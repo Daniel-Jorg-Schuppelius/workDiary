@@ -778,6 +778,11 @@
                                         'items'       => [
                                             ['route' => 'dataprotection.activities.index', 'label' => __('Verarbeitungstätigkeiten'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['dataprotection.activities.*']],
                                             ['route' => 'dataprotection.requests.index', 'label' => __('Betroffenenanfragen'), 'icon' => 'contact_mail', 'modal' => false, 'matches' => ['dataprotection.requests.*']],
+                                            ['route' => 'dataprotection.processors.index', 'label' => __('Dienstleister & AVV'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['dataprotection.processors.*', 'dataprotection.agreements.*']],
+                                            ['route' => 'dataprotection.gvv.index', 'label' => __('Gemeinsame Verantwortlichkeit'), 'icon' => 'diversity_3', 'modal' => false, 'matches' => ['dataprotection.gvv.*']],
+                                            ['route' => 'dataprotection.compliance.index', 'label' => __('Lückenanalyse'), 'icon' => 'rule', 'modal' => false, 'matches' => ['dataprotection.compliance.*']],
+                                            ['route' => 'dataprotection.incidents.index', 'label' => __('Datenschutzvorfälle'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['dataprotection.incidents.*']],
+                                            ['route' => 'dataprotection.tom.index', 'label' => __('TOM-Katalog'), 'icon' => 'shield_lock', 'modal' => false, 'matches' => ['dataprotection.tom.*']],
                                         ],
                                     ];
                                 }

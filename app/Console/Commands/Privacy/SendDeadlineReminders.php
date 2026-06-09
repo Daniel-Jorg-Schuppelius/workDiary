@@ -25,8 +25,9 @@ class SendDeadlineReminders extends Command {
     protected $description = 'Erinnert an fristnahe oder ueberfaellige Betroffenenanfragen (Art. 12).';
 
     public function handle(PrivacyDeadlineService $service): int {
-        $count = $service->remind();
-        $this->info("{$count} Anfrage(n) erinnert.");
+        $requests = $service->remind();
+        $incidents = $service->remindIncidents();
+        $this->info("{$requests} Anfrage(n), {$incidents} Vorfall/Vorfaelle erinnert.");
 
         return self::SUCCESS;
     }

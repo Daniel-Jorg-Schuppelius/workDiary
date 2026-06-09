@@ -69,7 +69,7 @@ class ProcessingActivityController extends Controller {
         Gate::authorize('view', $activity);
 
         return view('privacy.activities.show', [
-            'activity' => $activity->load('currentVersion'),
+            'activity' => $activity->load(['currentVersion', 'dpia']),
             'versions' => $activity->versions()->get(),
         ]);
     }

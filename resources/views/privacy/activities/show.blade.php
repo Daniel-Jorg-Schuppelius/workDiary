@@ -70,5 +70,34 @@
                 </form>
             </section>
         @endcan
+
+        @can('create', \App\Models\Privacy\Dpia::class)
+            @php $d = $activity->dpia; @endphp
+            <section class="card bg-base-200 p-4 space-y-3">
+                <h2 class="font-semibold">{{ __('Datenschutz-Folgenabschätzung (Art. 35)') }}
+                    @if ($d && $d->outcome->value !== 'open')<span class="badge badge-info badge-sm ml-2">{{ $d->outcome->label() }}</span>@endif
+                </h2>
+                <form method="post" action="{{ route('dataprotection.activities.dpia', $activity) }}" class="space-y-2">
+                    @csrf
+                    <textarea name="necessity" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Notwendigkeit & Verhältnismäßigkeit') }}">{{ old('necessity', $d?->necessity) }}</textarea>
+                    <textarea name="risks" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Risiken für Betroffene') }}">{{ old('risks', $d?->risks) }}</textarea>
+                    <textarea name="mitigations" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Abhilfemaßnahmen') }}">{{ old('mitigations', $d?->mitigations) }}</textarea>
+                    <div class="grid md:grid-cols-2 gap-2">
+                        <select name="residual_risk" class="select select-sm select-bordered">
+                            <option value="">{{ __('Restrisiko …') }}</option>
+                            @foreach (['low' => __('gering'), 'medium' => __('mittel'), 'high' => __('hoch')] as $v => $l)
+                                <option value="{{ $v }}" @selected(old('residual_risk', $d?->residual_risk) === $v)>{{ $l }}</option>
+                            @endforeach
+                        </select>
+                        <select name="outcome" class="select select-sm select-bordered">
+                            @foreach (\App\Enums\Privacy\DpiaOutcome::cases() as $o)
+                                <option value="{{ $o->value }}" @selected(old('outcome', $d?->outcome?->value ?? 'open') === $o->value)>{{ $o->label() }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button class="btn btn-sm">{{ __('DSFA speichern') }}</button>
+                </form>
+            </section>
+        @endcan
     </div>
 @endsection

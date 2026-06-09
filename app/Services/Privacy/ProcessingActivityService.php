@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\DB;
  * auf die freigegebene (gueltige) Version; der Audit-Trail laeuft ueber Auditable.
  */
 class ProcessingActivityService {
+    public function __construct(private readonly TechnicalMeasureService $tom) {}
+
     /**
      * @param  array<string, mixed>  $payload
      */
@@ -82,7 +84,12 @@ class ProcessingActivityService {
     public function approve(ProcessingActivity $activity, ProcessingActivityVersion $version, User $approver): ProcessingActivity {
         return DB::transaction(function () use ($activity, $version, $approver): ProcessingActivity {
             $now = Carbon::now();
+            // Unveraenderlichen TOM-Snapshot in die freigegebene Version einfrieren
+            // (Art. 32 / Nachweis): spaetere TOM-Aenderungen aendern die Historie nicht.
+            $payload = $version->payload;
+            $payload['tom_snapshot'] = $this->tom->snapshotForActivity($activity);
             $version->forceFill([
+                'payload' => $payload,
                 'approved_by' => $approver->id,
                 'approved_at' => $now,
                 'valid_from' => $now->toDateString(),

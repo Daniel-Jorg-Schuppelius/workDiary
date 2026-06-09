@@ -34,6 +34,11 @@ final class DataProtectionPermissions {
         'dataprotection.view',
         'dataprotection.ropa.manage',   // VVT bearbeiten/versionieren
         'dataprotection.ropa.approve',  // VVT freigeben
+        'dataprotection.avv.manage',    // Dienstleister/AVV-Register
+        'dataprotection.tom.manage',    // TOM-Katalog (Art. 32)
+        'dataprotection.compliance.manage', // Lueckenanalyse-Befunde entscheiden
+        'dataprotection.incident.manage', // Datenschutzvorfaelle
+        'dataprotection.dpia.manage',   // Datenschutz-Folgenabschaetzung
         'dataprotection.dsr.manage',    // Betroffenenanfragen bearbeiten/entscheiden
         'dataprotection.dsr.assign',    // Anfragen zuweisen
         'dataprotection.export',        // VVT-/Fall-Exporte

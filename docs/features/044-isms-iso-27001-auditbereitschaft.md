@@ -1,0 +1,327 @@
+# ISMS und ISO/IEC 27001-Auditbereitschaft
+
+## Status
+
+Proposed
+
+## Produktversprechen
+
+WorkDiary gibt Organisationen ein Werkzeug an die Hand, mit dem sie ein
+Informationssicherheits-Managementsystem (ISMS) aufbauen, betreiben,
+nachweisen und auf eine Zertifizierung nach ISO/IEC 27001:2022 vorbereiten
+können.
+
+WorkDiary zertifiziert keine Organisation und garantiert keine
+Normkonformität. Die Konformitätsbewertung und Zertifizierung erfolgen durch
+eine dafür zuständige, unabhängige Zertifizierungsstelle.
+
+## Ziel
+
+Die Anwendung soll nicht nur eine Kontroll-Checkliste anbieten, sondern den
+vollständigen Managementkreislauf unterstützen:
+
+1. Kontext, Geltungsbereich und Verantwortlichkeiten bestimmen.
+2. Informationswerte und Risiken erfassen und bewerten.
+3. Risikobehandlung und erforderliche Maßnahmen beschließen.
+4. Maßnahmen umsetzen und mit Nachweisen belegen.
+5. Wirksamkeit prüfen, interne Audits durchführen und Abweichungen bearbeiten.
+6. Managementbewertung dokumentieren und das ISMS fortlaufend verbessern.
+
+Damit kann ein Unternehmen seinen tatsächlichen ISMS-Stand erkennen und
+begründet auf ein Zertifizierungsaudit hinarbeiten.
+
+## Fachliche Bereiche
+
+### ISMS-Kontext und Geltungsbereich
+
+- Organisation, Standorte, Leistungen, Prozesse und relevante Parteien.
+- Dokumentierter ISMS-Geltungsbereich mit Ein- und Ausschlüssen.
+- Rechtliche, regulatorische, vertragliche und kundenspezifische
+  Anforderungen.
+- Informationssicherheitsleitlinie, Ziele und messbare Kennzahlen.
+- Rollen für Geschäftsleitung, ISMS-Verantwortliche, Asset Owner,
+  Risk Owner, Control Owner und interne Auditoren.
+
+### Informationswerte und Schutzbedarf
+
+- Register für Informationen, Systeme, Anwendungen, Geräte, Standorte,
+  Dienstleister und wesentliche Geschäftsprozesse.
+- Verantwortliche Person und unterstützende Organisationseinheiten.
+- Schutzbedarf für Vertraulichkeit, Integrität und Verfügbarkeit.
+- Abhängigkeiten zwischen Assets, Prozessen, Lieferanten und
+  Verarbeitungstätigkeiten.
+- Verknüpfung mit bestehenden WorkDiary-Assets, Software,
+  Organisationseinheiten und Datenschutzdaten.
+
+### Softwareinventar und Software-Stückliste
+
+WorkDiary unterscheidet zwei Ebenen:
+
+1. Das organisationsbezogene Softwareinventar zeigt, welche Produkte und
+   Versionen auf welchen Assets, Servern oder Diensten eingesetzt werden.
+2. Die produktbezogene Software Bill of Materials (SBOM) zeigt, welche
+   Komponenten und Abhängigkeiten in einer konkreten WorkDiary-Version
+   enthalten sind.
+
+Für jede ausgelieferte WorkDiary-Version wird automatisiert eine
+maschinenlesbare SBOM erzeugt und unveränderlich dem Release zugeordnet.
+Sie umfasst mindestens:
+
+- WorkDiary-Version, Build-Hash und Erstellungszeitpunkt.
+- PHP-, Laravel-, Datenbank- und Laufzeitversionen.
+- Composer- und NPM-Abhängigkeiten einschließlich transitiver
+  Abhängigkeiten und exakter Versionen aus den Lock-Dateien.
+- Aktivierte WorkDiary-Module und Plugins mit Implementierungs- und
+  Schema-Version.
+- Komponentenname, Anbieter, Paketkennung, Version, Hashes und Lizenzangaben,
+  soweit zuverlässig ermittelbar.
+- Abhängigkeitsbeziehungen zwischen Primärprodukt, Modulen, Plugins und
+  Bibliotheken.
+
+Als Austauschformat wird CycloneDX bevorzugt; ein SPDX-Export kann zusätzlich
+angeboten werden. Die fachlichen Mindestanforderungen orientieren sich an der
+jeweils unterstützten Fassung der BSI TR-03183-2.
+
+Die SBOM ist kein Schwachstellenbericht. Schwachstelleninformationen ändern
+sich dynamisch und werden separat mit der verwendeten Produktversion
+abgeglichen. Ergebnisse werden als Betroffenheitsprüfung dokumentiert und
+können über Security Advisories, CSAF oder VEX begründet werden.
+
+Eine administrative Komponentenübersicht zeigt:
+
+- installierte, aktivierte und deaktivierte Module und Plugins,
+- aktuelle und verfügbare Version,
+- Support- und End-of-Life-Status,
+- bekannte potenzielle Betroffenheiten,
+- Ergebnis der fachlichen Exploitability-Prüfung,
+- erforderliche Aktualisierung, Ausnahme oder Risikobehandlung.
+
+Die vollständige Komponentenliste und Schwachstellendetails sind nur für
+berechtigte Personen sichtbar. Öffentliche SBOMs oder Advisories werden
+bewusst pro Release freigegeben.
+
+### Risikomanagement
+
+- Konfigurierbare Bewertungsmethode mit Eintrittswahrscheinlichkeit,
+  Auswirkung und Akzeptanzkriterien.
+- Bedrohungen, Schwachstellen, bestehende Maßnahmen und Risikoeigentümer.
+- Brutto-, Netto- und Zielrisiko mit nachvollziehbarer Berechnung.
+- Risikobehandlung: vermeiden, vermindern, übertragen oder akzeptieren.
+- Genehmigung von Restrisiken mit Ablauf- und Reviewdatum.
+- Änderungsverlauf und stichtagsbezogener Export des Risikoregisters.
+
+### Maßnahmen und Statement of Applicability
+
+- Zentraler Maßnahmenkatalog mit Verantwortlichen, Status, Fälligkeit,
+  Wirksamkeit und Nachweisen.
+- Mapping eigener Maßnahmen zu ISO/IEC 27001:2022 sowie optional zu weiteren
+  Regelwerken.
+- Statement of Applicability (SoA) mit Anwendbarkeit, Begründung,
+  Umsetzungsstatus und Nachweisverweisen.
+- Verknüpfung zu Risiken, Informationswerten, Richtlinien,
+  Datenschutz-TOMs, Verträgen und Vorfällen.
+- Versionierung und Freigabe, damit ein Audit den Stand zu einem Stichtag
+  nachvollziehen kann.
+
+Die Anwendung darf urheberrechtlich geschützte Normtexte nicht ungeprüft
+mitliefern. Vollständige Norm- und Control-Texte werden nur aus einer
+zulässigen, vom Kunden lizenzierten Quelle übernommen. WorkDiary kann eigene
+Kurzbezeichnungen, Referenznummern und kundeneigene Beschreibungen verwalten.
+
+### Dokumente und Nachweise
+
+- Richtlinien, Verfahrensanweisungen, Prüfberichte, Schulungsnachweise,
+  Protokolle, Verträge, Zertifikate und technische Exporte.
+- Dokumenteneigner, Freigabe, Gültigkeit, Review- und Ablaufdatum.
+- Eindeutige Verknüpfung eines Nachweises mit Maßnahmen und Risiken.
+- Kennzeichnung fehlender, veralteter oder nicht freigegebener Nachweise.
+- Zugriffsschutz für vertrauliche Sicherheitsinformationen.
+
+### Sicherheitsvorfälle und Schwachstellen
+
+- Informationssicherheitsvorfälle unabhängig vom Personenbezug.
+- Verknüpfung zu Datenschutzvorfällen, falls personenbezogene Daten
+  betroffen sind, ohne die Fallakten zusammenzulegen.
+- Bewertung, Eindämmung, Ursachenanalyse, Kommunikation und Lessons Learned.
+- Maßnahmenverfolgung und Rückführung in Risiko- und Kontrollbewertungen.
+- Schwachstellenregister mit Kritikalität, Verantwortlichkeit und Fristen.
+- Automatisierter Abgleich von Softwareinventar und Release-SBOMs mit
+  Security Advisories und Schwachstellenquellen.
+- Dokumentierte Entscheidung, ob eine gefundene Komponenten-Schwachstelle
+  in der konkreten WorkDiary- oder Kundenkonfiguration ausnutzbar ist.
+- Import und Export maschinenlesbarer Advisories, insbesondere CSAF und VEX.
+
+### Lieferanten und Verträge
+
+- Kritikalitäts- und Risikobewertung von Lieferanten.
+- Anforderungen an Informationssicherheit, Meldewege, Verfügbarkeit,
+  Prüfungsrechte und Unterauftragnehmer.
+- Übersicht fehlender, ablaufender oder ungeprüfter Sicherheitsnachweise
+  und Vertragsklauseln.
+- Wiederverwendung von AVV, GVV, TOM-Anlagen und
+  Unterauftragsverarbeiterregister aus dem Datenschutzmanagement.
+
+### Interne Audits und Managementbewertung
+
+- Mehrjähriges Auditprogramm, Auditumfang, Kriterien und Auditoren.
+- Wahrung der Unabhängigkeit interner Auditoren.
+- Feststellungen, Nichtkonformitäten, Beobachtungen und Verbesserungen.
+- Ursachenanalyse, Korrekturmaßnahmen, Verantwortliche und
+  Wirksamkeitsprüfung.
+- Managementbewertung mit Eingaben, Entscheidungen und freigegebenem
+  Protokoll.
+
+### Auditbereitschaft
+
+- Dashboard je ISMS-Geltungsbereich mit Reifegrad und offenen Lücken.
+- Drill-down von einer Normanforderung zu Risiko, Maßnahme, Nachweis,
+  Auditfeststellung und Verantwortlichem.
+- Kennzahlen für überfällige Reviews, hohe Restrisiken, fehlende Nachweise,
+  offene Nichtkonformitäten und ungeprüfte Lieferanten.
+- Auditpaket für einen gewählten Stichtag mit SoA, Risikoregister,
+  Richtlinienverzeichnis, Auditnachweisen und Maßnahmenstatus.
+- Optionaler zeitlich begrenzter, lesender Prüferzugang.
+
+## Branchenprofile
+
+WorkDiary kann Branchenprofile als Startpunkt bereitstellen, zum Beispiel für
+IT-Service, Managed Services, Handwerk, Pflege oder Facility Management.
+Diese Profile enthalten typische Assets, Risiken, Nachweise und
+Vertragsanforderungen.
+
+Profile sind Vorlagen und keine pauschale Konformitätsentscheidung. Der
+konkrete Geltungsbereich, die Risiken und die angemessenen Maßnahmen müssen
+jede Organisation selbst bestimmen und freigeben.
+
+## MVP 1: ISMS-Grundlage
+
+- ISMS-Geltungsbereich, Rollen und Informationssicherheitsziele.
+- Informationswert- und Risikoregister.
+- Risikobehandlungsplan und Maßnahmenverwaltung.
+- SoA mit Anwendbarkeit, Begründung, Status und Nachweisen.
+- Dokumenten- und Nachweislückenübersicht.
+- Dashboard für hohe Risiken, überfällige Maßnahmen und fehlende Nachweise.
+- Softwareinventar mit Produkt, Installation, Version, Verantwortlichem und
+  Supportstatus.
+- Releasebezogene WorkDiary-SBOM aus `composer.lock`, `package-lock.json`,
+  Modulen und Plugins.
+- Geschützte Komponenten- und Versionsübersicht für Administratoren.
+- Versionierte JSON-, CSV- und druckbare Exporte.
+
+## MVP 2: Betrieb und Wirksamkeit
+
+- Sicherheitsvorfälle und Schwachstellenmanagement.
+- SBOM-/Inventarabgleich mit Advisories, dokumentierter Betroffenheit und
+  Patch- oder Risikobehandlungsworkflow.
+- Lieferantenbewertung und Vertragslücken.
+- Interne Audits, Nichtkonformitäten und Korrekturmaßnahmen.
+- Kennzahlen, Wirksamkeitsprüfungen und Managementbewertung.
+- Wiederkehrende Reviews und Eskalationen.
+
+## MVP 3: Auditvorbereitung
+
+- Stichtagsbezogene Auditpakete.
+- Zeitlich begrenzter Prüferzugang.
+- Reifegrad- und Readiness-Assessment mit begründeten Feststellungen.
+- Mapping zu weiteren Regelwerken, ohne Nachweise zu duplizieren.
+- Import eines kundenseitig lizenzierten Norm- und Maßnahmenkatalogs.
+
+## Gemeinsame Nachweisbasis
+
+Das ISMS verwendet bestehende WorkDiary-Daten, statt parallele Register
+anzulegen:
+
+- Datenschutz-TOMs als Maßnahmen und Nachweise.
+- Datenschutzvorfälle als verknüpfte Spezialfälle.
+- AVV, GVV und Dienstleisterprüfungen als Lieferantennachweise.
+- Backup- und Restore-Tests als Verfügbarkeitsnachweise.
+- Rollen-, Zugriffs- und Auditprotokolle als Kontrollnachweise.
+- Qualifikationen und Unterweisungen als Kompetenznachweise.
+- Prozeduren und Checklisten als dokumentierte Abläufe.
+
+## Kernmodell
+
+- `isms_scopes`
+- `isms_requirements`
+- `isms_assets`
+- `isms_software_products`
+- `isms_software_installations`
+- `isms_software_bills`
+- `isms_software_components`
+- `isms_component_relations`
+- `isms_vulnerability_assessments`
+- `isms_risks`
+- `isms_risk_assessments`
+- `isms_risk_treatments`
+- `isms_controls`
+- `isms_control_mappings`
+- `isms_control_evidence`
+- `isms_applicability_statements`
+- `isms_security_incidents`
+- `isms_supplier_assessments`
+- `isms_audits`
+- `isms_audit_findings`
+- `isms_corrective_actions`
+- `isms_management_reviews`
+
+## Akzeptanzkriterien
+
+- Eine Organisation kann den freigegebenen ISMS-Geltungsbereich benennen.
+- Eine WorkDiary-Installation kann ihre App-, Modul-, Plugin- und
+  Komponentenversionen für einen Release-Stichtag nachweisen.
+- Für jede veröffentlichte WorkDiary-Version existiert eine eindeutig
+  zugeordnete, maschinenlesbare SBOM.
+- Eine potenzielle Schwachstelle wird nicht automatisch als ausnutzbar
+  bezeichnet; die Betroffenheitsentscheidung ist begründet und freigegeben.
+- Jedes wesentliche Risiko hat Risk Owner, Bewertung, Behandlung und
+  Reviewdatum.
+- Das SoA erklärt für jede verwaltete Referenz die Anwendbarkeit und verweist
+  auf Umsetzung und Nachweise.
+- Fehlende oder veraltete Nachweise sind in einer priorisierten Übersicht
+  sichtbar.
+- Maßnahmen und Nichtkonformitäten haben Verantwortliche, Fristen und
+  Wirksamkeitsprüfungen.
+- Ein Auditpaket bildet den freigegebenen Stand zu einem gewählten Stichtag
+  unveränderlich ab.
+- WorkDiary bezeichnet eine Organisation nur dann als zertifiziert, wenn ein
+  gültiges Zertifikat mit Geltungsbereich, Zertifizierungsstelle und
+  Gültigkeitszeitraum hinterlegt wurde.
+
+## Abgrenzung
+
+- Keine Zertifizierung durch WorkDiary.
+- Keine automatische Behauptung von Normkonformität.
+- Keine allgemeingültige Risikobewertung allein aus dem Gewerk.
+- Kein Ersatz für unabhängige interne Audits oder Zertifizierungsaudits.
+- Keine unlizenzierte Auslieferung vollständiger ISO-Normtexte.
+- Eine SBOM allein gilt nicht als Schwachstellen- oder Sicherheitsnachweis.
+
+## Abhängigkeiten
+
+- Datenschutzmanagement: VVT, AVV und Betroffenenrechte
+- Datenschutz, Sicherheit und Datenlebenszyklus
+- Dokumentenmanagement
+- Prozeduren, Arbeitsanweisungen und Checklisten
+- Backup, Restore und Disaster Recovery
+- Rollen, Rechte und Produktprofile
+- Benachrichtigungen und Eskalationen
+- Gewerke- und Branchenprofile
+
+## Fachliche Referenzen
+
+- ISO/IEC 27001:2022: Anforderungen an ein
+  Informationssicherheits-Managementsystem.
+- ISO/IEC 27002:2022: Leitfaden für Informationssicherheitsmaßnahmen.
+- ISO-Übersicht zu ISO/IEC 27001:
+  <https://www.iso.org/standard/82875.html>
+- ISO-Übersicht zu ISO/IEC 27002:
+  <https://www.iso.org/standard/75652.html>
+- BSI TR-03183: Cyber-Resilienz-Anforderungen an Hersteller und Produkte,
+  insbesondere Teil 2 zur Software Bill of Materials:
+  <https://www.bsi.bund.de/dok/TR-03183>
+- BSI TR-03191: maschinenlesbare Security Advisories im CSAF-Format:
+  <https://www.bsi.bund.de/dok/TR-03191>
+
+## GitHub Issues
+
+- TBD

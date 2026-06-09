@@ -203,6 +203,62 @@ Route::middleware('auth')->group(function () {
             Route::post('anfragen/{request}/identitaet', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'verifyIdentity'])->name('requests.verify');
             Route::post('anfragen/{request}/zuweisung', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'assign'])->name('requests.assign');
             Route::post('anfragen/{request}/entscheidung', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'decide'])->name('requests.decide');
+
+            // ── MVP 2: Dienstleister-/AVV-Register (Art. 28) ─────────────────
+            Route::get('dienstleister', [\App\Http\Controllers\Privacy\ProcessorController::class, 'index'])->name('processors.index');
+            Route::get('dienstleister/neu', [\App\Http\Controllers\Privacy\ProcessorController::class, 'create'])->name('processors.create');
+            Route::post('dienstleister', [\App\Http\Controllers\Privacy\ProcessorController::class, 'store'])->name('processors.store');
+            Route::get('dienstleister/{processor}', [\App\Http\Controllers\Privacy\ProcessorController::class, 'show'])->name('processors.show');
+            Route::put('dienstleister/{processor}', [\App\Http\Controllers\Privacy\ProcessorController::class, 'update'])->name('processors.update');
+
+            Route::get('avv', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'index'])->name('agreements.index');
+            Route::post('avv', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'store'])->name('agreements.store');
+            Route::get('avv/{agreement}', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'show'])->name('agreements.show');
+            Route::get('avv/{agreement}/dokument', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'downloadDocument'])->name('agreements.document');
+            Route::post('avv/{agreement}/aktivieren', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'activate'])->name('agreements.activate');
+            Route::post('avv/{agreement}/kuendigen', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'terminate'])->name('agreements.terminate');
+            Route::post('avv/{agreement}/rueckgabe', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'confirmReturn'])->name('agreements.return');
+            Route::post('avv/{agreement}/taetigkeiten', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'syncActivities'])->name('agreements.activities');
+            Route::post('avv/{agreement}/subprozessoren', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'storeSubprocessor'])->name('agreements.subprocessor.store');
+            Route::post('avv/{agreement}/subprozessoren/{subprocessor}/freigabe', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'approveSubprocessor'])->name('agreements.subprocessor.approve');
+
+            // ── MVP 3: Datenschutzvorfaelle (Art. 33/34) + Massnahmen ────────
+            Route::get('vorfaelle', [\App\Http\Controllers\Privacy\IncidentController::class, 'index'])->name('incidents.index');
+            Route::get('vorfaelle/neu', [\App\Http\Controllers\Privacy\IncidentController::class, 'create'])->name('incidents.create');
+            Route::post('vorfaelle', [\App\Http\Controllers\Privacy\IncidentController::class, 'store'])->name('incidents.store');
+            Route::get('vorfaelle/{incident}', [\App\Http\Controllers\Privacy\IncidentController::class, 'show'])->name('incidents.show');
+            Route::post('vorfaelle/{incident}/bewertung', [\App\Http\Controllers\Privacy\IncidentController::class, 'assess'])->name('incidents.assess');
+            Route::post('vorfaelle/{incident}/meldeentscheidung', [\App\Http\Controllers\Privacy\IncidentController::class, 'decideNotification'])->name('incidents.decide');
+            Route::post('vorfaelle/{incident}/gemeldet', [\App\Http\Controllers\Privacy\IncidentController::class, 'markReported'])->name('incidents.reported');
+            Route::post('vorfaelle/{incident}/abschluss', [\App\Http\Controllers\Privacy\IncidentController::class, 'close'])->name('incidents.close');
+            Route::post('vorfaelle/{incident}/massnahmen', [\App\Http\Controllers\Privacy\IncidentController::class, 'storeMeasure'])->name('incidents.measure.store');
+            Route::post('vorfaelle/{incident}/massnahmen/{measure}/erledigt', [\App\Http\Controllers\Privacy\IncidentController::class, 'completeMeasure'])->name('incidents.measure.complete');
+
+            // DSFA (Art. 35) je Verarbeitungstaetigkeit
+            Route::post('vvt/{activity}/dsfa', [\App\Http\Controllers\Privacy\DpiaController::class, 'store'])->name('activities.dpia');
+
+            // TOM-Katalog (Art. 32)
+            Route::get('tom', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'index'])->name('tom.index');
+            Route::get('tom/neu', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'create'])->name('tom.create');
+            Route::post('tom', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'store'])->name('tom.store');
+            Route::get('tom/{measure}', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'show'])->name('tom.show');
+            Route::post('tom/{measure}/version', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'addVersion'])->name('tom.version');
+            Route::post('tom/{measure}/freigabe', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'approve'])->name('tom.approve');
+            Route::post('tom/{measure}/zuordnung', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'assignActivity'])->name('tom.assign');
+            Route::post('tom/{measure}/pruefung', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'review'])->name('tom.review');
+
+            // GVV – Gemeinsam Verantwortliche (Art. 26)
+            Route::get('gvv', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'index'])->name('gvv.index');
+            Route::post('gvv', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'store'])->name('gvv.store');
+            Route::get('gvv/{gvv}', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'show'])->name('gvv.show');
+            Route::put('gvv/{gvv}', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'update'])->name('gvv.update');
+            Route::get('gvv/{gvv}/dokument', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'downloadDocument'])->name('gvv.document');
+            Route::post('gvv/{gvv}/taetigkeiten', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'syncActivities'])->name('gvv.activities');
+
+            // Compliance-/Lueckenanalyse
+            Route::get('luecken', [\App\Http\Controllers\Privacy\ComplianceController::class, 'index'])->name('compliance.index');
+            Route::post('luecken/analyse', [\App\Http\Controllers\Privacy\ComplianceController::class, 'run'])->name('compliance.run');
+            Route::put('luecken/{finding}', [\App\Http\Controllers\Privacy\ComplianceController::class, 'update'])->name('compliance.update');
         });
 
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');

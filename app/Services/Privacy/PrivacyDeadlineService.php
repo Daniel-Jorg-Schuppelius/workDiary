@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy;
 
 use App\Enums\Privacy\DataSubjectRequestStatus;
-use App\Models\Privacy\DataSubjectRequest;
+use App\Models\Privacy\{DataSubjectRequest, Incident, IncidentEvent};
 use Illuminate\Support\Carbon;
 
 /**
@@ -46,6 +46,36 @@ class PrivacyDeadlineService {
             $this->events->record($request, 'deadline_reminder', null, [
                 'deadline_at' => $request->deadline_at?->toIso8601String(),
                 'overdue' => $request->deadline_at?->isPast() ?? false,
+            ]);
+        }
+
+        return $due->count();
+    }
+
+    /**
+     * Erinnert an Datenschutzvorfaelle, deren 72-h-Meldefrist verstrichen ist und
+     * die noch nicht an die Aufsichtsbehoerde gemeldet wurden. Idempotent (einmal
+     * je Vorfall).
+     *
+     * @return int Anzahl neu erinnerter Vorfaelle
+     */
+    public function remindIncidents(): int {
+        $due = Incident::query()
+            ->withoutGlobalScopes()
+            ->whereNotNull('authority_deadline_at')
+            ->where('authority_deadline_at', '<=', Carbon::now())
+            ->whereNull('authority_notified_at')
+            ->where('status', '!=', 'closed')
+            ->whereDoesntHave('events', static fn ($q) => $q->where('event', 'deadline_reminder'))
+            ->get();
+
+        foreach ($due as $incident) {
+            IncidentEvent::create([
+                'organization_id' => $incident->organization_id,
+                'incident_id' => $incident->id,
+                'actor_type' => 'system',
+                'event' => 'deadline_reminder',
+                'metadata' => ['authority_deadline_at' => $incident->authority_deadline_at?->toIso8601String()],
             ]);
         }
 

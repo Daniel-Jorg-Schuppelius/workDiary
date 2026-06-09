@@ -16,7 +16,7 @@ use App\Enums\Privacy\{ControllerRole, ProcessingActivityStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 
 /**
  * Verarbeitungstaetigkeit im Verzeichnis (DSGVO Art. 30). Der Kopf traegt den
@@ -68,6 +68,11 @@ class ProcessingActivity extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** @return HasOne<Dpia, $this> */
+    public function dpia(): HasOne {
+        return $this->hasOne(Dpia::class, 'activity_id');
     }
 
     public function isReviewOverdue(): bool {

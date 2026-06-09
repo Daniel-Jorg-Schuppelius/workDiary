@@ -56,6 +56,26 @@ nachweisbar in den Arbeitsalltag integrieren.
 - Unterauftragsverarbeiter, Verarbeitungsorte und Drittlandmechanismen.
 - Kündigung, Datenrückgabe und bestätigte Löschung zum Vertragsende.
 
+### Technische und organisatorische Maßnahmen (TOM)
+
+- Zentraler, versionierter TOM-Katalog nach Schutzziel und Maßnahmenbereich.
+- Maßnahmen unter anderem für Zutritt, Zugang, Zugriff, Weitergabe,
+  Eingabe, Verfügbarkeit, Wiederherstellung, Trennung und Datenschutz-
+  Management.
+- Zuordnung zu Verarbeitungstätigkeiten, Systemen, Standorten,
+  Auftragsverarbeitern und Verträgen.
+- Verantwortliche Person, Umsetzungsstatus, Gültigkeitszeitraum und
+  nächster Wirksamkeitsreview.
+- Schutzbedarf und adressierte Risiken statt pauschaler Checklisten.
+- Nachweise wie Richtlinien, Prüfprotokolle, Konfigurationsexporte,
+  Zertifikate und Restore-Tests mit restriktiven Zugriffsrechten.
+- Dokumentierte Wirksamkeitsprüfung mit Ergebnis, Abweichung,
+  Folgemaßnahme und Fälligkeit.
+- Exportierbare TOM-Anlage für AVV und GVV, ohne interne Sicherheitsdetails
+  unkontrolliert offenzulegen.
+- Jede freigegebene VVT- oder Vertragsversion speichert einen TOM-Snapshot,
+  damit spätere Änderungen den historischen Nachweis nicht verändern.
+
 ### Betroffenenanfragen
 
 - Fälle für Auskunft, Berichtigung, Löschung, Einschränkung,
@@ -74,16 +94,43 @@ nachweisbar in den Arbeitsalltag integrieren.
 - Zeitpunkt von Ereignis, Entdeckung und interner Meldung.
 - Betroffene Daten, Personengruppen, Systeme, Umfang und mögliche Folgen.
 - Sofortmaßnahmen, Risikobewertung und dokumentierte Meldeentscheidung.
-- Fristen und Nachweise für Aufsichtsbehörde und betroffene Personen.
+- 72-Stunden-Frist ab Kenntnis mit Eskalationen und dokumentierter Begründung,
+  falls eine Meldung verspätet erfolgt.
+- Getrennte Entscheidungen zur Meldung an die Aufsichtsbehörde und zur
+  Benachrichtigung betroffener Personen.
+- Fristen, Meldungsentwürfe und Nachweise für Aufsichtsbehörde und
+  betroffene Personen.
 - Lessons Learned und Folgemaßnahmen.
 
 Datenschutzvorfälle sind nicht mit dem bestehenden Hinweisgebersystem
 gleichzusetzen. Ein Hinweis kann einen Datenschutzvorfall auslösen, die
 Fallakten und Zugriffsrechte bleiben jedoch getrennt.
 
+### Compliance- und Vertragslücken
+
+- Zentrale Übersicht über fehlende, ablaufende oder ungeprüfte AVV, GVV,
+  TOM-Anlagen, Vertraulichkeitsvereinbarungen und Löschbestätigungen.
+- Ermittlung aus tatsächlichen Verarbeitungstätigkeiten, Verantwortungsrollen,
+  Dienstleisterbeziehungen, Datenkategorien und Drittlandtransfers.
+- Konfigurierbare Branchenprofile für IT-Service, Handwerk, Pflege,
+  Facility Management und weitere Gewerke.
+- Profile liefern prüfbare Anforderungen und Vorlagen, aber keine
+  automatische rechtliche Feststellung.
+- Jede Anforderung zeigt Auslöser, Rechts-/Organisationsgrundlage,
+  betroffene Tätigkeit, Vertragspartner, Zuständigkeit und Fälligkeit.
+- Status `erforderlich`, `vorhanden`, `in Prüfung`, `läuft ab`,
+  `fehlt`, `nicht anwendbar` oder `Abweichung akzeptiert`.
+- `Nicht anwendbar` und akzeptierte Abweichungen benötigen Begründung,
+  verantwortliche Person und nächsten Review.
+- Ampelübersichten pro Organisation, Gewerk, Kunde, Dienstleister und
+  Verarbeitungstätigkeit.
+- Drill-down von einer Lücke zum anzulegenden Vertrag, fehlenden Nachweis
+  oder betroffenen VVT-Eintrag.
+
 ## MVP 1: VVT und Betroffenenanfragen
 
 - Mandantensicheres VVT mit Entwurf, Review, Freigabe und Versionierung.
+- Versionierter TOM-Grundkatalog und Zuordnung zu Verarbeitungstätigkeiten.
 - Vorlagen für typische Prozesse aus IT-Service und Handwerk.
 - Register für Betroffenenanfragen mit Fristberechnung und Erinnerungen.
 - Rollen `privacy.view`, `privacy.manage`, `privacy.approve` und
@@ -100,9 +147,15 @@ Fallakten und Zugriffsrechte bleiben jedoch getrennt.
 - Dienstleister-, AVV- und GVV-Register mit Vertragsstatus und Review-Fristen.
 - Verknüpfung von AVV, TOM, Unterauftragsverarbeitern und
   Verarbeitungstätigkeiten.
+- TOM-Nachweise, Wirksamkeitsreviews und freigabefähige Vertragsanlagen.
 - Zuständigkeitsmatrix für Vereinbarungen gemeinsam Verantwortlicher.
 - Nachweisworkflow bei Vertragsende für Datenrückgabe oder Löschung.
 - Änderungsübersicht für neue Unterauftragsverarbeiter.
+- Regelbasierte Vertragslückenübersicht mit begründbaren Ausnahmen.
+- Branchenprofil-Vorlagen für typische Vertrags- und Nachweispflichten,
+  beginnend mit IT-Service und allgemeinen Handwerksbetrieben.
+- Dashboard-Kennzahlen für fehlende, ungeprüfte und bald ablaufende
+  Verträge und Nachweise.
 
 ## MVP 3: Datenschutzvorfälle und DSFA
 
@@ -117,10 +170,16 @@ Fallakten und Zugriffsrechte bleiben jedoch getrennt.
 
 - `privacy_processing_activities`
 - `privacy_processing_activity_versions`
+- `privacy_technical_measures`
+- `privacy_technical_measure_versions`
+- `privacy_measure_assignments`
+- `privacy_measure_reviews`
 - `privacy_processors`
 - `privacy_processing_agreements`
 - `privacy_joint_controller_agreements`
 - `privacy_subprocessors`
+- `privacy_compliance_requirements`
+- `privacy_compliance_findings`
 - `privacy_data_subject_requests`
 - `privacy_request_events`
 - `privacy_incidents`
@@ -136,12 +195,21 @@ ungefiltert offengelegt werden.
 - Eine Organisation kann ihr aktuelles VVT stichtagsbezogen exportieren.
 - Jede Verarbeitungstätigkeit hat einen Verantwortlichen und einen
   überprüfbaren Review-Status.
+- Jede freigegebene Verarbeitungstätigkeit enthält einen unveränderlichen
+  Snapshot der zu diesem Zeitpunkt geltenden TOM.
+- TOM haben Verantwortliche, Umsetzungsstatus, Nachweise und einen
+  nachvollziehbaren Wirksamkeitsreview.
 - Eine Betroffenenanfrage zeigt Frist, Bearbeitungsstand, Entscheidungen und
   Nachweise in einer nachvollziehbaren Timeline.
 - AVV, GVV und Unterauftragsverarbeiter lassen sich den betroffenen
   Verarbeitungstätigkeiten zuordnen.
+- Fehlende oder ablaufende Verträge werden mit dem konkreten fachlichen
+  Auslöser angezeigt; pauschale Gewerk-Zuordnungen sind überschreibbar und
+  begründungspflichtig.
 - Datenschutzvorfälle und Hinweisgeberfälle verwenden getrennte
   Berechtigungen, Daten und Aufbewahrungsregeln.
+- Ein Datenschutzvorfall dokumentiert Kenntniszeitpunkt, Risikobewertung,
+  72-Stunden-Frist und beide Meldeentscheidungen nachvollziehbar.
 - Kein Nutzer kann Datensätze oder Anhänge einer anderen Organisation sehen.
 - Sensible Exporte und Abrufe werden im Audit-Protokoll erfasst.
 
@@ -158,6 +226,8 @@ ungefiltert offengelegt werden.
 
 ## Abhängigkeiten
 
+- ISMS und ISO/IEC 27001-Auditbereitschaft, siehe
+  [Feature 044](./044-isms-iso-27001-auditbereitschaft.md)
 - Datenschutz, Sicherheit und Datenlebenszyklus
 - Rollen, Rechte und Produktprofile
 - Dokumentenmanagement
@@ -171,6 +241,8 @@ ungefiltert offengelegt werden.
 - DSGVO Art. 28: Auftragsverarbeitung.
 - DSGVO Art. 26: Gemeinsam Verantwortliche.
 - DSGVO Art. 30: Verzeichnis von Verarbeitungstätigkeiten.
+- DSGVO Art. 32: Sicherheit der Verarbeitung und regelmäßige Überprüfung der
+  Wirksamkeit technischer und organisatorischer Maßnahmen.
 - DSGVO Art. 33 und 34: Meldung von Datenschutzverletzungen.
 - DSGVO Art. 35: Datenschutz-Folgenabschätzung.
 - EDPB SME Data Protection Guide:

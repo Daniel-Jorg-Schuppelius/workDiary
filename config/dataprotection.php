@@ -21,4 +21,29 @@ return [
 
     // Standard-Reviewzyklus fuer Verarbeitungstaetigkeiten (Monate).
     'review_cycle_months' => (int) env('DATAPROTECTION_REVIEW_CYCLE_MONTHS', 12),
+
+    // Vorlauf (Tage), ab dem ein ablaufender Vertrag als „laeuft ab" gilt.
+    'expiry_warning_days' => (int) env('DATAPROTECTION_EXPIRY_WARNING_DAYS', 30),
+
+    /*
+     * Compliance-/Lueckenanalyse: prueffaehige Anforderungen (Definition) und
+     * Branchenprofile (welche Anforderungen je Gewerk erwartet werden). Die
+     * eigentlichen Befunde werden regelbasiert aus den echten Daten ermittelt.
+     */
+    'compliance' => [
+        'requirements' => [
+            'avv_required' => ['label' => 'AVV mit Auftragsverarbeiter', 'category' => 'contracts'],
+            'avv_current' => ['label' => 'AVV gültig (nicht abgelaufen)', 'category' => 'contracts'],
+            'gvv_required' => ['label' => 'GVV mit gemeinsam Verantwortlichem', 'category' => 'contracts'],
+            'dpia_required' => ['label' => 'DSFA bei DSFA-Bedarf', 'category' => 'assessment'],
+            'tom_assigned' => ['label' => 'TOM je Verarbeitungstätigkeit', 'category' => 'security'],
+        ],
+        // Gewerk => erwartete Anforderungs-Keys (informativ; die Regeln laufen generisch).
+        'profiles' => [
+            'it_service' => ['avv_required', 'avv_current', 'gvv_required', 'dpia_required', 'tom_assigned'],
+            'handwerk' => ['avv_required', 'avv_current', 'tom_assigned'],
+            'pflege' => ['avv_required', 'avv_current', 'gvv_required', 'dpia_required', 'tom_assigned'],
+            'facility' => ['avv_required', 'avv_current', 'tom_assigned'],
+        ],
+    ],
 ];

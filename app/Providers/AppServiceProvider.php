@@ -229,6 +229,13 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Supplier::class, \App\Policies\SupplierPolicy::class);
         Gate::policy(\App\Models\Privacy\ProcessingActivity::class, \App\Policies\Privacy\ProcessingActivityPolicy::class);
         Gate::policy(\App\Models\Privacy\DataSubjectRequest::class, \App\Policies\Privacy\DataSubjectRequestPolicy::class);
+        Gate::policy(\App\Models\Privacy\Processor::class, \App\Policies\Privacy\ProcessorPolicy::class);
+        Gate::policy(\App\Models\Privacy\ProcessingAgreement::class, \App\Policies\Privacy\ProcessingAgreementPolicy::class);
+        Gate::policy(\App\Models\Privacy\Incident::class, \App\Policies\Privacy\IncidentPolicy::class);
+        Gate::policy(\App\Models\Privacy\Dpia::class, \App\Policies\Privacy\DpiaPolicy::class);
+        Gate::policy(\App\Models\Privacy\TechnicalMeasure::class, \App\Policies\Privacy\TechnicalMeasurePolicy::class);
+        Gate::policy(\App\Models\Privacy\JointControllerAgreement::class, \App\Policies\Privacy\JointControllerAgreementPolicy::class);
+        Gate::policy(\App\Models\Privacy\ComplianceFinding::class, \App\Policies\Privacy\ComplianceFindingPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
@@ -488,5 +495,6 @@ class AppServiceProvider extends ServiceProvider {
         // (sonst doppelte Anzeige). Die Klassen bleiben für eine spätere Reaktivierung
         // erhalten. Der Widget-Loop bleibt für nicht-überlappende Widgets (z. B. Lesezeichen).
         $registry->register($this->app->make(\App\Dashboard\Widgets\BookmarksWidget::class));
+        $registry->register($this->app->make(\App\Dashboard\Widgets\DataProtectionWidget::class));
     }
 }

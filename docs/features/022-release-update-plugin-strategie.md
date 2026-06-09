@@ -21,6 +21,11 @@ passen.
 - Release-Prozess mit Changelog und Migrationshinweisen.
 - Update-Anleitung für lokale Installationen.
 - Plugin-Kompatibilitätsangaben.
+- Maschinenlesbare Software-Stückliste (SBOM) je Release mit exakten
+  Composer-, NPM-, Modul- und Plugin-Versionen.
+- Signierte Release-Metadaten mit Build-Hash und Prüfsummen.
+- Security Advisories sowie dokumentierte Betroffenheitsbewertung für
+  veröffentlichte Versionen.
 - Wartungsfenster und Rollback-Plan für SaaS.
 - Version-/Build-Anzeige in der App.
 - Health-Check nach Update.
@@ -30,6 +35,8 @@ passen.
 - Eine lokale Installation kann nachvollziehbar aktualisiert werden.
 - Migrationen sind vor Produktivbetrieb prüfbar.
 - Inkompatible Plugins werden erkannt.
+- Eine konkrete Installation kann ihre Komponenten und Versionen einem
+  veröffentlichten Release und dessen SBOM zuordnen.
 - SaaS-Rollouts können gestoppt oder zurückgerollt werden.
 
 ## Abhängigkeiten
@@ -38,6 +45,7 @@ passen.
 - Lizenzierung
 - Plugin-System
 - Backup und Restore
+- ISMS und ISO/IEC 27001-Auditbereitschaft
 
 ## GitHub Issues
 

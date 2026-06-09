@@ -79,6 +79,24 @@ class PrivacyHttpTest extends TestCase {
         ]);
     }
 
+    public function test_dashboard_widget_visible_for_officer(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+
+        $this->actingAs($officer)->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(route('dataprotection.requests.index'), false);
+    }
+
+    public function test_dashboard_widget_hidden_for_regular_user(): void {
+        $org = Organization::factory()->create();
+        $plain = User::factory()->create(['organization_id' => $org->id]);
+
+        $this->actingAs($plain)->get(route('dashboard'))
+            ->assertOk()
+            ->assertDontSee(route('dataprotection.requests.index'), false);
+    }
+
     public function test_tenant_isolation_blocks_foreign_request(): void {
         $orgA = Organization::factory()->create();
         $orgB = Organization::factory()->create();
