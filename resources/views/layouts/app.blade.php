@@ -765,6 +765,22 @@
                                         ],
                                     ];
                                 }
+                                // Datenschutzmanagement: nur fuer die Rolle `datenschutz`
+                                // (NICHT automatisch fuer Admins); modul-gegatet (Pro+).
+                                if (
+                                    \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Privacy\ProcessingActivity::class)
+                                    || \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Privacy\DataSubjectRequest::class)
+                                ) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'datenschutz',
+                                        'label'       => __('Datenschutz'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'dataprotection.activities.index', 'label' => __('Verarbeitungstätigkeiten'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['dataprotection.activities.*']],
+                                            ['route' => 'dataprotection.requests.index', 'label' => __('Betroffenenanfragen'), 'icon' => 'contact_mail', 'modal' => false, 'matches' => ['dataprotection.requests.*']],
+                                        ],
+                                    ];
+                                }
                                 $sidebarSections[] = [
                                     'key'         => 'reports',
                                     'label'       => __('Auswertungen'),
@@ -854,6 +870,7 @@
                                 'facility' => 'module.liegenschaften',
                                 'sales' => 'module.vertrieb',
                                 'compliance' => 'module.compliance',
+                                'datenschutz' => 'module.datenschutz',
                             ];
                             $features = app(\App\Services\Licensing\FeatureFlagResolver::class);
                             $nav = app(\App\Services\Navigation\NavGate::class);

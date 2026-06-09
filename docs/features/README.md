@@ -22,6 +22,7 @@ Definition-of-Done steht unter
 | P0 | [Aufzeichnung und Zeiterfassung als Kernprodukt](./001-zeiterfassung-kernprodukt.md) | Proposed | Nachweis, wer wann welche Aufträge angenommen und bearbeitet hat, welche Zeit verbraucht wurde und welche Dienstmittel genutzt wurden |
 | P0 | [Auswertungen und Entscheidungsgrundlagen](./002-auswertungen-entscheidungsgrundlagen.md) | Proposed | Macht aus Aufzeichnungen belastbare Zahlen, Grafiken und Ableitungen zu Kunden, Produkten, Effizienz und Schulungsbedarf |
 | P0 | [Dokumentation und Abnahmeprotokolle](./003-dokumentation-abnahmeprotokolle.md) | Proposed | Sichert Baustellen, Produkte, Anlagen und Aufträge mit Fotos, Checklisten, Unterschriften und Protokollen ab |
+| P1 | [Datenschutzmanagement: VVT, AVV und Betroffenenrechte](./043-datenschutzmanagement-vvt-avv-betroffenenrechte.md) | Proposed | Macht Datenschutzpflichten mit Fristen, Verantwortlichen, Verträgen und Nachweisen operativ bearbeitbar |
 | P1 | [Backup, Restore und Disaster Recovery](./017-backup-restore-disaster-recovery.md) | Proposed | Schützt Nachweisdaten, Anhänge, Protokolle und Mandanten vor Datenverlust |
 | P1 | [Import, Migration und Onboarding](./020-import-migration-onboarding.md) | Proposed | Senkt Wechselhürden und bringt Kunden schneller produktiv ins System |
 | P1 | [Gewerke- und Branchenprofile](./042-gewerke-branchenprofile.md) | Proposed | Erlaubt fachnahe Startkonfigurationen für Elektro, SHK, IT-Service, Bau, Facility und weitere Gewerke |

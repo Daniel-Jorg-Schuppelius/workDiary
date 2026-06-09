@@ -180,6 +180,31 @@ Route::middleware('auth')->group(function () {
                 Route::post('/slug', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'rotateSlug'])->name('rotate');
             });
 
+        // ── Datenschutzmanagement (Feature 043, MVP 1) ──────────────────────
+        // Modul-Gate via module.datenschutz (config/plans.routes); Autorisierung
+        // pro Aktion ueber die Privacy-Policies (Rolle `datenschutz`).
+        Route::prefix('compliance/datenschutz')->name('dataprotection.')->group(function (): void {
+            // VVT (Verzeichnis von Verarbeitungstaetigkeiten)
+            Route::get('vvt', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'index'])->name('activities.index');
+            Route::get('vvt/neu', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'create'])->name('activities.create');
+            Route::get('vvt/export', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'export'])->name('activities.export');
+            Route::post('vvt', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'store'])->name('activities.store');
+            Route::get('vvt/{activity}', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'show'])->name('activities.show');
+            Route::post('vvt/{activity}/version', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'addVersion'])->name('activities.version');
+            Route::post('vvt/{activity}/pruefung', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'submitReview'])->name('activities.submit');
+            Route::post('vvt/{activity}/freigabe', [\App\Http\Controllers\Privacy\ProcessingActivityController::class, 'approve'])->name('activities.approve');
+
+            // Betroffenenanfragen (DSR)
+            Route::get('anfragen', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'index'])->name('requests.index');
+            Route::get('anfragen/neu', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'create'])->name('requests.create');
+            Route::post('anfragen', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'store'])->name('requests.store');
+            Route::get('anfragen/{request}', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'show'])->name('requests.show');
+            Route::get('anfragen/{request}/export', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'export'])->name('requests.export');
+            Route::post('anfragen/{request}/identitaet', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'verifyIdentity'])->name('requests.verify');
+            Route::post('anfragen/{request}/zuweisung', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'assign'])->name('requests.assign');
+            Route::post('anfragen/{request}/entscheidung', [\App\Http\Controllers\Privacy\DataSubjectRequestController::class, 'decide'])->name('requests.decide');
+        });
+
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
         Route::post('onboarding/steps/{step}/skip', [OnboardingController::class, 'skipStep'])->name('onboarding.steps.skip');
         Route::post('onboarding/widget/dismiss', [OnboardingController::class, 'dismissWidget'])->name('onboarding.widget.dismiss');

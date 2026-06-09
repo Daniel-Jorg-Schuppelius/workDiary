@@ -1,0 +1,101 @@
+<?php
+/*
+ * Created on   : Tue Jun 09 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ProcessingActivityService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+namespace App\Services\Privacy;
+
+use App\Enums\Privacy\{ControllerRole, ProcessingActivityStatus};
+use App\Models\Organization;
+use App\Models\Privacy\{ProcessingActivity, ProcessingActivityVersion};
+use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Verwaltet Verarbeitungstaetigkeiten und ihre Versionierung (Art. 30): Entwurf,
+ * neue Version, Einreichung zur Pruefung und Freigabe. `current_version_id` zeigt
+ * auf die freigegebene (gueltige) Version; der Audit-Trail laeuft ueber Auditable.
+ */
+class ProcessingActivityService {
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    public function createDraft(
+        Organization $organization,
+        string $name,
+        ?string $purpose,
+        ControllerRole $role,
+        array $payload,
+        ?User $actor = null,
+        ?string $area = null,
+    ): ProcessingActivity {
+        return DB::transaction(function () use ($organization, $name, $purpose, $role, $payload, $actor, $area): ProcessingActivity {
+            $activity = ProcessingActivity::create([
+                'organization_id' => $organization->id,
+                'name' => $name,
+                'purpose' => $purpose,
+                'controller_role' => $role,
+                'area' => $area,
+                'status' => ProcessingActivityStatus::Draft,
+                'created_by' => $actor?->id,
+            ]);
+
+            $this->addVersion($activity, $payload, $actor, 'Erstentwurf');
+
+            return $activity;
+        });
+    }
+
+    /**
+     * Legt eine neue (Entwurfs-)Version an.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function addVersion(ProcessingActivity $activity, array $payload, ?User $actor = null, ?string $note = null): ProcessingActivityVersion {
+        $next = (int) $activity->versions()->max('version_no') + 1;
+
+        return ProcessingActivityVersion::create([
+            'organization_id' => $activity->organization_id,
+            'activity_id' => $activity->id,
+            'version_no' => $next,
+            'payload' => $payload,
+            'note' => $note,
+            'created_by' => $actor?->id,
+        ]);
+    }
+
+    public function submitForReview(ProcessingActivity $activity): ProcessingActivity {
+        $activity->forceFill(['status' => ProcessingActivityStatus::InReview])->save();
+
+        return $activity;
+    }
+
+    /** Gibt eine Version frei: setzt sie als aktuelle gueltige Version + naechsten Review. */
+    public function approve(ProcessingActivity $activity, ProcessingActivityVersion $version, User $approver): ProcessingActivity {
+        return DB::transaction(function () use ($activity, $version, $approver): ProcessingActivity {
+            $now = Carbon::now();
+            $version->forceFill([
+                'approved_by' => $approver->id,
+                'approved_at' => $now,
+                'valid_from' => $now->toDateString(),
+            ])->save();
+
+            $cycle = (int) config('dataprotection.review_cycle_months', 12);
+            $activity->forceFill([
+                'status' => ProcessingActivityStatus::Approved,
+                'current_version_id' => $version->id,
+                'review_due_at' => $now->copy()->addMonths($cycle)->toDateString(),
+            ])->save();
+
+            return $activity;
+        });
+    }
+}

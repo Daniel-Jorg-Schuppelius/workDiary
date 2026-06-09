@@ -75,6 +75,9 @@ sondern ein Verkaufsargument und Vertrauensanker.
 
 - Kundenfreigabe für Supportzugriff mit Ablaufzeit.
 - Datenschutz-Dashboard mit Datenkategorien und Fristen.
+- Operatives Datenschutzmanagement für VVT, AVV, Betroffenenanfragen und
+  Datenschutzvorfälle, siehe
+  [Feature 043](./043-datenschutzmanagement-vvt-avv-betroffenenrechte.md).
 - Automatische Löschläufe mit Review-Modus.
 - Verschlüsselung besonders sensibler Felder.
 - Regionale Datenhaltung für SaaS.

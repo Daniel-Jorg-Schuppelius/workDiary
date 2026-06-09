@@ -27,6 +27,12 @@ Schedule::command('plans:purge')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Datenschutz: Fristen-Erinnerungen fuer Betroffenenanfragen (Art. 12). Idempotent.
+Schedule::command('privacy:deadlines')
+    ->dailyAt('06:00')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('chat:send-reminders')
     ->everyMinute()
     ->withoutOverlapping();

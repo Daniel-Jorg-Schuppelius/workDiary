@@ -26,5 +26,6 @@ return [
         'audit_logs' => App\Models\AuditLog::class,
         'organization_audit_logs' => App\Models\OrganizationAuditLog::class,
         'whistleblowing_case_events' => App\Models\Whistleblowing\CaseEvent::class,
+        'privacy_request_events' => App\Models\Privacy\RequestEvent::class,
     ],
 ];

@@ -34,6 +34,7 @@ return [
             'module.liegenschaften',
             'module.auswertungen_team',
             'module.chat',
+            'module.datenschutz',
         ],
         'enterprise' => [
             'module.kanban',
@@ -44,6 +45,7 @@ return [
             'module.liegenschaften',
             'module.auswertungen_team',
             'module.chat',
+            'module.datenschutz',
             'module.lohn',
             'module.compliance',
             'protocols.signed',
@@ -60,6 +62,7 @@ return [
         'module.liegenschaften' => 'Liegenschaften',
         'module.auswertungen_team' => 'Team-Auswertungen',
         'module.chat' => 'Chat',
+        'module.datenschutz' => 'Datenschutz',
         'module.lohn' => 'Lohn & SV',
         'module.compliance' => 'Hinweisgebersystem',
     ],
@@ -103,6 +106,8 @@ return [
 
         'chat.*' => 'module.chat',
 
+        'dataprotection.*' => 'module.datenschutz',
+
         'payroll.*' => 'module.lohn',
 
         'whistleblowing.internal.*' => 'module.compliance',
@@ -136,6 +141,7 @@ return [
         'module.liegenschaften' => true,
         'module.auswertungen_team' => true, // nur Auswertungen, keine Primaerdaten
         'module.chat' => true,
+        'module.datenschutz' => false,      // VVT/Vorfaelle → Rechenschaft/Nachweis (Art. 5 Abs. 2)
         'module.lohn' => false,             // Lohn/SV → GoBD / §147 AO / SGB IV (6 J.)
         'module.compliance' => false,       // Hinweisgeber → HinSchG (3 J.)
     ],

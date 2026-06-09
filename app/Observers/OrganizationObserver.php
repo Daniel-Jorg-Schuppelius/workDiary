@@ -12,6 +12,7 @@ namespace App\Observers;
 
 use App\Models\Organization;
 use App\Services\Licensing\PlanModuleService;
+use App\Services\Privacy\DataProtectionPermissions;
 use App\Services\Whistleblowing\WhistleblowingPermissions;
 use Database\Seeders\PermissionsSeeder;
 
@@ -25,6 +26,8 @@ class OrganizationObserver {
         PermissionsSeeder::seedOrganization($organization);
         // Eigene, vom Plattform-Admin getrennte Meldestelle-Rolle (Abschnitt 5/25).
         WhistleblowingPermissions::seedOrganization($organization);
+        // Eigene Datenschutz-Rolle (ebenfalls vom Admin getrennt).
+        DataProtectionPermissions::seedOrganization($organization);
     }
 
     /**

@@ -227,6 +227,8 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\UserFilterPreset::class, \App\Policies\UserFilterPresetPolicy::class);
         Gate::policy(\App\Models\InvoiceTemplate::class, \App\Policies\InvoiceTemplatePolicy::class);
         Gate::policy(Supplier::class, \App\Policies\SupplierPolicy::class);
+        Gate::policy(\App\Models\Privacy\ProcessingActivity::class, \App\Policies\Privacy\ProcessingActivityPolicy::class);
+        Gate::policy(\App\Models\Privacy\DataSubjectRequest::class, \App\Policies\Privacy\DataSubjectRequestPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
