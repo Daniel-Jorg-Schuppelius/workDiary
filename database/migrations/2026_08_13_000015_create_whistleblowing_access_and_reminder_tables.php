@@ -54,7 +54,9 @@ return new class extends Migration {
             $table->date('reminder_date');
             $table->timestamp('created_at')->nullable();
 
-            $table->unique(['case_id', 'kind', 'reminder_date']);
+            // Expliziter, kurzer Indexname (MySQL-Limit 64 Zeichen; der
+            // auto-generierte Name waere 67 Zeichen lang).
+            $table->unique(['case_id', 'kind', 'reminder_date'], 'wb_deadline_reminder_unique');
         });
     }
 
