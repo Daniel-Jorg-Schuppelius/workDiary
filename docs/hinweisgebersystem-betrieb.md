@@ -7,15 +7,15 @@
 
 ## 1. Konfiguration (.env)
 
-| Variable | Zweck | Pflicht |
-|---|---|---|
-| `WHISTLEBLOWING_KEY` | Modul-KEK (base64 32 Byte), **getrennt von APP_KEY** | ja |
-| `WHISTLEBLOWING_LOOKUP_KEY` | HMAC-Key für Postfach-Lookup (getrennt) | empfohlen |
-| `WHISTLEBLOWING_SCANNER` | `none` (Default) oder `clamav` | – |
-| `WHISTLEBLOWING_CLAMAV_BINARY` | z. B. `clamdscan` | bei clamav |
-| `WHISTLEBLOWING_RETENTION_MONTHS` | Aufbewahrung nach Abschluss (Default 36) | – |
-| `WHISTLEBLOWING_EMERGENCY_TTL_MINUTES` | Dauer einer Notfallfreigabe (Default 240) | – |
-| `WHISTLEBLOWING_MAILBOX_SESSION_MINUTES` | Postfach-Sitzungsdauer (Default 30) | – |
+| Variable                                 | Zweck                                                | Pflicht    |
+| ---------------------------------------- | ---------------------------------------------------- | ---------- |
+| `WHISTLEBLOWING_KEY`                     | Modul-KEK (base64 32 Byte), **getrennt von APP_KEY** | ja         |
+| `WHISTLEBLOWING_LOOKUP_KEY`              | HMAC-Key für Postfach-Lookup (getrennt)              | empfohlen  |
+| `WHISTLEBLOWING_SCANNER`                 | `none` (Default) oder `clamav`                       | –          |
+| `WHISTLEBLOWING_CLAMAV_BINARY`           | z. B. `clamdscan`                                    | bei clamav |
+| `WHISTLEBLOWING_RETENTION_MONTHS`        | Aufbewahrung nach Abschluss (Default 36)             | –          |
+| `WHISTLEBLOWING_EMERGENCY_TTL_MINUTES`   | Dauer einer Notfallfreigabe (Default 240)            | –          |
+| `WHISTLEBLOWING_MAILBOX_SESSION_MINUTES` | Postfach-Sitzungsdauer (Default 30)                  | –          |
 
 Schlüssel erzeugen: `php -r 'echo base64_encode(random_bytes(32));'` — je einen
 für `WHISTLEBLOWING_KEY` und `WHISTLEBLOWING_LOOKUP_KEY`.
@@ -26,12 +26,12 @@ für `WHISTLEBLOWING_KEY` und `WHISTLEBLOWING_LOOKUP_KEY`.
 
 ## 2. Cron / Scheduler
 
-| Command | Takt | Zweck |
-|---|---|---|
-| `whistleblowing:deadlines` | stündlich | Fristen-Erinnerungen (idempotent) |
-| `whistleblowing:retention-review` | täglich | fällige Fälle → Aufbewahrungsprüfung (keine Auto-Löschung) |
-| `whistleblowing:scan` | minütlich/5-min | Anhang-Quarantäne → clean/rejected (nur mit Scanner) |
-| `audit:verify` | täglich | Integrität der Hash-Ketten |
+| Command                           | Takt            | Zweck                                                      |
+| --------------------------------- | --------------- | ---------------------------------------------------------- |
+| `whistleblowing:deadlines`        | stündlich       | Fristen-Erinnerungen (idempotent)                          |
+| `whistleblowing:retention-review` | täglich         | fällige Fälle → Aufbewahrungsprüfung (keine Auto-Löschung) |
+| `whistleblowing:scan`             | minütlich/5-min | Anhang-Quarantäne → clean/rejected (nur mit Scanner)       |
+| `audit:verify`                    | täglich         | Integrität der Hash-Ketten                                 |
 
 ## 3. Malware-Scanner (ClamAV)
 
@@ -74,6 +74,19 @@ grün sein** (FAIL = blockierend, WARN = bewusst entscheiden).
 Pilot-Daten: `php artisan whistleblowing:demo-seed <orgId> --count=N` (synthetische
 Fälle über den echten Meldepfad; in Produktion nur mit `--force`).
 
+## 7a. Zugang (UI)
+
+Sidebar-Sektion **„Compliance"** — nur sichtbar für Personen mit Meldestellen-
+Permission (nicht automatisch für Admins):
+
+- **Meldestelle** (`/compliance/meldungen`) — Fallbearbeitung; erfordert Rolle
+  `meldestelle` + aktives 2FA. Fallinhalt erst nach Zuweisung.
+- **Meldeportal** (`/compliance/portal`) — Portal anlegen/aktivieren, Modi
+  (anonym/vertraulich), Aufbewahrung, öffentlichen Link sehen/rotieren
+  (`whistleblowing.settings.manage`). Öffentlicher Meldelink: `/melden/{slug}`.
+
+Rolle `meldestelle` wird über **Admin → Zugriff → Mitglieder** zugewiesen.
+
 ## 8. Go-Live-Checkliste (vor Freigabe für echte Meldungen)
 
 Technisch (durch Code/Ops abgedeckt):
@@ -84,6 +97,8 @@ Technisch (durch Code/Ops abgedeckt):
       Quarantäne bleiben)
 - [ ] Cron-Jobs eingerichtet, `audit:verify` im Monitoring
 - [ ] Session-Cookies sicher (secure/strict/http_only)
+- [ ] 2FA-Pflicht fuer die Meldestelle aktiv (im Code erzwungen: Zugriff auf
+      `/compliance/meldungen` nur mit aktivem 2FA, sonst Redirect zur Einrichtung)
 - [ ] WB-Tabellen aus Standard-Export ausgeschlossen (per Test abgesichert)
 
 Organisatorisch/extern (NICHT durch Code leistbar — Phase-6-Kern):

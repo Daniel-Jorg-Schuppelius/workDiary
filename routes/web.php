@@ -145,13 +145,16 @@ Route::middleware('auth')->group(function () {
 
     // Alle folgenden Routen gehören zum neuen System und sind nur für
     // dort freigeschaltete User (is_new_system=true) bzw. Admins erreichbar.
-    Route::middleware('access.new')->group(function () {
+    Route::middleware(['access.new', \App\Http\Middleware\EnforcePlanModules::class])->group(function () {
         Route::get('dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
 
         // ── Hinweisgeber: interne Fallbearbeitung (Phase 3) ─────────────────
         // Autorisierung pro Aktion ueber WhistleblowingCasePolicy (Permission
         // UND Fall-Zuweisung). {case} wird org-scoped ueber public_id gebunden.
-        Route::prefix('compliance/meldungen')->name('whistleblowing.internal.')->group(function (): void {
+        Route::prefix('compliance/meldungen')
+            ->name('whistleblowing.internal.')
+            ->middleware(\App\Http\Middleware\Whistleblowing\RequireMeldestelleTwoFactor::class)
+            ->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'index'])->name('index');
             Route::get('{case}', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'show'])->name('show');
             Route::post('{case}/eingang', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'acknowledge'])->name('acknowledge');
@@ -166,6 +169,17 @@ Route::middleware('auth')->group(function () {
             Route::post('{case}/export', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'export'])->name('export');
             Route::post('{case}/loeschen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'destroy'])->name('destroy');
         });
+
+        // ── Hinweisgeber: Portal-Verwaltung (Permission settings.manage) ─────
+        Route::prefix('compliance/portal')
+            ->name('whistleblowing.portal.')
+            ->middleware(\App\Http\Middleware\Whistleblowing\RequireMeldestelleTwoFactor::class)
+            ->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'edit'])->name('edit');
+                Route::put('/', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'update'])->name('update');
+                Route::post('/slug', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'rotateSlug'])->name('rotate');
+            });
+
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
         Route::post('onboarding/steps/{step}/skip', [OnboardingController::class, 'skipStep'])->name('onboarding.steps.skip');
         Route::post('onboarding/widget/dismiss', [OnboardingController::class, 'dismissWidget'])->name('onboarding.widget.dismiss');

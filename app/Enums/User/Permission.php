@@ -166,6 +166,7 @@ enum Permission: string implements HasLabel {
 
         // ── Zeit-Korrekturanträge (MVP-017) ────────────────────────────────
     case CorrectionCreateOwn = 'correction.create.own';
+    case CorrectionCreateForOthers = 'correction.create.others';
     case CorrectionSubmitOwn = 'correction.submit.own';
     case CorrectionWithdrawOwn = 'correction.withdraw.own';
     case CorrectionViewTeam = 'correction.view.team';

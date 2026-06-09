@@ -10,6 +10,7 @@
 
 namespace App\Services\TimeApproval;
 
+use App\Enums\Attendance\AttendanceSource;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Models\{Attendance, TimeCorrectionItem, TimeCorrectionRequest, TimeEntry, User};
 use Carbon\CarbonImmutable;
@@ -133,6 +134,44 @@ class TimeCorrectionService {
         return $request->refresh();
     }
 
+    /**
+     * Darf dieser Antrag per Selbstkorrektur direkt angewendet werden? Nur wenn
+     * (a) die Organisation den 'self'-Modus aktiviert hat UND (b) es eine
+     * Eigenkorrektur ist (Antragsteller == betroffener Nutzer). Anträge im Namen
+     * anderer brauchen immer eine Genehmigung.
+     */
+    public function selfApplicable(TimeCorrectionRequest $request): bool {
+        if ((int) $request->requested_by_user_id !== (int) $request->user_id) {
+            return false;
+        }
+        $mode = data_get(
+            $request->organization?->settings,
+            'attendance.self_correction',
+            (string) config('attendance.self_correction', 'request'),
+        );
+
+        return $mode === 'self';
+    }
+
+    /**
+     * submitted → approved → applied in einem Schritt: der Mitarbeiter trägt eine
+     * vergessene Stempelung selbst nach (Firmen-Einstellung). Markiert
+     * self_applied; formale Genehmigung durch den Antragsteller selbst.
+     */
+    public function selfApply(TimeCorrectionRequest $request): TimeCorrectionRequest {
+        $this->assertStatus($request, [TimeCorrectionStatus::Submitted]);
+
+        $request->fill([
+            'status' => TimeCorrectionStatus::Approved,
+            'decided_at' => CarbonImmutable::now(),
+            'decided_by_user_id' => $request->user_id,
+            'decision_note' => __('Selbstkorrektur gemäß Organisations-Einstellung'),
+            'self_applied' => true,
+        ])->save();
+
+        return $this->apply($request);
+    }
+
     /** submitted → rejected. Pflicht-Begründung. */
     public function reject(TimeCorrectionRequest $request, User $actor, string $reason): TimeCorrectionRequest {
         $this->assertStatus($request, [TimeCorrectionStatus::Submitted]);
@@ -208,6 +247,12 @@ class TimeCorrectionService {
         }
 
         $after = $item->after ?? [];
+
+        // Jede aus einer Korrektur geschriebene Stempelung ist per Definition
+        // manuell (kein echter Stempel) → Quelle erzwingen (Nachvollziehbarkeit).
+        if ($item->target_type === Attendance::class && in_array($item->action, ['create', 'update'], true)) {
+            $after['source'] = AttendanceSource::Manual->value;
+        }
 
         match ($item->action) {
             'create' => $this->applyCreate($targetType, $after),

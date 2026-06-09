@@ -20,6 +20,13 @@ Schedule::command('archive:run')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Downgrade-Karenz: nach Ablauf Daten purgebarer Module entfernen
+// (aufbewahrungspflichtige bleiben). Taeglich, idempotent.
+Schedule::command('plans:purge')
+    ->dailyAt('03:30')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('chat:send-reminders')
     ->everyMinute()
     ->withoutOverlapping();

@@ -300,21 +300,21 @@ Mandantenscope als auch ueber Fallberechtigungen begrenzt.
 
 Organisationsbezogene Portal-Konfiguration:
 
-| Feld                       | Typ / Hinweis                                              |
-| -------------------------- | ---------------------------------------------------------- |
-| `id`                       | PK                                                         |
-| `organization_id`          | FK, unique                                                 |
-| `public_slug`              | zufaelliger, nicht aus Organisationsnamen ableitbarer Slug |
-| `is_enabled`               | Portal aktiv                                               |
-| `allow_anonymous`          | im Produkt standardmaessig `true`                          |
-| `allow_confidential`       | freiwillige Kontaktdaten                                   |
-| `allowed_locales`          | JSON                                                       |
-| `default_locale`           | Locale                                                     |
-| `intro_text`               | organisationsspezifischer Hinweis                          |
-| `privacy_text_version`     | angezeigte Datenschutzversion                              |
-| `external_channels`        | JSON mit Behoerden-/Kontaktinformationen                   |
+| Feld                       | Typ / Hinweis                                                    |
+| -------------------------- | ---------------------------------------------------------------- |
+| `id`                       | PK                                                               |
+| `organization_id`          | FK, unique                                                       |
+| `public_slug`              | zufaelliger, nicht aus Organisationsnamen ableitbarer Slug       |
+| `is_enabled`               | Portal aktiv                                                     |
+| `allow_anonymous`          | im Produkt standardmaessig `true`                                |
+| `allow_confidential`       | freiwillige Kontaktdaten                                         |
+| `allowed_locales`          | JSON                                                             |
+| `default_locale`           | Locale                                                           |
+| `intro_text`               | organisationsspezifischer Hinweis                                |
+| `privacy_text_version`     | angezeigte Datenschutzversion                                    |
+| `external_channels`        | JSON mit Behoerden-/Kontaktinformationen                         |
 | `retention_months`         | konfigurierbar, Default 36 (3 Jahre nach Abschluss, HinSchG §11) |
-| `created_at`, `updated_at` | Zeitstempel                                                |
+| `created_at`, `updated_at` | Zeitstempel                                                      |
 
 `public_slug` darf nicht der normale `organizations.slug` sein. Dadurch kann
 das Portal unabhaengig rotiert oder deaktiviert werden.
@@ -878,7 +878,7 @@ Umgesetzt (mit Tests):
   `routes/whistleblowing.php` (`/melden/{portal}`, `…/erfolg`).
 - `ResolvePortal` (Org nur ueber Portal-Slug, 404 bei unbekannt/deaktiviert) +
   `WhistleblowingSecurityHeaders` (CSP `default-src 'none'`, `Referrer-Policy:
-  no-referrer`, `Cache-Control: no-store`, keine Drittanbieter-Ressourcen).
+no-referrer`, `Cache-Control: no-store`, keine Drittanbieter-Ressourcen).
 - `WhistleblowingReportService` (transaktional, PII-frei, Verschluesselung,
   Zugangsdaten, Fristen, `case.submitted`-Event), `WhistleblowingAttachmentService`
   (privater Disk, MIME aus Inhalt, Positivliste, Limits, sha256, Quarantaene
@@ -1103,7 +1103,7 @@ Das MVP ist erst fertig, wenn:
   ca. 25 MB/Datei, max. 10 Dateien, Gesamt-Quota pro Fall.**
 - Welcher Malware-Scanner steht in allen Betriebsmodellen zur Verfuegung?
   **Empfehlung: ClamAV als Baseline** (self-hostbar, in allen Modi verfuegbar);
-  finale Wahl haengt an der Zielinfrastruktur. *Ops.*
+  finale Wahl haengt an der Zielinfrastruktur. _Ops._
 - Welche konkrete Aufbewahrungsregel gilt pro Rechtsraum und Kunde?
   **Entschieden: 3 Jahre nach Abschluss (Default, HinSchG §11),** technisch pro
   Organisation konfigurierbar (`retention_months`, §9.1).
@@ -1117,7 +1117,7 @@ Das MVP ist erst fertig, wenn:
 - Welches KMS oder Vault wird fuer die Zielverschluesselung verwendet?
   **Empfehlung: MVP entschieden (`WHISTLEBLOWING_KEY` + per-Fall-DEK, §10);
   Zielsystem an das Betriebsmodell koppeln** (SaaS → Cloud-KMS, On-Premise →
-  Vault), abstrahiert ueber `WhistleblowingCryptoService`. *Ops, spaeter.*
+  Vault), abstrahiert ueber `WhistleblowingCryptoService`. _Ops, spaeter._
 - Werden Hinweisgeberdaten aus vollstaendigen Mandantenexporten und
   Supportdiagnosen technisch ausgeschlossen? **Entschieden: ja, standardmaessig
   ausschliessen** (Abschnitt 17 / 25).

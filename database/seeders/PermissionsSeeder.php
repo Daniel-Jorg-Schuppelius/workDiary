@@ -212,6 +212,7 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CorrectionViewTeam,
             PermissionEnum::CorrectionApprove,
             PermissionEnum::CorrectionReject,
+            PermissionEnum::CorrectionCreateForOthers,
             PermissionEnum::ExportTimeCreate,
             PermissionEnum::ExportTimeDeliver,
             PermissionEnum::ExportTimeDelete,
@@ -323,6 +324,15 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::UserFlexManage,
             PermissionEnum::WorkScheduleManage,
             PermissionEnum::AttendanceViewAny,
+            // Zeitkorrekturen: Personalverwaltung trägt im Namen von Mitarbeitenden
+            // nach und entscheidet darüber (vergessene Stempelungen etc.).
+            PermissionEnum::CorrectionCreateOwn,
+            PermissionEnum::CorrectionCreateForOthers,
+            PermissionEnum::CorrectionSubmitOwn,
+            PermissionEnum::CorrectionWithdrawOwn,
+            PermissionEnum::CorrectionViewOrganization,
+            PermissionEnum::CorrectionApprove,
+            PermissionEnum::CorrectionReject,
             PermissionEnum::FlexBalanceView,
             PermissionEnum::VacationViewAny,
             PermissionEnum::SickLeaveViewAny,

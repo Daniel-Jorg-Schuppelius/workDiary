@@ -49,6 +49,7 @@ class TimeCorrectionRequest extends Model {
         'decided_by_user_id',
         'decision_note',
         'applied_at',
+        'self_applied',
     ];
 
     /** @var array<string, string> */
@@ -57,6 +58,7 @@ class TimeCorrectionRequest extends Model {
         'status' => TimeCorrectionStatus::class,
         'decided_at' => 'datetime',
         'applied_at' => 'datetime',
+        'self_applied' => 'boolean',
     ];
 
     /** @return BelongsTo<User, $this> */

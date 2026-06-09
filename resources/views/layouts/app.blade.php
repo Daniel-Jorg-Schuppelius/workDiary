@@ -745,6 +745,26 @@
                                         ['route' => 'events.index',    'label' => __('Veranstaltungen'),'icon' => 'event',           'modal' => false, 'matches' => ['events.*']],
                                     ],
                                 ];
+                                // Hinweisgeber/Meldestelle: nur fuer eigens Berechtigte
+                                // (NICHT automatisch fuer Admins), siehe WhistleblowingCasePolicy.
+                                if (
+                                    \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Whistleblowing\WhistleblowingCase::class)
+                                    || \Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage')
+                                ) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'compliance',
+                                        'label'       => __('Compliance'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ...(\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Whistleblowing\WhistleblowingCase::class) ? [
+                                                ['route' => 'whistleblowing.internal.index', 'label' => __('Meldestelle'), 'icon' => 'report', 'modal' => false, 'matches' => ['whistleblowing.internal.*']],
+                                            ] : []),
+                                            ...(\Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage') ? [
+                                                ['route' => 'whistleblowing.portal.edit', 'label' => __('Meldeportal'), 'icon' => 'campaign', 'modal' => false, 'matches' => ['whistleblowing.portal.*']],
+                                            ] : []),
+                                        ],
+                                    ];
+                                }
                                 $sidebarSections[] = [
                                     'key'         => 'reports',
                                     'label'       => __('Auswertungen'),
@@ -823,6 +843,75 @@
                                     ],
                                 ];
                             }
+
+                            // Hartes Modul-Gating (Menue): Sektionen ausblenden, deren
+                            // Modul der Plan/Lizenz nicht enthaelt. Das Route-Gate
+                            // (EnforcePlanModules) schuetzt zusaetzlich gegen Direkt-URLs.
+                            $moduleByKey = [
+                                'plan' => 'module.planung',
+                                'travel-expenses' => 'module.spesen',
+                                'fleet' => 'module.fuhrpark',
+                                'facility' => 'module.liegenschaften',
+                                'sales' => 'module.vertrieb',
+                                'compliance' => 'module.compliance',
+                            ];
+                            $features = app(\App\Services\Licensing\FeatureFlagResolver::class);
+                            $nav = app(\App\Services\Navigation\NavGate::class);
+                            $sidebarSections = array_values(array_filter(
+                                $sidebarSections,
+                                fn ($s) => ! isset($moduleByKey[$s['key']]) || $features->isEnabled($moduleByKey[$s['key']])
+                            ));
+
+                            // Feiner: einzelne Items / Report-Gruppen an Module haengen
+                            // (Kanban, Team-Auswertungen) UND zusaetzlich nach Rechten filtern
+                            // (viewAny der zugehoerigen Policy via NavGate).
+                            $moduleByItemRoute = [
+                                'kanban.index' => 'module.kanban',
+                            ];
+                            $moduleByGroupKey = [
+                                'reports-team' => 'module.auswertungen_team',
+                                'reports-projects' => 'module.auswertungen_team',
+                                'reports-resources' => 'module.auswertungen_team',
+                            ];
+                            foreach ($sidebarSections as $__i => $__sec) {
+                                if (! empty($__sec['items'])) {
+                                    $sidebarSections[$__i]['items'] = array_values(array_filter(
+                                        $__sec['items'],
+                                        fn ($it) => (! isset($moduleByItemRoute[$it['route']]) || $features->isEnabled($moduleByItemRoute[$it['route']]))
+                                            && $nav->mayAccess($it['route'])
+                                    ));
+                                }
+                                if (! empty($__sec['groups'])) {
+                                    $__groups = array_filter(
+                                        $__sec['groups'],
+                                        fn ($g) => ! isset($moduleByGroupKey[$g['key']]) || $features->isEnabled($moduleByGroupKey[$g['key']])
+                                    );
+                                    foreach ($__groups as $__gi => $__grp) {
+                                        $__groups[$__gi]['items'] = array_values(array_filter(
+                                            $__grp['items'] ?? [],
+                                            fn ($it) => $nav->mayAccess($it['route'])
+                                        ));
+                                    }
+                                    $sidebarSections[$__i]['groups'] = array_values(array_filter($__groups, fn ($g) => ! empty($g['items'])));
+                                }
+                            }
+                            unset($__sec);
+
+                            // Leere Sektionen entfernen (weder Items noch Gruppen uebrig).
+                            $sidebarSections = array_values(array_filter(
+                                $sidebarSections,
+                                fn ($s) => ! empty($s['items']) || ! empty($s['groups'])
+                            ));
+
+                            // Header-Navigation (Haupt- + Verwaltungsmenü): Plan UND Recht.
+                            $mainNavItems = array_values(array_filter(
+                                $mainNavItems,
+                                fn ($it) => $nav->allows($it['route'] ?? null)
+                            ));
+                            $manageNavItems = array_values(array_filter(
+                                $manageNavItems,
+                                fn ($it) => $nav->allows($it['route'] ?? null)
+                            ));
                         @endphp
 
                         @if ($isLegacyMode)
@@ -1120,6 +1209,7 @@
                                 $_bookmarks = $userBookmarks ?? collect();
                                 $chatUnread = auth()->check() ? \App\Models\Chat\Channel::unreadTotalFor(auth()->user()) : 0;
                             @endphp
+                            @if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.chat'))
                             <a id="chat-unread-link" href="{{ route('chat.index') }}"
                                data-unread-url="{{ route('chat.unread') }}"
                                class="btn btn-sm btn-ghost btn-square relative {{ request()->routeIs('chat.*') ? 'btn-active' : '' }}"
@@ -1128,6 +1218,7 @@
                                 <span id="chat-unread-badge"
                                       class="badge badge-primary badge-xs absolute -right-1 -top-1 tabular-nums {{ $chatUnread > 0 ? '' : 'hidden' }}">{{ $chatUnread > 99 ? '99+' : $chatUnread }}</span>
                             </a>
+                            @endif
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0"
                                        class="btn btn-sm btn-ghost btn-square"
@@ -1412,10 +1503,12 @@
                             ],
                         ],
                     ];
-                    // Nicht registrierte Routen herausfiltern, leere Gruppen entfernen.
+                    // Nicht registrierte Routen + nicht im Plan enthaltene Module entfernen,
+                    // leere Gruppen verwerfen. Resolver lokal (anderer Blade-Scope).
+                    $_nav = app(\App\Services\Navigation\NavGate::class);
                     $createGroups = collect($createGroups)
-                        ->map(function ($g) {
-                            $g['items'] = collect($g['items'])->filter(fn ($i) => \Illuminate\Support\Facades\Route::has($i['route']))->values()->all();
+                        ->map(function ($g) use ($_nav) {
+                            $g['items'] = collect($g['items'])->filter(fn ($i) => \Illuminate\Support\Facades\Route::has($i['route']) && $_nav->allows($i['route']))->values()->all();
                             return $g;
                         })
                         ->filter(fn ($g) => ! empty($g['items']))
@@ -1653,6 +1746,53 @@
                     {{ session('info') }}
                 </div>
             @endif
+
+            @auth
+            @unless($isLegacyMode ?? false)
+                @php
+                    // Zugriff ist nach einem Downgrade sofort gesperrt. Der Banner
+                    // warnt nur noch vor der geplanten DATENLOESCHUNG – also nur fuer
+                    // purgebare Module (aufbewahrungspflichtige bleiben dauerhaft erhalten).
+                    $_graceItems = [];
+                    if (app()->bound('currentOrganization') && \Illuminate\Support\Facades\Schema::hasTable('plan_module_grace')) {
+                        $_purgeable = (array) config('plans.purgeable_on_downgrade', []);
+                        foreach (\App\Models\PlanModuleGrace::query()
+                            ->where('organization_id', app('currentOrganization')->id)
+                            ->whereNull('purged_at')
+                            ->where('grace_until', '>', now())
+                            ->orderBy('grace_until')
+                            ->get() as $_g) {
+                            if (($_purgeable[$_g->module] ?? false) !== true) {
+                                continue; // aufbewahrungspflichtig → keine Loeschung, kein Hinweis
+                            }
+                            $_graceItems[] = [
+                                'label' => __((string) (config('plans.labels')[$_g->module] ?? $_g->module)),
+                                'until' => $_g->grace_until,
+                            ];
+                        }
+                    }
+                @endphp
+                @if (! empty($_graceItems))
+                    <details class="alert alert-warning mb-4 block rounded-2xl px-5 py-3 text-sm shadow-xs [&[open]_.grace-chevron]:rotate-180">
+                        <summary class="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
+                            <x-icon name="warning" class="text-base" />
+                            <span class="font-semibold">{{ __('Geplante Datenlöschung nach Downgrade') }}</span>
+                            <span class="badge badge-warning badge-sm">{{ count($_graceItems) }}</span>
+                            <span class="ml-auto text-xs font-normal opacity-70">{{ __('Stichtag') }} {{ $_graceItems[0]['until']->format('d.m.Y') }}</span>
+                            <x-icon name="expand_more" class="grace-chevron text-base transition-transform" />
+                        </summary>
+                        <div class="mt-2 pl-7">
+                            <p class="text-xs opacity-80">{{ __('Der Zugriff auf diese Module ist bereits beendet. Ein Upgrade vor dem Stichtag stellt Zugriff und Daten wieder her.') }}</p>
+                            <ul class="mt-1 list-disc pl-5">
+                                @foreach ($_graceItems as $_gi)
+                                    <li>{{ $_gi['label'] }} — {{ __('Daten werden entfernt am') }} {{ $_gi['until']->format('d.m.Y') }}.</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </details>
+                @endif
+            @endunless
+            @endauth
 
             <main class="flex-1 @yield('main-class', '')">
                 @yield('content')

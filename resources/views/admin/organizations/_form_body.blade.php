@@ -42,6 +42,18 @@
                          class="@error('settings.personalization.time_format') input-error @enderror" />
         @error('settings.personalization.time_format')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </div>
+
+    <div class="fieldset">
+        <label class="fieldset-label">{{ __('Vergessene Stempelungen') }}</label>
+        @php $_selfCorrection = old('settings.attendance.self_correction', data_get($organization?->settings, 'attendance.self_correction', 'request')); @endphp
+        <select name="settings[attendance][self_correction]"
+                class="select select-bordered w-full @error('settings.attendance.self_correction') select-error @enderror">
+            <option value="request" @selected($_selfCorrection === 'request')>{{ __('Mitarbeiter beantragt – Personalverwaltung genehmigt') }}</option>
+            <option value="self" @selected($_selfCorrection === 'self')>{{ __('Mitarbeiter darf selbst nachtragen') }}</option>
+        </select>
+        <p class="text-xs opacity-70 mt-1">{{ __('Nachträge werden immer als „manuell" gekennzeichnet und bleiben in der Korrektur-Inbox sichtbar.') }}</p>
+        @error('settings.attendance.self_correction')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+    </div>
 </x-form-group>
 
 <x-form-group :legend="__('Plan & Status')" icon="workspace_premium" tone="info" cols="2">
@@ -50,7 +62,7 @@
         <select name="plan" required class="select select-bordered w-full @error('plan') select-error @enderror">
             @foreach (\App\Models\Organization::$plans as $plan)
                 <option value="{{ $plan }}" @selected(old('plan', $organization?->plan ?? 'free') === $plan)>
-                    {{ ucfirst($plan) }}
+                    {{ \App\Models\Organization::planLabel($plan) }}
                 </option>
             @endforeach
         </select>

@@ -4,12 +4,12 @@
     $years = $startYear < $currentYear ? $startYear.'-'.$currentYear : (string) $currentYear;
 @endphp
 
-&copy; {{ $years }}
+&copy; {{ $years }}&nbsp;
 <a href="{{ config('app.copyright_holder_url') }}"
    class="transition hover:text-base-content"
    rel="author">{{ config('app.copyright_holder') }}</a>
-&middot; {{ config('app.name', 'WorkDiary') }}
-&middot;
+&nbsp;&middot; {{ config('app.name', 'WorkDiary') }}
+&middot;&nbsp;
 <a href="{{ config('app.license_url') }}"
    class="transition hover:text-base-content"
    rel="license">{{ config('app.license_name') }}</a>

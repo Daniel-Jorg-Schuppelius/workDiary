@@ -1,6 +1,11 @@
 <?php
 
 return [
+    // Subscription plans
+    'free'         => 'Free',
+    'pro'          => 'Pro',
+    'enterprise'   => 'Enterprise',
+
     // Invoice status
     'draft'        => 'Draft',
     'issued'       => 'Issued',

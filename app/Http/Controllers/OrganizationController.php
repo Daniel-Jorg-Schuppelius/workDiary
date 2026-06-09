@@ -149,6 +149,8 @@ class OrganizationController extends Controller {
             'settings.routing.tiles.max_zoom' => ['nullable', 'integer', 'min:1', 'max:22'],
             'settings.timesheet' => ['sometimes', 'array'],
             'settings.timesheet.default_schedule_type' => ['nullable', 'in:' . implode(',', \App\Enums\WorkSchedule\ScheduleType::values())],
+            'settings.attendance' => ['sometimes', 'array'],
+            'settings.attendance.self_correction' => ['nullable', 'in:request,self'],
             'settings.travel' => ['sometimes', 'array'],
             'settings.travel.enabled' => ['nullable', 'in:0,1'],
             'settings.travel.mode' => ['nullable', 'in:flat,km'],

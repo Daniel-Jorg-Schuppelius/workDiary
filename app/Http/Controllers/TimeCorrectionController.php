@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeApproval\TimeCorrectionStatus;
+use App\Enums\User\Permission;
 use App\Models\{Attendance, TimeCorrectionRequest, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
 use Carbon\CarbonImmutable;
@@ -77,8 +78,19 @@ class TimeCorrectionController extends Controller {
             ? (CarbonImmutable::parse((string) $request->input('date')))
             : CarbonImmutable::now()->subDay();
 
+        // Personalverwaltung/Teamleitung dürfen im Namen von Mitarbeitenden nachtragen.
+        $canCreateForOthers = $user->can(Permission::CorrectionCreateForOthers->value);
+        $members = $canCreateForOthers
+            ? User::query()
+                ->where('organization_id', $user->organization_id)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+            : collect();
+
         return view('time-approval.correction.create', [
             'scopeDate' => $scopeDate,
+            'canCreateForOthers' => $canCreateForOthers,
+            'members' => $members,
             'targetTypes' => [
                 TimeEntry::class => __('Zeitbuchung'),
                 Attendance::class => __('Anwesenheit'),
@@ -97,6 +109,7 @@ class TimeCorrectionController extends Controller {
         $user = Auth::user();
 
         $data = $request->validate([
+            'user_id' => ['nullable', 'integer'],
             'scope_date' => ['required', 'date'],
             'reason' => ['required', 'string', 'min:20', 'max:4000'],
             'items' => ['required', 'array', 'min:1'],
@@ -106,6 +119,16 @@ class TimeCorrectionController extends Controller {
             'items.*.before' => ['nullable', 'string'],
             'items.*.after' => ['nullable', 'string'],
         ]);
+
+        // „Im Namen von": Eigentümer = Mitarbeiter, Antragsteller = aktueller Nutzer.
+        // Nur mit Permission und nur innerhalb derselben Organisation.
+        $owner = $user;
+        if (! empty($data['user_id']) && (int) $data['user_id'] !== (int) $user->id) {
+            abort_unless($user->can(Permission::CorrectionCreateForOthers->value), 403);
+            $owner = User::query()
+                ->where('organization_id', $user->organization_id)
+                ->findOrFail((int) $data['user_id']);
+        }
 
         $items = [];
         foreach ($data['items'] as $row) {
@@ -120,7 +143,7 @@ class TimeCorrectionController extends Controller {
 
         try {
             $req = $this->service->createDraft(
-                $user,
+                $owner,
                 CarbonImmutable::parse($data['scope_date']),
                 $data['reason'],
                 $items,
@@ -149,7 +172,14 @@ class TimeCorrectionController extends Controller {
         $user = Auth::user();
 
         try {
-            $this->service->submit($correction, $user);
+            $correction = $this->service->submit($correction, $user);
+
+            // Selbstkorrektur-Modus: Eigenkorrekturen direkt anwenden (Manual).
+            if ($this->service->selfApplicable($correction)) {
+                $this->service->selfApply($correction);
+
+                return back()->with('status', __('Vergessene Stempelung wurde nachgetragen (manuell, selbst nachgetragen).'));
+            }
         } catch (TimeCorrectionWorkflowException $e) {
             return back()->with('error', $e->getMessage());
         }

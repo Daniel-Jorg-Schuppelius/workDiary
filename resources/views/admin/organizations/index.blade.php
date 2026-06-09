@@ -51,7 +51,7 @@
                     <td class="font-mono text-sm text-base-content/60">{{ $org->slug }}</td>
                     <td>
                         <x-status-badge size="sm" :tone="$org->plan === 'enterprise' ? 'primary' : ($org->plan === 'pro' ? 'secondary' : 'ghost')">
-                            {{ $org->plan }}
+                            {{ \App\Models\Organization::planLabel($org->plan) }}
                         </x-status-badge>
                     </td>
                     <td class="text-center">{{ $org->users_count }}</td>

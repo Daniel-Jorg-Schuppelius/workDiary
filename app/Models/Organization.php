@@ -85,6 +85,14 @@ class Organization extends Model {
         self::PLAN_ENTERPRISE,
     ];
 
+    public static function planLabel(?string $plan): string {
+        if ($plan === null || $plan === '') {
+            return '';
+        }
+
+        return (string) __("values.{$plan}");
+    }
+
     protected $fillable = [
         'name',
         'slug',

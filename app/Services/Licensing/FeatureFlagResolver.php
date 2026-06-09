@@ -12,6 +12,7 @@ namespace App\Services\Licensing;
 
 use App\Models\{LicenseFlagOverride, Organization};
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 /**
  * Löst Feature-Flags auf (MVP-047 §4 / Folge zu MVP-047).
@@ -46,6 +47,32 @@ class FeatureFlagResolver {
         return $this->resolve();
     }
 
+    /**
+     * Modul-Code, dem eine Route zugeordnet ist (config plans.routes), oder null,
+     * wenn die Route nicht gegatet ist (Core). Erste passende Regel gewinnt.
+     */
+    public function moduleForRoute(?string $routeName): ?string {
+        if ($routeName === null) {
+            return null;
+        }
+        /** @var array<string, string> $map */
+        $map = (array) config('plans.routes', []);
+        foreach ($map as $pattern => $module) {
+            if (Str::is($pattern, $routeName)) {
+                return (string) $module;
+            }
+        }
+
+        return null;
+    }
+
+    /** Ist die Route fuer den aktuellen Plan/Lizenz erreichbar? (Core-Routen immer.) */
+    public function routeEnabled(?string $routeName): bool {
+        $module = $this->moduleForRoute($routeName);
+
+        return $module === null || $this->isEnabled($module);
+    }
+
     public function flush(): void {
         $this->resolved = null;
     }
@@ -61,8 +88,18 @@ class FeatureFlagResolver {
         $licenseResult = $this->licenses->current();
         $payload = $licenseResult->payload;
         if ($payload !== null && $licenseResult->isUsable()) {
+            // Produktiv: die signierte Lizenz ist massgeblich.
             foreach ($payload->features as $code) {
                 $code = (string) $code;
+                if ($code !== '') {
+                    $map[$code] = true;
+                }
+            }
+        } else {
+            // Dev / ohne nutzbare Lizenz: das DB-Feld organizations.plan steuert
+            // ueber den Katalog (config/plans.php). organization->plan ist sonst
+            // nur ein Label – hier dient es als Fallback.
+            foreach ($this->planBaseline() as $code) {
                 if ($code !== '') {
                     $map[$code] = true;
                 }
@@ -88,6 +125,27 @@ class FeatureFlagResolver {
         }
 
         return $this->resolved = $map;
+    }
+
+    /**
+     * Modul-Codes der aktuellen Organisation gemaess ihrem Plan (config/plans.php).
+     * Nur Dev-/Fallback-Ebene, wenn keine nutzbare Lizenz vorliegt.
+     *
+     * @return list<string>
+     */
+    private function planBaseline(): array {
+        $plan = Organization::PLAN_FREE;
+        if (app()->bound('currentOrganization')) {
+            $org = app('currentOrganization');
+            if ($org instanceof Organization && in_array($org->plan, Organization::$plans, true)) {
+                $plan = (string) $org->plan;
+            }
+        }
+
+        /** @var list<string> $codes */
+        $codes = (array) config("plans.tiers.{$plan}", []);
+
+        return $codes;
     }
 
     /**

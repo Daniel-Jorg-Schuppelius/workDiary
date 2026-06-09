@@ -1,6 +1,11 @@
 <?php
 
 return [
+    // Subscription plans
+    'free' => 'Gratuit',
+    'pro' => 'Pro',
+    'enterprise' => 'Entreprise',
+
     'draft' => 'Brouillon',
     'issued' => 'Émise',
     'paid' => 'Payée',

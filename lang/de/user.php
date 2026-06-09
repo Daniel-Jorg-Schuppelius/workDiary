@@ -3,6 +3,7 @@
 return [
     'role' => [
         'admin' => 'Administrator',
+        'meldestelle' => 'Meldestelle',
         'geschaeftsfuehrung' => 'Geschäftsführung',
         'personalverwaltung' => 'Personalverwaltung',
         'teamleitung' => 'Teamleitung',

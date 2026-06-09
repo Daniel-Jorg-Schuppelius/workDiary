@@ -26,12 +26,19 @@ class OrganizationFactory extends Factory {
         return [
             'name' => $name,
             'slug' => Str::slug($name) . '-' . Str::lower(Str::random(4)),
-            'plan' => Organization::PLAN_FREE,
+            // Test-Orgs sind standardmaessig voll ausgestattet (enterprise), damit
+            // das harte Modul-Gating bestehende Tests nicht aushebelt. Gating-Tests
+            // waehlen explizit ->free()/->pro().
+            'plan' => Organization::PLAN_ENTERPRISE,
             'locale' => 'de',
             'timezone' => 'Europe/Berlin',
             'settings' => null,
             'is_active' => true,
         ];
+    }
+
+    public function free(): static {
+        return $this->state(['plan' => Organization::PLAN_FREE]);
     }
 
     public function pro(): static {

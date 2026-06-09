@@ -42,6 +42,7 @@ class ExportTest extends TestCase {
         $user = User::factory()->create(['organization_id' => $org->id]);
         app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
         $user->assignRole(WhistleblowingPermissions::ROLE_MELDESTELLE);
+        $user->forceFill(['two_factor_secret' => 'JBSWY3DPEHPK3PXP', 'two_factor_confirmed_at' => now()])->save();
 
         return $user;
     }

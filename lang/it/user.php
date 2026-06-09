@@ -3,6 +3,7 @@
 return [
     'role' => [
         'admin' => 'Amministratore',
+        'meldestelle' => 'Ufficio segnalazioni',
         'geschaeftsfuehrung' => 'Direzione',
         'personalverwaltung' => 'Gestione del personale',
         'teamleitung' => 'Capo team',

@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Admin\Access;
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization};
+use App\Services\Whistleblowing\WhistleblowingPermissions;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
@@ -48,7 +49,7 @@ class RoleController extends Controller {
             'organization' => $organization,
             'orgRoles' => $orgRoles,
             'globalRoles' => $globalRoles,
-            'systemRoleNames' => UserRole::values(),
+            'systemRoleNames' => $this->protectedRoleNames(),
         ]);
     }
 
@@ -146,7 +147,7 @@ class RoleController extends Controller {
         Gate::authorize('manage-access');
         $this->ensureEditable($role);
 
-        if (in_array($role->name, UserRole::values(), true)) {
+        if (in_array($role->name, $this->protectedRoleNames(), true)) {
             return back()->with('error', __('access.error.role_system_protected'));
         }
 
@@ -165,6 +166,20 @@ class RoleController extends Controller {
 
         return redirect()->route('admin.access.roles.index')
             ->with('success', __('access.flash.role_deleted'));
+    }
+
+    /**
+     * Geschuetzte Rollennamen: die System-Rollen aus der UserRole-Enum plus die
+     * sicherheitskritische Meldestellen-Rolle. Letztere ist bewusst NICHT in der
+     * Enum (sonst zoege sie der Rollen-/Permission-Seeder mit), muss aber
+     * trotzdem unloeschbar sein – ihr Verlust bricht das Hinweisgeber-Zugriffsmodell.
+     *
+     * @return list<string>
+     */
+    private function protectedRoleNames(): array {
+        $system = array_map(static fn (UserRole $r): string => $r->value, UserRole::cases());
+
+        return [...$system, WhistleblowingPermissions::ROLE_MELDESTELLE];
     }
 
     private function currentOrganization(): Organization {

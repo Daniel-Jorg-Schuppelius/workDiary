@@ -12,6 +12,11 @@
  */
 
 return [
+    // Subscription plans
+    'free'         => 'Kostenlos',
+    'pro'          => 'Pro',
+    'enterprise'   => 'Enterprise',
+
     // Invoice status
     'draft'        => 'Entwurf',
     'issued'       => 'Gestellt',

@@ -11,6 +11,7 @@
 namespace Tests\Feature\Access;
 
 use App\Models\{AuditLog, User};
+use App\Services\Whistleblowing\WhistleblowingPermissions;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -94,5 +95,22 @@ class RoleControllerAuditTest extends TestCase {
                 ->where('event', 'like', 'role.%')
                 ->count(),
         );
+    }
+
+    public function test_meldestelle_role_is_system_protected_and_cannot_be_deleted(): void {
+        WhistleblowingPermissions::seedOrganization($this->organization);
+        $role = Role::where('name', WhistleblowingPermissions::ROLE_MELDESTELLE)
+            ->where('team_id', $this->organization->id)
+            ->firstOrFail();
+
+        $this->actingAs($this->admin)
+            ->delete(route('admin.access.roles.destroy', $role));
+
+        $this->assertDatabaseHas('roles', ['id' => $role->getKey()]);
+        $this->assertDatabaseMissing('audit_logs', [
+            'organization_id' => $this->organization->id,
+            'event' => 'role.deleted',
+            'auditable_id' => $role->getKey(),
+        ]);
     }
 }

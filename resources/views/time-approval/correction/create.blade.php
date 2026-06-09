@@ -22,6 +22,17 @@
             @endif
 
             <div class="grid md:grid-cols-2 gap-4">
+                @if ($canCreateForOthers ?? false)
+                    <label class="form-control md:col-span-2">
+                        <span class="label-text">{{ __('Für Mitarbeiter:in') }}</span>
+                        <select name="user_id" class="select select-sm select-bordered">
+                            <option value="">{{ __('— mich selbst —') }}</option>
+                            @foreach ($members as $m)
+                                <option value="{{ $m->id }}" @selected((string) old('user_id') === (string) $m->id)>{{ $m->name }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                @endif
                 <label class="form-control">
                     <span class="label-text">{{ __('Bezugsdatum') }}</span>
                     <input type="date" name="scope_date"
