@@ -1,0 +1,21 @@
+/* Minimales, eigenstaendiges Stylesheet fuer das oeffentliche Meldeportal.
+   Keine Drittanbieter-Ressourcen, kein App-CSS (CSP: style-src 'self'). */
+:root { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; line-height: 1.5; background: #f5f6f8; color: #1a1a1a; }
+.wb-wrap { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.wb-header h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
+.wb-sub { margin: 0 0 1rem; color: #555; }
+.wb-card { background: #fff; border: 1px solid #e1e3e8; border-radius: 8px; padding: 1.25rem; margin: 1rem 0; }
+.wb-card h2 { margin-top: 0; font-size: 1.15rem; }
+label { display: block; margin: .75rem 0 .25rem; font-weight: 600; }
+input[type=text], input[type=date], select, textarea { width: 100%; padding: .55rem; border: 1px solid #c4c8d0; border-radius: 6px; font: inherit; background: #fff; color: inherit; }
+fieldset { border: 1px solid #e1e3e8; border-radius: 6px; margin: 0 0 .5rem; }
+fieldset label, .wb-consent { font-weight: 400; }
+.wb-hint { font-size: .85rem; color: #666; margin: .35rem 0 0; }
+.wb-consent { display: flex; gap: .5rem; align-items: flex-start; margin-top: 1rem; }
+button { margin-top: 1.25rem; padding: .7rem 1.4rem; border: 0; border-radius: 6px; background: #1d4ed8; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.wb-error { border-color: #dc2626; background: #fef2f2; }
+.wb-success { border-color: #16a34a; }
+.wb-credentials code { font-size: 1.1rem; background: #f1f5f9; padding: .25rem .5rem; border-radius: 4px; }
+.wb-footer { font-size: .8rem; color: #777; margin-top: 2rem; }

@@ -21,7 +21,9 @@ use Illuminate\Http\{RedirectResponse, Request};
 trait ResolvesWorkMode {
     protected function applyWorkModeAndRedirect(Request $request, User $user): RedirectResponse {
         $legacyConfigured = filled(config('database.connections.legacy.database'));
-        $sessionMode = (string) session('work_mode', 'legacy');
+        // Beim Login die zuletzt persistierte Modus-Wahl des Users übernehmen,
+        // statt hart auf 'legacy' zu defaulten.
+        $sessionMode = (string) session('work_mode', $user->preferredWorkMode());
 
         $canLegacy = $legacyConfigured && $user->canAccessLegacy();
         $canNew = $user->canAccessNew();

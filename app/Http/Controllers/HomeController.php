@@ -17,12 +17,18 @@ use Illuminate\View\View;
 
 class HomeController extends Controller {
     public function __invoke(Request $request): View|RedirectResponse {
-        $currentMode = $request->session()->get('work_mode', 'legacy');
         $canViewSensitive = Auth::check();
         $legacyConfigured = filled(config('database.connections.legacy.database'));
 
         /** @var User|null $user */
         $user = Auth::user();
+
+        // Ohne aktiven Session-Modus greift die persistierte Modus-Wahl des
+        // Users (statt hart 'legacy'), damit F5/neuer Login nicht in Legacy
+        // zurückfällt.
+        $default = $user instanceof User ? $user->preferredWorkMode() : 'legacy';
+        $currentMode = $request->session()->get('work_mode', $default);
+
         if ($user instanceof User) {
             // Modus auf einen tatsächlich erlaubten Wert korrigieren.
             if ($currentMode === 'legacy' && ! $user->canAccessLegacy()) {
@@ -74,6 +80,13 @@ class HomeController extends Controller {
         }
 
         $request->session()->put('work_mode', $mode);
+
+        // Wahl dauerhaft am User merken, damit sie Session-Ablauf, neuen Login
+        // und F5 überlebt (siehe EnsureNewSystemAccess / HomeController-Default).
+        // Liegt in der Per-User-Präferenz-Bag (preferences['work_mode']).
+        if ($user instanceof User && $user->getPreference('work_mode') !== $mode) {
+            $user->setPreference('work_mode', $mode);
+        }
 
         $origin = (string) $request->input('origin', 'home');
         $targetRoute = $this->resolveModeRoute($origin, $mode);

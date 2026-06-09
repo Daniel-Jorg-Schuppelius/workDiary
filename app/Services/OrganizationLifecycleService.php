@@ -61,6 +61,10 @@ class OrganizationLifecycleService {
     private const PURGE_EXCLUDE_TABLES = [
         'organizations',
         'organization_audit_logs',
+        // Der revisionssichere Änderungs-Trail (Hash-Kette) überdauert den
+        // Purge bewusst – ein Löschen würde die GoBD-Unveränderbarkeit
+        // verletzen und die Kette zerreißen ({@see App\Models\AuditLog}).
+        'audit_logs',
     ];
 
     public function deactivate(Organization $org, ?User $actor): Organization {
@@ -140,6 +144,12 @@ class OrganizationLifecycleService {
 
         // 1) DB-Dump: pro mandantengebundener Tabelle eine NDJSON-Datei.
         foreach ($this->organizationTables() as $table) {
+            // Hinweisgeberdaten sind aus dem Standard-Mandantenexport
+            // ausgeschlossen (besonders schutzbeduerftig, eigener autorisierter
+            // Exportpfad, Abschnitt 17/25 des Hinweisgeber-Konzepts).
+            if (str_starts_with($table, 'whistleblowing_')) {
+                continue;
+            }
             $rows = DB::table($table)
                 ->where('organization_id', $org->id)
                 ->orderBy(Schema::hasColumn($table, 'id') ? 'id' : 'organization_id')

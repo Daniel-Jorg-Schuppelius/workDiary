@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Services\RateCalculator;
 use Database\Factories\TimeEntryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -46,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property bool $exported
  */
 class TimeEntry extends Model {
+    use Auditable;
     use BelongsToOrganization;
 
     /** @use HasFactory<TimeEntryFactory> */

@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -51,6 +51,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Invoice> $creditNotes
  */
 class Invoice extends Model {
+    use Auditable;
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */

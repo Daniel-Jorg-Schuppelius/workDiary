@@ -57,7 +57,19 @@ class EnsureNewSystemAccess {
         // HomeController, damit ein noch nicht gesetzter work_mode nicht
         // versehentlich als "neuer Modus" interpretiert wird.
         $legacyConfigured = filled(config('database.connections.legacy.database'));
-        $workMode = $request->hasSession() ? $request->session()->get('work_mode', 'legacy') : null;
+        // Fehlt der Session-Modus (frische Session nach Ablauf/F5), greift die
+        // persistierte Modus-Wahl des Users statt hart 'legacy' – sonst landen
+        // Dual-Access-User (Admins) ungewollt wieder im Legacy-Modus. Der Wert
+        // wird in die Session zurückgeschrieben, damit Layout-Chrome (Body-Mode)
+        // konsistent bleibt.
+        if ($request->hasSession()) {
+            if (! $request->session()->has('work_mode')) {
+                $request->session()->put('work_mode', $user->preferredWorkMode());
+            }
+            $workMode = $request->session()->get('work_mode');
+        } else {
+            $workMode = null;
+        }
 
         if ($workMode === 'legacy' && $user->canAccessLegacy()) {
             // Ohne konfigurierte Legacy-DB existiert kein Legacy-Bereich, in
@@ -74,6 +86,7 @@ class EnsureNewSystemAccess {
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => __('Sie sind aktuell im Legacy-Modus. Bitte wechseln Sie zuerst in den neuen Modus.'),
+                    'target_mode' => 'new',
                 ], 409);
             }
 

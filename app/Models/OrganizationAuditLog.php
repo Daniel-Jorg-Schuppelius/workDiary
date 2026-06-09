@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\{HashChainable, HashChained};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -20,6 +21,9 @@ use Illuminate\Support\Carbon;
  * Bewusst ohne FK auf organizations: die Einträge sollen den Vorgang
  * auch nach dem endgültigen Löschen einer Organisation belegen können.
  *
+ * Revisionssicher (GoBD) über den {@see HashChained}-Trait: SHA-256-Hash-Kette
+ * + append-only. Prüfbar via `php artisan audit:verify`.
+ *
  * @property int $id
  * @property int|null $organization_id
  * @property string|null $organization_slug
@@ -29,9 +33,15 @@ use Illuminate\Support\Carbon;
  * @property string|null $actor_email
  * @property array<string,mixed>|null $payload
  * @property string|null $export_hash
+ * @property string|null $prev_hash
+ * @property string|null $hash
  * @property Carbon|null $created_at
+ *
+ * @phpstan-consistent-constructor
  */
-class OrganizationAuditLog extends Model {
+class OrganizationAuditLog extends Model implements HashChainable {
+    use HashChained;
+
     public const ACTION_DEACTIVATE = 'deactivate';
 
     public const ACTION_REACTIVATE = 'reactivate';
@@ -67,4 +77,23 @@ class OrganizationAuditLog extends Model {
         'payload' => 'array',
         'created_at' => 'datetime',
     ];
+
+    /**
+     * Die in den Hash eingehenden Nutzdaten dieser Zeile (feste Reihenfolge).
+     *
+     * @return array<string, mixed>
+     */
+    public function hashPayload(): array {
+        return [
+            'organization_id' => $this->getAttribute('organization_id') === null ? null : (int) $this->getAttribute('organization_id'),
+            'organization_slug' => $this->getAttribute('organization_slug'),
+            'organization_name' => $this->getAttribute('organization_name'),
+            'action' => $this->getAttribute('action'),
+            'actor_user_id' => $this->getAttribute('actor_user_id') === null ? null : (int) $this->getAttribute('actor_user_id'),
+            'actor_email' => $this->getAttribute('actor_email'),
+            'payload' => $this->getAttribute('payload'),
+            'export_hash' => $this->getAttribute('export_hash'),
+            'created_at' => $this->hashCreatedAt(),
+        ];
+    }
 }

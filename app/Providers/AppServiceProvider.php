@@ -39,6 +39,15 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Hinweisgeber-Anhang-Scanner: Treiber per Konfiguration (Default: kein
+        // Scanner → fail-safe Quarantaene). Tests koennen einen Fake binden.
+        $this->app->bind(\App\Services\Whistleblowing\Scanning\ScanDriver::class, function (): \App\Services\Whistleblowing\Scanning\ScanDriver {
+            return match ((string) config('whistleblowing.scanner', 'none')) {
+                'clamav' => new \App\Services\Whistleblowing\Scanning\ClamAvScanDriver,
+                default => new \App\Services\Whistleblowing\Scanning\NullScanDriver,
+            };
+        });
+
         // Web-Installer: EnvWriter/InstallationManager mit Default-Pfaden binden,
         // damit Middleware und Controller sie auflösen können. Tests können diese
         // Bindings auf temporäre Pfade umbiegen.
@@ -169,6 +178,7 @@ class AppServiceProvider extends ServiceProvider {
 
         Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
+        Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);
         Gate::policy(DutyPlan::class, DutyPlanPolicy::class);
         Gate::policy(CoverageRequirement::class, CoverageRequirementPolicy::class);
         Gate::policy(Milestone::class, MilestonePolicy::class);
@@ -280,6 +290,17 @@ class AppServiceProvider extends ServiceProvider {
         });
 
         RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
+
+        // Hinweisgeber-Portal (Abschnitt 19): Anzeige moderat, Absenden streng.
+        // IP nur als kurzlebiger, gehashter Cache-Key (datensparsam) – nie im
+        // Fachmodell gespeichert.
+        RateLimiter::for('wb-view', fn(Request $request) => Limit::perMinute(30)->by('wbv:' . sha1((string) $request->ip())));
+        RateLimiter::for('wb-submit', fn(Request $request) => Limit::perMinute(5)->by('wbs:' . sha1((string) $request->ip())));
+        // Postfach-Login: streng gegen Brute-Force des Geheimnisses.
+        RateLimiter::for('wb-login', fn(Request $request) => [
+            Limit::perMinute(5)->by('wbl:' . sha1((string) $request->ip())),
+            Limit::perHour(30)->by('wblh:' . sha1((string) $request->ip())),
+        ]);
 
         RateLimiter::for('password', function (Request $request) {
             $userId = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');

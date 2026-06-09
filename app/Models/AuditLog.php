@@ -10,12 +10,25 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HashChainable, HashChained};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
-class AuditLog extends Model {
+/**
+ * Revisionssicheres Änderungsprotokoll (GoBD). Jede Zeile ist über eine
+ * SHA-256-Hash-Kette mit ihrer Vorgängerzeile verbunden und append-only –
+ * die Mechanik steckt im {@see HashChained}-Trait (geteilt mit
+ * {@see OrganizationAuditLog}), nachweisbar über `php artisan audit:verify`.
+ *
+ * Der einzige Schreibpfad ist {@see static::create()} (Eloquent) – sowohl der
+ * {@see \App\Models\Concerns\Auditable}-Trait als auch direkte Aufrufer gehen
+ * darüber; es gibt keine rohen Inserts.
+ *
+ * @phpstan-consistent-constructor
+ */
+class AuditLog extends Model implements HashChainable {
     use BelongsToOrganization;
+    use HashChained;
 
     protected $fillable = [
         'organization_id',
@@ -32,6 +45,34 @@ class AuditLog extends Model {
     protected $casts = [
         'changes' => 'array',
     ];
+
+    /**
+     * Die in den Hash eingehenden Nutzdaten dieser Zeile. Ganzzahl-IDs werden
+     * null-erhaltend zu int normalisiert, damit Schreib- und Prüfpfad über alle
+     * DB-Treiber denselben Hash erzeugen.
+     *
+     * @return array<string, mixed>
+     */
+    public function hashPayload(): array {
+        return [
+            'user_id' => $this->nullableInt($this->getAttribute('user_id')),
+            'organization_id' => $this->nullableInt($this->getAttribute('organization_id')),
+            'event' => $this->getAttribute('event'),
+            'auditable_type' => $this->getAttribute('auditable_type'),
+            'auditable_id' => $this->nullableInt($this->getAttribute('auditable_id')),
+            // Bewusst getAttribute(): die Spalte `changes` kollidiert im
+            // Klassen-Scope mit Eloquents interner $changes-Property
+            // (Dirty-Tracking), $this->changes läse sonst [] statt der Nutzdaten.
+            'changes' => $this->getAttribute('changes'),
+            'ip' => $this->getAttribute('ip'),
+            'user_agent' => $this->getAttribute('user_agent'),
+            'created_at' => $this->hashCreatedAt(),
+        ];
+    }
+
+    private function nullableInt(mixed $value): ?int {
+        return $value === null ? null : (int) $value;
+    }
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {

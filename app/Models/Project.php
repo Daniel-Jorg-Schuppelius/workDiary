@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Diary\{LocationMode, Status as DiaryStatus};
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -48,6 +48,7 @@ use Illuminate\Support\{Carbon, Collection, Str};
  * @property Carbon|null $updated_at
  */
 class Project extends Model {
+    use Auditable;
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */

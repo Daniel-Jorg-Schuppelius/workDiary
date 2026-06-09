@@ -55,6 +55,7 @@ class EnsureLegacyAccess {
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => __('Sie sind aktuell im neuen Modus. Bitte wechseln Sie zuerst in den Legacy-Modus.'),
+                    'target_mode' => 'legacy',
                 ], 409);
             }
 

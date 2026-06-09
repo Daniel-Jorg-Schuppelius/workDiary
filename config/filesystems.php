@@ -55,6 +55,16 @@ return [
             'report' => false,
         ],
 
+        // Hinweisgeber-Anhaenge: privat, kein serve, kein oeffentlicher Pfad.
+        // Download nur ueber autorisierten Controller (Phase 2).
+        'whistleblowing' => [
+            'driver' => 'local',
+            'root' => storage_path('app/whistleblowing'),
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

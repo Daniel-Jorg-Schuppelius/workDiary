@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use App\Services\Numbering\NumberAuthority;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -58,6 +58,7 @@ use Illuminate\Support\{Carbon, Str};
  * @property int|null $created_by
  */
 class Customer extends Model {
+    use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
 

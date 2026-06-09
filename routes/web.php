@@ -147,6 +147,25 @@ Route::middleware('auth')->group(function () {
     // dort freigeschaltete User (is_new_system=true) bzw. Admins erreichbar.
     Route::middleware('access.new')->group(function () {
         Route::get('dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
+
+        // ── Hinweisgeber: interne Fallbearbeitung (Phase 3) ─────────────────
+        // Autorisierung pro Aktion ueber WhistleblowingCasePolicy (Permission
+        // UND Fall-Zuweisung). {case} wird org-scoped ueber public_id gebunden.
+        Route::prefix('compliance/meldungen')->name('whistleblowing.internal.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'index'])->name('index');
+            Route::get('{case}', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'show'])->name('show');
+            Route::post('{case}/eingang', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'acknowledge'])->name('acknowledge');
+            Route::post('{case}/status', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'status'])->name('status');
+            Route::post('{case}/zuweisungen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'assign'])->name('assign');
+            Route::post('{case}/notizen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'note'])->name('note');
+            Route::post('{case}/nachrichten', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'message'])->name('message');
+            Route::post('{case}/konflikt', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'conflict'])->name('conflict');
+            Route::post('{case}/notfallzugriff', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'emergency'])->name('emergency');
+            Route::post('{case}/betroffene', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'subject'])->name('subject');
+            Route::get('{case}/anhaenge/{attachment}', [\App\Http\Controllers\Whistleblowing\InternalAttachmentController::class, 'download'])->name('attachment');
+            Route::post('{case}/export', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'export'])->name('export');
+            Route::post('{case}/loeschen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'destroy'])->name('destroy');
+        });
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
         Route::post('onboarding/steps/{step}/skip', [OnboardingController::class, 'skipStep'])->name('onboarding.steps.skip');
         Route::post('onboarding/widget/dismiss', [OnboardingController::class, 'dismissWidget'])->name('onboarding.widget.dismiss');

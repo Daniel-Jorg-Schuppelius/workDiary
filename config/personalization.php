@@ -23,6 +23,10 @@ return [
         'time_format' => 'H:i',
         // Routen-Name oder null = an Mode-Default (Home-Controller)
         'startpage' => null,
+        // Bevorzugter Arbeitsmodus (legacy|new). Greift als Default, wenn die
+        // Session keinen work_mode trägt (frische Session/F5). Wird über die
+        // tatsächlichen Zugriffsrechte normalisiert (User::preferredWorkMode()).
+        'work_mode' => 'legacy',
     ],
 
     // Organisations-/App-weite Standardformate. Org-überschreibbar via

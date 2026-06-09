@@ -14,7 +14,7 @@ use App\Enums\User\CompensationModel;
 use App\Enums\User\UserRole;
 use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
-use App\Models\Concerns\{HasAttachments, HasSqid};
+use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
 use App\Services\Sickness\ContinuedPaymentService;
 use App\Support\Sickness\ContinuedPaymentStatus;
 use Carbon\CarbonInterface;
@@ -73,7 +73,7 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasAttachments, HasFactory, HasRoles, HasSqid, Notifiable;
+    use Auditable, HasApiTokens, HasAttachments, HasFactory, HasRoles, HasSqid, Notifiable;
 
     public function isAdmin(): bool {
         if ($this->hasRole(UserRole::Admin->value)) {
@@ -150,6 +150,45 @@ class User extends Authenticatable {
      */
     public function canAccessNew(): bool {
         return $this->isAdmin() || $this->existsInNewSystem();
+    }
+
+    /**
+     * Persistierter Arbeitsmodus des Users, normalisiert auf einen tatsächlich
+     * erlaubten Wert. Dient als Default, wenn die Session (noch) keinen
+     * work_mode trägt – so überlebt die Modus-Wahl Session-Ablauf, neuen Login
+     * und F5. Liegt in der Per-User-Präferenz-Bag (preferences['work_mode']).
+     */
+    public function preferredWorkMode(): string {
+        $stored = $this->getPreference('work_mode');
+        $mode = in_array($stored, ['legacy', 'new'], true) ? $stored : 'legacy';
+
+        if ($mode === 'new' && ! $this->canAccessNew()) {
+            return $this->canAccessLegacy() ? 'legacy' : 'new';
+        }
+        if ($mode === 'legacy' && ! $this->canAccessLegacy()) {
+            return $this->canAccessNew() ? 'new' : 'legacy';
+        }
+
+        return $mode;
+    }
+
+    /**
+     * Liest eine Per-User-Präferenz aus preferences (inkl. Merge mit den
+     * Defaults aus config/personalization.php).
+     */
+    public function getPreference(string $key, mixed $default = null): mixed {
+        return $this->preferences()[$key] ?? $default;
+    }
+
+    /**
+     * Setzt eine Per-User-Präferenz in der preferences-Bag und persistiert sie.
+     * Zentraler Schreibweg, damit Caller nicht selbst mergen müssen.
+     */
+    public function setPreference(string $key, mixed $value): void {
+        $stored = (array) ($this->getAttribute('preferences') ?? []);
+        $stored[$key] = $value;
+        $this->setAttribute('preferences', $stored);
+        $this->save();
     }
 
     protected $fillable = [

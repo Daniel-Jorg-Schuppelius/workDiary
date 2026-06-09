@@ -12,6 +12,8 @@ return [
         'load_failed' => 'Dialog konnte nicht geladen werden.',
         'loading' => 'Lade…',
         'open_in_new_tab' => 'Seite in neuem Tab öffnen',
+        'switch_to_new' => 'In den neuen Modus wechseln',
+        'switch_to_legacy' => 'In den Legacy-Modus wechseln',
     ],
     'schedule' => [
         'move_failed' => 'Fehler beim Verschieben.',

@@ -29,6 +29,9 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')->group(__DIR__ . '/../routes/install.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/customer.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');
+            // Oeffentliches Hinweisgeber-Meldeportal: eigener schlanker Stack
+            // (kein Auth/Org-Context/Locale/2FA), siehe Middleware-Gruppe unten.
+            Route::middleware('whistleblowing')->group(__DIR__ . '/../routes/whistleblowing.php');
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -60,6 +63,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             SecurityHeaders::class,
             SetOrganizationContext::class,
+        ]);
+
+        // Schlanker Stack fuer das oeffentliche Hinweisgeber-Meldeportal:
+        // Session/CSRF (fuer das Formular) + strikte Header, aber bewusst KEIN
+        // Auth, Org-Context, Locale, 2FA, Tracking oder Reverb (Abschnitt 6.2).
+        $middleware->group('whistleblowing', [
+            HandleDatabaseUnavailable::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\Whistleblowing\WhistleblowingSecurityHeaders::class,
         ]);
 
         // SetOrganizationContext MUSS vor SubstituteBindings laufen, damit

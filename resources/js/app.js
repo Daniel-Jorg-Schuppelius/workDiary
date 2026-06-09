@@ -823,6 +823,56 @@ document.addEventListener("click", (event) => {
             `;
         };
 
+        // Modus-Konflikt (HTTP 409 aus EnsureNewSystemAccess bzw.
+        // EnsureLegacyAccess): der aktive Arbeitsmodus passt nicht zum Bereich
+        // des angeforderten Dialogs. Statt eines stillen Konsolenfehlers die
+        // (serverseitig lokalisierte) Meldung zeigen und einen Direkt-Wechsel in
+        // den jeweils benötigten Modus anbieten. `targetMode` kommt aus der
+        // 409-Antwort ('new' = Dialog gehört zum neuen System, 'legacy' = zum
+        // Legacy-Bereich).
+        const renderModeConflict = (message, targetMode) => {
+            const mode = targetMode === "legacy" ? "legacy" : "new";
+            const label =
+                mode === "legacy"
+                    ? __("js.dialog.switch_to_legacy")
+                    : __("js.dialog.switch_to_new");
+            body.innerHTML = `
+                <div class="p-6 space-y-3">
+                    <p class="text-sm text-warning">${message}</p>
+                    <button type="button" data-mode-switch-retry class="btn btn-sm btn-primary">${label}</button>
+                </div>
+            `;
+            const retryBtn = body.querySelector("[data-mode-switch-retry]");
+            if (!retryBtn) return;
+            retryBtn.addEventListener("click", async () => {
+                retryBtn.disabled = true;
+                const csrf =
+                    document
+                        .querySelector('meta[name="csrf-token"]')
+                        ?.getAttribute("content") ?? "";
+                try {
+                    const res = await fetch(`/mode/${mode}`, {
+                        method: "POST",
+                        headers: {
+                            "X-CSRF-TOKEN": csrf,
+                            "X-Requested-With": "XMLHttpRequest",
+                            Accept: "application/json",
+                        },
+                        credentials: "same-origin",
+                    });
+                    if (!res.ok && res.status !== 302) {
+                        retryBtn.disabled = false;
+                        return;
+                    }
+                } catch (_e) {
+                    retryBtn.disabled = false;
+                    return;
+                }
+                // Modus ist jetzt umgeschaltet – Dialog frisch laden.
+                openEntryDialog(rawUrl);
+            });
+        };
+
         try {
             const response = await fetch(url, {
                 headers: {
@@ -832,6 +882,21 @@ document.addEventListener("click", (event) => {
             const html = await response.text();
 
             if (!response.ok) {
+                if (response.status === 409) {
+                    let message = "";
+                    let targetMode = "new";
+                    try {
+                        const parsed = JSON.parse(html);
+                        message = parsed?.message ?? "";
+                        targetMode = parsed?.target_mode ?? "new";
+                    } catch (_e) {
+                        message = "";
+                    }
+                    if (message) {
+                        renderModeConflict(message, targetMode);
+                        return;
+                    }
+                }
                 renderLoadError();
                 return;
             }

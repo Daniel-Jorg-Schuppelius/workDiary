@@ -50,7 +50,14 @@ class PermissionsSeeder extends Seeder {
             $globalAdmin = Role::findOrCreate(UserRole::Admin->value, 'web');
         }
 
-        $globalAdmin->syncPermissions(Permission::query()->where('guard_name', 'web')->get());
+        // Bewusst nur die in der zentralen PermissionEnum definierten Rechte:
+        // modul-eigene Permissions (z. B. whistleblowing.*) sollen NICHT
+        // automatisch an den Plattform-Admin gehen (Abschnitt 5/25 des
+        // Hinweisgeber-Konzepts – getrennte Meldestelle).
+        $enumNames = array_map(static fn(PermissionEnum $p): string => $p->value, PermissionEnum::cases());
+        $globalAdmin->syncPermissions(
+            Permission::query()->where('guard_name', 'web')->whereIn('name', $enumNames)->get()
+        );
 
         // Pro bestehender Organisation die vier Default-Rollen anlegen.
         foreach (Organization::query()->orderBy('id')->get() as $organization) {

@@ -33,6 +33,7 @@ Definition-of-Done steht unter
 | P1 | [Produkt-/Objektakte und Lebenszyklus](./027-produkt-objektakte-lebenszyklus.md) | Proposed | Führt die langfristige Historie von Anlagen, Produkten, Baustellen und Geräten zusammen |
 | P1 | [Terminierung, Einsatzplanung und Disposition](./028-terminierung-einsatzplanung-disposition.md) | Proposed | Plant konkrete Aufträge mit Personal, Qualifikation, Dienstmitteln, Standort und SLA |
 | P1 | [Kommunikationsprotokoll](./030-kommunikationsprotokoll.md) | Proposed | Dokumentiert Abstimmungen, Rückfragen und Entscheidungen zu Fällen und Aufträgen |
+| P1 | [Hinweisgebersystem und anonyme Meldestelle](../hinweisgebersystem.md) | Proposed | Ermoeglicht vertrauliche Compliance-Meldungen mit anonymer Zwei-Wege-Kommunikation, Fristen und strikt begrenztem Zugriff |
 | P1 | [Dokumentenmanagement](./031-dokumentenmanagement.md) | Proposed | Verwalten von Verträgen, Prüfberichten, Zertifikaten und Herstellerdokumenten mit Versionen |
 | P1 | [Klassifikationen, Tags und Datenqualität](./024-klassifikationen-tags-datenqualitaet.md) | Proposed | Sichert strukturierte Daten für belastbare Auswertungen statt Freitext-Chaos |
 | P1 | [Prozeduren, Arbeitsanweisungen und Checklisten](./026-prozeduren-arbeitsanweisungen-checklisten.md) | Proposed | Erzwingt und dokumentiert verbindliche Abläufe, Pflichtnachweise und Vier-Augen-Schritte |
