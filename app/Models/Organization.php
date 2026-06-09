@@ -97,6 +97,8 @@ class Organization extends Model {
         'name',
         'slug',
         'plan',
+        'license_key',
+        'license_uid',
         'locale',
         'timezone',
         'settings',
@@ -122,6 +124,10 @@ class Organization extends Model {
 
     protected static function booted(): void {
         static::creating(function (Organization $org): void {
+            // Stabile Bindungs-ID fuer org-gebundene Lizenzen.
+            if (! $org->license_uid) {
+                $org->license_uid = (string) Str::uuid();
+            }
             if (! $org->slug) {
                 $base = Str::slug($org->name) ?: 'org';
                 $slug = $base;

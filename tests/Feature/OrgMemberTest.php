@@ -235,6 +235,24 @@ class OrgMemberTest extends TestCase {
         $this->assertFalse($member->hasRole(UserRole::Admin->value));
     }
 
+    public function test_compensation_rate_is_required_for_time_based_compensation(): void {
+        $management = $this->management();
+        $member = $this->regularUser();
+
+        $this->actingAs($management)
+            ->put(route('org.members.update', $member), [
+                'compensation_model' => 'nach_zeitaufwand',
+                'compensation_rate' => '',
+            ])
+            ->assertSessionHasErrors('compensation_rate');
+
+        $this->assertSame(
+            'Das Feld Stundensatz ist erforderlich, wenn Vergütungsmodell gleich Nach Zeitaufwand ist.',
+            session('errors')->first('compensation_rate'),
+        );
+        $this->assertNull($member->fresh()->compensation_model);
+    }
+
     // ── Personalverwaltung (HR) ───────────────────────────────────────────────
 
     private function personnelAdmin(): User {

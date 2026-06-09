@@ -7,7 +7,9 @@
         <div class="flex items-center justify-between">
             <h1 class="text-xl font-semibold">{{ __('Verzeichnis von Verarbeitungstätigkeiten') }}</h1>
             <div class="flex gap-2">
-                <a href="{{ route('dataprotection.activities.export') }}" class="btn btn-sm">{{ __('Export (JSON)') }}</a>
+                <a href="{{ route('dataprotection.activities.export') }}" class="btn btn-sm">{{ __('JSON') }}</a>
+                <a href="{{ route('dataprotection.activities.export', ['format' => 'csv']) }}" class="btn btn-sm">{{ __('CSV') }}</a>
+                <a href="{{ route('dataprotection.activities.export', ['format' => 'print']) }}" target="_blank" class="btn btn-sm">{{ __('Druck') }}</a>
                 <a href="{{ route('dataprotection.activities.create') }}" class="btn btn-primary btn-sm">{{ __('Neue Tätigkeit') }}</a>
             </div>
         </div>

@@ -209,6 +209,14 @@ return [
         'userpw' => 'Password',
         'email' => 'Email',
         'week_date' => 'Week',
+        'compensation_model' => 'compensation model',
+        'compensation_rate' => 'compensation rate',
+    ],
+
+    'values' => [
+        'compensation_model' => [
+            'nach_zeitaufwand' => 'by time spent',
+        ],
     ],
 
 ];

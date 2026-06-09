@@ -34,6 +34,10 @@ class LicenseAdminController extends Controller {
         $userCount = User::query()->count();
         $orgCount = Organization::query()->count();
 
+        // Org-gebundene Lizenz der aktuellen Organisation.
+        $org = $request->user()?->organization;
+        $orgLicense = $org !== null ? $this->service->forOrganization($org) : null;
+
         return view('admin.license.index', [
             'license' => $result,
             'badgeTone' => $this->badgeTone($result),
@@ -43,7 +47,85 @@ class LicenseAdminController extends Controller {
             'isEnforced' => $this->service->isEnforced(),
             'canInstall' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
             'canToggleFlag' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
+            'org' => $org,
+            'orgLicense' => $orgLicense,
+            'orgBadgeTone' => $orgLicense !== null ? $this->badgeTone($orgLicense) : 'neutral',
+            'orgExpiresIn' => $orgLicense !== null ? $this->expiresInDays($orgLicense) : null,
+            'orgModules' => $this->orgModules($orgLicense),
         ]);
+    }
+
+    /**
+     * Tier + einzeln gebuchte Module der Org-Lizenz fuer die Anzeige.
+     *
+     * @return array{plan:string, addons:list<string>}
+     */
+    private function orgModules(?LicenseResult $orgLicense): array {
+        $payload = $orgLicense?->payload;
+        if ($payload === null || ! $orgLicense->isUsable()) {
+            return ['plan' => 'free', 'addons' => []];
+        }
+
+        return [
+            'plan' => $payload->plan,
+            'addons' => array_values(array_map(static fn($v): string => (string) $v, $payload->addons)),
+        ];
+    }
+
+    public function installOrg(Request $request): RedirectResponse {
+        Gate::authorize(Permission::PlatformLicenseInstall->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $org = $user->organization;
+        abort_if($org === null, Response::HTTP_NOT_FOUND);
+
+        $data = $request->validate(['license_key' => ['required', 'string', 'max:8000']]);
+        $result = $this->service->installForOrganization($org, $data['license_key']);
+        $this->resolver->flush();
+
+        if (! $result->isUsable()) {
+            return back()->withErrors([
+                'license_key' => __('Lizenz konnte nicht installiert werden: ') . ($result->message ?? $result->status->value),
+            ]);
+        }
+
+        AuditLog::query()->create([
+            'organization_id' => $org->id,
+            'user_id' => $user->id,
+            'event' => 'license.orgInstalled',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $org->id,
+            'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan],
+        ]);
+
+        $plan = $result->payload !== null ? $result->payload->plan : '—';
+
+        return back()->with('success', __('Org-Lizenz installiert. Plan: ') . $plan);
+    }
+
+    public function removeOrg(Request $request): RedirectResponse {
+        Gate::authorize(Permission::PlatformLicenseInstall->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $org = $user->organization;
+        abort_if($org === null, Response::HTTP_NOT_FOUND);
+
+        $org->forceFill(['license_key' => null])->save();
+        $this->service->flushOrganization($org);
+        $this->resolver->flush();
+
+        AuditLog::query()->create([
+            'organization_id' => $org->id,
+            'user_id' => $user->id,
+            'event' => 'license.orgRemoved',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $org->id,
+            'changes' => [],
+        ]);
+
+        return back()->with('success', __('Org-Lizenz entfernt.'));
     }
 
     public function toggleFlag(Request $request, string $flag): RedirectResponse {
@@ -185,7 +267,7 @@ class LicenseAdminController extends Controller {
             LicenseStatus::Valid => 'success',
             LicenseStatus::GracePeriod => 'warning',
             LicenseStatus::Missing, LicenseStatus::Expired, LicenseStatus::Malformed,
-            LicenseStatus::BadSignature, LicenseStatus::DomainMismatch,
+            LicenseStatus::BadSignature, LicenseStatus::DomainMismatch, LicenseStatus::OrgMismatch,
             LicenseStatus::PublicKeyMissing, LicenseStatus::Tampered => 'error',
         };
     }

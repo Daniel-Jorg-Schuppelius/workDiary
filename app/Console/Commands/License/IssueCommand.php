@@ -23,7 +23,10 @@ class IssueCommand extends Command {
         {--domain= : Domain-Bindung (z. B. app.kunde.de oder *.kunde.de)}
         {--expires= : Ablaufdatum (YYYY-MM-DD)}
         {--max-users= : Maximale Nutzerzahl}
-        {--features=* : Feature-Flags}
+        {--plan=free : Tier (free|pro|enterprise) – steuert die Basis-Module}
+        {--addons=* : Einzeln gebuchte Modul-Codes (z. B. module.datenschutz)}
+        {--org= : Bindungs-ID der Organisation (organizations.license_uid)}
+        {--features=* : Technische Feature-Flags (z. B. protocols.signed)}
         {--private-key= : Ed25519 Private Key (base64). Fallback: env(LICENSE_PRIVATE_KEY)}
         {--out= : Datei für den Lizenzschlüssel}';
 
@@ -62,6 +65,9 @@ class IssueCommand extends Command {
             'domain' => $this->option('domain') ?: null,
             'max_users' => $this->option('max-users') !== null ? (int) $this->option('max-users') : null,
             'features' => array_values(array_filter((array) $this->option('features'))),
+            'plan' => (string) ($this->option('plan') ?: 'free'),
+            'addons' => array_values(array_filter((array) $this->option('addons'))),
+            'organization' => $this->option('org') ?: null,
         ];
 
         $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

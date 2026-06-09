@@ -25,6 +25,12 @@ final class LicensePayload {
         /** @var array<int,string> */
         public readonly array $features,
         public readonly string $licenseId,
+        /** Tier (free|pro|enterprise); steuert die Basis-Module ueber config/plans.tiers. */
+        public readonly string $plan = 'free',
+        /** @var array<int,string> Einzeln gebuchte Modul-Codes (Add-ons ueber das Tier hinaus). */
+        public readonly array $addons = [],
+        /** Bindungs-ID der Organisation (z. B. Org-Sqid/UUID); leer = ungebunden. */
+        public readonly ?string $organization = null,
     ) {}
 
     /** @param array<string,mixed> $data */
@@ -40,6 +46,9 @@ final class LicensePayload {
             storageQuotaGb: isset($data['storage_quota_gb']) ? (int) $data['storage_quota_gb'] : null,
             features: array_values(array_map('strval', (array) ($data['features'] ?? []))),
             licenseId: (string) ($data['license_id'] ?? ''),
+            plan: (string) ($data['plan'] ?? 'free'),
+            addons: array_values(array_map('strval', (array) ($data['addons'] ?? []))),
+            organization: isset($data['organization']) && $data['organization'] !== '' ? (string) $data['organization'] : null,
         );
     }
 
@@ -56,6 +65,9 @@ final class LicensePayload {
             'max_orgs' => $this->maxOrgs,
             'storage_quota_gb' => $this->storageQuotaGb,
             'features' => $this->features,
+            'plan' => $this->plan,
+            'addons' => $this->addons,
+            'organization' => $this->organization,
         ];
     }
 }

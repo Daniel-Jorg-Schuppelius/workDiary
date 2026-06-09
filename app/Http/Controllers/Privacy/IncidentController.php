@@ -16,7 +16,7 @@ use App\Enums\Privacy\IncidentType;
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{Incident, Measure};
 use App\Services\Privacy\IncidentService;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -131,5 +131,57 @@ class IncidentController extends Controller {
         $this->service->completeMeasure($measure, $request->user());
 
         return back()->with('status', __('Maßnahme erledigt.'));
+    }
+
+    /**
+     * Vorbereiteter Meldungsentwurf (Art. 33 Behörde / Art. 34 Betroffene) als
+     * Textdatei – bewusst NICHT automatisch versendet.
+     */
+    public function reportDraft(Incident $incident, string $kind): Response {
+        Gate::authorize('view', $incident);
+        abort_unless(in_array($kind, ['authority', 'subjects'], true), 404);
+
+        $isAuthority = $kind === 'authority';
+        $lines = $isAuthority
+            ? [
+                __('ENTWURF – Meldung einer Verletzung des Schutzes personenbezogener Daten (Art. 33 DSGVO)'),
+                '',
+                __('Aktenzeichen') . ': ' . $incident->incident_number,
+                __('Art des Vorfalls') . ': ' . $incident->type->label(),
+                __('Zeitpunkt der Entdeckung') . ': ' . $incident->discovered_at?->format('d.m.Y H:i'),
+                __('Meldefrist (72 h)') . ': ' . $incident->authority_deadline_at?->format('d.m.Y H:i'),
+                __('Risikoeinstufung') . ': ' . ($incident->risk_level ?? '—'),
+                __('Zahl betroffener Personen (ca.)') . ': ' . ($incident->affected_count ?? '—'),
+                '',
+                __('Beschreibung des Vorfalls') . ':',
+                (string) ($incident->summary_ciphertext ?? ''),
+                '',
+                __('Betroffene Datenkategorien / Systeme') . ':',
+                (string) ($incident->affected_ciphertext ?? ''),
+                '',
+                __('Wahrscheinliche Folgen und ergriffene/vorgeschlagene Maßnahmen') . ':',
+                (string) ($incident->measures_ciphertext ?? ''),
+            ]
+            : [
+                __('ENTWURF – Benachrichtigung betroffener Personen (Art. 34 DSGVO)'),
+                '',
+                __('Sehr geehrte Damen und Herren,'),
+                '',
+                __('wir informieren Sie über einen Vorfall, der den Schutz Ihrer personenbezogenen Daten betrifft.'),
+                '',
+                __('Art des Vorfalls') . ': ' . $incident->type->label(),
+                __('Voraussichtliche Folgen / empfohlene Schutzmaßnahmen') . ':',
+                (string) ($incident->measures_ciphertext ?? ''),
+                '',
+                __('Für Rückfragen steht Ihnen unser Datenschutzteam zur Verfügung.'),
+            ];
+
+        $body = implode("\n", $lines);
+        $name = $incident->incident_number . '-' . ($isAuthority ? 'meldung-aufsicht' : 'benachrichtigung-betroffene') . '.txt';
+
+        return response($body, 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $name . '"',
+        ]);
     }
 }

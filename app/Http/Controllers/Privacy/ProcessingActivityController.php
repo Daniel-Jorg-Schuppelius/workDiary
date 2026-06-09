@@ -103,7 +103,7 @@ class ProcessingActivityController extends Controller {
         return back()->with('status', __('Version freigegeben.'));
     }
 
-    public function export(Request $request): Response {
+    public function export(Request $request): Response|View {
         Gate::authorize('export', ProcessingActivity::class);
         $user = $request->user();
         $org = $user?->organization;
@@ -116,17 +116,43 @@ class ProcessingActivityController extends Controller {
             'event' => 'privacy.ropa.exported',
             'auditable_type' => ProcessingActivity::class,
             'auditable_id' => 0,
-            'changes' => [],
+            'changes' => ['format' => (string) $request->query('format', 'json')],
             'ip' => $request->ip(),
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ]);
 
-        $json = json_encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $date = now()->toDateString();
+        return match ((string) $request->query('format', 'json')) {
+            'csv' => response($this->toCsv($this->exporter->ropaCsvRows($snapshot)), 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="vvt-' . $date . '.csv"',
+            ]),
+            'print' => view('privacy.activities.print', ['snapshot' => $snapshot]),
+            default => response(
+                (string) json_encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                200,
+                ['Content-Type' => 'application/json', 'Content-Disposition' => 'attachment; filename="vvt-' . $date . '.json"'],
+            ),
+        };
+    }
 
-        return response((string) $json, 200, [
-            'Content-Type' => 'application/json',
-            'Content-Disposition' => 'attachment; filename="vvt-' . now()->toDateString() . '.json"',
-        ]);
+    /**
+     * @param  list<array<string, mixed>>  $rows
+     */
+    private function toCsv(array $rows): string {
+        $out = fopen('php://temp', 'r+');
+        if ($out === false) {
+            return '';
+        }
+        fputcsv($out, ['name', 'purpose', 'controller_role', 'area', 'status', 'review_due_at', 'dsfa_required', 'version_no']);
+        foreach ($rows as $row) {
+            fputcsv($out, array_map(static fn ($v): string => (string) $v, $row));
+        }
+        rewind($out);
+        $csv = (string) stream_get_contents($out);
+        fclose($out);
+
+        return $csv;
     }
 
     /** @return array<string, mixed> */

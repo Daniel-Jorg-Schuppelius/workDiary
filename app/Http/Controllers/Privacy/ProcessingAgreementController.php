@@ -77,10 +77,15 @@ class ProcessingAgreementController extends Controller {
     public function show(ProcessingAgreement $agreement): View {
         Gate::authorize('view', $agreement);
 
+        $assignedMeasureIds = \App\Models\Privacy\MeasureAssignment::query()
+            ->where('agreement_id', $agreement->id)->pluck('measure_id')->all();
+
         return view('privacy.agreements.show', [
             'agreement' => $agreement->load(['processor', 'subprocessors', 'activities']),
             'allActivities' => ProcessingActivity::query()->orderBy('name')->get(['id', 'name']),
             'linkedIds' => $agreement->activities()->pluck('privacy_processing_activities.id')->all(),
+            'allMeasures' => \App\Models\Privacy\TechnicalMeasure::query()->orderBy('name')->get(['id', 'name']),
+            'assignedMeasures' => \App\Models\Privacy\TechnicalMeasure::query()->whereIn('id', $assignedMeasureIds)->get(['id', 'name']),
         ]);
     }
 
@@ -145,6 +150,17 @@ class ProcessingAgreementController extends Controller {
         $subprocessor->forceFill(['approved' => true])->save();
 
         return back()->with('status', __('Unterauftragsverarbeiter freigegeben.'));
+    }
+
+    public function assignMeasure(Request $request, ProcessingAgreement $agreement): RedirectResponse {
+        Gate::authorize('update', $agreement);
+        $data = $request->validate(['measure_id' => ['required', 'integer']]);
+        $measure = \App\Models\Privacy\TechnicalMeasure::query()
+            ->where('organization_id', $agreement->organization_id)
+            ->findOrFail((int) $data['measure_id']);
+        app(\App\Services\Privacy\TechnicalMeasureService::class)->assignToAgreement($measure, $agreement);
+
+        return back()->with('status', __('TOM dem Vertrag zugeordnet.'));
     }
 
     public function downloadDocument(ProcessingAgreement $agreement): BinaryFileResponse {

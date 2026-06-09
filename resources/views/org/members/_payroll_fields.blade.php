@@ -52,6 +52,7 @@
         <input type="number" name="compensation_rate" step="0.01" min="0"
                class="input input-bordered w-full @error('compensation_rate') input-error @enderror"
                value="{{ old('compensation_rate', $member?->compensation_rate) }}"
+               x-bind:required="is('nach_zeitaufwand')"
                @disabled(! $canManagePayroll)>
         @error('compensation_rate')<p class="text-error text-sm">{{ $message }}</p>@enderror
         <p class="mt-1 text-xs text-base-content/60">{{ __('Wird auf die erfasste Zeit angewandt (nicht der Kundensatz).') }}</p>

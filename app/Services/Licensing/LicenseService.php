@@ -11,6 +11,7 @@
 namespace App\Services\Licensing;
 
 use App\Models\AuditLog;
+use App\Models\Organization;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -113,6 +114,33 @@ class LicenseService {
         return $result;
     }
 
+    /**
+     * Installiert einen org-gebundenen Lizenzschluessel in `organizations.license_key`
+     * und synchronisiert `organizations.plan` mit dem Tier der Lizenz (loest darueber
+     * den Downgrade-Observer aus, falls das Tier sinkt).
+     */
+    public function installForOrganization(Organization $org, string $licenseKey): LicenseResult {
+        $licenseKey = trim($licenseKey);
+        $result = $this->verify($licenseKey, null, (string) $org->license_uid);
+        if (! $result->isUsable() && $result->status !== LicenseStatus::Expired) {
+            return $result;
+        }
+
+        $org->license_key = $licenseKey;
+        if ($result->payload !== null) {
+            $org->plan = $result->payload->plan;
+        }
+        $org->save();
+
+        $this->flushOrganization($org);
+
+        return $result;
+    }
+
+    public function flushOrganization(Organization $org): void {
+        $this->safeCacheCall(fn() => $this->cache->forget(self::CACHE_KEY . ':org:' . (string) $org->getKey()));
+    }
+
     public function rawKey(): ?string {
         $env = config('license.key');
         if (is_string($env) && $env !== '') {
@@ -129,7 +157,7 @@ class LicenseService {
         return null;
     }
 
-    public function verify(string $licenseKey, ?string $host = null): LicenseResult {
+    public function verify(string $licenseKey, ?string $host = null, ?string $organizationUid = null): LicenseResult {
         $publicKey = $this->loadPublicKey();
         if ($publicKey === null) {
             return LicenseResult::fail(LicenseStatus::PublicKeyMissing, 'Public Key fehlt in der Konfiguration.');
@@ -173,6 +201,19 @@ class LicenseService {
             }
         }
 
+        // Org-Bindung: ist die Lizenz an eine Organisation gebunden, muss deren
+        // stabile Bindungs-ID (license_uid) exakt passen – verhindert das
+        // Kopieren einer Lizenz auf eine andere Organisation.
+        if ($payload->organization !== null && $payload->organization !== '') {
+            if ($organizationUid === null || ! hash_equals($payload->organization, $organizationUid)) {
+                return new LicenseResult(
+                    LicenseStatus::OrgMismatch,
+                    $payload,
+                    'Lizenz ist an eine andere Organisation gebunden.'
+                );
+            }
+        }
+
         if ($payload->expiresAt !== null) {
             $now = CarbonImmutable::now();
             $graceDays = (int) config('license.grace_days', 14);
@@ -196,6 +237,40 @@ class LicenseService {
         }
 
         return $this->verify($key, $host);
+    }
+
+    /**
+     * Org-gebundene Lizenzbewertung: liest den Schluessel aus
+     * `organizations.license_key` und prueft Signatur, Org-Bindung und Ablauf.
+     * Cache pro Organisation; Integritaets-Seal gilt installationsweit.
+     */
+    public function forOrganization(Organization $org): LicenseResult {
+        $integrity = $this->checkIntegrity();
+        if ($integrity !== null) {
+            return $integrity;
+        }
+
+        $key = $org->license_key;
+        if (! is_string($key) || trim($key) === '') {
+            return LicenseResult::fail(LicenseStatus::Missing, 'Keine Lizenz für diese Organisation.');
+        }
+
+        $ttl = (int) config('license.cache_ttl', 300);
+        $cacheKey = self::CACHE_KEY . ':org:' . (string) $org->getKey();
+        if ($ttl > 0) {
+            $cached = $this->safeCacheGet($cacheKey);
+            if ($cached instanceof LicenseResult) {
+                return $cached;
+            }
+        }
+
+        $result = $this->verify(trim($key), null, (string) $org->license_uid);
+
+        if ($ttl > 0) {
+            $this->safeCacheCall(fn() => $this->cache->put($cacheKey, $result, $ttl));
+        }
+
+        return $result;
     }
 
     /**

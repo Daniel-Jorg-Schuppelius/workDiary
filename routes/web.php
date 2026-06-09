@@ -259,6 +259,16 @@ Route::middleware('auth')->group(function () {
             Route::get('luecken', [\App\Http\Controllers\Privacy\ComplianceController::class, 'index'])->name('compliance.index');
             Route::post('luecken/analyse', [\App\Http\Controllers\Privacy\ComplianceController::class, 'run'])->name('compliance.run');
             Route::put('luecken/{finding}', [\App\Http\Controllers\Privacy\ComplianceController::class, 'update'])->name('compliance.update');
+
+            // Anhaenge an Fallakten (Anfragen/Vorfaelle)
+            Route::post('anfragen/{dsr}/anhaenge', [\App\Http\Controllers\Privacy\PrivacyAttachmentController::class, 'storeForRequest'])->name('requests.attach');
+            Route::post('vorfaelle/{incident}/anhaenge', [\App\Http\Controllers\Privacy\PrivacyAttachmentController::class, 'storeForIncident'])->name('incidents.attach');
+            Route::get('anhaenge/{attachment}', [\App\Http\Controllers\Privacy\PrivacyAttachmentController::class, 'download'])->name('attachment.download');
+            Route::delete('anhaenge/{attachment}', [\App\Http\Controllers\Privacy\PrivacyAttachmentController::class, 'destroy'])->name('attachment.destroy');
+
+            // Meldungsentwuerfe (Vorfall) + TOM-Zuordnung zu AVV
+            Route::get('vorfaelle/{incident}/meldung/{kind}', [\App\Http\Controllers\Privacy\IncidentController::class, 'reportDraft'])->name('incidents.draft');
+            Route::post('avv/{agreement}/tom', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'assignMeasure'])->name('agreements.tom');
         });
 
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
@@ -297,6 +307,8 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/license/flags/{flag}/toggle', [LicenseAdminController::class, 'toggleFlag'])
             ->where('flag', '[A-Za-z0-9._-]+')
             ->name('admin.license.flags.toggle');
+        Route::post('admin/license/org', [LicenseAdminController::class, 'installOrg'])->name('admin.license.org.install');
+        Route::delete('admin/license/org', [LicenseAdminController::class, 'removeOrg'])->name('admin.license.org.remove');
 
         // Demo-Mandant (MVP-050)
         Route::get('admin/demo', [DemoTenantController::class, 'index'])->name('admin.demo.index');

@@ -100,6 +100,100 @@
         </div>
     </article>
 
+    {{-- Org-gebundene Lizenz (Tier + Add-on-Module) --}}
+    @php
+        /** @var \App\Models\Organization|null $org */
+        /** @var \App\Services\Licensing\LicenseResult|null $orgLicense */
+        /** @var string $orgBadgeTone */
+        /** @var int|null $orgExpiresIn */
+        /** @var array{plan:string, addons:list<string>} $orgModules */
+        $op = $orgLicense?->payload;
+        $orgUsable = $orgLicense !== null && $orgLicense->isUsable();
+        $orgStatusLabel = $orgLicense === null ? __('Keine') : match ($orgLicense->status->value) {
+            'valid' => __('Gültig'),
+            'grace_period' => __('Grace-Period'),
+            'missing' => __('Keine'),
+            'expired' => __('Abgelaufen'),
+            'org_mismatch' => __('Falsche Organisation'),
+            'bad_signature' => __('Signatur ungültig'),
+            'malformed' => __('Ungültiges Format'),
+            default => $orgLicense->status->value,
+        };
+        $planLabels = ['free' => 'Free', 'pro' => 'Pro', 'enterprise' => 'Enterprise'];
+    @endphp
+    <article class="card border border-base-300 bg-base-100 shadow-sm">
+        <div class="card-body gap-3">
+            <div class="flex items-center justify-between gap-2">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Org-Lizenz') }}</h2>
+                <x-status-badge :tone="$orgBadgeTone" size="md" outline>{{ $orgStatusLabel }}</x-status-badge>
+            </div>
+
+            @if ($org === null)
+                <p class="text-sm text-base-content/70">{{ __('Keine aktive Organisation im Kontext.') }}</p>
+            @else
+                <dl class="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
+                    <div>
+                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Plan (Tier)') }}</dt>
+                        <dd><x-status-badge :tone="$orgUsable ? 'success' : 'neutral'" size="md">{{ $planLabels[$orgModules['plan']] ?? $orgModules['plan'] }}</x-status-badge></dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Zugebuchte Module') }}</dt>
+                        <dd class="font-mono text-xs break-all">{{ count($orgModules['addons']) ? implode(', ', $orgModules['addons']) : '—' }}</dd>
+                    </div>
+                    @if ($op !== null && $orgUsable)
+                        <div>
+                            <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenznehmer') }}</dt>
+                            <dd class="font-mono">{{ $op->licensee }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gültig bis') }}</dt>
+                            <dd>
+                                @if ($op->expiresAt)
+                                    {{ $op->expiresAt->translatedFormat('d.m.Y') }}
+                                    @if ($orgExpiresIn !== null)
+                                        <span class="ml-1 text-xs text-base-content/60">({{ $orgExpiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $orgExpiresIn]) : __(':n Tage überzogen', ['n' => abs($orgExpiresIn)]) }})</span>
+                                    @endif
+                                @else
+                                    <span class="italic text-base-content/60">{{ __('unbefristet') }}</span>
+                                @endif
+                            </dd>
+                        </div>
+                    @endif
+                    <div class="md:col-span-2">
+                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Bindungs-ID (für die Ausstellung)') }}</dt>
+                        <dd class="font-mono text-xs text-base-content/80 break-all select-all">{{ $org->license_uid }}</dd>
+                    </div>
+                </dl>
+
+                @if ($orgLicense !== null && $orgLicense->message && ! $orgUsable)
+                    <p class="rounded-box border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-base-content/80">{{ $orgLicense->message }}</p>
+                @endif
+
+                @if ($canInstall)
+                    <form method="POST" action="{{ route('admin.license.org.install') }}" class="mt-1 space-y-2">
+                        @csrf
+                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenzschlüssel einspielen') }}</label>
+                        <textarea name="license_key" rows="3" required
+                            class="textarea textarea-bordered w-full font-mono text-xs @error('license_key') textarea-error @enderror"
+                            placeholder="payload.signature">{{ old('license_key') }}</textarea>
+                        @error('license_key')
+                            <p class="text-xs text-error">{{ $message }}</p>
+                        @enderror
+                        <div class="flex items-center gap-2">
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Installieren') }}</button>
+                            @if ($op !== null)
+                                <button type="submit" form="org-license-remove" class="btn btn-sm btn-ghost text-error">{{ __('Entfernen') }}</button>
+                            @endif
+                        </div>
+                    </form>
+                    <form method="POST" action="{{ route('admin.license.org.remove') }}" id="org-license-remove" class="hidden">
+                        @csrf @method('DELETE')
+                    </form>
+                @endif
+            @endif
+        </div>
+    </article>
+
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Limits') }}</h2>

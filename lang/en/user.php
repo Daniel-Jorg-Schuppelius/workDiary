@@ -4,6 +4,7 @@ return [
     'role' => [
         'admin' => 'Administrator',
         'meldestelle' => 'Reporting Office',
+        'datenschutz' => 'Data Protection',
         'geschaeftsfuehrung' => 'Management',
         'personalverwaltung' => 'Personnel Administration',
         'teamleitung' => 'Team Lead',

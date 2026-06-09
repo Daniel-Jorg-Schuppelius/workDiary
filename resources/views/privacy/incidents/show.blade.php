@@ -88,6 +88,40 @@
             @endcan
         </section>
 
+        {{-- Meldungsentwürfe (nicht versendet) --}}
+        <section class="card bg-base-200 p-4 space-y-2">
+            <h2 class="font-semibold">{{ __('Meldungsentwürfe') }}</h2>
+            <p class="text-xs text-base-content/60">{{ __('Vorbereitete Entwürfe – werden NICHT automatisch versendet.') }}</p>
+            <div class="flex gap-2">
+                <a href="{{ route('dataprotection.incidents.draft', [$incident, 'authority']) }}" class="btn btn-sm btn-outline">{{ __('An Aufsichtsbehörde (Art. 33)') }}</a>
+                <a href="{{ route('dataprotection.incidents.draft', [$incident, 'subjects']) }}" class="btn btn-sm btn-outline">{{ __('An Betroffene (Art. 34)') }}</a>
+            </div>
+        </section>
+
+        {{-- Anhänge --}}
+        <section class="card bg-base-200 p-4 space-y-2">
+            <h2 class="font-semibold">{{ __('Anhänge') }}</h2>
+            <ul class="text-sm space-y-1">
+                @forelse ($incident->attachments as $att)
+                    <li class="flex items-center justify-between">
+                        <a class="link" href="{{ route('dataprotection.attachment.download', $att) }}">{{ $att->filename }}</a>
+                        @can('update', $incident)
+                            <form method="post" action="{{ route('dataprotection.attachment.destroy', $att) }}">@csrf @method('DELETE')<button class="btn btn-xs btn-ghost text-error">✕</button></form>
+                        @endcan
+                    </li>
+                @empty
+                    <li class="text-base-content/60">{{ __('Keine Anhänge.') }}</li>
+                @endforelse
+            </ul>
+            @can('update', $incident)
+                <form method="post" action="{{ route('dataprotection.incidents.attach', $incident) }}" enctype="multipart/form-data" class="flex gap-2 pt-2">
+                    @csrf
+                    <input type="file" name="file" class="file-input file-input-sm file-input-bordered flex-1" required>
+                    <button class="btn btn-sm">{{ __('Hochladen') }}</button>
+                </form>
+            @endcan
+        </section>
+
         <section class="space-y-2">
             <h2 class="font-semibold">{{ __('Verlauf') }}</h2>
             <ul class="timeline timeline-vertical">

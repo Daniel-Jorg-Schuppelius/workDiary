@@ -16,6 +16,7 @@ enum LicenseStatus: string {
     case Malformed = 'malformed';
     case BadSignature = 'bad_signature';
     case DomainMismatch = 'domain_mismatch';
+    case OrgMismatch = 'org_mismatch';
     case Expired = 'expired';
     case GracePeriod = 'grace_period';
     case PublicKeyMissing = 'public_key_missing';

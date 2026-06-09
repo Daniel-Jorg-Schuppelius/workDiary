@@ -19,7 +19,7 @@ use App\Models\Privacy\Concerns\ProvidesRecordDek;
 use App\Models\User;
 use App\Services\Privacy\DataProtectionCryptoService;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 
 /**
  * Datenschutzvorfall (Art. 33/34). Sachverhalt/Betroffenes/Massnahmen sind
@@ -120,6 +120,11 @@ class Incident extends Model implements ProvidesRecordDek {
     /** @return HasMany<Measure, $this> */
     public function measures(): HasMany {
         return $this->hasMany(Measure::class, 'incident_id');
+    }
+
+    /** @return MorphMany<PrivacyAttachment, $this> */
+    public function attachments(): MorphMany {
+        return $this->morphMany(PrivacyAttachment::class, 'attachable')->latest('id');
     }
 
     /** 72-h-Frist verstrichen und noch nicht gemeldet? */

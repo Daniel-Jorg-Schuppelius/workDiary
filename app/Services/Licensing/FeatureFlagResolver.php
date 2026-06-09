@@ -85,23 +85,46 @@ class FeatureFlagResolver {
 
         $map = [];
 
-        $licenseResult = $this->licenses->current();
-        $payload = $licenseResult->payload;
-        if ($payload !== null && $licenseResult->isUsable()) {
-            // Produktiv: die signierte Lizenz ist massgeblich.
-            foreach ($payload->features as $code) {
-                $code = (string) $code;
-                if ($code !== '') {
-                    $map[$code] = true;
-                }
+        // Org-gebundene Lizenz hat Vorrang; hat die Organisation keine (nutzbare)
+        // eigene Lizenz, gilt als Fallback die installationsweite Lizenz
+        // (Rueckwaertskompatibilitaet mit globalen Lizenzen). Erst wenn BEIDE
+        // fehlen, greift produktiv hart free.
+        $org = $this->currentOrg();
+        $licenseResult = $org !== null ? $this->licenses->forOrganization($org) : $this->licenses->current();
+        if (! $licenseResult->isUsable() && $org !== null) {
+            $global = $this->licenses->current();
+            if ($global->isUsable()) {
+                $licenseResult = $global;
             }
+        }
+        $payload = $licenseResult->payload;
+        $usable = $payload !== null && $licenseResult->isUsable();
+
+        // Effektiver Plan (Tier): eine nutzbare Lizenz traegt das Tier. OHNE
+        // nutzbare Lizenz gilt produktiv HART free (pro/enterprise nur per Lizenz);
+        // in local/testing dient organizations.plan als Fallback, sonst verloeren
+        // Dev-Umgebung und Bestandstests ihre Module.
+        if ($usable && in_array($payload->plan, Organization::$plans, true)) {
+            $plan = (string) $payload->plan;
+        } elseif (! $usable && app()->environment('local', 'testing')) {
+            $plan = $this->orgPlan();
         } else {
-            // Dev / ohne nutzbare Lizenz: das DB-Feld organizations.plan steuert
-            // ueber den Katalog (config/plans.php). organization->plan ist sonst
-            // nur ein Label – hier dient es als Fallback.
-            foreach ($this->planBaseline() as $code) {
-                if ($code !== '') {
-                    $map[$code] = true;
+            $plan = Organization::PLAN_FREE;
+        }
+
+        // Tier-Basis-Module aus dem Katalog.
+        foreach ((array) config("plans.tiers.{$plan}", []) as $code) {
+            if ((string) $code !== '') {
+                $map[(string) $code] = true;
+            }
+        }
+
+        // Einzeln gebuchte Module (Add-ons) + technische Feature-Flags (z. B.
+        // protocols.signed, reports.export) additiv ueber das Tier hinaus.
+        if ($usable) {
+            foreach (array_merge($payload->addons, $payload->features) as $code) {
+                if ((string) $code !== '') {
+                    $map[(string) $code] = true;
                 }
             }
         }
@@ -127,25 +150,29 @@ class FeatureFlagResolver {
         return $this->resolved = $map;
     }
 
-    /**
-     * Modul-Codes der aktuellen Organisation gemaess ihrem Plan (config/plans.php).
-     * Nur Dev-/Fallback-Ebene, wenn keine nutzbare Lizenz vorliegt.
-     *
-     * @return list<string>
-     */
-    private function planBaseline(): array {
-        $plan = Organization::PLAN_FREE;
+    /** Aktuelle Organisation aus dem Container (oder null im konsolenweiten Kontext). */
+    private function currentOrg(): ?Organization {
         if (app()->bound('currentOrganization')) {
             $org = app('currentOrganization');
-            if ($org instanceof Organization && in_array($org->plan, Organization::$plans, true)) {
-                $plan = (string) $org->plan;
+            if ($org instanceof Organization) {
+                return $org;
             }
         }
 
-        /** @var list<string> $codes */
-        $codes = (array) config("plans.tiers.{$plan}", []);
+        return null;
+    }
 
-        return $codes;
+    /**
+     * Plan-Label der aktuellen Organisation (organizations.plan). Nur Dev-/Test-
+     * Fallback, wenn keine nutzbare Lizenz vorliegt.
+     */
+    private function orgPlan(): string {
+        $org = $this->currentOrg();
+        if ($org !== null && in_array($org->plan, Organization::$plans, true)) {
+            return (string) $org->plan;
+        }
+
+        return Organization::PLAN_FREE;
     }
 
     /**

@@ -597,6 +597,9 @@
                                 }
                                 if (! $isLegacyMode) {
                                     $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
+                                    if (\Illuminate\Support\Facades\Gate::allows('platform.license.view')) {
+                                        $adminNavItems[] = ['route' => 'admin.license.index',            'label' => __('Lizenz'),           'icon' => 'key',              'modal' => false];
+                                    }
                                     $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
                                     $adminNavItems[] = ['route' => 'admin.plugin-errors.index',          'label' => __('Plugin-Fehler'),    'icon' => 'bug_report',       'modal' => false];
 

@@ -19,7 +19,7 @@ use App\Models\Privacy\Concerns\ProvidesRecordDek;
 use App\Models\User;
 use App\Services\Privacy\DataProtectionCryptoService;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 
 /**
  * Betroffenenanfrage (DSGVO Art. 15–21). Identitaet/Anliegen sind per-Fall
@@ -110,6 +110,11 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
     /** @return HasMany<RequestEvent, $this> */
     public function events(): HasMany {
         return $this->hasMany(RequestEvent::class, 'request_id')->orderBy('id');
+    }
+
+    /** @return MorphMany<PrivacyAttachment, $this> */
+    public function attachments(): MorphMany {
+        return $this->morphMany(PrivacyAttachment::class, 'attachable')->latest('id');
     }
 
     public function isOverdue(): bool {

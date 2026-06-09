@@ -72,6 +72,29 @@
             </aside>
         </div>
 
+        <section class="card bg-base-200 p-4 space-y-2">
+            <h2 class="font-semibold">{{ __('Anhänge') }}</h2>
+            <ul class="text-sm space-y-1">
+                @forelse ($request->attachments as $att)
+                    <li class="flex items-center justify-between">
+                        <a class="link" href="{{ route('dataprotection.attachment.download', $att) }}">{{ $att->filename }}</a>
+                        @can('update', $request)
+                            <form method="post" action="{{ route('dataprotection.attachment.destroy', $att) }}">@csrf @method('DELETE')<button class="btn btn-xs btn-ghost text-error">✕</button></form>
+                        @endcan
+                    </li>
+                @empty
+                    <li class="text-base-content/60">{{ __('Keine Anhänge.') }}</li>
+                @endforelse
+            </ul>
+            @can('update', $request)
+                <form method="post" action="{{ route('dataprotection.requests.attach', $request) }}" enctype="multipart/form-data" class="flex gap-2 pt-2">
+                    @csrf
+                    <input type="file" name="file" class="file-input file-input-sm file-input-bordered flex-1" required>
+                    <button class="btn btn-sm">{{ __('Hochladen') }}</button>
+                </form>
+            @endcan
+        </section>
+
         <section class="space-y-2">
             <h2 class="font-semibold">{{ __('Verlauf') }}</h2>
             <ul class="timeline timeline-vertical">

@@ -94,5 +94,26 @@
                 </form>
             @endcan
         </section>
+
+        {{-- Zugeordnete TOM (Vertragsanlage) --}}
+        <section class="card bg-base-200 p-4 space-y-2">
+            <h2 class="font-semibold">{{ __('Technische & organisatorische Maßnahmen (Anlage)') }}</h2>
+            <ul class="text-sm space-y-1">
+                @forelse ($assignedMeasures as $m)
+                    <li>• <a class="link" href="{{ route('dataprotection.tom.show', $m) }}">{{ $m->name }}</a></li>
+                @empty
+                    <li class="text-base-content/60">{{ __('Keine TOM zugeordnet.') }}</li>
+                @endforelse
+            </ul>
+            @can('update', $agreement)
+                <form method="post" action="{{ route('dataprotection.agreements.tom', $agreement) }}" class="flex gap-2 pt-2">
+                    @csrf
+                    <select name="measure_id" class="select select-sm select-bordered flex-1">
+                        @foreach ($allMeasures as $m)<option value="{{ $m->id }}">{{ $m->name }}</option>@endforeach
+                    </select>
+                    <button class="btn btn-sm">{{ __('TOM zuordnen') }}</button>
+                </form>
+            @endcan
+        </section>
     </div>
 @endsection

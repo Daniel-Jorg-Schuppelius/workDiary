@@ -40,6 +40,8 @@ class LicenseFlagOverrideTest extends TestCase {
 
         $service = $this->createStub(LicenseService::class);
         $service->method('current')->willReturn($result);
+        // Org hat keine eigene Lizenz → Resolver faellt auf die globale Lizenz zurueck.
+        $service->method('forOrganization')->willReturn(LicenseResult::fail(LicenseStatus::Missing, 'keine Org-Lizenz'));
         $service->method('isEnforced')->willReturn(true);
         $this->app->instance(LicenseService::class, $service);
     }

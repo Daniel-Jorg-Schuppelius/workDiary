@@ -178,5 +178,13 @@ return [
         'current_password' => 'aktuelles Passwort',
         'email' => 'E-Mail',
         'week_date' => 'Woche',
+        'compensation_model' => 'Vergütungsmodell',
+        'compensation_rate' => 'Stundensatz',
+    ],
+
+    'values' => [
+        'compensation_model' => [
+            'nach_zeitaufwand' => 'Nach Zeitaufwand',
+        ],
     ],
 ];
