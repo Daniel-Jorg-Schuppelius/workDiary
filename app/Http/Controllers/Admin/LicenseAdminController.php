@@ -75,6 +75,75 @@ class LicenseAdminController extends Controller {
         return $codes;
     }
 
+    public function issuer(): View {
+        Gate::authorize(Permission::PlatformLicenseInstall->value);
+        abort_unless($this->service->canIssue(), Response::HTTP_FORBIDDEN);
+
+        return view('admin.license.issuer', [
+            'moduleCodes' => $this->moduleCodes(),
+        ]);
+    }
+
+    public function issueKey(Request $request): RedirectResponse {
+        Gate::authorize(Permission::PlatformLicenseInstall->value);
+        abort_unless($this->service->canIssue(), Response::HTTP_FORBIDDEN);
+
+        $data = $request->validate([
+            'licensee' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'plan' => ['required', \Illuminate\Validation\Rule::in(['free', 'pro', 'enterprise'])],
+            'addons' => ['array'],
+            'addons.*' => ['string', \Illuminate\Validation\Rule::in($this->moduleCodes())],
+            'expires' => ['nullable', 'date'],
+            'max_users' => ['nullable', 'integer', 'min:1'],
+            'organization_uid' => ['nullable', 'string', 'max:64'],
+            'domain' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        /** @var list<string> $addons */
+        $addons = array_values($data['addons'] ?? []);
+        $key = $this->service->signLicense(
+            (string) $data['plan'],
+            $addons,
+            $data['expires'] ?? null,
+            (string) $data['licensee'],
+            $data['organization_uid'] ?? null,
+            $data['domain'] ?? null,
+            $data['email'] ?? null,
+            isset($data['max_users']) ? (int) $data['max_users'] : null,
+        );
+
+        if ($key === null) {
+            return back()->withErrors(['issue' => __('Kein Private Key verfügbar.')])->withInput();
+        }
+
+        /** @var User $user */
+        $user = $request->user();
+        AuditLog::query()->create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'event' => 'license.keyIssued',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $user->organization_id ?? 0,
+            // Bewusst OHNE den Schlüssel selbst – nur Metadaten.
+            'changes' => [
+                'licensee' => $data['licensee'],
+                'plan' => $data['plan'],
+                'addons' => $addons,
+                'organization' => $data['organization_uid'] ?? null,
+                'domain' => $data['domain'] ?? null,
+            ],
+        ]);
+
+        return back()
+            ->with('issued_key', $key)
+            ->with('issued_meta', [
+                'licensee' => (string) $data['licensee'],
+                'plan' => (string) $data['plan'],
+            ])
+            ->withInput();
+    }
+
     public function issueOrg(Request $request): RedirectResponse {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
 
@@ -116,7 +185,7 @@ class LicenseAdminController extends Controller {
             'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan, 'addons' => $addons],
         ]);
 
-        return back()->with('success', __('Lizenz erstellt & installiert. Plan: ') . (string) $data['plan']);
+        return back()->with('success', __('Lizenz erstellt & installiert. Plan: ') . __('values.' . (string) $data['plan']));
     }
 
     /**
@@ -163,7 +232,7 @@ class LicenseAdminController extends Controller {
             'changes' => ['license_id' => $result->payload?->licenseId, 'plan' => $result->payload?->plan],
         ]);
 
-        $plan = $result->payload !== null ? $result->payload->plan : '—';
+        $plan = $result->payload !== null ? __('values.' . $result->payload->plan) : '—';
 
         return back()->with('success', __('Org-Lizenz installiert. Plan: ') . $plan);
     }

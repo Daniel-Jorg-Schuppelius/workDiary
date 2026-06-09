@@ -165,6 +165,32 @@ class OrgLicensingTest extends TestCase {
         $this->assertNotNull($org->license_key);
     }
 
+    public function test_issuer_signs_key_for_customer_without_installing(): void {
+        config()->set('license.private_key', base64_encode($this->secretKey));
+        $service = app(LicenseService::class);
+        $customer = Organization::factory()->create();
+
+        $key = $service->signLicense('enterprise', ['module.lohn'], null, 'Kunde GmbH', $customer->license_uid);
+        $this->assertIsString($key);
+
+        // Gültig für den Kunden, aber NICHT lokal installiert.
+        $verified = $service->verify($key, null, (string) $customer->license_uid);
+        $this->assertSame(LicenseStatus::Valid, $verified->status);
+        $this->assertSame('enterprise', $verified->payload?->plan);
+        $this->assertNull($customer->fresh()?->license_key);
+    }
+
+    public function test_issuer_console_route_flashes_key(): void {
+        config()->set('license.private_key', base64_encode($this->secretKey));
+        $this->seed(PermissionsSeeder::class);
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->post(route('admin.license.issuer.create'), ['licensee' => 'Kunde GmbH', 'plan' => 'pro'])
+            ->assertRedirect()
+            ->assertSessionHas('issued_key');
+    }
+
     public function test_no_license_falls_back_to_org_plan_in_testing(): void {
         $org = Organization::factory()->create(['plan' => 'enterprise']);
 

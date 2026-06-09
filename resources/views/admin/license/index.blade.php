@@ -39,6 +39,11 @@
         @endunless
     </x-slot:note>
     <x-slot:actions>
+        @if ($canIssue ?? false)
+            <a href="{{ route('admin.license.issuer') }}" class="btn btn-sm btn-secondary">
+                {{ __('Lizenzen ausstellen') }}
+            </a>
+        @endif
         @if ($canInstall)
             <a href="{{ route('license.show') }}" class="btn btn-sm btn-primary">
                 {{ __('Lizenz installieren / aktualisieren') }}
@@ -119,7 +124,6 @@
             'malformed' => __('Ungültiges Format'),
             default => $orgLicense->status->value,
         };
-        $planLabels = ['free' => 'Free', 'pro' => 'Pro', 'enterprise' => 'Enterprise'];
     @endphp
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
@@ -134,7 +138,7 @@
                 <dl class="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
                     <div>
                         <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Plan (Tier)') }}</dt>
-                        <dd><x-status-badge :tone="$orgUsable ? 'success' : 'neutral'" size="md">{{ $planLabels[$orgModules['plan']] ?? $orgModules['plan'] }}</x-status-badge></dd>
+                        <dd><x-status-badge :tone="$orgUsable ? 'success' : 'neutral'" size="md">{{ __('values.' . $orgModules['plan']) }}</x-status-badge></dd>
                     </div>
                     <div>
                         <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Zugebuchte Module') }}</dt>
@@ -207,8 +211,8 @@
                                 <div>
                                     <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Plan (Tier)') }}</label>
                                     <select name="plan" class="select select-sm select-bordered w-full">
-                                        @foreach (['free' => 'Free', 'pro' => 'Pro', 'enterprise' => 'Enterprise'] as $val => $lbl)
-                                            <option value="{{ $val }}" @selected(old('plan', $orgModules['plan']) === $val)>{{ $lbl }}</option>
+                                        @foreach (['free', 'pro', 'enterprise'] as $val)
+                                            <option value="{{ $val }}" @selected(old('plan', $orgModules['plan']) === $val)>{{ __('values.' . $val) }}</option>
                                         @endforeach
                                     </select>
                                 </div>

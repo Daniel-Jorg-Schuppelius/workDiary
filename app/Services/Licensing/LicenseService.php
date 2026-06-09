@@ -185,6 +185,53 @@ class LicenseService {
      *
      * @param  array<int,string>  $addons
      */
+    /**
+     * Signiert eine Lizenz und gibt den Schlüssel zurück (OHNE Installation) –
+     * für die Ausstellung an Kunden. null, wenn kein Private Key vorhanden ist.
+     *
+     * @param  array<int,string>  $addons
+     */
+    public function signLicense(
+        string $plan,
+        array $addons,
+        ?string $expires,
+        string $licensee,
+        ?string $organizationUid = null,
+        ?string $domain = null,
+        ?string $email = null,
+        ?int $maxUsers = null,
+    ): ?string {
+        $private = $this->privateKey();
+        if ($private === null || $private === '') {
+            return null;
+        }
+
+        $payload = [
+            'license_id' => bin2hex(random_bytes(8)),
+            'licensee' => $licensee,
+            'email' => ($email !== null && $email !== '') ? $email : null,
+            'issued_at' => CarbonImmutable::now()->toIso8601String(),
+            'expires_at' => ($expires !== null && $expires !== '')
+                ? CarbonImmutable::parse($expires)->endOfDay()->toIso8601String()
+                : null,
+            'domain' => ($domain !== null && $domain !== '') ? $domain : null,
+            'max_users' => $maxUsers,
+            'plan' => $plan,
+            'addons' => array_values($addons),
+            'organization' => ($organizationUid !== null && $organizationUid !== '') ? $organizationUid : null,
+        ];
+
+        $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $signature = sodium_crypto_sign_detached($json, $private);
+
+        return self::b64Encode($json) . '.' . self::b64Encode($signature);
+    }
+
+    /**
+     * Signiert eine org-gebundene Lizenz und installiert sie direkt.
+     *
+     * @param  array<int,string>  $addons
+     */
     public function issueForOrganization(
         Organization $org,
         string $plan,
@@ -193,27 +240,10 @@ class LicenseService {
         string $licensee,
         ?int $maxUsers = null,
     ): LicenseResult {
-        $private = $this->privateKey();
-        if ($private === null || $private === '') {
+        $key = $this->signLicense($plan, $addons, $expires, $licensee, (string) $org->license_uid, null, null, $maxUsers);
+        if ($key === null) {
             return LicenseResult::fail(LicenseStatus::PublicKeyMissing, 'Kein Private Key konfiguriert.');
         }
-
-        $payload = [
-            'license_id' => bin2hex(random_bytes(8)),
-            'licensee' => $licensee,
-            'issued_at' => CarbonImmutable::now()->toIso8601String(),
-            'expires_at' => ($expires !== null && $expires !== '')
-                ? CarbonImmutable::parse($expires)->endOfDay()->toIso8601String()
-                : null,
-            'max_users' => $maxUsers,
-            'plan' => $plan,
-            'addons' => array_values($addons),
-            'organization' => (string) $org->license_uid,
-        ];
-
-        $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        $signature = sodium_crypto_sign_detached($json, $private);
-        $key = self::b64Encode($json) . '.' . self::b64Encode($signature);
 
         return $this->installForOrganization($org, $key);
     }

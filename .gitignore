@@ -3,6 +3,13 @@
 .env
 .env.backup
 .env.production
+
+# Lizenz-Schlüssel (Private Key!) – NIEMALS ins Repo
+license-keys.env
+*license-keys*.env
+/storage/license-keys.env
+*.key
+/storage/app/private/license-seal.php
 .phpactor.json
 .phpunit.result.cache
 /database/testing.sqlite

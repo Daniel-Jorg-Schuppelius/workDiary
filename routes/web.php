@@ -310,6 +310,8 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/license/org', [LicenseAdminController::class, 'installOrg'])->name('admin.license.org.install');
         Route::delete('admin/license/org', [LicenseAdminController::class, 'removeOrg'])->name('admin.license.org.remove');
         Route::post('admin/license/org/issue', [LicenseAdminController::class, 'issueOrg'])->name('admin.license.org.issue');
+        Route::get('admin/license/issuer', [LicenseAdminController::class, 'issuer'])->name('admin.license.issuer');
+        Route::post('admin/license/issuer', [LicenseAdminController::class, 'issueKey'])->name('admin.license.issuer.create');
 
         // Demo-Mandant (MVP-050)
         Route::get('admin/demo', [DemoTenantController::class, 'index'])->name('admin.demo.index');
