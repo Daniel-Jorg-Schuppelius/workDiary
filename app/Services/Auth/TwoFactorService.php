@@ -11,6 +11,10 @@
 namespace App\Services\Auth;
 
 use App\Models\User;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FAQRCode\Google2FA;
 
@@ -36,12 +40,30 @@ class TwoFactorService {
         return $this->engine->verifyKey($secret, $code, 1) !== false;
     }
 
-    /** Inline-SVG eines QR-Codes mit der otpauth-URI für Authenticator-Apps. */
-    public function qrSvg(User $user, string $secret): string {
+    /** otpauth://-URI für Authenticator-Apps (TOTP, RFC 6238). */
+    public function otpauthUri(User $user, string $secret): string {
         $issuer = (string) config('app.name', 'WorkDiary');
         $label = $issuer . ':' . ($user->email ?: ('user-' . $user->getKey()));
 
-        return $this->engine->getQRCodeInline($issuer, $label, $secret);
+        return sprintf(
+            'otpauth://totp/%s?secret=%s&issuer=%s&algorithm=SHA1&digits=6&period=30',
+            rawurlencode($label),
+            $secret,
+            rawurlencode($issuer),
+        );
+    }
+
+    /**
+     * ROHES Inline-SVG (kein data:-URI) des QR-Codes – direkt per {!! !!}
+     * einbettbar, CSP-sicher und skalierbar.
+     */
+    public function qrSvg(User $user, string $secret, int $size = 220): string {
+        $renderer = new ImageRenderer(new RendererStyle($size, 1), new SvgImageBackEnd());
+        $svg = (new Writer($renderer))->writeString($this->otpauthUri($user, $secret));
+
+        // writeString stellt eine XML-Deklaration voran; fuer sauberes
+        // Inline-Einbetten entfernen wir sie.
+        return preg_replace('/^<\?xml[^>]*\?>\s*/', '', $svg) ?? $svg;
     }
 
     /**
