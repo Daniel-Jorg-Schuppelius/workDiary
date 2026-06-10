@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', __('GVV-Register'))
+@section('nav-title', __('Gemeinsame Verantwortlichkeit (Art. 26)'))
 @php
     $matrixLabels = [
         'information_duties' => __('Informationspflichten (Art. 13/14)'),
@@ -10,37 +11,45 @@
     $roleOptions = ['us' => __('Wir'), 'partner' => __('Partner'), 'joint' => __('Gemeinsam')];
 @endphp
 @section('content')
-    <div class="p-4 space-y-4">
-        <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold">{{ __('Gemeinsame Verantwortlichkeit (Art. 26)') }}</h1>
-            <a href="{{ route('dataprotection.processors.index') }}" class="btn btn-sm">{{ __('Dienstleister') }}</a>
-        </div>
+    <x-index-page :subtitle="__('Vereinbarungen über gemeinsame Verantwortlichkeit (Art. 26 DSGVO) verwalten.')">
+        <x-slot:actions>
+            <x-icon-btn icon="diversity_3" tone="ghost" size="sm"
+                        :href="route('dataprotection.processors.index')"
+                        show-label>{{ __('Dienstleister') }}</x-icon-btn>
+        </x-slot:actions>
+
         @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
         @if ($errors->any())<div class="alert alert-error"><ul class="list-disc ml-4">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
 
-        <div class="overflow-x-auto rounded-box border border-base-300">
-            <table class="table table-sm">
-                <thead><tr><th>{{ __('Titel') }}</th><th>{{ __('Partner') }}</th><th>{{ __('Status') }}</th><th>{{ __('Wesentliches bereitgestellt') }}</th></tr></thead>
-                <tbody>
-                    @forelse ($agreements as $g)
-                        <tr class="hover">
-                            <td><a class="link" href="{{ route('dataprotection.gvv.show', $g) }}">{{ $g->title }}</a></td>
-                            <td>{{ $g->partner?->name ?? '—' }}</td>
-                            <td><span class="badge badge-ghost">{{ $g->status->label() }}</span></td>
-                            <td>{{ $g->essence_provided ? __('ja') : '—' }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="4" class="text-center text-base-content/60 py-6">{{ __('Keine GVV erfasst.') }}</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        {{ $agreements->links() }}
+        <x-card padding="p-0">
+            <x-table>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('Titel') }}</x-table.th>
+                        <x-table.th>{{ __('Partner') }}</x-table.th>
+                        <x-table.th>{{ __('Status') }}</x-table.th>
+                        <x-table.th>{{ __('Wesentliches bereitgestellt') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($agreements as $g)
+                    <tr class="hover">
+                        <td><a class="link" href="{{ route('dataprotection.gvv.show', $g) }}">{{ $g->title }}</a></td>
+                        <td>{{ $g->partner?->name ?? '—' }}</td>
+                        <td><x-status-badge tone="ghost" size="sm">{{ $g->status->label() }}</x-status-badge></td>
+                        <td>{{ $g->essence_provided ? __('ja') : '—' }}</td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="4" :title="__('Keine GVV erfasst.')" />
+                @endforelse
+            </x-table>
+        </x-card>
+
+        <x-pagination :paginator="$agreements" />
 
         @can('create', \App\Models\Privacy\JointControllerAgreement::class)
-            <section class="card bg-base-200 p-4 space-y-3">
-                <h2 class="font-semibold">{{ __('Neue GVV anlegen') }}</h2>
-                <form method="post" action="{{ route('dataprotection.gvv.store') }}" enctype="multipart/form-data" class="space-y-2">
+            <x-card>
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neue GVV anlegen') }}</h2>
+                <form method="post" action="{{ route('dataprotection.gvv.store') }}" enctype="multipart/form-data" class="space-y-2 mt-2">
                     @csrf
                     <div class="grid md:grid-cols-2 gap-2">
                         <select name="partner_id" class="select select-sm select-bordered" required>
@@ -64,9 +73,9 @@
                     </div>
                     <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="essence_provided" value="1" class="checkbox checkbox-sm"> {{ __('Wesentliches der GVV den Betroffenen bereitgestellt') }}</label>
                     <input type="file" name="document" class="file-input file-input-sm file-input-bordered w-full" accept=".pdf,.doc,.docx">
-                    <button class="btn btn-sm btn-primary">{{ __('GVV anlegen') }}</button>
+                    <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('GVV anlegen') }}</x-icon-btn>
                 </form>
-            </section>
+            </x-card>
         @endcan
-    </div>
+    </x-index-page>
 @endsection

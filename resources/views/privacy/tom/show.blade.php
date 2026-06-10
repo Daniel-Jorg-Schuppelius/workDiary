@@ -1,49 +1,58 @@
 @extends('layouts.app')
 @section('title', $measure->name)
+@section('nav-title', $measure->name)
 @section('content')
-    <div class="p-4 max-w-4xl space-y-4">
-        <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold">{{ $measure->name }}</h1>
-            <span class="badge badge-ghost">{{ $measure->category->label() }} · {{ $measure->implementation_status->label() }}</span>
-        </div>
+    <x-index-page :subtitle="__('Maßnahme versionieren, zuordnen und auf Wirksamkeit prüfen.')">
+        <x-slot:actions>
+            <x-status-badge tone="ghost" size="sm">{{ $measure->category->label() }} · {{ $measure->implementation_status->label() }}</x-status-badge>
+            <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
+                        :href="route('dataprotection.tom.index')"
+                        show-label>{{ __('Zurück') }}</x-icon-btn>
+        </x-slot:actions>
+
         @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
 
         @if ($measure->currentVersion)
-            <section class="card bg-base-200 p-4 text-sm space-y-1">
+            <x-card class="text-sm space-y-1">
                 <p><span class="font-semibold">{{ __('Gültige Version') }}:</span> v{{ $measure->currentVersion->version_no }}</p>
                 <p class="whitespace-pre-line">{{ data_get($measure->currentVersion->payload, 'description') }}</p>
-            </section>
+            </x-card>
         @endif
 
         {{-- Versionen --}}
-        <section class="space-y-2">
-            <h2 class="font-semibold">{{ __('Versionen') }}</h2>
-            <div class="overflow-x-auto rounded-box border border-base-300">
-                <table class="table table-sm">
-                    <thead><tr><th>{{ __('Version') }}</th><th>{{ __('Notiz') }}</th><th>{{ __('Freigabe') }}</th><th></th></tr></thead>
-                    <tbody>
-                        @foreach ($versions as $v)
-                            <tr>
-                                <td>v{{ $v->version_no }}</td>
-                                <td class="text-sm">{{ $v->note ?? '—' }}</td>
-                                <td class="text-sm">{{ $v->approved_at?->format('d.m.Y') ?? __('Entwurf') }}</td>
-                                <td>
-                                    @can('update', $measure)
-                                        @unless ($v->approved_at)
-                                            <form method="post" action="{{ route('dataprotection.tom.approve', $measure) }}">@csrf <input type="hidden" name="version_id" value="{{ $v->id }}"><button class="btn btn-xs btn-primary">{{ __('Freigeben') }}</button></form>
-                                        @endunless
-                                    @endcan
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+        <x-card padding="p-0">
+            <div class="border-b border-base-300 px-4 py-3">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Versionen') }}</h2>
             </div>
-        </section>
+            <x-table>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('Version') }}</x-table.th>
+                        <x-table.th>{{ __('Notiz') }}</x-table.th>
+                        <x-table.th>{{ __('Freigabe') }}</x-table.th>
+                        <x-table.th></x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($versions as $v)
+                    <tr>
+                        <td>v{{ $v->version_no }}</td>
+                        <td class="text-sm">{{ $v->note ?? '—' }}</td>
+                        <td class="text-sm">{{ $v->approved_at?->format('d.m.Y') ?? __('Entwurf') }}</td>
+                        <td>
+                            @can('update', $measure)
+                                @unless ($v->approved_at)
+                                    <form method="post" action="{{ route('dataprotection.tom.approve', $measure) }}">@csrf <input type="hidden" name="version_id" value="{{ $v->id }}"><x-icon-btn icon="check" tone="primary" size="xs" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn></form>
+                                @endunless
+                            @endcan
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
 
         @can('update', $measure)
-            <section class="card bg-base-200 p-4 space-y-2">
-                <h2 class="font-semibold">{{ __('Neue Version') }}</h2>
+            <x-card class="space-y-2">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neue Version') }}</h2>
                 <form method="post" action="{{ route('dataprotection.tom.version', $measure) }}" class="space-y-2">
                     @csrf
                     <textarea name="description" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Beschreibung') }}">{{ data_get($measure->currentVersion?->payload, 'description') }}</textarea>
@@ -51,12 +60,12 @@
                     <input name="note" class="input input-sm input-bordered w-full" placeholder="{{ __('Änderungsnotiz') }}">
                     <button class="btn btn-sm btn-primary">{{ __('Version speichern') }}</button>
                 </form>
-            </section>
+            </x-card>
         @endcan
 
         {{-- Zuordnung zu Verarbeitungstätigkeiten --}}
-        <section class="card bg-base-200 p-4 space-y-2">
-            <h2 class="font-semibold">{{ __('Zugeordnete Verarbeitungstätigkeiten') }}</h2>
+        <x-card class="space-y-2">
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Zugeordnete Verarbeitungstätigkeiten') }}</h2>
             <ul class="text-sm space-y-1">
                 @forelse ($measure->assignments->whereNotNull('activity_id') as $as)
                     <li>• {{ $as->activity?->name ?? '—' }}</li>
@@ -73,11 +82,11 @@
                     <button class="btn btn-sm">{{ __('Zuordnen') }}</button>
                 </form>
             @endcan
-        </section>
+        </x-card>
 
         {{-- Wirksamkeitsprüfungen --}}
-        <section class="card bg-base-200 p-4 space-y-2">
-            <h2 class="font-semibold">{{ __('Wirksamkeitsprüfungen') }}</h2>
+        <x-card class="space-y-2">
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Wirksamkeitsprüfungen') }}</h2>
             <ul class="text-sm space-y-1">
                 @forelse ($measure->reviews as $r)
                     <li class="rounded-box border border-base-300 px-3 py-2">
@@ -102,6 +111,6 @@
                     <button class="btn btn-sm">{{ __('Prüfung dokumentieren') }}</button>
                 </form>
             @endcan
-        </section>
-    </div>
+        </x-card>
+    </x-index-page>
 @endsection

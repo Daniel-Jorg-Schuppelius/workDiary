@@ -1,47 +1,47 @@
 @extends('layouts.app')
 
 @section('title', __('Betroffenenanfragen'))
+@section('nav-title', __('Betroffenenanfragen'))
 
 @section('content')
-    <div class="p-4 space-y-4">
-        <div class="flex items-center justify-between">
-            <h1 class="text-xl font-semibold">{{ __('Betroffenenanfragen') }}</h1>
-            <a href="{{ route('dataprotection.requests.create') }}" class="btn btn-primary btn-sm">{{ __('Neue Anfrage') }}</a>
-        </div>
+    <x-index-page :subtitle="__('Anfragen betroffener Personen erfassen, zuweisen und fristgerecht bearbeiten.')">
+        <x-slot:actions>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        :href="route('dataprotection.requests.create')"
+                        show-label>{{ __('Neue Anfrage') }}</x-icon-btn>
+        </x-slot:actions>
 
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
         @endif
 
-        <div class="overflow-x-auto rounded-box border border-base-300">
-            <table class="table table-sm">
-                <thead>
+        <x-card padding="p-0">
+            <x-table>
+                <x-slot:head>
                     <tr>
-                        <th>{{ __('Nummer') }}</th>
-                        <th>{{ __('Art') }}</th>
-                        <th>{{ __('Status') }}</th>
-                        <th>{{ __('Frist') }}</th>
-                        <th>{{ __('Zuständig') }}</th>
+                        <x-table.th>{{ __('Nummer') }}</x-table.th>
+                        <x-table.th>{{ __('Art') }}</x-table.th>
+                        <x-table.th>{{ __('Status') }}</x-table.th>
+                        <x-table.th>{{ __('Frist') }}</x-table.th>
+                        <x-table.th>{{ __('Zuständig') }}</x-table.th>
                     </tr>
-                </thead>
-                <tbody>
-                    @forelse ($requests as $r)
-                        <tr class="hover">
-                            <td><a class="link" href="{{ route('dataprotection.requests.show', $r) }}">{{ $r->request_number }}</a></td>
-                            <td>{{ $r->type->label() }}</td>
-                            <td>
-                                <span class="badge {{ $r->isOverdue() ? 'badge-error' : 'badge-ghost' }}">{{ $r->status->label() }}</span>
-                            </td>
-                            <td class="{{ $r->isOverdue() ? 'text-error font-semibold' : '' }}">{{ $r->deadline_at?->format('d.m.Y') }}</td>
-                            <td>{{ $r->assignedUser?->name ?? '—' }}</td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="5" class="text-center text-base-content/60 py-6">{{ __('Keine Anfragen.') }}</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                </x-slot:head>
+                @forelse ($requests as $r)
+                    <tr class="hover">
+                        <td><a class="link" href="{{ route('dataprotection.requests.show', $r) }}">{{ $r->request_number }}</a></td>
+                        <td>{{ $r->type->label() }}</td>
+                        <td>
+                            <x-status-badge :tone="$r->isOverdue() ? 'error' : 'ghost'" size="sm">{{ $r->status->label() }}</x-status-badge>
+                        </td>
+                        <td class="{{ $r->isOverdue() ? 'text-error font-semibold' : '' }}">{{ $r->deadline_at?->format('d.m.Y') }}</td>
+                        <td>{{ $r->assignedUser?->name ?? '—' }}</td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="5" :title="__('Keine Anfragen.')" />
+                @endforelse
+            </x-table>
+        </x-card>
 
-        {{ $requests->links() }}
-    </div>
+        <x-pagination :paginator="$requests" />
+    </x-index-page>
 @endsection
