@@ -96,12 +96,19 @@
                 @endforelse
             </ul>
             @can('update', $agreement)
-                <form method="post" action="{{ route('dataprotection.agreements.subprocessor.store', $agreement) }}" class="grid md:grid-cols-3 gap-2 pt-2">
-                    @csrf
-                    <input name="name" class="input input-sm input-bordered" placeholder="{{ __('Name') }}" required>
-                    <input name="location" class="input input-sm input-bordered" placeholder="{{ __('Ort') }}">
-                    <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Hinzufügen') }}</x-icon-btn>
-                </form>
+                <div class="pt-2">
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                onclick="document.getElementById('dlg-subprocessor').showModal()" show-label>{{ __('Subprozessor hinzufügen') }}</x-icon-btn>
+                </div>
+                <x-modal :embedded="false" id="dlg-subprocessor" :title="__('Subprozessor hinzufügen')"
+                         icon="account_tree" tone="primary"
+                         :action="route('dataprotection.agreements.subprocessor.store', $agreement)" method="POST"
+                         :submit-label="__('Hinzufügen')">
+                    <x-form-group :legend="__('Unterauftragsverarbeiter')" icon="account_tree" tone="primary" cols="2">
+                        <x-input-field name="name" :label="__('Name')" required />
+                        <x-input-field name="location" :label="__('Ort')" />
+                    </x-form-group>
+                </x-modal>
             @endcan
         </x-card>
 

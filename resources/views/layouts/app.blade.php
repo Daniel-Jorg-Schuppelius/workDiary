@@ -623,6 +623,9 @@
                                     if (\Illuminate\Support\Facades\Gate::allows('platform.license.view')) {
                                         $adminNavItems[] = ['route' => 'admin.license.index',            'label' => __('Lizenz'),           'icon' => 'key',              'modal' => false];
                                     }
+                                    if (\Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage')) {
+                                        $adminNavItems[] = ['route' => 'whistleblowing.portal.edit',     'label' => __('Meldeportal'),      'icon' => 'campaign',         'modal' => false];
+                                    }
                                     $adminNavItems[] = ['route' => 'admin.plugins.index',                'label' => __('Plugins'),          'icon' => 'extension',        'modal' => false];
                                     $adminNavItems[] = ['route' => 'admin.plugin-errors.index',          'label' => __('Plugin-Fehler'),    'icon' => 'bug_report',       'modal' => false];
 
@@ -773,21 +776,14 @@
                                 ];
                                 // Hinweisgeber/Meldestelle: nur fuer eigens Berechtigte
                                 // (NICHT automatisch fuer Admins), siehe WhistleblowingCasePolicy.
-                                if (
-                                    \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Whistleblowing\WhistleblowingCase::class)
-                                    || \Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage')
-                                ) {
+                                // „Meldeportal"-Einstellungen liegen im Admin-Header-Menue.
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Whistleblowing\WhistleblowingCase::class)) {
                                     $sidebarSections[] = [
                                         'key'         => 'compliance',
                                         'label'       => __('Compliance'),
                                         'collapsible' => true,
                                         'items'       => [
-                                            ...(\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Whistleblowing\WhistleblowingCase::class) ? [
-                                                ['route' => 'whistleblowing.internal.index', 'label' => __('Meldestelle'), 'icon' => 'report', 'modal' => false, 'matches' => ['whistleblowing.internal.*']],
-                                            ] : []),
-                                            ...(\Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage') ? [
-                                                ['route' => 'whistleblowing.portal.edit', 'label' => __('Meldeportal'), 'icon' => 'campaign', 'modal' => false, 'matches' => ['whistleblowing.portal.*']],
-                                            ] : []),
+                                            ['route' => 'whistleblowing.internal.index', 'label' => __('Meldestelle'), 'icon' => 'report', 'modal' => false, 'matches' => ['whistleblowing.internal.*']],
                                         ],
                                     ];
                                 }

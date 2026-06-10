@@ -36,21 +36,27 @@
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Zuständigkeitsmatrix') }}</h2>
                 <form method="post" action="{{ route('dataprotection.gvv.update', $gvv) }}" class="space-y-2 mt-2">
                     @csrf @method('PUT')
-                    @foreach ($matrixKeys as $k)
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="text-sm flex-1">{{ $matrixLabels[$k] ?? $k }}</span>
-                            <select name="responsibilities[{{ $k }}]" class="select select-sm select-bordered">
-                                @foreach ($roleOptions as $v => $l)<option value="{{ $v }}" @selected(data_get($gvv->responsibilities, $k) === $v)>{{ $l }}</option>@endforeach
+                    <x-form-group :legend="__('Zuständigkeiten')" icon="checklist" tone="primary" cols="1">
+                        @foreach ($matrixKeys as $k)
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="text-sm flex-1">{{ $matrixLabels[$k] ?? $k }}</span>
+                                <select name="responsibilities[{{ $k }}]" class="select select-bordered">
+                                    @foreach ($roleOptions as $v => $l)<option value="{{ $v }}" @selected(data_get($gvv->responsibilities, $k) === $v)>{{ $l }}</option>@endforeach
+                                </select>
+                            </div>
+                        @endforeach
+                    </x-form-group>
+                    <x-form-group :legend="__('Eckdaten')" icon="tune" tone="ghost" cols="2">
+                        <x-input-field name="contact_point" :label="__('Anlaufstelle')" :value="$gvv->contact_point" />
+                        <x-input-field name="status" :label="__('Status')">
+                            <select id="status" name="status" class="select select-bordered w-full">
+                                @foreach (\App\Enums\Privacy\AgreementStatus::cases() as $s)<option value="{{ $s->value }}" @selected($gvv->status === $s)>{{ $s->label() }}</option>@endforeach
                             </select>
-                        </div>
-                    @endforeach
-                    <div class="flex items-center gap-3 pt-1">
-                        <input name="contact_point" class="input input-sm input-bordered flex-1" value="{{ $gvv->contact_point }}" placeholder="{{ __('Anlaufstelle') }}">
-                        <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="essence_provided" value="1" class="checkbox checkbox-sm" @checked($gvv->essence_provided)> {{ __('Wesentliches bereitgestellt') }}</label>
-                        <select name="status" class="select select-sm select-bordered">
-                            @foreach (\App\Enums\Privacy\AgreementStatus::cases() as $s)<option value="{{ $s->value }}" @selected($gvv->status === $s)>{{ $s->label() }}</option>@endforeach
-                        </select>
-                    </div>
+                        </x-input-field>
+                        <x-input-field name="essence_provided" :label="__('Wesentliches bereitgestellt')" span="2">
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="essence_provided" name="essence_provided" value="1" class="checkbox checkbox-sm" @checked($gvv->essence_provided)> {{ __('Wesentliches bereitgestellt') }}</label>
+                        </x-input-field>
+                    </x-form-group>
                     <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
                 </form>
             </x-card>

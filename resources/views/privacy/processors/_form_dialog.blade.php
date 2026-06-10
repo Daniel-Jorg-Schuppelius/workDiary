@@ -9,32 +9,23 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Anlegen')">
 
-    <div class="grid md:grid-cols-2 gap-3">
-        <div>
-            <label class="label" for="name">{{ __('Name') }}</label>
-            <input id="name" name="name" class="input input-bordered w-full" value="{{ old('name') }}" required>
-        </div>
-        <div>
-            <label class="label" for="role">{{ __('Rolle') }}</label>
+    <x-form-group :legend="__('Dienstleister')" icon="handshake" tone="primary" cols="2">
+        <x-input-field name="name" :label="__('Name')" :value="old('name')" required />
+        <x-input-field name="role" :label="__('Rolle')">
             <select id="role" name="role" class="select select-bordered w-full">
                 @foreach ($roles as $r)<option value="{{ $r->value }}" @selected(old('role') === $r->value)>{{ $r->label() }}</option>@endforeach
             </select>
-        </div>
-        <div>
-            <label class="label" for="contact">{{ __('Kontakt') }}</label>
-            <input id="contact" name="contact" class="input input-bordered w-full" value="{{ old('contact') }}">
-        </div>
-        <div>
-            <label class="label" for="location">{{ __('Verarbeitungsort') }}</label>
-            <input id="location" name="location" class="input input-bordered w-full" value="{{ old('location') }}">
-        </div>
-    </div>
-    <label class="flex items-center gap-2">
-        <input type="hidden" name="third_country" value="0">
-        <input type="checkbox" name="third_country" value="1" class="checkbox" @checked(old('third_country'))> {{ __('Drittlandtransfer') }}
-    </label>
-    <div>
-        <label class="label" for="notes">{{ __('Notizen') }}</label>
-        <textarea id="notes" name="notes" rows="3" class="textarea textarea-bordered w-full">{{ old('notes') }}</textarea>
-    </div>
+        </x-input-field>
+        <x-input-field name="contact" :label="__('Kontakt')" :value="old('contact')" />
+        <x-input-field name="location" :label="__('Verarbeitungsort')" :value="old('location')" />
+        <x-input-field name="third_country" :label="__('Drittlandtransfer')" span="2">
+            <label class="flex items-center gap-2">
+                <input type="hidden" name="third_country" value="0">
+                <input type="checkbox" id="third_country" name="third_country" value="1" class="checkbox" @checked(old('third_country'))> {{ __('Drittlandtransfer') }}
+            </label>
+        </x-input-field>
+        <x-input-field name="notes" :label="__('Notizen')" span="2">
+            <textarea id="notes" name="notes" rows="3" class="textarea textarea-bordered w-full">{{ old('notes') }}</textarea>
+        </x-input-field>
+    </x-form-group>
 </x-modal>

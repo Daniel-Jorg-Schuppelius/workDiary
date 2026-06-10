@@ -40,34 +40,34 @@
                 @csrf
                 @method('PUT')
 
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" name="is_enabled" value="1" class="checkbox" @checked(old('is_enabled', $portal->is_enabled))>
-                    {{ __('Portal aktiv (oeffentlich erreichbar)') }}
-                </label>
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" name="allow_anonymous" value="1" class="checkbox" @checked(old('allow_anonymous', $portal->allow_anonymous ?? true))>
-                    {{ __('Anonyme Meldungen erlauben') }}
-                </label>
-                <label class="flex items-center gap-2">
-                    <input type="checkbox" name="allow_confidential" value="1" class="checkbox" @checked(old('allow_confidential', $portal->allow_confidential ?? true))>
-                    {{ __('Vertrauliche Meldungen erlauben') }}
-                </label>
+                <x-form-group :legend="__('Sichtbarkeit')" icon="visibility" tone="primary" cols="1">
+                    <x-input-field name="is_enabled">
+                        <label class="label cursor-pointer justify-start gap-3">
+                            <input type="checkbox" id="is_enabled" name="is_enabled" value="1" class="checkbox checkbox-sm" @checked(old('is_enabled', $portal->is_enabled))>
+                            <span class="fieldset-label">{{ __('Portal aktiv (oeffentlich erreichbar)') }}</span>
+                        </label>
+                    </x-input-field>
+                    <x-input-field name="allow_anonymous">
+                        <label class="label cursor-pointer justify-start gap-3">
+                            <input type="checkbox" id="allow_anonymous" name="allow_anonymous" value="1" class="checkbox checkbox-sm" @checked(old('allow_anonymous', $portal->allow_anonymous ?? true))>
+                            <span class="fieldset-label">{{ __('Anonyme Meldungen erlauben') }}</span>
+                        </label>
+                    </x-input-field>
+                    <x-input-field name="allow_confidential">
+                        <label class="label cursor-pointer justify-start gap-3">
+                            <input type="checkbox" id="allow_confidential" name="allow_confidential" value="1" class="checkbox checkbox-sm" @checked(old('allow_confidential', $portal->allow_confidential ?? true))>
+                            <span class="fieldset-label">{{ __('Vertrauliche Meldungen erlauben') }}</span>
+                        </label>
+                    </x-input-field>
+                </x-form-group>
 
-                <div>
-                    <label class="font-semibold" for="intro_text">{{ __('Einleitungstext (optional)') }}</label>
-                    <textarea id="intro_text" name="intro_text" rows="4" class="textarea textarea-bordered w-full">{{ old('intro_text', $portal->intro_text) }}</textarea>
-                </div>
-
-                <div>
-                    <label class="font-semibold" for="default_locale">{{ __('Standardsprache (optional, z. B. de)') }}</label>
-                    <input id="default_locale" name="default_locale" class="input input-bordered w-full" value="{{ old('default_locale', $portal->default_locale) }}">
-                </div>
-
-                <div>
-                    <label class="font-semibold" for="retention_months">{{ __('Aufbewahrung nach Abschluss (Monate)') }}</label>
-                    <input id="retention_months" name="retention_months" type="number" min="1" max="600" class="input input-bordered w-full"
-                           value="{{ old('retention_months', $portal->retention_months ?? 36) }}" required>
-                </div>
+                <x-form-group :legend="__('Darstellung & Aufbewahrung')" icon="tune" tone="ghost" cols="2">
+                    <x-input-field name="intro_text" :label="__('Einleitungstext (optional)')" span="2">
+                        <textarea id="intro_text" name="intro_text" rows="4" class="textarea textarea-bordered w-full">{{ old('intro_text', $portal->intro_text) }}</textarea>
+                    </x-input-field>
+                    <x-input-field name="default_locale" :label="__('Standardsprache (optional, z. B. de)')" :value="old('default_locale', $portal->default_locale)" />
+                    <x-input-field name="retention_months" type="number" :label="__('Aufbewahrung nach Abschluss (Monate)')" :value="old('retention_months', $portal->retention_months ?? 36)" required min="1" max="600" />
+                </x-form-group>
 
                 <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
             </form>

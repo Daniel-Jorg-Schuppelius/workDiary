@@ -53,13 +53,22 @@
         @can('update', $measure)
             <x-card class="space-y-2">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neue Version') }}</h2>
-                <form method="post" action="{{ route('dataprotection.tom.version', $measure) }}" class="space-y-2">
-                    @csrf
-                    <textarea name="description" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Beschreibung') }}">{{ data_get($measure->currentVersion?->payload, 'description') }}</textarea>
-                    <textarea name="addressed_risks" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Adressierte Risiken') }}">{{ data_get($measure->currentVersion?->payload, 'addressed_risks') }}</textarea>
-                    <input name="note" class="input input-sm input-bordered w-full" placeholder="{{ __('Änderungsnotiz') }}">
-                    <button class="btn btn-sm btn-primary">{{ __('Version speichern') }}</button>
-                </form>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            onclick="document.getElementById('dlg-tom-version').showModal()" show-label>{{ __('Version speichern') }}</x-icon-btn>
+                <x-modal :embedded="false" id="dlg-tom-version" :title="__('Neue Version')"
+                         icon="add" tone="primary"
+                         :action="route('dataprotection.tom.version', $measure)" method="POST"
+                         :submit-label="__('Version speichern')">
+                    <x-form-group :legend="__('Neue Version')" icon="add" tone="primary" cols="1">
+                        <x-input-field name="description" :label="__('Beschreibung')">
+                            <textarea id="description" name="description" rows="2" class="textarea textarea-bordered w-full">{{ data_get($measure->currentVersion?->payload, 'description') }}</textarea>
+                        </x-input-field>
+                        <x-input-field name="addressed_risks" :label="__('Adressierte Risiken')">
+                            <textarea id="addressed_risks" name="addressed_risks" rows="2" class="textarea textarea-bordered w-full">{{ data_get($measure->currentVersion?->payload, 'addressed_risks') }}</textarea>
+                        </x-input-field>
+                        <x-input-field name="note" :label="__('Änderungsnotiz')" />
+                    </x-form-group>
+                </x-modal>
             </x-card>
         @endcan
 
@@ -99,17 +108,26 @@
                 @endforelse
             </ul>
             @can('update', $measure)
-                <form method="post" action="{{ route('dataprotection.tom.review', $measure) }}" class="space-y-2 pt-2">
-                    @csrf
-                    <div class="grid md:grid-cols-2 gap-2">
-                        <select name="result" class="select select-sm select-bordered">
-                            @foreach ($results as $res)<option value="{{ $res->value }}">{{ $res->label() }}</option>@endforeach
-                        </select>
-                        <input name="due_at" type="date" class="input input-sm input-bordered" title="{{ __('Folgemaßnahme fällig') }}">
-                    </div>
-                    <textarea name="deviation" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Abweichung / Folgemaßnahme') }}"></textarea>
-                    <button class="btn btn-sm">{{ __('Prüfung dokumentieren') }}</button>
-                </form>
+                <div class="pt-2">
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                onclick="document.getElementById('dlg-tom-review').showModal()" show-label>{{ __('Prüfung dokumentieren') }}</x-icon-btn>
+                </div>
+                <x-modal :embedded="false" id="dlg-tom-review" :title="__('Wirksamkeitsprüfung erfassen')"
+                         icon="fact_check" tone="primary"
+                         :action="route('dataprotection.tom.review', $measure)" method="POST"
+                         :submit-label="__('Prüfung dokumentieren')">
+                    <x-form-group :legend="__('Wirksamkeitsprüfung')" icon="fact_check" tone="primary" cols="2">
+                        <x-input-field name="result" :label="__('Ergebnis')">
+                            <select id="result" name="result" class="select select-bordered w-full">
+                                @foreach ($results as $res)<option value="{{ $res->value }}">{{ $res->label() }}</option>@endforeach
+                            </select>
+                        </x-input-field>
+                        <x-input-field name="due_at" type="date" :label="__('Folgemaßnahme fällig')" />
+                        <x-input-field name="deviation" :label="__('Abweichung / Folgemaßnahme')" span="2">
+                            <textarea id="deviation" name="deviation" rows="2" class="textarea textarea-bordered w-full"></textarea>
+                        </x-input-field>
+                    </x-form-group>
+                </x-modal>
             @endcan
         </x-card>
     </x-index-page>

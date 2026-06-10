@@ -1,28 +1,22 @@
 {{-- Strukturierte Art.-30-Felder (als payload-JSON gespeichert). $payload optional vorbelegen. --}}
 @php $p = $payload ?? []; @endphp
-<div class="grid md:grid-cols-2 gap-3">
-    <div>
-        <label class="label" for="data_categories">{{ __('Datenkategorien') }}</label>
+<x-form-group :legend="__('Verzeichnis-Angaben (Art. 30)')" icon="fact_check" tone="ghost" cols="2">
+    <x-input-field name="data_categories" :label="__('Datenkategorien')">
         <textarea id="data_categories" name="data_categories" rows="2" class="textarea textarea-bordered w-full">{{ old('data_categories', $p['data_categories'] ?? '') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="legal_basis">{{ __('Rechtsgrundlagen') }}</label>
+    </x-input-field>
+    <x-input-field name="legal_basis" :label="__('Rechtsgrundlagen')">
         <textarea id="legal_basis" name="legal_basis" rows="2" class="textarea textarea-bordered w-full">{{ old('legal_basis', $p['legal_basis'] ?? '') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="recipients">{{ __('Empfänger') }}</label>
+    </x-input-field>
+    <x-input-field name="recipients" :label="__('Empfänger')">
         <textarea id="recipients" name="recipients" rows="2" class="textarea textarea-bordered w-full">{{ old('recipients', $p['recipients'] ?? '') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="transfers">{{ __('Drittlandtransfers') }}</label>
+    </x-input-field>
+    <x-input-field name="transfers" :label="__('Drittlandtransfers')">
         <textarea id="transfers" name="transfers" rows="2" class="textarea textarea-bordered w-full">{{ old('transfers', $p['transfers'] ?? '') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="retention">{{ __('Aufbewahrung / Löschung') }}</label>
+    </x-input-field>
+    <x-input-field name="retention" :label="__('Aufbewahrung / Löschung')">
         <textarea id="retention" name="retention" rows="2" class="textarea textarea-bordered w-full">{{ old('retention', $p['retention'] ?? '') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="tom">{{ __('TOM (techn./org. Maßnahmen)') }}</label>
+    </x-input-field>
+    <x-input-field name="tom" :label="__('TOM (techn./org. Maßnahmen)')">
         <textarea id="tom" name="tom" rows="2" class="textarea textarea-bordered w-full">{{ old('tom', $p['tom'] ?? '') }}</textarea>
-    </div>
-</div>
+    </x-input-field>
+</x-form-group>

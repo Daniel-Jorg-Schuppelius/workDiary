@@ -64,17 +64,27 @@
 
         @can('update', $activity)
             <x-card>
-                <h2 class="font-['Space_Grotesk'] text-base font-semibold mb-3">{{ __('Neue Version anlegen') }}</h2>
-                <form method="post" action="{{ route('dataprotection.activities.version', $activity) }}" class="space-y-3">
-                    @csrf
-                    @include('privacy.activities._payload_fields', ['payload' => $activity->currentVersion?->payload])
-                    <input name="note" class="input input-sm input-bordered w-full" placeholder="{{ __('Änderungsnotiz') }}">
-                    {{-- name/role aus dem Kopf erneut mitsenden (validateActivity erwartet sie) --}}
-                    <input type="hidden" name="name" value="{{ $activity->name }}">
-                    <input type="hidden" name="controller_role" value="{{ $activity->controller_role->value }}">
-                    <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Version speichern') }}</x-icon-btn>
-                </form>
+                <div class="flex items-center justify-between">
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neue Version anlegen') }}</h2>
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                onclick="document.getElementById('dlg-activity-version').showModal()" show-label>{{ __('Neue Version') }}</x-icon-btn>
+                </div>
             </x-card>
+
+            <x-modal :embedded="false" id="dlg-activity-version"
+                     :title="__('Neue Version anlegen')"
+                     :eyebrow="__('Verzeichnis von Verarbeitungstätigkeiten')"
+                     icon="fact_check" tone="primary"
+                     :action="route('dataprotection.activities.version', $activity)"
+                     method="POST" :submit-label="__('Version speichern')">
+                @include('privacy.activities._payload_fields', ['payload' => $activity->currentVersion?->payload])
+                <x-form-group :legend="__('Änderung')" icon="edit_note" tone="ghost" cols="1">
+                    <x-input-field name="note" :label="__('Änderungsnotiz')" :value="old('note')" />
+                </x-form-group>
+                {{-- name/role aus dem Kopf erneut mitsenden (validateActivity erwartet sie) --}}
+                <input type="hidden" name="name" value="{{ $activity->name }}">
+                <input type="hidden" name="controller_role" value="{{ $activity->controller_role->value }}">
+            </x-modal>
         @endcan
 
         @can('create', \App\Models\Privacy\Dpia::class)
@@ -85,22 +95,32 @@
                 </h2>
                 <form method="post" action="{{ route('dataprotection.activities.dpia', $activity) }}" class="space-y-2">
                     @csrf
-                    <textarea name="necessity" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Notwendigkeit & Verhältnismäßigkeit') }}">{{ old('necessity', $d?->necessity) }}</textarea>
-                    <textarea name="risks" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Risiken für Betroffene') }}">{{ old('risks', $d?->risks) }}</textarea>
-                    <textarea name="mitigations" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Abhilfemaßnahmen') }}">{{ old('mitigations', $d?->mitigations) }}</textarea>
-                    <div class="grid md:grid-cols-2 gap-2">
-                        <select name="residual_risk" class="select select-sm select-bordered">
-                            <option value="">{{ __('Restrisiko …') }}</option>
-                            @foreach (['low' => __('gering'), 'medium' => __('mittel'), 'high' => __('hoch')] as $v => $l)
-                                <option value="{{ $v }}" @selected(old('residual_risk', $d?->residual_risk) === $v)>{{ $l }}</option>
-                            @endforeach
-                        </select>
-                        <select name="outcome" class="select select-sm select-bordered">
-                            @foreach (\App\Enums\Privacy\DpiaOutcome::cases() as $o)
-                                <option value="{{ $o->value }}" @selected(old('outcome', $d?->outcome?->value ?? 'open') === $o->value)>{{ $o->label() }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <x-form-group :legend="__('Folgenabschätzung')" icon="fact_check" tone="ghost" cols="2">
+                        <x-input-field name="necessity" :label="__('Notwendigkeit & Verhältnismäßigkeit')" span="2">
+                            <textarea id="necessity" name="necessity" rows="2" class="textarea textarea-bordered w-full">{{ old('necessity', $d?->necessity) }}</textarea>
+                        </x-input-field>
+                        <x-input-field name="risks" :label="__('Risiken für Betroffene')" span="2">
+                            <textarea id="risks" name="risks" rows="2" class="textarea textarea-bordered w-full">{{ old('risks', $d?->risks) }}</textarea>
+                        </x-input-field>
+                        <x-input-field name="mitigations" :label="__('Abhilfemaßnahmen')" span="2">
+                            <textarea id="mitigations" name="mitigations" rows="2" class="textarea textarea-bordered w-full">{{ old('mitigations', $d?->mitigations) }}</textarea>
+                        </x-input-field>
+                        <x-input-field name="residual_risk" :label="__('Restrisiko')">
+                            <select id="residual_risk" name="residual_risk" class="select select-bordered w-full">
+                                <option value="">{{ __('Restrisiko …') }}</option>
+                                @foreach (['low' => __('gering'), 'medium' => __('mittel'), 'high' => __('hoch')] as $v => $l)
+                                    <option value="{{ $v }}" @selected(old('residual_risk', $d?->residual_risk) === $v)>{{ $l }}</option>
+                                @endforeach
+                            </select>
+                        </x-input-field>
+                        <x-input-field name="outcome" :label="__('Ergebnis')">
+                            <select id="outcome" name="outcome" class="select select-bordered w-full">
+                                @foreach (\App\Enums\Privacy\DpiaOutcome::cases() as $o)
+                                    <option value="{{ $o->value }}" @selected(old('outcome', $d?->outcome?->value ?? 'open') === $o->value)>{{ $o->label() }}</option>
+                                @endforeach
+                            </select>
+                        </x-input-field>
+                    </x-form-group>
                     <x-icon-btn icon="check" tone="ghost" size="sm" type="submit" show-label>{{ __('DSFA speichern') }}</x-icon-btn>
                 </form>
             </x-card>

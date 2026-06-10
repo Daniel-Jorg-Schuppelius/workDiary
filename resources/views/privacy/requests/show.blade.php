@@ -57,12 +57,13 @@
                     <x-card>
                         <form method="post" action="{{ route('dataprotection.requests.assign', $request) }}" class="space-y-1">
                             @csrf
-                            <label class="label text-sm">{{ __('Zuweisen an') }}</label>
-                            <select name="user_id" class="select select-sm select-bordered w-full">
-                                @foreach ($members ?? [] as $m)
-                                    <option value="{{ $m->id }}" @selected($request->assigned_user_id === $m->id)>{{ $m->name }}</option>
-                                @endforeach
-                            </select>
+                            <x-input-field name="user_id" :label="__('Zuweisen an')">
+                                <select id="user_id" name="user_id" class="select select-bordered w-full">
+                                    @foreach ($members ?? [] as $m)
+                                        <option value="{{ $m->id }}" @selected($request->assigned_user_id === $m->id)>{{ $m->name }}</option>
+                                    @endforeach
+                                </select>
+                            </x-input-field>
                             <x-icon-btn icon="person_add" tone="ghost" size="sm" type="submit" show-label class="w-full">{{ __('Zuweisen') }}</x-icon-btn>
                         </form>
                     </x-card>
@@ -73,13 +74,16 @@
                         <x-card>
                             <form method="post" action="{{ route('dataprotection.requests.decide', $request) }}" class="space-y-1">
                                 @csrf
-                                <label class="label text-sm">{{ __('Entscheidung') }}</label>
-                                <select name="decision" class="select select-sm select-bordered w-full">
-                                    <option value="granted">{{ __('Stattgegeben') }}</option>
-                                    <option value="partially">{{ __('Teilweise') }}</option>
-                                    <option value="rejected">{{ __('Abgelehnt') }}</option>
-                                </select>
-                                <textarea name="note" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Begründung / Antwort') }}" required></textarea>
+                                <x-input-field name="decision" :label="__('Entscheidung')">
+                                    <select id="decision" name="decision" class="select select-bordered w-full">
+                                        <option value="granted">{{ __('Stattgegeben') }}</option>
+                                        <option value="partially">{{ __('Teilweise') }}</option>
+                                        <option value="rejected">{{ __('Abgelehnt') }}</option>
+                                    </select>
+                                </x-input-field>
+                                <x-input-field name="note" :label="__('Begründung / Antwort')" required>
+                                    <textarea id="note" name="note" rows="2" class="textarea textarea-bordered w-full" required></textarea>
+                                </x-input-field>
                                 <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label class="w-full">{{ __('Abschließen') }}</x-icon-btn>
                             </form>
                         </x-card>
@@ -103,9 +107,9 @@
                 @endforelse
             </ul>
             @can('update', $request)
-                <form method="post" action="{{ route('dataprotection.requests.attach', $request) }}" enctype="multipart/form-data" class="flex gap-2 pt-2">
+                <form method="post" action="{{ route('dataprotection.requests.attach', $request) }}" enctype="multipart/form-data" class="flex items-end gap-2 pt-2">
                     @csrf
-                    <input type="file" name="file" class="file-input file-input-sm file-input-bordered flex-1" required>
+                    <x-input-field name="file" type="file" :label="__('Datei')" required class="flex-1" />
                     <x-icon-btn icon="upload" tone="ghost" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
                 </form>
             @endcan

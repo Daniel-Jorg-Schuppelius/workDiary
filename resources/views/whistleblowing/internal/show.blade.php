@@ -82,12 +82,18 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Status aendern') }}</h2>
                     <form method="post" action="{{ route('whistleblowing.internal.status', $case) }}" class="mt-2 space-y-2">
                         @csrf
-                        <select name="to" class="select select-bordered w-full">
-                            @foreach (\App\Enums\Whistleblowing\CaseStatus::cases() as $s)
-                                <option value="{{ $s->value }}">{{ __('whistleblowing.status.' . $s->value) }}</option>
-                            @endforeach
-                        </select>
-                        <textarea name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begruendung (bei Abschluss erforderlich)') }}"></textarea>
+                        <x-form-group tone="ghost" cols="1">
+                            <x-input-field name="to" :label="__('Status')">
+                                <select id="to" name="to" class="select select-bordered w-full">
+                                    @foreach (\App\Enums\Whistleblowing\CaseStatus::cases() as $s)
+                                        <option value="{{ $s->value }}">{{ __('whistleblowing.status.' . $s->value) }}</option>
+                                    @endforeach
+                                </select>
+                            </x-input-field>
+                            <x-input-field name="reason" :label="__('Begruendung')">
+                                <textarea id="reason" name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begruendung (bei Abschluss erforderlich)') }}"></textarea>
+                            </x-input-field>
+                        </x-form-group>
                         <x-icon-btn icon="edit" tone="ghost" size="sm" type="submit" show-label>{{ __('Status setzen') }}</x-icon-btn>
                     </form>
                 </x-card>
@@ -98,12 +104,16 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Bearbeiter zuweisen') }}</h2>
                     <form method="post" action="{{ route('whistleblowing.internal.assign', $case) }}" class="mt-2 space-y-2">
                         @csrf
-                        <input name="user_id" type="number" class="input input-bordered w-full" placeholder="{{ __('Benutzer-ID') }}">
-                        <select name="role" class="select select-bordered w-full">
-                            @foreach (\App\Enums\Whistleblowing\CaseRole::cases() as $r)
-                                <option value="{{ $r->value }}">{{ $r->value }}</option>
-                            @endforeach
-                        </select>
+                        <x-form-group tone="ghost" cols="1">
+                            <x-input-field name="user_id" type="number" :label="__('Benutzer-ID')" placeholder="{{ __('Benutzer-ID') }}" />
+                            <x-input-field name="role" :label="__('Rolle')">
+                                <select id="role" name="role" class="select select-bordered w-full">
+                                    @foreach (\App\Enums\Whistleblowing\CaseRole::cases() as $r)
+                                        <option value="{{ $r->value }}">{{ $r->value }}</option>
+                                    @endforeach
+                                </select>
+                            </x-input-field>
+                        </x-form-group>
                         <x-icon-btn icon="person_add" tone="ghost" size="sm" type="submit" show-label>{{ __('Zuweisen') }}</x-icon-btn>
                     </form>
                 </x-card>
@@ -114,7 +124,11 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Interne Notiz') }}</h2>
                     <form method="post" action="{{ route('whistleblowing.internal.note', $case) }}" class="mt-2 space-y-2">
                         @csrf
-                        <textarea name="body" class="textarea textarea-bordered w-full" required></textarea>
+                        <x-form-group tone="ghost" cols="1">
+                            <x-input-field name="body" :label="__('Interne Notiz')" required>
+                                <textarea id="body" name="body" class="textarea textarea-bordered w-full" required></textarea>
+                            </x-input-field>
+                        </x-form-group>
                         <x-icon-btn icon="edit_note" tone="ghost" size="sm" type="submit" show-label>{{ __('Notiz speichern') }}</x-icon-btn>
                     </form>
                 </x-card>
@@ -125,7 +139,11 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Nachricht an die meldende Person') }}</h2>
                     <form method="post" action="{{ route('whistleblowing.internal.message', $case) }}" class="mt-2 space-y-2">
                         @csrf
-                        <textarea name="body" class="textarea textarea-bordered w-full" required></textarea>
+                        <x-form-group tone="ghost" cols="1">
+                            <x-input-field name="body" :label="__('Nachricht an die meldende Person')" required>
+                                <textarea id="body" name="body" class="textarea textarea-bordered w-full" required></textarea>
+                            </x-input-field>
+                        </x-form-group>
                         <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Senden') }}</x-icon-btn>
                     </form>
                 </x-card>

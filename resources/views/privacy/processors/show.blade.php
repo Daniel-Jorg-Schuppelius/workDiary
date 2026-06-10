@@ -31,22 +31,26 @@
         </x-card>
 
         @can('create', \App\Models\Privacy\ProcessingAgreement::class)
-            <x-card>
-                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neuen AVV anlegen') }}</h2>
-                <form method="post" action="{{ route('dataprotection.agreements.store') }}" enctype="multipart/form-data" class="space-y-2 mt-2">
-                    @csrf
-                    <input type="hidden" name="processor_id" value="{{ $processor->id }}">
-                    <div class="grid md:grid-cols-2 gap-2">
-                        <input name="title" class="input input-sm input-bordered" placeholder="{{ __('Titel') }}" required>
-                        <input name="version" class="input input-sm input-bordered" placeholder="{{ __('Version') }}" value="1.0">
-                        <input name="valid_from" type="date" class="input input-sm input-bordered" title="{{ __('Gültig ab') }}">
-                        <input name="valid_until" type="date" class="input input-sm input-bordered" title="{{ __('Gültig bis') }}">
-                    </div>
-                    <textarea name="data_categories" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Betroffene Datenkategorien') }}"></textarea>
-                    <input type="file" name="document" class="file-input file-input-sm file-input-bordered w-full" accept=".pdf,.doc,.docx">
-                    <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('AVV anlegen') }}</x-icon-btn>
-                </form>
-            </x-card>
+            <div>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            onclick="document.getElementById('dlg-agreement').showModal()" show-label>{{ __('Neuen AVV anlegen') }}</x-icon-btn>
+            </div>
+            <x-modal :embedded="false" id="dlg-agreement" :title="__('Neuen AVV anlegen')"
+                     icon="handshake" tone="primary"
+                     :action="route('dataprotection.agreements.store')" method="POST"
+                     enctype="multipart/form-data" :submit-label="__('AVV anlegen')">
+                <input type="hidden" name="processor_id" value="{{ $processor->id }}">
+                <x-form-group :legend="__('Auftragsverarbeitungsvertrag')" icon="handshake" tone="primary" cols="2">
+                    <x-input-field name="title" :label="__('Titel')" required />
+                    <x-input-field name="version" :label="__('Version')" value="1.0" />
+                    <x-input-field type="date" name="valid_from" :label="__('Gültig ab')" />
+                    <x-input-field type="date" name="valid_until" :label="__('Gültig bis')" />
+                    <x-input-field name="data_categories" :label="__('Betroffene Datenkategorien')" span="2">
+                        <textarea id="data_categories" name="data_categories" rows="2" class="textarea textarea-bordered w-full"></textarea>
+                    </x-input-field>
+                    <x-input-field type="file" name="document" :label="__('Dokument')" span="2" accept=".pdf,.doc,.docx" />
+                </x-form-group>
+            </x-modal>
         @endcan
     </x-index-page>
 @endsection

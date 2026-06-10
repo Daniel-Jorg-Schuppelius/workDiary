@@ -9,28 +9,21 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Anlegen')">
 
-    <div class="grid md:grid-cols-2 gap-3">
-        <div>
-            <label class="label" for="name">{{ __('Bezeichnung') }}</label>
-            <input id="name" name="name" class="input input-bordered w-full" value="{{ old('name') }}" required>
-        </div>
-        <div>
-            <label class="label" for="category">{{ __('Maßnahmenbereich') }}</label>
+    <x-form-group :legend="__('Maßnahme')" icon="shield" tone="primary" cols="2">
+        <x-input-field name="name" :label="__('Bezeichnung')" :value="old('name')" required />
+        <x-input-field name="category" :label="__('Maßnahmenbereich')">
             <select id="category" name="category" class="select select-bordered w-full">
                 @foreach ($categories as $c)<option value="{{ $c->value }}" @selected(old('category') === $c->value)>{{ $c->label() }}</option>@endforeach
             </select>
-        </div>
-    </div>
-    <div>
-        <label class="label" for="description">{{ __('Beschreibung') }}</label>
-        <textarea id="description" name="description" rows="3" class="textarea textarea-bordered w-full">{{ old('description') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="addressed_risks">{{ __('Adressierte Risiken') }}</label>
-        <textarea id="addressed_risks" name="addressed_risks" rows="2" class="textarea textarea-bordered w-full">{{ old('addressed_risks') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="evidence">{{ __('Nachweise (Richtlinien, Protokolle, Zertifikate …)') }}</label>
-        <textarea id="evidence" name="evidence" rows="2" class="textarea textarea-bordered w-full">{{ old('evidence') }}</textarea>
-    </div>
+        </x-input-field>
+        <x-input-field name="description" :label="__('Beschreibung')" span="2">
+            <textarea id="description" name="description" rows="3" class="textarea textarea-bordered w-full">{{ old('description') }}</textarea>
+        </x-input-field>
+        <x-input-field name="addressed_risks" :label="__('Adressierte Risiken')" span="2">
+            <textarea id="addressed_risks" name="addressed_risks" rows="2" class="textarea textarea-bordered w-full">{{ old('addressed_risks') }}</textarea>
+        </x-input-field>
+        <x-input-field name="evidence" :label="__('Nachweise (Richtlinien, Protokolle, Zertifikate …)')" span="2">
+            <textarea id="evidence" name="evidence" rows="2" class="textarea textarea-bordered w-full">{{ old('evidence') }}</textarea>
+        </x-input-field>
+    </x-form-group>
 </x-modal>

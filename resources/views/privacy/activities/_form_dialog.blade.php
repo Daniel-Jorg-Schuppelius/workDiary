@@ -9,28 +9,20 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Anlegen')">
 
-    <div class="grid md:grid-cols-2 gap-3">
-        <div>
-            <label class="label" for="name">{{ __('Bezeichnung') }}</label>
-            <input id="name" name="name" class="input input-bordered w-full" value="{{ old('name') }}" required>
-        </div>
-        <div>
-            <label class="label" for="controller_role">{{ __('Verantwortungsrolle') }}</label>
+    <x-form-group :legend="__('Tätigkeit')" icon="fact_check" tone="primary" cols="2">
+        <x-input-field name="name" :label="__('Bezeichnung')" :value="old('name')" required />
+        <x-input-field name="controller_role" :label="__('Verantwortungsrolle')">
             <select id="controller_role" name="controller_role" class="select select-bordered w-full">
                 @foreach ($roles as $r)
                     <option value="{{ $r->value }}" @selected(old('controller_role') === $r->value)>{{ $r->label() }}</option>
                 @endforeach
             </select>
-        </div>
-    </div>
-    <div>
-        <label class="label" for="purpose">{{ __('Zweck der Verarbeitung') }}</label>
-        <textarea id="purpose" name="purpose" rows="2" class="textarea textarea-bordered w-full">{{ old('purpose') }}</textarea>
-    </div>
-    <div>
-        <label class="label" for="area">{{ __('Fachbereich (optional)') }}</label>
-        <input id="area" name="area" class="input input-bordered w-full" value="{{ old('area') }}">
-    </div>
+        </x-input-field>
+        <x-input-field name="purpose" :label="__('Zweck der Verarbeitung')" span="2">
+            <textarea id="purpose" name="purpose" rows="2" class="textarea textarea-bordered w-full">{{ old('purpose') }}</textarea>
+        </x-input-field>
+        <x-input-field name="area" :label="__('Fachbereich (optional)')" :value="old('area')" />
+    </x-form-group>
 
     @include('privacy.activities._payload_fields')
 </x-modal>

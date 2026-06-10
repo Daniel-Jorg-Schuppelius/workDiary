@@ -47,35 +47,40 @@
         <x-pagination :paginator="$agreements" />
 
         @can('create', \App\Models\Privacy\JointControllerAgreement::class)
-            <x-card>
-                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neue GVV anlegen') }}</h2>
-                <form method="post" action="{{ route('dataprotection.gvv.store') }}" enctype="multipart/form-data" class="space-y-2 mt-2">
-                    @csrf
-                    <div class="grid md:grid-cols-2 gap-2">
-                        <select name="partner_id" class="select select-sm select-bordered" required>
+            <div>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            onclick="document.getElementById('dlg-gvv').showModal()" show-label>{{ __('Neue GVV anlegen') }}</x-icon-btn>
+            </div>
+            <x-modal :embedded="false" id="dlg-gvv" :title="__('Neue GVV anlegen')"
+                     icon="diversity_3" tone="primary"
+                     :action="route('dataprotection.gvv.store')" method="POST"
+                     enctype="multipart/form-data" :submit-label="__('GVV anlegen')">
+                <x-form-group :legend="__('Eckdaten')" icon="diversity_3" tone="primary" cols="2">
+                    <x-input-field name="partner_id" :label="__('Partner (Dienstleister)')" required>
+                        <select id="partner_id" name="partner_id" class="select select-bordered w-full" required>
                             <option value="">{{ __('Partner (Dienstleister) …') }}</option>
                             @foreach ($partners as $p)<option value="{{ $p->id }}">{{ $p->name }}</option>@endforeach
                         </select>
-                        <input name="title" class="input input-sm input-bordered" placeholder="{{ __('Titel') }}" required>
-                        <input name="valid_from" type="date" class="input input-sm input-bordered" title="{{ __('Gültig ab') }}">
-                        <input name="contact_point" class="input input-sm input-bordered" placeholder="{{ __('Gemeinsame Anlaufstelle') }}">
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-sm font-semibold">{{ __('Zuständigkeitsmatrix') }}</p>
-                        @foreach ($matrixKeys as $k)
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="text-sm flex-1">{{ $matrixLabels[$k] ?? $k }}</span>
-                                <select name="responsibilities[{{ $k }}]" class="select select-xs select-bordered">
-                                    @foreach ($roleOptions as $v => $l)<option value="{{ $v }}">{{ $l }}</option>@endforeach
-                                </select>
-                            </div>
-                        @endforeach
-                    </div>
+                    </x-input-field>
+                    <x-input-field name="title" :label="__('Titel')" required />
+                    <x-input-field type="date" name="valid_from" :label="__('Gültig ab')" />
+                    <x-input-field name="contact_point" :label="__('Gemeinsame Anlaufstelle')" />
+                </x-form-group>
+                <x-form-group :legend="__('Zuständigkeitsmatrix')" icon="checklist" tone="ghost" cols="1">
+                    @foreach ($matrixKeys as $k)
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-sm flex-1">{{ $matrixLabels[$k] ?? $k }}</span>
+                            <select name="responsibilities[{{ $k }}]" class="select select-bordered">
+                                @foreach ($roleOptions as $v => $l)<option value="{{ $v }}">{{ $l }}</option>@endforeach
+                            </select>
+                        </div>
+                    @endforeach
                     <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="essence_provided" value="1" class="checkbox checkbox-sm"> {{ __('Wesentliches der GVV den Betroffenen bereitgestellt') }}</label>
-                    <input type="file" name="document" class="file-input file-input-sm file-input-bordered w-full" accept=".pdf,.doc,.docx">
-                    <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('GVV anlegen') }}</x-icon-btn>
-                </form>
-            </x-card>
+                </x-form-group>
+                <x-form-group :legend="__('Dokument')" icon="upload_file" tone="ghost" cols="1">
+                    <x-input-field type="file" name="document" :label="__('Vertragsdokument')" accept=".pdf,.doc,.docx" />
+                </x-form-group>
+            </x-modal>
         @endcan
     </x-index-page>
 @endsection

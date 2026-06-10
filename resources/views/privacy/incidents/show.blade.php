@@ -83,12 +83,19 @@
                 @endforelse
             </ul>
             @can('update', $incident)
-                <form method="post" action="{{ route('dataprotection.incidents.measure.store', $incident) }}" class="grid md:grid-cols-3 gap-2 pt-2">
-                    @csrf
-                    <input name="title" class="input input-sm input-bordered" placeholder="{{ __('Maßnahme') }}" required>
-                    <input name="due_at" type="date" class="input input-sm input-bordered">
-                    <button class="btn btn-sm">{{ __('Hinzufügen') }}</button>
-                </form>
+                <div class="pt-2">
+                    <x-icon-btn icon="add" tone="primary" size="sm"
+                                onclick="document.getElementById('dlg-incident-measure').showModal()" show-label>{{ __('Hinzufügen') }}</x-icon-btn>
+                </div>
+                <x-modal :embedded="false" id="dlg-incident-measure" :title="__('Maßnahme hinzufügen')"
+                         icon="add_task" tone="primary"
+                         :action="route('dataprotection.incidents.measure.store', $incident)" method="POST"
+                         :submit-label="__('Hinzufügen')">
+                    <x-form-group :legend="__('Maßnahme')" icon="add_task" tone="primary" cols="2">
+                        <x-input-field name="title" :label="__('Maßnahme')" required span="2" />
+                        <x-input-field name="due_at" type="date" :label="__('Fällig bis')" />
+                    </x-form-group>
+                </x-modal>
             @endcan
         </x-card>
 
