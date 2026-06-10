@@ -32,7 +32,7 @@ class ProcessorController extends Controller {
     public function create(): View {
         Gate::authorize('create', Processor::class);
 
-        return view('privacy.processors.create', ['roles' => ProcessorRole::cases()]);
+        return view('privacy.processors._form_dialog', ['roles' => ProcessorRole::cases()]);
     }
 
     public function store(Request $request): RedirectResponse {

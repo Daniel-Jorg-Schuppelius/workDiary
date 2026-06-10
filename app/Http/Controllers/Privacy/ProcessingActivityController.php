@@ -42,7 +42,7 @@ class ProcessingActivityController extends Controller {
     public function create(): View {
         Gate::authorize('create', ProcessingActivity::class);
 
-        return view('privacy.activities.create', ['roles' => ControllerRole::cases()]);
+        return view('privacy.activities._form_dialog', ['roles' => ControllerRole::cases()]);
     }
 
     public function store(Request $request): RedirectResponse {

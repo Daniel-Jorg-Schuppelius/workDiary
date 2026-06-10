@@ -5,6 +5,7 @@
     <x-index-page :subtitle="__('Technische und organisatorische Maßnahmen dokumentieren und prüfen.')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('dataprotection.tom.create')"
                         show-label>{{ __('Neue Maßnahme') }}</x-icon-btn>
         </x-slot:actions>

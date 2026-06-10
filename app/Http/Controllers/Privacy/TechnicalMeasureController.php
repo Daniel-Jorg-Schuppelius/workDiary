@@ -36,7 +36,7 @@ class TechnicalMeasureController extends Controller {
     public function create(): View {
         Gate::authorize('create', TechnicalMeasure::class);
 
-        return view('privacy.tom.create', ['categories' => MeasureCategory::cases()]);
+        return view('privacy.tom._form_dialog', ['categories' => MeasureCategory::cases()]);
     }
 
     public function store(Request $request): RedirectResponse {

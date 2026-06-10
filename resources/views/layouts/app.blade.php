@@ -120,8 +120,8 @@
              ausgeliefert; kein externer Fallback nötig. --}}
 
         <style>
-            :root { --sidebar-w: min(16rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; }
-            @media (min-width: 1024px) { :root { --sidebar-w: 16rem; } }
+            :root { --sidebar-w: min(18rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; }
+            @media (min-width: 1024px) { :root { --sidebar-w: 18rem; } }
             body.sidebar-collapsed { --sidebar-w: 4rem; }
             #app-sidebar { width: var(--sidebar-w); transition: width 200ms ease; }
             @media (min-width: 1024px) {
@@ -341,6 +341,20 @@
             #app-sidebar details.sidebar-section-collapsible[open] > summary .sidebar-section-chevron {
                 transform: rotate(180deg);
             }
+            #app-sidebar .sidebar-subgroup {
+                margin-left: .75rem;
+                padding-left: .75rem;
+                border-left: 1px solid color-mix(in oklab, var(--color-base-content) 16%, transparent);
+            }
+            #app-sidebar .sidebar-subgroup-label {
+                padding-left: .375rem;
+            }
+            #app-sidebar .sidebar-subgroup > .menu {
+                padding-left: .75rem;
+            }
+            #app-sidebar details.sidebar-section-collapsible > .menu {
+                padding-left: 1.25rem;
+            }
 
             /* Collapsed-Mode: Section-Titel + Summary-Text/Chevron verschwinden, Details
                werden zwangsweise geöffnet, damit alle Item-Icons als flache Liste sichtbar
@@ -351,6 +365,15 @@
             body.sidebar-collapsed #app-sidebar .sidebar-section-chevron,
             body.sidebar-collapsed #app-sidebar .sidebar-section-icon { display: none; }
             body.sidebar-collapsed #app-sidebar .sidebar-subgroup-label { display: none; }
+            body.sidebar-collapsed #app-sidebar .sidebar-subgroup {
+                margin-left: 0;
+                padding-left: 0;
+                border-left: 0;
+            }
+            body.sidebar-collapsed #app-sidebar .sidebar-subgroup > .menu,
+            body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible > .menu {
+                padding-left: 0;
+            }
 
             /* Sidebar-Layout: Items scrollen, Footer (Collapse-Button) bleibt sticky
                am unteren Rand der Sidebar sichtbar. */

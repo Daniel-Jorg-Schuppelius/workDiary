@@ -17,6 +17,7 @@
                         target="_blank"
                         show-label>{{ __('Druck') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('dataprotection.activities.create')"
                         show-label>{{ __('Neue Tätigkeit') }}</x-icon-btn>
         </x-slot:actions>

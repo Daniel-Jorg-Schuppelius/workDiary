@@ -7,6 +7,7 @@
     <x-index-page :subtitle="__('Anfragen betroffener Personen erfassen, zuweisen und fristgerecht bearbeiten.')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('dataprotection.requests.create')"
                         show-label>{{ __('Neue Anfrage') }}</x-icon-btn>
         </x-slot:actions>

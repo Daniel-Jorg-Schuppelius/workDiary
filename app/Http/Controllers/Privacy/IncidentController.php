@@ -36,7 +36,7 @@ class IncidentController extends Controller {
     public function create(): View {
         Gate::authorize('create', Incident::class);
 
-        return view('privacy.incidents.create', ['types' => IncidentType::cases()]);
+        return view('privacy.incidents._form_dialog', ['types' => IncidentType::cases()]);
     }
 
     public function store(Request $request): RedirectResponse {

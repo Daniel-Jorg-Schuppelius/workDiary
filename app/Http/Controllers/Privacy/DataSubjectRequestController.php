@@ -45,7 +45,7 @@ class DataSubjectRequestController extends Controller {
     public function create(): View {
         Gate::authorize('create', DataSubjectRequest::class);
 
-        return view('privacy.requests.create', ['types' => DataSubjectRequestType::cases()]);
+        return view('privacy.requests._form_dialog', ['types' => DataSubjectRequestType::cases()]);
     }
 
     public function store(Request $request): RedirectResponse {

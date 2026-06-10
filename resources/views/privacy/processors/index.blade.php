@@ -8,6 +8,7 @@
                         :href="route('dataprotection.agreements.index')"
                         show-label>{{ __('AVV-Register') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('dataprotection.processors.create')"
                         show-label>{{ __('Neuer Dienstleister') }}</x-icon-btn>
         </x-slot:actions>

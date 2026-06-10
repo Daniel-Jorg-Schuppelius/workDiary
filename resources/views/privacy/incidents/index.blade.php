@@ -5,6 +5,7 @@
     <x-index-page :subtitle="__('Datenschutzvorfälle erfassen, bewerten und fristgerecht melden.')">
         <x-slot:actions>
             <x-icon-btn icon="gpp_maybe" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('dataprotection.incidents.create')"
                         show-label>{{ __('Vorfall melden') }}</x-icon-btn>
         </x-slot:actions>
