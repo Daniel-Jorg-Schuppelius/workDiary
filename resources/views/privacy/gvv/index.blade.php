@@ -16,6 +16,11 @@
             <x-icon-btn icon="diversity_3" tone="ghost" size="sm"
                         :href="route('dataprotection.processors.index')"
                         show-label>{{ __('Dienstleister') }}</x-icon-btn>
+            @can('create', \App\Models\Privacy\JointControllerAgreement::class)
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            onclick="document.getElementById('dlg-gvv').showModal()"
+                            show-label>{{ __('Neue GVV anlegen') }}</x-icon-btn>
+            @endcan
         </x-slot:actions>
 
         @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
@@ -47,10 +52,6 @@
         <x-pagination :paginator="$agreements" />
 
         @can('create', \App\Models\Privacy\JointControllerAgreement::class)
-            <div>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            onclick="document.getElementById('dlg-gvv').showModal()" show-label>{{ __('Neue GVV anlegen') }}</x-icon-btn>
-            </div>
             <x-modal :embedded="false" id="dlg-gvv" :title="__('Neue GVV anlegen')"
                      icon="diversity_3" tone="primary"
                      :action="route('dataprotection.gvv.store')" method="POST"
