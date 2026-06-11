@@ -4,6 +4,7 @@ return [
     'role' => [
         'admin' => 'Amministratore',
         'meldestelle' => 'Ufficio segnalazioni',
+        'datenschutz' => 'Protezione dei dati',
         'geschaeftsfuehrung' => 'Direzione',
         'personalverwaltung' => 'Gestione del personale',
         'teamleitung' => 'Capo team',

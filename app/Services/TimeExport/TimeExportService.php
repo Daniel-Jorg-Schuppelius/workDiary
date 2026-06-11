@@ -13,6 +13,9 @@ namespace App\Services\TimeExport;
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Models\{Attendance, MonthClosure, Organization, TimeExport, TimeExportEvent, TimeExportLine, User};
+use App\Models\Scopes\OrganizationScope;
+use App\Models\Surcharge\SurchargeRule;
+use App\Services\Surcharge\SurchargeCalculator;
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\Profiles\ExportProfile;
 use Carbon\CarbonImmutable;
@@ -41,6 +44,7 @@ use Illuminate\Support\Facades\{Auth, DB, Storage};
 class TimeExportService {
     public function __construct(
         private readonly MonthClosureService $closureService,
+        private readonly SurchargeCalculator $surchargeCalculator,
     ) {}
 
     /**
@@ -141,7 +145,7 @@ class TimeExportService {
             $export->scope_team_id,
         );
 
-        return DB::transaction(function () use ($export, $closures, $actorId, $actor): TimeExport {
+        $export = DB::transaction(function () use ($export, $closures, $actorId, $actor): TimeExport {
             $userIds = $closures->pluck('user_id')->unique()->values()->all();
             $rowCount = $this->aggregateLines($export, $userIds);
 
@@ -184,6 +188,11 @@ class TimeExportService {
 
             return $export->refresh();
         });
+
+        // Telemetry-Light (Feature 036): aggregierter Org-Tageszähler, fire-and-forget.
+        app(\App\Services\Metrics\OperationsMetricsService::class)->increment('timeExports.built', (int) $export->organization_id);
+
+        return $export;
     }
 
     public function markDelivered(TimeExport $export, ?User $actor = null, ?string $note = null): TimeExport {
@@ -274,6 +283,14 @@ class TimeExportService {
         // Bestehende Zeilen verwerfen (idempotente Re-Aggregation).
         $export->lines()->delete();
 
+        // Zuschlagsregeln der Organisation einmalig laden (Feature 005).
+        $surchargeRules = SurchargeRule::query()
+            ->withoutGlobalScope(OrganizationScope::class)
+            ->where('organization_id', $export->organization_id)
+            ->where('active', true)
+            ->orderBy('id')
+            ->get();
+
         $rows = 0;
         foreach ($userIds as $uid) {
             $minutes = (int) Attendance::query()
@@ -299,6 +316,96 @@ class TimeExportService {
                 'period_end' => $end->toDateString(),
                 'note' => null,
                 'source_refs' => ['attendance_minutes' => $minutes],
+            ]);
+
+            $rows++;
+
+            $rows += $this->aggregateSurchargeLines($export, $uid, $start, $end, $surchargeRules);
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Zuschlagszeilen je User × Kalendertag × Regel (Feature 005, additiv).
+     *
+     * Grundlage sind die Attendance-Intervalle (started_at→ended_at) des
+     * Monats; der {@see SurchargeCalculator} zerlegt sie in zuschlagsfähige
+     * Segmente (Stacking: höchster Prozentsatz gewinnt, kein Addieren).
+     * Hinweis (MVP): Pausen sind zeitlich nicht verortet und werden daher
+     * im Zuschlagsfenster nicht abgezogen — gerechnet wird auf dem
+     * Brutto-Intervall der Anwesenheit.
+     *
+     * @param  \Illuminate\Support\Collection<int, SurchargeRule>  $rules
+     * @return int Anzahl erzeugter Zeilen
+     */
+    private function aggregateSurchargeLines(
+        TimeExport $export,
+        int $uid,
+        CarbonImmutable $start,
+        CarbonImmutable $end,
+        \Illuminate\Support\Collection $rules,
+    ): int {
+        if ($rules->isEmpty()) {
+            return 0;
+        }
+
+        $attendances = Attendance::query()
+            ->where('user_id', $uid)
+            ->whereDate('date', '>=', $start->toDateString())
+            ->whereDate('date', '<=', $end->toDateString())
+            ->whereNotNull('started_at')
+            ->whereNotNull('ended_at')
+            ->orderBy('started_at')
+            ->get(['id', 'started_at', 'ended_at']);
+
+        // Akkumulieren: je (Regel, Kalendertag) Minuten + Quell-Attendances.
+        /** @var array<string, array{rule: SurchargeRule, date: string, minutes: int, sources: list<int>}> $acc */
+        $acc = [];
+        foreach ($attendances as $attendance) {
+            $shares = $this->surchargeCalculator->calculate(
+                CarbonImmutable::parse((string) $attendance->started_at),
+                CarbonImmutable::parse((string) $attendance->ended_at),
+                $rules,
+            );
+
+            foreach ($shares as $share) {
+                $key = $share->date . '|' . $share->rule->id;
+                if (! isset($acc[$key])) {
+                    $acc[$key] = [
+                        'rule' => $share->rule,
+                        'date' => $share->date,
+                        'minutes' => 0,
+                        'sources' => [],
+                    ];
+                }
+                $acc[$key]['minutes'] += $share->minutes;
+                $acc[$key]['sources'][] = (int) $attendance->id;
+            }
+        }
+
+        ksort($acc);
+
+        $rows = 0;
+        foreach ($acc as $row) {
+            if ($row['minutes'] <= 0) {
+                continue;
+            }
+
+            TimeExportLine::query()->create([
+                'time_export_id' => $export->id,
+                'user_id' => $uid,
+                'wage_type' => $row['rule']->wageType(),
+                'cost_center' => null,
+                'quantity' => round($row['minutes'] / 60, 4),
+                'unit' => 'h',
+                'period_start' => $row['date'],
+                'period_end' => $row['date'],
+                'note' => $row['rule']->label,
+                'source_refs' => ['attendance_ids' => array_values(array_unique($row['sources']))],
+                'surcharge_rule_id' => $row['rule']->id,
+                'wage_type_code' => $row['rule']->wage_type_code,
+                'percentage' => $row['rule']->percentage,
             ]);
 
             $rows++;

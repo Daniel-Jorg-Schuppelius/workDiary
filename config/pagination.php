@@ -24,4 +24,5 @@ return [
     'tags' => (int) env('PAGINATION_TAGS', 50),
     'archive' => (int) env('PAGINATION_ARCHIVE', 25),
     'dashboard_recent' => (int) env('PAGINATION_DASHBOARD_RECENT', 5),
+    'notifications' => (int) env('PAGINATION_NOTIFICATIONS', 25),
 ];

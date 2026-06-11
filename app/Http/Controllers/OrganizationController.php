@@ -115,6 +115,8 @@ class OrganizationController extends Controller {
             // Generic per-group overrides. Werte sind immer Strings (Form-Input);
             // leere Strings werden weiter unten verworfen → Fallback auf config().
             'settings' => ['sometimes', 'array'],
+            // Fakturierungsweg-Default (Feature 045): skalarer Top-Level-Key.
+            'settings.billing_mode' => ['nullable', 'in:' . implode(',', \App\Enums\Finance\BillingMode::values())],
             'settings.personalization' => ['sometimes', 'array'],
             'settings.personalization.date_format' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\Formats::dateOptions())],
             'settings.personalization.time_format' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\Formats::timeOptions())],
@@ -170,6 +172,25 @@ class OrganizationController extends Controller {
         /** @var array<string,mixed> $existingSettings */
         $existingSettings = (array) ($organization->settings ?? []);
         $mergedSettings = $existingSettings;
+
+        // Fakturierungsweg-Default (Feature 045, additiv): skalarer Top-Level-
+        // Key in settings — die Gruppen-Schleife unten überspringt Skalare
+        // bewusst, daher hier explizit behandeln. Nur mit finance.config.
+        if (
+            array_key_exists('settings', $data)
+            && is_array($data['settings'])
+            && array_key_exists('billing_mode', $data['settings'])
+        ) {
+            if (Gate::allows(\App\Enums\User\Permission::FinanceConfig->value)) {
+                $mode = $data['settings']['billing_mode'];
+                if ($mode === null || $mode === '') {
+                    unset($mergedSettings['billing_mode']);
+                } else {
+                    $mergedSettings['billing_mode'] = (string) $mode;
+                }
+            }
+            unset($data['settings']['billing_mode']);
+        }
 
         if (array_key_exists('settings', $data) && is_array($data['settings'])) {
             foreach ($data['settings'] as $group => $values) {

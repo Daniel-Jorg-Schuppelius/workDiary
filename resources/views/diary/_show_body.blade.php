@@ -117,6 +117,14 @@
     ])
 </section>
 
+@include('communication-notes._panel', ['notable' => $diary, 'notableKind' => 'diary'])
+
 @include('attachments._panel', ['parent' => $diary, 'parentType' => 'diary'])
 
 @include('open-issues._panel', ['subject' => $diary, 'subjectKind' => 'diary'])
+
+{{-- Formulare (Feature 032): ausgefüllte Formulare + „Formular ausfüllen" --}}
+@include('forms._panel', ['subject' => $diary, 'subjectKind' => 'diary'])
+
+{{-- Wissensbasis (Feature 011): verknüpfte Artikel + Vorschläge zum Auftrag --}}
+@include('knowledge._context_card', ['subject' => $diary, 'subjectKind' => 'diary', 'texts' => [(string) $diary->title, (string) $diary->content]])

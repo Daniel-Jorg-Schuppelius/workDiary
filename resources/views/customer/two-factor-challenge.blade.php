@@ -12,6 +12,23 @@
         @if ($errors->any())
             <div class="alert alert-error text-sm mb-4">{{ $errors->first() }}</div>
         @endif
+        @if (session('success'))
+            <div class="alert alert-success text-sm mb-4">{{ session('success') }}</div>
+        @endif
+
+        @if ($hasWebauthn ?? false)
+            <div class="mb-5" data-webauthn-block>
+                <p id="passkey-error" class="mb-2 hidden text-sm text-error"></p>
+                <button type="button" class="btn btn-primary w-full gap-2"
+                        data-webauthn-assert
+                        data-options="{{ route('customer.two-factor.login.webauthn.options') }}"
+                        data-target="{{ route('customer.two-factor.login.webauthn') }}"
+                        data-error="passkey-error">
+                    <span class="material-symbols-outlined">key</span> {{ __('Mit Passkey / Sicherheitsschlüssel') }}
+                </button>
+                <div class="my-4 flex items-center gap-3 text-xs text-base-content/50"><span class="h-px flex-1 bg-base-300"></span>{{ __('oder Code eingeben') }}<span class="h-px flex-1 bg-base-300"></span></div>
+            </div>
+        @endif
 
         <form method="POST" action="{{ route('customer.two-factor.login.attempt') }}" class="space-y-4">
             @csrf
@@ -33,9 +50,26 @@
             <span x-show="recovery" x-cloak>{{ __('Zurück zum Authenticator-Code') }}</span>
         </button>
 
+        @if ($hasEmail ?? false)
+            <div class="mt-5 border-t border-base-300 pt-4">
+                <p class="text-sm text-base-content/70 mb-2">{{ __('Oder Code per E-Mail erhalten:') }}</p>
+                <form method="POST" action="{{ route('customer.two-factor.login.email') }}" class="mb-3">
+                    @csrf
+                    <button type="submit" class="btn btn-outline btn-sm w-full">{{ __('Code per E-Mail senden') }}</button>
+                </form>
+                <form method="POST" action="{{ route('customer.two-factor.login.attempt') }}" class="space-y-2">
+                    @csrf
+                    <input name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="{{ __('E-Mail-Code') }}"
+                           class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.4em]">
+                    <button type="submit" class="btn btn-primary btn-sm w-full">{{ __('Mit E-Mail-Code bestätigen') }}</button>
+                </form>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('customer.logout') }}" class="mt-4 text-center">
             @csrf
             <button type="submit" class="text-sm text-base-content/60 hover:underline">← {{ __('Abbrechen') }}</button>
         </form>
     </div>
+    @include('partials.webauthn-script')
 @endsection

@@ -56,6 +56,14 @@ class NavGate {
         'tours.*' => \App\Models\Tour::class,
         'teams.*' => \App\Models\Team::class,
         'qualifications.*' => \App\Models\Qualification::class,
+        'documents.*' => \App\Models\Document::class,
+        'knowledge.*' => \App\Models\KnowledgeArticle::class,
+        'form-templates.*' => \App\Models\FormTemplate::class,
+        'form-submissions.*' => \App\Models\FormSubmission::class,
+        'isms.risks.*' => \App\Models\Isms\IsmsRisk::class,
+        'finance.*' => \App\Models\Finance\BillingTransfer::class,
+        'isms.controls.*' => \App\Models\Isms\IsmsControl::class,
+        'isms.soa' => \App\Models\Isms\IsmsControl::class,
     ];
 
     public function __construct(private readonly FeatureFlagResolver $features) {}

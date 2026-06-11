@@ -1,0 +1,113 @@
+<?php
+/*
+ * Created on   : Wed Jun 10 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SurchargeRule.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Models\Surcharge;
+
+use App\Enums\Surcharge\SurchargeKind;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use Carbon\CarbonInterface;
+use Database\Factories\SurchargeRuleFactory;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
+use Illuminate\Support\Carbon;
+
+/**
+ * Zuschlagsregel pro Organisation (Feature 005, MVP).
+ *
+ * Liefert dem {@see \App\Services\Surcharge\SurchargeCalculator} die
+ * Definition zuschlagsfähiger Zeiten (Nacht/Sa/So/Feiertag/Custom).
+ * `wage_type_code` ist die Lohnart für die DATEV-/Lexware-Übergabe.
+ *
+ * Stacking: Bei Überlappung mehrerer Regeln gewinnt der höchste
+ * Prozentsatz (kein Addieren); `priority` bricht Gleichstände.
+ *
+ * @property int $id
+ * @property int $organization_id
+ * @property string $code
+ * @property string $label
+ * @property SurchargeKind $kind
+ * @property string|null $window_start  TIME (H:i:s)
+ * @property string|null $window_end    TIME (H:i:s)
+ * @property string $percentage
+ * @property string|null $wage_type_code
+ * @property int $priority
+ * @property bool $active
+ * @property Carbon|null $valid_from
+ * @property Carbon|null $valid_until
+ */
+class SurchargeRule extends Model {
+    use Auditable;
+
+    use BelongsToOrganization;
+
+    /** @use HasFactory<SurchargeRuleFactory> */
+    use HasFactory;
+    use HasSqid;
+
+    use SoftDeletes;
+
+    protected $fillable = [
+        'organization_id',
+        'code',
+        'label',
+        'kind',
+        'window_start',
+        'window_end',
+        'percentage',
+        'wage_type_code',
+        'priority',
+        'active',
+        'valid_from',
+        'valid_until',
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'kind' => SurchargeKind::class,
+        'percentage' => 'decimal:2',
+        'priority' => 'integer',
+        'active' => 'boolean',
+        'valid_from' => 'date',
+        'valid_until' => 'date',
+    ];
+
+    protected static function newFactory(): SurchargeRuleFactory {
+        return SurchargeRuleFactory::new();
+    }
+
+    /**
+     * Nur aktive Regeln.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeActive(Builder $query): Builder {
+        return $query->where('active', true);
+    }
+
+    /** Gilt die Regel (Gültigkeitszeitraum, inklusiv) am gegebenen Tag? */
+    public function appliesOn(CarbonInterface $date): bool {
+        $day = $date->toDateString();
+        if ($this->valid_from !== null && $day < $this->valid_from->toDateString()) {
+            return false;
+        }
+        if ($this->valid_until !== null && $day > $this->valid_until->toDateString()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /** Lohnart-Schlüssel für TimeExportLine.wage_type (stabil, org-eindeutig). */
+    public function wageType(): string {
+        return 'surcharge.' . $this->code;
+    }
+}

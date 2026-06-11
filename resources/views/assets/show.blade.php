@@ -469,5 +469,10 @@
                 @endif
             </x-card>
         </div>
+
+        @include('documents._panel', ['documentable' => $asset, 'documentableKind' => 'asset'])
+
+        {{-- Wissensbasis (Feature 011): verknüpfte Artikel + Vorschläge zum Asset --}}
+        @include('knowledge._context_card', ['subject' => $asset, 'subjectKind' => 'asset', 'texts' => [(string) $asset->name, (string) ($asset->notes ?? '')]])
     </x-page-shell>
 @endsection

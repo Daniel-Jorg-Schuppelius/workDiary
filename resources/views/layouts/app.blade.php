@@ -567,6 +567,7 @@
                                     ['route' => 'suppliers.index',          'label' => __('Lieferanten'),    'icon' => 'local_shipping',   'modal' => false, 'matches' => ['suppliers.*']],
                                     ['route' => 'projects.index',           'label' => __('Projekte'),       'icon' => 'folder_special',   'modal' => false, 'matches' => ['projects.*']],
                                     ['route' => 'invoices.index',           'label' => __('Rechnungen & Belege'), 'icon' => 'receipt_long',     'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                                    ['route' => 'finance.transfers.index',  'label' => __('finance.title.menu'), 'icon' => 'outbox',           'modal' => false, 'matches' => ['finance.*']],
                                     ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                     ['route' => 'events.index',             'label' => __('Veranstaltungen'),'icon' => 'event',            'modal' => false, 'matches' => ['events.*']],
                                     ['route' => 'flex.index',               'label' => __('Arbeitszeitkonto'),'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
@@ -603,6 +604,20 @@
                                     $adminNavItems[]  = ['route' => 'admin.expense-categories.index',  'label' => __('Spesenkategorien'), 'icon' => 'receipt_long',     'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.per-diem-rates.index',      'label' => __('Verpflegungspauschalen'), 'icon' => 'restaurant_menu',  'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.automations.index',         'label' => __('Automatisierungen'), 'icon' => 'bolt',             'modal' => false];
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::NotificationRuleViewAny->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.notification-rules.index', 'label' => __('notification.title.rules'), 'icon' => 'notifications_active', 'modal' => false];
+                                    }
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SurchargeRuleViewAny->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.surcharge-rules.index', 'label' => __('surcharge.title.rules'), 'icon' => 'percent', 'modal' => false];
+                                    }
+                                    // Formularvorlagen (Feature 032): Verwaltung wie surcharge-rules;
+                                    // adminNavItems laufen nicht durch $nav->allows → Plan-Gating hier explizit.
+                                    if (
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::FormTemplateViewAny->value)
+                                        && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.forms')
+                                    ) {
+                                        $adminNavItems[] = ['route' => 'form-templates.index', 'label' => __('form.title.templates'), 'icon' => 'assignment', 'modal' => false];
+                                    }
                                     $adminNavItems[]  = ['route' => 'admin.data.index',                'label' => __('Datentransfer'),    'icon' => 'sync_alt',         'modal' => false];
                                     if (\Illuminate\Support\Facades\Route::has('admin.remote-support.pending.index')) {
                                         $_rsOrg = $_authUser?->organization;
@@ -622,6 +637,9 @@
                                     $adminNavItems[] = ['route' => 'audit.index',                       'label' => __('Audit-Log'),        'icon' => 'fact_check',       'modal' => false];
                                     if (\Illuminate\Support\Facades\Gate::allows('platform.license.view')) {
                                         $adminNavItems[] = ['route' => 'admin.license.index',            'label' => __('Lizenz'),           'icon' => 'key',              'modal' => false];
+                                    }
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::MetricsView->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.metrics.index',            'label' => __('metrics.title.index'), 'icon' => 'monitoring',    'modal' => false];
                                     }
                                     if (\Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage')) {
                                         $adminNavItems[] = ['route' => 'whistleblowing.portal.edit',     'label' => __('Meldeportal'),      'icon' => 'campaign',         'modal' => false];
@@ -712,6 +730,15 @@
                                         ['route' => 'week.index',      'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
                                         ['route' => 'kanban.index',    'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
                                         ['route' => 'attendance.index','label' => __('Stempeluhr'),    'icon' => 'punch_clock',       'modal' => false, 'matches' => ['attendance.*']],
+                                        // Dokumente (MVP-031): Recht via NavGate (@can document.viewAny
+                                        // über Document-Policy), Modul-Gating via $moduleByItemRoute.
+                                        ['route' => 'documents.index', 'label' => __('document.title.index'), 'icon' => 'folder_open', 'modal' => false, 'matches' => ['documents.*']],
+                                        // Wissensbasis (Feature 011): Recht via NavGate (@can knowledge.viewAny
+                                        // über KnowledgeArticle-Policy), Modul-Gating via $moduleByItemRoute.
+                                        ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
+                                        // Formulare (Feature 032): Recht via NavGate (@can formSubmission.viewAny
+                                        // über FormSubmission-Policy), Modul-Gating via $moduleByItemRoute.
+                                        ['route' => 'form-submissions.index', 'label' => __('form.title.submissions'), 'icon' => 'edit_note', 'modal' => false, 'matches' => ['form-submissions.*']],
                                     ],
                                 ];
                                 $sidebarSections[] = [
@@ -770,6 +797,9 @@
                                         ['route' => 'suppliers.index', 'label' => __('Lieferanten'),    'icon' => 'local_shipping',  'modal' => false, 'matches' => ['suppliers.*']],
                                         ['route' => 'projects.index',  'label' => __('Projekte'),       'icon' => 'folder_special',  'modal' => false, 'matches' => ['projects.*']],
                                         ['route' => 'invoices.index',  'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote',   'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                                        // Faktura-Übergabe (Feature 045): Recht via NavGate (@can finance.viewAny
+                                        // über BillingTransfer-Policy), Modul-Gating via $moduleByItemRoute (module.finance).
+                                        ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.*']],
                                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                         ['route' => 'events.index',    'label' => __('Veranstaltungen'),'icon' => 'event',           'modal' => false, 'matches' => ['events.*']],
                                     ],
@@ -805,6 +835,20 @@
                                             ['route' => 'dataprotection.compliance.index', 'label' => __('Lückenanalyse'), 'icon' => 'rule', 'modal' => false, 'matches' => ['dataprotection.compliance.*']],
                                             ['route' => 'dataprotection.incidents.index', 'label' => __('Datenschutzvorfälle'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['dataprotection.incidents.*']],
                                             ['route' => 'dataprotection.tom.index', 'label' => __('TOM-Katalog'), 'icon' => 'shield_lock', 'modal' => false, 'matches' => ['dataprotection.tom.*']],
+                                        ],
+                                    ];
+                                }
+                                // ISMS (Feature 044): admin + geschaeftsfuehrung (isms.viewAny);
+                                // modul-gegatet (NUR Enterprise, module.isms).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Isms\IsmsRisk::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'isms',
+                                        'label'       => __('isms.title.section'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],
+                                            ['route' => 'isms.controls.index', 'label' => __('isms.title.controls'), 'icon' => 'verified_user', 'modal' => false, 'matches' => ['isms.controls.*']],
+                                            ['route' => 'isms.soa', 'label' => __('isms.title.soa'), 'icon' => 'rule_folder', 'modal' => true, 'matches' => ['isms.soa']],
                                         ],
                                     ];
                                 }
@@ -898,6 +942,7 @@
                                 'sales' => 'module.vertrieb',
                                 'compliance' => 'module.compliance',
                                 'datenschutz' => 'module.datenschutz',
+                                'isms' => 'module.isms',
                             ];
                             $features = app(\App\Services\Licensing\FeatureFlagResolver::class);
                             $nav = app(\App\Services\Navigation\NavGate::class);
@@ -911,6 +956,10 @@
                             // (viewAny der zugehoerigen Policy via NavGate).
                             $moduleByItemRoute = [
                                 'kanban.index' => 'module.kanban',
+                                'documents.index' => 'module.documents',
+                                'knowledge.index' => 'module.knowledge',
+                                'form-submissions.index' => 'module.forms',
+                                'finance.transfers.index' => 'module.finance',
                             ];
                             $moduleByGroupKey = [
                                 'reports-team' => 'module.auswertungen_team',
@@ -1302,6 +1351,68 @@
                             </div>
                             @endif
                             @if (! $isLegacyMode)
+                            @php
+                                /* Notification-Center (MVP-018): persistente Database-Notifications. */
+                                $_notifUser = auth()->user();
+                                $_notifUnread = $_notifUser ? $_notifUser->unreadNotifications()->count() : 0;
+                                $_notifLatest = $_notifUser ? $_notifUser->notifications()->limit(8)->get() : collect();
+                            @endphp
+                            <div class="dropdown dropdown-end">
+                                <label tabindex="0"
+                                       class="btn btn-sm btn-ghost btn-square relative"
+                                       title="{{ __('notification.title.center') }}"
+                                       aria-label="{{ __('notification.title.center') }}">
+                                    <x-icon name="inbox" class="text-base" />
+                                    @if ($_notifUnread > 0)
+                                        <span class="absolute -top-0.5 -right-0.5 badge badge-xs badge-primary text-[0.6rem] font-semibold tabular-nums">
+                                            {{ $_notifUnread > 99 ? '99+' : $_notifUnread }}
+                                        </span>
+                                    @endif
+                                </label>
+                                <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 mt-2 w-[min(22rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
+                                    <div class="px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2">
+                                        <span class="text-xs uppercase tracking-wider opacity-60">{{ __('notification.title.center') }}</span>
+                                        @if ($_notifUnread > 0)
+                                            <form method="POST" action="{{ route('notifications.readAll') }}">
+                                                @csrf
+                                                <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('notification.action.mark_all_read') }}">
+                                                    <x-icon name="done_all" class="text-sm" />
+                                                    <span>{{ __('notification.action.mark_all_read') }}</span>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                    <div class="max-h-96 overflow-y-auto">
+                                        @forelse ($_notifLatest as $_notif)
+                                            @php
+                                                $_nd = (array) $_notif->data;
+                                                $_nUnread = $_notif->read_at === null;
+                                            @endphp
+                                            <a href="{{ route('notifications.index') }}"
+                                               class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0 {{ $_nUnread ? 'bg-primary/5' : '' }}">
+                                                <span class="material-symbols-outlined text-base {{ $_nUnread ? 'text-primary' : 'opacity-50' }}" aria-hidden="true">{{ $_nd['icon'] ?? 'notifications' }}</span>
+                                                <span class="flex-1 min-w-0">
+                                                    <span class="block text-sm font-medium truncate">{{ $_nd['title'] ?? '' }}</span>
+                                                    @if (! empty($_nd['message']))
+                                                        <span class="block text-xs opacity-60 mt-0.5 truncate">{{ $_nd['message'] }}</span>
+                                                    @endif
+                                                </span>
+                                                @if ($_nUnread)
+                                                    <span class="mt-1 inline-block h-2 w-2 rounded-full bg-primary shrink-0"></span>
+                                                @endif
+                                            </a>
+                                        @empty
+                                            <div class="px-4 py-6 text-center text-sm opacity-60">
+                                                <x-icon name="notifications_off" class="text-2xl block mb-1 mx-auto" />
+                                                {{ __('notification.title.empty') }}
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                    <div class="px-4 py-2 border-t border-base-200 text-right">
+                                        <a href="{{ route('notifications.index') }}" class="text-xs link link-hover opacity-70">{{ __('notification.action.show_all') }} →</a>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="dropdown dropdown-end">
                                 <label tabindex="0"
                                        class="btn btn-sm btn-ghost btn-square relative"
@@ -1846,6 +1957,7 @@
         <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
             <div class="mx-auto flex w-full {{ $_wrapperMaxW }} items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 <x-footer-copyright />
+                <span class="ml-1 whitespace-nowrap text-base-content/40" title="{{ __('Version') }}">&middot;&nbsp;v{{ config('app.version', '0.1.0-dev') }}</span>
             </div>
         </footer>
 

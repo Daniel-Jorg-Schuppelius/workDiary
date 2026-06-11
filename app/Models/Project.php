@@ -15,7 +15,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\{Carbon, Collection, Str};
 
 /**
@@ -441,6 +441,14 @@ class Project extends Model {
     /** @return HasMany<Task, $this> */
     public function tasks(): HasMany {
         return $this->hasMany(Task::class);
+    }
+
+    /** @return MorphMany<CommunicationNote, $this> */
+    public function communicationNotes(): MorphMany {
+        /** @var MorphMany<CommunicationNote, $this> $relation */
+        $relation = $this->morphMany(CommunicationNote::class, 'notable')->latest('occurred_at');
+
+        return $relation;
     }
 
     /**

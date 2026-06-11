@@ -102,7 +102,32 @@ class TimeCorrectionService {
         $request->fill(['status' => TimeCorrectionStatus::Submitted])->save();
         unset($actor); // Audit erfolgt via Auditable-Trait.
 
-        return $request->refresh();
+        $request = $request->refresh();
+
+        // Benachrichtigung (MVP-018, additiv): Entscheider informieren.
+        // Default-Regel: Rolle Teamleitung, nicht der Antragsteller selbst.
+        // Selbstkorrektur-Orgs überspringen — dort wird direkt selfApply()
+        // angewendet, eine Entscheider-Anfrage wäre nur Rauschen.
+        if ($this->selfApplicable($request)) {
+            return $request;
+        }
+
+        $owner = $request->user;
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::TimeCorrectionRequested,
+            $request,
+            $owner,
+            [
+                'title' => (string) __('notification.message.correction_requested_title', [
+                    'user' => (string) ($owner->name ?? '–'),
+                    'date' => $request->scope_date->format('d.m.Y'),
+                ]),
+                'message' => (string) $request->reason,
+                'url' => route('admin.corrections.show', $request),
+            ],
+        );
+
+        return $request;
     }
 
     /** submitted → withdrawn (nur durch Antragsteller). */
@@ -131,7 +156,37 @@ class TimeCorrectionService {
             'decision_note' => $note,
         ])->save();
 
-        return $request->refresh();
+        $request = $request->refresh();
+        $this->notifyDecided($request);
+
+        return $request;
+    }
+
+    /** Benachrichtigung „Korrekturantrag entschieden" an den Antragsteller (MVP-018, additiv). */
+    private function notifyDecided(TimeCorrectionRequest $request): void {
+        $owner = $request->user;
+        if ($owner === null) {
+            return;
+        }
+
+        $decisionKey = $request->status === TimeCorrectionStatus::Approved
+            ? 'correction_approved'
+            : 'correction_rejected';
+
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::TimeCorrectionDecided,
+            $request,
+            $owner,
+            [
+                'title' => (string) __('notification.message.correction_decided_title', [
+                    'date' => $request->scope_date->format('d.m.Y'),
+                ]),
+                'message' => (string) __('notification.message.' . $decisionKey, [
+                    'note' => (string) ($request->decision_note ?? ''),
+                ]),
+                'url' => route('corrections.show', $request),
+            ],
+        );
     }
 
     /**
@@ -184,7 +239,10 @@ class TimeCorrectionService {
             'decision_note' => $reason,
         ])->save();
 
-        return $request->refresh();
+        $request = $request->refresh();
+        $this->notifyDecided($request);
+
+        return $request;
     }
 
     /**
@@ -244,6 +302,25 @@ class TimeCorrectionService {
                 __('Target-Typ :type wird in MVP-017 nicht unterstützt.', ['type' => $targetType]),
                 ['target_type' => $targetType],
             );
+        }
+
+        // Übergabe-Guard (Feature 045, additiv): bereits an die Fakturierung
+        // übergebene Zeiteinträge (exported, z. B. via BillingTransfer) dürfen
+        // nicht mehr still korrigiert werden — Korrekturen erfordern eine
+        // Storno-/Differenzübergabe im führenden System.
+        if (
+            $targetType === TimeEntry::class
+            && in_array($item->action, ['update', 'delete'], true)
+            && $item->target_id !== null
+        ) {
+            $existing = TimeEntry::query()->find((int) $item->target_id);
+            if ($existing !== null && $existing->exported) {
+                throw new TimeCorrectionWorkflowException(
+                    'sourceTransferred',
+                    __('finance.error.entry_already_transferred'),
+                    ['target_id' => (int) $item->target_id],
+                );
+            }
         }
 
         $after = $item->after ?? [];

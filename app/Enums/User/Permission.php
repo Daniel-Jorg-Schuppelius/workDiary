@@ -44,6 +44,8 @@ enum Permission: string implements HasLabel {
         // ── Plattform-Diagnose (MVP-044) ────────────────────────────
     case PlatformDiagnosticsView = 'platform.diagnostics.view';
     case PlatformDiagnosticsRunCheck = 'platform.diagnostics.runCheck';
+        // ── Betriebsmetriken (Feature 036) ──────────────────────────
+    case MetricsView = 'metrics.view';
         // ── Plattform-Supportbericht (MVP-045) ──────────────────────
     case PlatformSupportExport = 'platform.support.export';
     case PlatformSupportExportWithSamples = 'platform.support.exportWithSamples';
@@ -180,6 +182,16 @@ enum Permission: string implements HasLabel {
     case ExportTimeDeliver = 'export.time.deliver';
     case ExportTimeDelete = 'export.time.delete';
 
+        // ── Zuschlagsregeln (Feature 005) ──────────────────────────────────
+    case SurchargeRuleViewAny = 'surchargeRule.viewAny';
+    case SurchargeRuleManage = 'surchargeRule.manage';
+
+        // ── Finanzschnittstelle (Feature 045) ──────────────────────────────
+    case FinanceViewAny = 'finance.viewAny';
+    case FinanceConfig = 'finance.config';
+    case FinanceTransferTime = 'finance.transfer.time';
+    case FinanceTransferMaterial = 'finance.transfer.material';
+
         // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
     case InvoiceView = 'invoice.view';
@@ -258,6 +270,47 @@ enum Permission: string implements HasLabel {
     case OpenIssueAssign = 'openIssue.assign';
     case OpenIssuePublishToCustomer = 'openIssue.publishToCustomer';
     case OpenIssueDelete = 'openIssue.delete';
+
+        // ── Benachrichtigungsregeln (MVP-018) ──────────────────────────────
+    case NotificationRuleViewAny = 'notificationRule.viewAny';
+    case NotificationRuleUpdate = 'notificationRule.update';
+
+        // ── Kommunikationsnotizen (MVP-012) ────────────────────────────────
+    case CommunicationViewAny = 'communication.viewAny';
+    case CommunicationView = 'communication.view';
+    case CommunicationCreate = 'communication.create';
+    case CommunicationUpdate = 'communication.update';
+    case CommunicationDelete = 'communication.delete';
+    case CommunicationPublishToCustomer = 'communication.publishToCustomer';
+    case CommunicationConfidentialManage = 'communication.confidential.manage';
+
+        // ── Dokumentenmanagement (MVP-031) ─────────────────────────────────
+    case DocumentViewAny = 'document.viewAny';
+    case DocumentView = 'document.view';
+    case DocumentCreate = 'document.create';
+    case DocumentUpdate = 'document.update';
+    case DocumentDelete = 'document.delete';
+    case DocumentArchive = 'document.archive';
+
+        // ── Wissensbasis & Problemhistorie (Feature 011) ───────────────────
+    case KnowledgeViewAny = 'knowledge.viewAny';
+    case KnowledgeView = 'knowledge.view';
+    case KnowledgeCreate = 'knowledge.create';
+    case KnowledgeUpdate = 'knowledge.update';
+    case KnowledgePublish = 'knowledge.publish';
+    case KnowledgeDelete = 'knowledge.delete';
+
+        // ── ISMS / ISO-27001-Auditbereitschaft (Feature 044) ───────────────
+    case IsmsViewAny = 'isms.viewAny';
+    case IsmsView = 'isms.view';
+    case IsmsManage = 'isms.manage';
+
+        // ── Vorlagen- & Formularsystem (Feature 032) ───────────────────────
+    case FormTemplateViewAny = 'formTemplate.viewAny';
+    case FormTemplateManage = 'formTemplate.manage';
+    case FormSubmissionViewAny = 'formSubmission.viewAny';
+    case FormSubmissionView = 'formSubmission.view';
+    case FormSubmissionCreate = 'formSubmission.create';
 
         // ── Protokolle (MVP-020) ───────────────────────────────────────────
     case ProtocolView = 'protocol.view';
@@ -364,6 +417,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'timeEntry.') => PermissionGroup::TimeEntries,
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
+            str_starts_with($this->value, 'finance.') => PermissionGroup::Finance,
             str_starts_with($this->value, 'article.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'voucher.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'diary.') => PermissionGroup::Diary,
@@ -382,14 +436,21 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'report.') => PermissionGroup::Reports,
             str_starts_with($this->value, 'attendance.'),
             str_starts_with($this->value, 'work-schedule.'),
+            str_starts_with($this->value, 'surchargeRule.'),
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'serviceTicket.') => PermissionGroup::OpenIssues,
+            str_starts_with($this->value, 'notificationRule.') => PermissionGroup::Organization,
+            str_starts_with($this->value, 'communication.') => PermissionGroup::Communication,
+            str_starts_with($this->value, 'document.') => PermissionGroup::Documents,
+            str_starts_with($this->value, 'knowledge.') => PermissionGroup::Knowledge,
+            str_starts_with($this->value, 'isms.') => PermissionGroup::Isms,
+            str_starts_with($this->value, 'formTemplate.'), str_starts_with($this->value, 'formSubmission.') => PermissionGroup::Forms,
             str_starts_with($this->value, 'slaContract.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'protocol.') => PermissionGroup::Protocols,
             str_starts_with($this->value, 'procedure.') => PermissionGroup::Procedures,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
-            str_starts_with($this->value, 'platform.') => PermissionGroup::Platform,
+            str_starts_with($this->value, 'platform.'), str_starts_with($this->value, 'metrics.') => PermissionGroup::Platform,
             default => PermissionGroup::MasterData,
         };
     }

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
-use App\Enums\Privacy\{IncidentStatus, IncidentType};
-use App\Models\Organization;
+use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
+use App\Models\{Customer, Organization};
 use App\Models\Privacy\{Incident, IncidentEvent, Measure};
 use App\Models\User;
 use Illuminate\Support\Carbon;
@@ -32,8 +32,12 @@ class IncidentService {
         ?string $affected = null,
         ?Carbon $occurredAt = null,
         ?User $actor = null,
+        ControllerRole $controllerRole = ControllerRole::Controller,
+        ?string $controllerName = null,
+        bool $ownInfrastructureAffected = false,
+        ?Customer $controllerCustomer = null,
     ): Incident {
-        return DB::transaction(function () use ($organization, $type, $summary, $affected, $occurredAt, $actor): Incident {
+        return DB::transaction(function () use ($organization, $type, $summary, $affected, $occurredAt, $actor, $controllerRole, $controllerName, $ownInfrastructureAffected, $controllerCustomer): Incident {
             $now = Carbon::now();
 
             $incident = new Incident;
@@ -41,6 +45,10 @@ class IncidentService {
             $incident->incident_number = $this->nextNumber($organization, $now);
             $incident->type = $type;
             $incident->status = IncidentStatus::Detected;
+            $incident->controller_role = $controllerRole;
+            $incident->setAttribute('controller_name', $controllerCustomer?->company ?: $controllerCustomer?->name ?: $controllerName);
+            $incident->setAttribute('controller_customer_id', $controllerCustomer?->id);
+            $incident->setAttribute('own_infrastructure_affected', $ownInfrastructureAffected);
             $incident->occurred_at = $occurredAt;
             $incident->discovered_at = $now;
             $incident->reported_internally_at = $now;
@@ -53,7 +61,7 @@ class IncidentService {
             }
             $incident->save();
 
-            $this->event($incident, 'opened', $actor, ['type' => $type->value]);
+            $this->event($incident, 'opened', $actor, ['type' => $type->value, 'role' => $controllerRole->value]);
 
             return $incident;
         });
@@ -88,6 +96,55 @@ class IncidentService {
             'subjects_notified_at' => $subjects ? $now : $incident->getAttribute('subjects_notified_at'),
         ])->save();
         $this->event($incident, 'reported', $actor, ['authority' => $authority, 'subjects' => $subjects]);
+
+        return $incident;
+    }
+
+    public function recordAuthorityReport(
+        Incident $incident,
+        string $authorityName,
+        ?string $portalUrl,
+        ?string $authorityKey,
+        string $reportType,
+        ?string $reportReference,
+        ?string $caseNumber,
+        ?Carbon $reportedAt = null,
+        ?User $actor = null,
+    ): Incident {
+        $when = $reportedAt ?? Carbon::now();
+        $incident->forceFill([
+            'status' => IncidentStatus::Reported,
+            'notify_authority' => true,
+            'authority_notified_at' => $when,
+            'authority_key' => $authorityKey,
+            'authority_name' => $authorityName,
+            'authority_portal_url' => $portalUrl,
+            'authority_report_type' => $reportType,
+            'authority_report_reference' => $reportReference,
+            'authority_case_number' => $caseNumber,
+        ])->save();
+        $this->event($incident, 'authority_report_recorded', $actor, [
+            'authority' => $authorityName,
+            'report_type' => $reportType,
+            'report_reference' => $reportReference,
+            'case_number' => $caseNumber,
+            'reported_at' => $when->toIso8601String(),
+        ]);
+
+        return $incident;
+    }
+
+    /**
+     * AV-Vorfall (Art. 33 Abs. 2): den Verantwortlichen/Kunden informieren – die
+     * Behoerdenmeldung obliegt dann dem Kunden. Schreibt Zeitpunkt + Ereignis.
+     */
+    public function notifyController(Incident $incident, ?Carbon $when = null, ?User $actor = null): Incident {
+        $now = $when ?? Carbon::now();
+        $incident->forceFill([
+            'controller_notified_at' => $now,
+            'status' => IncidentStatus::Reported,
+        ])->save();
+        $this->event($incident, 'controller_notified', $actor, ['controller' => $incident->getAttribute('controller_name')]);
 
         return $incident;
     }

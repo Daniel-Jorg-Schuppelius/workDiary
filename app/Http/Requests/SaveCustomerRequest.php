@@ -71,6 +71,10 @@ class SaveCustomerRequest extends FormRequest {
             'bank_bic' => ['nullable', 'string', 'max:32', 'regex:/^[A-Z0-9]{8}([A-Z0-9]{3})?$/i'],
             'bank_name' => ['nullable', 'string', 'max:200'],
             'billable' => ['sometimes', 'boolean'],
+            // Fakturierungsweg-Override (Feature 045): nur mit finance.config
+            // änderbar — ohne die Permission wird das Feld verworfen (siehe
+            // prepareForValidation) und taucht nicht in validated() auf.
+            'billing_mode' => ['sometimes', 'nullable', Rule::in(\App\Enums\Finance\BillingMode::values())],
             'contact_persons' => ['nullable', 'array', 'max:20'],
             'contact_persons.*.name' => ['nullable', 'string', 'max:200'],
             'contact_persons.*.email' => ['nullable', 'email', 'max:255'],
@@ -138,6 +142,17 @@ class SaveCustomerRequest extends FormRequest {
             $travel = array_filter($travel, static fn($v): bool => $v !== null && $v !== '');
         } else {
             $travel = [];
+        }
+
+        // Fakturierungsweg (Feature 045): ohne finance.config-Permission wird
+        // die Eingabe ignoriert; leerer String = Override entfernen (erben).
+        if ($this->has('billing_mode')) {
+            $canConfigureFinance = $this->user()?->can(\App\Enums\User\Permission::FinanceConfig->value) === true;
+            if (! $canConfigureFinance) {
+                $this->request->remove('billing_mode');
+            } elseif ($this->input('billing_mode') === '') {
+                $this->merge(['billing_mode' => null]);
+            }
         }
 
         $this->merge([

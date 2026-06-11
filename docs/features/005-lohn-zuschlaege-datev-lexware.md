@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Monatsfreigabe-Datenmodell (MVP-016):
+In Progress — Zuschlagsregeln und -berechnung (Nacht/Sa/So/Feiertag, max-Stacking), TimeExport-Integration und DATEV-LODAS-Profil umgesetzt (2026-06-10). Offen: Kostenstellen, steuerfrei/-pflichtig-Splitting, Lexware-Spezialformat. Monatsfreigabe-Datenmodell (MVP-016):
 [docs/monatsfreigabe.md](../monatsfreigabe.md). Exportgrundlage geprüfter
 Zeiten (MVP-019): [docs/zeit-export.md](../zeit-export.md). DATEV-/
 Lexware-Profile folgen als eigene Issues.
@@ -41,6 +41,7 @@ Reisezuschläge korrekt? Können Daten an DATEV, Lexware oder andere Systeme
 ## Abhängigkeiten
 
 - Zeiterfassungs-Monatsfreigabe
+- [DATEV- und Finanzschnittstelle](./045-datev-finanzschnittstelle.md)
 - `Attendance`
 - `TimeEntry`
 - `ScheduledShift`

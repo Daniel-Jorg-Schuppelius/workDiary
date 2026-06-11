@@ -108,6 +108,7 @@ class Customer extends Model {
         'bank_bic',
         'bank_name',
         'billable',
+        'billing_mode',
         'archived_at',
         'created_by',
     ];
@@ -115,6 +116,7 @@ class Customer extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'billable' => 'boolean',
+        'billing_mode' => \App\Enums\Finance\BillingMode::class,
         'archived_at' => 'datetime',
         'hourly_rate' => 'decimal:2',
         'internal_rate' => 'decimal:2',
@@ -212,6 +214,14 @@ class Customer extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** @return MorphMany<CommunicationNote, $this> */
+    public function communicationNotes(): MorphMany {
+        /** @var MorphMany<CommunicationNote, $this> $relation */
+        $relation = $this->morphMany(CommunicationNote::class, 'notable')->latest('occurred_at');
+
+        return $relation;
     }
 
     /** @return MorphMany<ContactAddress, $this> */

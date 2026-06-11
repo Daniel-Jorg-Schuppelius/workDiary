@@ -1,0 +1,89 @@
+<?php
+/*
+ * Created on   : Wed Jun 10 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : notification.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+return [
+    'title' => [
+        'center' => 'Notifiche',
+        'center_subtitle' => 'Le tue notifiche in-app — lette e non lette.',
+        'empty' => 'Nessuna notifica.',
+        'empty_message' => 'Non appena un evento ti riguarda, apparirà qui.',
+        'rules' => 'Regole di notifica',
+        'rules_subtitle' => 'Regole per tipo di evento: canali, destinatari ed escalation.',
+        'rules_help' => 'Come funzionano le regole di notifica?',
+        'rules_help_text' => 'Per ogni tipo di evento la regola definisce se e tramite quali canali vengono inviate le notifiche e chi le riceve (persona interessata, ruoli, persone fisse). Senza una regola salvata vale l’impostazione predefinita mostrata. Escalation: se un evento scaduto resta irrisolto oltre il tempo configurato, viene notificato in aggiunta il ruolo di escalation.',
+        'edit_rule' => 'Modifica regola di notifica',
+        'preferences' => 'Notifiche',
+    ],
+
+    'field' => [
+        'event' => 'Evento',
+        'enabled' => 'Attivo',
+        'rule_enabled' => 'Notifiche attive per questo evento',
+        'channels' => 'Canali',
+        'recipients' => 'Destinatari',
+        'affected_user' => 'Persona interessata',
+        'notify_affected_help' => 'Notifica la persona interessata (es. assegnataria o richiedente)',
+        'recipient_roles' => 'Ruoli destinatari',
+        'recipient_users' => 'Destinatari fissi aggiuntivi',
+        'fixed_users' => 'destinatari fissi',
+        'escalation' => 'Escalation',
+        'escalation_enabled' => 'Escalation attiva',
+        'escalation_help' => 'Se l’evento resta irrisolto per il tempo configurato dopo la prima notifica, viene notificato in aggiunta il ruolo di escalation.',
+        'escalation_unsupported' => 'L’escalation è disponibile solo per gli eventi scaduti.',
+        'escalate_after_hours' => 'Escalation dopo (ore)',
+        'escalation_role' => 'Ruolo di escalation',
+        'escalation_summary' => 'dopo :hours h a :role',
+        'default_rule' => 'Predefinito (non ancora personalizzato)',
+        'unread' => 'nuovo',
+        'yes' => 'Sì',
+        'no' => 'No',
+        'mail_enabled' => 'Ricevi notifiche via e-mail',
+        'quiet_from' => 'Ore di silenzio da',
+        'quiet_to' => 'Ore di silenzio fino a',
+        'preferences_help' => 'Le notifiche in-app vengono sempre raccolte. E-mail (e push) possono essere disattivate; durante le ore di silenzio non vengono inviati e-mail/push.',
+    ],
+
+    'action' => [
+        'mark_read' => 'Segna come letta',
+        'mark_all_read' => 'Segna tutte come lette',
+        'open' => 'Apri',
+        'show_all' => 'Mostra tutte',
+        'edit' => 'Modifica',
+        'save' => 'Salva',
+    ],
+
+    'flash' => [
+        'all_read' => 'Tutte le notifiche sono state segnate come lette.',
+        'rule_saved' => 'La regola di notifica per «:event» è stata salvata.',
+    ],
+
+    'mail' => [
+        'subject' => ':event: :title',
+        'subject_escalation' => 'Escalation — :event: :title',
+        'greeting' => 'Ciao :name,',
+        'action' => 'Apri nel sistema',
+    ],
+
+    'message' => [
+        'issue_assigned' => ':actor ti ha assegnato questo punto aperto.',
+        'due_soon' => 'In scadenza il :date.',
+        'overdue' => 'Scaduto dal :date.',
+        'followup_due_soon' => 'Azione di follow-up in scadenza il :date.',
+        'followup_overdue' => 'Azione di follow-up scaduta dal :date.',
+        'followup_fallback_title' => 'Follow-up di una nota di comunicazione',
+        'expiring_soon' => 'Il documento scade il :date.',
+        'expired' => 'Il documento è scaduto dal :date.',
+        'correction_requested_title' => 'Richiesta di correzione orari di :user per il :date',
+        'correction_decided_title' => 'Decisione sulla tua richiesta di correzione (:date)',
+        'correction_approved' => 'La tua richiesta è stata approvata. :note',
+        'correction_rejected' => 'La tua richiesta è stata respinta. :note',
+        'month_submitted_title' => 'Chiusura mensile :period inviata da :user',
+    ],
+];

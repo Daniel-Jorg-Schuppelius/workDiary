@@ -29,6 +29,7 @@ enum PermissionGroup: string implements HasLabel {
     case TimeEntries = 'time-entries';
     case Timesheets = 'timesheets';
     case Invoicing = 'invoicing';
+    case Finance = 'finance';
     case Diary = 'diary';
     case Scheduling = 'scheduling';
     case Absences = 'absences';
@@ -37,6 +38,11 @@ enum PermissionGroup: string implements HasLabel {
     case WorkingTime = 'working-time';
     case MasterData = 'master-data';
     case OpenIssues = 'open-issues';
+    case Communication = 'communication';
+    case Documents = 'documents';
+    case Knowledge = 'knowledge';
+    case Isms = 'isms';
+    case Forms = 'forms';
     case Protocols = 'protocols';
     case Procedures = 'procedures';
     case CustomerPortal = 'customer-portal';
@@ -57,6 +63,7 @@ enum PermissionGroup: string implements HasLabel {
             self::TimeEntries => 'schedule',
             self::Timesheets => 'fact_check',
             self::Invoicing => 'receipt_long',
+            self::Finance => 'account_balance',
             self::Diary => 'menu_book',
             self::Scheduling => 'event_note',
             self::Absences => 'beach_access',
@@ -65,6 +72,11 @@ enum PermissionGroup: string implements HasLabel {
             self::WorkingTime => 'punch_clock',
             self::MasterData => 'category',
             self::OpenIssues => 'task_alt',
+            self::Communication => 'forum',
+            self::Documents => 'folder_open',
+            self::Knowledge => 'school',
+            self::Isms => 'verified_user',
+            self::Forms => 'assignment',
             self::Protocols => 'description',
             self::Procedures => 'rule',
             self::CustomerPortal => 'support_agent',

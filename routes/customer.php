@@ -24,6 +24,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
     // Zweiter Login-Schritt (Zwei-Faktor): session-basiert, kein auth-Guard.
     Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.login');
     Route::post('/two-factor-challenge', [TwoFactorChallengeController::class, 'store'])->middleware('throttle:login')->name('two-factor.login.attempt');
+    Route::post('/two-factor-challenge/email', [TwoFactorChallengeController::class, 'email'])->middleware('throttle:login')->name('two-factor.login.email');
+    Route::post('/two-factor-challenge/webauthn/options', [TwoFactorChallengeController::class, 'webauthnOptions'])->name('two-factor.login.webauthn.options');
+    Route::post('/two-factor-challenge/webauthn', [TwoFactorChallengeController::class, 'webauthnVerify'])->middleware('throttle:login')->name('two-factor.login.webauthn');
 
     Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
@@ -36,6 +39,13 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('2fa.show');
         Route::post('/two-factor', [TwoFactorController::class, 'enable'])->name('2fa.enable');
         Route::post('/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('2fa.confirm');
+        Route::post('/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('2fa.recovery');
+        Route::post('/two-factor/email', [TwoFactorController::class, 'enableEmail'])->name('2fa.email.enable');
+        Route::post('/two-factor/email/resend', [TwoFactorController::class, 'resendEmailCode'])->name('2fa.email.resend');
+        Route::post('/two-factor/email/confirm', [TwoFactorController::class, 'confirmEmail'])->name('2fa.email.confirm');
+        Route::post('/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->name('2fa.webauthn.options');
+        Route::post('/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->name('2fa.webauthn.register');
+        Route::delete('/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->name('2fa.credential.destroy');
         Route::delete('/two-factor', [TwoFactorController::class, 'disable'])->name('2fa.disable');
     });
 });

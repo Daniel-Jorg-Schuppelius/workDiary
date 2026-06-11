@@ -101,6 +101,59 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\Chat\PollVote::class,
         \App\Models\Chat\Reminder::class,
         \App\Models\Chat\ScheduledMessage::class,
+        // Beteiligte einer Kommunikationsnotiz (MVP-012) — Mandantengrenze
+        // transitiv über die tenant-gebundene CommunicationNote (eigene
+        // organization_id wäre redundant). Siehe Allow-List im Audit-Doc.
+        \App\Models\CommunicationNoteParticipant::class,
+        // Datei-Version eines Dokuments (MVP-031) — append-only Kind-Tabelle,
+        // Mandantengrenze transitiv über das tenant-gebundene Document
+        // (documents.organization_id). Siehe Allow-List im Audit-Doc.
+        \App\Models\DocumentVersion::class,
+        // Wissensbasis (Feature 011): Verknüpfungen und Feedback sind
+        // Kind-Tabellen des tenant-gebundenen KnowledgeArticle —
+        // Mandantengrenze transitiv (knowledge_articles.organization_id),
+        // Controller bindet Links nur in Kombination mit dem Artikel.
+        // Siehe Allow-List im Audit-Doc.
+        \App\Models\KnowledgeArticleLink::class,
+        \App\Models\KnowledgeArticleFeedback::class,
+        // Append-only Event-Hash-Ketten (Hinweisgeber-/Datenschutzmodul) —
+        // analog OrganizationAuditLog: nullable organization_id BEWUSST ohne
+        // FK und ohne Global-Scope, da die Ketten (config('audit.chains'))
+        // via `audit:verify` scope-frei über alle Zeilen verifizierbar sein
+        // müssen und Einträge die Löschung von Fall/Org überdauern
+        // (organization_id geht in den Hash ein, ein Cascade würde die
+        // Kette zerreißen). Siehe Allow-List im Audit-Doc.
+        \App\Models\Whistleblowing\CaseEvent::class,
+        \App\Models\Privacy\RequestEvent::class,
+        \App\Models\Privacy\IncidentEvent::class,
+        // Tombstone-Ledger des Hinweisgebermoduls: Minimalnachweis OHNE
+        // Meldeinhalte, überlebt die Fall-Löschung (nullable organization_id
+        // ohne FK) und wird beim Backup-Restore wieder angewandt, um nach
+        // dem Backup gelöschte Fälle erneut zu sperren — ein Global-Scope
+        // würde genau diese Restore-/Nachweis-Funktion aushebeln.
+        \App\Models\Whistleblowing\CaseTombstone::class,
+        // Downgrade-/Karenz-Ledger des Lizenz-Layers (plan_module_grace):
+        // hat organization_id (FK + Unique je Org+Modul), wird aber in
+        // Command-/Gate-Kontexten (plans:purge, PlanModuleService) ohne
+        // Tenant-Kontext orgübergreifend gelesen und immer explizit nach
+        // organization_id gefiltert — bewusst ohne Global-Scope.
+        \App\Models\PlanModuleGrace::class,
+        // Zweiter Faktor eines Users (TOTP/E-Mail/WebAuthn): über user_id
+        // (FK cascade) an den User gebunden und damit transitiv
+        // mandantenfähig — analog UserBookmark; Zugriff ausschließlich über
+        // $user->twoFactorCredentials() bzw. mit explizitem Ownership-Check.
+        \App\Models\Auth\TwoFactorCredential::class,
+        // Quellnachweis-Positionen eines Übergabenachweises (Feature 045):
+        // Kind-Tabelle des tenant-gebundenen BillingTransfer — Mandantengrenze
+        // transitiv über billing_transfers.organization_id (analog
+        // TimeExportLine); Zugriff ausschließlich über den BillingTransfer.
+        \App\Models\Finance\BillingTransferItem::class,
+        // Append-only Event-Hash-Kette der Finanzschnittstelle (Feature 045) —
+        // analog Whistleblowing\CaseEvent: nullable organization_id BEWUSST
+        // ohne FK und ohne Global-Scope, da die Kette (config('audit.chains'))
+        // via `audit:verify` scope-frei über alle Zeilen verifizierbar sein
+        // muss und Einträge die Löschung von Transfer/Org überdauern.
+        \App\Models\Finance\BillingTransferEvent::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

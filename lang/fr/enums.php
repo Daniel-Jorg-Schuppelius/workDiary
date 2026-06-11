@@ -179,6 +179,26 @@ return [
             'cancelled' => 'Annulé',
         ],
     ],
+    'notification' => [
+        'event' => [
+            'openIssue.assigned' => 'Point ouvert assigné',
+            'openIssue.dueSoon' => 'Point ouvert bientôt dû',
+            'openIssue.overdue' => 'Point ouvert en retard',
+            'communication.followupDueSoon' => 'Action de suivi bientôt due',
+            'communication.followupOverdue' => 'Action de suivi en retard',
+            'document.expiringSoon' => 'Document expirant bientôt',
+            'document.expired' => 'Document expiré',
+            'timeCorrection.requested' => 'Demande de correction de temps soumise',
+            'timeCorrection.decided' => 'Demande de correction de temps décidée',
+            'monthClosure.submitted' => 'Clôture mensuelle soumise',
+        ],
+        'channel' => [
+            'inApp' => 'Dans l’application',
+            'mail' => 'E-mail',
+            'push' => 'Push',
+        ],
+    ],
+
     'open-issue' => [
         'status' => [
             'open' => 'Ouvert',
@@ -202,6 +222,78 @@ return [
         'visibility' => [
             'internal' => 'Interne',
             'customer' => 'Visible par le client',
+        ],
+    ],
+    'communication' => [
+        'type' => [
+            'call' => 'Appel téléphonique',
+            'email' => 'E-mail',
+            'meeting' => 'Entretien sur site',
+            'videocall' => 'Visioconférence',
+            'chat' => 'Chat / messagerie',
+            'internal' => 'Concertation interne',
+            'decision' => 'Décision',
+            'letter' => 'Courrier / fax',
+            'other' => 'Autre',
+        ],
+        'direction' => [
+            'inbound' => 'Entrant',
+            'outbound' => 'Sortant',
+            'internal' => 'Interne',
+        ],
+        'visibility' => [
+            'internal' => 'Interne',
+            'customer' => 'Visible client',
+        ],
+        'party' => [
+            'internal' => 'Interne',
+            'customer' => 'Client',
+            'thirdParty' => 'Tiers',
+        ],
+    ],
+    'knowledge' => [
+        'status' => [
+            'draft' => 'Brouillon',
+            'published' => 'Publié',
+            'archived' => 'Archivé',
+        ],
+        'visibility' => [
+            'internal' => 'Interne (toute l’organisation)',
+            'team' => 'Limité à l’équipe',
+        ],
+    ],
+    'form' => [
+        'template_status' => [
+            'draft' => 'Brouillon',
+            'active' => 'Actif',
+            'archived' => 'Archivé',
+        ],
+        'field_type' => [
+            'text' => 'Texte',
+            'textarea' => 'Texte multiligne',
+            'number' => 'Nombre',
+            'date' => 'Date',
+            'select' => 'Sélection',
+            'checkbox' => 'Case à cocher',
+        ],
+    ],
+    'document' => [
+        'type' => [
+            'contract' => 'Contrat',
+            'testReport' => 'Rapport de contrôle',
+            'certificate' => 'Certificat',
+            'manual' => 'Manuel',
+            'datasheet' => 'Fiche technique',
+            'manufacturerDoc' => 'Document fabricant',
+            'permit' => 'Autorisation',
+            'insurance' => 'Assurance',
+            'other' => 'Autre',
+        ],
+        'status' => [
+            'draft' => 'Brouillon',
+            'active' => 'Actif',
+            'expired' => 'Expiré',
+            'archived' => 'Archivé',
         ],
     ],
     'protocol' => [
@@ -344,6 +436,70 @@ return [
             'new_diary_entry' => 'Nouvelle mission',
             'requalify' => 'Réexécuter',
             'escalate' => 'Escalade',
+        ],
+    ],
+    'isms' => [
+        'risk-category' => [
+            'organizational' => 'Organisationnel',
+            'technical' => 'Technique',
+            'physical' => 'Physique',
+            'personnel' => 'Personnel',
+            'supplier' => 'Fournisseur',
+        ],
+        'risk-treatment' => [
+            'avoid' => 'Éviter',
+            'mitigate' => 'Réduire',
+            'transfer' => 'Transférer',
+            'accept' => 'Accepter',
+        ],
+        'risk-status' => [
+            'identified' => 'Identifié',
+            'analyzed' => 'Analysé',
+            'treated' => 'Traité',
+            'accepted' => 'Accepté',
+            'closed' => 'Clôturé',
+        ],
+        'control-source' => [
+            'iso27001AnnexA' => 'ISO/IEC 27001 Annexe A',
+            'custom' => 'Mesure propre',
+        ],
+        'control-implementation-status' => [
+            'open' => 'Ouvert',
+            'partial' => 'Partiellement mis en œuvre',
+            'implemented' => 'Mis en œuvre',
+            'notApplicable' => 'Non applicable',
+        ],
+    ],
+    'surcharge' => [
+        'kind' => [
+            'night' => 'Nuit',
+            'saturday' => 'Samedi',
+            'sunday' => 'Dimanche',
+            'holiday' => 'Jour férié',
+            'custom' => 'Personnalisé',
+        ],
+    ],
+    'finance' => [
+        'billing-mode' => [
+            'workdiary' => 'WorkDiary (local)',
+            'lexoffice' => 'Lexoffice pilote',
+            'datev' => 'DATEV pilote',
+        ],
+        'transfer-channel' => [
+            'time' => 'Prestations/temps',
+            'material' => 'Produits/matériel',
+        ],
+        'transfer-target' => [
+            'lexoffice' => 'Lexoffice',
+            'datev' => 'DATEV',
+            'file' => 'Export de fichier',
+        ],
+        'transfer-status' => [
+            'draft' => 'Brouillon',
+            'confirmed' => 'Confirmé',
+            'transferred' => 'Transféré',
+            'failed' => 'Échoué',
+            'voided' => 'Annulé',
         ],
     ],
 ];

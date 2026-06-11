@@ -15,6 +15,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FAQRCode\Google2FA;
 
@@ -67,8 +68,9 @@ class TwoFactorService {
     }
 
     /**
-     * Acht frische, einmalig nutzbare Recovery-Codes (Klartext zur Anzeige;
-     * at-rest über den encrypted-Cast der Spalte verschlüsselt).
+     * Acht frische, einmalig nutzbare Recovery-Codes im KLARTEXT.
+     * Nur zur einmaligen Anzeige – gespeichert wird ausschließlich der Hash
+     * (siehe regenerateRecoveryCodes()).
      *
      * @return list<string>
      */
@@ -77,5 +79,68 @@ class TwoFactorService {
             static fn (): string => Str::lower(Str::random(5)) . '-' . Str::lower(Str::random(5)),
             range(1, 8)
         );
+    }
+
+    /**
+     * Erzeugt neue Recovery-Codes, speichert sie GEHASHT (nicht reversibel) und
+     * gibt den Klartext zur einmaligen Anzeige zurück. Bei DB-Leak sind die
+     * Codes damit – anders als bei reversibler Verschlüsselung – nicht nutzbar.
+     *
+     * @return list<string> Klartext-Codes
+     */
+    public function regenerateRecoveryCodes(User $user): array {
+        $plain = $this->newRecoveryCodes();
+        $hashed = array_map(static fn (string $c): string => Hash::make($c), $plain);
+        $user->forceFill(['two_factor_recovery_codes' => $hashed])->save();
+
+        return $plain;
+    }
+
+    /**
+     * Stellt sicher, dass Recovery-Codes existieren. Existieren bereits welche,
+     * werden sie NICHT erneut ausgegeben (sie liegen nur gehasht vor).
+     *
+     * @return list<string> neu erzeugte Klartext-Codes oder leeres Array
+     */
+    public function ensureRecoveryCodes(User $user): array {
+        if ((array) ($user->two_factor_recovery_codes ?? []) !== []) {
+            return [];
+        }
+
+        return $this->regenerateRecoveryCodes($user);
+    }
+
+    /** Prüft einen Recovery-Code gegen die gehashten Codes – ohne ihn zu verbrauchen. */
+    public function matchesRecoveryCode(User $user, string $input): bool {
+        $input = trim($input);
+        if ($input === '') {
+            return false;
+        }
+        foreach ((array) ($user->two_factor_recovery_codes ?? []) as $hash) {
+            if (is_string($hash) && Hash::check($input, $hash)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Prüft und VERBRAUCHT einen Recovery-Code (einmalig). */
+    public function consumeRecoveryCode(User $user, string $input): bool {
+        $input = trim($input);
+        if ($input === '') {
+            return false;
+        }
+        $codes = (array) ($user->two_factor_recovery_codes ?? []);
+        foreach ($codes as $i => $hash) {
+            if (is_string($hash) && Hash::check($input, $hash)) {
+                unset($codes[$i]);
+                $user->forceFill(['two_factor_recovery_codes' => array_values($codes)])->save();
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

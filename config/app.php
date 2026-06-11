@@ -23,6 +23,20 @@ return [
 
     'name' => env('APP_NAME', 'WorkDiary'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Application Version (Feature 022)
+    |--------------------------------------------------------------------------
+    |
+    | Semantische Version der Installation. Wird im Footer, auf der
+    | Betriebsmetrik-/Diagnose-Seite und im Health-Check angezeigt.
+    | Releases setzen APP_VERSION in der .env; ohne Eintrag greift der
+    | Dev-Fallback.
+    |
+    */
+
+    'version' => env('APP_VERSION', '0.1.0-dev'),
+
     'copyright_start_year' => 2026,
 
     'copyright_holder' => 'Daniel Jörg Schuppelius',

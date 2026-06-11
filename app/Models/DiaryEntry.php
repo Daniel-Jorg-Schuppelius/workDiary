@@ -216,6 +216,14 @@ class DiaryEntry extends Model {
         return $relation;
     }
 
+    /** @return MorphMany<CommunicationNote, $this> */
+    public function communicationNotes(): MorphMany {
+        /** @var MorphMany<CommunicationNote, $this> $relation */
+        $relation = $this->morphMany(CommunicationNote::class, 'notable')->latest('occurred_at');
+
+        return $relation;
+    }
+
     public function statusLabel(): string {
         return $this->status->label();
     }

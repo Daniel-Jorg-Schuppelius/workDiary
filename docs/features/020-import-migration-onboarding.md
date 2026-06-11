@@ -38,6 +38,7 @@ produktiv nutzen können.
 ## Abhängigkeiten
 
 - Mandantenfähigkeit und Betriebsmodelle
+- [DATEV- und Finanzschnittstelle](./045-datev-finanzschnittstelle.md)
 - Kunden, Projekte, Nutzer
 - Inventar, Dienstmittel und Assets
 - Dienstplan

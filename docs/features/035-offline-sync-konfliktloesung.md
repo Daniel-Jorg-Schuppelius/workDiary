@@ -2,7 +2,9 @@
 
 ## Status
 
-Proposed
+Proposed — Architekturkonzept erstellt (2026-06-10):
+[Offline-Sync-Architektur](../offline-sync-architektur.md). Umsetzung
+bewusst zurückgestellt bis zur CSP-/Alpine-Build-Entscheidung.
 
 ## Ziel
 

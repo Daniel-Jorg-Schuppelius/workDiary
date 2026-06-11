@@ -91,6 +91,14 @@ Schedule::command('maintenance:scan-due')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Benachrichtigungen & Eskalationen (MVP-018): Fristen-Scanner für Offene
+// Punkte, Kommunikations-Folgeaktionen und ablaufende Dokumente. Stündlich,
+// idempotent (Dedup über notification_dispatch_log).
+Schedule::command('notifications:scan-deadlines')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('tickets:scan-sla-breaches')
     ->everyFiveMinutes()
     ->withoutOverlapping()

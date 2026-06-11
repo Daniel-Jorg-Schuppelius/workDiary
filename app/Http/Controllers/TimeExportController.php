@@ -32,8 +32,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class TimeExportController extends Controller {
     private const ALLOWED_SORTS = ['period_year', 'profile', 'status', 'rows_count', 'created_at'];
 
-    public function __construct(private readonly TimeExportService $service) {
-    }
+    public function __construct(private readonly TimeExportService $service) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', TimeExport::class);
@@ -149,7 +148,7 @@ class TimeExportController extends Controller {
 
     public function show(TimeExport $export): View {
         Gate::authorize('view', $export);
-        $export->load(['lines.user', 'events.actor', 'creator', 'deliveredBy', 'scopeUser', 'supersededBy']);
+        $export->load(['lines.user', 'lines.surchargeRule', 'events.actor', 'creator', 'deliveredBy', 'scopeUser', 'supersededBy']);
 
         return view('exports.show', [
             'export' => $export,

@@ -150,6 +150,58 @@
         </div>
     </div>
 
+    {{-- Prüfansicht (Feature 005): Summen je Mitarbeiter:in und Lohnart/Zuschlagsart --}}
+    @php
+        $userWageSummary = $export->lines
+            ->groupBy(fn($l) => $l->user_id . '|' . $l->wage_type)
+            ->map(fn($group) => [
+                'user' => $group->first()->user,
+                'wage_type' => $group->first()->wage_type,
+                'wage_type_code' => $group->first()->wage_type_code,
+                'percentage' => $group->first()->percentage,
+                'rule_label' => $group->first()->surchargeRule?->label,
+                'hours' => $group->sum(fn($l) => (float) $l->quantity),
+            ])
+            ->sortBy([['user.name', 'asc'], ['wage_type', 'asc']])
+            ->values();
+    @endphp
+    <div class="card bg-base-100 shadow-sm">
+        <div class="card-body">
+            <h3 class="card-title text-base">{{ __('surcharge.title.export_summary') }}</h3>
+            @if ($userWageSummary->isEmpty())
+                <p class="text-sm text-base-content/60">{{ __('Keine Summen verfügbar.') }}</p>
+            @else
+                <x-table table-sort="client">
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th sort type="string" default="asc">{{ __('Mitarbeiter:in') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('Lohnart') }}</x-table.th>
+                            <x-table.th sort type="string">{{ __('surcharge.field.wage_type_code') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('surcharge.field.percentage') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('surcharge.field.hours') }}</x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($userWageSummary as $row)
+                        <tr>
+                            <td>{{ $row['user']?->name }}</td>
+                            <td>
+                                <span class="font-mono text-sm">{{ $row['wage_type'] }}</span>
+                                @if ($row['rule_label'])
+                                    <div class="text-xs text-base-content/60">{{ $row['rule_label'] }}</div>
+                                @endif
+                            </td>
+                            <td class="font-mono text-sm">{{ $row['wage_type_code'] ?? '—' }}</td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $row['percentage'] ?? 0 }}">
+                                {{ $row['percentage'] !== null ? number_format((float) $row['percentage'], 2, ',', '.') . ' %' : '—' }}
+                            </td>
+                            <td class="text-right tabular-nums" data-sort-value="{{ $row['hours'] }}">{{ number_format($row['hours'], 4, ',', '.') }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            @endif
+        </div>
+    </div>
+
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
             <h3 class="card-title text-base">{{ __('Zeilen') }}</h3>

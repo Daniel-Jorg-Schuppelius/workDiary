@@ -470,5 +470,11 @@
             </x-table>
         </x-card>
     @endif
+
+    @include('customers._timeline_panel', ['customer' => $customer])
+
+    @include('communication-notes._panel', ['notable' => $customer, 'notableKind' => 'customer'])
+
+    @include('documents._panel', ['documentable' => $customer, 'documentableKind' => 'customer'])
 </x-page-shell>
 @endsection

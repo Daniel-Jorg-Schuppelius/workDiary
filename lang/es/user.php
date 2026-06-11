@@ -4,6 +4,7 @@ return [
     'role' => [
         'admin' => 'Administrador',
         'meldestelle' => 'Oficina de denuncias',
+        'datenschutz' => 'Protección de datos',
         'geschaeftsfuehrung' => 'Dirección',
         'personalverwaltung' => 'Administración de personal',
         'teamleitung' => 'Jefe de equipo',

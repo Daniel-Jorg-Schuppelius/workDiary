@@ -179,6 +179,26 @@ return [
             'cancelled' => 'Cancelled',
         ],
     ],
+    'notification' => [
+        'event' => [
+            'openIssue.assigned' => 'Open issue assigned',
+            'openIssue.dueSoon' => 'Open issue due soon',
+            'openIssue.overdue' => 'Open issue overdue',
+            'communication.followupDueSoon' => 'Follow-up due soon',
+            'communication.followupOverdue' => 'Follow-up overdue',
+            'document.expiringSoon' => 'Document expiring soon',
+            'document.expired' => 'Document expired',
+            'timeCorrection.requested' => 'Time correction requested',
+            'timeCorrection.decided' => 'Time correction decided',
+            'monthClosure.submitted' => 'Month closure submitted',
+        ],
+        'channel' => [
+            'inApp' => 'In-app',
+            'mail' => 'E-mail',
+            'push' => 'Push',
+        ],
+    ],
+
     'open-issue' => [
         'status' => [
             'open' => 'Open',
@@ -202,6 +222,78 @@ return [
         'visibility' => [
             'internal' => 'Internal',
             'customer' => 'Customer-visible',
+        ],
+    ],
+    'communication' => [
+        'type' => [
+            'call' => 'Phone call',
+            'email' => 'Email',
+            'meeting' => 'On-site meeting',
+            'videocall' => 'Video call',
+            'chat' => 'Chat / messenger',
+            'internal' => 'Internal consultation',
+            'decision' => 'Decision',
+            'letter' => 'Letter / fax',
+            'other' => 'Other',
+        ],
+        'direction' => [
+            'inbound' => 'Inbound',
+            'outbound' => 'Outbound',
+            'internal' => 'Internal',
+        ],
+        'visibility' => [
+            'internal' => 'Internal',
+            'customer' => 'Customer-visible',
+        ],
+        'party' => [
+            'internal' => 'Internal',
+            'customer' => 'Customer',
+            'thirdParty' => 'Third party',
+        ],
+    ],
+    'knowledge' => [
+        'status' => [
+            'draft' => 'Draft',
+            'published' => 'Published',
+            'archived' => 'Archived',
+        ],
+        'visibility' => [
+            'internal' => 'Internal (whole organisation)',
+            'team' => 'Team-scoped',
+        ],
+    ],
+    'form' => [
+        'template_status' => [
+            'draft' => 'Draft',
+            'active' => 'Active',
+            'archived' => 'Archived',
+        ],
+        'field_type' => [
+            'text' => 'Text',
+            'textarea' => 'Multi-line text',
+            'number' => 'Number',
+            'date' => 'Date',
+            'select' => 'Select',
+            'checkbox' => 'Checkbox',
+        ],
+    ],
+    'document' => [
+        'type' => [
+            'contract' => 'Contract',
+            'testReport' => 'Test report',
+            'certificate' => 'Certificate',
+            'manual' => 'Manual',
+            'datasheet' => 'Datasheet',
+            'manufacturerDoc' => 'Manufacturer document',
+            'permit' => 'Permit',
+            'insurance' => 'Insurance',
+            'other' => 'Other',
+        ],
+        'status' => [
+            'draft' => 'Draft',
+            'active' => 'Active',
+            'expired' => 'Expired',
+            'archived' => 'Archived',
         ],
     ],
     'protocol' => [
@@ -344,6 +436,70 @@ return [
             'new_diary_entry' => 'New job',
             'requalify' => 'Run again',
             'escalate' => 'Escalation',
+        ],
+    ],
+    'isms' => [
+        'risk-category' => [
+            'organizational' => 'Organisational',
+            'technical' => 'Technical',
+            'physical' => 'Physical',
+            'personnel' => 'Personnel',
+            'supplier' => 'Supplier',
+        ],
+        'risk-treatment' => [
+            'avoid' => 'Avoid',
+            'mitigate' => 'Mitigate',
+            'transfer' => 'Transfer',
+            'accept' => 'Accept',
+        ],
+        'risk-status' => [
+            'identified' => 'Identified',
+            'analyzed' => 'Analysed',
+            'treated' => 'Treated',
+            'accepted' => 'Accepted',
+            'closed' => 'Closed',
+        ],
+        'control-source' => [
+            'iso27001AnnexA' => 'ISO/IEC 27001 Annex A',
+            'custom' => 'Custom control',
+        ],
+        'control-implementation-status' => [
+            'open' => 'Open',
+            'partial' => 'Partially implemented',
+            'implemented' => 'Implemented',
+            'notApplicable' => 'Not applicable',
+        ],
+    ],
+    'surcharge' => [
+        'kind' => [
+            'night' => 'Night',
+            'saturday' => 'Saturday',
+            'sunday' => 'Sunday',
+            'holiday' => 'Public holiday',
+            'custom' => 'Custom',
+        ],
+    ],
+    'finance' => [
+        'billing-mode' => [
+            'workdiary' => 'WorkDiary (local)',
+            'lexoffice' => 'Lexoffice leads',
+            'datev' => 'DATEV leads',
+        ],
+        'transfer-channel' => [
+            'time' => 'Services/time',
+            'material' => 'Products/material',
+        ],
+        'transfer-target' => [
+            'lexoffice' => 'Lexoffice',
+            'datev' => 'DATEV',
+            'file' => 'File export',
+        ],
+        'transfer-status' => [
+            'draft' => 'Draft',
+            'confirmed' => 'Confirmed',
+            'transferred' => 'Transferred',
+            'failed' => 'Failed',
+            'voided' => 'Voided',
         ],
     ],
 ];

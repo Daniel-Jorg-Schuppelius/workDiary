@@ -10,10 +10,11 @@
 
 namespace Tests\Feature\CustomerPortal;
 
+use App\Mail\TwoFactorCodeMail;
 use App\Models\{Customer, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Hash, Mail};
 use PragmaRX\Google2FAQRCode\Google2FA;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -85,5 +86,45 @@ class CustomerTwoFactorTest extends TestCase {
             ->assertRedirect(route('customer.2fa.show'));
 
         $this->assertTrue($this->portalUser->fresh()->hasTwoFactorEnabled());
+    }
+
+    public function test_webauthn_registration_options_in_portal(): void {
+        $response = $this->actingAs($this->portalUser, 'customer')->post(route('customer.2fa.webauthn.options'));
+
+        $response->assertOk();
+        $this->assertArrayHasKey('challenge', $response->json());
+        $this->assertNotNull(session('webauthn.register'));
+    }
+
+    public function test_email_otp_enrollment_and_login_in_portal(): void {
+        Mail::fake();
+        $this->actingAs($this->portalUser, 'customer')->post(route('customer.2fa.email.enable'))
+            ->assertRedirect(route('customer.2fa.show'));
+
+        $code = null;
+        Mail::assertSent(TwoFactorCodeMail::class, function (TwoFactorCodeMail $m) use (&$code): bool {
+            $code = $m->code;
+
+            return true;
+        });
+        $this->actingAs($this->portalUser, 'customer')->post(route('customer.2fa.email.confirm'), ['email_code' => $code])
+            ->assertRedirect(route('customer.2fa.show'));
+        $this->assertTrue($this->portalUser->twoFactorCredentials()->where('type', 'email')->whereNotNull('confirmed_at')->exists());
+
+        // Login-Challenge per E-Mail. 30s-Versanddrossel abwarten (sonst greift canSend).
+        $this->travel(31)->seconds();
+        Mail::fake();
+        $this->withSession(['auth.customer.2fa.id' => $this->portalUser->id])
+            ->post(route('customer.two-factor.login.email'))->assertRedirect();
+        $challengeCode = null;
+        Mail::assertSent(TwoFactorCodeMail::class, function (TwoFactorCodeMail $m) use (&$challengeCode): bool {
+            $challengeCode = $m->code;
+
+            return true;
+        });
+        $this->withSession(['auth.customer.2fa.id' => $this->portalUser->id])
+            ->post(route('customer.two-factor.login.attempt'), ['email_code' => $challengeCode]);
+
+        $this->assertTrue(auth('customer')->check());
     }
 }

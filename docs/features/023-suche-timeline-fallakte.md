@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Auftrags-Timeline als MVP-010 konzipiert:
+In Progress — Auftrags-Timeline (MVP-010), Fallakte (MVP-013) und Kunden-Timeline light umgesetzt (2026-06-10); globale Suche bestand bereits. Konzipiert als:
 [docs/auftrags-timeline.md](../auftrags-timeline.md). Fallakte-Layout
 als MVP-013: [docs/fallakte.md](../fallakte.md). Globale Suche als
 MVP-014: [docs/globale-suche.md](../globale-suche.md). Kunden-/Projekt-/

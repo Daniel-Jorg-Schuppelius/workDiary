@@ -51,6 +51,12 @@ class ProfileController extends Controller {
             'preferences.date_format' => ['nullable', Rule::in(\App\Support\Formats::dateOptions())],
             'preferences.time_format' => ['nullable', Rule::in(\App\Support\Formats::timeOptions())],
             'preferences.startpage' => ['nullable', 'string', Rule::in($startpages)],
+            // Benachrichtigungs-Präferenzen (MVP-018): Mail global an/aus,
+            // Ruhezeit gilt nur für Mail/Push — In-App sammelt immer.
+            'preferences.notifications' => ['sometimes', 'array'],
+            'preferences.notifications.mail_enabled' => ['nullable', 'boolean'],
+            'preferences.notifications.quiet_from' => ['nullable', 'date_format:H:i'],
+            'preferences.notifications.quiet_to' => ['nullable', 'date_format:H:i'],
             'avatar' => ['nullable', 'file'],
             'remove_avatar' => ['nullable', 'boolean'],
         ] + $this->contactDetailRules());

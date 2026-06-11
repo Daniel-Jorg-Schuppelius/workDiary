@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{Event, Milestone, Organization, PerDiemTrip, Project, Task, TimeEntry, Timesheet, User};
+use App\Models\{CommunicationNote, Document, Event, FeatureUsageCounter, FormSubmission, FormTemplate, KnowledgeArticle, Milestone, Organization, PerDiemTrip, Project, Task, TimeEntry, Timesheet, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -94,6 +94,20 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame(0, TimeEntry::query()->count());
     }
 
+    public function test_billing_transfer_is_not_visible_cross_organization(): void {
+        $customerB = $this->withOrg($this->orgB, fn() => \App\Models\Customer::factory()->create());
+        $transferB = $this->withOrg($this->orgB, fn() => \App\Models\Finance\BillingTransfer::factory()->create([
+            'customer_id' => $customerB->id,
+            'created_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $transferB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Finance\BillingTransfer::find($transferB->id));
+        $this->assertSame(0, \App\Models\Finance\BillingTransfer::query()->count());
+    }
+
     public function test_per_diem_trip_is_not_visible_cross_organization(): void {
         $tripB = $this->withOrg($this->orgB, fn() => PerDiemTrip::factory()->for($this->userB)->create());
 
@@ -120,6 +134,141 @@ class TenantBoundaryTest extends TestCase {
         app()->instance('currentOrganization', $this->orgA);
         $this->assertNull(Timesheet::find($timesheetB->id));
         $this->assertSame(0, Timesheet::query()->count());
+    }
+
+    public function test_communication_note_is_not_visible_cross_organization(): void {
+        $projectB = $this->withOrg($this->orgB, fn() => Project::factory()->create());
+        $noteB = $this->withOrg($this->orgB, fn() => CommunicationNote::factory()
+            ->for($projectB, 'notable')
+            ->create([
+                'organization_id' => $this->orgB->id,
+                'created_by_user_id' => $this->userB->id,
+            ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $noteB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(CommunicationNote::find($noteB->id));
+        $this->assertSame(0, CommunicationNote::query()->count());
+    }
+
+    public function test_document_is_not_visible_cross_organization(): void {
+        $documentB = $this->withOrg($this->orgB, fn() => Document::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'created_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $documentB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(Document::find($documentB->id));
+        $this->assertSame(0, Document::query()->count());
+    }
+
+    public function test_knowledge_article_is_not_visible_cross_organization(): void {
+        $articleB = $this->withOrg($this->orgB, fn() => KnowledgeArticle::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'created_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $articleB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(KnowledgeArticle::find($articleB->id));
+        $this->assertSame(0, KnowledgeArticle::query()->count());
+    }
+
+    public function test_form_template_is_not_visible_cross_organization(): void {
+        $templateB = $this->withOrg($this->orgB, fn() => FormTemplate::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'created_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $templateB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(FormTemplate::find($templateB->id));
+        $this->assertSame(0, FormTemplate::query()->count());
+    }
+
+    public function test_form_submission_is_not_visible_cross_organization(): void {
+        $submissionB = $this->withOrg($this->orgB, fn() => FormSubmission::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'form_template_id' => FormTemplate::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'created_by_user_id' => $this->userB->id,
+            ])->id,
+            'submitted_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $submissionB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(FormSubmission::find($submissionB->id));
+        $this->assertSame(0, FormSubmission::query()->count());
+    }
+
+    public function test_isms_risk_is_not_visible_cross_organization(): void {
+        $riskB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsRisk::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $riskB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsRisk::find($riskB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsRisk::query()->count());
+    }
+
+    public function test_isms_control_is_not_visible_cross_organization(): void {
+        $controlB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsControl::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $controlB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsControl::find($controlB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsControl::query()->count());
+    }
+
+    public function test_notification_rule_is_not_visible_cross_organization(): void {
+        $ruleB = $this->withOrg($this->orgB, fn() => \App\Models\Notification\NotificationRule::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $ruleB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Notification\NotificationRule::find($ruleB->id));
+        $this->assertSame(0, \App\Models\Notification\NotificationRule::query()->count());
+    }
+
+    public function test_surcharge_rule_is_not_visible_cross_organization(): void {
+        $ruleB = $this->withOrg($this->orgB, fn() => \App\Models\Surcharge\SurchargeRule::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $ruleB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Surcharge\SurchargeRule::find($ruleB->id));
+        $this->assertSame(0, \App\Models\Surcharge\SurchargeRule::query()->count());
+    }
+
+    public function test_feature_usage_counter_is_not_visible_cross_organization(): void {
+        // Telemetry-Light (Feature 036): Zähler sind org-scoped, keine Factory nötig.
+        $counterB = $this->withOrg($this->orgB, fn() => FeatureUsageCounter::create([
+            'feature' => 'documents.created',
+            'period_date' => now()->toDateString(),
+            'count' => 1,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $counterB->organization_id, 'Trait befüllt organization_id');
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(FeatureUsageCounter::find($counterB->id));
+        $this->assertSame(0, FeatureUsageCounter::query()->count());
     }
 
     public function test_cross_organization_update_is_blocked_by_scope(): void {

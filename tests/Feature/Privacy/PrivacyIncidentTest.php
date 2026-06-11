@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Enums\Privacy\{IncidentStatus, IncidentType};
-use App\Models\{Organization, User};
+use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
+use App\Models\{Customer, Organization, User};
 use App\Models\Privacy\{Dpia, Incident, ProcessingActivity};
 use App\Services\Privacy\{DataProtectionPermissions, IncidentService, PrivacyDeadlineService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,6 +40,143 @@ class PrivacyIncidentTest extends TestCase {
         $user->assignRole(DataProtectionPermissions::ROLE_DATENSCHUTZ);
 
         return $user;
+    }
+
+    public function test_processor_incident_notifies_controller(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $customer = Customer::factory()->create([
+            'organization_id' => $org->id,
+            'company' => 'Muster GmbH',
+            'address_zip' => '80331',
+            'country' => 'DE',
+        ]);
+
+        // AV-Vorfall: Kunde = Verantwortlicher, eigene Infrastruktur mitbetroffen.
+        $this->actingAs($officer)->post(route('dataprotection.incidents.store'), [
+            'type' => IncidentType::UnauthorizedAccess->value,
+            'summary' => 'Ransomware in der Kundeninfrastruktur',
+            'controller_role' => 'processor',
+            'controller_name' => 'Muster GmbH',
+            'controller_customer_id' => $customer->id,
+            'own_infrastructure_affected' => '1',
+        ])->assertRedirect();
+
+        $incident = Incident::query()->latest('id')->firstOrFail();
+        $this->assertSame(ControllerRole::Processor, $incident->controller_role);
+        $this->assertSame('Muster GmbH', $incident->controller_name);
+        $this->assertSame($customer->id, $incident->controller_customer_id);
+        $this->assertTrue((bool) $incident->own_infrastructure_affected);
+        $this->assertNull($incident->controller_notified_at);
+
+        // Verantwortlichen/Kunden informiert.
+        $this->actingAs($officer)->post(route('dataprotection.incidents.notify-controller', $incident), [])->assertRedirect();
+
+        $incident->refresh();
+        $this->assertNotNull($incident->controller_notified_at);
+        $this->assertSame(IncidentStatus::Reported, $incident->status);
+        $this->assertDatabaseHas('privacy_incident_events', ['incident_id' => $incident->id, 'event' => 'controller_notified']);
+
+        // Detailseite rendert die AV-Sicht.
+        $this->actingAs($officer)->get(route('dataprotection.incidents.show', $incident))
+            ->assertOk()->assertSee('AV-Vorfall');
+    }
+
+    public function test_company_postcode_recommends_supervisory_authority(): void {
+        $org = Organization::factory()->create([
+            'settings' => [
+                'branding' => [
+                    'contact' => ['postal_code' => '70173', 'country' => 'DE'],
+                ],
+            ],
+        ]);
+        $officer = $this->officer($org);
+        $incident = app(IncidentService::class)->open($org, IncidentType::Disclosure, 'Fehlversand');
+
+        $this->actingAs($officer)->get(route('dataprotection.incidents.show', $incident))
+            ->assertOk()
+            ->assertSee('Baden-Württemberg')
+            ->assertSee('LfDI Baden-Württemberg');
+    }
+
+    public function test_customer_postcode_is_used_for_processor_incident_recommendation(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $customer = Customer::factory()->create([
+            'organization_id' => $org->id,
+            'address_zip' => '80331',
+            'country' => 'DE',
+        ]);
+        $incident = app(IncidentService::class)->open(
+            $org,
+            IncidentType::Disclosure,
+            'Vorfall beim Kunden',
+            controllerRole: ControllerRole::Processor,
+            controllerCustomer: $customer,
+        );
+
+        $this->actingAs($officer)->get(route('dataprotection.incidents.show', $incident))
+            ->assertOk()
+            ->assertSee('Bayern')
+            ->assertSee('Kunden-PLZ');
+    }
+
+    public function test_customer_from_another_tenant_cannot_be_linked(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $foreignCustomer = Customer::factory()->create([
+            'organization_id' => Organization::factory()->create()->id,
+        ]);
+
+        $this->actingAs($officer)->post(route('dataprotection.incidents.store'), [
+            'type' => IncidentType::UnauthorizedAccess->value,
+            'summary' => 'Fremder Kunde',
+            'controller_role' => 'processor',
+            'controller_customer_id' => $foreignCustomer->id,
+        ])->assertSessionHasErrors('controller_customer_id');
+    }
+
+    public function test_authority_report_is_documented_with_portal_reference(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $incident = app(IncidentService::class)->open($org, IncidentType::Disclosure, 'Fehlversand');
+
+        $this->actingAs($officer)->post(route('dataprotection.incidents.authority-report', $incident), [
+            'authority_key' => 'baylda',
+            'report_type' => 'initial',
+            'report_reference' => 'ABC123',
+            'case_number' => 'LDA-2026-42',
+            'reported_at' => '2026-06-10 14:30',
+        ])->assertRedirect();
+
+        $incident->refresh();
+        $this->assertSame(IncidentStatus::Reported, $incident->status);
+        $this->assertTrue($incident->notify_authority);
+        $this->assertSame('Bayerisches Landesamt für Datenschutzaufsicht (nicht-öffentlicher Bereich)', $incident->authority_name);
+        $this->assertSame('https://www.lda.bayern.de/de/datenpanne.html', $incident->authority_portal_url);
+        $this->assertSame('initial', $incident->authority_report_type);
+        $this->assertSame('ABC123', $incident->authority_report_reference);
+        $this->assertSame('LDA-2026-42', $incident->authority_case_number);
+        $this->assertDatabaseHas('privacy_incident_events', [
+            'incident_id' => $incident->id,
+            'event' => 'authority_report_recorded',
+        ]);
+    }
+
+    public function test_processor_cannot_record_its_own_authority_report(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $incident = app(IncidentService::class)->open(
+            $org,
+            IncidentType::Disclosure,
+            'Vorfall beim Kunden',
+            controllerRole: ControllerRole::Processor,
+        );
+
+        $this->actingAs($officer)->post(route('dataprotection.incidents.authority-report', $incident), [
+            'authority_name' => 'Aufsichtsbehörde',
+            'report_type' => 'initial',
+        ])->assertUnprocessable();
     }
 
     public function test_incident_lifecycle_with_crypto_and_chain(): void {

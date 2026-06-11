@@ -106,6 +106,16 @@ class InvoiceController extends Controller {
         /** @var \App\Models\ForeignCustomer|null $foreignCustomer */
         $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
 
+        // Hoheits-Sperre (Feature 045, additiv): führt ein externes Programm
+        // (Lexoffice/DATEV) die Fakturierung dieses Kunden, ist die lokale
+        // Rechnungserstellung gesperrt — Quellen gehen per Übergabenachweis.
+        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($customer);
+        if ($billingMode->isExternal()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'customer_id' => (string) __('finance.error.local_invoicing_locked', ['program' => $billingMode->label()]),
+            ]);
+        }
+
         $range = [
             'from' => $data['from'] ?? null,
             'to' => $data['to'] ?? null,

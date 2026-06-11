@@ -95,7 +95,7 @@ class DiagnosticsService {
             LicenseStatus::Valid => DiagnosticStatus::Ok,
             LicenseStatus::GracePeriod => DiagnosticStatus::Warn,
             LicenseStatus::Missing, LicenseStatus::Expired, LicenseStatus::Malformed,
-            LicenseStatus::BadSignature, LicenseStatus::DomainMismatch,
+            LicenseStatus::BadSignature, LicenseStatus::DomainMismatch, LicenseStatus::OrgMismatch,
             LicenseStatus::PublicKeyMissing, LicenseStatus::Tampered => DiagnosticStatus::Critical,
         };
 

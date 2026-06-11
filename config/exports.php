@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Services\TimeExport\Profiles\GenericCsvProfile;
+use App\Services\TimeExport\Profiles\{DatevLodasProfile, GenericCsvProfile};
 
 /**
  * Konfiguration des ApprovedTimeExporters (MVP-019).
@@ -36,12 +36,16 @@ return [
                 'bom' => true,
             ],
         ],
-        // DATEV/Lexware sind im MVP-019 vorbereitet, aber nicht aktiv.
+        // DATEV-LODAS-naher CSV-Aufbau (Feature 005): Personalnummer;Datum;
+        // Lohnart;Stunden — siehe DatevLodasProfile-Docblock.
         'datev' => [
-            'driver' => null,
-            'label' => 'DATEV LODAS (vorbereitet)',
+            'driver' => DatevLodasProfile::class,
+            'label' => 'DATEV LODAS (CSV: PersNr;Datum;Lohnart;Stunden)',
             'format' => 'csv',
-            'options' => [],
+            'options' => [
+                // Lohnart fuer Normalstunden ohne eigenen wage_type_code.
+                'normal_wage_type_code' => '1000',
+            ],
         ],
         'lexware' => [
             'driver' => null,

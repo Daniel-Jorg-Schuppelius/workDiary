@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Kommunikationsnotizen als MVP-012 konzipiert:
+Done — als MVP-012 umgesetzt (2026-06-10). Spezifikation:
 [docs/kommunikationsnotizen.md](../kommunikationsnotizen.md).
 
 ## Ziel

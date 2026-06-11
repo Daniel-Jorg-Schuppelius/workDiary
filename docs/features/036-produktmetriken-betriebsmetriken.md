@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Done — MVP umgesetzt (2026-06-10): Admin-Seite Betriebsmetriken (Queue, Backups, Plugin-Fehler, Speicher-Metadaten, aktive Nutzer, Datensätze je Modul), lokale Feature-Nutzungszähler ohne externes Senden, php artisan system:health.
 
 ## Ziel
 

@@ -16,6 +16,7 @@ use App\Legacy\Models\LegacyDiaryEntry;
 use App\Models\{Customer, DiaryEntry, EntryType, Tag, Tour, User};
 use App\Services\Archive\ArchiveService;
 use App\Services\SqidEncoder;
+use App\Services\Timeline\DiaryEntryTimelineService;
 use App\Services\UI\DateRangeContext;
 use App\Support\{LookupCache, Sqid};
 use Carbon\CarbonImmutable;
@@ -162,9 +163,29 @@ class DiaryController extends Controller {
             }
         }
 
-        $view = $request->boolean('dialog') ? 'diary._show_dialog' : 'diary.show';
+        if ($request->boolean('dialog')) {
+            return view('diary._show_dialog', compact('diary', 'legacyEntry'));
+        }
 
-        return view($view, compact('diary', 'legacyEntry'));
+        // Auftrags-Timeline „Verlauf" (MVP-010): serverseitiger Typ-Filter +
+        // einfaches „mehr laden" über wachsendes Limit.
+        /** @var User $viewer */
+        $viewer = Auth::user();
+        $timelineType = (string) $request->query('timeline_type', '');
+        $timelineLimit = max(1, min(500, (int) $request->query('timeline_limit', 50)));
+        $timeline = app(DiaryEntryTimelineService::class)->forDiaryEntry(
+            $diary,
+            $viewer,
+            $timelineType !== '' ? [$timelineType] : null,
+            $timelineLimit,
+        );
+
+        return view('diary.show', compact('diary', 'legacyEntry') + [
+            'timelineItems' => $timeline['items'],
+            'timelineHasMore' => $timeline['hasMore'],
+            'timelineType' => $timelineType,
+            'timelineLimit' => $timelineLimit,
+        ]);
     }
 
     public function edit(Request $request, DiaryEntry $diary): View {

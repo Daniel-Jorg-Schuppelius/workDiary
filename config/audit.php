@@ -28,5 +28,6 @@ return [
         'whistleblowing_case_events' => App\Models\Whistleblowing\CaseEvent::class,
         'privacy_request_events' => App\Models\Privacy\RequestEvent::class,
         'privacy_incident_events' => App\Models\Privacy\IncidentEvent::class,
+        'billing_transfer_events' => App\Models\Finance\BillingTransferEvent::class,
     ],
 ];

@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Done — MVP umgesetzt (2026-06-10): Wissensartikel (Problem/Lösung, Tags, Feedback je Nutzer), Verknüpfung zu Auftrag/Asset/Kunde/Protokoll, Kontext-Vorschläge auf der Auftragsdetailseite, Modul-Gating (module.knowledge, Pro+).
 
 ## Ziel
 

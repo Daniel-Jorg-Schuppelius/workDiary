@@ -153,6 +153,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::cases(),
             static function (PermissionEnum $p): bool {
                 $value = $p->value;
+                // Betriebsmetriken (Feature 036) sind bewusst NUR Admin —
+                // die .view-Heuristik unten würde metrics.view sonst mitnehmen.
+                if (str_starts_with($value, 'metrics.')) {
+                    return false;
+                }
                 if (str_ends_with($value, '.viewAny') || str_ends_with($value, '.view') || str_ends_with($value, '.viewOwn')) {
                     return true;
                 }
@@ -252,6 +257,35 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OpenIssueAssign,
             PermissionEnum::OpenIssuePublishToCustomer,
             PermissionEnum::OpenIssueDelete,
+            // Benachrichtigungsregeln (MVP-018): Teamleitung lesend,
+            // Bearbeitung bleibt Admin.
+            PermissionEnum::NotificationRuleViewAny,
+            PermissionEnum::CommunicationViewAny,
+            PermissionEnum::CommunicationView,
+            PermissionEnum::CommunicationCreate,
+            PermissionEnum::CommunicationUpdate,
+            PermissionEnum::CommunicationPublishToCustomer,
+            // Dokumente (MVP-031): Teamleitung verwaltet inkl. Archivieren,
+            // OHNE endgültiges Löschen (bleibt Admin).
+            PermissionEnum::DocumentViewAny,
+            PermissionEnum::DocumentView,
+            PermissionEnum::DocumentCreate,
+            PermissionEnum::DocumentUpdate,
+            PermissionEnum::DocumentArchive,
+            // Wissensbasis (Feature 011): Teamleitung redigiert und
+            // veröffentlicht, OHNE endgültiges Löschen (bleibt Admin).
+            PermissionEnum::KnowledgeViewAny,
+            PermissionEnum::KnowledgeView,
+            PermissionEnum::KnowledgeCreate,
+            PermissionEnum::KnowledgeUpdate,
+            PermissionEnum::KnowledgePublish,
+            // Formularsystem (Feature 032): Teamleitung pflegt Vorlagen
+            // und sieht alle ausgefüllten Formulare.
+            PermissionEnum::FormTemplateViewAny,
+            PermissionEnum::FormTemplateManage,
+            PermissionEnum::FormSubmissionViewAny,
+            PermissionEnum::FormSubmissionView,
+            PermissionEnum::FormSubmissionCreate,
             PermissionEnum::ServiceTicketView,
             PermissionEnum::ServiceTicketCreate,
             PermissionEnum::ServiceTicketUpdate,
@@ -343,6 +377,11 @@ class PermissionsSeeder extends Seeder {
 
         $buchhaltung = [
             PermissionEnum::OrganizationView,
+            PermissionEnum::CommunicationViewAny,
+            PermissionEnum::CommunicationView,
+            // Dokumente (MVP-031): nur lesend (z. B. Verträge, Versicherungen).
+            PermissionEnum::DocumentViewAny,
+            PermissionEnum::DocumentView,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
             PermissionEnum::CustomerCreate,
@@ -389,6 +428,15 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::InvoiceIssue,
             PermissionEnum::InvoicePay,
             PermissionEnum::InvoiceExport,
+            // Finanzschnittstelle (Feature 045): Übergaben vorbereiten und
+            // übertragen — bewusst OHNE finance.config (Konfiguration des
+            // Fakturierungswegs bleibt dem Admin vorbehalten).
+            PermissionEnum::FinanceViewAny,
+            PermissionEnum::FinanceTransferTime,
+            PermissionEnum::FinanceTransferMaterial,
+            // Zuschlagsregeln (Feature 005): Lohnbüro pflegt die Regeln.
+            PermissionEnum::SurchargeRuleViewAny,
+            PermissionEnum::SurchargeRuleManage,
             PermissionEnum::ReportView,
             PermissionEnum::ReportExport,
             PermissionEnum::AuditLogView,
@@ -430,6 +478,27 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OpenIssueView,
             PermissionEnum::OpenIssueCreate,
             PermissionEnum::OpenIssueUpdate,
+            PermissionEnum::CommunicationViewAny,
+            PermissionEnum::CommunicationView,
+            PermissionEnum::CommunicationCreate,
+            PermissionEnum::CommunicationUpdate,
+            // Dokumente (MVP-031): sehen, hochladen, eigene bearbeiten
+            // (DocumentPolicy beschränkt update auf den Erfasser).
+            PermissionEnum::DocumentViewAny,
+            PermissionEnum::DocumentView,
+            PermissionEnum::DocumentCreate,
+            PermissionEnum::DocumentUpdate,
+            // Wissensbasis (Feature 011): lesen, erfassen, EIGENE Entwürfe
+            // pflegen (KnowledgeArticlePolicy beschränkt update entsprechend).
+            PermissionEnum::KnowledgeViewAny,
+            PermissionEnum::KnowledgeView,
+            PermissionEnum::KnowledgeCreate,
+            PermissionEnum::KnowledgeUpdate,
+            // Formularsystem (Feature 032): ausfüllen + EIGENE Submissions
+            // einsehen (FormSubmissionPolicy beschränkt view entsprechend).
+            PermissionEnum::FormSubmissionViewAny,
+            PermissionEnum::FormSubmissionView,
+            PermissionEnum::FormSubmissionCreate,
             PermissionEnum::ProtocolView,
             PermissionEnum::ProtocolCreate,
             PermissionEnum::ProtocolEditDraft,
@@ -489,6 +558,20 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OpenIssueView,
             PermissionEnum::OpenIssueCreate,
             PermissionEnum::OpenIssueUpdate,
+            PermissionEnum::CommunicationViewAny,
+            PermissionEnum::CommunicationView,
+            PermissionEnum::CommunicationCreate,
+            PermissionEnum::CommunicationUpdate,
+            // Wissensbasis (Feature 011): lesen + erfassen (Lösungen aus
+            // dem Einsatz festhalten), Redaktion bleibt Innendienst.
+            PermissionEnum::KnowledgeViewAny,
+            PermissionEnum::KnowledgeView,
+            PermissionEnum::KnowledgeCreate,
+            // Formularsystem (Feature 032): Außendienst füllt Formulare im
+            // Einsatz aus; Vorlagenpflege bleibt Teamleitung/Admin.
+            PermissionEnum::FormSubmissionViewAny,
+            PermissionEnum::FormSubmissionView,
+            PermissionEnum::FormSubmissionCreate,
             PermissionEnum::ProtocolView,
             PermissionEnum::ProtocolCreate,
             PermissionEnum::ProtocolEditDraft,
@@ -513,6 +596,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DiaryUpdate,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
+            PermissionEnum::CommunicationViewAny,
+            PermissionEnum::CommunicationView,
+            PermissionEnum::CommunicationCreate,
+            PermissionEnum::CommunicationUpdate,
             PermissionEnum::ClassificationList,
             PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationRequirementView,

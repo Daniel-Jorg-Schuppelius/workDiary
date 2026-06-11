@@ -1,5 +1,12 @@
 @extends('customer.layout')
 
+@php
+    use App\Enums\Auth\TwoFactorType;
+    $statusTone = $enabled ? 'success' : (($pendingTotp || $pendingEmail) ? 'warning' : 'ghost');
+    $statusBadge = $enabled ? __('Aktiv') : (($pendingTotp || $pendingEmail) ? __('Einrichtung offen') : __('Inaktiv'));
+    $emailActive = $credentials->firstWhere('type', TwoFactorType::Email);
+@endphp
+
 @section('content')
     <div class="max-w-2xl mx-auto mt-8 space-y-4">
         <div class="flex items-center justify-between gap-3">
@@ -7,94 +14,122 @@
                 <span class="material-symbols-outlined">verified_user</span>
                 {{ __('Zwei-Faktor-Authentifizierung') }}
             </h1>
-            <x-status-badge :tone="$enabled ? 'success' : ($pending ? 'warning' : 'ghost')" size="sm">
-                {{ $enabled ? __('Aktiv') : ($pending ? __('Einrichtung offen') : __('Inaktiv')) }}
-            </x-status-badge>
+            <x-status-badge :tone="$statusTone" size="sm">{{ $statusBadge }}</x-status-badge>
         </div>
 
-        @if (session('success'))
-            <div class="alert alert-success text-sm">{{ session('success') }}</div>
-        @endif
-        @if (session('warning'))
-            <div class="alert alert-warning text-sm">{{ session('warning') }}</div>
-        @endif
-        @if ($errors->any())
-            <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
-        @endif
+        @if (session('success'))<div class="alert alert-success text-sm">{{ session('success') }}</div>@endif
+        @if ($errors->any())<div class="alert alert-error text-sm">{{ $errors->first() }}</div>@endif
 
-        {{-- Recovery-Codes einmalig nach Bestätigung --}}
+        {{-- Recovery-Codes einmalig --}}
         @if (! empty($recoveryCodes))
             <div class="border border-warning/40 bg-warning/10 rounded p-4">
                 <p class="font-semibold">{{ __('Recovery-Codes') }}</p>
-                <p class="text-sm text-base-content/70">{{ __('Bewahren Sie diese Codes sicher auf. Jeder Code funktioniert einmal, falls Sie keinen Zugriff auf Ihre Authenticator-App haben.') }}</p>
+                <p class="text-sm text-base-content/70">{{ __('Sicher aufbewahren – jeder Code funktioniert einmal.') }}</p>
                 <div class="mt-3 grid grid-cols-2 gap-2 font-mono text-sm sm:grid-cols-4">
-                    @foreach ($recoveryCodes as $rc)
-                        <code class="bg-base-200 rounded px-2 py-1 text-center select-all">{{ $rc }}</code>
-                    @endforeach
+                    @foreach ($recoveryCodes as $rc)<code class="bg-base-200 rounded px-2 py-1 text-center select-all">{{ $rc }}</code>@endforeach
                 </div>
             </div>
         @endif
 
+        {{-- Aktive Faktoren --}}
         @if ($enabled)
-            {{-- Aktiv: deaktivieren --}}
-            <div class="border border-success/30 bg-base-100 rounded p-4 space-y-3">
-                <p class="flex items-center gap-2 font-semibold text-success">
-                    <span class="material-symbols-outlined">check_circle</span> {{ __('Ihr Zugang ist mit einem zweiten Faktor geschützt.') }}
-                </p>
-                @unless (auth('customer')->user()->organization?->two_factor_required)
-                    <form method="POST" action="{{ route('customer.2fa.disable') }}" class="flex items-end gap-2 border-t border-base-300 pt-3">
-                        @csrf @method('DELETE')
-                        <div class="grow">
-                            <label class="block text-sm mb-1" for="dis-code">{{ __('Deaktivieren (aktueller Code)') }}</label>
-                            <input id="dis-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" class="w-full border border-base-300 rounded px-3 py-2 bg-base-100" required>
-                        </div>
-                        <button type="submit" class="btn btn-error">{{ __('Deaktivieren') }}</button>
-                    </form>
-                @else
-                    <p class="text-sm text-base-content/60">{{ __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung; Deaktivieren ist nicht möglich.') }}</p>
-                @endunless
+            <div class="border border-base-300 bg-base-100 rounded p-4">
+                <p class="font-semibold">{{ __('Aktive Faktoren') }}</p>
+                <ul class="mt-2 divide-y divide-base-200">
+                    @if ($hasTotp)
+                        <li class="flex items-center justify-between py-2 text-sm"><span class="flex items-center gap-2"><span class="material-symbols-outlined">smartphone</span> {{ __('Authenticator-App') }}</span><x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge></li>
+                    @endif
+                    @foreach ($credentials as $cred)
+                        <li class="flex items-center justify-between py-2 text-sm">
+                            <span class="flex items-center gap-2"><span class="material-symbols-outlined">{{ $cred->type->icon() }}</span> {{ $cred->type->label() }} <span class="text-base-content/50">{{ $cred->label }}</span></span>
+                            <form method="POST" action="{{ route('customer.2fa.credential.destroy', $cred) }}">@csrf @method('DELETE')<x-icon-btn icon="delete" tone="error" size="sm" type="submit" :label="__('Entfernen')" /></form>
+                        </li>
+                    @endforeach
+                </ul>
             </div>
-        @elseif ($pending)
-            {{-- Einrichtung: QR scannen + Code bestätigen --}}
-            <div class="border border-base-300 bg-base-100 rounded p-4 space-y-4">
-                <p class="font-semibold">{{ __('Einrichtung abschließen') }}</p>
+        @endif
 
-                <div class="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-start">
-                    <div class="mx-auto w-fit border border-base-300 bg-white p-3 rounded">
-                        {!! $qrSvg !!}
-                    </div>
-
-                    <div class="space-y-4">
-                        <ol class="list-decimal space-y-1 pl-5 text-sm text-base-content/70">
-                            <li>{{ __('QR-Code mit einer Authenticator-App scannen (z. B. Google Authenticator, Aegis, 1Password).') }}</li>
-                            <li>{{ __('Den dort angezeigten 6-stelligen Code unten eingeben.') }}</li>
-                        </ol>
-
-                        <div class="border border-base-300 bg-base-200/40 rounded p-3 text-xs">
-                            <span class="uppercase tracking-wider text-base-content/60">{{ __('Manueller Schlüssel') }}</span>
-                            <code class="mt-1 block break-all font-mono select-all">{{ $secret }}</code>
+        {{-- Methode hinzufügen --}}
+        <div class="border border-base-300 bg-base-100 rounded p-4">
+            <p class="font-semibold">{{ __('Methode hinzufügen') }}</p>
+            <div class="mt-2 grid gap-4 md:grid-cols-2">
+                {{-- Authenticator-App --}}
+                <div class="border border-base-300 rounded p-4 space-y-3">
+                    <p class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined">smartphone</span> {{ __('Authenticator-App') }}</p>
+                    @if ($hasTotp)
+                        <p class="text-sm text-success">{{ __('Aktiv.') }}</p>
+                    @elseif ($pendingTotp)
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="border border-base-300 bg-white p-3 rounded">{!! $qrSvg !!}</div>
+                            <p class="text-xs text-base-content/60">{{ __('Schlüssel') }}: <code class="select-all">{{ $secret }}</code></p>
                         </div>
-
                         <form method="POST" action="{{ route('customer.2fa.confirm') }}" class="flex items-end gap-2">
                             @csrf
-                            <div class="grow">
-                                <label class="block text-sm mb-1" for="confirm-code">{{ __('Code aus der App') }}</label>
-                                <input id="confirm-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.4em] font-mono" placeholder="000000" required autofocus>
-                            </div>
-                            <button type="submit" class="btn btn-primary">{{ __('Bestätigen') }}</button>
+                            <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.3em] font-mono" placeholder="000000">
+                            <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
                         </form>
-                    </div>
+                    @else
+                        <p class="text-sm text-base-content/70">{{ __('Einmalcode aus einer App (Google Authenticator, Aegis, 1Password).') }}</p>
+                        <form method="POST" action="{{ route('customer.2fa.enable') }}">@csrf<x-icon-btn icon="qr_code_2" tone="primary" size="sm" type="submit" show-label>{{ __('QR-Code anzeigen') }}</x-icon-btn></form>
+                    @endif
+                </div>
+
+                {{-- E-Mail-Code --}}
+                <div class="border border-base-300 rounded p-4 space-y-3">
+                    <p class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined">mail</span> {{ __('E-Mail-Code') }}</p>
+                    @if ($emailActive)
+                        <p class="text-sm text-success">{{ __('Aktiv.') }}</p>
+                    @elseif ($pendingEmail)
+                        <p class="text-sm text-base-content/70">{{ __('Wir haben einen Code an Ihre E-Mail gesendet.') }}</p>
+                        <form method="POST" action="{{ route('customer.2fa.email.confirm') }}" class="flex items-end gap-2">
+                            @csrf
+                            <input name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100 text-center tracking-[0.3em] font-mono" placeholder="000000">
+                            <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
+                        </form>
+                        <form method="POST" action="{{ route('customer.2fa.email.resend') }}">@csrf<x-icon-btn icon="refresh" tone="ghost" size="sm" type="submit" show-label>{{ __('Code erneut senden') }}</x-icon-btn></form>
+                    @else
+                        <p class="text-sm text-base-content/70">{{ __('Einmalcode an Ihre Adresse:') }} <span class="font-mono">{{ auth('customer')->user()->email }}</span></p>
+                        <form method="POST" action="{{ route('customer.2fa.email.enable') }}">@csrf<x-icon-btn icon="mail" tone="primary" size="sm" type="submit" show-label>{{ __('E-Mail-Code aktivieren') }}</x-icon-btn></form>
+                    @endif
+                </div>
+
+                {{-- Sicherheitsschlüssel / Passkey (FIDO2) --}}
+                <div class="border border-base-300 rounded p-4 space-y-3 md:col-span-2" data-webauthn-block>
+                    <p class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined">key</span> {{ __('Sicherheitsschlüssel / Passkey (FIDO2)') }}</p>
+                    <p class="text-sm text-base-content/70">{{ __('Phishing-resistente Anmeldung mit Passkey, Smartphone oder Hardware-Schlüssel.') }}</p>
+                    <p id="passkey-error" class="hidden text-sm text-error"></p>
+                    <x-icon-btn icon="key" tone="primary" size="sm" show-label
+                                data-webauthn-register
+                                data-options="{{ route('customer.2fa.webauthn.options') }}"
+                                data-target="{{ route('customer.2fa.webauthn.register') }}"
+                                data-error="passkey-error">{{ __('Passkey hinzufügen') }}</x-icon-btn>
                 </div>
             </div>
-        @else
-            {{-- Inaktiv: aktivieren --}}
-            <div class="border border-base-300 bg-base-100 rounded p-4 space-y-3">
-                <p class="text-sm text-base-content/70">{{ __('Schützen Sie Ihren Zugang zusätzlich mit einem Einmalcode aus einer Authenticator-App.') }}</p>
-                <form method="POST" action="{{ route('customer.2fa.enable') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-primary">{{ __('Aktivieren') }}</button>
-                </form>
+        </div>
+
+        {{-- Recovery + Deaktivieren --}}
+        @if ($enabled)
+            <div class="border border-base-300 bg-base-100 rounded p-4 grid gap-4 md:grid-cols-2">
+                @if ($hasTotp)
+                    <form method="POST" action="{{ route('customer.2fa.recovery') }}" class="space-y-2 border border-base-300 bg-base-200/40 rounded p-3">
+                        @csrf
+                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Recovery-Codes neu erzeugen') }}</label>
+                        <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100" placeholder="{{ __('Aktueller App-Code') }}">
+                        <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit" show-label>{{ __('Neu erzeugen') }}</x-icon-btn>
+                    </form>
+                @endif
+                @unless (auth('customer')->user()->organization?->two_factor_required)
+                    <form method="POST" action="{{ route('customer.2fa.disable') }}" class="space-y-2 border border-error/30 bg-error/5 rounded p-3">
+                        @csrf @method('DELETE')
+                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Alles deaktivieren') }}</label>
+                        <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100" placeholder="{{ __('App- oder Recovery-Code') }}">
+                        <x-icon-btn icon="gpp_bad" tone="error" size="sm" type="submit" show-label>{{ __('Deaktivieren') }}</x-icon-btn>
+                    </form>
+                @else
+                    <div class="flex items-center border border-base-300 bg-base-200/40 rounded p-3 text-sm text-base-content/60">{{ __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung; Deaktivieren ist nicht möglich.') }}</div>
+                @endunless
             </div>
         @endif
     </div>
+    @include('partials.webauthn-script')
 @endsection

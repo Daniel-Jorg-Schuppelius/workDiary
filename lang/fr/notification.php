@@ -1,0 +1,89 @@
+<?php
+/*
+ * Created on   : Wed Jun 10 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : notification.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+return [
+    'title' => [
+        'center' => 'Notifications',
+        'center_subtitle' => 'Vos notifications dans l’application — lues et non lues.',
+        'empty' => 'Aucune notification.',
+        'empty_message' => 'Dès qu’un événement vous concerne, il apparaît ici.',
+        'rules' => 'Règles de notification',
+        'rules_subtitle' => 'Règles par type d’événement : canaux, destinataires et escalade.',
+        'rules_help' => 'Comment fonctionnent les règles de notification ?',
+        'rules_help_text' => 'Pour chaque type d’événement, la règle définit si et par quels canaux les notifications sont envoyées et qui les reçoit (personne concernée, rôles, personnes fixes). Sans règle enregistrée, la valeur par défaut affichée s’applique. Escalade : si un événement en retard reste non résolu après le délai configuré, le rôle d’escalade est notifié en plus.',
+        'edit_rule' => 'Modifier la règle de notification',
+        'preferences' => 'Notifications',
+    ],
+
+    'field' => [
+        'event' => 'Événement',
+        'enabled' => 'Actif',
+        'rule_enabled' => 'Notifications activées pour cet événement',
+        'channels' => 'Canaux',
+        'recipients' => 'Destinataires',
+        'affected_user' => 'Personne concernée',
+        'notify_affected_help' => 'Notifier la personne concernée (p. ex. assignée ou demandeuse)',
+        'recipient_roles' => 'Rôles destinataires',
+        'recipient_users' => 'Destinataires fixes supplémentaires',
+        'fixed_users' => 'destinataires fixes',
+        'escalation' => 'Escalade',
+        'escalation_enabled' => 'Escalade activée',
+        'escalation_help' => 'Si l’événement reste non résolu pendant le délai configuré après la première notification, le rôle d’escalade est notifié en plus.',
+        'escalation_unsupported' => 'L’escalade n’est disponible que pour les événements en retard.',
+        'escalate_after_hours' => 'Escalader après (heures)',
+        'escalation_role' => 'Rôle d’escalade',
+        'escalation_summary' => 'après :hours h à :role',
+        'default_rule' => 'Standard (pas encore personnalisé)',
+        'unread' => 'nouveau',
+        'yes' => 'Oui',
+        'no' => 'Non',
+        'mail_enabled' => 'Recevoir les notifications par e-mail',
+        'quiet_from' => 'Plage de silence de',
+        'quiet_to' => 'Plage de silence jusqu’à',
+        'preferences_help' => 'Les notifications dans l’application sont toujours collectées. L’e-mail (et le push) peuvent être désactivés ; pendant la plage de silence, aucun e-mail/push n’est envoyé.',
+    ],
+
+    'action' => [
+        'mark_read' => 'Marquer comme lu',
+        'mark_all_read' => 'Tout marquer comme lu',
+        'open' => 'Ouvrir',
+        'show_all' => 'Tout afficher',
+        'edit' => 'Modifier',
+        'save' => 'Enregistrer',
+    ],
+
+    'flash' => [
+        'all_read' => 'Toutes les notifications ont été marquées comme lues.',
+        'rule_saved' => 'La règle de notification pour « :event » a été enregistrée.',
+    ],
+
+    'mail' => [
+        'subject' => ':event : :title',
+        'subject_escalation' => 'Escalade — :event : :title',
+        'greeting' => 'Bonjour :name,',
+        'action' => 'Ouvrir dans le système',
+    ],
+
+    'message' => [
+        'issue_assigned' => ':actor vous a assigné ce point ouvert.',
+        'due_soon' => 'Échéance le :date.',
+        'overdue' => 'En retard depuis le :date.',
+        'followup_due_soon' => 'Action de suivi due le :date.',
+        'followup_overdue' => 'Action de suivi en retard depuis le :date.',
+        'followup_fallback_title' => 'Action de suivi d’une note de communication',
+        'expiring_soon' => 'Le document expire le :date.',
+        'expired' => 'Le document est expiré depuis le :date.',
+        'correction_requested_title' => 'Demande de correction de temps de :user pour le :date',
+        'correction_decided_title' => 'Décision sur votre demande de correction (:date)',
+        'correction_approved' => 'Votre demande a été approuvée. :note',
+        'correction_rejected' => 'Votre demande a été refusée. :note',
+        'month_submitted_title' => 'Clôture mensuelle :period soumise par :user',
+    ],
+];

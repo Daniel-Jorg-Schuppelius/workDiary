@@ -66,7 +66,7 @@ class OpenIssueService {
             $assigneeId = $creator->id;
         }
 
-        return DB::transaction(function () use ($subject, $creator, $attributes, $severity, $assigneeId, $dueAt): OpenIssue {
+        $issue = DB::transaction(function () use ($subject, $creator, $attributes, $severity, $assigneeId, $dueAt): OpenIssue {
             $issue = OpenIssue::query()->create([
                 'organization_id' => $subject->getAttribute('organization_id') ?: $creator->organization_id,
                 'subject_type' => $subject::class,
@@ -98,6 +98,14 @@ class OpenIssueService {
 
             return $issue->fresh(['events']) ?? $issue;
         });
+
+        // Benachrichtigung (MVP-018) erst nach Commit — der Dispatcher darf
+        // die fachliche Transaktion nie beeinflussen.
+        if ($issue->assignee_user_id !== null && (int) $issue->assignee_user_id !== (int) $creator->id) {
+            $this->notifyAssigned($issue, $creator);
+        }
+
+        return $issue;
     }
 
     public function assign(OpenIssue $issue, ?User $assignee, User $actor): OpenIssue {
@@ -111,7 +119,30 @@ class OpenIssueService {
             'assignee_user_id' => $newId,
         ]);
 
+        if ($assignee !== null && (int) $assignee->id !== (int) $actor->id) {
+            $this->notifyAssigned($issue, $actor);
+        }
+
         return $issue;
+    }
+
+    /** Benachrichtigung „Offener Punkt zugewiesen" (MVP-018, additiv). */
+    private function notifyAssigned(OpenIssue $issue, User $actor): void {
+        $assignee = $issue->assignee ?? User::query()->find($issue->assignee_user_id);
+        if ($assignee === null) {
+            return;
+        }
+
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::OpenIssueAssigned,
+            $issue,
+            $assignee,
+            [
+                'title' => (string) $issue->title,
+                'message' => (string) __('notification.message.issue_assigned', ['actor' => $actor->name]),
+                'url' => \App\Support\NotificationLinks::openIssueUrl($issue),
+            ],
+        );
     }
 
     public function start(OpenIssue $issue, User $actor): OpenIssue {

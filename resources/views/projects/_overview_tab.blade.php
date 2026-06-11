@@ -144,4 +144,8 @@
             </ul>
         @endif
     </x-card>
+
+    @include('communication-notes._panel', ['notable' => $project, 'notableKind' => 'project'])
+
+    @include('documents._panel', ['documentable' => $project, 'documentableKind' => 'project'])
 </div>

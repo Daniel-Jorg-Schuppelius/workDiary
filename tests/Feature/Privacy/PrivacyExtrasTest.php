@@ -10,11 +10,11 @@
 
 namespace Tests\Feature\Privacy;
 
+use App\Enums\Privacy\DataSubjectRequestType;
 use App\Enums\Privacy\{IncidentType, MeasureCategory, ProcessorRole};
 use App\Models\{Organization, User};
-use App\Models\Privacy\{MeasureAssignment, PrivacyAttachment, ProcessingActivity, ProcessingAgreement, Processor, TechnicalMeasure};
+use App\Models\Privacy\{MeasureAssignment, PrivacyAttachment, ProcessingActivity, ProcessingAgreement, Processor};
 use App\Services\Privacy\{DataProtectionPermissions, DataSubjectRequestService, IncidentService, TechnicalMeasureService};
-use App\Enums\Privacy\DataSubjectRequestType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -71,6 +71,9 @@ class PrivacyExtrasTest extends TestCase {
         $this->actingAs($officer)->get(route('dataprotection.incidents.draft', [$incident, 'authority']))
             ->assertOk()->assertSee($incident->incident_number);
         $this->actingAs($officer)->get(route('dataprotection.incidents.draft', [$incident, 'subjects']))->assertOk();
+        $this->actingAs($officer)->get(route('dataprotection.incidents.draft', [$incident, 'authority', 'format' => 'pdf']))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
         $this->actingAs($officer)->get(route('dataprotection.incidents.draft', [$incident, 'nonsense']))->assertNotFound();
     }
 

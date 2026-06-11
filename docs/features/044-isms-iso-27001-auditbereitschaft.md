@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+In Progress — MVP1 umgesetzt (2026-06-10): Risikoregister mit 5x5-Matrix und Statusmaschine, Maßnahmenkatalog mit ISO 27001:2022 Annex-A-Import (93 Controls), Statement of Applicability (druckbar), module.isms (Enterprise). Offen: Scope-Dokument, Asset-Register, Audits/Findings, SBOM, Kennzahlen.
 
 ## Produktversprechen
 
@@ -14,6 +14,12 @@ können.
 WorkDiary zertifiziert keine Organisation und garantiert keine
 Normkonformität. Die Konformitätsbewertung und Zertifizierung erfolgen durch
 eine dafür zuständige, unabhängige Zertifizierungsstelle.
+
+Das ISMS ist das erste Normprofil des gemeinsamen
+[Zertifizierungsmanagements](./046-zertifizierungsmanagement-integriertes-managementsystem.md).
+Fachobjekte und Nachweise werden deshalb so aufgebaut, dass weitere
+Managementsystemnormen dieselbe Basis verwenden können und keine parallelen
+Register entstehen.
 
 ## Ziel
 
@@ -295,6 +301,10 @@ anzulegen:
 - Kein Ersatz für unabhängige interne Audits oder Zertifizierungsaudits.
 - Keine unlizenzierte Auslieferung vollständiger ISO-Normtexte.
 - Eine SBOM allein gilt nicht als Schwachstellen- oder Sicherheitsnachweis.
+- Produktweite Anforderungen, durch die WorkDiary die Zertifizierbarkeit
+  seiner Kunden nicht behindern darf, sind in
+  [Feature 046](./046-zertifizierungsmanagement-integriertes-managementsystem.md)
+  verbindlich beschrieben.
 
 ## Abhängigkeiten
 
@@ -306,6 +316,7 @@ anzulegen:
 - Rollen, Rechte und Produktprofile
 - Benachrichtigungen und Eskalationen
 - Gewerke- und Branchenprofile
+- Zertifizierungsmanagement und integriertes Managementsystem
 
 ## Fachliche Referenzen
 

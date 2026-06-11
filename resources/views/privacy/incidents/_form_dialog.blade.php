@@ -1,4 +1,4 @@
-{{-- Anlage-Dialog Datenschutzvorfall (in #entry-modal geladen). Variablen: $types --}}
+{{-- Anlage-Dialog Datenschutzvorfall (in #entry-modal geladen). Variablen: $types, $customers --}}
 <x-modal
     :title="__('Vorfall melden')"
     :eyebrow="__('Datenschutzvorfälle')"
@@ -22,6 +22,33 @@
         </x-input-field>
         <x-input-field name="affected" :label="__('Betroffene Daten / Personen / Systeme')" span="2">
             <textarea id="affected" name="affected" rows="3" class="textarea textarea-bordered w-full">{{ old('affected') }}</textarea>
+        </x-input-field>
+    </x-form-group>
+
+    <x-form-group :legend="__('Rolle & Zuständigkeit')" icon="diversity_3" tone="ghost" cols="2">
+        <x-input-field name="controller_role" :label="__('Eure Rolle bei diesem Vorfall')">
+            <select id="controller_role" name="controller_role" class="select select-bordered w-full">
+                <option value="controller" @selected(old('controller_role', 'controller') === 'controller')>{{ __('Eigener Vorfall (Verantwortlicher, Art. 33)') }}</option>
+                <option value="processor" @selected(old('controller_role') === 'processor')>{{ __('AV-Vorfall (Auftragsverarbeiter – Kunde meldet, Art. 33 Abs. 2)') }}</option>
+            </select>
+        </x-input-field>
+        <x-input-field name="controller_name" :label="__('Verantwortlicher / Kunde (bei AV-Vorfall)')" :value="old('controller_name')" />
+        <x-input-field name="controller_customer_id" :label="__('Kunde aus Stammdaten')" span="2">
+            <select id="controller_customer_id" name="controller_customer_id" class="select select-bordered w-full">
+                <option value="">{{ __('Kein Kunde verknüpft') }}</option>
+                @foreach ($customers as $customer)
+                    <option value="{{ $customer->id }}" @selected((string) old('controller_customer_id') === (string) $customer->id)>
+                        {{ $customer->company ?: $customer->name }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-base-content/60">{{ __('Bei AV-Vorfällen wird daraus die Kundenadresse für den Bundesland-Vorschlag verwendet.') }}</p>
+        </x-input-field>
+        <x-input-field name="own_infrastructure_affected" :label="__('Eigene Infrastruktur mitbetroffen')" span="2">
+            <label class="label cursor-pointer justify-start gap-2">
+                <input type="checkbox" name="own_infrastructure_affected" value="1" class="checkbox checkbox-sm" @checked(old('own_infrastructure_affected'))>
+                <span class="fieldset-label">{{ __('Ja – eigene Systeme/Daten ebenfalls betroffen (ggf. zusätzlicher eigener Meldefall)') }}</span>
+            </label>
         </x-input-field>
     </x-form-group>
 </x-modal>

@@ -12,6 +12,7 @@ namespace App\Services\Invoicing;
 
 use App\Enums\Numbering\NumberScope;
 use App\Models\{Customer, ForeignCustomer, Invoice, MaterialUsage, Project, TimeEntry};
+use App\Services\Finance\{BillingModeLockedException, BillingModeResolver};
 use App\Services\Numbering\NumberSequenceService;
 use App\Support\Setting;
 use Carbon\CarbonInterface;
@@ -54,6 +55,8 @@ class InvoiceGenerator {
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      */
     public function fromTimeEntries(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): Invoice {
+        $this->assertLocalBillingAllowed($customer);
+
         return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
             $notes = null;
             if ($foreignCustomer !== null) {
@@ -152,6 +155,8 @@ class InvoiceGenerator {
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      */
     public function fromMaterialUsages(Customer $customer, ?Project $project, array $range = [], ?ForeignCustomer $foreignCustomer = null): Invoice {
+        $this->assertLocalBillingAllowed($customer);
+
         return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
             $notes = null;
             if ($foreignCustomer !== null) {
@@ -261,6 +266,21 @@ class InvoiceGenerator {
 
             $charge->tour->travel_billed = true;
             $charge->tour->saveQuietly();
+        }
+    }
+
+    /**
+     * Hoheits-Sperre (Feature 045, additiv): führt ein externes Programm die
+     * Fakturierung des Kunden (lexoffice/datev), darf WorkDiary keine lokale
+     * Rechnung aus Zeiten/Material erzeugen — die Quellen gehen stattdessen
+     * als Übergabenachweis (BillingTransfer) an das führende System.
+     *
+     * @throws BillingModeLockedException
+     */
+    private function assertLocalBillingAllowed(Customer $customer): void {
+        $mode = app(BillingModeResolver::class)->effectiveFor($customer);
+        if ($mode->isExternal()) {
+            throw new BillingModeLockedException($mode);
         }
     }
 

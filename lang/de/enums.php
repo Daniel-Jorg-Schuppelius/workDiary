@@ -179,6 +179,26 @@ return [
             'cancelled' => 'Storniert',
         ],
     ],
+    'notification' => [
+        'event' => [
+            'openIssue.assigned' => 'Offener Punkt zugewiesen',
+            'openIssue.dueSoon' => 'Offener Punkt bald fällig',
+            'openIssue.overdue' => 'Offener Punkt überfällig',
+            'communication.followupDueSoon' => 'Folgeaktion bald fällig',
+            'communication.followupOverdue' => 'Folgeaktion überfällig',
+            'document.expiringSoon' => 'Dokument läuft bald ab',
+            'document.expired' => 'Dokument abgelaufen',
+            'timeCorrection.requested' => 'Zeit-Korrekturantrag eingereicht',
+            'timeCorrection.decided' => 'Zeit-Korrekturantrag entschieden',
+            'monthClosure.submitted' => 'Monatsabschluss eingereicht',
+        ],
+        'channel' => [
+            'inApp' => 'In-App',
+            'mail' => 'E-Mail',
+            'push' => 'Push',
+        ],
+    ],
+
     'open-issue' => [
         'status' => [
             'open' => 'Offen',
@@ -202,6 +222,78 @@ return [
         'visibility' => [
             'internal' => 'Intern',
             'customer' => 'Kunden-sichtbar',
+        ],
+    ],
+    'communication' => [
+        'type' => [
+            'call' => 'Telefonat',
+            'email' => 'E-Mail',
+            'meeting' => 'Vor-Ort-Gespräch',
+            'videocall' => 'Videokonferenz',
+            'chat' => 'Chat / Messenger',
+            'internal' => 'Interne Rücksprache',
+            'decision' => 'Entscheidung',
+            'letter' => 'Brief / Fax',
+            'other' => 'Sonstige',
+        ],
+        'direction' => [
+            'inbound' => 'Eingehend',
+            'outbound' => 'Ausgehend',
+            'internal' => 'Intern',
+        ],
+        'visibility' => [
+            'internal' => 'Intern',
+            'customer' => 'Kunden-sichtbar',
+        ],
+        'party' => [
+            'internal' => 'Intern',
+            'customer' => 'Kunde',
+            'thirdParty' => 'Dritte',
+        ],
+    ],
+    'knowledge' => [
+        'status' => [
+            'draft' => 'Entwurf',
+            'published' => 'Veröffentlicht',
+            'archived' => 'Archiviert',
+        ],
+        'visibility' => [
+            'internal' => 'Intern (gesamte Organisation)',
+            'team' => 'Teambezogen',
+        ],
+    ],
+    'form' => [
+        'template_status' => [
+            'draft' => 'Entwurf',
+            'active' => 'Aktiv',
+            'archived' => 'Archiviert',
+        ],
+        'field_type' => [
+            'text' => 'Text',
+            'textarea' => 'Mehrzeiliger Text',
+            'number' => 'Zahl',
+            'date' => 'Datum',
+            'select' => 'Auswahl',
+            'checkbox' => 'Checkbox',
+        ],
+    ],
+    'document' => [
+        'type' => [
+            'contract' => 'Vertrag',
+            'testReport' => 'Prüfbericht',
+            'certificate' => 'Zertifikat',
+            'manual' => 'Bedienungsanleitung',
+            'datasheet' => 'Datenblatt',
+            'manufacturerDoc' => 'Herstellerdokument',
+            'permit' => 'Genehmigung',
+            'insurance' => 'Versicherung',
+            'other' => 'Sonstiges',
+        ],
+        'status' => [
+            'draft' => 'Entwurf',
+            'active' => 'Aktiv',
+            'expired' => 'Abgelaufen',
+            'archived' => 'Archiviert',
         ],
     ],
     'protocol' => [
@@ -369,6 +461,70 @@ return [
             'preparing' => 'In Vorbereitung',
             'ready' => 'Bereit',
             'failed' => 'Fehlgeschlagen',
+        ],
+    ],
+    'isms' => [
+        'risk-category' => [
+            'organizational' => 'Organisatorisch',
+            'technical' => 'Technisch',
+            'physical' => 'Physisch',
+            'personnel' => 'Personell',
+            'supplier' => 'Lieferant',
+        ],
+        'risk-treatment' => [
+            'avoid' => 'Vermeiden',
+            'mitigate' => 'Vermindern',
+            'transfer' => 'Übertragen',
+            'accept' => 'Akzeptieren',
+        ],
+        'risk-status' => [
+            'identified' => 'Identifiziert',
+            'analyzed' => 'Analysiert',
+            'treated' => 'Behandelt',
+            'accepted' => 'Akzeptiert',
+            'closed' => 'Geschlossen',
+        ],
+        'control-source' => [
+            'iso27001AnnexA' => 'ISO/IEC 27001 Anhang A',
+            'custom' => 'Eigene Maßnahme',
+        ],
+        'control-implementation-status' => [
+            'open' => 'Offen',
+            'partial' => 'Teilweise umgesetzt',
+            'implemented' => 'Umgesetzt',
+            'notApplicable' => 'Nicht anwendbar',
+        ],
+    ],
+    'surcharge' => [
+        'kind' => [
+            'night' => 'Nacht',
+            'saturday' => 'Samstag',
+            'sunday' => 'Sonntag',
+            'holiday' => 'Feiertag',
+            'custom' => 'Benutzerdefiniert',
+        ],
+    ],
+    'finance' => [
+        'billing-mode' => [
+            'workdiary' => 'WorkDiary (lokal)',
+            'lexoffice' => 'Lexoffice führt',
+            'datev' => 'DATEV führt',
+        ],
+        'transfer-channel' => [
+            'time' => 'Leistungen/Zeit',
+            'material' => 'Produkte/Material',
+        ],
+        'transfer-target' => [
+            'lexoffice' => 'Lexoffice',
+            'datev' => 'DATEV',
+            'file' => 'Datei-Export',
+        ],
+        'transfer-status' => [
+            'draft' => 'Entwurf',
+            'confirmed' => 'Bestätigt',
+            'transferred' => 'Übergeben',
+            'failed' => 'Fehlgeschlagen',
+            'voided' => 'Verworfen',
         ],
     ],
 ];

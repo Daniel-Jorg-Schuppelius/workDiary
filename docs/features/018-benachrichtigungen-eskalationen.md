@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Done — MVP umgesetzt (2026-06-10): Notification-Center (In-App), Regelwerk je Organisation und Ereignistyp, Kanäle In-App/Mail/Push, Fristen-Scanner (notifications:scan-deadlines) mit einstufiger Eskalation, Benutzer-Präferenzen mit Ruhezeit.
 
 ## Ziel
 

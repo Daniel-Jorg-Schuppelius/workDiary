@@ -136,6 +136,38 @@
         </div>
     </x-form-group>
 
+    @php
+        $notifPrefs = (array) ($prefs['notifications'] ?? []);
+    @endphp
+    <x-form-group :legend="__('notification.title.preferences')" icon="notifications" tone="info" cols="2"
+                  :description="__('notification.field.preferences_help')">
+        <div class="fieldset md:col-span-2">
+            <label class="label cursor-pointer justify-start gap-3">
+                <input type="hidden" name="preferences[notifications][mail_enabled]" value="0">
+                <input type="checkbox" name="preferences[notifications][mail_enabled]" value="1" class="toggle toggle-primary"
+                       @checked(filter_var(old('preferences.notifications.mail_enabled', $notifPrefs['mail_enabled'] ?? true), FILTER_VALIDATE_BOOL))>
+                <span class="label-text">{{ __('notification.field.mail_enabled') }}</span>
+            </label>
+            @error('preferences.notifications.mail_enabled')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('notification.field.quiet_from') }}</label>
+            <input type="time" name="preferences[notifications][quiet_from]"
+                   value="{{ old('preferences.notifications.quiet_from', $notifPrefs['quiet_from'] ?? '') }}"
+                   class="input input-bordered w-full">
+            @error('preferences.notifications.quiet_from')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('notification.field.quiet_to') }}</label>
+            <input type="time" name="preferences[notifications][quiet_to]"
+                   value="{{ old('preferences.notifications.quiet_to', $notifPrefs['quiet_to'] ?? '') }}"
+                   class="input input-bordered w-full">
+            @error('preferences.notifications.quiet_to')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+
     <x-slot:footerExtra>
         <x-icon-btn icon="lock" size="sm"
                     data-entry-modal-trigger

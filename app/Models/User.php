@@ -10,8 +10,7 @@
 
 namespace App\Models;
 
-use App\Enums\User\CompensationModel;
-use App\Enums\User\UserRole;
+use App\Enums\User\{CompensationModel, UserRole};
 use App\Legacy\Models\LegacyUser;
 use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
@@ -83,9 +82,24 @@ class User extends Authenticatable {
         return LegacyRoleResolver::isAdmin($this);
     }
 
-    /** Zwei-Faktor-Authentifizierung aktiv (Secret bestätigt). */
+    /** @return HasMany<\App\Models\Auth\TwoFactorCredential, $this> */
+    public function twoFactorCredentials(): HasMany {
+        return $this->hasMany(\App\Models\Auth\TwoFactorCredential::class)->orderBy('id');
+    }
+
+    /**
+     * Bestaetigte zweite Faktoren (alle Methoden).
+     *
+     * @return Collection<int, \App\Models\Auth\TwoFactorCredential>
+     */
+    public function confirmedTwoFactorCredentials(): Collection {
+        return $this->twoFactorCredentials()->whereNotNull('confirmed_at')->get();
+    }
+
+    /** Zwei-Faktor aktiv: mindestens ein bestaetigter Faktor (oder Legacy-TOTP). */
     public function hasTwoFactorEnabled(): bool {
-        return $this->two_factor_confirmed_at !== null && filled($this->two_factor_secret);
+        return $this->twoFactorCredentials()->whereNotNull('confirmed_at')->exists()
+            || ($this->two_factor_confirmed_at !== null && filled($this->two_factor_secret));
     }
 
     /**

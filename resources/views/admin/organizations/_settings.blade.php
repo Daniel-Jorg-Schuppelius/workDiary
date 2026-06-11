@@ -65,6 +65,20 @@
                        placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('invoicing.time_unit')]) }}"
                        class="input input-bordered w-full">
             </div>
+
+            @can(\App\Enums\User\Permission::FinanceConfig->value)
+                {{-- Fakturierungsweg (Feature 045): Org-Default, Kunden können übersteuern. --}}
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('finance.field.billing_mode') }}</label>
+                    <select name="settings[billing_mode]" class="select select-bordered w-full">
+                        <option value="">{{ __('finance.field.billing_mode_default') }}</option>
+                        @foreach (\App\Enums\Finance\BillingMode::options() as $value => $label)
+                            <option value="{{ $value }}" @selected(old('settings.billing_mode', data_get($stored, 'billing_mode', '')) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-base-content/60 mt-1">{{ __('finance.field.billing_mode_org_hint') }}</p>
+                </div>
+            @endcan
         </x-form-group>
     </div>
 

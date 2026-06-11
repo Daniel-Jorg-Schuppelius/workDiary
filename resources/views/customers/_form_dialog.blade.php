@@ -157,6 +157,20 @@
                     <span>{{ __('Abrechenbar') }}</span>
                 </label>
             </div>
+
+            @can(\App\Enums\User\Permission::FinanceConfig->value)
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('finance.field.billing_mode') }}</label>
+                    <select name="billing_mode" class="select select-bordered w-full">
+                        <option value="">{{ __('finance.field.billing_mode_inherit') }}</option>
+                        @foreach (\App\Enums\Finance\BillingMode::options() as $value => $label)
+                            <option value="{{ $value }}" @selected(old('billing_mode', $customer?->billing_mode?->value) === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                    <p class="text-xs text-base-content/60 mt-1">{{ __('finance.field.billing_mode_hint') }}</p>
+                    @error('billing_mode')<p class="text-error text-sm">{{ $message }}</p>@enderror
+                </div>
+            @endcan
         </x-form-group>
 
         @php $ts = (array) old('travel_settings', $customer?->travel_settings ?? []); @endphp

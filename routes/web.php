@@ -8,16 +8,16 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CoverageRequirementController, CustomerController, DashboardController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, PayrollController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
+use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
 use App\Http\Controllers\Asset\MaintenancePlanController;
 use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController, TwoFactorChallengeController};
-use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
 use App\Http\Controllers\MeterReading\MeterReadingController;
 use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, ExternalPayoutReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\ServiceTicket\ServiceTicketController;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UI\DateRangeController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +48,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // weder guest- noch auth-Middleware. Der Controller prüft die Session selbst.
 Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.login');
 Route::post('/two-factor-challenge', [TwoFactorChallengeController::class, 'store'])->middleware('throttle:login')->name('two-factor.login.attempt');
+Route::post('/two-factor-challenge/email', [TwoFactorChallengeController::class, 'email'])->middleware('throttle:login')->name('two-factor.login.email');
+Route::post('/two-factor-challenge/webauthn/options', [TwoFactorChallengeController::class, 'webauthnOptions'])->name('two-factor.login.webauthn.options');
+Route::post('/two-factor-challenge/webauthn', [TwoFactorChallengeController::class, 'webauthnVerify'])->middleware('throttle:login')->name('two-factor.login.webauthn');
 
 Route::get('/register', [TenantRegistrationController::class, 'showForm'])->name('register')->middleware('guest');
 Route::post('/register', [TenantRegistrationController::class, 'register'])->middleware(['guest', 'throttle:register']);
@@ -110,10 +113,22 @@ Route::middleware('auth')->group(function () {
     Route::post('account/two-factor', [TwoFactorController::class, 'enable'])->name('account.2fa.enable');
     Route::post('account/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('account.2fa.confirm');
     Route::post('account/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('account.2fa.recovery');
+    Route::post('account/two-factor/email', [TwoFactorController::class, 'enableEmail'])->name('account.2fa.email.enable');
+    Route::post('account/two-factor/email/resend', [TwoFactorController::class, 'resendEmailCode'])->name('account.2fa.email.resend');
+    Route::post('account/two-factor/email/confirm', [TwoFactorController::class, 'confirmEmail'])->name('account.2fa.email.confirm');
+    Route::post('account/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->name('account.2fa.webauthn.options');
+    Route::post('account/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->name('account.2fa.webauthn.register');
+    Route::delete('account/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->name('account.2fa.credential.destroy');
     Route::delete('account/two-factor', [TwoFactorController::class, 'disable'])->name('account.2fa.disable');
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
+
+    // Notification-Center (MVP-018): eigene Benachrichtigungen, keine
+    // Permission nötig — Controller arbeitet ausschließlich auf auth()->user().
+    Route::get('notifications', [\App\Http\Controllers\NotificationCenterController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/read-all', [\App\Http\Controllers\NotificationCenterController::class, 'readAll'])->name('notifications.readAll');
+    Route::post('notifications/{id}/read', [\App\Http\Controllers\NotificationCenterController::class, 'read'])->name('notifications.read');
 
     // Persönliche Lesezeichen (Phase H)
     Route::get('account/bookmarks', [UserBookmarkController::class, 'index'])->name('bookmarks.index');
@@ -230,6 +245,8 @@ Route::middleware('auth')->group(function () {
             Route::post('vorfaelle/{incident}/bewertung', [\App\Http\Controllers\Privacy\IncidentController::class, 'assess'])->name('incidents.assess');
             Route::post('vorfaelle/{incident}/meldeentscheidung', [\App\Http\Controllers\Privacy\IncidentController::class, 'decideNotification'])->name('incidents.decide');
             Route::post('vorfaelle/{incident}/gemeldet', [\App\Http\Controllers\Privacy\IncidentController::class, 'markReported'])->name('incidents.reported');
+            Route::post('vorfaelle/{incident}/behoerdenmeldung', [\App\Http\Controllers\Privacy\IncidentController::class, 'recordAuthorityReport'])->name('incidents.authority-report');
+            Route::post('vorfaelle/{incident}/kunde-informiert', [\App\Http\Controllers\Privacy\IncidentController::class, 'notifyController'])->name('incidents.notify-controller');
             Route::post('vorfaelle/{incident}/abschluss', [\App\Http\Controllers\Privacy\IncidentController::class, 'close'])->name('incidents.close');
             Route::post('vorfaelle/{incident}/massnahmen', [\App\Http\Controllers\Privacy\IncidentController::class, 'storeMeasure'])->name('incidents.measure.store');
             Route::post('vorfaelle/{incident}/massnahmen/{measure}/erledigt', [\App\Http\Controllers\Privacy\IncidentController::class, 'completeMeasure'])->name('incidents.measure.complete');
@@ -271,6 +288,33 @@ Route::middleware('auth')->group(function () {
             Route::post('avv/{agreement}/tom', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'assignMeasure'])->name('agreements.tom');
         });
 
+        // ── ISMS / ISO-27001-Auditbereitschaft (Feature 044, MVP 1) ────────
+        // Modul-Gate via module.isms (config/plans.routes, NUR Enterprise);
+        // Autorisierung pro Aktion ueber die Isms-Policies (isms.viewAny/
+        // view fuer Lesen+SoA, isms.manage fuer Pflege/Katalog-Import).
+        Route::prefix('compliance/isms')->name('isms.')->group(function (): void {
+            // Risikoregister
+            Route::get('risiken', [\App\Http\Controllers\Isms\RiskController::class, 'index'])->name('risks.index');
+            Route::get('risiken/neu', [\App\Http\Controllers\Isms\RiskController::class, 'create'])->name('risks.create');
+            Route::post('risiken', [\App\Http\Controllers\Isms\RiskController::class, 'store'])->name('risks.store');
+            Route::get('risiken/{risk}/bearbeiten', [\App\Http\Controllers\Isms\RiskController::class, 'edit'])->name('risks.edit');
+            Route::put('risiken/{risk}', [\App\Http\Controllers\Isms\RiskController::class, 'update'])->name('risks.update');
+            Route::post('risiken/{risk}/status', [\App\Http\Controllers\Isms\RiskController::class, 'transition'])->name('risks.transition');
+            Route::delete('risiken/{risk}', [\App\Http\Controllers\Isms\RiskController::class, 'destroy'])->name('risks.destroy');
+
+            // Massnahmenkatalog (Controls) inkl. Annex-A-Import
+            Route::get('massnahmen', [\App\Http\Controllers\Isms\ControlController::class, 'index'])->name('controls.index');
+            Route::get('massnahmen/neu', [\App\Http\Controllers\Isms\ControlController::class, 'create'])->name('controls.create');
+            Route::post('massnahmen', [\App\Http\Controllers\Isms\ControlController::class, 'store'])->name('controls.store');
+            Route::post('massnahmen/katalog', [\App\Http\Controllers\Isms\ControlController::class, 'import'])->name('controls.import');
+            Route::get('massnahmen/{control}/bearbeiten', [\App\Http\Controllers\Isms\ControlController::class, 'edit'])->name('controls.edit');
+            Route::put('massnahmen/{control}', [\App\Http\Controllers\Isms\ControlController::class, 'update'])->name('controls.update');
+            Route::delete('massnahmen/{control}', [\App\Http\Controllers\Isms\ControlController::class, 'destroy'])->name('controls.destroy');
+
+            // Statement of Applicability (druckbare Read-Only-Sicht)
+            Route::get('soa', \App\Http\Controllers\Isms\SoaController::class)->name('soa');
+        });
+
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
         Route::post('onboarding/steps/{step}/skip', [OnboardingController::class, 'skipStep'])->name('onboarding.steps.skip');
         Route::post('onboarding/widget/dismiss', [OnboardingController::class, 'dismissWidget'])->name('onboarding.widget.dismiss');
@@ -291,6 +335,9 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/diagnostics/test-mail', [DiagnosticsController::class, 'testMail'])
             ->middleware('throttle:6,1')
             ->name('admin.diagnostics.test-mail');
+
+        // Betriebsmetriken (Feature 036)
+        Route::get('admin/metrics', [MetricsController::class, 'index'])->name('admin.metrics.index');
 
         // Supportbericht (MVP-045)
         Route::get('admin/support/report', [SupportReportController::class, 'index'])->name('admin.support.report.index');
@@ -340,6 +387,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('diary', DiaryController::class)->parameters(['diary' => 'diary']);
         Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->name('diary.archive');
         Route::post('diary/{diary}/restore', [DiaryController::class, 'restore'])->name('diary.restore');
+        Route::get('diary/{diary}/case-file', DiaryCaseFileController::class)->name('diary.case-file');
         Route::post('diary/{diary}/comments', [CommentController::class, 'store'])->name('diary.comments.store');
         Route::post('time-entries/{timeEntry}/comments', [TimeEntryCommentController::class, 'store'])->name('time-entries.comments.store');
         Route::put('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
@@ -511,6 +559,20 @@ Route::middleware('auth')->group(function () {
         Route::resource('invoice-templates', \App\Http\Controllers\InvoiceTemplateController::class)
             ->except(['show'])
             ->parameters(['invoice-templates' => 'template']);
+
+        // ── Faktura-Übergabe (Feature 045, Teil B) ──────────────────────────────
+        // Routen MÜSSEN finance.* heißen (Plan-Gating 'finance.*' → module.finance
+        // in config/plans.php). Autorisierung über BillingTransferPolicy.
+        Route::prefix('finanzen/uebergaben')->name('finance.transfers.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'store'])->name('store');
+            Route::get('{transfer}', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'show'])->name('show');
+            Route::post('{transfer}/bestaetigen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'confirm'])->name('confirm');
+            Route::post('{transfer}/uebertragen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'execute'])->name('execute');
+            Route::post('{transfer}/verwerfen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'void'])->name('void');
+            Route::get('{transfer}/download', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'download'])->name('download');
+        });
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
@@ -613,6 +675,57 @@ Route::middleware('auth')->group(function () {
         Route::post('open-issues/{issue}/transitions/{action}', [OpenIssueController::class, 'transition'])
             ->whereIn('action', ['start', 'block', 'unblock', 'complete', 'wontDo', 'reopen'])
             ->name('open-issues.transition');
+
+        // ── Kommunikationsnotizen (MVP-012) ────────────────────────────────
+        Route::get('communication-notes/create', [CommunicationNoteController::class, 'create'])->name('communication-notes.create');
+        Route::post('communication-notes', [CommunicationNoteController::class, 'store'])->name('communication-notes.store');
+        Route::get('communication-notes/{note}/edit', [CommunicationNoteController::class, 'edit'])->name('communication-notes.edit');
+        Route::put('communication-notes/{note}', [CommunicationNoteController::class, 'update'])->name('communication-notes.update');
+        Route::post('communication-notes/{note}/publish', [CommunicationNoteController::class, 'publish'])->name('communication-notes.publish');
+        Route::post('communication-notes/{note}/confidential', [CommunicationNoteController::class, 'confidential'])->name('communication-notes.confidential');
+        Route::post('communication-notes/{note}/followup-complete', [CommunicationNoteController::class, 'completeFollowup'])->name('communication-notes.followup-complete');
+        Route::delete('communication-notes/{note}', [CommunicationNoteController::class, 'destroy'])->name('communication-notes.destroy');
+
+        // ── Dokumentenmanagement (MVP-031) ─────────────────────────────────
+        Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index'])->name('documents.index');
+        Route::get('documents/create', [\App\Http\Controllers\DocumentController::class, 'create'])->name('documents.create');
+        Route::post('documents', [\App\Http\Controllers\DocumentController::class, 'store'])->name('documents.store');
+        Route::get('documents/{document}/edit', [\App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
+        Route::put('documents/{document}', [\App\Http\Controllers\DocumentController::class, 'update'])->name('documents.update');
+        Route::get('documents/{document}/versions', [\App\Http\Controllers\DocumentController::class, 'versions'])->name('documents.versions');
+        Route::post('documents/{document}/versions', [\App\Http\Controllers\DocumentController::class, 'addVersion'])->name('documents.versions.store');
+        Route::get('documents/{document}/download/{version?}', [\App\Http\Controllers\DocumentController::class, 'download'])->name('documents.download');
+        Route::post('documents/{document}/archive', [\App\Http\Controllers\DocumentController::class, 'archive'])->name('documents.archive');
+        Route::delete('documents/{document}', [\App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');
+
+        // ── Wissensbasis & Problemhistorie (Feature 011) ───────────────────
+        Route::get('knowledge', [\App\Http\Controllers\KnowledgeArticleController::class, 'index'])->name('knowledge.index');
+        Route::get('knowledge/create', [\App\Http\Controllers\KnowledgeArticleController::class, 'create'])->name('knowledge.create');
+        Route::post('knowledge', [\App\Http\Controllers\KnowledgeArticleController::class, 'store'])->name('knowledge.store');
+        Route::get('knowledge/{article}', [\App\Http\Controllers\KnowledgeArticleController::class, 'show'])->name('knowledge.show');
+        Route::get('knowledge/{article}/edit', [\App\Http\Controllers\KnowledgeArticleController::class, 'edit'])->name('knowledge.edit');
+        Route::put('knowledge/{article}', [\App\Http\Controllers\KnowledgeArticleController::class, 'update'])->name('knowledge.update');
+        Route::post('knowledge/{article}/publish', [\App\Http\Controllers\KnowledgeArticleController::class, 'publish'])->name('knowledge.publish');
+        Route::post('knowledge/{article}/archive', [\App\Http\Controllers\KnowledgeArticleController::class, 'archive'])->name('knowledge.archive');
+        Route::post('knowledge/{article}/feedback', [\App\Http\Controllers\KnowledgeArticleController::class, 'feedback'])->name('knowledge.feedback');
+        Route::post('knowledge/{article}/links', [\App\Http\Controllers\KnowledgeArticleController::class, 'storeLink'])->name('knowledge.links.store');
+        Route::delete('knowledge/{article}/links/{link}', [\App\Http\Controllers\KnowledgeArticleController::class, 'destroyLink'])->name('knowledge.links.destroy');
+        Route::delete('knowledge/{article}', [\App\Http\Controllers\KnowledgeArticleController::class, 'destroy'])->name('knowledge.destroy');
+
+        // ── Vorlagen- & Formularsystem (Feature 032) ───────────────────────
+        Route::get('form-templates', [\App\Http\Controllers\FormTemplateController::class, 'index'])->name('form-templates.index');
+        Route::get('form-templates/create', [\App\Http\Controllers\FormTemplateController::class, 'create'])->name('form-templates.create');
+        Route::post('form-templates', [\App\Http\Controllers\FormTemplateController::class, 'store'])->name('form-templates.store');
+        Route::get('form-templates/{template}/edit', [\App\Http\Controllers\FormTemplateController::class, 'edit'])->name('form-templates.edit');
+        Route::put('form-templates/{template}', [\App\Http\Controllers\FormTemplateController::class, 'update'])->name('form-templates.update');
+        Route::post('form-templates/{template}/activate', [\App\Http\Controllers\FormTemplateController::class, 'activate'])->name('form-templates.activate');
+        Route::post('form-templates/{template}/archive', [\App\Http\Controllers\FormTemplateController::class, 'archive'])->name('form-templates.archive');
+        Route::delete('form-templates/{template}', [\App\Http\Controllers\FormTemplateController::class, 'destroy'])->name('form-templates.destroy');
+
+        Route::get('form-submissions', [\App\Http\Controllers\FormSubmissionController::class, 'index'])->name('form-submissions.index');
+        Route::get('form-submissions/create', [\App\Http\Controllers\FormSubmissionController::class, 'create'])->name('form-submissions.create');
+        Route::post('form-submissions', [\App\Http\Controllers\FormSubmissionController::class, 'store'])->name('form-submissions.store');
+        Route::get('form-submissions/{submission}', [\App\Http\Controllers\FormSubmissionController::class, 'show'])->name('form-submissions.show');
 
         // ── Protokolle (MVP-020) ───────────────────────────────────────────
         Route::post('protocols', [ProtocolController::class, 'store'])->name('protocols.store');
@@ -952,6 +1065,22 @@ Route::middleware('auth')->group(function () {
         Route::resource('admin/per-diem-rates', PerDiemRateController::class)
             ->names('admin.per-diem-rates')
             ->parameters(['per-diem-rates' => 'perDiemRate'])
+            ->except('show');
+
+        // Benachrichtigungsregeln (MVP-018): pro Ereignistyp eine Regel,
+        // Bearbeitung als Modal. {event} ist der Enum-Wert (z. B. openIssue.assigned).
+        Route::get('admin/notification-rules', [\App\Http\Controllers\Admin\NotificationRuleController::class, 'index'])
+            ->name('admin.notification-rules.index');
+        Route::get('admin/notification-rules/{event}/edit', [\App\Http\Controllers\Admin\NotificationRuleController::class, 'edit'])
+            ->name('admin.notification-rules.edit');
+        Route::put('admin/notification-rules/{event}', [\App\Http\Controllers\Admin\NotificationRuleController::class, 'update'])
+            ->name('admin.notification-rules.update');
+
+        // Zuschlagsregeln (Feature 005): Listenseite + Modal-CRUD,
+        // Pflege durch Admin/Buchhaltung (surchargeRule.manage).
+        Route::resource('admin/surcharge-rules', \App\Http\Controllers\Admin\SurchargeRuleController::class)
+            ->names('admin.surcharge-rules')
+            ->parameters(['surcharge-rules' => 'surchargeRule'])
             ->except('show');
 
         // Workflow-Automatisierungen (Wenn-Dann-Regeln pro Org).

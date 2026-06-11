@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Done — MVP umgesetzt (2026-06-10): Dokumente mit Typen, Versionierung mit Versionshistorie je Dokument, Gültigkeits-/Ablaufverwaltung, Bezügen zu Kunde/Projekt/Auftrag/Asset und Modul-Gating (module.documents, Pro+).
 
 ## Ziel
 

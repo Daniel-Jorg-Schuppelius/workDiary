@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Done — MVP umgesetzt (2026-06-10): Formularvorlagen mit 6 Feldtypen, Ausfüllen am Auftrag mit fields_snapshot (Versionssicherheit), Druckansicht, Modul-Gating (module.forms, Pro+). Offen: Foto-/Datei-/Unterschrift-Felder, Bedingungslogik, PDF-Engine.
 
 ## Ziel
 

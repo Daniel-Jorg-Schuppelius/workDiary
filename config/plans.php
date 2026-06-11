@@ -35,6 +35,9 @@ return [
             'module.auswertungen_team',
             'module.chat',
             'module.datenschutz',
+            'module.documents',
+            'module.knowledge',
+            'module.forms',
         ],
         'enterprise' => [
             'module.kanban',
@@ -46,8 +49,13 @@ return [
             'module.auswertungen_team',
             'module.chat',
             'module.datenschutz',
+            'module.documents',
+            'module.knowledge',
+            'module.forms',
             'module.lohn',
             'module.compliance',
+            'module.isms',
+            'module.finance',
             'protocols.signed',
         ],
     ],
@@ -63,8 +71,13 @@ return [
         'module.auswertungen_team' => 'Team-Auswertungen',
         'module.chat' => 'Chat',
         'module.datenschutz' => 'Datenschutz',
+        'module.documents' => 'Dokumente',
+        'module.knowledge' => 'Wissensbasis',
+        'module.forms' => 'Formulare',
         'module.lohn' => 'Lohn & SV',
         'module.compliance' => 'Hinweisgebersystem',
+        'module.isms' => 'ISMS',
+        'module.finance' => 'Finanzschnittstelle',
     ],
 
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
@@ -108,10 +121,25 @@ return [
 
         'dataprotection.*' => 'module.datenschutz',
 
+        'documents.*' => 'module.documents',
+
+        'knowledge.*' => 'module.knowledge',
+
+        'form-templates.*' => 'module.forms',
+        'form-submissions.*' => 'module.forms',
+
         'payroll.*' => 'module.lohn',
+        'admin.surcharge-rules.*' => 'module.lohn', // Zuschlagsregeln (Feature 005)
 
         'whistleblowing.internal.*' => 'module.compliance',
         'whistleblowing.portal.*' => 'module.compliance',
+
+        'isms.*' => 'module.isms',
+
+        // Finanzschnittstelle (Feature 045): Routen kommen in Teil B —
+        // das Mapping ist bereits eingetragen, damit EnforcePlanModules
+        // neue finance.*-Routen sofort gated.
+        'finance.*' => 'module.finance',
 
         'reports.week-by-user' => 'module.auswertungen_team',
         'reports.month-by-user-team' => 'module.auswertungen_team',
@@ -142,8 +170,13 @@ return [
         'module.auswertungen_team' => true, // nur Auswertungen, keine Primaerdaten
         'module.chat' => true,
         'module.datenschutz' => false,      // VVT/Vorfaelle → Rechenschaft/Nachweis (Art. 5 Abs. 2)
+        'module.documents' => false,        // Vertraege/Zertifikate/Nachweise → Aufbewahrungspflichten (GoBD/§147 AO)
+        'module.knowledge' => true,         // org-eigenes Betriebswissen, keine gesetzliche Aufbewahrung
+        'module.forms' => false,            // ausgefuellte Formulare koennen Nachweise sein (Pruef-/Abnahmeprotokolle)
         'module.lohn' => false,             // Lohn/SV → GoBD / §147 AO / SGB IV (6 J.)
         'module.compliance' => false,       // Hinweisgeber → HinSchG (3 J.)
+        'module.isms' => false,             // Risikoregister/SoA → Compliance-Nachweise (Auditfähigkeit)
+        'module.finance' => false,          // Übergabenachweise/Exportpakete → GoBD / §147 AO (10 J.)
     ],
 
     // Modul → org-scoped Modelle, die `plans:purge` nach Ablauf der Karenz
@@ -168,6 +201,10 @@ return [
         'module.chat' => [
             \App\Models\Chat\Message::class,
             \App\Models\Chat\Channel::class,
+        ],
+        // Links/Feedback hängen per FK-Cascade am Artikel.
+        'module.knowledge' => [
+            \App\Models\KnowledgeArticle::class,
         ],
     ],
 ];

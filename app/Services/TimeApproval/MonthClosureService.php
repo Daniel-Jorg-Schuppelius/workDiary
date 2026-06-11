@@ -105,7 +105,7 @@ class MonthClosureService {
 
         $actorId = $this->resolveActorId($actor);
 
-        return DB::transaction(function () use ($closure, $snapshot, $counts, $actorId): MonthClosure {
+        $closure = DB::transaction(function () use ($closure, $snapshot, $counts, $actorId): MonthClosure {
             $closure->fill([
                 'status' => MonthClosureStatus::Submitted,
                 'submitted_at' => CarbonImmutable::now(),
@@ -125,6 +125,24 @@ class MonthClosureService {
 
             return $closure->refresh();
         });
+
+        // Benachrichtigung (MVP-018, additiv) erst nach Commit: Entscheider
+        // (Default-Regel: Rolle Teamleitung) über die Einreichung informieren.
+        app(\App\Services\Notification\NotificationDispatcher::class)->notify(
+            \App\Enums\Notification\NotificationEvent::MonthClosureSubmitted,
+            $closure,
+            $owner,
+            [
+                'title' => (string) __('notification.message.month_submitted_title', [
+                    'user' => (string) $owner->name,
+                    'period' => sprintf('%02d/%d', (int) $closure->period_month, (int) $closure->period_year),
+                ]),
+                'message' => null,
+                'url' => route('admin.month-approval.index'),
+            ],
+        );
+
+        return $closure;
     }
 
     /**

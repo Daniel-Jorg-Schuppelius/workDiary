@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <script @cspNonce>
             (function () {
                 var savedTheme = localStorage.getItem('workDiaryTheme');
@@ -39,6 +40,24 @@
                     @if ($errors->any())
                         <div class="mb-4 alert alert-error text-sm">{{ $errors->first() }}</div>
                     @endif
+                    @if (session('success'))
+                        <div class="mb-4 alert alert-success text-sm">{{ session('success') }}</div>
+                    @endif
+
+                    @if ($hasWebauthn ?? false)
+                        <div class="mb-5" data-webauthn-block>
+                            <p id="passkey-error" class="mb-2 hidden text-sm text-error"></p>
+                            <button type="button" class="btn btn-primary w-full gap-2 rounded-2xl font-['Space_Grotesk'] font-semibold"
+                                    data-webauthn-assert
+                                    data-options="{{ route('two-factor.login.webauthn.options') }}"
+                                    data-target="{{ route('two-factor.login.webauthn') }}"
+                                    data-error="passkey-error">
+                                <span class="material-symbols-outlined">key</span> {{ __('Mit Passkey / Sicherheitsschlüssel') }}
+                            </button>
+                            <div class="my-4 flex items-center gap-3 text-xs text-base-content/50"><span class="h-px flex-1 bg-base-300"></span>{{ __('oder Code eingeben') }}<span class="h-px flex-1 bg-base-300"></span></div>
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('two-factor.login.attempt') }}" class="space-y-5">
                         @csrf
                         <div x-show="authMode">
@@ -62,6 +81,22 @@
                         <span x-show="authMode">{{ __('Stattdessen Recovery-Code verwenden') }}</span>
                         <span x-show="recovery" x-cloak>{{ __('Zurück zum Authenticator-Code') }}</span>
                     </button>
+
+                    @if ($hasEmail ?? false)
+                        <div class="mt-6 border-t border-base-300 pt-5">
+                            <p class="mb-3 text-sm text-base-content/70">{{ __('Oder Code per E-Mail erhalten:') }}</p>
+                            <form method="POST" action="{{ route('two-factor.login.email') }}" class="mb-3">
+                                @csrf
+                                <button type="submit" class="btn btn-outline btn-sm w-full rounded-2xl">{{ __('Code per E-Mail senden') }}</button>
+                            </form>
+                            <form method="POST" action="{{ route('two-factor.login.attempt') }}" class="space-y-3">
+                                @csrf
+                                <input name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="{{ __('E-Mail-Code') }}"
+                                       class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-center text-xl tracking-[0.4em] text-base-content transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25">
+                                <button type="submit" class="btn btn-primary btn-sm w-full rounded-2xl">{{ __('Mit E-Mail-Code bestätigen') }}</button>
+                            </form>
+                        </div>
+                    @endif
                 </div>
 
                 <form method="POST" action="{{ route('logout') }}" class="mt-6 text-center">
@@ -70,5 +105,6 @@
                 </form>
             </div>
         </div>
+        @include('partials.webauthn-script')
     </body>
 </html>

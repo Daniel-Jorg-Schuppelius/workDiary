@@ -14,9 +14,9 @@ namespace App\Models\Privacy;
 
 use App\Enums\Privacy\{IncidentStatus, IncidentType};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\{Customer, User};
 use App\Models\Privacy\Casts\RecordEncrypted;
 use App\Models\Privacy\Concerns\ProvidesRecordDek;
-use App\Models\User;
 use App\Services\Privacy\DataProtectionCryptoService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -43,6 +43,11 @@ class Incident extends Model implements ProvidesRecordDek {
         'incident_number',
         'type',
         'status',
+        'controller_role',
+        'controller_name',
+        'controller_customer_id',
+        'controller_notified_at',
+        'own_infrastructure_affected',
         'occurred_at',
         'discovered_at',
         'reported_internally_at',
@@ -52,6 +57,12 @@ class Incident extends Model implements ProvidesRecordDek {
         'notify_authority',
         'notify_subjects',
         'authority_notified_at',
+        'authority_key',
+        'authority_name',
+        'authority_portal_url',
+        'authority_report_type',
+        'authority_report_reference',
+        'authority_case_number',
         'subjects_notified_at',
         'assigned_user_id',
         'summary_ciphertext',
@@ -67,6 +78,9 @@ class Incident extends Model implements ProvidesRecordDek {
     protected $casts = [
         'type' => IncidentType::class,
         'status' => IncidentStatus::class,
+        'controller_role' => \App\Enums\Privacy\ControllerRole::class,
+        'controller_notified_at' => 'datetime',
+        'own_infrastructure_affected' => 'boolean',
         'summary_ciphertext' => RecordEncrypted::class,
         'affected_ciphertext' => RecordEncrypted::class,
         'measures_ciphertext' => RecordEncrypted::class,
@@ -110,6 +124,11 @@ class Incident extends Model implements ProvidesRecordDek {
     /** @return BelongsTo<User, $this> */
     public function assignedUser(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function controllerCustomer(): BelongsTo {
+        return $this->belongsTo(Customer::class, 'controller_customer_id');
     }
 
     /** @return HasMany<IncidentEvent, $this> */

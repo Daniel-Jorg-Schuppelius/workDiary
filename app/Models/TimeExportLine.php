@@ -10,12 +10,17 @@
 
 namespace App\Models;
 
+use App\Models\Surcharge\SurchargeRule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
  * Aggregierte Export-Zeile je User × Lohnart × Kostenstelle (MVP-019).
+ *
+ * Zuschlagszeilen (Feature 005) tragen zusätzlich surcharge_rule_id,
+ * wage_type_code (DATEV-/Lexware-Lohnart) und percentage; bei normalen
+ * Arbeitszeit-Zeilen bleiben diese Spalten null.
  *
  * @property int $id
  * @property int $time_export_id
@@ -28,6 +33,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon $period_end
  * @property string|null $note
  * @property array<int, mixed>|null $source_refs
+ * @property int|null $surcharge_rule_id
+ * @property string|null $wage_type_code
+ * @property string|null $percentage
  */
 class TimeExportLine extends Model {
     protected $fillable = [
@@ -41,6 +49,9 @@ class TimeExportLine extends Model {
         'period_end',
         'note',
         'source_refs',
+        'surcharge_rule_id',
+        'wage_type_code',
+        'percentage',
     ];
 
     /** @var array<string, string> */
@@ -49,7 +60,13 @@ class TimeExportLine extends Model {
         'period_end' => 'date',
         'source_refs' => 'array',
         'quantity' => 'decimal:4',
+        'percentage' => 'decimal:2',
     ];
+
+    /** @return BelongsTo<SurchargeRule, $this> */
+    public function surchargeRule(): BelongsTo {
+        return $this->belongsTo(SurchargeRule::class);
+    }
 
     /** @return BelongsTo<TimeExport, $this> */
     public function export(): BelongsTo {

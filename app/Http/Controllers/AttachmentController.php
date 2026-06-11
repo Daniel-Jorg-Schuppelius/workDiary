@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, OnCallShift, Organization, Supplier, Task, User};
+use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, KnowledgeArticle, OnCallShift, Organization, Supplier, Task, User};
 use App\Services\Attachments\ImageMetaUploader;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -52,6 +52,7 @@ class AttachmentController extends Controller {
         'organization' => Organization::class,
         'user' => User::class,
         'asset' => Asset::class,
+        'knowledge' => KnowledgeArticle::class,
     ];
 
     /**

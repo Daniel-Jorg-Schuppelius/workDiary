@@ -140,9 +140,7 @@ class PayrollController extends Controller {
         $count = 0;
         foreach ($query->get() as $member) {
             $member->forceFill(['payroll_hourly_wage' => $current])->save();
-            if (method_exists($member, 'audit')) {
-                $member->audit('payroll.wage.raised_to_minimum', ['amount' => $current]);
-            }
+            $member->audit('payroll.wage.raised_to_minimum', ['amount' => $current]);
             $count++;
         }
 
