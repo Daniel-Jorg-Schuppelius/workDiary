@@ -3,23 +3,24 @@
  * Created on   : Fri Jun 12 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : XRechnungTest.php
+ * Filename     : ZugferdTest.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
 namespace Tests\Feature\Invoicing;
 
-use App\Models\{Customer, Invoice, Organization, User};
+use App\Models\{Customer, Invoice, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * E-Rechnung (Feature 045, Abschnitt 8): Download-Route, Preflight-Redirect,
- * Hoheits-Sperre (BillingModeResolver), Gate und Cross-Org-Isolation.
+ * E-Rechnung (Feature 045, Abschnitt 8): ZUGFeRD-Download-Route (PDF/A-3,
+ * EN 16931, php-erechnung-toolkit/php-pdf-toolkit), Hoheits-Sperre,
+ * Preflight-Differenz zur XRechnung (BT-10 nur dort Pflicht) und Gate.
  */
-class XRechnungTest extends TestCase {
+class ZugferdTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
@@ -66,13 +67,10 @@ class XRechnungTest extends TestCase {
         ];
     }
 
-    private function makeInvoice(string $status = Invoice::STATUS_ISSUED, ?Customer $customer = null, ?int $orgId = null): Invoice {
-        $orgId ??= $this->organization->id;
-        $customer ??= $this->customer;
-
+    private function makeInvoice(string $status = Invoice::STATUS_ISSUED): Invoice {
         $invoice = Invoice::create([
-            'organization_id' => $orgId,
-            'customer_id' => $customer->id,
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
             'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
             'status' => $status,
             'issued_on' => '2026-06-01',
@@ -83,7 +81,7 @@ class XRechnungTest extends TestCase {
         ]);
 
         $invoice->items()->create([
-            'organization_id' => $orgId,
+            'organization_id' => $this->organization->id,
             'description' => 'Beratung',
             'quantity' => '2.00',
             'unit' => 'Std.',
@@ -98,32 +96,58 @@ class XRechnungTest extends TestCase {
         return $invoice->fresh(['items', 'customer']);
     }
 
-    public function test_download_returns_xml_for_complete_issued_invoice(): void {
+    public function test_download_returns_pdf_with_embedded_invoice_xml(): void {
         $invoice = $this->makeInvoice();
 
-        $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
+        $response = $this->actingAs($this->admin)->get(route('invoices.zugferd', $invoice));
 
         $response->assertOk();
-        $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
-        $this->assertStringContainsString('XRechnung_' . $invoice->number . '.xml', (string) $response->headers->get('Content-Disposition'));
-        // Toolkit-Realität (php-erechnung-toolkit): alte 2.x-Kennung
-        // `urn:xoev-de:kosit:standard:xrechnung_3.0` — siehe Unit-Test/Bericht.
-        $this->assertStringContainsString(\ERechnungToolkit\Enums\ERechnungProfile::XRECHNUNG->value, $response->getContent());
-        $this->assertStringContainsString('<cbc:BuyerReference>991-12345-67</cbc:BuyerReference>', $response->getContent());
+        $response->assertHeader('Content-Type', 'application/pdf');
+        $this->assertStringContainsString('ZUGFeRD_' . $invoice->number . '.pdf', (string) $response->headers->get('Content-Disposition'));
+
+        $pdf = (string) $response->getContent();
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $this->assertGreaterThan(1000, strlen($pdf));
+
+        // Eingebettetes CII-XML nur prüfen, wenn die System-Tools (pdfdetach/
+        // pdftk) vorhanden sind — sonst genügt der PDF-Header (siehe Bericht).
+        $reader = new \PDFToolkit\Readers\ZugferdReader();
+        if ($reader->isAvailable()) {
+            $path = tempnam(sys_get_temp_dir(), 'zugferd_feature_') . '.pdf';
+            file_put_contents($path, $pdf);
+            try {
+                $xml = $reader->extractInvoiceXml($path);
+                $this->assertNotNull($xml);
+                $this->assertStringContainsString('CrossIndustryInvoice', (string) $xml);
+                $this->assertStringContainsString($invoice->number, (string) $xml);
+            } finally {
+                @unlink($path);
+            }
+        }
     }
 
-    public function test_download_redirects_with_error_when_buyer_reference_missing(): void {
+    public function test_download_works_without_buyer_reference_unlike_xrechnung(): void {
         $this->customer->update(['buyer_reference' => null]);
         $invoice = $this->makeInvoice();
 
-        $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
+        // XRechnung blockiert ohne BT-10 …
+        $this->actingAs($this->admin)
+            ->get(route('invoices.einvoice', $invoice))
+            ->assertRedirect(route('invoices.show', $invoice));
+
+        // … ZUGFeRD (EN 16931) nicht.
+        $response = $this->actingAs($this->admin)->get(route('invoices.zugferd', $invoice));
+        $response->assertOk();
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    public function test_download_redirects_with_error_for_draft_invoice(): void {
+        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+
+        $response = $this->actingAs($this->admin)->get(route('invoices.zugferd', $invoice));
 
         $response->assertRedirect(route('invoices.show', $invoice));
         $response->assertSessionHas('error');
-        $this->assertStringContainsString(
-            (string) __('invoicing.einvoice.error.missing_buyer_reference'),
-            (string) session('error'),
-        );
     }
 
     public function test_download_is_not_found_for_externally_billed_customer(): void {
@@ -131,17 +155,8 @@ class XRechnungTest extends TestCase {
         $this->customer->update(['billing_mode' => 'lexoffice']);
 
         $this->actingAs($this->admin)
-            ->get(route('invoices.einvoice', $invoice))
+            ->get(route('invoices.zugferd', $invoice))
             ->assertNotFound();
-    }
-
-    public function test_download_redirects_for_draft_invoice(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
-
-        $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
-
-        $response->assertRedirect(route('invoices.show', $invoice));
-        $response->assertSessionHas('error');
     }
 
     public function test_button_visible_on_issued_invoice_for_workdiary_mode(): void {
@@ -150,16 +165,7 @@ class XRechnungTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('invoices.show', $invoice))
             ->assertOk()
-            ->assertSee(route('invoices.einvoice', $invoice), false);
-    }
-
-    public function test_button_hidden_for_draft_invoice(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
-
-        $this->actingAs($this->admin)
-            ->get(route('invoices.show', $invoice))
-            ->assertOk()
-            ->assertDontSee(route('invoices.einvoice', $invoice), false);
+            ->assertSee(route('invoices.zugferd', $invoice), false);
     }
 
     public function test_button_hidden_for_externally_billed_customer(): void {
@@ -169,7 +175,7 @@ class XRechnungTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('invoices.show', $invoice))
             ->assertOk()
-            ->assertDontSee(route('invoices.einvoice', $invoice), false);
+            ->assertDontSee(route('invoices.zugferd', $invoice), false);
     }
 
     public function test_non_billing_user_is_forbidden(): void {
@@ -177,19 +183,7 @@ class XRechnungTest extends TestCase {
         $regular = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($regular)
-            ->get(route('invoices.einvoice', $invoice))
+            ->get(route('invoices.zugferd', $invoice))
             ->assertForbidden();
-    }
-
-    public function test_cross_org_invoice_is_not_accessible(): void {
-        $invoice = $this->makeInvoice();
-
-        // Admin einer fremden Organisation darf die Rechnung nicht erreichen.
-        $orgB = Organization::factory()->create();
-        $adminB = User::factory()->admin()->create(['organization_id' => $orgB->id]);
-        app()->instance('currentOrganization', $orgB);
-
-        $response = $this->actingAs($adminB)->get(route('invoices.einvoice', $invoice));
-        $this->assertContains($response->status(), [403, 404], 'Cross-Org-Zugriff muss blockiert sein');
     }
 }

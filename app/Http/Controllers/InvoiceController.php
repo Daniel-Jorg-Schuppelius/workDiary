@@ -188,6 +188,18 @@ class InvoiceController extends Controller {
             }
         }
 
+        return Pdf::loadView('invoices.pdf', $this->pdfViewData($invoice))
+            ->setPaper('a4')
+            ->download('rechnung-' . $invoice->number . '.pdf');
+    }
+
+    /**
+     * View-Daten der Rechnungs-Druckansicht (`invoices.pdf`) — geteilt vom
+     * dompdf-Download und der visuellen Darstellung im ZUGFeRD-PDF.
+     *
+     * @return array{invoice: Invoice, template: \App\Models\InvoiceTemplate|null, orgLegal: mixed}
+     */
+    private function pdfViewData(Invoice $invoice): array {
         $template = $invoice->customer->invoice_template_id
             ? \App\Models\InvoiceTemplate::find($invoice->customer->invoice_template_id)
             : \App\Models\InvoiceTemplate::query()
@@ -195,13 +207,11 @@ class InvoiceController extends Controller {
             ->where('is_default', true)
             ->first();
 
-        return Pdf::loadView('invoices.pdf', [
+        return [
             'invoice' => $invoice,
             'template' => $template,
             'orgLegal' => app(\App\Services\BrandingService::class)->legal(),
-        ])
-            ->setPaper('a4')
-            ->download('rechnung-' . $invoice->number . '.pdf');
+        ];
     }
 
     /**
@@ -229,6 +239,45 @@ class InvoiceController extends Controller {
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * ZUGFeRD-Download (Feature 045, Abschnitt 8): PDF/A-3 (EN 16931) mit
+     * eingebettetem CII-XML zur lokalen Ausgangsrechnung. Gleiche Gates und
+     * Hoheits-Sperre wie {@see einvoiceDownload()}; die visuelle Darstellung
+     * ist die bestehende Rechnungs-PDF-View (`invoices.pdf`). BT-10
+     * (BuyerReference) ist hier — anders als bei der XRechnung — keine
+     * Pflicht (Preflight mit Profil EN 16931).
+     */
+    public function zugferdDownload(Invoice $invoice, \App\Services\Invoicing\EInvoice\XRechnungGenerator $generator): SymfonyResponse {
+        Gate::authorize('view', $invoice);
+        $invoice->load(['items', 'customer', 'project']);
+
+        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
+        abort_if($billingMode->isExternal(), 404);
+
+        abort_unless($generator->zugferdAvailable(), 503, (string) __('invoicing.einvoice.zugferd.unavailable'));
+
+        $result = $generator->preflight($invoice, \ERechnungToolkit\Enums\ERechnungProfile::EN16931);
+        if ($result['errors'] !== []) {
+            return redirect()->route('invoices.show', $invoice)
+                ->with('error', __('invoicing.einvoice.zugferd.error_intro') . ' ' . implode(' ', $result['errors']));
+        }
+
+        $visualHtml = view('invoices.pdf', $this->pdfViewData($invoice))->render();
+        $pdf = $generator->generateZugferdPdf($invoice, $visualHtml);
+
+        if ($pdf === null) {
+            return redirect()->route('invoices.show', $invoice)
+                ->with('error', __('invoicing.einvoice.zugferd.failed'));
+        }
+
+        $filename = 'ZUGFeRD_' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number) . '.pdf';
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }

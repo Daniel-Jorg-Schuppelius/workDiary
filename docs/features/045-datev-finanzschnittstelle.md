@@ -16,11 +16,19 @@ Pflichtfeld-Preflight: Verkäuferstammdaten je Org in
 `settings['einvoice']`, Leitweg-ID/BT-10 je Kunde als
 `customers.buyer_reference`, Steuerkategorien S/Z/E inkl. § 19 UStG,
 SEPA-Zahlweg 58, Download-Route `invoices.einvoice` mit Hoheits-Sperre via
-BillingModeResolver). Bewusst offen am E-Rechnungs-MVP: ZUGFeRD
-(PDF/A-3-Einbettung), Schematron-/KoSIT-Validierung (benötigt Java; der
-Preflight ersetzt keine vollständige EN-16931-Regelprüfung), Peppol-Versand,
-Empfang eingehender E-Rechnungen. Weiterhin offen: DATEV-Desktop-API-Adapter
-(Phase 0/1), Buchungsstapel, Zahlungsabgleich, Storno-/Differenzübergaben.
+BillingModeResolver). Drittes Inkrement (2026-06-12): E-Rechnung auf
+`php-erechnung-toolkit` umgestellt — der `XRechnungGenerator` bleibt als
+Adapter mit unveränderter öffentlicher API (preflight/generate), baut intern
+aber über den `ERechnungDocumentBuilder` (UBL via `toUblXml()`); zusätzlich
+ZUGFeRD-Download umgesetzt (`invoices.zugferd`): PDF/A-3 mit eingebettetem
+CII-XML (Profil EN 16931/COMFORT) über `ZugferdPdfGenerator` +
+`php-pdf-toolkit`, visuelle Darstellung aus der bestehenden Rechnungs-PDF-
+View; Preflight profilabhängig (BT-10/BuyerReference nur für die XRechnung
+Pflicht, für ZUGFeRD Warnung). Bewusst offen am E-Rechnungs-Ausbau:
+Schematron-/KoSIT-Validierung (benötigt Java; der Preflight ersetzt keine
+vollständige EN-16931-Regelprüfung), Peppol-Versand, Empfang eingehender
+E-Rechnungen. Weiterhin offen: DATEV-Desktop-API-Adapter (Phase 0/1),
+Buchungsstapel, Zahlungsabgleich, Storno-/Differenzübergaben.
 
 ## Ziel
 
@@ -611,15 +619,20 @@ Bereits vorhandene Basis für:
 Die Anwendung verwendet weiterhin lokale Facades/Adapter, damit ein
 Toolkit-Wechsel die Fachlogik nicht durchdringt.
 
-### `php-pdf-toolkit`
+### `php-erechnung-toolkit` und `php-pdf-toolkit`
 
-Nicht für das DATEV-Datenformat erforderlich. Ein Einsatz ist nur vorgesehen,
-wenn Begleitberichte zusammengeführt, signiert, ausgelesen oder per OCR geprüft
-werden müssen.
+Seit dem dritten Inkrement eingebunden: die E-Rechnungs-Erzeugung läuft über
+`php-erechnung-toolkit` (`ERechnungDocumentBuilder` → UBL/CII), die
+ZUGFeRD-PDF/A-3-Erzeugung zusätzlich über `php-pdf-toolkit`
+(`ZugferdWriter`: dompdf + FPDI + TCPDF, eingebettetes CII-XML samt
+XMP-Profil). Der Adapter bleibt der `XRechnungGenerator` — Toolkit-Klassen
+werden nicht direkt in Controller oder Eloquent-Modelle eingebaut; die
+fachliche Geschäftsregel-Validierung (Preflight) liegt weiterhin in der
+Anwendung, da das Toolkit bewusst keine Geschäftsregeln prüft.
 
-Für einen einfachen HTML-basierten Prüfbericht genügt zunächst das bereits
-vorhandene `barryvdh/laravel-dompdf`. Eine zusätzliche Abhängigkeit vom
-PDF Toolkit wird erst bei einem konkreten Bedarf eingeführt.
+Für den einfachen HTML-basierten Rechnungs-PDF-Download (ohne eingebettete
+E-Rechnung) bleibt `barryvdh/laravel-dompdf` zuständig; beide Wege nutzen
+dieselbe Blade-View `invoices.pdf`.
 
 ### `datev-php-sdk`
 
@@ -1023,9 +1036,10 @@ Das Feature ist für die Anwendung erfolgreich, wenn:
       Fakturierungssystem konfiguriert, ist die lokale Rechnungserstellung
       für dessen Quellen gesperrt.
 - [x] Lokale Ausgangsrechnungen können als XRechnung (UBL 2.1, EN 16931)
-      ausgegeben werden; ein Pflichtfeld-Preflight prüft die fachlichen
-      Pflichtangaben. (Teilweise: ZUGFeRD und Schematron-/KoSIT-Validierung
-      stehen noch aus.)
+      und als ZUGFeRD-PDF (PDF/A-3 mit eingebettetem CII-XML, Profil
+      EN 16931) ausgegeben werden; ein Pflichtfeld-Preflight prüft die
+      fachlichen Pflichtangaben. (Teilweise: Schematron-/KoSIT-Validierung
+      steht noch aus.)
 - [ ] Die Festschreibe-Entscheidung je Buchungsstapel ist sichtbar und Teil
       des Exportnachweises.
 - [ ] Bankdaten mit Personenbezug liegen verschlüsselt vor; das Matching

@@ -33,10 +33,24 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   IBAN/BIC, Zahlungsziel, Kleinunternehmer § 19 UStG ⇒ Steuerkategorie E),
   Leitweg-ID/Käuferreferenz (BT-10) je Kunde (`customers.buyer_reference`),
   Steuerkategorien S/Z/E, SEPA-Zahlweg 58, Einheiten-Mapping
-  (Stunde ⇒ HUR, Stück ⇒ H87, Default C62), Gutschriften als Typ 381 und
+  (Stunde ⇒ HUR, Stück/Default ⇒ C62), Gutschriften als Typ 381 und
   Download-Button auf der Rechnungs-Detailseite (nur gestellt/bezahlt,
-  gesperrt bei externer Fakturierungshoheit). Bewusst offen: ZUGFeRD
-  (PDF/A-3), Schematron-/KoSIT-Validierung (Java), Peppol-Versand.
+  gesperrt bei externer Fakturierungshoheit). Bewusst offen:
+  Schematron-/KoSIT-Validierung (Java), Peppol-Versand.
+
+- E-Rechnung auf `php-erechnung-toolkit` umgestellt und ZUGFeRD ergänzt
+  (Feature 045, Abschnitt 8): der `XRechnungGenerator` bleibt als Adapter
+  mit unveränderter öffentlicher API (preflight/generate), baut das UBL-XML
+  intern aber über den `ERechnungDocumentBuilder` des Toolkits. NEU:
+  ZUGFeRD-Download (`invoices.zugferd`, Button „ZUGFeRD (PDF)") als
+  PDF/A-3 mit eingebettetem CII-XML (Profil EN 16931/COMFORT) über
+  `ZugferdPdfGenerator` + `php-pdf-toolkit`; die visuelle Darstellung ist
+  die bestehende Rechnungs-PDF-View (`invoices.pdf`). Der Preflight bleibt
+  die Validierungsschicht (das Toolkit prüft keine Geschäftsregeln) und ist
+  profilabhängig: BT-10/BuyerReference ist nur für die XRechnung Pflicht,
+  für ZUGFeRD eine Warnung; zusätzlicher Betragstreue-Check gegen die vom
+  Toolkit selbst berechneten Summen. Gutschriften werden jetzt als
+  UBL-CreditNote-Dokument emittiert (vorher Invoice mit TypeCode 381).
 
 - Kommunikationsnotizen (MVP-012): Telefonate, E-Mails und Vor-Ort-Gespräche
   als Notizen an Aufträgen, Kunden und Projekten — inkl. Vertraulichkeit,

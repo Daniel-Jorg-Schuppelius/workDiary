@@ -70,6 +70,8 @@
             @if ($einvoiceVisible)
                 <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
                             :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
+                <x-icon-btn icon="receipt" size="sm" :href="route('invoices.zugferd', $invoice)" show-label
+                            :title="__('invoicing.einvoice.zugferd.button_title')">{{ __('invoicing.einvoice.zugferd.button') }}</x-icon-btn>
             @endif
             @can('send', $invoice)
                 <x-icon-btn icon="mail" tone="primary" size="sm"

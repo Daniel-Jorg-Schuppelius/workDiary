@@ -21,6 +21,13 @@ return [
         'button' => 'XRechnung',
         'button_title' => 'XRechnung (UBL 2.1, EN 16931) herunterladen',
         'error_intro' => 'XRechnung kann nicht erzeugt werden:',
+        'zugferd' => [
+            'button' => 'ZUGFeRD (PDF)',
+            'button_title' => 'ZUGFeRD-PDF (PDF/A-3, EN 16931) herunterladen',
+            'error_intro' => 'ZUGFeRD-PDF kann nicht erzeugt werden:',
+            'unavailable' => 'ZUGFeRD-PDF-Erzeugung ist auf diesem System nicht verfügbar (php-pdf-toolkit fehlt).',
+            'failed' => 'Die ZUGFeRD-PDF-Erzeugung ist fehlgeschlagen.',
+        ],
         'payment_terms' => 'Zahlbar innerhalb von :days Tagen ohne Abzug.',
         'exemption_small_business' => 'Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).',
         'error' => [

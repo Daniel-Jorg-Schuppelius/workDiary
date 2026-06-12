@@ -21,6 +21,13 @@ return [
         'button' => 'XRechnung',
         'button_title' => 'Descargar la XRechnung (UBL 2.1, EN 16931)',
         'error_intro' => 'No se puede generar la XRechnung:',
+        'zugferd' => [
+            'button' => 'ZUGFeRD (PDF)',
+            'button_title' => 'Descargar el PDF ZUGFeRD (PDF/A-3, EN 16931)',
+            'error_intro' => 'No se puede generar el PDF ZUGFeRD:',
+            'unavailable' => 'La generación del PDF ZUGFeRD no está disponible en este sistema (falta php-pdf-toolkit).',
+            'failed' => 'La generación del PDF ZUGFeRD ha fallado.',
+        ],
         'payment_terms' => 'Pagadero en :days días sin descuento.',
         'exemption_small_business' => 'Sin IVA conforme al § 19 UStG (régimen alemán de pequeñas empresas).',
         'error' => [

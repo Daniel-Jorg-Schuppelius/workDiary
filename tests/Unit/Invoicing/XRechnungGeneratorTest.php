@@ -71,11 +71,11 @@ class XRechnungGeneratorTest extends TestCase {
         ], $overrides);
     }
 
-    private function makeIssuedInvoice(string $taxRate = '19.00', string $type = Invoice::TYPE_INVOICE): Invoice {
+    private function makeIssuedInvoice(string $taxRate = '19.00', string $type = Invoice::TYPE_INVOICE, string $number = 'R2026-0042'): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
-            'number' => 'R2026-0042',
+            'number' => $number,
             'status' => Invoice::STATUS_ISSUED,
             'type' => $type,
             'issued_on' => '2026-06-01',
@@ -127,6 +127,14 @@ class XRechnungGeneratorTest extends TestCase {
         $xml = app(XRechnungGenerator::class)->generate($invoice);
         $xp = $this->xpath($xml);
 
+        // Toolkit-Realität: das XRECHNUNG-Profil emittiert die alte
+        // 2.x-Kennung `urn:xoev-de:kosit:standard:xrechnung_3.0` (aktuell
+        // wäre `urn:xeinkauf.de:kosit:xrechnung_3.0`) — Befund an den
+        // Toolkit-Maintainer, vendor wird nicht gepatcht.
+        $this->assertSame(
+            'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0',
+            XRechnungGenerator::CUSTOMIZATION_ID,
+        );
         $this->assertSame(XRechnungGenerator::CUSTOMIZATION_ID, $xp->evaluate('string(/ubl:Invoice/cbc:CustomizationID)'));
         $this->assertSame(XRechnungGenerator::PROFILE_ID, $xp->evaluate('string(/ubl:Invoice/cbc:ProfileID)'));
         $this->assertSame('R2026-0042', $xp->evaluate('string(/ubl:Invoice/cbc:ID)'));
@@ -148,9 +156,10 @@ class XRechnungGeneratorTest extends TestCase {
         $this->assertSame('Musterstraße 1', $xp->evaluate("string($party/cac:PostalAddress/cbc:StreetName)"));
         $this->assertSame('12345', $xp->evaluate("string($party/cac:PostalAddress/cbc:PostalZone)"));
         $this->assertSame('DE', $xp->evaluate("string($party/cac:PostalAddress/cac:Country/cbc:IdentificationCode)"));
-        // BT-31 (USt-IdNr., TaxScheme VAT) und BT-32 (Steuernummer, TaxScheme FC).
+        // BT-31 (USt-IdNr., TaxScheme VAT); BT-32 (Steuernummer) legt das
+        // Toolkit als PartyLegalEntity/CompanyID ab (nicht als TaxScheme FC).
         $this->assertSame('DE123456789', $xp->evaluate("string($party/cac:PartyTaxScheme[cac:TaxScheme/cbc:ID='VAT']/cbc:CompanyID)"));
-        $this->assertSame('12/345/67890', $xp->evaluate("string($party/cac:PartyTaxScheme[cac:TaxScheme/cbc:ID='FC']/cbc:CompanyID)"));
+        $this->assertSame('12/345/67890', $xp->evaluate("string($party/cac:PartyLegalEntity/cbc:CompanyID)"));
         $this->assertSame('rechnung@workdiary.example', $xp->evaluate("string($party/cac:Contact/cbc:ElectronicMail)"));
     }
 
@@ -181,12 +190,40 @@ class XRechnungGeneratorTest extends TestCase {
         $this->assertSame('EUR', $xp->evaluate("string($total/cbc:PayableAmount/@currencyID)"));
     }
 
-    public function test_credit_note_uses_invoice_type_code_381(): void {
+    public function test_credit_note_uses_creditnote_root_with_type_code_381(): void {
         $invoice = $this->makeIssuedInvoice('19.00', Invoice::TYPE_CREDIT_NOTE);
         $xml = app(XRechnungGenerator::class)->generate($invoice);
-        $xp = $this->xpath($xml);
 
-        $this->assertSame('381', $xp->evaluate('string(/ubl:Invoice/cbc:InvoiceTypeCode)'));
+        // Toolkit-Realität: Gutschriften werden als eigenes UBL-CreditNote-
+        // Dokument emittiert (Root `CreditNote`, `cbc:CreditNoteTypeCode`),
+        // nicht mehr als Invoice mit InvoiceTypeCode 381.
+        $doc = new \DOMDocument();
+        $this->assertTrue($doc->loadXML($xml));
+        $xp = new \DOMXPath($doc);
+        $xp->registerNamespace('cn', 'urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2');
+        $xp->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+        $xp->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+
+        $this->assertSame('381', $xp->evaluate('string(/cn:CreditNote/cbc:CreditNoteTypeCode)'));
+        $this->assertSame('2.00', $xp->evaluate("string(/cn:CreditNote/cac:CreditNoteLine[cbc:ID='1']/cbc:CreditedQuantity)"));
+    }
+
+    public function test_credit_note_references_preceding_invoice(): void {
+        $original = $this->makeIssuedInvoice();
+        $creditNote = $this->makeIssuedInvoice('19.00', Invoice::TYPE_CREDIT_NOTE, 'G2026-0001');
+        $creditNote->forceFill(['parent_invoice_id' => $original->id])->save();
+
+        $xml = app(XRechnungGenerator::class)->generate($creditNote->fresh(['items', 'customer', 'parent']));
+
+        $doc = new \DOMDocument();
+        $this->assertTrue($doc->loadXML($xml));
+        $xp = new \DOMXPath($doc);
+        $xp->registerNamespace('cn', 'urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2');
+        $xp->registerNamespace('cac', 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2');
+        $xp->registerNamespace('cbc', 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2');
+
+        // BT-25: Referenz auf die vorausgegangene Rechnung.
+        $this->assertSame('R2026-0042', $xp->evaluate('string(/cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID)'));
     }
 
     public function test_unit_mapping_hours_to_hur_and_default_to_c62(): void {
@@ -223,15 +260,20 @@ class XRechnungGeneratorTest extends TestCase {
         $this->assertSame('E', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[1]/cac:Item/cac:ClassifiedTaxCategory/cbc:ID)"));
     }
 
-    public function test_payment_means_sepa_with_iban_and_payment_id(): void {
+    public function test_payment_means_sepa_with_iban(): void {
         $invoice = $this->makeIssuedInvoice();
         $xml = app(XRechnungGenerator::class)->generate($invoice);
         $xp = $this->xpath($xml);
 
         $means = '/ubl:Invoice/cac:PaymentMeans';
         $this->assertSame('58', $xp->evaluate("string($means/cbc:PaymentMeansCode)"));
-        $this->assertSame('R2026-0042', $xp->evaluate("string($means/cbc:PaymentID)"));
-        $this->assertSame('DE89370400440532013000', $xp->evaluate("string($means/cac:PayeeFinancialAccount/cbc:ID)"));
+        // Toolkit-Realität: die IBAN wird in 4er-Blöcken formatiert (Party-
+        // Konstruktor) und kein cbc:PaymentID emittiert — Befund an den
+        // Toolkit-Maintainer (KoSIT erwartet die IBAN ohne Leerzeichen).
+        $this->assertSame(
+            'DE89370400440532013000',
+            str_replace(' ', '', $xp->evaluate("string($means/cac:PayeeFinancialAccount/cbc:ID)")),
+        );
         $this->assertSame('COBADEFFXXX', $xp->evaluate("string($means/cac:PayeeFinancialAccount/cac:FinancialInstitutionBranch/cbc:ID)"));
     }
 
@@ -320,6 +362,61 @@ class XRechnungGeneratorTest extends TestCase {
 
         $this->expectException(ValidationException::class);
         app(XRechnungGenerator::class)->generate($invoice);
+    }
+
+    public function test_preflight_zugferd_profile_treats_missing_buyer_reference_as_warning(): void {
+        $this->customer->update(['buyer_reference' => null]);
+        $invoice = $this->makeIssuedInvoice();
+
+        $generator = app(XRechnungGenerator::class);
+        $xrechnung = $generator->preflight($invoice);
+        $zugferd = $generator->preflight($invoice, \ERechnungToolkit\Enums\ERechnungProfile::EN16931);
+
+        // BT-10 ist nur in der XRechnung Pflicht — ZUGFeRD EN 16931 nicht.
+        $this->assertContains((string) __('invoicing.einvoice.error.missing_buyer_reference'), $xrechnung['errors']);
+        $this->assertSame([], $zugferd['errors']);
+        $this->assertContains((string) __('invoicing.einvoice.error.missing_buyer_reference'), $zugferd['warnings']);
+    }
+
+    public function test_zugferd_pdf_contains_embedded_cii_xml(): void {
+        $invoice = $this->makeIssuedInvoice();
+        $generator = app(XRechnungGenerator::class);
+
+        $this->assertTrue($generator->zugferdAvailable(), 'php-pdf-toolkit muss installiert sein');
+
+        $pdf = $generator->generateZugferdPdf($invoice, '<html><body><h1>Rechnung R2026-0042</h1></body></html>');
+
+        $this->assertNotNull($pdf);
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $this->assertGreaterThan(1000, strlen($pdf));
+
+        // Eingebettetes CII-XML nur prüfen, wenn die System-Tools (pdfdetach/
+        // pdftk) vorhanden sind — sonst genügt der PDF-Header (siehe Bericht).
+        $reader = new \PDFToolkit\Readers\ZugferdReader();
+        if (! $reader->isAvailable()) {
+            $this->markTestIncomplete('pdfdetach/pdftk nicht verfügbar — eingebettetes XML nicht prüfbar.');
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'zugferd_test_') . '.pdf';
+        file_put_contents($path, $pdf);
+        try {
+            $xml = $reader->extractInvoiceXml($path);
+            $this->assertNotNull($xml, 'ZUGFeRD-PDF muss eine eingebettete XML-Rechnung tragen');
+            $this->assertStringContainsString('CrossIndustryInvoice', $xml);
+            $this->assertStringContainsString('R2026-0042', $xml);
+            // Profil EN 16931 (COMFORT) in der GuidelineSpecifiedDocumentContextParameter.
+            $this->assertStringContainsString('urn:cen.eu:en16931:2017', $xml);
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    public function test_zugferd_generation_throws_on_preflight_errors(): void {
+        $invoice = $this->makeIssuedInvoice();
+        $invoice->update(['status' => Invoice::STATUS_DRAFT]);
+
+        $this->expectException(ValidationException::class);
+        app(XRechnungGenerator::class)->generateZugferdPdf($invoice->fresh(['items', 'customer']));
     }
 
     public function test_seller_name_falls_back_to_organization_name(): void {
