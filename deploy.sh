@@ -30,6 +30,9 @@ composer install --no-dev --optimize-autoloader --no-interaction
 echo "→ Datenbank-Migrationen"
 php artisan migrate --force
 
+echo "→ Datenbank-Seeder ausführen"
+php artisan db:seed --force
+
 echo "→ Caches leeren"
 php artisan config:clear
 php artisan view:clear
