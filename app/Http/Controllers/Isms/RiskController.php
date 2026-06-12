@@ -10,9 +10,9 @@
 
 namespace App\Http\Controllers\Isms;
 
-use App\Enums\Isms\{RiskCategory, RiskStatus, RiskTreatment};
+use App\Enums\Isms\{AssessmentKind, RiskCategory, RiskStatus, RiskTreatment};
 use App\Http\Controllers\Controller;
-use App\Models\Isms\{IsmsControl, IsmsRisk};
+use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\User;
 use App\Services\Isms\RiskService;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -24,6 +24,11 @@ use Illuminate\View\View;
  * ISMS-Risikoregister (Feature 044, MVP 1): Listenseite mit Filtern und
  * 5x5-Risikomatrix-Widget, Modal-CRUD, Statusübergänge. Autorisierung
  * über IsmsRiskPolicy (isms.viewAny/view/manage).
+ *
+ * Bewertungshistorie (Feature 046, Inkrement D): Brutto/Netto/Ziel-
+ * Bewertungen je Risiko als unveränderliche, freigebbare Stände —
+ * Erfassung/Freigabe/Entwurfs-Löschung über die assessment-Aktionen
+ * (Pflege-Berechtigung = update am Risiko, Regeln im RiskService).
  */
 class RiskController extends Controller {
     public function __construct(
@@ -40,7 +45,12 @@ class RiskController extends Controller {
             'sort' => (string) $request->query('sort', 'score'),
         ];
 
-        $query = IsmsRisk::query()->with(['owner', 'controls']);
+        $query = IsmsRisk::query()->with([
+            'owner',
+            'controls',
+            'assessments' => fn($q) => $q->orderByDesc('assessment_no'),
+            'assessments.approvedBy',
+        ]);
 
         if (RiskStatus::tryFrom($filters['status']) !== null) {
             $query->where('status', $filters['status']);
@@ -153,6 +163,63 @@ class RiskController extends Controller {
             ->with('success', __('isms.flash.risk_deleted'));
     }
 
+    // ── Bewertungshistorie (Feature 046, Inkrement D) ──────────────────────
+
+    public function createAssessment(IsmsRisk $risk): View {
+        Gate::authorize('update', $risk);
+
+        return view('isms.risks._assessment_dialog', [
+            'risk' => $risk,
+        ]);
+    }
+
+    /** Legt IMMER einen neuen Entwurf an — kein Überschreiben alter Stände. */
+    public function storeAssessment(Request $request, IsmsRisk $risk): RedirectResponse {
+        Gate::authorize('update', $risk);
+
+        $data = $request->validate([
+            'kind' => ['required', 'string', Rule::enum(AssessmentKind::class)],
+            'likelihood' => ['required', 'integer', 'between:1,5'],
+            'impact' => ['required', 'integer', 'between:1,5'],
+            'rationale' => ['nullable', 'string', 'max:10000'],
+            'valid_until' => ['nullable', 'date'],
+        ]);
+
+        /** @var User $creator */
+        $creator = Auth::user();
+        $this->service->createAssessment($risk, $creator, AssessmentKind::from($data['kind']), $data);
+
+        return redirect()
+            ->back()
+            ->with('success', __('isms.flash.assessment_created'));
+    }
+
+    /** Freigabe (Person + Zeitpunkt); net-Freigabe synct das Risiko (RiskService). */
+    public function approveAssessment(IsmsRiskAssessment $assessment): RedirectResponse {
+        Gate::authorize('update', $assessment->risk()->firstOrFail());
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->service->approveAssessment($assessment, $actor);
+
+        return redirect()
+            ->back()
+            ->with('success', __('isms.flash.assessment_approved'));
+    }
+
+    /** Entwurfs-Löschung — freigegebene Stände sind unlöschbar (RiskService). */
+    public function destroyAssessment(IsmsRiskAssessment $assessment): RedirectResponse {
+        Gate::authorize('update', $assessment->risk()->firstOrFail());
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->service->deleteAssessment($assessment, $actor);
+
+        return redirect()
+            ->back()
+            ->with('success', __('isms.flash.assessment_deleted'));
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -179,16 +246,15 @@ class RiskController extends Controller {
     }
 
     /**
-     * Controls der Organisation für die Mehrfachauswahl im Dialog
-     * (natürlich nach Code sortiert: A.5.2 vor A.5.10).
+     * Maßnahmen der Organisation für die Mehrfachauswahl im Dialog
+     * (normneutral, alphabetisch nach Titel).
      *
      * @return \Illuminate\Support\Collection<int, IsmsControl>
      */
     private function controlOptions() {
         return IsmsControl::query()
-            ->get(['id', 'code', 'title'])
-            ->sortBy('code', SORT_NATURAL)
-            ->values();
+            ->orderBy('title')
+            ->get(['id', 'title']);
     }
 
     /**

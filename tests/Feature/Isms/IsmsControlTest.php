@@ -10,149 +10,148 @@
 
 namespace Tests\Feature\Isms;
 
-use App\Enums\Isms\{ControlImplementationStatus, ControlSource};
-use App\Models\Isms\IsmsControl;
+use App\Enums\Isms\ControlImplementationStatus;
+use App\Models\Isms\{IsmsControl, IsmsRequirement, IsmsRisk};
 use App\Models\{Organization, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
+/**
+ * Normneutrale Maßnahmen (Feature 046): CRUD, Anforderungs-Mapping
+ * (n:m, auch normübergreifend), org-sicheres Sync, Risiko-Verknüpfung,
+ * SoA-Dialog + Print-View.
+ */
 class IsmsControlTest extends TestCase {
     use RefreshDatabase;
 
-    public function test_admin_can_create_custom_control(): void {
+    public function test_admin_can_create_control(): void {
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->from(route('isms.controls.index'))
             ->post(route('isms.controls.store'), [
-                'code' => 'M-01',
                 'title' => 'Offboarding-Checkliste IT',
                 'description' => 'Rückgabe von Geräten und Entzug aller Zugänge.',
-                'applicable' => '1',
                 'implementation_status' => 'partial',
             ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('isms_controls', [
-            'code' => 'M-01',
+            'title' => 'Offboarding-Checkliste IT',
             'organization_id' => $admin->organization_id,
-            'source' => ControlSource::Custom->value,
-            'applicable' => true,
             'implementation_status' => ControlImplementationStatus::Partial->value,
         ]);
     }
 
-    public function test_not_applicable_without_justification_is_rejected(): void {
+    public function test_control_can_be_mapped_to_multiple_requirements_across_norms(): void {
         $admin = User::factory()->admin()->create();
-        $control = $this->makeControl($admin);
-
-        $this->actingAs($admin)
-            ->from(route('isms.controls.index'))
-            ->put(route('isms.controls.update', $control), [
-                'code' => $control->code,
-                'title' => $control->title,
-                'applicable' => '0',
-                'justification' => '',
-                'implementation_status' => 'open',
-            ])
-            ->assertRedirect(route('isms.controls.index'))
-            ->assertSessionHasErrors('justification');
-
-        $this->assertTrue($control->refresh()->applicable, 'Control bleibt unverändert anwendbar');
-    }
-
-    public function test_not_applicable_with_justification_forces_status_not_applicable(): void {
-        $admin = User::factory()->admin()->create();
-        $control = $this->makeControl($admin);
-
-        $this->actingAs($admin)
-            ->put(route('isms.controls.update', $control), [
-                'code' => $control->code,
-                'title' => $control->title,
-                'applicable' => '0',
-                'justification' => 'Kein eigener Quellcode — Entwicklung ist vollständig ausgelagert.',
-                'implementation_status' => 'open',
-            ])
-            ->assertRedirect()
-            ->assertSessionHasNoErrors();
-
-        $control->refresh();
-        $this->assertFalse($control->applicable);
-        $this->assertSame(ControlImplementationStatus::NotApplicable, $control->implementation_status);
-        $this->assertNotNull($control->justification);
-    }
-
-    public function test_reactivating_control_resets_not_applicable_status(): void {
-        $admin = User::factory()->admin()->create();
-        $control = $this->makeControl($admin, notApplicable: true);
-
-        $this->actingAs($admin)
-            ->put(route('isms.controls.update', $control), [
-                'code' => $control->code,
-                'title' => $control->title,
-                'applicable' => '1',
-                'justification' => $control->justification,
-                'implementation_status' => 'notApplicable',
-            ])
-            ->assertRedirect()
-            ->assertSessionHasNoErrors();
-
-        $control->refresh();
-        $this->assertTrue($control->applicable);
-        $this->assertSame(ControlImplementationStatus::Open, $control->implementation_status);
-    }
-
-    public function test_catalog_import_is_idempotent(): void {
-        $admin = User::factory()->admin()->create();
-
-        $this->actingAs($admin)->post(route('isms.controls.import'))->assertRedirect();
-        $this->actingAs($admin)->post(route('isms.controls.import'))->assertRedirect();
-
         app()->instance('currentOrganization', $admin->organization);
-        $this->assertSame(93, IsmsControl::query()->count(), 'Doppelter Import legt keine Duplikate an');
-        $this->assertSame(
-            93,
-            IsmsControl::query()->where('source', ControlSource::Iso27001AnnexA->value)->count(),
-        );
-        $this->assertDatabaseHas('isms_controls', [
+
+        $catalogA = IsmsRequirement::factory()->catalog('A.5.1')->create(['organization_id' => $admin->organization_id]);
+        $catalogB = IsmsRequirement::factory()->catalog('A.8.4', 'Zugriff auf Quellcode')->create(['organization_id' => $admin->organization_id]);
+        $custom = IsmsRequirement::factory()->create([
             'organization_id' => $admin->organization_id,
-            'code' => 'A.5.1',
-            'applicable' => true,
+            'ref_no' => 'M-07',
         ]);
-        $this->assertDatabaseHas('isms_controls', [
-            'organization_id' => $admin->organization_id,
-            'code' => 'A.8.34',
-        ]);
-    }
 
-    public function test_catalog_import_does_not_overwrite_maintained_soa_fields(): void {
-        $admin = User::factory()->admin()->create();
-
-        $this->actingAs($admin)->post(route('isms.controls.import'))->assertRedirect();
-
-        app()->instance('currentOrganization', $admin->organization);
-        /** @var IsmsControl $control */
-        $control = IsmsControl::query()->where('code', 'A.8.4')->firstOrFail();
         $this->actingAs($admin)
-            ->put(route('isms.controls.update', $control), [
-                'title' => $control->title,
-                'applicable' => '0',
-                'justification' => 'Kein Zugriff auf Quellcode nötig.',
+            ->post(route('isms.controls.store'), [
+                'title' => 'Berechtigungskonzept pflegen',
                 'implementation_status' => 'open',
+                'requirement_ids' => ['', (string) $catalogA->id, (string) $catalogB->id, (string) $custom->id],
             ])
             ->assertRedirect();
 
-        $this->actingAs($admin)->post(route('isms.controls.import'))->assertRedirect();
+        /** @var IsmsControl $control */
+        $control = IsmsControl::query()->where('title', 'Berechtigungskonzept pflegen')->firstOrFail();
+        $this->assertEqualsCanonicalizing(
+            [$catalogA->id, $catalogB->id, $custom->id],
+            $control->requirements->pluck('id')->all(),
+            'Eine Maßnahme erfüllt mehrere Anforderungen — auch normübergreifend',
+        );
 
-        $control->refresh();
-        $this->assertFalse($control->applicable, 'Re-Import überschreibt gepflegte SoA-Aussage nicht');
-        $this->assertSame('Kein Zugriff auf Quellcode nötig.', $control->justification);
+        // Abwählen über den leeren Marker löst alle Mappings.
+        $this->actingAs($admin)
+            ->put(route('isms.controls.update', $control), [
+                'title' => $control->title,
+                'implementation_status' => 'open',
+                'requirement_ids' => [''],
+            ])
+            ->assertRedirect();
+
+        $this->assertCount(0, $control->refresh()->requirements);
     }
 
-    public function test_soa_page_renders_controls_with_linked_risks(): void {
+    public function test_requirements_of_other_organization_cannot_be_mapped(): void {
         $admin = User::factory()->admin()->create();
-        $control = $this->makeControl($admin, ['code' => 'M-07', 'title' => 'Notfallhandbuch pflegen']);
-        $risk = \App\Models\Isms\IsmsRisk::factory()->create([
+        $otherOrg = Organization::factory()->create(['slug' => 'isms-req-foreign']);
+        $foreignRequirement = IsmsRequirement::factory()->create(['organization_id' => $otherOrg->id]);
+
+        app()->instance('currentOrganization', $admin->organization);
+
+        $this->actingAs($admin)
+            ->post(route('isms.controls.store'), [
+                'title' => 'Mapping-Schmuggel',
+                'implementation_status' => 'open',
+                'requirement_ids' => [(string) $foreignRequirement->id],
+            ])
+            ->assertRedirect();
+
+        /** @var IsmsControl $control */
+        $control = IsmsControl::query()->where('title', 'Mapping-Schmuggel')->firstOrFail();
+        $this->assertCount(0, $control->requirements, 'Fremde Anforderungen dürfen nicht gemappt werden');
+    }
+
+    public function test_control_risk_link_remains_intact(): void {
+        $admin = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $admin->organization);
+
+        $control = IsmsControl::factory()->create(['organization_id' => $admin->organization_id]);
+        $risk = IsmsRisk::factory()->create(['organization_id' => $admin->organization_id]);
+
+        $this->actingAs($admin)
+            ->put(route('isms.risks.update', $risk), [
+                'title' => $risk->title,
+                'category' => $risk->category->value,
+                'likelihood' => $risk->likelihood,
+                'impact' => $risk->impact,
+                'treatment' => $risk->treatment->value,
+                'control_ids' => [(string) $control->id],
+            ])
+            ->assertRedirect();
+
+        $this->assertSame([$control->id], $risk->refresh()->controls->pluck('id')->all());
+
+        // Löschen der Maßnahme löst die Verknüpfung.
+        $this->actingAs($admin)->delete(route('isms.controls.destroy', $control))->assertRedirect();
+        $this->assertCount(0, $risk->refresh()->controls);
+    }
+
+    public function test_soa_page_renders_statements_with_controls_and_risks(): void {
+        $admin = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $admin->organization);
+
+        // Eigene Anforderung M-07 über den Controller (legt Default-Scope
+        // + Statement automatisch an).
+        $this->actingAs($admin)
+            ->post(route('isms.requirements.store'), [
+                'norm' => 'Eigene',
+                'edition' => '-',
+                'ref_no' => 'M-07',
+                'title' => 'Notfallvorsorge dokumentieren',
+            ])
+            ->assertRedirect();
+
+        /** @var IsmsRequirement $requirement */
+        $requirement = IsmsRequirement::query()->where('ref_no', 'M-07')->firstOrFail();
+
+        $control = IsmsControl::factory()->create([
+            'organization_id' => $admin->organization_id,
+            'title' => 'Notfallhandbuch pflegen',
+        ]);
+        $control->requirements()->attach($requirement->id);
+
+        $risk = IsmsRisk::factory()->create([
             'organization_id' => $admin->organization_id,
             'risk_no' => 12,
         ]);
@@ -173,23 +172,34 @@ class IsmsControlTest extends TestCase {
             ->assertOk()
             ->assertSee(__('isms.soa.heading'))
             ->assertSee('M-07')
+            ->assertSee('Notfallhandbuch pflegen')
             ->assertSee('R-12');
     }
 
-    public function test_regular_user_cannot_access_controls_or_import(): void {
+    public function test_regular_user_cannot_access_controls(): void {
         $user = User::factory()->user()->create();
 
         $this->actingAs($user)->get(route('isms.controls.index'))->assertForbidden();
         $this->actingAs($user)->get(route('isms.soa'))->assertForbidden();
-        $this->actingAs($user)->post(route('isms.controls.import'))->assertForbidden();
+        $this->actingAs($user)
+            ->post(route('isms.controls.store'), [
+                'title' => 'Verboten',
+                'implementation_status' => 'open',
+            ])
+            ->assertForbidden();
     }
 
-    public function test_geschaeftsfuehrung_can_view_soa_but_not_import(): void {
+    public function test_geschaeftsfuehrung_can_view_but_not_manage(): void {
         $gf = User::factory()->geschaeftsfuehrung()->create();
 
         $this->actingAs($gf)->get(route('isms.controls.index'))->assertOk();
         $this->actingAs($gf)->get(route('isms.soa'))->assertOk();
-        $this->actingAs($gf)->post(route('isms.controls.import'))->assertForbidden();
+        $this->actingAs($gf)
+            ->post(route('isms.controls.store'), [
+                'title' => 'Nur lesen',
+                'implementation_status' => 'open',
+            ])
+            ->assertForbidden();
     }
 
     public function test_cross_organization_control_is_not_accessible(): void {
@@ -199,26 +209,11 @@ class IsmsControlTest extends TestCase {
 
         $this->actingAs($admin)
             ->put(route('isms.controls.update', $foreign), [
-                'code' => $foreign->code,
                 'title' => 'Hijack',
-                'applicable' => '1',
                 'implementation_status' => 'open',
             ])
             ->assertNotFound();
 
         $this->assertNotSame('Hijack', $foreign->refresh()->title);
-    }
-
-    private function makeControl(User $owner, array $overrides = [], bool $notApplicable = false): IsmsControl {
-        app()->instance('currentOrganization', $owner->organization);
-        $factory = IsmsControl::factory();
-        if ($notApplicable) {
-            $factory = $factory->notApplicable();
-        }
-
-        return $factory->create([
-            'organization_id' => $owner->organization_id,
-            ...$overrides,
-        ]);
     }
 }

@@ -20,6 +20,10 @@
     :badge="$statusBadge"
     :badge-tone="$statusTone"
 >
+    <x-slot:actions>
+        <x-help-button topic="account.two-factor" />
+    </x-slot:actions>
+
     @if (session('success'))<div class="alert alert-success text-sm">{{ session('success') }}</div>@endif
     @if ($errors->any())<div class="alert alert-error text-sm">{{ $errors->first() }}</div>@endif
 

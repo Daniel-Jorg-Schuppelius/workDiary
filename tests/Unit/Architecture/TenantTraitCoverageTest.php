@@ -154,6 +154,15 @@ class TenantTraitCoverageTest extends TestCase {
         // via `audit:verify` scope-frei über alle Zeilen verifizierbar sein
         // muss und Einträge die Löschung von Transfer/Org überdauern.
         \App\Models\Finance\BillingTransferEvent::class,
+        // Prüfer-Download-Tokens der ISMS-Auditpakete (Feature 046, Inkrement E):
+        // Kind-Tabelle des tenant-gebundenen IsmsAuditPackage — Mandantengrenze
+        // transitiv über isms_audit_packages.organization_id (analog
+        // ProtocolSignatureToken); der öffentliche Prüfer-Download (ohne Login,
+        // ohne Org-Session) löst den Token über den SHA-256-Hash auf, ein
+        // Global-Scope würde genau diesen Zugriff aushebeln. Interne Aktionen
+        // (Widerruf) autorisieren immer über die org-gescopte Paket-Query.
+        // Siehe Allow-List im Audit-Doc.
+        \App\Models\Isms\IsmsAuditPackageToken::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

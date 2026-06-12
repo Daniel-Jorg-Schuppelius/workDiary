@@ -38,6 +38,19 @@ class HelpController extends Controller {
             'created_at' => CarbonImmutable::now(),
         ]);
 
+        // Verwandte Themen mit übersetztem Titel ausliefern — und nur solche,
+        // die existieren und für den Nutzer sichtbar sind (kein toter Link,
+        // keine rohen Topic-Codes in der UI).
+        $related = collect($row->related ?? [])
+            ->map(function (string $slug) use ($resolver, $user): ?array {
+                $target = $resolver->find($slug, $user);
+
+                return $target === null ? null : ['topic' => $target->topic, 'title' => $target->title];
+            })
+            ->filter()
+            ->values()
+            ->all();
+
         return response()->json([
             'found' => true,
             'topic' => $row->topic,
@@ -45,7 +58,7 @@ class HelpController extends Controller {
             'title' => $row->title,
             'version' => $row->version,
             'body_html' => $row->body_html,
-            'related' => $row->related ?? [],
+            'related' => $related,
         ]);
     }
 

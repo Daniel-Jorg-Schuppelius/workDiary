@@ -10,9 +10,10 @@
 
 namespace App\Services\Isms;
 
-use App\Enums\Isms\RiskStatus;
-use App\Models\Isms\{IsmsControl, IsmsRisk};
+use App\Enums\Isms\{AssessmentKind, AssessmentStatus, RiskStatus};
+use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -22,18 +23,41 @@ use Illuminate\Validation\ValidationException;
  * Geschäftsregeln:
  * - risk_no: laufende Nummer je Organisation (Vergabe in der Transaktion,
  *   Unique-Index isms_risks_org_no_uq sichert Kollisionen ab).
+ * - Neue Risiken werden dem Default-Scope der Organisation zugeordnet
+ *   (Feature 046; ScopeService::ensureDefaultScope).
  * - score = likelihood * impact, wird hier berechnet und persistiert
  *   (Sortierung/Matrix laufen über die Spalte).
  * - Statusübergänge ausschließlich über transition() entlang
  *   RiskStatus::allowedTransitions().
+ *
+ * Bewertungshistorie (Feature 046, Inkrement D):
+ * - createAssessment() legt IMMER einen neuen Entwurf an (kein
+ *   Überschreiben); assessment_no läuft je Risiko (Vergabe in der
+ *   Transaktion, Unique-Index isms_assessment_risk_no_uq).
+ * - approveAssessment() setzt Person + Zeitpunkt (046-Prinzip „Freigabe
+ *   mit Person/Zeitpunkt/Gegenstand"); freigegebene Bewertungen sind
+ *   UNVERÄNDERLICH (Model-Guards in IsmsRiskAssessment).
+ * - Sync: Das jüngste FREIGEGEBENE net-Assessment ist die maßgebliche
+ *   aktuelle Bewertung — beim Approve eines net-Assessments werden
+ *   risk.likelihood/impact/score nachgezogen, damit Matrix, Listen und
+ *   Filter konsistent bleiben. gross/target berühren das Risiko nicht.
+ * - Inline-Bearbeitung (create()/update() mit likelihood/impact) erzeugt
+ *   automatisch ein selbst-freigegebenes net-Assessment („Direktbewertung")
+ *   — lückenlose Historie ohne UI-Bruch.
+ * - Restrisiko-Akzeptanz: der Übergang nach accepted erfordert ein
+ *   freigegebenes net-Assessment mit valid_until (Ablauf-/Reviewdatum).
  *
  * Audit läuft über den Auditable-Trait (created/updated/deleted) plus
  * gezielte audit()-Events für Statusübergänge — eine eigene Event-Tabelle
  * gibt es bewusst nicht (Lebenszyklus trivial, analog Wissensbasis).
  */
 class RiskService {
+    public function __construct(
+        private readonly ScopeService $scopes,
+    ) {}
+
     /**
-     * Legt ein Risiko an (Status default identified).
+     * Legt ein Risiko an (Status default identified, Default-Scope).
      *
      * @param  array<string, mixed>  $attributes
      */
@@ -44,6 +68,7 @@ class RiskService {
 
             $risk = IsmsRisk::query()->create([
                 'organization_id' => $creator->organization_id,
+                'isms_scope_id' => $this->scopes->ensureDefaultScope((int) $creator->organization_id)->id,
                 'risk_no' => $this->nextRiskNo((int) $creator->organization_id),
                 'title' => $attributes['title'],
                 'description' => $attributes['description'] ?? null,
@@ -63,6 +88,10 @@ class RiskService {
                 $this->syncControls($risk, $this->normalizeControlIds($attributes['control_ids']));
             }
 
+            // Direktbewertung: die Erst-Bewertung aus dem Dialog wird als
+            // selbst-freigegebenes net-Assessment historisiert (046-D).
+            $this->recordDirectAssessment($risk, $creator, $likelihood, $impact);
+
             return $risk;
         });
     }
@@ -71,14 +100,18 @@ class RiskService {
      * Aktualisiert Stammdaten/Bewertung (Score wird neu berechnet);
      * der Status bleibt unangetastet — Übergänge laufen über transition().
      *
+     * Ändert sich die Bewertung (likelihood/impact), entsteht automatisch
+     * ein selbst-freigegebenes net-Assessment („Direktbewertung") — so
+     * bleibt die Historie lückenlos, ohne den Inline-Workflow zu brechen
+     * (Feature 046, Inkrement D).
+     *
      * @param  array<string, mixed>  $attributes
      */
     public function update(IsmsRisk $risk, User $actor, array $attributes): IsmsRisk {
         return DB::transaction(function () use ($risk, $actor, $attributes): IsmsRisk {
-            unset($actor);
-
             $likelihood = (int) ($attributes['likelihood'] ?? $risk->likelihood);
             $impact = (int) ($attributes['impact'] ?? $risk->impact);
+            $assessmentChanged = $likelihood !== (int) $risk->likelihood || $impact !== (int) $risk->impact;
 
             $risk->update([
                 'title' => $attributes['title'] ?? $risk->title,
@@ -98,12 +131,20 @@ class RiskService {
                 $this->syncControls($risk, $this->normalizeControlIds($attributes['control_ids']));
             }
 
+            if ($assessmentChanged) {
+                $this->recordDirectAssessment($risk, $actor, $likelihood, $impact);
+            }
+
             return $risk;
         });
     }
 
     /**
      * Statusübergang entlang der State-Machine ({@see RiskStatus::allowedTransitions()}).
+     *
+     * Restrisiko-Akzeptanz (Feature 046, Inkrement D): der Übergang nach
+     * accepted erfordert ein FREIGEGEBENES net-Assessment mit
+     * valid_until (Ablauf-/Reviewdatum des akzeptierten Restrisikos).
      *
      * @throws ValidationException bei unzulässigem Übergang
      */
@@ -119,6 +160,15 @@ class RiskService {
                     'to' => $target->label(),
                 ]),
             ]);
+        }
+
+        if ($target === RiskStatus::Accepted) {
+            $latestNet = $risk->latestApprovedNetAssessment();
+            if ($latestNet === null || $latestNet->valid_until === null) {
+                throw ValidationException::withMessages([
+                    'status' => __('isms.error.accept_requires_approved_net_assessment'),
+                ]);
+            }
         }
 
         return DB::transaction(function () use ($risk, $target, $actor): IsmsRisk {
@@ -143,6 +193,124 @@ class RiskService {
             $risk->controls()->detach();
             $risk->delete();
         });
+    }
+
+    // ── Bewertungshistorie (Feature 046, Inkrement D) ──────────────────────
+
+    /**
+     * Erfasst einen neuen Bewertungsstand — IMMER als neuer Entwurf,
+     * bestehende Stände werden nie überschrieben. assessment_no läuft
+     * je Risiko (Vergabe in der Transaktion, Muster nextRiskNo()).
+     *
+     * @param  array<string, mixed>  $attributes  likelihood, impact, rationale?, valid_until?
+     */
+    public function createAssessment(IsmsRisk $risk, User $creator, AssessmentKind $kind, array $attributes): IsmsRiskAssessment {
+        return DB::transaction(function () use ($risk, $creator, $kind, $attributes): IsmsRiskAssessment {
+            $likelihood = (int) $attributes['likelihood'];
+            $impact = (int) $attributes['impact'];
+
+            return IsmsRiskAssessment::query()->create([
+                'organization_id' => $risk->organization_id,
+                'isms_risk_id' => $risk->id,
+                'assessment_no' => $this->nextAssessmentNo((int) $risk->id),
+                'kind' => $kind->value,
+                'likelihood' => $likelihood,
+                'impact' => $impact,
+                'score' => $likelihood * $impact,
+                'rationale' => $attributes['rationale'] ?? null,
+                'status' => AssessmentStatus::Draft->value,
+                'valid_until' => $attributes['valid_until'] ?? null,
+                'created_by_user_id' => $creator->id,
+            ]);
+        });
+    }
+
+    /**
+     * Freigabe (draft → approved): setzt Person + Zeitpunkt (046-Prinzip
+     * „Freigabe mit Person/Zeitpunkt/Gegenstand"); danach ist der Stand
+     * UNVERÄNDERLICH (Model-Guards in IsmsRiskAssessment).
+     *
+     * Sync-Semantik: Das jüngste FREIGEGEBENE net-Assessment ist die
+     * maßgebliche aktuelle Bewertung des Risikos — beim Approve eines
+     * net-Assessments werden risk.likelihood/impact/score nachgezogen,
+     * damit Matrix, Listen und Filter konsistent bleiben. gross/target
+     * dokumentieren nur und berühren das Risiko nicht.
+     *
+     * @throws ValidationException bei bereits freigegebener Bewertung
+     */
+    public function approveAssessment(IsmsRiskAssessment $assessment, User $actor): IsmsRiskAssessment {
+        if ($assessment->isApproved()) {
+            throw ValidationException::withMessages([
+                'status' => __('isms.error.assessment_already_approved'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($assessment, $actor): IsmsRiskAssessment {
+            $assessment->update([
+                'status' => AssessmentStatus::Approved->value,
+                'approved_by_user_id' => $actor->id,
+                'approved_at' => Carbon::now(),
+            ]);
+
+            $assessment->audit('isms.risk_assessment.approved', ['actor_user_id' => $actor->id]);
+
+            if ($assessment->kind === AssessmentKind::Net) {
+                $risk = $assessment->risk()->firstOrFail();
+                $risk->update([
+                    'likelihood' => $assessment->likelihood,
+                    'impact' => $assessment->impact,
+                    'score' => $assessment->likelihood * $assessment->impact,
+                ]);
+            }
+
+            return $assessment;
+        });
+    }
+
+    /**
+     * Soft-Delete eines Bewertungs-ENTWURFS — freigegebene Stände sind
+     * unlöschbarer Nachweis (der Model-Guard wirft zusätzlich).
+     *
+     * @throws ValidationException bei bereits freigegebener Bewertung
+     */
+    public function deleteAssessment(IsmsRiskAssessment $assessment, User $actor): void {
+        if ($assessment->isApproved()) {
+            throw ValidationException::withMessages([
+                'status' => __('isms.error.assessment_already_approved'),
+            ]);
+        }
+
+        DB::transaction(function () use ($assessment, $actor): void {
+            $assessment->audit('isms.risk_assessment.deleted', ['actor_user_id' => $actor->id]);
+            $assessment->delete();
+        });
+    }
+
+    /**
+     * Direktbewertung (Bestands-Kompatibilität): Inline-Pflege von
+     * likelihood/impact am Risiko erzeugt ein selbst-freigegebenes
+     * net-Assessment — Freigabe durch die bearbeitende Person, Begründung
+     * über den i18n-Key isms.assessment.rationale_direct.
+     */
+    private function recordDirectAssessment(IsmsRisk $risk, User $actor, int $likelihood, int $impact): void {
+        $assessment = $this->createAssessment($risk, $actor, AssessmentKind::Net, [
+            'likelihood' => $likelihood,
+            'impact' => $impact,
+            'rationale' => (string) __('isms.assessment.rationale_direct'),
+        ]);
+
+        $this->approveAssessment($assessment, $actor);
+    }
+
+    /** Nächste laufende Bewertungs-Nummer innerhalb eines Risikos. */
+    private function nextAssessmentNo(int $riskId): int {
+        $max = IsmsRiskAssessment::query()
+            ->withTrashed()
+            ->where('isms_risk_id', $riskId)
+            ->lockForUpdate()
+            ->max('assessment_no');
+
+        return ((int) $max) + 1;
     }
 
     /**

@@ -112,6 +112,10 @@ class AppServiceProvider extends ServiceProvider {
             );
         });
 
+        // Normprofil-Registry (Feature 046): Profile aus config/isms-norms/
+        // einmal pro Prozess laden + Schema validieren.
+        $this->app->singleton(\App\Services\Isms\NormProfileRegistry::class);
+
         // In-App-Hilfe (MVP-051): Loader liest aus resources/help/.
         $this->app->singleton(\App\Services\Help\HelpTopicLoader::class, function (): \App\Services\Help\HelpTopicLoader {
             return new \App\Services\Help\HelpTopicLoader(\App\Services\Help\HelpTopicLoader::defaultPath());
@@ -180,6 +184,14 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);
         Gate::policy(\App\Models\Isms\IsmsRisk::class, \App\Policies\Isms\IsmsRiskPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsControl::class, \App\Policies\Isms\IsmsControlPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsRequirement::class, \App\Policies\Isms\IsmsRequirementPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsScope::class, \App\Policies\Isms\IsmsScopePolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsSoftwareProduct::class, \App\Policies\Isms\IsmsSoftwareProductPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsSoftwareInstallation::class, \App\Policies\Isms\IsmsSoftwareInstallationPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsNormStatus::class, \App\Policies\Isms\IsmsNormStatusPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsAudit::class, \App\Policies\Isms\IsmsAuditPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsManagementReview::class, \App\Policies\Isms\IsmsManagementReviewPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsAuditPackage::class, \App\Policies\Isms\IsmsAuditPackagePolicy::class);
         Gate::policy(DutyPlan::class, DutyPlanPolicy::class);
         Gate::policy(CoverageRequirement::class, CoverageRequirementPolicy::class);
         Gate::policy(Milestone::class, MilestonePolicy::class);

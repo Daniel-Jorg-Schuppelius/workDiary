@@ -1,27 +1,39 @@
-{{-- In-App-Hilfe-Drawer (MVP-051). Wird einmal pro Seite eingebunden und über --}}
-{{-- data-help-trigger / [data-help-topic] gefüllt. JS in resources/js/help-drawer.js. --}}
+{{-- In-App-Hilfe (MVP-051 + Feature 039 Inkrement 1). Wird einmal pro Seite --}}
+{{-- eingebunden und über data-help-trigger / [data-help-topic] bzw. den --}}
+{{-- Seitenkontext (body[data-help-context]) gefüllt. JS in resources/js/help-drawer.js. --}}
+{{-- Desktop (lg+): nicht-modale rechte Sidebar unterhalb des Headers, ohne --}}
+{{-- Backdrop — der Seiteninhalt bekommt über body.help-sidebar-open rechts --}}
+{{-- Platz (.with-help-pad im Layout) und bleibt voll bedienbar. --}}
+{{-- Mobil: Drawer mit Backdrop wie bisher. --}}
 <div id="help-drawer"
-     class="fixed inset-y-0 right-0 z-[60] hidden w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg transition-transform"
+     class="fixed inset-y-0 right-0 z-[60] hidden w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg transition-transform lg:top-[var(--app-header-h)] lg:bottom-[var(--app-footer-h)] lg:z-40 lg:w-[var(--help-sidebar-w)] lg:max-w-[var(--help-sidebar-w)] lg:shadow-sm"
      data-help-drawer
-     role="dialog"
-     aria-modal="true"
-     aria-labelledby="help-drawer-title">
-    <header class="flex items-start justify-between gap-3 border-b border-base-300 px-4 py-3">
-        <div class="min-w-0">
+     role="complementary"
+     tabindex="-1"
+     aria-label="{{ __('Hilfe zur aktuellen Seite') }}"
+     aria-labelledby="help-drawer-title"
+     data-text-error="{{ __('Hilfe konnte nicht geladen werden.') }}"
+     data-text-missing="{{ __('Kein Hilfetext verfügbar.') }}">
+    <div class="flex h-full flex-col">
+        {{-- Schlanker Header: links Label, rechts Schließen — beide gleich
+             hoch (items-center). Die Topic-Überschrift sitzt im
+             Inhaltsbereich darunter. --}}
+        <header class="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-base-300 px-4">
             <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Hilfe') }}</p>
+            <button type="button" class="btn btn-ghost btn-sm btn-square" data-help-close aria-label="{{ __('Schließen') }}">
+                <x-icon name="close" />
+            </button>
+        </header>
+
+        <div class="shrink-0 px-4 pt-3">
             <h2 id="help-drawer-title" class="font-['Space_Grotesk'] text-base font-semibold text-base-content" data-help-title>{{ __('Wird geladen…') }}</h2>
         </div>
-        <button type="button" class="btn btn-ghost btn-sm" data-help-close aria-label="{{ __('Schließen') }}">
-            <x-icon name="close" />
-        </button>
-    </header>
 
-    <div class="flex h-full flex-col">
-        <div class="flex-1 overflow-y-auto px-4 py-4 text-sm leading-relaxed text-base-content" data-help-body>
+        <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-sm leading-relaxed text-base-content" data-help-body>
             <p class="text-base-content/60">{{ __('Wird geladen…') }}</p>
         </div>
 
-        <footer class="border-t border-base-300 px-4 py-3" data-help-footer>
+        <footer class="shrink-0 border-t border-base-300 px-4 py-3" data-help-footer>
             <p class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('War das hilfreich?') }}</p>
             <div class="flex flex-wrap items-center gap-2">
                 <button type="button" class="btn btn-sm btn-outline" data-help-feedback="1">
@@ -40,6 +52,28 @@
     </div>
 </div>
 
+{{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. --}}
 <div id="help-drawer-backdrop"
-     class="fixed inset-0 z-[55] hidden bg-base-300/40 backdrop-blur-sm"
+     class="fixed inset-0 z-[55] hidden bg-base-300/40 backdrop-blur-sm lg:hidden!"
      data-help-backdrop></div>
+
+{{-- Fallback-Panel (Feature 039): erscheint, wenn die Seite keinen --}}
+{{-- Hilfe-Kontext hat oder ein Topic fehlt. Texte serverseitig übersetzt, --}}
+{{-- JS klont nur den Inhalt (kein Inline-JS, CSP-freundlich). --}}
+<template data-help-fallback
+          data-fallback-title="{{ __('Hilfe') }}"
+          data-empty-results="{{ __('Keine passenden Hilfethemen gefunden.') }}">
+    <div class="space-y-3">
+        <p class="text-base-content/70" data-help-fallback-message>{{ __('Für diese Seite gibt es noch keine Hilfe.') }}</p>
+        <form data-help-search-form role="search" class="flex items-center gap-2">
+            <label class="input input-sm input-bordered flex grow items-center gap-2">
+                <x-icon name="search" class="text-base-content/50" />
+                <input type="search" name="q" class="grow" minlength="2"
+                       placeholder="{{ __('Hilfethemen durchsuchen…') }}"
+                       aria-label="{{ __('Hilfethemen durchsuchen') }}">
+            </label>
+            <button type="submit" class="btn btn-sm btn-outline">{{ __('Suchen') }}</button>
+        </form>
+        <ul class="space-y-1 text-sm" data-help-search-results></ul>
+    </div>
+</template>

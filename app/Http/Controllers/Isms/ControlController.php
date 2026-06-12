@@ -10,9 +10,9 @@
 
 namespace App\Http\Controllers\Isms;
 
-use App\Enums\Isms\{ControlImplementationStatus, ControlSource};
+use App\Enums\Isms\ControlImplementationStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Isms\IsmsControl;
+use App\Models\Isms\{IsmsControl, IsmsRequirement};
 use App\Models\User;
 use App\Services\Isms\ControlService;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -21,8 +21,10 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * ISMS-Maßnahmenkatalog (Feature 044, MVP 1): Listenseite mit Filtern,
- * Modal-CRUD (SoA-Felder), idempotenter Annex-A-Katalog-Import.
+ * NORMNEUTRALE Maßnahmen (Feature 046; vormals Maßnahmenkatalog + SoA aus
+ * Feature 044): Listenseite mit Filtern, Modal-CRUD (Titel, Status, Owner,
+ * Anforderungs-Mehrfachauswahl, Nachweis-Notiz). Der Annex-A-Katalog-Import
+ * lebt jetzt auf der Anforderungen-Seite (RequirementController).
  * Autorisierung über IsmsControlPolicy (isms.viewAny/view/manage).
  */
 class ControlController extends Controller {
@@ -34,36 +36,23 @@ class ControlController extends Controller {
         Gate::authorize('viewAny', IsmsControl::class);
 
         $filters = [
-            'source' => (string) $request->query('source', 'all'),
-            'applicable' => (string) $request->query('applicable', 'all'),
             'implementation_status' => (string) $request->query('implementation_status', 'all'),
         ];
 
-        $query = IsmsControl::query()->with('owner')->withCount('risks');
+        $query = IsmsControl::query()
+            ->with(['owner', 'requirements'])
+            ->withCount('risks');
 
-        if (ControlSource::tryFrom($filters['source']) !== null) {
-            $query->where('source', $filters['source']);
-        }
-        if (in_array($filters['applicable'], ['yes', 'no'], true)) {
-            $query->where('applicable', $filters['applicable'] === 'yes');
-        }
         if (ControlImplementationStatus::tryFrom($filters['implementation_status']) !== null) {
             $query->where('implementation_status', $filters['implementation_status']);
         }
 
-        // 93 Katalog-Controls + eigene Maßnahmen: bewusst ohne Pagination,
-        // natürliche Code-Sortierung (A.5.2 vor A.5.10) im PHP-Nachgang.
-        $controls = $query->get()->sortBy('code', SORT_NATURAL)->values();
-
-        $hasActiveFilters = $filters['source'] !== 'all'
-            || $filters['applicable'] !== 'all'
-            || $filters['implementation_status'] !== 'all';
+        $hasActiveFilters = $filters['implementation_status'] !== 'all';
 
         return view('isms.controls.index', [
-            'controls' => $controls,
+            'controls' => $query->orderBy('title')->get(),
             'filters' => $filters,
             'hasActiveFilters' => $hasActiveFilters,
-            'catalogLoaded' => IsmsControl::query()->where('source', ControlSource::Iso27001AnnexA->value)->exists(),
             'canManage' => Gate::allows('create', IsmsControl::class),
         ]);
     }
@@ -73,6 +62,7 @@ class ControlController extends Controller {
 
         return view('isms.controls._form_dialog', [
             'control' => null,
+            'requirements' => $this->requirementOptions(),
             'owners' => $this->ownerOptions(),
         ]);
     }
@@ -82,7 +72,7 @@ class ControlController extends Controller {
 
         /** @var User $creator */
         $creator = Auth::user();
-        $data = $this->validateControl($request, $creator, null);
+        $data = $this->validateControl($request, $creator);
 
         $this->service->create($creator, $data);
 
@@ -95,7 +85,8 @@ class ControlController extends Controller {
         Gate::authorize('update', $control);
 
         return view('isms.controls._form_dialog', [
-            'control' => $control,
+            'control' => $control->load('requirements'),
+            'requirements' => $this->requirementOptions(),
             'owners' => $this->ownerOptions(),
         ]);
     }
@@ -105,7 +96,7 @@ class ControlController extends Controller {
 
         /** @var User $actor */
         $actor = Auth::user();
-        $data = $this->validateControl($request, $actor, $control);
+        $data = $this->validateControl($request, $actor);
 
         $this->service->update($control, $actor, $data);
 
@@ -126,51 +117,43 @@ class ControlController extends Controller {
             ->with('success', __('isms.flash.control_deleted'));
     }
 
-    /** Annex-A-Referenzkatalog laden (idempotent, nur Code + Kurztitel). */
-    public function import(): RedirectResponse {
-        Gate::authorize('import', IsmsControl::class);
-
-        /** @var User $actor */
-        $actor = Auth::user();
-        $created = $this->service->importAnnexCatalog($actor);
-
-        return redirect()
-            ->route('isms.controls.index')
-            ->with('success', __('isms.flash.catalog_imported', ['count' => $created]));
-    }
-
     /**
      * @return array<string, mixed>
      */
-    private function validateControl(Request $request, User $actor, ?IsmsControl $control): array {
-        $isCatalog = $control !== null && $control->source === ControlSource::Iso27001AnnexA;
-
+    private function validateControl(Request $request, User $actor): array {
         return $request->validate([
-            // Code/Titel sind bei Annex-A-Controls Referenz (Code unveränderlich,
-            // erzwungen im ControlService); bei eigenen Maßnahmen Pflicht.
-            'code' => [
-                $isCatalog ? 'nullable' : 'required', 'string', 'max:24',
-                Rule::unique('isms_controls', 'code')
-                    ->where('organization_id', $actor->organization_id)
-                    ->ignore($control?->id),
-            ],
             'title' => ['required', 'string', 'min:3', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],
-            'applicable' => ['nullable', 'boolean'],
-            // SoA-Regel: Begründung Pflicht bei Nicht-Anwendbarkeit —
-            // zusätzlich zentral im ControlService durchgesetzt.
-            'justification' => ['nullable', 'string', 'max:5000', 'required_if:applicable,0'],
             'implementation_status' => ['required', 'string', Rule::enum(ControlImplementationStatus::class)],
             'evidence_note' => ['nullable', 'string', 'max:10000'],
             'owner_user_id' => [
                 'nullable', 'integer',
                 Rule::exists('users', 'id')->where('organization_id', $actor->organization_id),
             ],
+            // Leerer Marker-Eintrag (Hidden-Feld im Dialog) ist erlaubt und
+            // wird im ControlService herausgefiltert; org-sicher aufgelöst
+            // in ControlService::syncRequirements().
+            'requirement_ids' => ['nullable', 'array'],
+            'requirement_ids.*' => ['nullable', 'integer'],
         ]);
     }
 
     /**
-     * Mitglieder der Organisation als Control-Owner-Auswahl.
+     * Anforderungen der Organisation für die Mehrfachauswahl im Dialog
+     * (Norm, dann Ref-Nr. natürlich sortiert: A.5.2 vor A.5.10).
+     *
+     * @return \Illuminate\Support\Collection<int, IsmsRequirement>
+     */
+    private function requirementOptions() {
+        return IsmsRequirement::query()
+            ->get(['id', 'norm', 'edition', 'ref_no', 'title'])
+            ->sort(fn(IsmsRequirement $a, IsmsRequirement $b): int => strcmp($a->norm, $b->norm)
+                ?: strnatcmp($a->ref_no, $b->ref_no))
+            ->values();
+    }
+
+    /**
+     * Mitglieder der Organisation als Maßnahmen-Owner-Auswahl.
      *
      * @return \Illuminate\Support\Collection<int, User>
      */

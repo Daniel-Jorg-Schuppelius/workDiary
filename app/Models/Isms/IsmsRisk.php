@@ -17,7 +17,7 @@ use Database\Factories\Isms\IsmsRiskFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -26,8 +26,14 @@ use Illuminate\Support\Carbon;
  * Behandlungsentscheidung und Review-Termin. Maßnahmen-Zuordnung über
  * die Pivot-Tabelle isms_control_risk (ohne eigenes Model).
  *
+ * Bewertungshistorie (Feature 046, Inkrement D): historisierte
+ * Brutto-/Netto-/Ziel-Bewertungen über {@see self::assessments()};
+ * likelihood/impact/score am Risiko spiegeln stets die jüngste
+ * FREIGEGEBENE Nettobewertung (Sync im RiskService).
+ *
  * @property int $id
  * @property int $organization_id
+ * @property int|null $isms_scope_id
  * @property int $risk_no
  * @property string $title
  * @property string|null $description
@@ -55,6 +61,7 @@ class IsmsRisk extends Model {
 
     protected $fillable = [
         'organization_id',
+        'isms_scope_id',
         'risk_no',
         'title',
         'description',
@@ -103,9 +110,30 @@ class IsmsRisk extends Model {
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    /** @return BelongsTo<IsmsScope, $this> */
+    public function scope(): BelongsTo {
+        return $this->belongsTo(IsmsScope::class, 'isms_scope_id');
+    }
+
     /** @return BelongsToMany<IsmsControl, $this> */
     public function controls(): BelongsToMany {
         return $this->belongsToMany(IsmsControl::class, 'isms_control_risk', 'risk_id', 'control_id');
+    }
+
+    /** @return HasMany<IsmsRiskAssessment, $this> */
+    public function assessments(): HasMany {
+        return $this->hasMany(IsmsRiskAssessment::class, 'isms_risk_id');
+    }
+
+    /**
+     * Jüngste freigegebene Nettobewertung — die maßgebliche aktuelle
+     * Bewertung des Risikos (Feature 046, Inkrement D).
+     */
+    public function latestApprovedNetAssessment(): ?IsmsRiskAssessment {
+        return $this->assessments()
+            ->approvedNet()
+            ->orderByDesc('assessment_no')
+            ->first();
     }
 
     /**

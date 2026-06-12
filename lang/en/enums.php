@@ -181,16 +181,31 @@ return [
     ],
     'notification' => [
         'event' => [
-            'openIssue.assigned' => 'Open issue assigned',
-            'openIssue.dueSoon' => 'Open issue due soon',
-            'openIssue.overdue' => 'Open issue overdue',
-            'communication.followupDueSoon' => 'Follow-up due soon',
-            'communication.followupOverdue' => 'Follow-up overdue',
-            'document.expiringSoon' => 'Document expiring soon',
-            'document.expired' => 'Document expired',
-            'timeCorrection.requested' => 'Time correction requested',
-            'timeCorrection.decided' => 'Time correction decided',
-            'monthClosure.submitted' => 'Month closure submitted',
+            'openIssue' => [
+                'assigned' => 'Open issue assigned',
+                'dueSoon' => 'Open issue due soon',
+                'overdue' => 'Open issue overdue',
+            ],
+            'communication' => [
+                'followupDueSoon' => 'Follow-up due soon',
+                'followupOverdue' => 'Follow-up overdue',
+            ],
+            'document' => [
+                'expiringSoon' => 'Document expiring soon',
+                'expired' => 'Document expired',
+            ],
+            'timeCorrection' => [
+                'requested' => 'Time correction requested',
+                'decided' => 'Time correction decided',
+            ],
+            'monthClosure' => [
+                'submitted' => 'Month closure submitted',
+            ],
+            'isms' => [
+                'certificateExpiring' => 'ISMS certificate expiring soon',
+                'correctiveActionOverdue' => 'ISMS corrective action overdue',
+                'riskReviewDue' => 'ISMS risk review due',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-app',
@@ -439,6 +454,54 @@ return [
         ],
     ],
     'isms' => [
+        'audit-package-status' => [
+            'draft' => 'Draft',
+            'finalized' => 'Finalised',
+        ],
+        'audit-kind' => [
+            'internal' => 'Internal',
+            'external' => 'External',
+            'supplier' => 'Supplier',
+        ],
+        'audit-status' => [
+            'planned' => 'Planned',
+            'inPreparation' => 'In preparation',
+            'inProgress' => 'In progress',
+            'reportIssued' => 'Report issued',
+            'closed' => 'Closed',
+        ],
+        'finding-kind' => [
+            'nonconformityMajor' => 'Major nonconformity',
+            'nonconformityMinor' => 'Minor nonconformity',
+            'observation' => 'Observation',
+            'improvement' => 'Improvement opportunity',
+        ],
+        'finding-status' => [
+            'open' => 'Open',
+            'inCorrection' => 'In correction',
+            'effectivenessCheck' => 'Effectiveness check',
+            'closed' => 'Closed',
+        ],
+        'corrective-action-status' => [
+            'open' => 'Open',
+            'inProgress' => 'In progress',
+            'done' => 'Implemented',
+            'effective' => 'Effective',
+            'ineffective' => 'Ineffective',
+        ],
+        'review-status' => [
+            'draft' => 'Draft',
+            'approved' => 'Approved',
+        ],
+        'assessment-kind' => [
+            'gross' => 'Gross',
+            'net' => 'Net',
+            'target' => 'Target',
+        ],
+        'assessment-status' => [
+            'draft' => 'Draft',
+            'approved' => 'Approved',
+        ],
         'risk-category' => [
             'organizational' => 'Organisational',
             'technical' => 'Technical',
@@ -459,15 +522,38 @@ return [
             'accepted' => 'Accepted',
             'closed' => 'Closed',
         ],
-        'control-source' => [
-            'iso27001AnnexA' => 'ISO/IEC 27001 Annex A',
-            'custom' => 'Custom control',
+        'requirement-source' => [
+            'catalog' => 'Reference catalogue',
+            'custom' => 'Custom requirement',
         ],
         'control-implementation-status' => [
             'open' => 'Open',
             'partial' => 'Partially implemented',
             'implemented' => 'Implemented',
             'notApplicable' => 'Not applicable',
+        ],
+        'software-category' => [
+            'os' => 'Operating system',
+            'application' => 'Application',
+            'service' => 'Service',
+            'library' => 'Library',
+            'other' => 'Other',
+        ],
+        'support-status' => [
+            'supported' => 'Supported',
+            'extendedSupport' => 'Extended support',
+            'endOfLife' => 'End of life',
+            'unknown' => 'Unknown',
+        ],
+        'norm-conformity-status' => [
+            'notAssessed' => 'Not assessed',
+            'gapAnalysisDone' => 'Gap analysis done',
+            'inProgress' => 'In progress',
+            'internallyAuditReady' => 'Internally audit-ready',
+            'externalAuditPlanned' => 'External audit planned',
+            'certified' => 'Certified',
+            'certificateSuspended' => 'Certificate suspended',
+            'certificateExpired' => 'Certificate expired',
         ],
     ],
     'surcharge' => [

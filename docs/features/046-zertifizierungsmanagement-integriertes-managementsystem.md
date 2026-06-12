@@ -2,7 +2,19 @@
 
 ## Status
 
-Proposed
+In Progress — Kern umgesetzt (2026-06-11): Geltungsbereiche, versionierte
+Normanforderungen mit 7 Normprofilen (27001 inkl. Annex A; 27701, 9001,
+22301, 45001, 37301, 42001 auf HLS-Ebene), normneutrale Maßnahmen mit
+n:m-Mapping, Mehr-Scope-SoA, Zertifikatsregister mit strikter Statuskette
+(zertifiziert nur mit gültigem Zertifikat), Audit-/Verbesserungszyklus
+(Audits, Feststellungen, Korrekturmaßnahmen mit Wirksamkeitsprüfung,
+freigegebene Managementbewertungen), Risiko-Bewertungshistorie
+(Brutto/Netto/Ziel, unveränderliche Freigaben) und stichtagsbezogene
+Auditpakete mit Integritätsnachweis (SHA-256, isms:verify-packages) und
+zeitlich begrenztem Prüfer-Download-Token. Offen: lizenzierter
+Normtext-Import (044 MVP3), mehrjähriges Auditprogramm als eigene
+Planungsentität, Live-Prüferzugang (Feature 033), echte
+Stichtags-Rekonstruktion, Versionierungs-Metadaten der Normprofile.
 
 ## Produktversprechen
 

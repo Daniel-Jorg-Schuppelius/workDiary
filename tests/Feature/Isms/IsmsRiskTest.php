@@ -95,7 +95,14 @@ class IsmsRiskTest extends TestCase {
             ->assertSessionHasErrors('status');
         $this->assertSame(RiskStatus::Analyzed, $risk->refresh()->status);
 
-        // analyzed → accepted ist erlaubt.
+        // analyzed → accepted ist erlaubt — erfordert seit 046-D aber eine
+        // freigegebene Netto-Bewertung mit Ablauf-/Reviewdatum.
+        \App\Models\Isms\IsmsRiskAssessment::factory()->net()->approved($admin->id)->create([
+            'organization_id' => $admin->organization_id,
+            'isms_risk_id' => $risk->id,
+            'valid_until' => now()->addYear()->toDateString(),
+        ]);
+
         $this->actingAs($admin)
             ->post(route('isms.risks.transition', $risk), ['status' => 'accepted'])
             ->assertRedirect()

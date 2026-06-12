@@ -6,15 +6,16 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Erfassungs-/Bearbeitungs-Dialog ISMS-Maßnahme (in #entry-modal geladen).
-  SoA-Regel: applicable=false ⇒ justification Pflicht (Request-Validierung
-  required_if + zentral im ControlService).
-  Variablen: $control (IsmsControl|null), $owners (Collection id/name)
+  Erfassungs-/Bearbeitungs-Dialog normneutrale Maßnahme (in #entry-modal
+  geladen). Anforderungs-Mapping als Mehrfachauswahl (n:m, auch
+  normübergreifend); die SoA-Aussage liegt NICHT hier, sondern am
+  ApplicabilityStatement (Anforderungen-Seite).
+  Variablen: $control (IsmsControl|null), $requirements (Collection),
+             $owners (Collection id/name)
 --}}
 @php
     $isEdit = $control !== null;
-    $isCatalog = $isEdit && $control->source === \App\Enums\Isms\ControlSource::Iso27001AnnexA;
-    $applicableOld = (bool) old('applicable', $control?->applicable ?? true);
+    $linkedRequirementIds = $isEdit ? $control->requirements->pluck('id')->all() : [];
 @endphp
 
 <x-modal
@@ -29,23 +30,6 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_control')">
 
     <x-form-group :legend="__('isms.group.control')" icon="verified_user" tone="primary" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.code') }} @unless ($isCatalog) * @endunless</span>
-            <input type="text" name="code" maxlength="24"
-                   class="input input-bordered w-full font-mono"
-                   value="{{ old('code', $control?->code) }}"
-                   placeholder="{{ __('isms.hint.code') }}"
-                   @if ($isCatalog) readonly @else required @endif>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.owner') }}</span>
-            <select name="owner_user_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $control?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
-                @endforeach
-            </select>
-        </label>
         <label class="form-control sm:col-span-2">
             <span class="label-text">{{ __('isms.field.title') }} *</span>
             <input type="text" name="title" required minlength="3" maxlength="180"
@@ -57,37 +41,49 @@
             <textarea name="description" rows="3" maxlength="10000"
                       class="textarea textarea-bordered w-full">{{ old('description', $control?->description) }}</textarea>
         </label>
-    </x-form-group>
-
-    <x-form-group :legend="__('isms.group.soa')" icon="rule_folder" tone="warning" cols="1">
-        {{-- Checkbox + Hidden-0: applicable kommt immer mit (Toggle aus = 0). --}}
-        <input type="hidden" name="applicable" value="0">
-        <label class="label cursor-pointer justify-start gap-3">
-            <input type="checkbox" name="applicable" value="1" class="toggle toggle-success"
-                   @checked($applicableOld)>
-            <span class="label-text">{{ __('isms.field.applicable') }}</span>
+        <label class="form-control">
+            <span class="label-text">{{ __('isms.field.implementation_status') }} *</span>
+            <select name="implementation_status" required class="select select-bordered w-full">
+                @foreach (\App\Enums\Isms\ControlImplementationStatus::cases() as $status)
+                    <option value="{{ $status->value }}" @selected(old('implementation_status', $control?->implementation_status?->value ?? 'open') === $status->value)>{{ $status->label() }}</option>
+                @endforeach
+            </select>
         </label>
         <label class="form-control">
-            <span class="label-text">{{ __('isms.field.justification') }} <span class="text-base-content/60">({{ __('isms.hint.justification') }})</span></span>
-            <textarea name="justification" rows="2" maxlength="5000"
-                      class="textarea textarea-bordered w-full">{{ old('justification', $control?->justification) }}</textarea>
+            <span class="label-text">{{ __('isms.field.owner') }}</span>
+            <select name="owner_user_id" class="select select-bordered w-full">
+                <option value="">—</option>
+                @foreach ($owners as $owner)
+                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $control?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+                @endforeach
+            </select>
         </label>
-        <div class="grid gap-3 sm:grid-cols-2">
-            <label class="form-control">
-                <span class="label-text">{{ __('isms.field.implementation_status') }} *</span>
-                <select name="implementation_status" required class="select select-bordered w-full">
-                    @foreach (\App\Enums\Isms\ControlImplementationStatus::cases() as $status)
-                        <option value="{{ $status->value }}" @selected(old('implementation_status', $control?->implementation_status?->value ?? 'open') === $status->value)>{{ $status->label() }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <label class="form-control">
-                <span class="label-text">{{ __('isms.field.evidence_note') }}</span>
-                <input type="text" name="evidence_note" maxlength="10000"
-                       class="input input-bordered w-full"
-                       value="{{ old('evidence_note', $control?->evidence_note) }}"
-                       placeholder="{{ __('isms.hint.evidence_note') }}">
-            </label>
-        </div>
+        <label class="form-control sm:col-span-2">
+            <span class="label-text">{{ __('isms.field.evidence_note') }}</span>
+            <input type="text" name="evidence_note" maxlength="10000"
+                   class="input input-bordered w-full"
+                   value="{{ old('evidence_note', $control?->evidence_note) }}"
+                   placeholder="{{ __('isms.hint.evidence_note') }}">
+        </label>
+    </x-form-group>
+
+    <x-form-group :legend="__('isms.field.requirements')" icon="checklist" tone="info" cols="1">
+        {{-- Leerer Marker: sorgt dafür, dass requirement_ids auch bei komplett
+             abgewählter Auswahl übertragen wird (Sync auf leere Liste). --}}
+        <input type="hidden" name="requirement_ids[]" value="">
+        <label class="form-control">
+            <span class="label-text">{{ __('isms.hint.requirements') }}</span>
+            <select name="requirement_ids[]" multiple size="8" class="select select-bordered w-full h-auto">
+                @foreach ($requirements as $requirement)
+                    <option value="{{ $requirement->id }}"
+                            @selected(in_array($requirement->id, old('requirement_ids', $linkedRequirementIds)))>
+                        {{ $requirement->normLabel() }} {{ $requirement->ref_no }} — {{ $requirement->title }}
+                    </option>
+                @endforeach
+            </select>
+        </label>
+        @if ($requirements->isEmpty())
+            <p class="text-xs text-base-content/60">{{ __('isms.hint.no_requirements_yet') }}</p>
+        @endif
     </x-form-group>
 </x-modal>

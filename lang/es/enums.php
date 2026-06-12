@@ -181,16 +181,31 @@ return [
     ],
     'notification' => [
         'event' => [
-            'openIssue.assigned' => 'Punto abierto asignado',
-            'openIssue.dueSoon' => 'Punto abierto vence pronto',
-            'openIssue.overdue' => 'Punto abierto vencido',
-            'communication.followupDueSoon' => 'Seguimiento vence pronto',
-            'communication.followupOverdue' => 'Seguimiento vencido',
-            'document.expiringSoon' => 'Documento caduca pronto',
-            'document.expired' => 'Documento caducado',
-            'timeCorrection.requested' => 'Solicitud de corrección horaria enviada',
-            'timeCorrection.decided' => 'Solicitud de corrección horaria decidida',
-            'monthClosure.submitted' => 'Cierre mensual enviado',
+            'openIssue' => [
+                'assigned' => 'Punto abierto asignado',
+                'dueSoon' => 'Punto abierto vence pronto',
+                'overdue' => 'Punto abierto vencido',
+            ],
+            'communication' => [
+                'followupDueSoon' => 'Seguimiento vence pronto',
+                'followupOverdue' => 'Seguimiento vencido',
+            ],
+            'document' => [
+                'expiringSoon' => 'Documento caduca pronto',
+                'expired' => 'Documento caducado',
+            ],
+            'timeCorrection' => [
+                'requested' => 'Solicitud de corrección horaria enviada',
+                'decided' => 'Solicitud de corrección horaria decidida',
+            ],
+            'monthClosure' => [
+                'submitted' => 'Cierre mensual enviado',
+            ],
+            'isms' => [
+                'certificateExpiring' => 'Certificado ISMS próximo a vencer',
+                'correctiveActionOverdue' => 'Acción correctiva del SGSI vencida',
+                'riskReviewDue' => 'Revisión de riesgo del SGSI pendiente',
+            ],
         ],
         'channel' => [
             'inApp' => 'En la aplicación',
@@ -439,6 +454,54 @@ return [
         ],
     ],
     'isms' => [
+        'audit-package-status' => [
+            'draft' => 'Borrador',
+            'finalized' => 'Finalizado',
+        ],
+        'audit-kind' => [
+            'internal' => 'Interna',
+            'external' => 'Externa',
+            'supplier' => 'Proveedor',
+        ],
+        'audit-status' => [
+            'planned' => 'Planificada',
+            'inPreparation' => 'En preparación',
+            'inProgress' => 'En curso',
+            'reportIssued' => 'Informe emitido',
+            'closed' => 'Cerrada',
+        ],
+        'finding-kind' => [
+            'nonconformityMajor' => 'No conformidad mayor',
+            'nonconformityMinor' => 'No conformidad menor',
+            'observation' => 'Observación',
+            'improvement' => 'Oportunidad de mejora',
+        ],
+        'finding-status' => [
+            'open' => 'Abierto',
+            'inCorrection' => 'En corrección',
+            'effectivenessCheck' => 'Verificación de eficacia',
+            'closed' => 'Cerrado',
+        ],
+        'corrective-action-status' => [
+            'open' => 'Abierta',
+            'inProgress' => 'En curso',
+            'done' => 'Implementada',
+            'effective' => 'Eficaz',
+            'ineffective' => 'Ineficaz',
+        ],
+        'review-status' => [
+            'draft' => 'Borrador',
+            'approved' => 'Aprobada',
+        ],
+        'assessment-kind' => [
+            'gross' => 'Bruto',
+            'net' => 'Neto',
+            'target' => 'Objetivo',
+        ],
+        'assessment-status' => [
+            'draft' => 'Borrador',
+            'approved' => 'Aprobada',
+        ],
         'risk-category' => [
             'organizational' => 'Organizativo',
             'technical' => 'Técnico',
@@ -459,15 +522,38 @@ return [
             'accepted' => 'Aceptado',
             'closed' => 'Cerrado',
         ],
-        'control-source' => [
-            'iso27001AnnexA' => 'ISO/IEC 27001 Anexo A',
-            'custom' => 'Medida propia',
+        'requirement-source' => [
+            'catalog' => 'Catálogo de referencia',
+            'custom' => 'Requisito propio',
         ],
         'control-implementation-status' => [
             'open' => 'Abierto',
             'partial' => 'Parcialmente implantado',
             'implemented' => 'Implantado',
             'notApplicable' => 'No aplicable',
+        ],
+        'software-category' => [
+            'os' => 'Sistema operativo',
+            'application' => 'Aplicación',
+            'service' => 'Servicio',
+            'library' => 'Biblioteca',
+            'other' => 'Otro',
+        ],
+        'support-status' => [
+            'supported' => 'Con soporte',
+            'extendedSupport' => 'Soporte extendido',
+            'endOfLife' => 'Fin de vida',
+            'unknown' => 'Desconocido',
+        ],
+        'norm-conformity-status' => [
+            'notAssessed' => 'No evaluado',
+            'gapAnalysisDone' => 'Análisis de brechas realizado',
+            'inProgress' => 'En implementación',
+            'internallyAuditReady' => 'Listo para auditoría interna',
+            'externalAuditPlanned' => 'Auditoría externa planificada',
+            'certified' => 'Certificado',
+            'certificateSuspended' => 'Certificado suspendido',
+            'certificateExpired' => 'Certificado caducado',
         ],
     ],
     'surcharge' => [

@@ -6,9 +6,13 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Statement of Applicability (Feature 044, MVP 1): druckbare Read-Only-
-  Tabelle aller Controls. Standalone-HTML mit Print-CSS
-  (Muster: diary/case-file.blade.php — „Fallakte").
+  Statement of Applicability (Feature 044/046): druckbare Read-Only-Tabelle
+  der SoA-Aussagen des gewählten Geltungsbereichs (scope={sqid}, Default =
+  Default-Scope; optionaler Norm-Filter norm="norm|edition").
+  Standalone-HTML mit Print-CSS (Muster: diary/case-file.blade.php —
+  „Fallakte").
+  Variablen: $scope, $statements, $normLabel, $normFilter, $generatedAt,
+             $organizationName
 --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -38,55 +42,60 @@
 </head>
 <body>
     <div class="toolbar">
-        <a href="{{ route('isms.controls.index') }}">← {{ __('isms.action.back') }}</a>
+        <a href="{{ route('isms.requirements.index') }}">← {{ __('isms.action.back') }}</a>
         <button type="button" class="primary" onclick="window.print()">{{ __('isms.action.print') }}</button>
     </div>
 
     <h1>{{ __('isms.soa.heading') }}</h1>
     <p class="meta">
         {{ $organizationName }}
+        @if ($scope !== null)
+            · {{ __('isms.field.scope') }}: {{ $scope->name }}
+        @endif
+        @if ($normLabel !== null)
+            · {{ __('isms.field.norm') }}: {{ $normLabel }}
+        @endif
         · {{ __('isms.soa.generated_at') }}: {{ $generatedAt->format('d.m.Y H:i') }}
-        · {{ __('isms.soa.control_count', ['count' => $controls->count()]) }}
+        · {{ __('isms.soa.statement_count', ['count' => $statements->count()]) }}
     </p>
 
     <table>
         <thead>
             <tr>
-                <th style="width: 60px;">{{ __('isms.field.code') }}</th>
+                <th style="width: 60px;">{{ __('isms.field.ref_no') }}</th>
+                <th style="width: 110px;">{{ __('isms.field.norm') }}</th>
                 <th>{{ __('isms.field.title') }}</th>
                 <th style="width: 70px;" class="center">{{ __('isms.field.applicable') }}</th>
-                <th style="width: 24%;">{{ __('isms.field.justification') }}</th>
-                <th style="width: 110px;">{{ __('isms.field.implementation_status') }}</th>
-                <th style="width: 16%;">{{ __('isms.field.evidence_note') }}</th>
-                <th style="width: 12%;">{{ __('isms.field.risks') }}</th>
+                <th style="width: 22%;">{{ __('isms.field.justification') }}</th>
+                <th style="width: 100px;">{{ __('isms.field.implementation_status') }}</th>
+                <th style="width: 14%;">{{ __('isms.field.evidence_note') }}</th>
+                <th style="width: 18%;">{{ __('isms.soa.controls_risks') }}</th>
             </tr>
         </thead>
         <tbody>
-            @forelse ($controls as $control)
-                <tr @class(['na' => ! $control->applicable])>
-                    <td class="mono">{{ $control->code }}</td>
+            @forelse ($statements as $statement)
+                @php($requirement = $statement->requirement)
+                <tr @class(['na' => ! $statement->applicable])>
+                    <td class="mono">{{ $requirement->ref_no }}</td>
+                    <td class="muted">{{ $requirement->normLabel() }}</td>
+                    <td>{{ $requirement->title }}</td>
+                    <td class="center">{{ $statement->applicable ? __('isms.soa.yes') : __('isms.soa.no') }}</td>
+                    <td>{{ $statement->justification ?? '—' }}</td>
+                    <td>{{ $statement->implementation_status->label() }}</td>
+                    <td>{{ $statement->evidence_note ?? '—' }}</td>
                     <td>
-                        {{ $control->title }}
-                        @if ($control->owner !== null)
-                            <span class="muted"> · {{ $control->owner->name }}</span>
-                        @endif
-                    </td>
-                    <td class="center">{{ $control->applicable ? __('isms.soa.yes') : __('isms.soa.no') }}</td>
-                    <td>{{ $control->justification ?? '—' }}</td>
-                    <td>{{ $control->implementation_status->label() }}</td>
-                    <td>{{ $control->evidence_note ?? '—' }}</td>
-                    <td>
-                        @if ($control->risks->isEmpty())
+                        @if ($requirement->controls->isEmpty())
                             <span class="muted">—</span>
                         @else
-                            ({{ $control->risks->count() }})
-                            <span class="mono">{{ $control->risks->map(fn($r) => $r->displayNo())->implode(', ') }}</span>
+                            @foreach ($requirement->controls as $control)
+                                {{ $control->title }}@if ($control->risks->isNotEmpty()) <span class="mono">({{ $control->risks->map(fn($r) => $r->displayNo())->implode(', ') }})</span>@endif<br>
+                            @endforeach
                         @endif
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="muted">{{ __('isms.empty_controls') }}</td>
+                    <td colspan="8" class="muted">{{ __('isms.empty_requirements') }}</td>
                 </tr>
             @endforelse
         </tbody>

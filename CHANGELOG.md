@@ -36,6 +36,65 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 - ISMS MVP1 (Feature 044): Risikoregister mit 5×5-Matrix und Statusmaschine,
   Maßnahmenkatalog mit ISO/IEC-27001:2022-Annex-A-Import (93 Controls) und
   druckbarem Statement of Applicability (`module.isms`, Enterprise).
+- Managementsystem-Kern (Feature 046): ISMS auf den gemeinsamen Kern
+  refactort — Geltungsbereiche (`isms_scopes`), versionierte
+  Normanforderungen (`isms_requirements`, Annex-A als Normprofil
+  ISO/IEC 27001:2022), normneutrale Maßnahmen mit
+  n:m-Anforderungs-Mapping und SoA als eigene Applicability-Statements je
+  Geltungsbereich (inkl. Datenmigration bestehender Controls).
+- Normprofil-Registry (Feature 046, Inkrement A): sieben Normprofile als
+  Kataloge (ISO/IEC 27001:2022 mit Annex A + HLS-Kapiteln; 27701, 9001,
+  22301, 45001, 37301 und 42001 auf HLS-Ebene mit eigenen Kurztiteln),
+  Normprofil-Auswahl beim Katalog-Import, Norm-Filter und Mehr-Scope-SoA
+  mit Geltungsbereichs-Wechsel.
+- Zertifikatsregister (Feature 046, Inkrement B): Konformitätsstatus je
+  Geltungsbereich und Norm mit strikter Statuskette — `zertifiziert` nur
+  mit hinterlegtem, aktuell gültigem Zertifikat (Zertifizierungsstelle,
+  Nummer, Geltungsbereich, Gültigkeit, Überwachungstermine, optionales
+  Dokument aus dem Dokumentenmodul); automatischer Verfall und
+  Ablauf-Warnung (`isms.certificateExpiring`) über den Fristen-Scanner.
+- Risiko-Bewertungshistorie (Feature 046, Inkrement D): Brutto-/Netto-/
+  Ziel-Bewertungen als unveränderliche, freigegebene Stände je Risiko
+  (Person/Zeitpunkt), Direktbewertungen historisieren automatisch,
+  Restrisiko-Akzeptanz erfordert eine freigegebene Netto-Bewertung mit
+  Reviewdatum; Scanner-Ereignis `isms.riskReviewDue`.
+- Audit- und Verbesserungszyklus (Feature 046, Inkrement C): interne/
+  externe/Lieferanten-Audits je Geltungsbereich mit Statuskette und
+  Unabhängigkeitsprüfung, Feststellungen (Nichtkonformität major/minor,
+  Beobachtung, Verbesserung) mit Anforderungsbezug, Korrekturmaßnahmen mit
+  Ursachenanalyse und Wirksamkeitsprüfung (Pflicht-Notiz; unwirksam setzt
+  die Feststellung zurück), Managementbewertungen mit unveränderlicher
+  Freigabe (Person/Zeitpunkt) sowie Fristen-Scanner-Ereignis
+  `isms.correctiveActionOverdue` für überfällige Korrekturmaßnahmen
+  (`module.isms`, Enterprise).
+- Auditpakete & Prüferzugang (Feature 046, Inkrement E / 044
+  „Auditbereitschaft"): stichtagsbezogene, integritätsgeschützte
+  Auditpakete je Geltungsbereich (`isms_audit_packages`) — Finalisierung
+  friert den Datenstand als JSON-Snapshot ein (SoA, Risikoregister inkl.
+  freigegebener Bewertungen, Maßnahmen, Konformität + Zertifikate, Audits
+  mit Feststellungen/Korrekturmaßnahmen, freigegebene
+  Managementbewertungen, Softwareinventar) mit SHA-256-Integritätsnachweis
+  (`isms:verify-packages` + UI-Prüfung; finalisierte Pakete sind
+  unveränderlich). Ehrliche Stichtags-Semantik: `as_of_date` =
+  dokumentierter Berichtsstichtag, `data_captured_at` = Datenstand bei
+  Finalisierung (kein Event-Sourcing). Zeitlich begrenzter, lesender
+  Prüfer-Download über tokenisierte öffentliche Links (nur SHA-256-Hash
+  gespeichert, Klartext einmalig sichtbar, 1–90 Tage, widerrufbar)
+  (`module.isms`, Enterprise).
+- Kontextbezogene Prozesshilfe (Feature 039): rechte, nicht-blockierende
+  Hilfe-Sidebar am Desktop (mobil Drawer) mit automatischem Seitenkontext
+  über eine Route→Topic-Registry (`config/help-topics.php`), Hilfe-Button
+  im Header, `?`-Shortcut, gemerktem Auf/Zu-Zustand und Fallback mit
+  Suche; 26 neue Hilfe-Topics in Deutsch und Englisch (ISMS-Prozesse,
+  Datenschutz, Dokumente, Formulare, Wissensbasis, Kommunikationsnotizen,
+  Faktura-Übergabe, Lohnexport, Glossar, 7-teiliges Admin-Handbuch) plus
+  rollenbasierte Einstiegshilfen für Außendienst, Teamleitung,
+  Buchhaltung, Admin und Geschäftsführung (audience-gesteuert).
+- Softwareinventar & Release-SBOM (Feature 044 MVP1):
+  organisationsbezogenes Softwareinventar (Produkte, Installationen,
+  Support-Status mit EOL-Automatik) sowie `php artisan sbom:generate`
+  (CycloneDX 1.5 aus composer.lock/package-lock.json, Modulen und Plugins)
+  mit geschützter Admin-Komponentenübersicht (`admin/components`).
 - Finanzschnittstelle, erstes Inkrement (Feature 045): Fakturierungsweg je
   Organisation/Kunde (`billing_mode`) mit Rechnungshoheit beim externen
   Programm — lokale Rechnungserstellung ist bei extern geführter Fakturierung

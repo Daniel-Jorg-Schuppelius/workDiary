@@ -85,5 +85,8 @@ return [
         'correction_approved' => 'Dein Antrag wurde genehmigt. :note',
         'correction_rejected' => 'Dein Antrag wurde abgelehnt. :note',
         'month_submitted_title' => 'Monatsabschluss :period von :user eingereicht',
+        'certificate_expiring' => 'Zertifikat läuft am :date ab — Re-Zertifizierung rechtzeitig planen.',
+        'corrective_action_overdue' => 'Korrekturmaßnahme überfällig seit :date.',
+        'risk_review_due' => 'Review der akzeptierten Risikobewertung fällig am :date.',
     ],
 ];

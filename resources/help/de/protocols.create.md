@@ -17,8 +17,8 @@ Schritte:
 1. **Vorlage** wählen (z. B. „Abnahme", „Inbetriebnahme", „Wartung").
 2. **Protokollpunkte** abarbeiten: Text, Auswahl, Foto, Messwert.
 3. **Vorher-/Nachher-Fotos** an den jeweiligen Punkt hängen.
-4. **Speichern** lässt das Protokoll im Status `draft`. Für die Abnahme
-   wechsle anschließend in den Signatur-Dialog.
+4. **Speichern** lässt das Protokoll im Status **Entwurf**. Für die
+   Abnahme wechsle anschließend in den Signatur-Dialog.
 
 Pflichtpunkte sind im Editor visuell markiert und müssen vor dem
-Statuswechsel auf `review` ausgefüllt sein.
+Statuswechsel auf **In Prüfung** ausgefüllt sein.

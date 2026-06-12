@@ -181,7 +181,9 @@
                 </table>
             </div>
         @else
-            <x-empty-state icon="monitoring" :title="__('metrics.empty.feature_usage')" />
+            <x-empty-state
+                icon='<span class="material-symbols-outlined" aria-hidden="true">monitoring</span>'
+                :title="__('metrics.empty.feature_usage')" />
         @endif
         <p class="mt-2 text-xs text-base-content/50">{{ __('metrics.hint.feature_usage_window') }}</p>
     </x-card>

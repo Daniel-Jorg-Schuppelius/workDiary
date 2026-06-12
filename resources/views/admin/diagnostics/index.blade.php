@@ -63,7 +63,7 @@
                 $badge = $statusToBadge[$sv] ?? 'badge-ghost';
                 $label = $statusToLabel[$sv] ?? $sv;
                 $title = $sectionTitles[$section->code] ?? $section->code;
-                $icon = $sectionIcons[$section->code] ?? 'help_outline';
+                $icon = $sectionIcons[$section->code] ?? 'help';
             @endphp
             <article class="card border border-base-300 bg-base-100 shadow-sm">
                 <div class="card-body gap-3">

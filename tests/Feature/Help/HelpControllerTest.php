@@ -32,7 +32,19 @@ class HelpControllerTest extends TestCase {
             'version' => 1,
             'body_md' => 'Body',
             'body_html' => '<p>Body</p>',
-            'related' => ['sample.edit'],
+            // 'sample.missing' existiert nicht und darf nicht ausgeliefert
+            // werden (keine toten Links / rohen Slugs in der UI).
+            'related' => ['sample.edit', 'sample.missing'],
+        ]);
+        HelpTopic::query()->create([
+            'topic' => 'sample.edit',
+            'locale' => 'de',
+            'title' => 'Beispiel bearbeiten',
+            'audience' => [],
+            'version' => 1,
+            'body_md' => 'Edit',
+            'body_html' => '<p>Edit</p>',
+            'related' => [],
         ]);
 
         $user = User::factory()->user()->create();
@@ -44,7 +56,9 @@ class HelpControllerTest extends TestCase {
             ->assertJsonPath('topic', 'sample.show')
             ->assertJsonPath('title', 'Beispiel')
             ->assertJsonPath('body_html', '<p>Body</p>')
-            ->assertJsonPath('related.0', 'sample.edit');
+            ->assertJsonPath('related.0.topic', 'sample.edit')
+            ->assertJsonPath('related.0.title', 'Beispiel bearbeiten')
+            ->assertJsonCount(1, 'related');
 
         $view = HelpView::query()->where('topic', 'sample.show')->first();
         $this->assertNotNull($view);

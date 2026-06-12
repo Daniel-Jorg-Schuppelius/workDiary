@@ -9,7 +9,7 @@ related:
 ---
 
 Starte eine neue Zeiterfassung über den Button **„Neuer Eintrag"** in der
-Topbar oder über das Stopuhr-Symbol auf der Wochenseite.
+Topbar oder über die Stopuhr.
 
 Pflichtfelder im MVP:
 

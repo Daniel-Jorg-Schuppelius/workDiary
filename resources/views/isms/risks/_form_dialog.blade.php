@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Erfassungs-/Bearbeitungs-Dialog ISMS-Risiko (in #entry-modal geladen).
-  Variablen: $risk (IsmsRisk|null), $controls (Collection id/code/title),
+  Variablen: $risk (IsmsRisk|null), $controls (Collection id/title),
              $owners (Collection id/name)
 --}}
 @php
@@ -113,7 +113,7 @@
                 @foreach ($controls as $control)
                     <option value="{{ $control->id }}"
                             @selected(in_array($control->id, old('control_ids', $linkedControlIds)))>
-                        {{ $control->code }} — {{ $control->title }}
+                        {{ $control->title }}
                     </option>
                 @endforeach
             </select>

@@ -1,9 +1,9 @@
 <?php
 /*
- * Created on   : Wed Jun 10 2026
+ * Created on   : Thu Jun 11 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : ControlSource.php
+ * Filename     : RequirementSource.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
@@ -13,21 +13,25 @@ namespace App\Enums\Isms;
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
-/** Herkunft eines Controls: Annex-A-Referenzkatalog oder eigene Maßnahme. */
-enum ControlSource: string implements HasLabel {
+/**
+ * Herkunft einer Normanforderung (Feature 046): Referenzkatalog
+ * (z. B. ISO/IEC 27001:2022 Annex A) oder eigene Anforderung.
+ * Nachfolger von ControlSource (Feature 044, vor dem Kern-Refactoring).
+ */
+enum RequirementSource: string implements HasLabel {
     use HasOptions;
 
-    case Iso27001AnnexA = 'iso27001AnnexA';
+    case Catalog = 'catalog';
     case Custom = 'custom';
 
     public function label(): string {
-        return (string) __('enums.isms.control-source.' . $this->value);
+        return (string) __('enums.isms.requirement-source.' . $this->value);
     }
 
     /** DaisyUI badge tone */
     public function tone(): string {
         return match ($this) {
-            self::Iso27001AnnexA => 'info',
+            self::Catalog => 'info',
             self::Custom => 'ghost',
         };
     }

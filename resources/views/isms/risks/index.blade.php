@@ -154,11 +154,99 @@
                                 <p>
                                     <span class="font-semibold">{{ __('isms.field.controls') }}:</span>
                                     @forelse ($risk->controls as $control)
-                                        <x-status-badge tone="ghost" outline>{{ $control->code }}</x-status-badge>
+                                        <x-status-badge tone="ghost" outline>{{ $control->title }}</x-status-badge>
                                     @empty
                                         {{ __('isms.empty_controls_linked') }}
                                     @endforelse
                                 </p>
+
+                                {{-- Bewertungshistorie (046-D): freigegebene Stände statt Überschreiben --}}
+                                <p class="font-semibold">{{ __('isms.assessment.history_title') }}:</p>
+                                @if ($risk->assessments->isNotEmpty())
+                                    <table class="table table-xs">
+                                        <thead>
+                                            <tr>
+                                                <th>{{ __('isms.field.risk_no') }}</th>
+                                                <th>{{ __('isms.field.assessment_kind') }}</th>
+                                                <th>{{ __('isms.field.score') }}</th>
+                                                <th>{{ __('isms.field.rationale') }}</th>
+                                                <th>{{ __('isms.field.status') }}</th>
+                                                <th>{{ __('isms.field.approved_by') }}</th>
+                                                <th>{{ __('isms.field.valid_until') }}</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($risk->assessments as $assessment)
+                                                <tr id="isms-assessment-{{ $assessment->id }}">
+                                                    <td class="font-mono">{{ $assessment->displayNo() }}</td>
+                                                    <td><x-status-badge :tone="$assessment->kind->tone()" outline>{{ $assessment->kind->label() }}</x-status-badge></td>
+                                                    <td class="whitespace-nowrap">
+                                                        {{ $assessment->likelihood }}×{{ $assessment->impact }} =
+                                                        <x-status-badge :tone="\App\Models\Isms\IsmsRisk::scoreTone($assessment->score)">{{ $assessment->score }}</x-status-badge>
+                                                    </td>
+                                                    <td class="max-w-60">{{ $assessment->rationale !== null ? \Illuminate\Support\Str::limit($assessment->rationale, 80) : '—' }}</td>
+                                                    <td><x-status-badge :tone="$assessment->status->tone()">{{ $assessment->status->label() }}</x-status-badge></td>
+                                                    <td class="whitespace-nowrap">
+                                                        @if ($assessment->isApproved())
+                                                            {{ optional($assessment->approvedBy)->name ?? '—' }} · {{ $assessment->approved_at?->format('d.m.Y') }}
+                                                        @else
+                                                            —
+                                                        @endif
+                                                    </td>
+                                                    <td class="whitespace-nowrap">
+                                                        @if ($assessment->valid_until !== null)
+                                                            {{ $assessment->valid_until->format('d.m.Y') }}
+                                                            @if ($assessment->isReviewOverdue())
+                                                                <x-status-badge tone="warning">{{ __('isms.assessment.review_overdue') }}</x-status-badge>
+                                                            @endif
+                                                        @else
+                                                            —
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-right">
+                                                        @can('update', $risk)
+                                                            @unless ($assessment->isApproved())
+                                                                <span class="flex justify-end gap-1">
+                                                                    <form method="POST" action="{{ route('isms.risks.assessments.approve', $assessment) }}"
+                                                                          data-confirm-dialog
+                                                                          data-confirm-title="{{ __('isms.action.approve_assessment') }}"
+                                                                          data-confirm-message="{{ __('isms.confirm_approve_assessment') }}"
+                                                                          data-confirm-icon="task_alt"
+                                                                          data-confirm-tone="primary"
+                                                                          data-confirm-label="{{ __('isms.action.approve_assessment') }}">
+                                                                        @csrf
+                                                                        <x-icon-btn icon="task_alt" tone="primary" size="xs" type="submit"
+                                                                                    :label="__('isms.action.approve_assessment')" />
+                                                                    </form>
+                                                                    <form method="POST" action="{{ route('isms.risks.assessments.destroy', $assessment) }}"
+                                                                          data-confirm-dialog
+                                                                          data-confirm-title="{{ __('isms.action.delete') }}"
+                                                                          data-confirm-message="{{ __('isms.confirm_delete_assessment') }}"
+                                                                          data-confirm-icon="delete"
+                                                                          data-confirm-tone="error"
+                                                                          data-confirm-label="{{ __('isms.action.delete') }}">
+                                                                        @csrf @method('DELETE')
+                                                                        <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
+                                                                                    :label="__('isms.action.delete')" />
+                                                                    </form>
+                                                                </span>
+                                                            @endunless
+                                                        @endcan
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                @else
+                                    <p>{{ __('isms.assessment.empty') }}</p>
+                                @endif
+                                @can('update', $risk)
+                                    <x-icon-btn icon="add" tone="outline" size="xs"
+                                                data-entry-modal-trigger
+                                                :href="route('isms.risks.assessments.create', $risk)"
+                                                show-label>{{ __('isms.action.create_assessment') }}</x-icon-btn>
+                                @endcan
                             </div>
                         </details>
                     </td>

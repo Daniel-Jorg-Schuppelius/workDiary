@@ -2,7 +2,30 @@
 
 ## Status
 
-In Progress — MVP1 umgesetzt (2026-06-10): Risikoregister mit 5x5-Matrix und Statusmaschine, Maßnahmenkatalog mit ISO 27001:2022 Annex-A-Import (93 Controls), Statement of Applicability (druckbar), module.isms (Enterprise). Offen: Scope-Dokument, Asset-Register, Audits/Findings, SBOM, Kennzahlen.
+In Progress — MVP1 umgesetzt (2026-06-10), am 2026-06-11 auf den 046-Kern
+refactort: Geltungsbereiche (isms_scopes), versionierte Normanforderungen
+(isms_requirements, Annex-A-Katalog als Normprofil ISO/IEC 27001:2022),
+normneutrale Maßnahmen mit n:m-Anforderungs-Mapping, SoA als eigene
+Applicability-Statements je Scope (inkl. Datenmigration). Zusätzlich
+umgesetzt: Softwareinventar (Produkte/Installationen, EOL-Automatik) und
+Release-SBOM (CycloneDX 1.5, sbom:generate, Admin-Komponentenübersicht).
+Am 2026-06-11 (046-Inkrement C) ergänzt: interne Audits
+(isms_audits) mit Feststellungen (isms_audit_findings), Korrekturmaßnahmen
+inkl. Wirksamkeitsprüfung (isms_corrective_actions) und Managementbewertung
+mit unveränderlicher Freigabe (isms_management_reviews); überfällige
+Korrekturmaßnahmen meldet der Fristen-Scanner.
+Offen: Brutto/Netto/Ziel-Risiko mit Bewertungshistorie, Kennzahlen,
+Auditpakete, Advisory-Abgleich (MVP2/3).
+
+Refactoring auf den gemeinsamen Managementsystem-Kern aus
+[Feature 046](./046-zertifizierungsmanagement-integriertes-managementsystem.md)
+(2026-06-11): `isms_scopes` (Default-Scope „Gesamtorganisation"),
+`isms_requirements` (Annex A als versionierte Referenzen, norm/edition/
+ref_no), `isms_control_requirement` (Maßnahme erfüllt n:m Anforderungen,
+normübergreifend) und `isms_applicability_statements` (SoA je Scope mit
+Anwendbarkeit, Begründung, Umsetzungsstatus, Nachweis). `isms_controls`
+ist seitdem die normneutrale Maßnahme ohne Normreferenz/SoA-Felder;
+Risiken tragen den Geltungsbereich (`isms_scope_id`).
 
 ## Produktversprechen
 

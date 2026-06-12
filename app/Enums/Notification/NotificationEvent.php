@@ -45,6 +45,12 @@ enum NotificationEvent: string implements HasLabel {
     case TimeCorrectionDecided = 'timeCorrection.decided';
     /** Synchron: MonthClosureService::submit() */
     case MonthClosureSubmitted = 'monthClosure.submitted';
+    /** Scanner: ISMS-Zertifikat läuft innerhalb des Vorlaufs (30 Tage) ab */
+    case IsmsCertificateExpiring = 'isms.certificateExpiring';
+    /** Scanner: ISMS-Korrekturmaßnahme mit überschrittener Fälligkeit (open/inProgress) */
+    case IsmsCorrectiveActionOverdue = 'isms.correctiveActionOverdue';
+    /** Scanner: jüngste freigegebene Netto-Risikobewertung mit valid_until innerhalb des Vorlaufs (30 Tage) bzw. überschritten */
+    case IsmsRiskReviewDue = 'isms.riskReviewDue';
 
     public function label(): string {
         return (string) __('enums.notification.event.' . $this->value);
@@ -65,7 +71,7 @@ enum NotificationEvent: string implements HasLabel {
      * der Antragsteller selbst — Empfänger sind hier die Entscheider (Rolle).
      */
     public function defaultNotifyAffected(): bool {
-        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted], true);
+        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring], true);
     }
 
     /**
@@ -77,6 +83,15 @@ enum NotificationEvent: string implements HasLabel {
         return match ($this) {
             self::TimeCorrectionRequested,
             self::MonthClosureSubmitted => [UserRole::Teamleitung->value],
+            // Zertifikatsablauf betrifft keine einzelne Person — Default an
+            // die Leitungs-/Admin-Rollen der Organisation.
+            self::IsmsCertificateExpiring => [UserRole::Teamleitung->value, UserRole::Admin->value],
+            // Überfällige Korrekturmaßnahme: primär der Verantwortliche
+            // (notify_affected), die Teamleitung als Fallback/Mitwisser.
+            self::IsmsCorrectiveActionOverdue => [UserRole::Teamleitung->value],
+            // Fälliges Risiko-Review: primär der Risikoeigentümer
+            // (notify_affected), die Teamleitung als Fallback/Mitwisser.
+            self::IsmsRiskReviewDue => [UserRole::Teamleitung->value],
             default => [],
         };
     }
@@ -94,6 +109,9 @@ enum NotificationEvent: string implements HasLabel {
             self::TimeCorrectionRequested,
             self::TimeCorrectionDecided => 'edit_calendar',
             self::MonthClosureSubmitted => 'event_available',
+            self::IsmsCertificateExpiring => 'workspace_premium',
+            self::IsmsCorrectiveActionOverdue => 'fact_check',
+            self::IsmsRiskReviewDue => 'crisis_alert',
         };
     }
 
@@ -106,6 +124,7 @@ enum NotificationEvent: string implements HasLabel {
             self::OpenIssueOverdue,
             self::CommunicationFollowupOverdue,
             self::DocumentExpired,
+            self::IsmsCorrectiveActionOverdue,
         ], true);
     }
 }

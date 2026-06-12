@@ -19,6 +19,6 @@
         data-help-topic="{{ $topic }}"
         title="{{ $resolvedLabel }}"
         aria-label="{{ $resolvedLabel }}">
-    <x-icon name="help_outline" />
+    <x-icon name="help" />
     <span class="sr-only">{{ $resolvedLabel }}</span>
 </button>

@@ -181,16 +181,31 @@ return [
     ],
     'notification' => [
         'event' => [
-            'openIssue.assigned' => 'Punto aperto assegnato',
-            'openIssue.dueSoon' => 'Punto aperto in scadenza',
-            'openIssue.overdue' => 'Punto aperto scaduto',
-            'communication.followupDueSoon' => 'Follow-up in scadenza',
-            'communication.followupOverdue' => 'Follow-up scaduto',
-            'document.expiringSoon' => 'Documento in scadenza',
-            'document.expired' => 'Documento scaduto',
-            'timeCorrection.requested' => 'Richiesta di correzione orari inviata',
-            'timeCorrection.decided' => 'Richiesta di correzione orari decisa',
-            'monthClosure.submitted' => 'Chiusura mensile inviata',
+            'openIssue' => [
+                'assigned' => 'Punto aperto assegnato',
+                'dueSoon' => 'Punto aperto in scadenza',
+                'overdue' => 'Punto aperto scaduto',
+            ],
+            'communication' => [
+                'followupDueSoon' => 'Follow-up in scadenza',
+                'followupOverdue' => 'Follow-up scaduto',
+            ],
+            'document' => [
+                'expiringSoon' => 'Documento in scadenza',
+                'expired' => 'Documento scaduto',
+            ],
+            'timeCorrection' => [
+                'requested' => 'Richiesta di correzione orari inviata',
+                'decided' => 'Richiesta di correzione orari decisa',
+            ],
+            'monthClosure' => [
+                'submitted' => 'Chiusura mensile inviata',
+            ],
+            'isms' => [
+                'certificateExpiring' => 'Certificato ISMS in scadenza',
+                'correctiveActionOverdue' => 'Azione correttiva ISMS in ritardo',
+                'riskReviewDue' => 'Riesame del rischio ISMS in scadenza',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-app',
@@ -439,6 +454,54 @@ return [
         ],
     ],
     'isms' => [
+        'audit-package-status' => [
+            'draft' => 'Bozza',
+            'finalized' => 'Finalizzato',
+        ],
+        'audit-kind' => [
+            'internal' => 'Interno',
+            'external' => 'Esterno',
+            'supplier' => 'Fornitore',
+        ],
+        'audit-status' => [
+            'planned' => 'Pianificato',
+            'inPreparation' => 'In preparazione',
+            'inProgress' => 'In corso',
+            'reportIssued' => 'Rapporto emesso',
+            'closed' => 'Chiuso',
+        ],
+        'finding-kind' => [
+            'nonconformityMajor' => 'Non conformità maggiore',
+            'nonconformityMinor' => 'Non conformità minore',
+            'observation' => 'Osservazione',
+            'improvement' => 'Opportunità di miglioramento',
+        ],
+        'finding-status' => [
+            'open' => 'Aperto',
+            'inCorrection' => 'In correzione',
+            'effectivenessCheck' => 'Verifica di efficacia',
+            'closed' => 'Chiuso',
+        ],
+        'corrective-action-status' => [
+            'open' => 'Aperta',
+            'inProgress' => 'In corso',
+            'done' => 'Attuata',
+            'effective' => 'Efficace',
+            'ineffective' => 'Inefficace',
+        ],
+        'review-status' => [
+            'draft' => 'Bozza',
+            'approved' => 'Approvato',
+        ],
+        'assessment-kind' => [
+            'gross' => 'Lordo',
+            'net' => 'Netto',
+            'target' => 'Obiettivo',
+        ],
+        'assessment-status' => [
+            'draft' => 'Bozza',
+            'approved' => 'Approvata',
+        ],
         'risk-category' => [
             'organizational' => 'Organizzativo',
             'technical' => 'Tecnico',
@@ -459,15 +522,38 @@ return [
             'accepted' => 'Accettato',
             'closed' => 'Chiuso',
         ],
-        'control-source' => [
-            'iso27001AnnexA' => 'ISO/IEC 27001 Allegato A',
-            'custom' => 'Misura propria',
+        'requirement-source' => [
+            'catalog' => 'Catalogo di riferimento',
+            'custom' => 'Requisito proprio',
         ],
         'control-implementation-status' => [
             'open' => 'Aperto',
             'partial' => 'Parzialmente attuato',
             'implemented' => 'Attuato',
             'notApplicable' => 'Non applicabile',
+        ],
+        'software-category' => [
+            'os' => 'Sistema operativo',
+            'application' => 'Applicazione',
+            'service' => 'Servizio',
+            'library' => 'Libreria',
+            'other' => 'Altro',
+        ],
+        'support-status' => [
+            'supported' => 'Supportato',
+            'extendedSupport' => 'Supporto esteso',
+            'endOfLife' => 'Fine vita',
+            'unknown' => 'Sconosciuto',
+        ],
+        'norm-conformity-status' => [
+            'notAssessed' => 'Non valutato',
+            'gapAnalysisDone' => 'Gap analysis effettuata',
+            'inProgress' => 'In attuazione',
+            'internallyAuditReady' => 'Pronto per l’audit interno',
+            'externalAuditPlanned' => 'Audit esterno pianificato',
+            'certified' => 'Certificato',
+            'certificateSuspended' => 'Certificato sospeso',
+            'certificateExpired' => 'Certificato scaduto',
         ],
     ],
     'surcharge' => [

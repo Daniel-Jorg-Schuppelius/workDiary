@@ -85,5 +85,8 @@ return [
         'correction_approved' => 'Tu solicitud fue aprobada. :note',
         'correction_rejected' => 'Tu solicitud fue rechazada. :note',
         'month_submitted_title' => 'Cierre mensual :period enviado por :user',
+        'certificate_expiring' => 'El certificado vence el :date — planifique la recertificación a tiempo.',
+        'corrective_action_overdue' => 'Acción correctiva vencida desde el :date.',
+        'risk_review_due' => 'Revisión de la evaluación de riesgo aceptada pendiente para el :date.',
     ],
 ];

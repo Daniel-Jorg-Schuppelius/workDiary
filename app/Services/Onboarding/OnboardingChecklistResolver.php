@@ -88,7 +88,9 @@ class OnboardingChecklistResolver {
             'steps' => $steps,
             'required_done' => $requiredDone,
             'required_total' => $requiredTotal,
-            'progress_percent' => $requiredTotal > 0 ? (int) floor(($requiredDone / $requiredTotal) * 100) : 100,
+            // max(1, …) statt Null-Guard: STEPS enthält strukturell immer
+            // Pflichtschritte (PHPStan beweist $requiredTotal > 0).
+            'progress_percent' => (int) floor(($requiredDone * 100) / max(1, $requiredTotal)),
             'all_required_done' => $allRequiredDone,
         ];
     }

@@ -42,6 +42,7 @@ class MetricsPageTest extends TestCase {
             ->assertSee(__('metrics.title.index'))
             // Telemetrie-Hinweis: Daten bleiben lokal, kein externes Senden.
             ->assertSee(__('metrics.privacy_notice'))
+            ->assertSee('<span class="material-symbols-outlined" aria-hidden="true">monitoring</span>', false)
             // Versions-Anzeige (Feature 022) auf der Metrik-Seite.
             ->assertSee((string) config('app.version'));
     }

@@ -10,9 +10,12 @@
 
 namespace App\Console\Commands\Notification;
 
+use App\Enums\Isms\RiskStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Models\{CommunicationNote, Document, OpenIssue, User};
+use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAssessment};
+use App\Services\Isms\ConformityService;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
@@ -37,7 +40,7 @@ class ScanDeadlinesCommand extends Command {
 
     protected $description = 'Scannt Fristen (Offene Punkte, Folgeaktionen, Dokumente) und versendet Benachrichtigungen inkl. Eskalation.';
 
-    public function handle(NotificationDispatcher $dispatcher): int {
+    public function handle(NotificationDispatcher $dispatcher, ConformityService $conformity): int {
         $dueDays = max(1, (int) $this->option('due-days'));
         $expiringDays = max(1, (int) $this->option('expiring-days'));
 
@@ -45,6 +48,9 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanOpenIssues($dispatcher, $dueDays);
         $sent += $this->scanCommunicationFollowups($dispatcher, $dueDays);
         $sent += $this->scanDocuments($dispatcher, $expiringDays);
+        $sent += $this->scanIsmsCertificates($dispatcher, $conformity, $expiringDays);
+        $sent += $this->scanIsmsCorrectiveActions($dispatcher);
+        $sent += $this->scanIsmsRiskAssessments($dispatcher, $expiringDays);
 
         $this->info(sprintf('%d Benachrichtigung(en) versendet.', $sent));
 
@@ -177,6 +183,115 @@ class ScanDeadlinesCommand extends Command {
         return $sent;
     }
 
+    /**
+     * ISMS-Zertifikate (Feature 046, Inkrement B): erst den automatischen
+     * Verfall durchsetzen (certified ohne heute gültiges Zertifikat →
+     * certificateExpired, ConformityService), dann ablaufende Zertifikate
+     * melden (Vorlauf --expiring-days, Default 30 Tage; Empfänger gemäß
+     * Default-Regel an die Rollen teamleitung/admin). Dedup über das
+     * notification_dispatch_log pro Zertifikat.
+     */
+    private function scanIsmsCertificates(NotificationDispatcher $dispatcher, ConformityService $conformity, int $expiringDays): int {
+        $expired = $conformity->expireOverdue();
+        if ($expired > 0) {
+            $this->info(sprintf('%d Konformitätsstatus auf „Zertifikat abgelaufen" gesetzt.', $expired));
+        }
+
+        $today = Carbon::today();
+        $sent = 0;
+
+        IsmsCertificate::query()
+            ->whereDate('valid_from', '<=', $today)
+            ->whereDate('valid_until', '>=', $today)
+            ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
+            ->chunkById(200, function (Collection $certificates) use ($dispatcher, &$sent): void {
+                foreach ($certificates as $certificate) {
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::IsmsCertificateExpiring,
+                        $certificate,
+                        null,
+                        $this->certificatePayload($certificate),
+                        dedup: true,
+                    );
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * ISMS-Korrekturmaßnahmen (Feature 046, Inkrement C): überfällige
+     * Maßnahmen (due_on überschritten, Status open/inProgress) melden —
+     * Empfänger ist der Maßnahmen-Verantwortliche (notify_affected),
+     * Default-Fallback die Rolle teamleitung (NotificationEvent).
+     * Dedup über das notification_dispatch_log pro Maßnahme; Eskalation
+     * analog zu den übrigen Überfälligkeits-Ereignissen.
+     */
+    private function scanIsmsCorrectiveActions(NotificationDispatcher $dispatcher): int {
+        $sent = 0;
+
+        IsmsCorrectiveAction::query()
+            ->overdue()
+            ->chunkById(200, function (Collection $actions) use ($dispatcher, &$sent): void {
+                foreach ($actions as $action) {
+                    $payload = $this->correctiveActionPayload($action);
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::IsmsCorrectiveActionOverdue,
+                        $action,
+                        $action->owner()->first(),
+                        $payload,
+                        dedup: true,
+                    );
+                    $sent += $dispatcher->escalateIfDue(NotificationEvent::IsmsCorrectiveActionOverdue, $action, $payload);
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * Risiko-Bewertungshistorie (Feature 046, Inkrement D): die JÜNGSTE
+     * freigegebene Netto-Bewertung je Risiko ist der maßgebliche Stand —
+     * liegt ihr valid_until (Ablauf-/Reviewdatum des akzeptierten
+     * Restrisikos) innerhalb des Vorlaufs (--expiring-days, Default 30
+     * Tage) oder ist es überschritten, geht isms.riskReviewDue an den
+     * Risikoeigentümer (notify_affected), Default-Fallback Teamleitung.
+     * Geschlossene Risiken werden übersprungen. Abgrenzung: das Feld
+     * isms_risks.review_due_on wird NICHT gescannt (nur UI-Hinweis im
+     * Register) — das Event feuert ausschließlich auf assessment.valid_until.
+     * Dedup über das notification_dispatch_log pro Bewertungsstand.
+     */
+    private function scanIsmsRiskAssessments(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $today = Carbon::today();
+        $sent = 0;
+
+        // Nur der jüngste freigegebene Netto-Stand je Risiko zählt — ältere
+        // (abgelöste) Stände dürfen kein Review mehr anstoßen.
+        $latestApprovedNetIds = IsmsRiskAssessment::query()
+            ->approvedNet()
+            ->selectRaw('max(id)')
+            ->groupBy('isms_risk_id');
+
+        IsmsRiskAssessment::query()
+            ->whereIn('id', $latestApprovedNetIds)
+            ->whereNotNull('valid_until')
+            ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
+            ->whereHas('risk', fn($query) => $query->where('status', '!=', RiskStatus::Closed->value))
+            ->chunkById(200, function (Collection $assessments) use ($dispatcher, &$sent): void {
+                foreach ($assessments as $assessment) {
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::IsmsRiskReviewDue,
+                        $assessment,
+                        $this->riskAssessmentAffected($assessment),
+                        $this->riskAssessmentPayload($assessment),
+                        dedup: true,
+                    );
+                }
+            });
+
+        return $sent;
+    }
+
     // ── Betroffene & Payloads ──────────────────────────────────────────────
 
     private function issueAffected(OpenIssue $issue): ?User {
@@ -226,4 +341,47 @@ class ScanDeadlinesCommand extends Command {
         ];
     }
 
+    /** @return array{title: string, message: string, url: string|null} */
+    private function certificatePayload(IsmsCertificate $certificate): array {
+        $normStatus = $certificate->normStatus()->withTrashed()->first();
+
+        return [
+            'title' => trim(($normStatus?->normLabel() ?? '') . ' — ' . $certificate->certificate_no, ' —'),
+            'message' => (string) __('notification.message.certificate_expiring', [
+                'date' => $certificate->valid_until->format('d.m.Y'),
+            ]),
+            'url' => route('isms.conformity.index'),
+        ];
+    }
+
+    private function riskAssessmentAffected(IsmsRiskAssessment $assessment): ?User {
+        return $assessment->risk()->withTrashed()->first()?->owner()->first();
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function riskAssessmentPayload(IsmsRiskAssessment $assessment): array {
+        /** @var IsmsRisk|null $risk */
+        $risk = $assessment->risk()->withTrashed()->first();
+
+        return [
+            'title' => trim(($risk?->displayNo() ?? '') . ' — ' . (string) $risk?->title, ' —'),
+            'message' => (string) __('notification.message.risk_review_due', [
+                'date' => $assessment->valid_until?->format('d.m.Y') ?? '–',
+            ]),
+            'url' => route('isms.risks.index'),
+        ];
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function correctiveActionPayload(IsmsCorrectiveAction $action): array {
+        $finding = $action->finding()->withTrashed()->first();
+
+        return [
+            'title' => trim(($finding?->displayNo() ?? '') . ' — ' . $action->title, ' —'),
+            'message' => (string) __('notification.message.corrective_action_overdue', [
+                'date' => $action->due_on?->format('d.m.Y') ?? '–',
+            ]),
+            'url' => route('isms.audits.index'),
+        ];
+    }
 }

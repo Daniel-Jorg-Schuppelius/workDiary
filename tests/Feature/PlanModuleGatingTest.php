@@ -110,7 +110,7 @@ class PlanModuleGatingTest extends TestCase {
         $response->assertSee(route('reports.coverage'), false);
     }
 
-    public function test_header_management_hides_gated_module_links_on_free(): void {
+    public function test_navigation_hides_gated_module_links_on_free(): void {
         $org = Organization::factory()->free()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
 
@@ -123,7 +123,7 @@ class PlanModuleGatingTest extends TestCase {
         $response->assertDontSee(route('materials.index'), false);       // Vertrieb (Abrechnungskatalog)
     }
 
-    public function test_header_management_shows_gated_module_links_on_enterprise(): void {
+    public function test_navigation_shows_gated_module_links_on_enterprise(): void {
         $org = Organization::factory()->enterprise()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
 

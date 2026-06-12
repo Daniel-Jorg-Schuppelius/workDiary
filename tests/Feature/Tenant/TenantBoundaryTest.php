@@ -220,6 +220,21 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame(0, \App\Models\Isms\IsmsRisk::query()->count());
     }
 
+    public function test_isms_risk_assessment_is_not_visible_cross_organization(): void {
+        $assessmentB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsRiskAssessment::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'isms_risk_id' => \App\Models\Isms\IsmsRisk::factory()->create([
+                'organization_id' => $this->orgB->id,
+            ])->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $assessmentB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsRiskAssessment::find($assessmentB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsRiskAssessment::query()->count());
+    }
+
     public function test_isms_control_is_not_visible_cross_organization(): void {
         $controlB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsControl::factory()->create([
             'organization_id' => $this->orgB->id,
@@ -230,6 +245,213 @@ class TenantBoundaryTest extends TestCase {
         app()->instance('currentOrganization', $this->orgA);
         $this->assertNull(\App\Models\Isms\IsmsControl::find($controlB->id));
         $this->assertSame(0, \App\Models\Isms\IsmsControl::query()->count());
+    }
+
+    public function test_isms_requirement_is_not_visible_cross_organization(): void {
+        $requirementB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsRequirement::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $requirementB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsRequirement::find($requirementB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsRequirement::query()->count());
+    }
+
+    public function test_isms_scope_is_not_visible_cross_organization(): void {
+        $scopeB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsScope::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $scopeB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsScope::find($scopeB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsScope::query()->count());
+    }
+
+    public function test_isms_applicability_statement_is_not_visible_cross_organization(): void {
+        $statementB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+            $requirement = \App\Models\Isms\IsmsRequirement::factory()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\Isms\IsmsApplicabilityStatement::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+                'isms_requirement_id' => $requirement->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $statementB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsApplicabilityStatement::find($statementB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsApplicabilityStatement::query()->count());
+    }
+
+    public function test_isms_audit_package_is_not_visible_cross_organization(): void {
+        $packageB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\Isms\IsmsAuditPackage::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $packageB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsAuditPackage::find($packageB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsAuditPackage::query()->count());
+    }
+
+    public function test_isms_norm_status_is_not_visible_cross_organization(): void {
+        $statusB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\Isms\IsmsNormStatus::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $statusB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsNormStatus::find($statusB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsNormStatus::query()->count());
+    }
+
+    public function test_isms_certificate_is_not_visible_cross_organization(): void {
+        $certificateB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+            $status = \App\Models\Isms\IsmsNormStatus::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+            ]);
+
+            return \App\Models\Isms\IsmsCertificate::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_norm_status_id' => $status->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $certificateB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsCertificate::find($certificateB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsCertificate::query()->count());
+    }
+
+    public function test_isms_audit_is_not_visible_cross_organization(): void {
+        $auditB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\Isms\IsmsAudit::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $auditB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsAudit::find($auditB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsAudit::query()->count());
+    }
+
+    public function test_isms_audit_finding_is_not_visible_cross_organization(): void {
+        $findingB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+            $audit = \App\Models\Isms\IsmsAudit::factory()->inProgress()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+            ]);
+
+            return \App\Models\Isms\IsmsAuditFinding::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_audit_id' => $audit->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $findingB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsAuditFinding::find($findingB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsAuditFinding::query()->count());
+    }
+
+    public function test_isms_corrective_action_is_not_visible_cross_organization(): void {
+        $actionB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+            $audit = \App\Models\Isms\IsmsAudit::factory()->inProgress()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+            ]);
+            $finding = \App\Models\Isms\IsmsAuditFinding::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_audit_id' => $audit->id,
+            ]);
+
+            return \App\Models\Isms\IsmsCorrectiveAction::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_audit_finding_id' => $finding->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $actionB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsCorrectiveAction::find($actionB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsCorrectiveAction::query()->count());
+    }
+
+    public function test_isms_management_review_is_not_visible_cross_organization(): void {
+        $reviewB = $this->withOrg($this->orgB, function () {
+            $scope = \App\Models\Isms\IsmsScope::factory()->default()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\Isms\IsmsManagementReview::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_scope_id' => $scope->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $reviewB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsManagementReview::find($reviewB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsManagementReview::query()->count());
+    }
+
+    public function test_isms_software_product_is_not_visible_cross_organization(): void {
+        $productB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsSoftwareProduct::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $productB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsSoftwareProduct::find($productB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsSoftwareProduct::query()->count());
+    }
+
+    public function test_isms_software_installation_is_not_visible_cross_organization(): void {
+        $installationB = $this->withOrg($this->orgB, function () {
+            $product = \App\Models\Isms\IsmsSoftwareProduct::factory()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\Isms\IsmsSoftwareInstallation::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'isms_software_product_id' => $product->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $installationB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsSoftwareInstallation::find($installationB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsSoftwareInstallation::query()->count());
     }
 
     public function test_notification_rule_is_not_visible_cross_organization(): void {

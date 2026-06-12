@@ -65,6 +65,27 @@ Beschreibbarkeit, Queue-, Mail- und APP_KEY-Konfiguration sowie den
 Lizenzstatus und endet mit Exit-Code 0 (gesund) bzw. 1 (Problem) —
 geeignet für Update-Skripte und Monitoring.
 
+## 3a. SBOM je Release (Feature 044)
+
+Für jede ausgelieferte Version wird eine maschinenlesbare Software-
+Stückliste (SBOM, CycloneDX 1.5 JSON) erzeugt und dem Release zugeordnet:
+
+```bash
+php artisan sbom:generate
+```
+
+- Quellen: `composer.lock`, `package-lock.json`, Laufzeitversionen
+  (PHP/Laravel/DB-Treiber), WorkDiary-Module und registrierte Plugins.
+- Ablage: `storage/app/sbom/workdiary-{version}-{Zeitstempel}.cdx.json`
+  plus stabiler Alias `workdiary-latest.cdx.json`; der Command gibt den
+  **SHA-256** der Datei aus — diesen Hash in die Release-Notes übernehmen.
+- Optionen: `--output=<pfad>` (abweichender Zielpfad, z. B. CI-Artefakt)
+  und `--print` (Ausgabe nach stdout statt Datei).
+- Einsicht/Erzeugung/Download auch über die geschützte Admin-Seite
+  **System → Komponenten & Versionen** (`admin/components`, nur Admin).
+- Die SBOM ist eine Komponenteninventur — **kein** Schwachstellenbericht
+  (Orientierung: BSI TR-03183-2); der Advisory-Abgleich folgt separat.
+
 ## 4. Rollback
 
 - **Vor jedem Update**: vollständiges Backup (Datenbank + `storage/`),
@@ -77,7 +98,8 @@ geeignet für Update-Skripte und Monitoring.
 
 ## 5. Offene Punkte (außerhalb des MVP)
 
-- Maschinenlesbare SBOM (Composer-/NPM-/Plugin-Versionen) je Release.
+- ~~Maschinenlesbare SBOM (Composer-/NPM-/Plugin-Versionen) je Release.~~
+  Umgesetzt: `php artisan sbom:generate` (siehe §3a).
 - Signierte Release-Metadaten (Build-Hash, Prüfsummen).
 - Security Advisories und Betroffenheitsbewertung je Version.
 - Update-Server / Verfügbarkeits-Check (`update.workdiary.app`).

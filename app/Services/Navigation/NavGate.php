@@ -63,7 +63,15 @@ class NavGate {
         'isms.risks.*' => \App\Models\Isms\IsmsRisk::class,
         'finance.*' => \App\Models\Finance\BillingTransfer::class,
         'isms.controls.*' => \App\Models\Isms\IsmsControl::class,
-        'isms.soa' => \App\Models\Isms\IsmsControl::class,
+        'isms.requirements.*' => \App\Models\Isms\IsmsRequirement::class,
+        'isms.statements.*' => \App\Models\Isms\IsmsRequirement::class,
+        'isms.scopes.*' => \App\Models\Isms\IsmsScope::class,
+        'isms.soa' => \App\Models\Isms\IsmsRequirement::class,
+        'isms.software.*' => \App\Models\Isms\IsmsSoftwareProduct::class,
+        'isms.conformity.*' => \App\Models\Isms\IsmsNormStatus::class,
+        'isms.audits.*' => \App\Models\Isms\IsmsAudit::class,
+        'isms.reviews.*' => \App\Models\Isms\IsmsManagementReview::class,
+        'isms.packages.*' => \App\Models\Isms\IsmsAuditPackage::class,
     ];
 
     public function __construct(private readonly FeatureFlagResolver $features) {}

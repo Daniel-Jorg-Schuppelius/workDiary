@@ -133,6 +133,21 @@
             @media (min-width: 1536px) {
                 .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 3rem) !important; }
             }
+            /* Kontext-Hilfe (Feature 039): rechte, nicht-modale Desktop-Sidebar.
+               Gleiches Muster wie .with-sidebar-pad links — solange body.help-sidebar-open
+               gesetzt ist, bekommt der Content-Wrapper rechts Platz und die Seite
+               bleibt voll bedienbar (kein Backdrop ab lg). */
+            :root { --help-sidebar-w: 28rem; }
+            .with-help-pad { transition: padding-right 200ms ease; }
+            @media (min-width: 1024px) {
+                body.help-sidebar-open .with-help-pad { padding-right: calc(var(--help-sidebar-w) + 1rem) !important; }
+            }
+            @media (min-width: 1280px) {
+                body.help-sidebar-open .with-help-pad { padding-right: calc(var(--help-sidebar-w) + 2rem) !important; }
+            }
+            @media (min-width: 1536px) {
+                body.help-sidebar-open .with-help-pad { padding-right: calc(var(--help-sidebar-w) + 3rem) !important; }
+            }
             /* 3-stufiger Header über CSS Container Queries statt Viewport-
                Breakpoints. Vorteil: das Layout reagiert auf den tatsächlich
                verfügbaren Header-Platz (also nach Abzug der Sidebar) und nicht
@@ -481,8 +496,20 @@
     </head>
     @php
         $_bodyMode = (session('work_mode', 'legacy') === 'legacy' && filled(config('database.connections.legacy.database'))) ? 'legacy' : 'new';
+        // Kontext-Hilfe (Feature 039): Topic der aktuellen Route serverseitig
+        // auflösen — nur wenn das Topic existiert und für den Nutzer sichtbar
+        // ist (audience-Filter), sonst kein Kontext (Fallback im Drawer-JS).
+        $_helpContextTopic = null;
+        if (Auth::check()) {
+            try {
+                $_helpContextTopic = app(\App\Services\Help\HelpContextResolver::class)
+                    ->visibleTopicFor(request(), Auth::user());
+            } catch (\Throwable) {
+                $_helpContextTopic = null;
+            }
+        }
     @endphp
-    <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-linear-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}">
+    <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-linear-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}"@if ($_helpContextTopic) data-help-context="{{ $_helpContextTopic }}"@endif>
         @php
             $currentMode = session('work_mode', 'legacy');
             $legacyConfigured = filled(config('database.connections.legacy.database'));
@@ -590,7 +617,6 @@
                                 if (! $isLegacyMode) {
                                     $manageNavItems[] = ['route' => 'holidays.index',     'label' => __('Feiertage'),   'icon' => 'celebration',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'qualifications.index',         'label' => __('Qualifikationen'),  'icon' => 'workspace_premium','modal' => false];
-                                    $manageNavItems[] = ['route' => 'rooms.index',                   'label' => __('Räume'),             'icon' => 'meeting_room',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'event-categories.index',        'label' => __('Veranstaltungs-Kategorien'), 'icon' => 'category', 'modal' => false];
                                     $manageNavItems[] = ['route' => 'shift-types.index',             'label' => __('Schichttypen'),     'icon' => 'work_history',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'materials.index',               'label' => __('Materialien'),      'icon' => 'inventory',        'modal' => false];
@@ -640,6 +666,8 @@
                                     }
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::MetricsView->value)) {
                                         $adminNavItems[] = ['route' => 'admin.metrics.index',            'label' => __('metrics.title.index'), 'icon' => 'monitoring',    'modal' => false];
+                                        // Komponenten- und Versionsübersicht inkl. Release-SBOM (Feature 044) — gleiche Admin-Schutzstufe.
+                                        $adminNavItems[] = ['route' => 'admin.components.index',         'label' => __('isms.components.title'), 'icon' => 'receipt_long', 'modal' => false];
                                     }
                                     if (\Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage')) {
                                         $adminNavItems[] = ['route' => 'whistleblowing.portal.edit',     'label' => __('Meldeportal'),      'icon' => 'campaign',         'modal' => false];
@@ -786,6 +814,7 @@
                                         ['route' => 'sites.index',     'label' => __('Standorte'),  'icon' => 'location_on', 'modal' => false, 'matches' => ['sites.*']],
                                         ['route' => 'buildings.index', 'label' => __('Gebäude'),    'icon' => 'apartment',   'modal' => false, 'matches' => ['buildings.*']],
                                         ['route' => 'floors.index',    'label' => __('Geschosse'),  'icon' => 'layers',      'modal' => false, 'matches' => ['floors.*']],
+                                        ['route' => 'rooms.index',     'label' => __('Räume'),      'icon' => 'meeting_room','modal' => false, 'matches' => ['rooms.*']],
                                     ],
                                 ];
                                 $sidebarSections[] = [
@@ -845,11 +874,21 @@
                                         'key'         => 'isms',
                                         'label'       => __('isms.title.section'),
                                         'collapsible' => true,
-                                        'items'       => [
-                                            ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],
+                                        'items'       => array_values(array_filter([
+                                            ['route' => 'isms.requirements.index', 'label' => __('isms.title.requirements'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['isms.requirements.*', 'isms.statements.*']],
                                             ['route' => 'isms.controls.index', 'label' => __('isms.title.controls'), 'icon' => 'verified_user', 'modal' => false, 'matches' => ['isms.controls.*']],
+                                            ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],
+                                            ['route' => 'isms.software.index', 'label' => __('isms.title.software'), 'icon' => 'apps', 'modal' => false, 'matches' => ['isms.software.*']],
+                                            ['route' => 'isms.conformity.index', 'label' => __('isms.title.conformity'), 'icon' => 'workspace_premium', 'modal' => false, 'matches' => ['isms.conformity.*']],
+                                            ['route' => 'isms.audits.index', 'label' => __('isms.title.audits'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['isms.audits.*']],
+                                            ['route' => 'isms.reviews.index', 'label' => __('isms.title.reviews'), 'icon' => 'grading', 'modal' => false, 'matches' => ['isms.reviews.*']],
+                                            ['route' => 'isms.packages.index', 'label' => __('isms.title.packages'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['isms.packages.*']],
                                             ['route' => 'isms.soa', 'label' => __('isms.title.soa'), 'icon' => 'rule_folder', 'modal' => true, 'matches' => ['isms.soa']],
-                                        ],
+                                            // Geltungsbereiche: Verwaltungsflaeche, nur isms.manage (IsmsScopePolicy).
+                                            \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Isms\IsmsScope::class)
+                                                ? ['route' => 'isms.scopes.index', 'label' => __('isms.title.scopes'), 'icon' => 'travel_explore', 'modal' => false, 'matches' => ['isms.scopes.*']]
+                                                : null,
+                                        ])),
                                     ];
                                 }
                                 $sidebarSections[] = [
@@ -1107,7 +1146,7 @@
                                             // Gruppierung der Verwaltungs-Einträge in aufklappbare Ordner.
                                             $manageGroups = [
                                                 ['label' => __('Personal'), 'icon' => 'group', 'routes' => ['org.members.index', 'legacy.users.index', 'qualifications.index']],
-                                                ['label' => __('Planung'), 'icon' => 'event', 'routes' => ['holidays.index', 'shift-types.index', 'rooms.index', 'event-categories.index']],
+                                                ['label' => __('Planung'), 'icon' => 'event', 'routes' => ['holidays.index', 'shift-types.index', 'event-categories.index']],
                                                 ['label' => __('Kataloge'), 'icon' => 'category', 'routes' => ['materials.index', 'tags.index', 'activity-categories.index']],
                                             ];
                                             $manageByRoute = collect($manageNavItems)->keyBy('route');
@@ -1170,9 +1209,12 @@
                                         @php
                                             // Gruppierung der System-Einträge in aufklappbare Ordner.
                                             $adminGroups = [
-                                                ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.organizations.index', 'admin.branding.edit', 'admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
-                                                ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.automations.index', 'admin.data.index', 'admin.remote-support.pending.index']],
-                                                ['label' => __('System'), 'icon' => 'settings', 'routes' => ['admin.access.index', 'audit.index', 'admin.plugins.index', 'admin.plugin-errors.index', 'admin.legacy-migration.index']],
+                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.branding.edit', 'admin.access.index']],
+                                                ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
+                                                ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit']],
+                                                ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index']],
+                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index']],
+                                                ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => ['admin.plugins.index', 'admin.plugin-errors.index']],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');
                                             $adminGrouped = collect();
@@ -1182,10 +1224,17 @@
                                                     $adminGrouped->push(['label' => $g['label'], 'icon' => $g['icon'], 'items' => $items]);
                                                 }
                                             }
-                                            // Plugin-Panels als eigene Gruppe – direkt aus den Items, da mehrere
-                                            // Plugins auf dieselbe Route (admin.plugins.edit) zeigen können.
+                                            // Plugin-Panels an die Verwaltungsgruppe anhängen. Die Items werden
+                                            // direkt verwendet, da mehrere Plugins dieselbe Route nutzen können.
                                             if (! empty($pluginPanelItems)) {
-                                                $adminGrouped->push(['label' => __('Plugins'), 'icon' => 'extension', 'items' => collect($pluginPanelItems)]);
+                                                $pluginGroupIndex = $adminGrouped->search(fn ($g) => $g['label'] === __('Plugins'));
+                                                if ($pluginGroupIndex !== false) {
+                                                    $pluginGroup = $adminGrouped->get($pluginGroupIndex);
+                                                    $pluginGroup['items'] = $pluginGroup['items']->concat($pluginPanelItems)->values();
+                                                    $adminGrouped->put($pluginGroupIndex, $pluginGroup);
+                                                } else {
+                                                    $adminGrouped->push(['label' => __('Plugins'), 'icon' => 'extension', 'items' => collect($pluginPanelItems)]);
+                                                }
                                             }
                                             $groupedRoutes = $adminGrouped->flatMap(fn ($g) => $g['items']->pluck('route'))->all();
                                             $groupedRoutes = array_merge($groupedRoutes, $pluginPanelRoutes);
@@ -1292,6 +1341,20 @@
                         @endisset
 
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
+                            {{-- Kontext-Hilfe (Feature 039): Button ist IMMER sichtbar
+                                 (konsistente Stelle laut Bedienkonzept). Mit Kontext-Topic
+                                 öffnet er die Seitenhilfe, ohne öffnet er das
+                                 Fallback-Panel mit Suche (JS: Trigger ohne data-help-topic). --}}
+                            <button type="button"
+                                    class="btn btn-sm btn-ghost btn-square"
+                                    data-help-trigger
+                                    @if (! empty($_helpContextTopic)) data-help-topic="{{ $_helpContextTopic }}" @endif
+                                    title="{{ ! empty($_helpContextTopic) ? __('Hilfe zu dieser Seite') : __('Hilfe') }}"
+                                    aria-label="{{ ! empty($_helpContextTopic) ? __('Hilfe zu dieser Seite') : __('Hilfe') }}"
+                                    aria-haspopup="dialog"
+                                    aria-controls="help-drawer">
+                                <x-icon name="help" class="text-base" />
+                            </button>
                             @php
                                 $_reminders = $reminderItems ?? [];
                                 $_reminderTotal = collect($_reminders)->sum(fn($r) => is_object($r) ? $r->count : (int) ($r['count'] ?? 0));
@@ -1885,7 +1948,7 @@
         @auth
             <x-demo-banner :organization="$_activeOrg" />
         @endauth
-        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))]') w-full {{ $_wrapperMaxW }} flex-col px-4 pt-6 pb-20 xl:px-8 2xl:px-12 @auth @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
+        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))]') w-full {{ $_wrapperMaxW }} flex-col px-4 pt-6 pb-20 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}

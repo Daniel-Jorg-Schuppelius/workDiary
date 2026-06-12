@@ -181,16 +181,31 @@ return [
     ],
     'notification' => [
         'event' => [
-            'openIssue.assigned' => 'Offener Punkt zugewiesen',
-            'openIssue.dueSoon' => 'Offener Punkt bald fällig',
-            'openIssue.overdue' => 'Offener Punkt überfällig',
-            'communication.followupDueSoon' => 'Folgeaktion bald fällig',
-            'communication.followupOverdue' => 'Folgeaktion überfällig',
-            'document.expiringSoon' => 'Dokument läuft bald ab',
-            'document.expired' => 'Dokument abgelaufen',
-            'timeCorrection.requested' => 'Zeit-Korrekturantrag eingereicht',
-            'timeCorrection.decided' => 'Zeit-Korrekturantrag entschieden',
-            'monthClosure.submitted' => 'Monatsabschluss eingereicht',
+            'openIssue' => [
+                'assigned' => 'Offener Punkt zugewiesen',
+                'dueSoon' => 'Offener Punkt bald fällig',
+                'overdue' => 'Offener Punkt überfällig',
+            ],
+            'communication' => [
+                'followupDueSoon' => 'Folgeaktion bald fällig',
+                'followupOverdue' => 'Folgeaktion überfällig',
+            ],
+            'document' => [
+                'expiringSoon' => 'Dokument läuft bald ab',
+                'expired' => 'Dokument abgelaufen',
+            ],
+            'timeCorrection' => [
+                'requested' => 'Zeit-Korrekturantrag eingereicht',
+                'decided' => 'Zeit-Korrekturantrag entschieden',
+            ],
+            'monthClosure' => [
+                'submitted' => 'Monatsabschluss eingereicht',
+            ],
+            'isms' => [
+                'certificateExpiring' => 'ISMS-Zertifikat läuft bald ab',
+                'correctiveActionOverdue' => 'ISMS-Korrekturmaßnahme überfällig',
+                'riskReviewDue' => 'ISMS-Risiko-Review fällig',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-App',
@@ -464,6 +479,54 @@ return [
         ],
     ],
     'isms' => [
+        'audit-package-status' => [
+            'draft' => 'Entwurf',
+            'finalized' => 'Finalisiert',
+        ],
+        'audit-kind' => [
+            'internal' => 'Intern',
+            'external' => 'Extern',
+            'supplier' => 'Lieferant',
+        ],
+        'audit-status' => [
+            'planned' => 'Geplant',
+            'inPreparation' => 'In Vorbereitung',
+            'inProgress' => 'In Durchführung',
+            'reportIssued' => 'Bericht erstellt',
+            'closed' => 'Abgeschlossen',
+        ],
+        'finding-kind' => [
+            'nonconformityMajor' => 'Hauptabweichung',
+            'nonconformityMinor' => 'Nebenabweichung',
+            'observation' => 'Beobachtung',
+            'improvement' => 'Verbesserungspotenzial',
+        ],
+        'finding-status' => [
+            'open' => 'Offen',
+            'inCorrection' => 'In Korrektur',
+            'effectivenessCheck' => 'Wirksamkeitsprüfung',
+            'closed' => 'Geschlossen',
+        ],
+        'corrective-action-status' => [
+            'open' => 'Offen',
+            'inProgress' => 'In Bearbeitung',
+            'done' => 'Umgesetzt',
+            'effective' => 'Wirksam',
+            'ineffective' => 'Nicht wirksam',
+        ],
+        'review-status' => [
+            'draft' => 'Entwurf',
+            'approved' => 'Freigegeben',
+        ],
+        'assessment-kind' => [
+            'gross' => 'Brutto',
+            'net' => 'Netto',
+            'target' => 'Ziel',
+        ],
+        'assessment-status' => [
+            'draft' => 'Entwurf',
+            'approved' => 'Freigegeben',
+        ],
         'risk-category' => [
             'organizational' => 'Organisatorisch',
             'technical' => 'Technisch',
@@ -484,15 +547,38 @@ return [
             'accepted' => 'Akzeptiert',
             'closed' => 'Geschlossen',
         ],
-        'control-source' => [
-            'iso27001AnnexA' => 'ISO/IEC 27001 Anhang A',
-            'custom' => 'Eigene Maßnahme',
+        'requirement-source' => [
+            'catalog' => 'Referenzkatalog',
+            'custom' => 'Eigene Anforderung',
         ],
         'control-implementation-status' => [
             'open' => 'Offen',
             'partial' => 'Teilweise umgesetzt',
             'implemented' => 'Umgesetzt',
             'notApplicable' => 'Nicht anwendbar',
+        ],
+        'software-category' => [
+            'os' => 'Betriebssystem',
+            'application' => 'Anwendung',
+            'service' => 'Dienst',
+            'library' => 'Bibliothek',
+            'other' => 'Sonstiges',
+        ],
+        'support-status' => [
+            'supported' => 'Unterstützt',
+            'extendedSupport' => 'Erweiterter Support',
+            'endOfLife' => 'End-of-Life',
+            'unknown' => 'Unbekannt',
+        ],
+        'norm-conformity-status' => [
+            'notAssessed' => 'Nicht bewertet',
+            'gapAnalysisDone' => 'Lückenanalyse durchgeführt',
+            'inProgress' => 'In Umsetzung',
+            'internallyAuditReady' => 'Intern auditbereit',
+            'externalAuditPlanned' => 'Externes Audit geplant',
+            'certified' => 'Zertifiziert',
+            'certificateSuspended' => 'Zertifikat ausgesetzt',
+            'certificateExpired' => 'Zertifikat abgelaufen',
         ],
     ],
     'surcharge' => [

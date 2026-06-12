@@ -8,9 +8,9 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
+use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
 use App\Http\Controllers\Asset\MaintenancePlanController;
 use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController, TwoFactorChallengeController};
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
@@ -90,6 +90,15 @@ Route::get('sign/protocol/{token}', [PublicProtocolSignatureController::class, '
 Route::post('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('protocols.public-sign.submit');
+
+// Öffentlicher Prüfer-Download finalisierter ISMS-Auditpakete (Feature 046,
+// Inkrement E): token-basiert ohne Login/Org-Session (nur Token-Hash wird
+// gespeichert); widerrufen/abgelaufen/unbekannt ⇒ 404. Bewusst NICHT im
+// isms.*-Namensraum, damit das Plan-Gating (module.isms) den anonymen
+// Prüferzugriff nicht blockiert.
+Route::get('audit-paket/{token}', [PublicAuditPackageController::class, 'download'])
+    ->middleware('throttle:30,1')
+    ->name('audit-packages.public-download');
 
 // Backup-Heartbeat (MVP-046 §5): externer Endpoint mit Bearer-Token,
 // daher außerhalb von Auth-Gruppen, mit CSRF-Ausnahme (siehe bootstrap/app.php).
@@ -288,7 +297,8 @@ Route::middleware('auth')->group(function () {
             Route::post('avv/{agreement}/tom', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'assignMeasure'])->name('agreements.tom');
         });
 
-        // ── ISMS / ISO-27001-Auditbereitschaft (Feature 044, MVP 1) ────────
+        // ── ISMS / ISO-27001-Auditbereitschaft (Feature 044 auf dem ───────
+        // gemeinsamen Managementsystem-Kern aus Feature 046).
         // Modul-Gate via module.isms (config/plans.routes, NUR Enterprise);
         // Autorisierung pro Aktion ueber die Isms-Policies (isms.viewAny/
         // view fuer Lesen+SoA, isms.manage fuer Pflege/Katalog-Import).
@@ -302,17 +312,117 @@ Route::middleware('auth')->group(function () {
             Route::post('risiken/{risk}/status', [\App\Http\Controllers\Isms\RiskController::class, 'transition'])->name('risks.transition');
             Route::delete('risiken/{risk}', [\App\Http\Controllers\Isms\RiskController::class, 'destroy'])->name('risks.destroy');
 
-            // Massnahmenkatalog (Controls) inkl. Annex-A-Import
+            // Bewertungshistorie (Feature 046, Inkrement D): neue Staende
+            // statt Ueberschreiben; Freigabe friert ein (RiskService).
+            Route::get('risiken/{risk}/bewertungen/neu', [\App\Http\Controllers\Isms\RiskController::class, 'createAssessment'])->name('risks.assessments.create');
+            Route::post('risiken/{risk}/bewertungen', [\App\Http\Controllers\Isms\RiskController::class, 'storeAssessment'])->name('risks.assessments.store');
+            Route::post('bewertungen/{assessment}/freigeben', [\App\Http\Controllers\Isms\RiskController::class, 'approveAssessment'])->name('risks.assessments.approve');
+            Route::delete('bewertungen/{assessment}', [\App\Http\Controllers\Isms\RiskController::class, 'destroyAssessment'])->name('risks.assessments.destroy');
+
+            // Anforderungen + SoA-Aussagen je Geltungsbereich inkl.
+            // Normkatalog-Import (Normprofil-Registry, profile-Pflichtparameter)
+            Route::get('anforderungen', [\App\Http\Controllers\Isms\RequirementController::class, 'index'])->name('requirements.index');
+            Route::get('anforderungen/neu', [\App\Http\Controllers\Isms\RequirementController::class, 'create'])->name('requirements.create');
+            Route::post('anforderungen', [\App\Http\Controllers\Isms\RequirementController::class, 'store'])->name('requirements.store');
+            Route::post('anforderungen/katalog', [\App\Http\Controllers\Isms\RequirementController::class, 'import'])->name('requirements.import');
+            Route::get('anforderungen/{requirement}/bearbeiten', [\App\Http\Controllers\Isms\RequirementController::class, 'edit'])->name('requirements.edit');
+            Route::put('anforderungen/{requirement}', [\App\Http\Controllers\Isms\RequirementController::class, 'update'])->name('requirements.update');
+            Route::delete('anforderungen/{requirement}', [\App\Http\Controllers\Isms\RequirementController::class, 'destroy'])->name('requirements.destroy');
+            Route::post('geltungsbereiche/{scope}/aussagen', [\App\Http\Controllers\Isms\RequirementController::class, 'ensureStatements'])->name('statements.ensure');
+            Route::get('aussagen/{statement}/bearbeiten', [\App\Http\Controllers\Isms\RequirementController::class, 'editStatement'])->name('statements.edit');
+            Route::put('aussagen/{statement}', [\App\Http\Controllers\Isms\RequirementController::class, 'updateStatement'])->name('statements.update');
+
+            // Normneutrale Massnahmen (Mapping auf Anforderungen + Risiken)
             Route::get('massnahmen', [\App\Http\Controllers\Isms\ControlController::class, 'index'])->name('controls.index');
             Route::get('massnahmen/neu', [\App\Http\Controllers\Isms\ControlController::class, 'create'])->name('controls.create');
             Route::post('massnahmen', [\App\Http\Controllers\Isms\ControlController::class, 'store'])->name('controls.store');
-            Route::post('massnahmen/katalog', [\App\Http\Controllers\Isms\ControlController::class, 'import'])->name('controls.import');
             Route::get('massnahmen/{control}/bearbeiten', [\App\Http\Controllers\Isms\ControlController::class, 'edit'])->name('controls.edit');
             Route::put('massnahmen/{control}', [\App\Http\Controllers\Isms\ControlController::class, 'update'])->name('controls.update');
             Route::delete('massnahmen/{control}', [\App\Http\Controllers\Isms\ControlController::class, 'destroy'])->name('controls.destroy');
 
+            // Geltungsbereiche (nur isms.manage; Default-Scope nicht loeschbar)
+            Route::get('geltungsbereiche', [\App\Http\Controllers\Isms\ScopeController::class, 'index'])->name('scopes.index');
+            Route::get('geltungsbereiche/neu', [\App\Http\Controllers\Isms\ScopeController::class, 'create'])->name('scopes.create');
+            Route::post('geltungsbereiche', [\App\Http\Controllers\Isms\ScopeController::class, 'store'])->name('scopes.store');
+            Route::get('geltungsbereiche/{scope}/bearbeiten', [\App\Http\Controllers\Isms\ScopeController::class, 'edit'])->name('scopes.edit');
+            Route::put('geltungsbereiche/{scope}', [\App\Http\Controllers\Isms\ScopeController::class, 'update'])->name('scopes.update');
+            Route::delete('geltungsbereiche/{scope}', [\App\Http\Controllers\Isms\ScopeController::class, 'destroy'])->name('scopes.destroy');
+
             // Statement of Applicability (druckbare Read-Only-Sicht)
             Route::get('soa', \App\Http\Controllers\Isms\SoaController::class)->name('soa');
+
+            // Zertifizierungen (Feature 046, Inkrement B): Konformitaetsstatus
+            // je Scope + Norm/Ausgabe (Statuskette; certified NUR mit heute
+            // gueltigem Zertifikat — ConformityService) + Zertifikatsregister.
+            Route::get('zertifizierungen', [\App\Http\Controllers\Isms\ConformityController::class, 'index'])->name('conformity.index');
+            Route::get('zertifizierungen/neu', [\App\Http\Controllers\Isms\ConformityController::class, 'create'])->name('conformity.create');
+            Route::post('zertifizierungen', [\App\Http\Controllers\Isms\ConformityController::class, 'store'])->name('conformity.store');
+            Route::post('zertifizierungen/{scope}/anlegen', [\App\Http\Controllers\Isms\ConformityController::class, 'ensure'])->name('conformity.ensure');
+            Route::post('zertifizierungen/{normStatus}/status', [\App\Http\Controllers\Isms\ConformityController::class, 'transition'])->name('conformity.transition');
+            Route::get('zertifizierungen/{normStatus}/zertifikat/neu', [\App\Http\Controllers\Isms\ConformityController::class, 'createCertificate'])->name('conformity.certificates.create');
+            Route::post('zertifizierungen/{normStatus}/zertifikat', [\App\Http\Controllers\Isms\ConformityController::class, 'storeCertificate'])->name('conformity.certificates.store');
+
+            // Audits inkl. Feststellungen + Korrekturmassnahmen (Feature 046,
+            // Inkrement C): Statusketten + Abschluss-/Wirksamkeitsregeln
+            // zentral im AuditService.
+            Route::get('audits', [\App\Http\Controllers\Isms\AuditController::class, 'index'])->name('audits.index');
+            Route::get('audits/neu', [\App\Http\Controllers\Isms\AuditController::class, 'create'])->name('audits.create');
+            Route::post('audits', [\App\Http\Controllers\Isms\AuditController::class, 'store'])->name('audits.store');
+            Route::get('audits/{audit}/bearbeiten', [\App\Http\Controllers\Isms\AuditController::class, 'edit'])->name('audits.edit');
+            Route::put('audits/{audit}', [\App\Http\Controllers\Isms\AuditController::class, 'update'])->name('audits.update');
+            Route::post('audits/{audit}/status', [\App\Http\Controllers\Isms\AuditController::class, 'transition'])->name('audits.transition');
+            Route::delete('audits/{audit}', [\App\Http\Controllers\Isms\AuditController::class, 'destroy'])->name('audits.destroy');
+            Route::get('audits/{audit}/feststellungen/neu', [\App\Http\Controllers\Isms\AuditController::class, 'createFinding'])->name('audits.findings.create');
+            Route::post('audits/{audit}/feststellungen', [\App\Http\Controllers\Isms\AuditController::class, 'storeFinding'])->name('audits.findings.store');
+            Route::get('feststellungen/{finding}/bearbeiten', [\App\Http\Controllers\Isms\AuditController::class, 'editFinding'])->name('audits.findings.edit');
+            Route::put('feststellungen/{finding}', [\App\Http\Controllers\Isms\AuditController::class, 'updateFinding'])->name('audits.findings.update');
+            Route::post('feststellungen/{finding}/status', [\App\Http\Controllers\Isms\AuditController::class, 'transitionFinding'])->name('audits.findings.transition');
+            Route::delete('feststellungen/{finding}', [\App\Http\Controllers\Isms\AuditController::class, 'destroyFinding'])->name('audits.findings.destroy');
+            Route::get('feststellungen/{finding}/massnahmen/neu', [\App\Http\Controllers\Isms\AuditController::class, 'createAction'])->name('audits.actions.create');
+            Route::post('feststellungen/{finding}/massnahmen', [\App\Http\Controllers\Isms\AuditController::class, 'storeAction'])->name('audits.actions.store');
+            Route::get('korrekturmassnahmen/{action}/bearbeiten', [\App\Http\Controllers\Isms\AuditController::class, 'editAction'])->name('audits.actions.edit');
+            Route::put('korrekturmassnahmen/{action}', [\App\Http\Controllers\Isms\AuditController::class, 'updateAction'])->name('audits.actions.update');
+            Route::post('korrekturmassnahmen/{action}/status', [\App\Http\Controllers\Isms\AuditController::class, 'transitionAction'])->name('audits.actions.transition');
+            Route::delete('korrekturmassnahmen/{action}', [\App\Http\Controllers\Isms\AuditController::class, 'destroyAction'])->name('audits.actions.destroy');
+
+            // Managementbewertung (Feature 046, Inkrement C): Freigabe setzt
+            // Person + Zeitpunkt; freigegebene Protokolle unveraenderlich.
+            Route::get('managementbewertungen', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'index'])->name('reviews.index');
+            Route::get('managementbewertungen/neu', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'create'])->name('reviews.create');
+            Route::post('managementbewertungen', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'store'])->name('reviews.store');
+            Route::get('managementbewertungen/{review}', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'show'])->name('reviews.show');
+            Route::get('managementbewertungen/{review}/bearbeiten', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'edit'])->name('reviews.edit');
+            Route::put('managementbewertungen/{review}', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'update'])->name('reviews.update');
+            Route::post('managementbewertungen/{review}/freigeben', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'approve'])->name('reviews.approve');
+            Route::delete('managementbewertungen/{review}', [\App\Http\Controllers\Isms\ManagementReviewController::class, 'destroy'])->name('reviews.destroy');
+
+            // Auditpakete (Feature 046, Inkrement E): stichtagsbezogene,
+            // integritätsgeschützte JSON-Exporte (finalize friert ein,
+            // verify prüft den SHA-256) + zeitlich begrenzte Prüfer-Links
+            // (Token-Erstellung/-Widerruf; der öffentliche Download liegt
+            // als audit-packages.public-download außerhalb dieser Gruppe).
+            Route::get('auditpakete', [\App\Http\Controllers\Isms\AuditPackageController::class, 'index'])->name('packages.index');
+            Route::get('auditpakete/neu', [\App\Http\Controllers\Isms\AuditPackageController::class, 'create'])->name('packages.create');
+            Route::post('auditpakete', [\App\Http\Controllers\Isms\AuditPackageController::class, 'store'])->name('packages.store');
+            Route::post('auditpakete/{package}/finalisieren', [\App\Http\Controllers\Isms\AuditPackageController::class, 'finalize'])->name('packages.finalize');
+            Route::post('auditpakete/{package}/pruefen', [\App\Http\Controllers\Isms\AuditPackageController::class, 'verify'])->name('packages.verify');
+            Route::get('auditpakete/{package}/download', [\App\Http\Controllers\Isms\AuditPackageController::class, 'download'])->name('packages.download');
+            Route::get('auditpakete/{package}/pruefer-links/neu', [\App\Http\Controllers\Isms\AuditPackageController::class, 'createToken'])->name('packages.tokens.create');
+            Route::post('auditpakete/{package}/pruefer-links', [\App\Http\Controllers\Isms\AuditPackageController::class, 'storeToken'])->name('packages.tokens.store');
+            Route::post('pruefer-links/{token}/widerrufen', [\App\Http\Controllers\Isms\AuditPackageController::class, 'revokeToken'])->name('packages.tokens.revoke');
+
+            // Softwareinventar (Ebene 1): Produkte + Installationen
+            Route::get('software', [\App\Http\Controllers\Isms\SoftwareController::class, 'index'])->name('software.index');
+            Route::get('software/neu', [\App\Http\Controllers\Isms\SoftwareController::class, 'create'])->name('software.create');
+            Route::post('software', [\App\Http\Controllers\Isms\SoftwareController::class, 'store'])->name('software.store');
+            Route::get('software/{product}/bearbeiten', [\App\Http\Controllers\Isms\SoftwareController::class, 'edit'])->name('software.edit');
+            Route::put('software/{product}', [\App\Http\Controllers\Isms\SoftwareController::class, 'update'])->name('software.update');
+            Route::delete('software/{product}', [\App\Http\Controllers\Isms\SoftwareController::class, 'destroy'])->name('software.destroy');
+            Route::get('software/{product}/installationen/neu', [\App\Http\Controllers\Isms\SoftwareController::class, 'createInstallation'])->name('software.installations.create');
+            Route::post('software/{product}/installationen', [\App\Http\Controllers\Isms\SoftwareController::class, 'storeInstallation'])->name('software.installations.store');
+            Route::get('installationen/{installation}/bearbeiten', [\App\Http\Controllers\Isms\SoftwareController::class, 'editInstallation'])->name('software.installations.edit');
+            Route::put('installationen/{installation}', [\App\Http\Controllers\Isms\SoftwareController::class, 'updateInstallation'])->name('software.installations.update');
+            Route::delete('installationen/{installation}', [\App\Http\Controllers\Isms\SoftwareController::class, 'destroyInstallation'])->name('software.installations.destroy');
         });
 
         Route::get('onboarding', [OnboardingController::class, '__invoke'])->name('onboarding.index');
@@ -338,6 +448,13 @@ Route::middleware('auth')->group(function () {
 
         // Betriebsmetriken (Feature 036)
         Route::get('admin/metrics', [MetricsController::class, 'index'])->name('admin.metrics.index');
+
+        // Komponenten- und Versionsübersicht inkl. Release-SBOM (Feature 044)
+        Route::get('admin/components', [ComponentsController::class, 'index'])->name('admin.components.index');
+        Route::post('admin/components/sbom', [ComponentsController::class, 'generate'])
+            ->middleware('throttle:6,1')
+            ->name('admin.components.sbom.generate');
+        Route::get('admin/components/sbom/download', [ComponentsController::class, 'download'])->name('admin.components.sbom.download');
 
         // Supportbericht (MVP-045)
         Route::get('admin/support/report', [SupportReportController::class, 'index'])->name('admin.support.report.index');

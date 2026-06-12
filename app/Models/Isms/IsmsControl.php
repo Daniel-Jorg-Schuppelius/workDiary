@@ -10,29 +10,27 @@
 
 namespace App\Models\Isms;
 
-use App\Enums\Isms\{ControlImplementationStatus, ControlSource};
+use App\Enums\Isms\ControlImplementationStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\User;
 use Database\Factories\Isms\IsmsControlFactory;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 
 /**
- * ISMS-Maßnahme/Control (Feature 044, MVP 1): Eintrag im Maßnahmenkatalog
- * — Annex-A-Referenz (nur Code + Kurztitel, KEINE Normtexte) oder eigene
- * Maßnahme. Trägt die SoA-Aussage: anwendbar ja/nein, Begründung,
- * Umsetzungsstatus, Evidenz-Notiz (Regeln im ControlService).
+ * NORMNEUTRALE Maßnahme (Feature 046, gemeinsamer Managementsystem-Kern;
+ * vormals Control mit SoA-Feldern aus Feature 044 MVP 1): betriebliche
+ * Maßnahme mit Umsetzungsstatus, Nachweis-Notiz und Owner. Eine Maßnahme
+ * erfüllt n:m Normanforderungen ({@see IsmsRequirement}, Pivot
+ * isms_control_requirement) und behandelt n:m Risiken ({@see IsmsRisk},
+ * Pivot isms_control_risk). Die SoA-Aussage (anwendbar/Begründung) liegt
+ * NICHT mehr hier, sondern im {@see IsmsApplicabilityStatement}.
  *
  * @property int $id
  * @property int $organization_id
- * @property string $code
  * @property string $title
  * @property string|null $description
- * @property ControlSource $source
- * @property bool $applicable
- * @property string|null $justification
  * @property ControlImplementationStatus $implementation_status
  * @property string|null $evidence_note
  * @property int|null $owner_user_id
@@ -49,20 +47,14 @@ class IsmsControl extends Model {
 
     protected $fillable = [
         'organization_id',
-        'code',
         'title',
         'description',
-        'source',
-        'applicable',
-        'justification',
         'implementation_status',
         'evidence_note',
         'owner_user_id',
     ];
 
     protected $casts = [
-        'source' => ControlSource::class,
-        'applicable' => 'boolean',
         'implementation_status' => ControlImplementationStatus::class,
     ];
 
@@ -76,13 +68,8 @@ class IsmsControl extends Model {
         return $this->belongsToMany(IsmsRisk::class, 'isms_control_risk', 'control_id', 'risk_id');
     }
 
-    /**
-     * Anwendbare Controls (SoA: applicable = true).
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    public function scopeApplicable(Builder $query): Builder {
-        return $query->where('applicable', true);
+    /** @return BelongsToMany<IsmsRequirement, $this> */
+    public function requirements(): BelongsToMany {
+        return $this->belongsToMany(IsmsRequirement::class, 'isms_control_requirement', 'control_id', 'requirement_id');
     }
 }

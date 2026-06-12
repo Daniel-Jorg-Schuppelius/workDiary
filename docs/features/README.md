@@ -24,7 +24,7 @@ Definition-of-Done steht unter
 | P0 | [Dokumentation und Abnahmeprotokolle](./003-dokumentation-abnahmeprotokolle.md) | Done | Sichert Baustellen, Produkte, Anlagen und Aufträge mit Fotos, Checklisten, Unterschriften und Protokollen ab |
 | P1 | [Datenschutzmanagement: VVT, AVV und Betroffenenrechte](./043-datenschutzmanagement-vvt-avv-betroffenenrechte.md) | In Progress | Macht Datenschutzpflichten mit Fristen, Verantwortlichen, Verträgen und Nachweisen operativ bearbeitbar |
 | P1 | [ISMS und ISO/IEC 27001-Auditbereitschaft](./044-isms-iso-27001-auditbereitschaft.md) | In Progress | Führt Unternehmen von Risiken und Maßnahmen zu belastbaren Nachweisen und einem auditbereiten ISMS |
-| P1 | [Zertifizierungsmanagement und integriertes Managementsystem](./046-zertifizierungsmanagement-integriertes-managementsystem.md) | Proposed | Schafft eine gemeinsame, zertifizierungsfreundliche Basis für ISO 27001, 27701, 9001, 22301, 45001, 37301 und 42001 |
+| P1 | [Zertifizierungsmanagement und integriertes Managementsystem](./046-zertifizierungsmanagement-integriertes-managementsystem.md) | In Progress | Schafft eine gemeinsame, zertifizierungsfreundliche Basis für ISO 27001, 27701, 9001, 22301, 45001, 37301 und 42001 |
 | P1 | [Backup, Restore und Disaster Recovery](./017-backup-restore-disaster-recovery.md) | In Progress | Schützt Nachweisdaten, Anhänge, Protokolle und Mandanten vor Datenverlust |
 | P1 | [Import, Migration und Onboarding](./020-import-migration-onboarding.md) | In Progress | Senkt Wechselhürden und bringt Kunden schneller produktiv ins System |
 | P1 | [Gewerke- und Branchenprofile](./042-gewerke-branchenprofile.md) | In Progress | Erlaubt fachnahe Startkonfigurationen für Elektro, SHK, IT-Service, Bau, Facility und weitere Gewerke |

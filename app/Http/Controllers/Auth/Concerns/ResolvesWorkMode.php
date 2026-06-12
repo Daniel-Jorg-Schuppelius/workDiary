@@ -28,11 +28,16 @@ trait ResolvesWorkMode {
         $canLegacy = $legacyConfigured && $user->canAccessLegacy();
         $canNew = $user->canAccessNew();
 
-        if ($sessionMode === 'legacy' && ! $canLegacy && $canNew) {
-            $sessionMode = 'new';
-        } elseif ($sessionMode === 'new' && ! $canNew && $canLegacy) {
+        if (! $canLegacy && ! $canNew) {
+            // Weder Legacy noch Neu erlaubt: Legacy-Startseite mit Hinweis.
             $sessionMode = 'legacy';
-        } elseif (! $canLegacy && ! $canNew) {
+        } elseif ($sessionMode === 'legacy' && ! $canLegacy) {
+            // Kein Legacy-Zugriff, aber Neu erlaubt (sonst hätte der erste
+            // Zweig gegriffen) → in den neuen Bereich wechseln.
+            $sessionMode = 'new';
+        } elseif ($sessionMode === 'new' && ! $canNew) {
+            // Kein Neu-Zugriff, aber Legacy erlaubt (erster Zweig griff
+            // nicht) → zurück auf Legacy.
             $sessionMode = 'legacy';
         }
         $request->session()->put('work_mode', $sessionMode);

@@ -6,8 +6,9 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  ISMS-Maßnahmenkatalog (Feature 044, MVP 1): Filter, Modal-Bearbeitung
-  (SoA-Felder), Button „Annex-A-Katalog laden" (idempotent, mit Bestätigung).
+  Normneutrale Maßnahmen (Feature 046; vormals Maßnahmenkatalog + SoA):
+  Filter, Modal-CRUD (Titel, Status, Owner, Anforderungs-Mapping). Der
+  Annex-A-Katalog-Import lebt jetzt auf der Anforderungen-Seite.
 --}}
 
 @extends('layouts.app')
@@ -18,22 +19,10 @@
 @section('content')
     <x-index-page :subtitle="__('isms.subtitle.controls')">
         <x-slot:actions>
-            <x-icon-btn icon="rule_folder" tone="outline" size="sm"
-                        data-entry-modal-trigger
-                        :href="route('isms.soa')"
-                        show-label>{{ __('isms.title.soa') }}</x-icon-btn>
+            <x-icon-btn icon="checklist" tone="outline" size="sm"
+                        :href="route('isms.requirements.index')"
+                        show-label>{{ __('isms.title.requirements') }}</x-icon-btn>
             @if ($canManage)
-                <form method="POST" action="{{ route('isms.controls.import') }}"
-                      data-confirm-dialog
-                      data-confirm-title="{{ __('isms.action.import_catalog') }}"
-                      data-confirm-message="{{ __('isms.confirm_import_catalog') }}"
-                      data-confirm-icon="library_add"
-                      data-confirm-tone="info"
-                      data-confirm-label="{{ __('isms.action.import_catalog') }}">
-                    @csrf
-                    <x-icon-btn icon="library_add" tone="outline" size="sm" type="submit"
-                                show-label>{{ __('isms.action.import_catalog') }}</x-icon-btn>
-                </form>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('isms.controls.create')"
@@ -43,23 +32,6 @@
 
         <x-filter-bar :action="route('isms.controls.index')"
                       :reset="$hasActiveFilters ? route('isms.controls.index') : null">
-            <x-filter-field :label="__('isms.field.source')" for="isms-control-source" class="min-w-40">
-                <select id="isms-control-source" name="source" class="select select-sm select-bordered w-full">
-                    <option value="all">{{ __('isms.filter.all') }}</option>
-                    @foreach (\App\Enums\Isms\ControlSource::cases() as $source)
-                        <option value="{{ $source->value }}" @selected($filters['source'] === $source->value)>{{ $source->label() }}</option>
-                    @endforeach
-                </select>
-            </x-filter-field>
-
-            <x-filter-field :label="__('isms.field.applicable')" for="isms-control-applicable" class="min-w-40">
-                <select id="isms-control-applicable" name="applicable" class="select select-sm select-bordered w-full">
-                    <option value="all">{{ __('isms.filter.all') }}</option>
-                    <option value="yes" @selected($filters['applicable'] === 'yes')>{{ __('isms.filter.applicable_yes') }}</option>
-                    <option value="no" @selected($filters['applicable'] === 'no')>{{ __('isms.filter.applicable_no') }}</option>
-                </select>
-            </x-filter-field>
-
             <x-filter-field :label="__('isms.field.implementation_status')" for="isms-control-status" class="min-w-44">
                 <select id="isms-control-status" name="implementation_status" class="select select-sm select-bordered w-full">
                     <option value="all">{{ __('isms.filter.all') }}</option>
@@ -73,39 +45,41 @@
         <x-table>
             <x-slot:head>
                 <tr>
-                    <th>{{ __('isms.field.code') }}</th>
                     <th>{{ __('isms.field.title') }}</th>
-                    <th>{{ __('isms.field.source') }}</th>
-                    <th>{{ __('isms.field.applicable') }}</th>
                     <th>{{ __('isms.field.implementation_status') }}</th>
+                    <th>{{ __('isms.field.requirements') }}</th>
                     <th class="text-center">{{ __('isms.field.risks') }}</th>
                     <th>{{ __('isms.field.owner') }}</th>
                     <th></th>
                 </tr>
             </x-slot:head>
             @forelse ($controls as $control)
-                <tr class="hover {{ $control->applicable ? '' : 'opacity-60' }}" id="isms-control-{{ $control->id }}">
-                    <td class="font-mono text-sm">{{ $control->code }}</td>
+                <tr class="hover" id="isms-control-{{ $control->id }}">
                     <td>
                         <span class="font-medium">{{ $control->title }}</span>
-                        @if ($control->justification)
+                        @if ($control->description)
                             <span class="block max-w-md truncate text-xs text-base-content/60"
-                                  title="{{ $control->justification }}">{{ $control->justification }}</span>
+                                  title="{{ $control->description }}">{{ $control->description }}</span>
                         @endif
                         @if ($control->evidence_note)
                             <span class="block max-w-md truncate text-xs text-base-content/50"
                                   title="{{ $control->evidence_note }}"><x-icon name="attachment" /> {{ $control->evidence_note }}</span>
                         @endif
                     </td>
-                    <td><x-status-badge :tone="$control->source->tone()" outline>{{ $control->source->label() }}</x-status-badge></td>
+                    <td><x-status-badge :tone="$control->implementation_status->tone()">{{ $control->implementation_status->label() }}</x-status-badge></td>
                     <td>
-                        @if ($control->applicable)
-                            <x-status-badge tone="success">{{ __('isms.filter.applicable_yes') }}</x-status-badge>
+                        @if ($control->requirements->isEmpty())
+                            <span class="text-base-content/50">—</span>
                         @else
-                            <x-status-badge tone="neutral">{{ __('isms.filter.applicable_no') }}</x-status-badge>
+                            <div class="flex max-w-xs flex-wrap gap-1">
+                                @foreach ($control->requirements as $requirement)
+                                    <x-status-badge :tone="$requirement->source->tone()" outline>
+                                        <span class="font-mono" title="{{ $requirement->normLabel() }} — {{ $requirement->title }}">{{ $requirement->ref_no }}</span>
+                                    </x-status-badge>
+                                @endforeach
+                            </div>
                         @endif
                     </td>
-                    <td><x-status-badge :tone="$control->implementation_status->tone()">{{ $control->implementation_status->label() }}</x-status-badge></td>
                     <td class="text-center text-base-content/70">{{ $control->risks_count }}</td>
                     <td class="text-base-content/70">{{ optional($control->owner)->name ?? '—' }}</td>
                     <td class="text-right">
@@ -133,9 +107,9 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="8"
+                <x-table.empty :colspan="6"
                                :title="__('isms.empty_controls_title')"
-                               :message="$hasActiveFilters ? __('isms.empty_filtered') : ($catalogLoaded ? __('isms.empty_controls') : __('isms.empty_controls_hint_catalog'))" />
+                               :message="$hasActiveFilters ? __('isms.empty_filtered') : __('isms.empty_controls')" />
             @endforelse
         </x-table>
     </x-index-page>
