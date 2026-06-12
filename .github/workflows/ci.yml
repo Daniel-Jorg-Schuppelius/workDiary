@@ -88,10 +88,14 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Install PDF system dependencies
+      - name: Install system dependencies (PDF + common toolkit)
         env:
           CONFIG_DIR: ${{ github.workspace }}/vendor/daniel-jorg-schuppelius/php-pdf-toolkit/config
-        run: bash .tools/install-dependencies/install-dependencies.sh
+        # --all installiert auch optionale Tools (required=false), u. a. die
+        # vom php-common-toolkit benötigten file/chardet/uchardet für die
+        # Encoding-Erkennung bei CSV-/Datei-Imports. Die Vendor-Rekursion des
+        # Skripts findet dafür vendor/dschuppelius/php-common-toolkit/config.
+        run: bash .tools/install-dependencies/install-dependencies.sh --all
 
       - name: Prepare test environment
         run: |
