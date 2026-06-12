@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted — MVP umgesetzt mit MVP-003 (Issue #3, Branch `main`).
+Done — MVP umgesetzt mit MVP-003 (Issue #3, Branch `main`).
 
 ## Ziel
 

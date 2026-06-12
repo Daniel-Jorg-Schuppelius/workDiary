@@ -588,4 +588,21 @@ return [
             'voided' => 'Annullato',
         ],
     ],
+
+    // Chiusura giornaliera (MVP-015, docs/tagesabschluss.md §3/§5).
+    'dayClosure' => [
+        'status' => [
+            'open' => 'Aperto',
+            'closed' => 'Chiuso',
+            'correction' => 'In correzione',
+            'locked' => 'Bloccato',
+        ],
+    ],
+    'dayCorrection' => [
+        'status' => [
+            'pending' => 'In attesa',
+            'approved' => 'Approvata',
+            'rejected' => 'Respinta',
+        ],
+    ],
 ];

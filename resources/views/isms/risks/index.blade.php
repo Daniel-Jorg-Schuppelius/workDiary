@@ -19,6 +19,13 @@
 @section('content')
     <x-index-page :subtitle="__('isms.subtitle.risks')">
         <x-slot:actions>
+            {{-- Direkt-Exporte (Feature 044, MVP 1): Datenstand = jetzt; „versioniert" leistet das Auditpaket. --}}
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('isms.risks.export', ['format' => 'json'])"
+                        show-label>{{ __('isms.action.export_json') }}</x-icon-btn>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('isms.risks.export', ['format' => 'csv'])"
+                        show-label>{{ __('isms.action.export_csv') }}</x-icon-btn>
             <x-icon-btn icon="rule_folder" tone="outline" size="sm"
                         data-entry-modal-trigger
                         :href="route('isms.soa')"

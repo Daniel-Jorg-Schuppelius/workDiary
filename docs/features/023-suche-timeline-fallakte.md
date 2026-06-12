@@ -2,7 +2,7 @@
 
 ## Status
 
-In Progress — Auftrags-Timeline (MVP-010), Fallakte (MVP-013) und Kunden-Timeline light umgesetzt (2026-06-10); globale Suche bestand bereits. Konzipiert als:
+In Progress — Auftrags-Timeline (MVP-010), Fallakte (MVP-013) und Kunden-Timeline light umgesetzt (2026-06-10); globale Suche bestand bereits. Die globale Suche deckt jetzt auch Kommunikationsnotizen (Betreff, vertrauliche nur für Erfasser/Berechtigte), Dokumente, Wissensbasis (Veröffentlichtes + eigene Entwürfe) und Formular-Submissions (Vorlagen-Name, ohne formTemplate.viewAny nur eigene) ab — modul-gegatet über Plan/Lizenz (2026-06-12). Konzipiert als:
 [docs/auftrags-timeline.md](../auftrags-timeline.md). Fallakte-Layout
 als MVP-013: [docs/fallakte.md](../fallakte.md). Globale Suche als
 MVP-014: [docs/globale-suche.md](../globale-suche.md). Kunden-/Projekt-/

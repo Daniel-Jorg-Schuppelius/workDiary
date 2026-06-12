@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Plan/Ist-Abgleich (MVP-018):
+In Progress — Plan/Ist-Abgleich (MVP-018):
 [docs/plan-ist-abgleich.md](../plan-ist-abgleich.md). Wirtschaftlichkeit
 (€-Plan/Ist) folgt in späteren MVPs.
 

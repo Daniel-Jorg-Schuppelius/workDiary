@@ -42,7 +42,7 @@
     </div>
 
     {{-- INVOICING --}}
-    <div x-show="isTab('invoicing')" x-cloak>
+    <div x-show="isTab('invoicing')" x-cloak class="space-y-4">
         <x-form-group :legend="__('settings.tabs.invoicing')" :icon="$tabs['invoicing']['icon']" :tone="$tabs['invoicing']['tone']" cols="3" compact>
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.default_tax_rate') }}</label>
@@ -79,6 +79,107 @@
                     <p class="text-xs text-base-content/60 mt-1">{{ __('finance.field.billing_mode_org_hint') }}</p>
                 </div>
             @endcan
+        </x-form-group>
+
+        {{-- E-RECHNUNG (Feature 045, Abschnitt 8): Verkäuferstammdaten für XRechnung (EN 16931). --}}
+        <x-form-group :legend="__('settings.einvoice.heading')" icon="receipt" tone="info" cols="3" compact
+                      :description="__('settings.einvoice.description')">
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.seller_name') }}</label>
+                <input type="text" maxlength="200" name="settings[einvoice][seller_name]"
+                       value="{{ old('settings.einvoice.seller_name', data_get($stored, 'einvoice.seller_name', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) ($organization?->name ?? '')]) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.street') }}</label>
+                <input type="text" maxlength="255" name="settings[einvoice][street]"
+                       value="{{ old('settings.einvoice.street', data_get($stored, 'einvoice.street', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.zip') }}</label>
+                <input type="text" maxlength="32" name="settings[einvoice][zip]"
+                       value="{{ old('settings.einvoice.zip', data_get($stored, 'einvoice.zip', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.city') }}</label>
+                <input type="text" maxlength="128" name="settings[einvoice][city]"
+                       value="{{ old('settings.einvoice.city', data_get($stored, 'einvoice.city', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.country') }}</label>
+                <input type="text" maxlength="2" name="settings[einvoice][country]"
+                       value="{{ old('settings.einvoice.country', data_get($stored, 'einvoice.country', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => 'DE']) }}"
+                       class="input input-bordered w-full uppercase">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.vat_id') }}</label>
+                <input type="text" maxlength="64" name="settings[einvoice][vat_id]"
+                       value="{{ old('settings.einvoice.vat_id', data_get($stored, 'einvoice.vat_id', '')) }}"
+                       placeholder="DE123456789" class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.tax_number') }}</label>
+                <input type="text" maxlength="64" name="settings[einvoice][tax_number]"
+                       value="{{ old('settings.einvoice.tax_number', data_get($stored, 'einvoice.tax_number', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.contact_name') }}</label>
+                <input type="text" maxlength="200" name="settings[einvoice][contact_name]"
+                       value="{{ old('settings.einvoice.contact_name', data_get($stored, 'einvoice.contact_name', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.contact_email') }}</label>
+                <input type="email" maxlength="255" name="settings[einvoice][contact_email]"
+                       value="{{ old('settings.einvoice.contact_email', data_get($stored, 'einvoice.contact_email', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.contact_phone') }}</label>
+                <input type="text" maxlength="64" name="settings[einvoice][contact_phone]"
+                       value="{{ old('settings.einvoice.contact_phone', data_get($stored, 'einvoice.contact_phone', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.iban') }}</label>
+                <input type="text" maxlength="64" name="settings[einvoice][iban]"
+                       value="{{ old('settings.einvoice.iban', data_get($stored, 'einvoice.iban', '')) }}"
+                       class="input input-bordered w-full uppercase">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.bic') }}</label>
+                <input type="text" maxlength="32" name="settings[einvoice][bic]"
+                       value="{{ old('settings.einvoice.bic', data_get($stored, 'einvoice.bic', '')) }}"
+                       class="input input-bordered w-full uppercase">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.account_holder') }}</label>
+                <input type="text" maxlength="200" name="settings[einvoice][account_holder]"
+                       value="{{ old('settings.einvoice.account_holder', data_get($stored, 'einvoice.account_holder', '')) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.einvoice.payment_terms_days') }}</label>
+                <input type="number" min="0" max="365" name="settings[einvoice][payment_terms_days]"
+                       value="{{ old('settings.einvoice.payment_terms_days', data_get($stored, 'einvoice.payment_terms_days', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => '14']) }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset md:col-span-2">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input type="hidden" name="settings[einvoice][small_business]" value="0">
+                    <input type="checkbox" name="settings[einvoice][small_business]" value="1" class="toggle toggle-info"
+                           @checked((string) old('settings.einvoice.small_business', data_get($stored, 'einvoice.small_business', '0')) === '1')>
+                    <span class="label-text">{{ __('settings.einvoice.small_business') }}</span>
+                </label>
+                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.einvoice.small_business_hint') }}</p>
+            </div>
         </x-form-group>
     </div>
 

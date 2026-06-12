@@ -2,10 +2,15 @@
 
 ## Status
 
-Proposed — Auftrags-Lebenszyklus (Annahme/Bearbeitung/Abschluss) als MVP-011
+In Progress — Auftrags-Lebenszyklus (Annahme/Bearbeitung/Abschluss) als MVP-011
 konzipiert: [docs/auftrags-lebenszyklus.md](../auftrags-lebenszyklus.md).
 Auftrags-Timeline (MVP-010): [docs/auftrags-timeline.md](../auftrags-timeline.md).
-Tagesabschluss-Ansicht (MVP-015): [docs/tagesabschluss.md](../tagesabschluss.md).
+Tagesabschluss-Ansicht (MVP-015) umgesetzt: Seite `/tagesabschluss` mit
+Anwesenheit, Pausen, Buchungen, 7 Konsistenzprüfungen, Bilanz, Statusmaschine
+(open/closed/correction/locked), Korrektur-Workflow und Admin-Reopen inkl.
+Audit-Spur: [docs/tagesabschluss.md](../tagesabschluss.md). Offen aus MVP-015:
+Quick-Buchung per Drag auf dem Tageszeitstrahl (§2.3) und der
+Ctrl+Enter-Shortcut (§8); Korrektur-Inbox folgt als MVP-017.
 
 ## Ziel
 

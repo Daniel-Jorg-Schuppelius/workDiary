@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Backup-/Restore-Konzept für lokale Installationen liegt vor in
+In Progress — Backup-/Restore-Konzept für lokale Installationen liegt vor in
 [`docs/backup-restore.md`](../backup-restore.md) (MVP-046, Issue #45).
 
 ## Ziel

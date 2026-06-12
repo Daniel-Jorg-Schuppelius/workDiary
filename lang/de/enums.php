@@ -613,4 +613,21 @@ return [
             'voided' => 'Verworfen',
         ],
     ],
+
+    // Tagesabschluss (MVP-015, docs/tagesabschluss.md §3/§5).
+    'dayClosure' => [
+        'status' => [
+            'open' => 'Offen',
+            'closed' => 'Abgeschlossen',
+            'correction' => 'In Korrektur',
+            'locked' => 'Gesperrt',
+        ],
+    ],
+    'dayCorrection' => [
+        'status' => [
+            'pending' => 'Ausstehend',
+            'approved' => 'Freigegeben',
+            'rejected' => 'Abgelehnt',
+        ],
+    ],
 ];

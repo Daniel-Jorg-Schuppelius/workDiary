@@ -26,6 +26,13 @@
 @section('content')
     <x-index-page :subtitle="$scope !== null ? __('isms.subtitle.requirements_scope', ['scope' => $scope->name]) : __('isms.subtitle.requirements')">
         <x-slot:actions>
+            {{-- Direkt-Exporte (Feature 044, MVP 1): SoA-Stand des gewählten Scopes; „versioniert" leistet das Auditpaket. --}}
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('isms.requirements.export', array_filter(['scope' => $scope?->sqid, 'format' => 'json']))"
+                        show-label>{{ __('isms.action.export_json') }}</x-icon-btn>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('isms.requirements.export', array_filter(['scope' => $scope?->sqid, 'format' => 'csv']))"
+                        show-label>{{ __('isms.action.export_csv') }}</x-icon-btn>
             <x-icon-btn icon="rule_folder" tone="outline" size="sm"
                         data-entry-modal-trigger
                         :href="route('isms.soa', array_filter(['scope' => $scope?->sqid, 'norm' => $filters['norm'] !== 'all' ? $filters['norm'] : null]))"

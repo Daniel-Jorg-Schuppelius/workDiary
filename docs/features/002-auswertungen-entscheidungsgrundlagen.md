@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Konzipiert in MVP-039 bis MVP-043:
+Done — MVP umgesetzt; konzipiert in MVP-039 bis MVP-043:
 [Kundenanalyse](../kundenanalyse.md),
 [Auftragstypanalyse](../auftragstypanalyse.md),
 [Produkt-/Objektanalyse](../produkt-analyse.md),

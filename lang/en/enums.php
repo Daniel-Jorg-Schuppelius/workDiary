@@ -588,4 +588,21 @@ return [
             'voided' => 'Voided',
         ],
     ],
+
+    // Daily close (MVP-015, docs/tagesabschluss.md §3/§5).
+    'dayClosure' => [
+        'status' => [
+            'open' => 'Open',
+            'closed' => 'Closed',
+            'correction' => 'In correction',
+            'locked' => 'Locked',
+        ],
+    ],
+    'dayCorrection' => [
+        'status' => [
+            'pending' => 'Pending',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+        ],
+    ],
 ];

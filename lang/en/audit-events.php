@@ -110,4 +110,14 @@ return [
         'reset'                     => 'Demo tenant reset',
         'seeded'                    => 'Demo data seeded',
     ],
+    // daily close (MVP-015)
+    'dayClose' => [
+        'opened'                    => 'Daily close opened',
+        'entrySaved'                => 'Daily close saved',
+        'closed'                    => 'Day closed',
+        'correctionRequested'       => 'Day correction requested',
+        'correctionApproved'        => 'Day correction approved',
+        'correctionRejected'        => 'Day correction rejected',
+        'reopened'                  => 'Day reopened',
+    ],
 ];

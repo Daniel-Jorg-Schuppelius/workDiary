@@ -80,4 +80,13 @@ return [
         'reset' => 'Inquilino de demostración restablecido',
         'seeded' => 'Datos de demostración generados',
     ],
+    'dayClose' => [
+        'opened' => 'Cierre diario abierto',
+        'entrySaved' => 'Cierre diario guardado',
+        'closed' => 'Día cerrado',
+        'correctionRequested' => 'Corrección del día solicitada',
+        'correctionApproved' => 'Corrección del día aprobada',
+        'correctionRejected' => 'Corrección del día rechazada',
+        'reopened' => 'Día reabierto',
+    ],
 ];

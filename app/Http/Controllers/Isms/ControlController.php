@@ -14,11 +14,12 @@ use App\Enums\Isms\ControlImplementationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsControl, IsmsRequirement};
 use App\Models\User;
-use App\Services\Isms\ControlService;
+use App\Services\Isms\{ControlService, RegisterExportService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * NORMNEUTRALE Maßnahmen (Feature 046; vormals Maßnahmenkatalog + SoA aus
@@ -30,6 +31,7 @@ use Illuminate\View\View;
 class ControlController extends Controller {
     public function __construct(
         private readonly ControlService $service,
+        private readonly RegisterExportService $exports,
     ) {}
 
     public function index(Request $request): View {
@@ -54,6 +56,31 @@ class ControlController extends Controller {
             'filters' => $filters,
             'hasActiveFilters' => $hasActiveFilters,
             'canManage' => Gate::allows('create', IsmsControl::class),
+        ]);
+    }
+
+    /**
+     * Direkt-Export des Maßnahmenregisters (?format=json|csv) — gleiches
+     * Gate wie die Listenseite; meta-Block/Kopf trägt den Datenstand.
+     */
+    public function export(Request $request): StreamedResponse {
+        Gate::authorize('viewAny', IsmsControl::class);
+
+        $format = (string) $request->query('format', 'json');
+        abort_unless(in_array($format, RegisterExportService::FORMATS, true), 404);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $register = $this->exports->controlRegister();
+
+        $content = $format === 'csv'
+            ? $this->exports->toCsv(RegisterExportService::REGISTER_CONTROLS, $actor, null, $register)
+            : $this->exports->toJson(RegisterExportService::REGISTER_CONTROLS, $actor, null, $register);
+
+        return response()->streamDownload(static function () use ($content): void {
+            echo $content;
+        }, $this->exports->filename(RegisterExportService::REGISTER_CONTROLS, $format), [
+            'Content-Type' => $format === 'csv' ? 'text/csv; charset=UTF-8' : 'application/json; charset=UTF-8',
         ]);
     }
 

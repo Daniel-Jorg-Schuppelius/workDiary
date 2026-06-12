@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Grundsätze und Auditpunkte verbindlich dokumentiert in
+In Progress — Grundsätze und Auditpunkte verbindlich dokumentiert in
 [`docs/security/supportzugriff-grundsaetze.md`](../security/supportzugriff-grundsaetze.md)
 (MVP-004, Issue #4).
 

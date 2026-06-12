@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Konzipiert in MVP-035, 036, 038:
+In Progress — Teile umgesetzt; konzipiert in MVP-035, 036, 038:
 [Asset-Stammdaten](../asset-stammdaten.md),
 [Asset-Verknüpfungen](../asset-verknuepfungen.md),
 [Defekt-/Sperrstatus](../asset-sperrstatus.md).

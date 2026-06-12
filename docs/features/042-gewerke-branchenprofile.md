@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Konzipiert in MVP-033/034:
+In Progress — Teile umgesetzt; konzipiert in MVP-033/034:
 [Branchenprofil IT-Service](../branchenprofil-it.md),
 [Branchenprofil Handwerk/Service](../branchenprofil-handwerk.md).
 Weitere geplante Profile:

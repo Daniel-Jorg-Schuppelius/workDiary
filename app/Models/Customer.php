@@ -54,6 +54,7 @@ use Illuminate\Support\{Carbon, Str};
  * @property string|null $bank_bic
  * @property string|null $bank_name
  * @property bool $billable
+ * @property string|null $buyer_reference
  * @property Carbon|null $archived_at
  * @property int|null $created_by
  */
@@ -109,6 +110,7 @@ class Customer extends Model {
         'bank_name',
         'billable',
         'billing_mode',
+        'buyer_reference',
         'archived_at',
         'created_by',
     ];

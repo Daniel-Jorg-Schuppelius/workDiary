@@ -40,6 +40,7 @@ return [
         'admin-time-entries.*' => 'time-entries.edit',
         'projects.time-entries.*' => 'time-entries.edit',
         'attendance.*' => 'attendance.manage',
+        'day-close.*' => 'time-entries.day-close',
         'timesheets.*' => 'timesheets.manage',
         'projects.timesheets.*' => 'timesheets.manage',
         'flex.*' => 'time-accounts.flex',
@@ -85,7 +86,9 @@ return [
         // manuellen <x-help-button topic="procedures.run"> erreichbar.
 
         // ISMS (Feature 044/046): Anforderungen + SoA-Aussagen + Druckansicht
-        // teilen sich ein Topic; isms.soa ist ein exakter Route-Name.
+        // teilen sich ein Topic; isms.soa/isms.dashboard sind exakte
+        // Route-Namen (kein isms.*-Catch-all vorhanden — Mapping nötig).
+        'isms.dashboard' => 'isms.overview',
         'isms.requirements.*' => 'isms.requirements-soa',
         'isms.statements.*' => 'isms.requirements-soa',
         'isms.soa' => 'isms.requirements-soa',

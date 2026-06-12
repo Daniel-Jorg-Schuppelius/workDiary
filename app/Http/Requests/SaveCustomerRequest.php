@@ -71,6 +71,8 @@ class SaveCustomerRequest extends FormRequest {
             'bank_bic' => ['nullable', 'string', 'max:32', 'regex:/^[A-Z0-9]{8}([A-Z0-9]{3})?$/i'],
             'bank_name' => ['nullable', 'string', 'max:200'],
             'billable' => ['sometimes', 'boolean'],
+            // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
+            'buyer_reference' => ['nullable', 'string', 'max:64'],
             // Fakturierungsweg-Override (Feature 045): nur mit finance.config
             // änderbar — ohne die Permission wird das Feld verworfen (siehe
             // prepareForValidation) und taucht nicht in validated() auf.

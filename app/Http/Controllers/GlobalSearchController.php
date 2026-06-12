@@ -10,7 +10,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Customer, Expense, PerDiemTrip, Project, User};
+use App\Enums\Knowledge\ArticleStatus;
+use App\Enums\User\Permission;
+use App\Models\{CommunicationNote, Customer, DiaryEntry, Document, Expense, FormSubmission, KnowledgeArticle, PerDiemTrip, Project, User};
+use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 
@@ -24,7 +27,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 class GlobalSearchController extends Controller {
     private const PER_TYPE_LIMIT = 5;
 
-    public function __invoke(Request $request): JsonResponse {
+    public function __invoke(Request $request, FeatureFlagResolver $featureFlags): JsonResponse {
         $data = $request->validate([
             'q' => ['nullable', 'string', 'max:120'],
         ]);
@@ -154,10 +157,156 @@ class GlobalSearchController extends Controller {
             );
         }
 
+        // Kommunikationsnotizen (MVP-012): nur mit communication.viewAny;
+        // der visibleTo-Scope blendet vertrauliche Notizen Dritter aus
+        // (sichtbar nur für Erfasser + communication.confidential.manage).
+        // Mandantengrenze: BelongsToOrganization-Global-Scope.
+        if (Gate::allows('viewAny', CommunicationNote::class)) {
+            $notes = CommunicationNote::query()
+                ->visibleTo($user)
+                ->where('subject', 'like', $like)
+                ->with('notable')
+                ->orderByDesc('occurred_at')
+                ->limit(self::PER_TYPE_LIMIT)
+                ->get();
+            $noteItems = [];
+            foreach ($notes as $n) {
+                $url = $this->communicationNoteUrl($n);
+                if ($url === null) {
+                    continue; // Bezug fehlt (z. B. soft-deleted) → kein Deep-Link möglich.
+                }
+                $notableName = $this->notableName($n);
+                $noteItems[] = [
+                    'id' => $n->id,
+                    'title' => $n->subject,
+                    'subtitle' => $n->occurred_at->format('d.m.Y')
+                        . ' · ' . $n->type->label()
+                        . ($notableName !== null ? ' · ' . $notableName : ''),
+                    'url' => $url,
+                ];
+            }
+            $groups[] = $this->makeGroup(
+                'communication',
+                __('communication.title.index'),
+                'forum',
+                $noteItems,
+            );
+        }
+
+        // Dokumente (MVP-031): document.viewAny UND aktives Modul (Plan/Lizenz,
+        // Muster wie DiaryEntryTimelineService::canSeeDocuments()). Keine
+        // Detailseite — Link auf die vorgefilterte Liste (?q=Titel).
+        if ($featureFlags->isEnabled('module.documents') && Gate::allows('viewAny', Document::class)) {
+            $groups[] = $this->makeGroup(
+                'documents',
+                __('document.title.index'),
+                'folder_open',
+                Document::query()
+                    ->where('title', 'like', $like)
+                    ->latest('updated_at')
+                    ->limit(self::PER_TYPE_LIMIT)
+                    ->get()
+                    ->map(fn(Document $d) => [
+                        'id' => $d->id,
+                        'title' => $d->title,
+                        'subtitle' => $d->document_type->label() . ' · ' . $d->effectiveStatus()->label(),
+                        'url' => route('documents.index', ['q' => $d->title]),
+                    ])
+                    ->all(),
+            );
+        }
+
+        // Wissensbasis (Feature 011): Sichtbarkeit wie der Index —
+        // Redaktion (knowledge.publish/Admin) sieht alle Status, alle
+        // anderen Veröffentlichtes plus EIGENE Artikel.
+        if ($featureFlags->isEnabled('module.knowledge') && Gate::allows('viewAny', KnowledgeArticle::class)) {
+            $knowledgeQuery = KnowledgeArticle::query()
+                ->where(fn($q) => $q->where('title', 'like', $like)
+                    ->orWhere('problem', 'like', $like));
+            if (! ($user->isAdmin() || $user->can(Permission::KnowledgePublish->value))) {
+                $knowledgeQuery->where(fn($q) => $q->where('status', ArticleStatus::Published->value)
+                    ->orWhere('created_by_user_id', $user->id));
+            }
+            $groups[] = $this->makeGroup(
+                'knowledge',
+                __('knowledge.title.index'),
+                'school',
+                $knowledgeQuery->orderByDesc('created_at')
+                    ->limit(self::PER_TYPE_LIMIT)
+                    ->get()
+                    ->map(fn(KnowledgeArticle $a) => [
+                        'id' => $a->id,
+                        'title' => $a->title,
+                        'subtitle' => trim($a->status->label() . ($a->category ? ' · ' . $a->category : '')),
+                        'url' => route('knowledge.show', $a),
+                    ])
+                    ->all(),
+            );
+        }
+
+        // Formulare (Feature 032): Suche über den Vorlagen-Namen; Vorlagen-
+        // Sicht (formTemplate.viewAny/Admin) sieht alle Submissions, alle
+        // anderen ausschließlich die EIGENEN (wie FormSubmissionController).
+        if ($featureFlags->isEnabled('module.forms') && Gate::allows('viewAny', FormSubmission::class)) {
+            $submissionQuery = FormSubmission::query()
+                ->with(['template', 'submitter'])
+                ->whereHas('template', fn($q) => $q->where('name', 'like', $like));
+            if (! ($user->isAdmin() || $user->can(Permission::FormTemplateViewAny->value))) {
+                $submissionQuery->where('submitted_by_user_id', $user->id);
+            }
+            $groups[] = $this->makeGroup(
+                'forms',
+                __('form.title.submissions'),
+                'edit_note',
+                $submissionQuery->orderByDesc('submitted_at')
+                    ->limit(self::PER_TYPE_LIMIT)
+                    ->get()
+                    ->map(fn(FormSubmission $s) => [
+                        'id' => $s->id,
+                        'title' => $s->template->name ?? __('form.title.submissions') . ' #' . $s->id,
+                        'subtitle' => $s->submitted_at->format('d.m.Y')
+                            . ($s->submitter ? ' · ' . $s->submitter->name : ''),
+                        'url' => route('form-submissions.show', $s),
+                    ])
+                    ->all(),
+            );
+        }
+
         // Leere Gruppen entfernen.
         $groups = array_values(array_filter($groups, fn(array $g) => count($g['items']) > 0));
 
         return response()->json(['groups' => $groups, 'q' => $term]);
+    }
+
+    /**
+     * Anzeigename der Bezugsseite (Auftrag/Kunde/Projekt) einer
+     * Kommunikationsnotiz — null, wenn der Bezug fehlt.
+     */
+    private function notableName(CommunicationNote $note): ?string {
+        $notable = $note->notable;
+
+        return match (true) {
+            $notable instanceof DiaryEntry => $notable->title,
+            $notable instanceof Customer, $notable instanceof Project => $notable->name,
+            default => null,
+        };
+    }
+
+    /**
+     * Deep-Link auf die Bezugsseite mit Fragment-Anker (Muster wie die
+     * Redirects des CommunicationNoteController: #communication-note-{id}).
+     * Null, wenn der Bezug fehlt (z. B. soft-deleted) — Treffer wird übersprungen.
+     */
+    private function communicationNoteUrl(CommunicationNote $note): ?string {
+        $notable = $note->notable;
+        $base = match (true) {
+            $notable instanceof DiaryEntry => route('diary.show', $notable),
+            $notable instanceof Customer => route('customers.show', $notable),
+            $notable instanceof Project => route('projects.show', $notable),
+            default => null,
+        };
+
+        return $base === null ? null : $base . '#communication-note-' . $note->id;
     }
 
     /**

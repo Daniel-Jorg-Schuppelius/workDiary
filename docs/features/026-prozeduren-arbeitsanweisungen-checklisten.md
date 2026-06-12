@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Konzipiert in MVP-025 bis MVP-029:
+In Progress — Teile umgesetzt; konzipiert in MVP-025 bis MVP-029:
 [Prozedurvorlagen](../prozedurvorlagen.md),
 [Pflicht & Reihenfolge](../prozedur-pflicht.md),
 [Backup-Nachweis](../prozedur-backup.md),

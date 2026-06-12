@@ -182,6 +182,9 @@ class PermissionsSeeder extends Seeder {
                     // nicht, daher explizit.
                     PermissionEnum::MonthViewOrganization->value,
                     PermissionEnum::CorrectionViewOrganization->value,
+                    // MVP-015: Tagesabschluss-Lesezugriff auf Org-Ebene —
+                    // analog zu month.view.organization explizit.
+                    PermissionEnum::DayCloseViewOrganization->value,
                 ], true);
             }
         );
@@ -218,6 +221,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CorrectionApprove,
             PermissionEnum::CorrectionReject,
             PermissionEnum::CorrectionCreateForOthers,
+            // Tagesabschluss (MVP-015): Team-Sicht + Korrektur-Entscheidung;
+            // dayClose.reopen bleibt bewusst Admin-exklusiv (§7).
+            PermissionEnum::DayCloseViewTeam,
+            PermissionEnum::DayCloseApproveCorrection,
             PermissionEnum::ExportTimeCreate,
             PermissionEnum::ExportTimeDeliver,
             PermissionEnum::ExportTimeDelete,
@@ -464,6 +471,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CorrectionCreateOwn,
             PermissionEnum::CorrectionSubmitOwn,
             PermissionEnum::CorrectionWithdrawOwn,
+            // Tagesabschluss (MVP-015): eigene Tage sehen, abschließen,
+            // Korrektur anfordern (§7).
+            PermissionEnum::DayCloseViewOwn,
+            PermissionEnum::DayCloseCloseOwn,
+            PermissionEnum::DayCloseRequestCorrectionOwn,
             PermissionEnum::DiaryViewOwn,
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryUpdate,
@@ -542,6 +554,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CorrectionCreateOwn,
             PermissionEnum::CorrectionSubmitOwn,
             PermissionEnum::CorrectionWithdrawOwn,
+            // Tagesabschluss (MVP-015): eigene Tage (§7) — wie Rolle user.
+            PermissionEnum::DayCloseViewOwn,
+            PermissionEnum::DayCloseCloseOwn,
+            PermissionEnum::DayCloseRequestCorrectionOwn,
             PermissionEnum::DiaryViewOwn,
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryUpdate,

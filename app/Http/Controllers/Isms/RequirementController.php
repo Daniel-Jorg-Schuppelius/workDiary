@@ -14,13 +14,14 @@ use App\Enums\Isms\{ControlImplementationStatus, RequirementSource};
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
 use App\Models\User;
-use App\Services\Isms\{NormProfileRegistry, RequirementService};
+use App\Services\Isms\{NormProfileRegistry, RegisterExportService, RequirementService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Anforderungen + SoA je Geltungsbereich (Feature 044/046): Listenseite
@@ -39,6 +40,7 @@ class RequirementController extends Controller {
         private readonly RequirementService $service,
         private readonly NormProfileRegistry $registry,
         private readonly SqidEncoder $sqids,
+        private readonly RegisterExportService $exports,
     ) {}
 
     public function index(Request $request): View {
@@ -126,6 +128,35 @@ class RequirementController extends Controller {
         Gate::authorize('create', IsmsRequirement::class);
 
         return view('isms.requirements._form_dialog', ['requirement' => null]);
+    }
+
+    /**
+     * Direkt-Export der Anforderungen/SoA-Aussagen des gewählten
+     * Geltungsbereichs (?scope={sqid}&format=json|csv) — gleiches Gate
+     * wie die Listenseite; meta-Block/Kopf trägt den Datenstand.
+     */
+    public function export(Request $request): StreamedResponse {
+        Gate::authorize('viewAny', IsmsRequirement::class);
+
+        $format = (string) $request->query('format', 'json');
+        abort_unless(in_array($format, RegisterExportService::FORMATS, true), 404);
+
+        $scope = $this->resolveScope($request->query('scope'), null);
+        abort_if($scope === null, 404);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $register = $this->exports->soaRegister($scope);
+
+        $content = $format === 'csv'
+            ? $this->exports->toCsv(RegisterExportService::REGISTER_SOA, $actor, $scope, $register)
+            : $this->exports->toJson(RegisterExportService::REGISTER_SOA, $actor, $scope, $register);
+
+        return response()->streamDownload(static function () use ($content): void {
+            echo $content;
+        }, $this->exports->filename(RegisterExportService::REGISTER_SOA, $format), [
+            'Content-Type' => $format === 'csv' ? 'text/csv; charset=UTF-8' : 'application/json; charset=UTF-8',
+        ]);
     }
 
     public function store(Request $request): RedirectResponse {

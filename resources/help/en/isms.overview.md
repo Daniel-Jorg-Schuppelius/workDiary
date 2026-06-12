@@ -1,7 +1,7 @@
 ---
 title: "ISMS at a glance"
 topic: isms.overview
-version: 1
+version: 2
 audience: []
 related:
     - isms.requirements-soa
@@ -37,6 +37,14 @@ The typical path:
 Prerequisites: the **ISMS** module is part of the Enterprise plan.
 Staff with ISMS read access can view the content; changes and scope
 management require ISMS maintenance access.
+
+The **audit readiness** dashboard (first entry in the ISMS section)
+provides the overview: key figures per scope for high risks, overdue
+assessment reviews, evidence gaps, overdue corrective actions, open
+nonconformities and certificate dates – each tile links straight into
+the corresponding register. The register pages (risks, requirements &
+SoA, controls) additionally offer JSON/CSV exports with an explicit
+data timestamp.
 
 Next steps: create a finalized data snapshot for auditors under
 **Audit packages**; the **software inventory** documents the products

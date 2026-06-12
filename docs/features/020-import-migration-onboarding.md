@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — MVP-Bausteine liegen vor:
+In Progress — MVP-Bausteine liegen vor:
 [Onboarding-Checkliste](../onboarding-checkliste.md) (MVP-048, Issue #47) und
 [CSV-Import](../csv-import.md) (MVP-049, Issue #48).
 

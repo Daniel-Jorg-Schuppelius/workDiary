@@ -204,6 +204,35 @@ class InvoiceController extends Controller {
             ->download('rechnung-' . $invoice->number . '.pdf');
     }
 
+    /**
+     * E-Rechnung (Feature 045, Abschnitt 8): XRechnung-XML (UBL 2.1) zur
+     * lokalen Ausgangsrechnung. Nur im Pfad „WorkDiary führt" — bei externer
+     * Fakturierungshoheit (Lexoffice/DATEV) liegt die E-Rechnungs-Pflicht
+     * beim führenden Programm (⇒ 404). Preflight-Fehler führen zurück zur
+     * Detailansicht; Warnungen blockieren den Download nicht.
+     */
+    public function einvoiceDownload(Invoice $invoice, \App\Services\Invoicing\EInvoice\XRechnungGenerator $generator): SymfonyResponse {
+        Gate::authorize('view', $invoice);
+        $invoice->load(['items', 'customer']);
+
+        $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
+        abort_if($billingMode->isExternal(), 404);
+
+        $result = $generator->preflight($invoice);
+        if ($result['errors'] !== []) {
+            return redirect()->route('invoices.show', $invoice)
+                ->with('error', __('invoicing.einvoice.error_intro') . ' ' . implode(' ', $result['errors']));
+        }
+
+        $xml = $generator->generate($invoice);
+        $filename = 'XRechnung_' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number) . '.xml';
+
+        return response($xml, 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
     public function itemForm(Invoice $invoice, ?InvoiceItem $item = null): View {
         Gate::authorize('update', $invoice);
         $item ??= new InvoiceItem();

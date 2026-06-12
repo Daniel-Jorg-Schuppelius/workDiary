@@ -303,8 +303,13 @@ Route::middleware('auth')->group(function () {
         // Autorisierung pro Aktion ueber die Isms-Policies (isms.viewAny/
         // view fuer Lesen+SoA, isms.manage fuer Pflege/Katalog-Import).
         Route::prefix('compliance/isms')->name('isms.')->group(function (): void {
-            // Risikoregister
+            // Auditbereitschafts-Dashboard (Feature 044, MVP 1): KPI-Kacheln
+            // + Drill-down je Geltungsbereich (ReadinessService, Lesesicht).
+            Route::get('auditbereitschaft', [\App\Http\Controllers\Isms\DashboardController::class, 'index'])->name('dashboard');
+
+            // Risikoregister (Export: Direkt-Export JSON/CSV, ?format=...)
             Route::get('risiken', [\App\Http\Controllers\Isms\RiskController::class, 'index'])->name('risks.index');
+            Route::get('risiken/export', [\App\Http\Controllers\Isms\RiskController::class, 'export'])->name('risks.export');
             Route::get('risiken/neu', [\App\Http\Controllers\Isms\RiskController::class, 'create'])->name('risks.create');
             Route::post('risiken', [\App\Http\Controllers\Isms\RiskController::class, 'store'])->name('risks.store');
             Route::get('risiken/{risk}/bearbeiten', [\App\Http\Controllers\Isms\RiskController::class, 'edit'])->name('risks.edit');
@@ -322,6 +327,7 @@ Route::middleware('auth')->group(function () {
             // Anforderungen + SoA-Aussagen je Geltungsbereich inkl.
             // Normkatalog-Import (Normprofil-Registry, profile-Pflichtparameter)
             Route::get('anforderungen', [\App\Http\Controllers\Isms\RequirementController::class, 'index'])->name('requirements.index');
+            Route::get('anforderungen/export', [\App\Http\Controllers\Isms\RequirementController::class, 'export'])->name('requirements.export');
             Route::get('anforderungen/neu', [\App\Http\Controllers\Isms\RequirementController::class, 'create'])->name('requirements.create');
             Route::post('anforderungen', [\App\Http\Controllers\Isms\RequirementController::class, 'store'])->name('requirements.store');
             Route::post('anforderungen/katalog', [\App\Http\Controllers\Isms\RequirementController::class, 'import'])->name('requirements.import');
@@ -334,6 +340,7 @@ Route::middleware('auth')->group(function () {
 
             // Normneutrale Massnahmen (Mapping auf Anforderungen + Risiken)
             Route::get('massnahmen', [\App\Http\Controllers\Isms\ControlController::class, 'index'])->name('controls.index');
+            Route::get('massnahmen/export', [\App\Http\Controllers\Isms\ControlController::class, 'export'])->name('controls.export');
             Route::get('massnahmen/neu', [\App\Http\Controllers\Isms\ControlController::class, 'create'])->name('controls.create');
             Route::post('massnahmen', [\App\Http\Controllers\Isms\ControlController::class, 'store'])->name('controls.store');
             Route::get('massnahmen/{control}/bearbeiten', [\App\Http\Controllers\Isms\ControlController::class, 'edit'])->name('controls.edit');
@@ -666,6 +673,7 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/send', [InvoiceController::class, 'sendForm'])->name('invoices.send.form');
         Route::post('invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
         Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
+        Route::get('invoices/{invoice}/einvoice', [InvoiceController::class, 'einvoiceDownload'])->name('invoices.einvoice');
         Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
         Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
         Route::get('invoices/{invoice}/items/create', [InvoiceController::class, 'itemForm'])->name('invoices.items.create');
@@ -1016,6 +1024,22 @@ Route::middleware('auth')->group(function () {
             ->name('admin.corrections.reject');
         Route::post('admin/corrections/{correction}/apply', [\App\Http\Controllers\Admin\TimeCorrectionInboxController::class, 'apply'])
             ->name('admin.corrections.apply');
+
+        // ── Tagesabschluss (MVP-015) ────────────────────────────────────────────
+        Route::get('tagesabschluss', [\App\Http\Controllers\DayCloseController::class, 'show'])
+            ->name('day-close.show');
+        Route::post('tagesabschluss/save', [\App\Http\Controllers\DayCloseController::class, 'save'])
+            ->name('day-close.save');
+        Route::post('tagesabschluss/close', [\App\Http\Controllers\DayCloseController::class, 'close'])
+            ->name('day-close.close');
+        Route::post('tagesabschluss/request-correction', [\App\Http\Controllers\DayCloseController::class, 'requestCorrection'])
+            ->name('day-close.request-correction');
+        Route::post('tagesabschluss/corrections/{dayCorrection}/approve', [\App\Http\Controllers\DayCloseController::class, 'approveCorrection'])
+            ->name('day-close.correction.approve');
+        Route::post('tagesabschluss/corrections/{dayCorrection}/reject', [\App\Http\Controllers\DayCloseController::class, 'rejectCorrection'])
+            ->name('day-close.correction.reject');
+        Route::post('tagesabschluss/reopen', [\App\Http\Controllers\DayCloseController::class, 'reopen'])
+            ->name('day-close.reopen');
 
         // ── Zeit-Export (MVP-019) ──────────────────────────────────────────────
         Route::get('exports', [\App\Http\Controllers\TimeExportController::class, 'index'])

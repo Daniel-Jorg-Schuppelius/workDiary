@@ -31,7 +31,9 @@
         </div>
     @endif
 
-    @php($childCredits = $invoice->isCreditNote() ? collect() : $invoice->creditNotes()->get())
+    {{-- Blockform statt @php(...): Inline-@php + späterer @php…@endphp-Block in derselben Datei
+         erzeugt über Blades storePhpBlocks ein ungültiges "<?php(" (kein Open-Tag) — View bricht. --}}
+    @php $childCredits = $invoice->isCreditNote() ? collect() : $invoice->creditNotes()->get(); @endphp
     @if ($childCredits->isNotEmpty())
         <div class="alert alert-warning">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
@@ -63,6 +65,12 @@
         @endif
         <x-slot:actions>
             <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('invoices.pdf', $invoice)" show-label>{{ __('PDF') }}</x-icon-btn>
+            {{-- E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen. --}}
+            @php $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PAID], true) && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal(); @endphp
+            @if ($einvoiceVisible)
+                <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
+                            :title="__('invoicing.einvoice.button_title')">{{ __('invoicing.einvoice.button') }}</x-icon-btn>
+            @endif
             @can('send', $invoice)
                 <x-icon-btn icon="mail" tone="primary" size="sm"
                             data-entry-modal-trigger

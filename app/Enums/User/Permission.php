@@ -177,6 +177,15 @@ enum Permission: string implements HasLabel {
     case CorrectionReject = 'correction.reject';
     case CorrectionApplySystem = 'correction.apply.system';
 
+        // ── Tagesabschluss (MVP-015) ───────────────────────────────────────
+    case DayCloseViewOwn = 'dayClose.view.own';
+    case DayCloseViewTeam = 'dayClose.view.team';
+    case DayCloseViewOrganization = 'dayClose.view.organization';
+    case DayCloseCloseOwn = 'dayClose.close.own';
+    case DayCloseRequestCorrectionOwn = 'dayClose.requestCorrection.own';
+    case DayCloseApproveCorrection = 'dayClose.approveCorrection';
+    case DayCloseReopen = 'dayClose.reopen';
+
         // ── Zeit-Export / Lohnübergabe (MVP-019) ───────────────────────────
     case ExportTimeCreate = 'export.time.create';
     case ExportTimeDeliver = 'export.time.deliver';

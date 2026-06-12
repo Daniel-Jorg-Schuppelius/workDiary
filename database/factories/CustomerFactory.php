@@ -48,6 +48,7 @@ class CustomerFactory extends Factory {
             'comment' => null,
             'invoice_text' => null,
             'billable' => true,
+            'buyer_reference' => null,
             'archived_at' => null,
             'created_by' => User::factory(),
         ];

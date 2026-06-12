@@ -758,6 +758,8 @@
                                         ['route' => 'week.index',      'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
                                         ['route' => 'kanban.index',    'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
                                         ['route' => 'attendance.index','label' => __('Stempeluhr'),    'icon' => 'punch_clock',       'modal' => false, 'matches' => ['attendance.*']],
+                                        // Tagesabschluss (MVP-015): Recht via NavGate (dayClose.view.* über DayClosure-Policy).
+                                        ['route' => 'day-close.show',  'label' => __('Tagesabschluss'),'icon' => 'task_alt',          'modal' => false, 'matches' => ['day-close.*']],
                                         // Dokumente (MVP-031): Recht via NavGate (@can document.viewAny
                                         // über Document-Policy), Modul-Gating via $moduleByItemRoute.
                                         ['route' => 'documents.index', 'label' => __('document.title.index'), 'icon' => 'folder_open', 'modal' => false, 'matches' => ['documents.*']],
@@ -875,6 +877,8 @@
                                         'label'       => __('isms.title.section'),
                                         'collapsible' => true,
                                         'items'       => array_values(array_filter([
+                                            // Auditbereitschaft (Feature 044, MVP 1): bewusst ERSTER Eintrag des Bereichs.
+                                            ['route' => 'isms.dashboard', 'label' => __('isms.title.dashboard'), 'icon' => 'monitoring', 'modal' => false, 'matches' => ['isms.dashboard']],
                                             ['route' => 'isms.requirements.index', 'label' => __('isms.title.requirements'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['isms.requirements.*', 'isms.statements.*']],
                                             ['route' => 'isms.controls.index', 'label' => __('isms.title.controls'), 'icon' => 'verified_user', 'modal' => false, 'matches' => ['isms.controls.*']],
                                             ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],

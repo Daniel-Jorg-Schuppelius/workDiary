@@ -158,6 +158,16 @@
                 </label>
             </div>
 
+            {{-- E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10) — Pflicht in der XRechnung. --}}
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('invoicing.buyer_reference') }}</label>
+                <input name="buyer_reference" type="text" maxlength="64"
+                       class="input input-bordered w-full"
+                       value="{{ old('buyer_reference', $customer?->buyer_reference) }}">
+                <p class="text-xs text-base-content/60 mt-1">{{ __('invoicing.buyer_reference_hint') }}</p>
+                @error('buyer_reference')<p class="text-error text-sm">{{ $message }}</p>@enderror
+            </div>
+
             @can(\App\Enums\User\Permission::FinanceConfig->value)
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('finance.field.billing_mode') }}</label>

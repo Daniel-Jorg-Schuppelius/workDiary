@@ -2,20 +2,35 @@
 
 ## Status
 
-In Progress — MVP1 umgesetzt (2026-06-10), am 2026-06-11 auf den 046-Kern
-refactort: Geltungsbereiche (isms_scopes), versionierte Normanforderungen
-(isms_requirements, Annex-A-Katalog als Normprofil ISO/IEC 27001:2022),
-normneutrale Maßnahmen mit n:m-Anforderungs-Mapping, SoA als eigene
-Applicability-Statements je Scope (inkl. Datenmigration). Zusätzlich
-umgesetzt: Softwareinventar (Produkte/Installationen, EOL-Automatik) und
-Release-SBOM (CycloneDX 1.5, sbom:generate, Admin-Komponentenübersicht).
+In Progress — MVP1 KOMPLETT (2026-06-12). MVP1 umgesetzt (2026-06-10), am
+2026-06-11 auf den 046-Kern refactort: Geltungsbereiche (isms_scopes),
+versionierte Normanforderungen (isms_requirements, Annex-A-Katalog als
+Normprofil ISO/IEC 27001:2022), normneutrale Maßnahmen mit
+n:m-Anforderungs-Mapping, SoA als eigene Applicability-Statements je Scope
+(inkl. Datenmigration). Zusätzlich umgesetzt: Softwareinventar
+(Produkte/Installationen, EOL-Automatik) und Release-SBOM (CycloneDX 1.5,
+sbom:generate, Admin-Komponentenübersicht).
 Am 2026-06-11 (046-Inkrement C) ergänzt: interne Audits
 (isms_audits) mit Feststellungen (isms_audit_findings), Korrekturmaßnahmen
 inkl. Wirksamkeitsprüfung (isms_corrective_actions) und Managementbewertung
 mit unveränderlicher Freigabe (isms_management_reviews); überfällige
 Korrekturmaßnahmen meldet der Fristen-Scanner.
-Offen: Brutto/Netto/Ziel-Risiko mit Bewertungshistorie, Kennzahlen,
-Auditpakete, Advisory-Abgleich (MVP2/3).
+Am 2026-06-12 abgeschlossen: Auditbereitschafts-Dashboard je
+Geltungsbereich (ReadinessService: SoA-Fortschritt je Norm, hohe Risiken,
+überfällige Bewertungs-Reviews/unbewertete Risiken, überfällige
+Korrekturmaßnahmen, offene Nichtkonformitäten, Nachweislücken,
+Zertifikatstermine < 90 Tage, Software-EOL; KPI-Kacheln mit Drill-down,
+erster Eintrag im ISMS-Menü) sowie JSON-/CSV-Direkt-Exporte für
+Risikoregister, Anforderungen/SoA (je Scope) und Maßnahmen
+(RegisterExportService: meta-Block mit Organisation/Scope/generated_at/
+App-Version; CSV mit Semikolon + BOM). „Versioniert" im Sinne der
+Exporte leistet der unveränderliche Auditpaket-Snapshot
+(AuditPackageService); die Direkt-Exporte weisen den Datenstand
+(generated_at) aus. Die Kennzahl „ungeprüfte Lieferanten" entfällt in
+MVP1 bewusst — es gibt noch kein Lieferantenmodul (MVP 2).
+Offen (MVP2/3): Sicherheitsvorfälle/Schwachstellen, Advisory-Abgleich,
+Lieferantenbewertung, Reifegrad-Assessment, Katalog-Import weiterer
+Regelwerke.
 
 Refactoring auf den gemeinsamen Managementsystem-Kern aus
 [Feature 046](./046-zertifizierungsmanagement-integriertes-managementsystem.md)

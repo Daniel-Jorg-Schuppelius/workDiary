@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Konzipiert in MVP-020 bis MVP-024:
+Done — MVP umgesetzt; konzipiert in MVP-020 bis MVP-024:
 [Protokoll-Datenmodell](../protokoll-datenmodell.md),
 [Protokollpunkt-Typen](../protokollpunkt-typen.md),
 [Abnahme & Signatur](../abnahme-signatur.md),

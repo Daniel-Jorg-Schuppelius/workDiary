@@ -493,6 +493,40 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame(0, FeatureUsageCounter::query()->count());
     }
 
+    public function test_day_closure_is_not_visible_cross_organization(): void {
+        $closureB = $this->withOrg($this->orgB, fn() => \App\Models\DayClosure::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $closureB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\DayClosure::find($closureB->id));
+        $this->assertSame(0, \App\Models\DayClosure::query()->count());
+    }
+
+    public function test_day_correction_request_is_not_visible_cross_organization(): void {
+        $requestB = $this->withOrg($this->orgB, function () {
+            $closure = \App\Models\DayClosure::factory()->closed()->create([
+                'organization_id' => $this->orgB->id,
+                'user_id' => $this->userB->id,
+            ]);
+
+            return \App\Models\DayCorrectionRequest::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'day_closure_id' => $closure->id,
+                'requested_by_user_id' => $this->userB->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $requestB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\DayCorrectionRequest::find($requestB->id));
+        $this->assertSame(0, \App\Models\DayCorrectionRequest::query()->count());
+    }
+
     public function test_cross_organization_update_is_blocked_by_scope(): void {
         $projectB = $this->withOrg($this->orgB, fn() => Project::factory()->create());
         $taskB = $this->withOrg($this->orgB, fn() => Task::factory()->for($projectB)->create([

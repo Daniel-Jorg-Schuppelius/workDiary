@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Tenant;
 
-use App\Models\{Customer, Organization, Project, User};
+use App\Models\{CommunicationNote, Customer, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -75,6 +75,70 @@ class SearchTenantTest extends TestCase {
         $groups = (array) $response->json('groups');
         $allItems = collect($groups)->flatMap(fn($g) => $g['items'] ?? [])->all();
         $this->assertEmpty($allItems, 'Cross-Org-Suche darf kein Org-B-Projekt liefern.');
+    }
+
+    public function test_global_search_does_not_return_cross_org_communication_notes(): void {
+        $this->withOrg($this->orgB, fn() => CommunicationNote::factory()->create([
+            'subject' => 'ZZSEARCHNOTEBORG Rückruf',
+            'created_by_user_id' => $this->adminB->id,
+        ]));
+
+        $this->actingAs($this->adminA);
+        $response = $this->getJson(route('api.internal.search', ['q' => 'ZZSEARCHNOTEBORG']));
+        $response->assertOk();
+
+        $groups = (array) $response->json('groups');
+        $allItems = collect($groups)->flatMap(fn($g) => $g['items'] ?? [])->all();
+        $this->assertEmpty($allItems, 'Cross-Org-Suche darf keine Kommunikationsnotiz aus Org B liefern.');
+    }
+
+    public function test_global_search_does_not_return_cross_org_documents(): void {
+        $this->withOrg($this->orgB, fn() => Document::factory()->create([
+            'title' => 'ZZSEARCHDOCBORG Wartungsvertrag',
+            'created_by_user_id' => $this->adminB->id,
+        ]));
+
+        $this->actingAs($this->adminA);
+        $response = $this->getJson(route('api.internal.search', ['q' => 'ZZSEARCHDOCBORG']));
+        $response->assertOk();
+
+        $groups = (array) $response->json('groups');
+        $allItems = collect($groups)->flatMap(fn($g) => $g['items'] ?? [])->all();
+        $this->assertEmpty($allItems, 'Cross-Org-Suche darf kein Org-B-Dokument liefern.');
+    }
+
+    public function test_global_search_does_not_return_cross_org_knowledge_articles(): void {
+        $this->withOrg($this->orgB, fn() => KnowledgeArticle::factory()->published()->create([
+            'title' => 'ZZSEARCHKBBORG Druckerstau beheben',
+            'created_by_user_id' => $this->adminB->id,
+        ]));
+
+        $this->actingAs($this->adminA);
+        $response = $this->getJson(route('api.internal.search', ['q' => 'ZZSEARCHKBBORG']));
+        $response->assertOk();
+
+        $groups = (array) $response->json('groups');
+        $allItems = collect($groups)->flatMap(fn($g) => $g['items'] ?? [])->all();
+        $this->assertEmpty($allItems, 'Cross-Org-Suche darf keinen Org-B-Wissensartikel liefern.');
+    }
+
+    public function test_global_search_does_not_return_cross_org_form_submissions(): void {
+        $this->withOrg($this->orgB, function () {
+            $template = FormTemplate::factory()->create(['name' => 'ZZSEARCHFORMBORG Prüfprotokoll']);
+
+            return FormSubmission::factory()->create([
+                'form_template_id' => $template->id,
+                'submitted_by_user_id' => $this->adminB->id,
+            ]);
+        });
+
+        $this->actingAs($this->adminA);
+        $response = $this->getJson(route('api.internal.search', ['q' => 'ZZSEARCHFORMBORG']));
+        $response->assertOk();
+
+        $groups = (array) $response->json('groups');
+        $allItems = collect($groups)->flatMap(fn($g) => $g['items'] ?? [])->all();
+        $this->assertEmpty($allItems, 'Cross-Org-Suche darf keine Org-B-Submission liefern.');
     }
 
     /**

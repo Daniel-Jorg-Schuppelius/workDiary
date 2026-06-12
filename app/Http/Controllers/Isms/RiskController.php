@@ -14,11 +14,12 @@ use App\Enums\Isms\{AssessmentKind, RiskCategory, RiskStatus, RiskTreatment};
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\User;
-use App\Services\Isms\RiskService;
+use App\Services\Isms\{RegisterExportService, RiskService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * ISMS-Risikoregister (Feature 044, MVP 1): Listenseite mit Filtern und
@@ -33,6 +34,7 @@ use Illuminate\View\View;
 class RiskController extends Controller {
     public function __construct(
         private readonly RiskService $service,
+        private readonly RegisterExportService $exports,
     ) {}
 
     public function index(Request $request): View {
@@ -83,6 +85,32 @@ class RiskController extends Controller {
             'matrix' => $this->service->matrix(),
             'reviewDueCount' => IsmsRisk::query()->reviewDue()->count(),
             'canManage' => Gate::allows('create', IsmsRisk::class),
+        ]);
+    }
+
+    /**
+     * Direkt-Export des Risikoregisters (?format=json|csv) — gleiches
+     * Gate wie die Listenseite; meta-Block/Kopf trägt den Datenstand
+     * (generated_at), „versioniert" leistet das Auditpaket.
+     */
+    public function export(Request $request): StreamedResponse {
+        Gate::authorize('viewAny', IsmsRisk::class);
+
+        $format = (string) $request->query('format', 'json');
+        abort_unless(in_array($format, RegisterExportService::FORMATS, true), 404);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $register = $this->exports->riskRegister();
+
+        $content = $format === 'csv'
+            ? $this->exports->toCsv(RegisterExportService::REGISTER_RISKS, $actor, null, $register)
+            : $this->exports->toJson(RegisterExportService::REGISTER_RISKS, $actor, null, $register);
+
+        return response()->streamDownload(static function () use ($content): void {
+            echo $content;
+        }, $this->exports->filename(RegisterExportService::REGISTER_RISKS, $format), [
+            'Content-Type' => $format === 'csv' ? 'text/csv; charset=UTF-8' : 'application/json; charset=UTF-8',
         ]);
     }
 

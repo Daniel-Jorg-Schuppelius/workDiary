@@ -9,8 +9,18 @@ Kanälen Zeit/Material, Payload-Hash, Hash-Ketten-Events, audit:verify),
 Zeitkorrektur-Guard, Lexoffice-Positionsübergabe als Rechnungsentwurf über
 die bestehende API, Datei-Übergabepaket (CSV, ehrlich ohne DATEV-
 Formatanspruch) als Platzhalter für die Desktop-API, module.finance
-(Enterprise). Offen: DATEV-Desktop-API-Adapter (Phase 0/1), E-Rechnung,
-Buchungsstapel, Zahlungsabgleich, Storno-/Differenzübergaben.
+(Enterprise). Zweites Inkrement (2026-06-12): E-Rechnung-MVP umgesetzt —
+XRechnung-konformes UBL-2.1-XML (CIUS XRechnung 3.0) für lokale
+Ausgangsrechnungen im Pfad „WorkDiary führt" (`XRechnungGenerator` mit
+Pflichtfeld-Preflight: Verkäuferstammdaten je Org in
+`settings['einvoice']`, Leitweg-ID/BT-10 je Kunde als
+`customers.buyer_reference`, Steuerkategorien S/Z/E inkl. § 19 UStG,
+SEPA-Zahlweg 58, Download-Route `invoices.einvoice` mit Hoheits-Sperre via
+BillingModeResolver). Bewusst offen am E-Rechnungs-MVP: ZUGFeRD
+(PDF/A-3-Einbettung), Schematron-/KoSIT-Validierung (benötigt Java; der
+Preflight ersetzt keine vollständige EN-16931-Regelprüfung), Peppol-Versand,
+Empfang eingehender E-Rechnungen. Weiterhin offen: DATEV-Desktop-API-Adapter
+(Phase 0/1), Buchungsstapel, Zahlungsabgleich, Storno-/Differenzübergaben.
 
 ## Ziel
 
@@ -1012,8 +1022,10 @@ Das Feature ist für die Anwendung erfolgreich, wenn:
 - [ ] Ist für eine Organisation oder einen Kunden ein führendes externes
       Fakturierungssystem konfiguriert, ist die lokale Rechnungserstellung
       für dessen Quellen gesperrt.
-- [ ] Lokale Ausgangsrechnungen können als XRechnung/ZUGFeRD (EN 16931)
-      ausgegeben und gegen das Regelwerk validiert werden.
+- [x] Lokale Ausgangsrechnungen können als XRechnung (UBL 2.1, EN 16931)
+      ausgegeben werden; ein Pflichtfeld-Preflight prüft die fachlichen
+      Pflichtangaben. (Teilweise: ZUGFeRD und Schematron-/KoSIT-Validierung
+      stehen noch aus.)
 - [ ] Die Festschreibe-Entscheidung je Buchungsstapel ist sichtbar und Teil
       des Exportnachweises.
 - [ ] Bankdaten mit Personenbezug liegen verschlüsselt vor; das Matching

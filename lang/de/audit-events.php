@@ -110,4 +110,14 @@ return [
         'reset'                     => 'Demo-Mandant zurückgesetzt',
         'seeded'                    => 'Demo-Daten erzeugt',
     ],
+    // Tagesabschluss (MVP-015)
+    'dayClose' => [
+        'opened'                    => 'Tagesabschluss geöffnet',
+        'entrySaved'                => 'Tagesabschluss gespeichert',
+        'closed'                    => 'Tag abgeschlossen',
+        'correctionRequested'       => 'Tages-Korrektur beantragt',
+        'correctionApproved'        => 'Tages-Korrektur freigegeben',
+        'correctionRejected'        => 'Tages-Korrektur abgelehnt',
+        'reopened'                  => 'Tag wieder geöffnet',
+    ],
 ];

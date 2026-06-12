@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Accessibility-Checkliste als MVP-008 umgesetzt: siehe
+In Progress — Accessibility-Checkliste als MVP-008 umgesetzt: siehe
 [docs/accessibility-checkliste.md](../accessibility-checkliste.md).
 
 ## Ziel

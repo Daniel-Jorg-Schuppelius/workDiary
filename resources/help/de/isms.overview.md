@@ -1,7 +1,7 @@
 ---
 title: "ISMS im Überblick"
 topic: isms.overview
-version: 1
+version: 2
 audience: []
 related:
     - isms.requirements-soa
@@ -39,6 +39,14 @@ Der typische Weg:
 Voraussetzungen: Das Modul **ISMS** ist Teil des Enterprise-Plans.
 Personen mit ISMS-Leserechten können die Inhalte einsehen; Änderungen
 und die Verwaltung von Geltungsbereichen erfordern ISMS-Pflegerechte.
+
+Den Überblick liefert die **Auditbereitschaft** (erster Eintrag im
+ISMS-Bereich): Kennzahlen je Geltungsbereich zu hohen Risiken,
+überfälligen Bewertungs-Reviews, Nachweislücken, überfälligen
+Korrekturmaßnahmen, offenen Nichtkonformitäten und Zertifikatsterminen
+– jede Kachel verlinkt direkt in das zugehörige Register. Auf den
+Register-Seiten (Risiken, Anforderungen & SoA, Maßnahmen) stehen
+zusätzlich JSON-/CSV-Exporte mit ausgewiesenem Datenstand bereit.
 
 Nächste Schritte: Für Prüfer erstellst du unter **Auditpakete** einen
 finalisierten Daten-Snapshot, das **Softwareinventar** dokumentiert

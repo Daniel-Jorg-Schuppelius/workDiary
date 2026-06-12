@@ -80,4 +80,13 @@ return [
         'reset' => 'Locataire de démonstration réinitialisé',
         'seeded' => 'Données de démonstration générées',
     ],
+    'dayClose' => [
+        'opened' => 'Clôture journalière ouverte',
+        'entrySaved' => 'Clôture journalière enregistrée',
+        'closed' => 'Jour clôturé',
+        'correctionRequested' => 'Correction du jour demandée',
+        'correctionApproved' => 'Correction du jour approuvée',
+        'correctionRejected' => 'Correction du jour refusée',
+        'reopened' => 'Jour rouvert',
+    ],
 ];

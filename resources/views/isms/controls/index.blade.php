@@ -19,6 +19,13 @@
 @section('content')
     <x-index-page :subtitle="__('isms.subtitle.controls')">
         <x-slot:actions>
+            {{-- Direkt-Exporte (Feature 044, MVP 1): Datenstand = jetzt; „versioniert" leistet das Auditpaket. --}}
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('isms.controls.export', ['format' => 'json'])"
+                        show-label>{{ __('isms.action.export_json') }}</x-icon-btn>
+            <x-icon-btn icon="download" tone="outline" size="sm"
+                        :href="route('isms.controls.export', ['format' => 'csv'])"
+                        show-label>{{ __('isms.action.export_csv') }}</x-icon-btn>
             <x-icon-btn icon="checklist" tone="outline" size="sm"
                         :href="route('isms.requirements.index')"
                         show-label>{{ __('isms.title.requirements') }}</x-icon-btn>

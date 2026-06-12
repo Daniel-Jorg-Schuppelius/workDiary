@@ -80,4 +80,13 @@ return [
         'reset' => 'Tenant demo reimpostato',
         'seeded' => 'Dati demo generati',
     ],
+    'dayClose' => [
+        'opened' => 'Chiusura giornaliera aperta',
+        'entrySaved' => 'Chiusura giornaliera salvata',
+        'closed' => 'Giorno chiuso',
+        'correctionRequested' => 'Correzione del giorno richiesta',
+        'correctionApproved' => 'Correzione del giorno approvata',
+        'correctionRejected' => 'Correzione del giorno respinta',
+        'reopened' => 'Giorno riaperto',
+    ],
 ];

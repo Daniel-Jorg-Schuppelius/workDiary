@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed — Zeitkorrektur-Anträge (MVP-017):
+In Progress — Zeitkorrektur-Anträge (MVP-017):
 [docs/zeit-korrekturen.md](../zeit-korrekturen.md). Monatsfreigabe
 (MVP-016): [docs/monatsfreigabe.md](../monatsfreigabe.md).
 
