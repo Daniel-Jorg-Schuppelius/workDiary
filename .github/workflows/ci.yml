@@ -28,6 +28,14 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Checkout system dependency installer
+        uses: actions/checkout@v6
+        with:
+          repository: DSchuppelius/install-dependencies
+          ref: 8cfd278a89be3f58b734fac40779b5cb9d11a195
+          path: .tools/install-dependencies
+          persist-credentials: false
+
       - name: Set up PHP
         uses: shivammathur/setup-php@2.37.1
         with:
@@ -46,6 +54,11 @@ jobs:
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install PDF system dependencies
+        env:
+          CONFIG_DIR: ${{ github.workspace }}/vendor/daniel-jorg-schuppelius/php-pdf-toolkit/config
+        run: bash .tools/install-dependencies/install-dependencies.sh
 
       - name: Prepare test environment
         run: |
