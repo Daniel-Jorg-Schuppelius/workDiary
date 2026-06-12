@@ -12,10 +12,13 @@ namespace Tests\Feature\Licensing;
 
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 class FeatureBladeDirectiveTest extends TestCase {
+    use RefreshDatabase;
+
     public function test_directive_check_is_true_when_feature_enabled(): void {
         $this->bindLicenseFeatures(['protocols.signed']);
 

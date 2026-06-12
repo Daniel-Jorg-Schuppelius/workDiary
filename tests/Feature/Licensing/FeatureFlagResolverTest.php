@@ -12,9 +12,12 @@ namespace Tests\Feature\Licensing;
 
 use App\Services\Licensing\{FeatureFlagResolver, LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class FeatureFlagResolverTest extends TestCase {
+    use RefreshDatabase;
+
     public function test_unknown_feature_returns_false(): void {
         $this->bindLicense(LicenseResult::fail(LicenseStatus::Missing));
         $resolver = app()->make(FeatureFlagResolver::class);

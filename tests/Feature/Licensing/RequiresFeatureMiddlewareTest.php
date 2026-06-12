@@ -12,10 +12,13 @@ namespace Tests\Feature\Licensing;
 
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class RequiresFeatureMiddlewareTest extends TestCase {
+    use RefreshDatabase;
+
     public function test_allows_request_when_feature_enabled(): void {
         $this->bindLicenseFeatures(['protocols.signed']);
         Route::middleware('requires-feature:protocols.signed')
