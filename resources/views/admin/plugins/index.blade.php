@@ -239,21 +239,13 @@
                 ? data.message
                 : (status === 'ok' ? '{{ __('Plugin meldet sich gesund.') }}' : '{{ __('Keine Detailmeldung vom Plugin.') }}');
             updateRow(pluginId, data);
-            if (typeof window.notifyAction === 'function') {
-                window.notifyAction({ tone: tone, title: title, message: message });
-            } else {
-                window.alert(title + '\n\n' + message);
-            }
+            window.notifyAction({ tone: tone, title: title, message: message });
         }).catch(function (err) {
-            if (typeof window.notifyAction === 'function') {
-                window.notifyAction({
-                    tone: 'error',
-                    title: '{{ __('Healthcheck fehlgeschlagen') }} — ' + pluginName,
-                    message: (err && err.message) ? String(err.message) : '{{ __('Anfrage konnte nicht ausgeführt werden.') }}'
-                });
-            } else {
-                window.alert('{{ __('Healthcheck fehlgeschlagen') }}');
-            }
+            window.notifyAction({
+                tone: 'error',
+                title: '{{ __('Healthcheck fehlgeschlagen') }} — ' + pluginName,
+                message: (err && err.message) ? String(err.message) : '{{ __('Anfrage konnte nicht ausgeführt werden.') }}'
+            });
         }).then(function () {
             if (button) button.disabled = false;
             if (icon) {

@@ -48,7 +48,8 @@ const dateFormatByLang = { de: "d.m.Y", en: "m/d/Y", fr: "d/m/Y", it: "d/m/Y" };
 const cfgFormats = (typeof window !== "undefined" && window.__formats) || {};
 // PHP-Token → flatpickr-Token: identisch bis auf AM/PM (PHP "A" → flatpickr "K").
 const toFlatpickrFormat = (fmt) => String(fmt || "").replace(/A/g, "K");
-const dateAltFormat = cfgFormats.date || dateFormatByLang[htmlLang.slice(0, 2)] || "Y-m-d";
+const dateAltFormat =
+    cfgFormats.date || dateFormatByLang[htmlLang.slice(0, 2)] || "Y-m-d";
 const timeAltFormat = toFlatpickrFormat(cfgFormats.time || "H:i");
 // 12-Stunden-Format erkennen (PHP "h"=12h, "H"=24h; "K"=AM/PM nach Konvertierung).
 const timeIs24h = !/[hK]/.test(timeAltFormat);
@@ -524,7 +525,9 @@ document.addEventListener("click", (event) => {
                 const ov = opt && opt.dataset ? opt.dataset.parent : "";
                 if (ov && parent.value !== ov) {
                     parent.value = ov;
-                    parent.dispatchEvent(new Event("change", { bubbles: true }));
+                    parent.dispatchEvent(
+                        new Event("change", { bubbles: true }),
+                    );
                 }
             });
 
@@ -766,9 +769,6 @@ document.addEventListener("click", (event) => {
                                 tone: "warning",
                                 message: firstError || checkInputMsg,
                             });
-                        } else {
-                            // eslint-disable-next-line no-alert
-                            window.alert(firstError || checkInputMsg);
                         }
                         return;
                     }
@@ -787,9 +787,6 @@ document.addEventListener("click", (event) => {
                             tone: "error",
                             message: saveFailedMsg,
                         });
-                    } else {
-                        // eslint-disable-next-line no-alert
-                        window.alert(saveFailedMsg);
                     }
                 } finally {
                     if (submitButton) submitButton.disabled = false;

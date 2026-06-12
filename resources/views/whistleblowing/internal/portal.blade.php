@@ -24,7 +24,10 @@
                     </p>
                     <p class="text-sm text-base-content/70">{{ __('Diesen Link veroeffentlichen Sie fuer Hinweisgeber. Er ist nicht aus dem Organisationsnamen ableitbar.') }}</p>
                     <form method="post" action="{{ route('whistleblowing.portal.rotate') }}"
-                          onsubmit="return confirm('{{ __('Link wirklich rotieren? Bereits verteilte Links werden ungueltig.') }}')">
+                          data-confirm-dialog
+                          data-confirm-icon="autorenew"
+                          data-confirm-tone="warning"
+                          data-confirm-message="{{ __('Link wirklich rotieren? Bereits verteilte Links werden ungueltig.') }}">
                         @csrf
                         <x-icon-btn icon="autorenew" tone="ghost" size="sm" type="submit" show-label>{{ __('Link rotieren') }}</x-icon-btn>
                     </form>

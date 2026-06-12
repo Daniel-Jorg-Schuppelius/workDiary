@@ -43,7 +43,7 @@
                         {{ $item->actor ?? __('timeline.actor_system') }}
                     </p>
                     @if ($item->summary)
-                        <p class="mt-0.5 break-words text-sm text-base-content/80">{{ $item->summary }}</p>
+                        <p class="mt-0.5 wrap-break-word text-sm text-base-content/80">{{ $item->summary }}</p>
                     @endif
                 </div>
             </li>

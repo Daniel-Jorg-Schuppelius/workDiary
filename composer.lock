@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f07356799d65d9e600b12641c4553a17",
+    "content-hash": "3d7f5d31e7a83bb5c17b6583965fe944",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -547,6 +547,50 @@
             "time": "2026-06-07T11:47:49+00:00"
         },
         {
+            "name": "daniel-jorg-schuppelius/datev-php-sdk",
+            "version": "v0.4.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk.git",
+                "reference": "2b57fcca0e23482b71c4e593c6ecc841c337e7fc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/datev-php-sdk/zipball/2b57fcca0e23482b71c4e593c6ecc841c337e7fc",
+                "reference": "2b57fcca0e23482b71c4e593c6ecc841c337e7fc",
+                "shasum": ""
+            },
+            "require": {
+                "daniel-jorg-schuppelius/php-api-toolkit": "^2.2",
+                "php": ">=8.2 <8.5"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.3@dev"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Datev\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Joerg Schuppelius",
+                    "email": "info@schuppelius.org"
+                }
+            ],
+            "description": "DATEV SDK for PHP",
+            "support": {
+                "issues": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/issues",
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/tree/v0.4.5"
+            },
+            "time": "2026-01-11T18:40:29+00:00"
+        },
+        {
             "name": "daniel-jorg-schuppelius/lexoffice-php-sdk",
             "version": "v1.0",
             "source": {
@@ -749,16 +793,16 @@
         },
         {
             "name": "darkaonline/l5-swagger",
-            "version": "11.0.1",
+            "version": "11.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DarkaOnLine/L5-Swagger.git",
-                "reference": "63d737e841533cac6e8c04a007561aa833f69f3a"
+                "reference": "110b59478c9417c13794cef62a82b019433d642a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/63d737e841533cac6e8c04a007561aa833f69f3a",
-                "reference": "63d737e841533cac6e8c04a007561aa833f69f3a",
+                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/110b59478c9417c13794cef62a82b019433d642a",
+                "reference": "110b59478c9417c13794cef62a82b019433d642a",
                 "shasum": ""
             },
             "require": {
@@ -817,7 +861,7 @@
             ],
             "support": {
                 "issues": "https://github.com/DarkaOnLine/L5-Swagger/issues",
-                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/11.0.1"
+                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/11.1.0"
             },
             "funding": [
                 {
@@ -825,7 +869,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-04-08T13:14:00+00:00"
+            "time": "2026-06-12T10:04:41+00:00"
         },
         {
             "name": "dasprid/enum",
@@ -2190,16 +2234,16 @@
         },
         {
             "name": "guzzlehttp/uri-template",
-            "version": "v1.0.6",
+            "version": "v1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/uri-template.git",
-                "reference": "eef7f87bab6f204eba3c39224d8075c70c637946"
+                "reference": "7fe811c23a9e3cd712b4389eaeb50b5456d8c529"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/uri-template/zipball/eef7f87bab6f204eba3c39224d8075c70c637946",
-                "reference": "eef7f87bab6f204eba3c39224d8075c70c637946",
+                "url": "https://api.github.com/repos/guzzle/uri-template/zipball/7fe811c23a9e3cd712b4389eaeb50b5456d8c529",
+                "reference": "7fe811c23a9e3cd712b4389eaeb50b5456d8c529",
                 "shasum": ""
             },
             "require": {
@@ -2256,7 +2300,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/uri-template/issues",
-                "source": "https://github.com/guzzle/uri-template/tree/v1.0.6"
+                "source": "https://github.com/guzzle/uri-template/tree/v1.0.7"
             },
             "funding": [
                 {
@@ -2272,7 +2316,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-23T22:00:21+00:00"
+            "time": "2026-06-12T21:33:43+00:00"
         },
         {
             "name": "laravel/framework",
@@ -13365,6 +13409,62 @@
                 }
             ],
             "time": "2025-12-08T11:19:18+00:00"
+        },
+        {
+            "name": "wikimedia/composer-merge-plugin",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wikimedia/composer-merge-plugin.git",
+                "reference": "a03d426c8e9fb2c9c569d9deeb31a083292788bc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wikimedia/composer-merge-plugin/zipball/a03d426c8e9fb2c9c569d9deeb31a083292788bc",
+                "reference": "a03d426c8e9fb2c9c569d9deeb31a083292788bc",
+                "shasum": ""
+            },
+            "require": {
+                "composer-plugin-api": "^1.1||^2.0",
+                "php": ">=7.2.0"
+            },
+            "require-dev": {
+                "composer/composer": "^1.1||^2.0",
+                "ext-json": "*",
+                "mediawiki/mediawiki-phan-config": "0.11.1",
+                "php-parallel-lint/php-parallel-lint": "~1.3.1",
+                "phpspec/prophecy": "~1.15.0",
+                "phpunit/phpunit": "^8.5||^9.0",
+                "squizlabs/php_codesniffer": "~3.7.1"
+            },
+            "type": "composer-plugin",
+            "extra": {
+                "class": "Wikimedia\\Composer\\Merge\\V2\\MergePlugin",
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Wikimedia\\Composer\\Merge\\V2\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Bryan Davis",
+                    "email": "bd808@wikimedia.org"
+                }
+            ],
+            "description": "Composer plugin to merge multiple composer.json files",
+            "support": {
+                "issues": "https://github.com/wikimedia/composer-merge-plugin/issues",
+                "source": "https://github.com/wikimedia/composer-merge-plugin/tree/v2.1.0"
+            },
+            "time": "2023-04-15T19:07:00+00:00"
         }
     ],
     "aliases": [],

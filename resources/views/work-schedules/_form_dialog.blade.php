@@ -50,10 +50,10 @@
 >
     <x-slot:headerActions>
         <div class="join rounded-box border border-base-300/70">
-            <button type="button" class="join-item btn btn-xs"
+            <button type="button" class="join-item btn btn-sm"
                     :class="unitClass('minutes')"
                     @click="switchTo('minutes')">{{ __('Minuten') }}</button>
-            <button type="button" class="join-item btn btn-xs"
+            <button type="button" class="join-item btn btn-sm"
                     :class="unitClass('hours')"
                     @click="switchTo('hours')">{{ __('Stunden') }}</button>
         </div>

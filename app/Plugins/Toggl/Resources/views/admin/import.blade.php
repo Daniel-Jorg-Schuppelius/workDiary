@@ -87,7 +87,7 @@
                                     @csrf
                                     <input type="hidden" name="client_name" value="{{ $group->client_name }}">
                                     <input type="hidden" name="project_name" value="{{ $group->project_name }}">
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Verwerfen') }}</button>
+                                    <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Verwerfen') }}</button>
                                 </form>
                             </div>
 

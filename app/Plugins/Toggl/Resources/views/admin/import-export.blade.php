@@ -163,7 +163,7 @@
                     </h2>
                     <form method="POST" action="{{ route('admin.toggl.import-export.reset') }}">
                         @csrf
-                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('Vorschau zurücksetzen') }}</button>
+                        <button type="submit" class="btn btn-ghost btn-sm">{{ __('Vorschau zurücksetzen') }}</button>
                     </form>
                 </div>
                 <div class="overflow-x-auto">

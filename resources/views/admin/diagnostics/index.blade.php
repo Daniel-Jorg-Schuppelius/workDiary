@@ -49,7 +49,7 @@
         <a href="{{ route('admin.diagnostics.json') }}" class="btn btn-sm btn-ghost">{{ __('JSON') }}</a>
         @can(\App\Enums\User\Permission::PlatformDiagnosticsRunCheck->value)
             <form method="POST" action="{{ route('admin.diagnostics.test-mail') }}"
-                  onsubmit="event.preventDefault(); fetch(this.action, {method:'POST', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept':'application/json'}, credentials:'same-origin'}).then(r=>r.json()).then(p=>alert(p.ok ? 'Mail abgesetzt.' : 'Fehler: ' + (p.error || '?'))).catch(()=>alert('Fehler beim Senden.'));">
+                  onsubmit="event.preventDefault(); fetch(this.action, {method:'POST', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept':'application/json'}, credentials:'same-origin'}).then(r=>r.json()).then(p=>window.notifyAction(p.ok ? {tone:'success', title:'{{ __('Diagnose') }}', message:'{{ __('Mail abgesetzt.') }}'} : {tone:'error', title:'{{ __('Diagnose') }}', message:'{{ __('Fehler:') }} ' + (p.error || '?')})).catch(()=>window.notifyAction({tone:'error', title:'{{ __('Diagnose') }}', message:'{{ __('Fehler beim Senden.') }}'}));">
                 @csrf
                 <button type="submit" class="btn btn-sm btn-outline">{{ __('Test-Mail senden') }}</button>
             </form>

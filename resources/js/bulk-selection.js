@@ -72,7 +72,12 @@ const init = (root) => {
         const count = checkboxes().filter((b) => b.checked).length;
         if (count === 0) {
             e.preventDefault();
-            window.alert("Bitte zuerst mindestens einen Eintrag auswählen.");
+            if (typeof window.notifyAction === "function") {
+                window.notifyAction({
+                    tone: "warning",
+                    message: "Bitte zuerst mindestens einen Eintrag auswählen.",
+                });
+            }
         }
     });
 

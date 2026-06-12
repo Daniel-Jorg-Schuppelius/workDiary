@@ -68,15 +68,15 @@
                                         <div class="join">
                                             <form method="POST" action="{{ route('admin.lexoffice.conflicts.resolve-local', $conflict) }}" class="join-item inline">
                                                 @csrf
-                                                <button class="btn btn-xs btn-outline">{{ __('Lokal behalten') }}</button>
+                                                <button class="btn btn-sm btn-outline">{{ __('Lokal behalten') }}</button>
                                             </form>
                                             <form method="POST" action="{{ route('admin.lexoffice.conflicts.resolve-remote', $conflict) }}" class="join-item inline">
                                                 @csrf
-                                                <button class="btn btn-xs btn-primary">{{ __('Remote übernehmen') }}</button>
+                                                <button class="btn btn-sm btn-primary">{{ __('Remote übernehmen') }}</button>
                                             </form>
                                             <form method="POST" action="{{ route('admin.lexoffice.conflicts.dismiss', $conflict) }}" class="join-item inline">
                                                 @csrf
-                                                <button class="btn btn-xs btn-ghost">{{ __('Verwerfen') }}</button>
+                                                <button class="btn btn-sm btn-ghost">{{ __('Verwerfen') }}</button>
                                             </form>
                                         </div>
                                     @else

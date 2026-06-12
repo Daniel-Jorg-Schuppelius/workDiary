@@ -111,7 +111,10 @@
                             <x-icon-btn icon="download" size="sm" :href="route('admin.data.download', $run)" />
                         @endif
                         <form method="POST" action="{{ route('admin.data.destroy', $run) }}"
-                              onsubmit="return confirm('{{ __('Export wirklich löschen?') }}');">
+                              data-confirm-dialog
+                              data-confirm-icon="delete"
+                              data-confirm-tone="error"
+                              data-confirm-message="{{ __('Export wirklich löschen?') }}">
                             @csrf @method('DELETE')
                             <x-icon-btn icon="delete" size="sm" tone="ghost" type="submit" />
                         </form>

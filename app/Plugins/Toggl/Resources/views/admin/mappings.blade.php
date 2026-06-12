@@ -69,7 +69,7 @@
                                         <form method="POST" action="{{ route('admin.toggl.mappings.update', $mapping->id) }}"
                                               class="flex items-center gap-2">
                                             @csrf
-                                            <select name="target_id" required class="select select-xs select-bordered">
+                                            <select name="target_id" required class="select select-sm select-bordered">
                                                 <option value="">{{ __('— wählen —') }}</option>
                                                 @if ($isClient)
                                                     @foreach ($customers as $c)
@@ -83,13 +83,13 @@
                                                     @endforeach
                                                 @endif
                                             </select>
-                                            <button type="submit" class="btn btn-xs">{{ __('Umbiegen') }}</button>
+                                            <button type="submit" class="btn btn-sm">{{ __('Umbiegen') }}</button>
                                         </form>
                                         <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->id) }}"
                                               data-confirm-dialog
                                               data-confirm-message="{{ __('Diese Zuordnung entfernen? Künftige Importe matchen dann nicht mehr automatisch.') }}">
                                             @csrf
-                                            <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Entfernen') }}</button>
+                                            <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Entfernen') }}</button>
                                         </form>
                                     </div>
                                 </td>

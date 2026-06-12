@@ -17,10 +17,6 @@ let _dragShiftId = null; // shift id being dragged
 function notifyError(message) {
     if (typeof window.notifyAction === "function") {
         window.notifyAction({ tone: "error", message: String(message) });
-    } else {
-        // Fallback nur falls Layout-JS noch nicht geladen.
-        // eslint-disable-next-line no-alert
-        window.alert(String(message));
     }
 }
 
@@ -168,7 +164,8 @@ function openShiftDialog({
     const status = isEdit ? (shift?.status ?? "") : "";
     const isAdmin = !!_cfg?.isAdmin;
     const isOwner =
-        isEdit && String(shift?.user_id ?? "") === String(_cfg?.currentUserId ?? "");
+        isEdit &&
+        String(shift?.user_id ?? "") === String(_cfg?.currentUserId ?? "");
     const showPublish = isEdit && isAdmin && status === "draft";
     const showConfirm = isEdit && isOwner && status === "published";
     document
@@ -504,8 +501,8 @@ function addTypeRow(type) {
         <td id="type-end-${type.id}">${escHtml(type.default_end_time ?? "–")}</td>
         <td><span class="badge badge-sm ${type.is_active ? "badge-success" : "badge-ghost"}">${type.is_active ? "ja" : "nein"}</span></td>
         <td class="text-right">
-            <button type="button" onclick="shiftTypeOpenEdit(${type.id}, ${escAttr(JSON.stringify(type))})" class="btn btn-xs btn-ghost">Bearbeiten</button>
-            <button type="button" onclick="shiftTypeDelete(${type.id})" class="btn btn-xs btn-ghost text-error">Löschen</button>
+            <button type="button" onclick="shiftTypeOpenEdit(${type.id}, ${escAttr(JSON.stringify(type))})" class="btn btn-sm btn-ghost">Bearbeiten</button>
+            <button type="button" onclick="shiftTypeDelete(${type.id})" class="btn btn-sm btn-ghost text-error">Löschen</button>
         </td>`;
     tbody.appendChild(tr);
 }

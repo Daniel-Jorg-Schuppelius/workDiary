@@ -83,21 +83,21 @@
                             <input type="hidden" name="day_targets[{{ $iso }}][hours]" :value="dayHours({{ $iso }})">
                         </td>
                         <td>
-                            <select class="select select-bordered select-xs" x-model="days.d{{ $iso }}.mode" name="day_targets[{{ $iso }}][mode]" :disabled="dayDisabled({{ $iso }})">
+                            <select class="select select-bordered select-sm" x-model="days.d{{ $iso }}.mode" name="day_targets[{{ $iso }}][mode]" :disabled="dayDisabled({{ $iso }})">
                                 <option value="hours">{{ __('Stunden') }}</option>
                                 <option value="times">{{ __('Von–bis') }}</option>
                             </select>
                         </td>
                         <td>
                             <div x-show="dayModeIs({{ $iso }}, 'hours')" class="flex items-center gap-1">
-                                <input type="number" min="0" :step="step" x-model="days.d{{ $iso }}.hours" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-xs w-24">
+                                <input type="number" min="0" :step="step" x-model="days.d{{ $iso }}.hours" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-24">
                                 <span class="text-xs text-base-content/60" x-text="unitLabel"></span>
                             </div>
                             <div x-show="dayModeIs({{ $iso }}, 'times')" class="flex flex-wrap items-center gap-1">
-                                <input type="time" name="day_targets[{{ $iso }}][start]" x-model="days.d{{ $iso }}.start" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-xs w-28">
+                                <input type="time" name="day_targets[{{ $iso }}][start]" x-model="days.d{{ $iso }}.start" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-28">
                                 <span class="text-xs">–</span>
-                                <input type="time" name="day_targets[{{ $iso }}][end]" x-model="days.d{{ $iso }}.end" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-xs w-28">
-                                <input type="number" min="0" name="day_targets[{{ $iso }}][break]" x-model="days.d{{ $iso }}.break" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-xs w-16" title="{{ __('Pause (Min.)') }}">
+                                <input type="time" name="day_targets[{{ $iso }}][end]" x-model="days.d{{ $iso }}.end" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-28">
+                                <input type="number" min="0" name="day_targets[{{ $iso }}][break]" x-model="days.d{{ $iso }}.break" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-16" title="{{ __('Pause (Min.)') }}">
                                 <span class="text-xs text-base-content/60">{{ __('Pause') }}</span>
                             </div>
                         </td>

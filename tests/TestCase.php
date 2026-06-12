@@ -28,6 +28,9 @@ abstract class TestCase extends BaseTestCase {
     protected function setUp(): void {
         parent::setUp();
 
+        // Tests sollen nicht vom gebauten Vite-Manifest abhaengen.
+        $this->withoutVite();
+
         // Verhindert, dass DatabaseHealth-Marker zwischen Tests (oder zwischen
         // Tests und der Dev-Umgebung) durchsickern. Tests, die absichtlich
         // PDOExceptions ausl\u00f6sen (z. B. DatabaseUnavailableTest), w\u00fcrden

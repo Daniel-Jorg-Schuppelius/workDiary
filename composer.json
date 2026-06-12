@@ -13,6 +13,7 @@
         "azuyalabs/yasumi": "^2.11",
         "bacon/bacon-qr-code": "^3.1",
         "barryvdh/laravel-dompdf": "^3.1",
+        "daniel-jorg-schuppelius/datev-php-sdk": "^0.4.5",
         "daniel-jorg-schuppelius/lexoffice-php-sdk": "^1.0",
         "daniel-jorg-schuppelius/php-erechnung-toolkit": "^0.1.11",
         "daniel-jorg-schuppelius/php-pdf-toolkit": "^0.12.2",
@@ -40,7 +41,8 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^12.5.12"
+        "phpunit/phpunit": "^12.5.12",
+        "wikimedia/composer-merge-plugin": "^2.1"
     },
     "autoload": {
         "psr-4": {
@@ -108,9 +110,23 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
     },
+    "suggest": {
+        "daniel-jorg-schuppelius/php-financial-formats": "Optional (privat): DATEV-/Banking-Formate (CAMT, MT940, Pain, Swift, DATEV-Buchungsstapel) im Namespace CommonToolkit\\FinancialFormats\\. Nicht ueber die committete composer.json/lock eingebunden; lokal via gitignored composer.local.json (composer-merge-plugin) installierbar. Code, der das Paket nutzt, muss per class_exists()/Interface-Guard optional bleiben."
+    },
     "extra": {
         "laravel": {
             "dont-discover": []
+        },
+        "merge-plugin": {
+            "include": [
+                "composer.local.json"
+            ],
+            "recurse": true,
+            "replace": false,
+            "ignore-duplicates": false,
+            "merge-dev": true,
+            "merge-extra": false,
+            "merge-scripts": false
         }
     },
     "config": {
@@ -120,7 +136,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "wikimedia/composer-merge-plugin": true
         }
     },
     "minimum-stability": "stable",

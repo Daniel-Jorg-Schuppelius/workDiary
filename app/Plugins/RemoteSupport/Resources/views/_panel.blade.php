@@ -35,7 +35,7 @@
                         <form method="POST" action="{{ route('assets.remote-support.forget', [$asset, $provider]) }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-ghost btn-xs text-error" title="{{ __('Entfernen') }}">
+                            <button type="submit" class="btn btn-ghost btn-sm text-error" title="{{ __('Entfernen') }}">
                                 <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                             </button>
                         </form>

@@ -1,98 +1,31 @@
 # Copilot / Agent Instructions — workDiary
 
-Diese Datei ist die normative Kurzreferenz für alle automatisierten Code-Änderungen in diesem Repo. Detaillierte Konventionen liegen in `/memories/repo/workdiary-ui-conventions.md`.
+> **Verbindliche Standards stehen in [AGENTS.md](../AGENTS.md) (Repo-Root).**
+> Dieses Dokument ist nur der Einstiegspunkt für GitHub Copilot. Die
+> herstellerneutrale `AGENTS.md` ist die Single Source of Truth und wird von
+> VS Code automatisch zusätzlich geladen — **immer zuerst dort nachschlagen.**
 
-## Stack-Grundlagen
+## Schnellüberblick (Details in AGENTS.md)
 
-- Laravel 13 / PHP 8.4 / CarbonImmutable.
-- Frontend: Tailwind v4 + DaisyUI v5 + Material Symbols Outlined (Font).
-- Autorisierung: Spatie Permissions.
-- Tests: `composer test`; Statisch: `vendor/bin/phpstan analyse`; Linter: `vendor/bin/pint`.
+- **Stack:** Laravel 13 / PHP 8.4 / CarbonImmutable · Tailwind v4 + DaisyUI v5 + Material Symbols Outlined · Spatie Permissions · Sqid-IDs in URLs · Sprache **nur Deutsch** (`lang/de/`).
+- **Gates:** `composer test` · `vendor/bin/phpstan analyse` · `vendor/bin/pint`.
 
-## Index-/Listenseiten-Standard (Corporate Design)
+## Verbindliche Quellen (immer zuerst lesen)
 
-Jede neue Index-/Listenseite (`resources/views/**/index.blade.php`) MUSS dem folgenden Skeleton folgen.
+| Thema                                      | Quelle                                                          |
+| ------------------------------------------ | -------------------------------------------------------------- |
+| **Arbeitsanweisung (kanonisch)**           | [AGENTS.md](../AGENTS.md)                                       |
+| UX-Pattern-Katalog (Leitdokument)          | [docs/ux-pattern-katalog.md](../docs/ux-pattern-katalog.md)    |
+| Status- & Aktionssemantik                  | [docs/status-aktionsglossar.md](../docs/status-aktionsglossar.md) |
+| Barrierefreiheit                           | [docs/accessibility-checkliste.md](../docs/accessibility-checkliste.md) |
+| UI-Vereinheitlichung / Ausnahmen           | [docs/ui-unification-audit.md](../docs/ui-unification-audit.md) |
 
-### Skelett ohne Filter
+## Wichtigste Regeln (Kurzfassung)
 
-```blade
-@extends('layouts.app')
-
-@section('title', __('Kunden'))
-@section('nav-title', __('Kunden'))
-
-@section('content')
-<x-index-page :subtitle="__('Kunden des Mandanten :org verwalten.', ['org' => $organization->name])">
-    <x-slot:actions>
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    :href="route('customers.create')"
-                    show-label>{{ __('Kunde anlegen') }}</x-icon-btn>
-    </x-slot:actions>
-
-    @if ($customers->isEmpty())
-        <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' />
-    @else
-        <x-table>…</x-table>
-    @endif
-</x-index-page>
-@endsection
-```
-
-### Skelett mit Filter/Suche
-
-```blade
-<x-index-page :subtitle="__('…')">
-    <x-slot:actions>…</x-slot:actions>
-
-    <x-filter-bar :action="route('customers.index')" :reset="route('customers.index')">
-        <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
-               class="input input-sm input-bordered w-48 shrink-0"
-               placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
-        <select name="status" class="select select-sm select-bordered w-32 shrink-0">…</select>
-        …
-    </x-filter-bar>
-
-    @if ($customers->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' />
-    @else
-        <x-table>
-            <x-slot:head>…</x-slot:head>
-            @foreach ($customers as $c)
-                <tr>…</tr>
-            @endforeach
-        </x-table>
-    @endif
-</x-index-page>
-```
-
-### Verbindliche Regeln
-
-1. **Header**: `x-index-page` umschließt alles. KEIN `title`-Prop, KEIN zusätzliches `<h2>` im Body. Titel kommt aus `@section('nav-title')`.
-2. **Subtitle Pflicht**: kurze Beschreibung der Seite — was wird hier verwaltet, in welchem Kontext.
-3. **Aktionen**: rechte Toolbar-Aktionen ausschließlich via `<x-slot:actions>` mit `<x-icon-btn>`. Primär-Action ist meist „Anlegen" (`icon="add"`, `tone="primary"`, `size="sm"`, `show-label`).
-4. **Filter/Suche**:
-    - Wenn vorhanden: `<x-filter-bar>` direkt unter der Toolbar (einzeilig, scrollbar, sm-Größen).
-    - Wenn NICHT vorhanden: filter-bar komplett weglassen — keine leere Karte stehen lassen.
-    - Inputs/Selects mit `input-sm` / `select-sm` / `shrink-0` und fixer Breite (`w-24`..`w-48`).
-5. **Empty-State**:
-    - Liste/Cards: `<x-empty-state framed icon="…" />` — Defaults für `title` und `message` greifen.
-    - Tabelle: `<x-table.empty :colspan="…" icon="…" />` als letzte Zeile.
-    - Nur `icon` (Domain-Kontext) zwingend setzen; `title`/`message` nur bei abweichendem Wording (z. B. „Noch keine Dienstpläne vorhanden").
-6. **Größen-Standard**: `input-sm` / `select-sm` / `btn-sm`. **Kein `xs`.**
-7. **Material Symbols** nur gültige Namen (z. B. `add`, `groups`, `calendar_month`, `menu_book`, `inbox`). Heroicon-Namen werden als Literal-Text gerendert.
-
-### Komponenten-Inventar (Quellen)
-
-- `resources/views/components/index-page.blade.php` — Skeleton-Wrapper.
-- `resources/views/components/page-shell.blade.php` — Outer Container.
-- `resources/views/components/page-toolbar.blade.php` — Toolbar-Karte.
-- `resources/views/components/filter-bar.blade.php` — einzeilige Filterkarte.
-- `resources/views/components/empty-state.blade.php` — Empty-State (mit `framed`).
-- `resources/views/components/table/empty.blade.php` — Empty-Row für `<x-table>`.
-
-## Allgemeines
-
-- `&` statt `&amp;` in `__()`-Strings.
-- Drilldowns auf `customer` nutzen `diary.index?customer=…`.
-- Keine neuen Markdown-Dokumente für Code-Änderungen anlegen, sofern nicht ausdrücklich verlangt.
+1. **Index-/Listenseiten** folgen dem `<x-index-page>`-Skeleton (AGENTS.md §3).
+2. **Eingaben dialog-first als `<x-modal>`** — standalone Create-/Edit-Seiten nur als begründete Ausnahme bei sehr vielen Eingaben; keine Browser-Dialoge (AGENTS.md §4).
+3. **Tailwind v4-Klassennamen** (keine v3-Aliase), Farb-Tones nur über die definierte Semantik (AGENTS.md §5).
+4. **Komponenten wiederverwenden, nicht neu erfinden**; eigene Toolkits (`StringHelper`, `DateHelper`, … aus `php-common-toolkit` u. a.) vor Eigenbau nutzen (AGENTS.md §9). Abweichungen im PR begründen.
+5. **Globaler Header-Zeitraum** (`DateRangeContext`) ist die maßgebliche Zeitraum-Instanz — keine konkurrierenden Datumsfilter pro Seite (AGENTS.md §8).
+6. **Sicherer Weg vor schnellem Weg:** bei Unklarheit nachfragen statt raten, keine Gate-Abkürzungen (AGENTS.md §10).
+7. `&` (nicht `&amp;`) in `__()`-Strings; keine neuen Markdown-Dokumente ohne ausdrückliche Aufforderung.

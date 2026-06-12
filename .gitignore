@@ -36,3 +36,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Lokale, private Composer-Overrides (z. B. optionales php-financial-formats).
+# Wird via wikimedia/composer-merge-plugin gemergt; bewusst NICHT committen,
+# damit fremde Entwickler ohne Zugriff auf private Pakete lauffaehig bleiben.
+/composer.local.json
