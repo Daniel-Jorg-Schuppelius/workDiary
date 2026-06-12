@@ -33,6 +33,18 @@ class DatabaseSeeder extends Seeder {
         $this->call(PerDiemForeignRateSeeder::class);
         $this->call(InvoiceMailTemplateSeeder::class);
 
+        // Demo-/Test-Benutzer werden ausschließlich in lokalen bzw. Test-Umgebungen
+        // angelegt. In Produktion würde dies sonst Faker (Dev-Dependency) benötigen
+        // und unsichere Standard-Accounts erzeugen.
+        if (app()->environment('local', 'testing')) {
+            $this->seedDemoUsers();
+        }
+    }
+
+    /**
+     * Legt Demo-/Test-Benutzer an (nur für lokale und Test-Umgebungen).
+     */
+    private function seedDemoUsers(): void {
         $org = Organization::where('slug', 'default')->first();
 
         User::factory()->admin()->create([
