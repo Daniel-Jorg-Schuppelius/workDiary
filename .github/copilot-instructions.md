@@ -12,13 +12,13 @@
 
 ## Verbindliche Quellen (immer zuerst lesen)
 
-| Thema                                      | Quelle                                                          |
-| ------------------------------------------ | -------------------------------------------------------------- |
-| **Arbeitsanweisung (kanonisch)**           | [AGENTS.md](../AGENTS.md)                                       |
-| UX-Pattern-Katalog (Leitdokument)          | [docs/ux-pattern-katalog.md](../docs/ux-pattern-katalog.md)    |
-| Status- & Aktionssemantik                  | [docs/status-aktionsglossar.md](../docs/status-aktionsglossar.md) |
-| Barrierefreiheit                           | [docs/accessibility-checkliste.md](../docs/accessibility-checkliste.md) |
-| UI-Vereinheitlichung / Ausnahmen           | [docs/ui-unification-audit.md](../docs/ui-unification-audit.md) |
+| Thema                             | Quelle                                                                  |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| **Arbeitsanweisung (kanonisch)**  | [AGENTS.md](../AGENTS.md)                                               |
+| UX-Pattern-Katalog (Leitdokument) | [docs/ux-pattern-katalog.md](../docs/ux-pattern-katalog.md)             |
+| Status- & Aktionssemantik         | [docs/status-aktionsglossar.md](../docs/status-aktionsglossar.md)       |
+| Barrierefreiheit                  | [docs/accessibility-checkliste.md](../docs/accessibility-checkliste.md) |
+| UI-Vereinheitlichung / Ausnahmen  | [docs/ui-unification-audit.md](../docs/ui-unification-audit.md)         |
 
 ## Wichtigste Regeln (Kurzfassung)
 
@@ -27,5 +27,5 @@
 3. **Tailwind v4-Klassennamen** (keine v3-Aliase), Farb-Tones nur über die definierte Semantik (AGENTS.md §5).
 4. **Komponenten wiederverwenden, nicht neu erfinden**; eigene Toolkits (`StringHelper`, `DateHelper`, … aus `php-common-toolkit` u. a.) vor Eigenbau nutzen (AGENTS.md §9). Abweichungen im PR begründen.
 5. **Globaler Header-Zeitraum** (`DateRangeContext`) ist die maßgebliche Zeitraum-Instanz — keine konkurrierenden Datumsfilter pro Seite (AGENTS.md §8).
-6. **Sicherer Weg vor schnellem Weg:** bei Unklarheit nachfragen statt raten, keine Gate-Abkürzungen (AGENTS.md §10).
+6. **Gründlicher Weg vor schnellem Weg:** robuster, defensiver Code (Eingaben validieren, Zugriffe prüfen, Schwachstellenmuster vermeiden); bei Unklarheit nachfragen statt raten, keine Gate-Abkürzungen (AGENTS.md §10).
 7. `&` (nicht `&amp;`) in `__()`-Strings; keine neuen Markdown-Dokumente ohne ausdrückliche Aufforderung.

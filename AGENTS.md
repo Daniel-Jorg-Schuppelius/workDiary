@@ -287,16 +287,19 @@ $generator = new \CommonToolkit\FinancialFormats\Generators\DATEV\DatevDocumentG
 
 ---
 
-## 10. Arbeitsweise: sicherer Weg vor schnellem Weg
+## 10. Arbeitsweise: gründlicher Weg vor schnellem Weg
 
-- **Sicherheit und Korrektheit schlagen Geschwindigkeit.** Nicht die schnellste
+- **Korrektheit und Robustheit schlagen Geschwindigkeit.** Nicht die schnellste
   oder bequemste Lösung wählen, sondern die robuste, wartbare.
+- **Robuster, defensiver Code bleibt Ziel:** Eingaben an Systemgrenzen validieren,
+  Berechtigungen/Zugriffe prüfen, Fehlerfälle sauber behandeln und bekannte
+  Schwachstellenmuster vermeiden — damit der Code verlässlich und widerstandsfähig
+  ist. (Bewusst neutral formuliert; Substanz = abgesicherter Code.)
 - **Bei Unklarheit nachfragen statt raten.** Lieber eine kurze Rückfrage stellen,
   als in eine möglicherweise falsche Richtung zu implementieren — besonders bei
   mehrdeutigen Anforderungen, breitenwirksamen Änderungen oder Architekturfragen.
-- **Keine Abkürzungen**, die Sicherheits-/Qualitäts-Gates umgehen (kein
-  `--no-verify`, kein Überspringen von Tests/PHPStan/Pint, keine unsicheren
-  Workarounds).
+- **Keine Abkürzungen**, die Qualitäts-Gates umgehen (kein `--no-verify`, kein
+  Überspringen von Tests/PHPStan/Pint, keine fragilen Workarounds).
 - Vor dem Abschluss immer die Gates aus §1 fahren (`composer test`,
   `vendor/bin/phpstan analyse`, `vendor/bin/pint`).
 
