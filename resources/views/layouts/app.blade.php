@@ -273,6 +273,41 @@
             body.sidebar-collapsed #app-sidebar .menu { padding-left: 0; padding-right: 0; }
             body.sidebar-collapsed #app-sidebar .menu li { width: 100%; }
             body.sidebar-collapsed #app-sidebar .sidebar-cta-text { display: none; }
+
+            /* Eingeklappte Sidebar (Icon-Rail): Sektions-Header und Untergruppen
+               auf zentrierte Icons reduzieren, damit keine Lücken durch Chevron,
+               Einrückung oder Section-Labels entstehen. */
+            body.sidebar-collapsed #app-sidebar .sidebar-section-chevron { display: none; }
+            /* Geschlossene Bereiche im Icon-Streifen komplett ausblenden — sonst
+               summieren sich leere Section-Header zu sichtbaren Lücken. */
+            body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible:not([open]) {
+                display: none;
+            }
+            body.sidebar-collapsed #app-sidebar details.sidebar-section-collapsible > summary {
+                justify-content: center;
+                gap: 0;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            body.sidebar-collapsed #app-sidebar .sidebar-subgroup {
+                margin-left: 0;
+                padding-left: 0;
+                border-left: 0;
+            }
+            body.sidebar-collapsed #app-sidebar .sidebar-subgroup-label { display: none; }
+            body.sidebar-collapsed #app-sidebar .menu-link {
+                gap: 0;
+                justify-content: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+            /* Vertikale Abstände im Icon-Streifen verdichten — sonst wirkt die
+               1rem-Lücke (gap-4) zwischen eingeklappten Bereichen wie ein Loch,
+               zu eng kleben sie aber aneinander. */
+            body.sidebar-collapsed #app-sidebar .sidebar-items,
+            body.sidebar-collapsed #app-sidebar .sidebar-items > div {
+                gap: 0.5rem;
+            }
             #app-sidebar .material-symbols-outlined { font-size: 1.25rem; line-height: 1; flex-shrink: 0; }
             /* Sidebar nutzt `base-100` als Surface — bleibt damit weiß im hellen
                Corporate-Theme und im dim-Theme die übliche Card-Fläche. Abgrenzung
