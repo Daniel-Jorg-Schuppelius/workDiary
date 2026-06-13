@@ -39,8 +39,13 @@ npm run build
 
 echo "→ Storage-Link sicherstellen (public/storage → storage/app/public)"
 # Ohne den Symlink sind öffentliche Uploads (Logos, Anhänge) per URL nicht
-# erreichbar. Idempotent — vorhandener Link bleibt bestehen.
-php artisan storage:link || true
+# erreichbar. Nur anlegen, wenn er fehlt — sonst meldet Laravel einen Fehler
+# („link already exists"). Idempotent und still bei vorhandenem Link.
+if [ ! -e public/storage ]; then
+    php artisan storage:link
+else
+    echo "  ✓ Storage-Link existiert bereits."
+fi
 
 echo "→ Datenbank-Migrationen"
 php artisan migrate --force
@@ -53,9 +58,15 @@ echo "→ Hilfe-Topics indexieren (resources/help/{locale} → help_topics)"
 # (Sidebar) zeigt keine Texte.
 php artisan help:reindex
 
-echo "→ Caches leeren"
-php artisan config:clear
-php artisan view:clear
+echo "→ Production-Caches bauen (config/route/event)"
+# optimize:clear räumt alte Caches weg, dann werden Production-Caches gebaut
+# (schneller + konsistent mit scripts/install-webspace.sh). view:cache bleibt
+# bewusst außen vor. Hinweis: spätere .env-Änderungen erst nach erneutem
+# config:cache wirksam.
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan event:cache
 
 echo "→ Queue-Worker neu starten (laufende Worker laden den neuen Code)"
 # Ohne Restart arbeiten dauerhaft laufende Worker (Supervisor/systemd) mit dem
