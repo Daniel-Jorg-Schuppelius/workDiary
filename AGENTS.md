@@ -274,6 +274,7 @@ ohne Zugriff. Einbindung läuft über `wikimedia/composer-merge-plugin`:
 - Wo das Fehlen ein harter Fehler ist (z. B. CLI-Job, der explizit das Format
   verlangt): `FinancialFormatsSupport::ensureAvailable()` wirft eine
   aussagekräftige `RuntimeException`.
+
 ```php
 use App\Services\Finance\FinancialFormatsSupport;
 
