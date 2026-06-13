@@ -31,6 +31,12 @@ abstract class TestCase extends BaseTestCase {
         // Tests sollen nicht vom gebauten Vite-Manifest abhaengen.
         $this->withoutVite();
 
+        // withoutVite() tauscht die Vite-Instanz gegen eine Fake-Instanz aus,
+        // wodurch der in AppServiceProvider beim Boot gesetzte CSP-Nonce
+        // verloren geht. Erneut setzen, damit @cspNonce / der CSP-Header
+        // (siehe SecurityHeaders, CspNonceTest) weiterhin ein Nonce tragen.
+        \Illuminate\Support\Facades\Vite::useCspNonce();
+
         // Verhindert, dass DatabaseHealth-Marker zwischen Tests (oder zwischen
         // Tests und der Dev-Umgebung) durchsickern. Tests, die absichtlich
         // PDOExceptions ausl\u00f6sen (z. B. DatabaseUnavailableTest), w\u00fcrden

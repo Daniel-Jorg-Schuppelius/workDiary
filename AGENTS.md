@@ -264,17 +264,16 @@ ohne Zugriff. Einbindung läuft über `wikimedia/composer-merge-plugin`:
 - **Code-Guard Pflicht:** Jede Nutzung des Pakets MUSS optional bleiben — die App
   muss ohne das Paket fehlerfrei laufen. Verbindlicher Guard:
   `App\Services\Finance\FinancialFormatsSupport`.
-    - Vor jeder Nutzung `FinancialFormatsSupport::isAvailable()` prüfen und bei
-      Nichtverfügbarkeit graceful abbrechen (Flash/`error`, Feature ausblenden,
-      Route 404/Redirect) — **keine** harte Abhängigkeit, kein ungeguardetes `new`/`use`
-      auf `CommonToolkit\FinancialFormats\…` im Ausführungspfad.
-    - Direkte `use`-Imports der Paketklassen vermeiden; Klassen erst nach dem Guard
-      instanziieren (vollqualifiziert oder via Factory), damit Autoloader/Static-Analyse
-      ohne Paket nicht brechen.
-    - Wo das Fehlen ein harter Fehler ist (z. B. CLI-Job, der explizit das Format
-      verlangt): `FinancialFormatsSupport::ensureAvailable()` wirft eine
-      aussagekräftige `RuntimeException`.
-
+- Vor jeder Nutzung `FinancialFormatsSupport::isAvailable()` prüfen und bei
+  Nichtverfügbarkeit graceful abbrechen (Flash/`error`, Feature ausblenden,
+  Route 404/Redirect) — **keine** harte Abhängigkeit, kein ungeguardetes `new`/`use`
+  auf `CommonToolkit\FinancialFormats\…` im Ausführungspfad.
+- Direkte `use`-Imports der Paketklassen vermeiden; Klassen erst nach dem Guard
+  instanziieren (vollqualifiziert oder via Factory), damit Autoloader/Static-Analyse
+  ohne Paket nicht brechen.
+- Wo das Fehlen ein harter Fehler ist (z. B. CLI-Job, der explizit das Format
+  verlangt): `FinancialFormatsSupport::ensureAvailable()` wirft eine
+  aussagekräftige `RuntimeException`.
 ```php
 use App\Services\Finance\FinancialFormatsSupport;
 
@@ -311,7 +310,10 @@ $generator = new \CommonToolkit\FinancialFormats\Generators\DATEV\DatevDocumentG
   Tests dürfen **nicht** vom gebauten Vite-Manifest abhängen. In CI gibt es kein
   `public/build/manifest.json`; View-rendernde Tests würden sonst mit
   `ViteManifestNotFoundException` (HTTP 500) scheitern. **Diesen Aufruf nicht
-  entfernen** und in eigenen Basisklassen replizieren.
+  entfernen** und in eigenen Basisklassen replizieren. Direkt danach wird
+  `Vite::useCspNonce()` erneut gesetzt (withoutVite() tauscht die Vite-Instanz und
+  verwirft den beim Boot gesetzten CSP-Nonce) — sonst bricht `CspNonceTest`. Auch
+  diesen Aufruf nicht entfernen.
 - **CI baut das Frontend nicht für Tests** — der Test-Job ist bewusst unabhängig
   vom `npm run build`. Lokale grüne Läufe sind kein Beweis: lokal existiert das
   Manifest, in GitHub nicht. Build-abhängige Annahmen vermeiden.
