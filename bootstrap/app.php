@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\{EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequiresFeature, RequireTwoFactorSetup, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Http\Middleware\{EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
 use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
@@ -55,6 +55,10 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             ForcePasswordChange::class,
             RequireTwoFactorSetup::class,
+            // Sperrt schreibende Aktionen bei gesperrtem/abgelaufenem Mandanten
+            // (Feature 021). Läuft nach der Org-Auflösung; Auth-/Lizenz-/Logout-
+            // Routen bleiben erreichbar (Aufhebung der Sperre).
+            EnforceTenantStatus::class,
         ]);
 
         // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den

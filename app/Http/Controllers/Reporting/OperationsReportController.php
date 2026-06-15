@@ -94,18 +94,27 @@ class OperationsReportController extends Controller {
         $rows = $q->get(['status', 'priority', 'service_minutes']);
 
         $statusMap = [
-            DiaryStatus::Open->value => 'open',
+            DiaryStatus::Planned->value => 'open',
+            DiaryStatus::Accepted->value => 'open',
             DiaryStatus::InProgress->value => 'in_progress',
-            DiaryStatus::Done->value => 'done',
-            DiaryStatus::Problem->value => 'problem',
+            DiaryStatus::WaitingCustomer->value => 'problem',
+            DiaryStatus::WaitingMaterial->value => 'problem',
+            DiaryStatus::Completed->value => 'done',
+            DiaryStatus::AcceptedFinal->value => 'done',
+            DiaryStatus::Invoiced->value => 'done',
         ];
-        $byStatus = array_fill_keys(array_values($statusMap), 0);
+        $byStatus = ['open' => 0, 'in_progress' => 0, 'problem' => 0, 'done' => 0];
         /** @var array<string, int> $byPriority */
         $byPriority = array_fill_keys(Priority::values(), 0);
         $minutes = 0;
+        $cancelled = 0;
         foreach ($rows as $r) {
-            $label = $statusMap[$r->status->value];
-            $byStatus[$label]++;
+            $label = $statusMap[$r->status->value] ?? null;
+            if ($label === null) {
+                $cancelled++; // Stornierte Aufträge zählen nicht in die Statusverteilung.
+            } else {
+                $byStatus[$label]++;
+            }
             if ($r->priority !== null) {
                 $byPriority[$r->priority->value]++;
             }
@@ -114,7 +123,7 @@ class OperationsReportController extends Controller {
         $total = $rows->count();
         // "problem" zählt nicht als abgeschlossen, wirkt aber nicht als Erfolg.
         $done = $byStatus['done'];
-        $relevant = $total; // DiaryEntry kennt keinen "cancelled"-Status mehr.
+        $relevant = $total - $cancelled; // Stornierte Aufträge fließen nicht in die Abschlussquote ein.
 
         return [
             'total' => $total,

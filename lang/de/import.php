@@ -8,6 +8,7 @@ return [
         'projects' => 'Projekte',
         'users' => 'Benutzer',
         'materials' => 'Material',
+        'vehicles' => 'Fahrzeuge',
         'scheduled_shifts' => 'Schichtpläne',
         'tours' => 'Touren',
         'remote_sessions' => 'Fernwartungs-Sitzungen',

@@ -244,8 +244,13 @@ class DayCloseController extends Controller {
         return $target;
     }
 
+    /**
+     * Eigene Tagesaktionen (save/close/requestCorrection) landen wieder auf der
+     * zusammengelegten „Heute"-Seite (MVP-015 — Tagesabschluss in „Heute"
+     * integriert). Fremdtag-/Admin-Aktionen nutzen redirectToClosure → day-close.show.
+     */
     private function redirectToDay(CarbonImmutable $day): RedirectResponse {
-        return redirect()->route('day-close.show', ['date' => $day->toDateString()]);
+        return redirect()->route('today.show', ['date' => $day->toDateString()]);
     }
 
     private function redirectToClosure(DayClosure $closure): RedirectResponse {

@@ -92,6 +92,16 @@
     </div>
 </x-form-group>
 
+@php
+    $allTags = $allTags ?? collect();
+    $selectedTagIds = old('tag_ids', $asset->exists ? $asset->tags->map(fn ($t) => $t->sqid)->all() : []);
+@endphp
+<x-form-group :legend="__('Tags')" icon="sell" tone="ghost" cols="1">
+    <div class="fieldset md:col-span-2">
+        <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" />
+    </div>
+</x-form-group>
+
 @if ($errors->any())
     <div class="alert alert-error text-sm">
         <ul class="list-disc pl-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>

@@ -8,6 +8,9 @@ Done — MVP umgesetzt; konzipiert in MVP-039 bis MVP-043:
 [Produkt-/Objektanalyse](../produkt-analyse.md),
 [Drilldown](../report-drilldown.md),
 [CSV/PDF-Export](../report-export.md).
+Ergänzt: **Zielwerte & Benchmarks** (report_targets, Admin-Pflege, Soll/Ist in
+Wirtschaftlichkeit & SLA) und **Kohortenvergleich vor/nach Fortbildung**
+(reports.cohort-comparison, Erwerbsdatum aus `user_qualifications.valid_from`).
 
 ## Ziel
 
@@ -93,12 +96,27 @@ erfasst werden:
 
 ## Später
 
-- Zielwerte und Benchmarks pro Auftragstyp oder Kunde.
 - Frühwarnungen bei auffälligen Kunden, Produkten oder Dienstmitteln.
 - Automatische Handlungsempfehlungen: Schulung, Prozessprüfung, Vertragsprüfung,
   Preisanpassung, Produktproblem an Einkauf/Hersteller melden.
-- Kohortenvergleich vor/nach Fortbildung oder Prozessänderung.
-- Deckungsbeitragsnahe Auswertung, wenn Kosten- und Erlösdaten vollständig sind.
+
+## Umgesetzt (ehem. „Später")
+
+- **Zielwerte & Benchmarks** je Kennzahl/Bereich (`report_targets`: metric ∈
+  contributionMargin/billableRate/reworkShare/slaComplianceRate/utilization;
+  scope org/customer/project/user; optionaler Gültigkeitszeitraum). Pflege unter
+  Admin → Zielwerte (`report.target.manage`, GF/Admin). Soll/Ist + Ampel-
+  Abweichung sind im Wirtschaftlichkeits-Report (Deckungsbeitrags-Marge, org-
+  weit und je Kunde) und im SLA-Report (Einhaltungsquote) sichtbar. Es wird NUR
+  gegen bereits berechnete Kennzahlen geprüft — keine neue Kennzahlen-Engine.
+- **Kohortenvergleich vor/nach Fortbildung** (`reports.cohort-comparison`):
+  bildet je Qualifikation die Kohorte und vergleicht eine Kennzahl (abrechenbare
+  Quote / Nacharbeitsanteil) im Fenster vor vs. nach dem Erwerbsdatum, je
+  Mitarbeitendem und aggregiert. Datenquelle Erwerbsdatum:
+  `user_qualifications.valid_from`; Personen ohne Erwerbsdatum werden ehrlich
+  gesondert ausgewiesen. Kennzahlen aus denselben TimeEntry-Feldern wie die
+  Wirtschaftlichkeitssicht (keine parallele Berechnung).
+- Deckungsbeitragsnahe Auswertung (Feature 014, Nachkalkulation).
 
 ## Abhängigkeiten
 

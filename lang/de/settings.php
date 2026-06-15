@@ -20,6 +20,13 @@ return [
         'notifications' => 'Benachrichtigungen',
         'ui' => 'Oberfläche',
         'routing' => 'Routing & Karten',
+        'region' => 'Region & Feiertage',
+    ],
+    'region' => [
+        'heading' => 'Rechtsraum & Feiertage',
+        'description' => 'Bestimmt, welche gesetzlichen Feiertage gelten. Wirkt auf Feiertagszuschläge, die Dienstplan-Compliance und Feiertagsanzeigen.',
+        'holiday_provider' => 'Feiertagsregion (Land / Bundesland)',
+        'holiday_provider_hint' => 'Regionale Feiertage wie Fronleichnam oder Reformationstag gelten nur in bestimmten Bundesländern. Leer = systemweiter Standard.',
     ],
     'hint' => 'Leer lassen, um den systemweiten Standardwert zu nutzen.',
     'pagination' => [

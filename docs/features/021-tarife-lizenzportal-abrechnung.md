@@ -4,6 +4,11 @@
 
 In Progress — Lizenzstatus und Feature-Flags in der Admin-Oberfläche konzipiert
 in [`docs/lizenz-admin.md`](../lizenz-admin.md) (MVP-047, Issue #46).
+Nutzerlimit-Durchsetzung (org-bezogen, bei der Mitglieder-Anlage),
+SaaS-Mandantenstatus (trial/active/suspended, sonst aus Lizenz-Ablauf +
+Grace abgeleitet: gültig/in Kulanz/abgelaufen) mit Admin-Umschaltung und
+Schreibsperre bei gesperrtem/abgelaufenem Mandanten umgesetzt. Online-
+Lizenzportal (externe Selbstausstellung) bleibt offen (out of scope).
 
 ## Ziel
 

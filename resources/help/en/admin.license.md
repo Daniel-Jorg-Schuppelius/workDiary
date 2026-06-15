@@ -32,6 +32,20 @@ Typical actions:
    entitled to – **issue** new licenses (licensee, e-mail, plan,
    add-ons, expiry, limits, organization, domain).
 
+Tenant status (SaaS):
+
+- The **tenant status** shows whether the organization is in **trial**,
+  **active** or **suspended**. If no status is set explicitly, it is
+  derived from the trial period and the license expiry (valid / in
+  grace / expired).
+- A platform admin can set the status manually to **active**, **trial**
+  or **suspended**, or release it again via *Automatic (derive)*.
+- When **suspended** (or the license has finally expired), **write
+  actions are disabled**; reading stays possible. The license and
+  logout pages remain reachable so the lock can be lifted.
+- The license **user limit** is enforced when creating new members: if
+  the limit is reached, creation is blocked with a notice.
+
 Good to know:
 
 - Plan downgrades lock modules via plan gating; contents of modules

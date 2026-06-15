@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\ProcedureTemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +35,7 @@ class ProcedureTemplate extends Model {
 
     /** @use HasFactory<ProcedureTemplateFactory> */
     use HasFactory;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

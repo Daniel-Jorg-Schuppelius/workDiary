@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Asset\{AssetClass, AssetHealth, AssetOwnership, AssetStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -49,7 +49,7 @@ use Illuminate\Support\Carbon;
  */
 class Asset extends Model {
     /** @use HasFactory<AssetFactory> */
-    use Auditable, BelongsToOrganization, HasAttachments, HasFactory, HasSqid;
+    use Auditable, BelongsToOrganization, HasAttachments, HasFactory, HasSqid, HasTags;
 
     protected $fillable = [
         'organization_id',
@@ -138,6 +138,21 @@ class Asset extends Model {
     /** @return HasMany<MaintenancePlan, $this> */
     public function maintenancePlans(): HasMany {
         return $this->hasMany(MaintenancePlan::class)->orderBy('next_due_on');
+    }
+
+    /** @return HasMany<AssetAssignment, $this> */
+    public function assignments(): HasMany {
+        return $this->hasMany(AssetAssignment::class)->latest('checked_out_at')->latest('id');
+    }
+
+    /** @return HasOne<AssetAssignment, $this> */
+    public function currentAssignment(): HasOne {
+        return $this->hasOne(AssetAssignment::class)->whereNull('returned_at')->latest('checked_out_at')->latest('id');
+    }
+
+    /** @return HasMany<AssetDefect, $this> */
+    public function defects(): HasMany {
+        return $this->hasMany(AssetDefect::class)->latest('reported_at')->latest('id');
     }
 
     /** @return HasMany<SoftwareInstallation, $this> */

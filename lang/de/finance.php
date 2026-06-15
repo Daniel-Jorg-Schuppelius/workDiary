@@ -93,6 +93,8 @@ return [
         'quantity' => 'Menge',
         'unit' => 'Einheit',
         'unit_price_net' => 'Einzelpreis netto',
+        'tax_rate' => 'Steuersatz',
+        'cost_position' => 'Kostenposition',
         'total' => 'Summe',
     ],
 
@@ -117,5 +119,131 @@ return [
         'target_not_allowed' => 'Dieses Ziel ist für den Fakturierungsweg „:mode" nicht zulässig.',
         'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
         'sources_missing' => 'Quellen des Übergabenachweises sind nicht mehr vollständig vorhanden.',
+    ],
+
+    // DATEV-Buchungsstapel (Feature 045, Priorität 2 / Phase 3).
+    'datev' => [
+        'title' => 'DATEV-Buchungsstapel',
+        'menu' => 'DATEV-Buchungsstapel',
+        'subtitle' => 'Gestellte Rechnungen, Gutschriften und freigegebene Spesen eines abgeschlossenen Zeitraums als prüfbaren DATEV-Buchungsstapel (V700) übergeben.',
+        'empty' => 'Noch keine Buchungsstapel angelegt.',
+        'empty_sources' => 'Keine Buchungssätze in diesem Stapel.',
+
+        'field' => [
+            'batch_no' => 'Stapel-Nr.',
+            'period' => 'Zeitraum',
+            'status' => 'Status',
+            'booking_count' => 'Buchungssätze',
+            'total' => 'Summe',
+            'hash' => 'Datei-Hash (SHA-256)',
+            'open_ready' => 'Buchungsreife offene Belege',
+            'document_ref' => 'Belegfeld 1',
+            'soll_haben' => 'S/H',
+            'account' => 'Konto',
+            'contra_account' => 'Gegenkonto',
+            'tax_key' => 'BU-Schlüssel',
+            'amount' => 'Betrag (brutto)',
+            'lock_flag' => 'Festschreibung',
+            'include_expenses' => 'Freigegebene Spesen einbeziehen',
+            'debtor_no' => 'Debitorennummer (DATEV)',
+            'debtor_no_hint' => 'Leer lassen, um die Nummer automatisch aus dem konfigurierten Nummernkreis abzuleiten.',
+        ],
+
+        'lock' => [
+            'on' => 'festgeschrieben',
+            'off' => 'nicht festgeschrieben',
+        ],
+
+        'action' => [
+            'create' => 'Stapel anlegen',
+            'finalize' => 'Finalisieren',
+            'download' => 'CSV herunterladen',
+            'configure' => 'Konfiguration',
+            'save_config' => 'Konfiguration speichern',
+        ],
+
+        'dialog' => [
+            'create_title' => 'DATEV-Buchungsstapel anlegen',
+            'create_hint' => 'Buchungsreife Belege des Zeitraums werden zusammengestellt. Extern geführte Rechnungen werden ausgeschlossen.',
+        ],
+
+        'hint' => [
+            'period_sources' => 'Es werden gestellte/bezahlte Rechnungen mit Belegdatum im Zeitraum berücksichtigt, die noch in keinem finalisierten Stapel hängen.',
+            'include_expenses' => 'Optional: zusätzlich freigegebene Spesen als Aufwandsbuchung übernehmen (MVP — vereinfachte Konten).',
+        ],
+
+        'flash' => [
+            'created' => 'Buchungsstapel als Entwurf angelegt.',
+            'finalized' => 'Buchungsstapel finalisiert — CSV erzeugt und Quellen als übergeben markiert.',
+            'config_saved' => 'Buchhaltungs-Konfiguration gespeichert.',
+        ],
+
+        'error' => [
+            'no_sources' => 'Keine buchungsreifen Belege im gewählten Zeitraum gefunden.',
+            'already_finalized' => 'Der Buchungsstapel ist bereits finalisiert und unveränderlich.',
+            'storage_failed' => 'Die DATEV-Datei konnte nicht gespeichert werden.',
+            'unavailable' => 'Der DATEV-Export ist in dieser Installation nicht verfügbar (Format-Paket fehlt).',
+            'preflight_failed' => 'Der Stapel kann wegen Preflight-Fehlern nicht finalisiert werden.',
+            'no_organization' => 'Es konnte keine Organisation aufgelöst werden.',
+            'roundtrip_failed' => 'Die erzeugte DATEV-Datei hat die Wiedereinlese-Prüfung nicht bestanden: :errors',
+        ],
+
+        'preflight' => [
+            'no_sources' => 'Der Stapel enthält keine Buchungssätze.',
+            'missing_client_numbers' => 'Berater- und Mandantennummer müssen in der Konfiguration hinterlegt sein.',
+            'missing_debtor' => 'Beleg :ref hat kein gültiges Debitorenkonto.',
+            'missing_revenue' => 'Beleg :ref hat kein Erlöskonto.',
+            'unknown_tax_key' => 'Beleg :ref: kein BU-Schlüssel für Steuersatz :rate % hinterlegt.',
+            'external_excluded' => ':count extern geführte Rechnung(en) wurden aus dem lokalen Buchungsstapel ausgeschlossen.',
+        ],
+
+        // Write→Read-Validierung (erzeugte CSV wird mit dem Toolkit erneut eingelesen).
+        'roundtrip' => [
+            'unsupported' => 'Die Datei wurde nicht als unterstütztes DATEV-Format erkannt.',
+            'version_mismatch' => 'Unerwartete DATEV-Formatversion (:version statt 700).',
+            'parse_failed' => 'Die erzeugte Datei konnte nicht erneut eingelesen werden: :message',
+            'row_count_mismatch' => 'Wiedereingelesene Buchungszeilen (:actual) weichen von der Erwartung (:expected) ab.',
+        ],
+
+        // Formatkennung/-version (UI-Anzeige „Formatversion sichtbar").
+        'format' => [
+            'label' => 'Format',
+            'value' => 'DATEV-Buchungsstapel (EXTF V700)',
+            'encoding' => 'Zeichensatz',
+            'verified' => 'Wiedereinlese-Prüfung bestanden',
+        ],
+
+        // Konvertierungs-Hinweise: abgeleitete/nicht direkt abbildbare Felder.
+        'loss' => [
+            'title' => 'Abgeleitete und vereinfachte Felder',
+            'hint' => 'Diese Felder werden beim DATEV-Export abgeleitet oder vereinfacht abgebildet und sind vor der Übergabe zu prüfen.',
+            'booking_date' => 'Belegdatum = Periodenanfang (aus dem Stapelzeitraum abgeleitet, nicht je Beleg).',
+            'expense_account' => 'Spesen werden vereinfacht auf das Erlös-/Aufwandskonto gebucht (keine differenzierten Aufwands-/Vorsteuerkonten je Kategorie).',
+            'missing_tax_key' => 'Belege ohne BU-Schlüssel werden ohne Steueraufteilung übergeben.',
+        ],
+
+        'config' => [
+            'title' => 'DATEV-Buchhaltungskonfiguration',
+            'subtitle' => 'Berater-/Mandantennummer, Kontenrahmen, Sachkonten, Debitoren-Nummernkreis und Steuerschlüssel je Organisation.',
+            'client_group' => 'Berater & Mandant',
+            'advisor_number' => 'Beraternummer',
+            'client_number' => 'Mandantennummer',
+            'accounts_group' => 'Konten',
+            'skr' => 'Kontenrahmen',
+            'account_length' => 'Sachkontenlänge',
+            'revenue_account' => 'Erlöskonto (Standard)',
+            'revenue_account_tax_free' => 'Erlöskonto (steuerfrei / 0 %)',
+            'debtor_base' => 'Debitoren-Nummernkreis-Basis',
+            'debtor_base_hint' => 'Fehlt eine explizite Debitorennummer am Kunden, wird sie aus Basis + Kunden-ID gebildet.',
+            'tax_group' => 'Steuerschlüssel (DATEV-BU)',
+            'tax_key_19' => 'BU-Schlüssel 19 %',
+            'tax_key_7' => 'BU-Schlüssel 7 %',
+            'tax_key_0' => 'BU-Schlüssel 0 % / steuerfrei',
+            'export_group' => 'Export',
+            'finalize' => 'Festschreibekennzeichen setzen (GoBD)',
+            'finalize_hint' => 'Markiert die Buchungen beim Export als festgeschrieben.',
+            'encoding' => 'Zeichensatz',
+            'encoding_hint' => 'DATEV-üblich ist ISO-8859-1; UTF-8 nur, wenn ausdrücklich gewünscht.',
+        ],
     ],
 ];

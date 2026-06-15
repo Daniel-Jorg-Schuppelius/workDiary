@@ -28,9 +28,45 @@ Exporte leistet der unveränderliche Auditpaket-Snapshot
 (AuditPackageService); die Direkt-Exporte weisen den Datenstand
 (generated_at) aus. Die Kennzahl „ungeprüfte Lieferanten" entfällt in
 MVP1 bewusst — es gibt noch kein Lieferantenmodul (MVP 2).
-Offen (MVP2/3): Sicherheitsvorfälle/Schwachstellen, Advisory-Abgleich,
-Lieferantenbewertung, Reifegrad-Assessment, Katalog-Import weiterer
-Regelwerke.
+Am 2026-06-14 (MVP2 „Betrieb und Wirksamkeit", Kernscheibe) ergänzt:
+**Sicherheitsvorfälle** (`isms_security_incidents`) mit Lebenszyklus,
+Verknüpfung zu Risiken/Maßnahmen (`isms_incident_risk`/`isms_incident_control`)
+und synchroner Meldung kritischer Vorfälle an die Leitung; **Schwachstellen-
+register** (`isms_vulnerabilities`) mit Kritikalität (CVSS-v3-ableitbar),
+Verantwortung/Frist, Inventar-Bezug und Statusmaschine, wobei die
+Ausnutzbarkeits-Entscheidung eine begründete Nutzeraktion ist (nie
+automatisch) und überfällige Schwachstellen über `notifications:scan-deadlines`
+(`isms.vulnerabilityOverdue`) gemeldet/eskaliert werden; **Advisory-Import
+(CSAF/VEX)** nativ per `json_decode`, der betroffene Komponenten gegen das
+Softwareinventar und die letzte Release-SBOM abgleicht (`known_affected` ⇒
+offen + „in Untersuchung", `known_not_affected` ⇒ „nicht betroffen" mit
+VEX-Begründung), Original-Advisory mit SHA-256 als Nachweis
+(`isms_advisories`), Re-Import idempotent. Routen unter `compliance/isms`,
+Gating `module.isms`, bestehende `isms.*`-Permissions.
+Am 2026-06-14 (MVP2/3-Rest) ergänzt: **Lieferantenbewertung**
+(`isms_supplier_assessments`) mit Kritikalitäts-/Risikoeinstufung
+(`IncidentSeverity` wiederverwendet), geforderten Sicherheitsanforderungen,
+Vertragsmerkmalen (NDA/AVV/Prüfungsrecht), wiederkehrenden Reviews und einer
+Statusmaschine (draft→assessed→approved bzw. flagged). Der Supplier-Bezug ist
+optional: nullable FK auf das bestehende `Supplier`-Stammdatenmodell ODER
+Freitext-Name als Fallback; der AVV-Bezug zum Datenschutzmanagement bleibt
+BEWUSST lose (Flag `has_dpa` + Freitext `dpa_ref`, KEIN FK auf die
+Privacy-WIP-Tabellen). Überfällige Reviews (`next_review_on`, nicht
+freigegeben) füllen die in MVP1 bewusst entfallene Kennzahl „ungeprüfte
+Lieferanten" im Auditbereitschafts-Dashboard und werden über
+`notifications:scan-deadlines` (`isms.supplierReviewOverdue`) gemeldet/
+eskaliert. Zusätzlich: **Reifegrad-/Readiness-Assessment**
+(`ReadinessAssessmentService`, Seite `isms.readiness`), das aus den
+vorhandenen Registern je Domäne (SoA-Abdeckung, Risiken, Nachweise, Audits/
+Korrekturen, Betrieb aus Vorfällen+Schwachstellen, Lieferanten) einen
+Reifegrad (Ampel + Score 0–100 mit begründenden Signalen) und daraus eine
+Gesamteinschätzung „intern auditbereit? ja/nein mit Begründung" ableitet.
+WICHTIG (046-Prinzip): das Ergebnis ist ausschließlich eine begründete
+SELBSTEINSCHÄTZUNG/Empfehlung — NIE eine automatische Konformitäts-
+behauptung oder „zertifiziert"; ein prominenter Disclaimer kennzeichnet dies,
+und der Service setzt keinerlei Konformitätsstatus.
+Offen (MVP3-Rest): lizenzierter Katalog-/Normtext-Import, automatischer
+Advisory-Feed, vollständige VEX-Profile.
 
 Refactoring auf den gemeinsamen Managementsystem-Kern aus
 [Feature 046](./046-zertifizierungsmanagement-integriertes-managementsystem.md)
@@ -262,11 +298,63 @@ jede Organisation selbst bestimmen und freigeben.
 - Kennzahlen, Wirksamkeitsprüfungen und Managementbewertung.
 - Wiederkehrende Reviews und Eskalationen.
 
+### Umsetzungsstand MVP 2 (Kern umgesetzt)
+
+Die Kernbausteine „Betrieb und Wirksamkeit" sind umgesetzt; interne Audits,
+Nichtkonformitäten und Managementbewertung sind bereits aus Feature 046
+(gemeinsamer Managementsystem-Kern) vorhanden.
+
+**Umgesetzt:**
+
+- **Sicherheitsvorfälle** (`isms_security_incidents`): Vorfallregister
+  unabhängig vom Personenbezug, mit Kategorie/Kritikalität, Statusmaschine
+  (gemeldet → Bewertung → eingedämmt → bereinigt → wiederhergestellt →
+  geschlossen). Der Abschluss erzwingt Ursachenanalyse **und** Lessons
+  Learned. Rückführung in Risiken/Maßnahmen über die Pivots
+  `isms_incident_risk` / `isms_incident_control`. Die Datenschutz-Kopplung ist
+  bewusst lose: ein Flag „personenbezogene Daten betroffen" weist auf die
+  **separate** Datenschutzmeldung hin (Fallakten werden nicht zusammengelegt);
+  ein optionaler Freitext-Verweis (`privacy_incident_ref`, kein FK auf die
+  Privacy-WIP-Tabelle) referenziert den zugehörigen Datenschutzvorfall.
+  Neue **kritische** Vorfälle melden synchron an die Leitung.
+- **Schwachstellenregister** (`isms_vulnerabilities`): Kritikalität (aus
+  CVSS-v3 ableitbar), Verantwortung, Frist, Inventar-Bezug
+  (`isms_software_product_id`) und Statusmaschine. Die **Ausnutzbarkeits-
+  Entscheidung** ist eine bewusste, begründete Nutzeraktion (Pflichtnotiz bei
+  „ausnutzbar"/„nicht ausnutzbar"); überfällige Schwachstellen werden über den
+  Fristen-Scanner gemeldet und eskaliert.
+- **Advisory-Import + Abgleich (CSAF/VEX)**: nativer Parse per `json_decode`
+  (kein zusätzliches Paket). Betroffene Komponenten werden gegen das
+  Softwareinventar (Name/Version) und optional gegen die letzte Release-SBOM
+  (`storage/app/sbom/workdiary-latest.cdx.json`, CycloneDX) abgeglichen.
+  `known_affected` ⇒ offener Eintrag mit Ausnutzbarkeit „in Untersuchung"
+  (**nie automatisch ausnutzbar**); `known_not_affected` (VEX) ⇒ „nicht
+  betroffen"/„nicht ausnutzbar" mit der VEX-Begründung als Pflichtnotiz. Das
+  Original-Advisory wird mit SHA-256 als Nachweis in `isms_advisories`
+  abgelegt; der Re-Import derselben Datei ist idempotent.
+
+**Offen / Folgeinkremente:**
+
+- **Lieferantenbewertung und Vertragslücken** (Kritikalitäts-/Risikobewertung
+  von Lieferanten, Sicherheitsnachweise, AVV/GVV-Wiederverwendung) — am
+  2026-06-14 umgesetzt (`isms_supplier_assessments`, loser Supplier-/
+  AVV-Bezug; überfällige Reviews speisen die Kennzahl „ungeprüfte
+  Lieferanten"). Wiederverwendung des AVV bleibt ein loser Verweis (Flag +
+  Freitext), bis das Datenschutzmodul stabil ist.
+- Vollständige VEX-Profile (CycloneDX-VEX, Status `under_investigation`/`fixed`
+  als eigene Workflows) und ein automatischer Advisory-Feed (Pull statt
+  Upload).
+- Vollständiger SBOM-Abhängigkeitsgraph für den Komponentenabgleich
+  (derzeit flache Komponentenliste).
+
 ## MVP 3: Auditvorbereitung
 
 - Stichtagsbezogene Auditpakete.
 - Zeitlich begrenzter Prüferzugang.
-- Reifegrad- und Readiness-Assessment mit begründeten Feststellungen.
+- Reifegrad- und Readiness-Assessment mit begründeten Feststellungen — am
+  2026-06-14 umgesetzt (`ReadinessAssessmentService`, Seite `isms.readiness`):
+  Reifegrad je Domäne (Ampel/Score aus den Registern) plus begründete
+  Gesamtempfehlung; ausdrücklich Selbsteinschätzung, nie „zertifiziert".
 - Mapping zu weiteren Regelwerken, ohne Nachweise zu duplizieren.
 - Import eines kundenseitig lizenzierten Norm- und Maßnahmenkatalogs.
 

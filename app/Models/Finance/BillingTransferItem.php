@@ -31,6 +31,10 @@ use Illuminate\Support\Carbon;
  * @property int $source_id
  * @property string|null $amount
  * @property string|null $quantity
+ * @property string|null $unit
+ * @property string|null $unit_price
+ * @property string|null $tax_rate
+ * @property string|null $cost_position
  * @property Carbon|null $created_at
  */
 class BillingTransferItem extends Model {
@@ -42,12 +46,18 @@ class BillingTransferItem extends Model {
         'source_id',
         'amount',
         'quantity',
+        'unit',
+        'unit_price',
+        'tax_rate',
+        'cost_position',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'amount' => 'decimal:2',
         'quantity' => 'decimal:2',
+        'unit_price' => 'decimal:4',
+        'tax_rate' => 'decimal:2',
         'created_at' => 'datetime',
     ];
 

@@ -147,7 +147,12 @@
                 @foreach ($protocols as $protocol)
                     <tr>
                         <td>{{ $protocol->occurred_at?->fdatetime() ?? '—' }}</td>
-                        <td>{{ $protocol->title }}</td>
+                        <td>
+                            {{ $protocol->title }}
+                            @if ($protocol->tags->isNotEmpty())
+                                <div class="text-xs text-base-content/60">{{ $protocol->tags->pluck('name')->map(fn ($n) => '#' . $n)->implode(' ') }}</div>
+                            @endif
+                        </td>
                         <td><span class="badge">{{ $protocol->status->label() }}</span></td>
                         <td>
                             @if ($protocol->signed_at)

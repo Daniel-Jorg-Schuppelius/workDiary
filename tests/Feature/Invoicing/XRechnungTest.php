@@ -106,8 +106,7 @@ class XRechnungTest extends TestCase {
         $response->assertOk();
         $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
         $this->assertStringContainsString('XRechnung_' . $invoice->number . '.xml', (string) $response->headers->get('Content-Disposition'));
-        // Toolkit-Realität (php-erechnung-toolkit): alte 2.x-Kennung
-        // `urn:xoev-de:kosit:standard:xrechnung_3.0` — siehe Unit-Test/Bericht.
+        // Korrekte XRechnung-3.0-Kennung (xeinkauf.de) seit Toolkit v0.1.12.
         $this->assertStringContainsString(\ERechnungToolkit\Enums\ERechnungProfile::XRECHNUNG->value, $response->getContent());
         $this->assertStringContainsString('<cbc:BuyerReference>991-12345-67</cbc:BuyerReference>', $response->getContent());
     }

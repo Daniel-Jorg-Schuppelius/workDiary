@@ -74,9 +74,17 @@ class TenantTraitCoverageTest extends TestCase {
         UserBookmark::class,
         UserDashboardWidget::class,
         UserFilterPreset::class,
+        // Qualifikations-Zuordnung je User (Pivot user_qualifications, Feature
+        // 013): transitiv mandantenfähig über user_id → users.organization_id,
+        // analog UserBookmark — kein eigenes organization_id-Feld nötig.
+        \App\Models\UserQualification::class,
         // System-weiter Backup-Heartbeat (MVP-046 §5): externer Backup-Job postet
         // ohne Tenant-Kontext, gehört bewusst nicht zur Mandantengrenze.
         BackupHeartbeat::class,
+        // Restore-Test-Register (Feature 017): plattformweites Protokoll der
+        // Wiederherstellungs-Tests — analog BackupHeartbeat findet der
+        // Restore-Vorgang ohne Tenant-Kontext statt. Siehe Allow-List im Audit-Doc.
+        \App\Models\RestoreTest::class,
         // Plugin-Lifecycle (Installation/Schema/Health) und Plugin-Fehlerinbox sind
         // systemweit (instance-wide) — Plugins werden global installiert, per-Mandanten-
         // Aktivierung erfolgt über PluginSetting. PluginState/PluginError dienen Admin-
@@ -154,6 +162,25 @@ class TenantTraitCoverageTest extends TestCase {
         // via `audit:verify` scope-frei über alle Zeilen verifizierbar sein
         // muss und Einträge die Löschung von Transfer/Org überdauern.
         \App\Models\Finance\BillingTransferEvent::class,
+        // Append-only Event-Hash-Kette des Zahlungsabgleichs (Feature 045,
+        // Priorität 3) — analog BillingTransferEvent/Whistleblowing\CaseEvent:
+        // nullable organization_id BEWUSST ohne FK und ohne Global-Scope, da die
+        // Kette (config('audit.chains')) via `audit:verify` scope-frei über alle
+        // Zeilen verifizierbar sein muss und Einträge die Löschung von
+        // Umsatz/Org überdauern; payload bewusst ohne PII.
+        \App\Models\Finance\PaymentReconciliationEvent::class,
+        // Quellnachweis je Buchungssatz eines DATEV-Buchungsstapels (Feature 045,
+        // Priorität 2): Kind-Tabelle des tenant-gebundenen DatevBookingBatch —
+        // Mandantengrenze transitiv über datev_booking_batches.organization_id
+        // (analog BillingTransferItem); Zugriff ausschließlich über den Batch.
+        \App\Models\Finance\DatevBookingSource::class,
+        // Append-only Event-Hash-Kette des DATEV-Buchungsexports (Feature 045,
+        // Priorität 2) — analog BillingTransferEvent/PaymentReconciliationEvent:
+        // nullable organization_id BEWUSST ohne FK und ohne Global-Scope, da die
+        // Kette (config('audit.chains')) via `audit:verify` scope-frei über alle
+        // Zeilen verifizierbar sein muss und Einträge die Löschung von
+        // Batch/Org überdauern; payload bewusst ohne PII.
+        \App\Models\Finance\DatevBookingEvent::class,
         // Prüfer-Download-Tokens der ISMS-Auditpakete (Feature 046, Inkrement E):
         // Kind-Tabelle des tenant-gebundenen IsmsAuditPackage — Mandantengrenze
         // transitiv über isms_audit_packages.organization_id (analog
@@ -163,6 +190,13 @@ class TenantTraitCoverageTest extends TestCase {
         // (Widerruf) autorisieren immer über die org-gescopte Paket-Query.
         // Siehe Allow-List im Audit-Doc.
         \App\Models\Isms\IsmsAuditPackageToken::class,
+        // Append-only Nachweis externer Aktionen (Feature 033): Kind-Tabelle
+        // des tenant-gebundenen ExternalParticipant — Mandantengrenze transitiv
+        // über external_participants.organization_id (analog TimeExportLine).
+        // Akteur ist der externe Beteiligte (kein interner User), Zugriff
+        // ausschließlich über die ExternalParticipant-Relation. Siehe
+        // Allow-List im Audit-Doc.
+        \App\Models\ExternalParticipantEvent::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

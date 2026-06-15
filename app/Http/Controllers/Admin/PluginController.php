@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\{PluginSetting, PluginState, User};
-use App\Plugins\{PluginErrorRecorder, PluginManager};
+use App\Plugins\{PluginCompatibility, PluginErrorRecorder, PluginManager};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\View\View;
 use Throwable;
@@ -35,10 +35,16 @@ class PluginController extends Controller {
             ->get()
             ->keyBy('plugin_id');
 
+        $compatibility = [];
+        foreach ($manager->all() as $plugin) {
+            $compatibility[$plugin->id()] = PluginCompatibility::for($plugin);
+        }
+
         return view('admin.plugins.index', [
             'plugins' => $manager->all(),
             'settings' => $rows,
             'states' => PluginState::mapForOrganization((int) $admin->organization_id),
+            'compatibility' => $compatibility,
             'filters' => [
                 'status' => (string) $request->string('status'),
                 'q' => (string) $request->string('q'),
@@ -116,6 +122,16 @@ class PluginController extends Controller {
         $wasEnabled = (bool) $row->enabled;
         $row->enabled = $request->boolean('enabled');
 
+        // Aktivierung nur, wenn das Plugin zur laufenden Kernversion passt.
+        if ($row->enabled && ! $wasEnabled) {
+            $compat = PluginCompatibility::for($instance);
+            if (! $compat->compatible) {
+                return redirect()->back()->withInput()->with('error', __('plugins.compatibility.activation_blocked', [
+                    'message' => $compat->message,
+                ]));
+            }
+        }
+
         $settings = $row->settings ?? [];
         foreach ($schema as $field) {
             $key = $field['key'];
@@ -191,7 +207,20 @@ class PluginController extends Controller {
                 'organization_id' => $admin->organization_id,
                 'plugin_id' => $plugin,
             ]);
-        $row->enabled = ! (bool) $row->enabled;
+
+        $willEnable = ! (bool) $row->enabled;
+        if ($willEnable) {
+            // Inkompatible Plugins lassen sich nicht aktivieren (Feature 022):
+            // die Kernversion liegt außerhalb des deklarierten Bereichs.
+            $compat = PluginCompatibility::for($instance);
+            if (! $compat->compatible) {
+                return back()->with('error', __('plugins.compatibility.activation_blocked', [
+                    'message' => $compat->message,
+                ]));
+            }
+        }
+
+        $row->enabled = $willEnable;
         $row->save();
 
         // Lifecycle-Hook für (De-)Aktivierung in dieser Organisation.

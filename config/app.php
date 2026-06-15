@@ -228,16 +228,11 @@ return [
     | Feiertage
     |--------------------------------------------------------------------------
     |
-    | Region (Yasumi-Provider): "Germany" (bundesweit) oder eines der Bundesländer
-    | wie "Germany\\Berlin", "Germany\\Bavaria", "Germany\\NorthRhineWestphalia" usw.
-    | Locale: "de_DE" für deutsche Feiertagsnamen.
+    | Der Feiertags-Rechtsraum (Yasumi-Provider) ist nach config/holidays.php
+    | ausgelagert und mandantenbewusst über \App\Support\Setting auflösbar
+    | (Feature 034). Dort wird HOLIDAYS_PROVIDER / HOLIDAYS_LOCALE ausgewertet.
     |
     */
-
-    'holidays' => [
-        'provider' => env('HOLIDAYS_PROVIDER', 'Germany\\Berlin'),
-        'locale' => env('HOLIDAYS_LOCALE', 'de_DE'),
-    ],
 
     /*
     |--------------------------------------------------------------------------

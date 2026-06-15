@@ -176,7 +176,11 @@
         </x-table>
     </x-card>
 
-    {{-- Einzelquellen (Snapshot des Nachweises) --}}
+    {{-- Einzelquellen (Snapshot des Nachweises). Im Material-Kanal werden die im
+         Snapshot festgehaltenen Felder Einheit, Steuersatz und DATEV-Kostenposition
+         (Kriterium 045) zusätzlich gezeigt — sie dokumentieren die Materialzeile
+         zum Übergabezeitpunkt, unabhängig von späteren Stammdatenänderungen. --}}
+    @php $isMaterial = $transfer->channel === \App\Enums\Finance\TransferChannel::Material; @endphp
     <x-card>
         <h3 class="mb-2 text-sm font-semibold">{{ __('finance.title.sources') }}</h3>
         <x-table>
@@ -185,6 +189,11 @@
                     <th>{{ __('finance.csv.date') }}</th>
                     <th>{{ __('finance.field.source') }}</th>
                     <th class="text-right">{{ __('finance.csv.quantity') }}</th>
+                    @if ($isMaterial)
+                        <th>{{ __('finance.csv.unit') }}</th>
+                        <th class="text-right">{{ __('finance.csv.tax_rate') }}</th>
+                        <th>{{ __('finance.csv.cost_position') }}</th>
+                    @endif
                     <th class="text-right">{{ __('finance.csv.amount') }}</th>
                 </tr>
             </x-slot:head>
@@ -211,12 +220,20 @@
                         <td class="text-base-content/50">{{ __('finance.field.source_deleted') }}</td>
                     @endif
                     <td class="text-right tabular-nums">{{ $item->quantity !== null ? number_format((float) $item->quantity, 2, ',', '.') : '—' }}</td>
+                    @if ($isMaterial)
+                        <td>{{ $item->unit ?? '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $item->tax_rate !== null ? number_format((float) $item->tax_rate, 2, ',', '.') . ' %' : '—' }}</td>
+                        <td class="font-mono text-xs">{{ $item->cost_position ?? '—' }}</td>
+                    @endif
                     <td class="text-right tabular-nums">{{ $item->amount !== null ? number_format((float) $item->amount, 2, ',', '.') : '—' }}</td>
                 </tr>
             @endforeach
             <tr class="font-semibold">
                 <td colspan="2">{{ __('finance.csv.total') }}</td>
                 <td class="text-right tabular-nums">{{ number_format((float) $transfer->total_quantity, 2, ',', '.') }}</td>
+                @if ($isMaterial)
+                    <td colspan="3"></td>
+                @endif
                 <td class="text-right tabular-nums">{{ number_format((float) $transfer->total_amount, 2, ',', '.') }}</td>
             </tr>
         </x-table>

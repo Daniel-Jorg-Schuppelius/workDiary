@@ -55,6 +55,20 @@ class BranchProfileAdminControllerTest extends TestCase {
             ->assertSee('Veranstaltungstechnik');
     }
 
+    public function test_catalog_shows_package_content_preview(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.branch-profiles.index', ['q' => 'elektro']))
+            ->assertOk()
+            ->assertSee('Auftragsarten')
+            ->assertSee('Checklisten')
+            ->assertSee('Raumanforderungen')
+            // Inhaltsvorschau: konkrete Auftragsart und Checkliste des Pakets.
+            ->assertSee('Installation')
+            ->assertSee('Sicherheitscheck Elektro (5 Sicherheitsregeln)');
+    }
+
     public function test_admin_can_filter_branch_profile_catalog_by_search_query(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

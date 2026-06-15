@@ -2,7 +2,15 @@
 
 ## Status
 
-In Progress
+In Progress — MVP weitgehend umgesetzt: Release-Prozess + Changelog,
+Update-Anleitung, SBOM (`sbom:generate`), **signierte/integritätsgesicherte
+Release-Metadaten** (`release:manifest` / `release:verify`, Ed25519 oder
+SHA-256-Integrität), **Plugin-Kompatibilitätsangaben + Durchsetzung**
+(`Plugin::minAppVersion()`/`maxAppVersion()` + `PluginCompatibility`),
+Version-/Build-Anzeige sowie Health-Check nach Update (`system:health`, auch
+`--json`; sichtbar auf `admin/components`). Offen: Security Advisories +
+Betroffenheitsbewertung je Version, Wartungsfenster/Rollback-Automatik für
+SaaS, Update-Server/Verfügbarkeits-Check.
 
 ## Ziel
 

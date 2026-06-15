@@ -28,10 +28,19 @@
                     <div class="flex flex-wrap items-center gap-2 text-sm">
                         <x-status-badge tone="ghost" outline>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</x-status-badge>
                         <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
+                        <x-status-badge :tone="$lifecycle['phase_tone']">{{ $lifecycle['phase_label'] }}</x-status-badge>
                         @if ($asset->serial_no)
                             <span class="text-base-content/70">{{ __('Seriennummer') }}: {{ $asset->serial_no }}</span>
                         @endif
                     </div>
+                    @if ($asset->tags->isNotEmpty())
+                        <div class="flex flex-wrap gap-1">
+                            @foreach ($asset->tags as $tag)
+                                <span class="badge badge-sm badge-outline"
+                                      @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->name }}</span>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
                 <div class="flex items-center gap-2">
                     @if ($canUnblock && $assetStatusValue === \App\Enums\Asset\AssetStatus::Blocked->value)
@@ -40,6 +49,7 @@
                             <x-icon-btn icon="lock_open" tone="success" size="sm" type="submit" show-label>{{ __('Sperre aufheben') }}</x-icon-btn>
                         </form>
                     @endif
+                    <x-icon-btn icon="description" size="sm" :href="route('assets.dossier', $asset)" target="_blank" show-label>{{ __('Objektakte') }}</x-icon-btn>
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
                 </div>
             </div>
@@ -117,6 +127,25 @@
                     <x-empty-state compact icon='<span class="material-symbols-outlined">location_off</span>'
                                    :title="__('Keinem Raum zugeordnet')"
                                    :message="__('Dieses Asset hat noch keine Verortung.')" />
+                @endif
+
+                @if ($roomRequirements->isNotEmpty() || $room?->cleaningProfile)
+                    {{-- Raumbezogene Anforderungen des Standort-Raums (Feature 027). --}}
+                    <div class="mt-4 border-t border-base-200 pt-3">
+                        <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold">
+                            <x-icon name="rule" class="text-warning" /> {{ __('Raumanforderungen') }}
+                        </h3>
+                        <div class="flex flex-wrap gap-1">
+                            @if ($room?->cleaningProfile)
+                                <x-status-badge tone="info">{{ __('Reinigung') }}: {{ $room->cleaningProfile->label }}</x-status-badge>
+                            @endif
+                            @foreach ($roomRequirements as $req)
+                                <x-status-badge tone="warning" :title="$req->note ?? ''">
+                                    {{ $req->kind->label() }}@if ($req->level): {{ $req->level }}@endif
+                                </x-status-badge>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
             </x-card>
 
@@ -300,6 +329,179 @@
                                             </div>
                                         @endif
                                     </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </x-card>
+
+        {{-- ── Ausgabe / Rückgabe (Feature 009) ─────────────────────────────── --}}
+        <x-card>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="swap_horiz" class="text-base-content/60" /> {{ __('Ausgabe / Rückgabe') }}
+                </h2>
+                @if ($canCheckout && ! $isCheckedOut && ! $isDefectBlocked)
+                    <x-icon-btn icon="logout" tone="primary" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('assets.checkout.create', $asset)"
+                                show-label>{{ __('Ausgeben') }}</x-icon-btn>
+                @endif
+            </div>
+
+            @if ($isDefectBlocked && ! $isCheckedOut)
+                <div class="alert alert-warning mb-3">
+                    <x-icon name="lock" />
+                    <span>{{ __('Gesperrt wegen Defekt — keine Ausgabe möglich.') }}</span>
+                </div>
+            @endif
+
+            @if ($currentAssignment)
+                @php
+                    $overdue = $currentAssignment->isOverdue();
+                    $targetName = $currentAssignment->assignedToUser?->name
+                        ?? $currentAssignment->assignedToTeam?->name
+                        ?? '—';
+                @endphp
+                <div class="rounded-lg border {{ $overdue ? 'border-error' : 'border-base-300' }} p-3">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div class="space-y-1 text-sm">
+                            <div class="font-semibold">{{ __('Aktuell ausgegeben an') }}: {{ $targetName }}</div>
+                            <div class="text-base-content/70">
+                                {{ __('Seit') }}: {{ optional($currentAssignment->checked_out_at)->fdatetime() }}
+                                @if ($currentAssignment->expected_return_at)
+                                    · {{ __('Erwartete Rückgabe') }}:
+                                    <span class="@if ($overdue) text-error font-semibold @endif">{{ $currentAssignment->expected_return_at->fdatetime() }}</span>
+                                    @if ($overdue)
+                                        <x-status-badge tone="error" size="sm">{{ __('überfällig') }}</x-status-badge>
+                                    @endif
+                                @endif
+                            </div>
+                            @if ($currentAssignment->diaryEntry)
+                                <div class="text-base-content/70">{{ __('Auftrag') }}:
+                                    <a class="link link-hover" href="{{ route('diary.show', $currentAssignment->diaryEntry) }}">{{ $currentAssignment->diaryEntry->title ?: ('#' . $currentAssignment->diaryEntry->id) }}</a>
+                                </div>
+                            @endif
+                            @if ($currentAssignment->condition_out)
+                                <div class="text-base-content/70">{{ __('Zustand bei Ausgabe') }}: {{ $currentAssignment->condition_out }}</div>
+                            @endif
+                        </div>
+                        @if ($canCheckout)
+                            <form method="POST" action="{{ route('assets.checkout.return', [$asset, $currentAssignment]) }}">
+                                @csrf
+                                <x-icon-btn icon="login" tone="success" size="sm" type="submit" show-label>{{ __('Zurücknehmen') }}</x-icon-btn>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @else
+                <x-empty-state compact icon='<span class="material-symbols-outlined">check_circle</span>'
+                               :title="__('Verfügbar')"
+                               :message="__('Das Asset ist aktuell nicht ausgegeben.')" />
+            @endif
+
+            @if ($assignmentHistory->isNotEmpty())
+                <div class="mt-4 overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Empfänger') }}</th>
+                                <th>{{ __('Ausgegeben') }}</th>
+                                <th>{{ __('Zurückgegeben') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($assignmentHistory as $past)
+                                <tr>
+                                    <td>{{ $past->assignedToUser?->name ?? $past->assignedToTeam?->name ?? '—' }}</td>
+                                    <td>{{ optional($past->checked_out_at)->fdatetime() ?: '—' }}</td>
+                                    <td>{{ optional($past->returned_at)->fdatetime() ?: '—' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </x-card>
+
+        {{-- ── Defekte / Sperren (Feature 009) ──────────────────────────────── --}}
+        <x-card>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
+                    <x-icon name="report" class="text-base-content/60" /> {{ __('Defekte / Sperren') }}
+                    <span class="font-normal text-base-content/50">({{ $defects->count() }})</span>
+                </h2>
+                @if ($canManageDefects)
+                    <x-icon-btn icon="add" tone="error" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('assets.defects.create', $asset)"
+                                show-label>{{ __('Defekt melden') }}</x-icon-btn>
+                @endif
+            </div>
+
+            @if ($defects->isEmpty())
+                <x-empty-state compact icon='<span class="material-symbols-outlined">verified</span>'
+                               :title="__('Keine Defekte')"
+                               :message="__('Es liegen keine Defektmeldungen vor.')" />
+            @else
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Titel') }}</th>
+                                <th>{{ __('Schweregrad') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Sperrt') }}</th>
+                                <th>{{ __('Gemeldet') }}</th>
+                                @if ($canManageDefects)
+                                    <th class="text-end">{{ __('Aktionen') }}</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($defects as $defect)
+                                <tr>
+                                    <td>
+                                        <div class="font-medium">{{ $defect->title }}</div>
+                                        @if ($defect->description)
+                                            <div class="text-xs text-base-content/60">{{ \Illuminate\Support\Str::limit($defect->description, 80) }}</div>
+                                        @endif
+                                    </td>
+                                    <td><x-status-badge :tone="$defect->severity->tone()" size="sm">{{ $defect->severity->label() }}</x-status-badge></td>
+                                    <td><x-status-badge :tone="$defect->status->tone()" size="sm">{{ $defect->status->label() }}</x-status-badge></td>
+                                    <td>
+                                        @if ($defect->isBlocking())
+                                            <x-status-badge tone="error" size="sm">{{ __('gesperrt') }}</x-status-badge>
+                                        @else
+                                            <span class="text-base-content/50">—</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-base-content/70">{{ optional($defect->reported_at)->fdate() ?: '—' }}</td>
+                                    @if ($canManageDefects)
+                                        <td class="text-end">
+                                            @if ($defect->status->isOpen())
+                                                <div class="join">
+                                                    @if ($defect->status === \App\Enums\Asset\DefectStatus::Open)
+                                                        <form method="POST" action="{{ route('assets.defects.transition', [$asset, $defect]) }}" class="join-item">
+                                                            @csrf
+                                                            <input type="hidden" name="action" value="inRepair" />
+                                                            <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('In Reparatur') }}"><x-icon name="build" /></button>
+                                                        </form>
+                                                    @endif
+                                                    <a class="btn btn-xs btn-ghost text-success join-item" title="{{ __('Erledigen') }}"
+                                                       data-entry-modal-trigger
+                                                       href="{{ route('assets.defects.resolve-form', [$asset, $defect, 'action' => 'resolve']) }}"><x-icon name="check" /></a>
+                                                    <a class="btn btn-xs btn-ghost text-error join-item" title="{{ __('Ausbuchen') }}"
+                                                       data-entry-modal-trigger
+                                                       href="{{ route('assets.defects.resolve-form', [$asset, $defect, 'action' => 'writeOff']) }}"><x-icon name="delete_forever" /></a>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-base-content/50">{{ optional($defect->resolved_at)->fdate() }}</span>
+                                            @endif
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>

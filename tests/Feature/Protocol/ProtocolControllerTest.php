@@ -50,6 +50,63 @@ class ProtocolControllerTest extends TestCase {
         ]);
     }
 
+    public function test_store_protocol_persists_existing_and_new_tags(): void {
+        $user = User::factory()->user()->create();
+        $asset = Asset::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => null,
+            'owned_by' => AssetOwnership::Organization->value,
+        ]);
+        $existing = \App\Models\Tag::create([
+            'name' => 'Wartung',
+            'organization_id' => $user->organization_id,
+        ]);
+
+        $this->actingAs($user)
+            ->from('/')
+            ->post(route('protocols.store'), [
+                'subject_kind' => 'asset',
+                'subject_id' => $asset->id,
+                'type' => ProtocolType::Service->value,
+                'title' => 'Protokoll mit Tags',
+                'tag_ids' => [$existing->sqid],
+                'new_tags' => 'Inspektion, Sicherheit',
+            ])
+            ->assertRedirect();
+
+        $protocol = Protocol::query()->latest('id')->firstOrFail();
+        $names = $protocol->tags()->pluck('name')->sort()->values()->all();
+
+        $this->assertSame(['Inspektion', 'Sicherheit', 'Wartung'], $names);
+    }
+
+    public function test_update_protocol_syncs_tags(): void {
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $protocol = Protocol::factory()->create([
+            'organization_id' => $user->organization_id,
+            'subject_type' => DiaryEntry::class,
+            'subject_id' => $entry->id,
+            'created_by_user_id' => $user->id,
+            'status' => ProtocolStatus::Draft->value,
+        ]);
+        $protocol->tags()->attach(\App\Models\Tag::create([
+            'name' => 'Alt',
+            'organization_id' => $user->organization_id,
+        ]));
+
+        $this->actingAs($user)
+            ->from(route('diary.show', $entry))
+            ->put(route('protocols.update', $protocol), [
+                'title' => 'Aktualisiert',
+                'new_tags' => 'Neu',
+            ])
+            ->assertRedirect();
+
+        $names = $protocol->tags()->pluck('name')->all();
+        $this->assertSame(['Neu'], $names);
+    }
+
     public function test_user_can_store_protocol_against_diary_entry(): void {
         $user = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($user)->create();

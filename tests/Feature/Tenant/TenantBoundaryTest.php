@@ -108,6 +108,73 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame(0, \App\Models\Finance\BillingTransfer::query()->count());
     }
 
+    public function test_bank_account_is_not_visible_cross_organization(): void {
+        $accountB = $this->withOrg($this->orgB, fn() => \App\Models\Finance\BankAccount::factory()->create());
+
+        $this->assertSame((int) $this->orgB->id, (int) $accountB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Finance\BankAccount::find($accountB->id));
+        $this->assertSame(0, \App\Models\Finance\BankAccount::query()->count());
+    }
+
+    public function test_bank_statement_is_not_visible_cross_organization(): void {
+        $statementB = $this->withOrg($this->orgB, fn() => \App\Models\Finance\BankStatement::factory()->create());
+
+        $this->assertSame((int) $this->orgB->id, (int) $statementB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Finance\BankStatement::find($statementB->id));
+        $this->assertSame(0, \App\Models\Finance\BankStatement::query()->count());
+    }
+
+    public function test_bank_transaction_is_not_visible_cross_organization(): void {
+        $transactionB = $this->withOrg($this->orgB, function () {
+            $statement = \App\Models\Finance\BankStatement::factory()->create();
+
+            return \App\Models\Finance\BankTransaction::factory()->create(['bank_statement_id' => $statement->id]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $transactionB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Finance\BankTransaction::find($transactionB->id));
+        $this->assertSame(0, \App\Models\Finance\BankTransaction::query()->count());
+    }
+
+    public function test_payment_allocation_is_not_visible_cross_organization(): void {
+        $allocationB = $this->withOrg($this->orgB, function () {
+            $statement = \App\Models\Finance\BankStatement::factory()->create();
+            $transaction = \App\Models\Finance\BankTransaction::factory()->create(['bank_statement_id' => $statement->id]);
+            $customer = \App\Models\Customer::factory()->create();
+            $invoice = \App\Models\Invoice::create([
+                'organization_id' => $this->orgB->id,
+                'customer_id' => $customer->id,
+                'number' => 'RB-1',
+                'status' => \App\Models\Invoice::STATUS_ISSUED,
+                'type' => \App\Models\Invoice::TYPE_INVOICE,
+                'category' => \App\Models\Invoice::CATEGORY_SERVICE,
+                'currency' => 'EUR',
+                'tax_rate' => '19.00',
+                'subtotal' => '100.00',
+                'tax_amount' => '19.00',
+                'total' => '119.00',
+            ]);
+
+            return \App\Models\Finance\PaymentAllocation::factory()->create([
+                'bank_transaction_id' => $transaction->id,
+                'allocatable_type' => \App\Models\Invoice::class,
+                'allocatable_id' => $invoice->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $allocationB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Finance\PaymentAllocation::find($allocationB->id));
+        $this->assertSame(0, \App\Models\Finance\PaymentAllocation::query()->count());
+    }
+
     public function test_per_diem_trip_is_not_visible_cross_organization(): void {
         $tripB = $this->withOrg($this->orgB, fn() => PerDiemTrip::factory()->for($this->userB)->create());
 
@@ -245,6 +312,54 @@ class TenantBoundaryTest extends TestCase {
         app()->instance('currentOrganization', $this->orgA);
         $this->assertNull(\App\Models\Isms\IsmsControl::find($controlB->id));
         $this->assertSame(0, \App\Models\Isms\IsmsControl::query()->count());
+    }
+
+    public function test_isms_security_incident_is_not_visible_cross_organization(): void {
+        $incidentB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsSecurityIncident::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $incidentB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsSecurityIncident::find($incidentB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsSecurityIncident::query()->count());
+    }
+
+    public function test_isms_vulnerability_is_not_visible_cross_organization(): void {
+        $vulnerabilityB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsVulnerability::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $vulnerabilityB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsVulnerability::find($vulnerabilityB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsVulnerability::query()->count());
+    }
+
+    public function test_isms_supplier_assessment_is_not_visible_cross_organization(): void {
+        $assessmentB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsSupplierAssessment::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $assessmentB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsSupplierAssessment::find($assessmentB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsSupplierAssessment::query()->count());
+    }
+
+    public function test_isms_advisory_is_not_visible_cross_organization(): void {
+        $advisoryB = $this->withOrg($this->orgB, fn() => \App\Models\Isms\IsmsAdvisory::factory()->create([
+            'organization_id' => $this->orgB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $advisoryB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Isms\IsmsAdvisory::find($advisoryB->id));
+        $this->assertSame(0, \App\Models\Isms\IsmsAdvisory::query()->count());
     }
 
     public function test_isms_requirement_is_not_visible_cross_organization(): void {
@@ -527,6 +642,80 @@ class TenantBoundaryTest extends TestCase {
         $this->assertSame(0, \App\Models\DayCorrectionRequest::query()->count());
     }
 
+    public function test_sla_violation_is_not_visible_cross_organization(): void {
+        $violationB = $this->withOrg($this->orgB, function () {
+            $ticket = \App\Models\ServiceTicket::factory()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\SlaViolation::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'service_ticket_id' => $ticket->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $violationB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\SlaViolation::find($violationB->id));
+        $this->assertSame(0, \App\Models\SlaViolation::query()->count());
+    }
+
+    public function test_datev_booking_batch_is_not_visible_cross_organization(): void {
+        $batchB = $this->withOrg($this->orgB, fn() => \App\Models\Finance\DatevBookingBatch::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'created_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $batchB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Finance\DatevBookingBatch::find($batchB->id));
+        $this->assertSame(0, \App\Models\Finance\DatevBookingBatch::query()->count());
+    }
+
+    public function test_asset_assignment_is_not_visible_cross_organization(): void {
+        $assetB = $this->withOrg($this->orgB, fn() => \App\Models\Asset::factory()->create(['organization_id' => $this->orgB->id]));
+        $assignmentB = $this->withOrg($this->orgB, fn() => \App\Models\AssetAssignment::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'asset_id' => $assetB->id,
+            'assigned_to_user_id' => $this->userB->id,
+            'checked_out_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $assignmentB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\AssetAssignment::find($assignmentB->id));
+        $this->assertSame(0, \App\Models\AssetAssignment::query()->count());
+    }
+
+    public function test_asset_defect_is_not_visible_cross_organization(): void {
+        $assetB = $this->withOrg($this->orgB, fn() => \App\Models\Asset::factory()->create(['organization_id' => $this->orgB->id]));
+        $defectB = $this->withOrg($this->orgB, fn() => \App\Models\AssetDefect::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'asset_id' => $assetB->id,
+            'reported_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $defectB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\AssetDefect::find($defectB->id));
+        $this->assertSame(0, \App\Models\AssetDefect::query()->count());
+    }
+
+    public function test_safety_event_is_not_visible_cross_organization(): void {
+        $eventB = $this->withOrg($this->orgB, fn() => \App\Models\SafetyEvent::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'reported_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $eventB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\SafetyEvent::find($eventB->id));
+        $this->assertSame(0, \App\Models\SafetyEvent::query()->count());
+    }
+
     public function test_cross_organization_update_is_blocked_by_scope(): void {
         $projectB = $this->withOrg($this->orgB, fn() => Project::factory()->create());
         $taskB = $this->withOrg($this->orgB, fn() => Task::factory()->for($projectB)->create([
@@ -556,6 +745,104 @@ class TenantBoundaryTest extends TestCase {
 
         $stillThere = $this->withOrg($this->orgB, fn() => Task::find($taskB->id));
         $this->assertNotNull($stillThere, 'Datensatz aus Org B darf nicht gelöscht worden sein');
+    }
+
+    public function test_webhook_endpoint_is_not_visible_cross_organization(): void {
+        $endpointB = $this->withOrg($this->orgB, fn() => \App\Models\Integration\WebhookEndpoint::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'created_by_user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $endpointB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Integration\WebhookEndpoint::find($endpointB->id));
+        $this->assertSame(0, \App\Models\Integration\WebhookEndpoint::query()->count());
+    }
+
+    public function test_webhook_delivery_is_not_visible_cross_organization(): void {
+        $deliveryB = $this->withOrg($this->orgB, function () {
+            $endpoint = \App\Models\Integration\WebhookEndpoint::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'created_by_user_id' => $this->userB->id,
+            ]);
+
+            return \App\Models\Integration\WebhookDelivery::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'webhook_endpoint_id' => $endpoint->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $deliveryB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\Integration\WebhookDelivery::find($deliveryB->id));
+        $this->assertSame(0, \App\Models\Integration\WebhookDelivery::query()->count());
+    }
+
+    public function test_vehicle_reservation_is_not_visible_cross_organization(): void {
+        $reservationB = $this->withOrg($this->orgB, function () {
+            $vehicle = \App\Models\Vehicle::factory()->create(['organization_id' => $this->orgB->id]);
+
+            return \App\Models\VehicleReservation::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'vehicle_id' => $vehicle->id,
+                'reserved_by_user_id' => $this->userB->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $reservationB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\VehicleReservation::find($reservationB->id));
+        $this->assertSame(0, \App\Models\VehicleReservation::query()->count());
+    }
+
+    public function test_availability_window_is_not_visible_cross_organization(): void {
+        $windowB = $this->withOrg($this->orgB, fn() => \App\Models\AvailabilityWindow::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $windowB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\AvailabilityWindow::find($windowB->id));
+        $this->assertSame(0, \App\Models\AvailabilityWindow::query()->count());
+    }
+
+    public function test_desired_shift_is_not_visible_cross_organization(): void {
+        $desiredB = $this->withOrg($this->orgB, fn() => \App\Models\DesiredShift::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'user_id' => $this->userB->id,
+        ]));
+
+        $this->assertSame((int) $this->orgB->id, (int) $desiredB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\DesiredShift::find($desiredB->id));
+        $this->assertSame(0, \App\Models\DesiredShift::query()->count());
+    }
+
+    public function test_shift_exchange_is_not_visible_cross_organization(): void {
+        $exchangeB = $this->withOrg($this->orgB, function () {
+            $shift = \App\Models\ScheduledShift::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'user_id' => $this->userB->id,
+            ]);
+
+            return \App\Models\ShiftExchange::factory()->create([
+                'organization_id' => $this->orgB->id,
+                'scheduled_shift_id' => $shift->id,
+                'requested_by_user_id' => $this->userB->id,
+            ]);
+        });
+
+        $this->assertSame((int) $this->orgB->id, (int) $exchangeB->organization_id);
+
+        app()->instance('currentOrganization', $this->orgA);
+        $this->assertNull(\App\Models\ShiftExchange::find($exchangeB->id));
+        $this->assertSame(0, \App\Models\ShiftExchange::query()->count());
     }
 
     /**

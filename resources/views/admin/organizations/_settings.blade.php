@@ -12,6 +12,7 @@
         'ui' => ['icon' => 'tune', 'tone' => 'ghost', 'label' => __('settings.tabs.ui')],
         'routing' => ['icon' => 'route', 'tone' => 'info', 'label' => __('settings.tabs.routing')],
         'travel' => ['icon' => 'local_shipping', 'tone' => 'success', 'label' => __('Anfahrt')],
+        'region' => ['icon' => 'public', 'tone' => 'info', 'label' => __('settings.tabs.region')],
     ];
 @endphp
 
@@ -386,6 +387,28 @@
                     </div>
                 </div>
             </template>
+        </x-form-group>
+    </div>
+
+    {{-- REGION / FEIERTAGE (Feature 034) --}}
+    <div x-show="isTab('region')" x-cloak class="space-y-4">
+        <x-form-group :legend="__('settings.region.heading')" icon="public" tone="info" cols="2" compact
+                      :description="__('settings.region.description')">
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.region.holiday_provider') }}</label>
+                <select name="settings[holidays][provider]" class="select select-bordered w-full">
+                    <option value="">{{ __('settings.placeholder_default', ['value' => \App\Support\HolidayRegions::label((string) config('holidays.provider', 'Germany'))]) }}</option>
+                    @foreach (\App\Support\HolidayRegions::grouped() as $group => $providers)
+                        <optgroup label="{{ $group }}">
+                            @foreach ($providers as $value => $label)
+                                <option value="{{ $value }}"
+                                    @selected((string) old('settings.holidays.provider', data_get($stored, 'holidays.provider', '')) === $value)>{{ $label }}</option>
+                            @endforeach
+                        </optgroup>
+                    @endforeach
+                </select>
+                <p class="fieldset-label text-base-content/60">{{ __('settings.region.holiday_provider_hint') }}</p>
+            </div>
         </x-form-group>
     </div>
 </x-form-group>

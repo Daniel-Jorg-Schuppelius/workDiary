@@ -10,11 +10,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Console\Commands\SystemHealthCommand;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
-use App\Services\Licensing\FeatureFlagResolver;
+use App\Services\Licensing\{FeatureFlagResolver, LicenseService};
+use App\Services\Release\{ReleaseManifestService, ReleaseVerifier};
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Gate, Storage};
@@ -34,7 +36,13 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class ComponentsController extends Controller {
     private const SBOM_DIR = 'sbom';
 
-    public function index(PluginManager $plugins, FeatureFlagResolver $features, SbomGenerator $generator): View {
+    public function index(
+        PluginManager $plugins,
+        FeatureFlagResolver $features,
+        SbomGenerator $generator,
+        SystemHealthCommand $health,
+        LicenseService $licenses,
+    ): View {
         Gate::authorize(Permission::MetricsView->value);
 
         $dbConnection = (string) config('database.default', '');
@@ -70,7 +78,93 @@ class ComponentsController extends Controller {
             'modules' => $modules,
             'plugins' => $pluginRows,
             'sbom' => $this->latestSbomSummary(),
+            'health' => $this->healthSummary($health, $licenses),
+            'manifest' => $this->manifestSummary(),
         ]);
+    }
+
+    /**
+     * Erzeugt das Release-Manifest synchron (Versionen, Prüfsummen, ggf.
+     * Ed25519-Signatur) und legt es als release.json ab.
+     */
+    public function manifest(ReleaseManifestService $service): RedirectResponse {
+        Gate::authorize(Permission::MetricsView->value);
+
+        $document = $service->build();
+        $json = (string) json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        Storage::disk('local')->put(ReleaseManifestService::STORAGE_PATH, $json);
+
+        return redirect()
+            ->route('admin.components.index')
+            ->with('success', __('isms.components.manifest.flash_generated', [
+                'signed' => ($document['signature']['signed'] ?? false) === true
+                    ? __('isms.components.manifest.signed')
+                    : __('isms.components.manifest.unsigned'),
+            ]));
+    }
+
+    /** Release-Manifest herunterladen (fester Pfad, Gate-geprüft). */
+    public function manifestDownload(): StreamedResponse {
+        Gate::authorize(Permission::MetricsView->value);
+
+        abort_unless(Storage::disk('local')->exists(ReleaseManifestService::STORAGE_PATH), 404);
+
+        return Storage::disk('local')->download(ReleaseManifestService::STORAGE_PATH, 'release.json', [
+            'Content-Type' => 'application/json',
+        ]);
+    }
+
+    /**
+     * Strukturierte system:health-Zusammenfassung für die UI (Hinweis „nach
+     * Update ausführen", Pending-Migrationen prominent).
+     *
+     * @return array{healthy: bool, failed: int, total: int, checks: list<array{name: string, ok: bool, details: string}>}
+     */
+    private function healthSummary(SystemHealthCommand $health, LicenseService $licenses): array {
+        $checks = $health->runChecks($licenses);
+        $rows = array_map(
+            static fn(array $c): array => ['name' => $c[0], 'ok' => $c[1], 'details' => $c[2]],
+            $checks,
+        );
+        $failed = count(array_filter($rows, static fn(array $c): bool => ! $c['ok']));
+
+        return [
+            'healthy' => $failed === 0,
+            'failed' => $failed,
+            'total' => count($rows),
+            'checks' => $rows,
+        ];
+    }
+
+    /**
+     * Kennzahlen des letzten Release-Manifests — oder null, wenn keines erzeugt
+     * wurde.
+     *
+     * @return array{generated_at: string|null, signed: bool, signature_valid: bool|null, artifacts: int, build: string|null}|null
+     */
+    private function manifestSummary(): ?array {
+        if (! Storage::disk('local')->exists(ReleaseManifestService::STORAGE_PATH)) {
+            return null;
+        }
+
+        $json = (string) Storage::disk('local')->get(ReleaseManifestService::STORAGE_PATH);
+        $document = json_decode($json, true);
+        if (! is_array($document)) {
+            return null;
+        }
+
+        $result = app(ReleaseVerifier::class)->verify($document);
+        $generatedAt = $document['generated_at'] ?? null;
+        $build = $document['application']['build'] ?? null;
+
+        return [
+            'generated_at' => is_string($generatedAt) ? $generatedAt : null,
+            'signed' => $result->signed,
+            'signature_valid' => $result->signatureValid,
+            'valid' => $result->valid,
+            'artifacts' => $result->checkedArtifacts,
+            'build' => is_string($build) ? $build : null,
+        ];
     }
 
     /** SBOM synchron erzeugen (nur Lockfile-Parsing — schnell). */

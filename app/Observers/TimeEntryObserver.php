@@ -10,9 +10,22 @@
 
 namespace App\Observers;
 
-use App\Models\TimeEntry;
+use App\Models\{TimeEntry, User};
+use App\Services\Diary\OrderService;
 
 class TimeEntryObserver {
+    public function created(TimeEntry $entry): void {
+        if ($entry->diary_entry_id === null) {
+            return;
+        }
+
+        $actor = $entry->user;
+        $diaryEntry = $entry->diaryEntry;
+        if ($actor instanceof User && $diaryEntry !== null) {
+            app(OrderService::class)->startFromTimeEntry($diaryEntry, $actor);
+        }
+    }
+
     public function saved(TimeEntry $entry): void {
         $entry->timesheet?->recalcTotals();
     }

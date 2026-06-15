@@ -141,9 +141,69 @@
         </div>
     </x-form-group>
 
+    @if ($isEdit && isset($requirementKinds))
+        {{-- Raumbezogene Anforderungen je Gewerk (Feature 027): eigene 1:n-Sätze,
+             unabhängig vom Reinigungsprofil. Werden über separate Routen gepflegt;
+             daher hier nur Anzeige + Inline-Add (eigene Formulare ausserhalb der
+             Modal-Form, damit kein verschachteltes <form> entsteht). --}}
+        <x-form-group :legend="__('Raumanforderungen')" icon="rule" tone="warning">
+            <p class="text-sm text-base-content/60">{{ __('Fachliche Anforderungen je Gewerk – ergänzend zum Reinigungsprofil.') }}</p>
+            @if ($room->requirements->isNotEmpty())
+                <ul class="mt-2 space-y-1">
+                    @foreach ($room->requirements as $req)
+                        <li class="flex flex-wrap items-center gap-2 rounded-box border border-base-300 p-2 text-sm">
+                            <x-icon :name="$req->kind->icon()" class="text-warning" />
+                            <span class="font-medium">{{ $req->kind->label() }}</span>
+                            @if ($req->level)<span class="badge badge-sm badge-outline">{{ $req->level }}</span>@endif
+                            @unless ($req->is_active)<span class="badge badge-sm badge-ghost">{{ __('inaktiv') }}</span>@endunless
+                            @if ($req->note)<span class="text-base-content/60">— {{ $req->note }}</span>@endif
+                            <a class="ml-auto btn btn-ghost btn-xs text-error"
+                               href="#"
+                               onclick="event.preventDefault(); document.getElementById('req-del-{{ $req->id }}').submit();">{{ __('Entfernen') }}</a>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="mt-2 text-sm text-base-content/50">{{ __('Noch keine Anforderungen hinterlegt.') }}</p>
+            @endif
+        </x-form-group>
+    @endif
+
     @if ($errors->any())
         <div class="alert alert-error text-sm">
             <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
         </div>
     @endif
 </x-modal>
+
+@if ($isEdit && isset($requirementKinds))
+    {{-- Hilfs-Formulare ausserhalb der Modal-Form (keine verschachtelten Forms). --}}
+    @foreach ($room->requirements as $req)
+        <form id="req-del-{{ $req->id }}" method="POST"
+              action="{{ route('rooms.requirements.destroy', [$room, $req]) }}" class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endforeach
+    <form method="POST" action="{{ route('rooms.requirements.store', $room) }}"
+          class="mt-3 flex flex-wrap items-end gap-2 rounded-box border border-base-300 p-3">
+        @csrf
+        <div class="fieldset">
+            <label class="fieldset-label" for="req-kind">{{ __('Anforderung') }}</label>
+            <select id="req-kind" name="kind" class="select select-bordered select-sm">
+                @foreach ($requirementKinds as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="fieldset">
+            <label class="fieldset-label" for="req-level">{{ __('Stufe / Wert') }}</label>
+            <input id="req-level" type="text" name="level" maxlength="60" class="input input-bordered input-sm">
+        </div>
+        <div class="fieldset grow">
+            <label class="fieldset-label" for="req-note">{{ __('Notiz') }}</label>
+            <input id="req-note" type="text" name="note" maxlength="2000" class="input input-bordered input-sm w-full">
+        </div>
+        <button type="submit" class="btn btn-warning btn-sm">{{ __('Hinzufügen') }}</button>
+    </form>
+@endif

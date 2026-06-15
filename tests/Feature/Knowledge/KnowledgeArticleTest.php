@@ -50,6 +50,31 @@ class KnowledgeArticleTest extends TestCase {
         );
     }
 
+    public function test_user_can_attach_files_when_creating_article(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->from(route('knowledge.index'))
+            ->post(route('knowledge.store'), [
+                'title' => 'Artikel mit Anhang',
+                'problem' => 'Problem mit Screenshot zur Veranschaulichung.',
+                'solution' => 'Lösung samt Anleitung als PDF.',
+                'attachments' => [
+                    \Illuminate\Http\UploadedFile::fake()->image('screenshot.png'),
+                    \Illuminate\Http\UploadedFile::fake()->create('anleitung.pdf', 120, 'application/pdf'),
+                ],
+            ])
+            ->assertRedirect();
+
+        $article = KnowledgeArticle::query()->where('title', 'Artikel mit Anhang')->firstOrFail();
+        $this->assertSame(2, $article->attachments()->count());
+        $this->assertEqualsCanonicalizing(
+            ['screenshot.png', 'anleitung.pdf'],
+            $article->attachments->pluck('original_name')->all(),
+        );
+    }
+
     public function test_callcenter_without_permission_cannot_access_knowledge(): void {
         $user = User::factory()->callcenter()->create();
 

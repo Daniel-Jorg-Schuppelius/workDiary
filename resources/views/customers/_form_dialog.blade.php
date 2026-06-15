@@ -180,6 +180,17 @@
                     <p class="text-xs text-base-content/60 mt-1">{{ __('finance.field.billing_mode_hint') }}</p>
                     @error('billing_mode')<p class="text-error text-sm">{{ $message }}</p>@enderror
                 </div>
+
+                {{-- DATEV-Buchungsstapel (Feature 045, Priorität 2): Debitorennummer.
+                     Leer ⇒ deterministische Vergaberegel (Nummernkreis-Basis + Kunden-ID). --}}
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('finance.datev.field.debtor_no') }}</label>
+                    <input name="debtor_no" type="text" maxlength="12"
+                           class="input input-bordered w-full"
+                           value="{{ old('debtor_no', $customer?->debtor_no) }}">
+                    <p class="text-xs text-base-content/60 mt-1">{{ __('finance.datev.field.debtor_no_hint') }}</p>
+                    @error('debtor_no')<p class="text-error text-sm">{{ $message }}</p>@enderror
+                </div>
             @endcan
         </x-form-group>
 

@@ -44,6 +44,7 @@
     $slots          = ($openSlotsByDate ?? [])[$dateKey] ?? [];
     $openSlotsCount = collect($slots)->sum('missing');
     $totalCount     = $dayShifts->count() + $openSlotsCount;
+    $canSuggest     = ($canSuggest ?? false);
 @endphp
 
 <div class="schedule-cell group relative {{ $cellWrapperClass }} border-b border-r border-base-300 p-1 align-top {{ $cellBgClass }} {{ $isToday ? 'ring-1 ring-inset ring-primary' : '' }} @if ($cellClickable) cursor-pointer @endif"
@@ -64,9 +65,16 @@
                 <span class="truncate text-[0.6rem] text-warning" title="{{ $holidayName }}">{{ $holidayName }}</span>
             @endif
         </span>
-        @if ($totalCount > 0)
-            <span class="badge badge-xs badge-ghost">{{ $totalCount }}</span>
-        @endif
+        <span class="flex items-center gap-1">
+            @if ($openSlotsCount > 0)
+                <span class="badge badge-xs badge-warning gap-0.5" title="{{ __('schedule.coverage.under_title') }}">
+                    <span class="text-[0.6rem]">!</span>{{ $openSlotsCount }}
+                </span>
+            @endif
+            @if ($totalCount > 0)
+                <span class="badge badge-xs badge-ghost">{{ $totalCount }}</span>
+            @endif
+        </span>
     </div>
 
     {{-- Items-Container — identisch zur Default-Cell --}}
@@ -113,19 +121,31 @@
 
     {{-- Offene Schichten (Soll-Lücken) --}}
     @foreach ($slots as $slot)
+        @php($slotTypeSqid = \App\Support\Sqid::encode(\App\Models\ShiftType::class, (int) $slot['shift_type_id']))
         @for ($i = 0; $i < $slot['missing']; $i++)
-            <button type="button"
-                    @if ($cellClickable)
-                        onclick="event.stopPropagation(); scheduleOpenSlotDialog('{{ $dateKey }}', {{ $slot['shift_type_id'] }})"
-                    @else
-                        disabled
-                    @endif
-                    class="schedule-shift-badge flex w-full items-center gap-1 truncate rounded border-2 border-dashed px-1.5 py-0.5 text-[0.65rem] font-semibold leading-tight text-base-content/70 hover:bg-base-100 @if ($cellClickable) cursor-pointer @endif"
-                    style="border-color:{{ $slot['color'] }};color:{{ $slot['color'] }};"
-                    title="{{ __('Offene Schicht') }}: {{ $slot['name'] }}">
-                <span>{{ $slot['abbreviation'] }}</span>
-                <span class="ml-auto text-[0.55rem] opacity-70">+</span>
-            </button>
+            <div class="flex w-full items-stretch gap-0.5">
+                <button type="button"
+                        @if ($cellClickable)
+                            onclick="event.stopPropagation(); scheduleOpenSlotDialog('{{ $dateKey }}', {{ $slot['shift_type_id'] }})"
+                        @else
+                            disabled
+                        @endif
+                        class="schedule-shift-badge flex flex-1 items-center gap-1 truncate rounded border-2 border-dashed px-1.5 py-0.5 text-[0.65rem] font-semibold leading-tight text-base-content/70 hover:bg-base-100 @if ($cellClickable) cursor-pointer @endif"
+                        style="border-color:{{ $slot['color'] }};color:{{ $slot['color'] }};"
+                        title="{{ __('Offene Schicht') }}: {{ $slot['name'] }}">
+                    <span>{{ $slot['abbreviation'] }}</span>
+                    <span class="ml-auto text-[0.55rem] opacity-70">+</span>
+                </button>
+                @if ($canSuggest)
+                    <button type="button"
+                            onclick="event.stopPropagation(); scheduleSuggestStaffing('{{ $dateKey }}', '{{ $slotTypeSqid }}', @js($slot['name']))"
+                            class="schedule-staffing-suggest flex items-center justify-center rounded border border-base-300 px-1 text-[0.6rem] hover:bg-base-200"
+                            title="{{ __('schedule.suggest.button') }}"
+                            aria-label="{{ __('schedule.suggest.button') }}">
+                        <span class="material-symbols-rounded text-[0.85rem] leading-none">person_search</span>
+                    </button>
+                @endif
+            </div>
         @endfor
     @endforeach
 

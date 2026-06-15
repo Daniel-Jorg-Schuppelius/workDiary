@@ -9,6 +9,13 @@ return [
         'notifications' => 'Notificaciones',
         'ui' => 'Interfaz',
         'routing' => 'Enrutamiento y mapas',
+        'region' => 'Región y festivos',
+    ],
+    'region' => [
+        'heading' => 'Jurisdicción y festivos',
+        'description' => 'Determina qué días festivos se aplican. Afecta a los recargos por festivos, al cumplimiento de los turnos y a la visualización de festivos.',
+        'holiday_provider' => 'Región de festivos (país / estado)',
+        'holiday_provider_hint' => 'Los festivos regionales como el Corpus Christi o el Día de la Reforma solo se aplican en determinados estados. Vacío = valor predeterminado del sistema.',
     ],
     'hint' => 'Dejar vacío para usar el valor predeterminado del sistema.',
     'pagination' => [

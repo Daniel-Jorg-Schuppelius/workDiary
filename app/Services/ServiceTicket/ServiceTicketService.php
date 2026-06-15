@@ -23,6 +23,7 @@ class ServiceTicketService {
         private readonly TicketStatusMachine $statusMachine,
         private readonly SlaTimer $slaTimer,
         private readonly NumberSequenceService $numberSequence,
+        private readonly SlaViolationService $slaViolations = new SlaViolationService,
     ) {}
 
     /** @param array<string, mixed> $payload */
@@ -81,6 +82,8 @@ class ServiceTicketService {
         }
 
         $now = Carbon::now();
+        $wasAcknowledged = $ticket->acknowledged_at !== null;
+        $wasResolved = $ticket->resolved_at !== null;
         $ticket->status = $to;
         $this->stampTransition($ticket, $to, $now);
 
@@ -92,6 +95,17 @@ class ServiceTicketService {
             'from' => $from->value,
             'to' => $to->value,
         ]);
+
+        // SLA-Verletzungsregister (Feature 010): erste Reaktion bzw. Lösung zu
+        // spät ⇒ je Ticket+Typ genau eine Violation festhalten (idempotent).
+        if (! $wasAcknowledged && $ticket->acknowledged_at !== null
+            && $ticket->reaction_due_at !== null && $ticket->acknowledged_at->greaterThan($ticket->reaction_due_at)) {
+            $this->slaViolations->recordResponseBreach($ticket);
+        }
+        if (! $wasResolved && $ticket->resolved_at !== null
+            && $ticket->resolution_due_at !== null && $ticket->resolved_at->greaterThan($ticket->resolution_due_at)) {
+            $this->slaViolations->recordResolutionBreach($ticket);
+        }
 
         return $ticket->refresh();
     }

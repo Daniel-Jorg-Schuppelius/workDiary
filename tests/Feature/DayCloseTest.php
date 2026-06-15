@@ -59,11 +59,13 @@ class DayCloseTest extends TestCase {
 
         $response->assertOk()
             ->assertSee(__('day-close.section.attendance'))
-            ->assertSee(__('day-close.section.breaks'))
             ->assertSee(__('day-close.section.entries'))
             ->assertSee(__('day-close.section.issues'))
             ->assertSee(__('day-close.section.balance'))
             ->assertSee(__('day-close.field.target'))
+            // Pausen sind in die Bilanz integriert (Ist + Soll).
+            ->assertSee(__('day-close.field.recorded_break'))
+            ->assertSee(__('day-close.field.required_break'))
             ->assertSee(__('day-close.field.net'))
             ->assertSee(__('day-close.field.booked'))
             ->assertSee(__('day-close.field.diff'))

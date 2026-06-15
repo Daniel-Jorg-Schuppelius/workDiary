@@ -84,4 +84,47 @@ class ComponentsPageTest extends TestCase {
             ->get(route('admin.components.sbom.download'))
             ->assertNotFound();
     }
+
+    public function test_page_surfaces_system_health_section(): void {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.components.index'))
+            ->assertOk()
+            ->assertSee(__('isms.components.health.title'))
+            ->assertSee(__('isms.components.health.run_after_update'));
+    }
+
+    public function test_admin_generates_and_downloads_release_manifest(): void {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->post(route('admin.components.manifest.generate'))
+            ->assertRedirect(route('admin.components.index'))
+            ->assertSessionHas('success');
+
+        $this->assertTrue(Storage::disk('local')->exists(\App\Services\Release\ReleaseManifestService::STORAGE_PATH));
+
+        // Manifest-Kennzahlen erscheinen auf der Seite.
+        $this->actingAs($admin)
+            ->get(route('admin.components.index'))
+            ->assertOk()
+            ->assertSee(__('isms.components.manifest.title'))
+            ->assertSee(__('isms.components.manifest.artifacts'));
+
+        $this->actingAs($admin)
+            ->get(route('admin.components.manifest.download'))
+            ->assertOk()
+            ->assertDownload('release.json');
+    }
+
+    public function test_non_admin_cannot_generate_or_download_manifest(): void {
+        Storage::fake('local');
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)->post(route('admin.components.manifest.generate'))->assertForbidden();
+        $this->actingAs($user)->get(route('admin.components.manifest.download'))->assertForbidden();
+    }
 }

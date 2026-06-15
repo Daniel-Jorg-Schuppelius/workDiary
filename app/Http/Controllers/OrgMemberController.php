@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Concerns\ManagesUserContactDetails;
 use App\Models\User;
+use App\Services\Licensing\LimitGuard;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Hash};
@@ -68,11 +69,17 @@ class OrgMemberController extends Controller {
         return view('org.members._form_dialog', compact('roles', 'canManageMembers', 'canManagePayroll') + ['member' => null, 'isEdit' => false]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(Request $request, LimitGuard $limits): RedirectResponse {
         Gate::authorize('manage-members');
 
         /** @var User $auth */
         $auth = Auth::user();
+
+        // Lizenz-Nutzerlimit der Organisation durchsetzen (Feature 021).
+        // Wirft LimitExceededException (HTTP 423 / Flash-Error) bei Erreichen.
+        if ($auth->organization !== null) {
+            $limits->ensureCanCreateUser($auth->organization, $auth);
+        }
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],

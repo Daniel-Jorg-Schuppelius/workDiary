@@ -229,6 +229,62 @@ class PrintController extends Controller {
     }
 
     /**
+     * A4 quer — Schichtplan-Aushang: alle Mitarbeiter × Tage des Zeitraums,
+     * Zellen mit Schichtart-Kürzel und Zeit. Zeitraum via from/to (Default:
+     * aktueller Monat).
+     */
+    public function schedule(Request $request): View {
+        /** @var ?User $actor */
+        $actor = Auth::user();
+        abort_unless($actor?->isAdmin() === true, 403);
+
+        $from = $this->parseDate($request->query('from'), CarbonImmutable::now()->startOfMonth());
+        $to = $this->parseDate($request->query('to'), $from->endOfMonth());
+        if ($to->lessThan($from)) {
+            $to = $from->endOfMonth();
+        }
+
+        $shifts = ScheduledShift::query()
+            ->with(['user:id,name', 'shiftType'])
+            ->forDateRange($from, $to)
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
+
+        // Mitarbeiter mit Schichten im Zeitraum (nach Name sortiert).
+        $users = $shifts->map(fn(ScheduledShift $s): ?User => $s->user)
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
+        // Map "userId|YYYY-MM-DD" => Collection<ScheduledShift> für O(1)-Zugriff in der Matrix.
+        $byUserDate = $shifts->groupBy(fn(ScheduledShift $s): string => $s->user_id . '|' . $s->date->toDateString());
+
+        // Aktive Schichtarten für die Legende.
+        $shiftTypes = $shifts->map(fn(ScheduledShift $s): ?ShiftType => $s->shiftType)
+            ->filter()
+            ->unique('id')
+            ->sortBy('name')
+            ->values();
+
+        return view('print.schedule_a4', [
+            'pageSize' => 'A4 landscape',
+            'pageMargin' => '8mm',
+            'title' => __('Schichtplan'),
+            'subtitle' => $from->format('d.m.Y') . ' – ' . $to->format('d.m.Y'),
+            'from' => $from,
+            'to' => $to,
+            'users' => $users,
+            'byUserDate' => $byUserDate,
+            'shiftTypes' => $shiftTypes,
+            'holidays' => $this->holidays,
+            'anonymous' => $request->boolean('anonymous'),
+            'backUrl' => route('schedule.index'),
+        ]);
+    }
+
+    /**
      * A4 hoch — Urlaubsübersicht für ein Jahr (alle Mitarbeiter × Monate, Kalender-Streifen).
      */
     public function vacationYear(Request $request): View {

@@ -14,6 +14,8 @@
         @endcan
     </x-slot:actions>
 
+    @include('schedule._duty_tabs')
+
     <x-filter-bar :action="route('duty-plans.index')" :reset="route('duty-plans.index')">
         <x-filter-field :label="__('Status')" for="dp-status">
             <select id="dp-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">

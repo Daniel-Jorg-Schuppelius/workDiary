@@ -131,6 +131,78 @@ window.scheduleOpenSlotDialog = function (date, shiftTypeId) {
     openShiftDialog({ date, shiftTypeId });
 };
 
+/**
+ * Feature 007: fetch ranked staffing suggestions for an open slot and let the
+ * planner pick a candidate. The pick prefills the shift dialog (the regular
+ * store() path then re-checks compliance before the assignment is saved).
+ */
+window.scheduleSuggestStaffing = async function (date, shiftTypeSqid, typeName) {
+    const base = _cfg?.routes?.staffingSuggest;
+    if (!base) return;
+    const url = `${base}?date=${encodeURIComponent(date)}&shift_type_id=${encodeURIComponent(shiftTypeSqid)}`;
+    let data;
+    try {
+        data = await apiFetch("GET", url);
+    } catch (e) {
+        alert(e.message || "Error");
+        return;
+    }
+    const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
+    renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions);
+};
+
+function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
+    let dlg = document.getElementById("staffing-suggest-dialog");
+    if (!dlg) {
+        dlg = document.createElement("dialog");
+        dlg.id = "staffing-suggest-dialog";
+        dlg.className = "modal";
+        document.body.appendChild(dlg);
+    }
+    const rows = suggestions.length
+        ? suggestions
+              .map((s) => {
+                  const reasons = (s.reasons || []).map(escHtml).join(", ");
+                  const warnings = (s.warnings || []).length
+                      ? `<div class="text-warning text-[0.7rem]">⚠ ${(s.warnings || []).map(escHtml).join("; ")}</div>`
+                      : "";
+                  return `<tr class="hover">
+                    <td>${escHtml(s.name)}</td>
+                    <td class="text-right"><span class="badge badge-sm">${Number(s.score)}</span></td>
+                    <td class="text-[0.7rem] opacity-80">${reasons}${warnings}</td>
+                    <td class="text-right">
+                      <button type="button" class="btn btn-primary btn-xs"
+                        onclick="scheduleAssignSuggested('${escAttr(date)}','${escAttr(shiftTypeSqid)}','${escAttr(s.user_sqid)}')">
+                        Zuweisen
+                      </button>
+                    </td>
+                  </tr>`;
+              })
+              .join("")
+        : `<tr><td colspan="4" class="text-center text-sm opacity-60">Keine geeigneten Kandidaten</td></tr>`;
+
+    dlg.innerHTML = `
+      <div class="modal-box max-w-2xl">
+        <h3 class="text-lg font-semibold mb-1">Besetzungsvorschläge</h3>
+        <p class="text-sm opacity-70 mb-3">${escHtml(typeName)} · ${escHtml(date)}</p>
+        <table class="table table-sm table-zebra">
+          <thead><tr><th>Mitarbeiter</th><th class="text-right">Score</th><th>Begründung</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="modal-action">
+          <form method="dialog"><button class="btn btn-sm">Schließen</button></form>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop"><button>close</button></form>`;
+    dlg.showModal();
+}
+
+window.scheduleAssignSuggested = function (date, shiftTypeSqid, userSqid) {
+    const dlg = document.getElementById("staffing-suggest-dialog");
+    if (dlg) dlg.close();
+    openShiftDialog({ date, shiftTypeId: shiftTypeSqid, userId: userSqid });
+};
+
 function openShiftDialog({
     date = null,
     userId = null,

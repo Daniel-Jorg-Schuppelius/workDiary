@@ -25,6 +25,8 @@
             @endif
         </x-slot:actions>
 
+        @include('documents._tabs')
+
         <x-filter-bar :action="route('documents.index')"
                       :reset="$hasActiveFilters ? route('documents.index') : null">
             <x-filter-field :label="__('document.filter.search')" for="document-q" class="flex-1 min-w-60">

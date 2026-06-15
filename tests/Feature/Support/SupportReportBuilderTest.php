@@ -33,6 +33,10 @@ class SupportReportBuilderTest extends TestCase {
 
         $this->assertArrayHasKey('generated_at', $bundle);
         $this->assertArrayHasKey('installation', $bundle);
+        $this->assertArrayHasKey('release', $bundle);
+        $this->assertArrayHasKey('health', $bundle);
+        $this->assertArrayHasKey('plugin_errors', $bundle);
+        $this->assertArrayHasKey('operations', $bundle);
         $this->assertArrayHasKey('diagnostics', $bundle);
         $this->assertArrayHasKey('composer', $bundle);
         $this->assertArrayHasKey('npm', $bundle);
@@ -44,6 +48,70 @@ class SupportReportBuilderTest extends TestCase {
         $this->assertArrayHasKey('log_tail', $bundle);
         $this->assertArrayHasKey('audit_event_counts', $bundle);
         $this->assertArrayHasKey('options', $bundle);
+    }
+
+    public function test_bundle_contains_versions_via_release_block(): void {
+        $bundle = app(SupportReportBuilder::class)->build();
+
+        $this->assertArrayHasKey('runtime', $bundle['release']);
+        $this->assertArrayHasKey('php', $bundle['release']['runtime']);
+        $this->assertArrayHasKey('laravel', $bundle['release']['runtime']);
+        $this->assertArrayHasKey('database_version', $bundle['release']['runtime']);
+        $this->assertArrayHasKey('application', $bundle['release']);
+        $this->assertArrayHasKey('version', $bundle['release']['application']);
+        $this->assertArrayHasKey('build', $bundle['release']['application']);
+    }
+
+    public function test_bundle_contains_health_summary_from_system_health(): void {
+        $bundle = app(SupportReportBuilder::class)->build();
+
+        $this->assertArrayHasKey('available', $bundle['health']);
+        $this->assertTrue($bundle['health']['available']);
+        $this->assertArrayHasKey('checks', $bundle['health']);
+        $this->assertNotEmpty($bundle['health']['checks']);
+
+        $names = array_column($bundle['health']['checks'], 'name');
+        // system:health prüft u. a. Datenbank, Migrationen, Storage, Queue, APP_KEY.
+        $this->assertContains('Datenbank', $names);
+        $this->assertContains('APP_KEY', $names);
+        foreach ($bundle['health']['checks'] as $check) {
+            $this->assertArrayHasKey('ok', $check);
+            $this->assertIsBool($check['ok']);
+        }
+    }
+
+    public function test_bundle_contains_record_counts(): void {
+        $bundle = app(SupportReportBuilder::class)->build();
+
+        $this->assertIsArray($bundle['table_row_counts']);
+        $this->assertArrayHasKey('users', $bundle['table_row_counts']);
+        $this->assertIsInt($bundle['table_row_counts']['users']);
+
+        // Operations-Block liefert reine Counts/Metadaten.
+        $this->assertArrayHasKey('queue', $bundle['operations']);
+        $this->assertArrayHasKey('backup', $bundle['operations']);
+    }
+
+    public function test_plugin_error_block_contains_only_counts_no_messages(): void {
+        \App\Models\PluginError::query()->create([
+            'plugin_id' => 'demo-plugin',
+            'organization_id' => null,
+            'phase' => 'runtime',
+            'exception_class' => 'RuntimeException',
+            'message' => 'PII-Leak-Customer-Müller-Secret',
+            'occurred_at' => now(),
+        ]);
+
+        $bundle = app(SupportReportBuilder::class)->build();
+        $serialized = JsonHelper::encode($bundle['plugin_errors']);
+
+        $this->assertSame(1, $bundle['plugin_errors']['total']);
+        $this->assertSame('demo-plugin', $bundle['plugin_errors']['by_plugin_phase'][0]['plugin_id']);
+        $this->assertSame('runtime', $bundle['plugin_errors']['by_plugin_phase'][0]['phase']);
+        $this->assertSame(1, $bundle['plugin_errors']['by_plugin_phase'][0]['count']);
+        // Die Fehlermeldung darf NIE im Bericht stehen.
+        $this->assertStringNotContainsString('PII-Leak-Customer-Müller-Secret', $serialized);
+        $this->assertStringNotContainsString('PII-Leak-Customer-Müller-Secret', JsonHelper::encode($bundle));
     }
 
     public function test_bundle_never_contains_customer_pii(): void {
@@ -58,6 +126,22 @@ class SupportReportBuilderTest extends TestCase {
         $serialized = JsonHelper::encode($bundle);
         $this->assertStringNotContainsString($customer->name, $serialized);
         $this->assertStringNotContainsString($admin->email, $serialized);
+    }
+
+    public function test_bundle_never_contains_app_key_secret(): void {
+        // Gezielter Negativtest (Feature 041): der konfigurierte APP_KEY darf
+        // nirgends im Bericht auftauchen — weder als Wert noch im Config-/Diag-Block.
+        $appKey = (string) config('app.key');
+        $this->assertNotSame('', $appKey, 'APP_KEY muss in der Testumgebung gesetzt sein.');
+
+        $bundle = app(SupportReportBuilder::class)->build();
+        $serialized = JsonHelper::encode($bundle);
+
+        $this->assertStringNotContainsString($appKey, $serialized);
+        // Auch die Base64-Form (ohne base64:-Präfix) darf nicht auftauchen.
+        if (str_starts_with($appKey, 'base64:')) {
+            $this->assertStringNotContainsString(substr($appKey, 7), $serialized);
+        }
     }
 
     public function test_bundle_never_contains_secret_env_values(): void {

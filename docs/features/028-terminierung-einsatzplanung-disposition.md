@@ -2,7 +2,11 @@
 
 ## Status
 
-In Progress
+In Progress — MVP-Kern umgesetzt: Dispositionsstatus (ungeplant/geplant/
+bestätigt/unterwegs/erledigt), Konfliktwarnungen vor der Terminbestätigung
+(Wiederverwendung der Compliance-Regeln) und Fahrzeug-Reservierung mit
+Doppelbuchungs-Schutz. Offen: Karten-/Fahrzeit-Einbindung, Kalender-/
+Tagesansicht-Darstellung des Dispositionsstatus, Auftrags-Qualifikationsmatrix.
 
 ## Ziel
 

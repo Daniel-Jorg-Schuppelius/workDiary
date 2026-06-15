@@ -90,6 +90,8 @@
                     $assetClassValue = $asset->asset_class instanceof \BackedEnum ? $asset->asset_class->value : (string) $asset->asset_class;
                     $assetStatusValue = $asset->status instanceof \BackedEnum ? $asset->status->value : (string) $asset->status;
                     $isBlocked = $assetStatusValue === \App\Enums\Asset\AssetStatus::Blocked->value;
+                    $defectBlocked = (int) ($asset->blocking_defects_count ?? 0) > 0;
+                    $checkedOut = (int) ($asset->open_assignments_count ?? 0) > 0;
                 @endphp
                 <tr class="hover">
                     <td class="font-mono text-xs">
@@ -98,12 +100,29 @@
                     <td><x-status-badge tone="ghost" outline>{{ $classOptions[$assetClassValue] ?? $assetClassValue }}</x-status-badge></td>
                     <td>
                         <a href="{{ route('assets.show', $asset) }}" class="link link-hover font-medium">{{ $asset->name }}</a>
+                        @if ($asset->tags->isNotEmpty())
+                            <div class="mt-1 flex flex-wrap gap-1">
+                                @foreach ($asset->tags as $tag)
+                                    <span class="badge badge-xs badge-outline"
+                                          @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->name }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                     </td>
                     <td class="text-base-content/70">{{ $asset->serial_no ?: '—' }}</td>
                     <td class="text-base-content/70">{{ $asset->location_text ?: '—' }}</td>
                     <td class="text-base-content/70">{{ $asset->customer?->name ?: '—' }}</td>
                     <td>
-                        <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
+                        <div class="flex flex-wrap items-center gap-1">
+                            <x-status-badge :tone="$isBlocked ? 'error' : 'ghost'" :outline="! $isBlocked">{{ $statusOptions[$assetStatusValue] ?? $assetStatusValue }}</x-status-badge>
+                            @if ($defectBlocked)
+                                <x-status-badge tone="error" size="sm">{{ __('gesperrt: Defekt') }}</x-status-badge>
+                            @elseif ($checkedOut)
+                                <x-status-badge tone="warning" size="sm">{{ __('ausgegeben') }}</x-status-badge>
+                            @else
+                                <x-status-badge tone="success" size="sm" outline>{{ __('verfügbar') }}</x-status-badge>
+                            @endif
+                        </div>
                     </td>
                     <td class="text-right">
                         <x-icon-btn icon="open_in_new" :href="route('assets.show', $asset)" :label="__('Details')" />

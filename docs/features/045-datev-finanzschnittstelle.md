@@ -27,8 +27,85 @@ View; Preflight profilabhängig (BT-10/BuyerReference nur für die XRechnung
 Pflicht, für ZUGFeRD Warnung). Bewusst offen am E-Rechnungs-Ausbau:
 Schematron-/KoSIT-Validierung (benötigt Java; der Preflight ersetzt keine
 vollständige EN-16931-Regelprüfung), Peppol-Versand, Empfang eingehender
-E-Rechnungen. Weiterhin offen: DATEV-Desktop-API-Adapter (Phase 0/1),
-Buchungsstapel, Zahlungsabgleich, Storno-/Differenzübergaben.
+E-Rechnungen. Viertes Inkrement (2026-06-13): **Zahlungsabgleich-MVP**
+umgesetzt (Priorität 3 / Phase 4) — Bankauszüge im Format **CAMT.053**
+(bevorzugt) und **MT940** (Fallback) werden über einen Adapter um
+`php-financial-formats` (`BankStatementParser` → `CamtParser`/
+`Mt940DocumentParser`, verifizierte CreditDebit-Semantik: `CREDIT` =
+Geldeingang) eingelesen, in einen Prüfbereich (`bank_statements`/
+`bank_transactions`) normalisiert und gegen offene Rechnungen/freigegebene
+Spesen score-basiert vorgeschlagen (`MatchingService`). Der Import ändert
+keinen Beleg; erst die Bestätigung (`ReconciliationService::confirm`) setzt
+`Invoice.status=paid`/`paid_on` bzw. `Expense.reimbursed_at`. Mit dabei:
+Skonto-Toleranz (Default 3 %) und Cent-Toleranz (±0,02), Saldenketten-Prüfung
+(`balance_check`), Dublettenschutz über Datei-Hash (`file_hash`) und Umsatz-
+Fingerprint, reversible Zuordnungen (`payment_allocations` SoftDelete,
+`unmatch` ohne Veränderung des Bankumsatzes), eigene Bankkonten
+(`bank_accounts`, IBAN verschlüsselt at-rest + `iban_hash`-Blindindex), PII der
+Bankumsätze (Name/IBAN/Zweck) verschlüsselt mit Matching ausschließlich über
+unverschlüsselte Ableitungen, und eine append-only Hash-Kette
+(`payment_reconciliation_events`, in `config('audit.chains')`,
+`audit:verify`). Berechtigungen getrennt: `finance.payment.import`,
+`finance.payment.reconcile` (Buchhaltung+Admin), Bankkonten über
+`finance.config` (Admin). Bewusst offen am Zahlungsabgleich:
+Fremdwährungs-Kursdifferenz (nur erkannt + „manuell" markiert),
+Sammelbuchungs-Auflösung mehrerer TxDtls je Entry, EBICS/FinTS-Bankzugang,
+Lastschrift-Rückläufer-Workflow. Fünftes Inkrement (2026-06-14):
+**DATEV-Buchungsstapel-MVP** umgesetzt (Priorität 2 / Phase 3) — gestellte und
+bezahlte Rechnungen, Gutschriften sowie optional freigegebene Spesen eines
+abgeschlossenen Zeitraums werden als prüfbarer **DATEV-Buchungsstapel (Format
+V700)** exportiert. Eingebunden ist `php-financial-formats`
+(`Builders\DATEV\V700\BookingDocumentBuilder` + `Generators\DATEV\
+DatevDocumentGenerator`) über einen Adapter (`App\Services\Finance\Datev\
+DatevBookingAdapter`), abgesichert via `FinancialFormatsSupport`. Buchungslogik:
+je Rechnung ein Debitor-Buchungssatz **Soll Debitorenkonto an Haben Erlöskonto**
+mit BU-Schlüssel (Bruttobetrag; 19 %⇒3, 7 %⇒2, 0 %⇒0, konfigurierbar);
+Gutschriften umgekehrt (S/H getauscht), Belegfeld 1 = Rechnungsnummer,
+Buchungstext = Kunde/Leistung, Belegdatum = `issued_on`. Buchhaltungs-
+Konfiguration je Organisation (`settings['datev']`): Berater-/Mandantennummer,
+Kontenrahmen (SKR03/SKR04), Sachkontenlänge, Erlöskonto Standard und
+steuerfrei, Debitoren-Nummernkreis-Basis, Steuerschlüssel-Mapping,
+Festschreibekennzeichen (GoBD) und Zeichensatz (Default **ISO-8859-1**, DATEV-
+üblich). Debitorennummer je Kunde (`customers.debtor_no`, nullable) mit
+deterministischer Vergaberegel (Basis + Kunden-ID) als Fallback. Datenmodell:
+`datev_booking_batches` (laufende `batch_no` je Org, status draft|exported,
+SHA-256 `file_hash`, `finalized_locked`, SoftDeletes), `datev_booking_sources`
+(morph Invoice|Expense, Buchungs-Snapshot, Unique je Batch+Quelle —
+Doppel-Übergabe-Schutz: eine Quelle darf nicht in zwei exportierten Stapeln
+hängen) und append-only Hash-Kette `datev_booking_events`
+(config('audit.chains'), `audit:verify`). **Hoheits-Ausschluss:** Rechnungen
+extern geführter Kunden (BillingMode lexoffice/datev) gehören nicht in den
+lokalen Buchungsstapel und werden ausgeschlossen + im Preflight gewarnt. Ein
+finalisierter Stapel ist unveränderlich. Berechtigungen getrennt:
+`finance.booking.export` (Buchhaltung+Admin), Konfiguration über
+`finance.config` (Admin); Modul-Gating `module.finance`. Bewusst offen am
+Buchungsstapel: Stammdatenexport (Debitoren/Sachkonten als eigene
+DATEV-Formate), mehrere Stapel je Zeitraum/Teilauswahl, Beleg-/BEDI-Übergabe
+(Belege bleiben Anlage am Vorgang), differenzierte Aufwands-/Vorsteuerkonten je
+Spesenkategorie und eine echte DATEV-Abnahme der erzeugten Dateien. Weiterhin
+offen: DATEV-Desktop-API-Adapter (Phase 0/1), Storno-/Differenzübergaben.
+Sechstes Inkrement (2026-06-15): **Härtung & Nachweis-Vervollständigung** —
+(a) **Write→Read-Validierung** des DATEV-Buchungsstapels: die erzeugte CSV wird
+mit demselben Toolkit über einen unabhängigen Codepfad (`DatevDocumentParser`
+statt Builder) wieder eingelesen; geprüft werden Formaterkennung (Kategorie
+Buchungsstapel), Formatversion (EXTF V700) und die Buchungszeilen-Anzahl gegen
+die Erwartung. Schlägt der Roundtrip fehl, bricht `finalize()` ab und legt
+**keine** Datei ab; Formatkennung/-version und das Roundtrip-Ergebnis werden im
+revisionssicheren `finalized`-Event hinterlegt (Exportnachweis trägt damit die
+Formatversion). (b) **Materialpositions-Snapshot** vollständig: der
+Übergabenachweis hält je Materialposition zusätzlich Einheit, Einzelpreis,
+Steuersatz und DATEV-Kostenposition (Material-SKU) zum Übergabezeitpunkt fest
+(`billing_transfer_items.unit/unit_price/tax_rate/cost_position`, Teil des
+Payload-Hashs) und zeigt sie in der Vorschau. (c) **Formatversion + Roundtrip-
+Badge** und ein **Hinweis auf abgeleitete/vereinfachte Felder** (Belegdatum =
+Periodenanfang, vereinfachte Spesenkonten, fehlender BU-Schlüssel) in der DATEV-
+Vorschau. (d) **Capability-Matrix** der Import-/Exportformate dokumentiert
+(siehe unten); die Formaterkennung erfolgt inhaltsbasiert, nicht über die
+Dateiendung. Bewusst weiterhin offen (Desktop-API-gebunden, hier nicht testbar):
+DATEV-Rechnungsnummer/Billing-Status lesend synchronisieren, Desktop-API-
+Zugangsdaten-Hygiene, sowie das vollständige Mandant-/Auftrag-/Mitarbeiter-/
+Kostenpositions-Mapping (nur Kunde→Debitor ist über `customers.debtor_no`
+gepflegt).
 
 ## Ziel
 
@@ -608,6 +685,44 @@ Die Laravel-Anwendung soll diese Bibliothek über einen eigenen Adapter
 ansprechen. Klassen aus dem Toolkit werden nicht direkt in Controller oder
 Eloquent-Modelle eingebaut.
 
+**Eingebunden seit dem Zahlungsabgleich-MVP (2026-06-13, Priorität 3):** Der
+`App\Services\Finance\Banking\BankStatementParser` kapselt
+`Parsers\ISO20022\CamtParser` (CAMT.053 via `parseCamt053All()`, mehrere
+`<Stmt>` je Datei) und `Parsers\Swift\Mt940DocumentParser`
+(`parseMultiple()`); die Toolkit-Entities (`…\Camt\Type53\Document`/
+`Transaction`, `…\Swift\Mt9xx\Type940\Document`/`Transaction`,
+`…\Mt9xx\Purpose`) werden in formatneutrale DTOs
+(`NormalizedStatement`/`NormalizedTransaction`) überführt und bleiben damit aus
+Controllern und Eloquent-Modellen heraus. Die CreditDebit-Semantik ist gegen
+echte Fixtures verifiziert: `CommonToolkit\Enums\CreditDebit::CREDIT`
+(„Gutschrift / Haben") = Geldeingang aufs eigene Konto. Das Paket ist optional
+(`composer.local.json`, nicht in der committeten `composer.json`); jeder
+Aufruf ist über `FinancialFormatsSupport::isAvailable()`/`ensureAvailable()`
+gegen das Fehlen des Pakets abgesichert (`finance.reconciliation`-UI zeigt dann
+einen Hinweis statt eines Fehlers).
+
+**Eingebunden seit dem Buchungsstapel-MVP (2026-06-14, Priorität 2):** Der
+`App\Services\Finance\Datev\DatevBookingAdapter` kapselt den DATEV-V700-
+Buchungsstapel-Builder (`Builders\DATEV\V700\BookingDocumentBuilder`) und den
+`Generators\DATEV\DatevDocumentGenerator`. Verifizierte Signaturen (gegen
+`vendor/daniel-jorg-schuppelius/php-financial-formats/src`): der Builder bietet
+`setClient(int $advisorNumber, int $clientNumber)`,
+`setDateRange(DateTimeImmutable $from, $to)`, `setDescription(string)`,
+`setFieldHeader(?BookingBatchHeaderLine)`,
+`addSimpleBooking(float $amount, string $sollHaben, string $account, string
+$contraAccount, DateTimeImmutable|string $date, string $documentRef, string
+$text)` und `addBooking(DataLine)` → `build(): BookingBatch`. `addSimpleBooking()`
+setzt **keinen** BU-Schlüssel/keine Festschreibung; der Adapter baut die
+`CommonToolkit\Entities\CSV\DataLine` daher direkt über die Feldindizes aus
+`Enums\DATEV\HeaderFields\V700\BookingBatchHeaderField` (Umsatz,
+SollHabenKennzeichen, Konto, Gegenkonto, BUSchluessel, Belegdatum (Format `dm`),
+Belegfeld1, Buchungstext, Festschreibung). Der Generator erzeugt die CSV via
+`generate(BookingBatch $doc, ';', '"', null, $encoding)`; das Encoding ist
+konfigurierbar (Default **ISO-8859-1**, DATEV-üblich). Toolkit-Klassen bleiben
+aus Controllern und Eloquent-Modellen heraus; jeder Aufruf ist über
+`FinancialFormatsSupport::ensureAvailable()` abgesichert
+(`finance.datev`-UI zeigt sonst einen Hinweis).
+
 ### `php-common-toolkit`
 
 Bereits vorhandene Basis für:
@@ -971,87 +1086,146 @@ Das Feature ist für die Anwendung erfolgreich, wenn:
 - Installationen ohne DATEV Desktop API alle dateibasierten Kernabläufe nutzen
   können.
 
+## Capability-Matrix (Stand 2026-06-15)
+
+Unterstützte Import-/Exportformate und ihr Umsetzungsstand. Die Formaterkennung
+erfolgt **inhaltsbasiert** (nicht anhand der Dateiendung): XML mit Wurzel
+`<Document>` ⇒ CAMT.053, sonst MT940; der DATEV-Meta-Header (EXTF/Kategorie/
+Version) identifiziert den Buchungsstapel beim Wiedereinlesen.
+
+| Format | Richtung | Status | Umsetzung / Hinweis |
+| --- | --- | --- | --- |
+| DATEV-Buchungsstapel EXTF V700 | Export | ✅ umgesetzt | `DatevBookingAdapter` + `php-financial-formats`; Write→Read-validiert |
+| CAMT.053 (ISO 20022) | Import | ✅ umgesetzt | `BankStatementParser` (bevorzugt) |
+| MT940 (SWIFT) | Import | ✅ umgesetzt | `BankStatementParser` (Fallback) |
+| XRechnung (UBL 2.1, EN 16931) | Export | ✅ umgesetzt | `XRechnungGenerator`; Pflichtfeld-Preflight (KoSIT/Schematron offen) |
+| ZUGFeRD (PDF/A-3 + CII, EN 16931) | Export | ✅ umgesetzt | `ZugferdPdfGenerator` |
+| Lexoffice-Positionsübergabe | Export (API) | ✅ umgesetzt | `LexofficeTarget` (Rechnungsentwurf) |
+| CSV-Übergabepaket (kein DATEV-Format) | Export | ✅ umgesetzt | `FileTarget`, ehrlich gekennzeichnet |
+| DATEV LODAS / Lohn | Export | 🟡 Alt-Export | `DatevLodasProfile`, nur LODAS-nah, **nicht** DATEV-zertifiziert |
+| DATEV Desktop-API (Faktura/Buchung) | Import/Export | 🔴 offen | benötigt lokale DATEV-Installation |
+| Peppol (Versand/Empfang) | Import/Export | 🔴 offen | — |
+| SEPA pain.001 / Zahlungsdateien | Export | 🔴 offen | — |
+| OFX/QIF u. a. | Import | 🔴 offen | — |
+
+Verlust-/Ableitungshinweise je Exportpaar (z. B. abgeleitetes Belegdatum,
+vereinfachte Spesenkonten, fehlender BU-Schlüssel) werden in der DATEV-Vorschau
+vor der Finalisierung angezeigt.
+
 ## Akzeptanzkriterien
 
-- [ ] Der Nutzer wählt ein konkretes DATEV-Profil mit sichtbarer
-      Formatversion.
+- [x] Der Nutzer wählt ein konkretes DATEV-Profil mit sichtbarer
+      Formatversion. (Format-/Versions-Badge „DATEV-Buchungsstapel (EXTF V700)"
+      in der DATEV-Vorschau)
 - [ ] Kunden, Projekte, Benutzer und Tätigkeiten können eindeutig auf
       DATEV-Mandant, Auftrag/Teilauftrag, Mitarbeiter und Kostenposition
-      abgebildet werden.
-- [ ] Nur freigegebene und abrechenbare Leistungen werden zur DATEV-Fakturierung
-      angeboten.
-- [ ] Zeit- und Produkt-/Materialquellen werden in getrennten Übergabekanälen
-      ausgewählt, geprüft, bestätigt und protokolliert.
-- [ ] Eine erfolgreiche Zeitübertragung verändert nicht den Übergabestatus
-      offener Materialverwendungen und umgekehrt.
-- [ ] Materialpositionen enthalten nachvollziehbare Menge, Einheit, Preis,
+      abgebildet werden. (Nur Kunde→Debitor über `customers.debtor_no` gepflegt;
+      Mandant/Auftrag/Mitarbeiter/Kostenposition Desktop-API-gebunden, offen.)
+- [x] Nur freigegebene und abrechenbare Leistungen werden zur DATEV-Fakturierung
+      angeboten. (`BillingTransferService` sammelt nur abrechenbare/freigegebene
+      Quellen; `DatevBookingService` nur gestellte/bezahlte Belege)
+- [x] Zeit- und Produkt-/Materialquellen werden in getrennten Übergabekanälen
+      ausgewählt, geprüft, bestätigt und protokolliert. (`TransferChannel`
+      Time/Material, getrennte Permissions + Hash-Ketten-Events)
+- [x] Eine erfolgreiche Zeitübertragung verändert nicht den Übergabestatus
+      offener Materialverwendungen und umgekehrt. (kanalgetrennte Transfers;
+      `TimeEntry.exported` vs `MaterialUsage.billed` unabhängig)
+- [x] Materialpositionen enthalten nachvollziehbare Menge, Einheit, Preis,
       Steuerbehandlung und DATEV-Kostenposition.
-- [ ] Die Vorschau zeigt Zeit- und Produktquellen in getrennten Paketen sowie
+      (`billing_transfer_items.unit/unit_price/tax_rate/cost_position`-Snapshot,
+      Teil des Payload-Hashs, in der Vorschau angezeigt)
+- [x] Die Vorschau zeigt Zeit- und Produktquellen in getrennten Paketen sowie
       die daraus entstehenden DATEV-Buchungen einschließlich Zeiteinheiten,
-      Rundung, Mengen und Beträgen.
-- [ ] Erfolgreich übertragene Quellen können nicht zusätzlich lokal fakturiert
-      oder erneut an dasselbe Ziel übertragen werden.
-- [ ] DATEV-Posting-ID, Auftrag, Payload-Hash und Quellreferenzen werden
-      nachvollziehbar gespeichert.
+      Rundung, Mengen und Beträgen. (kanalseparierte Transfer-Vorschau +
+      DATEV-Buchungssatz-Tabelle mit S/H/Konto/Gegenkonto/BU/Betrag)
+- [x] Erfolgreich übertragene Quellen können nicht zusätzlich lokal fakturiert
+      oder erneut an dasselbe Ziel übertragen werden. (`excludeReserved`/
+      `excludeAlreadyBooked` + Unique-Constraints + Hoheits-Sperre)
+- [x] DATEV-Posting-ID, Auftrag, Payload-Hash und Quellreferenzen werden
+      nachvollziehbar gespeichert. (`billing_transfers`/`billing_transfer_items`
+      + `external_reference_id` + `payload_hash`)
 - [ ] DATEV-Rechnungsnummer und Billing-Status werden lesend synchronisiert,
       ohne einen konkurrierenden lokalen Nummernkreis zu erzeugen.
+      (Desktop-API-gebunden, hier nicht testbar — offen.)
 - [ ] Nutzer können unterstützte Finanzdateien hochladen und erhalten vor der
       Übernahme eine Vorschau mit erkanntem Format und Formatversion.
-- [ ] Ein Import verändert vor der ausdrücklichen Bestätigung keine
-      fachlichen WorkDiary-Daten.
-- [ ] Originaldatei, normalisierte Daten und Importnachweis bleiben
-      nachvollziehbar miteinander verbunden.
-- [ ] Wiederholte Importe derselben Datei oder Transaktion erzeugen keine
-      unbemerkten Dubletten.
-- [ ] Bankumsätze können bestätigt einer Rechnung, Teilzahlung,
+      (Für Bankauszüge umgesetzt — Upload-Dialog mit inhaltsbasierter
+      CAMT/MT940-Erkennung; allgemeiner Finanz-Import bewusst noch offen.)
+- [x] Ein Import verändert vor der ausdrücklichen Bestätigung keine
+      fachlichen WorkDiary-Daten. (Zahlungsabgleich-MVP)
+- [x] Originaldatei, normalisierte Daten und Importnachweis bleiben
+      nachvollziehbar miteinander verbunden. (`bank_statements.file_path`/
+      `file_hash` ↔ `bank_transactions`)
+- [x] Wiederholte Importe derselben Datei oder Transaktion erzeugen keine
+      unbemerkten Dubletten. (Datei-Hash je Org unique + Umsatz-Fingerprint)
+- [x] Bankumsätze können bestätigt einer Rechnung, Teilzahlung,
       Spesenerstattung oder dem Status „unzugeordnet“ zugewiesen werden.
-- [ ] Eine bestätigte Zuordnung ist reversibel, ohne den ursprünglichen
-      Bankumsatz zu verändern oder zu löschen.
-- [ ] Nur freigegebene Daten können exportiert oder übertragen werden.
-- [ ] Rechnungen, Gutschriften und Spesen werden höchstens einmal je
-      Exportrevision buchhalterisch übergeben.
-- [ ] Fehlende Personalnummern, Lohnarten, Kostenstellen oder Konten verhindern
+- [x] Eine bestätigte Zuordnung ist reversibel, ohne den ursprünglichen
+      Bankumsatz zu verändern oder zu löschen. (`unmatch`, SoftDelete)
+- [x] Nur freigegebene Daten können exportiert oder übertragen werden.
+      (abrechenbare/freigegebene Quellen; gestellte/bezahlte Belege)
+- [x] Rechnungen, Gutschriften und Spesen werden höchstens einmal je
+      Exportrevision buchhalterisch übergeben. (`datev_booking_sources`-Unique +
+      `excludeAlreadyBooked`; `MaterialUsage.billed`/`TimeEntry.exported`)
+- [x] Fehlende Personalnummern, Lohnarten, Kostenstellen oder Konten verhindern
       den finalen Export oder werden ausdrücklich als Warnung bestätigt.
-- [ ] DATEV-Dateien werden über `php-financial-formats` erzeugt und erneut
-      eingelesen/validiert.
-- [ ] Konvertierungen zeigen nicht abbildbare oder nur abgeleitete Felder vor
-      dem Export an.
-- [ ] Import- und Exportformate sind als Capability-Matrix dokumentiert und
-      werden nicht nur anhand ihrer Dateiendung erkannt.
-- [ ] Der Exportnachweis enthält Hash, Formatversion, Zeitraum, Organisation,
-      ausführende Person und Quellreferenzen.
-- [ ] Ein identischer erneuter Export ist reproduzierbar oder als neue Revision
-      nachvollziehbar.
-- [ ] Organisationen können keine Konfigurationen oder Exporte anderer
-      Organisationen lesen oder verwenden.
-- [ ] Berechtigungen für Lohn, Buchhaltung, Bankimport und
-      Verbindungskonfiguration sind getrennt.
-- [ ] Der bestehende LODAS-nahe Export wird nicht fälschlich als
-      DATEV-zertifiziert bezeichnet.
+      (Preflight: fehlendes Debitoren-/Erlöskonto = Fehler, fehlender
+      BU-Schlüssel = Warnung; Personalnummern/Lohnarten betreffen die noch
+      offene Lohnexport-Phase.)
+- [x] DATEV-Dateien werden über `php-financial-formats` erzeugt und erneut
+      eingelesen/validiert. (`DatevBookingAdapter::validateRoundtrip` —
+      Formaterkennung, Version, Buchungszeilen-Anzahl; bricht `finalize()` ab)
+- [x] Konvertierungen zeigen nicht abbildbare oder nur abgeleitete Felder vor
+      dem Export an. (Hinweisblock „Abgeleitete und vereinfachte Felder" in der
+      DATEV-Vorschau)
+- [x] Import- und Exportformate sind als Capability-Matrix dokumentiert und
+      werden nicht nur anhand ihrer Dateiendung erkannt. (siehe Capability-Matrix;
+      inhaltsbasierte Erkennung in `BankStatementParser`/`DatevDocumentParser`)
+- [x] Der Exportnachweis enthält Hash, Formatversion, Zeitraum, Organisation,
+      ausführende Person und Quellreferenzen. (`datev_booking_batches` +
+      `finalized`-Event mit `file_hash`/`format_version`/Quellen)
+- [x] Ein identischer erneuter Export ist reproduzierbar oder als neue Revision
+      nachvollziehbar. (deterministische Quellen + `file_hash`; neue `batch_no`
+      je Revision)
+- [x] Organisationen können keine Konfigurationen oder Exporte anderer
+      Organisationen lesen oder verwenden. (org-Scoping aller Finance-Tabellen +
+      Policies)
+- [x] Berechtigungen für Lohn, Buchhaltung, Bankimport und
+      Verbindungskonfiguration sind getrennt. (`finance.transfer.*`,
+      `finance.payment.*`, `finance.booking.export`, `finance.config`)
+- [x] Der bestehende LODAS-nahe Export wird nicht fälschlich als
+      DATEV-zertifiziert bezeichnet. (Capability-Matrix kennzeichnet LODAS als
+      Alt-Export; CSV-Paket-Titel „kein DATEV-Format")
 - [ ] Desktop-API-Zugangsdaten erscheinen weder in Logs noch in
-      Datenbank-Auditfeldern.
-- [ ] Datei-Export funktioniert ohne installierte oder erreichbare DATEV
-      Desktop API.
-- [ ] Ist für eine Organisation oder einen Kunden ein führendes externes
+      Datenbank-Auditfeldern. (greift erst mit dem offenen Desktop-API-Adapter.)
+- [x] Datei-Export funktioniert ohne installierte oder erreichbare DATEV
+      Desktop API. (`DatevBookingService::finalize` erzeugt die CSV rein lokal)
+- [x] Ist für eine Organisation oder einen Kunden ein führendes externes
       Fakturierungssystem konfiguriert, ist die lokale Rechnungserstellung
-      für dessen Quellen gesperrt.
+      für dessen Quellen gesperrt. (`BillingModeResolver` + `LocalInvoiceLock`)
 - [x] Lokale Ausgangsrechnungen können als XRechnung (UBL 2.1, EN 16931)
       und als ZUGFeRD-PDF (PDF/A-3 mit eingebettetem CII-XML, Profil
       EN 16931) ausgegeben werden; ein Pflichtfeld-Preflight prüft die
       fachlichen Pflichtangaben. (Teilweise: Schematron-/KoSIT-Validierung
       steht noch aus.)
-- [ ] Die Festschreibe-Entscheidung je Buchungsstapel ist sichtbar und Teil
-      des Exportnachweises.
-- [ ] Bankdaten mit Personenbezug liegen verschlüsselt vor; das Matching
-      funktioniert ohne Entschlüsselung ganzer Tabellen.
-- [ ] Eine genehmigte Zeitkorrektur an bereits übergebenen Zeiten wird
+- [x] Die Festschreibe-Entscheidung je Buchungsstapel ist sichtbar und Teil
+      des Exportnachweises. (`finalized_locked` in der Vorschau + DATEV-
+      Festschreibekennzeichen je Buchung)
+- [x] Bankdaten mit Personenbezug liegen verschlüsselt vor; das Matching
+      funktioniert ohne Entschlüsselung ganzer Tabellen. (encrypted Casts +
+      `counterparty_iban_hash`/`extracted_refs`-Ableitungen)
+- [x] Eine genehmigte Zeitkorrektur an bereits übergebenen Zeiten wird
       blockiert oder erzeugt nachvollziehbar eine Differenzübergabe.
-- [ ] Skontozahlungen innerhalb der Toleranz werden als vollständige Zahlung
+      (`TimeCorrectionService` blockiert Korrekturen an `exported` Einträgen mit
+      `reasonCode=sourceTransferred`; Differenzübergabe spätere Stufe)
+- [x] Skontozahlungen innerhalb der Toleranz werden als vollständige Zahlung
       mit Skontoabzug vorgeschlagen, nicht als offene Teilzahlung.
-- [ ] Lückenhafte Auszugsreihen (Saldenkette) erzeugen eine sichtbare
-      Warnung.
-- [ ] Transfer-Nachweise sind Teil der Audit-Hash-Kette und werden von
-      `audit:verify` geprüft.
+      (`MatchingService`, Default 3 %)
+- [x] Lückenhafte Auszugsreihen (Saldenkette) erzeugen eine sichtbare
+      Warnung. (`balance_check` = mismatch/unknown; Eröffnungs-/Schlusssaldo-
+      Prüfung je Auszug — auszugsübergreifende Kette: spätere Stufe)
+- [x] Transfer-Nachweise sind Teil der Audit-Hash-Kette und werden von
+      `audit:verify` geprüft. (`payment_reconciliation_events`)
 
 ## Tests
 

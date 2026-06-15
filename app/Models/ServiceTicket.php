@@ -10,8 +10,9 @@
 
 namespace App\Models;
 
-use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus};
+use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus, SlaStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Services\ServiceTicket\SlaTimer;
 use Database\Factories\ServiceTicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -129,5 +130,23 @@ class ServiceTicket extends Model {
     /** @return BelongsTo<User, $this> */
     public function assignedTo(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_to_user_id');
+    }
+
+    /**
+     * Abgeleiteter Lösungs-SLA-Status (reine Anzeige, Feature 010). Maßgeblich
+     * ist die Lösungsfrist (resolution_due_at) über den {@see SlaTimer}.
+     */
+    public function slaStatus(): SlaStatus {
+        return app(SlaTimer::class)->resolutionStatus($this);
+    }
+
+    /** Abgeleiteter Reaktions-SLA-Status (reine Anzeige). */
+    public function slaReactionStatus(): SlaStatus {
+        return app(SlaTimer::class)->reactionStatus($this);
+    }
+
+    /** Verbleibende Minuten bis zur Lösungsfrist (negativ = überfällig). */
+    public function slaMinutesRemaining(): ?int {
+        return app(SlaTimer::class)->minutesRemaining($this->resolution_due_at);
     }
 }

@@ -25,6 +25,7 @@
         'foreignCustomers' => $foreignCustomers ?? collect(),
         'categoryOptions' => $categoryOptions,
         'prefill' => $prefill,
+        'allTags' => $allTags ?? collect(),
         'sites' => $sites ?? collect(),
         'buildings' => $buildings ?? collect(),
         'floors' => $floors ?? collect(),

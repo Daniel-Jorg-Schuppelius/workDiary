@@ -11,7 +11,7 @@
 namespace App\Services\Isms;
 
 use App\Enums\Isms\{AssessmentKind, ControlImplementationStatus, FindingKind, FindingStatus};
-use App\Models\Isms\{IsmsApplicabilityStatement, IsmsAuditFinding, IsmsCertificate, IsmsCorrectiveAction, IsmsNormStatus, IsmsRisk, IsmsRiskAssessment, IsmsScope, IsmsSoftwareProduct};
+use App\Models\Isms\{IsmsApplicabilityStatement, IsmsAuditFinding, IsmsCertificate, IsmsCorrectiveAction, IsmsNormStatus, IsmsRisk, IsmsRiskAssessment, IsmsScope, IsmsSoftwareProduct, IsmsSupplierAssessment};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\{Carbon, Collection};
 
@@ -39,9 +39,8 @@ use Illuminate\Support\{Carbon, Collection};
  *   gemappte Maßnahme mit Umsetzungsstatus implemented.
  * - Zertifikate: Status je Norm + Ablauf/Überwachungstermin < 90 Tage.
  * - Software: Produkte mit erreichtem End-of-Life.
- *
- * Hinweis: Die Kennzahl „ungeprüfte Lieferanten" aus der Feature-Doku
- * entfällt bewusst — es existiert (noch) kein Lieferantenmodul (MVP 2).
+ * - Ungeprüfte Lieferanten (MVP 2/3): Lieferantenbewertungen mit
+ *   überfälligem Review (next_review_on) und nicht abschließend freigegeben.
  */
 class ReadinessService {
     /** Score-Schwelle der roten Matrix-Zone (score > 12 = hoch). */
@@ -70,7 +69,8 @@ class ReadinessService {
      *     nonconformities: array{open_count: int, open: Collection<int, IsmsAuditFinding>},
      *     evidence_gaps: array{count: int, top: Collection<int, IsmsApplicabilityStatement>},
      *     certificates: Collection<int, array{norm: string, status: \App\Enums\Isms\NormConformityStatus, valid_until: Carbon|null, expiring: bool, next_surveillance: Carbon|null, surveillance_soon: bool}>,
-     *     software: array{eol_count: int}
+     *     software: array{eol_count: int},
+     *     suppliers: array{overdue_count: int, overdue: Collection<int, IsmsSupplierAssessment>}
      * }
      */
     public function forScope(IsmsScope $scope): array {
@@ -85,6 +85,35 @@ class ReadinessService {
             'evidence_gaps' => $this->evidenceGaps($scope),
             'certificates' => $this->certificateStatus($scope),
             'software' => ['eol_count' => IsmsSoftwareProduct::query()->eolReached()->count()],
+            'suppliers' => $this->supplierReviews($scope),
+        ];
+    }
+
+    /**
+     * Ungeprüfte Lieferanten (Feature 044, MVP 2/3): Lieferantenbewertungen
+     * mit überfälligem Review (next_review_on überschritten) UND noch nicht
+     * abschließend freigegeben — die in MVP 1 bewusst entfallene Kennzahl, da
+     * es damals noch kein Lieferantenmodul gab. Lieferantenbewertungen tragen
+     * optional einen Scope; ohne Scope zählen sie zum Default-Scope.
+     *
+     * @return array{overdue_count: int, overdue: Collection<int, IsmsSupplierAssessment>}
+     */
+    private function supplierReviews(IsmsScope $scope): array {
+        $assessments = IsmsSupplierAssessment::query()
+            ->reviewOverdue()
+            ->where(function (Builder $query) use ($scope): void {
+                $query->where('isms_scope_id', $scope->id);
+                if ($scope->is_default) {
+                    $query->orWhereNull('isms_scope_id');
+                }
+            })
+            ->with(['owner:id,name', 'supplier:id,name'])
+            ->orderBy('next_review_on')
+            ->get();
+
+        return [
+            'overdue_count' => $assessments->count(),
+            'overdue' => $assessments->take(self::LIST_LIMIT)->values(),
         ];
     }
 

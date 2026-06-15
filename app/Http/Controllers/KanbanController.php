@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\Diary\Status;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{DiaryEntry, User};
 use App\Services\UI\DateRangeContext;
@@ -31,10 +32,15 @@ class KanbanController extends Controller {
      */
     public static function columns(): array {
         return [
-            2 => ['label' => 'Offen', 'tone' => 'open'],
-            3 => ['label' => 'Problem', 'tone' => 'alert'],
-            1 => ['label' => 'Bestätigt', 'tone' => 'progress'],
-            -1 => ['label' => 'Erledigt', 'tone' => 'done'],
+            Status::Planned->value => ['label' => Status::Planned->label(), 'tone' => 'open'],
+            Status::Accepted->value => ['label' => Status::Accepted->label(), 'tone' => 'progress'],
+            Status::InProgress->value => ['label' => Status::InProgress->label(), 'tone' => 'progress'],
+            Status::WaitingCustomer->value => ['label' => Status::WaitingCustomer->label(), 'tone' => 'alert'],
+            Status::WaitingMaterial->value => ['label' => Status::WaitingMaterial->label(), 'tone' => 'alert'],
+            Status::Completed->value => ['label' => Status::Completed->label(), 'tone' => 'done'],
+            Status::AcceptedFinal->value => ['label' => Status::AcceptedFinal->label(), 'tone' => 'done'],
+            Status::Invoiced->value => ['label' => Status::Invoiced->label(), 'tone' => 'done'],
+            Status::Cancelled->value => ['label' => Status::Cancelled->label(), 'tone' => 'neutral'],
         ];
     }
 
@@ -111,13 +117,11 @@ class KanbanController extends Controller {
 
     public function updateStatus(Request $request, DiaryEntry $entry): JsonResponse {
         Gate::authorize('update', $entry);
+        $request->validate(['status' => ['required', 'integer']]);
 
-        $validated = $request->validate([
-            'status' => 'required|integer|in:-1,1,2,3',
-        ]);
-
-        $entry->update(['status' => (int) $validated['status']]);
-
-        return response()->json(['ok' => true, 'status' => $entry->status]);
+        return response()->json([
+            'ok' => false,
+            'message' => __('Statuswechsel erfolgen über die fachlichen Auftragsaktionen.'),
+        ], 422);
     }
 }

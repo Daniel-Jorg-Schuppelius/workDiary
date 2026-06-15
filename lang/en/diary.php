@@ -20,9 +20,14 @@ return [
         'backlog' => 'Backlog',
     ],
     'status' => [
-        'Done' => 'Done',
-        'InProgress' => 'Confirmed',
-        'Open' => 'Open',
-        'Problem' => 'Problem',
+        'Planned' => 'Planned',
+        'Accepted' => 'Accepted',
+        'InProgress' => 'In progress',
+        'WaitingCustomer' => 'Waiting for response',
+        'WaitingMaterial' => 'Waiting for material',
+        'Completed' => 'Completed',
+        'AcceptedFinal' => 'Signed off',
+        'Invoiced' => 'Invoiced',
+        'Cancelled' => 'Cancelled',
     ],
 ];

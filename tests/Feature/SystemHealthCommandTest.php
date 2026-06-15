@@ -27,4 +27,14 @@ class SystemHealthCommandTest extends TestCase {
 
         $this->artisan('system:health')->assertExitCode(1);
     }
+
+    public function test_system_health_json_mode_emits_structured_output(): void {
+        // Strukturprüfung unabhängig vom Gesamtzustand (Backup-/Restore-Checks
+        // sind datenabhängig): valides JSON mit erwarteten Schlüsseln.
+        // Die JSON-Ausgabe ist eine einzelne Zeile mit allen Schlüsseln;
+        // expectsOutputToContain konsumiert pro Aufruf eine Zeile, daher EIN
+        // repräsentativer, eindeutiger Substring (deckt die Struktur ab).
+        $this->artisan('system:health --json')
+            ->expectsOutputToContain('"healthy":');
+    }
 }

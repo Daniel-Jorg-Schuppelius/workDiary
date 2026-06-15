@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Organization\TenantStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
@@ -17,6 +18,7 @@ use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, 
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -31,17 +33,21 @@ class LicenseAdminController extends Controller {
 
         $result = $this->service->current($request->getHost());
 
-        $userCount = User::query()->count();
         $orgCount = Organization::query()->count();
 
         // Org-gebundene Lizenz der aktuellen Organisation.
         $org = $request->user()?->organization;
         $orgLicense = $org !== null ? $this->service->forOrganization($org) : null;
 
+        // Nutzer-Limit org-bezogen auswerten: maßgeblich ist die org-gebundene
+        // Lizenz (sofern nutzbar), Auslastung sind die aktiven Org-Nutzer.
+        $limitLicense = ($orgLicense !== null && $orgLicense->isUsable()) ? $orgLicense : $result;
+        $userCount = $org !== null ? $org->activeUserCount() : User::query()->count();
+
         return view('admin.license.index', [
             'license' => $result,
             'badgeTone' => $this->badgeTone($result),
-            'limits' => $this->limits($result, $userCount, $orgCount),
+            'limits' => $this->limits($limitLicense, $userCount, $orgCount),
             'features' => $this->features($result),
             'expiresIn' => $this->expiresInDays($result),
             'isEnforced' => $this->service->isEnforced(),
@@ -54,7 +60,52 @@ class LicenseAdminController extends Controller {
             'orgModules' => $this->orgModules($orgLicense),
             'canIssue' => $this->service->canIssue(),
             'moduleCodes' => $this->moduleCodes(),
+            // Mandantenstatus (trial/active/suspended/expired); abgeleitet aus
+            // tenant_status-Spalte bzw. Lizenz-Ablauf (Feature 021).
+            'tenantStatus' => $org?->tenantStatus($orgLicense),
+            'tenantStatusExplicit' => $org?->tenant_status,
+            'tenantStatusOptions' => TenantStatus::assignable(),
+            'canManageTenant' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
         ]);
+    }
+
+    /**
+     * Setzt den SaaS-Mandantenstatus der aktuellen Organisation (Feature 021).
+     * `inherit` löscht den expliziten Wert und fällt auf die abgeleitete Logik
+     * zurück. Plattform-Admin-Operation (Permission `platform.license.install`).
+     */
+    public function setTenantStatus(Request $request): RedirectResponse {
+        Gate::authorize(Permission::PlatformLicenseInstall->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $org = $user->organization;
+        abort_if($org === null, Response::HTTP_NOT_FOUND);
+
+        $data = $request->validate([
+            'tenant_status' => ['required', Rule::in(['inherit', ...array_map(static fn(TenantStatus $s): string => $s->value, TenantStatus::assignable())])],
+        ]);
+
+        $previous = $org->tenant_status?->value;
+        $org->tenant_status = $data['tenant_status'] === 'inherit'
+            ? null
+            : TenantStatus::from($data['tenant_status']);
+        $org->save();
+        $this->service->flushOrganization($org);
+
+        AuditLog::query()->create([
+            'organization_id' => $org->id,
+            'user_id' => $user->id,
+            'event' => 'tenant.statusChanged',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $org->id,
+            'changes' => [
+                'from' => $previous,
+                'to' => $org->tenant_status?->value,
+            ],
+        ]);
+
+        return back()->with('success', __('Mandantenstatus aktualisiert.'));
     }
 
     /**

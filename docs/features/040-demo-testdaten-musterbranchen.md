@@ -3,7 +3,15 @@
 ## Status
 
 In Progress — [Demo-Mandant mit vollständigem Beispielauftrag](../demo-mandant.md)
-konzipiert (MVP-050, Issue #49).
+konzipiert (MVP-050, Issue #49). MVP umgesetzt: `DemoSeederService` erzeugt je
+**Musterbranche** (IT-Service, Elektro, Facility Management — `DemoIndustry`)
+ein End-to-End-Szenario auf Basis des `BranchProfileInstaller` inkl. Material,
+Asset, signiertem Abnahmeprotokoll, offenem Punkt und Kommunikationseintrag.
+**Resetbarer Demo-Modus** über `demo:reset`/Admin-Aktion (idempotent, wirkt
+ausschließlich auf `is_demo`-Orgs — echte Mandanten werden nie angefasst) und
+**Demo-Anlage** über `demo:seed {org?} --industry=`/Admin-Aktion mit
+Branchen-Auswahl. Offen: Prozedur-Run mit Backup-Proof/Vier-Augen-Schritt,
+Anhänge (JPEG/PDF), eigenständige `freshDemoOrg`-Org-Anlage.
 
 ## Ziel
 

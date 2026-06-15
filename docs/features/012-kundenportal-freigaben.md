@@ -2,7 +2,11 @@
 
 ## Status
 
-In Progress
+In Progress — Freigabe/Ablehnung mit offenen Punkten und Rückfrage-Funktion
+umgesetzt (auf `ProtocolSignatureToken`/`PublicProtocolSignatureController`,
+`OpenIssue` und neuem `customer_queries`-Modell aufgesetzt; Auth/2FA des Portals
+unberührt). Offen: signierte Links für Stundenzettel/sonstige Dokumente,
+read-only Kundenansicht für Fotos/Material/PDF im Portal, Foto-Bestätigung.
 
 ## Ziel
 

@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Procedure\ProcedureRunStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\ProcedureRunFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -42,6 +42,7 @@ class ProcedureRun extends Model {
 
     /** @use HasFactory<ProcedureRunFactory> */
     use HasFactory;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

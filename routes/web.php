@@ -8,14 +8,14 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SupportAccessAuditController, SupportReportController};
-use App\Http\Controllers\Asset\MaintenancePlanController;
+use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SecurityController, SupportAccessAuditController, SupportReportController};
+use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
 use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController, TwoFactorChallengeController};
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
 use App\Http\Controllers\MeterReading\MeterReadingController;
-use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, ExternalPayoutReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
+use App\Http\Controllers\Reporting\{AbsencesReportController, AssetAnalysisReportController, AttendanceReportController, AuditActivityReportController, BillingReportController, CoverageReportController, CustomerAnalysisReportController, CustomerProjectReportController, EconomicsReportController, EntryTypeAnalysisReportController, EntryTypeDrilldownReportController, ExpenseReportController, ExternalPayoutReportController, FleetReportController, MaterialReportController, MonthByUserTeamReportController, MyMonthReportController, MyYearReportController, OnCallReportController, OperationsReportController, ProjectDetailsReportController, ProjectInactiveReportController, QualificationReportController, SicknessReportController, WeekByUserReportController, WorkBalanceReportController};
 use App\Http\Controllers\ServiceTicket\ServiceTicketController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UI\DateRangeController;
@@ -90,6 +90,13 @@ Route::get('sign/protocol/{token}', [PublicProtocolSignatureController::class, '
 Route::post('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('protocols.public-sign.submit');
+// Ablehnung mit offenen Punkten + Kunden-Rückfrage (Feature 012)
+Route::post('sign/protocol/{token}/reject', [PublicProtocolSignatureController::class, 'reject'])
+    ->middleware('throttle:6,1')
+    ->name('protocols.public-sign.reject');
+Route::post('sign/protocol/{token}/query', [PublicProtocolSignatureController::class, 'query'])
+    ->middleware('throttle:6,1')
+    ->name('protocols.public-sign.query');
 
 // Öffentlicher Prüfer-Download finalisierter ISMS-Auditpakete (Feature 046,
 // Inkrement E): token-basiert ohne Login/Org-Session (nur Token-Hash wird
@@ -99,6 +106,25 @@ Route::post('sign/protocol/{token}', [PublicProtocolSignatureController::class, 
 Route::get('audit-paket/{token}', [PublicAuditPackageController::class, 'download'])
     ->middleware('throttle:30,1')
     ->name('audit-packages.public-download');
+
+// Öffentlicher, login-freier Zugriff externer Beteiligter (Feature 033):
+// kontextbezogene Read-Only-Seite eines Auftrags/Protokolls/Dokuments mit nur
+// den per abilities erlaubten Aktionen. Token-basiert ohne Login/Org-Session
+// (nur der SHA-256-Hash wird gespeichert); widerrufen/abgelaufen/unbekannt ⇒
+// 404. Bewusst außerhalb von auth/EnforcePlanModules; abilities werden
+// serverseitig je Aktion erzwungen (403). Throttle als Brute-Force-Schutz.
+Route::get('extern/{token}', [PublicExternalParticipantController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('external.show');
+Route::post('extern/{token}/kommentar', [PublicExternalParticipantController::class, 'comment'])
+    ->middleware('throttle:12,1')
+    ->name('external.comment');
+Route::post('extern/{token}/upload', [PublicExternalParticipantController::class, 'upload'])
+    ->middleware('throttle:12,1')
+    ->name('external.upload');
+Route::post('extern/{token}/bestaetigen', [PublicExternalParticipantController::class, 'confirm'])
+    ->middleware('throttle:12,1')
+    ->name('external.confirm');
 
 // Backup-Heartbeat (MVP-046 §5): externer Endpoint mit Bearer-Token,
 // daher außerhalb von Auth-Gruppen, mit CSRF-Ausnahme (siehe bootstrap/app.php).
@@ -324,6 +350,55 @@ Route::middleware('auth')->group(function () {
             Route::post('bewertungen/{assessment}/freigeben', [\App\Http\Controllers\Isms\RiskController::class, 'approveAssessment'])->name('risks.assessments.approve');
             Route::delete('bewertungen/{assessment}', [\App\Http\Controllers\Isms\RiskController::class, 'destroyAssessment'])->name('risks.assessments.destroy');
 
+            // Sicherheitsvorfälle (Feature 044, MVP 2): Vorfallregister mit
+            // Statusmaschine (closed erfordert Ursache + Lessons Learned) und
+            // Rückführung in Risiken/Maßnahmen (SecurityIncidentService).
+            Route::get('vorfaelle', [\App\Http\Controllers\Isms\SecurityIncidentController::class, 'index'])->name('incidents.index');
+            Route::get('vorfaelle/neu', [\App\Http\Controllers\Isms\SecurityIncidentController::class, 'create'])->name('incidents.create');
+            Route::post('vorfaelle', [\App\Http\Controllers\Isms\SecurityIncidentController::class, 'store'])->name('incidents.store');
+            Route::get('vorfaelle/{incident}/bearbeiten', [\App\Http\Controllers\Isms\SecurityIncidentController::class, 'edit'])->name('incidents.edit');
+            Route::put('vorfaelle/{incident}', [\App\Http\Controllers\Isms\SecurityIncidentController::class, 'update'])->name('incidents.update');
+            Route::post('vorfaelle/{incident}/status', [\App\Http\Controllers\Isms\SecurityIncidentController::class, 'transition'])->name('incidents.transition');
+            Route::delete('vorfaelle/{incident}', [\App\Http\Controllers\Isms\SecurityIncidentController::class, 'destroy'])->name('incidents.destroy');
+
+            // Schwachstellenregister (Feature 044, MVP 2): CVSS-Severity,
+            // Inventar-Bezug, Fristen und die bewusste, begründete
+            // Ausnutzbarkeits-Entscheidung (VulnerabilityService).
+            Route::get('schwachstellen', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'index'])->name('vulnerabilities.index');
+            Route::get('schwachstellen/neu', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'create'])->name('vulnerabilities.create');
+            Route::post('schwachstellen', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'store'])->name('vulnerabilities.store');
+            Route::get('schwachstellen/{vulnerability}/bearbeiten', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'edit'])->name('vulnerabilities.edit');
+            Route::put('schwachstellen/{vulnerability}', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'update'])->name('vulnerabilities.update');
+            Route::post('schwachstellen/{vulnerability}/status', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'transition'])->name('vulnerabilities.transition');
+            Route::get('schwachstellen/{vulnerability}/betroffenheit', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'editDecision'])->name('vulnerabilities.decision');
+            Route::post('schwachstellen/{vulnerability}/betroffenheit', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'decide'])->name('vulnerabilities.decide');
+            Route::delete('schwachstellen/{vulnerability}', [\App\Http\Controllers\Isms\VulnerabilityController::class, 'destroy'])->name('vulnerabilities.destroy');
+
+            // Advisories (Feature 044, MVP 2): CSAF/VEX-Import + Nachweis-Ablage
+            // (SHA-256), Inventar-/SBOM-Abgleich (AdvisoryImportService).
+            Route::get('advisories', [\App\Http\Controllers\Isms\AdvisoryController::class, 'index'])->name('advisories.index');
+            Route::get('advisories/import', [\App\Http\Controllers\Isms\AdvisoryController::class, 'create'])->name('advisories.create');
+            Route::post('advisories/import', [\App\Http\Controllers\Isms\AdvisoryController::class, 'store'])->name('advisories.store');
+
+            // Lieferantenbewertung (Feature 044, MVP 2/3 „Lieferanten und
+            // Verträge"): Kritikalitäts-/Risikobewertung, Sicherheits-
+            // anforderungen, Vertragsmerkmale (NDA/AVV/Prüfungsrecht) und
+            // wiederkehrende Reviews (SupplierAssessmentService). Überfällige
+            // Reviews fließen in die Auditbereitschaft (ungeprüfte Lieferanten).
+            Route::get('lieferanten', [\App\Http\Controllers\Isms\SupplierAssessmentController::class, 'index'])->name('suppliers.index');
+            Route::get('lieferanten/neu', [\App\Http\Controllers\Isms\SupplierAssessmentController::class, 'create'])->name('suppliers.create');
+            Route::post('lieferanten', [\App\Http\Controllers\Isms\SupplierAssessmentController::class, 'store'])->name('suppliers.store');
+            Route::get('lieferanten/{supplier}/bearbeiten', [\App\Http\Controllers\Isms\SupplierAssessmentController::class, 'edit'])->name('suppliers.edit');
+            Route::put('lieferanten/{supplier}', [\App\Http\Controllers\Isms\SupplierAssessmentController::class, 'update'])->name('suppliers.update');
+            Route::post('lieferanten/{supplier}/status', [\App\Http\Controllers\Isms\SupplierAssessmentController::class, 'transition'])->name('suppliers.transition');
+            Route::delete('lieferanten/{supplier}', [\App\Http\Controllers\Isms\SupplierAssessmentController::class, 'destroy'])->name('suppliers.destroy');
+
+            // Reifegrad-/Readiness-Assessment (Feature 044, MVP 3): begründete
+            // SELBSTEINSCHÄTZUNG der Auditbereitschaft je Geltungsbereich aus
+            // den ISMS-Registern (ReadinessAssessmentService). Nie automatische
+            // Konformitätsbehauptung — explizit als Selbsteinschätzung markiert.
+            Route::get('readiness', [\App\Http\Controllers\Isms\ReadinessController::class, 'index'])->name('readiness');
+
             // Anforderungen + SoA-Aussagen je Geltungsbereich inkl.
             // Normkatalog-Import (Normprofil-Registry, profile-Pflichtparameter)
             Route::get('anforderungen', [\App\Http\Controllers\Isms\RequirementController::class, 'index'])->name('requirements.index');
@@ -456,18 +531,42 @@ Route::middleware('auth')->group(function () {
         // Betriebsmetriken (Feature 036)
         Route::get('admin/metrics', [MetricsController::class, 'index'])->name('admin.metrics.index');
 
+        // Admin-Sicherheitsübersicht (Feature 016) — read-only Aggregation
+        // sicherheitsrelevanter Zustände (Sessions, API-Tokens, Integrationen,
+        // letzte Exporte/Supportzugriffe, 2FA-/Verschlüsselungs-Status).
+        Route::get('admin/security', [SecurityController::class, 'index'])->name('admin.security.index');
+
+        // Backup- & Restore-Status (Feature 017) — plattformweite Admin-Sicht
+        Route::get('admin/backup', [BackupStatusController::class, 'status'])->name('admin.backup.status');
+        Route::get('admin/backup/restore-tests/create', [BackupStatusController::class, 'createRestoreTest'])
+            ->name('admin.backup.restore-tests.create');
+        Route::post('admin/backup/restore-tests', [BackupStatusController::class, 'storeRestoreTest'])
+            ->name('admin.backup.restore-tests.store');
+
         // Komponenten- und Versionsübersicht inkl. Release-SBOM (Feature 044)
         Route::get('admin/components', [ComponentsController::class, 'index'])->name('admin.components.index');
         Route::post('admin/components/sbom', [ComponentsController::class, 'generate'])
             ->middleware('throttle:6,1')
             ->name('admin.components.sbom.generate');
         Route::get('admin/components/sbom/download', [ComponentsController::class, 'download'])->name('admin.components.sbom.download');
+        // Signiertes/integritätsgesichertes Release-Manifest (Feature 022)
+        Route::post('admin/components/manifest', [ComponentsController::class, 'manifest'])
+            ->middleware('throttle:6,1')
+            ->name('admin.components.manifest.generate');
+        Route::get('admin/components/manifest/download', [ComponentsController::class, 'manifestDownload'])->name('admin.components.manifest.download');
 
         // Supportbericht (MVP-045)
         Route::get('admin/support/report', [SupportReportController::class, 'index'])->name('admin.support.report.index');
         Route::post('admin/support/report', [SupportReportController::class, 'generate'])
             ->middleware('throttle:3,1')
             ->name('admin.support.report.generate');
+        // JSON-Variante (Feature 041): reine JSON-Datei + Browser-Vorschau ohne ZIP.
+        Route::get('admin/support/report/download', [SupportReportController::class, 'download'])
+            ->middleware('throttle:6,1')
+            ->name('admin.support.report.download');
+        Route::get('admin/support/report/preview', [SupportReportController::class, 'preview'])
+            ->middleware('throttle:6,1')
+            ->name('admin.support.report.preview');
 
         // Supportzugriffe-Audit (MVP-004)
         Route::get('admin/support/access-audit', [SupportAccessAuditController::class, 'index'])
@@ -481,6 +580,7 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/license/org', [LicenseAdminController::class, 'installOrg'])->name('admin.license.org.install');
         Route::delete('admin/license/org', [LicenseAdminController::class, 'removeOrg'])->name('admin.license.org.remove');
         Route::post('admin/license/org/issue', [LicenseAdminController::class, 'issueOrg'])->name('admin.license.org.issue');
+        Route::post('admin/license/tenant-status', [LicenseAdminController::class, 'setTenantStatus'])->name('admin.license.tenantStatus');
         Route::get('admin/license/issuer', [LicenseAdminController::class, 'issuer'])->name('admin.license.issuer');
         Route::post('admin/license/issuer', [LicenseAdminController::class, 'issueKey'])->name('admin.license.issuer.create');
 
@@ -511,9 +611,29 @@ Route::middleware('auth')->group(function () {
         Route::resource('diary', DiaryController::class)->parameters(['diary' => 'diary']);
         Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->name('diary.archive');
         Route::post('diary/{diary}/restore', [DiaryController::class, 'restore'])->name('diary.restore');
+        Route::post('diary/{diary}/lifecycle/{action}', DiaryLifecycleController::class)
+            ->whereIn('action', ['accept', 'start', 'pause', 'resume', 'complete', 'handover', 'markInvoiced', 'cancel'])
+            ->name('diary.lifecycle');
         Route::get('diary/{diary}/case-file', DiaryCaseFileController::class)->name('diary.case-file');
+
+        // Disposition / Einsatzplanung (Feature 028): Konfliktvorschau + Status.
+        Route::get('dispatch/{diary}/conflicts', [DispatchController::class, 'conflicts'])->name('dispatch.conflicts');
+        Route::post('dispatch/{diary}/transition', [DispatchController::class, 'transition'])->name('dispatch.transition');
+
+        // Leitstelle (Feature 029): Dispatch-Board + Karten-Sicht (SLA-Risiko).
+        // Route-Namen dispatch.* → Plan-Gating module.planung (config/plans.php).
+        Route::get('dispatch-board', [DispatchBoardController::class, 'board'])->name('dispatch.board');
+        Route::get('dispatch-board/map', [DispatchBoardController::class, 'map'])->name('dispatch.map');
         Route::post('diary/{diary}/comments', [CommentController::class, 'store'])->name('diary.comments.store');
         Route::post('time-entries/{timeEntry}/comments', [TimeEntryCommentController::class, 'store'])->name('time-entries.comments.store');
+
+        // Externe Beteiligte (Feature 033): interne Verwaltung — Einladen,
+        // Link-Anzeige (einmalig), Widerruf. Subject = type+Sqid
+        // (diary|protocol|document). Autorisierung über die
+        // ExternalParticipantPolicy (manage-Permission + update am Subject).
+        Route::get('extern/{type}/{id}/einladen', [ExternalParticipantController::class, 'create'])->name('external.create');
+        Route::post('extern/{type}/{id}/einladen', [ExternalParticipantController::class, 'store'])->name('external.store');
+        Route::post('extern/{participant}/widerrufen', [ExternalParticipantController::class, 'revoke'])->name('external.revoke');
         Route::put('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
         Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
@@ -551,6 +671,7 @@ Route::middleware('auth')->group(function () {
             Route::get('duty-plans/{dutyPlan}/week', [PrintController::class, 'dutyPlanWeek'])->name('duty-plan.week');
             Route::get('duty-plans/{dutyPlan}/day-briefing', [PrintController::class, 'dutyPlanDayBriefing'])->name('duty-plan.day');
             Route::get('users/{user}/month', [PrintController::class, 'userMonth'])->name('user.month');
+            Route::get('schedule', [PrintController::class, 'schedule'])->name('schedule');
             Route::get('on-call', [PrintController::class, 'onCall'])->name('on-call');
             Route::get('vacations', [PrintController::class, 'vacationYear'])->name('vacations');
         });
@@ -595,6 +716,14 @@ Route::middleware('auth')->group(function () {
             ->except('show')
             ->parameters(['event-categories' => 'category']);
         Route::resource('rooms', RoomController::class)->except('show');
+
+        // ── Raumbezogene Anforderungen (Feature 027) ────────────────────────
+        Route::post('rooms/{room}/requirements', [\App\Http\Controllers\RoomRequirementController::class, 'store'])
+            ->name('rooms.requirements.store');
+        Route::put('rooms/{room}/requirements/{requirement}', [\App\Http\Controllers\RoomRequirementController::class, 'update'])
+            ->name('rooms.requirements.update');
+        Route::delete('rooms/{room}/requirements/{requirement}', [\App\Http\Controllers\RoomRequirementController::class, 'destroy'])
+            ->name('rooms.requirements.destroy');
 
         // ── Liegenschaften (Standort → Gebäude → Geschoss) ──────────────────
         Route::resource('sites', \App\Http\Controllers\SiteController::class);
@@ -699,6 +828,46 @@ Route::middleware('auth')->group(function () {
             Route::post('{transfer}/verwerfen', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'void'])->name('void');
             Route::get('{transfer}/download', [\App\Http\Controllers\Finance\FinanceTransferController::class, 'download'])->name('download');
         });
+
+        // ── Zahlungsabgleich (Feature 045, Priorität 3 / Phase 4) ───────────────
+        // Routen MÜSSEN finance.* heißen (Plan-Gating 'finance.*' → module.finance).
+        // Autorisierung über die Bank*-Policies (finance.payment.import/reconcile).
+        Route::prefix('finanzen/zahlungsabgleich')->name('finance.reconciliation.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'index'])->name('index');
+            Route::get('import', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'create'])->name('create');
+            Route::post('import', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'upload'])->name('upload');
+            Route::get('{statement}', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'show'])->name('show');
+            Route::get('{statement}/download', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'download'])->name('download');
+            Route::post('umsatz/{transaction}/bestaetigen', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'confirm'])->name('confirm');
+            Route::post('umsatz/{transaction}/ignorieren', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'ignore'])->name('ignore');
+            Route::post('umsatz/{transaction}/nicht-zuordenbar', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'unassignable'])->name('unassignable');
+            Route::delete('zuordnung/{allocation}', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'unmatch'])->name('unmatch');
+        });
+
+        // ── Eigene Bankkonten (Feature 045, finance.config) ─────────────────────
+        Route::prefix('finanzen/bankkonten')->name('finance.bank-accounts.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\BankAccountController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Finance\BankAccountController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Finance\BankAccountController::class, 'store'])->name('store');
+            Route::get('{bankAccount}/bearbeiten', [\App\Http\Controllers\Finance\BankAccountController::class, 'edit'])->name('edit');
+            Route::put('{bankAccount}', [\App\Http\Controllers\Finance\BankAccountController::class, 'update'])->name('update');
+            Route::delete('{bankAccount}', [\App\Http\Controllers\Finance\BankAccountController::class, 'destroy'])->name('destroy');
+        });
+
+        // ── DATEV-Buchungsstapel (Feature 045, Priorität 2 / Phase 3) ───────────
+        // Routen MÜSSEN finance.* heißen (Plan-Gating 'finance.*' → module.finance).
+        // Autorisierung über DatevBookingBatchPolicy (finance.booking.export;
+        // Konfiguration über finance.config).
+        Route::prefix('finanzen/datev-buchungen')->name('finance.datev.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\DatevBookingController::class, 'index'])->name('index');
+            Route::get('konfiguration', [\App\Http\Controllers\Finance\DatevBookingController::class, 'editConfig'])->name('config');
+            Route::put('konfiguration', [\App\Http\Controllers\Finance\DatevBookingController::class, 'updateConfig'])->name('config.update');
+            Route::get('neu', [\App\Http\Controllers\Finance\DatevBookingController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Finance\DatevBookingController::class, 'store'])->name('store');
+            Route::get('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'show'])->name('show');
+            Route::post('{batch}/finalisieren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'finalize'])->name('finalize');
+            Route::get('{batch}/download', [\App\Http\Controllers\Finance\DatevBookingController::class, 'download'])->name('download');
+        });
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
         Route::resource('projects.time-entries', TimeEntryController::class)->except(['index', 'show']);
@@ -802,6 +971,17 @@ Route::middleware('auth')->group(function () {
             ->whereIn('action', ['start', 'block', 'unblock', 'complete', 'wontDo', 'reopen'])
             ->name('open-issues.transition');
 
+        // ── Sicherheitsereignis-Register (Arbeitsschutz, Feature 013) ──────
+        Route::get('safety-events', [SafetyEventController::class, 'index'])->name('safety-events.index');
+        Route::get('safety-events/create', [SafetyEventController::class, 'create'])->name('safety-events.create');
+        Route::post('safety-events', [SafetyEventController::class, 'store'])->name('safety-events.store');
+        Route::get('safety-events/{safety_event}', [SafetyEventController::class, 'show'])->name('safety-events.show');
+        Route::get('safety-events/{safety_event}/edit', [SafetyEventController::class, 'edit'])->name('safety-events.edit');
+        Route::put('safety-events/{safety_event}', [SafetyEventController::class, 'update'])->name('safety-events.update');
+        Route::post('safety-events/{safety_event}/transition', [SafetyEventController::class, 'transition'])->name('safety-events.transition');
+        Route::post('safety-events/{safety_event}/follow-up', [SafetyEventController::class, 'followUp'])->name('safety-events.follow-up');
+        Route::delete('safety-events/{safety_event}', [SafetyEventController::class, 'destroy'])->name('safety-events.destroy');
+
         // ── Kommunikationsnotizen (MVP-012) ────────────────────────────────
         Route::get('communication-notes/create', [CommunicationNoteController::class, 'create'])->name('communication-notes.create');
         Route::post('communication-notes', [CommunicationNoteController::class, 'store'])->name('communication-notes.store');
@@ -848,6 +1028,19 @@ Route::middleware('auth')->group(function () {
         Route::post('form-templates/{template}/archive', [\App\Http\Controllers\FormTemplateController::class, 'archive'])->name('form-templates.archive');
         Route::delete('form-templates/{template}', [\App\Http\Controllers\FormTemplateController::class, 'destroy'])->name('form-templates.destroy');
 
+        // ── Prozeduren / Arbeitsanweisungen (Feature 026) ──────────────────
+        Route::get('procedures', [\App\Http\Controllers\ProcedureTemplateController::class, 'index'])->name('procedures.index');
+        Route::get('procedures/create', [\App\Http\Controllers\ProcedureTemplateController::class, 'create'])->name('procedures.create');
+        Route::post('procedures', [\App\Http\Controllers\ProcedureTemplateController::class, 'store'])->name('procedures.store');
+        Route::get('procedures/{template}/edit', [\App\Http\Controllers\ProcedureTemplateController::class, 'edit'])->name('procedures.edit');
+        Route::put('procedures/{template}', [\App\Http\Controllers\ProcedureTemplateController::class, 'update'])->name('procedures.update');
+        Route::post('procedures/{template}/versions', [\App\Http\Controllers\ProcedureTemplateController::class, 'storeVersion'])->name('procedures.versions.store');
+        Route::post('procedures/{template}/versions/{version}/publish', [\App\Http\Controllers\ProcedureTemplateController::class, 'publish'])->name('procedures.versions.publish');
+        Route::post('procedures/{template}/activate', [\App\Http\Controllers\ProcedureTemplateController::class, 'activate'])->name('procedures.activate');
+        Route::post('procedures/{template}/archive', [\App\Http\Controllers\ProcedureTemplateController::class, 'archive'])->name('procedures.archive');
+        Route::get('procedure-runs/{run}/print', [\App\Http\Controllers\ProcedureRunController::class, 'print'])->name('procedure-runs.print');
+        Route::post('diary/{diary}/procedures/{template}/start', [\App\Http\Controllers\ProcedureRunController::class, 'start'])->name('procedure-runs.start');
+
         Route::get('form-submissions', [\App\Http\Controllers\FormSubmissionController::class, 'index'])->name('form-submissions.index');
         Route::get('form-submissions/create', [\App\Http\Controllers\FormSubmissionController::class, 'create'])->name('form-submissions.create');
         Route::post('form-submissions', [\App\Http\Controllers\FormSubmissionController::class, 'store'])->name('form-submissions.store');
@@ -867,6 +1060,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('protocol-item-photos/{photo}', [ProtocolController::class, 'destroyPhoto'])->name('protocols.items.photos.destroy');
         Route::post('protocols/{protocol}/signature-tokens', [ProtocolController::class, 'issueSignatureToken'])->name('protocols.signature-tokens.store');
         Route::get('protocols/{protocol}/pdf', [ProtocolController::class, 'pdf'])->name('protocols.pdf');
+
+        // ── Kunden-Rückfragen aus dem Portal (Feature 012) ─────────────────
+        Route::get('customer-queries', [CustomerQueryController::class, 'index'])->name('customer-queries.index');
+        Route::post('customer-queries/{customerQuery}/answer', [CustomerQueryController::class, 'answer'])->name('customer-queries.answer');
+        Route::post('customer-queries/{customerQuery}/close', [CustomerQueryController::class, 'close'])->name('customer-queries.close');
 
         // ── Verpflegungsmehraufwand (Per-Diem) ─────────────────────────────
         Route::get('per-diem-trips', [PerDiemTripController::class, 'index'])->name('per-diem-trips.index');
@@ -911,6 +1109,7 @@ Route::middleware('auth')->group(function () {
         Route::get('assets/{asset}/edit', [AssetController::class, 'edit'])->name('assets.edit');
         Route::put('assets/{asset}', [AssetController::class, 'update'])->name('assets.update');
         Route::post('assets/{asset}/unblock', [AssetController::class, 'unblock'])->name('assets.unblock');
+        Route::get('assets/{asset}/dossier', \App\Http\Controllers\AssetDossierController::class)->name('assets.dossier');
         Route::get('assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
 
         Route::get('assets/{asset}/maintenance-plans/create', [MaintenancePlanController::class, 'create'])->name('assets.maintenance-plans.create');
@@ -924,6 +1123,16 @@ Route::middleware('auth')->group(function () {
         Route::post('assets/{asset}/software-installations', [SoftwareInstallationController::class, 'store'])->name('assets.software-installations.store');
         Route::put('assets/{asset}/software-installations/{installation}', [SoftwareInstallationController::class, 'update'])->name('assets.software-installations.update');
         Route::delete('assets/{asset}/software-installations/{installation}', [SoftwareInstallationController::class, 'destroy'])->name('assets.software-installations.destroy');
+
+        // ── Ausgabe/Rückgabe (Checkout) + Defekt/Sperre (Feature 009) ────────
+        Route::get('assets/{asset}/checkout/create', [AssetCheckoutController::class, 'create'])->name('assets.checkout.create');
+        Route::post('assets/{asset}/checkout', [AssetCheckoutController::class, 'store'])->name('assets.checkout.store');
+        Route::post('assets/{asset}/checkout/{assignment}/return', [AssetCheckoutController::class, 'update'])->name('assets.checkout.return');
+
+        Route::get('assets/{asset}/defects/create', [AssetDefectController::class, 'create'])->name('assets.defects.create');
+        Route::post('assets/{asset}/defects', [AssetDefectController::class, 'store'])->name('assets.defects.store');
+        Route::get('assets/{asset}/defects/{defect}/resolve', [AssetDefectController::class, 'resolveForm'])->name('assets.defects.resolve-form');
+        Route::post('assets/{asset}/defects/{defect}/transition', [AssetDefectController::class, 'transition'])->name('assets.defects.transition');
 
         Route::get('software', [SoftwareController::class, 'index'])->name('software.index');
         Route::get('software/create', [SoftwareController::class, 'create'])->name('software.create');
@@ -955,6 +1164,11 @@ Route::middleware('auth')->group(function () {
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
         Route::post('vehicles/{vehicle}/restore', [VehicleController::class, 'restore'])->name('vehicles.restore');
+
+        // Fahrzeug-Reservierungen (Feature 028 — Disposition).
+        Route::get('vehicle-reservations', [VehicleReservationController::class, 'index'])->name('vehicle-reservations.index');
+        Route::post('vehicle-reservations', [VehicleReservationController::class, 'store'])->name('vehicle-reservations.store');
+        Route::delete('vehicle-reservations/{vehicleReservation}', [VehicleReservationController::class, 'destroy'])->name('vehicle-reservations.destroy');
 
         Route::get('energy-logs', [EnergyLogController::class, 'index'])->name('energy-logs.index');
         Route::get('energy-logs/create', [EnergyLogController::class, 'create'])->name('energy-logs.create');
@@ -1095,11 +1309,22 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/sickness', [SicknessReportController::class, 'index'])->name('reports.sickness');
         Route::get('reports/operations', [OperationsReportController::class, 'index'])->name('reports.operations');
         Route::get('reports/materials', [MaterialReportController::class, 'index'])->name('reports.materials');
+        Route::get('reports/economics', [EconomicsReportController::class, 'index'])->name('reports.economics');
         Route::get('reports/billing', [BillingReportController::class, 'index'])->name('reports.billing');
         Route::get('reports/expenses', [ExpenseReportController::class, 'index'])->name('reports.expenses');
         Route::get('reports/qualifications', [QualificationReportController::class, 'index'])->name('reports.qualifications');
+        // Feature 002: Kohortenvergleich vor/nach Fortbildung.
+        Route::get('reports/cohort-comparison', [\App\Http\Controllers\Reporting\CohortComparisonReportController::class, 'index'])
+            ->name('reports.cohort-comparison');
         Route::get('reports/attendance', [AttendanceReportController::class, 'index'])->name('reports.attendance');
         Route::get('reports/audit-activity', [AuditActivityReportController::class, 'index'])->name('reports.audit-activity');
+        Route::get('reports/sla', [\App\Http\Controllers\Reporting\SlaReportController::class, 'index'])->name('reports.sla');
+        Route::get('reports/safety', [\App\Http\Controllers\Reporting\SafetyReportController::class, 'index'])->name('reports.safety');
+        // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
+        Route::get('reports/arbzg-compliance', [\App\Http\Controllers\Reporting\ArbZgComplianceReportController::class, 'index'])
+            ->name('reports.arbzg-compliance');
+        Route::post('reports/sla/violations/{violation}/acknowledge', [\App\Http\Controllers\Reporting\SlaReportController::class, 'acknowledge'])
+            ->name('reports.sla.acknowledge');
 
         // ── Material-Stamm (Admin) ──────────────────────────────────────────────
         Route::resource('materials', MaterialController::class)->except('show');
@@ -1162,6 +1387,12 @@ Route::middleware('auth')->group(function () {
             ->parameters(['entry-types' => 'entryType'])
             ->except('show');
 
+        // Feature 002: Zielwerte & Benchmarks pflegen (GF/Admin).
+        Route::resource('admin/report-targets', \App\Http\Controllers\Admin\ReportTargetController::class)
+            ->names('admin.report-targets')
+            ->parameters(['report-targets' => 'reportTarget'])
+            ->except('show');
+
         Route::resource('admin/classifications', ClassificationController::class)
             ->names('admin.classifications')
             ->parameters(['classifications' => 'classification'])
@@ -1217,6 +1448,27 @@ Route::middleware('auth')->group(function () {
             ->name('admin.notification-rules.edit');
         Route::put('admin/notification-rules/{event}', [\App\Http\Controllers\Admin\NotificationRuleController::class, 'update'])
             ->name('admin.notification-rules.update');
+
+        // Ausgehende Webhooks (Feature 008): Listenseite mit Zustellprotokoll
+        // + Modal-CRUD, Secret-Rotation und Test-Event. Pflege durch Admin
+        // (webhook.manage). {webhook} bindet via Sqid (HasSqid).
+        Route::get('admin/webhooks', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'index'])
+            ->name('admin.webhooks.index');
+        Route::get('admin/webhooks/create', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'create'])
+            ->name('admin.webhooks.create');
+        Route::post('admin/webhooks', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'store'])
+            ->name('admin.webhooks.store');
+        Route::get('admin/webhooks/{webhook}/edit', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'edit'])
+            ->name('admin.webhooks.edit');
+        Route::put('admin/webhooks/{webhook}', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'update'])
+            ->name('admin.webhooks.update');
+        Route::post('admin/webhooks/{webhook}/rotate-secret', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'rotateSecret'])
+            ->name('admin.webhooks.rotate-secret');
+        Route::post('admin/webhooks/{webhook}/test', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'test'])
+            ->middleware('throttle:12,1')
+            ->name('admin.webhooks.test');
+        Route::delete('admin/webhooks/{webhook}', [\App\Http\Controllers\Admin\WebhookEndpointController::class, 'destroy'])
+            ->name('admin.webhooks.destroy');
 
         // Zuschlagsregeln (Feature 005): Listenseite + Modal-CRUD,
         // Pflege durch Admin/Buchhaltung (surchargeRule.manage).
@@ -1352,6 +1604,23 @@ Route::middleware('auth')->group(function () {
             Route::delete('/shifts/{shift}', [ScheduleController::class, 'destroy'])->name('shifts.destroy');
             Route::patch('/shifts/{shift}/publish', [ScheduleController::class, 'publish'])->name('shifts.publish');
             Route::patch('/shifts/{shift}/confirm', [ScheduleController::class, 'confirm'])->name('shifts.confirm');
+            // Besetzungsvorschläge (Feature 007)
+            Route::get('/suggest', [ScheduleController::class, 'suggest'])->name('suggest');
+            // Verfügbarkeiten & Wunschdienste – Self-Service (Feature 007)
+            Route::get('/availability', [AvailabilityController::class, 'index'])->name('availability.index');
+            Route::post('/availability/windows', [AvailabilityController::class, 'storeWindow'])->name('availability.windows.store');
+            Route::put('/availability/windows/{window}', [AvailabilityController::class, 'updateWindow'])->name('availability.windows.update');
+            Route::delete('/availability/windows/{window}', [AvailabilityController::class, 'destroyWindow'])->name('availability.windows.destroy');
+            Route::post('/availability/desired', [AvailabilityController::class, 'storeDesired'])->name('availability.desired.store');
+            Route::put('/availability/desired/{desired}', [AvailabilityController::class, 'updateDesired'])->name('availability.desired.update');
+            Route::delete('/availability/desired/{desired}', [AvailabilityController::class, 'destroyDesired'])->name('availability.desired.destroy');
+            // Schichttausch mit Freigabe (Feature 007)
+            Route::get('/exchanges', [ShiftExchangeController::class, 'index'])->name('exchanges.index');
+            Route::post('/exchanges', [ShiftExchangeController::class, 'store'])->name('exchanges.store');
+            Route::patch('/exchanges/{exchange}/accept', [ShiftExchangeController::class, 'accept'])->name('exchanges.accept');
+            Route::patch('/exchanges/{exchange}/cancel', [ShiftExchangeController::class, 'cancel'])->name('exchanges.cancel');
+            Route::patch('/exchanges/{exchange}/approve', [ShiftExchangeController::class, 'approve'])->name('exchanges.approve');
+            Route::patch('/exchanges/{exchange}/reject', [ShiftExchangeController::class, 'reject'])->name('exchanges.reject');
             // Shift types
             Route::post('/types', [ShiftTypeController::class, 'store'])->name('types.store');
             Route::put('/types/{shiftType}', [ShiftTypeController::class, 'update'])->name('types.update');

@@ -13,10 +13,13 @@ namespace App\Console\Commands\Notification;
 use App\Enums\Isms\RiskStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Models\{CommunicationNote, Document, OpenIssue, User};
-use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAssessment};
+use App\Enums\ServiceTicket\ServiceTicketStatus;
+use App\Enums\Shift\ShiftExchangeStatus;
+use App\Models\{AssetAssignment, CommunicationNote, Document, OpenIssue, ServiceTicket, ShiftExchange, User, UserQualification};
+use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAssessment, IsmsSupplierAssessment, IsmsVulnerability};
 use App\Services\Isms\ConformityService;
 use App\Services\Notification\NotificationDispatcher;
+use App\Services\ServiceTicket\SlaTimer;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -51,6 +54,12 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanIsmsCertificates($dispatcher, $conformity, $expiringDays);
         $sent += $this->scanIsmsCorrectiveActions($dispatcher);
         $sent += $this->scanIsmsRiskAssessments($dispatcher, $expiringDays);
+        $sent += $this->scanIsmsVulnerabilities($dispatcher);
+        $sent += $this->scanIsmsSupplierReviews($dispatcher);
+        $sent += $this->scanSlaTickets($dispatcher, app(SlaTimer::class));
+        $sent += $this->scanAssetReturns($dispatcher);
+        $sent += $this->scanQualificationExpiry($dispatcher, $expiringDays);
+        $sent += $this->scanPendingShiftExchanges($dispatcher);
 
         $this->info(sprintf('%d Benachrichtigung(en) versendet.', $sent));
 
@@ -292,6 +301,263 @@ class ScanDeadlinesCommand extends Command {
         return $sent;
     }
 
+    /**
+     * Schwachstellenregister (Feature 044, MVP 2): überfällige Schwachstellen
+     * (due_on überschritten, Status open/underReview/mitigating) melden —
+     * Empfänger ist der Schwachstellen-Verantwortliche (notify_affected),
+     * Default-Fallback die Rolle teamleitung (NotificationEvent). Dedup über
+     * das notification_dispatch_log pro Schwachstelle; Eskalation analog zu den
+     * übrigen Überfälligkeits-Ereignissen.
+     */
+    private function scanIsmsVulnerabilities(NotificationDispatcher $dispatcher): int {
+        $sent = 0;
+
+        IsmsVulnerability::query()
+            ->overdue()
+            ->chunkById(200, function (Collection $vulnerabilities) use ($dispatcher, &$sent): void {
+                foreach ($vulnerabilities as $vulnerability) {
+                    $payload = $this->vulnerabilityPayload($vulnerability);
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::IsmsVulnerabilityOverdue,
+                        $vulnerability,
+                        $vulnerability->owner()->first(),
+                        $payload,
+                        dedup: true,
+                    );
+                    $sent += $dispatcher->escalateIfDue(NotificationEvent::IsmsVulnerabilityOverdue, $vulnerability, $payload);
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * Lieferantenbewertung (Feature 044, MVP 2/3): überfällige Lieferanten-
+     * Reviews (next_review_on überschritten, Status nicht „approved") melden —
+     * Empfänger ist der Bewertungs-Verantwortliche (notify_affected),
+     * Default-Fallback die Rolle teamleitung (NotificationEvent). Dedup über
+     * das notification_dispatch_log pro Bewertung; Eskalation analog zu den
+     * übrigen Überfälligkeits-Ereignissen.
+     */
+    private function scanIsmsSupplierReviews(NotificationDispatcher $dispatcher): int {
+        $sent = 0;
+
+        IsmsSupplierAssessment::query()
+            ->reviewOverdue()
+            ->chunkById(200, function (Collection $assessments) use ($dispatcher, &$sent): void {
+                foreach ($assessments as $assessment) {
+                    $payload = $this->supplierReviewPayload($assessment);
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::IsmsSupplierReviewOverdue,
+                        $assessment,
+                        $assessment->owner()->first(),
+                        $payload,
+                        dedup: true,
+                    );
+                    $sent += $dispatcher->escalateIfDue(NotificationEvent::IsmsSupplierReviewOverdue, $assessment, $payload);
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * SLA-Eskalation (Feature 010): offene Service-Tickets mit gefährdeter
+     * (Restzeit unter dem Schwellwert, SlaTimer::AT_RISK_FRACTION) bzw.
+     * überschrittener Lösungsfrist melden. Empfänger ist der Ticket-
+     * Verantwortliche (notify_affected), Default-Fallback/Eskalationskette die
+     * Rolle teamleitung (NotificationEvent). Maßgeblich ist die Lösungsfrist
+     * (resolution_due_at). Dedup über das notification_dispatch_log pro Ticket;
+     * verletzte Tickets eskalieren zusätzlich (supportsEscalation).
+     */
+    private function scanSlaTickets(NotificationDispatcher $dispatcher, SlaTimer $timer): int {
+        $now = Carbon::now();
+        $sent = 0;
+
+        ServiceTicket::query()
+            ->whereNotIn('status', [
+                ServiceTicketStatus::Closed->value,
+                ServiceTicketStatus::Rejected->value,
+            ])
+            ->whereNotNull('resolution_due_at')
+            ->whereNull('resolved_at')
+            ->chunkById(200, function (Collection $tickets) use ($dispatcher, $timer, $now, &$sent): void {
+                /** @var Collection<int, ServiceTicket> $tickets */
+                foreach ($tickets as $ticket) {
+                    $status = $timer->resolutionStatus($ticket, $now);
+                    if ($status === \App\Enums\ServiceTicket\SlaStatus::Breached) {
+                        $payload = $this->slaPayload($ticket, 'sla_breached');
+                        $sent += $dispatcher->notify(
+                            NotificationEvent::SlaBreached,
+                            $ticket,
+                            $ticket->assignedTo,
+                            $payload,
+                            dedup: true,
+                        );
+                        $sent += $dispatcher->escalateIfDue(NotificationEvent::SlaBreached, $ticket, $payload);
+                    } elseif ($status === \App\Enums\ServiceTicket\SlaStatus::AtRisk) {
+                        $sent += $dispatcher->notify(
+                            NotificationEvent::SlaAtRisk,
+                            $ticket,
+                            $ticket->assignedTo,
+                            $this->slaPayload($ticket, 'sla_at_risk'),
+                            dedup: true,
+                        );
+                    }
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * Ausgabe-/Rückgabe-Workflow (Feature 009): offene Asset-Zuweisungen
+     * (returned_at = null) mit überschrittener erwarteter Rückgabe melden.
+     * Empfänger ist die ausleihende Person (notify_affected), Default-Fallback/
+     * Eskalationskette die Rolle teamleitung (NotificationEvent). Dedup über das
+     * notification_dispatch_log pro Zuweisung.
+     */
+    private function scanAssetReturns(NotificationDispatcher $dispatcher): int {
+        $now = Carbon::now();
+        $sent = 0;
+
+        AssetAssignment::query()
+            ->whereNull('returned_at')
+            ->whereNotNull('expected_return_at')
+            ->where('expected_return_at', '<=', $now)
+            ->with(['asset:id,name,asset_no', 'assignedToUser'])
+            ->chunkById(200, function (Collection $assignments) use ($dispatcher, &$sent): void {
+                /** @var Collection<int, AssetAssignment> $assignments */
+                foreach ($assignments as $assignment) {
+                    $payload = $this->assetReturnPayload($assignment);
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::AssetReturnOverdue,
+                        $assignment,
+                        $assignment->assignedToUser,
+                        $payload,
+                        dedup: true,
+                    );
+                    $sent += $dispatcher->escalateIfDue(NotificationEvent::AssetReturnOverdue, $assignment, $payload);
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * Qualifikations-/Unterweisungsablauf (Feature 013): Mitarbeiter-
+     * Qualifikationen mit gesetztem valid_until innerhalb des Vorlaufs
+     * (--expiring-days, Default 30 Tage) melden. Empfänger ist die betroffene
+     * Person (notify_affected), Default-Fallback die Rolle teamleitung
+     * (NotificationEvent). Org-Kontext wird über den User aufgelöst. Dedup über
+     * das notification_dispatch_log pro Pivot-Zeile (User × Qualifikation).
+     */
+    private function scanQualificationExpiry(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $today = Carbon::today();
+        $sent = 0;
+
+        UserQualification::query()
+            ->whereNotNull('valid_until')
+            ->whereDate('valid_until', '>=', $today)
+            ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
+            ->with(['user', 'qualification'])
+            ->chunkById(200, function (Collection $assignments) use ($dispatcher, &$sent): void {
+                /** @var Collection<int, UserQualification> $assignments */
+                foreach ($assignments as $assignment) {
+                    $user = $assignment->user;
+                    if ($user === null) {
+                        continue;
+                    }
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::QualificationExpiring,
+                        $assignment,
+                        $user,
+                        $this->qualificationPayload($assignment),
+                        dedup: true,
+                    );
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * Schichttausch (Feature 007): noch offene Tausch-Anträge (requested/accepted)
+     * erinnern die Teamleitung an die ausstehende Freigabe. Dedup über das
+     * notification_dispatch_log pro Antrag (1× pro Tag genügt; das Re-Notify
+     * greift erst, wenn der Antrag entschieden und ein neuer angelegt wird).
+     */
+    private function scanPendingShiftExchanges(NotificationDispatcher $dispatcher): int {
+        $sent = 0;
+
+        ShiftExchange::query()
+            ->whereIn('status', [
+                ShiftExchangeStatus::Requested->value,
+                ShiftExchangeStatus::Accepted->value,
+            ])
+            ->with(['scheduledShift', 'targetUser'])
+            ->chunkById(200, function (Collection $exchanges) use ($dispatcher, &$sent): void {
+                /** @var Collection<int, ShiftExchange> $exchanges */
+                foreach ($exchanges as $exchange) {
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::ShiftExchangeRequested,
+                        $exchange,
+                        $exchange->targetUser,
+                        $this->shiftExchangePayload($exchange),
+                        dedup: true,
+                    );
+                }
+            });
+
+        return $sent;
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function shiftExchangePayload(ShiftExchange $exchange): array {
+        return [
+            'title' => (string) __('schedule.exchange.notification_request_title'),
+            'message' => (string) __('schedule.exchange.notification_pending_message', [
+                'date' => $exchange->scheduledShift?->date?->format('d.m.Y') ?? '–',
+            ]),
+            'url' => $this->safeRoute('schedule.exchanges.index'),
+        ];
+    }
+
+    private function safeRoute(string $name): ?string {
+        try {
+            return route($name);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function qualificationPayload(UserQualification $assignment): array {
+        $name = (string) ($assignment->qualification->name ?? '');
+
+        return [
+            'title' => $name,
+            'message' => (string) __('notification.message.qualification_expiring', [
+                'date' => $assignment->valid_until?->format('d.m.Y') ?? '–',
+            ]),
+            'url' => route('reports.qualifications'),
+        ];
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function assetReturnPayload(AssetAssignment $assignment): array {
+        $asset = $assignment->asset;
+        $title = $asset !== null ? trim($asset->asset_no . ' — ' . $asset->name, ' —') : '';
+
+        return [
+            'title' => $title,
+            'message' => (string) __('notification.message.asset_return_overdue', [
+                'date' => $assignment->expected_return_at?->format('d.m.Y H:i') ?? '–',
+            ]),
+            'url' => $asset !== null ? route('assets.show', $asset) : null,
+        ];
+    }
+
     // ── Betroffene & Payloads ──────────────────────────────────────────────
 
     private function issueAffected(OpenIssue $issue): ?User {
@@ -369,6 +635,39 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $assessment->valid_until?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('isms.risks.index'),
+        ];
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function vulnerabilityPayload(IsmsVulnerability $vulnerability): array {
+        return [
+            'title' => trim($vulnerability->displayNo() . ' — ' . $vulnerability->title, ' —'),
+            'message' => (string) __('notification.message.vulnerability_overdue', [
+                'date' => $vulnerability->due_on?->format('d.m.Y') ?? '–',
+            ]),
+            'url' => route('isms.vulnerabilities.index'),
+        ];
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function supplierReviewPayload(IsmsSupplierAssessment $assessment): array {
+        return [
+            'title' => trim($assessment->displayNo() . ' — ' . $assessment->displayName(), ' —'),
+            'message' => (string) __('notification.message.supplier_review_overdue', [
+                'date' => $assessment->next_review_on?->format('d.m.Y') ?? '–',
+            ]),
+            'url' => route('isms.suppliers.index'),
+        ];
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function slaPayload(ServiceTicket $ticket, string $messageKey): array {
+        return [
+            'title' => trim($ticket->ticket_no . ' — ' . $ticket->title, ' —'),
+            'message' => (string) __('notification.message.' . $messageKey, [
+                'date' => $ticket->resolution_due_at?->format('d.m.Y H:i') ?? '–',
+            ]),
+            'url' => route('service-tickets.show', $ticket),
         ];
     }
 

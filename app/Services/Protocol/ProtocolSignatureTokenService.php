@@ -10,8 +10,11 @@
 
 namespace App\Services\Protocol;
 
+use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Enums\Protocol\{ProtocolEventType, ProtocolSignatureMethod, ProtocolSignatureRole};
 use App\Models\{Protocol, ProtocolEvent, ProtocolSignatureToken, User};
+use App\Services\OpenIssue\OpenIssueService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -119,7 +122,87 @@ class ProtocolSignatureTokenService {
 
             $record->update([
                 'used_at' => Carbon::now(),
+                'decision' => ProtocolSignatureToken::DECISION_APPROVED,
+                'decided_at' => Carbon::now(),
                 'signed_signature_id' => $signature->id,
+            ]);
+
+            return $record->refresh();
+        });
+    }
+
+    /**
+     * Lehnt den vorgelegten Vorgang ab (Reject-Pfad zum Signaturlink).
+     *
+     * Pflicht-Begründung; je gemeldetem Mangel wird ein Offener Punkt
+     * (OpenIssue, Quelle „customerRejection", Sichtbarkeit „customer") am
+     * betroffenen Auftrag/Protokoll angelegt. Der Token wird verbraucht und
+     * die Entscheidung revisionssicher als ProtocolEvent protokolliert.
+     *
+     * @param  array{reason?: string|null, signer_name?: string|null, issues?: list<string>, ip?: string|null, user_agent?: string|null}  $data
+     */
+    public function reject(string $token, array $data): ProtocolSignatureToken {
+        $reason = trim((string) ($data['reason'] ?? ''));
+        if ($reason === '') {
+            throw new InvalidArgumentException('Begründung ist bei einer Ablehnung Pflicht.');
+        }
+
+        $record = $this->ensureUsable($token);
+
+        return DB::transaction(function () use ($record, $data, $reason): ProtocolSignatureToken {
+            $protocol = $record->protocol()->firstOrFail();
+            $actor = $protocol->creator()->firstOrFail(); // Token-Inhaber agiert in Vertretung
+
+            $record->update([
+                'used_at' => Carbon::now(),
+                'decision' => ProtocolSignatureToken::DECISION_REJECTED,
+                'decision_reason' => $reason,
+                'decided_at' => Carbon::now(),
+            ]);
+
+            // Offene Punkte am betroffenen Auftrag (Protokoll-Subjekt) bzw.
+            // ersatzweise am Protokoll selbst erfassen.
+            $issueSubject = $protocol->subject instanceof Model ? $protocol->subject : $protocol;
+            $issues = array_values(array_filter(array_map(
+                static fn($line): string => trim((string) $line),
+                $data['issues'] ?? []
+            ), static fn(string $line): bool => $line !== ''));
+
+            if ($issues === []) {
+                // Mindestens ein Offener Punkt aus der Pflicht-Begründung.
+                $issues = [$reason];
+            }
+
+            $openIssues = app(OpenIssueService::class);
+            foreach ($issues as $line) {
+                $openIssues->create($issueSubject, $actor, [
+                    'organization_id' => $protocol->organization_id,
+                    'source_type' => OpenIssueSource::CustomerRejection->value,
+                    'source_ref_id' => $protocol->id,
+                    'title' => Str::limit($line, 200, ''),
+                    'description' => __('protocol.signature.rejectIssueDescription', [
+                        'protocol' => $protocol->title,
+                        'name' => $data['signer_name'] ?? $record->signer_name ?? __('protocol.signature.customer'),
+                    ]),
+                    'severity' => OpenIssueSeverity::Medium->value,
+                    'visibility' => OpenIssueVisibility::Customer->value,
+                ]);
+            }
+
+            ProtocolEvent::query()->create([
+                'protocol_id' => $protocol->id,
+                'event' => ProtocolEventType::SignatureRejected,
+                'actor_user_id' => $actor->id,
+                'payload' => [
+                    'token_id' => $record->id,
+                    'role' => $record->role->value,
+                    'signer_name' => $data['signer_name'] ?? $record->signer_name,
+                    'reason' => $reason,
+                    'issue_count' => count($issues),
+                    'ip' => $data['ip'] ?? null,
+                    'user_agent' => $data['user_agent'] ?? null,
+                ],
+                'created_at' => Carbon::now(),
             ]);
 
             return $record->refresh();

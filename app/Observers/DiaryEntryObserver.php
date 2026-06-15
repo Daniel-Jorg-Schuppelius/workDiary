@@ -11,11 +11,25 @@
 namespace App\Observers;
 
 use App\Enums\Diary\Status;
-use App\Models\DiaryEntry;
+use App\Models\{DiaryEntry, DiaryEntryEvent, User};
 use App\Services\{MailNotifier, PushNotifier};
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Auth;
 
 class DiaryEntryObserver {
     public function created(DiaryEntry $entry): void {
+        $actor = Auth::user();
+        DiaryEntryEvent::query()->create([
+            'diary_entry_id' => $entry->id,
+            'organization_id' => $entry->organization_id,
+            'event' => 'order.created',
+            'from_status' => null,
+            'to_status' => $entry->status->slug(),
+            'actor_user_id' => $actor instanceof User ? $actor->id : null,
+            'actor_kind' => $actor instanceof User ? 'user' : 'system',
+            'occurred_at' => CarbonImmutable::now(),
+        ]);
+
         app(PushNotifier::class)->diaryProblem($entry);
     }
 

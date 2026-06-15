@@ -102,7 +102,17 @@
                 <tr data-plugin-row="{{ $plugin->id() }}">
                     <td class="font-medium">{{ $plugin->name() }}</td>
                     <td><code class="text-xs">{{ $plugin->id() }}</code></td>
-                    <td class="tabular-nums">{{ $plugin->version() }}</td>
+                    <td class="tabular-nums">
+                        {{ $plugin->version() }}
+                        @php($compat = $compatibility[$plugin->id()] ?? null)
+                        @if ($compat && ! $compat->compatible)
+                            <x-status-badge tone="error" size="sm" class="ml-1" title="{{ $compat->message }}">{{ __('plugins.compatibility.incompatible') }}</x-status-badge>
+                        @elseif ($compat && ($compat->minAppVersion !== null || $compat->maxAppVersion !== null))
+                            <span class="block text-xs text-base-content/40" title="{{ __('plugins.compatibility.range_hint') }}">
+                                {{ __('plugins.compatibility.range', ['min' => $compat->minAppVersion ?? '*', 'max' => $compat->maxAppVersion ?? '*']) }}
+                            </span>
+                        @endif
+                    </td>
                     <td class="tabular-nums text-xs text-base-content/70">
                         {{ $state?->installed_version ?? '—' }}
                         @if ($state && $state->installed_version !== null && $state->installed_version !== $plugin->schemaVersion())

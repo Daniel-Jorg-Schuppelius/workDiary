@@ -3,8 +3,19 @@
 ## Status
 
 In Progress — Plan/Ist-Abgleich (MVP-018):
-[docs/plan-ist-abgleich.md](../plan-ist-abgleich.md). Wirtschaftlichkeit
-(€-Plan/Ist) folgt in späteren MVPs.
+[docs/plan-ist-abgleich.md](../plan-ist-abgleich.md).
+
+Wirtschaftlichkeits-/Deckungsbeitrags-Report umgesetzt
+(`reports.economics`, Geschäftsführung/Buchhaltung, Plan-Gating
+`module.auswertungen_team`): Erlös (abrechenbare Zeiten × Satz + abgerechnetes
+Material + abrechenbare Spesen) vs. Kosten (interner Zeit-Kostensatz
+`TimeEntry.internal_rate` + Material-/Beleg-Direktaufwand) ⇒ Deckungsbeitrag
+absolut und als Marge, je Kunde und je Projekt; Top/Flop-Ranking; nicht
+abrechenbare Zeit (`billable=false`) als Nacharbeits-/Kulanz-Proxy; Plan-vs-Ist
+in Minuten (`Project.time_budget`) und in Geld (`Project.budget`). CSV/PDF wie
+die übrigen Reports. Maßgebliche Rechnungen führt das externe Faktura-System;
+die Werte hier sind Projektion. Offen: dedizierter Nacharbeit-/Kulanz-Typ,
+Belegtiefe-Drilldown, separater Materialkostensatz.
 
 ## Ziel
 

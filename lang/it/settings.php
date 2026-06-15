@@ -9,6 +9,13 @@ return [
         'notifications' => 'Notifiche',
         'ui' => 'Interfaccia',
         'routing' => 'Routing e mappe',
+        'region' => 'Regione e festività',
+    ],
+    'region' => [
+        'heading' => 'Giurisdizione e festività',
+        'description' => 'Determina quali festività si applicano. Influisce sulle maggiorazioni per festività, sulla conformità dei turni e sulla visualizzazione delle festività.',
+        'holiday_provider' => 'Regione delle festività (Paese / Land)',
+        'holiday_provider_hint' => 'Le festività regionali come il Corpus Domini o il giorno della Riforma si applicano solo in determinati Länder. Vuoto = predefinito di sistema.',
     ],
     'hint' => 'Lascia vuoto per usare il valore predefinito del sistema.',
     'pagination' => [

@@ -14,6 +14,14 @@
                 'badge-error' => $diary->statusTone() === 'alert',
                 'badge-ghost' => $diary->statusTone() === 'neutral',
             ])>{{ $diary->statusLabel() }}</span>
+            @php($dispatchStatus = app(\App\Services\Dispatch\DispatchStatusResolver::class)->resolve($diary))
+            <span @class([
+                'badge badge-sm badge-outline',
+                'badge-success' => $dispatchStatus->tone() === 'done',
+                'badge-info' => $dispatchStatus->tone() === 'progress',
+                'badge-warning' => $dispatchStatus->tone() === 'open',
+                'badge-ghost' => $dispatchStatus->tone() === 'neutral',
+            ])>{{ __('dispatch.badge_prefix') }}: {{ $dispatchStatus->label() }}</span>
             <span class="text-sm text-base-content/70">{{ optional($diary->user)->name ?? '—' }}</span>
             @if ($diary->is_archived)
                 <x-status-badge tone="neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->fdate() : '' }}</x-status-badge>
@@ -40,6 +48,26 @@
             @if ($diary->legacy_id)
                 <x-status-badge tone="warning" outline>Legacy #{{ $diary->legacy_id }}</x-status-badge>
             @endif
+        </div>
+    @endif
+
+    @include('diary._lifecycle_panel', ['isDialog' => $isDialog])
+
+    @php($dataQualityGaps = $dataQualityGaps ?? [])
+    @if (! empty($dataQualityGaps))
+        @php($hasBlockingGap = collect($dataQualityGaps)->contains('blocking', true))
+        <div class="mb-4 alert {{ $hasBlockingGap ? 'alert-warning' : 'alert-info' }} text-sm" role="status">
+            <x-icon name="rule" />
+            <div>
+                <p class="font-semibold">{{ __('classification.dataquality.heading') }}</p>
+                <div class="mt-1 flex flex-wrap gap-1.5">
+                    @foreach ($dataQualityGaps as $gap)
+                        <span class="badge badge-sm {{ $gap['blocking'] ? 'badge-warning' : 'badge-ghost' }}">
+                            {{ __('classification.dataquality.missing', ['domain' => $gap['label']]) }}
+                        </span>
+                    @endforeach
+                </div>
+            </div>
         </div>
     @endif
 

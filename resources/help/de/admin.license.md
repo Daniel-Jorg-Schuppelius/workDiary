@@ -32,6 +32,23 @@ Typische Aktionen:
    (Lizenznehmer, E-Mail, Plan, Add-ons, Ablauf, Limits, Organisation,
    Domain).
 
+Mandantenstatus (SaaS):
+
+- Der **Mandantenstatus** zeigt, ob die Organisation in der
+  **Testphase**, **aktiv** oder **gesperrt** ist. Ist kein Status
+  fest gesetzt, wird er aus Testphase und Lizenz-Ablauf abgeleitet
+  (gültig / in Kulanz / abgelaufen).
+- Ein Plattform-Admin kann den Status manuell auf **aktiv**,
+  **Testphase** oder **gesperrt** setzen oder per *Automatisch
+  (ableiten)* wieder freigeben.
+- Bei **gesperrt** (oder endgültig abgelaufener Lizenz) sind
+  **schreibende Aktionen deaktiviert**; Lesen bleibt möglich. Die
+  Lizenz- und Logout-Seiten bleiben erreichbar, damit die Sperre
+  aufgehoben werden kann.
+- Das **Nutzerlimit** der Lizenz wird beim Anlegen neuer Mitglieder
+  durchgesetzt: ist das Limit erreicht, wird die Anlage mit Hinweis
+  blockiert.
+
 Wichtig zu wissen:
 
 - Plan-Downgrades sperren Module über das Plan-Gating; Inhalte

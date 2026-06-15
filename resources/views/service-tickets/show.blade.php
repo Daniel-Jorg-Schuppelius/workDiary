@@ -14,16 +14,11 @@
 
 @section('content')
 @php
-    $now = now();
     $resDue = $ticket->resolution_due_at;
     $reactDue = $ticket->reaction_due_at;
-    $slaPill = match (true) {
-        $ticket->resolution_breached => ['text-error', __('SLA verletzt')],
-        $resDue !== null && $resDue->lessThan($now) => ['text-error', __('SLA verletzt')],
-        $resDue !== null && $resDue->lessThan($now->copy()->addHours(4)) => ['text-warning', __('SLA kritisch')],
-        $resDue !== null => ['text-success', __('SLA im Plan')],
-        default => ['text-base-content/60', __('Kein SLA')],
-    };
+    $slaStatus = $ticket->slaStatus();
+    $reactionStatus = $ticket->slaReactionStatus();
+    $remaining = $ticket->slaMinutesRemaining();
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
@@ -41,11 +36,14 @@
             <span class="badge">{{ $ticket->priority->label() }}</span>
             <x-status-badge size="md" outline>{{ $ticket->status->label() }}</x-status-badge>
             <x-status-badge tone="ghost" size="md">{{ $ticket->source->label() }}</x-status-badge>
-            <span class="ml-auto {{ $slaPill[0] }} font-medium">
+            <span class="ml-auto {{ $slaStatus->textClass() }} font-medium">
                 <span class="material-symbols-outlined align-middle text-[16px]">timer</span>
-                {{ $slaPill[1] }}
+                {{ $slaStatus->label() }}
                 @if ($resDue)
                     · {{ __('Lösung bis :date', ['date' => $resDue->translatedFormat('d.m.Y H:i')]) }}
+                @endif
+                @if ($remaining !== null && $slaStatus->value !== 'met' && $slaStatus->value !== 'none')
+                    · {{ $remaining < 0 ? __('sla.overdue_by', ['min' => abs($remaining)]) : __('sla.remaining', ['min' => $remaining]) }}
                 @endif
             </span>
         </div>
@@ -57,7 +55,7 @@
             <div><dt class="text-base-content/60">{{ __('Gemeldet am') }}</dt><dd>{{ $ticket->reported_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
             <div><dt class="text-base-content/60">{{ __('Bearbeiter') }}</dt><dd>{{ $ticket->assignedTo?->name ?: '—' }}</dd></div>
             <div><dt class="text-base-content/60">{{ __('Bestätigt') }}</dt><dd>{{ $ticket->acknowledged_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Reaktion bis') }}</dt><dd>{{ $reactDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-base-content/60">{{ __('Reaktion bis') }}</dt><dd class="flex items-center gap-2">{{ $reactDue?->translatedFormat('d.m.Y H:i') ?: '—' }}@if ($reactDue)<x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>@endif</dd></div>
             <div><dt class="text-base-content/60">{{ __('Lösung bis') }}</dt><dd>{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
             <div><dt class="text-base-content/60">{{ __('Asset') }}</dt><dd>{{ $ticket->asset?->name ?: '—' }}</dd></div>
             <div><dt class="text-base-content/60">{{ __('Kunde') }}</dt><dd>{{ $ticket->customer?->name ?: '—' }}</dd></div>

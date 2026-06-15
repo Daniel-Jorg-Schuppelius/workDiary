@@ -4,9 +4,8 @@
     <h1 class="text-2xl font-semibold mb-4">{{ __('open-issue.title.index') }}</h1>
 
     @if ($issues->isEmpty())
-        <div class="bg-base-100 border border-base-300 rounded p-6 text-center text-base-content/60">
-            {{ __('Keine offenen Punkte für Sie freigegeben.') }}
-        </div>
+        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">flag</span>'
+                       :title="__('Keine offenen Punkte für Sie freigegeben.')" />
     @else
         <ul class="space-y-3">
             @foreach ($issues as $issue)
@@ -47,6 +46,6 @@
                 </li>
             @endforeach
         </ul>
-        <div class="mt-4">{{ $issues->links() }}</div>
+        <x-pagination :paginator="$issues" />
     @endif
 @endsection

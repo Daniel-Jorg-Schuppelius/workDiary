@@ -29,5 +29,7 @@ return [
         'privacy_request_events' => App\Models\Privacy\RequestEvent::class,
         'privacy_incident_events' => App\Models\Privacy\IncidentEvent::class,
         'billing_transfer_events' => App\Models\Finance\BillingTransferEvent::class,
+        'payment_reconciliation_events' => App\Models\Finance\PaymentReconciliationEvent::class,
+        'datev_booking_events' => App\Models\Finance\DatevBookingEvent::class,
     ],
 ];

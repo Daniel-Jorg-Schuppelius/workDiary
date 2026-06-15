@@ -105,6 +105,65 @@
         </div>
     </article>
 
+    {{-- Mandantenstatus (SaaS): trial/active/suspended/expired (Feature 021) --}}
+    @if ($org !== null && $tenantStatus !== null)
+        @php
+            /** @var \App\Enums\Organization\TenantStatus $tenantStatus */
+            /** @var \App\Enums\Organization\TenantStatus|null $tenantStatusExplicit */
+            /** @var list<\App\Enums\Organization\TenantStatus> $tenantStatusOptions */
+            $nearExpiry = $orgExpiresIn !== null && $orgExpiresIn >= 0 && $orgExpiresIn <= 30;
+        @endphp
+        <article class="card border border-base-300 bg-base-100 shadow-sm">
+            <div class="card-body gap-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Mandantenstatus') }}</h2>
+                    <x-status-badge :tone="$tenantStatus->tone()" size="md" outline>{{ $tenantStatus->label() }}</x-status-badge>
+                </div>
+
+                <p class="text-sm text-base-content/70">
+                    @switch($tenantStatus->value)
+                        @case('suspended')
+                            {{ __('Der Mandant ist gesperrt. Schreibende Aktionen sind deaktiviert (nur Lesezugriff).') }}
+                            @break
+                        @case('expired')
+                            {{ __('Die Lizenz ist endgültig abgelaufen. Schreibende Aktionen sind deaktiviert.') }}
+                            @break
+                        @case('trial')
+                            {{ __('Der Mandant befindet sich in der Testphase.') }}
+                            @break
+                        @default
+                            {{ __('Der Mandant ist regulär aktiv.') }}
+                    @endswitch
+                    @unless ($tenantStatusExplicit !== null)
+                        <span class="text-xs text-base-content/50">{{ __('(aus Lizenz/Testphase abgeleitet)') }}</span>
+                    @endunless
+                </p>
+
+                @if ($nearExpiry)
+                    <p class="rounded-box border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-base-content/80">
+                        {{ __('Achtung: Die Lizenz läuft in :n Tagen ab. Bitte rechtzeitig erneuern.', ['n' => $orgExpiresIn]) }}
+                    </p>
+                @endif
+
+                @if ($canManageTenant ?? false)
+                    <form method="POST" action="{{ route('admin.license.tenantStatus') }}" class="flex flex-wrap items-end gap-2">
+                        @csrf
+                        <div>
+                            <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Status setzen') }}</label>
+                            <select name="tenant_status" class="select select-sm select-bordered">
+                                <option value="inherit" @selected($tenantStatusExplicit === null)>{{ __('Automatisch (ableiten)') }}</option>
+                                @foreach ($tenantStatusOptions as $opt)
+                                    <option value="{{ $opt->value }}" @selected($tenantStatusExplicit === $opt)>{{ $opt->label() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Übernehmen') }}</button>
+                    </form>
+                @endif
+            </div>
+        </article>
+    @endif
+
     {{-- Org-gebundene Lizenz (Tier + Add-on-Module) --}}
     @php
         /** @var \App\Models\Organization|null $org */

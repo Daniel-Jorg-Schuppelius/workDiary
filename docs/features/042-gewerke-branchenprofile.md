@@ -2,7 +2,23 @@
 
 ## Status
 
-In Progress — Teile umgesetzt; konzipiert in MVP-033/034:
+In Progress — Branchenprofil-System mit importierbaren Vorlagenpaketen je
+Gewerk umgesetzt: deklarative Profil-Kataloge (`database/data/branchprofiles/`)
+und `BranchProfileInstaller` legen idempotent Auftragsarten/Kategorien
+(Klassifikationen), Pflichtregeln, Tags, Wartungspläne, SLA-/Reinigungsprofile
+und Software an. Erweitert um veröffentlichte **Checklisten/Prozedurvorlagen**
+(Feature 026, mit Schritten/Zweite-Person/Nachweispflicht) sowie
+organisationsweite **Raumanforderungs-Vorlagen** (`room_requirement_templates`,
+Feature 027). Sechs Gewerke mit erweitertem Paket: Elektro, SHK,
+Gebäudereinigung, Facility Management, IT-Service, GaLaBau. Admin-Katalog mit
+Inhaltsvorschau (Auftragsarten/Kategorien/Pflichtregeln/Checklisten/
+Raumanforderungen/Tags), Installations-Status und bestätigter Installation.
+Idempotenz strikt: erneutes Installieren erzeugt keine Dubletten; lokal
+angepasste Daten bleiben unberührt; veröffentlichte Checklisten werden nie
+überschrieben. Offen: Marketplace/Versionierung der Pakete, weitere Gewerke
+(u. a. ambulante Pflege), Prozedurvorlagen für die übrigen Gewerke.
+
+Konzipiert in MVP-033/034:
 [Branchenprofil IT-Service](../branchenprofil-it.md),
 [Branchenprofil Handwerk/Service](../branchenprofil-handwerk.md).
 Weitere geplante Profile:

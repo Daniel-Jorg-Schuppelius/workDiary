@@ -163,6 +163,59 @@ class BillingTransferServiceTest extends TestCase {
         $this->assertSame('30.00', (string) $item->amount);
     }
 
+    public function test_material_snapshot_captures_unit_tax_and_cost_position(): void {
+        $material = \App\Models\Material::create([
+            'organization_id' => $this->organization->id,
+            'sku' => 'KAB-001',
+            'name' => 'Netzwerkkabel',
+            'unit' => 'm',
+            'tax_rate' => '19.00',
+        ]);
+        $timesheet = Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->admin->id,
+            'project_id' => $this->project->id,
+            'work_date' => '2030-04-02',
+            'kind' => \App\Enums\Timesheet\TimesheetKind::Project,
+            'status' => \App\Enums\Timesheet\TimesheetStatus::Draft,
+        ]);
+        MaterialUsage::create([
+            'organization_id' => $this->organization->id,
+            'timesheet_id' => $timesheet->id,
+            'material_id' => $material->id,
+            'description' => 'Kabel',
+            'quantity' => '5.000',
+            'unit' => 'm',
+            'unit_price' => '2.5000',
+            'tax_rate' => '19.00',
+            'billed' => false,
+        ]);
+
+        $transfer = $this->service->createDraft(
+            $this->customer,
+            TransferChannel::Material,
+            TransferTarget::Lexoffice,
+            ['from' => '2030-04-01', 'to' => '2030-04-30'],
+        );
+
+        $item = $transfer->items->first();
+        $this->assertSame('m', $item->unit);
+        $this->assertSame('2.5000', (string) $item->unit_price);
+        $this->assertSame('19.00', (string) $item->tax_rate);
+        $this->assertSame('KAB-001', $item->cost_position);
+    }
+
+    public function test_time_snapshot_leaves_material_fields_null(): void {
+        $this->makeTimeEntry();
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);
+
+        $item = $transfer->items->first();
+        $this->assertNull($item->unit);
+        $this->assertNull($item->unit_price);
+        $this->assertNull($item->tax_rate);
+        $this->assertNull($item->cost_position);
+    }
+
     public function test_create_draft_without_sources_throws(): void {
         $this->expectException(BillingTransferException::class);
         $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::Datev);

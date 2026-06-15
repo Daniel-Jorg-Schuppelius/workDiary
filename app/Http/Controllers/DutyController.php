@@ -241,18 +241,27 @@ class DutyController extends Controller {
             ->where('is_archived', false)
             ->toBase()
             ->selectRaw(
+                // Statuswerte (App\Enums\Diary\Status): 2=Offen; 1 InProgress +
+                // 4 Accepted = In Bearbeitung; 3 WaitingCustomer + 5 WaitingMaterial
+                // = Probleme (pausiert/wartend); -1 Done + 6 AcceptedFinal +
+                // 7 Invoiced = Erledigt (konsistent zum Auftragsbuch); 8 = Storniert.
+                // Die fünf Gruppen decken alle Status ab ⇒ Summe = Gesamt.
                 'COUNT(*) as cnt_all,' .
                     'COUNT(CASE WHEN status = 2 THEN 1 END) as cnt_open,' .
-                    'COUNT(CASE WHEN status = 3 THEN 1 END) as cnt_alert,' .
-                    'COUNT(CASE WHEN status = -1 THEN 1 END) as cnt_done'
+                    'COUNT(CASE WHEN status IN (1, 4) THEN 1 END) as cnt_progress,' .
+                    'COUNT(CASE WHEN status IN (3, 5) THEN 1 END) as cnt_alert,' .
+                    'COUNT(CASE WHEN status IN (-1, 6, 7) THEN 1 END) as cnt_done,' .
+                    'COUNT(CASE WHEN status = 8 THEN 1 END) as cnt_cancelled'
             )
             ->first();
 
         return [
             'all' => (int) ($row->cnt_all ?? 0),
             'open' => (int) ($row->cnt_open ?? 0),
+            'progress' => (int) ($row->cnt_progress ?? 0),
             'alert' => (int) ($row->cnt_alert ?? 0),
             'done' => (int) ($row->cnt_done ?? 0),
+            'cancelled' => (int) ($row->cnt_cancelled ?? 0),
         ];
     }
 

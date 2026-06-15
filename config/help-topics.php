@@ -34,6 +34,15 @@ return [
         'diary.show' => 'diary-entries.edit',
         'diary.edit' => 'diary-entries.edit',
 
+        // Leitstelle (Feature 029): Dispatch-Board + Karten-Sicht. Vor dem
+        // breiten dispatch.*-Muster, weil eigenes Topic.
+        'dispatch.board' => 'dispatch.board',
+        'dispatch.map' => 'dispatch.board',
+
+        // Disposition / Einsatzplanung (Feature 028)
+        'dispatch.*' => 'dispatch.overview',
+        'vehicle-reservations.*' => 'dispatch.overview',
+
         // Wochenansicht der Aufträge sowie separate Zeiterfassung
         'week.index' => 'week.overview',
         'time-entries.create' => 'time-entries.start',
@@ -54,6 +63,9 @@ return [
 
         // Planung, Reisen und Abwesenheiten
         'duty-plans.*' => 'planning.shifts',
+        // Dienstplan-Intelligenz (Feature 007) – vor dem breiten schedule.*
+        'schedule.availability.*' => 'planning.availability',
+        'schedule.exchanges.*' => 'planning.exchange',
         'schedule.*' => 'planning.shifts',
         'scheduled-shifts.*' => 'planning.shifts',
         'shift-types.*' => 'planning.shifts',
@@ -68,6 +80,9 @@ return [
 
         // Auswertungen (Drilldowns vor den breiten Berichts-Routen)
         'reports.*.drilldown.*' => 'reports.drilldown',
+        'reports.arbzg-compliance' => 'reports.arbzg-compliance',
+        'reports.economics' => 'reports.economics',
+        'reports.cohort-comparison' => 'reports.cohort-comparison',
         'reports.customers' => 'reports.customer-analysis',
         'reports.customer-project' => 'reports.customer-analysis',
         'reports.entry-types' => 'reports.entry-type-analysis',
@@ -81,19 +96,37 @@ return [
         'protocols.signature-tokens.*' => 'protocols.sign',
         'protocols.*' => 'protocols.create',
 
+        // Kundenportal & Freigaben (Feature 012): interne Rückfragen-Liste.
+        'customer-queries.*' => 'customer.queries',
+
+        // Prozedurvorlagen-Designer (Feature 026): Listenseite + Editor.
+        'procedures.*' => 'procedures.designer',
+
         // Hinweis: procedures.run hat (noch) keine eigene Seite — Prozedurläufe
         // finden in der Auftrags-Detailansicht statt und sind dort über den
         // manuellen <x-help-button topic="procedures.run"> erreichbar.
+
+        // Sicherheitsereignis-Register (Arbeitsschutz, Feature 013)
+        'safety-events.*' => 'safety.overview',
 
         // ISMS (Feature 044/046): Anforderungen + SoA-Aussagen + Druckansicht
         // teilen sich ein Topic; isms.soa/isms.dashboard sind exakte
         // Route-Namen (kein isms.*-Catch-all vorhanden — Mapping nötig).
         'isms.dashboard' => 'isms.overview',
+        // Reifegrad-/Readiness-Assessment (Feature 044, MVP 3): eigenes Topic.
+        'isms.readiness' => 'isms.readiness',
+        // Lieferantenbewertung (Feature 044, MVP 2/3): eigenes Topic.
+        'isms.suppliers.*' => 'isms.suppliers',
         'isms.requirements.*' => 'isms.requirements-soa',
         'isms.statements.*' => 'isms.requirements-soa',
         'isms.soa' => 'isms.requirements-soa',
         'isms.controls.*' => 'isms.controls',
         'isms.risks.*' => 'isms.risks',
+        // Betrieb und Wirksamkeit (Feature 044, MVP 2): Vorfälle teilen sich
+        // ein Topic; Schwachstellen und Advisories teilen sich eines.
+        'isms.incidents.*' => 'isms.incidents',
+        'isms.vulnerabilities.*' => 'isms.vulnerabilities',
+        'isms.advisories.*' => 'isms.vulnerabilities',
         'isms.audits.*' => 'isms.audits',
         // Managementbewertungen werden im Audits-Topic miterklärt.
         'isms.reviews.*' => 'isms.audits',
@@ -120,6 +153,11 @@ return [
         'lexoffice.vouchers.*' => 'invoices.manage',
         'events.*' => 'events.manage',
         'assets.*' => 'assets.fleet',
+        // SLA, Verträge & Service-Level (Feature 010): Tickets und Report
+        // teilen sich das Überblick-Topic.
+        'service-tickets.*' => 'sla.overview',
+        'reports.sla' => 'sla.overview',
+        'reports.sla.*' => 'sla.overview',
         'vehicles.*' => 'assets.fleet',
         'energy-logs.*' => 'assets.fleet',
         'sites.*' => 'facilities.manage',
@@ -128,18 +166,30 @@ return [
         'rooms.*' => 'facilities.manage',
         'archive.*' => 'archive.manage',
 
+        // Externe Beteiligte (Feature 033): Einladungen verwalten.
+        'external.create' => 'external.participants',
+        'external.store' => 'external.participants',
+
         // Finance & Zeitexport
         'finance.transfers.*' => 'finance.transfers',
+        'finance.reconciliation.*' => 'finance.reconciliation',
+        'finance.bank-accounts.*' => 'finance.reconciliation',
+        'finance.datev.*' => 'finance.datev-bookings',
         'exports.*' => 'exports.payroll',
 
         // Administration (spezifische admin.*-Präfixe, kein breites admin.*)
         'admin.notification-rules.*' => 'admin.notification-rules',
+        'admin.webhooks.*' => 'admin.webhooks',
         'admin.surcharge-rules.*' => 'admin.surcharge-rules',
         'admin.organizations.*' => 'admin.tenants',
         'admin.access.*' => 'admin.roles',
         'admin.license.*' => 'admin.license',
         'admin.imports.*' => 'admin.import',
+        'admin.security.*' => 'admin.security',
         'admin.components.*' => 'admin.security',
+        'admin.support.report.*' => 'admin.support',
+        'admin.backup.*' => 'admin.backups',
+        'admin.branch-profiles.*' => 'admin.branch-profiles',
 
         // Hinweis: Das Dashboard hat bewusst KEINEN Auto-Kontext — der
         // sinnvolle Einstieg ist rollenabhängig (roles.*-Topics) und damit

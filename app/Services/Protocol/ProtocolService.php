@@ -10,9 +10,11 @@
 
 namespace App\Services\Protocol;
 
+use App\Enums\Diary\Status as DiaryStatus;
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolItemType, ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
-use App\Models\{Protocol, ProtocolEvent, ProtocolItem, ProtocolSignature, User};
+use App\Models\{DiaryEntry, Protocol, ProtocolEvent, ProtocolItem, ProtocolSignature, User};
+use App\Services\Diary\OrderService;
 use App\Services\OpenIssue\OpenIssueService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -141,6 +143,11 @@ class ProtocolService {
             $this->record($protocol, ProtocolEventType::Signed, $actor, [
                 'with_signature' => $signatureData !== null,
             ]);
+
+            $subject = $protocol->subject;
+            if ($subject instanceof DiaryEntry && $subject->status === DiaryStatus::Completed) {
+                app(OrderService::class)->handover($subject, $actor, $protocol->refresh());
+            }
 
             $this->renderPdfFor($protocol->refresh(), $actor);
 

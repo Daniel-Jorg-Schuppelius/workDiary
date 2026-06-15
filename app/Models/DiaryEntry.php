@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $content
  * @property string|null $response
  * @property Status $status
+ * @property int|null $status_legacy
  * @property Priority|null $priority
  * @property Carbon|null $start_at
  * @property Carbon|null $end_at
@@ -63,6 +64,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Carbon|null $accepted_at
+ * @property Carbon|null $started_at
+ * @property Carbon|null $paused_at
+ * @property Carbon|null $resumed_at
+ * @property int $wait_seconds_total
+ * @property Carbon|null $completed_at
+ * @property Carbon|null $accepted_final_at
+ * @property Carbon|null $invoiced_at
+ * @property Carbon|null $cancelled_at
  */
 class DiaryEntry extends Model {
     use Auditable;
@@ -90,6 +100,30 @@ class DiaryEntry extends Model {
         'content',
         'response',
         'status',
+        'status_legacy',
+        'planned_start_at',
+        'planned_end_at',
+        'planned_duration_min',
+        'accepted_at',
+        'accepted_by_user_id',
+        'started_at',
+        'paused_at',
+        'pause_reason',
+        'pause_note',
+        'resumed_at',
+        'wait_seconds_total',
+        'completed_at',
+        'completed_by_user_id',
+        'completion_summary',
+        'accepted_final_at',
+        'accepted_final_by',
+        'signature_attachment_id',
+        'protocol_id',
+        'invoiced_at',
+        'invoice_reference',
+        'cancelled_at',
+        'cancelled_by_user_id',
+        'cancellation_reason',
         'priority',
         'start_at',
         'end_at',
@@ -129,6 +163,19 @@ class DiaryEntry extends Model {
         'window_start_date' => 'date',
         'window_end_date' => 'date',
         'status' => Status::class,
+        'status_legacy' => 'integer',
+        'planned_start_at' => 'immutable_datetime',
+        'planned_end_at' => 'immutable_datetime',
+        'planned_duration_min' => 'integer',
+        'accepted_at' => 'immutable_datetime',
+        'started_at' => 'immutable_datetime',
+        'paused_at' => 'immutable_datetime',
+        'resumed_at' => 'immutable_datetime',
+        'wait_seconds_total' => 'integer',
+        'completed_at' => 'immutable_datetime',
+        'accepted_final_at' => 'immutable_datetime',
+        'invoiced_at' => 'immutable_datetime',
+        'cancelled_at' => 'immutable_datetime',
         'is_archived' => 'boolean',
         'service_minutes' => 'integer',
         'planned_minutes' => 'integer',
@@ -140,6 +187,27 @@ class DiaryEntry extends Model {
         'location_mode' => LocationMode::class,
         'mode' => Mode::class,
     ];
+
+    protected static function booted(): void {
+        static::saving(function (DiaryEntry $entry): void {
+            if (! in_array($entry->status, [Status::Planned, Status::Accepted], true)) {
+                return;
+            }
+
+            if ($entry->isDirty('start_at') || $entry->planned_start_at === null) {
+                // start_at ist als 'datetime' (Carbon), planned_start_at als
+                // 'immutable_datetime' (CarbonImmutable) gecastet — explizit
+                // wandeln, damit die Typen zusammenpassen.
+                $entry->planned_start_at = $entry->start_at?->toImmutable();
+            }
+            if ($entry->isDirty('end_at') || $entry->planned_end_at === null) {
+                $entry->planned_end_at = $entry->end_at?->toImmutable();
+            }
+            if ($entry->planned_duration_min === null) {
+                $entry->planned_duration_min = $entry->planned_minutes ?? $entry->service_minutes;
+            }
+        });
+    }
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
@@ -179,6 +247,21 @@ class DiaryEntry extends Model {
     /** @return HasMany<TimeEntry, $this> */
     public function timeEntries(): HasMany {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    /** @return HasMany<DiaryEntryEvent, $this> */
+    public function lifecycleEvents(): HasMany {
+        return $this->hasMany(DiaryEntryEvent::class)->orderBy('occurred_at');
+    }
+
+    /** @return MorphMany<Protocol, $this> */
+    public function protocols(): MorphMany {
+        return $this->morphMany(Protocol::class, 'subject')->latest('occurred_at');
+    }
+
+    /** @return BelongsTo<Protocol, $this> */
+    public function acceptanceProtocol(): BelongsTo {
+        return $this->belongsTo(Protocol::class, 'protocol_id');
     }
 
     /** @return BelongsTo<RecurrenceRule, $this> */
@@ -245,12 +328,18 @@ class DiaryEntry extends Model {
         $query->where('is_archived', false);
     }
 
-    /** Offene und problematische Einträge (Status 2 = Offen, 3 = Problem).
+    /** Noch nicht finalisierte Aufträge.
      *
      * @param  Builder<DiaryEntry>  $query
      */
     public function scopeOpen(Builder $query): void {
-        $query->whereIn('status', [Status::Open->value, Status::Problem->value]);
+        $query->whereIn('status', [
+            Status::Planned->value,
+            Status::Accepted->value,
+            Status::InProgress->value,
+            Status::WaitingCustomer->value,
+            Status::WaitingMaterial->value,
+        ]);
     }
 
     /** Bestätigte Einträge (Status 1 = In Bearbeitung).

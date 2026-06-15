@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Enums\Backup\RestoreTestResult;
+use App\Models\{BackupHeartbeat, RestoreTest};
 use App\Services\Licensing\{LicenseService, LicenseStatus};
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -29,34 +32,39 @@ use Throwable;
  * temporäre Schreibprobe im Storage).
  */
 class SystemHealthCommand extends Command {
-    protected $signature = 'system:health';
+    protected $signature = 'system:health {--json : Ergebnis als JSON ausgeben (für UI/Monitoring) statt als Tabelle}';
 
     protected $description = 'Prüft die Installation nach einem Update (DB, Migrationen, Storage, Queue, APP_KEY, Mail, Lizenz).';
 
     public function handle(LicenseService $licenses): int {
+        $checks = $this->runChecks($licenses);
+        $failed = array_values(array_filter($checks, static fn(array $c): bool => ! $c[1]));
+
+        if ((bool) $this->option('json')) {
+            $this->line((string) json_encode([
+                'version' => (string) config('app.version', '0.1.0-dev'),
+                'environment' => (string) app()->environment(),
+                'healthy' => $failed === [],
+                'checks' => array_map(
+                    static fn(array $c): array => ['name' => $c[0], 'ok' => $c[1], 'details' => $c[2]],
+                    $checks,
+                ),
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+            return $failed === [] ? self::SUCCESS : self::FAILURE;
+        }
+
         $this->info(sprintf(
             'WorkDiary Health-Check — Version %s (%s)',
             (string) config('app.version', '0.1.0-dev'),
             (string) app()->environment(),
         ));
 
-        /** @var list<array{0: string, 1: bool, 2: string}> $checks */
-        $checks = [
-            $this->checkDatabase(),
-            $this->checkMigrations(),
-            $this->checkStorage(),
-            $this->checkQueue(),
-            $this->checkAppKey(),
-            $this->checkMail(),
-            $this->checkLicense($licenses),
-        ];
-
         $this->table(
             ['Check', 'Status', 'Details'],
             array_map(static fn(array $c): array => [$c[0], $c[1] ? 'OK' : 'FEHLER', $c[2]], $checks),
         );
 
-        $failed = array_values(array_filter($checks, static fn(array $c): bool => ! $c[1]));
         if ($failed !== []) {
             $this->error(sprintf('%d von %d Checks fehlgeschlagen.', count($failed), count($checks)));
 
@@ -66,6 +74,26 @@ class SystemHealthCommand extends Command {
         $this->info('Alle Checks bestanden.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Führt alle Checks aus und liefert sie strukturiert — wiederverwendbar
+     * für die Tabellen-, JSON- und UI-Darstellung (admin/components).
+     *
+     * @return list<array{0: string, 1: bool, 2: string}>
+     */
+    public function runChecks(LicenseService $licenses): array {
+        return [
+            $this->checkDatabase(),
+            $this->checkMigrations(),
+            $this->checkStorage(),
+            $this->checkQueue(),
+            $this->checkAppKey(),
+            $this->checkMail(),
+            $this->checkLicense($licenses),
+            $this->checkBackupFreshness(),
+            $this->checkRestoreTest(),
+        ];
     }
 
     /** @return array{0: string, 1: bool, 2: string} */
@@ -156,6 +184,80 @@ class SystemHealthCommand extends Command {
         return $from !== ''
             ? ['Mail', true, $detail]
             : ['Mail', false, 'Keine Absender-Adresse konfiguriert (MAIL_FROM_ADDRESS)'];
+    }
+
+    /**
+     * Frische des letzten Backup-Heartbeats (Feature 017). Rot, wenn der
+     * jüngste Heartbeat älter als config('backup.heartbeat_freshness_hours')
+     * (Default 26 h) ist oder gar keiner vorliegt. Fehlt die Tabelle (frische
+     * Installation vor Migration), wird der Check übersprungen (grün), um den
+     * Update-Workflow nicht zu blockieren.
+     *
+     * @return array{0: string, 1: bool, 2: string}
+     */
+    private function checkBackupFreshness(): array {
+        try {
+            if (! DB::getSchemaBuilder()->hasTable((new BackupHeartbeat())->getTable())) {
+                return ['Backup-Heartbeat', true, 'Tabelle fehlt (vor Migration) — Check übersprungen'];
+            }
+
+            /** @var BackupHeartbeat|null $latest */
+            $latest = BackupHeartbeat::query()->orderByDesc('occurred_at')->first();
+            if ($latest === null) {
+                // Noch nie ein Heartbeat eingegangen (frische Installation,
+                // Test/CI, Backup noch nicht eingerichtet) ⇒ Hinweis statt
+                // hartem Fehler. Der rote „kein Backup registriert"-Hinweis
+                // steht auf der Admin-Backup-Statusseite (Feature 017).
+                return ['Backup-Heartbeat', true, 'Kein Backup registriert (Hinweis — Backup einrichten)'];
+            }
+
+            $maxHours = max(1, (int) config('backup.heartbeat_freshness_hours', 26));
+            $ageHours = (int) $latest->occurred_at->diffInHours(CarbonImmutable::now());
+
+            return $ageHours <= $maxHours
+                ? ['Backup-Heartbeat', true, sprintf('Letzter Heartbeat vor %d h (Schwelle %d h)', $ageHours, $maxHours)]
+                : ['Backup-Heartbeat', false, sprintf('Letzter Heartbeat vor %d h überfällig (Schwelle %d h)', $ageHours, $maxHours)];
+        } catch (Throwable $e) {
+            return ['Backup-Heartbeat', false, Str::limit($e->getMessage(), 120)];
+        }
+    }
+
+    /**
+     * Überfälligkeit des Restore-Tests (Feature 017, §6.3). Rot, wenn der
+     * jüngste ERFOLGREICHE Restore-Test länger als
+     * config('backup.restore_test_overdue_days') (Default 180) zurückliegt
+     * oder ganz fehlt. Tabelle fehlt ⇒ übersprungen (grün).
+     *
+     * @return array{0: string, 1: bool, 2: string}
+     */
+    private function checkRestoreTest(): array {
+        try {
+            if (! DB::getSchemaBuilder()->hasTable((new RestoreTest())->getTable())) {
+                return ['Restore-Test', true, 'Tabelle fehlt (vor Migration) — Check übersprungen'];
+            }
+
+            /** @var RestoreTest|null $lastPassed */
+            $lastPassed = RestoreTest::query()
+                ->where('result', RestoreTestResult::Passed->value)
+                ->orderByDesc('tested_on')
+                ->first();
+
+            $maxDays = max(1, (int) config('backup.restore_test_overdue_days', 180));
+            if ($lastPassed === null) {
+                // Noch kein protokollierter Restore-Test ⇒ Hinweis statt
+                // hartem Fehler (Überfälligkeit eines BESTEHENDEN Tests bleibt
+                // rot). Nudge zum Eintragen steht auf der Admin-Statusseite.
+                return ['Restore-Test', true, sprintf('Noch kein erfolgreicher Restore-Test (Hinweis — Schwelle %d Tage)', $maxDays)];
+            }
+
+            $ageDays = (int) $lastPassed->tested_on->startOfDay()->diffInDays(CarbonImmutable::now()->startOfDay());
+
+            return $ageDays <= $maxDays
+                ? ['Restore-Test', true, sprintf('Letzter erfolgreicher Test vor %d Tagen (Schwelle %d)', $ageDays, $maxDays)]
+                : ['Restore-Test', false, sprintf('Letzter erfolgreicher Test vor %d Tagen überfällig (Schwelle %d)', $ageDays, $maxDays)];
+        } catch (Throwable $e) {
+            return ['Restore-Test', false, Str::limit($e->getMessage(), 120)];
+        }
     }
 
     /** @return array{0: string, 1: bool, 2: string} */

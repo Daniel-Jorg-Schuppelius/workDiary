@@ -233,10 +233,15 @@ class Project extends Model {
                         $child->save();
                     });
 
-                // DiaryEntries mitziehen, außer abgeschlossene (STATUS_DONE).
+                // DiaryEntries mitziehen, außer finalisierte oder stornierte.
                 DiaryEntry::query()
                     ->where('project_id', $project->id)
-                    ->where('status', '!=', DiaryStatus::Done->value)
+                    ->whereNotIn('status', [
+                        DiaryStatus::Completed->value,
+                        DiaryStatus::AcceptedFinal->value,
+                        DiaryStatus::Invoiced->value,
+                        DiaryStatus::Cancelled->value,
+                    ])
                     ->update(['customer_id' => $newCustomerId]);
 
                 // Rechnungen mitziehen, außer freigegebene/bezahlte/stornierte (nur DRAFT).

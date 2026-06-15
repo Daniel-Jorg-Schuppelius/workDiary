@@ -54,6 +54,9 @@ class ProtocolController extends Controller {
             'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
             'template_id' => ['nullable', 'integer', 'min:1'],
             'template_version' => ['nullable', 'integer', 'min:1'],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['nullable', 'string', 'max:64'],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ]);
 
         $subjectClass = self::SUBJECT_MAP[$data['subject_kind']];
@@ -67,6 +70,7 @@ class ProtocolController extends Controller {
         $creator = Auth::user();
 
         $protocol = $this->service->create($subject, $creator, $data);
+        $this->syncTags($protocol, $request);
 
         return redirect()
             ->back()
@@ -85,6 +89,9 @@ class ProtocolController extends Controller {
             'occurred_at' => ['sometimes', 'nullable', 'date'],
             'visibility' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
             'type' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolType::cases(), 'value'))],
+            'tag_ids' => ['sometimes', 'nullable', 'array'],
+            'tag_ids.*' => ['nullable', 'string', 'max:64'],
+            'new_tags' => ['sometimes', 'nullable', 'string', 'max:500'],
         ]);
 
         /** @var User $actor */
@@ -94,6 +101,10 @@ class ProtocolController extends Controller {
             $this->service->update($protocol, $actor, $data);
         } catch (InvalidProtocolTransitionException $e) {
             return redirect()->back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        if ($request->has('tag_ids') || $request->has('new_tags')) {
+            $this->syncTags($protocol, $request);
         }
 
         return redirect()->back()->with('success', __('protocol.flash.updated'));
@@ -315,6 +326,26 @@ class ProtocolController extends Controller {
         $disk = Storage::disk(ProtocolPdfRenderer::DISK);
 
         return $disk->download($path, sprintf('protokoll-%d-r%d.pdf', $protocol->id, $protocol->revision));
+    }
+
+    /**
+     * Synchronisiert die Tags eines Protokolls aus den (optionalen)
+     * Formularfeldern `tag_ids[]` (Sqid/ID bestehender Tags) und `new_tags`
+     * (kommaseparierte neue Tag-Namen) — gleiche Mechanik wie bei Kunde/Asset.
+     */
+    private function syncTags(Protocol $protocol, Request $request): void {
+        // tag_ids kommen als opake Sqids aus dem Tag-Picker; rohe numerische
+        // IDs werden ebenfalls toleriert (Sqid::decodeOrNumeric).
+        $tagIds = array_values(array_filter(array_map(
+            static fn($v) => is_scalar($v) ? \App\Support\Sqid::decodeOrNumeric(\App\Models\Tag::class, (string) $v) : null,
+            (array) $request->input('tag_ids', []),
+        ), static fn($v): bool => $v !== null));
+        $newTags = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) $request->input('new_tags', '')),
+        )));
+
+        $protocol->syncTagsFromInput($tagIds, $newTags);
     }
 
     /**

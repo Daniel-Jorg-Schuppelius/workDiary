@@ -40,4 +40,12 @@ class AssetPolicy {
     public function transferOwnership(User $user, Asset $asset): bool {
         return $user->can(P::AssetTransferOwnership->value);
     }
+
+    public function checkout(User $user, Asset $asset): bool {
+        return $user->can(P::AssetCheckout->value);
+    }
+
+    public function manageDefects(User $user, Asset $asset): bool {
+        return $user->can(P::AssetDefectManage->value);
+    }
 }

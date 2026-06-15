@@ -10,13 +10,22 @@
 
 namespace App\Services\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, MaintenancePlanTemplate, Organization, SlaContract, Software, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, CleaningProfile, MaintenancePlanTemplate, Organization, ProcedureTemplate, RoomRequirementTemplate, SlaContract, Software, Tag, User};
+use App\Services\Procedure\ProcedureTemplateService;
 use Illuminate\Support\Arr;
 
 /**
  * Installiert deklarative Branchenprofile pro Organisation.
  */
 class BranchProfileInstaller {
+    public function __construct(
+        private readonly ?ProcedureTemplateService $procedures = null,
+    ) {}
+
+    private function procedureService(): ProcedureTemplateService {
+        return $this->procedures ?? app(ProcedureTemplateService::class);
+    }
+
     /**
      * @return array{profile_code: string, version: int, created: array<string, int>, updated: array<string, int>, skipped: array<string, int>}
      */
@@ -24,7 +33,7 @@ class BranchProfileInstaller {
         /** @var array<string, mixed> $profile */
         $profile = require database_path("data/branchprofiles/{$profileCode}.php");
 
-        $created = [
+        $counterTemplate = [
             'classifications' => 0,
             'classification_requirements' => 0,
             'tags' => 0,
@@ -32,25 +41,12 @@ class BranchProfileInstaller {
             'sla_contracts' => 0,
             'cleaning_profiles' => 0,
             'software' => 0,
+            'procedure_templates' => 0,
+            'room_requirement_templates' => 0,
         ];
-        $updated = [
-            'classifications' => 0,
-            'classification_requirements' => 0,
-            'tags' => 0,
-            'maintenance_plan_templates' => 0,
-            'sla_contracts' => 0,
-            'cleaning_profiles' => 0,
-            'software' => 0,
-        ];
-        $skipped = [
-            'classifications' => 0,
-            'classification_requirements' => 0,
-            'tags' => 0,
-            'maintenance_plan_templates' => 0,
-            'sla_contracts' => 0,
-            'cleaning_profiles' => 0,
-            'software' => 0,
-        ];
+        $created = $counterTemplate;
+        $updated = $counterTemplate;
+        $skipped = $counterTemplate;
 
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
         $classificationDomains = (array) Arr::get($profile, 'classifications', []);
@@ -339,6 +335,123 @@ class BranchProfileInstaller {
                 'created_by' => $actor?->id,
             ], $payload));
             $created['software']++;
+        }
+
+        /** @var list<array<string, mixed>> $procedureTemplates */
+        $procedureTemplates = (array) Arr::get($profile, 'procedure_templates', []);
+        foreach ($procedureTemplates as $row) {
+            $code = (string) ($row['code'] ?? '');
+            if ($code === '') {
+                continue;
+            }
+
+            $existing = ProcedureTemplate::query()
+                ->where('organization_id', $organization->id)
+                ->where('code', $code)
+                ->first();
+
+            // Vorlage existiert bereits (oder wurde lokal angepasst): idempotent
+            // überspringen, niemals überschreiben (auch nicht bei force – eine
+            // veröffentlichte Prozedurversion ist unveränderlich).
+            if ($existing instanceof ProcedureTemplate) {
+                $skipped['procedure_templates']++;
+
+                continue;
+            }
+
+            // Vollständige Vorlage (Name/Schritte) wird nur installiert, wenn das
+            // Profil sie deklarativ beschreibt UND ein Akteur vorhanden ist (die
+            // Version benötigt einen Autor). Reine Code-Platzhalter ohne Schritte
+            // werden als Folgearbeit übersprungen.
+            $name = isset($row['name']) ? trim((string) $row['name']) : '';
+            /** @var list<array<string, mixed>> $steps */
+            $steps = (array) ($row['steps'] ?? []);
+            if ($name === '' || $steps === [] || ! $actor instanceof User) {
+                $skipped['procedure_templates']++;
+
+                continue;
+            }
+
+            $service = $this->procedureService();
+            $template = $service->create($organization, $actor, [
+                'code' => $code,
+                'name' => $name,
+                'description' => isset($row['description']) ? (string) $row['description'] : null,
+                'domain' => isset($row['domain']) ? (string) $row['domain'] : null,
+                'active' => true,
+            ]);
+
+            $version = $template->versions()->firstOrFail();
+            if (isset($row['risk_level'])) {
+                $service->updateVersion($version, ['risk_level' => (string) $row['risk_level']]);
+            }
+
+            $normalizedSteps = [];
+            foreach ($steps as $step) {
+                $stepCode = (string) ($step['code'] ?? '');
+                $stepType = (string) ($step['step_type'] ?? '');
+                $stepLabel = (string) ($step['label'] ?? '');
+                if ($stepCode === '' || $stepType === '' || $stepLabel === '') {
+                    continue;
+                }
+
+                $normalizedSteps[] = [
+                    'code' => $stepCode,
+                    'step_type' => $stepType,
+                    'label' => $stepLabel,
+                    'description' => isset($step['description']) ? (string) $step['description'] : null,
+                    'required' => (bool) ($step['required'] ?? true),
+                    'blocking' => (bool) ($step['blocking'] ?? true),
+                    'requires_second_person' => (bool) ($step['requires_second_person'] ?? false),
+                    'requires_proof_type' => isset($step['requires_proof_type']) ? (string) $step['requires_proof_type'] : null,
+                ];
+            }
+
+            $service->syncSteps($version, $normalizedSteps);
+            $service->publish($version, $actor);
+
+            $created['procedure_templates']++;
+        }
+
+        /** @var list<array<string, mixed>> $roomRequirementTemplates */
+        $roomRequirementTemplates = (array) Arr::get($profile, 'room_requirement_templates_seed', []);
+        foreach ($roomRequirementTemplates as $row) {
+            $code = (string) ($row['code'] ?? '');
+            $kind = (string) ($row['kind'] ?? '');
+            if ($code === '' || $kind === '') {
+                continue;
+            }
+
+            $existing = RoomRequirementTemplate::query()
+                ->where('organization_id', $organization->id)
+                ->where('code', $code)
+                ->first();
+
+            $payload = [
+                'kind' => $kind,
+                'label' => (string) ($row['label'] ?? $code),
+                'level' => isset($row['level']) ? (string) $row['level'] : null,
+                'note' => isset($row['note']) ? (string) $row['note'] : null,
+                'is_active' => (bool) ($row['is_active'] ?? true),
+            ];
+
+            if ($existing instanceof RoomRequirementTemplate) {
+                if ($force) {
+                    $existing->update($payload);
+                    $updated['room_requirement_templates']++;
+                } else {
+                    $skipped['room_requirement_templates']++;
+                }
+
+                continue;
+            }
+
+            RoomRequirementTemplate::query()->create(array_merge([
+                'organization_id' => $organization->id,
+                'code' => $code,
+                'created_by' => $actor?->id,
+            ], $payload));
+            $created['room_requirement_templates']++;
         }
 
         $installedProfileCode = (string) ($profile['code'] ?? $profileCode);

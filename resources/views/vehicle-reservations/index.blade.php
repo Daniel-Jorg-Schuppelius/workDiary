@@ -1,0 +1,64 @@
+@extends('layouts.app')
+
+@section('title', __('dispatch.reservations.title'))
+@section('nav-title', __('dispatch.reservations.title'))
+
+@section('content')
+    <x-index-page :subtitle="__('dispatch.reservations.subtitle')">
+        <x-filter-bar :action="route('vehicle-reservations.index')" submit-label="{{ __('Anwenden') }}">
+            <x-filter-field :label="__('dispatch.vehicle.label')" for="res-vehicle">
+                <select id="res-vehicle" name="vehicle" class="select select-sm select-bordered" onchange="this.form.submit()">
+                    <option value="">{{ __('dispatch.reservations.all_vehicles') }}</option>
+                    @foreach ($vehicles as $v)
+                        <option value="{{ $v->sqid }}" @selected($vehicle && (int) $vehicle->id === (int) $v->id)>{{ $v->displayName() }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        </x-filter-bar>
+
+        <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
+            <x-table bare scroll="flex" :pinRows="true">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('dispatch.vehicle.label') }}</th>
+                        <th>{{ __('dispatch.vehicle.from') }}</th>
+                        <th>{{ __('dispatch.vehicle.to') }}</th>
+                        <th>{{ __('Auftrag') }}</th>
+                        <th>{{ __('dispatch.reservations.reserved_by') }}</th>
+                        <th>{{ __('Notiz') }}</th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($reservations as $reservation)
+                    <tr>
+                        <td><strong>{{ $reservation->vehicle?->displayName() ?? '—' }}</strong></td>
+                        <td>{{ $reservation->reserved_from->fdatetime() }}</td>
+                        <td>{{ $reservation->reserved_to->fdatetime() }}</td>
+                        <td>
+                            @if ($reservation->diaryEntry)
+                                <a class="link" href="{{ route('diary.show', $reservation->diaryEntry) }}">#{{ $reservation->diaryEntry->id }}</a>
+                            @else
+                                —
+                            @endif
+                        </td>
+                        <td>{{ $reservation->reservedBy?->name ?? '—' }}</td>
+                        <td>{{ $reservation->note ?? '—' }}</td>
+                        <td class="text-right">
+                            @can('delete', $reservation)
+                                <form method="POST" action="{{ route('vehicle-reservations.destroy', $reservation) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('dispatch.vehicle.release') }}</button>
+                                </form>
+                            @endcan
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="7" :title="__('dispatch.reservations.empty')" />
+                @endforelse
+            </x-table>
+        </x-card>
+
+        <x-pagination :paginator="$reservations" />
+    </x-index-page>
+@endsection

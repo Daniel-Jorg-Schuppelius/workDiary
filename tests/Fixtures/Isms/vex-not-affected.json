@@ -1,0 +1,51 @@
+{
+    "document": {
+        "category": "csaf_vex",
+        "title": "VEX: libbar not affected",
+        "tracking": {
+            "id": "VEX-2026-0002",
+            "status": "final",
+            "version": "1"
+        }
+    },
+    "product_tree": {
+        "full_product_names": [
+            {
+                "product_id": "LIBBAR-200",
+                "name": "libbar 2.0.0"
+            }
+        ]
+    },
+    "vulnerabilities": [
+        {
+            "cve": "CVE-2026-50002",
+            "title": "Potential XXE in libbar",
+            "scores": [
+                {
+                    "cvss_v3": {
+                        "version": "3.1",
+                        "baseScore": 7.5,
+                        "baseSeverity": "HIGH"
+                    },
+                    "products": ["LIBBAR-200"]
+                }
+            ],
+            "flags": [
+                {
+                    "label": "vulnerable_code_not_in_execute_path",
+                    "product_ids": ["LIBBAR-200"]
+                }
+            ],
+            "threats": [
+                {
+                    "category": "impact",
+                    "details": "Die betroffene Parser-Funktion wird in WorkDiary nicht aufgerufen.",
+                    "product_ids": ["LIBBAR-200"]
+                }
+            ],
+            "product_status": {
+                "known_not_affected": ["LIBBAR-200"]
+            }
+        }
+    ]
+}

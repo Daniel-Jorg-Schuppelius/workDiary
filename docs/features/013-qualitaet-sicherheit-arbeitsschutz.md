@@ -2,7 +2,45 @@
 
 ## Status
 
-In Progress
+In Progress — MVP teilweise umgesetzt (Sicherheitsereignis-Register,
+Qualifikations-/Unterweisungs-Ablaufwarnung, Sicherheits-Auswertung;
+Pflichtchecklisten je Auftragstyp über das bestehende Prozedursystem).
+
+## Umsetzungsstand (Feature 013)
+
+- **Sicherheitsereignis-Register** (umgesetzt): `safety_events` mit laufender
+  `event_no` je Organisation, Art (Unfall/Beinaheunfall/Gefährdung/Mangel),
+  Schweregrad, Sofortmaßnahme, Ursachenanalyse und Statusmaschine
+  (gemeldet → in Untersuchung → Maßnahmen definiert → geschlossen; Abschluss
+  erfordert `root_cause`). Modell `App\Models\SafetyEvent`,
+  `App\Services\Safety\SafetyEventService`, `SafetyEventController` + Routen
+  `safety-events.*`, Liste/Detail/Modale, `SafetyEventPolicy`, Foto-Nachweise
+  über `HasAttachments`. Kritische Ereignisse (Unfall ODER Schweregrad
+  kritisch) feuern synchron `NotificationEvent::SafetyCriticalEvent` an die
+  Leitung. Beim Schließen kann ein `OpenIssue` als Folgemaßnahme angelegt
+  werden (Wiederverwendung des Offene-Punkte-Systems).
+- **PSA-/Unterweisungs- & Qualifikationsstatus** (umgesetzt, additiv): Das
+  bestehende Qualifikationsmodell (Pivot `user_qualifications` mit
+  `valid_from`/`valid_until`) wird genutzt. Neuer Scanner-Pfad in
+  `ScanDeadlinesCommand` (`NotificationEvent::QualificationExpiring`) warnt
+  Person + Teamleitung vor ablaufenden Qualifikationen/Unterweisungen
+  (Vorlauf `--expiring-days`). Pivot-Modell `App\Models\UserQualification`
+  für stabile Dedup-Subjekte. „Unterweisungen" werden als Qualifikationsart
+  abgebildet (keine Parallelmechanik).
+- **Sicherheits-/Qualitätscheckliste je Auftragstyp** (über Bestand,
+  Feature 026): Pflichtchecklisten/Vier-Augen-Prüfungen laufen über die
+  Prozedurvorlagen. `ProcedureApplicabilityResolver` ordnet Vorlagen über
+  `applicability.diary_entry_type` (EntryType-Slug) zu; `SecondPersonGate`
+  erzwingt die zweite Person. Es wird KEINE Parallelmechanik gebaut — das
+  Hilfe-Topic verlinkt den Prozedur-Designer.
+- **Auswertung** (umgesetzt): `Reporting\SafetyReportController` +
+  View `reports.safety` (Ereignisse je Art/Schweregrad im Zeitraum, offen vs.
+  geschlossen), Menüeintrag unter Auswertungen → Team (gegated auf
+  `safety.viewAny`).
+
+Plan-Gating: bewusst ungated (Core-Arbeitsschutz, wie OpenIssue); Steuerung
+ausschließlich über Permissions `safety.viewAny` / `safety.report` /
+`safety.manage`.
 
 ## Ziel
 

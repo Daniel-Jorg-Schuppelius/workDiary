@@ -126,7 +126,7 @@ class BranchProfileController extends Controller {
     }
 
     /**
-     * @return Collection<int, array{code: string, label: string, version: int, classification_count: int, requirement_count: int, tag_count: int}>
+     * @return Collection<int, array{code: string, label: string, version: int, classification_count: int, entry_type_count: int, requirement_count: int, tag_count: int, procedure_count: int, room_requirement_count: int, entry_types: list<string>, procedures: list<string>}>
      */
     private function availableProfiles(): Collection {
         $profiles = [];
@@ -135,9 +135,28 @@ class BranchProfileController extends Controller {
             /** @var array<string, mixed> $profile */
             $profile = require $file;
 
+            /** @var array<string, mixed> $domains */
+            $domains = (array) ($profile['classifications'] ?? []);
             $classificationCount = 0;
-            foreach ((array) ($profile['classifications'] ?? []) as $rows) {
+            foreach ($domains as $rows) {
                 $classificationCount += is_array($rows) ? count($rows) : 0;
+            }
+
+            /** @var list<array<string, mixed>> $entryTypeRows */
+            $entryTypeRows = (array) ($domains['entry_type'] ?? []);
+            $entryTypes = [];
+            foreach ($entryTypeRows as $row) {
+                $entryTypes[] = (string) ($row['label'] ?? $row['code'] ?? '');
+            }
+            $entryTypes = array_values(array_filter($entryTypes, static fn(string $v): bool => $v !== ''));
+
+            /** @var list<array<string, mixed>> $procedureRows */
+            $procedureRows = (array) ($profile['procedure_templates'] ?? []);
+            $procedures = [];
+            foreach ($procedureRows as $row) {
+                if (isset($row['name']) && trim((string) $row['name']) !== '' && ($row['steps'] ?? []) !== []) {
+                    $procedures[] = (string) $row['name'];
+                }
             }
 
             $profiles[] = [
@@ -145,8 +164,13 @@ class BranchProfileController extends Controller {
                 'label' => (string) ($profile['label'] ?? pathinfo($file, PATHINFO_FILENAME)),
                 'version' => (int) ($profile['version'] ?? 1),
                 'classification_count' => $classificationCount,
+                'entry_type_count' => count($entryTypeRows),
                 'requirement_count' => count((array) ($profile['classification_requirements'] ?? [])),
                 'tag_count' => count((array) ($profile['tags_seed'] ?? [])),
+                'procedure_count' => count($procedures),
+                'room_requirement_count' => count((array) ($profile['room_requirement_templates_seed'] ?? [])),
+                'entry_types' => array_slice($entryTypes, 0, 8),
+                'procedures' => array_slice($procedures, 0, 6),
             ];
         }
 

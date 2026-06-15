@@ -17,6 +17,13 @@ return [
         'notifications' => 'Notifications',
         'ui' => 'Interface',
         'routing' => 'Routing & maps',
+        'region' => 'Region & holidays',
+    ],
+    'region' => [
+        'heading' => 'Jurisdiction & holidays',
+        'description' => 'Determines which public holidays apply. Affects holiday surcharges, duty-roster compliance and holiday displays.',
+        'holiday_provider' => 'Holiday region (country / state)',
+        'holiday_provider_hint' => 'Regional holidays such as Corpus Christi or Reformation Day only apply in certain states. Empty = system default.',
     ],
     'hint' => 'Leave empty to use the system default.',
     'pagination' => [

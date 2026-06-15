@@ -13,7 +13,7 @@ namespace App\Console\Commands\Plugin;
 use App\Events\{PluginHealthChanged, PluginRecovered};
 use App\Models\{Organization, PluginState};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginErrorRecorder, PluginHealth, PluginManager};
+use App\Plugins\{PluginCompatibility, PluginErrorRecorder, PluginHealth, PluginManager};
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -91,6 +91,25 @@ class HealthCheckCommand extends Command {
         $state->plugin_id = $plugin->id();
         $state->organization_id = $organizationId;
         $state->last_health_check_at = now();
+
+        // Kompatibilitätsprüfung VOR dem eigentlichen Healthcheck: ein zur
+        // Kernversion inkompatibles Plugin gilt als failing (zählt auf
+        // Auto-Disable ein), ohne dass sein Remote-Endpunkt angefasst wird.
+        $compat = PluginCompatibility::for($plugin);
+        if (! $compat->compatible) {
+            $state->last_health_status = PluginHealth::STATUS_FAILING;
+            $state->last_health_message = $compat->message;
+            $state->save();
+            $this->announce($plugin->id(), $organizationId, $previous, PluginHealth::STATUS_FAILING, $compat->message);
+            $recorder->record($plugin->id(), 'compatibility', new \RuntimeException($compat->message), [
+                'min_app_version' => $compat->minAppVersion,
+                'max_app_version' => $compat->maxAppVersion,
+                'app_version' => $compat->appVersion,
+            ], $organizationId);
+            $this->warn(sprintf('  ✗ %s: inkompatibel — %s', $label, $compat->message));
+
+            return self::FAILURE;
+        }
 
         try {
             $startedAt = hrtime(true);

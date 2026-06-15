@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission as P;
 use App\Models\{Asset, Customer, DiaryEntry, KnowledgeArticle, KnowledgeArticleLink, Protocol, User};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Knowledge\KnowledgeArticleService;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -150,6 +151,8 @@ class KnowledgeArticleController extends Controller {
             $this->service->linkTo($article, $subject, $creator);
         }
 
+        $this->storeUploads($article, $request);
+
         return redirect()
             ->back()
             ->with('success', __('knowledge.flash.created'));
@@ -174,6 +177,8 @@ class KnowledgeArticleController extends Controller {
         /** @var User $actor */
         $actor = Auth::user();
         $this->service->update($article, $actor, $data);
+
+        $this->storeUploads($article, $request);
 
         return redirect()
             ->back()
@@ -279,6 +284,10 @@ class KnowledgeArticleController extends Controller {
             'solution' => ['required', 'string', 'max:20000'],
             'category' => ['nullable', 'string', 'max:80'],
             'tags' => ['nullable', 'string', 'max:500'],
+            // Optionale Anhänge (Bilder/Dokumente) direkt aus dem Dialog —
+            // der Dialog wird als FormData (multipart) per AJAX gesendet.
+            'attachments' => ['nullable', 'array', 'max:10'],
+            'attachments.*' => FileAttacher::rule(),
         ];
 
         if ($includeLink) {
@@ -287,6 +296,28 @@ class KnowledgeArticleController extends Controller {
         }
 
         return $request->validate($rules);
+    }
+
+    /**
+     * Hängt optionale, aus dem Dialog mitgesendete Dateien als Anhänge an den
+     * Artikel an (Typ/Größe sind über {@see FileAttacher::rule()} in
+     * validateArticle() bereits geprüft). Der Dialog wird als FormData
+     * (multipart) gesendet, daher funktioniert der Upload auch beim Anlegen.
+     */
+    private function storeUploads(KnowledgeArticle $article, Request $request): void {
+        $files = $request->file('attachments');
+        if (! is_array($files)) {
+            return;
+        }
+
+        $attacher = new FileAttacher();
+        $userId = Auth::id() !== null ? (int) Auth::id() : null;
+
+        foreach ($files as $file) {
+            if ($file->isValid()) {
+                $attacher->store($article, $file, $userId);
+            }
+        }
     }
 
     /**

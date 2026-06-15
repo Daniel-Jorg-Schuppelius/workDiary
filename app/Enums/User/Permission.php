@@ -46,6 +46,11 @@ enum Permission: string implements HasLabel {
     case PlatformDiagnosticsRunCheck = 'platform.diagnostics.runCheck';
         // ── Betriebsmetriken (Feature 036) ──────────────────────────
     case MetricsView = 'metrics.view';
+        // ── Admin-Sicherheitsübersicht (Feature 016) ────────────────
+    case SecurityView = 'security.view';
+        // ── Backup & Restore-Status (Feature 017) ───────────────────
+    case BackupView = 'backup.view';
+    case BackupRestoreTestLog = 'backup.restoreTest.log';
         // ── Plattform-Supportbericht (MVP-045) ──────────────────────
     case PlatformSupportExport = 'platform.support.export';
     case PlatformSupportExportWithSamples = 'platform.support.exportWithSamples';
@@ -200,6 +205,9 @@ enum Permission: string implements HasLabel {
     case FinanceConfig = 'finance.config';
     case FinanceTransferTime = 'finance.transfer.time';
     case FinanceTransferMaterial = 'finance.transfer.material';
+    case FinancePaymentImport = 'finance.payment.import';
+    case FinancePaymentReconcile = 'finance.payment.reconcile';
+    case FinanceBookingExport = 'finance.booking.export';
 
         // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
@@ -219,6 +227,16 @@ enum Permission: string implements HasLabel {
     case DiaryDelete = 'diary.delete';
     case DiaryCreateForOthers = 'diary.create-for-others';
     case DiaryExport = 'diary.export';
+    case OrderAccept = 'order.accept';
+    case OrderWork = 'order.work';
+    case OrderComplete = 'order.complete';
+    case OrderHandover = 'order.handover';
+    case OrderMarkInvoiced = 'order.markInvoiced';
+    case OrderCancel = 'order.cancel';
+
+        // ── Disposition / Einsatzplanung (Feature 028) ─────────────────────
+    case DispatchViewAny = 'dispatch.viewAny';
+    case DispatchManage = 'dispatch.manage';
 
         // ── Dienstpläne / Schichten ────────────────────────────────────────
     case DutyPlanViewAny = 'dutyPlan.viewAny';
@@ -232,6 +250,11 @@ enum Permission: string implements HasLabel {
     case EmergencyAssignmentManage = 'emergency-assignment.manage';
     case ShiftTypeManage = 'shift-type.manage';
     case ScheduledShiftManage = 'scheduled-shift.manage';
+    // Dienstplan-Intelligenz (Feature 007)
+    case ShiftExchangeRequest = 'shift.exchange';
+    case ShiftExchangeApprove = 'shift.exchange.approve';
+    case AvailabilityManageOwn = 'availability.manage.own';
+    case StaffingSuggest = 'staffing.suggest';
 
         // ── Abwesenheiten ──────────────────────────────────────────────────
     case VacationViewAny = 'vacation.viewAny';
@@ -246,6 +269,8 @@ enum Permission: string implements HasLabel {
     case TourManage = 'tour.manage';
     case VehicleViewAny = 'vehicle.viewAny';
     case VehicleManage = 'vehicle.manage';
+    case VehicleReserve = 'vehicle.reserve';
+    case VehicleImport = 'vehicle.import';
     case TravelLogViewAny = 'travel-log.viewAny';
     case TravelLogManage = 'travel-log.manage';
     case EnergyLogManage = 'energy-log.manage';
@@ -263,10 +288,14 @@ enum Permission: string implements HasLabel {
         // ── Reporting / Audit / Sonstiges ──────────────────────────────────
     case ReportView = 'report.view';
     case ReportExport = 'report.export';
+    // Feature 002: Zielwerte/Benchmarks je Kennzahl pflegen (GF/Admin).
+    case ReportTargetManage = 'report.target.manage';
     case ImportViewReports = 'import.viewReports';
     case AuditLogView = 'audit-log.view';
     case AttendanceViewAny = 'attendance.viewAny';
     case AttendanceManage = 'attendance.manage';
+    // ArbZG-Compliance-Auswertung auf Ist-Arbeitszeit (Feature 006).
+    case ComplianceViewAny = 'compliance.viewAny';
     case WorkScheduleManage = 'work-schedule.manage';
     case FlexBalanceView = 'flex.view';
     case FlexBalanceManage = 'flex.manage';
@@ -279,6 +308,11 @@ enum Permission: string implements HasLabel {
     case OpenIssueAssign = 'openIssue.assign';
     case OpenIssuePublishToCustomer = 'openIssue.publishToCustomer';
     case OpenIssueDelete = 'openIssue.delete';
+
+        // ── Arbeitsschutz / Sicherheitsereignisse (Feature 013) ────────────
+    case SafetyViewAny = 'safety.viewAny';
+    case SafetyReport = 'safety.report';
+    case SafetyManage = 'safety.manage';
 
         // ── Benachrichtigungsregeln (MVP-018) ──────────────────────────────
     case NotificationRuleViewAny = 'notificationRule.viewAny';
@@ -338,6 +372,9 @@ enum Permission: string implements HasLabel {
     case ProtocolItemPhotoRemove = 'protocol.item.photo.remove';
     case ProtocolItemPhotoViewGeo = 'protocol.item.photo.viewGeo';
 
+        // ── Externe Beteiligte (Feature 033) ─────────────────────
+    case ExternalParticipantManage = 'externalParticipant.manage';
+
         // ── Prozedurvorlagen (MVP-025) ──────────────────────────
     case ProcedureTemplateView = 'procedure.template.view';
     case ProcedureTemplateCreate = 'procedure.template.create';
@@ -382,6 +419,8 @@ enum Permission: string implements HasLabel {
     case AssetUpdate = 'asset.update';
     case AssetDecommission = 'asset.decommission';
     case AssetTransferOwnership = 'asset.transferOwnership';
+    case AssetCheckout = 'asset.checkout';
+    case AssetDefectManage = 'asset.defect.manage';
         // ── ServiceTicket-Workflow (FM-Tickets mit SLA) ───────
     case ServiceTicketView = 'serviceTicket.view';
     case ServiceTicketCreate = 'serviceTicket.create';
@@ -390,6 +429,9 @@ enum Permission: string implements HasLabel {
     case ServiceTicketClose = 'serviceTicket.close';
     case SlaContractView = 'slaContract.view';
     case SlaContractManage = 'slaContract.manage';
+        // ── SLA-Status/-Verletzungen & Report (Feature 010) ───
+    case SlaViewAny = 'sla.viewAny';
+    case SlaManage = 'sla.manage';
         // ── KeyHandover (Schlüsselverwaltung) ─────────────────
     case KeyHandoverView = 'keyHandover.view';
     case KeyHandoverRecord = 'keyHandover.record';
@@ -402,6 +444,11 @@ enum Permission: string implements HasLabel {
     case CustomerPortalTimeEntryView = 'customerPortal.timeEntry.view';
     case CustomerPortalInvoiceView = 'customerPortal.invoice.view';
     case CustomerPortalOpenIssueView = 'customerPortal.openIssue.view';
+        // ── Kunden-Rückfragen (Feature 012, intern) ─────────────
+    case ProtocolCustomerQueryManage = 'protocol.customerQuery.manage';
+        // ── Webhooks / Integrationen (Feature 008) ──────────────
+    case WebhookViewAny = 'webhook.viewAny';
+    case WebhookManage = 'webhook.manage';
 
     public function label(): string {
         // Permission-Slugs enthalten Punkte (z. B. "project.view") — Laravels
@@ -436,7 +483,10 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'on-call-shift.'),
             str_starts_with($this->value, 'emergency-assignment.'),
             str_starts_with($this->value, 'shift-type.'),
-            str_starts_with($this->value, 'scheduled-shift.') => PermissionGroup::Scheduling,
+            str_starts_with($this->value, 'scheduled-shift.'),
+            str_starts_with($this->value, 'availability.'),
+            str_starts_with($this->value, 'staffing.'),
+            str_starts_with($this->value, 'dispatch.') => PermissionGroup::Scheduling,
             str_starts_with($this->value, 'vacation.'), str_starts_with($this->value, 'sick-leave.') => PermissionGroup::Absences,
             str_starts_with($this->value, 'tour.'),
             str_starts_with($this->value, 'vehicle.'),
@@ -446,20 +496,27 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'attendance.'),
             str_starts_with($this->value, 'work-schedule.'),
             str_starts_with($this->value, 'surchargeRule.'),
+            str_starts_with($this->value, 'compliance.'),
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
+            str_starts_with($this->value, 'safety.') => PermissionGroup::Safety,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'serviceTicket.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'notificationRule.') => PermissionGroup::Organization,
+            str_starts_with($this->value, 'webhook.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'communication.') => PermissionGroup::Communication,
             str_starts_with($this->value, 'document.') => PermissionGroup::Documents,
             str_starts_with($this->value, 'knowledge.') => PermissionGroup::Knowledge,
             str_starts_with($this->value, 'isms.') => PermissionGroup::Isms,
             str_starts_with($this->value, 'formTemplate.'), str_starts_with($this->value, 'formSubmission.') => PermissionGroup::Forms,
             str_starts_with($this->value, 'slaContract.') => PermissionGroup::Customers,
+            // Hinweis: nach slaContract.* prüfen — sonst würde 'slaContract.*'
+            // fälschlich über den 'sla.'-Präfix greifen.
+            str_starts_with($this->value, 'sla.') => PermissionGroup::Reports,
             str_starts_with($this->value, 'protocol.') => PermissionGroup::Protocols,
+            str_starts_with($this->value, 'externalParticipant.') => PermissionGroup::Protocols,
             str_starts_with($this->value, 'procedure.') => PermissionGroup::Procedures,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
-            str_starts_with($this->value, 'platform.'), str_starts_with($this->value, 'metrics.') => PermissionGroup::Platform,
+            str_starts_with($this->value, 'platform.'), str_starts_with($this->value, 'metrics.'), str_starts_with($this->value, 'backup.'), str_starts_with($this->value, 'security.') => PermissionGroup::Platform,
             default => PermissionGroup::MasterData,
         };
     }

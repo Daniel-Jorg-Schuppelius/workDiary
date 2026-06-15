@@ -45,6 +45,7 @@ enum PermissionGroup: string implements HasLabel {
     case Forms = 'forms';
     case Protocols = 'protocols';
     case Procedures = 'procedures';
+    case Safety = 'safety';
     case CustomerPortal = 'customer-portal';
     case Platform = 'platform';
 
@@ -79,6 +80,7 @@ enum PermissionGroup: string implements HasLabel {
             self::Forms => 'assignment',
             self::Protocols => 'description',
             self::Procedures => 'rule',
+            self::Safety => 'health_and_safety',
             self::CustomerPortal => 'support_agent',
             self::Platform => 'memory',
         };

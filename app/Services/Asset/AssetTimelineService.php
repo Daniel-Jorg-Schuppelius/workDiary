@@ -95,6 +95,71 @@ class AssetTimelineService {
             ];
         }
 
+        // Ausgabe/Rückgabe (Feature 009): jeweils ein Checkout- und (falls
+        // zurückgegeben) ein Return-Event aus derselben Zuweisung.
+        foreach ($asset->assignments()->limit($limit)->get() as $assignment) {
+            $events[] = [
+                'kind' => 'assignment.checkedOut',
+                'occurred_at' => $this->toIso($assignment->checked_out_at),
+                'payload' => [
+                    'id' => $assignment->id,
+                    'user_name' => $assignment->assignedToUser?->name,
+                    'team_name' => $assignment->assignedToTeam?->name,
+                ],
+            ];
+            if ($assignment->returned_at !== null) {
+                $events[] = [
+                    'kind' => 'assignment.returned',
+                    'occurred_at' => $this->toIso($assignment->returned_at),
+                    'payload' => [
+                        'id' => $assignment->id,
+                        'user_name' => $assignment->assignedToUser?->name,
+                        'team_name' => $assignment->assignedToTeam?->name,
+                    ],
+                ];
+            }
+        }
+
+        // Defekt-/Sperrmeldungen (Feature 009).
+        foreach ($asset->defects()->limit($limit)->get() as $defect) {
+            $events[] = [
+                'kind' => 'defect.reported',
+                'occurred_at' => $this->toIso($defect->reported_at),
+                'payload' => [
+                    'id' => $defect->id,
+                    'title' => $defect->title,
+                    'severity' => $defect->severity->value,
+                    'status' => $defect->status->value,
+                    'blocks_usage' => $defect->blocks_usage,
+                ],
+            ];
+            if ($defect->resolved_at !== null) {
+                $events[] = [
+                    'kind' => 'defect.resolved',
+                    'occurred_at' => $this->toIso($defect->resolved_at),
+                    'payload' => [
+                        'id' => $defect->id,
+                        'title' => $defect->title,
+                    ],
+                ];
+            }
+        }
+
+        // Durchgeführte Wartungen (MaintenancePlan.last_run_at) sowie geplante
+        // Fälligkeiten (next_due_on) als Lebenszyklus-Marker.
+        foreach ($asset->maintenancePlans()->get() as $plan) {
+            if ($plan->last_run_at !== null) {
+                $events[] = [
+                    'kind' => 'maintenance.completed',
+                    'occurred_at' => $this->toIso($plan->last_run_at),
+                    'payload' => [
+                        'id' => $plan->id,
+                        'label' => $plan->label,
+                    ],
+                ];
+            }
+        }
+
         usort(
             $events,
             static function (array $a, array $b): int {

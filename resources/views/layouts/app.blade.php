@@ -626,10 +626,12 @@
                                     ['route' => 'schedule.index',           'label' => __('Schichtplan'),    'icon' => 'schedule',         'modal' => false, 'matches' => ['schedule.*']],
                                     ['route' => 'timesheets.index',         'label' => __('Stundenzettel'),  'icon' => 'description',      'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                     ['route' => 'customers.index',          'label' => __('Kunden'),         'icon' => 'badge',            'modal' => false, 'matches' => ['customers.*']],
+                                    ['route' => 'customer-queries.index',   'label' => __('customer-query.title'), 'icon' => 'contact_support', 'modal' => false, 'matches' => ['customer-queries.*']],
                                     ['route' => 'suppliers.index',          'label' => __('Lieferanten'),    'icon' => 'local_shipping',   'modal' => false, 'matches' => ['suppliers.*']],
                                     ['route' => 'projects.index',           'label' => __('Projekte'),       'icon' => 'folder_special',   'modal' => false, 'matches' => ['projects.*']],
                                     ['route' => 'invoices.index',           'label' => __('Rechnungen & Belege'), 'icon' => 'receipt_long',     'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
-                                    ['route' => 'finance.transfers.index',  'label' => __('finance.title.menu'), 'icon' => 'outbox',           'modal' => false, 'matches' => ['finance.*']],
+                                    ['route' => 'finance.transfers.index',  'label' => __('finance.title.menu'), 'icon' => 'outbox',           'modal' => false, 'matches' => ['finance.transfers.*']],
+                                    ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
                                     ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                     ['route' => 'events.index',             'label' => __('Veranstaltungen'),'icon' => 'event',            'modal' => false, 'matches' => ['events.*']],
                                     ['route' => 'flex.index',               'label' => __('Arbeitszeitkonto'),'icon' => 'hourglass_top',   'modal' => false, 'matches' => ['flex.*']],
@@ -668,8 +670,23 @@
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::NotificationRuleViewAny->value)) {
                                         $adminNavItems[] = ['route' => 'admin.notification-rules.index', 'label' => __('notification.title.rules'), 'icon' => 'notifications_active', 'modal' => false];
                                     }
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::WebhookViewAny->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.webhooks.index', 'label' => __('integration.webhook.title.index'), 'icon' => 'webhook', 'modal' => false, 'matches' => ['admin.webhooks.*']];
+                                    }
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SurchargeRuleViewAny->value)) {
                                         $adminNavItems[] = ['route' => 'admin.surcharge-rules.index', 'label' => __('surcharge.title.rules'), 'icon' => 'percent', 'modal' => false];
+                                    }
+                                    // Feature 002: Zielwerte & Benchmarks pflegen (GF/Admin).
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ReportTargetManage->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.report-targets.index', 'label' => __('reporting.target.nav'), 'icon' => 'flag', 'modal' => false];
+                                    }
+                                    // Eigene Bankkonten (Feature 045): Verwaltung über finance.config,
+                                    // Plan-Gating module.finance — adminNavItems laufen nicht durch $nav->allows.
+                                    if (
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::FinanceConfig->value)
+                                        && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.finance')
+                                    ) {
+                                        $adminNavItems[] = ['route' => 'finance.bank-accounts.index', 'label' => __('bank.title.accounts'), 'icon' => 'account_balance', 'modal' => false];
                                     }
                                     // Formularvorlagen (Feature 032): Verwaltung wie surcharge-rules;
                                     // adminNavItems laufen nicht durch $nav->allows → Plan-Gating hier explizit.
@@ -678,6 +695,10 @@
                                         && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.forms')
                                     ) {
                                         $adminNavItems[] = ['route' => 'form-templates.index', 'label' => __('form.title.templates'), 'icon' => 'assignment', 'modal' => false];
+                                    }
+                                    // Prozedurvorlagen-Designer (Feature 026): Verwaltung wie Formularvorlagen.
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ProcedureTemplateView->value)) {
+                                        $adminNavItems[] = ['route' => 'procedures.index', 'label' => __('procedure.title.templates'), 'icon' => 'rule', 'modal' => false, 'matches' => ['procedures.*']];
                                     }
                                     $adminNavItems[]  = ['route' => 'admin.data.index',                'label' => __('Datentransfer'),    'icon' => 'sync_alt',         'modal' => false];
                                     if (\Illuminate\Support\Facades\Route::has('admin.remote-support.pending.index')) {
@@ -703,6 +724,14 @@
                                         $adminNavItems[] = ['route' => 'admin.metrics.index',            'label' => __('metrics.title.index'), 'icon' => 'monitoring',    'modal' => false];
                                         // Komponenten- und Versionsübersicht inkl. Release-SBOM (Feature 044) — gleiche Admin-Schutzstufe.
                                         $adminNavItems[] = ['route' => 'admin.components.index',         'label' => __('isms.components.title'), 'icon' => 'receipt_long', 'modal' => false];
+                                    }
+                                    // Admin-Sicherheitsübersicht (Feature 016) — eigene Schutzstufe security.view.
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SecurityView->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.security.index',           'label' => __('security.title.index'), 'icon' => 'shield_lock', 'modal' => false];
+                                    }
+                                    // Backup- & Restore-Status (Feature 017) — plattformweite Admin-Sicht.
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::BackupView->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.backup.status',            'label' => __('backup.title.status'), 'icon' => 'backup',        'modal' => false];
                                     }
                                     if (\Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage')) {
                                         $adminNavItems[] = ['route' => 'whistleblowing.portal.edit',     'label' => __('Meldeportal'),      'icon' => 'campaign',         'modal' => false];
@@ -787,37 +816,60 @@
                                     'key'         => 'work',
                                     'label'       => __('Tagesgeschäft'),
                                     'collapsible' => true,
-                                    'items'       => [
-                                        ['route' => 'today.show',      'label' => __('Heute'),         'icon' => 'today',             'modal' => false, 'matches' => ['today.show']],
+                                    'items'       => array_values(array_filter([
+                                        // „Heute" ist seit der Zusammenlegung auch die Tagesabschluss-Seite
+                                        // (MVP-015) für den eigenen Tag; daher matcht der Eintrag auch day-close.*
+                                        // (die day-close.*-Route bleibt für Fremdtage/Admin via ?user= erhalten).
+                                        ['route' => 'today.show',      'label' => __('Heute'),         'icon' => 'today',             'modal' => false, 'matches' => ['today.show', 'day-close.*']],
                                         ['route' => $indexRoute,       'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                                         ['route' => 'week.index',      'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
                                         ['route' => 'kanban.index',    'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
                                         ['route' => 'attendance.index','label' => __('Stempeluhr'),    'icon' => 'punch_clock',       'modal' => false, 'matches' => ['attendance.*']],
-                                        // Tagesabschluss (MVP-015): Recht via NavGate (dayClose.view.* über DayClosure-Policy).
-                                        ['route' => 'day-close.show',  'label' => __('Tagesabschluss'),'icon' => 'task_alt',          'modal' => false, 'matches' => ['day-close.*']],
-                                        // Dokumente (MVP-031): Recht via NavGate (@can document.viewAny
-                                        // über Document-Policy), Modul-Gating via $moduleByItemRoute.
-                                        ['route' => 'documents.index', 'label' => __('document.title.index'), 'icon' => 'folder_open', 'modal' => false, 'matches' => ['documents.*']],
+                                        // Dokumente & Formulare (MVP-031/032) sind auf der Seite per Tab-Leiste
+                                        // (documents/_tabs) zusammengelegt → ein Menüeintrag. Die Route zeigt auf
+                                        // die jeweils zugängliche Seite (Recht UND Modul), damit der Eintrag auch
+                                        // sichtbar bleibt, wenn nur eines von beiden verfügbar ist; der bestehende
+                                        // Filter (Modul + mayAccess) validiert die gewählte Route.
+                                        [
+                                            'route' => (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Document::class)
+                                                    && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.documents'))
+                                                ? 'documents.index' : 'form-submissions.index',
+                                            'label' => __('document.title.index') . ' & ' . __('form.title.submissions'),
+                                            'icon' => 'folder_open', 'modal' => false,
+                                            'matches' => ['documents.*', 'form-submissions.*'],
+                                        ],
                                         // Wissensbasis (Feature 011): Recht via NavGate (@can knowledge.viewAny
                                         // über KnowledgeArticle-Policy), Modul-Gating via $moduleByItemRoute.
                                         ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
-                                        // Formulare (Feature 032): Recht via NavGate (@can formSubmission.viewAny
-                                        // über FormSubmission-Policy), Modul-Gating via $moduleByItemRoute.
-                                        ['route' => 'form-submissions.index', 'label' => __('form.title.submissions'), 'icon' => 'edit_note', 'modal' => false, 'matches' => ['form-submissions.*']],
-                                    ],
+                                        // Sicherheitsereignisse (Arbeitsschutz, Feature 013): sichtbar
+                                        // für Melder (safety.report) und Register-Berechtigte (safety.viewAny/manage).
+                                        (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\SafetyEvent::class)
+                                            || \Illuminate\Support\Facades\Gate::allows('create', \App\Models\SafetyEvent::class))
+                                            ? ['route' => 'safety-events.index', 'label' => __('safety.title.index'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['safety-events.*']]
+                                            : null,
+                                    ])),
                                 ];
                                 $sidebarSections[] = [
                                     'key'         => 'plan',
                                     'label'       => __('Planung'),
                                     'collapsible' => true,
                                     'items'       => [
-                                        ['route' => 'duty-plans.index', 'label' => __('Dienstpläne'),   'icon' => 'event_available', 'modal' => false, 'matches' => ['duty-plans.*']],
-                                        ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.*']],
+                                        // Dienstpläne + Verfügbarkeit/Wunschdienste sind auf der Seite per
+                                        // Tab-Leiste zusammengelegt (schedule/_duty_tabs) → ein Menüeintrag.
+                                        ['route' => 'duty-plans.index', 'label' => __('Dienstpläne'),   'icon' => 'event_available', 'modal' => false, 'matches' => ['duty-plans.*', 'schedule.availability.*']],
+                                        // Schichtplan + Schichttausch ebenso (schedule/_shift_tabs).
+                                        ['route' => 'schedule.index',   'label' => __('Schichtplan'),   'icon' => 'schedule',        'modal' => false, 'matches' => ['schedule.index', 'schedule.api.*', 'schedule.shifts.*', 'schedule.types.*', 'schedule.import.*', 'schedule.suggest', 'schedule.exchanges.*']],
                                         ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description',     'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                                         ['route' => 'flex.index',       'label' => __('Arbeitszeitkonto'),'icon' => 'hourglass_top',  'modal' => false, 'matches' => ['flex.*']],
                                         ['route' => 'tours.index',      'label' => __('Touren'),        'icon' => 'route',           'modal' => false, 'matches' => ['tours.index', 'tours.map', 'tours.create', 'tours.show', 'tours.edit']],
+                                        // Leitstelle (Feature 029): Dispatch-Board + Karte. Recht über die
+                                        // Permission dispatch.viewAny (Feature 028), Modul-Gating module.planung.
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::DispatchViewAny->value)
+                                            ? ['route' => 'dispatch.board', 'label' => __('Leitstelle'), 'icon' => 'dashboard', 'modal' => false, 'matches' => ['dispatch.board', 'dispatch.map']]
+                                            : null,
                                     ],
                                 ];
+                                $sidebarSections[count($sidebarSections) - 1]['items'] = array_values(array_filter($sidebarSections[count($sidebarSections) - 1]['items']));
                                 $sidebarSections[] = [
                                     'key'         => 'travel-expenses',
                                     'label'       => __('Reisen & Spesen'),
@@ -865,7 +917,11 @@
                                         ['route' => 'invoices.index',  'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote',   'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
                                         // Faktura-Übergabe (Feature 045): Recht via NavGate (@can finance.viewAny
                                         // über BillingTransfer-Policy), Modul-Gating via $moduleByItemRoute (module.finance).
-                                        ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.*']],
+                                        ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
+                                        // DATEV-Buchungsstapel (Feature 045, Priorität 2): Recht via NavGate
+                                        // (@can finance.booking.export über DatevBookingBatch-Policy),
+                                        // Modul-Gating via $moduleByItemRoute (module.finance).
+                                        ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
                                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                         ['route' => 'events.index',    'label' => __('Veranstaltungen'),'icon' => 'event',           'modal' => false, 'matches' => ['events.*']],
                                     ],
@@ -914,10 +970,17 @@
                                         'items'       => array_values(array_filter([
                                             // Auditbereitschaft (Feature 044, MVP 1): bewusst ERSTER Eintrag des Bereichs.
                                             ['route' => 'isms.dashboard', 'label' => __('isms.title.dashboard'), 'icon' => 'monitoring', 'modal' => false, 'matches' => ['isms.dashboard']],
+                                            // Reifegrad-/Readiness-Assessment (Feature 044, MVP 3): begruendete Selbsteinschaetzung.
+                                            ['route' => 'isms.readiness', 'label' => __('isms.title.readiness'), 'icon' => 'speed', 'modal' => false, 'matches' => ['isms.readiness']],
                                             ['route' => 'isms.requirements.index', 'label' => __('isms.title.requirements'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['isms.requirements.*', 'isms.statements.*']],
                                             ['route' => 'isms.controls.index', 'label' => __('isms.title.controls'), 'icon' => 'verified_user', 'modal' => false, 'matches' => ['isms.controls.*']],
                                             ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],
+                                            // Betrieb und Wirksamkeit (Feature 044, MVP 2): Vorfaelle, Schwachstellen, Advisories.
+                                            ['route' => 'isms.incidents.index', 'label' => __('isms.title.incidents'), 'icon' => 'report', 'modal' => false, 'matches' => ['isms.incidents.*']],
+                                            ['route' => 'isms.vulnerabilities.index', 'label' => __('isms.title.vulnerabilities'), 'icon' => 'bug_report', 'modal' => false, 'matches' => ['isms.vulnerabilities.*', 'isms.advisories.*']],
                                             ['route' => 'isms.software.index', 'label' => __('isms.title.software'), 'icon' => 'apps', 'modal' => false, 'matches' => ['isms.software.*']],
+                                            // Lieferanten und Vertraege (Feature 044, MVP 2/3): Lieferantenbewertung.
+                                            ['route' => 'isms.suppliers.index', 'label' => __('isms.title.suppliers'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['isms.suppliers.*']],
                                             ['route' => 'isms.conformity.index', 'label' => __('isms.title.conformity'), 'icon' => 'workspace_premium', 'modal' => false, 'matches' => ['isms.conformity.*']],
                                             ['route' => 'isms.audits.index', 'label' => __('isms.title.audits'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['isms.audits.*']],
                                             ['route' => 'isms.reviews.index', 'label' => __('isms.title.reviews'), 'icon' => 'grading', 'modal' => false, 'matches' => ['isms.reviews.*']],
@@ -950,20 +1013,27 @@
                                             'key'   => 'reports-team',
                                             'label' => __('Team'),
                                             'icon'  => 'groups',
-                                            'items' => [
+                                            'items' => array_values(array_filter([
                                                 ['route' => 'reports.week-by-user',   'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range',  'modal' => false, 'matches' => ['reports.week-by-user']],
                                                 ['route' => 'reports.month-by-user-team', 'label' => __('Monat pro Mitarbeiter'), 'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.month-by-user-team']],
                                                 ['route' => 'reports.coverage',       'label' => __('Coverage'),              'icon' => 'group_work',  'modal' => false, 'matches' => ['reports.coverage']],
                                                 ['route' => 'reports.absences',       'label' => __('Urlaub & Flex'),         'icon' => 'event_busy',  'modal' => false, 'matches' => ['reports.absences']],
                                                 ['route' => 'reports.sickness',       'label' => __('Krankheiten'),           'icon' => 'sick',        'modal' => false, 'matches' => ['reports.sickness']],
                                                 ['route' => 'reports.qualifications', 'label' => __('Qualifikationen'),       'icon' => 'verified',    'modal' => false, 'matches' => ['reports.qualifications']],
-                                            ],
+                                                // Feature 002: Kohortenvergleich vor/nach Fortbildung — org-weite Personaldaten → nur report.view/Admin.
+                                                (auth()->user()?->isAdmin() || auth()->user()?->can(\App\Enums\User\Permission::ReportView->value))
+                                                    ? ['route' => 'reports.cohort-comparison', 'label' => __('reporting.cohort.nav'), 'icon' => 'compare_arrows', 'modal' => false, 'matches' => ['reports.cohort-comparison']]
+                                                    : null,
+                                                auth()->user()?->can(\App\Enums\User\Permission::SafetyViewAny->value)
+                                                    ? ['route' => 'reports.safety', 'label' => __('safety.report.nav'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['reports.safety']]
+                                                    : null,
+                                            ])),
                                         ],
                                         [
                                             'key'   => 'reports-projects',
                                             'label' => __('Projekte & Kunden'),
                                             'icon'  => 'folder_special',
-                                            'items' => [
+                                            'items' => array_values(array_filter([
                                                 ['route' => 'reports.customers',        'label' => __('Kundenanalyse'),     'icon' => 'bar_chart',  'modal' => false, 'matches' => ['reports.customers']],
                                                 ['route' => 'reports.entry-types',      'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']],
                                                 ['route' => 'reports.assets',           'label' => __('Produktanalyse'),    'icon' => 'inventory_2', 'modal' => false, 'matches' => ['reports.assets']],
@@ -971,7 +1041,11 @@
                                                 ['route' => 'reports.project-details',  'label' => __('Projekt-Details'),   'icon' => 'analytics',  'modal' => false, 'matches' => ['reports.project-details']],
                                                 ['route' => 'reports.project-inactive', 'label' => __('Inaktive Projekte'), 'icon' => 'folder_off', 'modal' => false, 'matches' => ['reports.project-inactive']],
                                                 ['route' => 'reports.operations',       'label' => __('Operations'),        'icon' => 'assignment', 'modal' => false, 'matches' => ['reports.operations']],
-                                            ],
+                                                // SLA-Report (Feature 010): nur für SLA-Berechtigte.
+                                                auth()->user()?->can(\App\Enums\User\Permission::SlaViewAny->value)
+                                                    ? ['route' => 'reports.sla',        'label' => __('sla.report.nav'),    'icon' => 'timer', 'modal' => false, 'matches' => ['reports.sla', 'reports.sla.*']]
+                                                    : null,
+                                            ])),
                                         ],
                                         [
                                             'key'   => 'reports-resources',
@@ -988,11 +1062,19 @@
                                             'label' => __('Finanzen & Audit'),
                                             'icon'  => 'request_quote',
                                             'items' => array_values(array_filter([
+                                                // Wirtschaftlichkeit/Nachkalkulation (Feature 014): org-weite Finanzdaten → nur report.view-Berechtigte.
+                                                (auth()->user()?->isAdmin() || auth()->user()?->can(\App\Enums\User\Permission::ReportView->value))
+                                                    ? ['route' => 'reports.economics', 'label' => __('Wirtschaftlichkeit'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['reports.economics']]
+                                                    : null,
                                                 ['route' => 'reports.billing',        'label' => __('Abrechnung'),      'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
                                                 ['route' => 'reports.expenses',       'label' => __('Spesen'),          'icon' => 'receipt_long',  'modal' => false, 'matches' => ['reports.expenses']],
                                                 // Externe Auszahlungen: sensible Vergütungsdaten → nur für Payroll-Berechtigte.
                                                 auth()->user()?->can(\App\Enums\User\Permission::UserPayrollManage->value)
                                                     ? ['route' => 'reports.external-payouts', 'label' => __('Externe Auszahlungen'), 'icon' => 'payments', 'modal' => false, 'matches' => ['reports.external-payouts']]
+                                                    : null,
+                                                // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006): nur für Compliance-Berechtigte.
+                                                auth()->user()?->can(\App\Enums\User\Permission::ComplianceViewAny->value)
+                                                    ? ['route' => 'reports.arbzg-compliance', 'label' => __('compliance.report.nav'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['reports.arbzg-compliance']]
                                                     : null,
                                                 ['route' => 'reports.audit-activity', 'label' => __('Audit-Aktivität'), 'icon' => 'security',      'modal' => false, 'matches' => ['reports.audit-activity']],
                                             ])),
@@ -1038,6 +1120,9 @@
                                 'knowledge.index' => 'module.knowledge',
                                 'form-submissions.index' => 'module.forms',
                                 'finance.transfers.index' => 'module.finance',
+                                'finance.reconciliation.index' => 'module.finance',
+                                'finance.bank-accounts.index' => 'module.finance',
+                                'finance.datev.index' => 'module.finance',
                             ];
                             $moduleByGroupKey = [
                                 'reports-team' => 'module.auswertungen_team',
@@ -1250,9 +1335,9 @@
                                             $adminGroups = [
                                                 ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.branding.edit', 'admin.access.index']],
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
-                                                ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit']],
+                                                ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit']],
                                                 ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index']],
-                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index']],
+                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status']],
                                                 ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => ['admin.plugins.index', 'admin.plugin-errors.index']],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');
@@ -2059,7 +2144,8 @@
         <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
             <div class="mx-auto flex w-full {{ $_wrapperMaxW }} items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 <x-footer-copyright />
-                <span class="ml-1 whitespace-nowrap text-base-content/40" title="{{ __('Version') }}">&middot;&nbsp;v{{ config('app.version', '0.1.0-dev') }}</span>
+                @php($buildHash = \Illuminate\Support\Facades\Cache::remember('build.hash', 3600, fn () => app(\App\Services\Isms\SbomGenerator::class)->resolveGitHash()))
+                <span class="ml-1 whitespace-nowrap text-base-content/40" title="{{ __('Version') }}">&middot;&nbsp;v{{ config('app.version', '0.1.0-dev') }}@if ($buildHash)&nbsp;·&nbsp;{{ $buildHash }}@endif</span>
             </div>
         </footer>
 

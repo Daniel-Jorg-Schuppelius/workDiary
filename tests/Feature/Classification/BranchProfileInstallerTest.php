@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Classification;
 
-use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, Software, Tag, User};
+use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, ProcedureStepDef, ProcedureTemplate, RoomRequirementTemplate, Software, Tag, User};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -318,5 +318,88 @@ class BranchProfileInstallerTest extends TestCase {
         $second = $this->installer->install($this->org, 'facility', $this->actor);
         $this->assertSame(0, $second['created']['maintenance_plan_templates']);
         $this->assertGreaterThan(0, $second['skipped']['maintenance_plan_templates']);
+    }
+
+    public function test_install_elektro_profile_creates_published_procedure_templates_with_steps(): void {
+        $result = $this->installer->install($this->org, 'elektro', $this->actor);
+
+        $this->assertGreaterThan(0, $result['created']['procedure_templates']);
+
+        $template = ProcedureTemplate::query()
+            ->where('organization_id', $this->org->id)
+            ->where('code', 'EL_SICHERHEITSCHECK')
+            ->first();
+        $this->assertNotNull($template);
+
+        $version = $template->versions()->firstOrFail();
+        $this->assertTrue($version->isPublished());
+        $this->assertGreaterThan(0, ProcedureStepDef::query()
+            ->where('procedure_template_version_id', $version->id)
+            ->count());
+
+        // Eine der Vorlagen erzwingt eine zweite Person (Spannungsfreiheit).
+        $this->assertGreaterThan(0, ProcedureStepDef::query()
+            ->where('procedure_template_version_id', $version->id)
+            ->where('requires_second_person', true)
+            ->count());
+    }
+
+    public function test_install_procedure_templates_is_idempotent_and_preserves_published_versions(): void {
+        $this->installer->install($this->org, 'elektro', $this->actor);
+
+        $template = ProcedureTemplate::query()
+            ->where('organization_id', $this->org->id)
+            ->where('code', 'EL_SICHERHEITSCHECK')
+            ->firstOrFail();
+        $versionId = $template->versions()->firstOrFail()->id;
+        $templateCount = ProcedureTemplate::query()->where('organization_id', $this->org->id)->count();
+
+        // Erneutes Installieren – auch mit force – darf veröffentlichte
+        // Checklisten weder duplizieren noch überschreiben.
+        $second = $this->installer->install($this->org, 'elektro', $this->actor, true);
+
+        $this->assertSame(0, $second['created']['procedure_templates']);
+        $this->assertGreaterThan(0, $second['skipped']['procedure_templates']);
+        $this->assertSame($templateCount, ProcedureTemplate::query()->where('organization_id', $this->org->id)->count());
+        $this->assertSame($versionId, $template->fresh()?->versions()->firstOrFail()->id);
+    }
+
+    public function test_install_seeds_room_requirement_templates_idempotent(): void {
+        $first = $this->installer->install($this->org, 'gebaeudereinigung', $this->actor);
+
+        $this->assertGreaterThan(0, $first['created']['room_requirement_templates']);
+        $this->assertDatabaseHas('room_requirement_templates', [
+            'organization_id' => $this->org->id,
+            'code' => 'gr_hygiene',
+            'kind' => 'hygieneLevel',
+        ]);
+
+        $second = $this->installer->install($this->org, 'gebaeudereinigung', $this->actor);
+        $this->assertSame(0, $second['created']['room_requirement_templates']);
+        $this->assertGreaterThan(0, $second['skipped']['room_requirement_templates']);
+
+        $this->assertSame(
+            $first['created']['room_requirement_templates'],
+            RoomRequirementTemplate::query()->where('organization_id', $this->org->id)->count(),
+        );
+    }
+
+    public function test_force_install_does_not_overwrite_customised_room_requirement_template(): void {
+        $this->installer->install($this->org, 'gebaeudereinigung', $this->actor);
+
+        $template = RoomRequirementTemplate::query()
+            ->where('organization_id', $this->org->id)
+            ->where('code', 'gr_hygiene')
+            ->firstOrFail();
+        $template->update(['label' => 'Hygiene LOKAL']);
+
+        // Ohne force bleibt die lokale Anpassung erhalten.
+        $this->installer->install($this->org, 'gebaeudereinigung', $this->actor);
+        $this->assertSame('Hygiene LOKAL', $template->fresh()?->label);
+
+        // Mit force wird die Vorlage auf den Profilstand zurückgesetzt.
+        $forced = $this->installer->install($this->org, 'gebaeudereinigung', $this->actor, true);
+        $this->assertGreaterThan(0, $forced['updated']['room_requirement_templates']);
+        $this->assertNotSame('Hygiene LOKAL', $template->fresh()?->label);
     }
 }

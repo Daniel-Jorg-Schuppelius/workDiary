@@ -148,12 +148,41 @@ return [
         ],
     ],
     'procedure_templates' => [
-        ['code' => 'FM_OBJEKTKONTROLLE'],
+        [
+            'code' => 'FM_OBJEKTKONTROLLE',
+            'name' => 'Objektkontrolle / Begehungsrunde',
+            'domain' => 'facility',
+            'risk_level' => 'normal',
+            'description' => 'Strukturierte Objektbegehung mit Mängelerfassung.',
+            'steps' => [
+                ['code' => 'rundgang', 'step_type' => 'confirm', 'label' => 'Rundgang nach Plan durchführen'],
+                ['code' => 'brandschutz', 'step_type' => 'confirm', 'label' => 'Brandschutz-/Fluchtwege kontrollieren'],
+                ['code' => 'maengel', 'step_type' => 'photo', 'label' => 'Mängel dokumentieren', 'required' => false, 'blocking' => false, 'requires_proof_type' => 'photo'],
+                ['code' => 'ergebnis', 'step_type' => 'choice', 'label' => 'Ergebnis festhalten'],
+            ],
+        ],
+        [
+            'code' => 'FM_SCHLUESSEL',
+            'name' => 'Schlüsselausgabe/-rücknahme',
+            'domain' => 'facility',
+            'risk_level' => 'normal',
+            'description' => 'Nachvollziehbare Schlüsselübergabe mit Unterschrift.',
+            'steps' => [
+                ['code' => 'schluessel', 'step_type' => 'text', 'label' => 'Schlüssel-/Schließnummer erfassen'],
+                ['code' => 'empfaenger', 'step_type' => 'text', 'label' => 'Empfänger erfassen'],
+                ['code' => 'quittung', 'step_type' => 'signature', 'label' => 'Quittung unterschreiben', 'requires_proof_type' => 'signature'],
+            ],
+        ],
         ['code' => 'FM_MAENGEL'],
         ['code' => 'FM_KLEINREPARATUR'],
         ['code' => 'FM_WINTERDIENST'],
-        ['code' => 'FM_SCHLUESSEL'],
         ['code' => 'FM_ZAEHLERSTAND'],
+    ],
+    'room_requirement_templates_seed' => [
+        ['code' => 'fm_brandschutz', 'kind' => 'operatorDuty', 'label' => 'Brandschutzkontrolle (Betreiberpflicht)', 'level' => 'monatlich'],
+        ['code' => 'fm_wartungsrunde', 'kind' => 'technicalInspection', 'label' => 'Wartungsrunde / technische Prüfung'],
+        ['code' => 'fm_gesperrt', 'kind' => 'accessRestriction', 'label' => 'Gesperrter Bereich', 'note' => 'Zutritt nur nach Freigabe.'],
+        ['code' => 'fm_stoerungsmeldung', 'kind' => 'other', 'label' => 'Störungsmeldung hinterlegt'],
     ],
     'protocol_templates' => [
         ['code' => 'FM_OBJEKTBERICHT'],

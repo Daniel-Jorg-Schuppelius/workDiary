@@ -18,6 +18,12 @@
         $m = abs($m);
         return sprintf('%s%d:%02d h', $sign, intdiv($m, 60), $m % 60);
     };
+    // Vom gemeinsamen Tagesabschluss-Partial _balance erwartet.
+    $fmtMin = function (int $m): string {
+        $sign = $m < 0 ? '−' : '';
+        $m = abs($m);
+        return sprintf('%s%d:%02d h', $sign, intdiv($m, 60), $m % 60);
+    };
     $balance = $attendanceMinutes - $targetMinutes;
     $progress = $targetMinutes > 0 ? min(100, (int) round($attendanceMinutes / $targetMinutes * 100)) : 0;
 
@@ -32,7 +38,8 @@
     <x-page-shell
         x-data="todayCounters({{ $isLive ? 'true' : 'false' }}, {{ $attendanceMinutes }}, {{ $entriesMinutes }}, {{ $targetMinutes }}, '{{ $renderedAt }}')">
         <x-slot:toolbar>
-            <x-page-toolbar :subtitle="$day->translatedFormat('l, d.m.Y')">
+            <x-page-toolbar :subtitle="$day->translatedFormat('l, d.m.Y')"
+                            :badge="$effectiveStatus->label()" :badgeTone="$effectiveStatus->tone()">
                 <x-slot:actions>
                     <x-icon-btn icon="arrow_back" size="sm"
                                 :href="route('today.show', ['date' => $day->copy()->subDay()->toDateString()])"
@@ -50,9 +57,30 @@
                                 data-entry-modal-trigger
                                 :href="route('admin-time-entries.create', ['date' => $day->toDateString()])"
                                 show-label>{{ __('Verwaltungszeit') }}</x-icon-btn>
+
+                    {{-- Tagesabschluss-Aktionen (Speichern / Tag abschließen / …):
+                         in die Toolbar gezogen statt sticky unten. Dialoge am Seitenende. --}}
+                    @include('time-approval.day._action_buttons')
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
+
+        {{-- Flash (Status sitzt jetzt als Badge in der Toolbar). --}}
+        @if (session('error'))
+            <div role="alert" class="alert alert-warning"><span>{{ session('error') }}</span></div>
+        @endif
+        @if (session('status'))
+            <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
+        @endif
+        @if ($errors->any())
+            <div role="alert" class="alert alert-warning"><span>{{ $errors->first() }}</span></div>
+        @endif
+        @if ($monthLocked)
+            <div role="alert" class="alert alert-info">
+                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                <span>{{ __('day-close.hint.month_locked') }}</span>
+            </div>
+        @endif
 
         <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <x-kpi-tile :label="__('Soll')" :value="$fmt($targetMinutes)" />
@@ -96,6 +124,11 @@
                       max="100"
                       value="{{ $progress }}"></progress>
         </x-card>
+
+        {{-- Tagesabschluss: Bilanz (kompakt — Soll/Anwesenheit/Erfasst/Unverteilt
+             stehen bereits oben als Kacheln) inkl. Pausen, dann Warnungen. --}}
+        @include('time-approval.day._balance', ['compact' => true])
+        @include('time-approval.day._issues')
 
         @if ($byActivity->isNotEmpty())
             <x-card as="section">
@@ -189,5 +222,11 @@
                 @endforelse
             </x-table>
         </x-card>
+
+        {{-- Tagesabschluss: Korrekturanträge (Bilanz steht oben; Aktionen in der
+             Toolbar; hier nur noch die zugehörigen Dialoge). --}}
+        @include('time-approval.day._corrections')
+        @include('time-approval.day._correction_dialog')
+        @include('time-approval.day._reopen_dialog')
     </x-page-shell>
 @endsection

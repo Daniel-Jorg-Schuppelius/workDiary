@@ -40,6 +40,22 @@ trait PluginDefaults {
     }
 
     /**
+     * Default: keine Untergrenze. Plugins, die eine Mindest-Kernversion
+     * benötigen, geben hier einen SemVer-String zurück (z. B. '1.2.0').
+     */
+    public function minAppVersion(): ?string {
+        return null;
+    }
+
+    /**
+     * Default: keine Obergrenze. Plugins, die nur bis zu einer bestimmten
+     * Kernversion getestet sind, geben hier einen SemVer-String zurück.
+     */
+    public function maxAppVersion(): ?string {
+        return null;
+    }
+
+    /**
      * Default: global (läuft einmalig auf der Instanz). Plugins mit
      * Konfiguration/API-Keys pro Organisation überschreiben dies mit `true`,
      * damit Healthcheck + Zustand je Organisation geführt werden.

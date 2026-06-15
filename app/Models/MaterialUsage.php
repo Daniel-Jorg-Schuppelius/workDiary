@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $tax_rate
  * @property string $line_total_net
  * @property bool $billed
+ * @property-read \App\Models\Material|null $material
  */
 class MaterialUsage extends Model {
     use Auditable;

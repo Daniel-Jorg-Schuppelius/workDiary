@@ -29,6 +29,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $expires_at
  * @property \Illuminate\Support\Carbon|null $opened_at
  * @property \Illuminate\Support\Carbon|null $used_at
+ * @property string|null $decision
+ * @property string|null $decision_reason
+ * @property \Illuminate\Support\Carbon|null $decided_at
  * @property int|null $signed_signature_id
  * @property int $created_by_user_id
  */
@@ -42,6 +45,9 @@ class ProtocolSignatureToken extends Model {
         'expires_at',
         'opened_at',
         'used_at',
+        'decision',
+        'decision_reason',
+        'decided_at',
         'signed_signature_id',
         'created_by_user_id',
     ];
@@ -51,7 +57,12 @@ class ProtocolSignatureToken extends Model {
         'expires_at' => 'datetime',
         'opened_at' => 'datetime',
         'used_at' => 'datetime',
+        'decided_at' => 'datetime',
     ];
+
+    public const DECISION_APPROVED = 'approved';
+
+    public const DECISION_REJECTED = 'rejected';
 
     /** @return BelongsTo<Protocol, $this> */
     public function protocol(): BelongsTo {

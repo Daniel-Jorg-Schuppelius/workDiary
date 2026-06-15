@@ -26,7 +26,7 @@ class Comment extends Model {
 
     use HasSqid;
 
-    protected $fillable = ['organization_id', 'commentable_type', 'commentable_id', 'user_id', 'body'];
+    protected $fillable = ['organization_id', 'commentable_type', 'commentable_id', 'user_id', 'external_participant_id', 'body'];
 
     /** @return MorphTo<Model, $this> */
     public function commentable(): MorphTo {

@@ -182,6 +182,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
         Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);
+        Gate::policy(\App\Models\Integration\WebhookEndpoint::class, \App\Policies\Integration\WebhookEndpointPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsRisk::class, \App\Policies\Isms\IsmsRiskPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsControl::class, \App\Policies\Isms\IsmsControlPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsRequirement::class, \App\Policies\Isms\IsmsRequirementPolicy::class);
@@ -192,6 +193,11 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Isms\IsmsAudit::class, \App\Policies\Isms\IsmsAuditPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsManagementReview::class, \App\Policies\Isms\IsmsManagementReviewPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsAuditPackage::class, \App\Policies\Isms\IsmsAuditPackagePolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsSecurityIncident::class, \App\Policies\Isms\IsmsSecurityIncidentPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsVulnerability::class, \App\Policies\Isms\IsmsVulnerabilityPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsAdvisory::class, \App\Policies\Isms\IsmsAdvisoryPolicy::class);
+        Gate::policy(\App\Models\Isms\IsmsSupplierAssessment::class, \App\Policies\Isms\IsmsSupplierAssessmentPolicy::class);
+        Gate::policy(\App\Models\ExternalParticipant::class, \App\Policies\ExternalParticipantPolicy::class);
         Gate::policy(DutyPlan::class, DutyPlanPolicy::class);
         Gate::policy(CoverageRequirement::class, CoverageRequirementPolicy::class);
         Gate::policy(Milestone::class, MilestonePolicy::class);
@@ -209,6 +215,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Floor::class, FloorPolicy::class);
         Gate::policy(MaintenancePlan::class, MaintenancePlanPolicy::class);
         Gate::policy(ServiceTicket::class, ServiceTicketPolicy::class);
+        Gate::policy(\App\Models\SlaViolation::class, \App\Policies\SlaViolationPolicy::class);
         Gate::policy(KeyHandover::class, KeyHandoverPolicy::class);
         Gate::policy(MeterReading::class, MeterReadingPolicy::class);
         Gate::policy(NumberFormat::class, NumberFormatPolicy::class);
@@ -226,6 +233,8 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(PerDiemRate::class, PerDiemRatePolicy::class);
         Gate::policy(Room::class, RoomPolicy::class);
         Gate::policy(OpenIssue::class, OpenIssuePolicy::class);
+        Gate::policy(\App\Models\CustomerQuery::class, \App\Policies\CustomerQueryPolicy::class);
+        Gate::policy(\App\Models\SafetyEvent::class, \App\Policies\SafetyEventPolicy::class);
         Gate::policy(\App\Models\Notification\NotificationRule::class, \App\Policies\NotificationRulePolicy::class);
         Gate::policy(\App\Models\Surcharge\SurchargeRule::class, \App\Policies\SurchargeRulePolicy::class);
         Gate::policy(CommunicationNote::class, CommunicationNotePolicy::class);
@@ -257,6 +266,10 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Privacy\JointControllerAgreement::class, \App\Policies\Privacy\JointControllerAgreementPolicy::class);
         Gate::policy(\App\Models\Privacy\ComplianceFinding::class, \App\Policies\Privacy\ComplianceFindingPolicy::class);
         Gate::policy(\App\Models\Finance\BillingTransfer::class, \App\Policies\Finance\BillingTransferPolicy::class);
+        Gate::policy(\App\Models\Finance\BankAccount::class, \App\Policies\Finance\BankAccountPolicy::class);
+        Gate::policy(\App\Models\Finance\BankStatement::class, \App\Policies\Finance\BankStatementPolicy::class);
+        Gate::policy(\App\Models\Finance\BankTransaction::class, \App\Policies\Finance\BankTransactionPolicy::class);
+        Gate::policy(\App\Models\Finance\DatevBookingBatch::class, \App\Policies\Finance\DatevBookingBatchPolicy::class);
 
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);

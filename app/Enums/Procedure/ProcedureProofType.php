@@ -16,4 +16,8 @@ enum ProcedureProofType: string {
     case Photo = 'photo';
     case Measure = 'measure';
     case Signature = 'signature';
+
+    public function label(): string {
+        return (string) __('enums.procedure.proof-type.' . $this->value);
+    }
 }

@@ -64,4 +64,26 @@ class OrganizationSettingsTest extends TestCase {
     public function test_setting_returns_default_for_unknown_key(): void {
         $this->assertSame('fallback', Setting::get('non_existent.key', 'fallback'));
     }
+
+    public function test_holiday_provider_override_is_resolved_via_setting(): void {
+        // Feature 034: der Feiertags-Rechtsraum wird über die generische
+        // Settings-Mechanik gepflegt (settings['holidays']['provider']).
+        $org = Organization::factory()->create([
+            'settings' => ['holidays' => ['provider' => 'Germany\\Bavaria']],
+        ]);
+
+        $this->app->instance('currentOrganization', $org);
+
+        $this->assertSame('Germany\\Bavaria', Setting::get('holidays.provider'));
+    }
+
+    public function test_holiday_provider_falls_back_to_config_without_override(): void {
+        $org = Organization::factory()->create(['settings' => []]);
+        $this->app->instance('currentOrganization', $org);
+
+        $this->assertSame(
+            (string) config('holidays.provider'),
+            (string) Setting::get('holidays.provider'),
+        );
+    }
 }

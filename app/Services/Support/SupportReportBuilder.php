@@ -10,8 +10,9 @@
 
 namespace App\Services\Support;
 
-use App\Models\AuditLog;
+use App\Models\{AuditLog, PluginError};
 use App\Services\Diagnostics\DiagnosticsService;
+use App\Services\Release\ReleaseManifestService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Support\Facades\{DB, File};
@@ -50,6 +51,8 @@ class SupportReportBuilder {
     public function __construct(
         private readonly DiagnosticsService $diagnostics,
         private readonly SupportReportLogFilter $logFilter,
+        private readonly SupportHealthSummary $health,
+        private readonly ReleaseManifestService $release,
     ) {}
 
     /**
@@ -63,8 +66,12 @@ class SupportReportBuilder {
 
         return [
             'generated_at' => $generatedAt->toIso8601String(),
-            'schema_version' => 1,
+            'schema_version' => 2,
             'installation' => $this->installation(),
+            'release' => $this->release(),
+            'health' => $this->health->collect(),
+            'plugin_errors' => $this->pluginErrorCounts(),
+            'operations' => $this->operations(),
             'diagnostics' => $this->diagnostics->collect()->toArray(),
             'composer' => $this->composerHashes(),
             'npm' => $this->npmHashes(),
@@ -95,6 +102,128 @@ class SupportReportBuilder {
             'locale' => (string) app()->getLocale(),
             'timezone' => (string) config('app.timezone', 'UTC'),
         ];
+    }
+
+    /**
+     * Release-/Build-Metadaten aus dem signaturfreien Manifest-Kern
+     * (Versionen, Build-Hash, aktive Module, Plugins). Whitelist-Quelle:
+     * {@see ReleaseManifestService::payload()} liefert ausschließlich
+     * technische Felder, KEINE Secrets/Signaturen.
+     *
+     * @return array<string, mixed>
+     */
+    private function release(): array {
+        try {
+            $payload = $this->release->payload();
+
+            // Bewusst nur die rein technischen Sektionen übernehmen — keine
+            // Artefakt-Checksummen-Pfade, keine Signatur.
+            return [
+                'application' => $payload['application'] ?? [],
+                'runtime' => $payload['runtime'] ?? [],
+                'modules' => $payload['modules'] ?? [],
+                'plugins' => $payload['plugins'] ?? [],
+            ];
+        } catch (Throwable) {
+            return [];
+        }
+    }
+
+    /**
+     * Plugin-Fehler der letzten 7 Tage — NUR Plugin-ID / Phase / Anzahl.
+     * KEINE Messages, KEINE Traces, KEINE Kontext-Payloads (Datensparsamkeit,
+     * Feature 041 §2.3). Aggregiert über GROUP BY, damit gar keine
+     * Einzeltexte aufgenommen werden.
+     *
+     * @return array{window_days:int, total:int, by_plugin_phase: list<array{plugin_id:string, phase:string, count:int}>}
+     */
+    private function pluginErrorCounts(): array {
+        $windowDays = 7;
+        $out = ['window_days' => $windowDays, 'total' => 0, 'by_plugin_phase' => []];
+
+        try {
+            if (! DB::getSchemaBuilder()->hasTable((new PluginError())->getTable())) {
+                return $out;
+            }
+        } catch (Throwable) {
+            return $out;
+        }
+
+        $since = CarbonImmutable::now()->subDays($windowDays);
+
+        try {
+            $rows = DB::table((new PluginError())->getTable())
+                ->where('occurred_at', '>=', $since)
+                ->selectRaw('plugin_id, phase, COUNT(*) as cnt')
+                ->groupBy('plugin_id', 'phase')
+                ->orderBy('plugin_id')
+                ->orderBy('phase')
+                ->get();
+        } catch (Throwable) {
+            return $out;
+        }
+
+        $total = 0;
+        $byPluginPhase = [];
+        foreach ($rows as $row) {
+            $count = (int) $row->cnt;
+            $total += $count;
+            $byPluginPhase[] = [
+                'plugin_id' => (string) $row->plugin_id,
+                'phase' => (string) $row->phase,
+                'count' => $count,
+            ];
+        }
+
+        return ['window_days' => $windowDays, 'total' => $total, 'by_plugin_phase' => $byPluginPhase];
+    }
+
+    /**
+     * Betriebs-Kennzahlen für die Diagnose: Queue-Stand und letzte
+     * Backup-Heartbeats. NUR Counts/Metadaten (Größe, Zeitpunkt, Quelle) —
+     * keine Inhalte. Quelle absichtlich rein technisch.
+     *
+     * @return array<string, mixed>
+     */
+    private function operations(): array {
+        $out = [
+            'queue' => ['available' => false, 'pending' => null, 'failed' => null],
+            'backup' => ['last_heartbeat_at' => null, 'last_size_bytes' => null, 'last_source' => null, 'count_30d' => 0],
+        ];
+
+        try {
+            $schema = DB::getSchemaBuilder();
+            $hasJobs = $schema->hasTable('jobs');
+            $hasFailed = $schema->hasTable('failed_jobs');
+            if ($hasJobs || $hasFailed) {
+                $out['queue'] = [
+                    'available' => true,
+                    'pending' => $hasJobs ? (int) DB::table('jobs')->count() : null,
+                    'failed' => $hasFailed ? (int) DB::table('failed_jobs')->count() : null,
+                ];
+            }
+        } catch (Throwable) {
+            // queue bleibt unavailable
+        }
+
+        try {
+            if (DB::getSchemaBuilder()->hasTable('backup_heartbeats')) {
+                $latest = DB::table('backup_heartbeats')->orderByDesc('occurred_at')->first();
+                $count30d = (int) DB::table('backup_heartbeats')
+                    ->where('occurred_at', '>=', CarbonImmutable::now()->subDays(30))
+                    ->count();
+                $out['backup'] = [
+                    'last_heartbeat_at' => $latest->occurred_at ?? null,
+                    'last_size_bytes' => isset($latest->size_bytes) ? (int) $latest->size_bytes : null,
+                    'last_source' => $latest->source ?? null,
+                    'count_30d' => $count30d,
+                ];
+            }
+        } catch (Throwable) {
+            // backup bleibt leer
+        }
+
+        return $out;
     }
 
     /** @return array<string, string|null> */

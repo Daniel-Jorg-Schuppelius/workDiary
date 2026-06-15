@@ -85,7 +85,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-center py-8 opacity-70">{{ __('Noch keine globalen Aufgaben.') }}</td></tr>
+                    <x-table.empty :colspan="7" :title="__('Noch keine globalen Aufgaben.')" />
                 @endforelse
             </tbody>
         </x-table>

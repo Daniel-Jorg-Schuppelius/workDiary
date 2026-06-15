@@ -72,6 +72,10 @@ class BillingTransferService {
             'date' => $s['date'],
             'quantity' => $s['quantity'],
             'amount' => $s['amount'],
+            'unit' => $s['unit'],
+            'unit_price' => $s['unit_price'],
+            'tax_rate' => $s['tax_rate'],
+            'cost_position' => $s['cost_position'],
         ])->all());
 
         $actorId = $this->resolveActorId($actor);
@@ -99,6 +103,10 @@ class BillingTransferService {
                     'source_id' => $source['id'],
                     'amount' => (string) $source['amount'],
                     'quantity' => (string) $source['quantity'],
+                    'unit' => $source['unit'],
+                    'unit_price' => $source['unit_price'] !== null ? (string) $source['unit_price'] : null,
+                    'tax_rate' => $source['tax_rate'] !== null ? (string) $source['tax_rate'] : null,
+                    'cost_position' => $source['cost_position'],
                 ]);
             }
 
@@ -241,7 +249,7 @@ class BillingTransferService {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
      * @param  list<int>|null  $sourceIds
-     * @return Collection<int, array{type: 'App\Models\TimeEntry', id: int, date: string|null, quantity: float, amount: float}>
+     * @return Collection<int, array{type: 'App\Models\TimeEntry', id: int, date: string|null, quantity: float, amount: float, unit: null, unit_price: null, tax_rate: null, cost_position: null}>
      */
     private function collectTimeSources(Customer $customer, array $period, ?array $sourceIds): Collection {
         $query = TimeEntry::query()
@@ -267,6 +275,11 @@ class BillingTransferService {
             'date' => $entry->date?->toDateString(),
             'quantity' => round(((int) $entry->minutes) / 60, 2),
             'amount' => round((float) $entry->rate, 2),
+            // Zeit-Positionen tragen keine Material-Felder (einheitliche Snapshot-Shape).
+            'unit' => null,
+            'unit_price' => null,
+            'tax_rate' => null,
+            'cost_position' => null,
         ])->values();
     }
 
@@ -277,7 +290,7 @@ class BillingTransferService {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $period
      * @param  list<int>|null  $sourceIds
-     * @return Collection<int, array{type: 'App\Models\MaterialUsage', id: int, date: string|null, quantity: float, amount: float}>
+     * @return Collection<int, array{type: 'App\Models\MaterialUsage', id: int, date: string|null, quantity: float, amount: float, unit: non-empty-string|null, unit_price: float|null, tax_rate: float|null, cost_position: non-empty-string|null}>
      */
     private function collectMaterialSources(Customer $customer, array $period, ?array $sourceIds): Collection {
         $query = MaterialUsage::query()
@@ -298,12 +311,18 @@ class BillingTransferService {
 
         $this->excludeReserved($query, MaterialUsage::class);
 
-        return $query->with('timesheet:id,work_date')->get()->map(fn(MaterialUsage $usage): array => [
+        return $query->with(['timesheet:id,work_date', 'material:id,sku'])->get()->map(fn(MaterialUsage $usage): array => [
             'type' => MaterialUsage::class,
             'id' => (int) $usage->id,
             'date' => $usage->timesheet?->work_date?->toDateString(),
             'quantity' => round((float) $usage->quantity, 2),
             'amount' => round((float) $usage->line_total_net, 2),
+            // Materialpositions-Snapshot (Kriterium 6): Einheit, Einzelpreis,
+            // Steuersatz und DATEV-Kostenposition (Material-SKU) zum Übergabezeitpunkt.
+            'unit' => $usage->unit !== '' ? (string) $usage->unit : null,
+            'unit_price' => $usage->unit_price !== null ? round((float) $usage->unit_price, 4) : null,
+            'tax_rate' => $usage->tax_rate !== null ? round((float) $usage->tax_rate, 2) : null,
+            'cost_position' => ($sku = trim((string) data_get($usage->material, 'sku', ''))) !== '' ? $sku : null,
         ])->values();
     }
 

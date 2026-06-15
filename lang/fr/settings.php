@@ -9,6 +9,13 @@ return [
         'notifications' => 'Notifications',
         'ui' => 'Interface',
         'routing' => 'Routage et cartes',
+        'region' => 'Région et jours fériés',
+    ],
+    'region' => [
+        'heading' => 'Juridiction et jours fériés',
+        'description' => 'Détermine les jours fériés applicables. Affecte les majorations pour jours fériés, la conformité des plannings et l’affichage des jours fériés.',
+        'holiday_provider' => 'Région des jours fériés (pays / Land)',
+        'holiday_provider_hint' => 'Les jours fériés régionaux comme la Fête-Dieu ou le jour de la Réforme ne s’appliquent que dans certains Länder. Vide = valeur par défaut du système.',
     ],
     'hint' => 'Laisser vide pour utiliser la valeur par défaut du système.',
     'pagination' => [

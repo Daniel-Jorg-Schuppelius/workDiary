@@ -12,6 +12,16 @@ related:
 
 Die wichtigsten Sicherheitswerkzeuge für den Betrieb:
 
+**Sicherheitsübersicht**: Die Admin-Seite „Sicherheit"
+(`/admin/security`) bündelt read-only den sicherheitsrelevanten
+Zustand: aktive Sitzungen, API-Tokens (nur Metadaten – niemals der
+Token-Wert), aktive externe Integrationen, die letzten Daten-/
+Zeit-Exporte, die letzten Supportzugriffe (Audit-Ereignisse mit
+Präfix `support.`) sowie 2FA-Abdeckung und at-rest-Verschlüsselungs-
+Status. Die Seite zeigt nur an und verändert keine Sicherheitsobjekte;
+die automatisierten Lösch- und Aufbewahrungsläufe sind nicht Teil
+dieser Übersicht.
+
 **Zwei-Faktor-Authentifizierung**: Nutzer können mehrere Methoden
 parallel hinterlegen – **TOTP** (Authenticator-App), **E-Mail-Code**
 und **WebAuthn** (FIDO2-Sicherheitsschlüssel/Passkey). Empfiehl

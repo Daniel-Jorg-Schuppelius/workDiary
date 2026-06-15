@@ -2,7 +2,18 @@
 
 ## Status
 
-In Progress
+In Progress — MVP umgesetzt: kontextbezogene, befristete externe Einladungen
+(`external_participants`, Subject DiaryEntry|Protocol|Document) mit
+hash-gespeichertem Einmal-Token (Muster ProtocolSignatureToken /
+IsmsAuditPackageToken), login-freier öffentlicher Zugriff (`/extern/{token}`,
+gedrosselt, 404 bei abgelaufen/widerrufen/unbekannt), serverseitig streng
+durchgesetzten `abilities` (view|comment|upload|confirm), append-only
+Nachweis aller externen Aktionen (`external_participant_events`), interner
+Verwaltung (Panel „Externe Beteiligte" auf der Auftragsdetailseite: Einladen,
+Einmal-Link, Widerruf) und Permission `externalParticipant.manage`
+(admin, teamleitung + Auftragsverantwortlicher via Subject-Policy). Offen:
+externe Kontakt-/Rollenprofile als wiederverwendbares Stammdaten-Modell,
+Panel-Anbindung an Protokoll-/Dokument-Detailseiten, E-Mail-Versand des Links.
 
 ## Ziel
 

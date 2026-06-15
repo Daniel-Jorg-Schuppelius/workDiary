@@ -37,6 +37,7 @@ final class NotificationLinks {
                 \App\Models\Project::class => route('projects.show', $subject),
                 \App\Models\Customer::class => route('customers.show', $subject),
                 \App\Models\Asset::class => route('assets.show', $subject),
+                \App\Models\SafetyEvent::class => route('safety-events.show', $subject),
                 default => null,
             };
         } catch (Throwable) {

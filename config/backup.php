@@ -46,4 +46,31 @@ return [
     */
     'min_size_bytes' => (int) env('BACKUP_MIN_SIZE_BYTES', 0),
     'size_drop_ratio' => (float) env('BACKUP_SIZE_DROP_RATIO', 0.5),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Erwartetes Heartbeat-Intervall der Statusseite (Feature 017)
+    |--------------------------------------------------------------------------
+    |
+    | Frische-Schwelle für die Admin-Backup-Statusseite je Quelle. Ist der
+    | jüngste Heartbeat einer Quelle älter als `heartbeat_freshness_hours`
+    | (Default 26 h), zeigt die Seite eine rote „überfällig"-Markierung; gibt
+    | es gar keinen Heartbeat, „kein Backup registriert".
+    |
+    | Bewusst plattform-/serverweit (config, NICHT organizations.settings): der
+    | Backup-Heartbeat (backup_heartbeats) wird vom externen Backup-Job ohne
+    | Tenant-Kontext gepostet und gehört nicht zur Mandantengrenze.
+    */
+    'heartbeat_freshness_hours' => (int) env('BACKUP_HEARTBEAT_FRESHNESS_HOURS', 26),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Überfälligkeit des Restore-Tests (Feature 017, §6.3)
+    |--------------------------------------------------------------------------
+    |
+    | Liegt der jüngste ERFOLGREICHE Restore-Test (result = passed) länger als
+    | `restore_test_overdue_days` (Default 180) zurück oder fehlt vollständig,
+    | warnt die Statusseite „überfälliger Restore-Test".
+    */
+    'restore_test_overdue_days' => (int) env('BACKUP_RESTORE_TEST_OVERDUE_DAYS', 180),
 ];

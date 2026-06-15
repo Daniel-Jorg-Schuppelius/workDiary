@@ -148,24 +148,9 @@
     </div>
 </x-form-group>
 
-<x-form-group :legend="__('Status & Zeitraum')" icon="traffic" tone="info" cols="2">
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label" for="status">{{ __('Status') }} *</label>
-        <select
-            id="status"
-            name="status"
-            class="select select-bordered w-full @error('status') select-error @enderror"
-        >
-            <option value="2" @selected((int) old('status', $entry?->status?->value ?? 2) === 2)>{{ __('Offen') }}</option>
-            <option value="3" @selected((int) old('status', $entry?->status?->value) === 3)>{{ __('Problem') }}</option>
-            <option value="1" @selected((int) old('status', $entry?->status?->value) === 1)>{{ __('Bestätigt') }}</option>
-            <option value="-1" @selected((int) old('status', $entry?->status?->value) === -1)>{{ __('Erledigt') }}</option>
-        </select>
-        @error('status')
-            <p class="text-error text-sm">{{ $message }}</p>
-        @enderror
-    </div>
+<input type="hidden" name="status" value="{{ $entry?->status?->value ?? \App\Enums\Diary\Status::Planned->value }}">
 
+<x-form-group :legend="__('Zeitraum')" icon="event" tone="info" cols="2">
     <div class="fieldset">
         <label class="fieldset-label" for="mode">{{ __('Termin-Modus') }} *</label>
         <select

@@ -90,7 +90,7 @@ class SaveDiaryEntryRequest extends FormRequest {
         return [
             'content' => ['required', 'string', 'max:65535'],
             'response' => ['nullable', 'string', 'max:65535'],
-            'status' => ['required', 'integer', 'in:-1,1,2,3'],
+            'status' => ['required', 'integer', 'in:-1,1,2,3,4,5,6,7,8'],
             'start_at' => [$startRequired ? 'required' : 'nullable', 'date'],
             'end_at' => [$startRequired ? 'required' : 'nullable', 'date', 'after_or_equal:start_at'],
 

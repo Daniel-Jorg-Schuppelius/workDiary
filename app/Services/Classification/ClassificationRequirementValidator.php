@@ -19,9 +19,12 @@ use App\Models\{ClassificationRequirement, DiaryEntry};
 class ClassificationRequirementValidator {
     /**
      * @param  array<string, list<string>>  $valuesByDomain
+     * @param  bool  $audit  Schreibt für harte Lücken einen Audit-Eintrag.
+     *                       Für rein lesende Hinweise (z. B. Detailseiten-Badge)
+     *                       auf false setzen, um keine Logs bei jedem Aufruf zu erzeugen.
      * @return list<RequirementResult>
      */
-    public function validate(DiaryEntry $entry, ClassificationRequirementPhase|string $phase, array $valuesByDomain = []): array {
+    public function validate(DiaryEntry $entry, ClassificationRequirementPhase|string $phase, array $valuesByDomain = [], bool $audit = true): array {
         $phaseValue = $phase instanceof ClassificationRequirementPhase ? $phase->value : $phase;
         $entryTypeCode = $this->entryTypeCode($entry, $valuesByDomain);
         if ($entryTypeCode === null) {
@@ -60,7 +63,7 @@ class ClassificationRequirementValidator {
             );
             $results[] = $result;
 
-            if ($result->isBlocking()) {
+            if ($audit && $result->isBlocking()) {
                 $entry->audit('classification.requirementMissing', [
                     'requirement_id' => $requirement->id,
                     'required_domain' => $requirement->required_domain,

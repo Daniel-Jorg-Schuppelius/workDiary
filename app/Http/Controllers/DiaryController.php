@@ -49,17 +49,19 @@ class DiaryController extends Controller {
 
         $row = DiaryEntry::query()->selectRaw(
             'COUNT(CASE WHEN is_archived = 0 THEN 1 END) as cnt_all,' .
-                'COUNT(CASE WHEN is_archived = 0 AND status = 2 THEN 1 END) as cnt_open,' .
-                'COUNT(CASE WHEN is_archived = 0 AND status = 3 THEN 1 END) as cnt_alert,' .
-                'COUNT(CASE WHEN is_archived = 0 AND status = -1 THEN 1 END) as cnt_done,' .
+                'COUNT(CASE WHEN is_archived = 0 AND status = 2 THEN 1 END) as cnt_planned,' .
+                'COUNT(CASE WHEN is_archived = 0 AND status IN (1,3,4,5) THEN 1 END) as cnt_active,' .
+                'COUNT(CASE WHEN is_archived = 0 AND status IN (-1,6,7) THEN 1 END) as cnt_done,' .
+                'COUNT(CASE WHEN is_archived = 0 AND status = 8 THEN 1 END) as cnt_cancelled,' .
                 'COUNT(CASE WHEN is_archived = 1 THEN 1 END) as cnt_archived'
         )->first()?->getAttributes() ?? [];
 
         $counts = [
             'all' => (int) ($row['cnt_all'] ?? 0),
-            'open' => (int) ($row['cnt_open'] ?? 0),
-            'alert' => (int) ($row['cnt_alert'] ?? 0),
+            'planned' => (int) ($row['cnt_planned'] ?? 0),
+            'active' => (int) ($row['cnt_active'] ?? 0),
             'done' => (int) ($row['cnt_done'] ?? 0),
+            'cancelled' => (int) ($row['cnt_cancelled'] ?? 0),
             'archived' => (int) ($row['cnt_archived'] ?? 0),
         ];
 
@@ -130,6 +132,7 @@ class DiaryController extends Controller {
 
     public function store(SaveDiaryEntryRequest $request): RedirectResponse {
         $data = $request->validated();
+        $data['status'] = \App\Enums\Diary\Status::Planned->value;
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 
@@ -151,7 +154,24 @@ class DiaryController extends Controller {
     }
 
     public function show(Request $request, DiaryEntry $diary): View {
-        $diary->load(['user:id,name', 'tags:id,name,color,slug', 'comments.user:id,name', 'attachments.uploader:id,name']);
+        Gate::authorize('view', $diary);
+
+        $diary->load([
+            'user:id,name',
+            'assignedUser:id,name',
+            'tags:id,name,color,slug',
+            'comments.user:id,name',
+            'attachments.uploader:id,name',
+            'lifecycleEvents.actor:id,name',
+            'protocols',
+            'entryType:id,slug,name',
+        ]);
+
+        // Datenqualität (Feature 024): rein lesende Hinweise auf fehlende
+        // Pflichtklassifikationen — abgeleitet aus den am Auftrag bereits
+        // persistierten Werten (Auftragsart, Priorität).
+        $dataQualityGaps = app(\App\Services\Classification\DataQualityInspector::class)
+            ->diaryEntryGaps($diary);
 
         // Falls der Eintrag aus einem Legacy-Import stammt, auch die Legacy-Daten laden
         $legacyEntry = null;
@@ -164,7 +184,7 @@ class DiaryController extends Controller {
         }
 
         if ($request->boolean('dialog')) {
-            return view('diary._show_dialog', compact('diary', 'legacyEntry'));
+            return view('diary._show_dialog', compact('diary', 'legacyEntry', 'dataQualityGaps'));
         }
 
         // Auftrags-Timeline „Verlauf" (MVP-010): serverseitiger Typ-Filter +
@@ -180,11 +200,38 @@ class DiaryController extends Controller {
             $timelineLimit,
         );
 
-        return view('diary.show', compact('diary', 'legacyEntry') + [
+        // Prozeduren (Feature 026): bereits laufende Läufe + per
+        // ProcedureApplicabilityResolver vorgeschlagene, noch nicht
+        // gestartete Vorlagen für diesen Auftrag.
+        $procedureRuns = collect();
+        $suggestedProcedures = collect();
+        if (Gate::allows(\App\Enums\User\Permission::ProcedureRunView->value)) {
+            $procedureRuns = \App\Models\ProcedureRun::query()
+                ->where('subject_type', $diary->getMorphClass())
+                ->where('subject_id', $diary->getKey())
+                ->with('templateVersion.template')
+                ->orderByDesc('id')
+                ->get();
+
+            if (Gate::allows(\App\Enums\User\Permission::ProcedureRunStart->value)) {
+                $startedTemplateIds = $procedureRuns
+                    ->map(fn($run) => $run->templateVersion?->procedure_template_id)
+                    ->filter()
+                    ->all();
+                $suggestedProcedures = app(\App\Services\Procedure\ProcedureApplicabilityResolver::class)
+                    ->suggestFor($diary)
+                    ->reject(fn($tpl) => in_array($tpl->id, $startedTemplateIds, true))
+                    ->values();
+            }
+        }
+
+        return view('diary.show', compact('diary', 'legacyEntry', 'dataQualityGaps') + [
             'timelineItems' => $timeline['items'],
             'timelineHasMore' => $timeline['hasMore'],
             'timelineType' => $timelineType,
             'timelineLimit' => $timelineLimit,
+            'procedureRuns' => $procedureRuns,
+            'suggestedProcedures' => $suggestedProcedures,
         ]);
     }
 
@@ -213,7 +260,7 @@ class DiaryController extends Controller {
         Gate::authorize('update', $diary);
 
         $data = $request->validated();
-        unset($data['user_id']); // Eigentümer wird beim Update nicht geändert
+        unset($data['user_id'], $data['status']); // Eigentümer und Lebenszyklus werden separat gesteuert
         $tagIds = $this->extractTagIds($request);
         $newTagNames = $this->extractNewTagNames($request);
 

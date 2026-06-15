@@ -168,6 +168,10 @@ class OrganizationController extends Controller {
             'settings.routing.tiles.max_zoom' => ['nullable', 'integer', 'min:1', 'max:22'],
             'settings.timesheet' => ['sometimes', 'array'],
             'settings.timesheet.default_schedule_type' => ['nullable', 'in:' . implode(',', \App\Enums\WorkSchedule\ScheduleType::values())],
+            // Feiertags-Rechtsraum (Feature 034): Yasumi-Provider-Pfad. Leer →
+            // Fallback auf config('holidays.provider'). Speist Zuschläge + Compliance.
+            'settings.holidays' => ['sometimes', 'array'],
+            'settings.holidays.provider' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\HolidayRegions::providers())],
             'settings.attendance' => ['sometimes', 'array'],
             'settings.attendance.self_correction' => ['nullable', 'in:request,self'],
             'settings.travel' => ['sometimes', 'array'],

@@ -1,0 +1,187 @@
+{{--
+  Created on   : Sat Jun 14 2026
+  Author       : Daniel Jörg Schuppelius
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  Self-Service: eigene Verfügbarkeiten & Wunschdienste (Feature 007).
+--}}
+
+@extends('layouts.app')
+@section('title', __('schedule.availability.title'))
+@section('nav-title', __('schedule.availability.title'))
+
+@php
+    use App\Enums\Shift\AvailabilityKind;
+    use App\Enums\Shift\ShiftPreference;
+    $weekdays = [
+        1 => __('Montag'), 2 => __('Dienstag'), 3 => __('Mittwoch'),
+        4 => __('Donnerstag'), 5 => __('Freitag'), 6 => __('Samstag'), 0 => __('Sonntag'),
+    ];
+@endphp
+
+@section('content')
+    <x-index-page :subtitle="__('schedule.availability.subtitle')">
+
+        @include('schedule._duty_tabs')
+
+        @if (session('success'))
+            <div class="alert alert-success text-sm">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-error text-sm">{{ session('error') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="alert alert-error text-sm">
+                <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
+            </div>
+        @endif
+
+        {{-- ── Verfügbarkeiten ─────────────────────────────────────────── --}}
+        <x-form-group :legend="__('schedule.availability.windows_legend')" icon="event_available" tone="primary">
+            <form method="POST" action="{{ route('schedule.availability.windows.store') }}"
+                  class="grid grid-cols-1 gap-2 md:grid-cols-6 md:items-end">
+                @csrf
+                <div class="fieldset">
+                    <label class="fieldset-label" for="aw-weekday">{{ __('Wochentag') }}</label>
+                    <select id="aw-weekday" name="weekday" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('—') }}</option>
+                        @foreach ($weekdays as $val => $label)
+                            <option value="{{ $val }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="aw-date">{{ __('oder Datum') }}</label>
+                    <input id="aw-date" type="date" name="specific_date" class="input input-bordered input-sm w-full">
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="aw-kind">{{ __('Art') }}</label>
+                    <select id="aw-kind" name="kind" class="select select-bordered select-sm w-full">
+                        @foreach (AvailabilityKind::cases() as $kind)
+                            <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="aw-start">{{ __('Von') }}</label>
+                    <input id="aw-start" type="time" name="start_time" class="input input-bordered input-sm w-full">
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="aw-end">{{ __('Bis') }}</label>
+                    <input id="aw-end" type="time" name="end_time" class="input input-bordered input-sm w-full">
+                </div>
+                <div class="fieldset">
+                    <button type="submit" class="btn btn-primary btn-sm w-full">{{ __('Hinzufügen') }}</button>
+                </div>
+            </form>
+
+            <x-table :zebra="true" class="mt-3">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Wann') }}</th>
+                        <th>{{ __('Art') }}</th>
+                        <th>{{ __('Zeit') }}</th>
+                        <th>{{ __('Notiz') }}</th>
+                        <th class="text-right">{{ __('Aktion') }}</th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($windows as $window)
+                    <tr class="hover">
+                        <td>
+                            @if ($window->specific_date)
+                                {{ $window->specific_date->format('d.m.Y') }}
+                            @else
+                                {{ $weekdays[$window->weekday] ?? '—' }}
+                                @if ($window->valid_from || $window->valid_until)
+                                    <span class="text-xs opacity-60">
+                                        ({{ $window->valid_from?->format('d.m.Y') ?? '…' }}–{{ $window->valid_until?->format('d.m.Y') ?? '…' }})
+                                    </span>
+                                @endif
+                            @endif
+                        </td>
+                        <td><x-status-badge :tone="$window->kind->tone()" size="sm">{{ $window->kind->label() }}</x-status-badge></td>
+                        <td class="whitespace-nowrap">
+                            @if ($window->start_time || $window->end_time)
+                                {{ \Illuminate\Support\Str::of($window->start_time)->substr(0, 5) }}–{{ \Illuminate\Support\Str::of($window->end_time)->substr(0, 5) }}
+                            @else {{ __('ganztägig') }} @endif
+                        </td>
+                        <td class="text-xs">{{ $window->note }}</td>
+                        <td class="text-right">
+                            <form method="POST" action="{{ route('schedule.availability.windows.destroy', $window) }}" class="inline">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="5" :title="__('schedule.availability.no_windows')" />
+                @endforelse
+            </x-table>
+        </x-form-group>
+
+        {{-- ── Wunschdienste ───────────────────────────────────────────── --}}
+        <x-form-group :legend="__('schedule.availability.desired_legend')" icon="favorite" tone="success">
+            <form method="POST" action="{{ route('schedule.availability.desired.store') }}"
+                  class="grid grid-cols-1 gap-2 md:grid-cols-5 md:items-end">
+                @csrf
+                <div class="fieldset">
+                    <label class="fieldset-label" for="ds-date">{{ __('Datum') }}</label>
+                    <input id="ds-date" type="date" name="date" class="input input-bordered input-sm w-full" required>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="ds-type">{{ __('Schichttyp') }}</label>
+                    <select id="ds-type" name="shift_type_id" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('beliebig') }}</option>
+                        @foreach ($shiftTypes as $type)
+                            <option value="{{ $type->sqid }}">{{ $type->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="ds-pref">{{ __('Wunsch') }}</label>
+                    <select id="ds-pref" name="preference" class="select select-bordered select-sm w-full">
+                        @foreach (ShiftPreference::cases() as $pref)
+                            <option value="{{ $pref->value }}">{{ $pref->label() }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="ds-note">{{ __('Notiz') }}</label>
+                    <input id="ds-note" type="text" name="note" class="input input-bordered input-sm w-full" maxlength="255">
+                </div>
+                <div class="fieldset">
+                    <button type="submit" class="btn btn-success btn-sm w-full">{{ __('Hinzufügen') }}</button>
+                </div>
+            </form>
+
+            <x-table :zebra="true" class="mt-3">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Datum') }}</th>
+                        <th>{{ __('Schichttyp') }}</th>
+                        <th>{{ __('Wunsch') }}</th>
+                        <th>{{ __('Notiz') }}</th>
+                        <th class="text-right">{{ __('Aktion') }}</th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($desired as $wish)
+                    <tr class="hover">
+                        <td>{{ $wish->date->format('d.m.Y') }}</td>
+                        <td>{{ $wish->shiftType?->name ?? __('beliebig') }}</td>
+                        <td><x-status-badge :tone="$wish->preference->tone()" size="sm">{{ $wish->preference->label() }}</x-status-badge></td>
+                        <td class="text-xs">{{ $wish->note }}</td>
+                        <td class="text-right">
+                            <form method="POST" action="{{ route('schedule.availability.desired.destroy', $wish) }}" class="inline">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="5" :title="__('schedule.availability.no_desired')" />
+                @endforelse
+            </x-table>
+        </x-form-group>
+
+    </x-index-page>
+@endsection

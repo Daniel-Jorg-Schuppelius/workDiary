@@ -92,6 +92,11 @@
                             :tone="$readiness['software']['eol_count'] > 0 ? 'error' : 'success'"
                             :hint="__('isms.dashboard.kpi_software_eol_hint')"
                             :href="route('isms.software.index')" />
+                <x-kpi-tile :label="__('isms.dashboard.kpi_suppliers')"
+                            :value="$readiness['suppliers']['overdue_count']"
+                            :tone="$readiness['suppliers']['overdue_count'] > 0 ? 'warning' : 'success'"
+                            :hint="__('isms.dashboard.kpi_suppliers_hint')"
+                            :href="route('isms.suppliers.index', ['sort' => 'review'])" />
             </div>
 
             <div class="grid gap-4 xl:grid-cols-2">
@@ -273,6 +278,30 @@
                                             </span>
                                         @endif
                                     </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </x-card>
+
+                {{-- Ungeprüfte Lieferanten (überfälliger Review) --}}
+                <x-card>
+                    <div class="mb-2 flex items-center justify-between gap-2">
+                        <h3 class="text-sm font-semibold">{{ __('isms.dashboard.section_suppliers') }}</h3>
+                        <a class="link text-xs" href="{{ route('isms.suppliers.index', ['sort' => 'review']) }}">{{ __('isms.dashboard.open_register') }}</a>
+                    </div>
+                    @if ($readiness['suppliers']['overdue']->isEmpty())
+                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_block') }}</p>
+                    @else
+                        <ul class="divide-y divide-base-200 text-sm">
+                            @foreach ($readiness['suppliers']['overdue'] as $assessment)
+                                <li class="flex items-center justify-between gap-2 py-2">
+                                    <span>
+                                        <span class="font-mono text-xs text-base-content/60">{{ $assessment->displayNo() }}</span>
+                                        {{ $assessment->displayName() }}
+                                        <x-status-badge :tone="$assessment->criticality->tone()" outline class="ml-1">{{ $assessment->criticality->label() }}</x-status-badge>
+                                    </span>
+                                    <x-status-badge tone="warning" outline>{{ __('isms.dashboard.review_overdue_since', ['date' => $assessment->next_review_on?->format('d.m.Y')]) }}</x-status-badge>
                                 </li>
                             @endforeach
                         </ul>

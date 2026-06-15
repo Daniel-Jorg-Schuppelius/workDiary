@@ -73,6 +73,7 @@ return [
 
     'message' => [
         'issue_assigned' => ':actor te ha asignado este punto abierto.',
+        'customer_query_raised' => 'Un cliente ha planteado una consulta.',
         'due_soon' => 'Vence el :date.',
         'overdue' => 'Vencido desde el :date.',
         'followup_due_soon' => 'Acción de seguimiento vence el :date.',
@@ -88,5 +89,13 @@ return [
         'certificate_expiring' => 'El certificado vence el :date — planifique la recertificación a tiempo.',
         'corrective_action_overdue' => 'Acción correctiva vencida desde el :date.',
         'risk_review_due' => 'Revisión de la evaluación de riesgo aceptada pendiente para el :date.',
+        'vulnerability_overdue' => 'Vulnerabilidad vencida desde el :date.',
+        'supplier_review_overdue' => 'Revisión de proveedor vencida desde :date.',
+        'sla_at_risk' => 'Plazo de resolución de SLA en riesgo — vence el :date.',
+        'sla_breached' => 'Plazo de resolución de SLA incumplido — vencía el :date.',
+        'asset_return_overdue' => 'Devolución del activo vencida — se esperaba el :date.',
+        'incident_critical' => 'Nuevo incidente de seguridad crítico notificado.',
+        'safety_critical_event' => 'Evento de seguridad crítico (:severity) notificado en :location.',
+        'qualification_expiring' => 'La cualificación/formación caduca el :date.',
     ],
 ];

@@ -40,11 +40,16 @@ final class DiaryEnumsTest extends TestCase {
     }
 
     public function test_status_values_and_tones(): void {
-        $this->assertSame([-1, 1, 2, 3], Status::values());
+        $this->assertSame([-1, 1, 2, 3, 4, 5, 6, 7, 8], Status::values());
         $this->assertSame('done', Status::Done->tone());
         $this->assertSame('progress', Status::InProgress->tone());
         $this->assertSame('open', Status::Open->tone());
         $this->assertSame('alert', Status::Problem->tone());
+        $this->assertSame(Status::Open, Status::Planned);
+        $this->assertSame(Status::Done, Status::Completed);
+        $this->assertSame(Status::Problem, Status::WaitingCustomer);
+        $this->assertSame(['accept', 'cancel'], Status::Planned->allowedActions());
+        $this->assertSame(['resume'], Status::WaitingMaterial->allowedActions());
         $this->assertNotEmpty(Status::Done->label());
         $this->assertNotEmpty(Status::InProgress->label());
         $this->assertNotEmpty(Status::Open->label());

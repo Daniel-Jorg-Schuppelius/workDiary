@@ -12,6 +12,7 @@ namespace App\Console\Commands\ServiceTicket;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\ServiceTicket;
+use App\Services\ServiceTicket\SlaViolationService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -19,9 +20,9 @@ use Illuminate\Support\Carbon;
 class SlaBreachScanCommand extends Command {
     protected $signature = 'tickets:scan-sla-breaches';
 
-    protected $description = 'Markiert Reaktions-/Lösungs-SLA-Verletzungen offener Service-Tickets und auditiert sie.';
+    protected $description = 'Markiert Reaktions-/Lösungs-SLA-Verletzungen offener Service-Tickets, schreibt das Verletzungsregister und auditiert sie.';
 
-    public function handle(): int {
+    public function handle(SlaViolationService $violations): int {
         $now = Carbon::now();
         $reactionBreached = 0;
         $resolutionBreached = 0;
@@ -44,7 +45,7 @@ class SlaBreachScanCommand extends Command {
                         ->whereNull('resolved_at');
                 });
             })
-            ->chunkById(200, function (Collection $tickets) use ($now, &$reactionBreached, &$resolutionBreached): void {
+            ->chunkById(200, function (Collection $tickets) use ($now, $violations, &$reactionBreached, &$resolutionBreached): void {
                 /** @var Collection<int, ServiceTicket> $tickets */
                 foreach ($tickets as $ticket) {
                     $changed = false;
@@ -60,6 +61,8 @@ class SlaBreachScanCommand extends Command {
                         $ticket->audit('service_ticket.sla_reaction_breached', [
                             'due_at' => $ticket->reaction_due_at->toIso8601String(),
                         ]);
+                        // Verletzungsregister (Feature 010): je Ticket+Typ genau einmal.
+                        $violations->recordResponseBreach($ticket, $now);
                     }
                     if (
                         ! $ticket->resolution_breached
@@ -73,6 +76,7 @@ class SlaBreachScanCommand extends Command {
                         $ticket->audit('service_ticket.sla_resolution_breached', [
                             'due_at' => $ticket->resolution_due_at->toIso8601String(),
                         ]);
+                        $violations->recordResolutionBreach($ticket, $now);
                     }
                     if ($changed) {
                         $ticket->saveQuietly();

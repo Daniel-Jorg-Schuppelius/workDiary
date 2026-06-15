@@ -2,7 +2,14 @@
 
 ## Status
 
-In Progress
+In Progress — MVP-Leitstelle umgesetzt: Dispatch-Board (Spalten nach
+Dispositionsstatus / Bahnen nach Mitarbeiter) und Karten-Sicht mit
+SLA-Risiko-Filter (route `dispatch.board` / `dispatch.map`, Recht
+`dispatch.viewAny`, Plan-Gating `module.planung`). Wiederverwendet
+Dispositionsstatus (Feature 028), Konfliktprüfung (DispatchConflictChecker),
+SLA-Status der Service-Tickets (Feature 010) und die bestehende
+Leaflet-/map.js-Einbindung. Bewusst NICHT enthalten (Datenschutz):
+Tourenoptimierung, Echtzeit-Tracking, dauerhafte Standortüberwachung.
 
 ## Ziel
 

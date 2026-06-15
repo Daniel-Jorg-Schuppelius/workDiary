@@ -2,7 +2,11 @@
 
 ## Status
 
-In Progress — Teile umgesetzt; konzipiert in MVP-025 bis MVP-029:
+In Progress — Backend-Kern (MVP-025..029) umgesetzt und getestet; **Vorlagen-
+Designer-UI, PDF-/Druckansicht eines Laufs, sichtbare automatische Zuordnung am
+Auftrag und bedingte Schritte (wenn-dann, als Vorlagen-Metadaten) ergänzt**.
+Offen: Auswertung bedingter Schritte im Execution-Kern sowie die ausführende
+Schritt-für-Schritt-Lauf-UI. Konzipiert in MVP-025 bis MVP-029:
 [Prozedurvorlagen](../prozedurvorlagen.md),
 [Pflicht & Reihenfolge](../prozedur-pflicht.md),
 [Backup-Nachweis](../prozedur-backup.md),

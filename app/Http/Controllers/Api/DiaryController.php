@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Diary\Status;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DiaryEntryResource;
 use App\Models\{DiaryEntry, Tag, User};
@@ -52,6 +53,7 @@ class DiaryController extends Controller {
 
     public function store(Request $request): JsonResponse {
         $data = $this->validateData($request);
+        $data['status'] = Status::Planned->value;
         /** @var User $user */
         $user = Auth::user();
         /** @var DiaryEntry $entry */
@@ -66,6 +68,7 @@ class DiaryController extends Controller {
     public function update(Request $request, DiaryEntry $diary): DiaryEntryResource {
         Gate::authorize('update', $diary);
         $data = $this->validateData($request);
+        unset($data['status']);
         $diary->update($data);
         if ($request->has('tag_ids')) {
             $diary->syncTagsFromInput($this->decodeTagIds($request->input('tag_ids')), []);
@@ -100,7 +103,7 @@ class DiaryController extends Controller {
         return $request->validate([
             'content' => ['required', 'string', 'max:65535'],
             'response' => ['nullable', 'string', 'max:65535'],
-            'status' => ['required', 'integer', 'in:-1,1,2,3'],
+            'status' => ['required', 'integer', 'in:-1,1,2,3,4,5,6,7,8'],
             'start_at' => ['nullable', 'date'],
             'end_at' => ['nullable', 'date', 'after_or_equal:start_at'],
         ]);

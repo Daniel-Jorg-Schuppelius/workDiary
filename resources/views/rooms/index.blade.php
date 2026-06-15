@@ -147,6 +147,11 @@
                                     @foreach (($room->equipment ?? []) as $eq)
                                         <x-status-badge tone="ghost">{{ __("values.$eq") }}</x-status-badge>
                                     @endforeach
+                                    @foreach ($room->requirements as $req)
+                                        <x-status-badge tone="warning" :title="$req->note ?? ''">
+                                            {{ $req->kind->label() }}@if ($req->level): {{ $req->level }}@endif
+                                        </x-status-badge>
+                                    @endforeach
                                 </div>
                             </td>
                             <td>

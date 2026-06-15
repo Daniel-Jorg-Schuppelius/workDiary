@@ -65,17 +65,17 @@
                     <x-table.th sort="priority">{{ __('Priorität') }}</x-table.th>
                     <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                     <th>{{ __('Bearbeiter') }}</th>
+                    <th>{{ __('SLA') }}</th>
                     <x-table.th sort="resolution_due_at">{{ __('Lösung bis') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>
             @foreach ($tickets as $ticket)
                 @php
-                    $isBreached = $ticket->resolution_breached || $ticket->reaction_breached;
-                    $now = now();
                     $resDue = $ticket->resolution_due_at;
-                    $dueClass = $isBreached ? 'text-error font-semibold'
-                        : ($resDue !== null && $resDue->lessThan($now->copy()->addHours(4)) ? 'text-warning' : 'text-base-content/70');
+                    $slaStatus = $ticket->slaStatus();
+                    $remaining = $ticket->slaMinutesRemaining();
+                    $dueClass = $slaStatus->textClass();
                 @endphp
                 <tr class="hover">
                     <td class="font-mono text-xs">
@@ -100,8 +100,16 @@
                         <x-status-badge size="sm" outline>{{ $ticket->status->label() }}</x-status-badge>
                     </td>
                     <td class="text-base-content/70">{{ $ticket->assignedTo?->name ?: '—' }}</td>
+                    <td>
+                        <x-status-badge :tone="$slaStatus->tone()" size="sm" outline>{{ $slaStatus->label() }}</x-status-badge>
+                    </td>
                     <td class="{{ $dueClass }}">
                         {{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}
+                        @if ($remaining !== null && $slaStatus->value !== 'met' && $slaStatus->value !== 'none')
+                            <div class="text-[11px] opacity-70">
+                                {{ $remaining < 0 ? __('sla.overdue_by', ['min' => abs($remaining)]) : __('sla.remaining', ['min' => $remaining]) }}
+                            </div>
+                        @endif
                     </td>
                     <td class="text-right">
                         <x-icon-btn icon="open_in_new" :href="route('service-tickets.show', $ticket)" :label="__('Details')" />

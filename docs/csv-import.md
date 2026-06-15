@@ -5,7 +5,7 @@ Status: Aktiv (MVP-049, Issue #48) • Quelle:
 
 ## 1. Zweck
 
-Org-Admin soll **Kunden, Projekte, Nutzer und Materialien** per CSV
+Org-Admin soll **Kunden, Projekte, Nutzer, Materialien und Fahrzeuge** per CSV
 in den Mandanten laden — ohne externe Tools, idempotent, mit klaren
 Fehlerberichten.
 
@@ -49,15 +49,45 @@ Fehlerberichten.
 
 ### 2.4 `materials.csv`
 
-| Spalte        | Pflicht | Notizen                      |
-| ------------- | ------- | ---------------------------- |
-| external_ref  | nein    |                              |
-| code          | ja      | unique pro Org               |
-| name          | ja      |                              |
-| unit          | ja      | Stk, m, kg, h, l, …          |
-| default_price | nein    | dezimal, Punkt als Separator |
-| vat_rate      | nein    | Prozent ganzzahlig           |
-| notes         | nein    |                              |
+| Spalte             | Pflicht | Notizen                                    |
+| ------------------ | ------- | ------------------------------------------ |
+| sku                | nein    | Artikelnummer; Idempotenz-Schlüssel pro Org |
+| name               | ja      | Bezeichnung                                |
+| unit               | ja      | Stk, m, kg, h, l, …                         |
+| default_unit_price | nein    | dezimal (Punkt oder Komma als Separator)   |
+| tax_rate           | nein    | Steuersatz in Prozent (dezimal)            |
+| external_provider  | nein    | Quelle eines Fremd-Schlüssels              |
+| external_id        | nein    | Fremd-Schlüssel beim externen Anbieter     |
+| is_active          | nein    | bool (ja/nein/1/0), Default `true`         |
+
+Idempotenz-Schlüssel: `(organization_id, sku)`. Ohne `sku` wird stets neu
+angelegt. Header-Aliase: `artikelnummer`→`sku`, `artikel`/`bezeichnung`→`name`,
+`einheit`→`unit`, `preis`/`einzelpreis`→`default_unit_price`,
+`steuersatz`/`mwst`→`tax_rate`, `aktiv`→`is_active`.
+
+### 2.5 `vehicles.csv`
+
+| Spalte               | Pflicht | Notizen                                                      |
+| -------------------- | ------- | ------------------------------------------------------------ |
+| license_plate        | ja      | Kennzeichen; Idempotenz-Schlüssel pro Org (wird großgeschrieben) |
+| label                | nein    | Anzeigename / Modell (z. B. „Sprinter")                      |
+| vehicle_type         | nein    | `car`, `van`, `truck`, `bicycle`, `other` (Default `car`)    |
+| propulsion           | nein    | `diesel`, `petrol`, `gas`, `hybrid`, `electric`, `muscle`, `other` (Default `diesel`) |
+| ownership            | nein    | `owned`, `leased`, `rental` (Default `owned`)                |
+| odometer_km          | nein    | Kilometerstand, ganzzahlig                                   |
+| tank_capacity_liters | nein    | dezimal                                                      |
+| battery_capacity_kwh | nein    | dezimal                                                      |
+| wltp_consumption     | nein    | dezimal                                                      |
+| default_rate_per_km  | nein    | dezimal (Kilometersatz)                                      |
+| notes                | nein    |                                                              |
+
+Idempotenz-Schlüssel: `(organization_id, license_plate)`. Ein vorhandenes
+Fahrzeug mit demselben Kennzeichen wird aktualisiert, sonst neu angelegt; leere
+Zellen überschreiben keine bestehenden Werte. Die Enum-Felder erwarten die
+technischen Werte (s. o.), case-insensitiv. Header-Aliase u. a.:
+`kennzeichen`→`license_plate`, `bezeichnung`/`fahrzeug`→`label`,
+`typ`/`fahrzeugtyp`→`vehicle_type`, `antrieb`/`kraftstoff`→`propulsion`,
+`eigentum`→`ownership`, `kilometerstand`→`odometer_km`, `verbrauch`→`wltp_consumption`.
 
 ## 3. Format-Spezifikation
 
@@ -132,12 +162,13 @@ Fehlerberichten.
 
 ## 7. Permissions
 
-| Permission             |
-| ---------------------- |
-| `org.import.customers` |
-| `org.import.projects`  |
-| `org.import.users`     |
-| `org.import.materials` |
+| Permission         |
+| ------------------ |
+| `customer.import`  |
+| `project.import`   |
+| `user.import`      |
+| `material.import`  |
+| `vehicle.import`   |
 
 Plus `org.import.viewReports` für `import_runs`-Liste.
 

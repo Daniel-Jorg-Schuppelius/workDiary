@@ -75,6 +75,11 @@
                                     <x-status-badge size="xs" :tone="$classification->active ? 'success' : 'ghost'">
                                         {{ $classification->active ? __('Aktiv') : __('Inaktiv') }}
                                     </x-status-badge>
+                                    @if (! $classification->active && $classification->deprecated_at)
+                                        <div class="mt-1 text-xs text-base-content/60" title="{{ __('Nicht mehr neu wählbar, für historische Daten weiterhin lesbar.') }}">
+                                            {{ __('Stillgelegt am :date', ['date' => $classification->deprecated_at->fdate()]) }}
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="text-right whitespace-nowrap">
                                     <x-icon-btn icon="edit" size="xs"

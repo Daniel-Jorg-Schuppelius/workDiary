@@ -13,15 +13,33 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Holiday as CustomHoliday;
+use App\Support\Setting;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Schema;
 use Yasumi\{Holiday, Yasumi};
 
 class HolidayService {
     /**
-     * @var array<int, array<string, string>>
+     * Cache pro Provider-Key (Rechtsraum) und Jahr — damit ein Org-Wechsel
+     * (anderer Yasumi-Provider) nicht versehentlich gecachte Feiertage eines
+     * anderen Bundeslandes/Landes liefert.
+     *
+     * @var array<string, array<int, array<string, string>>>
      */
     private array $cache = [];
+
+    /**
+     * Aktiver Feiertags-Rechtsraum (Yasumi-Provider) der gebundenen
+     * Organisation — settings['holidays']['provider'], sonst config-Default.
+     * Dieselbe Quelle für Zuschläge (SurchargeCalculator) und Compliance.
+     */
+    public function provider(): string {
+        return (string) Setting::get('holidays.provider', 'Germany');
+    }
+
+    public function locale(): string {
+        return (string) Setting::get('holidays.locale', 'de_DE');
+    }
 
     /**
      * Liefert eine Map [Y-m-d => Feiertagsname] für das gegebene Jahr.
@@ -29,17 +47,17 @@ class HolidayService {
      * @return array<string, string>
      */
     public function forYear(int $year): array {
-        if (isset($this->cache[$year])) {
-            return $this->cache[$year];
-        }
+        $provider = $this->provider();
+        $locale = $this->locale();
 
-        $provider = (string) config('app.holidays.provider', 'Germany');
-        $locale = (string) config('app.holidays.locale', 'de_DE');
+        if (isset($this->cache[$provider][$year])) {
+            return $this->cache[$provider][$year];
+        }
 
         try {
             $holidays = Yasumi::create($provider, $year, $locale);
         } catch (\Throwable) {
-            return $this->cache[$year] = [];
+            return $this->cache[$provider][$year] = [];
         }
 
         $map = [];
@@ -72,7 +90,7 @@ class HolidayService {
             }
         }
 
-        return $this->cache[$year] = $map;
+        return $this->cache[$provider][$year] = $map;
     }
 
     public function nameFor(CarbonInterface $date): ?string {

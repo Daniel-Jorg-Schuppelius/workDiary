@@ -73,7 +73,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="text-center text-muted py-4">{{ __('Noch keine Vorlagen.') }}</td></tr>
+                <x-table.empty :colspan="5" :title="__('Noch keine Vorlagen.')" />
             @endforelse
         </x-table>
     </x-card>

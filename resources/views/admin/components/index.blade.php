@@ -27,6 +27,33 @@
         <span>{{ __('isms.components.sbom_note') }}</span>
     </div>
 
+    {{-- Health-Gate „nach Update" (Feature 022) --}}
+    <article class="card border bg-base-100 shadow-sm {{ $health['healthy'] ? 'border-success/40' : 'border-error/40' }}">
+        <div class="card-body gap-3">
+            <header class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <x-icon name="monitor_heart" />
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('isms.components.health.title') }}</h2>
+                </div>
+                <x-status-badge :tone="$health['healthy'] ? 'success' : 'error'">
+                    {{ $health['healthy'] ? __('isms.components.health.healthy') : __('isms.components.health.unhealthy', ['count' => $health['failed']]) }}
+                </x-status-badge>
+            </header>
+            <p class="text-sm text-base-content/60">{{ __('isms.components.health.run_after_update') }}</p>
+            <ul class="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
+                @foreach ($health['checks'] as $check)
+                    <li class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                        <span class="flex items-center gap-1">
+                            <x-icon :name="$check['ok'] ? 'check_circle' : 'error'" class="{{ $check['ok'] ? 'text-success' : 'text-error' }}" />
+                            {{ $check['name'] }}
+                        </span>
+                        <span class="text-right text-xs text-base-content/60">{{ $check['details'] }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+    </article>
+
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
         {{-- Anwendung --}}
         <article class="card border border-base-300 bg-base-100 shadow-sm">
@@ -161,6 +188,69 @@
                         <x-icon-btn icon="download" tone="outline" size="sm"
                                     :href="route('admin.components.sbom.download')"
                                     show-label>{{ __('isms.components.action.download') }}</x-icon-btn>
+                    @endif
+                </div>
+            </div>
+        </article>
+
+        {{-- Release-Manifest (Feature 022) --}}
+        <article class="card border border-base-300 bg-base-100 shadow-sm md:col-span-2">
+            <div class="card-body gap-3">
+                <header class="flex items-center gap-2">
+                    <x-icon name="verified" />
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('isms.components.manifest.title') }}</h2>
+                </header>
+                <p class="text-sm text-base-content/60">{{ __('isms.components.manifest.note') }}</p>
+                @if ($manifest !== null)
+                    <dl class="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
+                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                            <dt class="text-base-content/60">{{ __('isms.components.field.generated_at') }}</dt>
+                            <dd class="font-mono text-xs">{{ $manifest['generated_at'] ?? '—' }}</dd>
+                        </div>
+                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                            <dt class="text-base-content/60">{{ __('isms.components.field.build') }}</dt>
+                            <dd class="font-mono text-xs">{{ $manifest['build'] ?? '—' }}</dd>
+                        </div>
+                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                            <dt class="text-base-content/60">{{ __('isms.components.manifest.artifacts') }}</dt>
+                            <dd class="font-mono text-xs">{{ $manifest['artifacts'] }}</dd>
+                        </div>
+                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                            <dt class="text-base-content/60">{{ __('isms.components.manifest.signature') }}</dt>
+                            <dd class="text-xs">
+                                @if (! $manifest['signed'])
+                                    <x-status-badge tone="ghost" size="sm">{{ __('isms.components.manifest.unsigned') }}</x-status-badge>
+                                @elseif ($manifest['signature_valid'] === true)
+                                    <x-status-badge tone="success" size="sm">{{ __('isms.components.manifest.signature_valid') }}</x-status-badge>
+                                @else
+                                    <x-status-badge tone="error" size="sm">{{ __('isms.components.manifest.signature_invalid') }}</x-status-badge>
+                                @endif
+                            </dd>
+                        </div>
+                        <div class="flex items-baseline justify-between gap-2 md:col-span-2">
+                            <dt class="text-base-content/60">{{ __('isms.components.manifest.integrity') }}</dt>
+                            <dd class="text-xs">
+                                <x-status-badge :tone="$manifest['valid'] ? 'success' : 'error'" size="sm">
+                                    {{ $manifest['valid'] ? __('isms.components.manifest.integrity_ok') : __('isms.components.manifest.integrity_broken') }}
+                                </x-status-badge>
+                            </dd>
+                        </div>
+                    </dl>
+                @else
+                    <p class="text-sm italic text-base-content/60">
+                        {{ __('isms.components.manifest.missing', ['command' => 'php artisan release:manifest']) }}
+                    </p>
+                @endif
+                <div class="flex flex-wrap gap-2">
+                    <form method="POST" action="{{ route('admin.components.manifest.generate') }}">
+                        @csrf
+                        <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit"
+                                    show-label>{{ __('isms.components.manifest.action_generate') }}</x-icon-btn>
+                    </form>
+                    @if ($manifest !== null)
+                        <x-icon-btn icon="download" tone="outline" size="sm"
+                                    :href="route('admin.components.manifest.download')"
+                                    show-label>{{ __('isms.components.manifest.action_download') }}</x-icon-btn>
                     @endif
                 </div>
             </div>

@@ -7,7 +7,14 @@ In Progress — Teilaspekt *Supportzugriff* ist mit MVP-004 (Issue #4) in
 verbindlich geregelt. Die **Datenschutzseite für Org-Admins** ist mit MVP-005
 (Issue #5) in
 [`docs/security/datenschutzseite-konzept.md`](../security/datenschutzseite-konzept.md)
-konzipiert (Routen, Sektionen, Permissions, Akzeptanzkriterien).
+konzipiert (Routen, Sektionen, Permissions, Akzeptanzkriterien). Die
+**Admin-Sicherheitsseite** (`/admin/security`, Permission `security.view`) ist
+als read-only Aggregation umgesetzt: aktive Sessions, API-Tokens (nur
+Metadaten, niemals Token-Werte/Hashes), aktive externe Integrationen, letzte
+Daten-/Zeit-Exporte, letzte Supportzugriffe (Audit-Präfix `support.`) sowie
+2FA-Abdeckung und at-rest-Verschlüsselungs-Status (`SecurityOverviewService`,
+`Admin\SecurityController`). Die automatisierten **Lösch-/Aufbewahrungsläufe**
+bleiben offen (siehe „Später").
 
 ## Produktversprechen
 
@@ -58,7 +65,9 @@ sondern ein Verkaufsargument und Vertrauensanker.
 - Konfigurierbare externe Dienste mit klarer Datenfluss-Dokumentation.
 - AVV-/DPA-Grundlage für SaaS-Kunden.
 - Sicherheitsseite für Admins: aktive Sessions, API-Tokens, externe Integrationen,
-  letzte Exporte, letzte Supportzugriffe.
+  letzte Exporte, letzte Supportzugriffe. — **umgesetzt** (`/admin/security`,
+  read-only; 2FA-/Verschlüsselungs-Status ergänzt; Lösch-/Aufbewahrungsläufe
+  weiterhin offen).
 
 ## Akzeptanzkriterien
 

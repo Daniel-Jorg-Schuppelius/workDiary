@@ -73,6 +73,7 @@ return [
 
     'message' => [
         'issue_assigned' => ':actor hat dir diesen Offenen Punkt zugewiesen.',
+        'customer_query_raised' => 'Ein Kunde hat eine Rückfrage gestellt.',
         'due_soon' => 'Fällig am :date.',
         'overdue' => 'Überfällig seit :date.',
         'followup_due_soon' => 'Folgeaktion fällig am :date.',
@@ -88,5 +89,13 @@ return [
         'certificate_expiring' => 'Zertifikat läuft am :date ab — Re-Zertifizierung rechtzeitig planen.',
         'corrective_action_overdue' => 'Korrekturmaßnahme überfällig seit :date.',
         'risk_review_due' => 'Review der akzeptierten Risikobewertung fällig am :date.',
+        'vulnerability_overdue' => 'Schwachstelle überfällig seit :date.',
+        'supplier_review_overdue' => 'Lieferanten-Review überfällig seit :date.',
+        'sla_at_risk' => 'SLA-Lösungsfrist gefährdet — fällig am :date.',
+        'sla_breached' => 'SLA-Lösungsfrist überschritten — fällig war :date.',
+        'asset_return_overdue' => 'Asset-Rückgabe überfällig — erwartet war :date.',
+        'incident_critical' => 'Neuer kritischer Sicherheitsvorfall gemeldet.',
+        'safety_critical_event' => 'Kritisches Sicherheitsereignis (:severity) am Ort :location gemeldet.',
+        'qualification_expiring' => 'Qualifikation/Unterweisung läuft am :date ab.',
     ],
 ];

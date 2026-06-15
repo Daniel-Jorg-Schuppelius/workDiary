@@ -10,8 +10,8 @@
 {{--
   Tagesabschluss (MVP-015, docs/tagesabschluss.md §2/§8):
   EINE Seite pro Mitarbeitendem mit den Sektionen
-  A) Anwesenheit  B) Pausen  C) Auftrags-/Projektzeiten
-  D) Lücken & Warnungen  E) Bilanz  F) Aktionen (sticky auf Mobile).
+  A) Anwesenheit  B) Auftrags-/Projektzeiten  C) Lücken & Warnungen
+  D) Bilanz (inkl. Pausen Ist/Soll)  E) Aktionen (sticky auf Mobile).
   Modals laufen über <x-modal :embedded="false"> (_correction_dialog /
   _reopen_dialog) + den generischen data-entry-modal-close-Handler in
   app.js — bewusst ohne eigenes JS-File (Ctrl+Enter-Shortcut aus §8
@@ -24,10 +24,8 @@
 @section('nav-title', __('Tagesabschluss'))
 
 @php
-    use App\Enums\TimeApproval\DayClosureStatus;
-    use App\Services\TimeApproval\DayClosureValidator;
-
-    // Minuten → "H:MM h" (negativ mit Vorzeichen).
+    // Minuten → "H:MM h" (negativ mit Vorzeichen). Wird von den gemeinsamen
+    // Workflow-Partial _balance aus dem Scope übernommen.
     $fmtMin = static function (int $m): string {
         $sign = $m < 0 ? '−' : '';
         $m = abs($m);
@@ -38,26 +36,10 @@
     $nextDay = $day->addDay()->toDateString();
     $userParam = $isOwnDay ? [] : ['user' => \App\Support\Sqid::encode(\App\Models\User::class, $targetUser->id)];
 
-    $isOpen = $effectiveStatus === DayClosureStatus::Open;
-    $isClosedState = $effectiveStatus === DayClosureStatus::Closed;
-    $inCorrection = $effectiveStatus === DayClosureStatus::Correction;
-
-    $canCloseNow = $isOwnDay && $isOpen && ! $hasBlocking && ! $isFuture && ! $monthLocked;
-    $closeBlockedReason = null;
-    if ($isFuture) {
-        $closeBlockedReason = __('day-close.errors.close_blocked.future');
-    } elseif ($monthLocked) {
-        $closeBlockedReason = __('day-close.errors.close_blocked.month_locked');
-    } elseif ($hasBlocking) {
-        $closeBlockedReason = __('day-close.errors.close_blocked.blocking');
-    } elseif (! $isOpen) {
-        $closeBlockedReason = __('day-close.errors.close_blocked.not_open');
-    }
-
-    $blockingIssues = array_values(array_filter($issues, fn(array $i) => $i['severity'] === DayClosureValidator::SEVERITY_BLOCKING));
-    $warningIssues = array_values(array_filter($issues, fn(array $i) => $i['severity'] === DayClosureValidator::SEVERITY_WARNING));
-    $breakIssue = collect($issues)->firstWhere('code', DayClosureValidator::CHECK_BREAK_REQUIRED);
-    $pendingCorrections = $correctionRequests->filter(fn($r) => $r->isPending());
+    // Wird von den hier verbliebenen Inline-Sektionen A) Anwesenheit (Stempeln)
+    // und B) Zeiteinträge („Zeit buchen") genutzt. Die übrigen Status-Flags
+    // berechnen die gemeinsamen Partials (_actions) selbst.
+    $isOpen = $effectiveStatus === \App\Enums\TimeApproval\DayClosureStatus::Open;
 @endphp
 
 @section('content')
@@ -171,31 +153,8 @@
             </p>
         </x-card>
 
-        {{-- B) Pausen ------------------------------------------------------ --}}
-        <x-card as="section">
-            <h2 class="mb-3 flex items-center gap-2 text-base font-semibold">
-                <span class="material-symbols-outlined" aria-hidden="true">pause</span>
-                {{ __('day-close.section.breaks') }}
-            </h2>
-            <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-3">
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.recorded_break') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['breaks']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.required_break') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['required_break']) }}</div>
-                </div>
-            </div>
-            @if ($breakIssue)
-                <div role="alert" class="alert alert-error mt-3">
-                    <span class="material-symbols-outlined" aria-hidden="true">block</span>
-                    <span>{{ $validator->messageFor($breakIssue) }}</span>
-                </div>
-            @endif
-        </x-card>
 
-        {{-- C) Auftrags-/Projektzeiten -------------------------------------- --}}
+        {{-- B) Auftrags-/Projektzeiten -------------------------------------- --}}
         <x-card as="section">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 text-base font-semibold">
@@ -265,167 +224,16 @@
             @endif
         </x-card>
 
-        {{-- D) Lücken & Warnungen (⛔ vor ⚠, §2.4) --------------------------- --}}
-        <x-card as="section">
-            <h2 class="mb-3 flex items-center gap-2 text-base font-semibold">
-                <span class="material-symbols-outlined" aria-hidden="true">report</span>
-                {{ __('day-close.section.issues') }}
-            </h2>
-            @if (empty($issues))
-                <div role="alert" class="alert alert-success">
-                    <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
-                    <span>{{ __('day-close.hint.no_issues') }}</span>
-                </div>
-            @else
-                <ul class="space-y-2">
-                    @foreach ($blockingIssues as $issue)
-                        <li role="alert" class="alert alert-error">
-                            <span class="material-symbols-outlined" aria-hidden="true">block</span>
-                            <span>{{ $validator->messageFor($issue) }}</span>
-                        </li>
-                    @endforeach
-                    @foreach ($warningIssues as $issue)
-                        <li role="alert" class="alert alert-warning">
-                            <span class="material-symbols-outlined" aria-hidden="true">warning</span>
-                            <span>{{ $validator->messageFor($issue) }}</span>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-        </x-card>
+        {{-- C) Lücken & Warnungen (⛔ vor ⚠, §2.4) --------------------------- --}}
+        @include('time-approval.day._issues')
 
-        {{-- E) Bilanz (§2.5) ------------------------------------------------ --}}
-        <x-card as="section">
-            <h2 class="mb-3 flex items-center gap-2 text-base font-semibold">
-                <span class="material-symbols-outlined" aria-hidden="true">analytics</span>
-                {{ __('day-close.section.balance') }}
-            </h2>
-            <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.target') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['target']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.gross') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['gross']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.break') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['breaks']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.net') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['net']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.booked') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['booked']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.diff') }}</div>
-                    <div @class(['font-medium tabular-nums', 'text-warning' => abs($aggregates['diff']) > 5])>{{ $fmtMin($aggregates['diff']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.day_balance') }}</div>
-                    <div @class(['font-medium tabular-nums', 'text-warning' => abs($aggregates['day_balance']) > 120])>{{ $fmtMin($aggregates['day_balance']) }}</div>
-                </div>
-                <div>
-                    <div class="text-xs opacity-70">{{ __('day-close.field.month_balance') }}</div>
-                    <div class="font-medium tabular-nums">{{ $fmtMin($aggregates['month_balance']) }}</div>
-                </div>
-            </div>
-        </x-card>
+        {{-- D) Bilanz inkl. Pausen (§2.5) ----------------------------------- --}}
+        @include('time-approval.day._balance')
 
         {{-- Korrekturanträge (§5) ------------------------------------------ --}}
-        @if ($correctionRequests->isNotEmpty())
-            <x-card as="section">
-                <h2 class="mb-3 flex items-center gap-2 text-base font-semibold">
-                    <span class="material-symbols-outlined" aria-hidden="true">rule</span>
-                    {{ __('day-close.section.corrections') }}
-                </h2>
-                <ul class="space-y-3 text-sm">
-                    @foreach ($correctionRequests as $cr)
-                        <li class="flex flex-wrap items-start justify-between gap-2 rounded-box border border-base-300 p-3">
-                            <div class="min-w-0">
-                                <div class="flex items-center gap-2">
-                                    <x-status-badge :tone="$cr->status->tone()" size="sm">{{ $cr->status->label() }}</x-status-badge>
-                                    <span class="text-xs opacity-70">{{ $cr->created_at?->fdatetime() }} · {{ $cr->requestedBy?->name }}</span>
-                                </div>
-                                <p class="mt-1 whitespace-pre-line">{{ $cr->reason }}</p>
-                                @if ($cr->decision_note)
-                                    <p class="mt-1 text-xs opacity-70">{{ __('day-close.field.decision') }}: {{ $cr->decision_note }} ({{ $cr->decidedBy?->name }})</p>
-                                @endif
-                            </div>
-                            @if ($cr->isPending() && $closure->exists)
-                                @can('approveCorrection', $closure)
-                                    <div class="flex gap-1">
-                                        <form method="POST" action="{{ route('day-close.correction.approve', $cr) }}">
-                                            @csrf
-                                            <x-icon-btn icon="check" tone="success" size="sm" type="submit"
-                                                        show-label>{{ __('day-close.action.approve') }}</x-icon-btn>
-                                        </form>
-                                        <form method="POST" action="{{ route('day-close.correction.reject', $cr) }}">
-                                            @csrf
-                                            <x-icon-btn icon="close" tone="warning" size="sm" type="submit"
-                                                        show-label>{{ __('day-close.action.reject') }}</x-icon-btn>
-                                        </form>
-                                    </div>
-                                @endcan
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            </x-card>
-        @endif
+        @include('time-approval.day._corrections')
 
-        {{-- F) Aktionen (sticky CTA auf Mobile, §8) -------------------------- --}}
-        <div class="sticky bottom-0 z-10 -mx-2 rounded-box border border-base-300 bg-base-100/95 p-3 shadow-xs backdrop-blur lg:static lg:mx-0">
-            <div class="flex flex-wrap items-center justify-end gap-2">
-                @if ($isOwnDay && $isOpen && ! $monthLocked)
-                    <form method="POST" action="{{ route('day-close.save') }}">
-                        @csrf
-                        <input type="hidden" name="date" value="{{ $day->toDateString() }}" />
-                        <x-icon-btn icon="save" tone="ghost" size="sm" type="submit"
-                                    show-label>{{ __('day-close.action.save') }}</x-icon-btn>
-                    </form>
-                @endif
-
-                @if ($isOwnDay && ! $monthLocked && ($isOpen || $inCorrection))
-                    <span @class(['tooltip tooltip-left' => ! $canCloseNow]) @if (! $canCloseNow && $closeBlockedReason) data-tip="{{ $closeBlockedReason }}" @endif>
-                        <form method="POST" action="{{ route('day-close.close') }}">
-                            @csrf
-                            <input type="hidden" name="date" value="{{ $day->toDateString() }}" />
-                            <button type="submit" class="btn btn-sm btn-primary" @disabled(! $canCloseNow)>
-                                <span class="material-symbols-outlined text-base" aria-hidden="true">task_alt</span>
-                                {{ __('day-close.action.close_day') }}
-                            </button>
-                        </form>
-                    </span>
-                @endif
-
-                @if ($isOwnDay && $isClosedState && ! $monthLocked && $pendingCorrections->isEmpty())
-                    @can('requestCorrection', $closure)
-                        <button type="button" class="btn btn-sm btn-warning"
-                                onclick="document.getElementById('day-correction-dialog').showModal()">
-                            <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
-                            {{ __('day-close.action.request_correction') }}
-                        </button>
-                    @endcan
-                @endif
-
-                @if ($closure->exists && $isClosedState && ! $monthLocked)
-                    @can('reopen', $closure)
-                        <button type="button" class="btn btn-sm btn-ghost"
-                                onclick="document.getElementById('day-reopen-dialog').showModal()">
-                            <span class="material-symbols-outlined text-base" aria-hidden="true">lock_open</span>
-                            {{ __('day-close.action.reopen') }}
-                        </button>
-                    @endcan
-                @endif
-            </div>
-        </div>
-
-        @include('time-approval.day._correction_dialog')
-        @include('time-approval.day._reopen_dialog')
+        {{-- F) Aktionen (sticky CTA auf Mobile, §8) + Dialoge ---------------- --}}
+        @include('time-approval.day._actions')
     </x-index-page>
 @endsection

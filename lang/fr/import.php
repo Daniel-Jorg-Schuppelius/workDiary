@@ -6,6 +6,7 @@ return [
         'projects' => 'Projets',
         'users' => 'Utilisateurs',
         'materials' => 'Matériaux',
+        'vehicles' => 'Véhicules',
         'scheduled_shifts' => 'Plannings de service',
         'tours' => 'Tournées',
         'remote_sessions' => 'Sessions de maintenance à distance',

@@ -77,6 +77,10 @@ class SaveCustomerRequest extends FormRequest {
             // änderbar — ohne die Permission wird das Feld verworfen (siehe
             // prepareForValidation) und taucht nicht in validated() auf.
             'billing_mode' => ['sometimes', 'nullable', Rule::in(\App\Enums\Finance\BillingMode::values())],
+            // DATEV-Debitorennummer (Feature 045, Priorität 2): nur mit
+            // finance.config änderbar (siehe prepareForValidation); leer ⇒
+            // deterministische Vergaberegel im DatevBookingService.
+            'debtor_no' => ['sometimes', 'nullable', 'string', 'max:12'],
             'contact_persons' => ['nullable', 'array', 'max:20'],
             'contact_persons.*.name' => ['nullable', 'string', 'max:200'],
             'contact_persons.*.email' => ['nullable', 'email', 'max:255'],
@@ -154,6 +158,16 @@ class SaveCustomerRequest extends FormRequest {
                 $this->request->remove('billing_mode');
             } elseif ($this->input('billing_mode') === '') {
                 $this->merge(['billing_mode' => null]);
+            }
+        }
+
+        // Debitorennummer (Feature 045): identische finance.config-Härtung.
+        if ($this->has('debtor_no')) {
+            $canConfigureFinance = $this->user()?->can(\App\Enums\User\Permission::FinanceConfig->value) === true;
+            if (! $canConfigureFinance) {
+                $this->request->remove('debtor_no');
+            } elseif ($this->input('debtor_no') === '') {
+                $this->merge(['debtor_no' => null]);
             }
         }
 

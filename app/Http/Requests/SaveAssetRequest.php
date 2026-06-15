@@ -57,6 +57,9 @@ class SaveAssetRequest extends FormRequest {
                 ),
             ],
             'status' => ['required', new Enum(AssetStatus::class), Rule::notIn([AssetStatus::Decommissioned->value])],
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['nullable', 'string', 'max:64'],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }
 

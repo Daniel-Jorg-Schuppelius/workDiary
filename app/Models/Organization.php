@@ -10,7 +10,9 @@
 
 namespace App\Models;
 
+use App\Enums\Organization\TenantStatus;
 use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
+use App\Services\Licensing\{LicenseResult, LicenseService};
 use Database\Factories\OrganizationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +28,7 @@ use Illuminate\Support\{Carbon, Str};
  * @property string|null $timezone
  * @property array<string, mixed>|null $settings
  * @property bool $is_active
+ * @property TenantStatus|null $tenant_status
  * @property int|null $owner_id
  * @property Carbon|null $trial_ends_at
  * @property Carbon|null $created_at
@@ -103,6 +106,7 @@ class Organization extends Model {
         'timezone',
         'settings',
         'is_active',
+        'tenant_status',
         'deactivated_at',
         'owner_id',
         'trial_ends_at',
@@ -115,6 +119,7 @@ class Organization extends Model {
     protected $casts = [
         'settings' => 'array',
         'is_active' => 'boolean',
+        'tenant_status' => TenantStatus::class,
         'two_factor_required' => 'boolean',
         'trial_ends_at' => 'datetime',
         'deactivated_at' => 'datetime',
@@ -180,6 +185,54 @@ class Organization extends Model {
     /** @return HasMany<User, $this> */
     public function users(): HasMany {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * Aktive Nutzer dieser Organisation – Bezugsgröße für das Lizenz-Nutzerlimit
+     * (Feature 021). User nutzen keinen BelongsToOrganization-GlobalScope, daher
+     * explizit ohne Scopes gegen `organization_id` zählen.
+     */
+    public function activeUserCount(): int {
+        return User::withoutGlobalScopes()
+            ->where('organization_id', $this->getKey())
+            ->count();
+    }
+
+    /**
+     * Effektiver SaaS-Mandantenstatus (Feature 021). Ein explizit gesetzter
+     * `tenant_status` hat Vorrang; sonst wird abgeleitet:
+     *  - `suspended`, wenn die Org deaktiviert ist (`is_active = false`),
+     *  - `expired`, wenn die org-gebundene Lizenz endgültig abgelaufen ist,
+     *  - `trial`, solange `trial_ends_at` in der Zukunft liegt,
+     *  - sonst `active`.
+     *
+     * Der optionale Lizenz-Status wird hereingereicht, um Doppel-Auflösung zu
+     * vermeiden; fehlt er, wird er bei Bedarf über {@see LicenseService} geholt.
+     */
+    public function tenantStatus(?LicenseResult $license = null): TenantStatus {
+        if ($this->tenant_status instanceof TenantStatus) {
+            return $this->tenant_status;
+        }
+
+        if (! $this->is_active) {
+            return TenantStatus::Suspended;
+        }
+
+        $license ??= ($this->license_key ? app(LicenseService::class)->forOrganization($this) : null);
+        if ($license !== null && $license->status === \App\Services\Licensing\LicenseStatus::Expired) {
+            return TenantStatus::Expired;
+        }
+
+        if ($this->trial_ends_at !== null && $this->trial_ends_at->isFuture()) {
+            return TenantStatus::Trial;
+        }
+
+        return TenantStatus::Active;
+    }
+
+    /** Sperrt der aktuelle Mandantenstatus schreibende Aktionen? */
+    public function tenantWritesBlocked(?LicenseResult $license = null): bool {
+        return $this->tenantStatus($license)->blocksWrites();
     }
 
     /**

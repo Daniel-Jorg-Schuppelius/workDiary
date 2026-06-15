@@ -14,7 +14,9 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Support\{SupportReportBuilder, SupportReportPackager};
-use Illuminate\Http\{RedirectResponse, Request};
+use CommonToolkit\Helper\Data\JsonHelper;
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -82,5 +84,53 @@ class SupportReportController extends Controller {
 
         return response()->download($package['path'], basename($package['path']))
             ->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Lädt den Bericht als reine JSON-Datei (ohne ZIP/Verschlüsselung) herunter.
+     * Datensparsam: nur die Whitelist-Felder des Builders, keine Kundendaten.
+     */
+    public function download(Request $request, SupportReportBuilder $builder): Response {
+        Gate::authorize(Permission::PlatformSupportExport->value);
+
+        /** @var User $user */
+        $user = $request->user();
+
+        $bundle = $builder->build();
+        $json = JsonHelper::encode($bundle, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        $filename = 'support-report-' . Carbon::now()->format('Y-m-d') . '.json';
+
+        AuditLog::query()->create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'event' => 'support.reportDownloaded',
+            'auditable_type' => User::class,
+            'auditable_id' => $user->id,
+            'changes' => [
+                'format' => 'json',
+                'sha256' => hash('sha256', $json),
+                'bytes' => strlen($json),
+            ],
+        ]);
+
+        return response($json, 200, [
+            'Content-Type' => 'application/json; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
+    }
+
+    /**
+     * Zeigt den Bericht als JSON im Browser an (Vorschau, ohne Download).
+     * Identische Whitelist-Quelle wie {@see download()}.
+     */
+    public function preview(Request $request, SupportReportBuilder $builder): JsonResponse {
+        Gate::authorize(Permission::PlatformSupportExport->value);
+
+        $bundle = $builder->build();
+
+        return response()->json($bundle, 200, [
+            'X-Content-Type-Options' => 'nosniff',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     }
 }

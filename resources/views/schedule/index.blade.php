@@ -21,6 +21,8 @@
 @endphp
 
 <x-index-page overflow="clip" :subtitle="__('Personalplanung und Schichtzuweisung des Mandanten.')">
+    @include('schedule._shift_tabs')
+
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
     <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
         {{-- User filter --}}
@@ -38,17 +40,10 @@
         @if ($isAdmin)
             <x-slot:extra>
                 <x-icon-btn icon="tune" size="sm" type="button" id="btn-open-type-manager" show-label>{{ __('Schichttypen') }}</x-icon-btn>
-                <x-icon-btn icon="upload" size="sm" :href="route('admin.imports.create', ['entity' => 'scheduled_shifts'])" show-label>{{ __('Import') }}</x-icon-btn>
-                <div class="dropdown dropdown-end">
-                    <label tabindex="0" class="btn btn-sm btn-ghost gap-1">
-                        <x-icon name="print" /><span>{{ __('Drucken') }}</span>
-                    </label>
-                    <ul tabindex="0" class="menu dropdown-content z-1 mt-2 w-72 rounded-box bg-base-100 p-2 shadow">
-                        <li class="menu-title">{{ __('Übersichten') }}</li>
-                        <li><a href="{{ route('print.on-call') }}" target="_blank">{{ __('Bereitschaft & Notdienst (A4 quer)') }}</a></li>
-                        <li><a href="{{ route('print.vacations', ['year' => $anchor->year]) }}" target="_blank">{{ __('Urlaubsübersicht ') . $anchor->year . __(' (A4 hoch)') }}</a></li>
-                    </ul>
-                </div>
+                {{-- Import & Drucken öffnen echte Dialoge (s. _print_import_dialogs) statt
+                     Vollseiten-Navigation bzw. CSS-Dropdown (das im overflow-clip-Container unsichtbar war). --}}
+                <x-icon-btn icon="upload" size="sm" type="button" id="btn-open-import" show-label>{{ __('Import') }}</x-icon-btn>
+                <x-icon-btn icon="print" size="sm" type="button" id="btn-open-print" show-label>{{ __('Drucken') }}</x-icon-btn>
             </x-slot:extra>
         @endif
     </x-filter-bar>
@@ -102,9 +97,10 @@
 {{-- ── Shift dialog ─────────────────────────────────────────────────────── --}}
 @include('schedule.partials._shift_dialog')
 
-{{-- ── Shift-type manager ──────────────────────────────────────────────── --}}
+{{-- ── Shift-type manager + Druck/Import-Dialoge ───────────────────────── --}}
 @if ($isAdmin)
     @include('schedule.partials._shift_type_manager')
+    @include('schedule.partials._print_import_dialogs')
 @endif
 
 @php
@@ -138,7 +134,9 @@ window.__scheduleConfig = {
         typesStore:    @json(route('schedule.types.store')),
         typesUpdate:   @json(url('schedule/types')),
         typesDestroy:  @json(url('schedule/types')),
+        staffingSuggest: @json(route('schedule.suggest')),
     },
+    canSuggest: {{ ($canSuggest ?? false) ? 'true' : 'false' }},
     shiftTypes: @json($scheduleShiftTypes),
     users: @json($scheduleUsers),
 };

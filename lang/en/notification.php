@@ -73,6 +73,7 @@ return [
 
     'message' => [
         'issue_assigned' => ':actor assigned this open issue to you.',
+        'customer_query_raised' => 'A customer raised a query.',
         'due_soon' => 'Due on :date.',
         'overdue' => 'Overdue since :date.',
         'followup_due_soon' => 'Follow-up due on :date.',
@@ -88,5 +89,13 @@ return [
         'certificate_expiring' => 'Certificate expires on :date — plan re-certification in time.',
         'corrective_action_overdue' => 'Corrective action overdue since :date.',
         'risk_review_due' => 'Review of the accepted risk assessment due on :date.',
+        'vulnerability_overdue' => 'Vulnerability overdue since :date.',
+        'supplier_review_overdue' => 'Supplier review overdue since :date.',
+        'sla_at_risk' => 'SLA resolution deadline at risk — due on :date.',
+        'sla_breached' => 'SLA resolution deadline breached — was due :date.',
+        'asset_return_overdue' => 'Asset return overdue — was expected :date.',
+        'incident_critical' => 'New critical security incident reported.',
+        'safety_critical_event' => 'Critical safety event (:severity) reported at :location.',
+        'qualification_expiring' => 'Qualification/training expires on :date.',
     ],
 ];

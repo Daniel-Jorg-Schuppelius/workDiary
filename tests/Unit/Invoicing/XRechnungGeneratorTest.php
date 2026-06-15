@@ -127,12 +127,10 @@ class XRechnungGeneratorTest extends TestCase {
         $xml = app(XRechnungGenerator::class)->generate($invoice);
         $xp = $this->xpath($xml);
 
-        // Toolkit-Realität: das XRECHNUNG-Profil emittiert die alte
-        // 2.x-Kennung `urn:xoev-de:kosit:standard:xrechnung_3.0` (aktuell
-        // wäre `urn:xeinkauf.de:kosit:xrechnung_3.0`) — Befund an den
-        // Toolkit-Maintainer, vendor wird nicht gepatcht.
+        // Seit php-erechnung-toolkit v0.1.12 emittiert das XRECHNUNG-Profil
+        // die korrekte XRechnung-3.0-Kennung (xeinkauf.de) — KoSIT-konform.
         $this->assertSame(
-            'urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0',
+            'urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0',
             XRechnungGenerator::CUSTOMIZATION_ID,
         );
         $this->assertSame(XRechnungGenerator::CUSTOMIZATION_ID, $xp->evaluate('string(/ubl:Invoice/cbc:CustomizationID)'));
@@ -156,10 +154,11 @@ class XRechnungGeneratorTest extends TestCase {
         $this->assertSame('Musterstraße 1', $xp->evaluate("string($party/cac:PostalAddress/cbc:StreetName)"));
         $this->assertSame('12345', $xp->evaluate("string($party/cac:PostalAddress/cbc:PostalZone)"));
         $this->assertSame('DE', $xp->evaluate("string($party/cac:PostalAddress/cac:Country/cbc:IdentificationCode)"));
-        // BT-31 (USt-IdNr., TaxScheme VAT); BT-32 (Steuernummer) legt das
-        // Toolkit als PartyLegalEntity/CompanyID ab (nicht als TaxScheme FC).
+        // BT-31 (USt-IdNr.) als PartyTaxScheme/TaxScheme VAT; BT-32
+        // (Steuernummer) seit Toolkit v0.1.12 korrekt als eigenes
+        // PartyTaxScheme/TaxScheme FC (vorher fälschlich PartyLegalEntity).
         $this->assertSame('DE123456789', $xp->evaluate("string($party/cac:PartyTaxScheme[cac:TaxScheme/cbc:ID='VAT']/cbc:CompanyID)"));
-        $this->assertSame('12/345/67890', $xp->evaluate("string($party/cac:PartyLegalEntity/cbc:CompanyID)"));
+        $this->assertSame('12/345/67890', $xp->evaluate("string($party/cac:PartyTaxScheme[cac:TaxScheme/cbc:ID='FC']/cbc:CompanyID)"));
         $this->assertSame('rechnung@workdiary.example', $xp->evaluate("string($party/cac:Contact/cbc:ElectronicMail)"));
     }
 
@@ -239,6 +238,20 @@ class XRechnungGeneratorTest extends TestCase {
         $this->assertSame('Beratung', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='1']/cac:Item/cbc:Name)"));
     }
 
+    public function test_unit_mapping_stueck_to_h87(): void {
+        // Stück ⇒ H87 (UN/ECE Rec 20 „piece", seit php-erechnung-toolkit
+        // v0.1.12). Nur die Einheit der ersten Position ändert sich, die
+        // Beträge bleiben identisch.
+        $invoice = $this->makeIssuedInvoice();
+        $invoice->items()->where('position', 1)->update(['unit' => 'Stück']);
+        $invoice->load('items');
+
+        $xml = app(XRechnungGenerator::class)->generate($invoice);
+        $xp = $this->xpath($xml);
+
+        $this->assertSame('H87', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='1']/cbc:InvoicedQuantity/@unitCode)"));
+    }
+
     public function test_zero_tax_rate_maps_to_category_z(): void {
         $invoice = $this->makeIssuedInvoice('0.00');
         $xml = app(XRechnungGenerator::class)->generate($invoice);
@@ -267,12 +280,11 @@ class XRechnungGeneratorTest extends TestCase {
 
         $means = '/ubl:Invoice/cac:PaymentMeans';
         $this->assertSame('58', $xp->evaluate("string($means/cbc:PaymentMeansCode)"));
-        // Toolkit-Realität: die IBAN wird in 4er-Blöcken formatiert (Party-
-        // Konstruktor) und kein cbc:PaymentID emittiert — Befund an den
-        // Toolkit-Maintainer (KoSIT erwartet die IBAN ohne Leerzeichen).
+        // IBAN seit Toolkit v0.1.12 ohne Leerzeichen (KoSIT-konform) — direkt
+        // ohne Normalisierung geprüft, damit eine Regression auffällt.
         $this->assertSame(
             'DE89370400440532013000',
-            str_replace(' ', '', $xp->evaluate("string($means/cac:PayeeFinancialAccount/cbc:ID)")),
+            $xp->evaluate("string($means/cac:PayeeFinancialAccount/cbc:ID)"),
         );
         $this->assertSame('COBADEFFXXX', $xp->evaluate("string($means/cac:PayeeFinancialAccount/cac:FinancialInstitutionBranch/cbc:ID)"));
     }

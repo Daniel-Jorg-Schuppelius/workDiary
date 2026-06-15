@@ -101,6 +101,21 @@ interface Plugin {
     public function healthCheck(): PluginHealth;
 
     /**
+     * Kleinste WorkDiary-Kernversion (config('app.version')), mit der dieses
+     * Plugin kompatibel ist (SemVer, inklusive). `null` = keine Untergrenze.
+     * Default-Implementierung liefert {@see \App\Plugins\PluginDefaults}.
+     */
+    public function minAppVersion(): ?string;
+
+    /**
+     * Größte WorkDiary-Kernversion, mit der dieses Plugin getestet/kompatibel
+     * ist (SemVer, inklusive). `null` = keine Obergrenze. Wird beim Aktivieren
+     * und im Healthcheck gegen die laufende Kernversion geprüft
+     * ({@see \App\Plugins\PluginCompatibility}). Default in {@see \App\Plugins\PluginDefaults}.
+     */
+    public function maxAppVersion(): ?string;
+
+    /**
      * Ob das Plugin pro Organisation betrieben wird (eigene Konfiguration /
      * API-Keys je Org) statt global auf der Instanz. Steuert den geplanten
      * Healthcheck: bei `true` wird er je Organisation mit gebundenem Kontext

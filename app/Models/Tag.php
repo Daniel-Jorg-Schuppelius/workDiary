@@ -85,4 +85,19 @@ class Tag extends Model {
     public function assignments(): MorphToMany {
         return $this->morphedByMany(EmergencyAssignment::class, 'taggable');
     }
+
+    /** @return MorphToMany<Customer, $this> */
+    public function customers(): MorphToMany {
+        return $this->morphedByMany(Customer::class, 'taggable');
+    }
+
+    /** @return MorphToMany<Asset, $this> */
+    public function assets(): MorphToMany {
+        return $this->morphedByMany(Asset::class, 'taggable');
+    }
+
+    /** @return MorphToMany<Protocol, $this> */
+    public function protocols(): MorphToMany {
+        return $this->morphedByMany(Protocol::class, 'taggable');
+    }
 }

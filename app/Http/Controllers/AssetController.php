@@ -13,8 +13,8 @@ namespace App\Http\Controllers;
 use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
-use App\Models\{Asset, Attachment, Building, Customer, DiaryEntry, Floor, ForeignCustomer, MaintenancePlan, MaterialUsage, Protocol, Room, Site, User};
-use App\Services\Asset\{AssetService, AssetStatusVisibilityService, AssetTimelineService};
+use App\Models\{Asset, Attachment, Building, Customer, DiaryEntry, Floor, ForeignCustomer, MaintenancePlan, MaterialUsage, Protocol, Room, Site, Tag, User};
+use App\Services\Asset\{AssetLifecycleService, AssetService, AssetStatusVisibilityService, AssetTimelineService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -23,6 +23,31 @@ use Illuminate\View\View;
 
 class AssetController extends Controller {
     private const ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
+
+    /**
+     * Trennt die Tag-Eingaben aus dem validierten Payload heraus (sie sind
+     * keine Asset-Spalten und dürfen nicht an den AssetService durchgereicht
+     * werden) und normalisiert sie für {@see HasTags::syncTagsFromInput()}.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{0: list<int>, 1: list<string>}
+     */
+    private function extractTagInput(array &$payload): array {
+        // tag_ids kommen als opake Sqids aus dem Tag-Picker; rohe numerische
+        // IDs werden ebenfalls toleriert (Sqid::decodeOrNumeric).
+        $tagIds = array_values(array_filter(array_map(
+            static fn($v) => is_scalar($v) ? Sqid::decodeOrNumeric(Tag::class, (string) $v) : null,
+            (array) ($payload['tag_ids'] ?? []),
+        ), static fn($v): bool => $v !== null));
+        $newTags = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) ($payload['new_tags'] ?? '')),
+        )));
+
+        unset($payload['tag_ids'], $payload['new_tags']);
+
+        return [$tagIds, $newTags];
+    }
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Asset::class);
@@ -36,7 +61,11 @@ class AssetController extends Controller {
         $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
 
         $assetsQuery = Asset::query()
-            ->with(['customer:id,name'])
+            ->with(['customer:id,name', 'tags:id,name,color,slug'])
+            ->withCount([
+                'assignments as open_assignments_count' => fn($q) => $q->whereNull('returned_at'),
+                'defects as blocking_defects_count' => fn($q) => $q->blocking(),
+            ])
             ->orderByRaw("case when status = ? then 1 else 0 end asc", [AssetStatus::Blocked->value])
             ->orderBy($sort, $dir);
 
@@ -113,6 +142,7 @@ class AssetController extends Controller {
             'foreignCustomers' => $this->foreignCustomerOptions(),
             'categoryOptions' => $this->categoryOptions(),
             'prefill' => $prefill,
+            'allTags' => Tag::query()->orderBy('name')->get(),
         ] + $this->facilityData());
     }
 
@@ -125,17 +155,20 @@ class AssetController extends Controller {
         }
 
         $payload = $request->validated();
+        [$tagIds, $newTags] = $this->extractTagInput($payload);
         $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
             ? AssetOwnership::Organization->value
             : AssetOwnership::Customer->value;
 
         try {
-            $assetService->create($user, $payload);
+            $asset = $assetService->create($user, $payload);
         } catch (AssetValidationException $exception) {
             return back()
                 ->withInput()
                 ->withErrors(['status' => __($exception->getMessage())]);
         }
+
+        $asset->syncTagsFromInput($tagIds, $newTags);
 
         return redirect()->route('assets.index')->with('success', __('Asset angelegt.'));
     }
@@ -156,13 +189,14 @@ class AssetController extends Controller {
         ];
 
         return view('assets._form_dialog', [
-            'asset' => $asset,
+            'asset' => $asset->load('tags'),
             'classOptions' => $this->assetClassOptions(),
             'statusOptions' => $this->assetStatusOptions(),
             'customers' => $this->customerOptions(),
             'foreignCustomers' => $this->foreignCustomerOptions(),
             'categoryOptions' => $this->categoryOptions(),
             'prefill' => $prefill,
+            'allTags' => Tag::query()->orderBy('name')->get(),
         ] + $this->facilityData());
     }
 
@@ -175,6 +209,7 @@ class AssetController extends Controller {
         }
 
         $payload = $request->validated();
+        [$tagIds, $newTags] = $this->extractTagInput($payload);
         $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
             ? AssetOwnership::Organization->value
             : AssetOwnership::Customer->value;
@@ -187,6 +222,8 @@ class AssetController extends Controller {
                 ->withErrors(['status' => __($exception->getMessage())]);
         }
 
+        $asset->syncTagsFromInput($tagIds, $newTags);
+
         return redirect()
             ->route('assets.show', $asset)
             ->with('success', __('Asset aktualisiert.'));
@@ -197,6 +234,8 @@ class AssetController extends Controller {
         Request $request,
         AssetTimelineService $assetTimeline,
         AssetStatusVisibilityService $assetStatusVisibility,
+        \App\Services\Asset\AssetAssignmentService $assignmentService,
+        AssetLifecycleService $assetLifecycle,
     ): View {
         Gate::authorize('view', $asset);
         $user = $request->user();
@@ -205,8 +244,28 @@ class AssetController extends Controller {
             abort(403);
         }
 
-        $asset->load(['customer:id,name', 'room.floorRelation.building.site', 'softwareInstallations.software', 'operatingSystem.software']);
+        $asset->load([
+            'customer:id,name',
+            'room.floorRelation.building.site',
+            'room.cleaningProfile',
+            'room.requirements' => fn($q) => $q->where('is_active', true),
+            'softwareInstallations.software',
+            'operatingSystem.software',
+            'tags:id,name,color,slug',
+        ]);
         $asset->loadCount(['diaryEntries', 'protocols', 'materialUsages', 'attachments']);
+
+        $currentAssignment = $assignmentService->openAssignment($asset);
+        $currentAssignment?->load(['assignedToUser:id,name', 'assignedToTeam:id,name', 'checkedOutBy:id,name', 'diaryEntry:id,title']);
+        $assignmentHistory = $asset->assignments()
+            ->whereNotNull('returned_at')
+            ->with(['assignedToUser:id,name', 'assignedToTeam:id,name'])
+            ->limit(12)
+            ->get();
+        $defects = $asset->defects()
+            ->with(['reportedBy:id,name', 'resolvedBy:id,name'])
+            ->limit(20)
+            ->get();
 
         $diaryEntries = $asset->diaryEntries()
             ->with(['user:id,name', 'project:id,name'])
@@ -275,6 +334,8 @@ class AssetController extends Controller {
 
         return view('assets.show', [
             'asset' => $asset,
+            'lifecycle' => $assetLifecycle->summary($asset),
+            'roomRequirements' => $asset->room_id !== null && $asset->room !== null ? $asset->room->requirements : collect(),
             'classOptions' => $this->assetClassOptions(),
             'statusOptions' => $this->assetStatusOptions(),
             'diaryEntries' => $diaryEntries,
@@ -283,6 +344,13 @@ class AssetController extends Controller {
             'attachments' => $attachments,
             'timelineEntries' => $timelineEntries,
             'statusSummary' => $visibilitySummary,
+            'currentAssignment' => $currentAssignment,
+            'assignmentHistory' => $assignmentHistory,
+            'defects' => $defects,
+            'isCheckedOut' => $currentAssignment !== null,
+            'isDefectBlocked' => $assignmentService->isBlocked($asset),
+            'canCheckout' => Gate::forUser($user)->allows('checkout', $asset),
+            'canManageDefects' => Gate::forUser($user)->allows('manageDefects', $asset),
             'canUnblock' => Gate::forUser($user)->allows('update', $asset),
             'maintenancePlans' => $maintenancePlans,
             'intervalKindOptions' => $intervalKindOptions,

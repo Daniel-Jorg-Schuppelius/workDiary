@@ -140,6 +140,85 @@ class ProcedureTemplateService {
     }
 
     /**
+     * Aktualisiert die Stammdaten einer Vorlage (Name/Beschreibung/Domain)
+     * sowie deren Aktiv-Status. Versionen bleiben unberuehrt.
+     *
+     * @param  array{name?: string, description?: ?string, domain?: ?string, active?: bool}  $attributes
+     */
+    public function updateTemplate(ProcedureTemplate $template, array $attributes): ProcedureTemplate {
+        $template->fill(array_intersect_key($attributes, array_flip([
+            'name', 'description', 'domain', 'active',
+        ])));
+        $template->save();
+        return $template->refresh();
+    }
+
+    /**
+     * Aktualisiert die Metadaten einer noch nicht veroeffentlichten
+     * Version (Risikostufe, Anwendbarkeit, Aenderungsnotiz). Wirft auf
+     * veroeffentlichten Versionen.
+     *
+     * @param  array{change_note?: ?string, risk_level?: ProcedureRiskLevel|string, applicability?: ?array<string, mixed>}  $attributes
+     */
+    public function updateVersion(ProcedureTemplateVersion $version, array $attributes): ProcedureTemplateVersion {
+        if ($version->isPublished()) {
+            throw PublishedProcedureVersionLockedException::forVersion($version);
+        }
+
+        if (array_key_exists('risk_level', $attributes)) {
+            $riskLevel = $attributes['risk_level'];
+            $version->risk_level = $riskLevel instanceof ProcedureRiskLevel
+                ? $riskLevel
+                : ProcedureRiskLevel::from((string) $riskLevel);
+        }
+        if (array_key_exists('change_note', $attributes)) {
+            $version->change_note = $attributes['change_note'];
+        }
+        if (array_key_exists('applicability', $attributes)) {
+            $version->applicability = $attributes['applicability'];
+        }
+        $version->save();
+        return $version->refresh();
+    }
+
+    /**
+     * Ersetzt saemtliche Schritt-Definitionen einer Draft-Version durch
+     * die uebergebene Liste (Designer-Speichern). Reihenfolge ergibt sich
+     * aus der Listen-Position (sort_order = (Index + 1) * 10). Wirft auf
+     * veroeffentlichten Versionen.
+     *
+     * @param  list<array<string, mixed>>  $steps
+     */
+    public function syncSteps(ProcedureTemplateVersion $version, array $steps): ProcedureTemplateVersion {
+        if ($version->isPublished()) {
+            throw PublishedProcedureVersionLockedException::forVersion($version);
+        }
+
+        return DB::transaction(function () use ($version, $steps) {
+            $version->steps()->delete();
+
+            foreach ($steps as $index => $step) {
+                $this->addStepDef($version, [
+                    'sort_order' => ($index + 1) * 10,
+                    'code' => $step['code'],
+                    'step_type' => $step['step_type'],
+                    'label' => $step['label'],
+                    'description' => $step['description'] ?? null,
+                    'required' => $step['required'] ?? true,
+                    'blocking' => $step['blocking'] ?? true,
+                    'config' => $step['config'] ?? null,
+                    'required_role' => $step['required_role'] ?? null,
+                    'required_qualification_code' => $step['required_qualification_code'] ?? null,
+                    'requires_second_person' => $step['requires_second_person'] ?? false,
+                    'requires_proof_type' => $step['requires_proof_type'] ?? null,
+                ]);
+            }
+
+            return $version->refresh();
+        });
+    }
+
+    /**
      * Veroeffentlicht die angegebene Version. Die vorherige aktive
      * Version (mit kleinerer Versionsnummer und ohne `valid_to`) wird
      * mit `valid_to = valid_from - 1 day` geschlossen.

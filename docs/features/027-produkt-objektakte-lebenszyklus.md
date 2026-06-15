@@ -2,10 +2,27 @@
 
 ## Status
 
-In Progress — Teile umgesetzt; konzipiert in MVP-035, 036, 037:
+In Progress — Kern-MVP umgesetzt; konzipiert in MVP-035, 036, 037:
 [Asset-Stammdaten](../asset-stammdaten.md),
 [Asset-Verknüpfungen](../asset-verknuepfungen.md),
 [Objekt-Timeline](../objekt-timeline.md).
+
+Umgesetzt (2026-06): **Objektakte / Lebenszyklus-Dossier** als druckbare
+Gesamtsicht je Asset (`assets.dossier`, Pendant zur Auftrags-Fallakte
+`diary/case-file`, Print-CSS, `?print=1`) — baut auf `AssetTimelineService`
+(additiv um Ausgabe/Rückgabe, Defekte und durchgeführte Wartungen erweitert)
+sowie den 009-Modellen `AssetAssignment`/`AssetDefect`/`MaintenancePlan` auf.
+**Lebenszyklus-Status** (in Betrieb / ersetzt / stillgelegt) wird über
+`AssetLifecycleService` aus `status` + `decommissioned_on` abgeleitet (keine
+neue Statusmaschine) und im Kopf der Asset-Seite und der Objektakte angezeigt.
+**Raumbezogene Anforderungen** je Gewerk über eigene 1:n-Tabelle
+`room_requirements` (kind/level/note; Hygienestufe, Sonderreinigung,
+Zugangsbeschränkung, IT-Inventar, technische Prüfung, Betreiberpflicht) —
+ergänzend zum `CleaningProfile`, gepflegt in der Raumverwaltung, sichtbar in
+Raumliste, Asset-Seite und Objektakte.
+
+Offen (Folge): SLA/Vertrags-Verknüpfung, Eigentümerwechsel-Historie als
+eigene Sektion, Customer-Portal-Sicht der Objektakte.
 
 ## Ziel
 

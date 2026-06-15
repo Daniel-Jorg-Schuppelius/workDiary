@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Facility\RoomUsageType;
+use App\Enums\Facility\{RoomRequirementKind, RoomUsageType};
 use App\Models\{Building, CleaningProfile, Customer, Floor, Room, Site};
 use App\Services\Event\RoomBookingService;
 use App\Support\Sqid;
@@ -35,6 +35,7 @@ class RoomController extends Controller {
         $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
 
         $rooms = Room::query()
+            ->with(['requirements' => fn($q) => $q->where('is_active', true)])
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
@@ -82,8 +83,15 @@ class RoomController extends Controller {
     public function edit(Room $room): View {
         Gate::authorize('update', $room);
 
+        $room->load('requirements');
+
         return view('rooms._form_dialog', array_merge(
-            ['room' => $room, 'isEdit' => true, 'prefill' => []],
+            [
+                'room' => $room,
+                'isEdit' => true,
+                'prefill' => [],
+                'requirementKinds' => RoomRequirementKind::options(),
+            ],
             $this->pickerData(),
         ));
     }

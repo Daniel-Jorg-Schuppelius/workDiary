@@ -96,6 +96,11 @@ class Room extends Model {
         return $this->hasMany(Asset::class)->orderBy('name');
     }
 
+    /** @return HasMany<RoomRequirement, $this> */
+    public function requirements(): HasMany {
+        return $this->hasMany(RoomRequirement::class)->orderBy('kind');
+    }
+
     /** @return BelongsToMany<Event, $this> */
     public function events(): BelongsToMany {
         return $this->belongsToMany(Event::class, 'event_room')

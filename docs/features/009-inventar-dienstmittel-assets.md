@@ -2,8 +2,17 @@
 
 ## Status
 
-In Progress — Teile umgesetzt; konzipiert in MVP-035, 036, 038:
-[Asset-Stammdaten](../asset-stammdaten.md),
+In Progress — Stammdaten, Verknüpfungen, Wartungspläne sowie der
+Ausgabe-/Rückgabe-Workflow (Checkout) und der Defekt-/Sperrstatus sind
+umgesetzt (MVP-035, 036, 038 + Feature 009). Verfügbarkeit und Sperre
+werden aus den Tabellen `asset_assignments` (offene Zuweisung = ausgegeben)
+und `asset_defects` (offener blockierender Defekt = gesperrt) abgeleitet;
+der vorhandene `Asset.status` wird zusätzlich auf die bestehenden Werte
+`loanOut`/`blocked` gespiegelt (keine neuen Enum-Werte). Überfällige
+Rückgaben meldet der Fristen-Scanner via `asset.returnOverdue`.
+Offen: Foto-/Anhang-Verknüpfung direkt am Defekt, Prüfintervall-Eskalation,
+auswertbare Wiederholdefekt-Statistik.
+Konzept: [Asset-Stammdaten](../asset-stammdaten.md),
 [Asset-Verknüpfungen](../asset-verknuepfungen.md),
 [Defekt-/Sperrstatus](../asset-sperrstatus.md).
 

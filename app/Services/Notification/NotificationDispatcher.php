@@ -10,10 +10,12 @@
 
 namespace App\Services\Notification;
 
+use App\Enums\Integration\WebhookEvent;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\User;
 use App\Notifications\GenericEventNotification;
+use App\Services\Integration\WebhookDispatchService;
 use App\Services\WebPushService;
 use App\Support\Setting;
 use Illuminate\Database\Eloquent\Model;
@@ -54,6 +56,15 @@ class NotificationDispatcher {
         string $stage = NotificationDispatchLog::STAGE_INITIAL,
         bool $dedup = false,
     ): int {
+        // Additiver Webhook-Hook (Feature 008): jedes real gefeuerte
+        // Ereignis, das eine WebhookEvent-Entsprechung hat, wird an die
+        // aktiven, abonnierten Endpunkte der Organisation gefächert — ohne
+        // Einfluss auf die Benachrichtigungs-Geschäftslogik. Nur die initiale
+        // Stufe wird publiziert (Eskalationen sind rein interne Vorgänge).
+        if ($stage === NotificationDispatchLog::STAGE_INITIAL) {
+            $this->publishWebhook($event, $subject, $payload);
+        }
+
         try {
             return $this->dispatch($event, $subject, $affected, $payload, $stage, $dedup);
         } catch (Throwable $e) {
@@ -304,6 +315,49 @@ class NotificationDispatcher {
 
         // Über-Nacht-Fenster (from > to), z. B. 22:00–06:00.
         return $now >= $from || $now < $to;
+    }
+
+    /**
+     * Veröffentlicht das Ereignis als ausgehenden Webhook, sofern es eine
+     * {@see WebhookEvent}-Entsprechung hat. Vollständig gekapselt: ein Fehler
+     * hier darf die Benachrichtigung/Geschäftslogik nie scheitern lassen.
+     *
+     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null}  $payload
+     */
+    private function publishWebhook(NotificationEvent $event, Model $subject, array $payload): void {
+        try {
+            $webhookEvent = WebhookEvent::forSource($event);
+            if ($webhookEvent === null) {
+                return;
+            }
+
+            $organizationId = $this->organizationIdOf($subject, null);
+            if ($organizationId === null) {
+                return;
+            }
+
+            // Minimaler, dokumentierter Payload: fachliches Subjekt (Typ + Sqid-
+            // fähige ID) und ein knapper Titel. Bewusst arm an personenbezogenen
+            // Daten — Empfänger reichern bei Bedarf über die REST-API an.
+            $data = [
+                'subject_type' => class_basename($subject),
+                'subject_id' => $subject->getKey(),
+                'title' => $payload['title'],
+            ];
+            if (isset($payload['url']) && $payload['url'] !== '') {
+                $data['url'] = (string) $payload['url'];
+            }
+
+            app(WebhookDispatchService::class)->publish($webhookEvent, $organizationId, $data);
+        } catch (Throwable $e) {
+            if (app()->runningUnitTests()) {
+                throw $e;
+            }
+            Log::warning('webhook: hook failed', [
+                'event' => $event->value,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     private function organizationIdOf(Model $subject, ?User $affected): ?int {

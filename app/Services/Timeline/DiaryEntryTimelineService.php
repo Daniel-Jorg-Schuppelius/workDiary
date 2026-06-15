@@ -116,7 +116,11 @@ class DiaryEntryTimelineService {
             );
         }
 
-        foreach (DiaryEntry::query()->where('customer_id', $customer->id)->where('status', Status::Done->value)->with('user:id,name')->latest('updated_at')->limit($cap)->get() as $entry) {
+        foreach (DiaryEntry::query()->where('customer_id', $customer->id)->whereIn('status', [
+            Status::Completed->value,
+            Status::AcceptedFinal->value,
+            Status::Invoiced->value,
+        ])->with('user:id,name')->latest('updated_at')->limit($cap)->get() as $entry) {
             $items[] = new TimelineItem(
                 id: 'order-done:' . $entry->id,
                 type: 'status',

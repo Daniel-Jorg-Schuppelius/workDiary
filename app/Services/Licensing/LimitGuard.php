@@ -24,22 +24,27 @@ class LimitGuard {
     public function __construct(private readonly LicenseService $licenses) {}
 
     /**
-     * Wirft {@see LimitExceededException}, wenn das Nutzerlimit der
-     * aktuellen Lizenz erreicht ist. Schreibt im Fehlerfall einen
+     * Wirft {@see LimitExceededException}, wenn das Nutzerlimit der Lizenz
+     * für diese Organisation erreicht ist. Schreibt im Fehlerfall einen
      * `limit.exceeded`-Audit-Eintrag.
+     *
+     * Maßgeblich ist die org-gebundene Lizenz (`organizations.license_key`),
+     * sofern vorhanden; sonst die globale Installations-Lizenz. Gezählt werden
+     * die aktiven Nutzer der Organisation gegen `max_users`. Fehlt ein Limit
+     * (unbegrenzt/Enterprise), passiert nichts.
      */
     public function ensureCanCreateUser(Organization $organization, ?User $actor = null): void {
         if (! $this->licenses->isEnforced()) {
             return;
         }
 
-        $payload = $this->licenses->current()->payload;
+        $payload = $this->licenseFor($organization)->payload;
         $max = $payload?->maxUsers;
         if ($max === null || $max <= 0) {
             return;
         }
 
-        $current = User::query()->count();
+        $current = $organization->activeUserCount();
         if ($current < $max) {
             return;
         }
@@ -51,6 +56,22 @@ class LimitGuard {
             current: $current,
             max: $max,
         );
+    }
+
+    /**
+     * Org-gebundene Lizenz, falls die Organisation einen eigenen Schlüssel
+     * trägt; andernfalls die globale Installations-Lizenz als Fallback.
+     */
+    private function licenseFor(Organization $organization): \App\Services\Licensing\LicenseResult {
+        $orgKey = $organization->license_key;
+        if (is_string($orgKey) && trim($orgKey) !== '') {
+            $orgLicense = $this->licenses->forOrganization($organization);
+            if ($orgLicense->isUsable()) {
+                return $orgLicense;
+            }
+        }
+
+        return $this->licenses->current();
     }
 
     /**

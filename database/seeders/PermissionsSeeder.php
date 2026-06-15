@@ -158,6 +158,12 @@ class PermissionsSeeder extends Seeder {
                 if (str_starts_with($value, 'metrics.')) {
                     return false;
                 }
+                // Admin-Sicherheitsübersicht (Feature 016) ist ebenfalls NUR
+                // Admin — security.view würde sonst über die .view-Heuristik an
+                // die Geschäftsführung gehen.
+                if (str_starts_with($value, 'security.')) {
+                    return false;
+                }
                 if (str_ends_with($value, '.viewAny') || str_ends_with($value, '.view') || str_ends_with($value, '.viewOwn')) {
                     return true;
                 }
@@ -166,6 +172,9 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::OrganizationView->value,
                     PermissionEnum::ReportView->value,
                     PermissionEnum::ReportExport->value,
+                    // Feature 002: Zielwert-Pflege ist GF-/Admin-Sache; die
+                    // .view-Heuristik trifft `report.target.manage` nicht.
+                    PermissionEnum::ReportTargetManage->value,
                     PermissionEnum::AuditLogView->value,
                     PermissionEnum::AccessAuditView->value,
                     PermissionEnum::FlexBalanceView->value,
@@ -233,6 +242,17 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DiaryCreateForOthers,
             PermissionEnum::DiaryUpdate,
             PermissionEnum::DiaryExport,
+            PermissionEnum::OrderAccept,
+            PermissionEnum::OrderWork,
+            PermissionEnum::OrderComplete,
+            PermissionEnum::OrderHandover,
+            PermissionEnum::OrderCancel,
+            // Disposition / Einsatzplanung (Feature 028): Teamleitung disponiert
+            // Aufträge (Konfliktwarnungen, Status, Fahrzeug-Reservierung).
+            PermissionEnum::DispatchViewAny,
+            PermissionEnum::DispatchManage,
+            PermissionEnum::VehicleViewAny,
+            PermissionEnum::VehicleReserve,
             PermissionEnum::DutyPlanViewAny,
             PermissionEnum::DutyPlanCreate,
             PermissionEnum::DutyPlanUpdate,
@@ -243,6 +263,12 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OnCallShiftManage,
             PermissionEnum::EmergencyAssignmentManage,
             PermissionEnum::ShiftTypeManage,
+            // Dienstplan-Intelligenz (Feature 007): Teamleitung gibt Tausch frei,
+            // erhält Besetzungsvorschläge und beantragt/pflegt eigene Verfügbarkeit.
+            PermissionEnum::ShiftExchangeRequest,
+            PermissionEnum::ShiftExchangeApprove,
+            PermissionEnum::AvailabilityManageOwn,
+            PermissionEnum::StaffingSuggest,
             PermissionEnum::VacationViewAny,
             PermissionEnum::VacationApprove,
             PermissionEnum::VacationCancel,
@@ -250,6 +276,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::SickLeaveManage,
             PermissionEnum::AttendanceViewAny,
             PermissionEnum::AttendanceManage,
+            // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
+            PermissionEnum::ComplianceViewAny,
             // Arbeitszeit-Modell pflegen jetzt exklusiv Personalverwaltung +
             // Geschäftsführung (work-schedule.manage daher hier entfernt).
             PermissionEnum::FlexBalanceView,
@@ -264,6 +292,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OpenIssueAssign,
             PermissionEnum::OpenIssuePublishToCustomer,
             PermissionEnum::OpenIssueDelete,
+            // Arbeitsschutz / Sicherheitsereignisse (Feature 013): Teamleitung
+            // führt das Register (sehen, melden, bearbeiten/schließen).
+            PermissionEnum::SafetyViewAny,
+            PermissionEnum::SafetyReport,
+            PermissionEnum::SafetyManage,
             // Benachrichtigungsregeln (MVP-018): Teamleitung lesend,
             // Bearbeitung bleibt Admin.
             PermissionEnum::NotificationRuleViewAny,
@@ -300,6 +333,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ServiceTicketClose,
             PermissionEnum::SlaContractView,
             PermissionEnum::SlaContractManage,
+            PermissionEnum::SlaViewAny,
+            PermissionEnum::SlaManage,
             PermissionEnum::KeyHandoverView,
             PermissionEnum::KeyHandoverRecord,
             PermissionEnum::MeterReadingView,
@@ -315,10 +350,16 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ProtocolSupersede,
             PermissionEnum::ProtocolDelete,
             PermissionEnum::ProtocolSignatureRequest,
+            // Kunden-Rückfragen aus dem Portal (Feature 012): Teamleitung
+            // sieht und beantwortet die Rückfragen der Kunden.
+            PermissionEnum::ProtocolCustomerQueryManage,
             PermissionEnum::ProtocolPdfDownload,
             PermissionEnum::ProtocolItemPhotoAdd,
             PermissionEnum::ProtocolItemPhotoRemove,
             PermissionEnum::ProtocolItemPhotoViewGeo,
+            // Externe Beteiligte (Feature 033): Teamleitung darf Subunternehmer/
+            // Prüfer befristet zu Aufträgen/Protokollen einladen und widerrufen.
+            PermissionEnum::ExternalParticipantManage,
             PermissionEnum::ProcedureTemplateView,
             PermissionEnum::ProcedureTemplateCreate,
             PermissionEnum::ProcedureTemplateUpdate,
@@ -350,6 +391,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AssetUpdate,
             PermissionEnum::AssetDecommission,
             PermissionEnum::AssetTransferOwnership,
+            PermissionEnum::AssetCheckout,
+            PermissionEnum::AssetDefectManage,
             PermissionEnum::ReportView,
             PermissionEnum::AccessAuditView,
         ];
@@ -384,6 +427,7 @@ class PermissionsSeeder extends Seeder {
 
         $buchhaltung = [
             PermissionEnum::OrganizationView,
+            PermissionEnum::DiaryViewAny,
             PermissionEnum::CommunicationViewAny,
             PermissionEnum::CommunicationView,
             // Dokumente (MVP-031): nur lesend (z. B. Verträge, Versicherungen).
@@ -435,17 +479,30 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::InvoiceIssue,
             PermissionEnum::InvoicePay,
             PermissionEnum::InvoiceExport,
+            PermissionEnum::OrderMarkInvoiced,
             // Finanzschnittstelle (Feature 045): Übergaben vorbereiten und
             // übertragen — bewusst OHNE finance.config (Konfiguration des
             // Fakturierungswegs bleibt dem Admin vorbehalten).
             PermissionEnum::FinanceViewAny,
             PermissionEnum::FinanceTransferTime,
             PermissionEnum::FinanceTransferMaterial,
+            // Zahlungsabgleich (Feature 045, Priorität 3): Bankdatei importieren
+            // und Zuordnungen bestätigen. Die Verwaltung eigener Bankkonten
+            // (finance.config) bleibt dem Admin vorbehalten.
+            PermissionEnum::FinancePaymentImport,
+            PermissionEnum::FinancePaymentReconcile,
+            // DATEV-Buchungsstapel (Feature 045, Priorität 2): buchungsreife
+            // Belege exportieren. Die Buchhaltungs-Konfiguration (Konten,
+            // Steuerschlüssel, Beraternummer) bleibt über finance.config dem
+            // Admin vorbehalten.
+            PermissionEnum::FinanceBookingExport,
             // Zuschlagsregeln (Feature 005): Lohnbüro pflegt die Regeln.
             PermissionEnum::SurchargeRuleViewAny,
             PermissionEnum::SurchargeRuleManage,
             PermissionEnum::ReportView,
             PermissionEnum::ReportExport,
+            // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
+            PermissionEnum::ComplianceViewAny,
             PermissionEnum::AuditLogView,
             PermissionEnum::UserViewAny,
             PermissionEnum::UserView,
@@ -480,8 +537,17 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryUpdate,
             PermissionEnum::DiaryDelete,
+            PermissionEnum::OrderAccept,
+            PermissionEnum::OrderWork,
+            PermissionEnum::OrderComplete,
+            PermissionEnum::OrderHandover,
+            PermissionEnum::OrderCancel,
             PermissionEnum::VacationRequest,
             PermissionEnum::AttendanceManage,
+            // Dienstplan-Intelligenz (Feature 007): Mitarbeitende beantragen
+            // Schichttausch und pflegen ihre eigene Verfügbarkeit/Wunschdienste.
+            PermissionEnum::ShiftExchangeRequest,
+            PermissionEnum::AvailabilityManageOwn,
             PermissionEnum::FlexBalanceView,
             PermissionEnum::TourViewAny,
             PermissionEnum::TravelLogViewAny,
@@ -531,6 +597,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AssetView,
             PermissionEnum::AssetCreate,
             PermissionEnum::AssetUpdate,
+            // Ausgabe/Rückgabe + Defektverwaltung (Feature 009): Teamleitung
+            // führt den Bestand operativ.
+            PermissionEnum::AssetCheckout,
+            PermissionEnum::AssetDefectManage,
         ];
 
         // Außendienst: schlanker als user, dafür mit vollem Touren-/Spesen-
@@ -562,6 +632,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryUpdate,
             PermissionEnum::DiaryDelete,
+            PermissionEnum::OrderAccept,
+            PermissionEnum::OrderWork,
+            PermissionEnum::OrderComplete,
+            PermissionEnum::OrderHandover,
+            PermissionEnum::OrderCancel,
             PermissionEnum::TourViewAny,
             PermissionEnum::TravelLogViewAny,
             PermissionEnum::TravelLogManage,
@@ -569,11 +644,18 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::EnergyLogManage,
             PermissionEnum::VacationRequest,
             PermissionEnum::AttendanceManage,
+            // Dienstplan-Intelligenz (Feature 007): auch der Außendienst kann
+            // Schichten tauschen und eigene Verfügbarkeit pflegen.
+            PermissionEnum::ShiftExchangeRequest,
+            PermissionEnum::AvailabilityManageOwn,
             PermissionEnum::FlexBalanceView,
             PermissionEnum::OpenIssueViewAny,
             PermissionEnum::OpenIssueView,
             PermissionEnum::OpenIssueCreate,
             PermissionEnum::OpenIssueUpdate,
+            // Arbeitsschutz (Feature 013): Außendienst meldet Ereignisse vom
+            // Einsatz; Registerführung/Abschluss bleibt Teamleitung/Admin.
+            PermissionEnum::SafetyReport,
             PermissionEnum::CommunicationViewAny,
             PermissionEnum::CommunicationView,
             PermissionEnum::CommunicationCreate,
@@ -602,6 +684,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AssetView,
             PermissionEnum::AssetCreate,
             PermissionEnum::AssetUpdate,
+            // Außendienst nimmt Geräte mit auf den Einsatz (Feature 009):
+            // Ausgabe/Rückgabe ja, Defektverwaltung bleibt Teamleitung/Admin.
+            PermissionEnum::AssetCheckout,
         ];
 
         $callcenter = [
@@ -610,6 +695,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DiaryCreate,
             PermissionEnum::DiaryCreateForOthers,
             PermissionEnum::DiaryUpdate,
+            PermissionEnum::OrderAccept,
+            PermissionEnum::OrderCancel,
             PermissionEnum::CustomerViewAny,
             PermissionEnum::CustomerView,
             PermissionEnum::CommunicationViewAny,

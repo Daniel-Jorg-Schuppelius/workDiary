@@ -2,7 +2,13 @@
 
 ## Status
 
-In Progress
+In Progress — MVP: SLA-Status (im Plan/gefährdet/verletzt) auf Ticketliste und
+-detail, SLA-Verletzungsregister (`sla_violations`) mit idempotenter Erkennung
+(Scanner `tickets:scan-sla-breaches` + Statusübergänge), SLA-Report
+(Einhaltungsquote, Aufschlüsselung je Typ/Priorität/Kunde/Ursache, CSV/PDF),
+Eskalation (`sla.atRisk` < 20 % Restzeit / `sla.breached`) über den Fristen-Scanner.
+Offen: Auftrags-/DiaryEntry-Verknüpfung des SLA-Kontexts, Wartungsintervalle,
+Inklusivzeiten/Kontingente, Geschäftszeiten in der Fristberechnung.
 
 ## Ziel
 

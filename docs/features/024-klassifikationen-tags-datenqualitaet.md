@@ -2,7 +2,21 @@
 
 ## Status
 
-In Progress — Teile umgesetzt; konzipiert in MVP-030 bis MVP-032:
+In Progress — Kernklassifikationen, Org-Kategorien und Pflichtklassifikationen
+umgesetzt (MVP-030 bis MVP-032). Tagging ist über die polymorphe `HasTags`-
+Mechanik nun zusätzlich an Kunde, Asset und Protokoll angebunden (Auftrag/
+Wissensartikel hatten es bereits). Datenqualitäts-Hinweise werden auf der
+Auftrags-Detailseite aus den vorhandenen Pflichtklassifikationen abgeleitet
+(`DataQualityInspector`, rein lesend, ohne neue Pflichtmechanik). Stillgelegte
+Klassifikationen (`deprecated_at`) sind im Admin sichtbar und über den Resolver
+nicht mehr neu wählbar, bleiben für historische Daten aber lesbar.
+
+Offen: Tag-/Kategorie-Mapping für CSV-Import (kein generischer Objekt-Import
+mit Tag-Spalten vorhanden); Datenqualitäts-Report/Widget „Objekte ohne
+Pflichtklassifikation" (Zähler je Domäne); produktbezogenes Tagging (kein
+eigenständiges Produkt-Modell).
+
+Konzipiert in MVP-030 bis MVP-032:
 [Kernklassifikationen](../kernklassifikationen.md),
 [Kategorien pro Organisation](../kategorien-org.md),
 [Pflichtklassifikationen](../pflichtklassifikationen.md).

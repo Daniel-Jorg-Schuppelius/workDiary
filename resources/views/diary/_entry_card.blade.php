@@ -16,6 +16,16 @@
                 'badge-error'   => $entry->statusTone() === 'alert',
                 'badge-ghost'   => $entry->statusTone() === 'neutral',
             ])>{{ $entry->statusLabel() }}</span>
+            @php($dispatchStatus = app(\App\Services\Dispatch\DispatchStatusResolver::class)->resolve($entry))
+            @if ($dispatchStatus !== \App\Enums\Diary\DispatchStatus::Unplanned)
+                <span @class([
+                    'badge badge-sm badge-outline',
+                    'badge-success' => $dispatchStatus->tone() === 'done',
+                    'badge-info'    => $dispatchStatus->tone() === 'progress',
+                    'badge-warning' => $dispatchStatus->tone() === 'open',
+                    'badge-ghost'   => $dispatchStatus->tone() === 'neutral',
+                ])>{{ $dispatchStatus->label() }}</span>
+            @endif
             @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
                 <x-status-badge tone="ghost" outline>{{ $entry->modeLabel() }}</x-status-badge>
             @endif

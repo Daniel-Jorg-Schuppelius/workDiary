@@ -13,36 +13,44 @@ namespace App\Http\Controllers;
 use App\Models\{Attendance, TimeEntry, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
+use App\Services\TimeApproval\DayCloseService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
+/**
+ * „Heute" — die tägliche Selbstbedienungs-Tagesseite (eigener Tag). Seit der
+ * Zusammenlegung mit dem Tagesabschluss (MVP-015) zeigt diese Seite zusätzlich
+ * Pausen, Warnungen, Bilanz, Korrekturanträge und die Abschluss-Aktionen über
+ * die gemeinsamen Partials unter time-approval/day/. Die Tagesabschluss-Route
+ * bleibt für Fremdtage/Admin (`?user=`) erhalten.
+ */
 class TodayController extends Controller {
     public function __construct(
         protected AttendanceClockService $clock,
         protected FlexCalculator $flex,
+        protected DayCloseService $dayClose,
     ) {}
 
     public function show(Request $request): View {
         /** @var User $user */
         $user = Auth::user();
-        $day = $request->date('date')?->startOfDay() ?? CarbonImmutable::today();
+        $rawDay = $request->date('date');
+        $day = $rawDay !== null ? CarbonImmutable::instance($rawDay)->startOfDay() : CarbonImmutable::today();
 
-        $attendances = Attendance::query()
-            ->where('user_id', $user->id)
-            ->whereDate('date', $day->toDateString())
-            ->orderBy('started_at')
-            ->get();
+        // Tagesabschluss-Kontext (eigener Tag): legt den Abschluss beim ersten
+        // Öffnen an (Audit dayClose.opened 1×/Tag) und liefert Checks/Bilanz.
+        $closure = $this->dayClose->getOrCreate($user, $day);
+        Gate::authorize('view', $closure);
+        $context = $this->dayClose->context($user, $day);
 
-        $entries = TimeEntry::query()
-            ->where('user_id', $user->id)
-            ->whereDate('date', $day->toDateString())
-            ->with(['project', 'task', 'activityCategory'])
-            ->orderBy('started_at')
-            ->get();
+        /** @var \Illuminate\Support\Collection<int, Attendance> $attendances */
+        $attendances = $context['attendances'];
+        /** @var \Illuminate\Support\Collection<int, TimeEntry> $entries */
+        $entries = $context['entries'];
 
-        $targetMinutes = $this->flex->targetMinutes($user, $day);
+        $targetMinutes = (int) $context['aggregates']['target'];
         $attendanceMinutes = (int) $attendances->sum(function (Attendance $a): int {
             if ($a->duration_minutes > 0) {
                 return (int) $a->duration_minutes;
@@ -68,9 +76,11 @@ class TodayController extends Controller {
             ];
         });
 
+        $current = $this->clock->current($user);
+
         return view('today.show', [
             'day' => $day,
-            'current' => $this->clock->current($user),
+            'current' => $current,
             'attendances' => $attendances,
             'entries' => $entries,
             'targetMinutes' => $targetMinutes,
@@ -78,6 +88,20 @@ class TodayController extends Controller {
             'entriesMinutes' => $entriesMinutes,
             'untrackedMinutes' => $untrackedMinutes,
             'byActivity' => $byActivity,
+            // Tagesabschluss-Workflow (gemeinsame Partials erwarten diese Variablen):
+            'closure' => $closure,
+            'isOwnDay' => true,
+            'targetUser' => $user,
+            'openAttendance' => $current,
+            'effectiveStatus' => $this->dayClose->effectiveStatus($closure, $context['monthLocked']),
+            'monthLocked' => $context['monthLocked'],
+            'issues' => $context['issues'],
+            'hasBlocking' => $context['hasBlocking'],
+            'aggregates' => $context['aggregates'],
+            'validator' => $this->dayClose->makeValidator(),
+            'isToday' => $day->isSameDay(CarbonImmutable::now()),
+            'isFuture' => $day->startOfDay()->greaterThan(CarbonImmutable::now()->endOfDay()),
+            'correctionRequests' => $closure->exists ? $closure->correctionRequests()->with(['requestedBy', 'decidedBy'])->get() : collect(),
         ]);
     }
 }

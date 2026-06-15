@@ -43,6 +43,8 @@
             @endcan
         </x-slot:actions>
 
+        @include('documents._tabs')
+
         <x-filter-bar :action="route('form-submissions.index')"
                       :reset="$hasActiveFilters ? route('form-submissions.index') : null">
             <x-filter-field :label="__('form.field.template')" for="form-sub-template" class="min-w-52">

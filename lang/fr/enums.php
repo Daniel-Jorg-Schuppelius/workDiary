@@ -1,6 +1,29 @@
 <?php
 
 return [
+    'asset' => [
+        'defect-severity' => [
+            'low' => 'Faible',
+            'medium' => 'Moyenne',
+            'high' => 'Élevée',
+            'critical' => 'Critique',
+        ],
+        'defect-status' => [
+            'open' => 'Ouvert',
+            'inRepair' => 'En réparation',
+            'resolved' => 'Résolu',
+            'writtenOff' => 'Mis au rebut',
+        ],
+    ],
+    'room_requirement_kind' => [
+        'hygieneLevel' => 'Niveau d\'hygiène',
+        'specialCleaning' => 'Nettoyage spécial',
+        'accessRestriction' => 'Restriction d\'accès',
+        'itInventory' => 'Inventaire informatique',
+        'technicalInspection' => 'Inspection technique',
+        'operatorDuty' => 'Obligation d\'exploitant',
+        'other' => 'Autre',
+    ],
     'event' => [
         'type' => [
             'training' => 'Formation',
@@ -66,6 +89,15 @@ return [
             'owned' => 'En propriété',
             'leased' => 'Leasing',
             'rental' => 'Location',
+        ],
+    ],
+    'diary' => [
+        'dispatch_status' => [
+            'unplanned' => 'Non planifié',
+            'planned' => 'Planifié',
+            'confirmed' => 'Confirmé',
+            'enRoute' => 'En route',
+            'done' => 'Terminé',
         ],
     ],
     'sickness' => [
@@ -205,12 +237,97 @@ return [
                 'certificateExpiring' => 'Certificat ISMS arrive à expiration',
                 'correctiveActionOverdue' => 'Action corrective SMSI en retard',
                 'riskReviewDue' => 'Revue de risque SMSI à échéance',
+                'vulnerabilityOverdue' => 'Vulnérabilité ISMS en retard',
+                'incidentCritical' => 'Incident de sécurité ISMS critique',
+                'supplierReviewOverdue' => 'Examen fournisseur ISMS en retard',
+            ],
+            'sla' => [
+                'atRisk' => 'Échéance SLA menacée',
+                'breached' => 'Échéance SLA dépassée',
+            ],
+            'asset' => [
+                'returnOverdue' => 'Retour de ressource en retard',
+            ],
+            'safety' => [
+                'criticalEvent' => 'Événement de sécurité critique',
+            ],
+            'qualification' => [
+                'expiring' => 'Qualification bientôt expirée',
+            ],
+            'shiftExchange' => [
+                'requested' => 'Échange de poste demandé',
+                'decided' => 'Échange de poste décidé',
+            ],
+            'customer' => [
+                'queryRaised' => 'Le client a posé une question',
             ],
         ],
         'channel' => [
             'inApp' => 'Dans l’application',
             'mail' => 'E-mail',
             'push' => 'Push',
+        ],
+    ],
+
+    'customer-query' => [
+        'status' => [
+            'open' => 'Ouverte',
+            'answered' => 'Répondu',
+            'closed' => 'Fermée',
+        ],
+    ],
+
+    'shift' => [
+        'availability_kind' => [
+            'available' => 'Disponible',
+            'unavailable' => 'Indisponible',
+            'preferred' => 'Préféré',
+        ],
+        'preference' => [
+            'want' => 'Souhait',
+            'avoid' => 'Aversion',
+        ],
+        'exchange_status' => [
+            'requested' => 'Demandé',
+            'accepted' => 'Accepté',
+            'approved' => 'Approuvé',
+            'rejected' => 'Refusé',
+            'cancelled' => 'Retiré',
+        ],
+    ],
+
+    'sla' => [
+        'status' => [
+            'none' => 'Aucun SLA',
+            'met' => 'SLA respecté',
+            'onTrack' => 'SLA dans les temps',
+            'atRisk' => 'SLA menacé',
+            'breached' => 'SLA dépassé',
+        ],
+        'violationKind' => [
+            'responseTime' => 'Temps de réaction',
+            'resolutionTime' => 'Temps de résolution',
+        ],
+    ],
+
+    'safety' => [
+        'kind' => [
+            'accident' => 'Accident',
+            'nearMiss' => 'Presqu’accident',
+            'hazard' => 'Danger',
+            'defect' => 'Défaut',
+        ],
+        'severity' => [
+            'low' => 'Faible',
+            'medium' => 'Moyen',
+            'high' => 'Élevé',
+            'critical' => 'Critique',
+        ],
+        'status' => [
+            'reported' => 'Signalé',
+            'investigating' => 'En investigation',
+            'measuresDefined' => 'Mesures définies',
+            'closed' => 'Clôturé',
         ],
     ],
 
@@ -233,6 +350,8 @@ return [
             'manual' => 'Manuel',
             'protocolDefect' => 'Depuis le protocole',
             'communicationFollowup' => 'Depuis la communication',
+            'procedureDeviation' => 'Depuis un écart de procédure',
+            'customerRejection' => 'Refus du client',
         ],
         'visibility' => [
             'internal' => 'Interne',
@@ -399,6 +518,13 @@ return [
             'link_protocol' => 'Lier le protocole',
             'link_test' => 'Lier le test',
         ],
+        'proof-type' => [
+            'backup' => 'Sauvegarde',
+            'file' => 'Fichier',
+            'photo' => 'Photo',
+            'measure' => 'Mesure',
+            'signature' => 'Signature',
+        ],
         'run-status' => [
             'open' => 'Ouvert',
             'inProgress' => 'En cours',
@@ -454,6 +580,58 @@ return [
         ],
     ],
     'isms' => [
+        'security-incident-category' => [
+            'malware' => 'Logiciel malveillant',
+            'phishing' => 'Hameçonnage',
+            'dataLoss' => 'Perte de données',
+            'unauthorizedAccess' => 'Accès non autorisé',
+            'serviceOutage' => 'Interruption de service',
+            'misconfiguration' => 'Erreur de configuration',
+            'physical' => 'Incident physique',
+            'other' => 'Autre',
+        ],
+        'security-incident-status' => [
+            'reported' => 'Signalé',
+            'triage' => 'Triage',
+            'contained' => 'Contenu',
+            'eradicated' => 'Éradiqué',
+            'recovered' => 'Rétabli',
+            'closed' => 'Clôturé',
+        ],
+        'incident-severity' => [
+            'low' => 'Faible',
+            'medium' => 'Moyenne',
+            'high' => 'Élevée',
+            'critical' => 'Critique',
+        ],
+        'vulnerability-status' => [
+            'open' => 'Ouverte',
+            'underReview' => 'En cours d\'examen',
+            'mitigating' => 'En cours d\'atténuation',
+            'resolved' => 'Résolue',
+            'accepted' => 'Acceptée',
+            'notAffected' => 'Non affecté',
+        ],
+        'exploitability' => [
+            'unknown' => 'Inconnue',
+            'underInvestigation' => 'En cours d\'investigation',
+            'exploitable' => 'Exploitable',
+            'notExploitable' => 'Non exploitable',
+        ],
+        'vulnerability-source' => [
+            'manual' => 'Manuelle',
+            'advisoryImport' => 'Import d\'avis',
+        ],
+        'supplier-assessment-status' => [
+            'draft' => 'Brouillon',
+            'assessed' => 'Évalué',
+            'approved' => 'Approuvé',
+            'flagged' => 'Signalé',
+        ],
+        'advisory-format' => [
+            'csaf' => 'CSAF',
+            'vex' => 'VEX',
+        ],
         'audit-package-status' => [
             'draft' => 'Brouillon',
             'finalized' => 'Finalisé',
@@ -587,6 +765,42 @@ return [
             'failed' => 'Échoué',
             'voided' => 'Annulé',
         ],
+        'chart-of-accounts' => [
+            'skr03' => 'SKR03',
+            'skr04' => 'SKR04',
+        ],
+        'datev-batch-status' => [
+            'draft' => 'Brouillon',
+            'exported' => 'Exporté',
+        ],
+        // Rapprochement des paiements (Feature 045, priorité 3).
+        'bank-statement-format' => [
+            'camt053' => 'CAMT.053',
+            'mt940' => 'MT940',
+        ],
+        'transaction-direction' => [
+            'credit' => 'Entrée d’argent',
+            'debit' => 'Sortie d’argent',
+        ],
+        'balance-check' => [
+            'ok' => 'Chaîne de soldes cohérente',
+            'mismatch' => 'Écart de solde',
+            'unknown' => 'Soldes incomplets',
+        ],
+        'match-status' => [
+            'unmatched' => 'Ouvert',
+            'suggested' => 'Suggestions',
+            'matched' => 'Affecté',
+            'ignored' => 'Mis de côté',
+            'unassignable' => 'Non affectable',
+            'duplicate' => 'Doublon',
+        ],
+        'allocation-kind' => [
+            'payment' => 'Paiement',
+            'partial' => 'Paiement partiel',
+            'overpayment' => 'Trop-perçu',
+            'reimbursement' => 'Remboursement',
+        ],
     ],
 
     // Clôture journalière (MVP-015, docs/tagesabschluss.md §3/§5).
@@ -603,6 +817,15 @@ return [
             'pending' => 'En attente',
             'approved' => 'Approuvée',
             'rejected' => 'Rejetée',
+        ],
+    ],
+
+    // Résultat du test de restauration (Feature 017).
+    'backup' => [
+        'restore-test-result' => [
+            'passed' => 'Réussi',
+            'partial' => 'Avec réserves',
+            'failed' => 'Échoué',
         ],
     ],
 ];

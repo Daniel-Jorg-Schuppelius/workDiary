@@ -4,7 +4,12 @@
 
 In Progress — MVP-Bausteine liegen vor:
 [Onboarding-Checkliste](../onboarding-checkliste.md) (MVP-048, Issue #47) und
-[CSV-Import](../csv-import.md) (MVP-049, Issue #48).
+[CSV-Import](../csv-import.md) (MVP-049, Issue #48). Der CSV-Import-Wizard deckt
+inzwischen **Kunden, Projekte, Nutzer, Materialien, Schichtpläne und Fahrzeuge**
+ab (eine gemeinsame Spec-Registry, Preflight, Fehlerprotokoll, Idempotenz).
+Offen bleibt die **Legacy-Migration vorhandener WorkDiary-/Tagebuchdaten**
+(umfangreiches, eigenständiges Vorhaben) sowie branchenspezifische
+Beispielkonfigurationen.
 
 ## Ziel
 

@@ -8,6 +8,7 @@ return [
         'projects' => 'Projects',
         'users' => 'Users',
         'materials' => 'Materials',
+        'vehicles' => 'Vehicles',
         'scheduled_shifts' => 'Shift schedules',
         'tours' => 'Tours',
         'remote_sessions' => 'Remote support sessions',

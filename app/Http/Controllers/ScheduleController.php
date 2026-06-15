@@ -11,13 +11,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Shift\ScheduledShiftStatus;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\{StoreScheduledShiftRequest, UpdateScheduledShiftRequest};
 use App\Http\Resources\ScheduledShiftResource;
 use App\Models\{Organization, ScheduledShift, ShiftType, User};
 use App\Services\Compliance\ShiftComplianceService;
 use App\Services\HolidayService;
-use App\Services\Schedule\OpenSlotService;
+use App\Services\Schedule\{OpenSlotService, StaffingSuggester};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -85,6 +86,7 @@ class ScheduleController extends Controller {
             'userFilterSqid' => $userFilter > 0 ? Sqid::encode(User::class, $userFilter) : null,
             'holidays' => $holidays,
             'isAdmin' => $auth->isAdmin(),
+            'canSuggest' => $auth->hasPermissionTo(Permission::StaffingSuggest->value),
             'complianceByShift' => $complianceByShift,
             'openSlotsByDate' => $openSlots->compute($from, $to, $shifts),
             'months' => $months,
@@ -235,6 +237,50 @@ class ScheduleController extends Controller {
         $shift->load(['user:id,name', 'shiftType']);
 
         return response()->json(new ScheduledShiftResource($shift));
+    }
+
+    // ── Besetzungsvorschläge (Feature 007) ──────────────────────────────────
+
+    /**
+     * Liefert gerankte Kandidatenvorschläge für eine offene Schicht
+     * (Datum + Schichttyp). Reine Assistenz; die Zuweisung erfolgt separat
+     * über den regulären store()-Pfad inkl. Compliance-Re-Check.
+     */
+    public function suggest(Request $request, StaffingSuggester $suggester): JsonResponse {
+        /** @var User $auth */
+        $auth = Auth::user();
+        if (! $auth->hasPermissionTo(Permission::StaffingSuggest->value)) {
+            abort(403);
+        }
+        if (! $auth->organization_id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'date' => ['required', 'date'],
+            'shift_type_id' => ['required', 'string'],
+            'start_time' => ['nullable', 'date_format:H:i'],
+            'end_time' => ['nullable', 'date_format:H:i'],
+        ]);
+
+        $shiftTypeId = (int) (Sqid::decodeOrNumeric(ShiftType::class, (string) $validated['shift_type_id'], 0) ?? 0);
+        $shiftType = ShiftType::query()
+            ->where('organization_id', $auth->organization_id)
+            ->find($shiftTypeId);
+
+        if ($shiftType === null) {
+            return response()->json(['suggestions' => []]);
+        }
+
+        $suggestions = $suggester->suggest(
+            new CarbonImmutable($validated['date']),
+            $shiftType,
+            (int) $auth->organization_id,
+            $validated['start_time'] ?? null,
+            $validated['end_time'] ?? null,
+        );
+
+        return response()->json(['suggestions' => $suggestions]);
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

@@ -77,6 +77,30 @@ class AssetUpdateControllerTest extends TestCase {
         $this->assertSame('Neuer Name', $asset->name);
     }
 
+    public function test_update_syncs_existing_and_new_tags(): void {
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'status' => AssetStatus::Active->value,
+        ]);
+        $existing = \App\Models\Tag::create([
+            'name' => 'Bestand',
+            'organization_id' => $this->organization->id,
+        ]);
+
+        $this->actingAs($user)->put(route('assets.update', $asset), [
+            'asset_class' => AssetClass::Device->value,
+            'status' => AssetStatus::Active->value,
+            'name' => 'Getaggtes Asset',
+            'tag_ids' => [$existing->sqid],
+            'new_tags' => 'Kritisch, Serverraum',
+        ])->assertRedirect(route('assets.show', $asset));
+
+        $names = $asset->refresh()->tags()->pluck('name')->sort()->values()->all();
+        $this->assertSame(['Bestand', 'Kritisch', 'Serverraum'], $names);
+    }
+
     public function test_update_rejects_room_with_mismatching_customer(): void {
         $user = $this->userWithRole(UserRole::Teamleitung->value);
         $customerA = Customer::factory()->create(['organization_id' => $this->organization->id]);

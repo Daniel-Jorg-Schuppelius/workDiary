@@ -187,6 +187,36 @@ class PrintLayoutsTest extends TestCase {
             ->assertForbidden();
     }
 
+    // ── Schichtplan ──────────────────────────────────────────────────────────
+
+    public function test_admin_can_print_schedule_layout(): void {
+        $u = $this->user();
+        $type = ShiftType::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Frühdienst',
+            'abbreviation' => 'F',
+        ]);
+        ScheduledShift::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $u->id,
+            'shift_type_id' => $type->id,
+            'date' => '2026-05-15',
+        ]);
+
+        $this->actingAs($this->admin())
+            ->get(route('print.schedule', ['from' => '2026-05-01', 'to' => '2026-05-31']))
+            ->assertOk()
+            ->assertSee(__('Schichtplan'))
+            ->assertSee($u->name)
+            ->assertSee('Frühdienst');
+    }
+
+    public function test_non_admin_cannot_print_schedule(): void {
+        $this->actingAs($this->user())
+            ->get(route('print.schedule'))
+            ->assertForbidden();
+    }
+
     // ── Vacation year ────────────────────────────────────────────────────────
 
     public function test_admin_can_print_vacation_year(): void {

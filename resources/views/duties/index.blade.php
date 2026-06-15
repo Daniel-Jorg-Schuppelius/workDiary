@@ -137,10 +137,12 @@
         @php
             $kpiTiles = match ($tab) {
                 'diary' => [
-                    ['label' => __('Gesamt'),   'value' => $diaryCounts['all'],   'tone' => 'neutral', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary'])),                    'statusKey' => 'all'],
-                    ['label' => __('Offen'),    'value' => $diaryCounts['open'],  'tone' => 'warning', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '2'])),  'statusKey' => '2'],
-                    ['label' => __('Probleme'), 'value' => $diaryCounts['alert'], 'tone' => 'error',   'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '3'])),  'statusKey' => '3'],
-                    ['label' => __('Erledigt'), 'value' => $diaryCounts['done'],  'tone' => 'success', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '-1'])), 'statusKey' => '-1'],
+                    ['label' => __('Gesamt'),         'value' => $diaryCounts['all'],      'tone' => 'neutral', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary'])),                             'statusKey' => 'all'],
+                    ['label' => __('Offen'),          'value' => $diaryCounts['open'],     'tone' => 'warning', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '2'])),        'statusKey' => '2'],
+                    ['label' => __('In Bearbeitung'), 'value' => $diaryCounts['progress'], 'tone' => 'info',    'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => 'progress'])), 'statusKey' => 'progress'],
+                    ['label' => __('Probleme'),       'value' => $diaryCounts['alert'],    'tone' => 'error',   'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => 'alert'])),    'statusKey' => 'alert'],
+                    ['label' => __('Erledigt'),       'value' => $diaryCounts['done'],     'tone' => 'success', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => 'done'])),     'statusKey' => 'done'],
+                    ['label' => __('Storniert'),      'value' => $diaryCounts['cancelled'],'tone' => 'neutral', 'href' => route('duties.index', array_merge($tabFilters, ['tab' => 'diary', 'status' => '8'])),        'statusKey' => '8'],
                 ],
                 'bereitschaft' => [
                     ['label' => __('Gesamt'),                 'value' => $shiftKpis['total'],   'tone' => 'neutral',   'href' => null, 'statusKey' => null],
@@ -169,7 +171,7 @@
             };
             $activeStatus = (string) ($filters['status'] ?? 'all');
         @endphp
-        <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div class="flex-none grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
             @foreach ($kpiTiles as $tile)
                 <x-kpi-tile
                     :label="$tile['label']"

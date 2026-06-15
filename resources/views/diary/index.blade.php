@@ -22,12 +22,13 @@
     </x-filter-bar>
 
     {{-- Zähler --}}
-    <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         @foreach ([
-            ['key' => 'all',   'label' => __('Gesamt'),   'tone' => 'primary'],
-            ['key' => 'open',  'label' => __('Offen'),    'tone' => 'warning'],
-            ['key' => 'alert', 'label' => __('Probleme'), 'tone' => 'error'],
-            ['key' => 'done',  'label' => __('Erledigt'), 'tone' => 'success'],
+            ['key' => 'all',       'label' => __('Gesamt'),         'tone' => 'primary'],
+            ['key' => 'planned',   'label' => __('Geplant'),        'tone' => 'info'],
+            ['key' => 'active',    'label' => __('In Bearbeitung'), 'tone' => 'warning'],
+            ['key' => 'done',      'label' => __('Abgeschlossen'),  'tone' => 'success'],
+            ['key' => 'cancelled', 'label' => __('Storniert'),      'tone' => 'neutral'],
         ] as $tile)
             <x-kpi-tile
                 :label="$tile['label']"

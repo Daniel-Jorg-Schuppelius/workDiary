@@ -14,6 +14,9 @@
         <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
             <div class="h-full overflow-auto p-6 md:p-8 space-y-6">
                 @include('diary._show_body', ['isDialog' => false])
+                @include('diary._dispatch_panel')
+                @include('external-participants._panel', ['subject' => $diary, 'externalType' => 'diary'])
+                @includeWhen(isset($procedureRuns), 'diary._procedure_panel')
                 @include('diary._timeline_panel')
                 <div class="text-center">
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('diary.index')" show-label>{{ __('Zurück zur Liste') }}</x-icon-btn>

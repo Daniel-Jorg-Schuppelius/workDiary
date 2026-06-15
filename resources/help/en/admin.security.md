@@ -12,6 +12,15 @@ related:
 
 The most important security tools for operations:
 
+**Security overview**: the admin page "Security"
+(`/admin/security`) bundles the security-relevant state read-only:
+active sessions, API tokens (metadata only – never the token value),
+active external integrations, the most recent data/time exports, the
+most recent support accesses (audit events with the `support.`
+prefix), plus 2FA coverage and the at-rest encryption status. The
+page only displays and never changes any security objects; the
+automated deletion and retention runs are not part of this overview.
+
 **Two-factor authentication**: users can register several methods in
 parallel – **TOTP** (authenticator app), **e-mail code** and
 **WebAuthn** (FIDO2 security key/passkey). Recommend at least two

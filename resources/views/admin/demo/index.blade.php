@@ -6,6 +6,8 @@
 @php
     /** @var \App\Models\Organization $organization */
     /** @var bool $isEmpty */
+    /** @var array<int, \App\Enums\Demo\DemoIndustry> $industries */
+    /** @var \App\Enums\Demo\DemoIndustry $currentIndustry */
     $alreadySeeded = (bool) $organization->is_demo;
 @endphp
 
@@ -41,8 +43,18 @@
             @endif
 
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <form method="POST" action="{{ route('admin.demo.seed') }}" class="contents">
+                <form method="POST" action="{{ route('admin.demo.seed') }}" class="flex flex-col gap-2 md:flex-row md:items-end">
                     @csrf
+                    <label class="form-control w-full md:w-64">
+                        <span class="label-text mb-1 text-sm">{{ __('Musterbranche') }}</span>
+                        <select name="industry" class="select select-bordered select-sm w-full" @disabled(! $isEmpty)>
+                            @foreach ($industries as $industry)
+                                <option value="{{ $industry->value }}" @selected($currentIndustry->value === $industry->value)>
+                                    {{ $industry->label() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </label>
                     <button type="submit"
                             class="btn btn-primary w-full md:w-auto"
                             @disabled(! $isEmpty)>
@@ -80,12 +92,14 @@
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Inhalt des Demo-Mandanten') }}</h2>
+            <p class="text-xs text-base-content/60">{{ __('Inhalt richtet sich nach der gewählten Musterbranche und installiert das passende Branchenprofil.') }}</p>
             <ul class="space-y-1 text-sm text-base-content/80">
-                <li>{{ __('3 Demo-Kunden (ACME GmbH, Beispiel-Apotheke, Mustermann KG)') }}</li>
-                <li>{{ __('5 Demo-Projekte') }}</li>
+                <li>{{ __('Branchenprofil je Musterbranche (Klassifikationen, Tags, SLAs, Prozeduren)') }}</li>
+                <li>{{ __('3 Demo-Kunden und 5 Demo-Projekte') }}</li>
                 <li>{{ __('6 Demo-Nutzer mit unterschiedlichen Rollen (Admin, Operator, Disponent, Buchhaltung, Read-Only)') }}</li>
-                <li>{{ __('1 Hauptauftrag „Server-Migration ACME" mit 3 Zeiterfassungen und 1 offenem Punkt') }}</li>
-                <li>{{ __('25 Hintergrund-Aufträge der letzten 60 Tage') }}</li>
+                <li>{{ __('1 branchenspezifischer Hauptauftrag mit 3 Zeiterfassungen, Material, Asset und 1 offenem Punkt') }}</li>
+                <li>{{ __('1 signiertes Abnahmeprotokoll mit Prüfpunkten und 1 Kommunikationseintrag') }}</li>
+                <li>{{ __('25 Hintergrund-Aufträge der letzten 60 Tage in verschiedenen Stati') }}</li>
             </ul>
         </div>
     </article>

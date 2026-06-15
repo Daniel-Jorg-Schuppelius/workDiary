@@ -44,14 +44,26 @@
                         @endif
                     </div>
 
-                    <div class="grid grid-cols-3 gap-3 text-sm">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                        <div class="rounded-box bg-base-200 px-3 py-2">
+                            <div class="text-lg font-semibold">{{ $profile['entry_type_count'] }}</div>
+                            <div class="text-base-content/60">{{ __('Auftragsarten') }}</div>
+                        </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['classification_count'] }}</div>
-                            <div class="text-base-content/60">{{ __('Klassifikationen') }}</div>
+                            <div class="text-base-content/60">{{ __('Kategorien') }}</div>
                         </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['requirement_count'] }}</div>
                             <div class="text-base-content/60">{{ __('Pflichtregeln') }}</div>
+                        </div>
+                        <div class="rounded-box bg-base-200 px-3 py-2">
+                            <div class="text-lg font-semibold">{{ $profile['procedure_count'] }}</div>
+                            <div class="text-base-content/60">{{ __('Checklisten') }}</div>
+                        </div>
+                        <div class="rounded-box bg-base-200 px-3 py-2">
+                            <div class="text-lg font-semibold">{{ $profile['room_requirement_count'] }}</div>
+                            <div class="text-base-content/60">{{ __('Raumanforderungen') }}</div>
                         </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['tag_count'] }}</div>
@@ -59,14 +71,52 @@
                         </div>
                     </div>
 
+                    @if (! empty($profile['entry_types']) || ! empty($profile['procedures']))
+                        <div class="space-y-3 text-sm">
+                            @if (! empty($profile['entry_types']))
+                                <div>
+                                    <div class="text-base-content/60 mb-1">{{ __('Enthaltene Auftragsarten') }}</div>
+                                    <div class="flex flex-wrap gap-1">
+                                        @foreach ($profile['entry_types'] as $entryType)
+                                            <span class="badge badge-ghost badge-sm">{{ $entryType }}</span>
+                                        @endforeach
+                                        @if ($profile['entry_type_count'] > count($profile['entry_types']))
+                                            <span class="badge badge-sm">+{{ $profile['entry_type_count'] - count($profile['entry_types']) }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if (! empty($profile['procedures']))
+                                <div>
+                                    <div class="text-base-content/60 mb-1">{{ __('Enthaltene Checklisten') }}</div>
+                                    <ul class="list-disc list-inside text-base-content/80">
+                                        @foreach ($profile['procedures'] as $procedure)
+                                            <li>{{ $procedure }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
                     <div class="flex gap-2 justify-end">
-                        <form method="POST" action="{{ route('admin.branch-profiles.install', $profile['code']) }}">
+                        <form method="POST" action="{{ route('admin.branch-profiles.install', $profile['code']) }}"
+                              data-confirm-dialog
+                              data-confirm-message="{{ __('Paket ":profile" für :org installieren? Bestehende, lokal angepasste Daten bleiben unberührt.', ['profile' => $profile['label'], 'org' => $organization->name]) }}"
+                              data-confirm-icon="playlist_add_check"
+                              data-confirm-label="{{ __('Installieren') }}">
                             @csrf
                             <button type="submit" class="btn btn-sm btn-primary gap-2">
                                 <x-icon name="playlist_add_check" /> {{ __('Installieren') }}
                             </button>
                         </form>
-                        <form method="POST" action="{{ route('admin.branch-profiles.install', $profile['code']) }}">
+                        <form method="POST" action="{{ route('admin.branch-profiles.install', $profile['code']) }}"
+                              data-confirm-dialog
+                              data-confirm-message="{{ __('Paket ":profile" erneut anwenden? Vorlagen werden auf den Profilstand zurückgesetzt; veröffentlichte Checklisten bleiben erhalten.', ['profile' => $profile['label']]) }}"
+                              data-confirm-icon="refresh"
+                              data-confirm-tone="warning"
+                              data-confirm-label="{{ __('Erneut anwenden') }}">
                             @csrf
                             <input type="hidden" name="force" value="1" />
                             <button type="submit" class="btn btn-sm btn-outline gap-2">

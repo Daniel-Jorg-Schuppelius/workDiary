@@ -91,6 +91,20 @@
                     </span>
                 </div>
             </form>
+
+            <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
+                <a href="{{ route('admin.support.report.download') }}" class="btn btn-outline btn-sm">
+                    <x-icon name="download" />
+                    {{ __('Als JSON-Datei herunterladen') }}
+                </a>
+                <a href="{{ route('admin.support.report.preview') }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+                    <x-icon name="visibility" />
+                    {{ __('Im Browser anzeigen') }}
+                </a>
+                <span class="text-xs text-base-content/60">
+                    {{ __('Reine JSON-Variante ohne ZIP — gleiche datensparsame Felder.') }}
+                </span>
+            </div>
         </div>
     </article>
 </x-page-shell>

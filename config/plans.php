@@ -93,6 +93,7 @@ return [
         'timesheets.*' => 'module.planung',
         'flex.*' => 'module.planung',
         'tours.*' => 'module.planung',
+        'dispatch.*' => 'module.planung',
 
         'travel-logs.*' => 'module.spesen',
         'expenses.*' => 'module.spesen',
@@ -110,6 +111,7 @@ return [
 
         'assets.*' => 'module.fuhrpark',
         'vehicles.*' => 'module.fuhrpark',
+        'vehicle-reservations.*' => 'module.fuhrpark',
         'energy-logs.*' => 'module.fuhrpark',
 
         'sites.*' => 'module.liegenschaften',
@@ -154,6 +156,8 @@ return [
         'reports.project-details' => 'module.auswertungen_team',
         'reports.project-inactive' => 'module.auswertungen_team',
         'reports.operations' => 'module.auswertungen_team',
+        'reports.economics' => 'module.auswertungen_team',
+        'reports.arbzg-compliance' => 'module.auswertungen_team',
     ],
 
     // Duerfen die Daten eines Moduls nach Ablauf der Karenz geloescht werden?
@@ -188,6 +192,7 @@ return [
         'module.kanban' => [],
         'module.auswertungen_team' => [],
         'module.fuhrpark' => [
+            \App\Models\VehicleReservation::class,
             \App\Models\EnergyLog::class,
             \App\Models\Vehicle::class,
             \App\Models\Asset::class,

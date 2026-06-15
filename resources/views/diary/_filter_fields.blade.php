@@ -15,10 +15,9 @@
 <x-filter-field :label="__('Status')" for="{{ $idPrefix }}-status" class="min-w-40">
     <select id="{{ $idPrefix }}-status" name="status" class="select select-bordered select-sm w-full">
         <option value="all" @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
-        <option value="2" @selected(($filters['status'] ?? '') === '2')>{{ __('Offen') }}</option>
-        <option value="3" @selected(($filters['status'] ?? '') === '3')>{{ __('Problem') }}</option>
-        <option value="1" @selected(($filters['status'] ?? '') === '1')>{{ __('Bestätigt') }}</option>
-        <option value="-1" @selected(($filters['status'] ?? '') === '-1')>{{ __('Erledigt') }}</option>
+        @foreach (\App\Enums\Diary\Status::cases() as $status)
+            <option value="{{ $status->value }}" @selected(($filters['status'] ?? '') === (string) $status->value)>{{ $status->label() }}</option>
+        @endforeach
     </select>
 </x-filter-field>
 @if (($allTags ?? collect())->isNotEmpty())

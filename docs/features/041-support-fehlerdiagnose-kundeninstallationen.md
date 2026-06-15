@@ -10,6 +10,24 @@ Konzepte für MVP-044/045 liegen vor:
 [Diagnose-Seite](../diagnose-seite.md) (MVP-044, Issue #43) und
 [Supportbericht](../supportbericht.md) (MVP-045, Issue #44).
 
+MVP-Kern umgesetzt: **Exportierbarer Supportbericht ohne Kundendaten** und
+**Health-Zusammenfassung** sind gebaut. Der `SupportReportBuilder`
+(`app/Services/Support/SupportReportBuilder.php`) liefert einen
+Whitelist-basierten Bericht mit App-Version + Build-Hash,
+PHP-/Laravel-/DB-Version, aktiven Modulen + Plugins (über den
+signaturfreien `ReleaseManifestService`-Kern), einem Health-Statusblock aus
+`system:health --json` (über `app/Services/Support/SupportHealthSummary.php`,
+**ohne** DiagnosticsService zu duplizieren), Plugin-Fehlern der letzten 7 Tage
+(nur Plugin-ID/Phase/Anzahl), Queue-/Backup-Kennzahlen, Migrations-Stand,
+Datensatz-Counts je Tabelle, Konfigurations-/ENV-Schlüsseln (Secrets
+redaktiert) und gefilterten Log-/failed_jobs-Auszügen. Ausgabe als ZIP-Bundle,
+**reine JSON-Datei** (`support-report-{date}.json`), Browser-Vorschau sowie über
+den Artisan-Befehl **`support:report {--output=}`** für CLI/On-Premise. Datensparsamkeit
+ist durch den Whitelist-Ansatz und gezielte Negativtests (kein Kundenname, kein
+`APP_KEY`) abgesichert. Offen: Diagnose-Seite-Detailausbau (MVP-044) und die
+temporäre Supportfreigabe/Session-/Impersonation-Lifecycle (Abschnitt 5 der
+Grundsätze).
+
 ## Ziel
 
 WorkDiary soll Support und Fehlerdiagnose für lokale Installationen, Private

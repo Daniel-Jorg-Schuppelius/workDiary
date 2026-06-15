@@ -25,6 +25,7 @@
     size="lg"
     :action="$isEdit ? route('knowledge.update', $article) : route('knowledge.store')"
     :method="$isEdit ? 'PUT' : 'POST'"
+    enctype="multipart/form-data"
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('knowledge.action.save') : __('knowledge.action.create')">
 
@@ -74,5 +75,26 @@
                       class="textarea textarea-bordered w-full"
                       placeholder="{{ __('knowledge.hint.solution') }}">{{ old('solution', $article?->solution) }}</textarea>
         </label>
+    </x-form-group>
+
+    <x-form-group :legend="__('Anhänge')" icon="attach_file" tone="ghost" cols="1">
+        @if ($isEdit && $article->attachments->isNotEmpty())
+            <ul class="space-y-1 text-sm">
+                @foreach ($article->attachments as $att)
+                    <li class="flex items-center gap-2 text-base-content/70">
+                        <x-icon :name="$att->isImage() ? 'image' : 'attach_file'" class="text-base-content/50" />
+                        <span class="truncate">{{ $att->original_name }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+        <label class="form-control">
+            <span class="label-text">{{ __('Bilder oder Dokumente hinzufügen') }}</span>
+            <input type="file" name="attachments[]" multiple
+                   accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.csv,.log,.zip,.docx,.xlsx"
+                   class="file-input file-input-bordered w-full" />
+        </label>
+        @error('attachments.*')<p class="text-sm text-error">{{ $message }}</p>@enderror
+        <p class="text-xs text-base-content/50">{{ __('Max. 25 MB pro Datei. Verwalten/Löschen auf der Artikelseite.') }}</p>
     </x-form-group>
 </x-modal>

@@ -20,6 +20,7 @@ enum OpenIssueSource: string implements HasLabel {
     case ProtocolDefect = 'protocolDefect';
     case CommunicationFollowup = 'communicationFollowup';
     case ProcedureDeviation = 'procedureDeviation';
+    case CustomerRejection = 'customerRejection';
 
     public function label(): string {
         return (string) __('enums.open-issue.source.' . $this->value);

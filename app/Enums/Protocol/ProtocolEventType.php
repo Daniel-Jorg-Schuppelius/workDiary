@@ -30,6 +30,9 @@ final class ProtocolEventType {
     public const AttachmentRemoved = 'protocol.attachmentRemoved';
     public const SignatureRequested = 'protocol.signatureRequested';
     public const SignatureLinkOpened = 'protocol.signatureLinkOpened';
+    public const SignatureRejected = 'protocol.signatureRejected';
+    public const CustomerQueryRaised = 'protocol.customerQueryRaised';
+    public const CustomerQueryAnswered = 'protocol.customerQueryAnswered';
     public const PdfRendered = 'protocol.pdfRendered';
     public const PdfDownloaded = 'protocol.pdfDownloaded';
     public const ItemPhotoAdded = 'protocol.item.photoAdded';

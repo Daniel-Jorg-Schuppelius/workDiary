@@ -57,6 +57,7 @@ class DiaryCaseFileController extends Controller {
             ->where('subject_type', $diary->getMorphClass())
             ->where('subject_id', $diary->getKey())
             ->withCount('signatures')
+            ->with('tags:id,name,color,slug')
             ->orderByDesc('occurred_at')
             ->get();
 

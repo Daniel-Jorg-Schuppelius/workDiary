@@ -86,6 +86,42 @@ php artisan sbom:generate
 - Die SBOM ist eine Komponenteninventur — **kein** Schwachstellenbericht
   (Orientierung: BSI TR-03183-2); der Advisory-Abgleich folgt separat.
 
+## 3b. Signiertes Release-Manifest (Feature 022)
+
+Zusätzlich zur SBOM wird je Release ein **integritätsgesichertes
+Release-Manifest** erzeugt, das eine konkrete Installation einem Release
+zuordnet:
+
+```bash
+php artisan release:manifest
+```
+
+- Inhalt: App-/Build-Version (`config('app.version')` + Git-Kurz-Hash),
+  PHP-/Laravel-/DB-Versionen, Erstellungszeit, aktive Module und registrierte
+  Plugins (mit Version und Kompatibilitätsbereich) sowie **SHA-256-Prüfsummen**
+  der release-relevanten Artefakte (SBOM-Alias `workdiary-latest.cdx.json`,
+  `composer.lock`, `package-lock.json`).
+- Ablage: `storage/app/release/release.json`. Optionen: `--output=<pfad>`
+  (z. B. CI-Artefakt) und `--print` (stdout).
+- **Signatur**: Ist ein **Ed25519-Private-Key** konfiguriert
+  (`LICENSE_PRIVATE_KEY` bzw. `LICENSE_PRIVATE_KEY_FILE` — derselbe Schlüssel
+  wie das Lizenzsystem), wird das Manifest signiert. Auf Kundeninstallationen
+  ohne Private Key bleibt das Manifest **unsigniert**, die Prüfsummen-
+  Integrität ist trotzdem nachweisbar.
+- **Verifikation** (auch im Update-/Monitoring-Skript):
+
+  ```bash
+  php artisan release:verify           # Default: storage/app/release/release.json
+  php artisan release:verify /pfad/zu/release.json
+  ```
+
+  Prüft jede Artefakt-Prüfsumme gegen die aktuelle Datei und — falls signiert —
+  die Signatur gegen den (versiegelten/konfigurierten) Public Key. Exit-Code 0
+  = gültig, 1 = manipuliert/abweichend.
+- Erzeugung/Download/Status auch über **System → Komponenten & Versionen**
+  (`admin/components`), dort zusammen mit dem `system:health`-Status für den
+  „nach Update"-Ablauf.
+
 ## 4. Rollback
 
 - **Vor jedem Update**: vollständiges Backup (Datenbank + `storage/`),
@@ -100,7 +136,13 @@ php artisan sbom:generate
 
 - ~~Maschinenlesbare SBOM (Composer-/NPM-/Plugin-Versionen) je Release.~~
   Umgesetzt: `php artisan sbom:generate` (siehe §3a).
-- Signierte Release-Metadaten (Build-Hash, Prüfsummen).
+- ~~Signierte Release-Metadaten (Build-Hash, Prüfsummen).~~ Umgesetzt:
+  `php artisan release:manifest` / `release:verify` (Ed25519-Signatur, sonst
+  SHA-256-Integrität; siehe §3b).
+- ~~Plugin-Kompatibilitätsangaben + Durchsetzung je Kern-Version.~~ Umgesetzt:
+  `Plugin::minAppVersion()` / `maxAppVersion()` + `PluginCompatibility`
+  (Aktivierung/Healthcheck blockieren bei Inkompatibilität; Anzeige in
+  `admin/plugins` und im Manifest).
 - Security Advisories und Betroffenheitsbewertung je Version.
 - Update-Server / Verfügbarkeits-Check (`update.workdiary.app`).
-- Plugin-Kompatibilitätsmatrix je Kern-Version.
+- Plugin-Kompatibilitätsmatrix (übergreifende Sicht je Kern-Version).

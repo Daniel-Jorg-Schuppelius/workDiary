@@ -32,7 +32,19 @@ trait FiltersDiaryEntries {
      */
     protected function applyDiaryFilters(Builder $query, Request $request, string $from, string $to): array {
         if ($request->filled('status') && $request->status !== 'all') {
-            $query->where('status', (int) $request->status);
+            // Benannte Status-Gruppen (z. B. die /duties-KPI-Kacheln, die mehrere
+            // Status zusammenfassen) — sonst Einzelstatus wie bisher (numerisch).
+            $statusGroups = [
+                'progress' => [1, 4],       // In Bearbeitung (InProgress, Accepted)
+                'alert' => [3, 5],          // Probleme (WaitingCustomer, WaitingMaterial)
+                'done' => [-1, 6, 7],       // Erledigt (Done, AcceptedFinal, Invoiced)
+            ];
+            $raw = (string) $request->status;
+            if (isset($statusGroups[$raw])) {
+                $query->whereIn('status', $statusGroups[$raw]);
+            } else {
+                $query->where('status', (int) $raw);
+            }
         }
 
         // Modus-bewusste Datumsfilterung (Overlap; backlog/recurring immer).

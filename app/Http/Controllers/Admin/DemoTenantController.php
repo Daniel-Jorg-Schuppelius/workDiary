@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Demo\DemoIndustry;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, User};
@@ -35,6 +36,8 @@ class DemoTenantController extends Controller {
         return view('admin.demo.index', [
             'organization' => $organization,
             'isEmpty' => $isEmpty,
+            'industries' => DemoIndustry::all(),
+            'currentIndustry' => $organization->is_demo ? $this->seeder->resolveIndustry($organization) : DemoIndustry::default(),
         ]);
     }
 
@@ -46,7 +49,9 @@ class DemoTenantController extends Controller {
         $organization = $user->organization;
         abort_if($organization === null, 404);
 
-        $counts = $this->seeder->seed($organization, $user);
+        $industry = DemoIndustry::fromKey((string) $request->input('industry'));
+
+        $counts = $this->seeder->seed($organization, $user, $industry);
 
         $this->writeAudit($user, $organization, 'demo.seeded', $counts);
 
@@ -74,7 +79,7 @@ class DemoTenantController extends Controller {
         return back()->with('success', __('Demo-Mandant wurde zurückgesetzt.'));
     }
 
-    /** @param array<string, int> $counts */
+    /** @param array<string, int|string> $counts */
     private function writeAudit(User $user, Organization $organization, string $event, array $counts): void {
         AuditLog::query()->create([
             'organization_id' => $organization->id,

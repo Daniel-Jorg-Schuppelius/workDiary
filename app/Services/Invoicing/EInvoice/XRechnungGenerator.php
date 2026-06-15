@@ -49,9 +49,8 @@ use Illuminate\Validation\ValidationException;
 class XRechnungGenerator {
     /**
      * CustomizationID, wie sie das Toolkit für das XRechnung-Profil emittiert.
-     * Achtung: `urn:xoev-de:kosit:standard:xrechnung_3.0` weicht von der
-     * aktuellen 3.0-Kennung `urn:xeinkauf.de:kosit:xrechnung_3.0` ab —
-     * bewusst NICHT lokal gepatcht, Befund geht an den Toolkit-Maintainer.
+     * Seit php-erechnung-toolkit v0.1.12 die korrekte 3.0-Kennung
+     * `urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0`.
      */
     public const CUSTOMIZATION_ID = ERechnungProfile::XRECHNUNG->value;
 
@@ -59,8 +58,9 @@ class XRechnungGenerator {
 
     /**
      * Einheiten-Mapping auf UN/ECE-Recommendation-20-Codes (Toolkit-Enum):
-     * Stunde ⇒ HOUR (HUR), Stück/Default ⇒ PIECE (C62 — das Toolkit kennt
-     * kein H87, C62 ist EN-16931-konform).
+     * Stunde ⇒ HOUR (HUR), Stück ⇒ UNIT_H87 (H87, seit Toolkit v0.1.12),
+     * unbekannte Einheit (z. B. „Pauschale") ⇒ Default PIECE (C62, generisch
+     * „one", EN-16931-konform).
      *
      * @var array<string, UnitCode>
      */
@@ -75,19 +75,19 @@ class XRechnungGenerator {
         'hour' => UnitCode::HOUR,
         'hours' => UnitCode::HOUR,
         'hr' => UnitCode::HOUR,
-        // Stück
-        'st' => UnitCode::PIECE,
-        'st.' => UnitCode::PIECE,
-        'stk' => UnitCode::PIECE,
-        'stk.' => UnitCode::PIECE,
-        'stück' => UnitCode::PIECE,
-        'stueck' => UnitCode::PIECE,
-        'pc' => UnitCode::PIECE,
-        'pcs' => UnitCode::PIECE,
-        'pce' => UnitCode::PIECE,
-        'pz' => UnitCode::PIECE,
-        'ud' => UnitCode::PIECE,
-        'piece' => UnitCode::PIECE,
+        // Stück ⇒ H87 (UN/ECE Rec 20 „piece")
+        'st' => UnitCode::UNIT_H87,
+        'st.' => UnitCode::UNIT_H87,
+        'stk' => UnitCode::UNIT_H87,
+        'stk.' => UnitCode::UNIT_H87,
+        'stück' => UnitCode::UNIT_H87,
+        'stueck' => UnitCode::UNIT_H87,
+        'pc' => UnitCode::UNIT_H87,
+        'pcs' => UnitCode::UNIT_H87,
+        'pce' => UnitCode::UNIT_H87,
+        'pz' => UnitCode::UNIT_H87,
+        'ud' => UnitCode::UNIT_H87,
+        'piece' => UnitCode::UNIT_H87,
     ];
 
     private const DEFAULT_PAYMENT_TERMS_DAYS = 14;

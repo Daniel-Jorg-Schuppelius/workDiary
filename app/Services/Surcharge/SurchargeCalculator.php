@@ -30,8 +30,8 @@ use Illuminate\Support\Collection;
  *    23:00–24:00 gesplittet (Minuten zählen zum Tag, in dem sie liegen).
  *  - saturday/sunday: ganzer Wochentag.
  *  - holiday: ganzer Tag laut {@see HolidayService} (Yasumi-Provider gemäß
- *    config('app.holidays.provider') + org-eigene Holiday-Einträge — dieselbe
- *    Quelle wie die Compliance-Regeln).
+ *    dem mandantenbewussten Rechtsraum Setting::get('holidays.provider') +
+ *    org-eigene Holiday-Einträge — dieselbe Quelle wie die Compliance-Regeln).
  *  - valid_from/valid_until (inklusiv) und active werden pro Kalendertag geprüft.
  *
  * Stacking-Entscheidung (MVP): Überlappen mehrere Regeln (z. B. Nacht +

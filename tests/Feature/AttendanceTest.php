@@ -199,7 +199,13 @@ class AttendanceTest extends TestCase {
             ->assertSee(__('Heute'))
             ->assertSee(__('Soll'))
             ->assertSee(__('Anwesenheit'))
-            ->assertSee(__('Unverteilt'));
+            ->assertSee(__('Unverteilt'))
+            // Zusammenlegung mit dem Tagesabschluss (MVP-015): „Heute" zeigt
+            // jetzt auch Warnungen, Bilanz (inkl. Pausen) und die Abschluss-Aktion.
+            ->assertSee(__('day-close.section.issues'))
+            ->assertSee(__('day-close.section.balance'))
+            ->assertSee(__('day-close.field.required_break'))
+            ->assertSee(__('day-close.action.close_day'));
     }
 
     public function test_backfill_command_creates_attendance_from_entries(): void {

@@ -56,7 +56,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="3" class="text-center text-base-content/60 py-6">{{ __('access.empty.roles') }}</td></tr>
+                <x-table.empty :colspan="3" :title="__('access.empty.roles')" />
             @endforelse
         </x-table>
     </section>

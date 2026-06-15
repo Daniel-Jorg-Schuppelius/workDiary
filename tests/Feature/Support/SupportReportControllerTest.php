@@ -70,4 +70,66 @@ class SupportReportControllerTest extends TestCase {
             ->post(route('admin.support.report.generate'))
             ->assertForbidden();
     }
+
+    public function test_json_download_returns_json_file_and_writes_audit(): void {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->get(route('admin.support.report.download'));
+
+        $response->assertOk();
+        $this->assertStringContainsString('application/json', (string) $response->headers->get('Content-Type'));
+        $this->assertStringContainsString('support-report-', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('.json', (string) $response->headers->get('Content-Disposition'));
+
+        $payload = json_decode((string) $response->getContent(), true);
+        $this->assertIsArray($payload);
+        $this->assertArrayHasKey('release', $payload);
+        $this->assertArrayHasKey('health', $payload);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'user_id' => $admin->id,
+            'event' => 'support.reportDownloaded',
+        ]);
+    }
+
+    public function test_json_download_forbidden_for_regular_user(): void {
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.support.report.download'))
+            ->assertForbidden();
+    }
+
+    public function test_browser_preview_returns_json_payload(): void {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->get(route('admin.support.report.preview'))
+            ->assertOk()
+            ->assertJsonStructure(['installation', 'release', 'health', 'plugin_errors', 'operations']);
+    }
+
+    public function test_browser_preview_forbidden_for_regular_user(): void {
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->get(route('admin.support.report.preview'))
+            ->assertForbidden();
+    }
+
+    public function test_json_download_excludes_customer_and_app_key(): void {
+        $admin = User::factory()->admin()->create();
+        $customer = \App\Models\Customer::factory()->create([
+            'organization_id' => $admin->organization_id,
+            'created_by' => $admin->id,
+            'name' => 'Negativ-Test-Kunde-ABC-XYZ',
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.support.report.download'));
+        $body = (string) $response->getContent();
+
+        $this->assertStringNotContainsString($customer->name, $body);
+        $this->assertStringNotContainsString((string) config('app.key'), $body);
+        $this->assertStringNotContainsString($admin->email, $body);
+    }
 }

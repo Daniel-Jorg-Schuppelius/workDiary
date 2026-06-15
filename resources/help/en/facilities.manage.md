@@ -19,3 +19,13 @@ required.
 Before deleting a level, reassign its children and linked records. When
 the organization changes, archiving is often better than removing a
 location used by historical records.
+
+## Room-specific requirements
+
+A room can carry several trade-specific requirements without being
+duplicated: hygiene level, special cleaning, access restriction, IT
+inventory, technical inspection or operator duty. They complement the
+cleaning profile and are maintained in the room edit dialog (pick the
+requirement, optionally a level or value and a note). Active requirements
+are shown in the room list and in the object file of any asset located in
+that room.
