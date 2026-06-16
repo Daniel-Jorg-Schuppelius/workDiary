@@ -172,6 +172,11 @@
             .header-row .header-left   { grid-area: left;   min-width: 0; max-width: 100%; }
             .header-row .header-center { grid-area: center; min-width: 0; max-width: 100%; display: flex; justify-content: center; }
             .header-row .header-right  { grid-area: right;  min-width: 0; max-width: 100%; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem; }
+            /* Benutzername-Button: max. Breite je Header-Band. Im gestapelten
+               Portrait/Mobile-Band (<600cqi) früh kürzen, damit der Header nie über
+               die Seite hinausläuft; breitere Bänder dürfen mehr Name zeigen
+               (container-query-konsistent zum übrigen Header). */
+            .header-row .header-username { max-width: 5rem; }
             .header-dropdown-panel {
                 scroll-padding-block: .5rem;
             }
@@ -249,14 +254,17 @@
                     justify-items: stretch;
                 }
                 .header-row .header-left   { justify-self: start; }
-                .header-row .header-right  { justify-self: end; flex-wrap: nowrap; justify-content: flex-end; }
+                .header-row .header-right  { justify-self: end; flex-wrap: wrap; justify-content: flex-end; }
                 .header-row .header-center { justify-self: center; }
+                .header-row .header-username { max-width: 7rem; }
             }
             @container app-header (min-width: 1400px) {
                 .header-row {
                     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
                     grid-template-areas: "left center right";
                 }
+                .header-row .header-right { flex-wrap: nowrap; }
+                .header-row .header-username { max-width: 12rem; }
             }
             body.sidebar-collapsed #app-sidebar [data-sidebar-label],
             body.sidebar-collapsed #app-sidebar [data-sidebar-section] {
@@ -1748,8 +1756,8 @@
                                        class="btn btn-sm gap-1.5 {{ $isUserActive ? 'btn-primary' : 'btn-ghost' }}"
                                        title="{{ Auth::user()->name }}"
                                        aria-label="{{ __('Benutzermenü') }}">
-                                    <x-icon name="account_circle" class="text-[1.65rem]" />
-                                    <span class="max-w-32 truncate">{{ Auth::user()->name }}</span>
+                                    <x-icon name="account_circle" class="text-[1.65rem] shrink-0" />
+                                    <span class="header-username truncate">{{ Auth::user()->name }}</span>
                                 </label>
                                 <ul tabindex="0" class="dropdown-content header-dropdown-panel header-menu-list menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     @foreach ($userNavItems as $item)
