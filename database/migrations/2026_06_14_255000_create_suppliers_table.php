@@ -21,6 +21,15 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration {
     public function up(): void {
+        // Idempotent: Diese Migration wurde aus 2026_08_05_120000 nach vorne
+        // gezogen (FK-Reihenfolge, s. isms_supplier_assessments). Bestehende
+        // Datenbanken haben die Tabelle bereits unter dem alten Migrationsnamen
+        // angelegt — dort nur überspringen (Schema ist identisch), statt erneut
+        // CREATE TABLE auszuführen (sonst MySQL 1050 „already exists").
+        if (Schema::hasTable('suppliers')) {
+            return;
+        }
+
         Schema::create('suppliers', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
