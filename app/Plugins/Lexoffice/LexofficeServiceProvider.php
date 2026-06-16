@@ -26,6 +26,9 @@ use Illuminate\Support\ServiceProvider;
  */
 class LexofficeServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Plugin liefert seine eigenen Config-Defaults/ENV-Fallbacks → `config('plugins.lexoffice.*')`.
+        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . LexofficePlugin::ID);
+
         $this->app->singleton(LexofficeService::class, function (): LexofficeService {
             $config = LexofficeConfig::resolve();
 

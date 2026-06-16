@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Import\{ImportEntity, ImportRunState};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessCsvImportJob;
-use App\Models\{AuditLog, ImportRun, ImportRunError, Organization, User};
+use App\Models\{AuditLog, ImportRun, ImportRunError, User};
 use App\Services\Import\CsvPreflightAnalyzer;
 use App\Support\Toolkit\CsvFacade;
 use Illuminate\Contracts\View\View;
@@ -29,10 +30,11 @@ use Illuminate\Support\Facades\{Auth, Storage};
  * (Vorschau + Fehler) → confirm (Dispatch Job) → show (Status).
  */
 class ImportController extends Controller {
+    use ResolvesCurrentOrganization;
+
     private const ALLOWED_SORTS = ['id', 'entity', 'input_filename', 'state', 'rows_total', 'created_at'];
 
-    public function __construct(private readonly CsvPreflightAnalyzer $analyzer) {
-    }
+    public function __construct(private readonly CsvPreflightAnalyzer $analyzer) {}
 
     public function index(Request $request): View {
         $organization = $this->currentOrganization();
@@ -184,14 +186,6 @@ class ImportController extends Controller {
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ]);
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-        $organization = app('currentOrganization');
-        abort_unless($organization instanceof Organization, 403);
-
-        return $organization;
     }
 
     private function ensureOwned(ImportRun $run): void {

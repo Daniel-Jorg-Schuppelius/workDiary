@@ -20,6 +20,9 @@ use Illuminate\Support\ServiceProvider;
  */
 class TogglServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Plugin liefert seine eigenen Config-Defaults/ENV-Fallbacks → `config('plugins.toggl.*')`.
+        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . TogglPlugin::ID);
+
         $this->app->singleton(TogglImportService::class, fn(): TogglImportService => new TogglImportService);
     }
 

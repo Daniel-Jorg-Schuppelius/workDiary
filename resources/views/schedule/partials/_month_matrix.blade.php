@@ -24,5 +24,6 @@
         'shiftsByDate'      => $shiftsByDate ?? collect(),
         'openSlotsByDate'   => $openSlotsByDate ?? [],
         'complianceByShift' => $complianceByShift ?? [],
+        'qualificationGapByShift' => $qualificationGapByShift ?? [],
     ]"
     full-height />

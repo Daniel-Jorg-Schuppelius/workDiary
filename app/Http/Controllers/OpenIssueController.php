@@ -48,10 +48,7 @@ class OpenIssueController extends Controller {
 
         $subjectClass = self::SUBJECT_MAP[$subjectKind];
         $rawSubjectId = (string) $request->query('subject_id', '');
-        $subjectId = Sqid::decode($subjectClass, $rawSubjectId);
-        if ($subjectId === null && is_numeric($rawSubjectId)) {
-            $subjectId = (int) $rawSubjectId;
-        }
+        $subjectId = Sqid::decodeOrNumeric($subjectClass, $rawSubjectId);
         if ($subjectId < 1 || $subjectClass::query()->whereKey($subjectId)->doesntExist()) {
             abort(404);
         }
@@ -98,10 +95,7 @@ class OpenIssueController extends Controller {
         }
 
         $subjectClass = self::SUBJECT_MAP[$data['subject_kind']];
-        $decodedSubjectId = Sqid::decode($subjectClass, (string) $data['subject_id']);
-        if ($decodedSubjectId === null && is_numeric((string) $data['subject_id'])) {
-            $decodedSubjectId = (int) $data['subject_id'];
-        }
+        $decodedSubjectId = Sqid::decodeOrNumeric($subjectClass, (string) $data['subject_id']);
         if ($decodedSubjectId === null || $decodedSubjectId < 1) {
             abort(404);
         }

@@ -52,10 +52,7 @@ class CohortComparisonReportController extends Controller {
         $window = max(7, min(365, $window));
 
         $rawQualId = $request->query('qualification_id');
-        $qualId = Sqid::decode(Qualification::class, $rawQualId);
-        if ($qualId === null && is_numeric($rawQualId)) {
-            $qualId = (int) $rawQualId;
-        }
+        $qualId = Sqid::decodeOrNumeric(Qualification::class, $rawQualId);
 
         $result = null;
         $qualification = null;

@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Exceptions\ClassificationValidationException;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Classification, Organization};
+use App\Models\{Classification};
 use App\Services\Classification\ClassificationManager;
 use App\Support\Setting;
 use App\Support\Toolkit\CsvFacade;
@@ -23,6 +24,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ClassificationController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly ClassificationManager $manager,
     ) {}
@@ -258,15 +261,6 @@ class ClassificationController extends Controller {
 
         return redirect()->route('admin.classifications.index')
             ->with('success', __('Plattform-Default wurde für diese Organisation deaktiviert.'));
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-
-        $organization = app('currentOrganization');
-        abort_unless($organization instanceof Organization, 403);
-
-        return $organization;
     }
 
     private function ensureKnownClassification(Classification $classification): void {

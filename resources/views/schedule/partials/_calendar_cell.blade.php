@@ -85,6 +85,8 @@
         @php
             $compl = $complianceByShift[$shift->id] ?? null;
             $complTitle = $compl ? "\n⚠ ".implode("\n⚠ ", $compl['messages']) : '';
+            $qualGap = ($qualificationGapByShift ?? [])[$shift->id] ?? null;
+            $qualTitle = $qualGap ? "\n⛔ ".__('schedule.qualification.missing').': '.implode(', ', $qualGap) : '';
             $shiftPayload = [
                 'id' => $shift->sqid,
                 'user_id' => $shift->user?->sqid,
@@ -104,14 +106,19 @@
                  ondragstart='scheduleDragStart(event, @js($shift->sqid))'
                  onclick='event.stopPropagation(); scheduleOpenEditDialog(@js($shift->sqid), @js($shiftPayload))'
              @endif
-             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}">
+             title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}">
             {{ $shift->shiftType?->abbreviation ?? '?' }}
             @if ($shift->resolvedStartTime() || $shift->resolvedEndTime())
                 <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() ?? '' }}–{{ $shift->resolvedEndTime() ?? '' }}</span>
             @endif
-            @if ($compl)
-                <span class="ml-auto inline-flex h-3 w-3 items-center justify-center rounded-full bg-white/90 text-[0.55rem] font-bold {{ $compl['severity'] === 'error' ? 'text-error' : 'text-warning' }}" aria-hidden="true">!</span>
-            @endif
+            <span class="ml-auto inline-flex items-center gap-0.5">
+                @if ($qualGap)
+                    <span class="inline-flex h-3 w-3 items-center justify-center rounded-full bg-white/90 text-[0.55rem] font-bold text-error" aria-hidden="true" title="{{ __('schedule.qualification.missing') }}: {{ implode(', ', $qualGap) }}">Q</span>
+                @endif
+                @if ($compl)
+                    <span class="inline-flex h-3 w-3 items-center justify-center rounded-full bg-white/90 text-[0.55rem] font-bold {{ $compl['severity'] === 'error' ? 'text-error' : 'text-warning' }}" aria-hidden="true">!</span>
+                @endif
+            </span>
         </div>
     @endforeach
 

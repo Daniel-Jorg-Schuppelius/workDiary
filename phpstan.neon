@@ -8,3 +8,6 @@ parameters:
         - app
     excludePaths:
         - app/Legacy/Models/*
+        # Plugin-eigene Config-Dateien sind reine config()-Rückgaben (wie config/,
+        # das ebenfalls nicht analysiert wird) — env() ist hier zulässig.
+        - app/Plugins/*/config.php

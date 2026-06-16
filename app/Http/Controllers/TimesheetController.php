@@ -116,16 +116,10 @@ class TimesheetController extends Controller {
         Gate::authorize('create', Timesheet::class);
 
         $rawCustomerId = $request->input('customer_id');
-        $customerId = \App\Support\Sqid::decode(\App\Models\Customer::class, $rawCustomerId);
-        if ($customerId === null && is_numeric($rawCustomerId)) {
-            $customerId = (int) $rawCustomerId;
-        }
+        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $rawCustomerId);
 
         $rawProjectId = $request->input('project_id');
-        $projectId = \App\Support\Sqid::decode(\App\Models\Project::class, $rawProjectId);
-        if ($projectId === null && is_numeric($rawProjectId)) {
-            $projectId = (int) $rawProjectId;
-        }
+        $projectId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Project::class, $rawProjectId);
 
         $request->merge([
             'customer_id' => $customerId,

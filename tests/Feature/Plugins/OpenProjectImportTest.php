@@ -1,0 +1,267 @@
+<?php
+/*
+ * Created on   : Mon Jun 16 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : OpenProjectImportTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace Tests\Feature\Plugins;
+
+use App\Models\{OpenProjectPendingEntry, PluginSetting, Project, TimeEntry, User};
+use App\Plugins\OpenProject\OpenProjectConfig;
+use App\Plugins\OpenProject\OpenProjectPlugin;
+use App\Plugins\OpenProject\Services\{OpenProjectImportService, OpenProjectStructureSync};
+use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Tests\Concerns\WithOrganization;
+use Tests\TestCase;
+
+class OpenProjectImportTest extends TestCase {
+    use RefreshDatabase;
+    use WithOrganization;
+
+    private const BASE = 'https://op.example.test/api/v3';
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+
+        $owner = User::factory()->create(['organization_id' => $this->organization->id]);
+        $this->organization->forceFill(['owner_id' => $owner->id])->save();
+    }
+
+    private function service(): OpenProjectImportService {
+        return new OpenProjectImportService(new OpenProjectStructureSync);
+    }
+
+    private function enable(array $extra = []): array {
+        PluginSetting::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => OpenProjectPlugin::ID,
+            'enabled' => true,
+            'settings' => array_merge([
+                'base_url' => 'https://op.example.test',
+                'api_token' => 'test-token',
+            ], $extra),
+        ]);
+
+        return OpenProjectConfig::resolve($this->organization->id);
+    }
+
+    /** @param array<int, array<string, mixed>> $elements */
+    private function hal(array $elements): array {
+        return ['_embedded' => ['elements' => $elements], 'total' => count($elements)];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $projects
+     * @param  array<int, array<string, mixed>>  $workPackages
+     * @param  array<int, array<string, mixed>>  $timeEntries
+     */
+    private function fakeApi(array $projects, array $workPackages, array $timeEntries): void {
+        Http::fake([
+            self::BASE . '/projects*' => Http::response($this->hal($projects), 200),
+            self::BASE . '/work_packages*' => Http::response($this->hal($workPackages), 200),
+            self::BASE . '/users*' => Http::response($this->hal([]), 200),
+            self::BASE . '/time_entries*' => Http::response($this->hal($timeEntries), 200),
+        ]);
+    }
+
+    private function timeEntryPayload(int $id, int $projectId, string $hours, string $spentOn, ?int $wpId = null): array {
+        $links = ['project' => ['href' => "/api/v3/projects/{$projectId}", 'title' => 'Website']];
+        if ($wpId !== null) {
+            $links['workPackage'] = ['href' => "/api/v3/work_packages/{$wpId}", 'title' => 'Login bug'];
+        }
+        $links['user'] = ['href' => '/api/v3/users/3', 'title' => 'Tech'];
+
+        return [
+            'id' => $id,
+            'hours' => $hours,
+            'spentOn' => $spentOn,
+            'comment' => ['raw' => 'Bugfix'],
+            '_links' => $links,
+        ];
+    }
+
+    public function test_import_books_entry_in_name_matched_project(): void {
+        $config = $this->enable();
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Website',
+            'is_default' => false,
+        ]);
+
+        $this->fakeApi(
+            projects: [['id' => 9, 'name' => 'Website', 'active' => true, '_links' => []]],
+            workPackages: [],
+            timeEntries: [$this->timeEntryPayload(111, 9, 'PT0H45M', '2026-05-26')],
+        );
+
+        $result = $this->service()->importFromApi(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['unmatched']);
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(45, $entry->minutes);
+
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => OpenProjectPlugin::ID,
+            'external_type' => OpenProjectImportService::EXT_TYPE_ENTRY,
+            'external_id' => 'openproject:te:111',
+            'referenceable_id' => $entry->id,
+        ]);
+        // Projekt-Mapping wurde gemerkt.
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => OpenProjectPlugin::ID,
+            'external_type' => OpenProjectStructureSync::EXT_TYPE_PROJECT,
+            'external_id' => '9',
+            'referenceable_id' => $project->id,
+        ]);
+    }
+
+    public function test_import_is_idempotent(): void {
+        $config = $this->enable();
+        Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Website',
+            'is_default' => false,
+        ]);
+
+        $this->fakeApi(
+            projects: [['id' => 9, 'name' => 'Website', 'active' => true, '_links' => []]],
+            workPackages: [],
+            timeEntries: [$this->timeEntryPayload(111, 9, 'PT0H30M', '2026-05-26')],
+        );
+
+        $from = CarbonImmutable::parse('2026-05-25');
+        $to = CarbonImmutable::parse('2026-05-27');
+
+        $first = $this->service()->importFromApi($this->organization, $config, $from, $to);
+        $second = $this->service()->importFromApi($this->organization, $config, $from, $to);
+
+        $this->assertSame(1, $first['created']);
+        $this->assertSame(0, $second['created']);
+        $this->assertSame(1, $second['skipped']);
+        $this->assertSame(1, TimeEntry::query()->count());
+    }
+
+    public function test_unmatched_project_lands_in_inbox(): void {
+        $config = $this->enable();
+
+        $this->fakeApi(
+            projects: [['id' => 9, 'name' => 'Mystery', 'active' => true, '_links' => []]],
+            workPackages: [],
+            timeEntries: [$this->timeEntryPayload(222, 9, 'PT0H15M', '2026-05-26')],
+        );
+
+        $result = $this->service()->importFromApi(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['unmatched']);
+        $this->assertSame(0, TimeEntry::query()->count());
+
+        $this->assertDatabaseHas('openproject_pending_entries', [
+            'organization_id' => $this->organization->id,
+            'entry_key' => 'openproject:te:222',
+            'project_external_id' => '9',
+            'project_name' => 'Website', // aus dem time-entry project-link title
+            'status' => OpenProjectPendingEntry::STATUS_OPEN,
+        ]);
+    }
+
+    public function test_create_missing_projects_auto_creates_and_books(): void {
+        $config = $this->enable(['create_missing_projects' => true]);
+
+        $this->fakeApi(
+            projects: [['id' => 9, 'name' => 'Brandneu', 'active' => true, '_links' => []]],
+            workPackages: [],
+            timeEntries: [$this->timeEntryPayload(333, 9, 'PT1H', '2026-05-26')],
+        );
+
+        $result = $this->service()->importFromApi(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        $this->assertSame(1, $result['created']);
+        $project = Project::query()->where('name', 'Brandneu')->first();
+        $this->assertNotNull($project);
+        $this->assertSame(60, TimeEntry::query()->where('project_id', $project->id)->value('minutes'));
+    }
+
+    public function test_assign_pending_books_and_remembers_reference(): void {
+        $config = $this->enable();
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Support',
+            'is_default' => false,
+        ]);
+
+        OpenProjectPendingEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'entry_key' => 'openproject:te:900',
+            'project_external_id' => '42',
+            'project_name' => 'Externes Projekt',
+            'description' => 'Wartung',
+            'spent_on' => '2026-05-26',
+            'minutes' => 90,
+            'status' => OpenProjectPendingEntry::STATUS_OPEN,
+        ]);
+
+        $result = $this->service()->assignPending($this->organization, '42', $project, $config);
+
+        $this->assertSame(1, $result['created']);
+        $entry = TimeEntry::query()->where('project_id', $project->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(90, $entry->minutes);
+
+        $this->assertDatabaseHas('openproject_pending_entries', [
+            'entry_key' => 'openproject:te:900',
+            'status' => OpenProjectPendingEntry::STATUS_IMPORTED,
+            'time_entry_id' => $entry->id,
+        ]);
+        // Projekt-Reference gemerkt → künftiger Import matcht automatisch.
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => OpenProjectPlugin::ID,
+            'external_type' => OpenProjectStructureSync::EXT_TYPE_PROJECT,
+            'external_id' => '42',
+            'referenceable_id' => $project->id,
+        ]);
+    }
+
+    public function test_health_check_is_degraded_without_credentials(): void {
+        $this->assertSame('degraded', (new OpenProjectPlugin)->healthCheck()->status);
+    }
+
+    public function test_health_check_is_ok_when_reachable(): void {
+        $this->enable();
+        Http::fake([self::BASE . '/users/me*' => Http::response(['_type' => 'User'], 200)]);
+
+        $this->assertTrue((new OpenProjectPlugin)->healthCheck()->isOk());
+    }
+
+    public function test_health_check_is_failing_on_unauthorized(): void {
+        $this->enable();
+        Http::fake([self::BASE . '/users/me*' => Http::response(['_type' => 'Error'], 401)]);
+
+        $this->assertTrue((new OpenProjectPlugin)->healthCheck()->isFailing());
+    }
+}

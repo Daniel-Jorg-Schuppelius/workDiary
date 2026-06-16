@@ -81,6 +81,16 @@ Schedule::command('toggl:import')
     ->withoutOverlapping()
     ->onOneServer();
 
+Schedule::command('openproject:import')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('openproject:push')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('workdiary:backup:check-restore')
     ->dailyAt('05:00')
     ->withoutOverlapping()

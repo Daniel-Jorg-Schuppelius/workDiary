@@ -227,6 +227,44 @@ class FinanceTransferExecuteTest extends TestCase {
             ->where('external_type', LexofficeTarget::EXT_TYPE_INVOICE)->count());
     }
 
+    public function test_execute_lexoffice_unconfigured_marks_failed_without_http(): void {
+        // Kein API-Key (weder Org- noch globale Konfig) ⇒ Adapter bricht ab,
+        // BEVOR ein HTTP-Call passiert; Quellen bleiben unverbraucht.
+        config()->set('plugins.lexoffice.api_key', '');
+
+        $entry = $this->makeTimeEntry();
+        $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
+
+        Http::fake();
+
+        $this->post(route('finance.transfers.execute', $transfer))
+            ->assertSessionHasErrors('transfer');
+
+        $transfer = $transfer->fresh();
+        $this->assertSame(TransferStatus::Failed, $transfer->status);
+        $this->assertNotNull($transfer->failure_reason);
+        $this->assertFalse((bool) $entry->fresh()->exported);
+        Http::assertNothingSent();
+    }
+
+    public function test_execute_lexoffice_without_invoice_id_marks_failed(): void {
+        // 201, aber ohne `id` im Body ⇒ Adapter wirft, Übergabe gilt als Fehler.
+        $this->makeTimeEntry();
+        $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
+
+        Http::fake([
+            'https://api.lexoffice.io/v1/contacts*' => Http::response(['content' => [['id' => 'c1']]], 200),
+            'https://api.lexoffice.io/v1/invoices*' => Http::response([], 201),
+        ]);
+
+        $this->post(route('finance.transfers.execute', $transfer))
+            ->assertSessionHasErrors('transfer');
+
+        $this->assertSame(TransferStatus::Failed, $transfer->fresh()->status);
+        $this->assertSame(0, ExternalReference::query()
+            ->where('external_type', LexofficeTarget::EXT_TYPE_INVOICE)->count());
+    }
+
     public function test_execute_from_draft_is_rejected_without_target_call(): void {
         $this->makeTimeEntry();
         $transfer = $this->service->createDraft(

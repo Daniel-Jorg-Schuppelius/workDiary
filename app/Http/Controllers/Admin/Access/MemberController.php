@@ -11,8 +11,9 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\UserRole;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User, UserGroup};
+use App\Models\{User, UserGroup};
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -29,6 +30,8 @@ use Spatie\Permission\Models\Role;
  * verantwortlich für das Anlegen und Löschen von Mitgliedern selbst.
  */
 class MemberController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         Gate::authorize('manage-access');
 
@@ -154,14 +157,6 @@ class MemberController extends Controller {
         }
 
         return $roles;
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-        $org = app('currentOrganization');
-        abort_unless($org instanceof Organization, 403);
-
-        return $org;
     }
 
     private function ensureSameOrg(User $member): void {

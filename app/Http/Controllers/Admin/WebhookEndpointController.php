@@ -129,7 +129,17 @@ class WebhookEndpointController extends Controller {
     private function validated(Request $request): array {
         $data = $request->validate([
             'label' => ['required', 'string', 'max:120'],
-            'url' => ['required', 'url', 'max:2048', 'starts_with:https://,http://'],
+            'url' => [
+                'required', 'url', 'max:2048', 'starts_with:https://,http://',
+                // SSRF-Schutz (Konfigurationszeit, ohne blockierendes DNS):
+                // keine offensichtlich internen/privaten Ziele. Die verbindliche
+                // DNS-basierte Prüfung erfolgt zur Laufzeit im WebhookDeliveryJob.
+                static function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! is_string($value) || ! \App\Support\UrlSafety::isAcceptableExternalHttpUrl($value)) {
+                        $fail(__('Die URL muss ein öffentlich erreichbares Ziel sein (keine internen/privaten Adressen).'));
+                    }
+                },
+            ],
             'events' => ['required', 'array', 'min:1'],
             'events.*' => [Rule::enum(WebhookEvent::class)],
             'active' => ['required', 'boolean'],

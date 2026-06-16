@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'qualification' => [
+        'missing' => 'Cualificación obligatoria faltante',
+    ],
     'availability' => [
         'title' => 'Disponibilidad y deseos de turno',
         'subtitle' => 'Gestiona tu disponibilidad y tus deseos de turno. La planificación los tiene en cuenta para las sugerencias de cobertura.',

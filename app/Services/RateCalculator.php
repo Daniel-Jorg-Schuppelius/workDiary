@@ -23,7 +23,7 @@ class RateCalculator {
     /**
      * Resolve the effective hourly rate for the given entry.
      */
-    public function resolveHourlyRate(TimeEntry $entry): ?float {
+    private function resolveHourlyRate(TimeEntry $entry): ?float {
         if ($entry->hourly_rate !== null) {
             return (float) $entry->hourly_rate;
         }
@@ -54,7 +54,7 @@ class RateCalculator {
     /**
      * Resolve the effective internal (cost) rate for the given entry.
      */
-    public function resolveInternalRate(TimeEntry $entry): ?float {
+    private function resolveInternalRate(TimeEntry $entry): ?float {
         $user = $entry->user;
         if ($user && $user->internal_rate !== null) {
             return (float) $user->internal_rate;
@@ -82,7 +82,7 @@ class RateCalculator {
      * Determine whether the entry should be considered billable, taking the
      * project/customer billable flags into account.
      */
-    public function isBillable(TimeEntry $entry): bool {
+    private function isBillable(TimeEntry $entry): bool {
         if (! $entry->billable) {
             return false;
         }

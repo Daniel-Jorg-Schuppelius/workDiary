@@ -20,6 +20,9 @@ use Illuminate\Support\ServiceProvider;
  */
 class RemoteSupportServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Plugin liefert seine eigenen Config-Defaults/ENV-Fallbacks → `config('plugins.remote-support.*')`.
+        $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . RemoteSupportPlugin::ID);
+
         $this->app->singleton(RemoteSupportService::class, fn(): RemoteSupportService => new RemoteSupportService);
     }
 

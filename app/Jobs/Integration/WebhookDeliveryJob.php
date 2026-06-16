@@ -80,6 +80,14 @@ class WebhookDeliveryJob implements ShouldQueue {
         $delivery->attempt = $this->attempts();
         $delivery->save();
 
+        // SSRF-Laufzeit-Guard (auch gegen DNS-Rebinding / Altbestand-Endpunkte):
+        // niemals an interne/private/reservierte Ziele zustellen.
+        if (! \App\Support\UrlSafety::isPubliclyRoutableHttpUrl((string) $endpoint->url)) {
+            $this->markFailure($delivery, $endpoint, 'Blocked: non-public URL');
+
+            return;
+        }
+
         $signature = $this->sign($endpoint->secret);
 
         try {

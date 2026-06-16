@@ -154,10 +154,7 @@ class VacationController extends Controller {
     /** @return array<string, mixed> */
     private function validateVacation(Request $request): array {
         $rawUserId = $request->input('user_id');
-        $userId = \App\Support\Sqid::decode(\App\Models\User::class, $rawUserId);
-        if ($userId === null && is_numeric($rawUserId)) {
-            $userId = (int) $rawUserId;
-        }
+        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $rawUserId);
 
         $request->merge([
             'user_id' => $userId,

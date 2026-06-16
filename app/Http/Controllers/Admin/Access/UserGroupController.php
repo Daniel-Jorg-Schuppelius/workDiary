@@ -11,8 +11,9 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\Permission as PermissionEnum;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, User, UserGroup};
+use App\Models\{User, UserGroup};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -24,6 +25,8 @@ use Spatie\Permission\Models\{Permission, Role};
  * bündelt Mitglieder und vererbt diesen Rollen sowie direkte Permissions.
  */
 class UserGroupController extends Controller {
+    use ResolvesCurrentOrganization;
+
     private const ALLOWED_SORTS = ['name', 'slug', 'members_count', 'description'];
 
     public function index(Request $request): View {
@@ -238,14 +241,6 @@ class UserGroupController extends Controller {
             })
             ->orderBy('name')
             ->get();
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-        $org = app('currentOrganization');
-        abort_unless($org instanceof Organization, 403);
-
-        return $org;
     }
 
     /**

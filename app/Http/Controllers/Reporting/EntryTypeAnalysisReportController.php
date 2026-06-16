@@ -37,20 +37,11 @@ class EntryTypeAnalysisReportController extends Controller {
         $rawUserId = $request->query('user_id');
         $rawEntryTypeId = $request->query('entry_type_id');
 
-        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
-        if ($customerId === null && is_numeric($rawCustomerId)) {
-            $customerId = (int) $rawCustomerId;
-        }
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
 
-        $userId = Sqid::decode(User::class, $rawUserId);
-        if ($userId === null && is_numeric($rawUserId)) {
-            $userId = (int) $rawUserId;
-        }
+        $userId = Sqid::decodeOrNumeric(User::class, $rawUserId);
 
-        $entryTypeFilter = Sqid::decode(EntryType::class, $rawEntryTypeId);
-        if ($entryTypeFilter === null && is_numeric($rawEntryTypeId)) {
-            $entryTypeFilter = (int) $rawEntryTypeId;
-        }
+        $entryTypeFilter = Sqid::decodeOrNumeric(EntryType::class, $rawEntryTypeId);
         $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
 
         $rows = $this->buildRows($from, $to, $customerId, $userId, $entryTypeFilter, $statusFilter);

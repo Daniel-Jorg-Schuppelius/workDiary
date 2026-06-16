@@ -38,7 +38,11 @@ class IcsFeedService {
     }
 
     public function feedPublic(): string {
+        // Bewusst org-agnostisch: liefert ausschließlich Events mit
+        // Visibility=Public über alle Organisationen hinweg (opt-in durch den
+        // jeweiligen Mandanten). Siehe PublicRouteTenantTest.
         $events = Event::query()
+            ->withoutGlobalScopes()
             ->with(['rooms', 'category'])
             ->whereNull('cancelled_at')
             ->where('visibility', EventVisibility::Public->value)

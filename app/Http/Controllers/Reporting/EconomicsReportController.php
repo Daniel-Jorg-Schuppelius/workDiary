@@ -52,10 +52,7 @@ class EconomicsReportController extends Controller {
         $to = $range['to']->endOfDay();
 
         $rawProjectId = $request->query('project_id');
-        $projectId = Sqid::decode(Project::class, $rawProjectId);
-        if ($projectId === null && is_numeric($rawProjectId)) {
-            $projectId = (int) $rawProjectId;
-        }
+        $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
 
         $byProject = $this->builder->byProject($from, $to, $projectId !== null ? [$projectId] : null);
         $byCustomer = $this->builder->byCustomer($from, $to);

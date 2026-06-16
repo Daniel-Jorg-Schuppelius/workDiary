@@ -2,7 +2,28 @@
 
 ## Status
 
-In Progress
+Done — MVP 1–3 umgesetzt (Stand 2026-06-15, per Akzeptanzkriterien-Audit
+bestätigt): VVT mit Versionierung/Freigabe/TOM-Snapshot + Export (JSON/CSV/
+Druck), Betroffenenanfragen mit Fristen-Timeline und per-Fall-Crypto,
+TOM-Katalog mit Wirksamkeitsreview, Dienstleister/AVV/GVV/Unterauftragsverarbeiter
+inkl. Verknüpfung zu Verarbeitungstätigkeiten, regelbasierte Lückenanalyse,
+Datenschutzvorfall-Workflow (Kenntniszeitpunkt, Risiko, 72-Stunden-Frist, beide
+Meldeentscheidungen, Maßnahmen, Meldungsentwurf) und DSFA. Alle 10
+Akzeptanzkriterien erfüllt.
+
+**Zugriff/Rollen (wichtig):** Die `dataprotection.*`-Rechte sind BEWUSST nicht
+in der zentralen `App\Enums\User\Permission` (sonst bekäme der Plattform-Admin
+automatisch Zugriff auf Betroffenen-/Vorfalldaten). Single Source of Truth ist
+`App\Services\Privacy\DataProtectionPermissions`; die Rechte gehen ausschließlich
+an die per-Organisation-Rolle **`datenschutz`**. Neue Organisationen erhalten die
+Rolle über den `OrganizationObserver`; bestehende per
+`php artisan datenschutz:seed-roles`. Erst nach Zuweisung der `datenschutz`-Rolle
+(Admin → Zugriff → Mitglieder) ist das Modul für eine Person sichtbar/nutzbar.
+
+Bewusst offene Vertiefungen (keine MVP-Blocker): Nachweis-Anhänge an
+TOM-Wirksamkeitsreviews, eigene Unterauftragsverarbeiter-Verwaltungs-UI,
+interaktiver DSFA-Schritt-Workflow, konfigurierbarer Compliance-Anforderungskatalog
+und Branchenprofil-Vorlagen.
 
 ## Ziel
 

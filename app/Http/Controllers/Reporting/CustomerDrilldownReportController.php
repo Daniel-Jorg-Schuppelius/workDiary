@@ -32,23 +32,14 @@ class CustomerDrilldownReportController extends Controller {
         $to = $range['to']->endOfDay();
 
         $rawCustomerId = $request->query('customer_id');
-        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
-        if ($customerId === null && is_numeric($rawCustomerId)) {
-            $customerId = (int) $rawCustomerId;
-        }
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
         $customerId ??= 0;
 
         $rawProjectId = $request->query('project_id');
-        $projectId = Sqid::decode(Project::class, $rawProjectId);
-        if ($projectId === null && is_numeric($rawProjectId)) {
-            $projectId = (int) $rawProjectId;
-        }
+        $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
 
         $rawUserId = $request->query('user_id');
-        $userId = Sqid::decode(User::class, $rawUserId);
-        if ($userId === null && is_numeric($rawUserId)) {
-            $userId = (int) $rawUserId;
-        }
+        $userId = Sqid::decodeOrNumeric(User::class, $rawUserId);
 
         $escalatedOnly = $request->boolean('escalated');
 
@@ -174,23 +165,14 @@ class CustomerDrilldownReportController extends Controller {
         $to = $range['to']->endOfDay();
 
         $rawCustomerId = $request->query('customer_id');
-        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
-        if ($customerId === null && is_numeric($rawCustomerId)) {
-            $customerId = (int) $rawCustomerId;
-        }
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
         $customerId ??= 0;
 
         $rawProjectId = $request->query('project_id');
-        $projectId = Sqid::decode(Project::class, $rawProjectId);
-        if ($projectId === null && is_numeric($rawProjectId)) {
-            $projectId = (int) $rawProjectId;
-        }
+        $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
 
         $rawUserId = $request->query('user_id');
-        $userId = Sqid::decode(User::class, $rawUserId);
-        if ($userId === null && is_numeric($rawUserId)) {
-            $userId = (int) $rawUserId;
-        }
+        $userId = Sqid::decodeOrNumeric(User::class, $rawUserId);
 
         $customer = $customerId > 0
             ? Customer::query()->find($customerId)

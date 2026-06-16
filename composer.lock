@@ -592,16 +592,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/lexoffice-php-sdk",
-            "version": "v1.0",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk.git",
-                "reference": "048339a6ceb2fc2e74c2705999a37c1d81c6da77"
+                "reference": "8aa59e4ecb3f2b4319e7926b2b14d92119ac5ad6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/048339a6ceb2fc2e74c2705999a37c1d81c6da77",
-                "reference": "048339a6ceb2fc2e74c2705999a37c1d81c6da77",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/zipball/8aa59e4ecb3f2b4319e7926b2b14d92119ac5ad6",
+                "reference": "8aa59e4ecb3f2b4319e7926b2b14d92119ac5ad6",
                 "shasum": ""
             },
             "require": {
@@ -630,9 +630,9 @@
             "description": "Lexoffice SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.0"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/lexoffice-php-sdk/tree/v1.0.1"
             },
-            "time": "2026-01-11T12:28:31+00:00"
+            "time": "2026-06-15T16:26:01+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",
@@ -744,16 +744,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-financial-formats",
-            "version": "v1.4.2",
+            "version": "v1.5.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:Daniel-Jorg-Schuppelius/php-financial-formats.git",
-                "reference": "5817c382f9a9ebae5f8e184cfad78f6e6af70140"
+                "reference": "43023640451ae1457d78fa34f4fc28f989fc01c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-financial-formats/zipball/5817c382f9a9ebae5f8e184cfad78f6e6af70140",
-                "reference": "5817c382f9a9ebae5f8e184cfad78f6e6af70140",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-financial-formats/zipball/43023640451ae1457d78fa34f4fc28f989fc01c2",
+                "reference": "43023640451ae1457d78fa34f4fc28f989fc01c2",
                 "shasum": ""
             },
             "require": {
@@ -791,10 +791,10 @@
             ],
             "description": "PHP library for parsing, validating and processing financial and banking file formats such as CAMT, MT and PAIN.",
             "support": {
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-financial-formats/tree/v1.4.2",
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-financial-formats/tree/v1.5.1",
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-financial-formats/issues"
             },
-            "time": "2026-06-14T07:17:26+00:00"
+            "time": "2026-06-15T13:09:37+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
@@ -1572,16 +1572,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.8.5",
+            "version": "v1.8.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "75e5fb918c1ad98896b53c66529cedc8fa23f354"
+                "reference": "63e82b24ccfbd3625596ca9c0c87b990e69e94ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/75e5fb918c1ad98896b53c66529cedc8fa23f354",
-                "reference": "75e5fb918c1ad98896b53c66529cedc8fa23f354",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/63e82b24ccfbd3625596ca9c0c87b990e69e94ff",
+                "reference": "63e82b24ccfbd3625596ca9c0c87b990e69e94ff",
                 "shasum": ""
             },
             "require": {
@@ -1615,9 +1615,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.8.5"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.8.8"
             },
-            "time": "2026-06-14T07:13:12+00:00"
+            "time": "2026-06-15T16:03:59+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -3914,16 +3914,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "3.11.4",
+            "version": "3.12.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CarbonPHP/carbon.git",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60"
+                "reference": "6e7853a668c3107294aff38d42bf760ec02126b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/e890471a3494740f7d9326d72ce6a8c559ffee60",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60",
+                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/6e7853a668c3107294aff38d42bf760ec02126b6",
+                "reference": "6e7853a668c3107294aff38d42bf760ec02126b6",
                 "shasum": ""
             },
             "require": {
@@ -4015,7 +4015,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-07T09:57:54+00:00"
+            "time": "2026-06-14T20:41:42+00:00"
         },
         {
             "name": "nette/schema",
@@ -10763,16 +10763,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.4.0",
+            "version": "2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "9007ea6f45ecf352a9422b36644e4bfc039b9155"
+                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/9007ea6f45ecf352a9422b36644e4bfc039b9155",
-                "reference": "9007ea6f45ecf352a9422b36644e4bfc039b9155",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/2ccb7c2e821038c03a3e6e1700c570c158c55f70",
+                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70",
                 "shasum": ""
             },
             "require": {
@@ -10823,9 +10823,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/2.4.0"
+                "source": "https://github.com/webmozarts/assert/tree/2.4.1"
             },
-            "time": "2026-05-20T13:07:01+00:00"
+            "time": "2026-06-15T15:31:57+00:00"
         },
         {
             "name": "zircote/swagger-php",
@@ -12365,16 +12365,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.29",
+            "version": "12.5.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "9aa66a47db3ea70f1a468e66dd969f67e594945a"
+                "reference": "900400a5b616d6fb306f9549f6da33ba615d3fbb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/9aa66a47db3ea70f1a468e66dd969f67e594945a",
-                "reference": "9aa66a47db3ea70f1a468e66dd969f67e594945a",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/900400a5b616d6fb306f9549f6da33ba615d3fbb",
+                "reference": "900400a5b616d6fb306f9549f6da33ba615d3fbb",
                 "shasum": ""
             },
             "require": {
@@ -12443,7 +12443,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.29"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.30"
             },
             "funding": [
                 {
@@ -12451,7 +12451,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-06-04T06:14:42+00:00"
+            "time": "2026-06-15T13:12:30+00:00"
         },
         {
             "name": "sebastian/cli-parser",

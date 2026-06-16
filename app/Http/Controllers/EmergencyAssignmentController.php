@@ -93,16 +93,10 @@ class EmergencyAssignmentController extends Controller {
     /** @return array<string, mixed> */
     private function validateAssignment(Request $request): array {
         $rawUserId = $request->input('user_id');
-        $userId = \App\Support\Sqid::decode(\App\Models\User::class, $rawUserId);
-        if ($userId === null && is_numeric($rawUserId)) {
-            $userId = (int) $rawUserId;
-        }
+        $userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $rawUserId);
 
         $rawShiftId = $request->input('on_call_shift_id');
-        $onCallShiftId = \App\Support\Sqid::decode(\App\Models\OnCallShift::class, $rawShiftId);
-        if ($onCallShiftId === null && is_numeric($rawShiftId)) {
-            $onCallShiftId = (int) $rawShiftId;
-        }
+        $onCallShiftId = \App\Support\Sqid::decodeOrNumeric(\App\Models\OnCallShift::class, $rawShiftId);
 
         $request->merge([
             'user_id' => $userId,

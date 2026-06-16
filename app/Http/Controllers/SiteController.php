@@ -130,10 +130,7 @@ class SiteController extends Controller {
     /** @return array<string, mixed> */
     private function validateSite(Request $request): array {
         $rawCustomerId = $request->input('customer_id');
-        $customerId = \App\Support\Sqid::decode(\App\Models\Customer::class, $rawCustomerId);
-        if ($customerId === null && is_numeric($rawCustomerId)) {
-            $customerId = (int) $rawCustomerId;
-        }
+        $customerId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Customer::class, $rawCustomerId);
 
         $request->merge([
             'customer_id' => $customerId,

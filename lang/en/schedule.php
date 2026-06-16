@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'qualification' => [
+        'missing' => 'Missing required qualification',
+    ],
     'availability' => [
         'title' => 'Availability & shift wishes',
         'subtitle' => 'Maintain your own availability and shift wishes. The planning takes them into account for staffing suggestions.',

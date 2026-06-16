@@ -18,7 +18,7 @@ use App\Http\Resources\ScheduledShiftResource;
 use App\Models\{Organization, ScheduledShift, ShiftType, User};
 use App\Services\Compliance\ShiftComplianceService;
 use App\Services\HolidayService;
-use App\Services\Schedule\{OpenSlotService, StaffingSuggester};
+use App\Services\Schedule\{OpenSlotService, QualificationGate, StaffingSuggester};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -88,6 +88,7 @@ class ScheduleController extends Controller {
             'isAdmin' => $auth->isAdmin(),
             'canSuggest' => $auth->hasPermissionTo(Permission::StaffingSuggest->value),
             'complianceByShift' => $complianceByShift,
+            'qualificationGapByShift' => $this->computeQualificationGaps($shifts),
             'openSlotsByDate' => $openSlots->compute($from, $to, $shifts),
             'months' => $months,
             'activeMonthKey' => $activeMonthKey,
@@ -129,6 +130,28 @@ class ScheduleController extends Controller {
         }
 
         return $complianceByShift;
+    }
+
+    /**
+     * Sperrhinweis (Feature 013): fehlende Pflichtqualifikationen je Schicht
+     * (Schichttyp-Anforderung vs. Qualifikationen des zugewiesenen Mitarbeiters).
+     *
+     * @param  Collection<int, ScheduledShift>  $shifts
+     * @return array<int, list<string>>  Schicht-ID ⇒ Liste fehlender Qualifikations-Kürzel/-Namen
+     */
+    private function computeQualificationGaps(Collection $shifts): array {
+        $shifts->loadMissing(['shiftType.qualifications', 'user.qualifications']);
+
+        $gate = new QualificationGate();
+        $gaps = [];
+        foreach ($shifts as $s) {
+            $missing = $gate->missingFor($s);
+            if ($missing->isNotEmpty()) {
+                $gaps[(int) $s->id] = array_values($missing->map(fn($q): string => (string) ($q->abbreviation ?: $q->name))->all());
+            }
+        }
+
+        return $gaps;
     }
 
     // ── JSON-API for Alpine.js ───────────────────────────────────────────────

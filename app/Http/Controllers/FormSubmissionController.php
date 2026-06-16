@@ -149,10 +149,7 @@ class FormSubmissionController extends Controller {
 
     /** Aktive Vorlage über Sqid auflösen (404 bei fremder Org/inaktiv). */
     private function findActiveTemplate(string $rawId): FormTemplate {
-        $id = Sqid::decode(FormTemplate::class, $rawId);
-        if ($id === null && is_numeric($rawId)) {
-            $id = (int) $rawId;
-        }
+        $id = Sqid::decodeOrNumeric(FormTemplate::class, $rawId);
         if ($id === null || $id < 1) {
             abort(404);
         }
@@ -176,10 +173,7 @@ class FormSubmissionController extends Controller {
             abort(404);
         }
 
-        $id = Sqid::decode($class, $rawId);
-        if ($id === null && is_numeric($rawId)) {
-            $id = (int) $rawId;
-        }
+        $id = Sqid::decodeOrNumeric($class, $rawId);
         if ($id === null || $id < 1) {
             abort(404);
         }

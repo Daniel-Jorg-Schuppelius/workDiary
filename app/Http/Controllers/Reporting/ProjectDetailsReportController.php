@@ -42,10 +42,7 @@ class ProjectDetailsReportController extends Controller {
         $year = (int) $this->globalDateRange()['from']->year;
         $year = max(2000, min(2100, $year));
         $rawProjectId = $request->query('project_id');
-        $projectId = Sqid::decode(Project::class, $rawProjectId);
-        if ($projectId === null && is_numeric($rawProjectId)) {
-            $projectId = (int) $rawProjectId;
-        }
+        $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
         $projectId ??= 0;
 
         $projects = $this->loadAccessibleProjects($isAdmin, $userId);

@@ -2,9 +2,12 @@
 
 ## Status
 
-In Progress — MVP teilweise umgesetzt (Sicherheitsereignis-Register,
-Qualifikations-/Unterweisungs-Ablaufwarnung, Sicherheits-Auswertung;
-Pflichtchecklisten je Auftragstyp über das bestehende Prozedursystem).
+Done — MVP umgesetzt (Sicherheitsereignis-Register,
+Qualifikations-/Unterweisungs-Ablaufwarnung **und Sperrhinweis bei fehlender
+Pflichtqualifikation**, Sicherheits-Auswertung; Pflichtchecklisten/Vier-Augen je
+Auftragstyp über das bestehende Prozedursystem). Vertiefungen (z. B.
+Gültigkeitsprüfung der Qualifikation am Einsatztag, Sperre statt Hinweis) bleiben
+optionale Folgearbeit.
 
 ## Umsetzungsstand (Feature 013)
 
@@ -27,6 +30,15 @@ Pflichtchecklisten je Auftragstyp über das bestehende Prozedursystem).
   (Vorlauf `--expiring-days`). Pivot-Modell `App\Models\UserQualification`
   für stabile Dedup-Subjekte. „Unterweisungen" werden als Qualifikationsart
   abgebildet (keine Parallelmechanik).
+- **Sperrhinweis bei fehlender Pflichtqualifikation** (umgesetzt, 2026-06-15):
+  Pro Schichttyp hinterlegte Pflichtqualifikationen (`shift_type_qualifications`)
+  werden im Schichtplan (Monats- und Wochenmatrix) gegen die Qualifikationen des
+  zugewiesenen Mitarbeitenden geprüft; fehlt eine, zeigt die Schicht einen
+  Sperrhinweis (Indikator „Q" + Tooltip mit den fehlenden Qualifikationen).
+  Service `App\Services\Schedule\QualificationGate` (gleiche „hält/hält-nicht"-
+  Semantik wie `StaffingSuggester::isQualified()`; der Ablauf wird separat über
+  den Deadline-Scanner gewarnt). Damit ist das MVP-Kriterium „Fehlende
+  Qualifikationen vor Einsatz sichtbar" erfüllt.
 - **Sicherheits-/Qualitätscheckliste je Auftragstyp** (über Bestand,
   Feature 026): Pflichtchecklisten/Vier-Augen-Prüfungen laufen über die
   Prozedurvorlagen. `ProcedureApplicabilityResolver` ordnet Vorlagen über

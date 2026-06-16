@@ -330,10 +330,7 @@ class KnowledgeArticleController extends Controller {
             abort(404);
         }
 
-        $id = Sqid::decode($class, $rawId);
-        if ($id === null && is_numeric($rawId)) {
-            $id = (int) $rawId;
-        }
+        $id = Sqid::decodeOrNumeric($class, $rawId);
         if ($id === null || $id < 1) {
             abort(404);
         }

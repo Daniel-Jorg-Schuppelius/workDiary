@@ -10,8 +10,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, Organization, User};
+use App\Models\{AuditLog, User};
 use App\Services\Classification\BranchProfileInstaller;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Arr, Collection};
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class BranchProfileController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly BranchProfileInstaller $installer,
     ) {}
@@ -114,15 +117,6 @@ class BranchProfileController extends Controller {
             'not_installed' => 'not_installed',
             default => 'all',
         };
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-
-        $organization = app('currentOrganization');
-        abort_unless($organization instanceof Organization, 403);
-
-        return $organization;
     }
 
     /**

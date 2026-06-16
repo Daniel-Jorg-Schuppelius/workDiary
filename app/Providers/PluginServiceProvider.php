@@ -11,7 +11,7 @@
 namespace App\Providers;
 
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\{PluginErrorRecorder, PluginManager, PluginSchemaManager};
+use App\Plugins\{PluginDiscovery, PluginErrorRecorder, PluginManager, PluginSchemaManager};
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
@@ -36,8 +36,10 @@ class PluginServiceProvider extends ServiceProvider {
         $this->app->singleton(PluginErrorRecorder::class);
         $this->app->singleton(PluginSchemaManager::class);
 
-        /** @var array<int, class-string> $classes */
-        $classes = (array) config('plugins.classes', []);
+        // Plugin-Klassen per Auto-Discovery (app/Plugins/*/*Plugin.php) plus
+        // optionaler expliziter Config-Liste — ein neues Plugin braucht keinen
+        // manuellen Eintrag mehr in config/plugins.php (s. {@see PluginDiscovery}).
+        $classes = PluginDiscovery::classes();
 
         // Plugin-Service-Provider VOR dem PluginManager registrieren, damit
         // Container-Bindings (z. B. LexofficeService) verfügbar sind, sobald

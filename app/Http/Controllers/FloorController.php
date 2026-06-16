@@ -123,10 +123,7 @@ class FloorController extends Controller {
     /** @return array<string, mixed> */
     private function validateFloor(Request $request, ?Floor $existing = null): array {
         $rawBuildingId = $request->input('building_id');
-        $buildingId = \App\Support\Sqid::decode(\App\Models\Building::class, $rawBuildingId);
-        if ($buildingId === null && is_numeric($rawBuildingId)) {
-            $buildingId = (int) $rawBuildingId;
-        }
+        $buildingId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Building::class, $rawBuildingId);
 
         $request->merge([
             'building_id' => $buildingId,

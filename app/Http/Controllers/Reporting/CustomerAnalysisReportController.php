@@ -34,15 +34,9 @@ class CustomerAnalysisReportController extends Controller {
 
         $minMinutes = max(0, (int) $request->integer('min_minutes', 0));
         $rawProjectId = $request->query('project_id');
-        $projectId = Sqid::decode(Project::class, $rawProjectId);
-        if ($projectId === null && is_numeric($rawProjectId)) {
-            $projectId = (int) $rawProjectId;
-        }
+        $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
         $rawUserId = $request->query('user_id');
-        $userId = Sqid::decode(User::class, $rawUserId);
-        if ($userId === null && is_numeric($rawUserId)) {
-            $userId = (int) $rawUserId;
-        }
+        $userId = Sqid::decodeOrNumeric(User::class, $rawUserId);
 
         $rows = collect($this->buildRows($from, $to, $projectId, $userId))
             ->filter(static fn(array $row): bool => $row['totalMinutes'] >= $minMinutes)

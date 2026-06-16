@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization};
 use App\Services\Whistleblowing\WhistleblowingPermissions;
@@ -27,6 +28,8 @@ use Spatie\Permission\Models\{Permission, Role};
  * werden ausschließlich vom Seeder verwaltet.
  */
 class RoleController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize('manage-access');
 
@@ -180,14 +183,6 @@ class RoleController extends Controller {
         $system = array_map(static fn (UserRole $r): string => $r->value, UserRole::cases());
 
         return [...$system, WhistleblowingPermissions::ROLE_MELDESTELLE];
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-        $org = app('currentOrganization');
-        abort_unless($org instanceof Organization, 403);
-
-        return $org;
     }
 
     /**

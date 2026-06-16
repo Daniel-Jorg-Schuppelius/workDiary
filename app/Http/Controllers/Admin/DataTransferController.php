@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Export\{ExportEntity, ExportFormat, ExportRunState};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, ExportRun, ImportRun, Organization, User};
+use App\Models\{AuditLog, ExportRun, ImportRun, User};
 use App\Services\Export\{ExportRunner, ExportSpecRegistry};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -29,6 +30,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * (Import · Export · Verlauf).
  */
 class DataTransferController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly ExportSpecRegistry $registry,
         private readonly ExportRunner $runner,
@@ -164,14 +167,6 @@ class DataTransferController extends Controller {
 
         return redirect()->route('admin.data.index')
             ->with('success', __('Export wurde gelöscht.'));
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-        $organization = app('currentOrganization');
-        abort_unless($organization instanceof Organization, 403);
-
-        return $organization;
     }
 
     private function ensureOwned(ExportRun $run): void {

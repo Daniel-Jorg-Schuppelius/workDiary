@@ -105,7 +105,7 @@ class BrandingService {
         return asset('img/logo/workdiary-logo-512.png');
     }
 
-    public function logoAttachment(string $variant = 'light'): ?Attachment {
+    private function logoAttachment(string $variant = 'light'): ?Attachment {
         $org = $this->currentOrganization();
         if ($org === null) {
             return null;

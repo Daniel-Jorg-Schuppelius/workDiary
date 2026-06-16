@@ -44,7 +44,9 @@ class NotificationCenterController extends Controller {
         $notification->markAsRead();
 
         $url = (string) data_get($notification->data, 'url', '');
-        if ($request->boolean('follow') && $url !== '') {
+        // Open-Redirect-Schutz: nur interne Ziele zulassen (Notification-URLs
+        // werden serverseitig via route() erzeugt; fremde Hosts werden ignoriert).
+        if ($request->boolean('follow') && $url !== '' && \App\Support\UrlSafety::isSameOriginOrRelative($url, $request->getHost())) {
             return redirect()->to($url);
         }
 

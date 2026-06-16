@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'qualification' => [
+        'missing' => 'Qualification obligatoire manquante',
+    ],
     'availability' => [
         'title' => 'Disponibilité et souhaits de poste',
         'subtitle' => 'Gérez votre disponibilité et vos souhaits de poste. La planification en tient compte pour les suggestions d\'affectation.',

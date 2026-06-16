@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'qualification' => [
+        'missing' => 'Fehlende Pflichtqualifikation',
+    ],
     'availability' => [
         'title' => 'Verfügbarkeit & Wunschdienste',
         'subtitle' => 'Pflege deine eigene Verfügbarkeit und deine Wunschdienste. Die Planung berücksichtigt sie bei den Besetzungsvorschlägen.',

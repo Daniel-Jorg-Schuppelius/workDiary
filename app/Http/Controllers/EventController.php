@@ -29,8 +29,7 @@ class EventController extends Controller {
 
     public function __construct(
         private readonly EventService $events,
-    ) {
-    }
+    ) {}
 
     // ── Index / Calendar ────────────────────────────────────────────────────
 
@@ -45,10 +44,7 @@ class EventController extends Controller {
         $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
 
         $rawCategoryId = $request->query('category_id');
-        $categoryId = Sqid::decode(EventCategory::class, $rawCategoryId);
-        if ($categoryId === null && is_numeric($rawCategoryId)) {
-            $categoryId = (int) $rawCategoryId;
-        }
+        $categoryId = Sqid::decodeOrNumeric(EventCategory::class, $rawCategoryId);
 
         $view = $request->query('view', 'list');
         $filters = [
@@ -222,22 +218,13 @@ class EventController extends Controller {
         $auth = Auth::user();
 
         $rawCategoryId = $request->input('category_id');
-        $categoryId = Sqid::decode(EventCategory::class, $rawCategoryId);
-        if ($categoryId === null && is_numeric($rawCategoryId)) {
-            $categoryId = (int) $rawCategoryId;
-        }
+        $categoryId = Sqid::decodeOrNumeric(EventCategory::class, $rawCategoryId);
 
         $rawResponsibleUserId = $request->input('responsible_user_id');
-        $responsibleUserId = Sqid::decode(User::class, $rawResponsibleUserId);
-        if ($responsibleUserId === null && is_numeric($rawResponsibleUserId)) {
-            $responsibleUserId = (int) $rawResponsibleUserId;
-        }
+        $responsibleUserId = Sqid::decodeOrNumeric(User::class, $rawResponsibleUserId);
 
         $rawCustomerId = $request->input('customer_id');
-        $customerId = Sqid::decode(Customer::class, $rawCustomerId);
-        if ($customerId === null && is_numeric($rawCustomerId)) {
-            $customerId = (int) $rawCustomerId;
-        }
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
 
         $request->merge([
             'category_id' => $categoryId,
@@ -289,10 +276,7 @@ class EventController extends Controller {
                 continue;
             }
 
-            $roomId = Sqid::decode(Room::class, $row['room_id']);
-            if ($roomId === null && is_numeric($row['room_id'])) {
-                $roomId = (int) $row['room_id'];
-            }
+            $roomId = Sqid::decodeOrNumeric(Room::class, $row['room_id']);
             if ($roomId === null) {
                 continue;
             }
@@ -323,10 +307,7 @@ class EventController extends Controller {
                 continue;
             }
 
-            $participantUserId = Sqid::decode(User::class, $row['user_id']);
-            if ($participantUserId === null && is_numeric($row['user_id'])) {
-                $participantUserId = (int) $row['user_id'];
-            }
+            $participantUserId = Sqid::decodeOrNumeric(User::class, $row['user_id']);
             if ($participantUserId === null) {
                 continue;
             }

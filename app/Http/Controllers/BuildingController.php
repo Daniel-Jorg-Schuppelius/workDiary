@@ -123,10 +123,7 @@ class BuildingController extends Controller {
     /** @return array<string, mixed> */
     private function validateBuilding(Request $request): array {
         $rawSiteId = $request->input('site_id');
-        $siteId = \App\Support\Sqid::decode(\App\Models\Site::class, $rawSiteId);
-        if ($siteId === null && is_numeric($rawSiteId)) {
-            $siteId = (int) $rawSiteId;
-        }
+        $siteId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Site::class, $rawSiteId);
 
         $request->merge([
             'site_id' => $siteId,

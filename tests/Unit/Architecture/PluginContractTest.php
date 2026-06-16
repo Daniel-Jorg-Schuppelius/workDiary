@@ -11,16 +11,17 @@
 namespace Tests\Unit\Architecture;
 
 use App\Plugins\Contracts\{Plugin, PluginCapability};
+use App\Plugins\PluginDiscovery;
 use Tests\TestCase;
 
 /**
  * Architektur-Gate für das Plugin-System: erzwingt die Vertrags-Invarianten
- * für jedes in config/plugins.php registrierte Plugin (vgl. `plugin:doctor`).
+ * für jedes geladene Plugin (Auto-Discovery + explizite Config; vgl. `plugin:doctor`).
  */
 class PluginContractTest extends TestCase {
     /** @return array<int, class-string> */
     private function pluginClasses(): array {
-        return (array) config('plugins.classes', []);
+        return PluginDiscovery::classes();
     }
 
     public function test_registered_classes_implement_plugin_contract(): void {

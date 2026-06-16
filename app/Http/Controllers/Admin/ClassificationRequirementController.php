@@ -11,8 +11,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{ClassificationRequirement, Organization};
+use App\Models\{ClassificationRequirement};
 use App\Services\Classification\ClassificationResolver;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +23,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ClassificationRequirementController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly ClassificationResolver $resolver,
     ) {}
@@ -215,15 +218,6 @@ class ClassificationRequirementController extends Controller {
 
         return redirect()->route('admin.classification-requirements.index')
             ->with('success', __('Pflichtregel wurde gelöscht.'));
-    }
-
-    private function currentOrganization(): Organization {
-        abort_unless(app()->bound('currentOrganization'), 403);
-
-        $organization = app('currentOrganization');
-        abort_unless($organization instanceof Organization, 403);
-
-        return $organization;
     }
 
     private function ensureOrganizationScoped(ClassificationRequirement $classificationRequirement): void {

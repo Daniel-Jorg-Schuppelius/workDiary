@@ -115,10 +115,7 @@ class FinanceTransferController extends Controller {
     }
 
     public function store(Request $request): RedirectResponse {
-        $customerId = Sqid::decode(Customer::class, (string) $request->input('customer_id'));
-        if ($customerId === null && is_numeric((string) $request->input('customer_id'))) {
-            $customerId = (int) $request->input('customer_id');
-        }
+        $customerId = Sqid::decodeOrNumeric(Customer::class, (string) $request->input('customer_id'));
         $request->merge(['customer_id' => $customerId]);
 
         $data = $request->validate([

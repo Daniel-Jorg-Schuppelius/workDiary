@@ -257,10 +257,7 @@ class CommunicationNoteController extends Controller {
      * @param  class-string<Model>  $notableClass
      */
     private function findNotable(string $notableClass, string $rawId): Model {
-        $notableId = Sqid::decode($notableClass, $rawId);
-        if ($notableId === null && is_numeric($rawId)) {
-            $notableId = (int) $rawId;
-        }
+        $notableId = Sqid::decodeOrNumeric($notableClass, $rawId);
         if ($notableId === null || $notableId < 1) {
             abort(404);
         }
