@@ -174,7 +174,7 @@ return [
             'no_sources' => 'No documents ready for booking were found in the selected period.',
             'already_finalized' => 'The booking batch has already been finalized and is immutable.',
             'storage_failed' => 'The DATEV file could not be saved.',
-            'unavailable' => 'The DATEV export is not available in this installation (format package missing).',
+            'unavailable' => 'The DATEV export is an optional, paid add-on module and is not enabled in this installation. It can be unlocked on request at :contact.',
             'preflight_failed' => 'The batch cannot be finalized due to preflight errors.',
             'no_organization' => 'No organisation could be resolved.',
             'roundtrip_failed' => 'The generated DATEV file failed the re-import check: :errors',

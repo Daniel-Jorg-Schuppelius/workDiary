@@ -285,6 +285,20 @@ if (! FinancialFormatsSupport::isAvailable()) {
 $generator = new \CommonToolkit\FinancialFormats\Generators\DATEV\DatevDocumentGenerator(/* … */);
 ```
 
+**Geschäftsmodell:** Das Paket ist ein **kostenpflichtiges Zusatzmodul** — nur
+zahlende Kunden erhalten Repo-Zugriff und binden es lokal via `composer.local.json`
+ein. Alle anderen Installationen laufen ohne das Modul; die betroffenen Features
+(DATEV-Export, Bankimport) zeigen statt eines Fehlers einen Hinweis auf die
+Freischaltbarkeit (`finance.datev.error.unavailable`, `bank.import.error.unavailable`).
+
+**Deploy:** `deploy.sh` ist zahler-bewusst — liegt eine `composer.local.json` vor,
+wird das Modul zusätzlich aufgelöst (`composer update … --with-all-dependencies`);
+sonst läuft ein reproduzierbarer `composer install` aus der (paketfreien) Lock.
+
+**Absicherung:** `tests/Unit/Architecture/ComposerLockHygieneTest` schlägt fehl,
+falls das private Paket je in die committete `composer.lock` gerät (in
+Zahler-Umgebungen mit aktiver `composer.local.json` wird der Test übersprungen).
+
 ---
 
 ## 10. Arbeitsweise: gründlicher Weg vor schnellem Weg

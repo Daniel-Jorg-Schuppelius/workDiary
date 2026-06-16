@@ -22,7 +22,7 @@
                                 :href="route('finance.reconciliation.create')"
                                 show-label>{{ __('bank.action.import') }}</x-icon-btn>
                 @else
-                    <span class="text-sm text-base-content/60">{{ __('bank.import.error.unavailable') }}</span>
+                    <span class="text-sm text-base-content/60">{{ \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('bank.import.error.unavailable') }}</span>
                 @endif
             @endcan
             @can('viewAny', \App\Models\Finance\BankAccount::class)

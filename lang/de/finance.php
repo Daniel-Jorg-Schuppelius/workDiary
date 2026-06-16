@@ -182,7 +182,7 @@ return [
             'no_sources' => 'Keine buchungsreifen Belege im gewählten Zeitraum gefunden.',
             'already_finalized' => 'Der Buchungsstapel ist bereits finalisiert und unveränderlich.',
             'storage_failed' => 'Die DATEV-Datei konnte nicht gespeichert werden.',
-            'unavailable' => 'Der DATEV-Export ist in dieser Installation nicht verfügbar (Format-Paket fehlt).',
+            'unavailable' => 'Der DATEV-Export ist ein optionales, kostenpflichtiges Zusatzmodul und in dieser Installation nicht aktiviert. Eine Freischaltung ist auf Anfrage unter :contact möglich.',
             'preflight_failed' => 'Der Stapel kann wegen Preflight-Fehlern nicht finalisiert werden.',
             'no_organization' => 'Es konnte keine Organisation aufgelöst werden.',
             'roundtrip_failed' => 'Die erzeugte DATEV-Datei hat die Wiedereinlese-Prüfung nicht bestanden: :errors',

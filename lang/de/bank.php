@@ -89,7 +89,7 @@ return [
             'empty' => 'Der Auszug enthält keine Umsätze.',
             'empty_file' => 'Die Datei ist leer.',
             'duplicate_file' => 'Diese Datei wurde bereits importiert (Dublette).',
-            'unavailable' => 'Der Bankimport ist in dieser Installation nicht verfügbar (Paket php-financial-formats fehlt).',
+            'unavailable' => 'Der Bankimport ist ein optionales, kostenpflichtiges Zusatzmodul und in dieser Installation nicht aktiviert. Eine Freischaltung ist auf Anfrage unter :contact möglich.',
         ],
     ],
     'reconcile' => [

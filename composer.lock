@@ -743,60 +743,6 @@
             "time": "2026-06-14T07:19:04+00:00"
         },
         {
-            "name": "daniel-jorg-schuppelius/php-financial-formats",
-            "version": "v1.5.1",
-            "source": {
-                "type": "git",
-                "url": "git@github.com:Daniel-Jorg-Schuppelius/php-financial-formats.git",
-                "reference": "43023640451ae1457d78fa34f4fc28f989fc01c2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-financial-formats/zipball/43023640451ae1457d78fa34f4fc28f989fc01c2",
-                "reference": "43023640451ae1457d78fa34f4fc28f989fc01c2",
-                "shasum": ""
-            },
-            "require": {
-                "dschuppelius/php-common-toolkit": "^1.5",
-                "php": ">=8.2 <8.6"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^11.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "CommonToolkit\\FinancialFormats\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ]
-            },
-            "license": [
-                "AGPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Joerg Schuppelius",
-                    "email": "info@schuppelius.org"
-                }
-            ],
-            "description": "PHP library for parsing, validating and processing financial and banking file formats such as CAMT, MT and PAIN.",
-            "support": {
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-financial-formats/tree/v1.5.1",
-                "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-financial-formats/issues"
-            },
-            "time": "2026-06-15T13:09:37+00:00"
-        },
-        {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
             "version": "v0.12.3",
             "source": {
@@ -1572,16 +1518,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.8.8",
+            "version": "v1.8.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "63e82b24ccfbd3625596ca9c0c87b990e69e94ff"
+                "reference": "f8fcbec0a6cdf79ac5895bad22286396c519a079"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/63e82b24ccfbd3625596ca9c0c87b990e69e94ff",
-                "reference": "63e82b24ccfbd3625596ca9c0c87b990e69e94ff",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/f8fcbec0a6cdf79ac5895bad22286396c519a079",
+                "reference": "f8fcbec0a6cdf79ac5895bad22286396c519a079",
                 "shasum": ""
             },
             "require": {
@@ -1615,9 +1561,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.8.8"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.8.9"
             },
-            "time": "2026-06-15T16:03:59+00:00"
+            "time": "2026-06-15T18:14:52+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -1957,16 +1903,16 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.11.1",
+            "version": "7.11.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "5af96f374e0ab4ebd747b8310888c99d3adb0a8c"
+                "reference": "bf5f35ad4b774b9d7c5766c02035e865e7e3fdab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/5af96f374e0ab4ebd747b8310888c99d3adb0a8c",
-                "reference": "5af96f374e0ab4ebd747b8310888c99d3adb0a8c",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/bf5f35ad4b774b9d7c5766c02035e865e7e3fdab",
+                "reference": "bf5f35ad4b774b9d7c5766c02035e865e7e3fdab",
                 "shasum": ""
             },
             "require": {
@@ -2065,7 +2011,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.11.1"
+                "source": "https://github.com/guzzle/guzzle/tree/7.11.2"
             },
             "funding": [
                 {
@@ -2081,7 +2027,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-07T22:54:06+00:00"
+            "time": "2026-06-12T21:49:57+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -2169,16 +2115,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.11.0",
+            "version": "2.11.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "bbb5e61349fa5cb822b3e87842b951088b76b81f"
+                "reference": "640e2897bbee822dbc8af761d49e1a29b1f2a6b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/bbb5e61349fa5cb822b3e87842b951088b76b81f",
-                "reference": "bbb5e61349fa5cb822b3e87842b951088b76b81f",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/640e2897bbee822dbc8af761d49e1a29b1f2a6b1",
+                "reference": "640e2897bbee822dbc8af761d49e1a29b1f2a6b1",
                 "shasum": ""
             },
             "require": {
@@ -2268,7 +2214,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.11.0"
+                "source": "https://github.com/guzzle/psr7/tree/2.11.1"
             },
             "funding": [
                 {
@@ -2284,7 +2230,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-02T12:30:48+00:00"
+            "time": "2026-06-12T21:50:12+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
@@ -11531,16 +11477,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.29.1",
+            "version": "v1.29.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "0770e9b7fafd50d4586881d456d6eb41c9247a80"
+                "reference": "88493e9b15581b73db00fcc3cedfec07bcc52cf5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/0770e9b7fafd50d4586881d456d6eb41c9247a80",
-                "reference": "0770e9b7fafd50d4586881d456d6eb41c9247a80",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/88493e9b15581b73db00fcc3cedfec07bcc52cf5",
+                "reference": "88493e9b15581b73db00fcc3cedfec07bcc52cf5",
                 "shasum": ""
             },
             "require": {
@@ -11551,14 +11497,14 @@
                 "php": "^8.2.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.95.1",
-                "illuminate/view": "^12.56.0",
-                "larastan/larastan": "^3.9.6",
+                "friendsofphp/php-cs-fixer": "^3.95.8",
+                "illuminate/view": "^12.62.0",
+                "larastan/larastan": "^3.10.0",
                 "laravel-zero/framework": "^12.1.0",
+                "laravel/agent-detector": "^2.0.2",
                 "mockery/mockery": "^1.6.12",
                 "nunomaduro/termwind": "^2.4.0",
-                "pestphp/pest": "^3.8.6",
-                "shipfastlabs/agent-detector": "^1.1.3"
+                "pestphp/pest": "^3.8.6"
             },
             "bin": [
                 "builds/pint"
@@ -11595,7 +11541,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2026-04-20T15:26:14+00:00"
+            "time": "2026-06-16T12:31:41+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -13530,5 +13476,5 @@
         "php": "^8.4"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

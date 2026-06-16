@@ -89,7 +89,7 @@ return [
             'empty' => 'L’estratto conto non contiene movimenti.',
             'empty_file' => 'Il file è vuoto.',
             'duplicate_file' => 'Questo file è già stato importato (duplicato).',
-            'unavailable' => 'L’importazione bancaria non è disponibile in questa installazione (pacchetto php-financial-formats mancante).',
+            'unavailable' => 'L’importazione bancaria è un modulo aggiuntivo opzionale e a pagamento, non attivato in questa installazione. L’attivazione è possibile su richiesta a :contact.',
         ],
     ],
     'reconcile' => [

@@ -25,7 +25,18 @@ echo "→ Lizenz-Signierschlüssel absichern (falls vorhanden)"
 [ -f storage/license-keys.env ] && chmod 600 storage/license-keys.env || true
 
 echo "→ Composer-Abhängigkeiten (ohne dev)"
-composer install --no-dev --optimize-autoloader --no-interaction
+# Das private Zusatzmodul php-financial-formats ist NICHT Teil der committeten
+# composer.lock (siehe AGENTS.md §9.1) — so läuft der Deploy auch für Installationen
+# OHNE Zugriff auf das private Repo. Liegt lokal eine composer.local.json (nur
+# zahlende Kunden mit Repo-Zugriff), wird das Modul zusätzlich aufgelöst; sonst
+# reproduzierbarer Install aus der Lock.
+if [ -f composer.local.json ]; then
+    echo "  composer.local.json erkannt → privates Zusatzmodul (php-financial-formats) wird mit aufgelöst"
+    composer update daniel-jorg-schuppelius/php-financial-formats --with-all-dependencies \
+        --no-dev --optimize-autoloader --no-interaction
+else
+    composer install --no-dev --optimize-autoloader --no-interaction
+fi
 
 echo "→ Frontend-Assets bauen (Vite-Manifest für public/build)"
 # Pflicht: ohne gebautes Manifest wirft @vite eine ViteManifestNotFoundException

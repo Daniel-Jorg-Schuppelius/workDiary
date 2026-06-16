@@ -73,7 +73,7 @@ class PaymentReconciliationController extends Controller {
         Gate::authorize('create', BankStatement::class);
 
         if (! FinancialFormatsSupport::isAvailable()) {
-            return back()->with('error', __('bank.import.error.unavailable'));
+            return back()->with('error', FinancialFormatsSupport::unavailableMessage('bank.import.error.unavailable'));
         }
 
         $validated = $request->validate([

@@ -27,7 +27,7 @@
                                 :href="route('finance.datev.create')"
                                 show-label>{{ __('finance.datev.action.create') }}</x-icon-btn>
                 @else
-                    <span class="text-sm text-base-content/60">{{ __('finance.datev.error.unavailable') }}</span>
+                    <span class="text-sm text-base-content/60">{{ \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable') }}</span>
                 @endif
             @endif
         </x-slot:actions>

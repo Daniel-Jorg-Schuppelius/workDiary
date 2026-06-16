@@ -89,7 +89,7 @@ return [
             'empty' => 'The statement contains no transactions.',
             'empty_file' => 'The file is empty.',
             'duplicate_file' => 'This file has already been imported (duplicate).',
-            'unavailable' => 'Bank import is not available in this installation (package php-financial-formats missing).',
+            'unavailable' => 'Bank import is an optional, paid add-on module and is not enabled in this installation. It can be unlocked on request at :contact.',
         ],
     ],
     'reconcile' => [

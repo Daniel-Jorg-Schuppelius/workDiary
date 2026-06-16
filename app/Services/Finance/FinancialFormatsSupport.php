@@ -62,6 +62,18 @@ final class FinancialFormatsSupport {
     }
 
     /**
+     * Übersetzter „Modul nicht aktiviert"-Hinweis inkl. zentraler Kontaktadresse.
+     *
+     * Die betroffenen Übersetzungen (z. B. `finance.datev.error.unavailable`,
+     * `bank.import.error.unavailable`) nutzen den `:contact`-Platzhalter; die
+     * Adresse kommt aus {@see config()} `support.module_contact` — so muss sie
+     * bei einer Änderung nur an EINER Stelle angepasst werden.
+     */
+    public static function unavailableMessage(string $key): string {
+        return (string) __($key, ['contact' => (string) config('support.module_contact')]);
+    }
+
+    /**
      * Nur für Tests: gecachten Status zurücksetzen.
      */
     public static function flush(): void {

@@ -89,7 +89,7 @@ return [
             'empty' => 'El extracto no contiene movimientos.',
             'empty_file' => 'El archivo está vacío.',
             'duplicate_file' => 'Este archivo ya se ha importado (duplicado).',
-            'unavailable' => 'La importación bancaria no está disponible en esta instalación (falta el paquete php-financial-formats).',
+            'unavailable' => 'La importación bancaria es un módulo adicional opcional y de pago, no activado en esta instalación. Su activación es posible bajo petición en :contact.',
         ],
     ],
     'reconcile' => [

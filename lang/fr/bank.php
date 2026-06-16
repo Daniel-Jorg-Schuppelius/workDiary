@@ -89,7 +89,7 @@ return [
             'empty' => 'Le relevé ne contient aucune opération.',
             'empty_file' => 'Le fichier est vide.',
             'duplicate_file' => 'Ce fichier a déjà été importé (doublon).',
-            'unavailable' => 'L’import bancaire n’est pas disponible dans cette installation (paquet php-financial-formats manquant).',
+            'unavailable' => 'L’import bancaire est un module complémentaire optionnel et payant, non activé dans cette installation. Son activation est possible sur demande à :contact.',
         ],
     ],
     'reconcile' => [

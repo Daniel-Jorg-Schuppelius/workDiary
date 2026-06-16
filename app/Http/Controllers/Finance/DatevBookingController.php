@@ -123,7 +123,7 @@ class DatevBookingController extends Controller {
         Gate::authorize('finalize', $batch);
 
         if (! FinancialFormatsSupport::isAvailable()) {
-            return back()->withErrors(['status' => __('finance.datev.error.unavailable')]);
+            return back()->withErrors(['status' => FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')]);
         }
 
         $config = DatevBookingConfig::forOrganization($this->organization());

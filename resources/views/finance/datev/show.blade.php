@@ -34,7 +34,7 @@
         </x-slot:actions>
 
         @if (! $importAvailable)
-            <div class="alert alert-warning text-sm mb-4">{{ __('finance.datev.error.unavailable') }}</div>
+            <div class="alert alert-warning text-sm mb-4">{{ \App\Services\Finance\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable') }}</div>
         @endif
 
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">

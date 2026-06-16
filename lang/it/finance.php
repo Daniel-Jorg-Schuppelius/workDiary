@@ -174,7 +174,7 @@ return [
             'no_sources' => 'Nessun documento pronto per la registrazione trovato nel periodo selezionato.',
             'already_finalized' => 'Il lotto di registrazioni è già finalizzato e immutabile.',
             'storage_failed' => 'Impossibile salvare il file DATEV.',
-            'unavailable' => 'L\'esportazione DATEV non è disponibile in questa installazione (pacchetto di formato mancante).',
+            'unavailable' => 'L\'esportazione DATEV è un modulo aggiuntivo opzionale e a pagamento, non attivato in questa installazione. L\'attivazione è possibile su richiesta a :contact.',
             'preflight_failed' => 'Il lotto non può essere finalizzato a causa di errori di verifica preliminare.',
             'no_organization' => 'Non è stato possibile risolvere alcuna organizzazione.',
             'roundtrip_failed' => 'Il file DATEV generato non ha superato il controllo di rilettura: :errors',
