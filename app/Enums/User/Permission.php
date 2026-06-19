@@ -449,6 +449,15 @@ enum Permission: string implements HasLabel {
         // ── Webhooks / Integrationen (Feature 008) ──────────────
     case WebhookViewAny = 'webhook.viewAny';
     case WebhookManage = 'webhook.manage';
+        // ── Artikelstamm (Feature 048, MVP-060) ─────────────────
+        // ArticleViewAny / ArticleLexofficeSync existieren bereits oben
+        // (Lexoffice-Artikel-Cache); hier nur die neuen Detail-/Pflegerechte.
+    case ArticleView = 'article.view';
+    case ArticleManage = 'article.manage';
+        // ── Lagerwirtschaft (Feature 048, MVP-066/067) ──────────
+    case InventoryViewAny = 'inventory.viewAny';
+    case InventoryPost = 'inventory.post';
+    case InventoryConfigure = 'inventory.configure';
 
     public function label(): string {
         // Permission-Slugs enthalten Punkte (z. B. "project.view") — Laravels
@@ -475,6 +484,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'finance.') => PermissionGroup::Finance,
             str_starts_with($this->value, 'article.') => PermissionGroup::Invoicing,
+            str_starts_with($this->value, 'inventory.') => PermissionGroup::MasterData,
             str_starts_with($this->value, 'voucher.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'diary.') => PermissionGroup::Diary,
             str_starts_with($this->value, 'dutyPlan.'),

@@ -14,6 +14,12 @@ welchen Auftrag angenommen, bearbeitet, dokumentiert, abgenommen und mit welchem
 Zeit-, Material- und Dienstmitteleinsatz abgeschlossen hat. Datenschutz,
 Mandantentrennung und einheitliche Bedienung sind Teil des Kernprodukts.
 
+WorkDiary ist zugleich die operative Integrationsdrehscheibe zwischen den
+eingesetzten Fachprogrammen. Es ersetzt weder Faktura, Warenwirtschaft,
+Buchhaltung noch Lohnabrechnung, sondern übergibt die bei der Arbeit
+entstandenen, geprüften Daten an das jeweils führende System. Pro Datenbereich
+ist genau ein schreibend führendes System festgelegt.
+
 ## MVP-Scope
 
 ### Muss in Version 1
@@ -280,6 +286,78 @@ Definition of Done:
 - Neuer Mandant kann ohne Entwicklerhilfe initial befüllt werden.
 - Demo zeigt den kompletten Nachweisfluss von Auftrag bis Auswertung.
 
+## Phase 5: Fertigung und Montage
+
+### Epic 5.1: Dynamische Arbeitspläne und Fertigungsaufträge
+
+Quellen:
+[047](./047-fertigungs-montage-arbeitsauftraege.md),
+[026](./026-prozeduren-arbeitsanweisungen-checklisten.md),
+[009](./009-inventar-dienstmittel-assets.md),
+[014](./014-nachkalkulation-wirtschaftlichkeit.md)
+
+Issues:
+
+- `MVP-060`: Einheitlichen Artikelstamm mit bestandsführenden Varianten, strukturierten Optionswerten, Nummernhoheit, Lebenszyklus, Preisen, Beschaffungsarten, Basiseinheiten und externen Zuordnungen organisationsbezogen modellieren.
+- `MVP-061`: Versionierte, vererbbare Stücklisten, Rezepturen, Auftragsparameter und Anleitungsmedien an Arbeitsplan-Versionen ergänzen.
+- `MVP-062`: Fertigungs-/Montageauftrag mit Statusmaschine, Varianten-/Parameter-Snapshot und Materialbedarfsberechnung anlegen.
+- `MVP-063`: Ausführbare mobile Prozedurlauf-Ansicht einschließlich bedingter Schritte und Medien umsetzen.
+- `MVP-064`: Serverseitige Warte-/Trockenschritte mit blockierter Fortsetzung implementieren.
+- `MVP-065`: Teilrückmeldungen, Ist-Material, Gutmenge, Ausschuss, Nacharbeit und Fertigungsnachweis erfassen.
+
+Definition of Done:
+
+- Ein freigegebener Auftrag friert Arbeitsplan-Version und Materialbedarf ein.
+- Rezepturen und stückbezogene Bedarfe werden reproduzierbar berechnet.
+- Mitarbeitende können den Auftrag mobil Schritt für Schritt ausführen.
+- Wartezeiten, Abweichungen, Materialverbrauch und Fertigungsergebnis sind
+  serverseitig nachvollziehbar.
+- Vollständige Lagerwirtschaft, MRP und Chargenrückverfolgung bleiben außerhalb
+  dieses ersten Blocks.
+
+### Epic 5.2: Lagerwirtschaft und Bestandsprovider
+
+Quellen:
+[048](./048-lagerwirtschaft-bestandsintegration.md),
+[008](./008-integrationen-api.md),
+[047](./047-fertigungs-montage-arbeitsauftraege.md),
+[009](./009-inventar-dienstmittel-assets.md)
+
+Issues:
+
+- `MVP-066`: Bestandsführerschaft, Provider-Vertrag und Capability-Matrix organisationsbezogen definieren.
+- `MVP-067`: Lokale Lagerorte, Bestandszustände, Eigentumsarten und append-only Lagerbewegungsjournal umsetzen.
+- `MVP-068`: Verfügbarkeit, Reservierungen, Mindestbestände und Fehlmaterialprozess ergänzen.
+- `MVP-069`: Wareneingang, Entnahme, Rückgabe, Umlagerung und stichtagsbezogene Inventur umsetzen.
+- `MVP-070`: Kostensnapshots und gleitende Durchschnittsbewertung ergänzen.
+- `MVP-071`: Fertigungs-/Montageaufträge mit Teilrückmeldungen, Reservierung, Verbrauch, Ausschuss und Einlagerung verbinden.
+- `MVP-072`: Persistierte Outbox, Idempotenz, Retry, Konflikte und Kompensationsbuchungen für externe Provider umsetzen.
+- `MVP-073`: Optionales JTL-Wawi-Plugin gegen den Provider-Vertrag pilotieren.
+- `MVP-074`: Fertigerzeugnisse ausliefern, Bestand abbuchen und als konkrete Variante an das führende Fakturasystem übergeben.
+
+Definition of Done:
+
+- Eine Organisation kann Lexoffice für Artikel/Faktura und WorkDiary für
+  Lagerbestände verwenden.
+- Pro Organisation ist genau ein Bestandsprovider aktiv.
+- Bestände ändern sich ausschließlich über nachvollziehbare Bewegungen.
+- Artikel, Varianten, Einheiten und externe Referenzen bilden keinen
+  konkurrierenden Parallelstamm.
+- Bestandszustände und Eigentumsarten werden bei Verfügbarkeit und Verbrauch
+  berücksichtigt.
+- Fehlmaterial und Ersatzmaterial folgen einem geregelten Freigabeprozess.
+- Reservierungszeitpunkt und Beschaffungsweg sind pro Auftrag eindeutig.
+- Reservierung, Ist-Verbrauch und Restfreigabe sind getrennt und
+  reproduzierbar.
+- Bestätigte Lagerbewegungen werden durch Gegenbuchung statt Änderung
+  korrigiert.
+- Teilfertigungen und historische Kosten bleiben je Rückmeldung
+  nachvollziehbar.
+- Inventurdifferenzen beziehen sich auf einen eindeutigen Zählzeitpunkt.
+- Auslieferung und Fakturaübergabe bleiben getrennt nachvollziehbar.
+- Externe Provider-Buchungen sind per Outbox idempotent und zeigen Fehler offen
+  an.
+
 ## Querschnitt: Tests und Qualität
 
 Jeder MVP-Issue sollte mindestens eine dieser Prüfungen enthalten:
@@ -297,6 +375,8 @@ Jeder MVP-Issue sollte mindestens eine dieser Prüfungen enthalten:
 3. Phase 2: Protokolle und Prozeduren.
 4. Phase 3: Klassifikationen, Assets, Auswertungen.
 5. Phase 4: Betrieb, Onboarding, Demo.
+6. Phase 5: dynamische Arbeitspläne, Fertigungs-/Montageaufträge und
+   Lagerintegration.
 
 ## GitHub-Umsetzung
 
@@ -319,3 +399,4 @@ Empfohlene Meilensteine:
 - `MVP Phase 2 - Dokumentation und Prozeduren`
 - `MVP Phase 3 - Auswertungen und Stammdaten`
 - `MVP Phase 4 - Betrieb und Onboarding`
+- `MVP Phase 5 - Fertigung und Montage`

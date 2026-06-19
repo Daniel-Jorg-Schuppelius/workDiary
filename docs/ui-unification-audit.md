@@ -64,6 +64,23 @@ Statuswerte: ✅ erledigt · ⚠️ teilweise · ❌ offen · — nicht anwendba
 | `dashboard/`             |  ✅   |  ✅  |   —   |  ✅   |   —   |     ✅      | Übersichtsseite                                    |
 | `profile/api-tokens`     |   —   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Schmale, zentrierte Seite (eigener Container)      |
 | `work-schedules/`        |  ✅   |  ✅  |   —   |   —   |  ✅   |     ✅      |                                                    |
+| `articles/`              |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Artikelstamm (MVP-060)                             |
+| `warehouses/`            |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Lagerorte (MVP-066)                               |
+| `inventory/`             |  ✅   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Bestand/Reservierung/Meldebestand                 |
+| `inventory/counts/`      |  ✅   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Inventur (MVP-069)                                |
+| `inventory/lots/`        |  ✅   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Chargen (E2)                                      |
+| `inventory/scan/`        |  ✅   |  ✅  |   —   |   —   |   —   |     ✅      | Mobile Scan-Buchung (E5)                          |
+| `inventory/label-templates/` | ✅ | ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Etiketten-Layout-Designer (E5)                    |
+| `serials/`               |  ✅   |  ✅  |  ✅   |  ✅   |   —   |     ✅      | Seriennummern / Geräte-Pass (E2)                  |
+| `manufacturing/`         |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Fertigungsaufträge (MVP-061/062)                  |
+| `manufacturing/work-centers/` | ✅ | ✅ | ✅  |  ✅   |  ✅   |     ✅      | Arbeitsplätze/Kapazität (E7)                      |
+| `purchase-orders/`       |  ✅   |  ✅  |  ✅   |  ✅   |  ✅   |     ✅      | Beschaffung inkl. ASN/Lieferavis (E4)             |
+
+> **Header-Zeitraum (2026-06-19):** Datierte Listen der Lager-/Fertigungs-/
+> Beschaffungsmodule berücksichtigen jetzt den globalen Header-Zeitraum
+> (`ResolvesGlobalDateRange`): Fertigungsaufträge, Bestellungen, Serien und
+> Inventuren werden nach Erstelldatum eingegrenzt, erwartete Wareneingänge nach
+> Liefertermin (ohne Termin bleiben sie sichtbar).
 
 ## Roadmap-Module (geplant, noch nicht implementiert)
 

@@ -84,6 +84,7 @@ class TimeEntry extends Model {
         'activity_category_id',
         'attendance_id',
         'travel_log_id',
+        'manufacturing_order_id',
         'date',
         'started_at',
         'ended_at',

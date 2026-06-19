@@ -75,6 +75,12 @@ Route::get('calendar/feed/{token}.ics', [IcsFeedController::class, 'personalSche
     ->name('calendar.feed.personal');
 
 // Öffentlicher Stundenzettel-Sign-Link (Magic-Token)
+// Öffentlicher Geräte-Pass (Feature 047/048, E2): opt-in pro Org, rate-limitiert,
+// ohne personenbezogene Daten.
+Route::get('serial-passport/{token}', [\App\Http\Controllers\PublicSerialController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->name('serials.public-passport');
+
 Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])
     ->middleware('throttle:30,1')
     ->name('timesheets.public-sign');
@@ -751,6 +757,98 @@ Route::middleware('auth')->group(function () {
         Route::resource('suppliers', SupplierController::class);
         Route::post('suppliers/{supplier}/archive', [SupplierController::class, 'archive'])->name('suppliers.archive');
         Route::post('suppliers/{supplier}/restore', [SupplierController::class, 'restore'])->name('suppliers.restore');
+
+        // ── Artikelstamm (Feature 048, MVP-060) ─ Modul-Gate articles.* → module.lager
+        Route::resource('articles', \App\Http\Controllers\ArticleController::class);
+        Route::post('articles/{article}/retire', [\App\Http\Controllers\ArticleController::class, 'retire'])->name('articles.retire');
+        Route::post('articles/{article}/options', [\App\Http\Controllers\ArticleController::class, 'storeOption'])->name('articles.options.store');
+        Route::post('articles/{article}/options/{option}/values', [\App\Http\Controllers\ArticleController::class, 'storeOptionValue'])->name('articles.options.values.store');
+        Route::post('articles/{article}/units', [\App\Http\Controllers\ArticleController::class, 'storeUnit'])->name('articles.units.store');
+        Route::post('articles/{article}/variants', [\App\Http\Controllers\ArticleController::class, 'storeVariant'])->name('articles.variants.store');
+        Route::post('articles/{article}/variants/{variant}/retire', [\App\Http\Controllers\ArticleController::class, 'retireVariant'])->name('articles.variants.retire');
+
+        // ── Lagerwirtschaft (Feature 048, MVP-067) ─ Gate warehouses.*/inventory.* → module.lager
+        Route::resource('warehouses', \App\Http\Controllers\WarehouseController::class)->except(['show']);
+        Route::get('inventory/stock', [\App\Http\Controllers\StockController::class, 'index'])->name('inventory.stock');
+        Route::post('inventory/movements', [\App\Http\Controllers\StockController::class, 'storeMovement'])->name('inventory.movements.store');
+        Route::get('inventory/counts', [\App\Http\Controllers\StocktakeController::class, 'index'])->name('inventory.counts.index');
+        Route::post('inventory/counts', [\App\Http\Controllers\StocktakeController::class, 'open'])->name('inventory.counts.open');
+        Route::post('inventory/counts/cycle', [\App\Http\Controllers\StocktakeController::class, 'openCycle'])->name('inventory.counts.cycle'); // E6 zyklisch
+        Route::get('inventory/counts/{count}', [\App\Http\Controllers\StocktakeController::class, 'show'])->name('inventory.counts.show');
+        Route::post('inventory/counts/{count}/record', [\App\Http\Controllers\StocktakeController::class, 'record'])->name('inventory.counts.record');
+        Route::post('inventory/counts/{count}/scan', [\App\Http\Controllers\StocktakeController::class, 'recordScan'])->name('inventory.counts.scan'); // E6 Scan-Erfassung
+        Route::post('inventory/counts/{count}/apply', [\App\Http\Controllers\StocktakeController::class, 'apply'])->name('inventory.counts.apply');
+
+        // ── Scan-/Buchungs-UI (Feature 048, E5)
+        Route::get('inventory/scan', [\App\Http\Controllers\ScanController::class, 'index'])->name('inventory.scan');
+        Route::post('inventory/scan', [\App\Http\Controllers\ScanController::class, 'book'])->name('inventory.scan.book');
+
+        // ── Chargenverwaltung / Los-Split-Merge (Feature 048, E2/E7)
+        Route::get('inventory/lots', [\App\Http\Controllers\LotController::class, 'index'])->name('inventory.lots');
+        Route::post('inventory/lots/split', [\App\Http\Controllers\LotController::class, 'splitLot'])->name('inventory.lots.split');
+        Route::post('inventory/lots/merge', [\App\Http\Controllers\LotController::class, 'mergeLot'])->name('inventory.lots.merge');
+
+        // ── Etikettendruck (Feature 048, E5)
+        Route::get('inventory/labels/variant/{variant}', [\App\Http\Controllers\LabelController::class, 'variant'])->name('inventory.labels.variant');
+        Route::get('inventory/labels/serial/{stockSerial}', [\App\Http\Controllers\LabelController::class, 'serial'])->name('inventory.labels.serial');
+        Route::get('inventory/labels/lot/{stockLot}', [\App\Http\Controllers\LabelController::class, 'lot'])->name('inventory.labels.lot');
+
+        // Etiketten-Layout-Designer (Feature 048, E5)
+        Route::get('inventory/label-templates', [\App\Http\Controllers\LabelTemplateController::class, 'index'])->name('inventory.label-templates.index');
+        Route::get('inventory/label-templates/create', [\App\Http\Controllers\LabelTemplateController::class, 'create'])->name('inventory.label-templates.create');
+        Route::post('inventory/label-templates', [\App\Http\Controllers\LabelTemplateController::class, 'store'])->name('inventory.label-templates.store');
+        Route::get('inventory/label-templates/{labelTemplate}/edit', [\App\Http\Controllers\LabelTemplateController::class, 'edit'])->name('inventory.label-templates.edit');
+        Route::put('inventory/label-templates/{labelTemplate}', [\App\Http\Controllers\LabelTemplateController::class, 'update'])->name('inventory.label-templates.update');
+        Route::delete('inventory/label-templates/{labelTemplate}', [\App\Http\Controllers\LabelTemplateController::class, 'destroy'])->name('inventory.label-templates.destroy');
+        Route::post('inventory/reservations/{reservation}/release', [\App\Http\Controllers\StockController::class, 'releaseReservation'])->name('inventory.reservations.release');
+        Route::post('inventory/levels', [\App\Http\Controllers\StockController::class, 'setLevels'])->name('inventory.levels.set');
+
+        // ── Fertigungsaufträge (Feature 047) ─ Gate manufacturing-orders.* → module.lager
+        Route::get('manufacturing-orders', [\App\Http\Controllers\ManufacturingOrderController::class, 'index'])->name('manufacturing-orders.index');
+        Route::get('manufacturing-orders/create', [\App\Http\Controllers\ManufacturingOrderController::class, 'create'])->name('manufacturing-orders.create');
+        Route::post('manufacturing-orders', [\App\Http\Controllers\ManufacturingOrderController::class, 'store'])->name('manufacturing-orders.store');
+        Route::get('manufacturing-orders/{order}', [\App\Http\Controllers\ManufacturingOrderController::class, 'show'])->name('manufacturing-orders.show');
+        Route::post('manufacturing-orders/{order}/release', [\App\Http\Controllers\ManufacturingOrderController::class, 'release'])->name('manufacturing-orders.release');
+        Route::post('manufacturing-orders/{order}/start', [\App\Http\Controllers\ManufacturingOrderController::class, 'start'])->name('manufacturing-orders.start');
+        Route::post('manufacturing-orders/{order}/reserve', [\App\Http\Controllers\ManufacturingOrderController::class, 'reserve'])->name('manufacturing-orders.reserve');
+        Route::post('manufacturing-orders/{order}/report', [\App\Http\Controllers\ManufacturingOrderController::class, 'report'])->name('manufacturing-orders.report');
+        Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
+        Route::post('manufacturing-orders/{order}/cancel', [\App\Http\Controllers\ManufacturingOrderController::class, 'cancel'])->name('manufacturing-orders.cancel');
+        Route::post('manufacturing-orders/{order}/subcontract', [\App\Http\Controllers\ManufacturingOrderController::class, 'subcontract'])->name('manufacturing-orders.subcontract'); // E7 Fremdfertigung
+
+        Route::post('manufacturing-orders/{order}/work-center', [\App\Http\Controllers\ManufacturingOrderController::class, 'assignWorkCenter'])->name('manufacturing-orders.work-center'); // E7 Kapazität
+
+        // Fertigungsplanung MRP/SPC (Feature 047/048, E7) → module.lager
+        Route::get('manufacturing-planning', [\App\Http\Controllers\ManufacturingPlanningController::class, 'index'])->name('manufacturing-planning.index');
+
+        // Kapazitätsboard / Arbeitsplätze (Feature 047/048, E7) → module.lager
+        Route::get('work-centers', [\App\Http\Controllers\WorkCenterController::class, 'index'])->name('work-centers.index');
+        Route::get('work-centers/create', [\App\Http\Controllers\WorkCenterController::class, 'create'])->name('work-centers.create');
+        Route::post('work-centers', [\App\Http\Controllers\WorkCenterController::class, 'store'])->name('work-centers.store');
+
+        // ── Seriennummern (Feature 047/048, E2) ─ Gate serials.* → module.lager
+        Route::get('serials', [\App\Http\Controllers\SerialController::class, 'index'])->name('serials.index');
+        Route::get('serials/verify', [\App\Http\Controllers\SerialController::class, 'verify'])->name('serials.verify');
+        Route::get('serials/{serial}', [\App\Http\Controllers\SerialController::class, 'show'])->name('serials.show');
+        Route::post('serials/{serial}/block', [\App\Http\Controllers\SerialController::class, 'block'])->name('serials.block');
+        Route::post('serials/{serial}/unblock', [\App\Http\Controllers\SerialController::class, 'unblock'])->name('serials.unblock');
+        Route::post('serials/{serial}/scrap', [\App\Http\Controllers\SerialController::class, 'scrap'])->name('serials.scrap');
+
+        // ── Beschaffung / Bestellungen (Feature 048, E4) ─ Gate purchase-orders.* → module.lager
+        Route::get('purchase-orders', [\App\Http\Controllers\PurchaseOrderController::class, 'index'])->name('purchase-orders.index');
+        Route::get('purchase-orders/suggestions', [\App\Http\Controllers\PurchaseOrderController::class, 'suggestions'])->name('purchase-orders.suggestions');
+        Route::get('purchase-orders/incoming', [\App\Http\Controllers\PurchaseOrderController::class, 'incoming'])->name('purchase-orders.incoming'); // E4 erwartete Wareneingänge
+        Route::post('purchase-orders/suggestions/apply', [\App\Http\Controllers\PurchaseOrderController::class, 'applySuggestions'])->name('purchase-orders.suggestions.apply');
+        Route::get('purchase-orders/create', [\App\Http\Controllers\PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
+        Route::post('purchase-orders', [\App\Http\Controllers\PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
+        Route::get('purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
+        Route::post('purchase-orders/{purchaseOrder}/lines', [\App\Http\Controllers\PurchaseOrderController::class, 'addLine'])->name('purchase-orders.lines.add');
+        Route::post('purchase-orders/{purchaseOrder}/submit', [\App\Http\Controllers\PurchaseOrderController::class, 'submit'])->name('purchase-orders.submit');
+        Route::post('purchase-orders/{purchaseOrder}/receive', [\App\Http\Controllers\PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
+        Route::post('purchase-orders/{purchaseOrder}/advices', [\App\Http\Controllers\PurchaseOrderController::class, 'announceAdvice'])->name('purchase-orders.advices.announce'); // E4 Lieferavis
+        Route::post('purchase-orders/advices/{advice}/receive', [\App\Http\Controllers\PurchaseOrderController::class, 'receiveAdvice'])->name('purchase-orders.advices.receive');
+        Route::post('purchase-orders/advices/{advice}/cancel', [\App\Http\Controllers\PurchaseOrderController::class, 'cancelAdvice'])->name('purchase-orders.advices.cancel');
+        Route::post('purchase-orders/{purchaseOrder}/cancel', [\App\Http\Controllers\PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
 
         // Plugin-spezifische Routen (z. B. Lexoffice customers.lexoffice.*) werden
         // vom jeweiligen Plugin-ServiceProvider geladen — siehe app/Plugins/*/routes.php.

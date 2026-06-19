@@ -242,6 +242,11 @@ return [
         'supplier.lexoffice.sync' => 'Lieferanten mit Lexoffice synchronisieren',
 
         'article.viewAny' => 'Produkte & Leistungen auflisten',
+        'article.view' => 'Artikel ansehen',
+        'article.manage' => 'Artikel verwalten',
+        'inventory.viewAny' => 'Lagerbestand & Bewegungen sehen',
+        'inventory.post' => 'Lagerbewegungen buchen',
+        'inventory.configure' => 'Bestandsprovider konfigurieren',
         'article.lexoffice.sync' => 'Produkte & Leistungen mit Lexoffice synchronisieren',
 
         'voucher.viewAny' => 'Belege auflisten',

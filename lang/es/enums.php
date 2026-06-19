@@ -517,6 +517,7 @@ return [
             'messreihe' => 'Serie de mediciones',
             'link_protocol' => 'Vincular protocolo',
             'link_test' => 'Vincular prueba',
+            'wait' => 'Tiempo de espera',
         ],
         'proof-type' => [
             'backup' => 'Copia de seguridad',

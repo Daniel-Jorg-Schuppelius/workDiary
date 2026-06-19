@@ -1,0 +1,92 @@
+<?php
+/*
+ * Created on   : Tue Jun 16 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SaveArticleRequest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Requests;
+
+use App\Enums\Article\{ArticleStatus, ArticleType};
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Article;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+/**
+ * Validierung für Anlage/Bearbeitung eines Artikels (Feature 048, MVP-060).
+ * Die SKU (number) wird i. d. R. automatisch vergeben; ein manuell gesetzter
+ * Wert (z. B. Übernahme einer führenden externen Nummer) ist je Organisation
+ * eindeutig. Berechtigung trägt der Controller (ArticlePolicy).
+ */
+class SaveArticleRequest extends FormRequest {
+    use DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'default_procedure_template_version_id' => \App\Models\ProcedureTemplateVersion::class,
+    ];
+
+    /** @var list<string> */
+    private const FLAGS = [
+        'stockable', 'purchasable', 'sellable', 'manufacturable',
+        'batch_required', 'serial_required', 'shelf_life_required',
+    ];
+
+    public function authorize(): bool {
+        return true;
+    }
+
+    protected function prepareForValidation(): void {
+        $merge = [];
+        foreach (self::FLAGS as $flag) {
+            $merge[$flag] = $this->boolean($flag);
+        }
+        $this->merge($merge);
+    }
+
+    /** @return array<string, mixed> */
+    public function rules(): array {
+        /** @var Article|null $article */
+        $article = $this->route('article');
+        $organizationId = $article instanceof Article
+            ? $article->organization_id
+            : $this->currentOrganizationId();
+
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'number' => [
+                'nullable', 'string', 'max:64',
+                Rule::unique('articles', 'number')
+                    ->where(fn($q) => $q->where('organization_id', $organizationId))
+                    ->ignore($article?->id),
+            ],
+            'gtin' => ['nullable', 'string', 'max:14'],
+            'type' => ['required', Rule::enum(ArticleType::class)],
+            'base_unit' => ['required', 'string', 'max:20'],
+            'tax_class' => ['nullable', 'string', 'max:40'],
+            'status' => ['required', Rule::enum(ArticleStatus::class)],
+            'default_purchase_price' => ['nullable', 'numeric', 'min:0'],
+            'default_sale_price' => ['nullable', 'numeric', 'min:0'],
+            'currency' => ['nullable', 'string', 'size:3'],
+            'default_procedure_template_version_id' => ['nullable', 'integer', 'exists:procedure_template_versions,id'],
+            ...array_fill_keys(self::FLAGS, ['boolean']),
+        ];
+    }
+
+    private function currentOrganizationId(): ?int {
+        if (app()->bound('currentOrganization')) {
+            $organization = app('currentOrganization');
+            if ($organization instanceof \App\Models\Organization) {
+                return (int) $organization->id;
+            }
+        }
+
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        return $user?->organization_id !== null ? (int) $user->organization_id : null;
+    }
+}

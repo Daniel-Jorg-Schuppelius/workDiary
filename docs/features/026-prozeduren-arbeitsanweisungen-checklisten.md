@@ -11,7 +11,10 @@ Schritt-für-Schritt-Lauf-UI. Konzipiert in MVP-025 bis MVP-029:
 [Pflicht & Reihenfolge](../prozedur-pflicht.md),
 [Backup-Nachweis](../prozedur-backup.md),
 [Vier-Augen / Freigeber](../prozedur-vier-augen.md),
-[Abweichungen & Folgeaktion](../prozedur-abweichungen.md).
+[Abweichungen & Folgeaktion](../prozedur-abweichungen.md). Der operative Einsatz
+als versionierter Arbeitsplan für Mengen-, Material- und Ergebnisaufträge wird
+in [Fertigungs-, Montage- und Arbeitsaufträge](./047-fertigungs-montage-arbeitsauftraege.md)
+weitergeführt.
 
 ## Ziel
 
@@ -40,6 +43,8 @@ Prozeduren bleibt unklar, ob kritische Schritte wirklich erledigt wurden.
 - Arbeiten, die nur mit bestimmter Qualifikation oder Unterweisung erlaubt sind.
 - Übergaben zwischen Mitarbeitenden oder Schichten.
 - Notfall- oder Rückfallprozeduren.
+- Arbeitspläne für Fertigung oder Montage mit Rezeptur, Materialbedarf,
+  Wartezeiten und Anleitungsbildern.
 
 ## MVP
 
@@ -54,6 +59,10 @@ Prozeduren bleibt unklar, ob kritische Schritte wirklich erledigt wurden.
 - Abweichung begründen, wenn ein Schritt nicht wie vorgesehen ausgeführt wird.
 - Prozedurstand im Auftrag: offen, in Bearbeitung, blockiert, abgeschlossen.
 - PDF-/Exportdarstellung der durchlaufenen Prozedur.
+
+Prozeduren definieren dabei den Ablauf. Konkrete Sollmengen, Termine,
+Materialbedarfs-Snapshots, Gutmengen und Ausschuss gehören in einen
+Fertigungs-/Montageauftrag und nicht in die allgemeine Prozedurvorlage.
 
 ## Akzeptanzkriterien
 
@@ -89,6 +98,8 @@ Für belastbare Prozeduren braucht es strukturierte Daten:
 - Automatische Folgeaufträge bei fehlgeschlagenen Schritten.
 - Auswertung der häufigsten Abweichungen und blockierten Prozeduren.
 - Import von Arbeitsanweisungen aus bestehenden Dokumenten.
+- Wiederverwendbare Arbeitspläne mit Stücklisten, Rezepturen,
+  Anleitungsmedien und serverseitigen Wartezeiten gemäß Feature 047.
 
 ## Abhängigkeiten
 
@@ -100,6 +111,7 @@ Für belastbare Prozeduren braucht es strukturierte Daten:
 - Qualifikationen
 - Audit
 - Anhänge und Storage
+- Fertigungs-, Montage- und Arbeitsaufträge
 
 ## GitHub Issues
 

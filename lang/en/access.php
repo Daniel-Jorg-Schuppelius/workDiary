@@ -242,6 +242,11 @@ return [
         'supplier.lexoffice.sync' => 'Sync suppliers with Lexoffice',
 
         'article.viewAny' => 'List products & services',
+        'article.view' => 'View article',
+        'article.manage' => 'Manage articles',
+        'inventory.viewAny' => 'View stock & movements',
+        'inventory.post' => 'Post stock movements',
+        'inventory.configure' => 'Configure inventory provider',
         'article.lexoffice.sync' => 'Sync products & services with Lexoffice',
 
         'voucher.viewAny' => 'List vouchers',

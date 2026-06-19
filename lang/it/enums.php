@@ -517,6 +517,7 @@ return [
             'messreihe' => 'Serie di misurazioni',
             'link_protocol' => 'Collega protocollo',
             'link_test' => 'Collega test',
+            'wait' => 'Attesa',
         ],
         'proof-type' => [
             'backup' => 'Backup',

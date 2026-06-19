@@ -49,6 +49,8 @@ class ProcedureStepRun extends Model {
         'proof_attachment_id',
         'note',
         'deviation_id',
+        'wait_started_at',
+        'wait_until',
     ];
 
     protected $casts = [
@@ -56,6 +58,8 @@ class ProcedureStepRun extends Model {
         'value_json' => 'array',
         'executed_at' => 'datetime',
         'second_person_signed_at' => 'datetime',
+        'wait_started_at' => 'datetime',
+        'wait_until' => 'datetime',
     ];
 
     /** @return BelongsTo<ProcedureRun, $this> */

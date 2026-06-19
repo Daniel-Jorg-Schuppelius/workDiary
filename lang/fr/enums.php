@@ -517,6 +517,7 @@ return [
             'messreihe' => 'Série de mesures',
             'link_protocol' => 'Lier le protocole',
             'link_test' => 'Lier le test',
+            'wait' => 'Temps d’attente',
         ],
         'proof-type' => [
             'backup' => 'Sauvegarde',

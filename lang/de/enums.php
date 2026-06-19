@@ -517,6 +517,7 @@ return [
             'messreihe' => 'Messreihe',
             'link_protocol' => 'Protokoll verlinken',
             'link_test' => 'Test verlinken',
+            'wait' => 'Wartezeit',
         ],
         'proof-type' => [
             'backup' => 'Backup',

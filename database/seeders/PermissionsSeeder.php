@@ -149,7 +149,7 @@ class PermissionsSeeder extends Seeder {
         $all = PermissionEnum::cases();
 
         // Geschäftsführung: read-only über alle Bereiche, Reports + Audit.
-        $geschaeftsfuehrung = array_filter(
+        $geschaeftsfuehrung = array_values(array_filter(
             PermissionEnum::cases(),
             static function (PermissionEnum $p): bool {
                 $value = $p->value;
@@ -196,7 +196,7 @@ class PermissionsSeeder extends Seeder {
                     PermissionEnum::DayCloseViewOrganization->value,
                 ], true);
             }
-        );
+        ));
 
         // Teamleitung: operative Führung (Personal, Zeit, Plan), ohne Finanzen.
         $teamleitung = [
@@ -253,6 +253,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::DispatchManage,
             PermissionEnum::VehicleViewAny,
             PermissionEnum::VehicleReserve,
+            // Lagerwirtschaft (Feature 048): operative Bestandsbuchungen.
+            PermissionEnum::InventoryViewAny,
+            PermissionEnum::InventoryPost,
             PermissionEnum::DutyPlanViewAny,
             PermissionEnum::DutyPlanCreate,
             PermissionEnum::DutyPlanUpdate,
@@ -456,6 +459,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::SupplierImport,
             PermissionEnum::SupplierLexofficeSync,
             PermissionEnum::ArticleViewAny,
+            PermissionEnum::ArticleView,
+            PermissionEnum::ArticleManage,
             PermissionEnum::ArticleLexofficeSync,
             PermissionEnum::VoucherViewAny,
             PermissionEnum::VoucherLexofficeSync,

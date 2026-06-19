@@ -29,6 +29,7 @@ enum ProcedureStepType: string {
     case Messreihe = 'messreihe';
     case LinkProtocol = 'link_protocol';
     case LinkTest = 'link_test';
+    case Wait = 'wait'; // Warte-/Trocken-/Aushärtezeit (serverseitig, Feature 047 MVP-064)
 
     public function label(): string {
         return (string) __('enums.procedure.step-type.' . $this->value);

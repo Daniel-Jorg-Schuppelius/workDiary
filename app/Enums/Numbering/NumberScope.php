@@ -13,6 +13,10 @@ namespace App\Enums\Numbering;
 enum NumberScope: string {
     case ServiceTicket = 'service_ticket';
     case Asset = 'asset';
+    case Article = 'article';
+    case ManufacturingOrder = 'manufacturing_order';
+    case Serial = 'serial';
+    case PurchaseOrder = 'purchase_order';
     case Customer = 'customer';
     case Supplier = 'supplier';
     case Invoice = 'invoice';
@@ -22,6 +26,10 @@ enum NumberScope: string {
         return match ($this) {
             self::ServiceTicket => __('Service-Ticket'),
             self::Asset => __('Asset'),
+            self::Article => __('Artikel'),
+            self::ManufacturingOrder => __('Fertigungsauftrag'),
+            self::Serial => __('Seriennummer'),
+            self::PurchaseOrder => __('Bestellung'),
             self::Customer => __('Kunde'),
             self::Supplier => __('Lieferant'),
             self::Invoice => __('Rechnung'),
@@ -36,7 +44,7 @@ enum NumberScope: string {
     public function isAccountingRelevant(): bool {
         return match ($this) {
             self::Customer, self::Supplier, self::Invoice, self::CreditNote => true,
-            self::ServiceTicket, self::Asset => false,
+            self::ServiceTicket, self::Asset, self::Article, self::ManufacturingOrder, self::Serial, self::PurchaseOrder => false,
         };
     }
 }

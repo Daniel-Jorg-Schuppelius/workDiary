@@ -56,6 +56,7 @@ return [
             'module.compliance',
             'module.isms',
             'module.finance',
+            'module.lager',
             'protocols.signed',
         ],
     ],
@@ -78,6 +79,7 @@ return [
         'module.compliance' => 'Hinweisgebersystem',
         'module.isms' => 'ISMS',
         'module.finance' => 'Finanzschnittstelle',
+        'module.lager' => 'Lager & Artikel',
     ],
 
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
@@ -99,6 +101,15 @@ return [
         'expenses.*' => 'module.spesen',
         'per-diem-trips.*' => 'module.spesen',
         'expense-approvals.*' => 'module.spesen',
+
+        'articles.*' => 'module.lager',
+        'warehouses.*' => 'module.lager',
+        'inventory.*' => 'module.lager',
+        'manufacturing-orders.*' => 'module.lager',
+        'manufacturing-planning.*' => 'module.lager',
+        'work-centers.*' => 'module.lager',
+        'serials.*' => 'module.lager',
+        'purchase-orders.*' => 'module.lager',
 
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',

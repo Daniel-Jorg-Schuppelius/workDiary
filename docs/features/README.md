@@ -27,6 +27,7 @@ Definition-of-Done steht unter
 | P1 | [Zertifizierungsmanagement und integriertes Managementsystem](./046-zertifizierungsmanagement-integriertes-managementsystem.md) | In Progress | Schafft eine gemeinsame, zertifizierungsfreundliche Basis für ISO 27001, 27701, 9001, 22301, 45001, 37301 und 42001 |
 | P1 | [Backup, Restore und Disaster Recovery](./017-backup-restore-disaster-recovery.md) | In Progress | Schützt Nachweisdaten, Anhänge, Protokolle und Mandanten vor Datenverlust |
 | P1 | [Import, Migration und Onboarding](./020-import-migration-onboarding.md) | In Progress | Senkt Wechselhürden und bringt Kunden schneller produktiv ins System |
+| P1 | [Integrationen und offene API](./008-integrationen-api.md) | In Progress | Positioniert WorkDiary als operative Integrationsdrehscheibe mit klarer Datenführerschaft zwischen Faktura, Warenwirtschaft, Buchhaltung, Kalender und eigenen Tools |
 | P1 | [Gewerke- und Branchenprofile](./042-gewerke-branchenprofile.md) | In Progress | Erlaubt fachnahe Startkonfigurationen für Elektro, SHK, IT-Service, Bau, Facility und weitere Gewerke |
 | P1 | [Tarife, Lizenzportal und Abrechnung](./021-tarife-lizenzportal-abrechnung.md) | In Progress | Macht On-Premise- und SaaS-Vertrieb steuerbar |
 | P1 | [Einheitliche Bedienung und UX-Konventionen](./037-einheitliche-bedienung-ux-konventionen.md) | In Progress | Senkt Schulungsaufwand und hält Bedienmuster über alle Module konsistent |
@@ -40,6 +41,8 @@ Definition-of-Done steht unter
 | P1 | [Dokumentenmanagement](./031-dokumentenmanagement.md) | Done | Verwalten von Verträgen, Prüfberichten, Zertifikaten und Herstellerdokumenten mit Versionen |
 | P1 | [Klassifikationen, Tags und Datenqualität](./024-klassifikationen-tags-datenqualitaet.md) | In Progress | Sichert strukturierte Daten für belastbare Auswertungen statt Freitext-Chaos |
 | P1 | [Prozeduren, Arbeitsanweisungen und Checklisten](./026-prozeduren-arbeitsanweisungen-checklisten.md) | In Progress | Erzwingt und dokumentiert verbindliche Abläufe, Pflichtnachweise und Vier-Augen-Schritte |
+| P1 | [Fertigungs-, Montage- und Arbeitsaufträge](./047-fertigungs-montage-arbeitsauftraege.md) | Planned | Verbindet versionierte Arbeitspläne mit Sollmengen, Rezepturen, Materialbedarf, Wartezeiten und dokumentierten Fertigungsergebnissen |
+| P1 | [Lagerwirtschaft und Bestandsintegration](./048-lagerwirtschaft-bestandsintegration.md) | Planned | Führt Bestände bei Lexoffice-Nutzung lokal oder bindet eine externe Warenwirtschaft als führenden Bestandsprovider an |
 | P1 | [Offline-Sync und Konfliktlösung](./035-offline-sync-konfliktloesung.md) | Proposed | Verhindert Datenverlust und stille Überschreibungen bei mobiler Offline-Erfassung |
 | P1 | [Mobiler Field-Workflow](./004-mobiler-field-workflow.md) | In Progress | Macht den Nachweis für Außendienst, Service, Handwerk und Einsatzteams direkt am Ort der Arbeit erfassbar |
 | P1 | [Lohn, Zuschläge und DATEV/Lexware](./005-lohn-zuschlaege-datev-lexware.md) | In Progress | Macht Zeiten abrechnungs- und payrollfähig statt nur dokumentiert |
@@ -63,7 +66,6 @@ Definition-of-Done steht unter
 | P2 | [Qualität, Sicherheit und Arbeitsschutz](./013-qualitaet-sicherheit-arbeitsschutz.md) | In Progress | Verankert Unterweisungen, PSA, Prüfpflichten und Sicherheitsereignisse im Arbeitsnachweis |
 | P3 | [KI-Assistenz und intelligente Automatisierung](./025-ki-assistenz-automatisierung.md) | Proposed | Ermöglicht spätere Assistenzfunktionen ohne Verlust von Datenschutz und Datenhoheit |
 | P3 | [Produktmetriken und Betriebsmetriken](./036-produktmetriken-betriebsmetriken.md) | Done | Erlaubt sicheren Betrieb ohne verdecktes Tracking oder Verwertung von Kundendaten |
-| P3 | [Integrationen und offene API](./008-integrationen-api.md) | In Progress | Reduziert Wechselhürden und bindet Buchhaltung, Kalender und Kommunikation an |
 
 ## Statuswerte
 

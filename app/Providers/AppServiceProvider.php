@@ -101,6 +101,10 @@ class AppServiceProvider extends ServiceProvider {
             return new ClassificationManager($app->make(ClassificationResolver::class));
         });
 
+        // Externe Bestands-Dispatcher (MVP-072): Registry muss Singleton sein,
+        // damit Plugins beim Booten registrieren und der Outbox-Job auflösen kann.
+        $this->app->singleton(\App\Services\Inventory\ExternalInventoryDispatcherResolver::class);
+
         // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
         $this->app->singleton(ConditionEvaluator::class);
         $this->app->singleton(RuleEngine::class, function ($app): RuleEngine {
