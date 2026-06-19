@@ -6,7 +6,7 @@
 {{-- Platz (.with-help-pad im Layout) und bleibt voll bedienbar. --}}
 {{-- Mobil: Drawer mit Backdrop wie bisher. --}}
 <div id="help-drawer"
-     class="fixed inset-y-0 right-0 z-[60] hidden w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg transition-transform lg:top-[var(--app-header-h)] lg:bottom-[var(--app-footer-h)] lg:z-40 lg:w-[var(--help-sidebar-w)] lg:max-w-[var(--help-sidebar-w)] lg:shadow-sm"
+     class="wd-badge fixed inset-y-0 right-0 z-[60] hidden w-full max-w-md translate-x-full transform overflow-hidden border-l border-base-300 bg-base-100 shadow-lg transition-transform lg:top-[var(--app-header-h)] lg:bottom-[var(--app-footer-h)] lg:z-40 lg:w-[var(--help-sidebar-w)] lg:max-w-[var(--help-sidebar-w)] lg:shadow-xl"
      data-help-drawer
      role="complementary"
      tabindex="-1"
@@ -50,6 +50,24 @@
             </div>
         </footer>
     </div>
+</div>
+
+{{-- Minimierte Hilfe-Rail (Feature 039): ab lg IMMER sichtbare schmale Schiene
+     rechts. Klick (data-help-trigger ohne Topic → JS öffnet Seitenkontext-Hilfe)
+     klappt die volle Hilfe-Sidebar auf; deren Schließen-Button minimiert wieder
+     auf die Rail. Auf Mobil ausgeblendet — dort bleibt der Header-Button. --}}
+<div id="help-rail"
+     class="wd-badge fixed z-40 hidden flex-col items-center gap-2 py-3 shadow-xl lg:flex"
+     aria-label="{{ __('Hilfe') }}">
+    <button type="button"
+            data-help-trigger
+            class="btn btn-sm btn-ghost btn-square"
+            title="{{ __('Hilfe öffnen') }}"
+            aria-label="{{ __('Hilfe öffnen') }}"
+            aria-haspopup="dialog"
+            aria-controls="help-drawer">
+        <x-icon name="help" />
+    </button>
 </div>
 
 {{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. --}}

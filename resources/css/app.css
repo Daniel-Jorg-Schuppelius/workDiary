@@ -23,6 +23,137 @@
     display: none !important;
 }
 
+/* ------------------------------------------------------------------ */
+/* Schwebende „Badge"-Panels: gemeinsame Optik für die Sidebars (links  */
+/* + rechts) und für Content-Flächen, damit sich alle Panels gleichen.  */
+/* Verwendet über die <x-panel>-Komponente und direkt an den Sidebars.  */
+/*                                                                      */
+/*   .wd-badge   – dunkles Anthrazit-/Neutral-Panel. Mappt die base-     */
+/*                 Slots lokal auf die neutral-Palette, sodass alle      */
+/*                 bestehenden Regeln (Hover/Active/Borders, die         */
+/*                 base-100/base-content/base-300 nutzen) automatisch    */
+/*                 lesbar auf dunklem Grund bleiben — ohne jede Regel    */
+/*                 einzeln umzuschreiben.                                */
+/*   .wd-surface – helle Card-Fläche (Content-Panel) mit feiner Border   */
+/*                 + Schatten, „schwebt" über dem Body-Verlauf.          */
+/* Radius/Randabstand über --panel-radius / --sidebar-gap (Layout-Head). */
+/* ------------------------------------------------------------------ */
+.wd-badge {
+    /* Anthrazit-Grundton eine Nuance aufgehellt (10 % neutral-content). */
+    --wd-badge-bg: color-mix(
+        in oklab,
+        var(--color-neutral) 70%,
+        var(--color-neutral-content) 10%
+    );
+    --wd-badge-header-bg: color-mix(
+        in oklab,
+        var(--color-neutral) 40%,
+        var(--color-neutral-content) 10%
+    );
+    --wd-badge-footer-bg: color-mix(
+        in oklab,
+        var(--color-neutral) 50%,
+        var(--color-neutral-content) 10%
+    );
+    --color-base-100: var(--wd-badge-bg);
+    --color-base-200: color-mix(
+        in oklab,
+        var(--color-neutral-content) 12%,
+        var(--wd-badge-bg) 70%
+    );
+    --color-base-300: color-mix(
+        in oklab,
+        var(--color-neutral-content) 20%,
+        transparent
+    );
+    --color-base-content: var(--color-neutral-content);
+    background-color: var(--wd-badge-bg);
+    border-radius: var(--panel-radius, 1rem);
+}
+.wd-surface {
+    background-color: var(--color-base-100);
+    border: 1px solid
+        color-mix(in oklab, var(--color-base-300) 80%, transparent);
+    border-radius: var(--panel-radius, 1rem);
+}
+
+/* Flat Design: dekorative Schatten neutralisieren. Die Tailwind-`shadow-*`-
+   Utilities tragen ihren Schatten über `--tw-shadow` bei; Ring-/Focus-Schatten
+   liegen in eigenen Variablen. Wir setzen nur `--tw-shadow` auf transparent —
+   Schatten weg, Focus-Ringe bleiben erhalten. Ungelayert, damit es sicher greift. */
+.shadow-2xs,
+.shadow-xs,
+.shadow-sm,
+.shadow,
+.shadow-md,
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl {
+    --tw-shadow: 0 0 #0000;
+}
+/* Ausnahme: die Rahmen-Bars (App-Header oben, App-Footer unten) behalten ihren
+   Schatten, damit sie sich vom Content abheben. id-Selektor sticht die obige
+   Neutralisierung. */
+#app-header,
+#app-footer {
+    --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* ------------------------------------------------------------------ */
+/* App-Shell des Content-Bereichs.                                      */
+/* Bewusst UNGELAYERT (wie .wd-surface) — in manchen Setups greifen die  */
+/* Tailwind-`@layer utilities` (flex/flex-1) hier nicht durch, dann wäre */
+/* der Wrapper kein Flex-Container und `main` würde die Höhe nicht       */
+/* füllen. Diese Regeln greifen unabhängig davon.                        */
+/*                                                                      */
+/*   .wd-page-fill  – fester Höhenrahmen zwischen Header und Footer,     */
+/*                    Flex-Spalte; Inhalt scrollt INTERN (overflow:clip).*/
+/*   > main         – füllt die Resthöhe (flex:1) und scrollt intern.    */
+/* 100vh-Fallback VOR 100dvh: kann der Browser kein `dvh`, hält `vh`.    */
+/* ------------------------------------------------------------------ */
+.wd-page-fill {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--app-header-h) - var(--app-footer-h));
+    height: calc(100dvh - var(--app-header-h) - var(--app-footer-h));
+    overflow: clip;
+}
+.wd-page-fill > main {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    overflow: auto;
+    --wd-main-pad: 1rem;
+    padding: var(--wd-main-pad);
+    /* Rechts kein Padding: der Scroll-Container reicht bis zum Panel-Rand,
+       der Scrollbalken sitzt damit bündig am rechten main-Rand. */
+    padding-right: 0;
+}
+@media (min-width: 768px) {
+    .wd-page-fill > main {
+        --wd-main-pad: 1.5rem;
+    }
+}
+/* main hat rechts kein Padding, damit der Scrollbalken am Panel-Rand sitzt.
+   Damit der INHALT rechts trotzdem denselben Abstand wie links hat, bekommt die
+   innere .wd-page-shell (der Scroll-Container, der bis zum Rand reicht) ein
+   padding-right in Höhe des main-Paddings. Der Scrollbalken bleibt bündig. */
+/* Rechter Inhaltsabstand. main hat rechts kein Padding, damit ein Panel-Scroll-
+   balken bündig am Rand sitzt — den Abstand bringt das direkte Kind von main als
+   padding-right wieder rein. Gilt für JEDES Kind, also auch für Seiten mit
+   eigenem Inhalts-Root und INNEREM Scroll (z. B. .wd-week der Wochenansicht), wo
+   sonst der rechte Abstand fehlte. Ohne Scrollbalken ist es genau wie links. */
+.wd-page-fill > main > * {
+    padding-right: var(--wd-main-pad);
+}
+/* Nur wenn die page-shell SELBST der Scroll-Container ist und überläuft
+   (Scrollbalken sichtbar, Klasse via Skript): etwas weniger, der Balken trägt
+   die Breite bei. Innere Scrollbars (z. B. Wochenansicht) bleiben unberührt. */
+.wd-page-fill > main > .wd-page-shell.wd-has-scroll {
+    padding-right: calc(var(--wd-main-pad) - 0.5rem);
+}
+
 @theme {
     --font-sans:
         "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif,
@@ -115,15 +246,11 @@
          • ≥ lg  → feste Höhe = max(Boden, Viewport) + overflow-clip → interner
                    Scroll wie bisher; unterschreitet der Viewport den Boden,
                    greift der Boden und die SEITE scrollt (kein Zerquetschen). */
-    .wd-page-fill {
-        min-height: max(var(--wd-content-min-h, 42rem), calc(100dvh - var(--app-header-h)));
-    }
-    @media (min-width: 64rem) {
-        .wd-page-fill {
-            height: max(var(--wd-content-min-h, 42rem), calc(100dvh - var(--app-header-h)));
-            overflow: clip;
-        }
-    }
+    /* .wd-page-fill ist als UNGELAYERTE Regel oben in dieser Datei definiert
+       (zusammen mit der App-Shell). Grund: In manchen Setups greifen die
+       Tailwind-`@layer utilities` (z. B. `flex`, `flex-1`) an dieser Stelle
+       nicht zuverlässig durch, sodass der Wrapper kein Flex-Container wurde und
+       `main` die Höhe nicht füllte. Ungelayerte Regeln greifen immer. */
 
     /* Volle-Höhe-Tabellenkarten (scroll="flex"): Wenn die Tabelle leer ist
        (nur die Empty-State-Zeile <tr data-sort-ignore>), soll die Karte NICHT

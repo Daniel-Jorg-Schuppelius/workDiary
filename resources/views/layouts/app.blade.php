@@ -120,34 +120,52 @@
              ausgeliefert; kein externer Fallback nötig. --}}
 
         <style>
-            :root { --sidebar-w: min(18rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; }
+            :root { --sidebar-w: min(18rem, 85vw); --app-header-h: 3.5rem; --app-footer-h: 3rem; --sidebar-gap: 0.75rem; --panel-radius: 1rem; }
             @media (min-width: 1024px) { :root { --sidebar-w: 18rem; } }
-            body.sidebar-collapsed { --sidebar-w: 4rem; }
+            body.sidebar-collapsed { --sidebar-w: 4.5rem; }
             #app-sidebar { width: var(--sidebar-w); transition: width 200ms ease; }
             @media (min-width: 1024px) {
-                .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 1rem) !important; transition: padding-left 200ms ease; }
-            }
-            @media (min-width: 1280px) {
-                .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 2rem) !important; }
-            }
-            @media (min-width: 1536px) {
-                .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + 3rem) !important; }
+                .with-sidebar-pad { padding-left: calc(var(--sidebar-w) + var(--sidebar-gap) * 2) !important; transition: padding-left 200ms ease; }
             }
             /* Kontext-Hilfe (Feature 039): rechte, nicht-modale Desktop-Sidebar.
                Gleiches Muster wie .with-sidebar-pad links — solange body.help-sidebar-open
                gesetzt ist, bekommt der Content-Wrapper rechts Platz und die Seite
                bleibt voll bedienbar (kein Backdrop ab lg). */
-            :root { --help-sidebar-w: 28rem; }
+            :root { --help-sidebar-w: 28rem; --help-rail-w: 3.25rem; }
             .with-help-pad { transition: padding-right 200ms ease; }
+            /* Ab lg ist die Hilfe IMMER präsent: standardmäßig als schmale Rail
+               (--help-rail-w), aufgeklappt als volle Sidebar (--help-sidebar-w).
+               Der Content reserviert rechts entsprechend Platz. */
             @media (min-width: 1024px) {
-                body.help-sidebar-open .with-help-pad { padding-right: calc(var(--help-sidebar-w) + 1rem) !important; }
+                .with-help-pad { padding-right: calc(var(--help-rail-w) + var(--sidebar-gap) * 2) !important; }
+                body.help-sidebar-open .with-help-pad { padding-right: calc(var(--help-sidebar-w) + var(--sidebar-gap) * 2) !important; }
             }
-            @media (min-width: 1280px) {
-                body.help-sidebar-open .with-help-pad { padding-right: calc(var(--help-sidebar-w) + 2rem) !important; }
+            /* Help-Sidebar als schwebendes Badge: mobil bleibt sie randbündig
+               (Vollbild-Drawer), ab lg löst sie sich mit --sidebar-gap vom Rand
+               und bekommt dieselbe Rundung wie die linke Sidebar. */
+            #help-drawer { border-radius: 0; }
+            @media (min-width: 1024px) {
+                #help-drawer {
+                    top: calc(var(--app-header-h) + var(--sidebar-gap));
+                    bottom: calc(var(--app-footer-h) + var(--sidebar-gap));
+                    right: var(--sidebar-gap);
+                    border-radius: var(--panel-radius);
+                    border-left: 0;
+                }
+                /* Minimierte Hilfe-Rail: schwebt wie die volle Sidebar, ist immer
+                   sichtbar — solange die volle Hilfe zu ist. */
+                #help-rail {
+                    top: calc(var(--app-header-h) + var(--sidebar-gap));
+                    bottom: calc(var(--app-footer-h) + var(--sidebar-gap));
+                    right: var(--sidebar-gap);
+                    width: var(--help-rail-w);
+                }
+                body.help-sidebar-open #help-rail { display: none; }
             }
-            @media (min-width: 1536px) {
-                body.help-sidebar-open .with-help-pad { padding-right: calc(var(--help-sidebar-w) + 3rem) !important; }
-            }
+            /* Rail-Button: btn-ghost erbt sonst die dunkle body-base-content-Farbe
+               (Corporate) → unsichtbares Icon auf dunklem Grund. Helle Sidebar-
+               Textfarbe explizit setzen (ohne --btn-color, sonst weißer Fond). */
+            #help-rail [data-help-trigger] { color: var(--color-base-content); }
             /* 3-stufiger Header über CSS Container Queries statt Viewport-
                Breakpoints. Vorteil: das Layout reagiert auf den tatsächlich
                verfügbaren Header-Platz (also nach Abzug der Sidebar) und nicht
@@ -316,11 +334,44 @@
             body.sidebar-collapsed #app-sidebar .sidebar-items > div {
                 gap: 0.5rem;
             }
+            /* Im Icon-Streifen den Scrollbalken ausblenden (Inhalt scrollt
+               weiter) — so sitzen die Symbole exakt mittig (kein Versatz durch
+               die Scrollbar) und die Tiles dürfen die volle Rail-Breite nutzen.
+               Weniger seitliches Padding → breitere Icon-Buttons. */
+            body.sidebar-collapsed #app-sidebar .sidebar-items {
+                scrollbar-width: none;
+                padding-left: 0.375rem;
+                padding-right: 0.375rem;
+            }
+            body.sidebar-collapsed #app-sidebar .sidebar-items::-webkit-scrollbar {
+                width: 0;
+                height: 0;
+            }
+            body.sidebar-collapsed #app-sidebar .menu li > a,
+            body.sidebar-collapsed #app-sidebar .menu li > .menu-link {
+                justify-content: center;
+                text-align: center;
+            }
+            /* „Einklappen"-Footer dezent sichtbar lassen (erkennbar), beim Hover
+               bzw. Tastatur-Fokus voll einblenden. Platz bleibt reserviert. */
+            #app-sidebar .sidebar-footer {
+                opacity: 0.7;
+                transition: opacity .15s ease;
+            }
+            #app-sidebar:hover .sidebar-footer,
+            #app-sidebar:focus-within .sidebar-footer {
+                opacity: 1;
+            }
             #app-sidebar .material-symbols-outlined { font-size: 1.25rem; line-height: 1; flex-shrink: 0; }
-            /* Sidebar nutzt `base-100` als Surface — bleibt damit weiß im hellen
-               Corporate-Theme und im dim-Theme die übliche Card-Fläche. Abgrenzung
-               zum Body kommt über Border + Schatten. */
-            #app-sidebar { background-color: var(--color-base-100); }
+            /* Surface (Anthrazit) + Rundung kommen aus der gemeinsamen .wd-badge-
+               Klasse (resources/css/app.css), damit sich Sidebars und Content-
+               Panels gleichen. Hier nur noch die schwebende Geometrie: Abstand
+               zu allen Rändern, damit das „Badge" nicht am Fensterrand klebt. */
+            #app-sidebar {
+                top: calc(var(--app-header-h) + var(--sidebar-gap));
+                bottom: calc(var(--app-footer-h) + var(--sidebar-gap));
+                left: var(--sidebar-gap);
+            }
             #app-sidebar [data-sidebar-section] { color: color-mix(in oklab, var(--color-base-content) 55%, transparent); }
 
             /* Menü-Items: Farben kommen ausschließlich aus den DaisyUI-Theme-Tokens.
@@ -359,6 +410,13 @@
             }
             /* Sidebar-CTA „Neuer Eintrag“ als primäre Action erhält den vollen Theme-Primary. */
             #app-sidebar .sidebar-cta { color: var(--color-primary-content); }
+            /* „Neu …"-Dropdown: eigenständige, klar abgesetzte (hellere) Fläche —
+               sonst hat das Menü dieselbe Farbe wie die dunkle Sidebar dahinter
+               und wirkt dadurch „transparent". base-200 + Border + Schatten heben
+               es als schwebendes Panel ab. */
+            #app-sidebar .sidebar-cta-menu {
+                background-color: var(--color-base-200);
+            }
 
             /* Collapsible Section-Header (<details>): optisch wie eine Section-Überschrift,
                aber klickbar mit drehendem Chevron. Im aktiven Zustand (offen oder mit
@@ -438,7 +496,8 @@
             #app-sidebar .sidebar-shell {
                 display: flex;
                 flex-direction: column;
-                height: calc(100dvh - var(--app-header-h) - var(--app-footer-h));
+                height: calc(100vh - var(--app-header-h) - var(--app-footer-h) - (var(--sidebar-gap) * 2));
+                height: calc(100dvh - var(--app-header-h) - var(--app-footer-h) - (var(--sidebar-gap) * 2));
             }
             #app-sidebar .sidebar-items {
                 flex: 1 1 auto;
@@ -448,16 +507,19 @@
             }
             #app-sidebar .sidebar-header {
                 flex: 0 0 auto;
-                border-bottom: 1px solid var(--color-base-300);
-                background-color: var(--color-base-100);
+                background-color: var(--wd-badge-header-bg);
+                border-top-left-radius: var(--panel-radius);
+                border-top-right-radius: var(--panel-radius);
             }
             #app-sidebar .sidebar-footer {
                 flex: 0 0 auto;
                 border-top: 1px solid var(--color-base-300);
-                background-color: var(--color-base-100);
+                background-color: var(--wd-badge-footer-bg);
+                border-bottom-left-radius: var(--panel-radius);
+                border-bottom-right-radius: var(--panel-radius);
             }
-            /* Collapsed-Mode: Header-Padding minimieren, Dropdown-Trigger zentriert. */
-            body.sidebar-collapsed #app-sidebar .sidebar-header { padding-left: .25rem; padding-right: .25rem; }
+            /* Collapsed-Mode: Header behält denselben seitlichen Randabstand wie der
+               Footer (px-3), damit der „Neu"-Button nicht am Panel-Rand klebt. */
             body.sidebar-collapsed #app-sidebar .sidebar-cta-menu { min-width: 16rem; }
                 /* Material Symbols Outlined ist eine Single-Color-Variable-Font und folgt automatisch
                     currentColor — sie funktioniert in jedem DaisyUI-Theme, auf jedem Hintergrund und in
@@ -1491,12 +1553,13 @@
                         @endisset
 
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
-                            {{-- Kontext-Hilfe (Feature 039): Button ist IMMER sichtbar
-                                 (konsistente Stelle laut Bedienkonzept). Mit Kontext-Topic
-                                 öffnet er die Seitenhilfe, ohne öffnet er das
-                                 Fallback-Panel mit Suche (JS: Trigger ohne data-help-topic). --}}
+                            {{-- Kontext-Hilfe (Feature 039): Nur auf Mobil/Tablet (<lg)
+                                 sichtbar. Ab lg übernimmt die permanente, minimierte
+                                 Hilfe-Rail rechts den Zugang, daher lg:hidden. Mit
+                                 Kontext-Topic öffnet er die Seitenhilfe, ohne öffnet er
+                                 das Fallback-Panel mit Suche (Trigger ohne data-help-topic). --}}
                             <button type="button"
-                                    class="btn btn-sm btn-ghost btn-square"
+                                    class="btn btn-sm btn-ghost btn-square lg:hidden"
                                     data-help-trigger
                                     @if (! empty($_helpContextTopic)) data-help-topic="{{ $_helpContextTopic }}" @endif
                                     title="{{ ! empty($_helpContextTopic) ? __('Hilfe zu dieser Seite') : __('Hilfe') }}"
@@ -1827,8 +1890,7 @@
         @unless ($isLegacyMode)
         {{-- Sidebar: persistent ab lg, sonst Drawer --}}
         <aside id="app-sidebar"
-               class="fixed left-0 z-40 -translate-x-full transform border-r border-base-300 shadow-sm transition-transform duration-200 lg:translate-x-0"
-               style="top: var(--app-header-h); bottom: var(--app-footer-h);"
+               class="wd-badge fixed z-40 -translate-x-full transform shadow-xl transition-transform duration-200 lg:translate-x-0"
                aria-label="{{ __('Hauptnavigation') }}"
                data-sidebar>
             <div class="sidebar-shell">
@@ -1884,7 +1946,7 @@
                         ->all();
                 @endphp
 
-                <div class="sidebar-header px-2 py-3">
+                <div class="sidebar-header px-3 py-4">
                     <div class="dropdown dropdown-bottom dropdown-start w-full">
                         <div tabindex="0" role="button"
                              class="sidebar-cta btn btn-sm btn-primary w-full gap-2"
@@ -1991,10 +2053,10 @@
                     </div>
                 </div>
 
-                <div class="sidebar-footer px-2 py-2">
+                <div class="sidebar-footer px-3 py-4">
                     <button type="button"
                             id="app-sidebar-collapse"
-                            class="btn btn-sm btn-ghost w-full justify-center gap-2"
+                            class="btn btn-sm btn-primary w-full justify-center gap-2"
                             aria-label="{{ __('Sidebar ein-/ausklappen') }}"
                             title="{{ __('Sidebar ein-/ausklappen') }}">
                         <x-icon name="chevron_left" data-sidebar-collapse-icon />
@@ -2026,6 +2088,39 @@
                     window.addEventListener('resize', apply);
                 }
                 window.addEventListener('load', apply);
+            })();
+        </script>
+        <script @cspNonce>
+            // Setzt `.wd-has-scroll` auf den Content-Scroll-Container, sobald er
+            // überläuft (Scrollbalken sichtbar). CSS reduziert dann das rechte
+            // Padding leicht, damit der Abstand mit Balken nicht größer wirkt als
+            // links. Ohne Überlauf bleibt der Abstand symmetrisch.
+            (function () {
+                function update(el) {
+                    if (el) el.classList.toggle('wd-has-scroll', el.scrollHeight > el.clientHeight + 1);
+                }
+                function init() {
+                    var els = document.querySelectorAll('.wd-page-fill > main > .wd-page-shell');
+                    els.forEach(function (el) {
+                        update(el);
+                        if (typeof ResizeObserver === 'function') {
+                            // Reagiert auf Viewport-/Layout-Änderungen UND auf
+                            // wachsenden/schrumpfenden Inhalt (Kinder beobachten).
+                            var ro = new ResizeObserver(function () { update(el); });
+                            ro.observe(el);
+                            Array.prototype.forEach.call(el.children, function (c) { ro.observe(c); });
+                        }
+                    });
+                }
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', init);
+                } else {
+                    init();
+                }
+                window.addEventListener('load', init);
+                window.addEventListener('resize', function () {
+                    document.querySelectorAll('.wd-page-fill > main > .wd-page-shell').forEach(update);
+                });
             })();
         </script>
         <script @cspNonce>
@@ -2098,7 +2193,7 @@
         @auth
             <x-demo-banner :organization="$_activeOrg" />
         @endauth
-        <div class="mx-auto flex @yield('wrapper-height-class', 'min-h-[calc(100dvh_-_var(--app-header-h))]') w-full {{ $_wrapperMaxW }} flex-col px-4 pt-6 pb-20 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
+        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-4 pt-[var(--sidebar-gap)] pb-[calc(var(--app-footer-h)_+_var(--sidebar-gap))] lg:pb-[var(--sidebar-gap)] xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
@@ -2162,12 +2257,18 @@
             @endunless
             @endauth
 
-            <main class="flex-1 @yield('main-class', '')">
+            {{-- Seitenkopf: Beschreibung + Aktionen der Seite. <x-page-shell> hebt
+                 seine Toolbar per @push('page-header') hierher — als eigenes,
+                 stehendes Panel ÜBER dem main. Ohne Toolbar wird nichts gerendert
+                 (kein Leerraum); den Abstand zum main bringt der gepushte Block mit. --}}
+            @stack('page-header')
+
+            <main class="wd-surface @yield('main-class', '')">
                 @yield('content')
             </main>
         </div>
 
-        <footer class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
+        <footer id="app-footer" class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
             <div class="mx-auto flex w-full {{ $_wrapperMaxW }} items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
                 <x-footer-copyright />
                 @php($buildHash = \Illuminate\Support\Facades\Cache::remember('build.hash', 3600, fn () => app(\App\Services\Isms\SbomGenerator::class)->resolveGitHash()))

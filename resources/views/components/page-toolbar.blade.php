@@ -20,7 +20,7 @@
     DaisyUI-Theme korrekt.
 --}}
 <div {{ $attributes->class([
-    'flex min-h-16 flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs',
+    'flex min-h-16 flex-wrap items-center justify-between gap-3 rounded-[var(--panel-radius)] border border-base-300 bg-base-100 p-4 shadow-xs',
 ]) }}>
     <div class="min-w-0 flex flex-col gap-0.5">
         @if ($title || $badge)
