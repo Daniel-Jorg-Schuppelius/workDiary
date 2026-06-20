@@ -9,11 +9,10 @@
 
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('An externe Mitarbeiter zu zahlende Beträge im gewählten Zeitraum (:from – :to).', ['from' => $from->fdate(), 'to' => $to->fdate()])">
-            <x-slot:actions>
-                <x-header-date-range />
-            </x-slot:actions>
-        </x-page-toolbar>
+        {{-- Kein eigenes Zeitraum-Element hier: der Header blendet den zentrierten
+             Zeitraum automatisch ein (wie bei allen anderen Reports). Ein zweites
+             hier wäre doppelt. --}}
+        <x-page-toolbar :subtitle="__('An externe Mitarbeiter zu zahlende Beträge im gewählten Zeitraum (:from – :to).', ['from' => $from->fdate(), 'to' => $to->fdate()])" />
     </x-slot:toolbar>
 
     <x-card>
