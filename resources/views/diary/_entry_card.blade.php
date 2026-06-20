@@ -5,8 +5,8 @@
       - $filters : array (für Such-Highlight, optional)
 --}}
 @php($needle = trim((string) ($filters['q'] ?? '')))
-<article class="grid gap-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs transition hover:border-primary/30 md:grid-cols-[1fr_auto]">
-    <div>
+<article class="grid gap-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs transition hover:border-primary/30 md:grid-cols-[minmax(0,1fr)_auto]">
+    <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-3 mb-3">
             <span @class([
                 'badge badge-sm',
@@ -39,7 +39,7 @@
             @endif
             <span class="text-sm text-base-content/70">{{ $entry->user?->name ?? '—' }}</span>
         </div>
-        <p class="text-base leading-relaxed text-base-content">
+        <p class="text-base leading-relaxed text-base-content wrap-break-word">
             @php($snippet = \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 240))
             @if ($needle !== '')
                 {!! preg_replace('/(' . preg_quote($needle, '/') . ')/i', '<mark class="bg-warning/40 px-0.5 rounded">$1</mark>', e($snippet)) !!}

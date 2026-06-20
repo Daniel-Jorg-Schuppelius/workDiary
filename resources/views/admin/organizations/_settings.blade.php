@@ -19,7 +19,7 @@
 <x-form-group :legend="__('Erweiterte Einstellungen')" icon="settings" tone="ghost" cols="1"
               :description="__('settings.hint')"
               x-data="tabs('pagination')">
-    <div role="tablist" class="tabs tabs-lifted mb-2">
+    <div role="tablist" class="tabs tabs-box mb-2">
         @foreach ($tabs as $key => $meta)
             <a role="tab" class="tab" :class="tabClass('{{ $key }}')"
                @click.prevent="setTab('{{ $key }}')" href="#">{{ $meta['label'] }}</a>

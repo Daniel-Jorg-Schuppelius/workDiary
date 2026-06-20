@@ -101,7 +101,7 @@
         </x-filter-bar>
 
         {{-- Tabs --}}
-        <div role="tablist" class="tabs tabs-box self-start">
+        <div role="tablist" class="tabs tabs-box w-full">
             @foreach ($tabs as $key => $info)
                 <a role="tab"
                    href="{{ route('archive.index', array_merge($tabFilters, ['tab' => $key])) }}"

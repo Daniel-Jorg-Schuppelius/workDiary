@@ -14,7 +14,7 @@
         @endcan
     </x-slot:actions>
 
-    <div role="tablist" class="tabs tabs-box self-start">
+    <div role="tablist" class="tabs tabs-box w-full">
         <a role="tab" href="{{ route('manufacturing-orders.index') }}" class="tab {{ $status === 'all' ? 'tab-active' : '' }}">{{ __('Alle') }}</a>
         @foreach ($statuses as $st)
             <a role="tab" href="{{ route('manufacturing-orders.index', ['status' => $st->value]) }}"

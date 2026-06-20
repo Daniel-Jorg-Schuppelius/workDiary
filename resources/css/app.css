@@ -175,9 +175,9 @@
 /* ------------------------------------------------------------------ */
 @media (max-width: 767px) {
     /* Auf Handys schmaler Außenabstand des Contents für maximale nutzbare
-       Breite (Wrapper px-2 + dieses Padding ≈ 1rem Rand pro Seite). */
+       Breite (Wrapper px-2 + dieses Padding ≈ 0.75rem Rand pro Seite). */
     .wd-page-fill > main {
-        --wd-main-pad: 0.5rem;
+        --wd-main-pad: 0.25rem;
     }
     .wd-page-fill:not(:has(> main.flex-col)) {
         height: auto;
@@ -240,6 +240,24 @@
         height: 60dvh;
         flex: none;
     }
+}
+
+/* ------------------------------------------------------------------ */
+/* Tab-Leisten (DaisyUI .tabs.tabs-box): App-weit robust gegen Überlauf. */
+/* Standardmäßig bricht DaisyUI Tabs um (flex-wrap) — bei vielen/langen   */
+/* Reitern entsteht so eine mehrzeilige Box, oder eine auf Inhaltsbreite  */
+/* (self-start) wachsende Box wird vom Seiten-overflow ABGESCHNITTEN      */
+/* (z. B. Bestellungen-Status-Tabs). Lösung zentral: einzeilig, auf die   */
+/* Container-Breite begrenzt und bei Überlauf horizontal scrollbar — egal */
+/* welche Layout-Utility (self-start / w-full / …) die View setzt.        */
+/* Ungelayert, damit es DaisyUIs gelayertes flex-wrap zuverlässig sticht. */
+/* ------------------------------------------------------------------ */
+.tabs.tabs-box {
+    max-width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    /* dezenter Touch-Scroll ohne sichtbare Leiste, solange nichts überläuft */
+    scrollbar-width: thin;
 }
 
 @theme {

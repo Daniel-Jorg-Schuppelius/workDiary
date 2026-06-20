@@ -13,7 +13,7 @@
                     :href="route('purchase-orders.create')" show-label>{{ __('procurement.action.create') }}</x-icon-btn>
     </x-slot:actions>
 
-    <div role="tablist" class="tabs tabs-box self-start">
+    <div role="tablist" class="tabs tabs-box w-full">
         <a role="tab" href="{{ route('purchase-orders.index') }}" class="tab {{ $status === 'all' ? 'tab-active' : '' }}">{{ __('Alle') }}</a>
         @foreach ($statuses as $st)
             <a role="tab" href="{{ route('purchase-orders.index', ['status' => $st->value]) }}"

@@ -83,7 +83,7 @@
         {{-- Tabs --}}
         <div x-data="persistedTabs('wd-dash-tab', 'overview')"
              class="space-y-4">
-            <div role="tablist" class="tabs tabs-box flex-nowrap self-start overflow-x-auto">
+            <div role="tablist" class="tabs tabs-box flex-nowrap w-full overflow-x-auto">
                 <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="tabClass('overview')" @click="setTab('overview')">
                     <x-icon name="dashboard" /> <span>{{ __('Überblick') }}</span>
                 </button>

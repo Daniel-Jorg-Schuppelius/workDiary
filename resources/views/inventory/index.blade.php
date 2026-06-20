@@ -25,7 +25,7 @@
         <x-empty-state framed :title="__('inventory.empty.warehouses')" />
     @else
         {{-- Lagerort-Auswahl --}}
-        <div role="tablist" class="tabs tabs-box self-start">
+        <div role="tablist" class="tabs tabs-box w-full">
             @foreach ($warehouses as $wh)
                 <a role="tab" href="{{ route('inventory.stock', ['warehouse' => $wh->sqid]) }}"
                    class="tab {{ $selected && $selected->id === $wh->id ? 'tab-active' : '' }}">{{ $wh->name }}</a>

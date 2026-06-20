@@ -40,7 +40,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div role="tablist" class="tabs tabs-box self-start">
+    <div role="tablist" class="tabs tabs-box w-full">
         <a role="tab" href="{{ route('foreign-customers.index', array_filter(['status' => 'active', 'q' => $search, 'customer' => $customerParam])) }}"
            class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('Aktiv') }}</a>
         <a role="tab" href="{{ route('foreign-customers.index', array_filter(['status' => 'archived', 'q' => $search, 'customer' => $customerParam])) }}"

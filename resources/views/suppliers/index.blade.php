@@ -35,7 +35,7 @@
     </x-filter-bar>
 
     {{-- Tabs: Status --}}
-    <div role="tablist" class="tabs tabs-box self-start">
+    <div role="tablist" class="tabs tabs-box w-full">
         <a role="tab" href="{{ route('suppliers.index', ['status' => 'active', 'q' => $search]) }}"
            class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('Aktiv') }}</a>
         <a role="tab" href="{{ route('suppliers.index', ['status' => 'archived', 'q' => $search]) }}"

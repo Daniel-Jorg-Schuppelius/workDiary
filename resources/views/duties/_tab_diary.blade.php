@@ -1,5 +1,5 @@
 {{-- Aufträge (Diary): Karten-Ansicht --}}
-<div class="min-h-0 flex-1 overflow-y-auto space-y-3 pr-1">
+<div class="min-h-0 flex-1 overflow-y-auto space-y-3">
     @forelse ($entries as $entry)
         @include('diary._entry_card', ['entry' => $entry, 'filters' => $filters])
     @empty

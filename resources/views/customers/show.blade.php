@@ -237,7 +237,7 @@
                 <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                     <x-icon name="analytics" class="text-base-content/60" /> {{ __('Auswertung') }}
                 </h2>
-                <div role="tablist" class="tabs tabs-boxed tabs-sm">
+                <div role="tablist" class="tabs tabs-box tabs-sm">
                     <button role="tab" class="tab" :class="tabClass('month')" @click="setTab('month')">{{ __('Aktueller Monat') }}</button>
                     <button role="tab" class="tab" :class="tabClass('total')" @click="setTab('total')">{{ __('Gesamt') }}</button>
                 </div>

@@ -31,7 +31,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div role="tablist" class="tabs tabs-box self-start">
+    <div role="tablist" class="tabs tabs-box w-full">
         <a role="tab" href="{{ route('articles.index', ['status' => 'active', 'q' => $search]) }}"
            class="tab {{ $status === 'active' ? 'tab-active' : '' }}">{{ __('article.status.active') }}</a>
         <a role="tab" href="{{ route('articles.index', ['status' => 'draft', 'q' => $search]) }}"

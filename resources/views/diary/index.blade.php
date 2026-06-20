@@ -38,7 +38,7 @@
     </div>
 
     {{-- Eintrags-Liste --}}
-    <div class="min-h-0 flex-1 overflow-y-auto pr-1 space-y-3">
+    <div class="min-h-0 flex-1 overflow-y-auto space-y-3">
         @forelse ($entries as $entry)
             @include('diary._entry_card', ['entry' => $entry, 'filters' => $filters])
         @empty
