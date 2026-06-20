@@ -2,7 +2,12 @@
     $isDialog = $isDialog ?? true;
     /** @var \App\Models\User $user */
     $prefs = $user->preferences();
-    $themes = (array) config('personalization.themes', []);
+    $themeService = app(\App\Services\ThemeService::class);
+    $builtinThemes = $themeService->builtinThemes();
+    $lightThemes = array_values(array_filter($builtinThemes, fn($t) => $t['scheme'] === 'light'));
+    $darkThemes = array_values(array_filter($builtinThemes, fn($t) => $t['scheme'] === 'dark'));
+    $customThemes = array_map(fn($d) => $d->toPickerEntry(), $themeService->customDefinitions());
+    $currentTheme = (string) (old('preferences.theme', data_get($user->preferences, 'theme')) ?? '');
     $startpages = (array) config('personalization.startpages', []);
     $avatarMaxKb = (int) config('branding.limits.avatar_kb', 1024);
     $currentAvatar = $user->avatar();
@@ -83,10 +88,25 @@
         <div class="fieldset">
             <label class="fieldset-label">{{ __('Theme') }}</label>
             <select name="preferences[theme]" class="select select-bordered w-full">
-                <option value="">{{ __('Standard') }}</option>
-                @foreach ($themes as $theme)
-                    <option value="{{ $theme }}" @selected(old('preferences.theme', $prefs['theme'] ?? '') === $theme)>{{ ucfirst($theme) }}</option>
-                @endforeach
+                <option value="">{{ __('Standard (Organisation)') }}</option>
+                <option value="auto" @selected($currentTheme === 'auto')>{{ __('Automatisch – folgt System (hell/dunkel)') }}</option>
+                <optgroup label="{{ __('Hell') }}">
+                    @foreach ($lightThemes as $t)
+                        <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }}</option>
+                    @endforeach
+                </optgroup>
+                <optgroup label="{{ __('Dunkel') }}">
+                    @foreach ($darkThemes as $t)
+                        <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }}</option>
+                    @endforeach
+                </optgroup>
+                @if ($customThemes !== [])
+                    <optgroup label="{{ __('Eigene Themes') }}">
+                        @foreach ($customThemes as $t)
+                            <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }} ({{ $t['scheme'] === 'dark' ? __('Dunkel') : __('Hell') }})</option>
+                        @endforeach
+                    </optgroup>
+                @endif
             </select>
             @error('preferences.theme')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>

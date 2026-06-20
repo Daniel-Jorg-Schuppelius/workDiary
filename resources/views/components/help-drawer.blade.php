@@ -20,7 +20,9 @@
              Inhaltsbereich darunter. --}}
         <header class="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-base-300 px-4">
             <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Hilfe') }}</p>
-            <button type="button" class="btn btn-ghost btn-sm btn-square" data-help-close aria-label="{{ __('Schließen') }}">
+            {{-- Rot, damit der Schließen-Button sich klar abhebt (analog zur
+                 roten Schließen-Optik der Dialoge). --}}
+            <button type="button" class="btn btn-sm btn-square btn-outline btn-error" data-help-close aria-label="{{ __('Schließen') }}">
                 <x-icon name="close" />
             </button>
         </header>
@@ -70,9 +72,12 @@
     </button>
 </div>
 
-{{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. --}}
+{{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. Bezieht sich –
+     wie der Sidebar-Menü-Backdrop – nur auf den CONTENT-Bereich (zwischen
+     Header und Footer), damit Header/Footer frei bleiben. --}}
 <div id="help-drawer-backdrop"
-     class="fixed inset-0 z-[55] hidden bg-base-300/40 backdrop-blur-sm lg:hidden!"
+     class="fixed inset-x-0 z-[55] hidden bg-base-300/40 backdrop-blur-[2px] lg:hidden!"
+     style="top: var(--app-header-h); bottom: var(--app-footer-h);"
      data-help-backdrop></div>
 
 {{-- Fallback-Panel (Feature 039): erscheint, wenn die Seite keinen --}}

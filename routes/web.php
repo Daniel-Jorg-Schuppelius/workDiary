@@ -164,6 +164,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
+    // Schnelle Theme-Persistenz für den Header-Umschalter (ohne ganzes Profil).
+    Route::put('account/theme', [ProfileController::class, 'updateTheme'])->name('account.theme.update');
 
     // Notification-Center (MVP-018): eigene Benachrichtigungen, keine
     // Permission nötig — Controller arbeitet ausschließlich auf auth()->user().
@@ -1473,6 +1475,18 @@ Route::middleware('auth')->group(function () {
         // Kontakt, PDF-Konfig). Logo-Uploads laufen über AttachmentController.
         Route::get('admin/branding', [BrandingController::class, 'edit'])->name('admin.branding.edit');
         Route::put('admin/branding', [BrandingController::class, 'update'])->name('admin.branding.update');
+
+        // Theme-Editor (eigene Themes erstellen). Erstellen/Bearbeiten ist über
+        // EnforcePlanModules (config/plans.php: admin.themes.* = module.theming)
+        // auf Pro+ gegated; die Anwendung gesetzter Themes läuft im Layout und
+        // bleibt davon unberührt.
+        Route::get('admin/themes', [\App\Http\Controllers\Admin\ThemeController::class, 'index'])->name('admin.themes.index');
+        Route::get('admin/themes/create', [\App\Http\Controllers\Admin\ThemeController::class, 'create'])->name('admin.themes.create');
+        Route::post('admin/themes', [\App\Http\Controllers\Admin\ThemeController::class, 'store'])->name('admin.themes.store');
+        Route::get('admin/themes/{key}/edit', [\App\Http\Controllers\Admin\ThemeController::class, 'edit'])->name('admin.themes.edit');
+        Route::put('admin/themes/{key}', [\App\Http\Controllers\Admin\ThemeController::class, 'update'])->name('admin.themes.update');
+        Route::delete('admin/themes/{key}', [\App\Http\Controllers\Admin\ThemeController::class, 'destroy'])->name('admin.themes.destroy');
+        Route::put('admin/themes-default', [\App\Http\Controllers\Admin\ThemeController::class, 'setDefault'])->name('admin.themes.default');
 
         // Konfigurierbare Nummernkreise (Tickets, Assets, Kunden, Rechnungen, Gutschriften).
         Route::get('admin/number-formats', [\App\Http\Controllers\Admin\NumberFormatController::class, 'index'])

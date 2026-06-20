@@ -38,6 +38,7 @@ return [
             'module.documents',
             'module.knowledge',
             'module.forms',
+            'module.theming',
         ],
         'enterprise' => [
             'module.kanban',
@@ -52,6 +53,7 @@ return [
             'module.documents',
             'module.knowledge',
             'module.forms',
+            'module.theming',
             'module.lohn',
             'module.compliance',
             'module.isms',
@@ -75,6 +77,7 @@ return [
         'module.documents' => 'Dokumente',
         'module.knowledge' => 'Wissensbasis',
         'module.forms' => 'Formulare',
+        'module.theming' => 'Eigene Themes',
         'module.lohn' => 'Lohn & SV',
         'module.compliance' => 'Hinweisgebersystem',
         'module.isms' => 'ISMS',
@@ -141,6 +144,11 @@ return [
         'form-templates.*' => 'module.forms',
         'form-submissions.*' => 'module.forms',
 
+        // Theme-Editor (Custom-Themes erstellen). Nur das BEARBEITEN ist
+        // gegatet — die Anwendung bereits gesetzter Themes läuft über das
+        // Layout (ThemeService) und bleibt auch nach einem Downgrade aktiv.
+        'admin.themes.*' => 'module.theming',
+
         'payroll.*' => 'module.lohn',
         'admin.surcharge-rules.*' => 'module.lohn', // Zuschlagsregeln (Feature 005)
 
@@ -188,6 +196,7 @@ return [
         'module.documents' => false,        // Vertraege/Zertifikate/Nachweise → Aufbewahrungspflichten (GoBD/§147 AO)
         'module.knowledge' => true,         // org-eigenes Betriebswissen, keine gesetzliche Aufbewahrung
         'module.forms' => false,            // ausgefuellte Formulare koennen Nachweise sein (Pruef-/Abnahmeprotokolle)
+        'module.theming' => false,          // rein kosmetische Org-Settings → nie purgen; nach Downgrade bleibt das Theme aktiv, nur der Editor ist gesperrt
         'module.lohn' => false,             // Lohn/SV → GoBD / §147 AO / SGB IV (6 J.)
         'module.compliance' => false,       // Hinweisgeber → HinSchG (3 J.)
         'module.isms' => false,             // Risikoregister/SoA → Compliance-Nachweise (Auditfähigkeit)

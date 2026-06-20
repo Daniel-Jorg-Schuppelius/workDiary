@@ -58,10 +58,10 @@
      data-txt-scheduled="{{ __('Nachricht geplant.') }}"
      data-txt-today="{{ __('Heute') }}"
      data-txt-yesterday="{{ __('Gestern') }}"
-     class="flex min-h-0 flex-1 gap-3">
+     class="flex min-h-0 flex-1 gap-2 lg:gap-3">
 
     {{-- Sidebar: Kanäle (mobil: Vollbreite; bei offenem Kanal ausgeblendet) --}}
-    <aside class="{{ $activeChannel ? 'hidden lg:flex' : 'flex' }} w-full min-h-0 shrink-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs lg:w-64">
+    <aside class="{{ $activeChannel ? 'hidden lg:flex' : 'flex' }} w-full min-h-0 shrink-0 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs lg:w-64">
         <div class="flex h-14 shrink-0 items-center gap-2 border-b border-base-300 px-3">
             <h2 class="font-['Space_Grotesk'] font-semibold">{{ __('Kanäle') }}</h2>
         </div>
@@ -71,7 +71,7 @@
     </aside>
 
     {{-- Hauptbereich (mobil: nur sichtbar, wenn ein Kanal offen ist) --}}
-    <section class="{{ $activeChannel ? 'flex' : 'hidden lg:flex' }} min-h-0 min-w-0 flex-1 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <section class="{{ $activeChannel ? 'flex' : 'hidden lg:flex' }} min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
         @if ($activeChannel)
             <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-base-300 px-3">
                 <a href="{{ route('chat.index') }}" class="btn btn-ghost btn-sm btn-square -ml-1 shrink-0 lg:hidden" title="{{ __('Zurück') }}"><x-icon name="arrow_back" /></a>

@@ -12,8 +12,9 @@
  */
 
 return [
-    // Erlaubte DaisyUI-Themes für den Theme-Picker. 'auto' => System-Default.
-    'themes' => ['auto', 'corporate', 'dim', 'dark', 'light', 'business', 'wireframe'],
+    // Erlaubte Themes für den Picker werden NICHT mehr hier statisch gepflegt
+    // (Quelle der Wahrheit = ThemeService::availableThemes(): config('theme.builtin')
+    // + Org-Custom-Themes). 'auto' folgt prefers-color-scheme (config('theme.auto')).
 
     'defaults' => [
         // null = an Organisations-/App-Locale ausrichten

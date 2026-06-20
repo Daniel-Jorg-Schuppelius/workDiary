@@ -37,7 +37,7 @@ class ProfileController extends Controller {
         /** @var User $user */
         $user = $this->authUser();
 
-        $themes = (array) config('personalization.themes', []);
+        $themeKeys = app(\App\Services\ThemeService::class)->allowedKeys();
         $startpages = (array) config('personalization.startpages', []);
         $avatarMaxKb = (int) config('branding.limits.avatar_kb', 1024);
 
@@ -45,7 +45,7 @@ class ProfileController extends Controller {
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'preferences' => ['sometimes', 'array'],
-            'preferences.theme' => ['nullable', 'string', Rule::in($themes)],
+            'preferences.theme' => ['nullable', 'string', Rule::in($themeKeys)],
             'preferences.locale' => ['nullable', Rule::in(\App\Support\Locales::enabledCodes())],
             'preferences.timezone' => ['nullable', 'timezone'],
             'preferences.date_format' => ['nullable', Rule::in(\App\Support\Formats::dateOptions())],
@@ -65,11 +65,19 @@ class ProfileController extends Controller {
         $this->fillUserContactFields($user, $data);
 
         if ($request->has('preferences')) {
-            $clean = array_filter(
+            $submitted = array_filter(
                 (array) ($data['preferences'] ?? []),
                 static fn($v) => $v !== null && $v !== ''
             );
-            $user->preferences = $clean === [] ? null : $clean;
+            // Vom Profilformular verwaltete Keys werden durch die Eingabe ersetzt
+            // (bzw. geleert, wenn leer gesendet). Andere Keys — insbesondere
+            // color_scheme vom Header-Umschalter — bleiben erhalten, damit ein
+            // Profil-Speichern die Hell/Dunkel-Wahl nicht zurücksetzt.
+            $existing = (array) ($user->preferences ?? []);
+            $formKeys = ['theme', 'locale', 'timezone', 'date_format', 'time_format', 'startpage', 'notifications'];
+            $preserved = array_diff_key($existing, array_flip($formKeys));
+            $merged = array_merge($preserved, $submitted);
+            $user->preferences = $merged === [] ? null : $merged;
         }
 
         $user->save();
@@ -85,5 +93,32 @@ class ProfileController extends Controller {
         }
 
         return back()->with('success', __('Profil aktualisiert.'));
+    }
+
+    /**
+     * Persistiert die Wahl des Header-Umschalters (leichtgewichtig, JSON).
+     * Der Header setzt nur den Farbmodus ('light'|'dark'|'auto') — WELCHES Theme
+     * das ist, kommt aus dem Org-Hell/Dunkel-Paar (ThemeService). Ein zuvor
+     * gesetztes konkretes Profil-Theme wird dabei aufgehoben (der Modus gewinnt).
+     */
+    public function updateTheme(Request $request): \Illuminate\Http\JsonResponse {
+        /** @var User $user */
+        $user = $this->authUser();
+
+        $data = $request->validate([
+            'scheme' => ['required', 'in:auto,light,dark'],
+        ]);
+
+        $prefs = (array) ($user->preferences ?? []);
+        unset($prefs['theme']); // konkretes Theme weicht der Modus-Wahl
+        if (($data['scheme'] ?? 'auto') === 'auto') {
+            unset($prefs['color_scheme']);
+        } else {
+            $prefs['color_scheme'] = $data['scheme'];
+        }
+        $user->preferences = $prefs === [] ? null : $prefs;
+        $user->save();
+
+        return response()->json(['ok' => true, 'scheme' => $data['scheme']]);
     }
 }

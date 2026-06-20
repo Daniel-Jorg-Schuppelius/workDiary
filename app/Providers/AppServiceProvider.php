@@ -79,6 +79,10 @@ class AppServiceProvider extends ServiceProvider {
         // pro Container-Lifecycle resolven.
         $this->app->singleton(BrandingService::class);
 
+        // ThemeService nutzt denselben Request-Cache (über BrandingService)
+        // und hält die validierten Org-Custom-Themes vor.
+        $this->app->singleton(\App\Services\ThemeService::class);
+
         // Sqid-Encoder als Singleton: hält pro Modell-Klasse einen Sqids-
         // Instanz-Cache mit deterministisch permutiertem Alphabet vor.
         $this->app->singleton(\App\Services\SqidEncoder::class, function ($app): \App\Services\SqidEncoder {
@@ -505,6 +509,18 @@ class AppServiceProvider extends ServiceProvider {
                 $branding = null;
             }
             $view->with('branding', $branding);
+        });
+
+        // ThemeService als `$theme` für das App-Layout (Theme-Injektion +
+        // Anti-Flash-Seed) und die Auth-Seiten. PDFs nutzen kein Runtime-Theme.
+        View::composer(['layouts.*', 'auth.*'], function ($view): void {
+            try {
+                $theme = app(\App\Services\ThemeService::class);
+            } catch (\Throwable $e) {
+                report($e);
+                $theme = null;
+            }
+            $view->with('theme', $theme);
         });
     }
 

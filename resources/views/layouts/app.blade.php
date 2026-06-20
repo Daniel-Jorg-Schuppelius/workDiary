@@ -78,14 +78,49 @@
                 overflow: visible;
             }
         </style>
+        {{-- Theme-Seed (User-/Org-Auflösung) + Custom-Theme-Definitionen der
+             Organisation. Beides MUSS vor dem Anti-Flash-Skript und vor dem
+             CSS-Bundle stehen, damit der erste Paint das richtige (auch ein
+             org-eigenes) Theme trägt. Die Farbwerte sind durch ThemeDefinition
+             sanitisiert (nur HEX/erlaubte Tokens) → kein CSS-Injection-Risiko. --}}
+        @if (isset($theme) && $theme)
+            <script @cspNonce>window.__theme = @json($theme->seed());</script>
+            @php $__customThemesCss = $theme->customThemesCss(); @endphp
+            @if ($__customThemesCss !== '')
+                <style @cspNonce>{!! $__customThemesCss !!}</style>
+            @endif
+        @endif
         <script @cspNonce>
             (function () {
-                var savedTheme = localStorage.getItem('workDiaryTheme');
-                var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-                var theme = savedTheme || (prefersLight ? 'corporate' : 'dim');
                 var root = document.documentElement;
+                var seed = window.__theme || {};
+                var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+                var choice;
+                if (seed.authenticated) {
+                    // Eingeloggt: ALLEIN die serverseitig aufgelöste Wahl zählt
+                    // (persönliches Theme aus der DB, sonst 'auto' → Org-Hell/Dunkel-
+                    // Paar). KEIN localStorage-Override — so kann kein veralteter
+                    // lokaler Zustand den Org-Standard überstimmen. Der Header-
+                    // Umschalter persistiert seine Wahl serverseitig
+                    // (account.theme.update) und kommt damit beim nächsten Render
+                    // bereits über seed.active zurück.
+                    choice = seed.active || 'auto';
+                } else {
+                    // Gast (z. B. Login): localStorage führt, gegen die Allowlist
+                    // geprüft, sonst Server-Default bzw. 'auto'.
+                    var saved = null;
+                    try { saved = localStorage.getItem('workDiaryTheme'); } catch (e) {}
+                    if (saved && seed.allowed && seed.allowed.indexOf(saved) === -1) saved = null;
+                    choice = saved || seed.active || 'auto';
+                }
+                var theme = choice;
+                if (choice === 'auto') {
+                    theme = prefersLight ? (seed.autoLight || 'corporate') : (seed.autoDark || 'dim');
+                }
+                var scheme = (seed.schemes && seed.schemes[theme])
+                    || (theme === 'dim' || theme === 'dark' || theme === 'business' ? 'dark' : 'light');
                 root.setAttribute('data-theme', theme);
-                root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
+                root.style.colorScheme = scheme;
 
                 if (document.fonts && document.fonts.ready) {
                     document.fonts.ready.then(function () {
@@ -144,6 +179,24 @@
                (Vollbild-Drawer), ab lg löst sie sich mit --sidebar-gap vom Rand
                und bekommt dieselbe Rundung wie die linke Sidebar. */
             #help-drawer { border-radius: 0; }
+            /* Mobil/Tablet/iPad (< lg): Hilfe als SCHWEBENDER Drawer wie das linke
+               Sidebar-Menü — Abstand zu allen Rändern + Rundung statt vollhoch am
+               Rand. Bleibt ein Drawer (slide-in + Backdrop via help-drawer.js); die
+               persistente Rail/with-help-pad bleibt lg+ vorbehalten. */
+            @media (max-width: 1023px) {
+                #help-drawer {
+                    top: calc(var(--app-header-h) + var(--sidebar-gap));
+                    bottom: calc(var(--app-footer-h) + var(--sidebar-gap));
+                    right: var(--sidebar-gap);
+                    border-radius: var(--panel-radius);
+                    border-left: 0;
+                }
+                /* Geschlossen vollständig ausblenden trotz Floating-Abstand
+                   (analog linke Sidebar; +100 % allein ließe einen Streifen). */
+                #help-drawer.translate-x-full {
+                    --tw-translate-x: calc(100% + var(--sidebar-gap) + 0.25rem);
+                }
+            }
             @media (min-width: 1024px) {
                 #help-drawer {
                     top: calc(var(--app-header-h) + var(--sidebar-gap));
@@ -195,6 +248,29 @@
                die Seite hinausläuft; breitere Bänder dürfen mehr Name zeigen
                (container-query-konsistent zum übrigen Header). */
             .header-row .header-username { max-width: 5rem; }
+            /* Sehr enger Header (viele Icon-Buttons rechts): den Benutzernamen
+               ganz ausblenden, nur das Account-Icon bleibt. Spart Platz, das Menü
+               ist weiter über das Icon erreichbar (Tooltip/aria-label tragen den
+               Namen). Container-Query → reagiert auf den realen Header-Platz. */
+            @container app-header (max-width: 560px) {
+                .header-row .header-username { display: none; }
+            }
+            /* Handys: Header kompakter — weniger vertikales Padding, engere
+               Zeilenabstände im gestapelten Band und keine erzwungene Mindesthöhe.
+               Spart spürbar Höhe (der Header stapelt sonst Logo + Icon-Leiste +
+               Datumszeile und frisst viel Platz). Touch-Tap-Größe der Icons bleibt
+               unverändert (nur Abstände schrumpfen). */
+            @media (max-width: 639px) {
+                #app-header .header-row {
+                    min-height: 0;
+                    padding-top: 0.25rem;
+                    padding-bottom: 0.25rem;
+                    row-gap: 0.25rem;
+                }
+                /* Engere Abstände in der rechten Icon-Leiste → weniger Umbruch-
+                   Reihen, kompaktere Höhe. */
+                #app-header .header-right { gap: 0.375rem; }
+            }
             .header-dropdown-panel {
                 scroll-padding-block: .5rem;
             }
@@ -219,7 +295,13 @@
                 min-height: 2.55rem;
                 padding-block: .55rem;
             }
-            @media (max-width: 639px), (hover: none) and (pointer: coarse) {
+            /* Gestapeltes Header-Band: NUR wenn der Header tatsächlich schmal ist
+               (Container < 600px). Vorher hing das zusätzlich an
+               (hover:none)+(pointer:coarse) und griff dadurch auch auf breiten
+               Touch-Geräten (z. B. iPad Air) — dort überschrieb es das 2-spaltige
+               Container-Layout und der Header wirkte durcheinander. Jetzt rein an
+               die reale Header-Breite gekoppelt, konsistent zu den anderen Bändern. */
+            @container app-header (max-width: 599px) {
                 .header-row {
                     justify-items: stretch;
                 }
@@ -231,6 +313,11 @@
                 .header-row .header-right {
                     justify-content: center;
                 }
+            }
+            /* Touch-Dropdowns als Vollhöhen-Panel (mobilfreundlich). Bewusst weiter
+               an Touch gekoppelt, betrifft aber nur GEÖFFNETE Header-Dropdowns,
+               nicht das Layout der Header-Leiste selbst. */
+            @media (max-width: 639px), (hover: none) and (pointer: coarse) {
                 .header-dropdown-panel {
                     position: fixed !important;
                     inset-inline: .5rem !important;
@@ -271,8 +358,12 @@
                     grid-template-areas: "left right" "center center";
                     justify-items: stretch;
                 }
-                .header-row .header-left   { justify-self: start; }
-                .header-row .header-right  { justify-self: end; flex-wrap: wrap; justify-content: flex-end; }
+                /* align-self: start → Logo + Icon-Leiste oben in der ersten Zeile
+                   verankern. Bricht die Icon-Leiste um (viele Icons, z. B. iPad),
+                   bleibt das Logo oben, statt vertikal in die Mitte der dadurch
+                   höheren Zeile zu rutschen. */
+                .header-row .header-left   { justify-self: start; align-self: start; }
+                .header-row .header-right  { justify-self: end; align-self: start; flex-wrap: wrap; justify-content: flex-end; }
                 .header-row .header-center { justify-self: center; }
                 .header-row .header-username { max-width: 7rem; }
             }
@@ -281,6 +372,9 @@
                     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
                     grid-template-areas: "left center right";
                 }
+                /* Einzeiliges Band: wieder vertikal mittig in der Leiste. */
+                .header-row .header-left,
+                .header-row .header-right { align-self: center; }
                 .header-row .header-right { flex-wrap: nowrap; }
                 .header-row .header-username { max-width: 12rem; }
             }
@@ -372,6 +466,17 @@
                 bottom: calc(var(--app-footer-h) + var(--sidebar-gap));
                 left: var(--sidebar-gap);
             }
+            /* Mobil/Tablet (< lg): die Sidebar ist ein schwebender Drawer und
+               behält ihren Abstand zum Rand (left: sidebar-gap) — sie klebt also
+               NICHT am Bildschirmrand. Im GESCHLOSSENEN Zustand reicht das
+               Tailwind `-translate-x-full` (-100 %) wegen dieses Abstands aber
+               nicht ganz aus → es bliebe ein schmaler Streifen sichtbar. Deshalb
+               im geschlossenen Zustand zusätzlich um den Abstand hinausschieben. */
+            @media (max-width: 1023px) {
+                #app-sidebar.-translate-x-full {
+                    --tw-translate-x: calc(-100% - var(--sidebar-gap) - 0.25rem);
+                }
+            }
             #app-sidebar [data-sidebar-section] { color: color-mix(in oklab, var(--color-base-content) 55%, transparent); }
 
             /* Menü-Items: Farben kommen ausschließlich aus den DaisyUI-Theme-Tokens.
@@ -410,12 +515,65 @@
             }
             /* Sidebar-CTA „Neuer Eintrag“ als primäre Action erhält den vollen Theme-Primary. */
             #app-sidebar .sidebar-cta { color: var(--color-primary-content); }
-            /* „Neu …"-Dropdown: eigenständige, klar abgesetzte (hellere) Fläche —
-               sonst hat das Menü dieselbe Farbe wie die dunkle Sidebar dahinter
-               und wirkt dadurch „transparent". base-200 + Border + Schatten heben
-               es als schwebendes Panel ab. */
+            /* „Neu …"-Dropdown: VOLL-OPAKE, klar abgesetzte Fläche. Wichtig: die
+               base-Töne der Sidebar sind über color-mix mit <100 %-Summe definiert
+               und dadurch halbtransparent — `bg-base-100`/`base-200` würden das
+               Menü durchscheinen lassen. Daher hier ein eigener Mix, dessen
+               Prozente auf 100 % summieren (kein Alpha) und der etwas heller als
+               die Sidebar ist. Plus Schatten als schwebendes Overlay. */
             #app-sidebar .sidebar-cta-menu {
-                background-color: var(--color-base-200);
+                background-color: color-mix(in oklab, var(--color-neutral) 78%, var(--color-neutral-content) 22%) !important;
+                --tw-shadow: 0 12px 28px -8px rgb(0 0 0 / 0.45);
+                /* Breiter + 2-spaltig per GRID (wächst vertikal und scrollt, statt
+                   wie Multi-Column horizontal überzulaufen → keine fehlenden
+                   Einträge). auto-fill/minmax macht es responsiv: 2 Spalten bei
+                   genug Breite, sonst 1. */
+                width: min(34rem, calc(100vw - 1.5rem)) !important;
+                grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+                gap: 0.125rem 0.5rem;
+                align-content: start;
+            }
+            /* WICHTIG: display:grid NUR im geöffneten Zustand. Sonst überschreibt
+               das `!important`-Grid DaisyUIs `display:none` im GESCHLOSSENEN Zustand
+               → das (per opacity unsichtbare) Menü läge weiter als absolute Fläche
+               ÜBER der Navigation und würde Klicks abfangen (Klick auf „Heute"
+               landet unsichtbar im „Neu"-Menü). Geschlossen bleibt es daher
+               display:none → kein Klick-Abfangen. Klick (.dropdown-open) bzw.
+               Tastatur-Fokus (:focus-within) blendet es als Grid ein. */
+            #app-sidebar .dropdown.dropdown-open > .sidebar-cta-menu,
+            #app-sidebar .dropdown:focus-within > .sidebar-cta-menu {
+                display: grid !important;
+            }
+            /* Das „Neu …"-Menü ist klick-/JS-gesteuert (Klasse .dropdown-open vom
+               Dropdown-Handler). Das ungewollte Aufklappen per Fokus nach einem
+               Redirect wird per JS (Blur des Triggers beim Laden) verhindert —
+               siehe Dropdown-Handler-Skript. */
+            /* Gruppen-Header über die volle Breite; Items fließen darunter in Spalten. */
+            #app-sidebar .sidebar-cta-menu > li.menu-title {
+                grid-column: 1 / -1;
+            }
+            /* Trennlinien überflüssig (vollbreite Gruppen-Header trennen schon) und
+               würden im Grid eine Zelle belegen → ganz ausblenden. */
+            #app-sidebar .sidebar-cta-menu > li.sidebar-cta-divider {
+                display: none;
+            }
+            /* Mobil/Touch: Höhe so begrenzen, dass das Menü über dem fixen Footer
+               bleibt (sonst sind untere Einträge dahinter verdeckt) und intern
+               scrollt. Keine Fixierung — das Menü bleibt am „Neu"-Button verankert.
+               overscroll-contain hält den Touch-Scroll IM Menü. */
+            @media (max-width: 639px), (hover: none) and (pointer: coarse) {
+                #app-sidebar .sidebar-cta-menu {
+                    /* Kompakt: einspaltig und auf Sidebar-Breite begrenzt, damit das
+                       Menü die übrige Navigation nicht überdeckt/verdrängt. Höhe
+                       gedeckelt → intern scrollbar (alle Einträge erreichbar). */
+                    width: min(var(--sidebar-w), calc(100vw - 1.5rem)) !important;
+                    min-width: 0 !important;
+                    grid-template-columns: 1fr !important;
+                    max-height: calc(100dvh - var(--app-header-h) - var(--app-footer-h) - 6rem) !important;
+                    overflow-y: auto !important;
+                    overscroll-behavior: contain;
+                    -webkit-overflow-scrolling: touch;
+                }
             }
 
             /* Collapsible Section-Header (<details>): optisch wie eine Section-Überschrift,
@@ -517,6 +675,10 @@
                 background-color: var(--wd-badge-footer-bg);
                 border-bottom-left-radius: var(--panel-radius);
                 border-bottom-right-radius: var(--panel-radius);
+            }
+
+            #app-sidebar .sidebar-header {
+                border-bottom: 1px solid var(--color-base-300);
             }
             /* Collapsed-Mode: Header behält denselben seitlichen Randabstand wie der
                Footer (px-3), damit der „Neu"-Button nicht am Panel-Rand klebt. */
@@ -652,7 +814,7 @@
                 $_showCenteredRange = ! $_hasCenter && auth()->check() && ! $isLegacyMode;
                 $_useGrid = $_hasCenter || $_showCenteredRange;
             @endphp
-            <div class="header-row w-full px-4 xl:px-8 2xl:px-12 min-h-14 py-2">
+            <div class="header-row w-full px-3 xl:px-4 2xl:px-4 min-h-14 py-2">
                 <div class="header-left flex items-center">
                     <a href="{{ route('home') }}" class="flex items-center gap-2 group min-w-0">
                         @php
@@ -739,6 +901,10 @@
                                     $manageNavItems[] = ['route' => 'tags.index',                    'label' => __('Tags'),             'icon' => 'label',            'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
+                                    // Theme-Editor nur bei aktivem module.theming (Pro+) einblenden.
+                                    if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.theming')) {
+                                        $adminNavItems[] = ['route' => 'admin.themes.index',          'label' => __('Themes'),           'icon' => 'format_paint',     'modal' => false, 'matches' => ['admin.themes.*']];
+                                    }
                                     $adminNavItems[]  = ['route' => 'admin.entry-types.index',        'label' => __('Eintragstypen'),    'icon' => 'category',         'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.classifications.index',    'label' => __('Klassifikationen'), 'icon' => 'category_search',  'modal' => false];
                                     $adminNavItems[]  = ['route' => 'admin.classification-requirements.index', 'label' => __('Pflichtregeln'), 'icon' => 'rule_settings', 'modal' => false];
@@ -1764,7 +1930,7 @@
                                                 aria-label="{{ __('Farbschema wechseln') }}"
                                                 title="{{ __('Farbschema wechseln') }}"
                                                 class="btn btn-xs btn-ghost gap-2">
-                                            <span data-theme-label class="text-base leading-none">◐</span>
+                                            <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
                                             <span class="text-xs opacity-70">{{ __('Wechseln') }}</span>
                                         </button>
                                     </div>
@@ -1865,7 +2031,7 @@
                     @else
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                                <span data-theme-label class="text-base leading-none">◐</span>
+                                <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
                             </button>
                             <x-locale-switcher />
                             <a href="{{ route('login') }}" class="btn btn-sm btn-primary">⇢ {{ __('Anmelden') }}</a>
@@ -1960,7 +2126,7 @@
                             class="sidebar-cta-menu dropdown-content menu menu-sm z-50 mt-2 w-64 max-h-[70vh] overflow-y-auto rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
                             @foreach ($createGroups as $gi => $group)
                                 @if ($gi > 0)
-                                    <li><div class="divider my-1"></div></li>
+                                    <li class="sidebar-cta-divider"><div class="divider my-1"></div></li>
                                 @endif
                                 <li class="menu-title">
                                     <span class="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-base-content/55">{{ $group['label'] }}</span>
@@ -2143,7 +2309,10 @@
                         if (trigger.classList.contains('dropdown-content')) return;
 
                         var dropdown = trigger.closest('.dropdown');
-                        if (!dropdown || !dropdown.querySelector('.header-dropdown-panel')) return;
+                        // Klick-gesteuert: Header-Menüs UND das Sidebar-„Neu"-Menü.
+                        // Sonst (reines CSS-/Focus-Dropdown) schließt das „Neu"-Menü
+                        // auf Touch beim Hineinscrollen → unscrollbar.
+                        if (!dropdown || !(dropdown.querySelector('.header-dropdown-panel') || dropdown.querySelector('.sidebar-cta-menu'))) return;
 
                         event.preventDefault();
                         var open = dropdown.classList.contains('dropdown-open');
@@ -2162,6 +2331,21 @@
                     if (event.key !== 'Escape') return;
                     closeOthers(null);
                 });
+
+                // Verhindert, dass das „Neu …"-Menü von selbst aufklappt, wenn der
+                // Fokus nach einem Redirect / Dialog-Schließen im „Neu"-Trigger
+                // landet (DaisyUI öffnet Dropdowns per :focus-within). Wir nehmen
+                // den Fokus dort beim Laden weg — Klick/Tastatur öffnen es weiter.
+                function blurStrayCtaFocus() {
+                    var active = document.activeElement;
+                    if (!active || !active.closest) return;
+                    var dd = active.closest('#app-sidebar .dropdown');
+                    if (dd && dd.querySelector('.sidebar-cta-menu') && !dd.classList.contains('dropdown-open')) {
+                        active.blur();
+                    }
+                }
+                blurStrayCtaFocus();
+                window.addEventListener('pageshow', blurStrayCtaFocus);
             })();
         </script>
 
@@ -2193,7 +2377,7 @@
         @auth
             <x-demo-banner :organization="$_activeOrg" />
         @endauth
-        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-4 pt-[var(--sidebar-gap)] pb-[calc(var(--app-footer-h)_+_var(--sidebar-gap))] lg:pb-[var(--sidebar-gap)] xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
+        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-[var(--sidebar-gap)] pb-[calc(var(--app-footer-h)_+_var(--sidebar-gap))] md:pb-[var(--sidebar-gap)] sm:px-4 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}
@@ -2269,12 +2453,42 @@
         </div>
 
         <footer id="app-footer" class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">
-            <div class="mx-auto flex w-full {{ $_wrapperMaxW }} items-center justify-center px-4 py-3 text-xs text-base-content/70 xl:px-8 2xl:px-12">
-                <x-footer-copyright />
+            {{-- Mobil: gestapelt (Copyright oben, Version kleiner darunter, Build-
+                 Hash ausgeblendet) und kompakt, damit alles in den fixen Footer
+                 passt. Ab sm: eine Zeile wie bisher mit voller Versionsangabe. --}}
+            <div class="mx-auto flex h-full w-full {{ $_wrapperMaxW }} flex-col items-center justify-center gap-0 px-4 text-center text-[0.65rem] leading-tight text-base-content/70 sm:flex-row sm:text-xs xl:px-8 2xl:px-12">
+                <div class="max-w-full"><x-footer-copyright /></div>
                 @php($buildHash = \Illuminate\Support\Facades\Cache::remember('build.hash', 3600, fn () => app(\App\Services\Isms\SbomGenerator::class)->resolveGitHash()))
-                <span class="ml-1 whitespace-nowrap text-base-content/40" title="{{ __('Version') }}">&middot;&nbsp;v{{ config('app.version', '0.1.0-dev') }}@if ($buildHash)&nbsp;·&nbsp;{{ $buildHash }}@endif</span>
+                <span class="whitespace-nowrap text-[0.6rem] text-base-content/40 sm:ml-1 sm:text-xs" title="{{ __('Version') }}"><span class="hidden sm:inline">&middot;&nbsp;</span>v{{ config('app.version', '0.1.0-dev') }}@if ($buildHash)<span class="hidden sm:inline">&nbsp;·&nbsp;{{ $buildHash }}</span>@endif</span>
             </div>
         </footer>
+
+        {{-- Header-/Footer-Höhe live messen und in --app-header-h / --app-footer-h
+             schreiben. Nötig, weil der Header je nach Breite mehrzeilig wird (z. B.
+             iPad: Logo/Icons + Datumszeile). Die festen 3.5rem/3rem stimmen dann
+             nicht mehr → alle darauf basierenden Höhen (wd-page-fill, Sidebar) wären
+             falsch und Main stünde nicht bündig über dem Footer. ResizeObserver hält
+             die Werte bei Umbruch/Orientierungswechsel aktuell. --}}
+        <script @cspNonce>
+            (function () {
+                var root = document.documentElement;
+                var header = document.getElementById('app-header');
+                var footer = document.getElementById('app-footer');
+                function sync() {
+                    if (header) root.style.setProperty('--app-header-h', header.offsetHeight + 'px');
+                    if (footer) root.style.setProperty('--app-footer-h', footer.offsetHeight + 'px');
+                }
+                sync();
+                if (window.ResizeObserver) {
+                    var ro = new ResizeObserver(sync);
+                    if (header) ro.observe(header);
+                    if (footer) ro.observe(footer);
+                }
+                window.addEventListener('resize', sync);
+                window.addEventListener('orientationchange', sync);
+                window.addEventListener('load', sync);
+            })();
+        </script>
 
         <x-modal id="action-confirm-dialog"
                  :embedded="false"
@@ -2320,27 +2534,66 @@
         <script @cspNonce>
                 (function () {
                     var root = document.documentElement;
-                    var toggle = document.querySelector('[data-theme-toggle]');
-                    var label = document.querySelector('[data-theme-label]');
+                    var seed = window.__theme || {};
+                    // Hell-/Dunkel-Theme dieses Kontextes (Org-Paar, sonst corporate/dim).
+                    var lightTheme = seed.autoLight || 'corporate';
+                    var darkTheme = seed.autoDark || 'dim';
+                    var toggles = document.querySelectorAll('[data-theme-toggle]');
+                    var labels = document.querySelectorAll('[data-theme-label]');
 
-                    function setTheme(theme) {
-                        root.setAttribute('data-theme', theme);
-                        root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
-                        localStorage.setItem('workDiaryTheme', theme);
-                        if (label) {
-                            label.textContent = theme === 'corporate' ? '☾' : '◐';
-                        }
+                    function schemeOf(theme) {
+                        return (seed.schemes && seed.schemes[theme])
+                            || (theme === 'dim' || theme === 'dark' || theme === 'business' ? 'dark' : 'light');
+                    }
+                    function isDark() {
+                        return schemeOf(root.getAttribute('data-theme')) === 'dark';
+                    }
+                    function syncLabel() {
+                        // Material-Symbol: aktuell hell → Mond (Klick → dunkel);
+                        // aktuell dunkel → Sonne (Klick → hell).
+                        var glyph = isDark() ? 'light_mode' : 'dark_mode';
+                        labels.forEach(function (l) { l.textContent = glyph; });
+                    }
+                    // Beim Laden NICHT das data-theme überschreiben (das setzt bereits
+                    // das Anti-Flash-Skript im <head> theme-bewusst) — nur das Label
+                    // an den aktuellen Zustand angleichen.
+                    syncLabel();
+
+                    var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+                    function persistScheme(scheme) {
+                        // Eingeloggt zählt allein die DB-Wahl → der Farbmodus muss
+                        // serverseitig persistiert werden, damit er den Reload übersteht.
+                        // Es wird NUR der Modus gespeichert; welches Theme das ist,
+                        // bestimmt das Org-Hell/Dunkel-Paar (ThemeService).
+                        if (!seed.authenticated) return;
+                        try {
+                            fetch('{{ route('account.theme.update') }}', {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrf,
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ scheme: scheme })
+                            });
+                        } catch (e) {}
                     }
 
-                    var activeTheme = root.getAttribute('data-theme') === 'corporate' ? 'corporate' : 'dim';
-                    setTheme(activeTheme);
-
-                    if (toggle) {
+                    toggles.forEach(function (toggle) {
                         toggle.addEventListener('click', function () {
-                            var nextTheme = root.getAttribute('data-theme') === 'corporate' ? 'dim' : 'corporate';
-                            setTheme(nextTheme);
+                            // Hell/Dunkel umschalten: in das jeweils andere Schema des
+                            // Org-Hell/Dunkel-Paares wechseln, sofort anwenden und den
+                            // Modus serverseitig persistieren.
+                            var goDark = !isDark();
+                            var next = goDark ? darkTheme : lightTheme;
+                            root.setAttribute('data-theme', next);
+                            root.style.colorScheme = schemeOf(next);
+                            try { localStorage.setItem('workDiaryTheme', next); } catch (e) {}
+                            syncLabel();
+                            persistScheme(goDark ? 'dark' : 'light');
                         });
-                    }
+                    });
 
                     var confirmDialog = document.getElementById('action-confirm-dialog');
                     var confirmTitle = document.getElementById('action-confirm-title');

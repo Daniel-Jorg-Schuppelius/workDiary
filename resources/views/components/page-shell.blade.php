@@ -36,7 +36,12 @@
 
 @isset($toolbar)
     @push('page-header')
-        <div class="shrink-0 mb-[var(--sidebar-gap)]">
+        {{-- max-md:px-3 gleicht den Seitenrand der Toolbar auf Handys an das
+             Main-Padding (--wd-main-pad = 0.75rem) an. Sonst sitzt die Toolbar-
+             Karte breiter als die Inhaltskarten (sichtbar, weil das Main-Panel
+             mobil transparent ist → zwei verschiedene Kartenränder). Ab md ist
+             das Main wieder ein Panel → kein Extra-Padding nötig. --}}
+        <div class="shrink-0 mb-[var(--sidebar-gap)] max-md:px-2">
             {{ $toolbar }}
         </div>
     @endpush

@@ -305,6 +305,17 @@ class Organization extends Model {
         return $this->groupSettings('branding');
     }
 
+    /**
+     * Theming-Einstellungen (config/theme.php gemerged mit settings['theme']).
+     * Enthält `builtin`/`auto`/`geometry` aus der Config sowie — falls gesetzt —
+     * `custom` (Liste der Org-Themes) und `default` (Org-Default-Theme-Token).
+     *
+     * @return array<string, mixed>
+     */
+    public function themeSettings(): array {
+        return $this->groupSettings('theme');
+    }
+
     public function logo(): ?Attachment {
         return $this->attachmentByMeta(Attachment::META_LOGO);
     }

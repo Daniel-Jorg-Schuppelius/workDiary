@@ -10,7 +10,13 @@
 @plugin '../../node_modules/daisyui/index.js' {
     themes:
         corporate --default,
-        dim --prefersdark;
+        dim --prefersdark,
+        business,
+        emerald,
+        nord,
+        light,
+        dark,
+        wireframe;
 }
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -152,6 +158,88 @@
    die Breite bei. Innere Scrollbars (z. B. Wochenansicht) bleiben unberührt. */
 .wd-page-fill > main > .wd-page-shell.wd-has-scroll {
     padding-right: calc(var(--wd-main-pad) - 0.5rem);
+}
+
+/* ------------------------------------------------------------------ */
+/* Handys (< 768 px): CONTENT-Seiten orientieren sich am INHALT statt am  */
+/* Bildschirm — feste Viewport-Höhe + interner Scroll entfallen, die Seite */
+/* scrollt natürlich (Body). Das Wrapper-`padding-bottom` (footer+gap)     */
+/* hält den fixen Footer frei; das schwebende Panel tritt zurück.          */
+/*                                                                        */
+/* AUSGENOMMEN: App-Shell-Seiten (Chat, Kalender/Wochenansicht, Kanban,    */
+/* Schichtplan, Dispatch …). Sie erkennt man daran, dass `main` ein Flex-  */
+/* Spalten-Shell ist (`main.flex-col`) mit internem flex-1-Scroll + unten  */
+/* fixierter Eingabe/Leiste. Bei Höhe `auto` würden deren flex-1-Panes     */
+/* kollabieren → sie MÜSSEN ihre feste Höhe behalten. Erkennung via :has.  */
+/* Tablet/iPad (>= 768 px) behalten generell das App-Shell-Layout.         */
+/* ------------------------------------------------------------------ */
+@media (max-width: 767px) {
+    /* Auf Handys schmaler Außenabstand des Contents für maximale nutzbare
+       Breite (Wrapper px-2 + dieses Padding ≈ 1rem Rand pro Seite). */
+    .wd-page-fill > main {
+        --wd-main-pad: 0.5rem;
+    }
+    .wd-page-fill:not(:has(> main.flex-col)) {
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+    }
+    .wd-page-fill:not(:has(> main.flex-col)) > main {
+        flex: 0 0 auto;
+        min-height: 0;
+        overflow: visible;
+        /* Ohne internen Scroll braucht es die Scrollbalken-Padding-Tricks
+           nicht mehr: rechts denselben Abstand wie links zurückgeben. */
+        padding-right: var(--wd-main-pad);
+    }
+    .wd-page-fill:not(:has(> main.flex-col)) > main > *,
+    .wd-page-fill:not(:has(> main.flex-col)) > main > .wd-page-shell.wd-has-scroll {
+        padding-right: 0;
+    }
+    /* „Nur Inhalt": Auf Handys das Panel-Chrome für ALLE Seiten zurücknehmen
+       (Rahmen/Radius/Hintergrund weg, edge-to-edge) — auch für App-Shell-Seiten
+       wie den Chat. Deren feste Höhe + interner Scroll bleibt erhalten (nur die
+       Optik des äußeren Panels entfällt), damit sie lesbar bleiben. */
+    main.wd-surface {
+        border: 0;
+        border-radius: 0;
+        background-color: transparent;
+    }
+    /* App-Shell-Seiten (feste Höhe): Die Höhe `calc(100dvh − header − footer)`
+       schließt den Footer bereits aus → unten nur `sidebar-gap` statt
+       `footer+gap`. Sonst wird der Footer ein ZWEITES Mal abgezogen und die
+       ohnehin knappe Höhe weiter gestaucht (z. B. Chat auf iPhone SE → kaum
+       lesbare Nachrichtenfläche). */
+    .wd-page-fill:has(> main.flex-col) {
+        /* Mindesthöhe als Boden: Frisst der gestapelte Header auf sehr kleinen
+           Geräten (z. B. iPhone SE) fast die ganze Viewport-Höhe, wäre die feste
+           Höhe `calc(100dvh − header − footer)` nur ein paar Pixel. Der Boden
+           sorgt für ein nutzbares Fenster — die SEITE scrollt dann statt das
+           Fenster auf wenige Pixel zu stauchen. */
+        min-height: 60dvh;
+        padding-bottom: var(--sidebar-gap) !important;
+    }
+
+    /* CHAT auf kleinen Geräten: content-size (natürlicher Fluss) statt fester
+       App-Shell-Höhe. Sonst frisst der hohe gestapelte Header die Höhe und der
+       Chat ist unbrauchbar (nur wenige Pixel). Die Seite scrollt natürlich; die
+       Nachrichtenliste bekommt eine definierte Scroll-Höhe, damit sie im Fluss
+       nicht kollabiert. (Höhere Spezifität durch #chat-root → schlägt die
+       App-Shell-Regeln oben.) */
+    .wd-page-fill:has(#chat-root) {
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+        padding-bottom: calc(var(--app-footer-h) + var(--sidebar-gap)) !important;
+    }
+    .wd-page-fill:has(#chat-root) > main {
+        flex: 0 0 auto;
+        overflow: visible;
+    }
+    #chat-messages {
+        height: 60dvh;
+        flex: none;
+    }
 }
 
 @theme {
@@ -1458,6 +1546,19 @@
     .flatpickr-wrapper > input {
         width: 100% !important;
         min-width: 0;
+    }
+
+    /* === Flatpickr + join (z. B. Header-Datumsbereich) =====================
+       Ohne `static:true` schiebt Flatpickr den SICHTBAREN altInput als
+       Geschwister HINTER das (nun `type=hidden`) Original. Im `join` ist damit
+       das versteckte Original der `:first-child` und trägt die linke Rundung
+       (unsichtbar) — der sichtbare „Von"-Input bleibt links eckig. DaisyUI v5
+       steuert die Join-Rundung über --join-ss/--join-es; wir übertragen die
+       linke Rundung daher auf den ersten sichtbaren Input hinter dem
+       versteckten Original. */
+    .join > input.flatpickr-input[type="hidden"]:first-child + input:not([type="hidden"]) {
+        --join-ss: var(--radius-field);
+        --join-es: var(--radius-field);
     }
 
     /* === File-Upload-Komponente (Branding-Logos, Avatare) ============== */

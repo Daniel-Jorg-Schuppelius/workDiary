@@ -194,18 +194,7 @@ class BrandingService {
     }
 
     private function normalizeHex(?string $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        $value = trim($value);
-        if ($value === '') {
-            return null;
-        }
-        if (! preg_match('/^#?[0-9a-fA-F]{6}$/', $value)) {
-            return null;
-        }
-
-        return str_starts_with($value, '#') ? strtolower($value) : '#' . strtolower($value);
+        return \App\Support\Color::normalizeHex($value);
     }
 
     /**
