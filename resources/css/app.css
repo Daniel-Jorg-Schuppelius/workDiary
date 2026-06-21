@@ -80,6 +80,21 @@
     background-color: var(--wd-badge-bg);
     border-radius: var(--panel-radius, 1rem);
 }
+/* Auf dem dunklen Anthrazit-Panel ist die Theme-Primärfarbe für Links zu
+   dunkel. base-content ist hier hell gemappt – Links daher mit base-content
+   aufhellen (primary nur noch als leichte Tönung), damit sie lesbar bleiben.
+   Greift u. a. auf die per JS erzeugten Hilfe-Links (Verwandte Themen +
+   Suchergebnisse) im Hilfe-Drawer. */
+.wd-badge .link-primary {
+    color: color-mix(
+        in oklab,
+        var(--color-primary) 45%,
+        var(--color-base-content) 55%
+    );
+}
+.wd-badge .link-primary:hover {
+    color: var(--color-base-content);
+}
 .wd-surface {
     background-color: var(--color-base-100);
     border: 1px solid

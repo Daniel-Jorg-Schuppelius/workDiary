@@ -21,10 +21,12 @@
         <header class="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-base-300 px-4">
             <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Hilfe') }}</p>
             {{-- Rot, damit der Schließen-Button sich klar abhebt (analog zur
-                 roten Schließen-Optik der Dialoge). --}}
-            <button type="button" class="btn btn-sm btn-square btn-outline btn-error" data-help-close aria-label="{{ __('Schließen') }}">
-                <x-icon name="close" />
-            </button>
+                 roten Schließen-Optik der Dialoge). Outline + Farbe, weil
+                 nacktes btn-outline auf dem dunklen wd-badge-Grund zu blass
+                 wäre. --}}
+            <x-icon-btn icon="close" tone="outline" size="sm"
+                        class="btn-square btn-error"
+                        label="{{ __('Schließen') }}" data-help-close />
         </header>
 
         <div class="shrink-0 px-4 pt-3">
@@ -37,11 +39,15 @@
 
         <footer class="shrink-0 border-t border-base-300 px-4 py-3" data-help-footer>
             <p class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('War das hilfreich?') }}</p>
+            {{-- Outline + Akzentfarbe (grün/rot): nacktes btn-outline ist auf
+                 dem dunklen wd-badge-Grund kaum sichtbar – die leuchtenden
+                 success/error-Farben heben sich klar ab (wie der Schließen-
+                 Button oben). --}}
             <div class="flex flex-wrap items-center gap-2">
-                <x-button type="button" tone="outline" size="sm" icon="thumb_up" data-help-feedback="1">
+                <x-button type="button" tone="outline" size="sm" icon="thumb_up" class="btn-success" data-help-feedback="1">
                     {{ __('Ja') }}
                 </x-button>
-                <x-button type="button" tone="outline" size="sm" icon="thumb_down" data-help-feedback="0">
+                <x-button type="button" tone="outline" size="sm" icon="thumb_down" class="btn-error" data-help-feedback="0">
                     {{ __('Nein') }}
                 </x-button>
                 <span class="ml-2 text-xs text-base-content/60 hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
@@ -61,15 +67,14 @@
 <div id="help-rail"
      class="wd-badge fixed z-40 hidden flex-col items-center gap-2 py-3 shadow-xl lg:flex"
      aria-label="{{ __('Hilfe') }}">
-    <button type="button"
-            data-help-trigger
-            class="btn btn-sm btn-ghost btn-square"
-            title="{{ __('Hilfe öffnen') }}"
-            aria-label="{{ __('Hilfe öffnen') }}"
-            aria-haspopup="dialog"
-            aria-controls="help-drawer">
-        <x-icon name="help" />
-    </button>
+    <x-icon-btn icon="help"
+                tone="ghost"
+                size="sm"
+                class="btn-square"
+                label="{{ __('Hilfe öffnen') }}"
+                data-help-trigger
+                aria-haspopup="dialog"
+                aria-controls="help-drawer" />
 </div>
 
 {{-- Backdrop nur mobil (<lg): Desktop-Sidebar ist nicht-modal. Bezieht sich –
