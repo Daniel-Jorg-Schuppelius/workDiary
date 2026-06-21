@@ -25,40 +25,26 @@
     @endif
 
     <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Mitarbeiter') }} *</label>
-            <select name="user_id" required class="select select-bordered w-full">
-                @foreach ($users as $u)
-                    <option value="{{ $u->sqid }}" @selected((string) old('user_id', \App\Support\Sqid::encode(\App\Models\User::class, $shift->user_id)) === $u->sqid)>{{ $u->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Schichttyp') }}</label>
-            <select name="shift_type_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($types as $t)
-                    <option value="{{ $t->sqid }}" @selected((string) old('shift_type_id', \App\Support\Sqid::encode(\App\Models\ShiftType::class, $shift->shift_type_id)) === $t->sqid)>{{ $t->name }} ({{ $t->abbreviation }})</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="user_id" :label="__('Mitarbeiter')" required>
+            @foreach ($users as $u)
+                <option value="{{ $u->sqid }}" @selected((string) old('user_id', \App\Support\Sqid::encode(\App\Models\User::class, $shift->user_id)) === $u->sqid)>{{ $u->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="shift_type_id" :label="__('Schichttyp')">
+            <option value="">—</option>
+            @foreach ($types as $t)
+                <option value="{{ $t->sqid }}" @selected((string) old('shift_type_id', \App\Support\Sqid::encode(\App\Models\ShiftType::class, $shift->shift_type_id)) === $t->sqid)>{{ $t->name }} ({{ $t->abbreviation }})</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('Zeitraum & Status')" icon="schedule" tone="info" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Datum') }} *</label>
-            <input type="date" name="date" required
-                   value="{{ old('date', $shift->date->format('Y-m-d')) }}"
-                   class="input input-bordered w-full">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Status') }}</label>
-            <select name="status" class="select select-bordered w-full">
-                @foreach (\App\Enums\Shift\ScheduledShiftStatus::cases() as $s)
-                    <option value="{{ $s->value }}" @selected(old('status', $shift->status?->value) === $s->value)>{{ $s->label() }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-input-field name="date" type="date" :label="__('Datum')" required :value="old('date', $shift->date->format('Y-m-d'))" />
+        <x-select-field name="status" :label="__('Status')">
+            @foreach (\App\Enums\Shift\ScheduledShiftStatus::cases() as $s)
+                <option value="{{ $s->value }}" @selected(old('status', $shift->status?->value) === $s->value)>{{ $s->label() }}</option>
+            @endforeach
+        </x-select-field>
         <x-date-range
             layout="split"
             type="time"
@@ -74,21 +60,16 @@
     </x-form-group>
 
     <x-form-group :legend="__('Notiz')" icon="description" tone="ghost">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Notiz') }}</label>
-            <textarea name="note" rows="3" class="textarea textarea-bordered w-full">{{ old('note', $shift->note) }}</textarea>
-        </div>
+        <x-textarea-field name="note" :label="__('Notiz')" rows="3" :value="old('note', $shift->note)" />
     </x-form-group>
 
     @can('delete', $shift)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('scheduled-shifts.destroy', $shift) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Wirklich löschen?') }}"
-                  data-confirm-label="{{ __('Löschen') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('scheduled-shifts.destroy', $shift)" method="DELETE"
+                  :confirm="__('Wirklich löschen?')"
+                  :confirm-label="__('Löschen')">
                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Schicht löschen') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endcan
 </x-modal>

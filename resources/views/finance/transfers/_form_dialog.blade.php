@@ -40,15 +40,11 @@
             @endif
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('finance.field.channel') }} *</label>
-            <select name="channel" required class="select select-bordered w-full">
-                @foreach ($allowedChannels as $channel)
-                    <option value="{{ $channel->value }}" @selected(old('channel') === $channel->value)>{{ $channel->label() }}</option>
-                @endforeach
-            </select>
-            <p class="mt-1 text-xs text-base-content/60">{{ __('finance.hint.channels_separate') }}</p>
-        </div>
+        <x-select-field name="channel" :label="__('finance.field.channel')" required :hint="__('finance.hint.channels_separate')">
+            @foreach ($allowedChannels as $channel)
+                <option value="{{ $channel->value }}" @selected(old('channel') === $channel->value)>{{ $channel->label() }}</option>
+            @endforeach
+        </x-select-field>
 
         <div class="fieldset">
             <label class="fieldset-label">{{ __('finance.field.target') }} *</label>

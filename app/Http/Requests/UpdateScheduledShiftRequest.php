@@ -10,44 +10,18 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Shift\ScheduledShiftStatus;
-use App\Http\Requests\Concerns\{ChecksShiftCompliance, DecodesSqidInputs};
-use App\Models\{ScheduledShift, User};
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\{Rule, Validator};
+use App\Models\ScheduledShift;
+use Illuminate\Validation\Validator;
 
-class UpdateScheduledShiftRequest extends FormRequest {
-    use DecodesSqidInputs;
-
-    /** @var array<string, class-string> */
-    protected array $sqidFields = [
-        'user_id' => \App\Models\User::class,
-        'shift_type_id' => \App\Models\ShiftType::class,
-        'duty_plan_id' => \App\Models\DutyPlan::class,
-    ];
-
-    use ChecksShiftCompliance;
-
-    public function authorize(): bool {
-        $user = Auth::user();
-
-        return $user instanceof User && $user->isAdmin();
-    }
-
-    /** @return array<string, mixed> */
+class UpdateScheduledShiftRequest extends StoreScheduledShiftRequest {
+    /**
+     * Wie beim Anlegen, aber als Teil-Update (PATCH): Pflichtfelder werden
+     * optional (sometimes).
+     *
+     * @return array<string, mixed>
+     */
     public function rules(): array {
-        return [
-            'user_id' => ['sometimes', 'integer', 'exists:users,id'],
-            'shift_type_id' => ['sometimes', 'nullable', 'integer', 'exists:shift_types,id'],
-            'duty_plan_id' => ['sometimes', 'nullable', 'integer', 'exists:duty_plans,id'],
-            'date' => ['sometimes', 'date'],
-            'start_time' => ['sometimes', 'nullable', 'date_format:H:i'],
-            'end_time' => ['sometimes', 'nullable', 'date_format:H:i'],
-            'note' => ['sometimes', 'nullable', 'string', 'max:1000'],
-            'status' => ['sometimes', Rule::enum(ScheduledShiftStatus::class)],
-            'override_compliance' => ['sometimes', 'boolean'],
-        ];
+        return $this->fieldRules(true);
     }
 
     public function withValidator(Validator $validator): void {

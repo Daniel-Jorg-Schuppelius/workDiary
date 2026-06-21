@@ -24,13 +24,11 @@
 
     @if ($material->exists)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('materials.destroy', $material) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Material wirklich löschen?') }}"
-                  data-confirm-label="{{ __('Löschen') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('materials.destroy', $material)" method="DELETE"
+                  :confirm="__('Material wirklich löschen?')"
+                  :confirm-label="__('Löschen')">
                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endif
 </x-modal>

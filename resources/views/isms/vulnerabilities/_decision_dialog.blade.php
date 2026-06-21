@@ -24,14 +24,11 @@
 
     <x-form-group :legend="__('isms.field.exploitability')" icon="gavel" tone="primary" cols="1">
         <p class="text-xs text-base-content/70">{{ __('isms.hint.exploitability_decision') }}</p>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.exploitability') }} *</span>
-            <select name="exploitability" required class="select select-bordered w-full">
+        <x-select-field name="exploitability" :label="__('isms.field.exploitability')" required>
                 @foreach (\App\Enums\Isms\Exploitability::cases() as $exp)
                     <option value="{{ $exp->value }}" @selected(old('exploitability', $vulnerability->exploitability->value) === $exp->value)>{{ $exp->label() }}</option>
                 @endforeach
-            </select>
-        </label>
+        </x-select-field>
         <label class="form-control">
             <span class="label-text">{{ __('isms.field.exploitability_note') }}</span>
             <textarea name="exploitability_note" rows="4" maxlength="10000"

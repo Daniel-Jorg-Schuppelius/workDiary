@@ -11,9 +11,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
-use Illuminate\Foundation\Http\FormRequest;
 
-class SavePerDiemTripRequest extends FormRequest {
+class SavePerDiemTripRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;
 
     protected function prepareForValidation(): void {
@@ -26,10 +25,6 @@ class SavePerDiemTripRequest extends FormRequest {
         'customer_id' => \App\Models\Customer::class,
         'travel_log_id' => \App\Models\TravelLog::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

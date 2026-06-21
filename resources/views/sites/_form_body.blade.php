@@ -35,26 +35,10 @@
 </x-form-group>
 
 <x-form-group :legend="__('Geo-Koordinaten')" icon="my_location" tone="ghost" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Breitengrad') }}</label>
-        <input type="number" step="0.0000001" min="-90" max="90" name="geo_lat"
-               value="{{ old('geo_lat', $site?->geo_lat) }}"
-               class="input input-bordered w-full @error('geo_lat') input-error @enderror">
-        @error('geo_lat')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Längengrad') }}</label>
-        <input type="number" step="0.0000001" min="-180" max="180" name="geo_lng"
-               value="{{ old('geo_lng', $site?->geo_lng) }}"
-               class="input input-bordered w-full @error('geo_lng') input-error @enderror">
-        @error('geo_lng')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
+    <x-input-field name="geo_lat" type="number" :label="__('Breitengrad')" step="0.0000001" min="-90" max="90" :value="old('geo_lat', $site?->geo_lat)" />
+    <x-input-field name="geo_lng" type="number" :label="__('Längengrad')" step="0.0000001" min="-180" max="180" :value="old('geo_lng', $site?->geo_lng)" />
 </x-form-group>
 
 <x-form-group :legend="__('Notizen')" icon="description" tone="ghost">
-    <div class="fieldset">
-        <textarea name="notes" rows="3" maxlength="2000"
-                  class="textarea textarea-bordered w-full @error('notes') textarea-error @enderror">{{ old('notes', $site?->notes) }}</textarea>
-        @error('notes')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
+    <x-textarea-field name="notes" rows="3" maxlength="2000" :value="old('notes', $site?->notes)" />
 </x-form-group>

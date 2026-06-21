@@ -98,16 +98,14 @@
                 @endif
                 @if ($transfer->status === \App\Enums\Finance\TransferStatus::Confirmed)
                     @can('markTransferred', $transfer)
-                        <form method="POST" action="{{ route('finance.transfers.execute', $transfer) }}"
-                              data-confirm-dialog
+                        <x-action-form :action="route('finance.transfers.execute', $transfer)"
                               data-confirm-title="{{ __('finance.action.execute') }}"
-                              data-confirm-message="{{ __('finance.confirm_execute') }}"
-                              data-confirm-icon="cloud_upload"
-                              data-confirm-tone="primary"
-                              data-confirm-label="{{ __('finance.action.execute') }}">
-                            @csrf
+                              :confirm="__('finance.confirm_execute')"
+                              confirm-icon="cloud_upload"
+                              confirm-tone="primary"
+                              :confirm-label="__('finance.action.execute')">
                             <x-icon-btn icon="cloud_upload" tone="primary" size="sm" type="submit" show-label>{{ __('finance.action.execute') }}</x-icon-btn>
-                        </form>
+                        </x-action-form>
                     @endcan
                 @endif
                 @if ($transfer->status === \App\Enums\Finance\TransferStatus::Failed)
@@ -120,16 +118,14 @@
                 @endif
                 @if (in_array($transfer->status, [\App\Enums\Finance\TransferStatus::Draft, \App\Enums\Finance\TransferStatus::Confirmed], true))
                     @can('void', $transfer)
-                        <form method="POST" action="{{ route('finance.transfers.void', $transfer) }}"
-                              data-confirm-dialog
+                        <x-action-form :action="route('finance.transfers.void', $transfer)"
                               data-confirm-title="{{ __('finance.action.void') }}"
-                              data-confirm-message="{{ __('finance.confirm_void') }}"
-                              data-confirm-icon="delete"
-                              data-confirm-tone="error"
-                              data-confirm-label="{{ __('finance.action.void') }}">
-                            @csrf
+                              :confirm="__('finance.confirm_void')"
+                              confirm-icon="delete"
+                              confirm-tone="error"
+                              :confirm-label="__('finance.action.void')">
                             <x-icon-btn icon="cancel" tone="error" size="sm" type="submit" show-label>{{ __('finance.action.void') }}</x-icon-btn>
-                        </form>
+                        </x-action-form>
                     @endcan
                 @endif
                 @if ($transfer->file_path !== null && $transfer->status === \App\Enums\Finance\TransferStatus::Transferred)

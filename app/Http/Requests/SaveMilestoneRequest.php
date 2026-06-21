@@ -10,12 +10,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class SaveMilestoneRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveMilestoneRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

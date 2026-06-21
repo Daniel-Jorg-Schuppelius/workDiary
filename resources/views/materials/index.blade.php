@@ -54,15 +54,13 @@
                                         :label="__('Bearbeiten')" />
                         @endcan
                         @can('delete', $m)
-                            <form method="POST" action="{{ route('materials.destroy', $m) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Löschen?') }}"
-                                  data-confirm-icon="delete"
-                                  data-confirm-tone="error"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('materials.destroy', $m)" method="DELETE"
+                                  :confirm="__('Löschen?')"
+                                  confirm-icon="delete"
+                                  confirm-tone="error"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         @endcan
                     </td>
                 </tr>

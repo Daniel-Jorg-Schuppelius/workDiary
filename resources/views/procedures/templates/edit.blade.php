@@ -83,17 +83,15 @@
                         @else
                             <x-status-badge tone="warning">{{ __('procedure.status.draft') }}</x-status-badge>
                             @if ($canPublish)
-                                <form method="POST" action="{{ route('procedures.versions.publish', [$template, $v->id]) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('procedures.versions.publish', [$template, $v->id])"
                                       data-confirm-title="{{ __('procedure.action.publish') }}"
-                                      data-confirm-message="{{ __('procedure.confirm.publish') }}"
-                                      data-confirm-icon="publish"
-                                      data-confirm-tone="primary"
-                                      data-confirm-label="{{ __('procedure.action.publish') }}">
-                                    @csrf
+                                      :confirm="__('procedure.confirm.publish')"
+                                      confirm-icon="publish"
+                                      confirm-tone="primary"
+                                      :confirm-label="__('procedure.action.publish')">
                                     <x-icon-btn icon="publish" tone="primary" size="xs" type="submit"
                                                 :label="__('procedure.action.publish')" />
-                                </form>
+                                </x-action-form>
                             @endif
                         @endif
                     </div>
@@ -120,51 +118,22 @@
 
             {{-- Stammdaten --}}
             <x-form-group :legend="__('procedure.title.template')" icon="rule" tone="primary" cols="2">
-                <label class="form-control sm:col-span-2">
-                    <span class="label-text">{{ __('procedure.field.name') }} *</span>
-                    <input type="text" name="name" required minlength="3" maxlength="180"
-                           class="input input-bordered w-full" value="{{ old('name', $template->name) }}">
-                </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('procedure.field.domain') }}</span>
-                    <input type="text" name="domain" maxlength="40"
-                           class="input input-bordered w-full" value="{{ old('domain', $template->domain) }}">
-                </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('procedure.field.riskLevel') }}</span>
-                    <select name="risk_level" class="select select-bordered w-full" @disabled($draft === null)>
-                        @foreach ($riskLevels as $level)
-                            <option value="{{ $level->value }}" @selected(old('risk_level', $draft?->risk_level?->value) === $level->value)>{{ $level->label() }}</option>
-                        @endforeach
-                    </select>
-                </label>
-                <label class="form-control sm:col-span-2">
-                    <span class="label-text">{{ __('procedure.field.description') }}</span>
-                    <textarea name="description" rows="2" maxlength="2000"
-                              class="textarea textarea-bordered w-full">{{ old('description', $template->description) }}</textarea>
-                </label>
+                <x-input-field name="name" :label="__('procedure.field.name')" required minlength="3" maxlength="180" span="2" :value="old('name', $template->name)" />
+                <x-input-field name="domain" :label="__('procedure.field.domain')" maxlength="40" :value="old('domain', $template->domain)" />
+                <x-select-field name="risk_level" :label="__('procedure.field.riskLevel')" :disabled="$draft === null">
+                    @foreach ($riskLevels as $level)
+                        <option value="{{ $level->value }}" @selected(old('risk_level', $draft?->risk_level?->value) === $level->value)>{{ $level->label() }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-textarea-field name="description" :label="__('procedure.field.description')" rows="2" maxlength="2000" span="2" :value="old('description', $template->description)" />
             </x-form-group>
 
             {{-- Anwendbarkeit (automatische Zuordnung) --}}
             <x-form-group :legend="__('procedure.title.applicability')" icon="filter_alt" tone="info" cols="2">
                 <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('procedure.hint.applicability') }}</p>
-                <label class="form-control">
-                    <span class="label-text">{{ __('procedure.field.applicabilityEntryTypes') }}</span>
-                    <input type="text" name="applicability_entry_types" maxlength="2000"
-                           placeholder="{{ __('procedure.hint.commaList') }}"
-                           class="input input-bordered w-full" value="{{ $entryTypesVal }}" @disabled($draft === null)>
-                </label>
-                <label class="form-control">
-                    <span class="label-text">{{ __('procedure.field.applicabilityTags') }}</span>
-                    <input type="text" name="applicability_tags" maxlength="2000"
-                           placeholder="{{ __('procedure.hint.commaList') }}"
-                           class="input input-bordered w-full" value="{{ $tagsVal }}" @disabled($draft === null)>
-                </label>
-                <label class="form-control sm:col-span-2">
-                    <span class="label-text">{{ __('procedure.field.changeNote') }}</span>
-                    <input type="text" name="change_note" maxlength="2000"
-                           class="input input-bordered w-full" value="{{ old('change_note', $draft?->change_note) }}" @disabled($draft === null)>
-                </label>
+                <x-input-field name="applicability_entry_types" :label="__('procedure.field.applicabilityEntryTypes')" maxlength="2000" placeholder="{{ __('procedure.hint.commaList') }}" :value="$entryTypesVal" :disabled="$draft === null" />
+                <x-input-field name="applicability_tags" :label="__('procedure.field.applicabilityTags')" maxlength="2000" placeholder="{{ __('procedure.hint.commaList') }}" :value="$tagsVal" :disabled="$draft === null" />
+                <x-input-field name="change_note" :label="__('procedure.field.changeNote')" maxlength="2000" span="2" :value="old('change_note', $draft?->change_note)" :disabled="$draft === null" />
             </x-form-group>
 
             {{-- Schritte --}}

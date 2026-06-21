@@ -14,10 +14,9 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Project;
 use Closure;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTaskRequest extends FormRequest {
+class SaveTaskRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -26,10 +25,6 @@ class SaveTaskRequest extends FormRequest {
         'parent_task_id' => \App\Models\Task::class,
         'assignee_ids' => \App\Models\User::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     protected function prepareForValidation(): void {
         $this->merge([

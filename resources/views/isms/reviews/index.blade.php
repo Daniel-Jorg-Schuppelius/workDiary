@@ -80,30 +80,26 @@
                                                 :label="__('isms.action.edit')" />
                                 @endcan
                                 @can('approve', $review)
-                                    <form method="POST" action="{{ route('isms.reviews.approve', $review) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('isms.reviews.approve', $review)"
                                           data-confirm-title="{{ __('isms.action.approve_review') }}"
-                                          data-confirm-message="{{ __('isms.confirm_approve_review') }}"
-                                          data-confirm-icon="grading"
-                                          data-confirm-tone="primary"
-                                          data-confirm-label="{{ __('isms.action.approve_review') }}">
-                                        @csrf
+                                          :confirm="__('isms.confirm_approve_review')"
+                                          confirm-icon="grading"
+                                          confirm-tone="primary"
+                                          :confirm-label="__('isms.action.approve_review')">
                                         <x-icon-btn icon="grading" tone="primary" size="xs" type="submit"
                                                     :label="__('isms.action.approve_review')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                                 @can('delete', $review)
-                                    <form method="POST" action="{{ route('isms.reviews.destroy', $review) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('isms.reviews.destroy', $review)" method="DELETE"
                                           data-confirm-title="{{ __('isms.action.delete') }}"
-                                          data-confirm-message="{{ __('isms.confirm_delete_review') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('isms.action.delete') }}">
-                                        @csrf @method('DELETE')
+                                          :confirm="__('isms.confirm_delete_review')"
+                                          confirm-icon="delete"
+                                          confirm-tone="error"
+                                          :confirm-label="__('isms.action.delete')">
                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                     :label="__('isms.action.delete')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             @endif
                         </div>

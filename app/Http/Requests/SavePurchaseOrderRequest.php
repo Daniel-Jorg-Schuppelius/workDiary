@@ -11,13 +11,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Validierung für die Anlage einer Bestellung (Feature 048, E4). Lieferant und
  * Lager kommen als Sqid; die Berechtigung trägt der Controller.
  */
-class SavePurchaseOrderRequest extends FormRequest {
+class SavePurchaseOrderRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -25,10 +24,6 @@ class SavePurchaseOrderRequest extends FormRequest {
         'supplier' => \App\Models\Supplier::class,
         'warehouse' => \App\Models\Warehouse::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

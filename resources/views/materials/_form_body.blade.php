@@ -3,39 +3,16 @@
 {{-- Shared form fields for Material --}}
 
 <x-form-group :legend="__('Stammdaten')" icon="category" tone="primary" cols="2">
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Name') }} *</label>
-        <input type="text" name="name" required value="{{ old('name', $material->name) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">SKU</label>
-        <input type="text" name="sku" value="{{ old('sku', $material->sku) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Einheit') }} *</label>
-        <input type="text" name="unit" required value="{{ old('unit', $material->unit) }}" class="input input-bordered w-full">
-    </div>
+    <x-input-field name="name" :label="__('Name')" required span="2" :value="old('name', $material->name)" />
+    <x-input-field name="sku" label="SKU" :value="old('sku', $material->sku)" />
+    <x-input-field name="unit" :label="__('Einheit')" required :value="old('unit', $material->unit)" />
 </x-form-group>
 
 <x-form-group :legend="__('Preis & Status')" icon="payments" tone="info" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('EP netto') }}</label>
-        <input type="number" step="0.0001" min="0" name="default_unit_price"
-               value="{{ old('default_unit_price', $material->default_unit_price) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">USt %</label>
-        <input type="number" step="0.01" min="0" max="100" name="tax_rate"
-               value="{{ old('tax_rate', $material->tax_rate) }}" class="input input-bordered w-full">
-    </div>
+    <x-input-field name="default_unit_price" type="number" step="0.0001" min="0" :label="__('EP netto')" :value="old('default_unit_price', $material->default_unit_price)" />
+    <x-input-field name="tax_rate" type="number" step="0.01" min="0" max="100" label="USt %" :value="old('tax_rate', $material->tax_rate)" />
     @unless ($skipStatusControls)
-    <div class="fieldset md:col-span-2">
-        <label class="label cursor-pointer justify-start gap-3">
-            <input type="hidden" name="is_active" value="0">
-            <input type="checkbox" name="is_active" value="1" class="checkbox checkbox-sm" @checked(old('is_active', $material->is_active))>
-            <span class="fieldset-label">{{ __('Aktiv') }}</span>
-        </label>
-    </div>
+    <x-checkbox-field name="is_active" :label="__('Aktiv')" :checked="old('is_active', $material->is_active)" :toggle="false" span="2" />
     @endunless
 </x-form-group>
 

@@ -120,31 +120,27 @@
                             @endif
                             @if ($article->status !== \App\Enums\Knowledge\ArticleStatus::Archived)
                                 @can('archive', $article)
-                                    <form method="POST" action="{{ route('knowledge.archive', $article) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('knowledge.archive', $article)"
                                           data-confirm-title="{{ __('knowledge.action.archive') }}"
-                                          data-confirm-message="{{ __('knowledge.confirm_archive') }}"
-                                          data-confirm-icon="archive"
-                                          data-confirm-tone="warning"
-                                          data-confirm-label="{{ __('knowledge.action.archive') }}">
-                                        @csrf
+                                          :confirm="__('knowledge.confirm_archive')"
+                                          confirm-icon="archive"
+                                          confirm-tone="warning"
+                                          :confirm-label="__('knowledge.action.archive')">
                                         <x-icon-btn icon="archive" tone="warning" size="xs" type="submit"
                                                     :label="__('knowledge.action.archive')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             @endif
                             @can('delete', $article)
-                                <form method="POST" action="{{ route('knowledge.destroy', $article) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('knowledge.destroy', $article)" method="DELETE"
                                       data-confirm-title="{{ __('knowledge.action.delete') }}"
-                                      data-confirm-message="{{ __('knowledge.confirm_delete') }}"
-                                      data-confirm-icon="delete"
-                                      data-confirm-tone="error"
-                                      data-confirm-label="{{ __('knowledge.action.delete') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('knowledge.confirm_delete')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('knowledge.action.delete')">
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                 :label="__('knowledge.action.delete')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

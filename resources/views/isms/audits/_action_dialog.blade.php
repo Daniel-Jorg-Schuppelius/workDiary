@@ -28,37 +28,23 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_action')">
 
     <x-form-group :legend="__('isms.group.corrective_action')" icon="build_circle" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.title') }} *</span>
-            <input type="text" name="title" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('title', $action?->title) }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.root_cause') }}</span>
-            <textarea name="root_cause" rows="2" maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.root_cause') }}">{{ old('root_cause', $action?->root_cause) }}</textarea>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.action_plan') }}</span>
-            <textarea name="action_plan" rows="3" maxlength="10000"
-                      class="textarea textarea-bordered w-full">{{ old('action_plan', $action?->action_plan) }}</textarea>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.owner') }}</span>
-            <select name="owner_user_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $action?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.due_on') }}</span>
-            <input type="date" name="due_on"
-                   class="input input-bordered w-full"
-                   value="{{ old('due_on', $action?->due_on?->toDateString()) }}">
-        </label>
+        <x-input-field name="title" :label="__('isms.field.title')" required minlength="3" maxlength="180"
+                       span="2"
+                       :value="old('title', $action?->title)" />
+        <x-textarea-field name="root_cause" :label="__('isms.field.root_cause')" rows="2" maxlength="10000"
+                          span="2"
+                          placeholder="{{ __('isms.hint.root_cause') }}"
+                          :value="old('root_cause', $action?->root_cause)" />
+        <x-textarea-field name="action_plan" :label="__('isms.field.action_plan')" rows="3" maxlength="10000"
+                          span="2"
+                          :value="old('action_plan', $action?->action_plan)" />
+        <x-select-field name="owner_user_id" :label="__('isms.field.owner')">
+            <option value="">—</option>
+            @foreach ($owners as $owner)
+                <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $action?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="due_on" type="date" :label="__('isms.field.due_on')"
+                       :value="old('due_on', $action?->due_on?->toDateString())" />
     </x-form-group>
 </x-modal>

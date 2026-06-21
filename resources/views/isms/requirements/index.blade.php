@@ -123,18 +123,16 @@
             <div class="alert alert-info">
                 <x-icon name="rule" />
                 <span>{{ __('isms.statements_missing_for_scope', ['scope' => $scope->name]) }}</span>
-                <form method="POST" action="{{ route('isms.statements.ensure', $scope) }}"
-                      data-confirm-dialog
+                <x-action-form :action="route('isms.statements.ensure', $scope)"
                       data-confirm-title="{{ __('isms.action.ensure_statements') }}"
-                      data-confirm-message="{{ __('isms.confirm_ensure_statements') }}"
-                      data-confirm-icon="rule"
-                      data-confirm-tone="info"
-                      data-confirm-label="{{ __('isms.action.ensure_statements') }}">
-                    @csrf
+                      :confirm="__('isms.confirm_ensure_statements')"
+                      confirm-icon="rule"
+                      confirm-tone="info"
+                      :confirm-label="__('isms.action.ensure_statements')">
                     <input type="hidden" name="norm" value="{{ $filters['norm'] }}">
                     <x-icon-btn icon="rule" tone="outline" size="sm" type="submit"
                                 show-label>{{ __('isms.action.ensure_statements') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             </div>
         @endif
 
@@ -201,17 +199,15 @@
                                                 :label="__('isms.action.edit')" />
                                 @endcan
                                 @can('delete', $requirement)
-                                    <form method="POST" action="{{ route('isms.requirements.destroy', $requirement) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('isms.requirements.destroy', $requirement)" method="DELETE"
                                           data-confirm-title="{{ __('isms.action.delete') }}"
-                                          data-confirm-message="{{ __('isms.confirm_delete_requirement') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('isms.action.delete') }}">
-                                        @csrf @method('DELETE')
+                                          :confirm="__('isms.confirm_delete_requirement')"
+                                          confirm-icon="delete"
+                                          confirm-tone="error"
+                                          :confirm-label="__('isms.action.delete')">
                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                     :label="__('isms.action.delete')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             @endif
                         </div>

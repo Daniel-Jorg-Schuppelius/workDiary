@@ -49,18 +49,15 @@
                 </td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
-                        <form method="POST" action="{{ route('admin.automations.toggle', $rule) }}" class="inline">
-                            @csrf
+                        <x-action-form :action="route('admin.automations.toggle', $rule)">
                             <x-icon-btn icon="{{ $rule->is_active ? 'pause' : 'play_arrow' }}" type="submit"
                                         :label="$rule->is_active ? __('Deaktivieren') : __('Aktivieren')" />
-                        </form>
-                        <form method="POST" action="{{ route('admin.automations.destroy', $rule) }}" class="inline"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('Regel wirklich löschen?') }}"
-                              data-confirm-label="{{ __('Löschen') }}">
-                            @csrf @method('DELETE')
+                        </x-action-form>
+                        <x-action-form :action="route('admin.automations.destroy', $rule)" method="DELETE"
+                              :confirm="__('Regel wirklich löschen?')"
+                              :confirm-label="__('Löschen')">
                             <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                        </form>
+                        </x-action-form>
                     </div>
                 </td>
             </tr>

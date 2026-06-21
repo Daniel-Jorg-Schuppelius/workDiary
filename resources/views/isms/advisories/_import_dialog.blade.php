@@ -24,14 +24,11 @@
 
     <x-form-group :legend="__('isms.group.advisory_import')" icon="upload_file" tone="primary" cols="1">
         <p class="text-xs text-base-content/70">{{ __('isms.advisories.import_hint') }}</p>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.format') }} *</span>
-            <select name="format" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Isms\AdvisoryFormat::cases() as $format)
-                    <option value="{{ $format->value }}" @selected(old('format', 'csaf') === $format->value)>{{ $format->label() }}</option>
-                @endforeach
-            </select>
-        </label>
+        <x-select-field name="format" :label="__('isms.field.format')" required>
+            @foreach (\App\Enums\Isms\AdvisoryFormat::cases() as $format)
+                <option value="{{ $format->value }}" @selected(old('format', 'csaf') === $format->value)>{{ $format->label() }}</option>
+            @endforeach
+        </x-select-field>
         <label class="form-control">
             <span class="label-text">{{ __('isms.field.advisory_file') }} *</span>
             <input type="file" name="advisory" required accept=".json,application/json"

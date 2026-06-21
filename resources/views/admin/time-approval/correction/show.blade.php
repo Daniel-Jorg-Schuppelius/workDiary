@@ -90,17 +90,15 @@
                 </form>
             @endcan
             @can('apply', $request)
-                <form method="POST" action="{{ route('admin.corrections.apply', $request) }}"
-                      data-confirm-dialog
-                      data-confirm-message="{{ __('Antrag jetzt anwenden?') }}"
-                      data-confirm-icon="play_arrow"
-                      data-confirm-tone="primary"
-                      data-confirm-label="{{ __('Anwenden') }}">
-                    @csrf
+                <x-action-form :action="route('admin.corrections.apply', $request)"
+                      :confirm="__('Antrag jetzt anwenden?')"
+                      confirm-icon="play_arrow"
+                      confirm-tone="primary"
+                      :confirm-label="__('Anwenden')">
                     <button class="btn btn-sm btn-primary" type="submit">
                         <span class="material-symbols-outlined">play_arrow</span>{{ __('Anwenden') }}
                     </button>
-                </form>
+                </x-action-form>
             @endcan
         </div>
     </x-index-page>

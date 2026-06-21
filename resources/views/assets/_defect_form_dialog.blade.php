@@ -22,21 +22,14 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Defekt melden')">
 
-    <label class="form-control">
-        <span class="label-text">{{ __('Titel') }}</span>
-        <input type="text" name="title" required maxlength="180" value="{{ old('title') }}"
-               class="input input-bordered w-full" />
-    </label>
+    <x-input-field name="title" :label="__('Titel')" required maxlength="180" :value="old('title')" />
 
     <div class="grid gap-3 sm:grid-cols-2">
-        <label class="form-control">
-            <span class="label-text">{{ __('Schweregrad') }}</span>
-            <select name="severity" class="select select-bordered w-full">
-                @foreach ($severityOptions as $value => $label)
-                    <option value="{{ $value }}" @selected(old('severity', 'medium') === $value)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </label>
+        <x-select-field name="severity" :label="__('Schweregrad')">
+            @foreach ($severityOptions as $value => $label)
+                <option value="{{ $value }}" @selected(old('severity', 'medium') === $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
         <label class="form-control justify-end">
             <span class="label cursor-pointer justify-start gap-3">
                 <input type="hidden" name="blocks_usage" value="0" />
@@ -47,8 +40,5 @@
         </label>
     </div>
 
-    <label class="form-control">
-        <span class="label-text">{{ __('Beschreibung') }}</span>
-        <textarea name="description" rows="3" class="textarea textarea-bordered w-full">{{ old('description') }}</textarea>
-    </label>
+    <x-textarea-field name="description" :label="__('Beschreibung')" rows="3" :value="old('description')" />
 </x-modal>

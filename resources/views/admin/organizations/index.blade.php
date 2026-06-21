@@ -71,27 +71,24 @@
                                         :label="__('Bearbeiten')" />
 
                             {{-- Daten-Export (DSGVO Art. 20): liefert ZIP --}}
-                            <form method="POST" action="{{ route('admin.organizations.export', $org) }}" class="inline">
-                                @csrf
+                            <x-action-form :action="route('admin.organizations.export', $org)">
                                 <x-icon-btn icon="download" type="submit"
                                             :label="__('Daten exportieren (ZIP)')" />
-                            </form>
+                            </x-action-form>
 
                             @if ($org->is_active)
                                 {{-- Deaktivieren (reversibel) --}}
-                                <form method="POST" action="{{ route('admin.organizations.deactivate', $org) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Organisation ":name" deaktivieren? Sie verschwindet aus dem Org-Switcher und kann nicht mehr als aktiver Kontext gewählt werden, bis sie reaktiviert wird.', ['name' => $org->name]) }}"
-                                      data-confirm-label="{{ __('Deaktivieren') }}">
-                                    @csrf
+                                @php $deactivateConfirm = __('Organisation ":name" deaktivieren? Sie verschwindet aus dem Org-Switcher und kann nicht mehr als aktiver Kontext gewählt werden, bis sie reaktiviert wird.', ['name' => $org->name]); @endphp
+                                <x-action-form :action="route('admin.organizations.deactivate', $org)"
+                                      :confirm="$deactivateConfirm"
+                                      :confirm-label="__('Deaktivieren')">
                                     <x-icon-btn icon="block" tone="warning" type="submit" :label="__('Deaktivieren')" />
-                                </form>
+                                </x-action-form>
                             @else
                                 {{-- Reaktivieren --}}
-                                <form method="POST" action="{{ route('admin.organizations.reactivate', $org) }}" class="inline">
-                                    @csrf
+                                <x-action-form :action="route('admin.organizations.reactivate', $org)">
                                     <x-icon-btn icon="check_circle" tone="success" type="submit" :label="__('Reaktivieren')" />
-                                </form>
+                                </x-action-form>
 
                                 {{-- Endgültig löschen (Purge) — nur nach Cooldown --}}
                                 @if ($canPurge)

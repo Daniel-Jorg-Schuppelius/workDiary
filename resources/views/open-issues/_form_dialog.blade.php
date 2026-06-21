@@ -21,43 +21,24 @@
     <input type="hidden" name="subject_kind" value="{{ $subjectKind }}">
     <input type="hidden" name="subject_id" value="{{ $subjectId }}">
 
-    <label class="form-control w-full">
-        <span class="label-text">{{ __('open-issue.field.title') }}</span>
-        <input type="text" name="title" required maxlength="200"
-               class="input input-bordered w-full" value="{{ old('title') }}">
-    </label>
+    <x-input-field name="title" :label="__('open-issue.field.title')" required maxlength="200" :value="old('title')" />
 
-    <label class="form-control w-full">
-        <span class="label-text">{{ __('open-issue.field.description') }}</span>
-        <textarea name="description" rows="3" class="textarea textarea-bordered w-full">{{ old('description') }}</textarea>
-    </label>
+    <x-textarea-field name="description" :label="__('open-issue.field.description')" rows="3" :value="old('description')" />
 
     <div class="grid gap-3 sm:grid-cols-2">
-        <label class="form-control">
-            <span class="label-text">{{ __('open-issue.field.severity') }}</span>
-            <select name="severity" class="select select-bordered w-full">
-                @foreach (\App\Enums\OpenIssue\OpenIssueSeverity::cases() as $sev)
-                    <option value="{{ $sev->value }}" @selected(old('severity', 'medium') === $sev->value)>{{ $sev->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('open-issue.field.category') }}</span>
-            <input type="text" name="category" maxlength="100" class="input input-bordered w-full" value="{{ old('category') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('open-issue.field.due_at') }}</span>
-            <input type="datetime-local" name="due_at" class="input input-bordered w-full" value="{{ old('due_at') }}">
-        </label>
+        <x-select-field name="severity" :label="__('open-issue.field.severity')">
+            @foreach (\App\Enums\OpenIssue\OpenIssueSeverity::cases() as $sev)
+                <option value="{{ $sev->value }}" @selected(old('severity', 'medium') === $sev->value)>{{ $sev->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="category" :label="__('open-issue.field.category')" maxlength="100" :value="old('category')" />
+        <x-input-field name="due_at" type="datetime-local" :label="__('open-issue.field.due_at')" :value="old('due_at')" />
         @if ($canPublishToCustomer)
-            <label class="form-control">
-                <span class="label-text">{{ __('open-issue.field.visibility') }}</span>
-                <select name="visibility" class="select select-bordered w-full">
-                    @foreach (\App\Enums\OpenIssue\OpenIssueVisibility::cases() as $vis)
-                        <option value="{{ $vis->value }}" @selected(old('visibility', 'internal') === $vis->value)>{{ $vis->label() }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <x-select-field name="visibility" :label="__('open-issue.field.visibility')">
+                @foreach (\App\Enums\OpenIssue\OpenIssueVisibility::cases() as $vis)
+                    <option value="{{ $vis->value }}" @selected(old('visibility', 'internal') === $vis->value)>{{ $vis->label() }}</option>
+                @endforeach
+            </x-select-field>
         @endif
     </div>
 </x-modal>

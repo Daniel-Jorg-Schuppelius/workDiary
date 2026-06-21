@@ -18,30 +18,13 @@
                class="input input-bordered w-full">
         @error('work_date')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </div>
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Kunde – Name') }}</label>
-        <input type="text" name="customer_name" maxlength="255"
-               value="{{ old('customer_name', $defaultCustomerName) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Rolle / Funktion') }}</label>
-        <input type="text" name="customer_role" maxlength="255"
-               value="{{ old('customer_role', $defaultCustomerRole) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('E-Mail') }}</label>
-        <input type="email" name="customer_email" maxlength="255"
-               value="{{ old('customer_email', $defaultCustomerEmail) }}"
-               class="input input-bordered w-full">
-    </div>
+    <x-input-field name="customer_name" :label="__('Kunde – Name')" maxlength="255" :value="old('customer_name', $defaultCustomerName)" :span="2" />
+    <x-input-field name="customer_role" :label="__('Rolle / Funktion')" maxlength="255" :value="old('customer_role', $defaultCustomerRole)" />
+    <x-input-field name="customer_email" type="email" :label="__('E-Mail')" maxlength="255" :value="old('customer_email', $defaultCustomerEmail)" />
 </x-form-group>
 
 <x-form-group :legend="__('Notizen')" icon="notes" tone="ghost" cols="1">
-    <div class="fieldset">
-        <textarea name="notes" rows="4" class="textarea textarea-bordered w-full">{{ old('notes', $timesheet->notes) }}</textarea>
-    </div>
+    <x-textarea-field name="notes" rows="4" :value="old('notes', $timesheet->notes)" />
 </x-form-group>
 
 @if ($errors->any())

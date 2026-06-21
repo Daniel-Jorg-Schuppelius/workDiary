@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Models\{ExpenseCategory, Organization};
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveExpenseCategoryRequest extends FormRequest {
-    public function authorize(): bool {
-        return true; // Policy greift im Controller
-    }
+class SaveExpenseCategoryRequest extends BaseFormRequest {
 
     protected function prepareForValidation(): void {
         $this->merge([

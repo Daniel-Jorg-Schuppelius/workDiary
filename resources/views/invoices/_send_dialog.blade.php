@@ -16,40 +16,27 @@
         </div>
 
         {{-- Template-Auswahl --}}
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('Vorlage') }}</span>
-            <select name="template_id" class="select select-bordered w-full" required>
-                @foreach ($templates as $tpl)
-                    <option value="{{ $tpl->sqid }}" @selected($tpl->id === $defaultTemplateId)>
-                        {{ $tpl->name }}@if ($tpl->is_default) ({{ __('Standard') }})@endif
-                    </option>
-                @endforeach
-            </select>
-        </label>
+        <x-select-field name="template_id" :label="__('Vorlage')" required>
+            @foreach ($templates as $tpl)
+                <option value="{{ $tpl->sqid }}" @selected($tpl->id === $defaultTemplateId)>
+                    {{ $tpl->name }}@if ($tpl->is_default) ({{ __('Standard') }})@endif
+                </option>
+            @endforeach
+        </x-select-field>
 
         {{-- An (To) --}}
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('An (To, mehrere mit Komma)') }} <span class="text-error">*</span></span>
-            <input type="text" name="to[]" value="{{ $defaultTo }}" required
-                   class="input input-bordered w-full"
-                   data-multi-email
-                   placeholder="empfaenger@firma.de">
-            <span class="label label-text-alt">{{ __('Mehrere Empfänger durch Komma trennen.') }}</span>
-        </label>
+        <x-input-field name="to[]" :label="__('An (To, mehrere mit Komma)')" required :value="$defaultTo"
+                       data-multi-email
+                       placeholder="empfaenger@firma.de"
+                       :hint="__('Mehrere Empfänger durch Komma trennen.')" />
 
         {{-- CC --}}
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('CC (optional)') }}</span>
-            <input type="text" name="cc[]" class="input input-bordered w-full" data-multi-email
-                   placeholder="cc@firma.de">
-        </label>
+        <x-input-field name="cc[]" :label="__('CC (optional)')" data-multi-email
+                       placeholder="cc@firma.de" />
 
         {{-- BCC --}}
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('BCC (optional)') }}</span>
-            <input type="text" name="bcc[]" class="input input-bordered w-full" data-multi-email
-                   placeholder="bcc@firma.de">
-        </label>
+        <x-input-field name="bcc[]" :label="__('BCC (optional)')" data-multi-email
+                       placeholder="bcc@firma.de" />
 
         <label class="label cursor-pointer justify-start gap-2">
             <input type="checkbox" name="bcc_sender" value="1" checked class="checkbox checkbox-sm">
@@ -57,11 +44,8 @@
         </label>
 
         {{-- Freitext --}}
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('Individueller Begleittext (optional)') }}</span>
-            <textarea name="custom_text" rows="3" class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('Wird als Platzhalter custom_text im Template eingesetzt.') }}"></textarea>
-        </label>
+        <x-textarea-field name="custom_text" :label="__('Individueller Begleittext (optional)')" rows="3"
+                          placeholder="{{ __('Wird als Platzhalter custom_text im Template eingesetzt.') }}" />
 
         <details class="text-xs">
             <summary class="cursor-pointer text-base-content/60">{{ __('Verfügbare Variablen') }}</summary>

@@ -26,14 +26,9 @@
             @error('code')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="surcharge-label">{{ __('surcharge.field.label') }}</label>
-            <input id="surcharge-label" type="text" name="label" required maxlength="100"
-                   value="{{ old('label', $rule->label) }}"
-                   class="input input-bordered w-full"
-                   placeholder="{{ __('surcharge.field.label_placeholder') }}">
-            @error('label')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="label" :label="__('surcharge.field.label')" required maxlength="100"
+                       :value="old('label', $rule->label)"
+                       :placeholder="__('surcharge.field.label_placeholder')" />
 
         <div class="fieldset">
             <label class="fieldset-label" for="surcharge-kind">{{ __('surcharge.field.kind') }}</label>
@@ -46,14 +41,10 @@
             @error('kind')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="surcharge-percentage">{{ __('surcharge.field.percentage') }}</label>
-            <input id="surcharge-percentage" type="number" name="percentage" required
-                   min="0" max="999.99" step="0.01"
-                   value="{{ old('percentage', $rule->percentage) }}"
-                   class="input input-bordered w-full tabular-nums">
-            @error('percentage')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field type="number" name="percentage" :label="__('surcharge.field.percentage')" required
+                       min="0" max="999.99" step="0.01"
+                       :value="old('percentage', $rule->percentage)"
+                       class="tabular-nums" />
     </x-form-group>
 
     <x-form-group :legend="__('surcharge.field.window')" icon="schedule" tone="info" cols="2"
@@ -120,13 +111,12 @@
 
     @if ($isEdit)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('admin.surcharge-rules.destroy', $rule) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('surcharge.action.delete_confirm') }}"
-                  data-confirm-label="{{ __('surcharge.action.delete') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('admin.surcharge-rules.destroy', $rule)"
+                  method="DELETE"
+                  :confirm="__('surcharge.action.delete_confirm')"
+                  :confirm-label="__('surcharge.action.delete')">
                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('surcharge.action.delete') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endif
 </x-modal>

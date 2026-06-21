@@ -48,11 +48,10 @@
                                     :href="route('teams.edit', $team)" :title="__('Bearbeiten')" />
                     @endcan
                     @can('delete', $team)
-                        <form method="POST" action="{{ route('teams.destroy', $team) }}" class="inline"
-                              data-confirm-dialog data-confirm-message="{{ __('Team wirklich löschen?') }}">
-                            @csrf @method('DELETE')
+                        <x-action-form :action="route('teams.destroy', $team)" method="DELETE"
+                              :confirm="__('Team wirklich löschen?')">
                             <x-icon-btn type="submit" icon="delete" size="xs" tone="error" :title="__('Löschen')" />
-                        </form>
+                        </x-action-form>
                     @endcan
                 </td>
             </tr>

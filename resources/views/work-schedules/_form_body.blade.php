@@ -118,22 +118,10 @@
 {{-- Kern- & Rahmenzeit (nur Gleitzeit) --}}
 <x-form-group :legend="__('Kernzeit & Rahmenzeit')" icon="schedule" tone="info" cols="2"
               x-show="isType('flextime')" x-cloak>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Kernzeit Start') }}</label>
-        <input type="time" name="core_start" value="{{ old('core_start', substr((string) $schedule->core_start, 0, 5)) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Kernzeit Ende') }}</label>
-        <input type="time" name="core_end" value="{{ old('core_end', substr((string) $schedule->core_end, 0, 5)) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Rahmenzeit Start') }}</label>
-        <input type="time" name="frame_start" value="{{ old('frame_start', substr((string) $schedule->frame_start, 0, 5)) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Rahmenzeit Ende') }}</label>
-        <input type="time" name="frame_end" value="{{ old('frame_end', substr((string) $schedule->frame_end, 0, 5)) }}" class="input input-bordered w-full">
-    </div>
+    <x-input-field name="core_start" type="time" :label="__('Kernzeit Start')" :value="old('core_start', substr((string) $schedule->core_start, 0, 5))" />
+    <x-input-field name="core_end" type="time" :label="__('Kernzeit Ende')" :value="old('core_end', substr((string) $schedule->core_end, 0, 5))" />
+    <x-input-field name="frame_start" type="time" :label="__('Rahmenzeit Start')" :value="old('frame_start', substr((string) $schedule->frame_start, 0, 5))" />
+    <x-input-field name="frame_end" type="time" :label="__('Rahmenzeit Ende')" :value="old('frame_end', substr((string) $schedule->frame_end, 0, 5))" />
 </x-form-group>
 
 {{-- Pausen & Gültigkeit (für alle Typen; Pflichtpause ist gesetzlich) --}}
@@ -148,16 +136,8 @@
         <input type="hidden" name="break_minutes" :value="toMin(d.breakMin)">
         <input type="number" min="0" :step="step" x-model="d.breakMin" class="input input-bordered w-full">
     </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Gültig ab') }} *</label>
-        <input type="date" name="valid_from" required
-               value="{{ old('valid_from', optional($schedule->valid_from)->format('Y-m-d')) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Gültig bis') }}</label>
-        <input type="date" name="valid_to"
-               value="{{ old('valid_to', optional($schedule->valid_to)->format('Y-m-d')) }}" class="input input-bordered w-full">
-    </div>
+    <x-input-field name="valid_from" type="date" :label="__('Gültig ab')" required :value="old('valid_from', optional($schedule->valid_from)->format('Y-m-d'))" />
+    <x-input-field name="valid_to" type="date" :label="__('Gültig bis')" :value="old('valid_to', optional($schedule->valid_to)->format('Y-m-d'))" />
 </x-form-group>
 
 @if ($errors->any())

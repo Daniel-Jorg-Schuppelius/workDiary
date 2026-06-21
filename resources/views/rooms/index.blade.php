@@ -169,13 +169,11 @@
                                                 :label="__('Bearbeiten')" />
                                 @endcan
                                 @can('delete', $room)
-                                    <form action="{{ route('rooms.destroy', $room) }}" method="POST" class="inline"
-                                          data-confirm-dialog
-                                          data-confirm-message="{{ __('Raum wirklich löschen?') }}"
-                                          data-confirm-label="{{ __('Löschen') }}">
-                                        @csrf @method('DELETE')
+                                    <x-action-form :action="route('rooms.destroy', $room)" method="DELETE"
+                                          :confirm="__('Raum wirklich löschen?')"
+                                          :confirm-label="__('Löschen')">
                                         <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             </td>
                         </tr>

@@ -22,16 +22,14 @@
             <x-icon-btn icon="upload" size="sm"
                         :href="route('admin.imports.create', ['entity' => 'customers'])"
                         show-label>{{ __('CSV-Import') }}</x-icon-btn>
-            <form method="POST" action="{{ route('customers.lexoffice.push-all') }}"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?') }}"
-                  data-confirm-icon="sync"
-                  data-confirm-tone="info"
-                  data-confirm-label="{{ __('Synchronisieren') }}">
-                @csrf
+            <x-action-form :action="route('customers.lexoffice.push-all')"
+                  :confirm="__('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?')"
+                  confirm-icon="sync"
+                  confirm-tone="info"
+                  :confirm-label="__('Synchronisieren')">
                 <x-icon-btn icon="sync" type="submit" size="sm"
                             show-label>{{ __('Lexoffice: alle pushen') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         @endif
         @can('create', App\Models\Customer::class)
             <x-icon-btn icon="add" tone="primary" size="sm"

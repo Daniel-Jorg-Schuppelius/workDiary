@@ -80,13 +80,11 @@
                             <x-icon-btn icon="edit"
                                         :href="route('tours.edit', $tour)"
                                         :label="__('Bearbeiten')" />
-                            <form method="POST" action="{{ route('tours.destroy', $tour) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Tour wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('tours.destroy', $tour)" method="DELETE"
+                                  :confirm="__('Tour wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         </td>
                     </tr>
                 @empty

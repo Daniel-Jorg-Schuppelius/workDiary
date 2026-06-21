@@ -45,39 +45,34 @@
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <form method="POST" action="{{ route('admin.demo.seed') }}" class="flex flex-col gap-2 md:flex-row md:items-end">
                     @csrf
-                    <label class="form-control w-full md:w-64">
-                        <span class="label-text mb-1 text-sm">{{ __('Musterbranche') }}</span>
-                        <select name="industry" class="select select-bordered select-sm w-full" @disabled(! $isEmpty)>
-                            @foreach ($industries as $industry)
-                                <option value="{{ $industry->value }}" @selected($currentIndustry->value === $industry->value)>
-                                    {{ $industry->label() }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </label>
+                    <x-select-field name="industry" :label="__('Musterbranche')" class="select-sm" :disabled="! $isEmpty">
+                        @foreach ($industries as $industry)
+                            <option value="{{ $industry->value }}" @selected($currentIndustry->value === $industry->value)>
+                                {{ $industry->label() }}
+                            </option>
+                        @endforeach
+                    </x-select-field>
                     <button type="submit"
                             class="btn btn-primary w-full md:w-auto"
-                            @disabled(! $isEmpty)>
+                            :disabled="! $isEmpty">
                         <x-icon name="play_arrow" />
                         {{ __('Demo-Daten erzeugen') }}
                     </button>
                 </form>
 
                 @can(\App\Enums\User\Permission::PlatformDemoReset->value)
-                    <form method="POST" action="{{ route('admin.demo.reset') }}" class="contents"
-                          data-confirm-dialog
-                          data-confirm-message="{{ __('Wirklich alle Demo-Daten löschen und neu erzeugen?') }}"
-                          data-confirm-icon="refresh"
-                          data-confirm-tone="warning"
-                          data-confirm-label="{{ __('Zurücksetzen') }}">
-                        @csrf
+                    <x-action-form :action="route('admin.demo.reset')" class="contents"
+                          :confirm="__('Wirklich alle Demo-Daten löschen und neu erzeugen?')"
+                          confirm-icon="refresh"
+                          confirm-tone="warning"
+                          :confirm-label="__('Zurücksetzen')">
                         <button type="submit"
                                 class="btn btn-warning w-full md:w-auto"
                                 @disabled(! $alreadySeeded)>
                             <x-icon name="refresh" />
                             {{ __('Demo-Mandant zurücksetzen') }}
                         </button>
-                    </form>
+                    </x-action-form>
                 @endcan
             </div>
 

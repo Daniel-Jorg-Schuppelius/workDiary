@@ -30,9 +30,9 @@
                         </form>
                     @endif
                     @if ($isOpen)
-                        <form method="POST" action="{{ route('manufacturing-orders.cancel', $order) }}" onsubmit="return confirm('{{ __('manufacturing.order.action.cancel') }}?')">@csrf
+                        <x-action-form :action="route('manufacturing-orders.cancel', $order)" :confirm="__('manufacturing.order.action.cancel').'?'">
                             <x-icon-btn icon="cancel" tone="error" size="sm" type="submit" :title="__('manufacturing.order.action.cancel')" />
-                        </form>
+                        </x-action-form>
                     @endif
                 @endif
             </x-slot:actions>

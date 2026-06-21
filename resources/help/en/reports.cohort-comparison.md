@@ -4,7 +4,6 @@ topic: reports.cohort-comparison
 version: 1
 audience: []
 related:
-    - reports.qualifications
     - reports.economics
 ---
 

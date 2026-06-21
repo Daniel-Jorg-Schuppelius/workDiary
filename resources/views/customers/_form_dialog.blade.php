@@ -19,254 +19,84 @@
     @endif
 
     <x-form-group :legend="__('Stammdaten')" icon="badge" tone="primary" cols="2">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Name') }} *</label>
-                <input name="name" type="text" required maxlength="200"
-                       class="input input-bordered w-full"
-                       value="{{ old('name', $customer?->name) }}">
-                @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Kundennummer') }}</label>
-                <input name="number" type="text" maxlength="64"
-                       class="input input-bordered w-full"
-                       value="{{ old('number', $customer?->number) }}">
-                @error('number')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
-
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Firma') }}</label>
-                <input name="company" type="text" maxlength="200"
-                       class="input input-bordered w-full"
-                       value="{{ old('company', $customer?->company) }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('USt-IdNr.') }}</label>
-                <input name="vat_id" type="text" maxlength="64"
-                       class="input input-bordered w-full"
-                       value="{{ old('vat_id', $customer?->vat_id) }}">
-            </div>
+            <x-input-field name="name" :label="__('Name')" required maxlength="200" :value="old('name', $customer?->name)" />
+            <x-input-field name="number" :label="__('Kundennummer')" maxlength="64" :value="old('number', $customer?->number)" />
+            <x-input-field name="company" :label="__('Firma')" maxlength="200" :value="old('company', $customer?->company)" />
+            <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $customer?->vat_id)" />
         </x-form-group>
 
         <x-form-group :legend="__('Kontakt')" icon="call" tone="info" cols="2">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Ansprechpartner') }}</label>
-                <input name="contact_name" type="text" maxlength="200"
-                       class="input input-bordered w-full"
-                       value="{{ old('contact_name', $customer?->contact_name) }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('E-Mail') }}</label>
-                <input name="email" type="email" maxlength="255"
-                       class="input input-bordered w-full"
-                       value="{{ old('email', $customer?->email) }}">
-                @error('email')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
-
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Telefon') }}</label>
-                <input name="phone" type="text" maxlength="64"
-                       class="input input-bordered w-full"
-                       value="{{ old('phone', $customer?->phone) }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Mobil') }}</label>
-                <input name="mobile" type="text" maxlength="64"
-                       class="input input-bordered w-full"
-                       value="{{ old('mobile', $customer?->mobile) }}">
-            </div>
+            <x-input-field name="contact_name" :label="__('Ansprechpartner')" maxlength="200" :value="old('contact_name', $customer?->contact_name)" />
+            <x-input-field name="email" type="email" :label="__('E-Mail')" maxlength="255" :value="old('email', $customer?->email)" />
+            <x-input-field name="phone" :label="__('Telefon')" maxlength="64" :value="old('phone', $customer?->phone)" />
+            <x-input-field name="mobile" :label="__('Mobil')" maxlength="64" :value="old('mobile', $customer?->mobile)" />
         </x-form-group>
 
         <x-form-group :legend="__('Adresse')" icon="home" tone="ghost" cols="2">
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('Adresse (Freitext, optional)') }}</label>
-                <textarea name="address" rows="2" maxlength="1000"
-                          class="textarea textarea-bordered w-full">{{ old('address', $customer?->address) }}</textarea>
-                <p class="text-xs text-base-content/60 mt-1">{{ __('Wird nur genutzt, wenn die strukturierten Felder darunter leer sind.') }}</p>
-            </div>
-
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('Straße / Hausnr.') }}</label>
-                <input name="address_street" type="text" maxlength="255"
-                       class="input input-bordered w-full"
-                       value="{{ old('address_street', $customer?->address_street) }}">
-            </div>
-
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('PLZ') }}</label>
-                <input name="address_zip" type="text" maxlength="32"
-                       class="input input-bordered w-full"
-                       value="{{ old('address_zip', $customer?->address_zip) }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Ort') }}</label>
-                <input name="address_city" type="text" maxlength="128"
-                       class="input input-bordered w-full"
-                       value="{{ old('address_city', $customer?->address_city) }}">
-            </div>
-
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Land (ISO 2)') }}</label>
-                <input name="country" type="text" maxlength="2"
-                       class="input input-bordered w-full uppercase"
-                       value="{{ old('country', $customer?->country) }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Homepage') }}</label>
-                <input name="homepage" type="url" maxlength="255"
-                       class="input input-bordered w-full"
-                       value="{{ old('homepage', $customer?->homepage) }}">
-                @error('homepage')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
+            <x-textarea-field name="address" span="2" :label="__('Adresse (Freitext, optional)')" rows="2" maxlength="1000"
+                              :value="old('address', $customer?->address)"
+                              :hint="__('Wird nur genutzt, wenn die strukturierten Felder darunter leer sind.')" />
+            <x-input-field name="address_street" span="2" :label="__('Straße / Hausnr.')" maxlength="255" :value="old('address_street', $customer?->address_street)" />
+            <x-input-field name="address_zip" :label="__('PLZ')" maxlength="32" :value="old('address_zip', $customer?->address_zip)" />
+            <x-input-field name="address_city" :label="__('Ort')" maxlength="128" :value="old('address_city', $customer?->address_city)" />
+            <x-input-field name="country" :label="__('Land (ISO 2)')" maxlength="2" class="uppercase" :value="old('country', $customer?->country)" />
+            <x-input-field name="homepage" type="url" :label="__('Homepage')" maxlength="255" :value="old('homepage', $customer?->homepage)" />
         </x-form-group>
 
         <x-form-group :legend="__('Abrechnung & Darstellung')" icon="payments" tone="warning" cols="2">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Währung') }}</label>
-                <input name="currency" type="text" maxlength="3" required
-                       class="input input-bordered w-full uppercase"
-                       value="{{ old('currency', $customer?->currency ?? 'EUR') }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Zeitzone') }}</label>
-                <input name="timezone" type="text" maxlength="64"
-                       class="input input-bordered w-full"
-                       value="{{ old('timezone', $customer?->timezone) }}"
-                       placeholder="Europe/Berlin">
-                @error('timezone')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
+            <x-input-field name="currency" :label="__('Währung')" required maxlength="3" class="uppercase" :value="old('currency', $customer?->currency ?? 'EUR')" />
+            <x-input-field name="timezone" :label="__('Zeitzone')" maxlength="64" placeholder="Europe/Berlin" :value="old('timezone', $customer?->timezone)" />
+            <x-input-field name="hourly_rate" type="number" step="0.01" min="0" :label="__('Stundensatz')" :value="old('hourly_rate', $customer?->hourly_rate)" />
+            <x-input-field name="internal_rate" type="number" step="0.01" min="0" :label="__('Interner Satz')" :value="old('internal_rate', $customer?->internal_rate)" />
 
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Stundensatz') }}</label>
-                <input name="hourly_rate" type="number" step="0.01" min="0"
-                       class="input input-bordered w-full"
-                       value="{{ old('hourly_rate', $customer?->hourly_rate) }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Interner Satz') }}</label>
-                <input name="internal_rate" type="number" step="0.01" min="0"
-                       class="input input-bordered w-full"
-                       value="{{ old('internal_rate', $customer?->internal_rate) }}">
-            </div>
-
-            <div class="fieldset">
-                <label class="fieldset-label cursor-pointer gap-3">
-                    <input type="hidden" name="billable" value="0">
-                    <input type="checkbox" name="billable" value="1" class="toggle toggle-primary"
-                           @checked(old('billable', $customer?->billable ?? true))>
-                    <span>{{ __('Abrechenbar') }}</span>
-                </label>
-            </div>
+            <x-checkbox-field name="billable" :label="__('Abrechenbar')" :checked="old('billable', $customer?->billable ?? true)" />
 
             {{-- E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10) — Pflicht in der XRechnung. --}}
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('invoicing.buyer_reference') }}</label>
-                <input name="buyer_reference" type="text" maxlength="64"
-                       class="input input-bordered w-full"
-                       value="{{ old('buyer_reference', $customer?->buyer_reference) }}">
-                <p class="text-xs text-base-content/60 mt-1">{{ __('invoicing.buyer_reference_hint') }}</p>
-                @error('buyer_reference')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
+            <x-input-field name="buyer_reference" :label="__('invoicing.buyer_reference')" maxlength="64"
+                           :value="old('buyer_reference', $customer?->buyer_reference)" :hint="__('invoicing.buyer_reference_hint')" />
 
             @can(\App\Enums\User\Permission::FinanceConfig->value)
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.field.billing_mode') }}</label>
-                    <select name="billing_mode" class="select select-bordered w-full">
-                        <option value="">{{ __('finance.field.billing_mode_inherit') }}</option>
-                        @foreach (\App\Enums\Finance\BillingMode::options() as $value => $label)
-                            <option value="{{ $value }}" @selected(old('billing_mode', $customer?->billing_mode?->value) === $value)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                    <p class="text-xs text-base-content/60 mt-1">{{ __('finance.field.billing_mode_hint') }}</p>
-                    @error('billing_mode')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                </div>
+                <x-select-field name="billing_mode" :label="__('finance.field.billing_mode')" :hint="__('finance.field.billing_mode_hint')">
+                    <option value="">{{ __('finance.field.billing_mode_inherit') }}</option>
+                    @foreach (\App\Enums\Finance\BillingMode::options() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('billing_mode', $customer?->billing_mode?->value) === $value)>{{ $label }}</option>
+                    @endforeach
+                </x-select-field>
 
                 {{-- DATEV-Buchungsstapel (Feature 045, Priorität 2): Debitorennummer.
                      Leer ⇒ deterministische Vergaberegel (Nummernkreis-Basis + Kunden-ID). --}}
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.field.debtor_no') }}</label>
-                    <input name="debtor_no" type="text" maxlength="12"
-                           class="input input-bordered w-full"
-                           value="{{ old('debtor_no', $customer?->debtor_no) }}">
-                    <p class="text-xs text-base-content/60 mt-1">{{ __('finance.datev.field.debtor_no_hint') }}</p>
-                    @error('debtor_no')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                </div>
+                <x-input-field name="debtor_no" :label="__('finance.datev.field.debtor_no')" maxlength="12"
+                               :value="old('debtor_no', $customer?->debtor_no)" :hint="__('finance.datev.field.debtor_no_hint')" />
             @endcan
         </x-form-group>
 
         @php $ts = (array) old('travel_settings', $customer?->travel_settings ?? []); @endphp
         <x-form-group :legend="__('Anfahrt (Übersteuerung)')" icon="local_shipping" tone="ghost" cols="2"
                       :description="__('Leer = globale Einstellung erben.')">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Modus') }}</label>
-                <select name="travel_settings[mode]" class="select select-bordered w-full">
-                    <option value="">{{ __('— erben —') }}</option>
-                    <option value="flat" @selected(($ts['mode'] ?? '') === 'flat')>{{ __('Pauschale') }}</option>
-                    <option value="km" @selected(($ts['mode'] ?? '') === 'km')>{{ __('Kilometer') }}</option>
-                </select>
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Kilometer-Quelle') }}</label>
-                <select name="travel_settings[km_source]" class="select select-bordered w-full">
-                    <option value="">{{ __('— erben —') }}</option>
-                    <option value="company" @selected(($ts['km_source'] ?? '') === 'company')>{{ __('Firmenstandort') }}</option>
-                    <option value="tour" @selected(($ts['km_source'] ?? '') === 'tour')>{{ __('Je nach Tour') }}</option>
-                </select>
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Pauschale (netto €)') }}</label>
-                <input type="number" step="0.01" min="0" name="travel_settings[flat_amount]"
-                       value="{{ $ts['flat_amount'] ?? '' }}" class="input input-bordered w-full">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Satz (€/km)') }}</label>
-                <input type="number" step="0.01" min="0" name="travel_settings[rate_per_km]"
-                       value="{{ $ts['rate_per_km'] ?? '' }}" class="input input-bordered w-full">
-            </div>
+            <x-select-field name="travel_settings[mode]" :label="__('Modus')">
+                <option value="">{{ __('— erben —') }}</option>
+                <option value="flat" @selected(($ts['mode'] ?? '') === 'flat')>{{ __('Pauschale') }}</option>
+                <option value="km" @selected(($ts['mode'] ?? '') === 'km')>{{ __('Kilometer') }}</option>
+            </x-select-field>
+            <x-select-field name="travel_settings[km_source]" :label="__('Kilometer-Quelle')">
+                <option value="">{{ __('— erben —') }}</option>
+                <option value="company" @selected(($ts['km_source'] ?? '') === 'company')>{{ __('Firmenstandort') }}</option>
+                <option value="tour" @selected(($ts['km_source'] ?? '') === 'tour')>{{ __('Je nach Tour') }}</option>
+            </x-select-field>
+            <x-input-field name="travel_settings[flat_amount]" type="number" step="0.01" min="0" :label="__('Pauschale (netto €)')" :value="$ts['flat_amount'] ?? ''" />
+            <x-input-field name="travel_settings[rate_per_km]" type="number" step="0.01" min="0" :label="__('Satz (€/km)')" :value="$ts['rate_per_km'] ?? ''" />
         </x-form-group>
 
         <x-form-group :legend="__('Bankverbindung')" icon="account_balance" tone="ghost" cols="2">
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('Kontoinhaber') }}</label>
-                <input name="bank_account_holder" type="text" maxlength="200"
-                       class="input input-bordered w-full"
-                       value="{{ old('bank_account_holder', $customer?->bank_account_holder) }}">
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('IBAN') }}</label>
-                <input name="bank_iban" type="text" maxlength="64"
-                       class="input input-bordered w-full uppercase"
-                       value="{{ old('bank_iban', $customer?->bank_iban) }}"
-                       placeholder="DE00 0000 0000 0000 0000 00">
-                @error('bank_iban')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('BIC') }}</label>
-                <input name="bank_bic" type="text" maxlength="32"
-                       class="input input-bordered w-full uppercase"
-                       value="{{ old('bank_bic', $customer?->bank_bic) }}">
-                @error('bank_bic')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('Bank') }}</label>
-                <input name="bank_name" type="text" maxlength="200"
-                       class="input input-bordered w-full"
-                       value="{{ old('bank_name', $customer?->bank_name) }}">
-            </div>
+            <x-input-field name="bank_account_holder" span="2" :label="__('Kontoinhaber')" maxlength="200" :value="old('bank_account_holder', $customer?->bank_account_holder)" />
+            <x-input-field name="bank_iban" :label="__('IBAN')" maxlength="64" class="uppercase" placeholder="DE00 0000 0000 0000 0000 00" :value="old('bank_iban', $customer?->bank_iban)" />
+            <x-input-field name="bank_bic" :label="__('BIC')" maxlength="32" class="uppercase" :value="old('bank_bic', $customer?->bank_bic)" />
+            <x-input-field name="bank_name" span="2" :label="__('Bank')" maxlength="200" :value="old('bank_name', $customer?->bank_name)" />
         </x-form-group>
 
         <x-form-group :legend="__('Notizen')" icon="description" tone="ghost">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Notiz (intern)') }}</label>
-                <textarea name="comment" rows="2" maxlength="5000"
-                          class="textarea textarea-bordered w-full">{{ old('comment', $customer?->comment) }}</textarea>
-            </div>
-
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Rechnungstext') }}</label>
-                <textarea name="invoice_text" rows="2" maxlength="5000"
-                          class="textarea textarea-bordered w-full">{{ old('invoice_text', $customer?->invoice_text) }}</textarea>
-            </div>
+            <x-textarea-field name="comment" :label="__('Notiz (intern)')" rows="2" maxlength="5000" :value="old('comment', $customer?->comment)" />
+            <x-textarea-field name="invoice_text" :label="__('Rechnungstext')" rows="2" maxlength="5000" :value="old('invoice_text', $customer?->invoice_text)" />
         </x-form-group>
 
         @php

@@ -22,28 +22,9 @@
     :submit-label="__('procedure.action.createTemplate')">
 
     <x-form-group :legend="__('procedure.title.template')" icon="rule" tone="primary" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('procedure.field.code') }} *</span>
-            <input type="text" name="code" required maxlength="60"
-                   pattern="[A-Za-z0-9_.\-]+"
-                   placeholder="{{ __('procedure.hint.code') }}"
-                   class="input input-bordered w-full font-mono" value="{{ old('code') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('procedure.field.domain') }}</span>
-            <input type="text" name="domain" maxlength="40"
-                   placeholder="{{ __('procedure.hint.domain') }}"
-                   class="input input-bordered w-full" value="{{ old('domain') }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('procedure.field.name') }} *</span>
-            <input type="text" name="name" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full" value="{{ old('name') }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('procedure.field.description') }}</span>
-            <textarea name="description" rows="2" maxlength="2000"
-                      class="textarea textarea-bordered w-full">{{ old('description') }}</textarea>
-        </label>
+        <x-input-field name="code" :label="__('procedure.field.code')" required maxlength="60" pattern="[A-Za-z0-9_.\-]+" placeholder="{{ __('procedure.hint.code') }}" class="font-mono" :value="old('code')" />
+        <x-input-field name="domain" :label="__('procedure.field.domain')" maxlength="40" placeholder="{{ __('procedure.hint.domain') }}" :value="old('domain')" />
+        <x-input-field name="name" :label="__('procedure.field.name')" required minlength="3" maxlength="180" span="2" :value="old('name')" />
+        <x-textarea-field name="description" :label="__('procedure.field.description')" rows="2" maxlength="2000" span="2" :value="old('description')" />
     </x-form-group>
 </x-modal>

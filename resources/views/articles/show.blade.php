@@ -23,15 +23,13 @@
                 @if ($canManage)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('articles.edit', $article)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @if ($article->status->value !== 'retired')
-                        <form method="POST" action="{{ route('articles.retire', $article) }}" onsubmit="return confirm('{{ __('article.confirm.retire') }}')" class="inline">
-                            @csrf
+                        <x-action-form :action="route('articles.retire', $article)" :confirm="__('article.confirm.retire')">
                             <x-icon-btn icon="archive" size="sm" type="submit" tone="warning" show-label>{{ __('article.action.retire') }}</x-icon-btn>
-                        </form>
+                        </x-action-form>
                     @endif
-                    <form method="POST" action="{{ route('articles.destroy', $article) }}" onsubmit="return confirm('{{ __('article.confirm.delete') }}')" class="inline">
-                        @csrf @method('DELETE')
+                    <x-action-form :action="route('articles.destroy', $article)" method="DELETE" :confirm="__('article.confirm.delete')">
                         <x-icon-btn icon="delete" size="sm" type="submit" tone="error" :title="__('Löschen')" />
-                    </form>
+                    </x-action-form>
                 @endif
             </x-slot:actions>
         </x-page-toolbar>

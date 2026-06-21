@@ -28,66 +28,38 @@
     @endif
 
     <x-form-group :legend="__('Stammdaten')" icon="inventory_2" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Name') }} *</label>
-            <input name="name" type="text" required maxlength="255"
-                   class="input input-bordered w-full" value="{{ old('name', $article?->name) }}">
-            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.sku') }}</label>
-            <input name="number" type="text" maxlength="64"
-                   class="input input-bordered w-full" value="{{ old('number', $article?->number) }}"
-                   placeholder="{{ __('article.sku_auto_hint') }}">
-            @error('number')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="name" :label="__('Name')" required maxlength="255"
+                       :value="old('name', $article?->name)" />
+        <x-input-field name="number" :label="__('article.field.sku')" maxlength="64"
+                       :value="old('number', $article?->number)"
+                       :placeholder="__('article.sku_auto_hint')" />
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.type') }} *</label>
-            <select name="type" class="select select-bordered w-full">
-                @foreach ($types as $type)
-                    <option value="{{ $type->value }}" @selected(old('type', $article?->type?->value) === $type->value)>{{ $type->label() }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.base_unit') }} *</label>
-            <input name="base_unit" type="text" required maxlength="20"
-                   class="input input-bordered w-full" value="{{ old('base_unit', $article?->base_unit ?? 'Stk') }}">
-            @error('base_unit')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-select-field name="type" :label="__('article.field.type')" required>
+            @foreach ($types as $type)
+                <option value="{{ $type->value }}" @selected(old('type', $article?->type?->value) === $type->value)>{{ $type->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="base_unit" :label="__('article.field.base_unit')" required maxlength="20"
+                       :value="old('base_unit', $article?->base_unit ?? 'Stk')" />
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.status') }} *</label>
-            <select name="status" class="select select-bordered w-full">
-                @foreach ($statuses as $st)
-                    <option value="{{ $st->value }}" @selected(old('status', $article?->status?->value ?? 'draft') === $st->value)>{{ $st->label() }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.gtin') }}</label>
-            <input name="gtin" type="text" maxlength="14"
-                   class="input input-bordered w-full" value="{{ old('gtin', $article?->gtin) }}">
-        </div>
+        <x-select-field name="status" :label="__('article.field.status')" required>
+            @foreach ($statuses as $st)
+                <option value="{{ $st->value }}" @selected(old('status', $article?->status?->value ?? 'draft') === $st->value)>{{ $st->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="gtin" :label="__('article.field.gtin')" maxlength="14"
+                       :value="old('gtin', $article?->gtin)" />
     </x-form-group>
 
     <x-form-group :legend="__('article.group.pricing')" icon="payments" tone="primary" cols="3">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.default_purchase_price') }}</label>
-            <input name="default_purchase_price" type="number" step="0.0001" min="0"
-                   class="input input-bordered w-full" value="{{ old('default_purchase_price', $article?->default_purchase_price) }}">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.default_sale_price') }}</label>
-            <input name="default_sale_price" type="number" step="0.0001" min="0"
-                   class="input input-bordered w-full" value="{{ old('default_sale_price', $article?->default_sale_price) }}">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.currency') }}</label>
-            <input name="currency" type="text" maxlength="3"
-                   class="input input-bordered w-full" value="{{ old('currency', $article?->currency ?? 'EUR') }}">
-        </div>
+        <x-input-field name="default_purchase_price" type="number" step="0.0001" min="0"
+                       :label="__('article.field.default_purchase_price')"
+                       :value="old('default_purchase_price', $article?->default_purchase_price)" />
+        <x-input-field name="default_sale_price" type="number" step="0.0001" min="0"
+                       :label="__('article.field.default_sale_price')"
+                       :value="old('default_sale_price', $article?->default_sale_price)" />
+        <x-input-field name="currency" :label="__('article.field.currency')" maxlength="3"
+                       :value="old('currency', $article?->currency ?? 'EUR')" />
     </x-form-group>
 
     <x-form-group :legend="__('article.group.flags')" icon="tune" tone="primary" cols="2">

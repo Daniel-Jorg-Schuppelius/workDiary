@@ -27,13 +27,11 @@
                                     :href="route('foreign-customers.edit', $foreignCustomer)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @endcan
                     @can('promote', $foreignCustomer)
-                        <form method="POST" action="{{ route('foreign-customers.promote', $foreignCustomer) }}"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('Diesen Fremdkunden zu einem eigenständigen Kunden befördern? Alle zugeordneten Projekte werden auf den neuen Kunden umgehängt.') }}"
-                              data-confirm-label="{{ __('Befördern') }}">
-                            @csrf
+                        <x-action-form :action="route('foreign-customers.promote', $foreignCustomer)"
+                              :confirm="__('Diesen Fremdkunden zu einem eigenständigen Kunden befördern? Alle zugeordneten Projekte werden auf den neuen Kunden umgehängt.')"
+                              :confirm-label="__('Befördern')">
                             <x-icon-btn icon="upgrade" type="submit" size="sm" tone="primary" show-label>{{ __('Zu Kunde befördern') }}</x-icon-btn>
-                        </form>
+                        </x-action-form>
                     @endcan
                     @can('archive', $foreignCustomer)
                         @if ($foreignCustomer->isArchived())

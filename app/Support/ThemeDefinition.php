@@ -167,7 +167,11 @@ final class ThemeDefinition {
         ];
     }
 
-    /** Picker-Eintrag. @return array{key:string,label:string,scheme:string} */
+    /**
+     * Picker-Eintrag.
+     *
+     * @return array{key:string,label:string,scheme:string}
+     */
     public function toPickerEntry(): array {
         return ['key' => $this->token(), 'label' => $this->label, 'scheme' => $this->scheme];
     }

@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\Asset\MaintenanceIntervalKind;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
-class SaveMaintenancePlanRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveMaintenancePlanRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

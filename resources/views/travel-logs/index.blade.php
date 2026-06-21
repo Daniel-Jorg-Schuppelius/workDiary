@@ -76,21 +76,17 @@
                                         data-entry-modal-trigger
                                         :href="route('travel-logs.edit', $log)"
                                         :label="__('Bearbeiten')" />
-                            <form method="POST" action="{{ route('travel-logs.per-diem.generate', $log) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Verpflegungspauschale aus dieser Fahrt erzeugen?') }}"
-                                  data-confirm-label="{{ __('Erzeugen') }}">
-                                @csrf
+                            <x-action-form :action="route('travel-logs.per-diem.generate', $log)"
+                                  :confirm="__('Verpflegungspauschale aus dieser Fahrt erzeugen?')"
+                                  :confirm-label="__('Erzeugen')">
                                 <x-icon-btn icon="restaurant_menu" tone="primary" type="submit"
                                             :label="__('Verpflegungspauschale erzeugen')" />
-                            </form>
-                            <form method="POST" action="{{ route('travel-logs.destroy', $log) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Fahrt wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            </x-action-form>
+                            <x-action-form :action="route('travel-logs.destroy', $log)" method="DELETE"
+                                  :confirm="__('Fahrt wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         </td>
                     </tr>
                 @empty

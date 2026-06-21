@@ -12,10 +12,9 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\User;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTeamRequest extends FormRequest {
+class SaveTeamRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -23,11 +22,6 @@ class SaveTeamRequest extends FormRequest {
         'lead_user_id' => User::class,
         'member_ids' => User::class,
     ];
-
-    public function authorize(): bool {
-        // Autorisierung erfolgt im Controller via Gate (TeamPolicy).
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

@@ -81,13 +81,12 @@
                                         data-entry-modal-trigger
                                         :href="route('admin.surcharge-rules.edit', $rule)"
                                         :label="__('surcharge.action.edit')" />
-                            <form method="POST" action="{{ route('admin.surcharge-rules.destroy', $rule) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('surcharge.action.delete_confirm') }}"
-                                  data-confirm-label="{{ __('surcharge.action.delete') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('admin.surcharge-rules.destroy', $rule)"
+                                  method="DELETE"
+                                  :confirm="__('surcharge.action.delete_confirm')"
+                                  :confirm-label="__('surcharge.action.delete')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('surcharge.action.delete')" />
-                            </form>
+                            </x-action-form>
                         </div>
                     @endif
                 </td>

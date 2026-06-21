@@ -27,50 +27,32 @@
     </p>
 
     <div class="grid gap-3 sm:grid-cols-2">
-        <label class="form-control">
-            <span class="label-text">{{ __('An Person') }}</span>
-            <select name="assigned_to_user_id" class="select select-bordered w-full">
-                <option value="">{{ __('— keine —') }}</option>
-                @foreach ($users as $u)
-                    <option value="{{ $u->sqid }}" @selected(old('assigned_to_user_id') === $u->sqid)>{{ $u->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('An Team') }}</span>
-            <select name="assigned_to_team_id" class="select select-bordered w-full">
-                <option value="">{{ __('— keines —') }}</option>
-                @foreach ($teams as $t)
-                    <option value="{{ $t->sqid }}" @selected(old('assigned_to_team_id') === $t->sqid)>{{ $t->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Auftragsbezug') }}</span>
-            <select name="diary_entry_id" class="select select-bordered w-full">
-                <option value="">{{ __('— kein Auftrag —') }}</option>
-                @foreach ($diaryEntries as $entry)
-                    <option value="{{ $entry->sqid }}" @selected(old('diary_entry_id') === $entry->sqid)>
-                        {{ $entry->title ?: ('#' . $entry->id) }}
-                    </option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Erwartete Rückgabe') }}</span>
-            <input type="datetime-local" name="expected_return_at" value="{{ old('expected_return_at') }}"
-                   class="input input-bordered w-full" />
-        </label>
+        <x-select-field name="assigned_to_user_id" :label="__('An Person')">
+            <option value="">{{ __('— keine —') }}</option>
+            @foreach ($users as $u)
+                <option value="{{ $u->sqid }}" @selected(old('assigned_to_user_id') === $u->sqid)>{{ $u->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="assigned_to_team_id" :label="__('An Team')">
+            <option value="">{{ __('— keines —') }}</option>
+            @foreach ($teams as $t)
+                <option value="{{ $t->sqid }}" @selected(old('assigned_to_team_id') === $t->sqid)>{{ $t->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="diary_entry_id" :label="__('Auftragsbezug')">
+            <option value="">{{ __('— kein Auftrag —') }}</option>
+            @foreach ($diaryEntries as $entry)
+                <option value="{{ $entry->sqid }}" @selected(old('diary_entry_id') === $entry->sqid)>
+                    {{ $entry->title ?: ('#' . $entry->id) }}
+                </option>
+            @endforeach
+        </x-select-field>
+        <x-input-field type="datetime-local" name="expected_return_at" :label="__('Erwartete Rückgabe')"
+                       :value="old('expected_return_at')" />
     </div>
 
-    <label class="form-control">
-        <span class="label-text">{{ __('Zustand bei Ausgabe') }}</span>
-        <input type="text" name="condition_out" maxlength="180" value="{{ old('condition_out') }}"
-               class="input input-bordered w-full" placeholder="{{ __('z. B. vollständig, keine sichtbaren Mängel') }}" />
-    </label>
+    <x-input-field name="condition_out" :label="__('Zustand bei Ausgabe')" maxlength="180"
+                   :value="old('condition_out')" :placeholder="__('z. B. vollständig, keine sichtbaren Mängel')" />
 
-    <label class="form-control">
-        <span class="label-text">{{ __('Notiz') }}</span>
-        <textarea name="note" rows="2" class="textarea textarea-bordered w-full">{{ old('note') }}</textarea>
-    </label>
+    <x-textarea-field name="note" :label="__('Notiz')" rows="2" :value="old('note')" />
 </x-modal>

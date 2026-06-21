@@ -73,14 +73,12 @@
                                data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
                         @endcan
                         @can('delete', $milestone)
-                            <form method="POST" action="{{ route('projects.milestones.destroy', [$project, $milestone]) }}"
-                                  data-confirm-dialog
-                                  data-confirm-title="{{ __('Milestone löschen') }}"
-                                  data-confirm-message="{{ __('Aufgaben bleiben erhalten, werden aber vom Milestone getrennt.') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('projects.milestones.destroy', [$project, $milestone])" method="DELETE"
+                                  :confirm="__('Aufgaben bleiben erhalten, werden aber vom Milestone getrennt.')"
+                                  :confirm-label="__('Löschen')"
+                                  data-confirm-title="{{ __('Milestone löschen') }}">
                                 <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
-                            </form>
+                            </x-action-form>
                         @endcan
                     </div>
                 </li>

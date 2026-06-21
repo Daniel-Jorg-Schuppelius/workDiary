@@ -28,13 +28,11 @@
                                     show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                     @endcan
                     @can('convert', $trip)
-                        <form method="POST" action="{{ route('per-diem-trips.convert', $trip) }}" class="inline"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('Reise als Spese einreichen?') }}"
-                              data-confirm-label="{{ __('Einreichen') }}">
-                            @csrf
+                        <x-action-form :action="route('per-diem-trips.convert', $trip)"
+                              :confirm="__('Reise als Spese einreichen?')"
+                              :confirm-label="__('Einreichen')">
                             <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Als Spese einreichen') }}</x-icon-btn>
-                        </form>
+                        </x-action-form>
                     @endcan
                     @if ($trip->expense)
                         <x-icon-btn icon="receipt_long" tone="ghost" size="sm"

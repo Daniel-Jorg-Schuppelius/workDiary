@@ -100,29 +100,29 @@
                         </div>
                     @endif
 
+                    @php
+                        $installConfirm = __('Paket ":profile" für :org installieren? Bestehende, lokal angepasste Daten bleiben unberührt.', ['profile' => $profile['label'], 'org' => $organization->name]);
+                        $reapplyConfirm = __('Paket ":profile" erneut anwenden? Vorlagen werden auf den Profilstand zurückgesetzt; veröffentlichte Checklisten bleiben erhalten.', ['profile' => $profile['label']]);
+                    @endphp
                     <div class="flex gap-2 justify-end">
-                        <form method="POST" action="{{ route('admin.branch-profiles.install', $profile['code']) }}"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('Paket ":profile" für :org installieren? Bestehende, lokal angepasste Daten bleiben unberührt.', ['profile' => $profile['label'], 'org' => $organization->name]) }}"
-                              data-confirm-icon="playlist_add_check"
-                              data-confirm-label="{{ __('Installieren') }}">
-                            @csrf
+                        <x-action-form :action="route('admin.branch-profiles.install', $profile['code'])"
+                              :confirm="$installConfirm"
+                              confirm-icon="playlist_add_check"
+                              :confirm-label="__('Installieren')">
                             <button type="submit" class="btn btn-sm btn-primary gap-2">
                                 <x-icon name="playlist_add_check" /> {{ __('Installieren') }}
                             </button>
-                        </form>
-                        <form method="POST" action="{{ route('admin.branch-profiles.install', $profile['code']) }}"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('Paket ":profile" erneut anwenden? Vorlagen werden auf den Profilstand zurückgesetzt; veröffentlichte Checklisten bleiben erhalten.', ['profile' => $profile['label']]) }}"
-                              data-confirm-icon="refresh"
-                              data-confirm-tone="warning"
-                              data-confirm-label="{{ __('Erneut anwenden') }}">
-                            @csrf
+                        </x-action-form>
+                        <x-action-form :action="route('admin.branch-profiles.install', $profile['code'])"
+                              :confirm="$reapplyConfirm"
+                              confirm-icon="refresh"
+                              confirm-tone="warning"
+                              :confirm-label="__('Erneut anwenden')">
                             <input type="hidden" name="force" value="1" />
                             <button type="submit" class="btn btn-sm btn-outline gap-2">
                                 <x-icon name="refresh" /> {{ __('Erneut anwenden') }}
                             </button>
-                        </form>
+                        </x-action-form>
                     </div>
                 </div>
             </x-card>

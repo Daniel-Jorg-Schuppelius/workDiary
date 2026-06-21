@@ -55,14 +55,12 @@
                 <td class="text-right">
                     <x-icon-btn icon="edit" size="xs"
                                 :href="route('admin.invoice-mail-templates.edit', $tpl)"/>
-                    <form method="POST" action="{{ route('admin.invoice-mail-templates.destroy', $tpl) }}" class="inline"
-                          data-confirm-dialog
-                          data-confirm-message="{{ __('Template wirklich löschen?') }}"
-                          data-confirm-tone="error"
-                          data-confirm-label="{{ __('Löschen') }}">
-                        @csrf @method('DELETE')
+                    <x-action-form :action="route('admin.invoice-mail-templates.destroy', $tpl)" method="DELETE"
+                          :confirm="__('Template wirklich löschen?')"
+                          confirm-tone="error"
+                          :confirm-label="__('Löschen')">
                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit"/>
-                    </form>
+                    </x-action-form>
                 </td>
             </tr>
         @empty

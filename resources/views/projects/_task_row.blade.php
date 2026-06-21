@@ -6,15 +6,14 @@
 
     {{-- Status-Checkbox --}}
     @can('update', $task)
-        <form method="POST" action="{{ route('projects.tasks.complete', [$project, $task]) }}" class="flex items-center">
-            @csrf @method('PATCH')
+        <x-action-form :action="route('projects.tasks.complete', [$project, $task])" method="PATCH" class="flex items-center">
             <button type="submit"
                     class="checkbox checkbox-sm {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'checkbox-success' : '' }}"
                     title="{{ $task->statusLabel() }}"
                     style="appearance:none;width:1rem;height:1rem;border:2px solid currentColor;border-radius:3px;cursor:pointer;
                            {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'background:#4ade80' : '' }}">
             </button>
-        </form>
+        </x-action-form>
     @else
         <span class="inline-block h-4 w-4 shrink-0 rounded border-2 {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'bg-success border-success' : 'border-base-300' }}"></span>
     @endcan

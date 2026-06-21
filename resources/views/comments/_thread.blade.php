@@ -38,14 +38,13 @@
                                 onclick="document.getElementById('comment-edit-{{ $comment->id }}').classList.toggle('hidden')" />
                         @endcan
                         @can('delete', $comment)
-                            <form method="POST" action="{{ route('comments.destroy', $comment) }}" class="inline"
-                                data-confirm-dialog
+                            <x-action-form :action="route('comments.destroy', $comment)"
+                                method="DELETE"
                                 data-confirm-title="{{ __('Kommentar löschen') }}"
-                                data-confirm-message="{{ __('Kommentar wird dauerhaft gelöscht.') }}"
-                                data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                                :confirm="__('Kommentar wird dauerhaft gelöscht.')"
+                                :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         @endcan
                     </div>
                 </div>

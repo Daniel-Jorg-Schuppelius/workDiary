@@ -37,44 +37,17 @@
     @endunless
 
     <x-form-group :legend="__('knowledge.title.index')" icon="school" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('knowledge.field.title') }} *</span>
-            <input type="text" name="title" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('title', $article?->title ?? ($prefill['title'] ?? '')) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('knowledge.field.category') }}</span>
-            <input type="text" name="category" maxlength="80"
-                   class="input input-bordered w-full"
-                   value="{{ old('category', $article?->category) }}"
-                   placeholder="{{ __('knowledge.hint.category') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('knowledge.field.tags') }}</span>
-            <input type="text" name="tags" maxlength="500"
-                   class="input input-bordered w-full"
-                   value="{{ old('tags', $tagNames) }}"
-                   placeholder="{{ __('knowledge.hint.tags') }}">
-        </label>
+        <x-input-field name="title" :label="__('knowledge.field.title')" required minlength="3" maxlength="180" span="2" :value="old('title', $article?->title ?? ($prefill['title'] ?? ''))" />
+        <x-input-field name="category" :label="__('knowledge.field.category')" maxlength="80" :value="old('category', $article?->category)" placeholder="{{ __('knowledge.hint.category') }}" />
+        <x-input-field name="tags" :label="__('knowledge.field.tags')" maxlength="500" :value="old('tags', $tagNames)" placeholder="{{ __('knowledge.hint.tags') }}" />
     </x-form-group>
 
     <x-form-group :legend="__('knowledge.field.problem')" icon="report_problem" tone="warning" cols="1">
-        <label class="form-control">
-            <span class="label-text">{{ __('knowledge.field.problem') }} *</span>
-            <textarea name="problem" rows="4" required maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('knowledge.hint.problem') }}">{{ old('problem', $article?->problem ?? ($prefill['problem'] ?? '')) }}</textarea>
-        </label>
+        <x-textarea-field name="problem" :label="__('knowledge.field.problem')" required rows="4" maxlength="10000" placeholder="{{ __('knowledge.hint.problem') }}" :value="old('problem', $article?->problem ?? ($prefill['problem'] ?? ''))" />
     </x-form-group>
 
     <x-form-group :legend="__('knowledge.field.solution')" icon="lightbulb" tone="success" cols="1">
-        <label class="form-control">
-            <span class="label-text">{{ __('knowledge.field.solution') }} *</span>
-            <textarea name="solution" rows="6" required maxlength="20000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('knowledge.hint.solution') }}">{{ old('solution', $article?->solution) }}</textarea>
-        </label>
+        <x-textarea-field name="solution" :label="__('knowledge.field.solution')" required rows="6" maxlength="20000" placeholder="{{ __('knowledge.hint.solution') }}" :value="old('solution', $article?->solution)" />
     </x-form-group>
 
     <x-form-group :legend="__('Anhänge')" icon="attach_file" tone="ghost" cols="1">

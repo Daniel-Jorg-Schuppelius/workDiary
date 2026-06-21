@@ -31,9 +31,5 @@
     :submit-label="__('open-issue.action.' . $action)"
     :submit-class="'btn-' . $tone">
 
-    <label class="form-control w-full">
-        <span class="label-text">{{ $requiresResolution ? __('open-issue.field.resolution') : __('open-issue.field.reason') }}</span>
-        <textarea name="{{ $field }}" rows="4" required minlength="3"
-                  class="textarea textarea-bordered w-full" autofocus></textarea>
-    </label>
+    <x-textarea-field :name="$field" :label="$requiresResolution ? __('open-issue.field.resolution') : __('open-issue.field.reason')" required rows="4" minlength="3" autofocus />
 </x-modal>

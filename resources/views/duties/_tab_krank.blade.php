@@ -125,23 +125,19 @@
                         @endcan
 
                         @can('cancel', $s)
-                            <form method="POST" action="{{ route('sick-leaves.cancel', $s) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Krankmeldung wirklich stornieren?') }}"
-                                  data-confirm-label="{{ __('Stornieren') }}">
-                                @csrf @method('PATCH')
+                            <x-action-form :action="route('sick-leaves.cancel', $s)" method="PATCH"
+                                  :confirm="__('Krankmeldung wirklich stornieren?')"
+                                  :confirm-label="__('Stornieren')">
                                 <x-icon-btn icon="block" tone="warning" type="submit" :label="__('Stornieren')" />
-                            </form>
+                            </x-action-form>
                         @endcan
 
                         @can('delete', $s)
-                            <form method="POST" action="{{ route('sick-leaves.destroy', $s) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Krankmeldung wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('sick-leaves.destroy', $s)" method="DELETE"
+                                  :confirm="__('Krankmeldung wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         @endcan
                     </div>
                 </td>

@@ -16,14 +16,9 @@
     :submit-label="$isEdit ? __('integration.webhook.action.save') : __('integration.webhook.action.create')"
 >
     <x-form-group :legend="__('integration.webhook.field.basics')" icon="webhook" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label" for="webhook-label">{{ __('integration.webhook.field.label') }}</label>
-            <input id="webhook-label" type="text" name="label" required maxlength="120"
-                   value="{{ old('label', $endpoint->label) }}"
-                   class="input input-bordered w-full"
-                   placeholder="{{ __('integration.webhook.field.label_placeholder') }}">
-            @error('label')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="label" :label="__('integration.webhook.field.label')" required maxlength="120"
+                       :value="old('label', $endpoint->label)"
+                       :placeholder="__('integration.webhook.field.label_placeholder')" />
 
         <div class="fieldset">
             <label class="fieldset-label" for="webhook-url">{{ __('integration.webhook.field.url') }}</label>
@@ -81,20 +76,17 @@
     @if ($isEdit)
         <x-slot:footerExtra>
             <div class="flex flex-wrap gap-2">
-                <form method="POST" action="{{ route('admin.webhooks.rotate-secret', $endpoint) }}" class="inline"
-                      data-confirm-dialog
-                      data-confirm-message="{{ __('integration.webhook.secret.rotate_confirm') }}"
-                      data-confirm-label="{{ __('integration.webhook.action.rotate_secret') }}">
-                    @csrf
+                <x-action-form :action="route('admin.webhooks.rotate-secret', $endpoint)"
+                      :confirm="__('integration.webhook.secret.rotate_confirm')"
+                      :confirm-label="__('integration.webhook.action.rotate_secret')">
                     <x-icon-btn icon="autorenew" tone="warning" size="sm" type="submit" show-label>{{ __('integration.webhook.action.rotate_secret') }}</x-icon-btn>
-                </form>
-                <form method="POST" action="{{ route('admin.webhooks.destroy', $endpoint) }}" class="inline"
-                      data-confirm-dialog
-                      data-confirm-message="{{ __('integration.webhook.action.delete_confirm') }}"
-                      data-confirm-label="{{ __('integration.webhook.action.delete') }}">
-                    @csrf @method('DELETE')
+                </x-action-form>
+                <x-action-form :action="route('admin.webhooks.destroy', $endpoint)"
+                      method="DELETE"
+                      :confirm="__('integration.webhook.action.delete_confirm')"
+                      :confirm-label="__('integration.webhook.action.delete')">
                     <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('integration.webhook.action.delete') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             </div>
         </x-slot:footerExtra>
     @endif

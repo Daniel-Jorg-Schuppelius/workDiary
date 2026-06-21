@@ -17,32 +17,28 @@
     <x-slot:footerExtra>
         @can('archive', $diary)
             @if ($diary->is_archived)
-                <form method="POST" action="{{ route('diary.restore', $diary) }}" class="inline">
-                    @csrf
+                <x-action-form :action="route('diary.restore', $diary)">
                     <button type="submit" class="btn btn-outline gap-2">
                         <x-icon name="restore" /> {{ __('Wiederherstellen') }}
                     </button>
-                </form>
+                </x-action-form>
             @else
-                <form method="POST" action="{{ route('diary.archive', $diary) }}" class="inline">
-                    @csrf
+                <x-action-form :action="route('diary.archive', $diary)">
                     <button type="submit" class="btn btn-outline gap-2">
                         <x-icon name="archive" /> {{ __('Archivieren') }}
                     </button>
-                </form>
+                </x-action-form>
             @endif
         @endcan
         @can('delete', $diary)
-            <form method="POST" action="{{ route('diary.destroy', $diary) }}" class="inline"
-                data-confirm-dialog
+            <x-action-form :action="route('diary.destroy', $diary)" method="DELETE"
                 data-confirm-title="{{ __('Eintrag löschen') }}"
-                data-confirm-message="{{ __('Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?') }}"
-                data-confirm-label="{{ __('Löschen') }}">
-                @csrf @method('DELETE')
+                :confirm="__('Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?')"
+                :confirm-label="__('Löschen')">
                 <button type="submit" class="btn btn-ghost gap-2 text-error">
                     <x-icon name="delete" /> {{ __('Löschen') }}
                 </button>
-            </form>
+            </x-action-form>
         @endcan
     </x-slot:footerExtra>
 

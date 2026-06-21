@@ -34,16 +34,12 @@
                 </div>
 
                 <div class="flex flex-wrap gap-2">
-                    <form method="POST" action="{{ route('account.calendar.rotate') }}"
-                          data-confirm-dialog data-confirm-message="{{ __('Token rotieren? Bestehende Abos brechen ab.') }}">
-                        @csrf
+                    <x-action-form :action="route('account.calendar.rotate')" :confirm="__('Token rotieren? Bestehende Abos brechen ab.')">
                         <button type="submit" class="btn btn-warning btn-sm">{{ __('Token rotieren') }}</button>
-                    </form>
-                    <form method="POST" action="{{ route('account.calendar.revoke') }}"
-                          data-confirm-dialog data-confirm-message="{{ __('Kalender-Link wirklich widerrufen?') }}">
-                        @csrf @method('DELETE')
+                    </x-action-form>
+                    <x-action-form :action="route('account.calendar.revoke')" method="DELETE" :confirm="__('Kalender-Link wirklich widerrufen?')">
                         <button type="submit" class="btn btn-error btn-sm">{{ __('Widerrufen') }}</button>
-                    </form>
+                    </x-action-form>
                 </div>
             @else
                 <p>{{ __('Es ist noch kein Kalender-Link aktiv.') }}</p>

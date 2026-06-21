@@ -47,27 +47,17 @@
     @endunless
 
     <x-form-group :legend="__('communication.title.index')" icon="forum" tone="primary" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('communication.field.type') }} *</span>
-            <select name="type" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Communication\CommunicationNoteType::cases() as $type)
-                    <option value="{{ $type->value }}" @selected(old('type', $note?->type?->value ?? 'call') === $type->value)>{{ $type->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('communication.field.direction') }} *</span>
-            <select name="direction" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Communication\CommunicationDirection::cases() as $direction)
-                    <option value="{{ $direction->value }}" @selected(old('direction', $note?->direction?->value ?? 'outbound') === $direction->value)>{{ $direction->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('communication.field.occurred_at') }} *</span>
-            <input type="datetime-local" name="occurred_at" required
-                   class="input input-bordered w-full" value="{{ $occurredDefault }}">
-        </label>
+        <x-select-field name="type" :label="__('communication.field.type')" required>
+            @foreach (\App\Enums\Communication\CommunicationNoteType::cases() as $type)
+                <option value="{{ $type->value }}" @selected(old('type', $note?->type?->value ?? 'call') === $type->value)>{{ $type->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="direction" :label="__('communication.field.direction')" required>
+            @foreach (\App\Enums\Communication\CommunicationDirection::cases() as $direction)
+                <option value="{{ $direction->value }}" @selected(old('direction', $note?->direction?->value ?? 'outbound') === $direction->value)>{{ $direction->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="occurred_at" type="datetime-local" :label="__('communication.field.occurred_at')" required :value="$occurredDefault" />
         <label class="form-control sm:col-span-2">
             <span class="label-text">{{ __('communication.field.subject') }} *</span>
             <input type="text" name="subject" required minlength="3" maxlength="180"
@@ -135,20 +125,13 @@
             <input type="text" name="next_action" maxlength="180"
                    class="input input-bordered w-full" value="{{ old('next_action', $note?->next_action) }}">
         </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('communication.field.next_action_due_at') }}</span>
-            <input type="datetime-local" name="next_action_due_at"
-                   class="input input-bordered w-full" value="{{ $dueDefault }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('communication.field.next_action_user') }}</span>
-            <select name="next_action_user_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($users as $user)
-                    <option value="{{ $user->id }}" @selected((string) old('next_action_user_id', $note?->next_action_user_id) === (string) $user->id)>{{ $user->name }}</option>
-                @endforeach
-            </select>
-        </label>
+        <x-input-field name="next_action_due_at" type="datetime-local" :label="__('communication.field.next_action_due_at')" :value="$dueDefault" />
+        <x-select-field name="next_action_user_id" :label="__('communication.field.next_action_user')">
+            <option value="">—</option>
+            @foreach ($users as $user)
+                <option value="{{ $user->id }}" @selected((string) old('next_action_user_id', $note?->next_action_user_id) === (string) $user->id)>{{ $user->name }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     @if ($canPublishToCustomer || $canManageConfidential)

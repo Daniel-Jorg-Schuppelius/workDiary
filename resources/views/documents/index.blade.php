@@ -160,31 +160,27 @@
                             @endcan
                             @if ($document->status !== \App\Enums\Document\DocumentStatus::Archived)
                                 @can('archive', $document)
-                                    <form method="POST" action="{{ route('documents.archive', $document) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('documents.archive', $document)"
                                           data-confirm-title="{{ __('document.action.archive') }}"
-                                          data-confirm-message="{{ __('document.confirm_archive') }}"
-                                          data-confirm-icon="archive"
-                                          data-confirm-tone="warning"
-                                          data-confirm-label="{{ __('document.action.archive') }}">
-                                        @csrf
+                                          :confirm="__('document.confirm_archive')"
+                                          confirm-icon="archive"
+                                          confirm-tone="warning"
+                                          :confirm-label="__('document.action.archive')">
                                         <x-icon-btn icon="archive" tone="warning" size="xs" type="submit"
                                                     :label="__('document.action.archive')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             @endif
                             @can('delete', $document)
-                                <form method="POST" action="{{ route('documents.destroy', $document) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('documents.destroy', $document)" method="DELETE"
                                       data-confirm-title="{{ __('document.action.delete') }}"
-                                      data-confirm-message="{{ __('document.confirm_delete') }}"
-                                      data-confirm-icon="delete"
-                                      data-confirm-tone="error"
-                                      data-confirm-label="{{ __('document.action.delete') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('document.confirm_delete')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('document.action.delete')">
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                 :label="__('document.action.delete')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

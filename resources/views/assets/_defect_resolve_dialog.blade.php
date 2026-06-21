@@ -27,8 +27,5 @@
 
     <input type="hidden" name="action" value="{{ $action }}" />
 
-    <label class="form-control">
-        <span class="label-text">{{ __('Lösungsnotiz') }} <span class="text-error">*</span></span>
-        <textarea name="resolution_note" rows="3" required class="textarea textarea-bordered w-full">{{ old('resolution_note') }}</textarea>
-    </label>
+    <x-textarea-field name="resolution_note" :label="__('Lösungsnotiz')" required rows="3" :value="old('resolution_note')" />
 </x-modal>

@@ -91,31 +91,27 @@
                             @endif
                             @if ($template->status !== \App\Enums\Form\FormTemplateStatus::Archived)
                                 @can('archive', $template)
-                                    <form method="POST" action="{{ route('form-templates.archive', $template) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('form-templates.archive', $template)"
                                           data-confirm-title="{{ __('form.action.archive') }}"
-                                          data-confirm-message="{{ __('form.confirm_archive') }}"
-                                          data-confirm-icon="archive"
-                                          data-confirm-tone="warning"
-                                          data-confirm-label="{{ __('form.action.archive') }}">
-                                        @csrf
+                                          :confirm="__('form.confirm_archive')"
+                                          confirm-icon="archive"
+                                          confirm-tone="warning"
+                                          :confirm-label="__('form.action.archive')">
                                         <x-icon-btn icon="archive" tone="warning" size="xs" type="submit"
                                                     :label="__('form.action.archive')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             @endif
                             @can('delete', $template)
-                                <form method="POST" action="{{ route('form-templates.destroy', $template) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('form-templates.destroy', $template)" method="DELETE"
                                       data-confirm-title="{{ __('form.action.delete') }}"
-                                      data-confirm-message="{{ __('form.confirm_delete') }}"
-                                      data-confirm-icon="delete"
-                                      data-confirm-tone="error"
-                                      data-confirm-label="{{ __('form.action.delete') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('form.confirm_delete')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('form.action.delete')">
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                 :label="__('form.action.delete')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

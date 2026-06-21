@@ -5,7 +5,6 @@ version: 1
 audience: []
 related:
     - protocols.sign
-    - open-issues.manage
 ---
 
 Customers raise queries about a submitted item (protocol, acceptance, order)

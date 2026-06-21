@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
 use App\Http\Requests\SaveForeignCustomerRequest;
 use App\Models\{AuditLog, Customer, ForeignCustomer, Project};
 use App\Support\{Setting, Sqid};
@@ -24,17 +25,16 @@ use Illuminate\View\View;
  * Projekte um (für den Fall „Endkunde kommt direkt zu mir").
  */
 class ForeignCustomerController extends Controller {
+    use ArchivesModels;
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['name', 'company', 'created_at'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', ForeignCustomer::class);
 
-        $status = $request->string('status')->toString() ?: 'active';
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $customerId = Sqid::decode(Customer::class, (string) $request->string('customer')->toString());
 
@@ -145,19 +145,11 @@ class ForeignCustomerController extends Controller {
     }
 
     public function archive(ForeignCustomer $foreignCustomer): RedirectResponse {
-        Gate::authorize('archive', $foreignCustomer);
-
-        $foreignCustomer->forceFill(['archived_at' => now()])->save();
-
-        return back()->with('success', __('Fremdkunde archiviert.'));
+        return $this->archiveModel($foreignCustomer, __('Fremdkunde archiviert.'));
     }
 
     public function restore(ForeignCustomer $foreignCustomer): RedirectResponse {
-        Gate::authorize('restore', $foreignCustomer);
-
-        $foreignCustomer->forceFill(['archived_at' => null])->save();
-
-        return back()->with('success', __('Fremdkunde wiederhergestellt.'));
+        return $this->restoreModel($foreignCustomer, __('Fremdkunde wiederhergestellt.'));
     }
 
     /**

@@ -6,6 +6,7 @@
     'required' => false,
     'span' => null,
     'error' => null,
+    'hint' => null,
 ])
 
 @php
@@ -33,6 +34,10 @@
             @unless ($isFile) value="{{ $value }}" @endunless
             {{ $attributes->class(array_filter([$controlBase, 'w-full', $controlError])) }}
         >
+    @endif
+
+    @if ($hint)
+        <p class="text-xs text-base-content/60 mt-1">{{ $hint }}</p>
     @endif
 
     @if ($hasError)

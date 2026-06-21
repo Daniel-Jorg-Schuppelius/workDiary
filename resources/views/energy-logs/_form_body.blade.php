@@ -1,102 +1,47 @@
 {{-- Shared form fields for EnergyLog --}}
 
 <x-form-group :legend="__('Tank-/Ladevorgang')" icon="local_gas_station" tone="primary" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Fahrzeug') }} *</label>
-        <select name="vehicle_id" required class="select select-bordered w-full">
-            <option value="">—</option>
-            @foreach ($vehicles as $v)
-                <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $log?->vehicle_id ?? $defaultVehicleId)) === $v->sqid)>{{ $v->displayName() }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Typ') }} *</label>
-        <select name="energy_type" required class="select select-bordered w-full">
-            @foreach ($types as $type)
-                <option value="{{ $type }}" @selected(old('energy_type', $log?->energy_type ?? 'fuel') === $type)>{{ __("values.$type") }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Kraftstoff') }}</label>
-        <select name="fuel_kind" class="select select-bordered w-full">
-            <option value="">—</option>
-            @foreach ($fuelKinds as $k)
-                <option value="{{ $k }}" @selected(old('fuel_kind', $log?->fuel_kind) === $k)>{{ __("values.$k") }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ladetyp') }}</label>
-        <select name="charger_type" class="select select-bordered w-full">
-            <option value="">—</option>
-            @foreach ($chargerTypes as $c)
-                <option value="{{ $c }}" @selected(old('charger_type', $log?->charger_type) === $c)>{{ __("values.$c") }}</option>
-            @endforeach
-        </select>
-    </div>
+    <x-select-field name="vehicle_id" :label="__('Fahrzeug')" required>
+        <option value="">—</option>
+        @foreach ($vehicles as $v)
+            <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $log?->vehicle_id ?? $defaultVehicleId)) === $v->sqid)>{{ $v->displayName() }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field name="energy_type" :label="__('Typ')" required>
+        @foreach ($types as $type)
+            <option value="{{ $type }}" @selected(old('energy_type', $log?->energy_type ?? 'fuel') === $type)>{{ __("values.$type") }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field name="fuel_kind" :label="__('Kraftstoff')">
+        <option value="">—</option>
+        @foreach ($fuelKinds as $k)
+            <option value="{{ $k }}" @selected(old('fuel_kind', $log?->fuel_kind) === $k)>{{ __("values.$k") }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field name="charger_type" :label="__('Ladetyp')">
+        <option value="">—</option>
+        @foreach ($chargerTypes as $c)
+            <option value="{{ $c }}" @selected(old('charger_type', $log?->charger_type) === $c)>{{ __("values.$c") }}</option>
+        @endforeach
+    </x-select-field>
 </x-form-group>
 
 <x-form-group :legend="__('Menge & Kosten')" icon="payments" tone="info" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Menge') }} *</label>
-        <input type="number" step="0.001" min="0" name="quantity" required
-               value="{{ old('quantity', $log?->quantity) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Kosten gesamt €') }}</label>
-        <input type="number" step="0.01" min="0" name="cost_total"
-               value="{{ old('cost_total', $log?->cost_total) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Tachostand') }}</label>
-        <input type="number" min="0" name="odometer_km"
-               value="{{ old('odometer_km', $log?->odometer_km) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ort') }}</label>
-        <input type="text" name="location_address" maxlength="255"
-               value="{{ old('location_address', $log?->location_address) }}"
-               class="input input-bordered w-full">
-    </div>
+    <x-input-field name="quantity" type="number" :label="__('Menge')" required step="0.001" min="0" :value="old('quantity', $log?->quantity)" />
+    <x-input-field name="cost_total" type="number" :label="__('Kosten gesamt €')" step="0.01" min="0" :value="old('cost_total', $log?->cost_total)" />
+    <x-input-field name="odometer_km" type="number" :label="__('Tachostand')" min="0" :value="old('odometer_km', $log?->odometer_km)" />
+    <x-input-field name="location_address" :label="__('Ort')" maxlength="255" :value="old('location_address', $log?->location_address)" />
 </x-form-group>
 
 <x-form-group :legend="__('Zeitraum & Ladestand')" icon="schedule" tone="success" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Beginn') }} *</label>
-        <input type="datetime-local" name="started_at" required
-               value="{{ old('started_at', $log?->started_at?->orgTz()->format('Y-m-d\TH:i')) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ende') }}</label>
-        <input type="datetime-local" name="ended_at"
-               value="{{ old('ended_at', $log?->ended_at?->orgTz()->format('Y-m-d\TH:i')) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('SoC vorher (%)') }}</label>
-        <input type="number" min="0" max="100" name="soc_before"
-               value="{{ old('soc_before', $log?->soc_before) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('SoC nachher (%)') }}</label>
-        <input type="number" min="0" max="100" name="soc_after"
-               value="{{ old('soc_after', $log?->soc_after) }}"
-               class="input input-bordered w-full">
-    </div>
+    <x-input-field name="started_at" type="datetime-local" :label="__('Beginn')" required :value="old('started_at', $log?->started_at?->orgTz()->format('Y-m-d\TH:i'))" />
+    <x-input-field name="ended_at" type="datetime-local" :label="__('Ende')" :value="old('ended_at', $log?->ended_at?->orgTz()->format('Y-m-d\TH:i'))" />
+    <x-input-field name="soc_before" type="number" :label="__('SoC vorher (%)')" min="0" max="100" :value="old('soc_before', $log?->soc_before)" />
+    <x-input-field name="soc_after" type="number" :label="__('SoC nachher (%)')" min="0" max="100" :value="old('soc_after', $log?->soc_after)" />
 </x-form-group>
 
 <x-form-group :legend="__('Notizen')" icon="edit_note" tone="ghost" cols="1">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Notizen') }}</label>
-        <textarea name="notes" rows="3" class="textarea textarea-bordered w-full">{{ old('notes', $log?->notes) }}</textarea>
-    </div>
+    <x-textarea-field name="notes" :label="__('Notizen')" rows="3" :value="old('notes', $log?->notes)" />
 </x-form-group>
 
 @if ($errors->any())

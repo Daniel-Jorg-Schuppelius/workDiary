@@ -26,18 +26,8 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_scope')">
 
     <x-form-group :legend="__('isms.group.scope')" icon="travel_explore" tone="primary" cols="1">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.name') }} *</span>
-            <input type="text" name="name" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('name', $scope?->name) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.description') }}</span>
-            <textarea name="description" rows="3" maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.scope_description') }}">{{ old('description', $scope?->description) }}</textarea>
-        </label>
+        <x-input-field name="name" :label="__('isms.field.name')" required minlength="3" maxlength="180" :value="old('name', $scope?->name)" />
+        <x-textarea-field name="description" :label="__('isms.field.description')" rows="3" maxlength="10000" :value="old('description', $scope?->description)" placeholder="{{ __('isms.hint.scope_description') }}" />
         @if ($isEdit && $scope->is_default)
             <p class="text-xs text-base-content/60">{{ __('isms.scope.default_hint') }}</p>
         @endif

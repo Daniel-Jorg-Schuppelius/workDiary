@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Article\{ArticleStatus, ArticleType, ArticleUnitKind};
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Requests\SaveArticleRequest;
 use App\Models\{Article, ArticleOptionDefinition, ArticleVariant};
 use App\Services\Article\{ArticleService, VariantResolver};
@@ -26,6 +26,7 @@ use RuntimeException;
  * Varianten auf der Detailseite. Modul-Gating über `articles.*` → module.lager.
  */
 class ArticleController extends Controller {
+    use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
     private const ALLOWED_SORTS = ['name', 'number', 'created_at'];
@@ -38,12 +39,8 @@ class ArticleController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', Article::class);
 
-        $status = $request->string('status')->toString() ?: 'active';
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $articles = Article::query()
             ->withCount('variants')

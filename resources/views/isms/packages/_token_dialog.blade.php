@@ -25,20 +25,12 @@
     :submit-label="__('isms.action.create_token')">
 
     <x-form-group :legend="__('isms.group.token')" icon="key" tone="primary" cols="1">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.token_label') }} *</span>
-            <input type="text" name="label" required maxlength="120"
-                   class="input input-bordered w-full"
-                   placeholder="{{ __('isms.hint.token_label') }}"
-                   value="{{ old('label') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.token_days') }} *</span>
-            <input type="number" name="days" required min="1" max="90" step="1"
-                   class="input input-bordered w-full"
-                   value="{{ old('days', 14) }}">
-            <span class="label-text-alt text-base-content/60">{{ __('isms.hint.token_days') }}</span>
-        </label>
+        <x-input-field name="label" :label="__('isms.field.token_label')" required maxlength="120"
+                       placeholder="{{ __('isms.hint.token_label') }}"
+                       :value="old('label')" />
+        <x-input-field name="days" type="number" :label="__('isms.field.token_days')" required min="1" max="90" step="1"
+                       :value="old('days', 14)"
+                       :hint="__('isms.hint.token_days')" />
         <p class="text-xs text-base-content/60">{{ __('isms.package.token_once_hint') }}</p>
     </x-form-group>
 </x-modal>

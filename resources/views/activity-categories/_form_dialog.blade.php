@@ -32,78 +32,39 @@
     <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
 
     <x-form-group :legend="__('Stammdaten')" icon="category" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label" for="ac-key">{{ __('Schlüssel') }} *</label>
-            <input id="ac-key" type="text" name="key" required maxlength="64"
-                   pattern="[a-z0-9_\-]+"
-                   class="input input-bordered w-full font-mono @error('key') input-error @enderror"
-                   placeholder="team_meeting"
-                   value="{{ old('key', $category?->key) }}"
-                   @if ($isEdit) readonly @endif>
-            @error('key')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="key" :label="__('Schlüssel')" required maxlength="64"
+                       pattern="[a-z0-9_\-]+" class="font-mono"
+                       placeholder="team_meeting"
+                       :value="old('key', $category?->key)"
+                       @if ($isEdit) readonly @endif />
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ac-label">{{ __('Bezeichnung') }} *</label>
-            <input id="ac-label" type="text" name="label" required maxlength="120"
-                   class="input input-bordered w-full @error('label') input-error @enderror"
-                   value="{{ old('label', $category?->label) }}">
-            @error('label')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="label" :label="__('Bezeichnung')" required maxlength="120"
+                       :value="old('label', $category?->label)" />
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ac-type">{{ __('Typ') }} *</label>
-            <select id="ac-type" name="activity_type" required
-                    class="select select-bordered w-full @error('activity_type') select-error @enderror">
-                @foreach ($types as $value => $label)
-                    <option value="{{ $value }}" @selected(old('activity_type', $category?->activity_type?->value) === $value)>{{ $label }}</option>
-                @endforeach
-            </select>
-            @error('activity_type')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-select-field name="activity_type" :label="__('Typ')" required>
+            @foreach ($types as $value => $label)
+                <option value="{{ $value }}" @selected(old('activity_type', $category?->activity_type?->value) === $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ac-sort">{{ __('Reihenfolge') }}</label>
-            <input id="ac-sort" type="number" min="0" max="999" name="sort_order"
-                   class="input input-bordered w-full"
-                   value="{{ old('sort_order', $category?->sort_order ?? 100) }}">
-        </div>
+        <x-input-field type="number" min="0" max="999" name="sort_order" :label="__('Reihenfolge')"
+                       :value="old('sort_order', $category?->sort_order ?? 100)" />
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ac-icon">{{ __('Icon') }}</label>
-            <input id="ac-icon" type="text" name="icon" maxlength="64"
-                   class="input input-bordered w-full font-mono"
-                   placeholder="category"
-                   value="{{ old('icon', $category?->icon) }}">
-        </div>
+        <x-input-field name="icon" :label="__('Icon')" maxlength="64"
+                       class="font-mono"
+                       placeholder="category"
+                       :value="old('icon', $category?->icon)" />
 
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label" for="ac-desc">{{ __('Beschreibung') }}</label>
-            <textarea id="ac-desc" name="description" rows="2" maxlength="500"
-                      class="textarea textarea-bordered w-full">{{ old('description', $category?->description) }}</textarea>
-        </div>
+        <x-textarea-field name="description" :label="__('Beschreibung')" rows="2" maxlength="500"
+                          span="2" :value="old('description', $category?->description)" />
     </x-form-group>
 
     <x-form-group :legend="__('Verhalten')" icon="tune" tone="info" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label cursor-pointer justify-start gap-2">
-                <input type="hidden" name="counts_as_work" value="0">
-                <input type="checkbox" name="counts_as_work" value="1"
-                       class="toggle toggle-info"
-                       @checked(old('counts_as_work', $category?->counts_as_work ?? true))>
-                <span>{{ __('Zählt als Arbeit') }}</span>
-            </label>
-        </div>
+        <x-checkbox-field name="counts_as_work" :label="__('Zählt als Arbeit')" tone="info"
+                          :checked="old('counts_as_work', $category?->counts_as_work ?? true)" />
 
-        <div class="fieldset">
-            <label class="fieldset-label cursor-pointer justify-start gap-2">
-                <input type="hidden" name="billable_default" value="0">
-                <input type="checkbox" name="billable_default" value="1"
-                       class="toggle toggle-success"
-                       @checked(old('billable_default', $category?->billable_default ?? false))>
-                <span>{{ __('Standardmäßig abrechenbar') }}</span>
-            </label>
-        </div>
+        <x-checkbox-field name="billable_default" :label="__('Standardmäßig abrechenbar')" tone="success"
+                          :checked="old('billable_default', $category?->billable_default ?? false)" />
     </x-form-group>
 
     @if ($errors->any())

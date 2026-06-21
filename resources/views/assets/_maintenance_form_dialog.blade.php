@@ -22,34 +22,16 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Anlegen')">
 
-    <label class="form-control">
-        <span class="label-text">{{ __('Bezeichnung') }}</span>
-        <input type="text" name="label" required maxlength="180"
-               value="{{ old('label') }}" class="input input-bordered w-full" />
-    </label>
+    <x-input-field name="label" :label="__('Bezeichnung')" required maxlength="180" :value="old('label')" />
 
     <div class="grid gap-3 sm:grid-cols-2">
-        <label class="form-control">
-            <span class="label-text">{{ __('Intervall') }}</span>
-            <select name="interval_kind" class="select select-bordered w-full">
-                @foreach ($intervalKindOptions as $value => $label)
-                    <option value="{{ $value }}" @selected(old('interval_kind', 'months') === $value)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Wert') }}</span>
-            <input type="number" name="interval_value" min="1" value="{{ old('interval_value', 6) }}"
-                   class="input input-bordered w-full" required />
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Toleranz (Tage)') }}</span>
-            <input type="number" name="tolerance_days" min="0" max="365" value="{{ old('tolerance_days', 7) }}"
-                   class="input input-bordered w-full" />
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Erste Fälligkeit') }}</span>
-            <input type="date" name="next_due_on" value="{{ old('next_due_on') }}" class="input input-bordered w-full" />
-        </label>
+        <x-select-field name="interval_kind" :label="__('Intervall')">
+            @foreach ($intervalKindOptions as $value => $label)
+                <option value="{{ $value }}" @selected(old('interval_kind', 'months') === $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field type="number" name="interval_value" :label="__('Wert')" min="1" :value="old('interval_value', 6)" required />
+        <x-input-field type="number" name="tolerance_days" :label="__('Toleranz (Tage)')" min="0" max="365" :value="old('tolerance_days', 7)" />
+        <x-input-field type="date" name="next_due_on" :label="__('Erste Fälligkeit')" :value="old('next_due_on')" />
     </div>
 </x-modal>

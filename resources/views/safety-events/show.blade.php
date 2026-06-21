@@ -103,15 +103,13 @@
                                     <span class="text-base-content/60">· {{ number_format($att->size / 1024, 0, ',', '.') }} KB</span>
                                 </div>
                                 @can('delete', $att)
-                                    <form method="POST" action="{{ route('attachments.destroy', $att) }}" class="inline"
-                                          data-confirm-dialog
-                                          data-confirm-message="{{ __('Anhang löschen?') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('Löschen') }}">
-                                        @csrf @method('DELETE')
+                                    <x-action-form :action="route('attachments.destroy', $att)" method="DELETE"
+                                          :confirm="__('Anhang löschen?')"
+                                          confirm-icon="delete"
+                                          confirm-tone="error"
+                                          :confirm-label="__('Löschen')">
                                         <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             </li>
                         @endforeach
@@ -126,12 +124,11 @@
                     <h3 class="mb-3 text-sm font-semibold">{{ __('safety.section.status') }}</h3>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($event->status->allowedTransitions() as $target)
-                            <form method="POST" action="{{ route('safety-events.transition', $event) }}" class="inline">
-                                @csrf
+                            <x-action-form :action="route('safety-events.transition', $event)">
                                 <input type="hidden" name="status" value="{{ $target->value }}">
                                 <x-icon-btn type="submit" size="sm" tone="outline" show-label
                                             icon="{{ $target->value === 'closed' ? 'lock' : 'arrow_forward' }}">{{ __('safety.transition.' . $target->value) }}</x-icon-btn>
-                            </form>
+                            </x-action-form>
                         @endforeach
                     </div>
                     @if ($errors->has('status'))
@@ -196,10 +193,9 @@
                                                             :href="route('open-issues.transition.form', ['issue' => $issue, 'action' => $action])"
                                                             show-label>{{ __('open-issue.action.' . $action) }}</x-icon-btn>
                                             @else
-                                                <form method="POST" action="{{ route('open-issues.transition', ['issue' => $issue, 'action' => $action]) }}">
-                                                    @csrf
+                                                <x-action-form :action="route('open-issues.transition', ['issue' => $issue, 'action' => $action])">
                                                     <button type="submit" class="btn btn-xs btn-outline">{{ __('open-issue.action.' . $action) }}</button>
-                                                </form>
+                                                </x-action-form>
                                             @endif
                                         @endforeach
                                     </div>

@@ -130,16 +130,13 @@
                         <td>{{ $rule->net_unit_price !== null ? number_format((float) $rule->net_unit_price, 2, ',', '.') : '—' }}</td>
                         <td>{{ $rule->priority }}</td>
                         <td class="text-right">
-                            <form method="POST" action="{{ route('projects.billing-rules.destroy', [$project, $rule]) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Regel wirklich löschen?') }}"
-                                  data-confirm-icon="delete"
-                                  data-confirm-tone="error"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf
-                                @method('DELETE')
+                            <x-action-form :action="route('projects.billing-rules.destroy', [$project, $rule])" method="DELETE"
+                                  :confirm="__('Regel wirklich löschen?')"
+                                  confirm-icon="delete"
+                                  confirm-tone="error"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         </td>
                     </tr>
                 @endforeach

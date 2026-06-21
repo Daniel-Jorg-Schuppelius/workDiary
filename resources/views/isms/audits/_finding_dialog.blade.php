@@ -28,35 +28,24 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_finding')">
 
     <x-form-group :legend="__('isms.group.finding')" icon="report" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.title') }} *</span>
-            <input type="text" name="title" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('title', $finding?->title) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.finding_kind') }} *</span>
-            <select name="kind" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Isms\FindingKind::cases() as $kind)
-                    <option value="{{ $kind->value }}" @selected(old('kind', $finding?->kind?->value ?? 'observation') === $kind->value)>{{ $kind->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.requirement') }}</span>
-            <select name="isms_requirement_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($requirements as $requirement)
-                    <option value="{{ $requirement->id }}" @selected((string) old('isms_requirement_id', $finding?->isms_requirement_id) === (string) $requirement->id)>
-                        {{ $requirement->normLabel() }} · {{ $requirement->ref_no }} — {{ $requirement->title }}
-                    </option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.description') }}</span>
-            <textarea name="description" rows="4" maxlength="10000"
-                      class="textarea textarea-bordered w-full">{{ old('description', $finding?->description) }}</textarea>
-        </label>
+        <x-input-field name="title" :label="__('isms.field.title')" required minlength="3" maxlength="180"
+                       span="2"
+                       :value="old('title', $finding?->title)" />
+        <x-select-field name="kind" :label="__('isms.field.finding_kind')" required>
+            @foreach (\App\Enums\Isms\FindingKind::cases() as $kind)
+                <option value="{{ $kind->value }}" @selected(old('kind', $finding?->kind?->value ?? 'observation') === $kind->value)>{{ $kind->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="isms_requirement_id" :label="__('isms.field.requirement')">
+            <option value="">—</option>
+            @foreach ($requirements as $requirement)
+                <option value="{{ $requirement->id }}" @selected((string) old('isms_requirement_id', $finding?->isms_requirement_id) === (string) $requirement->id)>
+                    {{ $requirement->normLabel() }} · {{ $requirement->ref_no }} — {{ $requirement->title }}
+                </option>
+            @endforeach
+        </x-select-field>
+        <x-textarea-field name="description" :label="__('isms.field.description')" rows="4" maxlength="10000"
+                          span="2"
+                          :value="old('description', $finding?->description)" />
     </x-form-group>
 </x-modal>

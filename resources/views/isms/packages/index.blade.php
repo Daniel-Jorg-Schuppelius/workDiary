@@ -119,17 +119,15 @@
                                                 {{ $token->last_accessed_at?->format('d.m.Y H:i') ?? '—' }}
                                             </p>
                                             @if ($canManage && $token->revoked_at === null)
-                                                <form method="POST" action="{{ route('isms.packages.tokens.revoke', $token) }}"
-                                                      data-confirm-dialog
+                                                <x-action-form :action="route('isms.packages.tokens.revoke', $token)"
                                                       data-confirm-title="{{ __('isms.action.revoke_token') }}"
-                                                      data-confirm-message="{{ __('isms.confirm_revoke_token') }}"
-                                                      data-confirm-icon="link_off"
-                                                      data-confirm-tone="error"
-                                                      data-confirm-label="{{ __('isms.action.revoke_token') }}">
-                                                    @csrf
+                                                      :confirm="__('isms.confirm_revoke_token')"
+                                                      confirm-icon="link_off"
+                                                      confirm-tone="error"
+                                                      :confirm-label="__('isms.action.revoke_token')">
                                                     <x-icon-btn icon="link_off" tone="outline" size="xs" type="submit"
                                                                 show-label>{{ __('isms.action.revoke_token') }}</x-icon-btn>
-                                                </form>
+                                                </x-action-form>
                                             @endif
                                         </div>
                                     @endforeach
@@ -160,17 +158,15 @@
                                 @endcan
                             @else
                                 @can('finalize', $package)
-                                    <form method="POST" action="{{ route('isms.packages.finalize', $package) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('isms.packages.finalize', $package)"
                                           data-confirm-title="{{ __('isms.action.finalize_package') }}"
-                                          data-confirm-message="{{ __('isms.confirm_finalize_package') }}"
-                                          data-confirm-icon="lock"
-                                          data-confirm-tone="primary"
-                                          data-confirm-label="{{ __('isms.action.finalize_package') }}">
-                                        @csrf
+                                          :confirm="__('isms.confirm_finalize_package')"
+                                          confirm-icon="lock"
+                                          confirm-tone="primary"
+                                          :confirm-label="__('isms.action.finalize_package')">
                                         <x-icon-btn icon="lock" tone="primary" size="xs" type="submit"
                                                     :label="__('isms.action.finalize_package')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             @endif
                         </div>

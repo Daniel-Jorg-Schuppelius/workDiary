@@ -92,11 +92,10 @@
                         </td>
                         <td class="text-right whitespace-nowrap">
                             @can('submit', $expense)
-                                <form method="POST" action="{{ route('expenses.submit', $expense) }}" class="inline">
-                                    @csrf
+                                <x-action-form :action="route('expenses.submit', $expense)">
                                     <x-icon-btn icon="send" tone="warning" size="sm" type="submit"
                                                 :label="__('Zur Genehmigung einreichen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                             @can('update', $expense)
                                 <x-icon-btn icon="edit"
@@ -105,13 +104,11 @@
                                             :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $expense)
-                                <form method="POST" action="{{ route('expenses.destroy', $expense) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Spese wirklich löschen?') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                <x-action-form :action="route('expenses.destroy', $expense)" method="DELETE"
+                                      :confirm="__('Spese wirklich löschen?')"
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </td>
                     </tr>

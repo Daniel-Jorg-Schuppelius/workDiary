@@ -13,10 +13,9 @@ namespace App\Http\Requests;
 use App\Enums\Travel\TravelLogVehicle;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\{Rule, Validator};
 
-class SaveTravelLogRequest extends FormRequest {
+class SaveTravelLogRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -27,10 +26,6 @@ class SaveTravelLogRequest extends FormRequest {
         'attendance_id' => \App\Models\Attendance::class,
         'vehicle_id' => \App\Models\Vehicle::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /**
      * Compose `started_at` / `ended_at` from the separately submitted

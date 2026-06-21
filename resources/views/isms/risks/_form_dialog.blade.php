@@ -27,38 +27,15 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_risk')">
 
     <x-form-group :legend="__('isms.group.risk')" icon="warning_amber" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.title') }} *</span>
-            <input type="text" name="title" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('title', $risk?->title) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.category') }} *</span>
-            <select name="category" required class="select select-bordered w-full">
+        <x-input-field name="title" :label="__('isms.field.title')" required minlength="3" maxlength="180" span="2" :value="old('title', $risk?->title)" />
+        <x-select-field name="category" :label="__('isms.field.category')" required>
                 @foreach (\App\Enums\Isms\RiskCategory::cases() as $category)
                     <option value="{{ $category->value }}" @selected(old('category', $risk?->category?->value ?? 'organizational') === $category->value)>{{ $category->label() }}</option>
                 @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.asset_ref') }}</span>
-            <input type="text" name="asset_ref" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('asset_ref', $risk?->asset_ref) }}"
-                   placeholder="{{ __('isms.hint.asset_ref') }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.threat') }}</span>
-            <textarea name="threat" rows="2" maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.threat') }}">{{ old('threat', $risk?->threat) }}</textarea>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.description') }}</span>
-            <textarea name="description" rows="3" maxlength="10000"
-                      class="textarea textarea-bordered w-full">{{ old('description', $risk?->description) }}</textarea>
-        </label>
+        </x-select-field>
+        <x-input-field name="asset_ref" :label="__('isms.field.asset_ref')" maxlength="180" :value="old('asset_ref', $risk?->asset_ref)" placeholder="{{ __('isms.hint.asset_ref') }}" />
+        <x-textarea-field name="threat" :label="__('isms.field.threat')" rows="2" maxlength="10000" span="2" :value="old('threat', $risk?->threat)" placeholder="{{ __('isms.hint.threat') }}" />
+        <x-textarea-field name="description" :label="__('isms.field.description')" rows="3" maxlength="10000" span="2" :value="old('description', $risk?->description)" />
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.assessment')" icon="speed" tone="warning" cols="2">
@@ -78,29 +55,18 @@
                 @endfor
             </select>
         </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.treatment') }} *</span>
-            <select name="treatment" required class="select select-bordered w-full">
+        <x-select-field name="treatment" :label="__('isms.field.treatment')" required>
                 @foreach (\App\Enums\Isms\RiskTreatment::cases() as $treatment)
                     <option value="{{ $treatment->value }}" @selected(old('treatment', $risk?->treatment?->value ?? 'mitigate') === $treatment->value)>{{ $treatment->label() }}</option>
                 @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.review_due_on') }}</span>
-            <input type="date" name="review_due_on"
-                   class="input input-bordered w-full"
-                   value="{{ old('review_due_on', $risk?->review_due_on?->toDateString()) }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.owner') }}</span>
-            <select name="owner_user_id" class="select select-bordered w-full">
+        </x-select-field>
+        <x-input-field name="review_due_on" type="date" :label="__('isms.field.review_due_on')" :value="old('review_due_on', $risk?->review_due_on?->toDateString())" />
+        <x-select-field name="owner_user_id" :label="__('isms.field.owner')" span="2">
                 <option value="">—</option>
                 @foreach ($owners as $owner)
                     <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $risk?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
                 @endforeach
-            </select>
-        </label>
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('isms.field.controls')" icon="verified_user" tone="success" cols="1">

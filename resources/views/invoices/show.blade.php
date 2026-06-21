@@ -92,49 +92,43 @@
                 @endif
             @endcan
             @can('issue', $invoice)
-                <form method="POST" action="{{ route('invoices.issue', $invoice) }}" class="inline">@csrf
+                <x-action-form :action="route('invoices.issue', $invoice)">
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
-                </form>
+                </x-action-form>
                 {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
                 {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
             @endcan
             @can('pay', $invoice)
-                <form method="POST" action="{{ route('invoices.pay', $invoice) }}" class="inline">@csrf
+                <x-action-form :action="route('invoices.pay', $invoice)">
                     <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Bezahlt markieren') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             @endcan
             @can('cancel', $invoice)
-                <form method="POST" action="{{ route('invoices.cancel', $invoice) }}" class="inline"
-                      data-confirm-dialog
-                      data-confirm-message="{{ __('Rechnung wirklich stornieren?') }}"
-                      data-confirm-icon="block"
-                      data-confirm-tone="warning"
-                      data-confirm-label="{{ __('Stornieren') }}">
-                    @csrf
+                <x-action-form :action="route('invoices.cancel', $invoice)"
+                      :confirm="__('Rechnung wirklich stornieren?')"
+                      confirm-icon="block"
+                      confirm-tone="warning"
+                      :confirm-label="__('Stornieren')">
                     <x-icon-btn icon="block" tone="warning" size="sm" type="submit" show-label>{{ __('Stornieren') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             @endcan
             @can('createCreditNote', $invoice)
-                <form method="POST" action="{{ route('invoices.credit-note', $invoice) }}" class="inline"
-                      data-confirm-dialog
-                      data-confirm-message="{{ __('Korrekturrechnung (Gutschrift) zu :nr erstellen?', ['nr' => $invoice->number]) }}"
-                      data-confirm-icon="undo"
-                      data-confirm-tone="warning"
-                      data-confirm-label="{{ __('Korrekturrechnung erstellen') }}">
-                    @csrf
+                <x-action-form :action="route('invoices.credit-note', $invoice)"
+                      :confirm="__('Korrekturrechnung (Gutschrift) zu :nr erstellen?', ['nr' => $invoice->number])"
+                      confirm-icon="undo"
+                      confirm-tone="warning"
+                      :confirm-label="__('Korrekturrechnung erstellen')">
                     <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Korrekturrechnung') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             @endcan
             @can('delete', $invoice)
-                <form method="POST" action="{{ route('invoices.destroy', $invoice) }}" class="inline"
-                      data-confirm-dialog
-                      data-confirm-message="{{ __('Wirklich löschen?') }}"
-                      data-confirm-icon="delete"
-                      data-confirm-tone="error"
-                      data-confirm-label="{{ __('Löschen') }}">
-                    @csrf @method('DELETE')
+                <x-action-form :action="route('invoices.destroy', $invoice)" method="DELETE"
+                      :confirm="__('Wirklich löschen?')"
+                      confirm-icon="delete"
+                      confirm-tone="error"
+                      :confirm-label="__('Löschen')">
                     <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             @endcan
         </x-slot:actions>
     </x-page-toolbar>
@@ -176,15 +170,13 @@
                                         data-entry-modal-trigger
                                         :href="route('invoices.items.edit', [$invoice, $item])"
                                         :title="__('Bearbeiten')" />
-                            <form method="POST" action="{{ route('invoices.items.destroy', [$invoice, $item]) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Position wirklich entfernen?') }}"
-                                  data-confirm-icon="delete"
-                                  data-confirm-tone="error"
-                                  data-confirm-label="{{ __('Entfernen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('invoices.items.destroy', [$invoice, $item])" method="DELETE"
+                                  :confirm="__('Position wirklich entfernen?')"
+                                  confirm-icon="delete"
+                                  confirm-tone="error"
+                                  :confirm-label="__('Entfernen')">
                                 <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Entfernen')" />
-                            </form>
+                            </x-action-form>
                         </td>
                     @endif
                 @endcan

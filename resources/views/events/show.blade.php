@@ -49,34 +49,26 @@
             <div class="card bg-base-100 shadow lg:col-span-2">
                 <div class="card-body">
                     <h3 class="card-title text-base">{{ __('Details') }}</h3>
-                    <dl class="grid grid-cols-2 gap-y-2 text-sm">
-                        <dt class="opacity-70">{{ __('Beginn') }}</dt>
-                        <dd>{{ $event->started_at?->isoFormat('LLLL') }}</dd>
-                        <dt class="opacity-70">{{ __('Ende') }}</dt>
-                        <dd>{{ $event->ended_at?->isoFormat('LLLL') }}</dd>
+                    <x-detail-grid class="grid-cols-2">
+                        <x-detail-grid.row :label="__('Beginn')" :value="$event->started_at?->isoFormat('LLLL')" />
+                        <x-detail-grid.row :label="__('Ende')" :value="$event->ended_at?->isoFormat('LLLL')" />
                         @if ($event->topic)
-                            <dt class="opacity-70">{{ __('Thema') }}</dt>
-                            <dd>{{ $event->topic }}</dd>
+                            <x-detail-grid.row :label="__('Thema')" :value="$event->topic" />
                         @endif
-                        <dt class="opacity-70">{{ __('Verantwortlich') }}</dt>
-                        <dd>{{ $event->responsibleUser?->name ?? '—' }}</dd>
+                        <x-detail-grid.row :label="__('Verantwortlich')" :value="$event->responsibleUser?->name ?? '—'" />
                         @if ($event->customer)
-                            <dt class="opacity-70">{{ __('Externer Anbieter') }}</dt>
-                            <dd>{{ $event->customer->name }}</dd>
+                            <x-detail-grid.row :label="__('Externer Anbieter')" :value="$event->customer->name" />
                         @endif
                         @if ($event->external_contact_note)
-                            <dt class="opacity-70">{{ __('Externer Kontakt') }}</dt>
-                            <dd>{{ $event->external_contact_note }}</dd>
+                            <x-detail-grid.row :label="__('Externer Kontakt')" :value="$event->external_contact_note" />
                         @endif
                         @if ($event->max_participants)
-                            <dt class="opacity-70">{{ __('Max. Teilnehmer') }}</dt>
-                            <dd>{{ $event->max_participants }}</dd>
+                            <x-detail-grid.row :label="__('Max. Teilnehmer')" :value="$event->max_participants" />
                         @endif
                         @if ($event->recurrence_rule)
-                            <dt class="opacity-70">{{ __('Wiederholung') }}</dt>
-                            <dd><code class="text-xs">{{ $event->recurrence_rule }}</code></dd>
+                            <x-detail-grid.row :label="__('Wiederholung')"><code class="text-xs">{{ $event->recurrence_rule }}</code></x-detail-grid.row>
                         @endif
-                    </dl>
+                    </x-detail-grid>
 
                     @if ($event->description)
                         <div class="divider my-2"></div>

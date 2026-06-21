@@ -63,13 +63,11 @@
                         <a href="{{ route('invoice-templates.edit', $template) }}" class="btn btn-sm btn-secondary">
                             <x-icon name="edit" />
                         </a>
-                        <form method="POST" action="{{ route('invoice-templates.destroy', $template) }}" class="inline" data-confirm-dialog data-confirm-message="{{ __('Vorlage wirklich löschen?') }}">
-                            @csrf
-                            @method('DELETE')
+                        <x-action-form :action="route('invoice-templates.destroy', $template)" method="DELETE" :confirm="__('Vorlage wirklich löschen?')">
                             <button type="submit" class="btn btn-sm btn-danger">
                                 <x-icon name="delete" />
                             </button>
-                        </form>
+                        </x-action-form>
                     </td>
                 </tr>
             @empty

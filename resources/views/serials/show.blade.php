@@ -25,9 +25,9 @@
                         </form>
                     @endif
                     @unless ($serial->status->isTerminal())
-                        <form method="POST" action="{{ route('serials.scrap', $serial) }}" onsubmit="return confirm('{{ __('inventory.serial.action.scrap') }}?')">@csrf
+                        <x-action-form :action="route('serials.scrap', $serial)" :confirm="__('inventory.serial.action.scrap').'?'">
                             <x-icon-btn icon="delete_forever" tone="error" size="sm" type="submit" :title="__('inventory.serial.action.scrap')" />
-                        </form>
+                        </x-action-form>
                     @endunless
                 </x-slot:actions>
             @endif

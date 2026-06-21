@@ -11,84 +11,38 @@
 @endif
 
 <x-form-group :legend="__('Reise')" icon="restaurant_menu" tone="primary" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Land') }} *</label>
-        <select name="country" required class="select select-bordered w-full uppercase">
-            @foreach ($countries as $iso)
-                <option value="{{ $iso }}" @selected(old('country', $trip?->country ?? 'DE') === $iso)>{{ $iso }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ort / Tätigkeitsstätte') }} *</label>
-        <input type="text" name="location" required maxlength="255"
-               value="{{ old('location', $trip?->location) }}"
-               class="input input-bordered w-full"
-               placeholder="{{ __('z. B. Frankfurt am Main') }}">
-    </div>
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Zweck') }} *</label>
-        <input type="text" name="purpose" required maxlength="255"
-               value="{{ old('purpose', $trip?->purpose) }}"
-               class="input input-bordered w-full"
-               placeholder="{{ __('z. B. Workshop, Onsite-Termin, Schulung …') }}">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Beginn') }} *</label>
-        <input type="datetime-local" name="started_at" required
-               value="{{ old('started_at', $trip ? $trip->started_at->orgTz()->format('Y-m-d\\TH:i') : $date . 'T08:00') }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ende') }} *</label>
-        <input type="datetime-local" name="ended_at" required
-               value="{{ old('ended_at', $trip ? $trip->ended_at->format('Y-m-d\\TH:i') : $date . 'T18:00') }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset md:col-span-2">
-        <label class="label cursor-pointer justify-start gap-3">
-            <input type="hidden" name="accommodation_provided" value="0">
-            <input type="checkbox" name="accommodation_provided" value="1"
-                   @checked(old('accommodation_provided', $trip?->accommodation_provided ?? false))
-                   class="checkbox checkbox-sm">
-            <span class="fieldset-label">{{ __('Übernachtung wurde vom Arbeitgeber gestellt') }}</span>
-        </label>
-    </div>
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Notizen') }}</label>
-        <textarea name="notes" rows="2" maxlength="5000"
-                  class="textarea textarea-bordered w-full">{{ old('notes', $trip?->notes) }}</textarea>
-    </div>
+    <x-select-field name="country" :label="__('Land')" required class="uppercase">
+        @foreach ($countries as $iso)
+            <option value="{{ $iso }}" @selected(old('country', $trip?->country ?? 'DE') === $iso)>{{ $iso }}</option>
+        @endforeach
+    </x-select-field>
+    <x-input-field name="location" :label="__('Ort / Tätigkeitsstätte')" required maxlength="255" :value="old('location', $trip?->location)" :placeholder="__('z. B. Frankfurt am Main')" />
+    <x-input-field name="purpose" :label="__('Zweck')" required span="2" maxlength="255" :value="old('purpose', $trip?->purpose)" :placeholder="__('z. B. Workshop, Onsite-Termin, Schulung …')" />
+    <x-input-field name="started_at" type="datetime-local" :label="__('Beginn')" required :value="old('started_at', $trip ? $trip->started_at->orgTz()->format('Y-m-d\\TH:i') : $date . 'T08:00')" />
+    <x-input-field name="ended_at" type="datetime-local" :label="__('Ende')" required :value="old('ended_at', $trip ? $trip->ended_at->format('Y-m-d\\TH:i') : $date . 'T18:00')" />
+    <x-checkbox-field name="accommodation_provided" :label="__('Übernachtung wurde vom Arbeitgeber gestellt')" :checked="old('accommodation_provided', $trip?->accommodation_provided ?? false)" :toggle="false" span="2" />
+    <x-textarea-field name="notes" :label="__('Notizen')" rows="2" maxlength="5000" span="2" :value="old('notes', $trip?->notes)" />
 </x-form-group>
 
 <x-form-group :legend="__('Zuordnung')" icon="link" tone="success" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Projekt') }}</label>
-        <select name="project_id" class="select select-bordered w-full" data-depends-on="customer_id">
-            <option value="">—</option>
-            @foreach ($projects as $p)
-                <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $trip?->project_id)) === $p->sqid)>{{ $p->name }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Kunde') }}</label>
-        <select name="customer_id" class="select select-bordered w-full">
-            <option value="">—</option>
-            @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $trip?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Bezug zum Fahrtenbuch') }}</label>
-        <select name="travel_log_id" class="select select-bordered w-full">
-            <option value="">—</option>
-            @foreach ($travelLogs as $tl)
-                <option value="{{ $tl->sqid }}" @selected((string) old('travel_log_id', \App\Support\Sqid::encode(\App\Models\TravelLog::class, $trip?->travel_log_id)) === $tl->sqid)>
-                    {{ $tl->started_at?->fdate() }} · {{ $tl->from_address ?: '?' }} → {{ $tl->to_address ?: '?' }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+    <x-select-field name="project_id" :label="__('Projekt')" data-depends-on="customer_id">
+        <option value="">—</option>
+        @foreach ($projects as $p)
+            <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $trip?->project_id)) === $p->sqid)>{{ $p->name }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field name="customer_id" :label="__('Kunde')">
+        <option value="">—</option>
+        @foreach ($customers as $c)
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $trip?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field name="travel_log_id" :label="__('Bezug zum Fahrtenbuch')" span="2">
+        <option value="">—</option>
+        @foreach ($travelLogs as $tl)
+            <option value="{{ $tl->sqid }}" @selected((string) old('travel_log_id', \App\Support\Sqid::encode(\App\Models\TravelLog::class, $trip?->travel_log_id)) === $tl->sqid)>
+                {{ $tl->started_at?->fdate() }} · {{ $tl->from_address ?: '?' }} → {{ $tl->to_address ?: '?' }}
+            </option>
+        @endforeach
+    </x-select-field>
 </x-form-group>

@@ -77,19 +77,16 @@
             </form>
 
             @if ($current && $deleteAction)
-                <form method="POST" action="{{ $deleteAction }}" class="wd-file-upload__delete"
-                      data-confirm-dialog
-                      data-confirm-message="{{ __('Bild wirklich entfernen?') }}"
-                      data-confirm-icon="delete"
-                      data-confirm-tone="error"
-                      data-confirm-label="{{ __('Entfernen') }}">
-                    @csrf
-                    @method('DELETE')
+                <x-action-form :action="$deleteAction" method="DELETE" class="wd-file-upload__delete"
+                      :confirm="__('Bild wirklich entfernen?')"
+                      confirm-icon="delete"
+                      confirm-tone="error"
+                      :confirm-label="__('Entfernen')">
                     <button type="submit" class="btn btn-ghost btn-sm text-error">
                         <x-icon name="delete" />
                         <span>{{ __('Entfernen') }}</span>
                     </button>
-                </form>
+                </x-action-form>
             @endif
 
             @if ($helper)

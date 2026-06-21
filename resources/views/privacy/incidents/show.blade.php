@@ -173,42 +173,21 @@
                 @can('update', $incident)
                     <form method="post" action="{{ route('dataprotection.incidents.authority-report', $incident) }}" class="grid gap-3 md:grid-cols-2">
                         @csrf
-                        <label class="form-control md:col-span-2">
-                            <span class="label-text">{{ __('Offizielles Portal') }}</span>
-                            <select name="authority_key" class="select select-bordered select-sm">
-                                <option value="">{{ __('Andere / manuell eintragen') }}</option>
-                                @foreach ($authorityPortals as $key => $portal)
-                                    <option value="{{ $key }}" @selected(($authorityRecommendation['portal_key'] ?? null) === $key)>{{ $portal['name'] }}</option>
-                                @endforeach
-                            </select>
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text">{{ __('Behördenname bei manuellem Eintrag') }}</span>
-                            <input name="authority_name" class="input input-bordered input-sm" maxlength="255">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text">{{ __('Portal-URL bei manuellem Eintrag') }}</span>
-                            <input type="url" name="authority_portal_url" class="input input-bordered input-sm" maxlength="2000">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text">{{ __('Meldeart') }}</span>
-                            <select name="report_type" class="select select-bordered select-sm" required>
-                                <option value="initial">{{ __('Erstmeldung') }}</option>
-                                <option value="follow_up">{{ __('Folgemeldung') }}</option>
-                            </select>
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text">{{ __('Gemeldet am') }}</span>
-                            <input type="datetime-local" name="reported_at" class="input input-bordered input-sm">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text">{{ __('Meldekennung / Bestätigungs-ID') }}</span>
-                            <input name="report_reference" class="input input-bordered input-sm" maxlength="255">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text">{{ __('Behördliches Aktenzeichen') }}</span>
-                            <input name="case_number" class="input input-bordered input-sm" maxlength="255">
-                        </label>
+                        <x-select-field name="authority_key" :label="__('Offizielles Portal')" span="2" class="select-sm">
+                            <option value="">{{ __('Andere / manuell eintragen') }}</option>
+                            @foreach ($authorityPortals as $key => $portal)
+                                <option value="{{ $key }}" @selected(($authorityRecommendation['portal_key'] ?? null) === $key)>{{ $portal['name'] }}</option>
+                            @endforeach
+                        </x-select-field>
+                        <x-input-field name="authority_name" :label="__('Behördenname bei manuellem Eintrag')" maxlength="255" class="input-sm" />
+                        <x-input-field name="authority_portal_url" type="url" :label="__('Portal-URL bei manuellem Eintrag')" maxlength="2000" class="input-sm" />
+                        <x-select-field name="report_type" :label="__('Meldeart')" required class="select-sm">
+                            <option value="initial">{{ __('Erstmeldung') }}</option>
+                            <option value="follow_up">{{ __('Folgemeldung') }}</option>
+                        </x-select-field>
+                        <x-input-field name="reported_at" type="datetime-local" :label="__('Gemeldet am')" class="input-sm" />
+                        <x-input-field name="report_reference" :label="__('Meldekennung / Bestätigungs-ID')" maxlength="255" class="input-sm" />
+                        <x-input-field name="case_number" :label="__('Behördliches Aktenzeichen')" maxlength="255" class="input-sm" />
                         <button class="btn btn-sm btn-primary md:col-span-2">{{ __('Behördenmeldung dokumentieren') }}</button>
                     </form>
                 @endcan

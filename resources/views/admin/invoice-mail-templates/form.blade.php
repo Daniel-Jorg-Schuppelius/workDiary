@@ -19,12 +19,8 @@
         @csrf
         @if ($template->exists) @method('PUT') @endif
 
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('Name') }} <span class="text-error">*</span></span>
-            <input type="text" name="name" required maxlength="120"
-                   value="{{ old('name', $template->name) }}"
-                   class="input input-bordered w-full">
-        </label>
+        <x-input-field name="name" :label="__('Name')" required maxlength="120"
+                       :value="old('name', $template->name)" />
 
         <label class="label cursor-pointer justify-start gap-2">
             <input type="checkbox" name="is_default" value="1" @checked(old('is_default', $template->is_default))
@@ -32,24 +28,16 @@
             <span class="label-text">{{ __('Als Standard-Template verwenden') }}</span>
         </label>
 
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('Betreff') }} <span class="text-error">*</span></span>
-            <input type="text" name="subject" required maxlength="255"
-                   value="{{ old('subject', $template->subject) }}"
-                   class="input input-bordered w-full">
-        </label>
+        <x-input-field name="subject" :label="__('Betreff')" required maxlength="255"
+                       :value="old('subject', $template->subject)" />
 
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('HTML-Body') }} <span class="text-error">*</span></span>
-            <textarea name="body_html" rows="10" required
-                      class="textarea textarea-bordered w-full font-mono text-xs">{{ old('body_html', $template->body_html) }}</textarea>
-        </label>
+        <x-textarea-field name="body_html" :label="__('HTML-Body')" required rows="10"
+                          class="font-mono text-xs"
+                          :value="old('body_html', $template->body_html)" />
 
-        <label class="form-control w-full">
-            <span class="label label-text">{{ __('Text-Body (Fallback)') }} <span class="text-error">*</span></span>
-            <textarea name="body_text" rows="8" required
-                      class="textarea textarea-bordered w-full font-mono text-xs">{{ old('body_text', $template->body_text) }}</textarea>
-        </label>
+        <x-textarea-field name="body_text" :label="__('Text-Body (Fallback)')" required rows="8"
+                          class="font-mono text-xs"
+                          :value="old('body_text', $template->body_text)" />
 
         <details class="text-sm">
             <summary class="cursor-pointer text-base-content/70">{{ __('Verfügbare Variablen') }}</summary>

@@ -76,13 +76,11 @@
                                         data-entry-modal-trigger
                                         :href="route('admin.entry-types.edit', $type)"
                                         :label="__('Bearbeiten')" />
-                            <form method="POST" action="{{ route('admin.entry-types.destroy', $type) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Eintragstyp wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('admin.entry-types.destroy', $type)" method="DELETE"
+                                  :confirm="__('Eintragstyp wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         </div>
                     </td>
                 </tr>

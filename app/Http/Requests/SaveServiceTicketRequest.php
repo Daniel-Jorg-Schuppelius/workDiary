@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource};
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
 
-class SaveServiceTicketRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveServiceTicketRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

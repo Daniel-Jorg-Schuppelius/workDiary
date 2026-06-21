@@ -11,13 +11,12 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Validierung für die Anlage eines Fertigungsauftrags (Feature 047, MVP-062).
  * Artikel/Variante/Lager kommen als Sqid; Berechtigung trägt der Controller.
  */
-class SaveManufacturingOrderRequest extends FormRequest {
+class SaveManufacturingOrderRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -27,10 +26,6 @@ class SaveManufacturingOrderRequest extends FormRequest {
         'warehouse' => \App\Models\Warehouse::class,
         'customer' => \App\Models\Customer::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

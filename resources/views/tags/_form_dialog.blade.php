@@ -26,12 +26,6 @@
     @endif
 
     <x-form-group :legend="__('Tag-Daten')" icon="label" tone="success">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Name') }}</label>
-            <input name="name" type="text" required maxlength="60"
-                   class="input input-bordered w-full"
-                   value="{{ old('name', $tag?->name) }}">
-            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="name" :label="__('Name')" required maxlength="60" :value="old('name', $tag?->name)" />
     </x-form-group>
 </x-modal>

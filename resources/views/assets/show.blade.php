@@ -44,10 +44,9 @@
                 </div>
                 <div class="flex items-center gap-2">
                     @if ($canUnblock && $assetStatusValue === \App\Enums\Asset\AssetStatus::Blocked->value)
-                        <form method="POST" action="{{ route('assets.unblock', $asset) }}">
-                            @csrf
+                        <x-action-form :action="route('assets.unblock', $asset)">
                             <x-icon-btn icon="lock_open" tone="success" size="sm" type="submit" show-label>{{ __('Sperre aufheben') }}</x-icon-btn>
-                        </form>
+                        </x-action-form>
                     @endif
                     <x-icon-btn icon="description" size="sm" :href="route('assets.dossier', $asset)" target="_blank" show-label>{{ __('Objektakte') }}</x-icon-btn>
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('assets.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
@@ -81,15 +80,12 @@
 
         {{-- ── Verortung + Betriebssystem (nebeneinander) ──────────────────── --}}
         <div class="grid gap-4 md:grid-cols-2">
-            <x-card>
-                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                        <x-icon name="location_on" class="text-base-content/60" /> {{ __('Verortung') }}
-                    </h2>
-                    @if ($canEditAsset)
+            <x-card :title="__('Verortung')" icon="location_on">
+                @if ($canEditAsset)
+                    <x-slot:actions>
                         <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('assets.edit', $asset)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                    @endif
-                </div>
+                    </x-slot:actions>
+                @endif
                 @if ($room || $site || $building || $floor)
                     <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
                         <div>
@@ -149,18 +145,15 @@
                 @endif
             </x-card>
 
-            <x-card>
-                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                    <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                        <x-icon name="desktop_windows" class="text-base-content/60" /> {{ __('Betriebssystem') }}
-                    </h2>
-                    @if ($canEditAsset)
+            <x-card :title="__('Betriebssystem')" icon="desktop_windows">
+                @if ($canEditAsset)
+                    <x-slot:actions>
                         <x-icon-btn icon="add" tone="primary" size="sm"
                                     data-entry-modal-trigger
                                     :href="route('assets.software-installations.create', ['asset' => $asset, 'os' => 1])"
                                     show-label>{{ $os ? __('OS ersetzen') : __('OS zuweisen') }}</x-icon-btn>
-                    @endif
-                </div>
+                    </x-slot:actions>
+                @endif
                 @if ($os)
                     <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
                         <div><dt class="text-xs text-base-content/60">{{ __('Software') }}</dt><dd class="font-medium">{{ $os->software?->name }}</dd></div>
@@ -179,19 +172,15 @@
         {!! app(\App\Plugins\PluginManager::class)->renderSlot('asset-show.aside', $asset) !!}
 
         {{-- ── Installierte Software ────────────────────────────────────────── --}}
-        <x-card>
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="apps" class="text-base-content/60" /> {{ __('Installierte Software') }}
-                    <span class="font-normal text-base-content/50">({{ $installations->where('is_operating_system', false)->count() }})</span>
-                </h2>
-                @if ($canEditAsset)
+        <x-card :title="__('Installierte Software')" icon="apps" :count="$installations->where('is_operating_system', false)->count()">
+            @if ($canEditAsset)
+                <x-slot:actions>
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('assets.software-installations.create', $asset)"
                                 show-label>{{ __('Software zuweisen') }}</x-icon-btn>
-                @endif
-            </div>
+                </x-slot:actions>
+            @endif
             @php $apps = $installations->where('is_operating_system', false); @endphp
             @if ($apps->isEmpty())
                 <x-empty-state compact icon='<span class="material-symbols-outlined">apps</span>'
@@ -220,14 +209,12 @@
                                     <td>{{ $inst->expires_on?->isoFormat('L') ?: '—' }}</td>
                                     <td class="text-right">
                                         @if ($canEditAsset)
-                                            <form method="POST" action="{{ route('assets.software-installations.destroy', [$asset, $inst]) }}"
-                                                  data-confirm-dialog
-                                                  data-confirm-message="{{ __('Diese Software wirklich entfernen?') }}"
-                                                  data-confirm-label="{{ __('Entfernen') }}"
-                                                  class="inline">
-                                                @csrf @method('DELETE')
+                                            <x-action-form :action="route('assets.software-installations.destroy', [$asset, $inst])"
+                                                  method="DELETE"
+                                                  :confirm="__('Diese Software wirklich entfernen?')"
+                                                  :confirm-label="__('Entfernen')">
                                                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" />
-                                            </form>
+                                            </x-action-form>
                                         @endif
                                     </td>
                                 </tr>
@@ -239,19 +226,15 @@
         </x-card>
 
         {{-- ── Wartungspläne ────────────────────────────────────────────────── --}}
-        <x-card>
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="event_repeat" class="text-base-content/60" /> {{ __('Wartungspläne') }}
-                    <span class="font-normal text-base-content/50">({{ $maintenancePlans->count() }})</span>
-                </h2>
-                @if ($canManageMaintenance)
+        <x-card :title="__('Wartungspläne')" icon="event_repeat" :count="$maintenancePlans->count()">
+            @if ($canManageMaintenance)
+                <x-slot:actions>
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('assets.maintenance-plans.create', $asset)"
                                 show-label>{{ __('Plan anlegen') }}</x-icon-btn>
-                @endif
-            </div>
+                </x-slot:actions>
+            @endif
 
             @if ($maintenancePlans->isEmpty())
                 <x-empty-state compact icon='<span class="material-symbols-outlined">event_repeat</span>'
@@ -304,28 +287,24 @@
                                     <td class="text-end">
                                         @if ($canManageMaintenance)
                                             <div class="join">
-                                                <form method="POST" action="{{ route('assets.maintenance-plans.complete', [$asset, $plan]) }}" class="join-item">
-                                                    @csrf
+                                                <x-action-form :action="route('assets.maintenance-plans.complete', [$asset, $plan])" class="join-item">
                                                     <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('Erledigt') }}">
                                                         <x-icon name="check" />
                                                     </button>
-                                                </form>
-                                                <form method="POST" action="{{ route('assets.maintenance-plans.toggle', [$asset, $plan]) }}" class="join-item">
-                                                    @csrf
+                                                </x-action-form>
+                                                <x-action-form :action="route('assets.maintenance-plans.toggle', [$asset, $plan])" class="join-item">
                                                     <button type="submit" class="btn btn-xs btn-ghost" title="{{ $plan->is_active ? __('Pausieren') : __('Reaktivieren') }}">
                                                         <x-icon :name="$plan->is_active ? 'pause' : 'play_arrow'" />
                                                     </button>
-                                                </form>
-                                                <form method="POST" action="{{ route('assets.maintenance-plans.destroy', [$asset, $plan]) }}" class="join-item"
-                                                      data-confirm-dialog
-                                                      data-confirm-message="{{ __('Plan wirklich löschen?') }}"
-                                                      data-confirm-label="{{ __('Löschen') }}">
-                                                    @csrf
-                                                    @method('DELETE')
+                                                </x-action-form>
+                                                <x-action-form :action="route('assets.maintenance-plans.destroy', [$asset, $plan])" class="join-item"
+                                                      method="DELETE"
+                                                      :confirm="__('Plan wirklich löschen?')"
+                                                      :confirm-label="__('Löschen')">
                                                     <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
                                                         <x-icon name="delete" />
                                                     </button>
-                                                </form>
+                                                </x-action-form>
                                             </div>
                                         @endif
                                     </td>
@@ -338,18 +317,15 @@
         </x-card>
 
         {{-- ── Ausgabe / Rückgabe (Feature 009) ─────────────────────────────── --}}
-        <x-card>
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="swap_horiz" class="text-base-content/60" /> {{ __('Ausgabe / Rückgabe') }}
-                </h2>
-                @if ($canCheckout && ! $isCheckedOut && ! $isDefectBlocked)
+        <x-card :title="__('Ausgabe / Rückgabe')" icon="swap_horiz">
+            @if ($canCheckout && ! $isCheckedOut && ! $isDefectBlocked)
+                <x-slot:actions>
                     <x-icon-btn icon="logout" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('assets.checkout.create', $asset)"
                                 show-label>{{ __('Ausgeben') }}</x-icon-btn>
-                @endif
-            </div>
+                </x-slot:actions>
+            @endif
 
             @if ($isDefectBlocked && ! $isCheckedOut)
                 <div class="alert alert-warning mb-3">
@@ -389,10 +365,9 @@
                             @endif
                         </div>
                         @if ($canCheckout)
-                            <form method="POST" action="{{ route('assets.checkout.return', [$asset, $currentAssignment]) }}">
-                                @csrf
+                            <x-action-form :action="route('assets.checkout.return', [$asset, $currentAssignment])">
                                 <x-icon-btn icon="login" tone="success" size="sm" type="submit" show-label>{{ __('Zurücknehmen') }}</x-icon-btn>
-                            </form>
+                            </x-action-form>
                         @endif
                     </div>
                 </div>
@@ -427,19 +402,15 @@
         </x-card>
 
         {{-- ── Defekte / Sperren (Feature 009) ──────────────────────────────── --}}
-        <x-card>
-            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="report" class="text-base-content/60" /> {{ __('Defekte / Sperren') }}
-                    <span class="font-normal text-base-content/50">({{ $defects->count() }})</span>
-                </h2>
-                @if ($canManageDefects)
+        <x-card :title="__('Defekte / Sperren')" icon="report" :count="$defects->count()">
+            @if ($canManageDefects)
+                <x-slot:actions>
                     <x-icon-btn icon="add" tone="error" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('assets.defects.create', $asset)"
                                 show-label>{{ __('Defekt melden') }}</x-icon-btn>
-                @endif
-            </div>
+                </x-slot:actions>
+            @endif
 
             @if ($defects->isEmpty())
                 <x-empty-state compact icon='<span class="material-symbols-outlined">verified</span>'
@@ -484,11 +455,10 @@
                                             @if ($defect->status->isOpen())
                                                 <div class="join">
                                                     @if ($defect->status === \App\Enums\Asset\DefectStatus::Open)
-                                                        <form method="POST" action="{{ route('assets.defects.transition', [$asset, $defect]) }}" class="join-item">
-                                                            @csrf
+                                                        <x-action-form :action="route('assets.defects.transition', [$asset, $defect])" class="join-item">
                                                             <input type="hidden" name="action" value="inRepair" />
                                                             <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('In Reparatur') }}"><x-icon name="build" /></button>
-                                                        </form>
+                                                        </x-action-form>
                                                     @endif
                                                     <a class="btn btn-xs btn-ghost text-success join-item" title="{{ __('Erledigen') }}"
                                                        data-entry-modal-trigger
@@ -511,11 +481,7 @@
         </x-card>
 
         {{-- ── Aufträge ─────────────────────────────────────────────────────── --}}
-        <x-card>
-            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                <x-icon name="assignment" class="text-base-content/60" /> {{ __('Aufträge') }}
-                <span class="font-normal text-base-content/50">({{ $visibleCounts['diary'] }})</span>
-            </h2>
+        <x-card :title="__('Aufträge')" icon="assignment" :count="$visibleCounts['diary']">
             @if ($diaryEntries->isEmpty())
                 <x-empty-state compact icon='<span class="material-symbols-outlined">assignment</span>'
                                :title="__('Keine Aufträge')"
@@ -549,11 +515,7 @@
         </x-card>
 
         {{-- ── Protokolle ───────────────────────────────────────────────────── --}}
-        <x-card>
-            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                <x-icon name="description" class="text-base-content/60" /> {{ __('Protokolle') }}
-                <span class="font-normal text-base-content/50">({{ $visibleCounts['protocols'] }})</span>
-            </h2>
+        <x-card :title="__('Protokolle')" icon="description" :count="$visibleCounts['protocols']">
             @if ($protocols->isEmpty())
                 <x-empty-state compact icon='<span class="material-symbols-outlined">description</span>'
                                :title="__('Keine Protokolle')"
@@ -585,11 +547,7 @@
         </x-card>
 
         {{-- ── Materialeinsatz ──────────────────────────────────────────────── --}}
-        <x-card>
-            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                <x-icon name="inventory_2" class="text-base-content/60" /> {{ __('Materialeinsatz') }}
-                <span class="font-normal text-base-content/50">({{ $visibleCounts['material'] }})</span>
-            </h2>
+        <x-card :title="__('Materialeinsatz')" icon="inventory_2" :count="$visibleCounts['material']">
             @if ($materialUsages->isEmpty())
                 <x-empty-state compact icon='<span class="material-symbols-outlined">inventory_2</span>'
                                :title="__('Kein Materialeinsatz')"
@@ -624,11 +582,7 @@
 
         {{-- ── Timeline + Anhänge (nebeneinander) ───────────────────────────── --}}
         <div class="grid gap-4 md:grid-cols-2">
-            <x-card>
-                <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="timeline" class="text-base-content/60" /> {{ __('Timeline') }}
-                    <span class="font-normal text-base-content/50">({{ $timelineEntries->count() }})</span>
-                </h2>
+            <x-card :title="__('Timeline')" icon="timeline" :count="$timelineEntries->count()">
                 @if ($timelineEntries->isEmpty())
                     <x-empty-state compact icon='<span class="material-symbols-outlined">timeline</span>'
                                    :title="__('Keine Timeline-Einträge')"
@@ -650,11 +604,7 @@
                 @endif
             </x-card>
 
-            <x-card>
-                <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="attach_file" class="text-base-content/60" /> {{ __('Anhänge') }}
-                    <span class="font-normal text-base-content/50">({{ $visibleCounts['attachments'] }})</span>
-                </h2>
+            <x-card :title="__('Anhänge')" icon="attach_file" :count="$visibleCounts['attachments']">
                 @if ($attachments->isEmpty())
                     <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
                                    :title="__('Keine Anhänge')"

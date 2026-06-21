@@ -87,21 +87,19 @@
                 <td class="text-right">
                     @if ($canManage ?? false)
                         <div class="flex justify-end gap-1">
-                            <form method="POST" action="{{ route('admin.webhooks.test', $endpoint) }}" class="inline">
-                                @csrf
+                            <x-action-form :action="route('admin.webhooks.test', $endpoint)">
                                 <x-icon-btn icon="send" type="submit" :label="__('integration.webhook.action.test')" />
-                            </form>
+                            </x-action-form>
                             <x-icon-btn icon="edit"
                                         data-entry-modal-trigger
                                         :href="route('admin.webhooks.edit', $endpoint)"
                                         :label="__('integration.webhook.action.edit')" />
-                            <form method="POST" action="{{ route('admin.webhooks.destroy', $endpoint) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('integration.webhook.action.delete_confirm') }}"
-                                  data-confirm-label="{{ __('integration.webhook.action.delete') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('admin.webhooks.destroy', $endpoint)"
+                                  method="DELETE"
+                                  :confirm="__('integration.webhook.action.delete_confirm')"
+                                  :confirm-label="__('integration.webhook.action.delete')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('integration.webhook.action.delete')" />
-                            </form>
+                            </x-action-form>
                         </div>
                     @endif
                 </td>

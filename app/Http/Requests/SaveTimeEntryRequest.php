@@ -12,10 +12,9 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Support\Tz;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTimeEntryRequest extends FormRequest {
+class SaveTimeEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -23,10 +22,6 @@ class SaveTimeEntryRequest extends FormRequest {
         'task_id' => \App\Models\Task::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

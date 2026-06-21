@@ -14,14 +14,11 @@
     <form method="POST" action="{{ route('admin.imports.preflight') }}" enctype="multipart/form-data" class="card bg-base-100 shadow-sm">
         @csrf
         <div class="card-body space-y-4">
-            <label class="form-control">
-                <span class="label-text">{{ __('Entität') }}</span>
-                <select name="entity" class="select select-sm select-bordered w-64">
-                    @foreach ($entities as $e)
-                        <option value="{{ $e->value }}" @selected($entity->value === $e->value)>{{ $e->label() }}</option>
-                    @endforeach
-                </select>
-            </label>
+            <x-select-field name="entity" :label="__('Entität')" class="select-sm w-64">
+                @foreach ($entities as $e)
+                    <option value="{{ $e->value }}" @selected($entity->value === $e->value)>{{ $e->label() }}</option>
+                @endforeach
+            </x-select-field>
 
             <label class="form-control">
                 <span class="label-text">{{ __('CSV-Datei (max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => number_format(50000, 0, ',', '.')]) }}</span>

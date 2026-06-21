@@ -50,13 +50,11 @@
                                             :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $qual)
-                                <form method="POST" action="{{ route('qualifications.destroy', $qual) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Qualifikation wirklich löschen?') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                <x-action-form :action="route('qualifications.destroy', $qual)" method="DELETE"
+                                      :confirm="__('Qualifikation wirklich löschen?')"
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

@@ -11,14 +11,10 @@
 namespace App\Http\Requests;
 
 use App\Enums\Asset\{AssetClass, AssetStatus};
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
-class SaveAssetRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveAssetRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

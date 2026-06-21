@@ -41,21 +41,12 @@
                       class="textarea textarea-bordered w-full">{{ old('justification', $statement->justification) }}</textarea>
         </label>
         <div class="grid gap-3 sm:grid-cols-2">
-            <label class="form-control">
-                <span class="label-text">{{ __('isms.field.implementation_status') }} *</span>
-                <select name="implementation_status" required class="select select-bordered w-full">
+            <x-select-field name="implementation_status" :label="__('isms.field.implementation_status')" required>
                     @foreach (\App\Enums\Isms\ControlImplementationStatus::cases() as $status)
                         <option value="{{ $status->value }}" @selected(old('implementation_status', $statement->implementation_status->value) === $status->value)>{{ $status->label() }}</option>
                     @endforeach
-                </select>
-            </label>
-            <label class="form-control">
-                <span class="label-text">{{ __('isms.field.evidence_note') }}</span>
-                <input type="text" name="evidence_note" maxlength="10000"
-                       class="input input-bordered w-full"
-                       value="{{ old('evidence_note', $statement->evidence_note) }}"
-                       placeholder="{{ __('isms.hint.evidence_note') }}">
-            </label>
+            </x-select-field>
+            <x-input-field name="evidence_note" :label="__('isms.field.evidence_note')" maxlength="10000" :value="old('evidence_note', $statement->evidence_note)" placeholder="{{ __('isms.hint.evidence_note') }}" />
         </div>
     </x-form-group>
 </x-modal>

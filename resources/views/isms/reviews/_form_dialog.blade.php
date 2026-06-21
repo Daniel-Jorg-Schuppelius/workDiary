@@ -29,47 +29,19 @@
 
     <x-form-group :legend="__('isms.group.review')" icon="grading" tone="primary" cols="2">
         @unless ($isEdit)
-            <label class="form-control">
-                <span class="label-text">{{ __('isms.field.scope') }} *</span>
-                <select name="scope" required class="select select-bordered w-full">
+            <x-select-field name="scope" :label="__('isms.field.scope')" required>
                     @foreach ($scopes as $scopeOption)
                         <option value="{{ $scopeOption->sqid }}" @selected(old('scope') === $scopeOption->sqid || (old('scope') === null && $scopeOption->is_default))>{{ $scopeOption->name }}</option>
                     @endforeach
-                </select>
-            </label>
+            </x-select-field>
         @endunless
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.held_on') }} *</span>
-            <input type="date" name="held_on" required
-                   class="input input-bordered w-full"
-                   value="{{ old('held_on', $review?->held_on?->toDateString()) }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.participants') }} *</span>
-            <textarea name="participants" required rows="2" maxlength="5000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.participants') }}">{{ old('participants', $review?->participants) }}</textarea>
-        </label>
+        <x-input-field name="held_on" type="date" :label="__('isms.field.held_on')" required :value="old('held_on', $review?->held_on?->toDateString())" />
+        <x-textarea-field name="participants" :label="__('isms.field.participants')" required rows="2" maxlength="5000" span="2" :value="old('participants', $review?->participants)" placeholder="{{ __('isms.hint.participants') }}" />
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.review_content')" icon="summarize" tone="info" cols="1">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.inputs') }} *</span>
-            <textarea name="inputs" required rows="4" maxlength="20000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.inputs') }}">{{ old('inputs', $review?->inputs) }}</textarea>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.decisions') }} *</span>
-            <textarea name="decisions" required rows="4" maxlength="20000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.decisions') }}">{{ old('decisions', $review?->decisions) }}</textarea>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.follow_ups') }}</span>
-            <textarea name="follow_ups" rows="3" maxlength="20000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.follow_ups') }}">{{ old('follow_ups', $review?->follow_ups) }}</textarea>
-        </label>
+        <x-textarea-field name="inputs" :label="__('isms.field.inputs')" required rows="4" maxlength="20000" :value="old('inputs', $review?->inputs)" placeholder="{{ __('isms.hint.inputs') }}" />
+        <x-textarea-field name="decisions" :label="__('isms.field.decisions')" required rows="4" maxlength="20000" :value="old('decisions', $review?->decisions)" placeholder="{{ __('isms.hint.decisions') }}" />
+        <x-textarea-field name="follow_ups" :label="__('isms.field.follow_ups')" rows="3" maxlength="20000" :value="old('follow_ups', $review?->follow_ups)" placeholder="{{ __('isms.hint.follow_ups') }}" />
     </x-form-group>
 </x-modal>

@@ -52,11 +52,6 @@
                    placeholder="{{ __('isms.hint.ref_no') }}"
                    @if ($isCatalog) readonly @else required @endif>
         </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.title') }} *</span>
-            <input type="text" name="title" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('title', $requirement?->title) }}">
-        </label>
+        <x-input-field name="title" :label="__('isms.field.title')" required minlength="3" maxlength="180" span="2" :value="old('title', $requirement?->title)" />
     </x-form-group>
 </x-modal>

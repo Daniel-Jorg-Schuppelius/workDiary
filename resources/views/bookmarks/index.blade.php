@@ -58,14 +58,13 @@
                                         data-entry-modal-trigger
                                         :href="route('bookmarks.edit', $bookmark)"
                                         :label="__('Bearbeiten')" />
-                            <form method="POST" action="{{ route('bookmarks.destroy', $bookmark) }}" class="inline"
-                                  data-confirm-dialog
+                            <x-action-form :action="route('bookmarks.destroy', $bookmark)"
+                                  method="DELETE"
                                   data-confirm-title="{{ __('Lesezeichen löschen') }}"
-                                  data-confirm-message="{{ __('Das Lesezeichen wird entfernt.') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                                  :confirm="__('Das Lesezeichen wird entfernt.')"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         </td>
                     </tr>
                 @empty

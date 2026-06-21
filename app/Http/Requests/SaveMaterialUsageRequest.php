@@ -11,20 +11,15 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveMaterialUsageRequest extends FormRequest {
+class SaveMaterialUsageRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'material_id' => \App\Models\Material::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

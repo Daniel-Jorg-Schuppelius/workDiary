@@ -23,7 +23,7 @@ Teamleitung und Administration.
 ## Kritische Ereignisse
 
 Ein Unfall oder ein als kritisch eingestuftes Ereignis löst sofort eine
-Benachrichtigung an die Leitung aus (Ereignis `safety.criticalEvent`).
+Benachrichtigung an die Leitung aus.
 So werden schwerwiegende Vorfälle nicht übersehen.
 
 ## Status und Abschluss
@@ -36,7 +36,7 @@ angelegt werden.
 ## Qualifikationen und Pflichtchecks
 
 Ablaufende Qualifikationen und Unterweisungen werden über den
-Fristen-Scanner gemeldet (Ereignis `qualification.expiring`). Pflicht-
+Fristen-Scanner gemeldet. Pflicht-
 Sicherheitschecklisten je Auftragstyp werden über die Prozedurvorlagen
 abgebildet: In der Anwendbarkeit einer Vorlage lässt sich der Auftragstyp
 hinterlegen, sodass kritische Tätigkeiten verbindliche Schrittfolgen,

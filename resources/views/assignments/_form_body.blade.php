@@ -18,14 +18,11 @@
 
 @if ($canAssignOthers)
     <x-form-group :legend="__('Mitarbeiter')" icon="person" tone="primary">
-        <div class="fieldset w-full">
-            <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
-            <select name="user_id" class="select select-bordered w-full">
-                @foreach ($assignableUsers as $u)
-                    <option value="{{ $u['id'] }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="user_id" :label="__('Mitarbeiter')" class="w-full">
+            @foreach ($assignableUsers as $u)
+                <option value="{{ $u['id'] }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 @endif
 
@@ -48,24 +45,18 @@
         @error('end_at')<p class="text-error text-sm">{{ $message }}</p>@enderror
     </div>
 
-    <div class="fieldset w-full">
-        <label class="fieldset-label">{{ __('Zugehörige Bereitschaft (optional)') }}</label>
-        <select name="on_call_shift_id" class="select select-bordered w-full">
-            <option value="">{{ __('— keine —') }}</option>
-            @foreach ($shiftOptions as $s)
-                <option value="{{ $s->sqid }}" @selected((string) old('on_call_shift_id', \App\Support\Sqid::encode(\App\Models\OnCallShift::class, $selectedShift)) === $s->sqid)>
-                    {{ $s->user?->name }} · {{ $s->start_at?->fdatetime() }} – {{ $s->end_at?->fdatetime() }}
-                </option>
-            @endforeach
-        </select>
-    </div>
+    <x-select-field name="on_call_shift_id" :label="__('Zugehörige Bereitschaft (optional)')" class="w-full">
+        <option value="">{{ __('— keine —') }}</option>
+        @foreach ($shiftOptions as $s)
+            <option value="{{ $s->sqid }}" @selected((string) old('on_call_shift_id', \App\Support\Sqid::encode(\App\Models\OnCallShift::class, $selectedShift)) === $s->sqid)>
+                {{ $s->user?->name }} · {{ $s->start_at?->fdatetime() }} – {{ $s->end_at?->fdatetime() }}
+            </option>
+        @endforeach
+    </x-select-field>
 </x-form-group>
 
 <x-form-group :legend="__('Grund')" icon="description" tone="ghost">
-    <div class="fieldset w-full">
-        <label class="fieldset-label">{{ __('Grund') }}</label>
-        <textarea name="reason" rows="3" class="textarea textarea-bordered w-full">{{ $reason }}</textarea>
-    </div>
+    <x-textarea-field name="reason" :label="__('Grund')" rows="3" :value="$reason" class="w-full" />
 </x-form-group>
 
 @if ($errors->any())

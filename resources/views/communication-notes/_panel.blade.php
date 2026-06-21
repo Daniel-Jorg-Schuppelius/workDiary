@@ -27,19 +27,15 @@
     $canManageConfidential = \Illuminate\Support\Facades\Gate::allows('manageConfidential', \App\Models\CommunicationNote::class);
 @endphp
 
-<x-card as="section" id="communication-notes">
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
-            <x-icon name="forum" class="text-base-content/60" /> {{ __('communication.title.index') }}
-            <span class="font-normal text-base-content/50">({{ $notes->count() }})</span>
-        </h2>
-        @if ($canCreate)
+<x-card as="section" id="communication-notes" :title="__('communication.title.index')" icon="forum" :count="$notes->count()">
+    @if ($canCreate)
+        <x-slot:actions>
             <x-icon-btn icon="add_comment" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('communication-notes.create', ['notable_kind' => $notableKind, 'notable_id' => \App\Support\Sqid::encode(get_class($notable), (int) $notable->id)])"
                         show-label>{{ __('communication.action.create') }}</x-icon-btn>
-        @endif
-    </div>
+        </x-slot:actions>
+    @endif
 
     @if ($openFollowUps->isNotEmpty())
         <div class="mb-4 rounded-box border border-warning/40 bg-warning/5 p-4">
@@ -160,39 +156,34 @@
                                 @endif
 
                                 @if ($publishable)
-                                    <form method="POST" action="{{ route('communication-notes.publish', $note) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('communication-notes.publish', $note)"
                                           data-confirm-title="{{ __('communication.action.publish') }}"
-                                          data-confirm-message="{{ __('communication.confirm_publish') }}"
-                                          data-confirm-icon="visibility"
-                                          data-confirm-tone="success"
-                                          data-confirm-label="{{ __('communication.action.publish') }}">
-                                        @csrf
+                                          :confirm="__('communication.confirm_publish')"
+                                          confirm-icon="visibility"
+                                          confirm-tone="success"
+                                          :confirm-label="__('communication.action.publish')">
                                         <x-icon-btn icon="visibility" tone="success" size="xs" type="submit"
                                                     :label="__('communication.action.publish')" />
-                                    </form>
+                                    </x-action-form>
                                 @endif
 
                                 @if ($canManageConfidential && ! $isCustomerVisible)
-                                    <form method="POST" action="{{ route('communication-notes.confidential', $note) }}">
-                                        @csrf
+                                    <x-action-form :action="route('communication-notes.confidential', $note)">
                                         <input type="hidden" name="confidential" value="{{ $note->confidential ? 0 : 1 }}">
                                         <x-icon-btn :icon="$note->confidential ? 'lock_open' : 'lock'" tone="warning" size="xs" type="submit"
                                                     :label="$note->confidential ? __('communication.action.unmark_confidential') : __('communication.action.mark_confidential')" />
-                                    </form>
+                                    </x-action-form>
                                 @endif
 
                                 @if ($canDelete)
-                                    <form method="POST" action="{{ route('communication-notes.destroy', $note) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('communication-notes.destroy', $note)" method="DELETE"
                                           data-confirm-title="{{ __('communication.action.delete') }}"
-                                          data-confirm-message="{{ __('communication.confirm_delete') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('communication.action.delete') }}">
-                                        @csrf @method('DELETE')
+                                          :confirm="__('communication.confirm_delete')"
+                                          confirm-icon="delete"
+                                          confirm-tone="error"
+                                          :confirm-label="__('communication.action.delete')">
                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :label="__('communication.action.delete')" />
-                                    </form>
+                                    </x-action-form>
                                 @endif
                             </div>
                         @endif

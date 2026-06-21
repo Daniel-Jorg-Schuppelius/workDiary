@@ -13,13 +13,9 @@ namespace App\Http\Requests;
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetPeriod, ReportTargetScope};
 use App\Models\{Customer, Project, User};
 use App\Services\SqidEncoder;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveReportTargetRequest extends FormRequest {
-    public function authorize(): bool {
-        return true; // Policy greift im Controller
-    }
+class SaveReportTargetRequest extends BaseFormRequest {
 
     protected function prepareForValidation(): void {
         $scope = $this->input('scope');

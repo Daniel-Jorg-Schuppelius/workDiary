@@ -58,17 +58,15 @@
                             @endcan
                             @if (! $scope->is_default)
                                 @can('delete', $scope)
-                                    <form method="POST" action="{{ route('isms.scopes.destroy', $scope) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('isms.scopes.destroy', $scope)" method="DELETE"
                                           data-confirm-title="{{ __('isms.action.delete') }}"
-                                          data-confirm-message="{{ __('isms.confirm_delete_scope') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('isms.action.delete') }}">
-                                        @csrf @method('DELETE')
+                                          :confirm="__('isms.confirm_delete_scope')"
+                                          confirm-icon="delete"
+                                          confirm-tone="error"
+                                          :confirm-label="__('isms.action.delete')">
                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                     :label="__('isms.action.delete')" />
-                                    </form>
+                                    </x-action-form>
                                 @endcan
                             @endif
                         </div>

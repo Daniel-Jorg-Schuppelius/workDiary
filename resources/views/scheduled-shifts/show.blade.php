@@ -36,13 +36,11 @@
         </div>
 
         @can('delete', $shift)
-            <form action="{{ route('scheduled-shifts.destroy', $shift) }}" method="POST" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Wirklich löschen?') }}"
-                  data-confirm-label="{{ __('Löschen') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('scheduled-shifts.destroy', $shift)" method="DELETE"
+                  :confirm="__('Wirklich löschen?')"
+                  :confirm-label="__('Löschen')">
                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         @endcan
     </x-page-shell>
 @endsection

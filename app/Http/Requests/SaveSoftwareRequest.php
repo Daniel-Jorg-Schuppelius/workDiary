@@ -11,14 +11,10 @@
 namespace App\Http\Requests;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
-class SaveSoftwareRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveSoftwareRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

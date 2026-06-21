@@ -82,13 +82,11 @@
                                         · {{ number_format((float) $allocation->amount, 2, ',', '.') }}
                                     </span>
                                     @if ($canReconcile)
-                                        <form method="POST" action="{{ route('finance.reconciliation.unmatch', $allocation->sqid) }}"
-                                              data-confirm-dialog
-                                              data-confirm-message="{{ __('bank.action.unmatch') }}?">
-                                            @csrf @method('DELETE')
+                                        <x-action-form :action="route('finance.reconciliation.unmatch', $allocation->sqid)" method="DELETE"
+                                              :confirm="__('bank.action.unmatch') . '?'">
                                             <x-icon-btn icon="link_off" tone="error" size="xs" type="submit"
                                                         show-label>{{ __('bank.action.unmatch') }}</x-icon-btn>
-                                        </form>
+                                        </x-action-form>
                                     @endif
                                 </div>
                             @endforeach

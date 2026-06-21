@@ -41,7 +41,9 @@ class ThemeService {
     }
 
     /**
-     * Built-in-Themes aus der Config. @return array<int, array{key:string,label:string,scheme:string}>
+     * Built-in-Themes aus der Config.
+     *
+     * @return array<int, array{key:string,label:string,scheme:string}>
      */
     public function builtinThemes(): array {
         /** @var array<string, array{label?:string,scheme?:string}> $builtin */
@@ -68,9 +70,10 @@ class ThemeService {
             return $this->customCache;
         }
 
-        $org = $this->currentOrganization();
+        $settings = $this->currentOrganization()?->settings;
+        $settings = is_array($settings) ? $settings : [];
         /** @var array<string, mixed> $themeSettings */
-        $themeSettings = is_array($org?->settings['theme'] ?? null) ? $org->settings['theme'] : [];
+        $themeSettings = is_array($settings['theme'] ?? null) ? $settings['theme'] : [];
         /** @var array<int, mixed> $rawList */
         $rawList = is_array($themeSettings['custom'] ?? null) ? array_values($themeSettings['custom']) : [];
 
@@ -145,8 +148,10 @@ class ThemeService {
     }
 
     private function resolveOrgDefault(string $key, string $scheme, string $fallback): string {
-        $org = $this->currentOrganization();
-        $token = is_string($org?->settings['theme'][$key] ?? null) ? $org->settings['theme'][$key] : null;
+        $settings = $this->currentOrganization()?->settings;
+        $settings = is_array($settings) ? $settings : [];
+        $theme = is_array($settings['theme'] ?? null) ? $settings['theme'] : [];
+        $token = is_string($theme[$key] ?? null) ? $theme[$key] : null;
 
         return $token !== null && $this->schemeOf($token) === $scheme ? $token : $fallback;
     }

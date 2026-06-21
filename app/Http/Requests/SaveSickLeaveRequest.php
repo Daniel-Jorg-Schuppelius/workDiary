@@ -14,10 +14,9 @@ use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\SickLeave;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveSickLeaveRequest extends FormRequest {
+class SaveSickLeaveRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -25,10 +24,6 @@ class SaveSickLeaveRequest extends FormRequest {
         'user_id' => \App\Models\User::class,
         'follow_up_for_id' => \App\Models\SickLeave::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

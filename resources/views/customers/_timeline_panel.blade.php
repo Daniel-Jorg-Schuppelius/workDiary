@@ -17,12 +17,6 @@
         ->forCustomer($customer, $timelineViewer, 15);
 @endphp
 
-<x-card as="section" id="customer-timeline">
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
-            <x-icon name="history" class="text-base-content/60" /> {{ __('timeline.title.customer_section') }}
-        </h2>
-    </div>
-
+<x-card as="section" id="customer-timeline" :title="__('timeline.title.customer_section')" icon="history">
     @include('timeline._items', ['items' => $customerTimeline['items']])
 </x-card>

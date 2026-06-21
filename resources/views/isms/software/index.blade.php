@@ -99,17 +99,15 @@
                                                         :label="__('isms.action.edit')" />
                                         @endcan
                                         @can('delete', $installation)
-                                            <form method="POST" action="{{ route('isms.software.installations.destroy', $installation) }}"
-                                                  data-confirm-dialog
+                                            <x-action-form :action="route('isms.software.installations.destroy', $installation)" method="DELETE"
                                                   data-confirm-title="{{ __('isms.action.delete') }}"
-                                                  data-confirm-message="{{ __('isms.confirm_delete_installation') }}"
-                                                  data-confirm-icon="delete"
-                                                  data-confirm-tone="error"
-                                                  data-confirm-label="{{ __('isms.action.delete') }}">
-                                                @csrf @method('DELETE')
+                                                  :confirm="__('isms.confirm_delete_installation')"
+                                                  confirm-icon="delete"
+                                                  confirm-tone="error"
+                                                  :confirm-label="__('isms.action.delete')">
                                                 <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                             :label="__('isms.action.delete')" />
-                                            </form>
+                                            </x-action-form>
                                         @endcan
                                     </div>
                                 @empty
@@ -159,17 +157,15 @@
                                             :label="__('isms.action.edit')" />
                             @endcan
                             @can('delete', $product)
-                                <form method="POST" action="{{ route('isms.software.destroy', $product) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('isms.software.destroy', $product)" method="DELETE"
                                       data-confirm-title="{{ __('isms.action.delete') }}"
-                                      data-confirm-message="{{ __('isms.confirm_delete_software') }}"
-                                      data-confirm-icon="delete"
-                                      data-confirm-tone="error"
-                                      data-confirm-label="{{ __('isms.action.delete') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('isms.confirm_delete_software')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('isms.action.delete')">
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                 :label="__('isms.action.delete')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

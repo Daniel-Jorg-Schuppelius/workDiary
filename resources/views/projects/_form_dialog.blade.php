@@ -62,20 +62,9 @@
         @endif
 
         <x-form-group :legend="__('Stammdaten')" icon="folder" tone="primary">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Name') }}</label>
-                <input name="name" type="text" required maxlength="120"
-                       class="input input-bordered w-full"
-                       value="{{ old('name', $project?->name) }}">
-                @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
+            <x-input-field name="name" :label="__('Name')" required maxlength="120" :value="old('name', $project?->name)" />
 
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Beschreibung') }}</label>
-                <textarea name="description" rows="3" maxlength="2000"
-                          class="textarea textarea-bordered w-full">{{ old('description', $project?->description) }}</textarea>
-                @error('description')<p class="text-error text-sm">{{ $message }}</p>@enderror
-            </div>
+            <x-textarea-field name="description" :label="__('Beschreibung')" rows="3" maxlength="2000" :value="old('description', $project?->description)" />
         </x-form-group>
 
         <x-form-group :legend="__('Zuordnung')" icon="link" tone="info">
@@ -124,16 +113,13 @@
 
         <x-form-group :legend="__('Status & Zeitraum')" icon="event" tone="success">
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Status') }}</label>
-                    <select name="status" class="select select-bordered w-full">
-                        @foreach (\App\Enums\Project\ProjectStatus::options() as $value => $label)
-                            <option value="{{ $value }}" @selected(old('status', $project?->status?->value ?? \App\Enums\Project\ProjectStatus::Active->value) === $value)>
-                                {{ $label }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-select-field name="status" :label="__('Status')">
+                    @foreach (\App\Enums\Project\ProjectStatus::options() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('status', $project?->status?->value ?? \App\Enums\Project\ProjectStatus::Active->value) === $value)>
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </x-select-field>
 
                 <x-date-range
                     layout="join"

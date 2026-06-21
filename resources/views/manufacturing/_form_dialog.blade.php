@@ -15,47 +15,27 @@
     @endif
 
     <x-form-group :legend="__('Stammdaten')" icon="precision_manufacturing" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Artikel') }} *</label>
-            <select name="article" class="select select-bordered w-full" required>
-                @foreach ($articles as $article)
-                    <option value="{{ $article->sqid }}">{{ $article->name }}</option>
-                @endforeach
-            </select>
-            @error('article')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('manufacturing.quantity_kind.per_unit') }} — {{ __('Variante') }}</label>
-            <select name="variant" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($variants as $variant)
-                    <option value="{{ $variant->sqid }}">{{ $variant->article?->name }} — {{ $variant->name ?? $variant->option_signature }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="article" :label="__('Artikel')" required>
+            @foreach ($articles as $article)
+                <option value="{{ $article->sqid }}">{{ $article->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="variant" :label="__('manufacturing.quantity_kind.per_unit') . ' — ' . __('Variante')">
+            <option value="">—</option>
+            @foreach ($variants as $variant)
+                <option value="{{ $variant->sqid }}">{{ $variant->article?->name }} — {{ $variant->name ?? $variant->option_signature }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('manufacturing.order.field.target_qty') }} *</label>
-            <input name="target_qty" type="number" step="0.0001" min="0.0001" required class="input input-bordered w-full" value="{{ old('target_qty', 1) }}">
-            @error('target_qty')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('article.field.base_unit') }} *</label>
-            <input name="unit" type="text" required maxlength="20" class="input input-bordered w-full" value="{{ old('unit', 'Stk') }}">
-        </div>
+        <x-input-field name="target_qty" type="number" :label="__('manufacturing.order.field.target_qty')" required step="0.0001" min="0.0001" :value="old('target_qty', 1)" />
+        <x-input-field name="unit" :label="__('article.field.base_unit')" required maxlength="20" :value="old('unit', 'Stk')" />
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('inventory.field.warehouse') }}</label>
-            <select name="warehouse" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($warehouses as $warehouse)
-                    <option value="{{ $warehouse->sqid }}">{{ $warehouse->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('inventory.overview.priority') }}</label>
-            <input name="priority" type="number" min="1" class="input input-bordered w-full" value="{{ old('priority', 100) }}">
-        </div>
+        <x-select-field name="warehouse" :label="__('inventory.field.warehouse')">
+            <option value="">—</option>
+            @foreach ($warehouses as $warehouse)
+                <option value="{{ $warehouse->sqid }}">{{ $warehouse->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="priority" type="number" :label="__('inventory.overview.priority')" min="1" :value="old('priority', 100)" />
     </x-form-group>
 </x-modal>

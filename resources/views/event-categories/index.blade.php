@@ -85,13 +85,11 @@
                                             :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $cat)
-                                <form action="{{ route('event-categories.destroy', $cat) }}" method="POST" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Kategorie wirklich löschen?') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                <x-action-form :action="route('event-categories.destroy', $cat)" method="DELETE"
+                                      :confirm="__('Kategorie wirklich löschen?')"
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </td>
                     </tr>

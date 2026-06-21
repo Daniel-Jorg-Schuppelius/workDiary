@@ -150,11 +150,10 @@
                         <td class="tabular-nums">{{ number_format((float) $mw->hourly_amount, 2, ',', '.') }} €</td>
                         <td class="text-sm text-base-content/70">{{ $mw->note }}</td>
                         <td class="text-right">
-                            <form method="POST" action="{{ route('payroll.minimum-wages.destroy', $mw) }}" class="inline"
-                                  data-confirm-dialog data-confirm-message="{{ __('Mindestlohn-Satz entfernen?') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('payroll.minimum-wages.destroy', $mw)" method="DELETE"
+                                  :confirm="__('Mindestlohn-Satz entfernen?')">
                                 <x-icon-btn type="submit" icon="delete" size="xs" tone="error" :title="__('Entfernen')" />
-                            </form>
+                            </x-action-form>
                         </td>
                     </tr>
                 @empty
@@ -230,11 +229,10 @@
                             <td class="text-sm">{{ $u->employment_type?->label() ?? '—' }}</td>
                             <td class="tabular-nums text-warning">{{ number_format((float) $u->payroll_hourly_wage, 2, ',', '.') }} €</td>
                             <td class="text-right">
-                                <form method="POST" action="{{ route('payroll.raise-to-minimum') }}" class="inline">
-                                    @csrf
+                                <x-action-form :action="route('payroll.raise-to-minimum')">
                                     <input type="hidden" name="user" value="{{ $u->sqid }}">
                                     <button type="submit" class="btn btn-xs btn-ghost">{{ __('Anheben') }}</button>
-                                </form>
+                                </x-action-form>
                             </td>
                         </tr>
                     @endforeach

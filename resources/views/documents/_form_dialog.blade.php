@@ -39,22 +39,16 @@
             <input type="text" name="title" required minlength="3" maxlength="180"
                    class="input input-bordered w-full" value="{{ old('title', $document?->title) }}">
         </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('document.field.type') }} *</span>
-            <select name="document_type" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Document\DocumentType::cases() as $type)
-                    <option value="{{ $type->value }}" @selected(old('document_type', $document?->document_type?->value ?? 'other') === $type->value)>{{ $type->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('document.field.status') }}</span>
-            <select name="status" class="select select-bordered w-full">
-                @foreach ([\App\Enums\Document\DocumentStatus::Active, \App\Enums\Document\DocumentStatus::Draft] as $status)
-                    <option value="{{ $status->value }}" @selected(old('status', $document?->status?->value ?? 'active') === $status->value)>{{ $status->label() }}</option>
-                @endforeach
-            </select>
-        </label>
+        <x-select-field name="document_type" :label="__('document.field.type')" required>
+            @foreach (\App\Enums\Document\DocumentType::cases() as $type)
+                <option value="{{ $type->value }}" @selected(old('document_type', $document?->document_type?->value ?? 'other') === $type->value)>{{ $type->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="status" :label="__('document.field.status')">
+            @foreach ([\App\Enums\Document\DocumentStatus::Active, \App\Enums\Document\DocumentStatus::Draft] as $status)
+                <option value="{{ $status->value }}" @selected(old('status', $document?->status?->value ?? 'active') === $status->value)>{{ $status->label() }}</option>
+            @endforeach
+        </x-select-field>
         <label class="form-control sm:col-span-2">
             <span class="label-text">{{ __('document.field.description') }}</span>
             <textarea name="description" rows="3" maxlength="4000"

@@ -19,23 +19,9 @@
     @endif
 
     <x-form-group :legend="__('Stammdaten')" icon="warehouse" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Name') }} *</label>
-            <input name="name" type="text" required maxlength="255"
-                   class="input input-bordered w-full" value="{{ old('name', $warehouse?->name) }}">
-            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('inventory.field.code') }}</label>
-            <input name="code" type="text" maxlength="40"
-                   class="input input-bordered w-full" value="{{ old('code', $warehouse?->code) }}">
-            @error('code')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('inventory.field.location_note') }}</label>
-            <input name="location_note" type="text" maxlength="255"
-                   class="input input-bordered w-full" value="{{ old('location_note', $warehouse?->location_note) }}">
-        </div>
+        <x-input-field name="name" :label="__('Name')" required maxlength="255" :value="old('name', $warehouse?->name)" />
+        <x-input-field name="code" :label="__('inventory.field.code')" maxlength="40" :value="old('code', $warehouse?->code)" />
+        <x-input-field name="location_note" :label="__('inventory.field.location_note')" maxlength="255" :value="old('location_note', $warehouse?->location_note)" :span="2" />
     </x-form-group>
 
     <x-form-group :legend="__('Status')" icon="tune" tone="primary" cols="3">

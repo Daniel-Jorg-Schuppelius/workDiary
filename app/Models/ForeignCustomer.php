@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Archivable, BelongsToOrganization, HasSqid, Searchable};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -46,12 +46,14 @@ use Illuminate\Support\Carbon;
  * @property int|null $created_by
  */
 class ForeignCustomer extends Model {
+    use Archivable;
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -102,27 +104,9 @@ class ForeignCustomer extends Model {
         return $this->morphMany(ExternalReference::class, 'referenceable');
     }
 
-    public function isArchived(): bool {
-        return $this->archived_at !== null;
-    }
 
-    /**
-     * Suche über Name/Firma/E-Mail.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    public function scopeSearch(Builder $query, ?string $term): Builder {
-        $term = trim((string) $term);
-        if ($term === '') {
-            return $query;
-        }
-        $like = '%' . $term . '%';
-
-        return $query->where(function (Builder $q) use ($like): void {
-            $q->where('name', 'like', $like)
-                ->orWhere('company', 'like', $like)
-                ->orWhere('email', 'like', $like);
-        });
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'company', 'email'];
     }
 }

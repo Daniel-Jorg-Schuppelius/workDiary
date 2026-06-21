@@ -51,14 +51,11 @@
                 <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->fdatetime() }}</td>
                 <td data-sort-value="{{ optional($token->last_used_at)->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
                 <td class="text-right">
-                    <form method="POST" action="{{ route('profile.api-tokens.destroy', $token->id) }}" class="inline"
-                          data-confirm-dialog
-                          data-confirm-message="{{ __('Token wirklich widerrufen?') }}"
-                          data-confirm-label="{{ __('Widerrufen') }}">
-                        @csrf
-                        @method('DELETE')
+                    <x-action-form :action="route('profile.api-tokens.destroy', $token->id)" method="DELETE"
+                          :confirm="__('Token wirklich widerrufen?')"
+                          :confirm-label="__('Widerrufen')">
                         <x-icon-btn icon="block" tone="error" type="submit" :label="__('Widerrufen')" />
-                    </form>
+                    </x-action-form>
                 </td>
             </tr>
         @empty

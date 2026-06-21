@@ -22,7 +22,7 @@ register (editing, status, closing) stays with team leads and admins.
 ## Critical events
 
 An accident or an event rated as critical immediately triggers a
-notification to management (event `safety.criticalEvent`), so serious
+notification to management, so serious
 incidents are not missed.
 
 ## Status and closing
@@ -34,7 +34,7 @@ an open issue can be created as a follow-up (rework) measure.
 ## Qualifications and mandatory checks
 
 Expiring qualifications and training are reported via the deadline
-scanner (event `qualification.expiring`). Mandatory safety checklists per
+scanner. Mandatory safety checklists per
 order type are modelled through procedure templates: a template's
 applicability can target the order type, so critical activities can
 enforce step sequences, proofs and four-eyes checks.

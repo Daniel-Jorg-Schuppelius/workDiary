@@ -11,16 +11,11 @@
 namespace App\Http\Requests;
 
 use App\Models\Warehouse;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveWarehouseRequest extends FormRequest {
+class SaveWarehouseRequest extends BaseFormRequest {
     /** @var list<string> */
     private const FLAGS = ['is_default', 'active', 'blocked'];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     protected function prepareForValidation(): void {
         $merge = [];

@@ -13,7 +13,6 @@ namespace App\Http\Requests;
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Article;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
@@ -22,7 +21,7 @@ use Illuminate\Validation\Rule;
  * Wert (z. B. Übernahme einer führenden externen Nummer) ist je Organisation
  * eindeutig. Berechtigung trägt der Controller (ArticlePolicy).
  */
-class SaveArticleRequest extends FormRequest {
+class SaveArticleRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -35,10 +34,6 @@ class SaveArticleRequest extends FormRequest {
         'stockable', 'purchasable', 'sellable', 'manufacturable',
         'batch_required', 'serial_required', 'shelf_life_required',
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     protected function prepareForValidation(): void {
         $merge = [];

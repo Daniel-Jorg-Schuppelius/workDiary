@@ -15,32 +15,18 @@
     @endif
 
     <x-form-group :legend="__('Stammdaten')" icon="shopping_cart" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('procurement.field.supplier') }} *</label>
-            <select name="supplier" class="select select-bordered w-full" required>
-                @foreach ($suppliers as $supplier)
-                    <option value="{{ $supplier->sqid }}">{{ $supplier->name }}</option>
-                @endforeach
-            </select>
-            @error('supplier')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('procurement.field.warehouse') }} *</label>
-            <select name="warehouse" class="select select-bordered w-full" required>
-                @foreach ($warehouses as $warehouse)
-                    <option value="{{ $warehouse->sqid }}">{{ $warehouse->name }}</option>
-                @endforeach
-            </select>
-            @error('warehouse')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-select-field name="supplier" :label="__('procurement.field.supplier')" required>
+            @foreach ($suppliers as $supplier)
+                <option value="{{ $supplier->sqid }}">{{ $supplier->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="warehouse" :label="__('procurement.field.warehouse')" required>
+            @foreach ($warehouses as $warehouse)
+                <option value="{{ $warehouse->sqid }}">{{ $warehouse->name }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('procurement.field.expected_at') }}</label>
-            <input name="expected_at" type="date" class="input input-bordered w-full" value="{{ old('expected_at') }}">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('procurement.field.note') }}</label>
-            <input name="note" type="text" maxlength="2000" class="input input-bordered w-full" value="{{ old('note') }}">
-        </div>
+        <x-input-field name="expected_at" type="date" :label="__('procurement.field.expected_at')" :value="old('expected_at')" />
+        <x-input-field name="note" :label="__('procurement.field.note')" maxlength="2000" :value="old('note')" />
     </x-form-group>
 </x-modal>

@@ -13,10 +13,9 @@ namespace App\Http\Requests;
 use App\Enums\Diary\{LocationMode, Priority};
 use App\Enums\Recurrence\RecurrenceFrequency;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveRecurrenceRuleRequest extends FormRequest {
+class SaveRecurrenceRuleRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -25,10 +24,6 @@ class SaveRecurrenceRuleRequest extends FormRequest {
         'entry_type_id' => \App\Models\EntryType::class,
         'assigned_user_id' => \App\Models\User::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     protected function prepareForValidation(): void {
         foreach (['customer_id', 'entry_type_id', 'assigned_user_id', 'bymonthday', 'bymonth', 'default_service_minutes'] as $key) {

@@ -64,20 +64,13 @@
         @method('PUT')
 
         <x-form-group :legend="__('Stammdaten')" icon="badge" tone="primary" cols="2">
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('Anzeigename der App') }}</label>
-                <input type="text" name="branding[app_name]" maxlength="120"
-                       class="input input-bordered w-full @error('branding.app_name') input-error @enderror"
-                       value="{{ old('branding.app_name', data_get($organization->settings, 'branding.app_name', '')) }}"
-                       placeholder="{{ config('branding.app_name') ?? config('app.name') }}">
-                @error('branding.app_name')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-            </div>
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('Slogan / Untertitel') }}</label>
-                <input type="text" name="branding[slogan]" maxlength="200"
-                       class="input input-bordered w-full"
-                       value="{{ old('branding.slogan', data_get($organization->settings, 'branding.slogan', '')) }}">
-            </div>
+            <x-input-field name="branding[app_name]" :label="__('Anzeigename der App')" maxlength="120"
+                           span="2" error="branding.app_name"
+                           :value="old('branding.app_name', data_get($organization->settings, 'branding.app_name', ''))"
+                           :placeholder="config('branding.app_name') ?? config('app.name')" />
+            <x-input-field name="branding[slogan]" :label="__('Slogan / Untertitel')" maxlength="200"
+                           span="2"
+                           :value="old('branding.slogan', data_get($organization->settings, 'branding.slogan', ''))" />
         </x-form-group>
 
         <x-form-group :legend="__('Kontakt')" icon="contact_mail" tone="ghost" cols="2">
@@ -118,11 +111,8 @@
                            value="{{ old('branding.legal.'.$field, data_get($organization->settings, 'branding.legal.'.$field, '')) }}">
                 </div>
             @endforeach
-            <div class="fieldset md:col-span-2">
-                <label class="fieldset-label">{{ __('Fußzeilentext (für PDF-Dokumente)') }}</label>
-                <textarea name="branding[legal][footer_text]" rows="3"
-                          class="textarea textarea-bordered w-full">{{ old('branding.legal.footer_text', data_get($organization->settings, 'branding.legal.footer_text', '')) }}</textarea>
-            </div>
+            <x-textarea-field name="branding[legal][footer_text]" :label="__('Fußzeilentext (für PDF-Dokumente)')" rows="3"
+                              span="2" :value="old('branding.legal.footer_text', data_get($organization->settings, 'branding.legal.footer_text', ''))" />
         </x-form-group>
 
         <x-form-group :legend="__('Farben')" icon="palette" tone="ghost" cols="2">

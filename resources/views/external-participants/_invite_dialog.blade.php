@@ -25,30 +25,14 @@
     :submit-label="__('external.invite.submit')">
 
     <x-form-group :legend="__('external.group.contact')" icon="person" tone="primary" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('external.field.name') }} *</span>
-            <input type="text" name="name" required minlength="2" maxlength="160"
-                   class="input input-bordered w-full" value="{{ old('name') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('external.field.email') }}</span>
-            <input type="email" name="email" maxlength="190"
-                   class="input input-bordered w-full" value="{{ old('email') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('external.field.role') }}</span>
-            <input type="text" name="role" maxlength="120"
-                   class="input input-bordered w-full" value="{{ old('role') }}"
-                   placeholder="{{ __('external.hint.role') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('external.field.party') }} *</span>
-            <select name="party" class="select select-bordered w-full">
-                @foreach ($parties as $party)
-                    <option value="{{ $party->value }}" @selected(old('party') === $party->value)>{{ $party->label() }}</option>
-                @endforeach
-            </select>
-        </label>
+        <x-input-field name="name" :label="__('external.field.name')" required minlength="2" maxlength="160" :value="old('name')" />
+        <x-input-field name="email" type="email" :label="__('external.field.email')" maxlength="190" :value="old('email')" />
+        <x-input-field name="role" :label="__('external.field.role')" maxlength="120" :value="old('role')" placeholder="{{ __('external.hint.role') }}" />
+        <x-select-field name="party" :label="__('external.field.party')" required>
+            @foreach ($parties as $party)
+                <option value="{{ $party->value }}" @selected(old('party') === $party->value)>{{ $party->label() }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('external.group.abilities')" icon="lock" tone="primary" cols="1">
@@ -64,12 +48,7 @@
     </x-form-group>
 
     <x-form-group :legend="__('external.group.validity')" icon="schedule" tone="primary" cols="1">
-        <label class="form-control max-w-xs">
-            <span class="label-text">{{ __('external.field.ttl_days') }} *</span>
-            <input type="number" name="ttl_days" required min="1" max="180" step="1"
-                   class="input input-bordered w-full" value="{{ old('ttl_days', $defaultTtl) }}">
-            <span class="label-text-alt text-base-content/60">{{ __('external.hint.ttl_days') }}</span>
-        </label>
+        <x-input-field name="ttl_days" type="number" :label="__('external.field.ttl_days')" required min="1" max="180" step="1" :value="old('ttl_days', $defaultTtl)" :hint="__('external.hint.ttl_days')" />
         <p class="text-xs text-base-content/60">{{ __('external.invite.once_hint') }}</p>
     </x-form-group>
 </x-modal>

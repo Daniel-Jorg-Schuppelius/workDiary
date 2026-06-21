@@ -7,19 +7,15 @@
     $canPublishToCustomer = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\OpenIssue::class);
 @endphp
 
-<x-card as="section" id="open-issues">
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
-            <x-icon name="flag" class="text-base-content/60" /> {{ __('open-issue.title.index') }}
-            <span class="font-normal text-base-content/50">({{ $issues->count() }})</span>
-        </h2>
-        @if ($canCreate)
+<x-card as="section" id="open-issues" :title="__('open-issue.title.index')" icon="flag" :count="$issues->count()">
+    @if ($canCreate)
+        <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('open-issues.create', ['subject_kind' => $subjectKind, 'subject_id' => \App\Support\Sqid::encode(get_class($subject), (int) $subject->id)])"
                         show-label>{{ __('open-issue.action.create') }}</x-icon-btn>
-        @endif
-    </div>
+        </x-slot:actions>
+    @endif
 
     @if ($issues->isEmpty())
         <x-empty-state compact icon='<span class="material-symbols-outlined">flag</span>'
@@ -104,16 +100,14 @@
                                 @endforeach
 
                                 @if ($canDelete)
-                                    <form method="POST" action="{{ route('open-issues.destroy', $issue) }}"
-                                          data-confirm-dialog
+                                    <x-action-form :action="route('open-issues.destroy', $issue)" method="DELETE"
                                           data-confirm-title="{{ __('open-issue.action.delete') }}"
-                                          data-confirm-message="{{ __('Offenen Punkt wirklich löschen?') }}"
-                                          data-confirm-icon="delete"
-                                          data-confirm-tone="error"
-                                          data-confirm-label="{{ __('open-issue.action.delete') }}">
-                                        @csrf @method('DELETE')
+                                          :confirm="__('Offenen Punkt wirklich löschen?')"
+                                          confirm-icon="delete"
+                                          confirm-tone="error"
+                                          :confirm-label="__('open-issue.action.delete')">
                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :label="__('open-issue.action.delete')" />
-                                    </form>
+                                    </x-action-form>
                                 @endif
                             </div>
                         @endif

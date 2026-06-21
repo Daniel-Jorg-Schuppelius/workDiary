@@ -26,14 +26,12 @@
                             show-label>{{ __('Bearbeiten') }}</x-icon-btn>
             @endcan
             @can('delete', $project)
-                <form method="POST" action="{{ route('projects.destroy', $project) }}" class="inline"
-                      data-confirm-dialog
-                      data-confirm-title="{{ __('Projekt löschen') }}"
-                      data-confirm-message="{{ __('Verknüpfungen zu Einträgen werden gelöst.') }}"
-                      data-confirm-label="{{ __('Löschen') }}">
-                    @csrf @method('DELETE')
+                <x-action-form :action="route('projects.destroy', $project)" method="DELETE"
+                      :confirm="__('Verknüpfungen zu Einträgen werden gelöst.')"
+                      :confirm-label="__('Löschen')"
+                      data-confirm-title="{{ __('Projekt löschen') }}">
                     <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Löschen') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             @endcan
         </x-slot:actions>
     </x-page-toolbar>

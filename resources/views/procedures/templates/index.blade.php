@@ -102,23 +102,20 @@
                             @endcan
                             @can('update', $template)
                                 @if ($template->active)
-                                    <form method="POST" action="{{ route('procedures.archive', $template) }}"
-                                          data-confirm-dialog
-                                          data-confirm-title="{{ __('procedure.action.archive') }}"
-                                          data-confirm-message="{{ __('procedure.confirm.archive') }}"
-                                          data-confirm-icon="archive"
-                                          data-confirm-tone="warning"
-                                          data-confirm-label="{{ __('procedure.action.archive') }}">
-                                        @csrf
+                                    <x-action-form :action="route('procedures.archive', $template)"
+                                          :confirm="__('procedure.confirm.archive')"
+                                          confirm-icon="archive"
+                                          confirm-tone="warning"
+                                          :confirm-label="__('procedure.action.archive')"
+                                          data-confirm-title="{{ __('procedure.action.archive') }}">
                                         <x-icon-btn icon="archive" tone="warning" size="xs" type="submit"
                                                     :label="__('procedure.action.archive')" />
-                                    </form>
+                                    </x-action-form>
                                 @else
-                                    <form method="POST" action="{{ route('procedures.activate', $template) }}">
-                                        @csrf
+                                    <x-action-form :action="route('procedures.activate', $template)">
                                         <x-icon-btn icon="play_arrow" tone="success" size="xs" type="submit"
                                                     :label="__('procedure.action.activate')" />
-                                    </form>
+                                    </x-action-form>
                                 @endif
                             @endcan
                         </div>

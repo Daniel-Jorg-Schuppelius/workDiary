@@ -19,13 +19,11 @@
 
     @if ($site)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('sites.destroy', $site) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Standort wirklich löschen?') }}"
-                  data-confirm-label="{{ __('Löschen') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('sites.destroy', $site)" method="DELETE"
+                  :confirm="__('Standort wirklich löschen?')"
+                  :confirm-label="__('Löschen')">
                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Standort löschen') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endif
 </x-modal>

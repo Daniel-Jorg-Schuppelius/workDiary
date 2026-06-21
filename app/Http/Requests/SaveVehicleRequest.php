@@ -12,20 +12,15 @@ namespace App\Http\Requests;
 
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveVehicleRequest extends FormRequest {
+class SaveVehicleRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'default_user_id' => \App\Models\User::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     protected function prepareForValidation(): void {
         if (! $this->filled('ownership')) {

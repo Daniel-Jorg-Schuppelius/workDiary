@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
 use App\Http\Requests\SaveSupplierRequest;
 use App\Models\{AuditLog, ExternalReference, LexofficeVoucher, Supplier, Tag};
 use App\Plugins\Contracts\PluginCapability;
@@ -24,17 +25,16 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupplierController extends Controller {
+    use ArchivesModels;
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Supplier::class);
 
-        $status = $request->string('status')->toString() ?: 'active';
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $suppliers = Supplier::query()
             ->search($search)
@@ -155,19 +155,11 @@ class SupplierController extends Controller {
     }
 
     public function archive(Supplier $supplier): RedirectResponse {
-        Gate::authorize('archive', $supplier);
-
-        $supplier->forceFill(['archived_at' => now()])->save();
-
-        return back()->with('success', __('Lieferant archiviert.'));
+        return $this->archiveModel($supplier, __('Lieferant archiviert.'));
     }
 
     public function restore(Supplier $supplier): RedirectResponse {
-        Gate::authorize('restore', $supplier);
-
-        $supplier->forceFill(['archived_at' => null])->save();
-
-        return back()->with('success', __('Lieferant wiederhergestellt.'));
+        return $this->restoreModel($supplier, __('Lieferant wiederhergestellt.'));
     }
 
     /**

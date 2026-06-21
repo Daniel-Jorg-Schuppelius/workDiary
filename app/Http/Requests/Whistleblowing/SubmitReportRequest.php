@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Whistleblowing;
 
 use App\Enums\Whistleblowing\{CaseCategory, ReporterMode};
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\BaseFormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 
@@ -22,10 +22,7 @@ use Illuminate\Validation\Rules\File;
  * (Abschnitt 7.1). Die autoritative MIME-/Inhaltspruefung der Anhaenge erfolgt
  * serverseitig im WhistleblowingAttachmentService.
  */
-class SubmitReportRequest extends FormRequest {
-    public function authorize(): bool {
-        return true; // oeffentlich; Zugriff wird ueber ResolvePortal (404) geschuetzt
-    }
+class SubmitReportRequest extends BaseFormRequest {
 
     /**
      * @return array<string, mixed>

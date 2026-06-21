@@ -25,65 +25,30 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_software')">
 
     <x-form-group :legend="__('isms.group.software')" icon="apps" tone="primary" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.name') }} *</span>
-            <input type="text" name="name" required minlength="2" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('name', $product?->name) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.vendor') }}</span>
-            <input type="text" name="vendor" maxlength="120"
-                   class="input input-bordered w-full"
-                   value="{{ old('vendor', $product?->vendor) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.product_version') }}</span>
-            <input type="text" name="product_version" maxlength="64"
-                   class="input input-bordered w-full"
-                   value="{{ old('product_version', $product?->product_version) }}"
-                   placeholder="{{ __('isms.hint.product_version') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.category') }}</span>
-            <select name="category" class="select select-bordered w-full">
+        <x-input-field name="name" :label="__('isms.field.name')" required minlength="2" maxlength="180" :value="old('name', $product?->name)" />
+        <x-input-field name="vendor" :label="__('isms.field.vendor')" maxlength="120" :value="old('vendor', $product?->vendor)" />
+        <x-input-field name="product_version" :label="__('isms.field.product_version')" maxlength="64" :value="old('product_version', $product?->product_version)" placeholder="{{ __('isms.hint.product_version') }}" />
+        <x-select-field name="category" :label="__('isms.field.category')">
                 <option value="">—</option>
                 @foreach (\App\Enums\Isms\SoftwareCategory::cases() as $category)
                     <option value="{{ $category->value }}" @selected(old('category', $product?->category?->value) === $category->value)>{{ $category->label() }}</option>
                 @endforeach
-            </select>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.notes') }}</span>
-            <textarea name="notes" rows="3" maxlength="10000"
-                      class="textarea textarea-bordered w-full">{{ old('notes', $product?->notes) }}</textarea>
-        </label>
+        </x-select-field>
+        <x-textarea-field name="notes" :label="__('isms.field.notes')" rows="3" maxlength="10000" span="2" :value="old('notes', $product?->notes)" />
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.support')" icon="support_agent" tone="warning" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.support_status') }} *</span>
-            <select name="support_status" required class="select select-bordered w-full">
+        <x-select-field name="support_status" :label="__('isms.field.support_status')" required>
                 @foreach (\App\Enums\Isms\SupportStatus::cases() as $status)
                     <option value="{{ $status->value }}" @selected(old('support_status', $product?->support_status?->value ?? 'unknown') === $status->value)>{{ $status->label() }}</option>
                 @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.eol_on') }}</span>
-            <input type="date" name="eol_on"
-                   class="input input-bordered w-full"
-                   value="{{ old('eol_on', $product?->eol_on?->toDateString()) }}">
-            <span class="label-text-alt text-base-content/60">{{ __('isms.hint.eol_on') }}</span>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.owner') }}</span>
-            <select name="owner_user_id" class="select select-bordered w-full">
+        </x-select-field>
+        <x-input-field name="eol_on" type="date" :label="__('isms.field.eol_on')" :value="old('eol_on', $product?->eol_on?->toDateString())" :hint="__('isms.hint.eol_on')" />
+        <x-select-field name="owner_user_id" :label="__('isms.field.owner')" span="2">
                 <option value="">—</option>
                 @foreach ($owners as $owner)
                     <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $product?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
                 @endforeach
-            </select>
-        </label>
+        </x-select-field>
     </x-form-group>
 </x-modal>

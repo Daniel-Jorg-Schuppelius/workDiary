@@ -90,14 +90,13 @@
                         <button class="btn btn-xs btn-ghost btn-square" title="{{ __('Mitglieder einladen') }}" aria-label="{{ __('Mitglieder einladen') }}" onclick="document.getElementById('chat-invite').showModal()"><x-icon name="person_add" size="1.1rem" /></button>
                     @endcan
                     @if (! $activeChannel->isDirect())
-                        <form method="POST" action="{{ route('chat.channels.leave', $activeChannel) }}"
-                              data-confirm-dialog
+                        <x-action-form :action="route('chat.channels.leave', $activeChannel)"
                               data-confirm-title="{{ __('Kanal verlassen?') }}"
-                              data-confirm-message="{{ __('Du erhältst keine neuen Nachrichten dieses Kanals mehr.') }}"
-                              data-confirm-label="{{ __('Verlassen') }}"
-                              data-confirm-icon="logout">@csrf
+                              :confirm="__('Du erhältst keine neuen Nachrichten dieses Kanals mehr.')"
+                              :confirm-label="__('Verlassen')"
+                              confirm-icon="logout">
                             <button class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Verlassen') }}" aria-label="{{ __('Verlassen') }}"><x-icon name="logout" size="1.1rem" /></button>
-                        </form>
+                        </x-action-form>
                     @endif
                 </div>
             </header>

@@ -134,27 +134,23 @@
                         </td>
                         <td class="text-right whitespace-nowrap">
                             @if ($expense->status === \App\Enums\Expense\ExpenseStatus::Pending)
-                                <form method="POST" action="{{ route('expense-approvals.approve', $expense) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Spese genehmigen?') }}"
-                                      data-confirm-label="{{ __('Genehmigen') }}">
-                                    @csrf
+                                <x-action-form :action="route('expense-approvals.approve', $expense)"
+                                      :confirm="__('Spese genehmigen?')"
+                                      :confirm-label="__('Genehmigen')">
                                     <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit"
                                                 :label="__('Genehmigen')" />
-                                </form>
+                                </x-action-form>
                                 <x-icon-btn icon="block" tone="error" size="sm"
                                             data-entry-modal-trigger
                                             :href="route('expense-approvals.reject-form', $expense)"
                                             :label="__('Ablehnen')" />
                             @elseif ($expense->status === \App\Enums\Expense\ExpenseStatus::Approved)
-                                <form method="POST" action="{{ route('expense-approvals.reimburse', $expense) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Als erstattet markieren?') }}"
-                                      data-confirm-label="{{ __('Markieren') }}">
-                                    @csrf
+                                <x-action-form :action="route('expense-approvals.reimburse', $expense)"
+                                      :confirm="__('Als erstattet markieren?')"
+                                      :confirm-label="__('Markieren')">
                                     <x-icon-btn icon="payments" tone="info" size="sm" type="submit"
                                                 :label="__('Als erstattet markieren')" />
-                                </form>
+                                </x-action-form>
                             @endif
                         </td>
                     </tr>

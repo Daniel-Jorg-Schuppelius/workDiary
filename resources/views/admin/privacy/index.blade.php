@@ -168,16 +168,14 @@
                                     <td class="text-xs">{{ $lastActivity?->diffForHumans() ?? '—' }}</td>
                                     @if ($canRevokeSessions)
                                         <td class="text-right">
-                                            <form method="POST" action="{{ route('admin.privacy.sessions.destroy', ['id' => $session->id]) }}"
-                                                  data-confirm-dialog
-                                                  data-confirm-message="{{ __('Session wirklich widerrufen?') }}"
-                                                  data-confirm-icon="logout"
-                                                  data-confirm-tone="error"
-                                                  data-confirm-label="{{ __('Widerrufen') }}">
-                                                @csrf
-                                                @method('DELETE')
+                                            <x-action-form :action="route('admin.privacy.sessions.destroy', ['id' => $session->id])"
+                                                  method="DELETE"
+                                                  :confirm="__('Session wirklich widerrufen?')"
+                                                  confirm-icon="logout"
+                                                  confirm-tone="error"
+                                                  :confirm-label="__('Widerrufen')">
                                                 <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Widerrufen') }}</button>
-                                            </form>
+                                            </x-action-form>
                                         </td>
                                     @endif
                                 </tr>
@@ -223,16 +221,14 @@
                                     <td class="text-xs">{{ $token->expires_at ? \Carbon\CarbonImmutable::parse($token->expires_at)->translatedFormat('d.m.Y') : __('—') }}</td>
                                     @if ($canRevokeTokens)
                                         <td class="text-right">
-                                            <form method="POST" action="{{ route('admin.privacy.tokens.destroy', ['id' => $token->id]) }}"
-                                                  data-confirm-dialog
-                                                  data-confirm-message="{{ __('Token wirklich widerrufen?') }}"
-                                                  data-confirm-icon="key_off"
-                                                  data-confirm-tone="error"
-                                                  data-confirm-label="{{ __('Widerrufen') }}">
-                                                @csrf
-                                                @method('DELETE')
+                                            <x-action-form :action="route('admin.privacy.tokens.destroy', ['id' => $token->id])"
+                                                  method="DELETE"
+                                                  :confirm="__('Token wirklich widerrufen?')"
+                                                  confirm-icon="key_off"
+                                                  confirm-tone="error"
+                                                  :confirm-label="__('Widerrufen')">
                                                 <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Widerrufen') }}</button>
-                                            </form>
+                                            </x-action-form>
                                         </td>
                                     @endif
                                 </tr>

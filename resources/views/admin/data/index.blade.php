@@ -26,45 +26,27 @@
         @csrf
         <div class="card-body space-y-4">
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <label class="form-control">
-                    <span class="label-text">{{ __('Entität') }}</span>
-                    <select name="entity" class="select select-sm select-bordered w-full">
-                        @foreach ($entities as $e)
-                            <option value="{{ $e->value }}" @selected($entity->value === $e->value)>{{ $e->label() }}</option>
-                        @endforeach
-                    </select>
-                </label>
+                <x-select-field name="entity" :label="__('Entität')" class="select-sm">
+                    @foreach ($entities as $e)
+                        <option value="{{ $e->value }}" @selected($entity->value === $e->value)>{{ $e->label() }}</option>
+                    @endforeach
+                </x-select-field>
 
-                <label class="form-control">
-                    <span class="label-text">{{ __('Format') }}</span>
-                    <select name="format" class="select select-sm select-bordered w-full">
-                        @foreach ($formats as $f)
-                            <option value="{{ $f->value }}">{{ $f->label() }}</option>
-                        @endforeach
-                    </select>
-                </label>
+                <x-select-field name="format" :label="__('Format')" class="select-sm">
+                    @foreach ($formats as $f)
+                        <option value="{{ $f->value }}">{{ $f->label() }}</option>
+                    @endforeach
+                </x-select-field>
 
-                <label class="form-control">
-                    <span class="label-text">{{ __('Status') }}</span>
-                    <input type="text" name="status" class="input input-sm input-bordered w-full"
-                           placeholder="{{ __('z. B. active, archived') }}" />
-                </label>
+                <x-input-field name="status" :label="__('Status')" class="input-sm"
+                               placeholder="{{ __('z. B. active, archived') }}" />
 
-                <label class="form-control">
-                    <span class="label-text">{{ __('Suche') }}</span>
-                    <input type="text" name="q" class="input input-sm input-bordered w-full"
-                           placeholder="{{ __('Name, Nummer …') }}" />
-                </label>
+                <x-input-field name="q" :label="__('Suche')" class="input-sm"
+                               placeholder="{{ __('Name, Nummer …') }}" />
 
-                <label class="form-control">
-                    <span class="label-text">{{ __('Von (Datum)') }}</span>
-                    <input type="date" name="from" class="input input-sm input-bordered w-full" />
-                </label>
+                <x-input-field type="date" name="from" :label="__('Von (Datum)')" class="input-sm" />
 
-                <label class="form-control">
-                    <span class="label-text">{{ __('Bis (Datum)') }}</span>
-                    <input type="date" name="to" class="input input-sm input-bordered w-full" />
-                </label>
+                <x-input-field type="date" name="to" :label="__('Bis (Datum)')" class="input-sm" />
             </div>
 
             <div class="text-sm text-base-content/70">
@@ -110,14 +92,12 @@
                         @if ($run->state->canDownload())
                             <x-icon-btn icon="download" size="sm" :href="route('admin.data.download', $run)" />
                         @endif
-                        <form method="POST" action="{{ route('admin.data.destroy', $run) }}"
-                              data-confirm-dialog
-                              data-confirm-icon="delete"
-                              data-confirm-tone="error"
-                              data-confirm-message="{{ __('Export wirklich löschen?') }}">
-                            @csrf @method('DELETE')
+                        <x-action-form :action="route('admin.data.destroy', $run)" method="DELETE"
+                              confirm-icon="delete"
+                              confirm-tone="error"
+                              :confirm="__('Export wirklich löschen?')">
                             <x-icon-btn icon="delete" size="sm" tone="ghost" type="submit" />
-                        </form>
+                        </x-action-form>
                     </td>
                 </tr>
             @endforeach

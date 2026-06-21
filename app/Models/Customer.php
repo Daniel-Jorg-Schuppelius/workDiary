@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasAttachments, HasContactAndBankDetails, HasSqid, HasTags, Searchable};
 use App\Services\Numbering\NumberAuthority;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -60,6 +60,7 @@ use Illuminate\Support\{Carbon, Str};
  * @property int|null $created_by
  */
 class Customer extends Model {
+    use Archivable;
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -67,8 +68,10 @@ class Customer extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    use HasContactAndBankDetails;
     use HasSqid;
     use HasTags;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -307,9 +310,6 @@ class Customer extends Model {
         return $this->morphMany(ExternalReference::class, 'referenceable');
     }
 
-    public function isArchived(): bool {
-        return $this->archived_at !== null;
-    }
 
     public function hasProjects(): bool {
         return $this->projects()->exists();
@@ -319,63 +319,9 @@ class Customer extends Model {
         return $this->projects()->where('is_default', false)->exists();
     }
 
-    /**
-     * Bankverbindung als formatiertes Array für PDF/Show. Leer wenn keine
-     * Felder gepflegt sind. `hasAny` erleichtert den Blade-Check.
-     *
-     * @return array{has_any: bool, holder: ?string, iban: ?string, bic: ?string, bank: ?string}
-     */
-    public function bankDetails(): array {
-        $hasAny = (string) $this->bank_iban !== ''
-            || (string) $this->bank_bic !== ''
-            || (string) $this->bank_name !== ''
-            || (string) $this->bank_account_holder !== '';
-
-        return [
-            'has_any' => $hasAny,
-            'holder' => $this->bank_account_holder,
-            'iban' => $this->bank_iban,
-            'bic' => $this->bank_bic,
-            'bank' => $this->bank_name,
-        ];
-    }
-
-    /**
-     * Liefert den primären Ansprechpartner (oder den ersten in der Liste)
-     * gemerged mit den Legacy-Einzelfeldern. Wird vom Lexoffice-Mapper genutzt.
-     *
-     * @return array{name: ?string, email: ?string, phone: ?string}
-     */
-    public function primaryContact(): array {
-        $persons = $this->contact_persons ?? [];
-        $primary = collect($persons)->firstWhere('primary', true) ?? ($persons[0] ?? []);
-
-        return [
-            'name' => $primary['name'] ?? $this->contact_name,
-            'email' => $primary['email'] ?? $this->email,
-            'phone' => $primary['phone'] ?? ($this->phone ?: $this->mobile),
-        ];
-    }
-
-    /**
-     * Suche über Name/Nummer/Firma/E-Mail.
-     *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    public function scopeSearch(Builder $query, ?string $term): Builder {
-        $term = trim((string) $term);
-        if ($term === '') {
-            return $query;
-        }
-        $like = '%' . $term . '%';
-
-        return $query->where(function (Builder $q) use ($like): void {
-            $q->where('name', 'like', $like)
-                ->orWhere('number', 'like', $like)
-                ->orWhere('company', 'like', $like)
-                ->orWhere('email', 'like', $like);
-        });
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'number', 'company', 'email'];
     }
 
     /**

@@ -12,13 +12,9 @@ namespace App\Http\Requests;
 
 use App\Enums\Diary\Priority;
 use App\Models\{EntryType, Organization};
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveEntryTypeRequest extends FormRequest {
-    public function authorize(): bool {
-        return true; // Policy greift im Controller
-    }
+class SaveEntryTypeRequest extends BaseFormRequest {
 
     protected function prepareForValidation(): void {
         $this->merge([

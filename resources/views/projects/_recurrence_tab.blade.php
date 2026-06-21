@@ -55,23 +55,19 @@
                     </div>
                     <div class="flex gap-1">
                         @can('update', $project)
-                            <form method="POST" action="{{ route('projects.recurrence-rules.run', [$project, $rule]) }}" class="inline">
-                                @csrf
+                            <x-action-form :action="route('projects.recurrence-rules.run', [$project, $rule])">
                                 <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('Jetzt Aufträge erzeugen') }}">
                                     <x-icon name="play_arrow" />
                                 </button>
-                            </form>
+                            </x-action-form>
                             <a href="{{ route('projects.recurrence-rules.edit', [$project, $rule]) }}"
                                data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
-                            <form method="POST" action="{{ route('projects.recurrence-rules.destroy', [$project, $rule]) }}"
-                                  data-confirm-dialog
-                                  data-confirm-title="{{ __('Regel löschen') }}"
-                                  data-confirm-message="{{ __('Bereits erzeugte Aufträge bleiben erhalten, die Regel wird entfernt.') }}"
-                                  data-confirm-label="{{ __('Löschen') }}"
-                                  class="inline">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('projects.recurrence-rules.destroy', [$project, $rule])" method="DELETE"
+                                  :confirm="__('Bereits erzeugte Aufträge bleiben erhalten, die Regel wird entfernt.')"
+                                  :confirm-label="__('Löschen')"
+                                  data-confirm-title="{{ __('Regel löschen') }}">
                                 <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
-                            </form>
+                            </x-action-form>
                         @endcan
                     </div>
                 </li>

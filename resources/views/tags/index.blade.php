@@ -49,14 +49,12 @@
                                             :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $tag)
-                                <form method="POST" action="{{ route('tags.destroy', $tag) }}" class="inline"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('tags.destroy', $tag)" method="DELETE"
+                                      :confirm="__('Tag wird inklusive aller Verknüpfungen entfernt.')"
                                       data-confirm-title="{{ __('Tag löschen') }}"
-                                      data-confirm-message="{{ __('Tag wird inklusive aller Verknüpfungen entfernt.') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </td>
                     </tr>

@@ -86,14 +86,12 @@
                                 <td class="text-xs">{{ $p->expires_at?->fdate() }}</td>
                                 <td class="text-right">
                                     @if ($canManage && $p->revoked_at === null)
-                                        <form method="POST" action="{{ route('external.revoke', $p) }}" class="inline"
-                                              data-confirm-dialog
+                                        <x-action-form :action="route('external.revoke', $p)"
                                               data-confirm-title="{{ __('external.revoke.title') }}"
-                                              data-confirm-message="{{ __('external.revoke.message') }}"
-                                              data-confirm-label="{{ __('external.revoke.confirm') }}">
-                                            @csrf
+                                              :confirm="__('external.revoke.message')"
+                                              :confirm-label="__('external.revoke.confirm')">
                                             <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" show-label>{{ __('external.revoke.action') }}</x-icon-btn>
-                                        </form>
+                                        </x-action-form>
                                     @endif
                                 </td>
                             </tr>

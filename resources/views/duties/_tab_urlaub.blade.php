@@ -49,10 +49,9 @@ use App\Enums\Vacation\VacationStatus;
                         <div class="flex items-center gap-1">
                             @can('decide', $v)
                                 @if ($v->status === \App\Models\VacationStatus::Pending->value)
-                                    <form method="POST" action="{{ route('vacations.approve', $v) }}" class="inline">
-                                        @csrf @method('PATCH')
+                                    <x-action-form :action="route('vacations.approve', $v)" method="PATCH">
                                         <x-icon-btn icon="check" tone="success" type="submit" :label="__('Genehmigen')" />
-                                    </form>
+                                    </x-action-form>
                                     <x-icon-btn icon="close" tone="error"
                                                 data-entry-modal-trigger
                                                 :href="route('vacations.reject-form', $v) . '?dialog=1'"
@@ -68,23 +67,19 @@ use App\Enums\Vacation\VacationStatus;
                             @endcan
 
                             @can('cancel', $v)
-                                <form method="POST" action="{{ route('vacations.cancel', $v) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Urlaubsantrag wirklich stornieren?') }}"
-                                      data-confirm-label="{{ __('Stornieren') }}">
-                                    @csrf @method('PATCH')
+                                <x-action-form :action="route('vacations.cancel', $v)" method="PATCH"
+                                      :confirm="__('Urlaubsantrag wirklich stornieren?')"
+                                      :confirm-label="__('Stornieren')">
                                     <x-icon-btn icon="block" tone="warning" type="submit" :label="__('Stornieren')" />
-                                </form>
+                                </x-action-form>
                             @endcan
 
                             @can('delete', $v)
-                                <form method="POST" action="{{ route('vacations.destroy', $v) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Urlaubsantrag wirklich löschen?') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                <x-action-form :action="route('vacations.destroy', $v)" method="DELETE"
+                                      :confirm="__('Urlaubsantrag wirklich löschen?')"
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

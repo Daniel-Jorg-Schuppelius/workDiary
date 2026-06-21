@@ -215,28 +215,24 @@
                                                         @can('update', $risk)
                                                             @unless ($assessment->isApproved())
                                                                 <span class="flex justify-end gap-1">
-                                                                    <form method="POST" action="{{ route('isms.risks.assessments.approve', $assessment) }}"
-                                                                          data-confirm-dialog
+                                                                    <x-action-form :action="route('isms.risks.assessments.approve', $assessment)"
                                                                           data-confirm-title="{{ __('isms.action.approve_assessment') }}"
-                                                                          data-confirm-message="{{ __('isms.confirm_approve_assessment') }}"
-                                                                          data-confirm-icon="task_alt"
-                                                                          data-confirm-tone="primary"
-                                                                          data-confirm-label="{{ __('isms.action.approve_assessment') }}">
-                                                                        @csrf
+                                                                          :confirm="__('isms.confirm_approve_assessment')"
+                                                                          confirm-icon="task_alt"
+                                                                          confirm-tone="primary"
+                                                                          :confirm-label="__('isms.action.approve_assessment')">
                                                                         <x-icon-btn icon="task_alt" tone="primary" size="xs" type="submit"
                                                                                     :label="__('isms.action.approve_assessment')" />
-                                                                    </form>
-                                                                    <form method="POST" action="{{ route('isms.risks.assessments.destroy', $assessment) }}"
-                                                                          data-confirm-dialog
+                                                                    </x-action-form>
+                                                                    <x-action-form :action="route('isms.risks.assessments.destroy', $assessment)" method="DELETE"
                                                                           data-confirm-title="{{ __('isms.action.delete') }}"
-                                                                          data-confirm-message="{{ __('isms.confirm_delete_assessment') }}"
-                                                                          data-confirm-icon="delete"
-                                                                          data-confirm-tone="error"
-                                                                          data-confirm-label="{{ __('isms.action.delete') }}">
-                                                                        @csrf @method('DELETE')
+                                                                          :confirm="__('isms.confirm_delete_assessment')"
+                                                                          confirm-icon="delete"
+                                                                          confirm-tone="error"
+                                                                          :confirm-label="__('isms.action.delete')">
                                                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                                                     :label="__('isms.action.delete')" />
-                                                                    </form>
+                                                                    </x-action-form>
                                                                 </span>
                                                             @endunless
                                                         @endcan
@@ -297,17 +293,15 @@
                                 @endif
                             @endcan
                             @can('delete', $risk)
-                                <form method="POST" action="{{ route('isms.risks.destroy', $risk) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('isms.risks.destroy', $risk)" method="DELETE"
                                       data-confirm-title="{{ __('isms.action.delete') }}"
-                                      data-confirm-message="{{ __('isms.confirm_delete_risk') }}"
-                                      data-confirm-icon="delete"
-                                      data-confirm-tone="error"
-                                      data-confirm-label="{{ __('isms.action.delete') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('isms.confirm_delete_risk')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('isms.action.delete')">
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                 :label="__('isms.action.delete')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

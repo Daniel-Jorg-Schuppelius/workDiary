@@ -5,7 +5,6 @@ version: 1
 audience: []
 related:
     - protocols.sign
-    - open-issues.manage
 ---
 
 Kunden stellen über das Portal bzw. den **Signaturlink** Rückfragen zu einem

@@ -15,10 +15,9 @@ use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Vehicle;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTourRequest extends FormRequest {
+class SaveTourRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -26,10 +25,6 @@ class SaveTourRequest extends FormRequest {
         'user_id' => \App\Models\User::class,
         'vehicle_id' => \App\Models\Vehicle::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

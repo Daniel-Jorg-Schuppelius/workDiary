@@ -23,32 +23,19 @@
     :submit-label="__('isms.action.create_norm_status')">
 
     <x-form-group :legend="__('isms.group.norm_status')" icon="workspace_premium" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.scope') }} *</span>
-            <select name="scope" required class="select select-bordered w-full">
-                @foreach ($scopes as $scopeOption)
-                    <option value="{{ $scopeOption->sqid }}" @selected(old('scope', $scope?->sqid) === $scopeOption->sqid)>{{ $scopeOption->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.norm') }} *</span>
-            <input type="text" name="norm" required maxlength="64"
-                   class="input input-bordered w-full"
-                   value="{{ old('norm') }}"
-                   placeholder="{{ __('isms.hint.norm') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.edition') }}</span>
-            <input type="text" name="edition" maxlength="16"
-                   class="input input-bordered w-full"
-                   value="{{ old('edition') }}"
-                   placeholder="{{ __('isms.hint.edition') }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.notes') }}</span>
-            <textarea name="notes" rows="3" maxlength="5000"
-                      class="textarea textarea-bordered w-full">{{ old('notes') }}</textarea>
-        </label>
+        <x-select-field name="scope" :label="__('isms.field.scope')" required span="2">
+            @foreach ($scopes as $scopeOption)
+                <option value="{{ $scopeOption->sqid }}" @selected(old('scope', $scope?->sqid) === $scopeOption->sqid)>{{ $scopeOption->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="norm" :label="__('isms.field.norm')" required maxlength="64"
+                       :value="old('norm')"
+                       placeholder="{{ __('isms.hint.norm') }}" />
+        <x-input-field name="edition" :label="__('isms.field.edition')" maxlength="16"
+                       :value="old('edition')"
+                       placeholder="{{ __('isms.hint.edition') }}" />
+        <x-textarea-field name="notes" :label="__('isms.field.notes')" rows="3" maxlength="5000"
+                          span="2"
+                          :value="old('notes')" />
     </x-form-group>
 </x-modal>

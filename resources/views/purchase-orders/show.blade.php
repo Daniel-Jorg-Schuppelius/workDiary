@@ -22,9 +22,9 @@
                         </form>
                     @endif
                     @if ($isOpen)
-                        <form method="POST" action="{{ route('purchase-orders.cancel', $order) }}" onsubmit="return confirm('{{ __('procurement.action.cancel') }}?')">@csrf
+                        <x-action-form :action="route('purchase-orders.cancel', $order)" :confirm="__('procurement.action.cancel').'?'">
                             <x-icon-btn icon="cancel" tone="error" size="sm" type="submit" :title="__('procurement.action.cancel')" />
-                        </form>
+                        </x-action-form>
                     @endif
                 </x-slot:actions>
             @endif

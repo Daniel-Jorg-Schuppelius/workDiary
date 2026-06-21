@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
 use App\Http\Requests\SaveCustomerRequest;
 use App\Models\{AuditLog, Customer, ExternalReference, LexofficeVoucher, Tag, TimeEntry, User};
 use App\Plugins\Contracts\PluginCapability;
@@ -29,17 +30,16 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CustomerController extends Controller {
+    use ArchivesModels;
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Customer::class);
 
-        $status = $request->string('status')->toString() ?: 'active';
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $customers = Customer::query()
             ->search($search)
@@ -205,19 +205,11 @@ class CustomerController extends Controller {
     }
 
     public function archive(Customer $customer): RedirectResponse {
-        Gate::authorize('archive', $customer);
-
-        $customer->forceFill(['archived_at' => now()])->save();
-
-        return back()->with('success', __('Kunde archiviert.'));
+        return $this->archiveModel($customer, __('Kunde archiviert.'));
     }
 
     public function restore(Customer $customer): RedirectResponse {
-        Gate::authorize('restore', $customer);
-
-        $customer->forceFill(['archived_at' => null])->save();
-
-        return back()->with('success', __('Kunde wiederhergestellt.'));
+        return $this->restoreModel($customer, __('Kunde wiederhergestellt.'));
     }
 
     /**

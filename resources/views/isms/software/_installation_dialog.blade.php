@@ -25,30 +25,9 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_installation')">
 
     <x-form-group :legend="__('isms.group.installation')" icon="dns" tone="primary" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.installed_version') }}</span>
-            <input type="text" name="installed_version" maxlength="64"
-                   class="input input-bordered w-full"
-                   value="{{ old('installed_version', $installation?->installed_version) }}"
-                   placeholder="{{ $product->product_version }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.asset_ref') }}</span>
-            <input type="text" name="asset_ref" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('asset_ref', $installation?->asset_ref) }}"
-                   placeholder="{{ __('isms.hint.installation_asset_ref') }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.location') }}</span>
-            <input type="text" name="location" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('location', $installation?->location) }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.notes') }}</span>
-            <textarea name="notes" rows="2" maxlength="10000"
-                      class="textarea textarea-bordered w-full">{{ old('notes', $installation?->notes) }}</textarea>
-        </label>
+        <x-input-field name="installed_version" :label="__('isms.field.installed_version')" maxlength="64" :value="old('installed_version', $installation?->installed_version)" placeholder="{{ $product->product_version }}" />
+        <x-input-field name="asset_ref" :label="__('isms.field.asset_ref')" maxlength="180" :value="old('asset_ref', $installation?->asset_ref)" placeholder="{{ __('isms.hint.installation_asset_ref') }}" />
+        <x-input-field name="location" :label="__('isms.field.location')" maxlength="180" span="2" :value="old('location', $installation?->location)" />
+        <x-textarea-field name="notes" :label="__('isms.field.notes')" rows="2" maxlength="10000" span="2" :value="old('notes', $installation?->notes)" />
     </x-form-group>
 </x-modal>

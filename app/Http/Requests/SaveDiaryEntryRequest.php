@@ -13,10 +13,9 @@ namespace App\Http\Requests;
 use App\Enums\Diary\{LocationMode, Mode, Priority};
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\EntryType;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveDiaryEntryRequest extends FormRequest {
+class SaveDiaryEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;
 
     /** @var array<string, class-string> */
@@ -27,10 +26,6 @@ class SaveDiaryEntryRequest extends FormRequest {
         'assigned_user_id' => \App\Models\User::class,
         'tour_id' => \App\Models\Tour::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     protected function prepareForValidation(): void {
         // "0" / leerer Wert => null behandeln, damit Folge-Regeln korrekt greifen.

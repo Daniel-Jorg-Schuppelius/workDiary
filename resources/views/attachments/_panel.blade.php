@@ -24,14 +24,13 @@
                     </div>
                 </div>
                 @can('delete', $attachment)
-                    <form method="POST" action="{{ route('attachments.destroy', $attachment) }}" class="inline"
-                        data-confirm-dialog
+                    <x-action-form :action="route('attachments.destroy', $attachment)"
+                        method="DELETE"
                         data-confirm-title="{{ __('Anhang löschen') }}"
-                        data-confirm-message="{{ __('Anhang wird dauerhaft gelöscht.') }}"
-                        data-confirm-label="{{ __('Löschen') }}">
-                        @csrf @method('DELETE')
+                        :confirm="__('Anhang wird dauerhaft gelöscht.')"
+                        :confirm-label="__('Löschen')">
                         <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                    </form>
+                    </x-action-form>
                 @endcan
             </div>
         @empty

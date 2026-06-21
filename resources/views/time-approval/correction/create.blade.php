@@ -23,29 +23,20 @@
 
             <div class="grid md:grid-cols-2 gap-4">
                 @if ($canCreateForOthers ?? false)
-                    <label class="form-control md:col-span-2">
-                        <span class="label-text">{{ __('Für Mitarbeiter:in') }}</span>
-                        <select name="user_id" class="select select-sm select-bordered">
-                            <option value="">{{ __('— mich selbst —') }}</option>
-                            @foreach ($members as $m)
-                                <option value="{{ $m->id }}" @selected((string) old('user_id') === (string) $m->id)>{{ $m->name }}</option>
-                            @endforeach
-                        </select>
-                    </label>
+                    <x-select-field name="user_id" :label="__('Für Mitarbeiter:in')" span="2" class="select-sm">
+                        <option value="">{{ __('— mich selbst —') }}</option>
+                        @foreach ($members as $m)
+                            <option value="{{ $m->id }}" @selected((string) old('user_id') === (string) $m->id)>{{ $m->name }}</option>
+                        @endforeach
+                    </x-select-field>
                 @endif
-                <label class="form-control">
-                    <span class="label-text">{{ __('Bezugsdatum') }}</span>
-                    <input type="date" name="scope_date"
-                           value="{{ old('scope_date', $scopeDate->format('Y-m-d')) }}"
-                           class="input input-sm input-bordered" required />
-                </label>
+                <x-input-field name="scope_date" type="date" :label="__('Bezugsdatum')"
+                               :value="old('scope_date', $scopeDate->format('Y-m-d'))"
+                               class="input-sm" required />
             </div>
 
-            <label class="form-control">
-                <span class="label-text">{{ __('Begründung (≥ 20 Zeichen)') }}</span>
-                <textarea name="reason" rows="3" minlength="20" maxlength="4000"
-                          class="textarea textarea-bordered" required>{{ old('reason') }}</textarea>
-            </label>
+            <x-textarea-field name="reason" :label="__('Begründung (≥ 20 Zeichen)')" rows="3" minlength="20" maxlength="4000"
+                              :value="old('reason')" required />
 
             <div class="card bg-base-200" id="items-card" data-target-types='@json($targetTypes)' data-actions='@json($actions)'>
                 <div class="card-body space-y-3">
@@ -72,40 +63,25 @@
         <template id="item-template">
             <div class="border border-base-300 rounded-md p-3 space-y-2 item-row">
                 <div class="grid md:grid-cols-3 gap-2">
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Ziel-Typ') }}</span>
-                        <select name="items[__IDX__][target_type]" class="select select-sm select-bordered" required>
-                            @foreach ($targetTypes as $cls => $label)
-                                <option value="{{ $cls }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Ziel-ID (leer für create)') }}</span>
-                        <input type="number" name="items[__IDX__][target_id]" class="input input-sm input-bordered" />
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Aktion') }}</span>
-                        <select name="items[__IDX__][action]" class="select select-sm select-bordered" required>
-                            @foreach ($actions as $val => $label)
-                                <option value="{{ $val }}">{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </label>
+                    <x-select-field name="items[__IDX__][target_type]" :label="__('Ziel-Typ')" class="select-sm" required>
+                        @foreach ($targetTypes as $cls => $label)
+                            <option value="{{ $cls }}">{{ $label }}</option>
+                        @endforeach
+                    </x-select-field>
+                    <x-input-field name="items[__IDX__][target_id]" type="number" :label="__('Ziel-ID (leer für create)')" class="input-sm" />
+                    <x-select-field name="items[__IDX__][action]" :label="__('Aktion')" class="select-sm" required>
+                        @foreach ($actions as $val => $label)
+                            <option value="{{ $val }}">{{ $label }}</option>
+                        @endforeach
+                    </x-select-field>
                 </div>
                 <div class="grid md:grid-cols-2 gap-2">
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Vorher (JSON, optional)') }}</span>
-                        <textarea name="items[__IDX__][before]" rows="3"
-                                  class="textarea textarea-bordered font-mono text-xs"
-                                  placeholder='{"minutes": 60}'></textarea>
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Nachher (JSON)') }}</span>
-                        <textarea name="items[__IDX__][after]" rows="3"
-                                  class="textarea textarea-bordered font-mono text-xs"
-                                  placeholder='{"minutes": 90}'></textarea>
-                    </label>
+                    <x-textarea-field name="items[__IDX__][before]" :label="__('Vorher (JSON, optional)')" rows="3"
+                                      class="font-mono text-xs"
+                                      placeholder='{"minutes": 60}' />
+                    <x-textarea-field name="items[__IDX__][after]" :label="__('Nachher (JSON)')" rows="3"
+                                      class="font-mono text-xs"
+                                      placeholder='{"minutes": 90}' />
                 </div>
                 <div class="text-right">
                     <button type="button" class="btn btn-xs btn-ghost remove-item">

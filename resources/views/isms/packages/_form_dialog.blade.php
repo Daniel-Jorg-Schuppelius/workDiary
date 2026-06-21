@@ -24,45 +24,27 @@
     :submit-label="__('isms.action.create_package')">
 
     <x-form-group :legend="__('isms.group.package')" icon="inventory_2" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.title') }} *</span>
-            <input type="text" name="title" required maxlength="180"
-                   class="input input-bordered w-full"
-                   placeholder="{{ __('isms.hint.package_title') }}"
-                   value="{{ old('title') }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.scope') }} *</span>
-            <select name="scope" required class="select select-bordered w-full">
-                @foreach ($scopes as $scope)
-                    <option value="{{ $scope->sqid }}" @selected(old('scope') === $scope->sqid)>{{ $scope->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.as_of_date') }} *</span>
-            <input type="date" name="as_of_date" required
-                   class="input input-bordered w-full"
-                   value="{{ old('as_of_date', now()->toDateString()) }}">
-            <span class="label-text-alt text-base-content/60">{{ __('isms.hint.package_as_of_date') }}</span>
-        </label>
+        <x-input-field name="title" :label="__('isms.field.title')" required maxlength="180"
+                       span="2"
+                       placeholder="{{ __('isms.hint.package_title') }}"
+                       :value="old('title')" />
+        <x-select-field name="scope" :label="__('isms.field.scope')" required>
+            @foreach ($scopes as $scope)
+                <option value="{{ $scope->sqid }}" @selected(old('scope') === $scope->sqid)>{{ $scope->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="as_of_date" type="date" :label="__('isms.field.as_of_date')" required
+                       :value="old('as_of_date', now()->toDateString())"
+                       :hint="__('isms.hint.package_as_of_date')" />
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.package_filter')" icon="filter_alt" tone="info" cols="2">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.norm') }}</span>
-            <input type="text" name="norm" maxlength="64"
-                   class="input input-bordered w-full"
-                   placeholder="{{ __('isms.hint.norm') }}"
-                   value="{{ old('norm') }}">
-            <span class="label-text-alt text-base-content/60">{{ __('isms.hint.package_norm') }}</span>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.edition') }}</span>
-            <input type="text" name="edition" maxlength="16"
-                   class="input input-bordered w-full"
-                   placeholder="{{ __('isms.hint.edition') }}"
-                   value="{{ old('edition') }}">
-        </label>
+        <x-input-field name="norm" :label="__('isms.field.norm')" maxlength="64"
+                       placeholder="{{ __('isms.hint.norm') }}"
+                       :value="old('norm')"
+                       :hint="__('isms.hint.package_norm')" />
+        <x-input-field name="edition" :label="__('isms.field.edition')" maxlength="16"
+                       placeholder="{{ __('isms.hint.edition') }}"
+                       :value="old('edition')" />
     </x-form-group>
 </x-modal>

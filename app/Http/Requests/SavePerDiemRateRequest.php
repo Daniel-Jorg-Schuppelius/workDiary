@@ -10,12 +10,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class SavePerDiemRateRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SavePerDiemRateRequest extends BaseFormRequest {
 
     /**
      * @return array<string, mixed>

@@ -80,13 +80,8 @@
                     <p class="text-xs opacity-60 mt-1">{{ __('Kleinbuchstaben, Ziffern, Bindestrich. Nicht änderbar nach dem Anlegen.') }}</p>
                     @error('key')<p class="text-error text-sm">{{ $message }}</p>@enderror
                 </div>
-                <div class="fieldset">
-                    <label class="fieldset-label" for="theme-label">{{ __('Name') }} *</label>
-                    <input id="theme-label" type="text" name="label" required maxlength="60"
-                           value="{{ old('label', $defArr['label'] ?? '') }}"
-                           class="input input-bordered w-full @error('label') input-error @enderror">
-                    @error('label')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                </div>
+                <x-input-field name="label" :label="__('Name')" required maxlength="60"
+                               :value="old('label', $defArr['label'] ?? '')" />
                 <div class="fieldset md:col-span-2">
                     <label class="fieldset-label" for="theme-scheme">{{ __('Grundmodus') }}</label>
                     <select id="theme-scheme" name="scheme" x-model="scheme" class="select select-bordered w-full">

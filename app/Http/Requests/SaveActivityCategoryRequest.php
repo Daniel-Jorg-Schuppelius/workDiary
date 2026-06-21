@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\Activity\ActivityCategoryType;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveActivityCategoryRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveActivityCategoryRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

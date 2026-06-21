@@ -10,13 +10,7 @@
   Erwartet: $diary, $timelineItems (list<TimelineItem>), $timelineHasMore (bool),
             $timelineType (string, ''=alle), $timelineLimit (int)
 --}}
-<x-card as="section" id="timeline">
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
-            <x-icon name="history" class="text-base-content/60" /> {{ __('timeline.title.section') }}
-        </h2>
-    </div>
-
+<x-card as="section" id="timeline" :title="__('timeline.title.section')" icon="history">
     {{-- Filter-Chips nach Ereignistyp (serverseitig per Query-Param) --}}
     <nav class="mb-4 flex flex-wrap gap-1.5" aria-label="{{ __('timeline.filter.label') }}">
         <a href="{{ route('diary.show', $diary) }}#timeline"

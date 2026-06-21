@@ -57,13 +57,12 @@
                                     data-entry-modal-trigger
                                     :href="route('admin.report-targets.edit', $t)"
                                     :label="__('Bearbeiten')" />
-                        <form method="POST" action="{{ route('admin.report-targets.destroy', $t) }}" class="inline"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('reporting.target.delete_confirm') }}"
-                              data-confirm-label="{{ __('Löschen') }}">
-                            @csrf @method('DELETE')
+                        <x-action-form :action="route('admin.report-targets.destroy', $t)"
+                              method="DELETE"
+                              :confirm="__('reporting.target.delete_confirm')"
+                              :confirm-label="__('Löschen')">
                             <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                        </form>
+                        </x-action-form>
                     </div>
                 </td>
             </tr>

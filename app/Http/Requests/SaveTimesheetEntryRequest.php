@@ -15,20 +15,15 @@ use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Timesheet;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\{Rule, Validator};
 
-class SaveTimesheetEntryRequest extends FormRequest {
+class SaveTimesheetEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'task_id' => \App\Models\Task::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /**
      * Compose `started_at` / `ended_at` from `date` (or parent timesheet's

@@ -20,28 +20,25 @@
         </x-icon-btn>
 
         @if ($run->state === \App\Enums\Import\ImportRunState::AwaitingApproval)
-            <form method="POST" action="{{ route('admin.imports.confirm', $run) }}" class="inline">
-                @csrf
+            <x-action-form :action="route('admin.imports.confirm', $run)">
                 <button type="submit" class="btn btn-primary btn-sm">
                     <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
                     {{ __('Import bestätigen & starten') }}
                 </button>
-            </form>
+            </x-action-form>
         @endif
 
         @if (in_array($run->state, [\App\Enums\Import\ImportRunState::AwaitingApproval, \App\Enums\Import\ImportRunState::Failed], true))
-            <form method="POST" action="{{ route('admin.imports.destroy', $run) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Import wirklich verwerfen?') }}"
-                  data-confirm-icon="delete"
-                  data-confirm-tone="error"
-                  data-confirm-label="{{ __('Verwerfen') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('admin.imports.destroy', $run)" method="DELETE"
+                  :confirm="__('Import wirklich verwerfen?')"
+                  confirm-icon="delete"
+                  confirm-tone="error"
+                  :confirm-label="__('Verwerfen')">
                 <button type="submit" class="btn btn-error btn-sm btn-outline">
                     <span class="material-symbols-outlined" aria-hidden="true">delete</span>
                     {{ __('Verwerfen') }}
                 </button>
-            </form>
+            </x-action-form>
         @endif
 
         @if ($errors->total() > 0)

@@ -26,19 +26,15 @@
     $canCreateDocument = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\Document::class);
 @endphp
 
-<x-card as="section" id="documents">
-    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
-            <x-icon name="folder_open" class="text-base-content/60" /> {{ __('document.title.index') }}
-            <span class="font-normal text-base-content/50">({{ $panelDocuments->count() }})</span>
-        </h2>
-        @if ($canCreateDocument)
+<x-card as="section" id="documents" :title="__('document.title.index')" icon="folder_open" :count="$panelDocuments->count()">
+    @if ($canCreateDocument)
+        <x-slot:actions>
             <x-icon-btn icon="note_add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('documents.create', ['documentable_kind' => $documentableKind, 'documentable_id' => \App\Support\Sqid::encode(get_class($documentable), (int) $documentable->getKey())])"
                         show-label>{{ __('document.action.create') }}</x-icon-btn>
-        @endif
-    </div>
+        </x-slot:actions>
+    @endif
 
     @if ($panelDocuments->isEmpty())
         <x-empty-state compact icon='<span class="material-symbols-outlined">folder_open</span>'

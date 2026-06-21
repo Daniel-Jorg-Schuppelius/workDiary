@@ -21,13 +21,11 @@
 
     @if ($vehicle && ! $vehicle->archived_at)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Fahrzeug wirklich archivieren?') }}"
-                  data-confirm-label="{{ __('Archivieren') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('vehicles.destroy', $vehicle)" method="DELETE"
+                  :confirm="__('Fahrzeug wirklich archivieren?')"
+                  :confirm-label="__('Archivieren')">
                 <x-icon-btn icon="archive" tone="error" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endif
 </x-modal>

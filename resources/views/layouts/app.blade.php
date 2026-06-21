@@ -2018,12 +2018,11 @@
                                         </li>
                                     @endforeach
                                     <li>
-                                        <form method="POST" action="{{ route('logout') }}" class="w-full">
-                                            @csrf
+                                        <x-action-form :action="route('logout')" class="w-full">
                                             <button type="submit" class="flex w-full items-center gap-2 text-error">
                                                 ⎋ <span>{{ __('Abmelden') }}</span>
                                             </button>
-                                        </form>
+                                        </x-action-form>
                                     </li>
                                 </ul>
                             </div>
@@ -2377,7 +2376,7 @@
         @auth
             <x-demo-banner :organization="$_activeOrg" />
         @endauth
-        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-[var(--sidebar-gap)] pb-[calc(var(--app-footer-h)_+_var(--sidebar-gap))] md:pb-[var(--sidebar-gap)] sm:px-4 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
+        <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
             @if (session('success'))
                 <div class="alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('success') }}

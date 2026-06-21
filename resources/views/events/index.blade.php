@@ -157,22 +157,18 @@
                                             :label="__('Bearbeiten')" />
                             @endcan
                             @can('cancel', $event)
-                                <form method="POST" action="{{ route('events.cancel', $event) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Veranstaltung wirklich absagen?') }}"
-                                      data-confirm-label="{{ __('Absagen') }}">
-                                    @csrf @method('PATCH')
+                                <x-action-form :action="route('events.cancel', $event)" method="PATCH"
+                                      :confirm="__('Veranstaltung wirklich absagen?')"
+                                      :confirm-label="__('Absagen')">
                                     <x-icon-btn type="submit" icon="cancel" tone="warning" :label="__('Absagen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                             @can('delete', $event)
-                                <form method="POST" action="{{ route('events.destroy', $event) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Veranstaltung wirklich löschen?') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                <x-action-form :action="route('events.destroy', $event)" method="DELETE"
+                                      :confirm="__('Veranstaltung wirklich löschen?')"
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn type="submit" icon="delete" tone="error" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </td>
                     </tr>

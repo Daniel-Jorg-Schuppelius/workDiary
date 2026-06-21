@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\Numbering\NumberScope;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveNumberFormatRequest extends FormRequest {
-    public function authorize(): bool {
-        return true; // Autorisierung erfolgt im Controller via Gate.
-    }
+class SaveNumberFormatRequest extends BaseFormRequest {
 
     /** @return array<string, array<int, mixed>> */
     public function rules(): array {

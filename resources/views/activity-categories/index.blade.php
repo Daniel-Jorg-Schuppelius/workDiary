@@ -101,14 +101,12 @@
                                             :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $cat)
-                                <form method="POST" action="{{ route('activity-categories.destroy', $cat) }}" class="inline"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('activity-categories.destroy', $cat)" method="DELETE"
                                       data-confirm-title="{{ __('Tätigkeit löschen') }}"
-                                      data-confirm-message="{{ __('Tätigkeit wird endgültig entfernt. Bestehende Zeiteinträge bleiben erhalten.') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('Tätigkeit wird endgültig entfernt. Bestehende Zeiteinträge bleiben erhalten.')"
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </td>
                     </tr>

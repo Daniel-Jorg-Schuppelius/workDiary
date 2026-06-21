@@ -125,14 +125,12 @@
                                                 data-entry-modal-trigger
                                                 :href="route('admin.themes.edit', $d->key).'?dialog=1'"
                                                 :label="__('Bearbeiten')" />
-                                    <form method="POST" action="{{ route('admin.themes.destroy', $d->key) }}"
-                                          data-confirm-dialog
-                                          data-confirm-message="{{ __('Theme wirklich löschen?') }}"
-                                          data-confirm-label="{{ __('Löschen') }}">
-                                        @csrf
-                                        @method('DELETE')
+                                    <x-action-form :action="route('admin.themes.destroy', $d->key)"
+                                          method="DELETE"
+                                          :confirm="__('Theme wirklich löschen?')"
+                                          :confirm-label="__('Löschen')">
                                         <x-icon-btn icon="delete" tone="error" size="sm" type="submit" :label="__('Löschen')" />
-                                    </form>
+                                    </x-action-form>
                                 </div>
                             </div>
                         </div>

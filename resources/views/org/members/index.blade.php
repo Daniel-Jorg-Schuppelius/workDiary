@@ -62,13 +62,11 @@
                                             :href="route('org.members.edit', $member)"
                                             :label="__('Bearbeiten')" />
                                 @if ($canManageMembers ?? true)
-                                    <form method="POST" action="{{ route('org.members.destroy', $member) }}" class="inline"
-                                          data-confirm-dialog
-                                          data-confirm-message="{{ __('Mitarbeiter wirklich entfernen?') }}"
-                                          data-confirm-label="{{ __('Entfernen') }}">
-                                        @csrf @method('DELETE')
+                                    <x-action-form :action="route('org.members.destroy', $member)" method="DELETE"
+                                          :confirm="__('Mitarbeiter wirklich entfernen?')"
+                                          :confirm-label="__('Entfernen')">
                                         <x-icon-btn icon="person_remove" tone="error" type="submit" :label="__('Entfernen')" />
-                                    </form>
+                                    </x-action-form>
                                 @endif
                             </div>
                         </td>

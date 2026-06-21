@@ -20,27 +20,17 @@
     @endif
 
     <x-form-group :legend="__('inventory.label_template.title')" icon="label" tone="primary" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('inventory.label_template.name') }} *</label>
-            <input name="name" required maxlength="120" class="input input-bordered w-full" value="{{ old('name', $tpl?->name) }}">
-            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('inventory.label_template.paper_size') }} *</label>
-            <select name="paper_size" class="select select-bordered w-full">
-                @foreach (['a6', 'a7', 'a8'] as $size)
-                    <option value="{{ $size }}" @selected(old('paper_size', $tpl?->paper_size ?? 'a7') === $size)>{{ strtoupper($size) }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('inventory.label_template.orientation') }} *</label>
-            <select name="orientation" class="select select-bordered w-full">
-                @foreach (['landscape', 'portrait'] as $o)
-                    <option value="{{ $o }}" @selected(old('orientation', $tpl?->orientation ?? 'landscape') === $o)>{{ __('inventory.label_template.orientation_' . $o) }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-input-field name="name" :label="__('inventory.label_template.name')" required maxlength="120" :value="old('name', $tpl?->name)" />
+        <x-select-field name="paper_size" :label="__('inventory.label_template.paper_size')" required>
+            @foreach (['a6', 'a7', 'a8'] as $size)
+                <option value="{{ $size }}" @selected(old('paper_size', $tpl?->paper_size ?? 'a7') === $size)>{{ strtoupper($size) }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="orientation" :label="__('inventory.label_template.orientation')" required>
+            @foreach (['landscape', 'portrait'] as $o)
+                <option value="{{ $o }}" @selected(old('orientation', $tpl?->orientation ?? 'landscape') === $o)>{{ __('inventory.label_template.orientation_' . $o) }}</option>
+            @endforeach
+        </x-select-field>
         <div class="fieldset">
             <label class="label cursor-pointer gap-2 justify-start">
                 <input type="checkbox" name="with_qr" value="1" class="checkbox checkbox-sm" @checked(old('with_qr', $tpl?->with_qr ?? true))>

@@ -14,63 +14,38 @@
 @section('content')
 <x-page-shell>
     {{-- Header --}}
-    <x-card>
-        <div class="flex flex-wrap items-start justify-between gap-3">
-            <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                    <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $supplier->color ?: '#94a3b8' }}"></span>
-                    <h1 class="font-['Space_Grotesk'] text-lg font-semibold truncate">{{ $supplier->name }}</h1>
-                    @if ($supplier->isArchived())
-                        <x-status-badge tone="ghost">{{ __('archiviert') }}</x-status-badge>
-                    @endif
-                    @unless ($supplier->active)
-                        <x-status-badge tone="warning">{{ __('inaktiv') }}</x-status-badge>
-                    @endunless
-                </div>
-                <p class="mt-1 text-sm text-base-content/60">
-                    @if ($supplier->company){{ $supplier->company }} · @endif
-                    @if ($supplier->number){{ __('Nr.') }} {{ $supplier->number }} · @endif
-                    {{ $supplier->currency }}
-                </p>
-                @if ($tags->isNotEmpty())
-                    <div class="mt-2 flex flex-wrap gap-1">
-                        @foreach ($tags as $tag)
-                            <span class="badge badge-sm" style="background:{{ $tag->color ?? '#e5e7eb' }};color:#000">{{ $tag->name }}</span>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-            <div class="flex flex-wrap items-center gap-2">
-                <x-icon-btn icon="arrow_back" size="sm"
-                            :href="route('suppliers.index')"
-                            show-label>{{ __('Zurück') }}</x-icon-btn>
-                @can('update', $supplier)
-                    @if ($supplier->isArchived())
-                        <form method="POST" action="{{ route('suppliers.restore', $supplier) }}" class="inline">
-                            @csrf
-                            <x-icon-btn icon="restore" size="sm" type="submit" show-label>{{ __('Wiederherstellen') }}</x-icon-btn>
-                        </form>
-                    @else
-                        <form method="POST" action="{{ route('suppliers.archive', $supplier) }}" class="inline">
-                            @csrf
-                            <x-icon-btn icon="archive" size="sm" type="submit" show-label>{{ __('Archivieren') }}</x-icon-btn>
-                        </form>
-                    @endif
-                    <x-icon-btn icon="edit" tone="primary" size="sm"
-                                data-entry-modal-trigger
-                                :href="route('suppliers.edit', $supplier)"
-                                show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                @endcan
-            </div>
-        </div>
-    </x-card>
+    <x-entity-header :title="$supplier->name" :color="$supplier->color"
+                     :back-route="route('suppliers.index')"
+                     :edit-route="route('suppliers.edit', $supplier)"
+                     :archived="$supplier->isArchived()"
+                     :restore-route="route('suppliers.restore', $supplier)"
+                     :archive-route="route('suppliers.archive', $supplier)"
+                     :can-manage="auth()->user()->can('update', $supplier)">
+        <x-slot:badges>
+            @if ($supplier->isArchived())
+                <x-status-badge tone="ghost">{{ __('archiviert') }}</x-status-badge>
+            @endif
+            @unless ($supplier->active)
+                <x-status-badge tone="warning">{{ __('inaktiv') }}</x-status-badge>
+            @endunless
+        </x-slot:badges>
+        <x-slot:meta>
+            @if ($supplier->company){{ $supplier->company }} · @endif
+            @if ($supplier->number){{ __('Nr.') }} {{ $supplier->number }} · @endif
+            {{ $supplier->currency }}
+        </x-slot:meta>
+        @if ($tags->isNotEmpty())
+            <x-slot:tags>
+                @foreach ($tags as $tag)
+                    <x-tag-badge :tag="$tag" />
+                @endforeach
+            </x-slot:tags>
+        @endif
+    </x-entity-header>
 
     {{-- Stammdaten --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <x-card>
-            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                <x-icon name="contacts" class="text-base-content/60" /> {{ __('Kontakt') }}
-            </h2>
+        <x-card :title="__('Kontakt')" icon="contacts">
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Ansprechpartner')" :value="$supplier->contact_name" />
                 <x-detail-grid.row :label="__('E-Mail')">@if ($supplier->email)<a class="link" href="mailto:{{ $supplier->email }}">{{ $supplier->email }}</a>@endif</x-detail-grid.row>
@@ -86,28 +61,10 @@
                 @endif
                 <x-detail-grid.row :label="__('Land')" :value="$supplier->country" />
             </x-detail-grid>
-            @php $contactPersons = is_array($supplier->contact_persons) ? array_values(array_filter($supplier->contact_persons, fn($r) => is_array($r) && trim((string)($r['name'] ?? '')) !== '')) : []; @endphp
-            @if ($contactPersons !== [])
-                <div class="pt-3">
-                    <h3 class="mb-1 text-sm font-semibold">{{ __('Ansprechpartner') }}</h3>
-                    <ul class="divide-y divide-base-300 text-sm">
-                        @foreach ($contactPersons as $cp)
-                            <li class="py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                                <span class="font-medium">{{ $cp['name'] ?? '' }}</span>
-                                @if (! empty($cp['primary']))<x-status-badge tone="primary" size="xs">{{ __('Primär') }}</x-status-badge>@endif
-                                @if (! empty($cp['email']))<a class="link link-hover" href="mailto:{{ $cp['email'] }}">{{ $cp['email'] }}</a>@endif
-                                @if (! empty($cp['phone']))<span class="text-base-content/70">{{ $cp['phone'] }}</span>@endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            <x-contact-persons :persons="$supplier->contact_persons" />
         </x-card>
 
-        <x-card>
-            <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                <x-icon name="store" class="text-base-content/60" /> {{ __('Geschäftsdaten') }}
-            </h2>
+        <x-card :title="__('Geschäftsdaten')" icon="store">
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Aktiv')" :value="$supplier->active ? __('Ja') : __('Nein')" />
                 <x-detail-grid.row :label="__('USt-IdNr.')" :value="$supplier->vat_id" />
@@ -153,46 +110,8 @@
     @endif
 
     {{-- Anhänge --}}
-    <x-card>
-        <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-            <x-icon name="attach_file" class="text-base-content/60" /> {{ __('Anhänge') }}
-            <span class="font-normal text-base-content/50">({{ $attachments->count() }})</span>
-        </h2>
-        @if ($attachments->isEmpty())
-            <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
-                           :title="__('Keine Anhänge')"
-                           :message="__('Keine Anhänge.')" />
-        @else
-            <ul class="divide-y divide-base-300 text-sm">
-                @foreach ($attachments as $att)
-                    <li class="flex items-center justify-between gap-2 py-2">
-                        <div class="min-w-0 truncate">
-                            <a class="link link-hover" href="{{ URL::signedRoute('attachments.download', $att) }}">{{ $att->original_name }}</a>
-                            <span class="text-base-content/60">· {{ number_format($att->size / 1024, 0, ',', '.') }} KB</span>
-                        </div>
-                        @can('delete', $att)
-                        <form method="POST" action="{{ route('attachments.destroy', $att) }}" class="inline"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('Anhang löschen?') }}"
-                              data-confirm-icon="delete"
-                              data-confirm-tone="error"
-                              data-confirm-label="{{ __('Löschen') }}">
-                            @csrf @method('DELETE')
-                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                        </form>
-                        @endcan
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-        @can('update', $supplier)
-        <form method="POST" action="{{ route('attachments.store', ['type' => 'supplier', 'id' => $supplier->sqid]) }}" enctype="multipart/form-data" class="mt-3 flex items-center gap-2">
-            @csrf
-            <input type="file" name="file" required class="file-input file-input-sm file-input-bordered">
-            <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
-        </form>
-        @endcan
-    </x-card>
+    <x-attachments-section :attachments="$attachments" upload-type="supplier"
+                           :upload-id="$supplier->sqid" :can-upload="auth()->user()->can('update', $supplier)" />
 
     {{-- Lexoffice-Belege --}}
     @if ($lexofficePlugin && $lexofficePlugin->isEnabled() && $lexofficeVoucherCache->isNotEmpty())
@@ -256,21 +175,8 @@
 
     {{-- Verlauf --}}
     @if ($auditLogs->isNotEmpty())
-    <x-card>
-        <h2 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-            <x-icon name="history" class="text-base-content/60" /> {{ __('Verlauf') }}
-        </h2>
-        <ul class="divide-y divide-base-300 text-sm">
-            @foreach ($auditLogs as $log)
-                <li class="flex items-center justify-between gap-2 py-2">
-                    <span class="flex items-center gap-2">
-                        <x-status-badge tone="ghost">{{ $log->eventLabel() }}</x-status-badge>
-                        {{ optional($log->user)->name ?? '—' }}
-                    </span>
-                    <span class="text-base-content/60">{{ $log->created_at->fdatetime() }}</span>
-                </li>
-            @endforeach
-        </ul>
+    <x-card :title="__('Verlauf')" icon="history">
+        <x-audit-log-list :logs="$auditLogs" />
     </x-card>
     @endif
 </x-page-shell>

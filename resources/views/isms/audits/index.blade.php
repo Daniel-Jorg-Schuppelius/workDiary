@@ -149,17 +149,15 @@
                                                             </ul>
                                                         </details>
                                                     @endif
-                                                    <form method="POST" action="{{ route('isms.audits.findings.destroy', $finding) }}"
-                                                          data-confirm-dialog
+                                                    <x-action-form :action="route('isms.audits.findings.destroy', $finding)" method="DELETE"
                                                           data-confirm-title="{{ __('isms.action.delete') }}"
-                                                          data-confirm-message="{{ __('isms.confirm_delete_finding') }}"
-                                                          data-confirm-icon="delete"
-                                                          data-confirm-tone="error"
-                                                          data-confirm-label="{{ __('isms.action.delete') }}">
-                                                        @csrf @method('DELETE')
+                                                          :confirm="__('isms.confirm_delete_finding')"
+                                                          confirm-icon="delete"
+                                                          confirm-tone="error"
+                                                          :confirm-label="__('isms.action.delete')">
                                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                                     :label="__('isms.action.delete')" />
-                                                    </form>
+                                                    </x-action-form>
                                                 </span>
                                             @endcan
                                         </div>
@@ -217,17 +215,15 @@
                                                                             </ul>
                                                                         </details>
                                                                     @endif
-                                                                    <form method="POST" action="{{ route('isms.audits.actions.destroy', $action) }}"
-                                                                          data-confirm-dialog
+                                                                    <x-action-form :action="route('isms.audits.actions.destroy', $action)" method="DELETE"
                                                                           data-confirm-title="{{ __('isms.action.delete') }}"
-                                                                          data-confirm-message="{{ __('isms.confirm_delete_action') }}"
-                                                                          data-confirm-icon="delete"
-                                                                          data-confirm-tone="error"
-                                                                          data-confirm-label="{{ __('isms.action.delete') }}">
-                                                                        @csrf @method('DELETE')
+                                                                          :confirm="__('isms.confirm_delete_action')"
+                                                                          confirm-icon="delete"
+                                                                          confirm-tone="error"
+                                                                          :confirm-label="__('isms.action.delete')">
                                                                         <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                                                     :label="__('isms.action.delete')" />
-                                                                    </form>
+                                                                    </x-action-form>
                                                                 </span>
                                                             @endcan
                                                         </div>
@@ -317,17 +313,15 @@
                                 @endif
                             @endcan
                             @can('delete', $audit)
-                                <form method="POST" action="{{ route('isms.audits.destroy', $audit) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('isms.audits.destroy', $audit)" method="DELETE"
                                       data-confirm-title="{{ __('isms.action.delete') }}"
-                                      data-confirm-message="{{ __('isms.confirm_delete_audit') }}"
-                                      data-confirm-icon="delete"
-                                      data-confirm-tone="error"
-                                      data-confirm-label="{{ __('isms.action.delete') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('isms.confirm_delete_audit')"
+                                      confirm-icon="delete"
+                                      confirm-tone="error"
+                                      :confirm-label="__('isms.action.delete')">
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
                                                 :label="__('isms.action.delete')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </td>

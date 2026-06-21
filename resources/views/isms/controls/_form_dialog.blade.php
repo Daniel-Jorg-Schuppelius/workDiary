@@ -30,41 +30,27 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_control')">
 
     <x-form-group :legend="__('isms.group.control')" icon="verified_user" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.title') }} *</span>
-            <input type="text" name="title" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('title', $control?->title) }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.description') }}</span>
-            <textarea name="description" rows="3" maxlength="10000"
-                      class="textarea textarea-bordered w-full">{{ old('description', $control?->description) }}</textarea>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.implementation_status') }} *</span>
-            <select name="implementation_status" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Isms\ControlImplementationStatus::cases() as $status)
-                    <option value="{{ $status->value }}" @selected(old('implementation_status', $control?->implementation_status?->value ?? 'open') === $status->value)>{{ $status->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.owner') }}</span>
-            <select name="owner_user_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $control?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.evidence_note') }}</span>
-            <input type="text" name="evidence_note" maxlength="10000"
-                   class="input input-bordered w-full"
-                   value="{{ old('evidence_note', $control?->evidence_note) }}"
-                   placeholder="{{ __('isms.hint.evidence_note') }}">
-        </label>
+        <x-input-field name="title" :label="__('isms.field.title')" required minlength="3" maxlength="180"
+                       span="2"
+                       :value="old('title', $control?->title)" />
+        <x-textarea-field name="description" :label="__('isms.field.description')" rows="3" maxlength="10000"
+                          span="2"
+                          :value="old('description', $control?->description)" />
+        <x-select-field name="implementation_status" :label="__('isms.field.implementation_status')" required>
+            @foreach (\App\Enums\Isms\ControlImplementationStatus::cases() as $status)
+                <option value="{{ $status->value }}" @selected(old('implementation_status', $control?->implementation_status?->value ?? 'open') === $status->value)>{{ $status->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="owner_user_id" :label="__('isms.field.owner')">
+            <option value="">—</option>
+            @foreach ($owners as $owner)
+                <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $control?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="evidence_note" :label="__('isms.field.evidence_note')" maxlength="10000"
+                       span="2"
+                       :value="old('evidence_note', $control?->evidence_note)"
+                       placeholder="{{ __('isms.hint.evidence_note') }}" />
     </x-form-group>
 
     <x-form-group :legend="__('isms.field.requirements')" icon="checklist" tone="info" cols="1">

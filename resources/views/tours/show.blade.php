@@ -31,25 +31,21 @@
             <x-slot:actions>
                 <x-icon-btn icon="edit" size="sm" :href="route('tours.edit', $tour)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Draft, \App\Enums\Tour\TourStatus::Planned], true))
-                    <form method="POST" action="{{ route('tours.start', $tour) }}" class="inline">
-                        @csrf
+                    <x-action-form :action="route('tours.start', $tour)">
                         <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
-                    </form>
+                    </x-action-form>
                 @endif
                 @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::Planned, \App\Enums\Tour\TourStatus::InProgress], true))
-                    <form method="POST" action="{{ route('tours.complete', $tour) }}" class="inline">
-                        @csrf
+                    <x-action-form :action="route('tours.complete', $tour)">
                         <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Abschließen') }}</x-icon-btn>
-                    </form>
+                    </x-action-form>
                 @endif
                 @if (in_array($tour->status, [\App\Enums\Tour\TourStatus::InProgress, \App\Enums\Tour\TourStatus::Completed], true))
-                    <form method="POST" action="{{ route('tours.materialize', $tour) }}" class="inline"
-                          data-confirm-dialog
-                          data-confirm-message="{{ __('Stopps als Fahrten ins Fahrtenbuch übernehmen?') }}"
-                          data-confirm-label="{{ __('Übernehmen') }}">
-                        @csrf
+                    <x-action-form :action="route('tours.materialize', $tour)"
+                          :confirm="__('Stopps als Fahrten ins Fahrtenbuch übernehmen?')"
+                          :confirm-label="__('Übernehmen')">
                         <x-icon-btn icon="directions_car" size="sm" type="submit" show-label>{{ __('Als Fahrten übernehmen') }}</x-icon-btn>
-                    </form>
+                    </x-action-form>
                 @endif
             </x-slot:actions>
         </x-page-toolbar>

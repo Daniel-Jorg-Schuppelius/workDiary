@@ -1,12 +1,7 @@
 {{-- Shared form fields for Expense --}}
 
 <x-form-group :legend="__('Spese')" icon="receipt_long" tone="primary" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Datum') }} *</label>
-        <input type="date" name="date" required
-               value="{{ old('date', $date) }}"
-               class="input input-bordered w-full">
-    </div>
+    <x-input-field name="date" type="date" :label="__('Datum')" required :value="old('date', $date)" />
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Kategorie') }}</label>
         <select name="expense_category_id" class="select select-bordered w-full" data-expense-category>
@@ -31,61 +26,23 @@
             </a>
         </div>
     </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Beleg / Anbieter') }}</label>
-        <input type="text" name="vendor" maxlength="160"
-               value="{{ old('vendor', $expense?->vendor) }}"
-               class="input input-bordered w-full"
-               placeholder="{{ __('z. B. Bahn, Hotel-Name …') }}">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Zahlungsart') }} *</label>
-        <select name="payment_method" required class="select select-bordered w-full">
-            @foreach ($paymentMethods as $pm)
-                <option value="{{ $pm->value }}"
-                        @selected(old('payment_method', $expense?->payment_method?->value ?? \App\Enums\Expense\PaymentMethod::PrivatePaid->value) === $pm->value)>
-                    {{ $pm->label() }}
-                </option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Beschreibung') }} *</label>
-        <input type="text" name="description" required maxlength="500"
-               value="{{ old('description', $expense?->description) }}"
-               class="input input-bordered w-full">
-    </div>
+    <x-input-field name="vendor" :label="__('Beleg / Anbieter')" maxlength="160" placeholder="{{ __('z. B. Bahn, Hotel-Name …') }}" :value="old('vendor', $expense?->vendor)" />
+    <x-select-field name="payment_method" :label="__('Zahlungsart')" required>
+        @foreach ($paymentMethods as $pm)
+            <option value="{{ $pm->value }}"
+                    @selected(old('payment_method', $expense?->payment_method?->value ?? \App\Enums\Expense\PaymentMethod::PrivatePaid->value) === $pm->value)>
+                {{ $pm->label() }}
+            </option>
+        @endforeach
+    </x-select-field>
+    <x-input-field name="description" :label="__('Beschreibung')" required maxlength="500" span="2" :value="old('description', $expense?->description)" />
 </x-form-group>
 
 <x-form-group :legend="__('Betrag')" icon="payments" tone="info" cols="3">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Brutto') }} *</label>
-        <input type="number" step="0.01" min="0" name="amount_gross" required
-               value="{{ old('amount_gross', $expense?->amount_gross) }}"
-               class="input input-bordered w-full"
-               data-expense-gross>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Steuersatz (%)') }}</label>
-        <input type="number" step="0.01" min="0" max="100" name="tax_rate"
-               value="{{ old('tax_rate', $expense?->tax_rate) }}"
-               class="input input-bordered w-full"
-               data-expense-tax-rate
-               placeholder="{{ __('Aus Kategorie') }}">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Netto (optional)') }}</label>
-        <input type="number" step="0.01" min="0" name="amount_net"
-               value="{{ old('amount_net', $expense?->amount_net) }}"
-               class="input input-bordered w-full"
-               placeholder="{{ __('Wird ausgerechnet') }}">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Währung') }}</label>
-        <input type="text" name="currency" maxlength="3" minlength="3"
-               value="{{ old('currency', $expense?->currency ?? 'EUR') }}"
-               class="input input-bordered input-sm w-24 uppercase">
-    </div>
+    <x-input-field name="amount_gross" type="number" :label="__('Brutto')" required step="0.01" min="0" data-expense-gross :value="old('amount_gross', $expense?->amount_gross)" />
+    <x-input-field name="tax_rate" type="number" :label="__('Steuersatz (%)')" step="0.01" min="0" max="100" data-expense-tax-rate placeholder="{{ __('Aus Kategorie') }}" :value="old('tax_rate', $expense?->tax_rate)" />
+    <x-input-field name="amount_net" type="number" :label="__('Netto (optional)')" step="0.01" min="0" placeholder="{{ __('Wird ausgerechnet') }}" :value="old('amount_net', $expense?->amount_net)" />
+    <x-input-field name="currency" :label="__('Währung')" maxlength="3" minlength="3" class="input-sm w-24 uppercase" :value="old('currency', $expense?->currency ?? 'EUR')" />
     <div class="fieldset md:col-span-2">
         <label class="label cursor-pointer justify-start gap-3">
             <input type="hidden" name="billable" value="0">
@@ -98,24 +55,18 @@
 </x-form-group>
 
 <x-form-group :legend="__('Zuordnung')" icon="link" tone="success" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Projekt') }}</label>
-        <select name="project_id" class="select select-bordered w-full" data-depends-on="customer_id">
-            <option value="">—</option>
-            @foreach ($projects as $p)
-                <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $expense?->project_id)) === $p->sqid)>{{ $p->name }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Kunde') }}</label>
-        <select name="customer_id" class="select select-bordered w-full">
-            <option value="">—</option>
-            @foreach ($customers as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $expense?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
-            @endforeach
-        </select>
-    </div>
+    <x-select-field name="project_id" :label="__('Projekt')" data-depends-on="customer_id">
+        <option value="">—</option>
+        @foreach ($projects as $p)
+            <option value="{{ $p->sqid }}" data-parent="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $p->customer_id) }}" @selected((string) old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $expense?->project_id)) === $p->sqid)>{{ $p->name }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field name="customer_id" :label="__('Kunde')">
+        <option value="">—</option>
+        @foreach ($customers as $c)
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $expense?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+        @endforeach
+    </x-select-field>
 </x-form-group>
 
 @if (! $expense || in_array($expense->status, [\App\Enums\Expense\ExpenseStatus::Draft, \App\Enums\Expense\ExpenseStatus::Rejected], true))

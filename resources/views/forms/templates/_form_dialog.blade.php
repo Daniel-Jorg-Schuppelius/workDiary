@@ -38,16 +38,8 @@
     :submit-label="$isEdit ? __('form.action.save') : __('form.action.create_template')">
 
     <x-form-group :legend="__('form.title.template')" icon="assignment" tone="primary" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('form.field.name') }} *</span>
-            <input type="text" name="name" required minlength="3" maxlength="160"
-                   class="input input-bordered w-full" value="{{ old('name', $template?->name) }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('form.field.description') }}</span>
-            <textarea name="description" rows="2" maxlength="2000"
-                      class="textarea textarea-bordered w-full">{{ old('description', $template?->description) }}</textarea>
-        </label>
+        <x-input-field name="name" :label="__('form.field.name')" required minlength="3" maxlength="160" span="2" :value="old('name', $template?->name)" />
+        <x-textarea-field name="description" :label="__('form.field.description')" rows="2" maxlength="2000" span="2" :value="old('description', $template?->description)" />
     </x-form-group>
 
     <x-form-group :legend="__('form.field.fields')" icon="list_alt" tone="info">

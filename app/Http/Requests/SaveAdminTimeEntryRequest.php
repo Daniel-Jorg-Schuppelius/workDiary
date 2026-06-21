@@ -15,13 +15,12 @@ use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\TimeEntry;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\{Rule, Validator};
 
 /**
  * Validates a non-project (administrative / travel / training) TimeEntry.
  */
-class SaveAdminTimeEntryRequest extends FormRequest {
+class SaveAdminTimeEntryRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -29,10 +28,6 @@ class SaveAdminTimeEntryRequest extends FormRequest {
         'activity_category_id' => \App\Models\ActivityCategory::class,
         'attendance_id' => \App\Models\Attendance::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /**
      * Compose `started_at` / `ended_at` from the separately submitted

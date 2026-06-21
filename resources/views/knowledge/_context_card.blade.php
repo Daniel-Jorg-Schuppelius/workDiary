@@ -32,19 +32,15 @@
         $canCreateKnowledge = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\KnowledgeArticle::class);
     @endphp
 
-    <x-card as="section" id="knowledge-context">
-        <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
-                <x-icon name="school" class="text-base-content/60" /> {{ __('knowledge.title.index') }}
-                <span class="font-normal text-base-content/50">({{ $knowledgeLinks->count() }})</span>
-            </h2>
-            @if ($canCreateKnowledge)
+    <x-card as="section" id="knowledge-context" :title="__('knowledge.title.index')" icon="school" :count="$knowledgeLinks->count()">
+        @if ($canCreateKnowledge)
+            <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('knowledge.create', ['source_kind' => $subjectKind, 'source_id' => $subjectSqid])"
                             show-label>{{ __('knowledge.action.create_from_subject') }}</x-icon-btn>
-            @endif
-        </div>
+            </x-slot:actions>
+        @endif
 
         @if ($knowledgeLinks->isEmpty() && $knowledgeSuggestions->isEmpty())
             <x-empty-state compact icon='<span class="material-symbols-outlined">school</span>'
@@ -65,17 +61,15 @@
                         <div class="flex items-center gap-2">
                             <span class="flex items-center gap-1 text-xs text-success"><x-icon name="thumb_up" /> {{ $linkedArticle->helpful_count }}</span>
                             @can('link', $linkedArticle)
-                                <form method="POST" action="{{ route('knowledge.links.destroy', [$linkedArticle, $link]) }}"
-                                      data-confirm-dialog
+                                <x-action-form :action="route('knowledge.links.destroy', [$linkedArticle, $link])" method="DELETE"
                                       data-confirm-title="{{ __('knowledge.action.unlink') }}"
-                                      data-confirm-message="{{ __('knowledge.confirm_unlink') }}"
-                                      data-confirm-icon="link_off"
-                                      data-confirm-tone="warning"
-                                      data-confirm-label="{{ __('knowledge.action.unlink') }}">
-                                    @csrf @method('DELETE')
+                                      :confirm="__('knowledge.confirm_unlink')"
+                                      confirm-icon="link_off"
+                                      confirm-tone="warning"
+                                      :confirm-label="__('knowledge.action.unlink')">
                                     <x-icon-btn icon="link_off" tone="warning" size="xs" type="submit"
                                                 :label="__('knowledge.action.unlink')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </div>
                     </li>

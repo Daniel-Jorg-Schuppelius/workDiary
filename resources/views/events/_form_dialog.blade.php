@@ -58,63 +58,36 @@
 
     {{-- Basis -------------------------------------------------------------- --}}
     <x-form-group :legend="__('Basis')" icon="event" tone="primary" cols="2">
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label" for="ev-title">{{ __('Titel') }} *</label>
-            <input id="ev-title" type="text" name="title" required
-                   class="input input-bordered w-full @error('title') input-error @enderror"
-                   value="{{ old('title', $event?->title) }}">
-            @error('title')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="title" :label="__('Titel')" required span="2" :value="old('title', $event?->title)" />
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-type">{{ __('Typ') }} *</label>
-            <select id="ev-type" name="event_type" required class="select select-bordered w-full">
-                @foreach ($types as $val => $label)
-                    <option value="{{ $val }}" @selected(old('event_type', $event?->event_type?->value) === $val)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="event_type" :label="__('Typ')" required>
+            @foreach ($types as $val => $label)
+                <option value="{{ $val }}" @selected(old('event_type', $event?->event_type?->value) === $val)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-category">{{ __('Kategorie') }}</label>
-            <select id="ev-category" name="category_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($categories as $cat)
-                    <option value="{{ $cat->sqid }}" @selected((string) old('category_id', \App\Support\Sqid::encode(\App\Models\EventCategory::class, $event?->category_id)) === $cat->sqid)>{{ $cat->name }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="category_id" :label="__('Kategorie')">
+            <option value="">—</option>
+            @foreach ($categories as $cat)
+                <option value="{{ $cat->sqid }}" @selected((string) old('category_id', \App\Support\Sqid::encode(\App\Models\EventCategory::class, $event?->category_id)) === $cat->sqid)>{{ $cat->name }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-status">{{ __('Status') }}</label>
-            <select id="ev-status" name="status" class="select select-bordered w-full">
-                @foreach ($statuses as $val => $label)
-                    <option value="{{ $val }}" @selected(old('status', $event?->status?->value) === $val)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="status" :label="__('Status')">
+            @foreach ($statuses as $val => $label)
+                <option value="{{ $val }}" @selected(old('status', $event?->status?->value) === $val)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-visibility">{{ __('Sichtbarkeit') }}</label>
-            <select id="ev-visibility" name="visibility" class="select select-bordered w-full">
-                @foreach ($visibilities as $val => $label)
-                    <option value="{{ $val }}" @selected(old('visibility', $event?->visibility?->value) === $val)>{{ $label }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="visibility" :label="__('Sichtbarkeit')">
+            @foreach ($visibilities as $val => $label)
+                <option value="{{ $val }}" @selected(old('visibility', $event?->visibility?->value) === $val)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label" for="ev-topic">{{ __('Thema') }}</label>
-            <input id="ev-topic" type="text" name="topic"
-                   class="input input-bordered w-full"
-                   value="{{ old('topic', $event?->topic) }}">
-        </div>
+        <x-input-field name="topic" :label="__('Thema')" span="2" :value="old('topic', $event?->topic)" />
 
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label" for="ev-description">{{ __('Beschreibung') }}</label>
-            <textarea id="ev-description" name="description" rows="3"
-                      class="textarea textarea-bordered w-full">{{ old('description', $event?->description) }}</textarea>
-        </div>
+        <x-textarea-field name="description" :label="__('Beschreibung')" rows="3" span="2" :value="old('description', $event?->description)" />
     </x-form-group>
 
     {{-- Termin ------------------------------------------------------------- --}}
@@ -147,12 +120,7 @@
             </label>
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-tz">{{ __('Zeitzone') }}</label>
-            <input id="ev-tz" type="text" name="timezone"
-                   class="input input-bordered w-full font-mono"
-                   value="{{ old('timezone', $event?->timezone ?? config('app.timezone')) }}">
-        </div>
+        <x-input-field name="timezone" :label="__('Zeitzone')" class="font-mono" :value="old('timezone', $event?->timezone ?? config('app.timezone'))" />
 
         <div class="fieldset md:col-span-2">
             <label class="fieldset-label" for="ev-rrule">{{ __('Wiederholungsregel (iCal RRULE)') }}</label>
@@ -163,42 +131,26 @@
             <p class="text-xs opacity-60">{{ __('Optional. iCal RRULE-Format.') }}</p>
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-series-until">{{ __('Serie bis') }}</label>
-            <input id="ev-series-until" type="date" name="series_until"
-                   class="input input-bordered w-full"
-                   value="{{ old('series_until', $event?->series_until?->format('Y-m-d')) }}">
-        </div>
+        <x-input-field name="series_until" type="date" :label="__('Serie bis')" :value="old('series_until', $event?->series_until?->format('Y-m-d'))" />
     </x-form-group>
 
     {{-- Verantwortung ----------------------------------------------------- --}}
     <x-form-group :legend="__('Verantwortung')" icon="person" tone="success" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-resp">{{ __('Verantwortlich') }} *</label>
-            <select id="ev-resp" name="responsible_user_id" required class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($users as $u)
-                    <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $event?->responsible_user_id ?? auth()->id())) === $u->sqid)>{{ $u->name }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="responsible_user_id" :label="__('Verantwortlich')" required>
+            <option value="">—</option>
+            @foreach ($users as $u)
+                <option value="{{ $u->sqid }}" @selected((string) old('responsible_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $event?->responsible_user_id ?? auth()->id())) === $u->sqid)>{{ $u->name }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-customer">{{ __('Externer Anbieter') }}</label>
-            <select id="ev-customer" name="customer_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($customers as $c)
-                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $event?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-select-field name="customer_id" :label="__('Externer Anbieter')">
+            <option value="">—</option>
+            @foreach ($customers as $c)
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $event?->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+            @endforeach
+        </x-select-field>
 
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label" for="ev-contact-note">{{ __('Externer Kontakt (Notiz)') }}</label>
-            <input id="ev-contact-note" type="text" name="external_contact_note"
-                   class="input input-bordered w-full"
-                   value="{{ old('external_contact_note', $event?->external_contact_note) }}">
-        </div>
+        <x-input-field name="external_contact_note" :label="__('Externer Kontakt (Notiz)')" span="2" :value="old('external_contact_note', $event?->external_contact_note)" />
     </x-form-group>
 
     {{-- Pflicht & Zertifikat --------------------------------------------- --}}
@@ -213,19 +165,9 @@
             </label>
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-max">{{ __('Max. Teilnehmer') }}</label>
-            <input id="ev-max" type="number" min="1" name="max_participants"
-                   class="input input-bordered w-full"
-                   value="{{ old('max_participants', $event?->max_participants) }}">
-        </div>
+        <x-input-field name="max_participants" type="number" :label="__('Max. Teilnehmer')" min="1" :value="old('max_participants', $event?->max_participants)" />
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="ev-cert-months">{{ __('Zertifikat gültig (Monate)') }}</label>
-            <input id="ev-cert-months" type="number" min="1" name="certificate_valid_months"
-                   class="input input-bordered w-full"
-                   value="{{ old('certificate_valid_months', $event?->certificate_valid_months) }}">
-        </div>
+        <x-input-field name="certificate_valid_months" type="number" :label="__('Zertifikat gültig (Monate)')" min="1" :value="old('certificate_valid_months', $event?->certificate_valid_months)" />
     </x-form-group>
 
     {{-- Räume ------------------------------------------------------------- --}}

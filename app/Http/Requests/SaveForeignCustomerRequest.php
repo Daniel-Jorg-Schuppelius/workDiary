@@ -11,24 +11,19 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Validierung für Fremdkunden (Endkunden). Leichtgewichtiger Kontakt; die
  * Zugehörigkeit zur Firma erfolgt über `customer_id` (als Sqid übermittelt,
  * via {@see DecodesSqidInputs} zu einer ID dekodiert).
  */
-class SaveForeignCustomerRequest extends FormRequest {
+class SaveForeignCustomerRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'customer_id' => \App\Models\Customer::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

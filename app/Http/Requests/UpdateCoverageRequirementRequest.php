@@ -10,36 +10,9 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\User;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Auth;
-
-class UpdateCoverageRequirementRequest extends FormRequest {
-    use DecodesSqidInputs;
-
-    /** @var array<string, class-string> */
-    protected array $sqidFields = [
-        'shift_type_id' => \App\Models\ShiftType::class,
-    ];
-
-    public function authorize(): bool {
-        $user = Auth::user();
-
-        return $user instanceof User && $user->isAdmin();
-    }
-
-    /** @return array<string, mixed> */
-    public function rules(): array {
-        return [
-            'shift_type_id' => ['required', 'integer', 'exists:shift_types,id'],
-            'weekday' => ['nullable', 'integer', 'between:0,6'],
-            'specific_date' => ['nullable', 'date'],
-            'min_staff' => ['required', 'integer', 'min:0', 'max:99'],
-            'max_staff' => ['nullable', 'integer', 'min:0', 'max:99', 'gte:min_staff'],
-            'required_qualification_ids' => ['nullable', 'array'],
-            'required_qualification_ids.*' => ['integer', 'exists:qualifications,id'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ];
-    }
+/**
+ * Bearbeiten einer Bedarfsregel — identische Validierung, Autorisierung und
+ * Sqid-Dekodierung wie beim Anlegen (PUT ersetzt den Datensatz vollständig).
+ */
+class UpdateCoverageRequirementRequest extends StoreCoverageRequirementRequest {
 }

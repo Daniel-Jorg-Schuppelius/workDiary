@@ -25,15 +25,11 @@
     :submit-label="__('isms.action.create_assessment')">
 
     <x-form-group :legend="__('isms.group.assessment')" icon="speed" tone="warning" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.assessment_kind') }} *</span>
-            <select name="kind" required class="select select-bordered w-full">
+        <x-select-field name="kind" :label="__('isms.field.assessment_kind')" required span="2" :hint="__('isms.hint.assessment_kind')">
                 @foreach (\App\Enums\Isms\AssessmentKind::cases() as $kind)
                     <option value="{{ $kind->value }}" @selected(old('kind', 'net') === $kind->value)>{{ $kind->label() }}</option>
                 @endforeach
-            </select>
-            <span class="label-text-alt text-base-content/60">{{ __('isms.hint.assessment_kind') }}</span>
-        </label>
+        </x-select-field>
         <label class="form-control">
             <span class="label-text">{{ __('isms.field.likelihood') }} (1–5) *</span>
             <select name="likelihood" required class="select select-bordered w-full">
@@ -50,18 +46,7 @@
                 @endfor
             </select>
         </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.rationale') }}</span>
-            <textarea name="rationale" rows="3" maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.rationale') }}">{{ old('rationale') }}</textarea>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.valid_until') }}</span>
-            <input type="date" name="valid_until"
-                   class="input input-bordered w-full"
-                   value="{{ old('valid_until') }}">
-            <span class="label-text-alt text-base-content/60">{{ __('isms.hint.assessment_valid_until') }}</span>
-        </label>
+        <x-textarea-field name="rationale" :label="__('isms.field.rationale')" rows="3" maxlength="10000" span="2" :value="old('rationale')" placeholder="{{ __('isms.hint.rationale') }}" />
+        <x-input-field name="valid_until" type="date" :label="__('isms.field.valid_until')" span="2" :value="old('valid_until')" :hint="__('isms.hint.assessment_valid_until')" />
     </x-form-group>
 </x-modal>

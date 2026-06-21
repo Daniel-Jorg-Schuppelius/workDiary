@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Models\Material;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveMaterialRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveMaterialRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

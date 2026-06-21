@@ -31,22 +31,22 @@
                             data-entry-modal-trigger
                             :href="route('projects.timesheets.edit', [$project, $timesheet])"
                             show-label>{{ __('Kopfdaten') }}</x-icon-btn>
-                <form method="POST" action="{{ route('projects.timesheets.magic-link', [$project, $timesheet]) }}" class="inline">@csrf
+                <x-action-form :action="route('projects.timesheets.magic-link', [$project, $timesheet])">
                     <x-icon-btn icon="link" tone="secondary" size="sm" type="submit" show-label>{{ __('Sign-Link an Kunden') }}</x-icon-btn>
-                </form>
-                <form method="POST" action="{{ route('projects.timesheets.submit', [$project, $timesheet]) }}" class="inline">@csrf
+                </x-action-form>
+                <x-action-form :action="route('projects.timesheets.submit', [$project, $timesheet])">
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Einreichen') }}</x-icon-btn>
-                </form>
+                </x-action-form>
             @endif
             @can('lock', $timesheet)
                 @if(! $timesheet->isLocked())
-                    <form method="POST" action="{{ route('projects.timesheets.lock', [$project, $timesheet]) }}" class="inline">@csrf
+                    <x-action-form :action="route('projects.timesheets.lock', [$project, $timesheet])">
                         <x-icon-btn icon="lock" tone="warning" size="sm" type="submit" show-label>{{ __('Sperren') }}</x-icon-btn>
-                    </form>
+                    </x-action-form>
                 @else
-                    <form method="POST" action="{{ route('projects.timesheets.unlock', [$project, $timesheet]) }}" class="inline">@csrf
+                    <x-action-form :action="route('projects.timesheets.unlock', [$project, $timesheet])">
                         <x-icon-btn icon="lock_open" size="sm" type="submit" show-label>{{ __('Entsperren') }}</x-icon-btn>
-                    </form>
+                    </x-action-form>
                 @endif
             @endcan
         </x-slot:actions>
@@ -93,15 +93,13 @@
                     <td>{{ $e->description }}</td>
                     <td class="text-right">
                         @if($editable)
-                            <form method="POST" action="{{ route('projects.timesheets.entries.destroy', [$project, $timesheet, $e]) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Löschen?') }}"
-                                  data-confirm-icon="delete"
-                                  data-confirm-tone="error"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('projects.timesheets.entries.destroy', [$project, $timesheet, $e])" method="DELETE"
+                                  :confirm="__('Löschen?')"
+                                  confirm-icon="delete"
+                                  confirm-tone="error"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         @endif
                     </td>
                 </tr>
@@ -142,15 +140,13 @@
                     <td class="text-right tabular-nums" data-sort-value="{{ (float) $u->line_total_net }}">{{ number_format((float)$u->line_total_net, 2, ',', '.') }} €</td>
                     <td class="text-right">
                         @if($editable)
-                            <form method="POST" action="{{ route('projects.timesheets.materials.destroy', [$project, $timesheet, $u]) }}" class="inline"
-                                  data-confirm-dialog
-                                  data-confirm-message="{{ __('Löschen?') }}"
-                                  data-confirm-icon="delete"
-                                  data-confirm-tone="error"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf @method('DELETE')
+                            <x-action-form :action="route('projects.timesheets.materials.destroy', [$project, $timesheet, $u])" method="DELETE"
+                                  :confirm="__('Löschen?')"
+                                  confirm-icon="delete"
+                                  confirm-tone="error"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         @endif
                     </td>
                 </tr>

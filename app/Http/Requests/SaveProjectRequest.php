@@ -14,10 +14,9 @@ use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\{Customer, ForeignCustomer, Project, Team, User};
 use Closure;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveProjectRequest extends FormRequest {
+class SaveProjectRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -28,10 +27,6 @@ class SaveProjectRequest extends FormRequest {
         'team_ids' => Team::class,
         'member_ids' => User::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

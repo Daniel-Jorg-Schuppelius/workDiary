@@ -63,15 +63,12 @@
                                         data-entry-modal-trigger
                                         :href="route('holidays.edit', $row['custom'])"
                                         :label="__('Bearbeiten')" />
-                            <form method="POST" action="{{ route('holidays.destroy', $row['custom']) }}" class="inline"
-                                  data-confirm-dialog
+                            <x-action-form :action="route('holidays.destroy', $row['custom'])" method="DELETE"
                                   data-confirm-title="{{ __('Feiertag löschen') }}"
-                                  data-confirm-message="{{ __('Diesen Feiertag wirklich löschen?') }}"
-                                  data-confirm-label="{{ __('Löschen') }}">
-                                @csrf
-                                @method('DELETE')
+                                  :confirm="__('Diesen Feiertag wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </form>
+                            </x-action-form>
                         @else
                             <span class="text-xs text-base-content/40">{{ __('—') }}</span>
                         @endif
@@ -113,15 +110,12 @@
                                     data-entry-modal-trigger
                                     :href="route('holidays.edit', $holiday)"
                                     :label="__('Bearbeiten')" />
-                        <form method="POST" action="{{ route('holidays.destroy', $holiday) }}" class="inline"
-                              data-confirm-dialog
+                        <x-action-form :action="route('holidays.destroy', $holiday)" method="DELETE"
                               data-confirm-title="{{ __('Feiertag löschen') }}"
-                              data-confirm-message="{{ __('Diesen Feiertag wirklich löschen?') }}"
-                              data-confirm-label="{{ __('Löschen') }}">
-                            @csrf
-                            @method('DELETE')
+                              :confirm="__('Diesen Feiertag wirklich löschen?')"
+                              :confirm-label="__('Löschen')">
                             <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                        </form>
+                        </x-action-form>
                     </td>
                 </tr>
             @empty

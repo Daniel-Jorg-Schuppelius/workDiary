@@ -10,12 +10,7 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
-
-class SaveUserBookmarkRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveUserBookmarkRequest extends BaseFormRequest {
 
     /** @return array<string, array<int, string>> */
     public function rules(): array {

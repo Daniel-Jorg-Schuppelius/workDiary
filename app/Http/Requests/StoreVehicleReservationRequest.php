@@ -12,10 +12,9 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\{DiaryEntry, Vehicle};
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreVehicleReservationRequest extends FormRequest {
+class StoreVehicleReservationRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -23,10 +22,6 @@ class StoreVehicleReservationRequest extends FormRequest {
         'vehicle_id' => Vehicle::class,
         'diary_entry_id' => DiaryEntry::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

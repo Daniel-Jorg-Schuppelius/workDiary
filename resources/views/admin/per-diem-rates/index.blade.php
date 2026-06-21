@@ -65,13 +65,11 @@
                                     data-entry-modal-trigger
                                     :href="route('admin.per-diem-rates.edit', $rate)"
                                     :label="__('Bearbeiten')" />
-                        <form method="POST" action="{{ route('admin.per-diem-rates.destroy', $rate) }}" class="inline"
-                              data-confirm-dialog
-                              data-confirm-message="{{ __('Pauschalensatz wirklich löschen?') }}"
-                              data-confirm-label="{{ __('Löschen') }}">
-                            @csrf @method('DELETE')
+                        <x-action-form :action="route('admin.per-diem-rates.destroy', $rate)" method="DELETE"
+                              :confirm="__('Pauschalensatz wirklich löschen?')"
+                              :confirm-label="__('Löschen')">
                             <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                        </form>
+                        </x-action-form>
                     </div>
                 </td>
             </tr>

@@ -31,13 +31,11 @@
 
     @if ($isEdit)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('qualifications.destroy', $qualification) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Wirklich löschen?') }}"
-                  data-confirm-label="{{ __('Löschen') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('qualifications.destroy', $qualification)" method="DELETE"
+                  :confirm="__('Wirklich löschen?')"
+                  :confirm-label="__('Löschen')">
                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Qualifikation löschen') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endif
 </x-modal>

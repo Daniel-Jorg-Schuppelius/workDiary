@@ -43,38 +43,23 @@
     <input type="hidden" name="is_operating_system" value="{{ $isOperatingSystem ? 1 : 0 }}" />
 
     @unless ($isEdit)
-        <label class="form-control">
-            <span class="label-text">{{ __('Software') }}</span>
-            <select name="software_id" required class="select select-bordered w-full">
-                @forelse ($softwareCatalog as $sw)
-                    <option value="{{ $sw->sqid }}" @selected(old('software_id') === $sw->sqid)>{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
-                @empty
-                    <option value="" disabled>{{ __('Kein passender Software-Katalog vorhanden.') }}</option>
-                @endforelse
-            </select>
-        </label>
+        <x-select-field name="software_id" :label="__('Software')" required>
+            @forelse ($softwareCatalog as $sw)
+                <option value="{{ $sw->sqid }}" @selected(old('software_id') === $sw->sqid)>{{ $sw->name }}@if ($sw->vendor) — {{ $sw->vendor }}@endif</option>
+            @empty
+                <option value="" disabled>{{ __('Kein passender Software-Katalog vorhanden.') }}</option>
+            @endforelse
+        </x-select-field>
     @endunless
 
     <div class="grid gap-3 sm:grid-cols-2">
-        <label class="form-control">
-            <span class="label-text">{{ __('Version') }}</span>
-            <input type="text" name="version" value="{{ old('version', $installation?->version) }}" class="input input-bordered w-full">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Sitze') }}</span>
-            <input type="number" name="seats" min="1" value="{{ old('seats', $installation?->seats) }}" class="input input-bordered w-full">
-        </label>
+        <x-input-field name="version" :label="__('Version')" :value="old('version', $installation?->version)" />
+        <x-input-field name="seats" type="number" min="1" :label="__('Sitze')" :value="old('seats', $installation?->seats)" />
         <label class="form-control sm:col-span-2">
             <span class="label-text">{{ __('Lizenzschlüssel') }}</span>
             <input type="text" name="license_key" value="{{ old('license_key', $installation?->license_key) }}" class="input input-bordered w-full">
         </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Installiert am') }}</span>
-            <input type="date" name="installed_on" value="{{ old('installed_on', $installation?->installed_on?->format('Y-m-d')) }}" class="input input-bordered w-full">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('Läuft ab') }}</span>
-            <input type="date" name="expires_on" value="{{ old('expires_on', $installation?->expires_on?->format('Y-m-d')) }}" class="input input-bordered w-full">
-        </label>
+        <x-input-field name="installed_on" type="date" :label="__('Installiert am')" :value="old('installed_on', $installation?->installed_on?->format('Y-m-d'))" />
+        <x-input-field name="expires_on" type="date" :label="__('Läuft ab')" :value="old('expires_on', $installation?->expires_on?->format('Y-m-d'))" />
     </div>
 </x-modal>

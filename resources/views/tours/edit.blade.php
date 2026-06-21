@@ -47,59 +47,32 @@
                 <input type="hidden" name="tour_date" value="{{ $tour->tour_date?->toDateString() }}">
 
                 <div class="grid gap-3 md:grid-cols-2">
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Fahrzeug') }}</span>
-                        <select name="vehicle_id" class="select select-bordered select-sm">
-                            <option value="">—</option>
-                            @foreach ($vehicles as $v)
-                                <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $tour->vehicle_id)) === $v->sqid)>{{ $v->license_plate }} {{ $v->label }}</option>
-                            @endforeach
-                        </select>
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Status') }}</span>
-                        <select name="status" class="select select-bordered select-sm">
-                            @foreach ($statuses as $value => $label)
-                                <option value="{{ $value }}" @selected($tour->status?->value === $value)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </label>
-                    <label class="form-control md:col-span-2">
-                        <span class="label-text">{{ __('Name') }}</span>
-                        <input type="text" name="name" maxlength="200" value="{{ $tour->name }}" class="input input-bordered input-sm">
-                    </label>
+                    <x-select-field name="vehicle_id" :label="__('Fahrzeug')" class="select-sm">
+                        <option value="">—</option>
+                        @foreach ($vehicles as $v)
+                            <option value="{{ $v->sqid }}" @selected((string) old('vehicle_id', \App\Support\Sqid::encode(\App\Models\Vehicle::class, $tour->vehicle_id)) === $v->sqid)>{{ $v->license_plate }} {{ $v->label }}</option>
+                        @endforeach
+                    </x-select-field>
+                    <x-select-field name="status" :label="__('Status')" class="select-sm">
+                        @foreach ($statuses as $value => $label)
+                            <option value="{{ $value }}" @selected($tour->status?->value === $value)>{{ $label }}</option>
+                        @endforeach
+                    </x-select-field>
+                    <x-input-field name="name" :label="__('Name')" maxlength="200" :value="$tour->name" class="input-sm" span="2" />
                 </div>
 
                 <fieldset class="grid gap-3 md:grid-cols-2 rounded-box border border-base-300 p-3">
                     <legend class="px-1 text-sm font-medium">{{ __('Start') }}</legend>
-                    <label class="form-control md:col-span-2">
-                        <span class="label-text">{{ __('Adresse') }}</span>
-                        <input type="text" name="start_address" value="{{ $tour->start_address }}" class="input input-bordered input-sm">
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Lat') }}</span>
-                        <input type="number" step="0.0000001" name="start_lat" value="{{ $tour->start_lat }}" class="input input-bordered input-sm">
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Lng') }}</span>
-                        <input type="number" step="0.0000001" name="start_lng" value="{{ $tour->start_lng }}" class="input input-bordered input-sm">
-                    </label>
+                    <x-input-field name="start_address" :label="__('Adresse')" :value="$tour->start_address" class="input-sm" span="2" />
+                    <x-input-field name="start_lat" type="number" step="0.0000001" :label="__('Lat')" :value="$tour->start_lat" class="input-sm" />
+                    <x-input-field name="start_lng" type="number" step="0.0000001" :label="__('Lng')" :value="$tour->start_lng" class="input-sm" />
                 </fieldset>
 
                 <fieldset class="grid gap-3 md:grid-cols-2 rounded-box border border-base-300 p-3">
                     <legend class="px-1 text-sm font-medium">{{ __('Ziel') }}</legend>
-                    <label class="form-control md:col-span-2">
-                        <span class="label-text">{{ __('Adresse') }}</span>
-                        <input type="text" name="end_address" value="{{ $tour->end_address }}" class="input input-bordered input-sm">
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Lat') }}</span>
-                        <input type="number" step="0.0000001" name="end_lat" value="{{ $tour->end_lat }}" class="input input-bordered input-sm">
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Lng') }}</span>
-                        <input type="number" step="0.0000001" name="end_lng" value="{{ $tour->end_lng }}" class="input input-bordered input-sm">
-                    </label>
+                    <x-input-field name="end_address" :label="__('Adresse')" :value="$tour->end_address" class="input-sm" span="2" />
+                    <x-input-field name="end_lat" type="number" step="0.0000001" :label="__('Lat')" :value="$tour->end_lat" class="input-sm" />
+                    <x-input-field name="end_lng" type="number" step="0.0000001" :label="__('Lng')" :value="$tour->end_lng" class="input-sm" />
                 </fieldset>
 
                 <fieldset class="rounded-box border border-base-300 p-3">

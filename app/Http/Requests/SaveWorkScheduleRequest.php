@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\WorkSchedule\ScheduleType;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveWorkScheduleRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveWorkScheduleRequest extends BaseFormRequest {
 
     /**
      * Normalisiert die Eingaben je nach Arbeitszeit-Typ. Insbesondere werden

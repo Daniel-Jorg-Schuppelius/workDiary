@@ -37,14 +37,27 @@ class StoreScheduledShiftRequest extends FormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
+        return $this->fieldRules(false);
+    }
+
+    /**
+     * Gemeinsame Feldregeln für Anlegen/Bearbeiten. $partial=true (PATCH)
+     * macht Pflichtfelder optional (sometimes statt required).
+     *
+     * @return array<string, mixed>
+     */
+    protected function fieldRules(bool $partial): array {
+        $req = $partial ? ['sometimes'] : ['required'];
+        $opt = $partial ? ['sometimes', 'nullable'] : ['nullable'];
+
         return [
-            'user_id' => ['required', 'integer', 'exists:users,id'],
-            'shift_type_id' => ['nullable', 'integer', 'exists:shift_types,id'],
-            'duty_plan_id' => ['nullable', 'integer', 'exists:duty_plans,id'],
-            'date' => ['required', 'date'],
-            'start_time' => ['nullable', 'date_format:H:i'],
-            'end_time' => ['nullable', 'date_format:H:i'],
-            'note' => ['nullable', 'string', 'max:1000'],
+            'user_id' => [...$req, 'integer', 'exists:users,id'],
+            'shift_type_id' => [...$opt, 'integer', 'exists:shift_types,id'],
+            'duty_plan_id' => [...$opt, 'integer', 'exists:duty_plans,id'],
+            'date' => [...$req, 'date'],
+            'start_time' => [...$opt, 'date_format:H:i'],
+            'end_time' => [...$opt, 'date_format:H:i'],
+            'note' => [...$opt, 'string', 'max:1000'],
             'status' => ['sometimes', Rule::enum(ScheduledShiftStatus::class)],
             'override_compliance' => ['sometimes', 'boolean'],
         ];

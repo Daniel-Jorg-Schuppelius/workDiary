@@ -3,13 +3,8 @@
 {{-- Shared form fields for Organization create & edit. --}}
 
 <x-form-group :legend="__('Stammdaten')" icon="apartment" tone="primary" cols="2">
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Name') }} *</label>
-        <input type="text" name="name" required maxlength="255" autofocus
-               class="input input-bordered w-full @error('name') input-error @enderror"
-               value="{{ old('name', $organization?->name) }}">
-        @error('name')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-    </div>
+    <x-input-field name="name" :label="__('Name')" required maxlength="255" autofocus span="2"
+                   :value="old('name', $organization?->name)" />
 
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Sprache') }}</label>
@@ -57,17 +52,13 @@
 </x-form-group>
 
 <x-form-group :legend="__('Plan & Status')" icon="workspace_premium" tone="info" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Plan') }} *</label>
-        <select name="plan" required class="select select-bordered w-full @error('plan') select-error @enderror">
-            @foreach (\App\Models\Organization::$plans as $plan)
-                <option value="{{ $plan }}" @selected(old('plan', $organization?->plan ?? 'free') === $plan)>
-                    {{ \App\Models\Organization::planLabel($plan) }}
-                </option>
-            @endforeach
-        </select>
-        @error('plan')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-    </div>
+    <x-select-field name="plan" :label="__('Plan')" required>
+        @foreach (\App\Models\Organization::$plans as $plan)
+            <option value="{{ $plan }}" @selected(old('plan', $organization?->plan ?? 'free') === $plan)>
+                {{ \App\Models\Organization::planLabel($plan) }}
+            </option>
+        @endforeach
+    </x-select-field>
 
     @unless ($skipStatusControls)
     <div class="fieldset">

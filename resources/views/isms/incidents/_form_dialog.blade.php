@@ -27,75 +27,44 @@
     :submit-label="$isEdit ? __('isms.action.save') : __('isms.action.create_incident')">
 
     <x-form-group :legend="__('isms.group.incident')" icon="report" tone="error" cols="2">
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.title') }} *</span>
-            <input type="text" name="title" required minlength="3" maxlength="180"
-                   class="input input-bordered w-full"
-                   value="{{ old('title', $incident?->title) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.category') }} *</span>
-            <select name="category" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Isms\SecurityIncidentCategory::cases() as $category)
-                    <option value="{{ $category->value }}" @selected(old('category', $incident?->category?->value ?? 'other') === $category->value)>{{ $category->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.severity') }} *</span>
-            <select name="severity" required class="select select-bordered w-full">
-                @foreach (\App\Enums\Isms\IncidentSeverity::cases() as $severity)
-                    <option value="{{ $severity->value }}" @selected(old('severity', $incident?->severity?->value ?? 'medium') === $severity->value)>{{ $severity->label() }}</option>
-                @endforeach
-            </select>
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.description') }}</span>
-            <textarea name="description" rows="3" maxlength="10000"
-                      class="textarea textarea-bordered w-full">{{ old('description', $incident?->description) }}</textarea>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.detected_at') }}</span>
-            <input type="date" name="detected_at"
-                   class="input input-bordered w-full"
-                   value="{{ old('detected_at', $incident?->detected_at?->toDateString()) }}">
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.occurred_at') }}</span>
-            <input type="date" name="occurred_at"
-                   class="input input-bordered w-full"
-                   value="{{ old('occurred_at', $incident?->occurred_at?->toDateString()) }}">
-        </label>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.owner') }}</span>
-            <select name="owner_user_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $incident?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
-                @endforeach
-            </select>
-        </label>
+        <x-input-field name="title" :label="__('isms.field.title')" required minlength="3" maxlength="180"
+                       span="2"
+                       :value="old('title', $incident?->title)" />
+        <x-select-field name="category" :label="__('isms.field.category')" required>
+            @foreach (\App\Enums\Isms\SecurityIncidentCategory::cases() as $category)
+                <option value="{{ $category->value }}" @selected(old('category', $incident?->category?->value ?? 'other') === $category->value)>{{ $category->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="severity" :label="__('isms.field.severity')" required>
+            @foreach (\App\Enums\Isms\IncidentSeverity::cases() as $severity)
+                <option value="{{ $severity->value }}" @selected(old('severity', $incident?->severity?->value ?? 'medium') === $severity->value)>{{ $severity->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-textarea-field name="description" :label="__('isms.field.description')" rows="3" maxlength="10000"
+                          span="2"
+                          :value="old('description', $incident?->description)" />
+        <x-input-field name="detected_at" type="date" :label="__('isms.field.detected_at')"
+                       :value="old('detected_at', $incident?->detected_at?->toDateString())" />
+        <x-input-field name="occurred_at" type="date" :label="__('isms.field.occurred_at')"
+                       :value="old('occurred_at', $incident?->occurred_at?->toDateString())" />
+        <x-select-field name="owner_user_id" :label="__('isms.field.owner')" span="2">
+            <option value="">—</option>
+            @foreach ($owners as $owner)
+                <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $incident?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.incident_analysis')" icon="troubleshoot" tone="warning" cols="1">
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.impact') }}</span>
-            <textarea name="impact" rows="2" maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.incident_impact') }}">{{ old('impact', $incident?->impact) }}</textarea>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.root_cause') }}</span>
-            <textarea name="root_cause" rows="2" maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.incident_root_cause') }}">{{ old('root_cause', $incident?->root_cause) }}</textarea>
-        </label>
-        <label class="form-control">
-            <span class="label-text">{{ __('isms.field.lessons_learned') }}</span>
-            <textarea name="lessons_learned" rows="2" maxlength="10000"
-                      class="textarea textarea-bordered w-full"
-                      placeholder="{{ __('isms.hint.incident_lessons_learned') }}">{{ old('lessons_learned', $incident?->lessons_learned) }}</textarea>
-        </label>
+        <x-textarea-field name="impact" :label="__('isms.field.impact')" rows="2" maxlength="10000"
+                          placeholder="{{ __('isms.hint.incident_impact') }}"
+                          :value="old('impact', $incident?->impact)" />
+        <x-textarea-field name="root_cause" :label="__('isms.field.root_cause')" rows="2" maxlength="10000"
+                          placeholder="{{ __('isms.hint.incident_root_cause') }}"
+                          :value="old('root_cause', $incident?->root_cause)" />
+        <x-textarea-field name="lessons_learned" :label="__('isms.field.lessons_learned')" rows="2" maxlength="10000"
+                          placeholder="{{ __('isms.hint.incident_lessons_learned') }}"
+                          :value="old('lessons_learned', $incident?->lessons_learned)" />
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.incident_privacy')" icon="privacy_tip" tone="secondary" cols="2">
@@ -107,13 +76,10 @@
             <span class="label-text">{{ __('isms.field.personal_data_affected') }}</span>
         </label>
         <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('isms.hint.personal_data_affected') }}</p>
-        <label class="form-control sm:col-span-2">
-            <span class="label-text">{{ __('isms.field.privacy_incident_ref') }}</span>
-            <input type="text" name="privacy_incident_ref" maxlength="64"
-                   class="input input-bordered w-full"
-                   value="{{ old('privacy_incident_ref', $incident?->privacy_incident_ref) }}"
-                   placeholder="{{ __('isms.hint.privacy_incident_ref') }}">
-        </label>
+        <x-input-field name="privacy_incident_ref" :label="__('isms.field.privacy_incident_ref')" maxlength="64"
+                       span="2"
+                       :value="old('privacy_incident_ref', $incident?->privacy_incident_ref)"
+                       placeholder="{{ __('isms.hint.privacy_incident_ref') }}" />
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.incident_links')" icon="link" tone="primary" cols="2">

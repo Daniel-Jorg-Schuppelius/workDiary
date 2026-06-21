@@ -147,29 +147,25 @@
                                class="btn btn-sm btn-ghost" title="{{ __('Konfigurieren') }}">
                                 <span class="material-symbols-outlined" aria-hidden="true">settings</span>
                             </a>
-                            <form method="POST" action="{{ route('admin.plugins.toggle', $plugin->id()) }}" class="inline">
-                                @csrf
+                            <x-action-form :action="route('admin.plugins.toggle', $plugin->id())">
                                 <button type="submit" class="btn btn-sm btn-ghost" title="{{ $isEnabled ? __('Deaktivieren') : __('Aktivieren') }}">
                                     <span class="material-symbols-outlined" aria-hidden="true">{{ $isEnabled ? 'toggle_on' : 'toggle_off' }}</span>
                                 </button>
-                            </form>
-                            <form method="POST" action="{{ route('admin.plugins.health-check', $plugin->id()) }}" class="inline"
+                            </x-action-form>
+                            <x-action-form :action="route('admin.plugins.health-check', $plugin->id())"
                                   data-health-check-form data-plugin-id="{{ $plugin->id() }}" data-plugin-name="{{ $plugin->name() }}">
-                                @csrf
                                 <button type="submit" class="btn btn-sm btn-ghost" title="{{ __('Healthcheck ausführen') }}">
                                     <span class="material-symbols-outlined" aria-hidden="true">monitor_heart</span>
                                 </button>
-                            </form>
+                            </x-action-form>
                             @if ($isAutoDisabled)
-                                <form method="POST" action="{{ route('admin.plugins.reset-errors', $plugin->id()) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Failure-Counter zurücksetzen und Plugin wieder aktivieren?') }}"
-                                      data-confirm-tone="primary">
-                                    @csrf
+                                <x-action-form :action="route('admin.plugins.reset-errors', $plugin->id())"
+                                      :confirm="__('Failure-Counter zurücksetzen und Plugin wieder aktivieren?')"
+                                      confirm-tone="primary">
                                     <button type="submit" class="btn btn-sm btn-warning" title="{{ __('Reset & Reaktivieren') }}">
                                         <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
                                     </button>
-                                </form>
+                                </x-action-form>
                             @endif
                         </div>
                     </td>

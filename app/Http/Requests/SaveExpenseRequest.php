@@ -12,10 +12,9 @@ namespace App\Http\Requests;
 
 use App\Enums\Expense\PaymentMethod;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveExpenseRequest extends FormRequest {
+class SaveExpenseRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
@@ -26,10 +25,6 @@ class SaveExpenseRequest extends FormRequest {
         'task_id' => \App\Models\Task::class,
         'attendance_id' => \App\Models\Attendance::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

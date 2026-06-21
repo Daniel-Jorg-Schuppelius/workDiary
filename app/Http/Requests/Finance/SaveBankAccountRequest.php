@@ -10,12 +10,9 @@
 
 namespace App\Http\Requests\Finance;
 
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\BaseFormRequest;
 
-class SaveBankAccountRequest extends FormRequest {
-    public function authorize(): bool {
-        return true; // Gate-Prüfung im Controller (BankAccountPolicy).
-    }
+class SaveBankAccountRequest extends BaseFormRequest {
 
     /**
      * @return array<string, mixed>

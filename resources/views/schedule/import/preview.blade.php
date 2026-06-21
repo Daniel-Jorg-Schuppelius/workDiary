@@ -31,7 +31,7 @@
                 @foreach (array_slice($rows, 0, 5) as $row)
                     <tr>
                         @foreach ($row as $cell)
-                            <td class="max-w-[12rem] truncate text-xs" title="{{ $cell }}">{{ $cell }}</td>
+                            <td class="max-w-48 truncate text-xs" title="{{ $cell }}">{{ $cell }}</td>
                         @endforeach
                     </tr>
                 @endforeach

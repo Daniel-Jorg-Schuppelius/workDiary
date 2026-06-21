@@ -25,30 +25,19 @@
                 @endif
 
                 <div class="grid gap-4 sm:grid-cols-2">
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Jahr') }}</span>
-                        <input type="number" name="year" min="2000" max="2999"
-                               value="{{ old('year', $defaultYear) }}"
-                               class="input input-sm input-bordered" required />
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Monat') }}</span>
-                        <select name="month" class="select select-sm select-bordered" required>
-                            @for ($m = 1; $m <= 12; $m++)
-                                <option value="{{ $m }}" @selected((int) old('month', $defaultMonth) === $m)>
-                                    {{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }}
-                                </option>
-                            @endfor
-                        </select>
-                    </label>
-                    <label class="form-control">
-                        <span class="label-text">{{ __('Profil') }}</span>
-                        <select name="profile" class="select select-sm select-bordered" required>
-                            @foreach ($profiles as $key => $label)
-                                <option value="{{ $key }}" @selected(old('profile') === $key)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </label>
+                    <x-input-field name="year" type="number" :label="__('Jahr')" min="2000" max="2999" class="input-sm" :value="old('year', $defaultYear)" required />
+                    <x-select-field name="month" :label="__('Monat')" class="select-sm" required>
+                        @for ($m = 1; $m <= 12; $m++)
+                            <option value="{{ $m }}" @selected((int) old('month', $defaultMonth) === $m)>
+                                {{ str_pad((string) $m, 2, '0', STR_PAD_LEFT) }}
+                            </option>
+                        @endfor
+                    </x-select-field>
+                    <x-select-field name="profile" :label="__('Profil')" class="select-sm" required>
+                        @foreach ($profiles as $key => $label)
+                            <option value="{{ $key }}" @selected(old('profile') === $key)>{{ $label }}</option>
+                        @endforeach
+                    </x-select-field>
                     <label class="form-control">
                         <span class="label-text">{{ __('Scope') }}</span>
                         <select name="scope" class="select select-sm select-bordered" id="scope-select" required>

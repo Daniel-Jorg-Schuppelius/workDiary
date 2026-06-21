@@ -47,15 +47,11 @@
         <div class="card bg-base-100 shadow-sm lg:col-span-2">
             <div class="card-body space-y-2">
                 <h3 class="card-title text-base">{{ __('Stammdaten') }}</h3>
-                <dl class="grid grid-cols-2 gap-y-2 text-sm">
-                    <dt class="text-base-content/70">{{ __('Periode') }}</dt>
-                    <dd class="tabular-nums">{{ $export->periodLabel() }}</dd>
-                    <dt class="text-base-content/70">{{ __('Profil') }}</dt>
-                    <dd>{{ $export->profile }}</dd>
-                    <dt class="text-base-content/70">{{ __('Status') }}</dt>
-                    <dd><x-status-badge :tone="$tone" size="sm">{{ $export->status->label() }}</x-status-badge></dd>
-                    <dt class="text-base-content/70">{{ __('Scope') }}</dt>
-                    <dd>
+                <x-detail-grid class="grid-cols-2">
+                    <x-detail-grid.row :label="__('Periode')" :value="$export->periodLabel()" class="tabular-nums" />
+                    <x-detail-grid.row :label="__('Profil')" :value="$export->profile" />
+                    <x-detail-grid.row :label="__('Status')"><x-status-badge :tone="$tone" size="sm">{{ $export->status->label() }}</x-status-badge></x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Scope')">
                         @if ($export->scope === 'user')
                             {{ __('Person') }} · {{ $export->scopeUser?->name }}
                         @elseif ($export->scope === 'team')
@@ -63,24 +59,18 @@
                         @else
                             {{ __('Gesamte Organisation') }}
                         @endif
-                    </dd>
-                    <dt class="text-base-content/70">{{ __('Zeilen') }}</dt>
-                    <dd class="tabular-nums">{{ $export->rows_count }}</dd>
-                    <dt class="text-base-content/70">{{ __('Hash') }}</dt>
-                    <dd class="font-mono text-xs break-all">{{ $export->payload_hash }}</dd>
-                    <dt class="text-base-content/70">{{ __('Datei') }}</dt>
-                    <dd class="font-mono text-xs break-all">{{ $export->file_path ?? '—' }}</dd>
-                    <dt class="text-base-content/70">{{ __('Erstellt') }}</dt>
-                    <dd>{{ $export->created_at?->fdatetime() }} · {{ $export->creator?->name }}</dd>
+                    </x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Zeilen')" :value="$export->rows_count" class="tabular-nums" />
+                    <x-detail-grid.row :label="__('Hash')" :value="$export->payload_hash" class="font-mono text-xs break-all" />
+                    <x-detail-grid.row :label="__('Datei')" :value="$export->file_path ?? '—'" class="font-mono text-xs break-all" />
+                    <x-detail-grid.row :label="__('Erstellt')">{{ $export->created_at?->fdatetime() }} · {{ $export->creator?->name }}</x-detail-grid.row>
                     @if ($export->delivered_at)
-                        <dt class="text-base-content/70">{{ __('Übermittelt') }}</dt>
-                        <dd>{{ $export->delivered_at->fdatetime() }} · {{ $export->deliveredBy?->name }}</dd>
+                        <x-detail-grid.row :label="__('Übermittelt')">{{ $export->delivered_at->fdatetime() }} · {{ $export->deliveredBy?->name }}</x-detail-grid.row>
                     @endif
                     @if ($export->supersededBy)
-                        <dt class="text-base-content/70">{{ __('Ersetzt durch') }}</dt>
-                        <dd><a class="link link-primary" href="{{ route('exports.show', $export->supersededBy) }}">#{{ $export->supersededBy->id }}</a></dd>
+                        <x-detail-grid.row :label="__('Ersetzt durch')"><a class="link link-primary" href="{{ route('exports.show', $export->supersededBy) }}">#{{ $export->supersededBy->id }}</a></x-detail-grid.row>
                     @endif
-                </dl>
+                </x-detail-grid>
             </div>
         </div>
 

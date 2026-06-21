@@ -11,15 +11,10 @@
 namespace App\Http\Requests;
 
 use App\Enums\Backup\RestoreTestResult;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
-class LogRestoreTestRequest extends FormRequest {
-    public function authorize(): bool {
-        // Autorisierung erfolgt im Controller via Gate (Permission backup.restoreTest.log).
-        return true;
-    }
+class LogRestoreTestRequest extends BaseFormRequest {
 
     /**
      * @return array<string, mixed>

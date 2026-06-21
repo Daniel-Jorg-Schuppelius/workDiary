@@ -52,11 +52,9 @@
                                             :href="route('warehouses.edit', $warehouse)" :title="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $warehouse)
-                                <form method="POST" action="{{ route('warehouses.destroy', $warehouse) }}" class="inline"
-                                      onsubmit="return confirm('{{ __('inventory.confirm.delete_warehouse') }}')">
-                                    @csrf @method('DELETE')
+                                <x-action-form :action="route('warehouses.destroy', $warehouse)" method="DELETE" :confirm="__('inventory.confirm.delete_warehouse')">
                                     <x-icon-btn icon="delete" size="xs" type="submit" tone="error" :title="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </td>
                     </tr>

@@ -2,34 +2,19 @@
      separater Planungs-/Optimierungs-Editor mit Auftragszuweisung und Karte. --}}
 
 <x-form-group :legend="__('Stammdaten')" icon="map" tone="primary" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Datum') }} *</label>
-        <input type="date" name="tour_date" required value="{{ old('tour_date', $date) }}"
-               class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Fahrer') }} *</label>
-        <select name="user_id" required class="select select-bordered w-full">
-            @foreach ($users as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('user_id') === $u->sqid)>{{ $u->name }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Fahrzeug') }}</label>
-        <select name="vehicle_id" class="select select-bordered w-full">
-            <option value="">—</option>
-            @foreach ($vehicles as $v)
-                <option value="{{ $v->sqid }}">{{ $v->license_plate }} {{ $v->label }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Name') }}</label>
-        <input type="text" name="name" maxlength="200"
-               value="{{ old('name') }}"
-               class="input input-bordered w-full">
-    </div>
+    <x-input-field name="tour_date" type="date" :label="__('Datum')" required :value="old('tour_date', $date)" />
+    <x-select-field name="user_id" :label="__('Fahrer')" required>
+        @foreach ($users as $u)
+            <option value="{{ $u->sqid }}" @selected((string) old('user_id') === $u->sqid)>{{ $u->name }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field name="vehicle_id" :label="__('Fahrzeug')">
+        <option value="">—</option>
+        @foreach ($vehicles as $v)
+            <option value="{{ $v->sqid }}">{{ $v->license_plate }} {{ $v->label }}</option>
+        @endforeach
+    </x-select-field>
+    <x-input-field name="name" :label="__('Name')" maxlength="200" :value="old('name')" />
 </x-form-group>
 
 @if ($errors->any())

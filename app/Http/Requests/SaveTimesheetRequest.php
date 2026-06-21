@@ -11,13 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\Timesheet\TimesheetStatus;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveTimesheetRequest extends FormRequest {
-    public function authorize(): bool {
-        return true;
-    }
+class SaveTimesheetRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {

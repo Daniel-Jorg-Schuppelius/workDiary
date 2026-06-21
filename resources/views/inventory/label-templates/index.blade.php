@@ -33,9 +33,9 @@
                         @if ($canManage)
                             <td class="text-right whitespace-nowrap">
                                 <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger :href="route('inventory.label-templates.edit', $tpl)" :title="__('Bearbeiten')" />
-                                <form method="POST" action="{{ route('inventory.label-templates.destroy', $tpl) }}" class="inline" onsubmit="return confirm('{{ __('inventory.label_template.delete') }}?')">@csrf @method('DELETE')
+                                <x-action-form :action="route('inventory.label-templates.destroy', $tpl)" method="DELETE" :confirm="__('inventory.label_template.delete').'?'">
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :title="__('inventory.label_template.delete')" />
-                                </form>
+                                </x-action-form>
                             </td>
                         @endif
                     </tr>

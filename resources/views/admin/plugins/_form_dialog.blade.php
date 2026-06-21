@@ -77,13 +77,11 @@
 
     @if ($state && $state->isAutoDisabled())
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('admin.plugins.reset-errors', $plugin->id()) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Failure-Counter zurücksetzen und Plugin wieder aktivieren?') }}"
-                  data-confirm-tone="primary">
-                @csrf
+            <x-action-form :action="route('admin.plugins.reset-errors', $plugin->id())"
+                  :confirm="__('Failure-Counter zurücksetzen und Plugin wieder aktivieren?')"
+                  confirm-tone="primary">
                 <x-icon-btn icon="restart_alt" tone="warning" size="sm" type="submit" show-label>{{ __('Reset & Reaktivieren') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endif
 </x-modal>

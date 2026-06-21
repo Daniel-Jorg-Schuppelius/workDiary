@@ -29,19 +29,9 @@
     <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
 
     <x-form-group :legend="__('Stammdaten')" icon="category" tone="primary" cols="2">
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label" for="cat-name">{{ __('Name') }} *</label>
-            <input id="cat-name" type="text" name="name" required
-                   class="input input-bordered w-full @error('name') input-error @enderror"
-                   value="{{ old('name', $category?->name) }}">
-            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="name" :label="__('Name')" required span="2" :value="old('name', $category?->name)" />
 
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label" for="cat-desc">{{ __('Beschreibung') }}</label>
-            <textarea id="cat-desc" name="description" rows="2"
-                      class="textarea textarea-bordered w-full">{{ old('description', $category?->description) }}</textarea>
-        </div>
+        <x-textarea-field name="description" :label="__('Beschreibung')" rows="2" span="2" :value="old('description', $category?->description)" />
     </x-form-group>
 
     <x-form-group :legend="__('Zertifikat')" icon="workspace_premium" tone="warning" cols="1">
@@ -55,13 +45,7 @@
             </label>
         </x-slot:legendActions>
 
-        <div class="fieldset">
-            <label class="fieldset-label" for="cat-cert-months">{{ __('Gültigkeit (Monate)') }}</label>
-            <input id="cat-cert-months" type="number" min="1" max="120"
-                   name="certificate_valid_months"
-                   class="input input-bordered w-full"
-                   value="{{ old('certificate_valid_months', $category?->certificate_valid_months) }}">
-        </div>
+        <x-input-field name="certificate_valid_months" type="number" :label="__('Gültigkeit (Monate)')" min="1" max="120" :value="old('certificate_valid_months', $category?->certificate_valid_months)" />
     </x-form-group>
 
     <x-form-group :legend="__('Reminder')" icon="notifications" tone="info">

@@ -85,13 +85,11 @@
                                             :label="__('Bearbeiten')" />
                             @endcan
                             @can('delete', $trip)
-                                <form method="POST" action="{{ route('per-diem-trips.destroy', $trip) }}" class="inline"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Reise wirklich löschen?') }}"
-                                      data-confirm-label="{{ __('Löschen') }}">
-                                    @csrf @method('DELETE')
+                                <x-action-form :action="route('per-diem-trips.destroy', $trip)" method="DELETE"
+                                      :confirm="__('Reise wirklich löschen?')"
+                                      :confirm-label="__('Löschen')">
                                     <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                                </form>
+                                </x-action-form>
                             @endcan
                         </td>
                     </tr>

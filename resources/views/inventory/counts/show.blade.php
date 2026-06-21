@@ -79,11 +79,9 @@
 
     @if ($canApply && $count->status->isOpen())
         <x-card>
-            <form method="POST" action="{{ route('inventory.counts.apply', $count) }}"
-                  onsubmit="return confirm('{{ __('inventory.count_ui.apply') }}?')">
-                @csrf
+            <x-action-form :action="route('inventory.counts.apply', $count)" :confirm="__('inventory.count_ui.apply').'?'">
                 <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('inventory.count_ui.apply') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-card>
     @endif
 </x-page-shell>

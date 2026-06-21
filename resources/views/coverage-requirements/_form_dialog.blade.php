@@ -20,13 +20,11 @@
 
     @if ($isEdit)
         <x-slot:footerExtra>
-            <form method="POST" action="{{ route('duty-plans.coverage.destroy', [$dutyPlan, $requirement]) }}" class="inline"
-                  data-confirm-dialog
-                  data-confirm-message="{{ __('Wirklich löschen?') }}"
-                  data-confirm-label="{{ __('Löschen') }}">
-                @csrf @method('DELETE')
+            <x-action-form :action="route('duty-plans.coverage.destroy', [$dutyPlan, $requirement])" method="DELETE"
+                  :confirm="__('Wirklich löschen?')"
+                  :confirm-label="__('Löschen')">
                 <x-icon-btn icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('Soll-Besetzung löschen') }}</x-icon-btn>
-            </form>
+            </x-action-form>
         </x-slot:footerExtra>
     @endif
 </x-modal>

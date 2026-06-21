@@ -12,10 +12,9 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\EnergyLog;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class SaveEnergyLogRequest extends FormRequest {
+class SaveEnergyLogRequest extends BaseFormRequest {
     use DecodesSqidInputs, ParsesOrgLocalDateTimes;
 
     protected function prepareForValidation(): void {
@@ -26,10 +25,6 @@ class SaveEnergyLogRequest extends FormRequest {
     protected array $sqidFields = [
         'vehicle_id' => \App\Models\Vehicle::class,
     ];
-
-    public function authorize(): bool {
-        return true;
-    }
 
     /** @return array<string, mixed> */
     public function rules(): array {
