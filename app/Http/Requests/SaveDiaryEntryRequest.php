@@ -94,7 +94,7 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'window_start_date' => [$windowRequired ? 'required' : 'nullable', 'date'],
             'window_end_date' => [$windowRequired ? 'required' : 'nullable', 'date', 'after_or_equal:window_start_date'],
             'location_mode' => ['required', Rule::enum(LocationMode::class)],
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
 
             // Phase 6: typgesteuerte Felder
@@ -102,7 +102,7 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'title' => ['nullable', 'string', 'max:200'],
             'priority' => ['nullable', Rule::enum(Priority::class)],
             'customer_id' => [$requiresCustomer ? 'required' : 'nullable', 'integer', 'exists:customers,id'],
-            'assigned_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'assigned_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
 
             'scheduled_for' => [$requiresSchedule ? 'required' : 'nullable', 'date'],
             'time_window_start' => ['nullable', 'date_format:H:i'],

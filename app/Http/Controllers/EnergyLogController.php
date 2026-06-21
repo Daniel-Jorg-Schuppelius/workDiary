@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUser};
 use App\Http\Requests\SaveEnergyLogRequest;
 use App\Models\{EnergyLog, User, Vehicle};
 use App\Services\Fleet\EnergyLogService;
@@ -23,7 +23,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class EnergyLogController extends Controller {
-    use ResolvesGlobalDateRange;
+    use ResolvesGlobalDateRange, ResolvesRequestedUser;
 
     public function __construct(private readonly EnergyLogService $service) {}
 
@@ -157,55 +157,17 @@ class EnergyLogController extends Controller {
     }
 
     /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
-     */
-    private function resolveRange(Request $request): array {
-        if ($request->filled('from') && $request->filled('to')) {
-            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
-            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
-
-            return [$from, $to];
-        }
-
-        $range = $this->globalDateRange();
-
-        return [$range['from']->startOfDay(), $range['to']->endOfDay()];
-    }
-
-    /**
      * Mirrors WorkBalanceReportController: admins may pick any user via ?user=,
      * non-admins are locked to themselves; ?user=all (admins only) returns null
      * so all users are shown.
      */
     private function resolveTargetUser(Request $request, User $authUser): ?User {
-        if (! $request->filled('user')) {
-            return $authUser;
-        }
-
-        $raw = (string) $request->query('user');
-        if ($raw === 'all') {
-            if (! $authUser->isAdmin()) {
-                throw new AccessDeniedHttpException('Nur Admins dürfen alle Nutzer einsehen.');
-            }
-
-            return null;
-        }
-
-        $requestedId = Sqid::decodeOrNumeric(User::class, $raw);
-        if ($requestedId === null || $requestedId === (int) $authUser->id) {
-            return $authUser;
-        }
-
-        if (! $authUser->isAdmin()) {
-            throw new AccessDeniedHttpException('Nur Admins dürfen Tankungen anderer Nutzer einsehen.');
-        }
-
-        $target = User::query()->find($requestedId);
-        if (! $target instanceof User) {
-            throw new AccessDeniedHttpException('Nutzer nicht gefunden.');
-        }
-
-        return $target;
+        return $this->resolveRequestedUserOrAll(
+            $request,
+            $authUser,
+            'Nur Admins dürfen alle Nutzer einsehen.',
+            'Nur Admins dürfen Tankungen anderer Nutzer einsehen.',
+        );
     }
 
     /** @return Collection<int, Vehicle> */

@@ -147,7 +147,7 @@ class ServiceTicketController extends Controller {
         Gate::authorize('assign', $ticket);
 
         $data = $request->validate([
-            'assignee_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ]);
 
         $user = $request->user();

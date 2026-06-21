@@ -14,6 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -32,39 +33,64 @@ class InventoryLedger {
     public function post(StockPosting $posting): StockMovement {
         $orgId = $posting->variant->organization_id;
 
-        if ($posting->idempotencyKey !== null && $orgId !== null) {
-            /** @var StockMovement|null $existing */
-            $existing = StockMovement::query()
-                ->where('organization_id', $orgId)
-                ->where('idempotency_key', $posting->idempotencyKey)
-                ->first();
-            if ($existing !== null) {
-                return $existing; // Doppelbuchung verhindert
+        return DB::transaction(function () use ($posting, $orgId): StockMovement {
+            // Idempotenzprüfung in derselben Transaktion wie der Insert: ein
+            // paralleler Aufruf mit gleichem Schlüssel wird durch den Unique-Index
+            // abgefangen (siehe catch unten), nicht durch ein TOCTOU-Fenster.
+            if ($posting->idempotencyKey !== null && $orgId !== null) {
+                $existing = $this->findByIdempotencyKey($orgId, $posting->idempotencyKey, lock: true);
+                if ($existing !== null) {
+                    return $existing; // Doppelbuchung verhindert
+                }
             }
+
+            try {
+                return StockMovement::query()->create([
+                    'organization_id' => $orgId,
+                    'article_variant_id' => $posting->variant->id,
+                    'warehouse_id' => $posting->warehouse->id,
+                    'stock_lot_id' => $posting->stockLotId,
+                    'stock_serial_id' => $posting->stockSerialId,
+                    'stock_state' => $posting->state->value,
+                    'ownership_type' => $posting->ownership->value,
+                    'owner_ref' => $posting->ownerRef,
+                    'movement_type' => $posting->type->value,
+                    'qty_base' => $posting->signedQty,
+                    'original_qty' => $posting->originalQty,
+                    'original_unit' => $posting->originalUnit,
+                    'occurred_at' => Carbon::now(),
+                    'actor_user_id' => $posting->actorUserId,
+                    'source_type' => $posting->source?->getMorphClass(),
+                    'source_id' => $posting->source?->getKey(),
+                    'idempotency_key' => $posting->idempotencyKey,
+                    'cost_unit' => $posting->costUnit,
+                    'cost_total' => $posting->costTotal,
+                    'currency' => $posting->currency,
+                ]);
+            } catch (QueryException $e) {
+                // Verlor das Rennen um den Unique-Index: bestehende Buchung
+                // idempotent zurückgeben statt mit 500 durchzuschlagen.
+                if ($posting->idempotencyKey !== null && $orgId !== null) {
+                    $existing = $this->findByIdempotencyKey($orgId, $posting->idempotencyKey, lock: false);
+                    if ($existing !== null) {
+                        return $existing;
+                    }
+                }
+                throw $e;
+            }
+        });
+    }
+
+    private function findByIdempotencyKey(int $orgId, string $key, bool $lock): ?StockMovement {
+        $query = StockMovement::query()
+            ->where('organization_id', $orgId)
+            ->where('idempotency_key', $key);
+        if ($lock) {
+            $query->lockForUpdate();
         }
 
-        return DB::transaction(fn (): StockMovement => StockMovement::query()->create([
-            'organization_id' => $orgId,
-            'article_variant_id' => $posting->variant->id,
-            'warehouse_id' => $posting->warehouse->id,
-            'stock_lot_id' => $posting->stockLotId,
-            'stock_serial_id' => $posting->stockSerialId,
-            'stock_state' => $posting->state->value,
-            'ownership_type' => $posting->ownership->value,
-            'owner_ref' => $posting->ownerRef,
-            'movement_type' => $posting->type->value,
-            'qty_base' => $posting->signedQty,
-            'original_qty' => $posting->originalQty,
-            'original_unit' => $posting->originalUnit,
-            'occurred_at' => Carbon::now(),
-            'actor_user_id' => $posting->actorUserId,
-            'source_type' => $posting->source?->getMorphClass(),
-            'source_id' => $posting->source?->getKey(),
-            'idempotency_key' => $posting->idempotencyKey,
-            'cost_unit' => $posting->costUnit,
-            'cost_total' => $posting->costTotal,
-            'currency' => $posting->currency,
-        ]));
+        /** @var StockMovement|null */
+        return $query->first();
     }
 
     /**
@@ -104,6 +130,38 @@ class InventoryLedger {
         return $result;
     }
 
+    /**
+     * Wie {@see available()}, sperrt aber die zugrunde liegenden Bewegungszeilen
+     * des Buckets (`SELECT … FOR UPDATE`). Nur innerhalb einer Transaktion sinnvoll:
+     * konkurrierende Abgänge/Reservierungen serialisieren so über denselben Bestand
+     * und können nicht beide gegen denselben Saldo buchen (kein Überverkauf).
+     *
+     * @return numeric-string
+     */
+    public function availableForUpdate(ArticleVariant $variant, Warehouse $warehouse): string {
+        $rows = StockMovement::query()
+            ->where('article_variant_id', $variant->id)
+            ->where('warehouse_id', $warehouse->id)
+            ->whereIn('stock_state', [
+                StockState::Physical->value,
+                StockState::Reserved->value,
+                StockState::Blocked->value,
+                StockState::Quality->value,
+            ])
+            ->lockForUpdate()
+            ->get(['stock_state', 'qty_base']);
+
+        $result = '0';
+        foreach ($rows as $row) {
+            $qty = $this->numeric((string) $row->qty_base);
+            $result = $row->stock_state === StockState::Physical
+                ? bcadd($result, $qty, self::SCALE)
+                : bcsub($result, $qty, self::SCALE);
+        }
+
+        return bcadd($result, '0', self::SCALE);
+    }
+
     // ── Semantische Buchungen ───────────────────────────────────────────
 
     public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
@@ -111,15 +169,21 @@ class InventoryLedger {
     }
 
     public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        $this->guardSufficient($variant, $warehouse, $qty, $allowNegative);
+        // Prüfung und Buchung in einer Transaktion: availableForUpdate() sperrt den
+        // Bestand, sodass parallele Abgänge nicht beide gegen denselben Saldo buchen.
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId): StockMovement {
+            $this->guardSufficient($variant, $warehouse, $qty, $allowNegative);
 
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, $this->negative($qty), StockMovementType::Issue, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+            return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, $this->negative($qty), StockMovementType::Issue, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+        });
     }
 
     public function reserve(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        $this->guardSufficient($variant, $warehouse, $qty, false);
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $idempotencyKey, $actorUserId): StockMovement {
+            $this->guardSufficient($variant, $warehouse, $qty, false);
 
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, $this->positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+            return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, $this->positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+        });
     }
 
     public function releaseReservation(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
@@ -139,7 +203,7 @@ class InventoryLedger {
         if ($allowNegative) {
             return;
         }
-        if (bccomp($this->available($variant, $warehouse), $this->positive($qty), self::SCALE) < 0) {
+        if (bccomp($this->availableForUpdate($variant, $warehouse), $this->positive($qty), self::SCALE) < 0) {
             throw new RuntimeException('Nicht genügend verfügbarer Bestand (negativer Bestand nicht freigegeben).');
         }
     }

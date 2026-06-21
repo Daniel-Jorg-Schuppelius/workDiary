@@ -37,7 +37,7 @@ class SaveSickLeaveRequest extends BaseFormRequest {
         $hasExisting = $route !== null && $route->attachments()->exists();
 
         return [
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'gte:start_date'],
             'kind' => ['required', Rule::enum(SickLeaveKind::class)],

@@ -13,10 +13,11 @@ namespace App\Http\Controllers\Admin\Access;
 use App\Enums\User\Permission as PermissionEnum;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
+use App\Enums\User\UserRole;
 use App\Models\{User, UserGroup};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 use Spatie\Permission\Models\{Permission, Role};
 
@@ -185,7 +186,7 @@ class UserGroupController extends Controller {
         Gate::authorize('update', $group);
 
         $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ]);
 
         /** @var User|null $user */
@@ -234,13 +235,25 @@ class UserGroupController extends Controller {
         $organization = $this->currentOrganization();
         $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
 
-        return Role::query()
+        $roles = Role::query()
             ->where(function ($q) use ($teamForeign, $organization): void {
                 $q->whereNull($teamForeign)
                     ->orWhere($teamForeign, $organization->id);
             })
             ->orderBy('name')
             ->get();
+
+        // Eskalationsschutz: Die globale System-Rolle "admin" (plattformweit, auch
+        // org-übergreifend) darf ein delegierter access.manage-Verwalter nicht über
+        // eine Gruppe vergeben — nur ein echter Plattform-Admin sieht sie hier.
+        $auth = Auth::user();
+        if (! ($auth instanceof User && $auth->isAdmin())) {
+            $roles = $roles->reject(
+                fn (Role $r): bool => $r->name === UserRole::Admin->value && $r->getAttribute($teamForeign) === null
+            )->values();
+        }
+
+        return $roles;
     }
 
     /**
@@ -258,6 +271,24 @@ class UserGroupController extends Controller {
                     ->orWhere($teamForeign, $organization->id);
             })
             ->get();
+
+        // Eskalationsschutz (analog MemberController): die globale "admin"-Rolle darf
+        // nur ein echter Plattform-Admin einer Gruppe zuweisen/entziehen. Hatte die
+        // Gruppe sie bereits, bleibt sie erhalten, damit ein Verwalter sie nicht
+        // versehentlich verliert.
+        $auth = Auth::user();
+        $adminRole = Role::query()->where('name', UserRole::Admin->value)->whereNull($teamForeign)->first();
+        if ($adminRole instanceof Role && ! ($auth instanceof User && $auth->isAdmin())) {
+            $validRoles = $validRoles->reject(fn (Role $r): bool => $r->is($adminRole));
+            $hadAdmin = DB::table(config('permission.table_names.model_has_roles', 'model_has_roles'))
+                ->where('role_id', $adminRole->id)
+                ->where('model_id', $group->getKey())
+                ->where('model_type', $group->getMorphClass())
+                ->exists();
+            if ($hadAdmin) {
+                $validRoles->push($adminRole);
+            }
+        }
 
         $group->syncRoles($validRoles);
 

@@ -81,7 +81,7 @@ class OpenIssueController extends Controller {
             'description' => ['nullable', 'string', 'max:10000'],
             'category' => ['nullable', 'string', 'max:40'],
             'severity' => ['nullable', 'string', 'in:' . implode(',', array_column(OpenIssueSeverity::cases(), 'value'))],
-            'assignee_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'due_at' => ['nullable', 'date'],
             'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(OpenIssueVisibility::cases(), 'value'))],
         ]);
@@ -155,7 +155,7 @@ class OpenIssueController extends Controller {
         Gate::authorize('assign', OpenIssue::class);
 
         $data = $request->validate([
-            'assignee_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ]);
 
         /** @var User $actor */

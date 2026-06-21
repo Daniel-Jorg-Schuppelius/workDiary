@@ -197,14 +197,14 @@ class CommunicationNoteController extends Controller {
             'result' => ['nullable', 'string', 'max:8000'],
             'next_action' => ['nullable', 'string', 'max:180'],
             'next_action_due_at' => ['nullable', 'date', 'required_with:next_action_user_id'],
-            'next_action_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'next_action_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(CommunicationVisibility::cases(), 'value'))],
             'confidential' => ['nullable', 'boolean'],
             'participants' => ['nullable', 'array', 'max:25'],
             'participants.*.name' => ['nullable', 'string', 'max:120'],
             'participants.*.role' => ['nullable', 'string', 'max:40'],
             'participants.*.party' => ['nullable', 'string', 'in:' . implode(',', array_column(ParticipantParty::cases(), 'value'))],
-            'participants.*.user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'participants.*.user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ];
 
         if ($includeNotable) {

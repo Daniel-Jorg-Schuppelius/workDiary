@@ -265,22 +265,4 @@ class ExpenseController extends Controller {
             'paymentMethods' => PaymentMethod::cases(),
         ];
     }
-
-    /**
-     * Vorrang: explizites ?from/?to im Request → globaler Header-Range.
-     *
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
-     */
-    private function resolveRange(Request $request): array {
-        if ($request->filled('from') && $request->filled('to')) {
-            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
-            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
-
-            return [$from, $to];
-        }
-
-        $range = $this->globalDateRange();
-
-        return [$range['from']->startOfDay(), $range['to']->endOfDay()];
-    }
 }

@@ -161,7 +161,7 @@ class VacationController extends Controller {
         ]);
 
         return $request->validate([
-            'user_id' => ['nullable', 'exists:users,id'],
+            'user_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization()],
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'gte:start_date'],
             'type' => ['required', Rule::enum(VacationType::class)->only([

@@ -99,7 +99,7 @@ class ChannelController extends Controller {
             'type' => ['required', 'in:channel,group'],
             'visibility' => ['required', 'in:public,private'],
             'members' => ['sometimes', 'array'],
-            'members.*' => ['integer', 'exists:users,id'],
+            'members.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization()],
         ]);
 
         $channel = Channel::create([
@@ -127,7 +127,7 @@ class ChannelController extends Controller {
     public function direct(Request $request): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
-        $data = $request->validate(['user_id' => ['required', 'integer', 'exists:users,id']]);
+        $data = $request->validate(['user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()]]);
         $other = (int) $data['user_id'];
         abort_if($other === $user->id, 422);
 
@@ -197,7 +197,7 @@ class ChannelController extends Controller {
         Gate::authorize('manageMembers', $channel);
         $data = $request->validate([
             'members' => ['required', 'array', 'min:1'],
-            'members.*' => ['integer', 'exists:users,id'],
+            'members.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization()],
         ]);
         foreach (array_unique($data['members']) as $memberId) {
             $channel->members()->syncWithoutDetaching([(int) $memberId => ['role' => 'member', 'joined_at' => now()]]);

@@ -113,7 +113,7 @@ class TimeExportController extends Controller {
             'month' => ['required', 'integer', 'between:1,12'],
             'profile' => ['required', 'string', 'in:' . implode(',', $profileKeys)],
             'scope' => ['required', 'string', 'in:organization,user'],
-            'scope_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'scope_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
         ]);
 
         $org = $user->organization;

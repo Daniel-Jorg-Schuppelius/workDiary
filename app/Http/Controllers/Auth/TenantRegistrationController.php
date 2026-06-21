@@ -55,6 +55,7 @@ class TenantRegistrationController extends Controller {
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
+                'is_new_system' => true,
             ]);
 
             // Owner setzen

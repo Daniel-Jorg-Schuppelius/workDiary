@@ -102,6 +102,7 @@ class OrgMemberController extends Controller {
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'must_change_password' => true,
+            'is_new_system' => true,
         ]);
         $this->fillUserPayrollFields($user, $data, $auth);
         $this->fillUserContactFields($user, $data);

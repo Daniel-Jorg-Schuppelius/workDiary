@@ -81,7 +81,7 @@ class InternalCaseController extends Controller {
     public function assign(Request $request, WhistleblowingCase $case, WhistleblowingAssignmentService $assignments): RedirectResponse {
         Gate::authorize('assign', $case);
         $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'role' => ['required', Rule::in(array_column(CaseRole::cases(), 'value'))],
         ]);
 
@@ -124,7 +124,7 @@ class InternalCaseController extends Controller {
     public function emergency(Request $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
         Gate::authorize('grantEmergency', $case);
         $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'reason' => ['required', 'string', 'max:2000'],
         ]);
 
@@ -138,7 +138,7 @@ class InternalCaseController extends Controller {
     public function subject(Request $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
         Gate::authorize('process', $case);
         $data = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
+            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'note' => ['nullable', 'string', 'max:2000'],
         ]);
 

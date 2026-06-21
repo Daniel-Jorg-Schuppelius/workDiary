@@ -210,22 +210,6 @@ class PerDiemTripController extends Controller {
             ->with('success', __('Verpflegungspauschale aus Fahrt erzeugt – bitte Mahlzeiten prüfen.'));
     }
 
-    /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
-     */
-    private function resolveRange(Request $request): array {
-        if ($request->filled('from') && $request->filled('to')) {
-            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
-            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
-
-            return [$from, $to];
-        }
-
-        $range = $this->globalDateRange();
-
-        return [$range['from']->startOfDay(), $range['to']->endOfDay()];
-    }
-
     /** @return array<string, mixed> */
     private function formData(): array {
         $userId = Auth::id();

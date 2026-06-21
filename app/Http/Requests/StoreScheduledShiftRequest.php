@@ -51,7 +51,7 @@ class StoreScheduledShiftRequest extends FormRequest {
         $opt = $partial ? ['sometimes', 'nullable'] : ['nullable'];
 
         return [
-            'user_id' => [...$req, 'integer', 'exists:users,id'],
+            'user_id' => [...$req, 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'shift_type_id' => [...$opt, 'integer', 'exists:shift_types,id'],
             'duty_plan_id' => [...$opt, 'integer', 'exists:duty_plans,id'],
             'date' => [...$req, 'date'],

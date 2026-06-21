@@ -98,7 +98,7 @@ class OnCallShiftController extends Controller {
         ]);
 
         return $request->validate([
-            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'start_at' => ['required', 'date'],
             'end_at' => ['required', 'date', 'after:start_at'],
             'note' => ['nullable', 'string', 'max:1000'],

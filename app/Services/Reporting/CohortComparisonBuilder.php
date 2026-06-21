@@ -53,6 +53,37 @@ class CohortComparisonBuilder {
         /** @var Collection<int, User> $users */
         $users = $qualification->users()->orderBy('name')->get(['users.id', 'users.name']);
 
+        // Erwerbsdaten je User sammeln und daraus das globale Datumsfenster
+        // aufspannen, um alle Zeitbuchungen der Kohorte in EINER Query zu laden
+        // (vormals zwei Queries je Mitarbeitendem → N+1).
+        $acquiredByUser = [];
+        foreach ($users as $user) {
+            $pivot = $user->getRelationValue('pivot');
+            $raw = $pivot !== null ? $pivot->getAttribute('valid_from') : null;
+            if ($raw !== null) {
+                $acquiredByUser[(int) $user->id] = CarbonImmutable::parse((string) $raw);
+            }
+        }
+
+        /** @var Collection<int, Collection<int, TimeEntry>> $entriesByUser */
+        $entriesByUser = collect();
+        if ($acquiredByUser !== []) {
+            $minDate = null;
+            $maxDate = null;
+            foreach ($acquiredByUser as $on) {
+                $lo = $on->subDays($windowDays);
+                $hi = $on->addDays($windowDays - 1);
+                $minDate = ($minDate === null || $lo->lt($minDate)) ? $lo : $minDate;
+                $maxDate = ($maxDate === null || $hi->gt($maxDate)) ? $hi : $maxDate;
+            }
+
+            $entriesByUser = TimeEntry::query()
+                ->whereIn('user_id', array_keys($acquiredByUser))
+                ->whereBetween('date', [$minDate->toDateString(), $maxDate->toDateString()])
+                ->get(['user_id', 'date', 'minutes', 'billable'])
+                ->groupBy(static fn (TimeEntry $e): int => (int) $e->user_id);
+        }
+
         $members = [];
         $beforeSum = 0.0;
         $afterSum = 0.0;
@@ -61,9 +92,7 @@ class CohortComparisonBuilder {
         $improved = 0;
 
         foreach ($users as $user) {
-            $pivot = $user->getRelationValue('pivot');
-            $acquiredRaw = $pivot !== null ? $pivot->getAttribute('valid_from') : null;
-            $acquiredOn = $acquiredRaw !== null ? CarbonImmutable::parse((string) $acquiredRaw) : null;
+            $acquiredOn = $acquiredByUser[(int) $user->id] ?? null;
 
             if ($acquiredOn === null) {
                 $withoutDate++;
@@ -82,8 +111,9 @@ class CohortComparisonBuilder {
                 continue;
             }
 
-            $beforeWindow = $this->aggregate((int) $user->id, $acquiredOn->subDays($windowDays), $acquiredOn->subDay(), $metric);
-            $afterWindow = $this->aggregate((int) $user->id, $acquiredOn, $acquiredOn->addDays($windowDays - 1), $metric);
+            $userEntries = $entriesByUser->get((int) $user->id, collect());
+            $beforeWindow = $this->aggregate($userEntries, $acquiredOn->subDays($windowDays), $acquiredOn->subDay(), $metric);
+            $afterWindow = $this->aggregate($userEntries, $acquiredOn, $acquiredOn->addDays($windowDays - 1), $metric);
 
             $before = $beforeWindow['value'];
             $after = $afterWindow['value'];
@@ -137,20 +167,24 @@ class CohortComparisonBuilder {
     /**
      * Berechnet die Kennzahl für einen Mitarbeitenden in einem Datumsfenster
      * aus denselben TimeEntry-Feldern wie der Wirtschaftlichkeits-Report.
+     * Filtert die bereits geladene Buchungsmenge in PHP nach Fenster, statt
+     * je Fenster erneut die DB abzufragen.
      *
+     * @param  Collection<int, TimeEntry>  $entries
      * @return array{value: float|null, minutes: int}
      */
-    private function aggregate(int $userId, CarbonImmutable $from, CarbonImmutable $to, string $metric): array {
-        /** @var Collection<int, TimeEntry> $entries */
-        $entries = TimeEntry::query()
-            ->where('user_id', $userId)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-            ->get(['minutes', 'billable']);
+    private function aggregate(Collection $entries, CarbonImmutable $from, CarbonImmutable $to, string $metric): array {
+        $fromStr = $from->toDateString();
+        $toStr = $to->toDateString();
 
         $total = 0;
         $billable = 0;
         $nonBillable = 0;
         foreach ($entries as $e) {
+            $dateStr = CarbonImmutable::parse((string) $e->date)->toDateString();
+            if ($dateStr < $fromStr || $dateStr > $toStr) {
+                continue; // außerhalb des Fensters
+            }
             $m = (int) $e->minutes;
             $total += $m;
             if ($e->billable) {

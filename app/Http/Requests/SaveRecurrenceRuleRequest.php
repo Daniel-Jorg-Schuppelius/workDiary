@@ -51,7 +51,7 @@ class SaveRecurrenceRuleRequest extends BaseFormRequest {
             'name' => ['required', 'string', 'max:160'],
             'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
             'entry_type_id' => ['nullable', 'integer', 'exists:entry_types,id'],
-            'assigned_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'assigned_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
 
             'title_template' => ['nullable', 'string', 'max:200'],
             'content_template' => ['required', 'string', 'max:65535'],

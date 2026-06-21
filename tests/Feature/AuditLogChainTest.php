@@ -75,6 +75,32 @@ class AuditLogChainTest extends TestCase {
         $this->assertSame(1, $this->runVerify(), 'Manipulation muss erkannt werden.');
     }
 
+    public function test_deleting_a_row_breaks_prev_hash_link(): void {
+        $this->makeEntry('created', 1);
+        $second = $this->makeEntry('updated', 1);
+        $this->makeEntry('deleted', 1);
+
+        $this->assertSame(0, $this->runVerify(), 'Unveränderte Kette ist gültig.');
+
+        // Mittlere Zeile unter Umgehung des Append-only-Guards entfernen: die
+        // dritte Zeile verweist nun per prev_hash ins Leere → prev_hash-Bruch
+        // (anderer Erkennungszweig als die Inhalts-Manipulation).
+        DB::table('audit_logs')->where('id', $second->id)->delete();
+
+        $this->assertSame(1, $this->runVerify(), 'Gelöschte Zeile muss die Kette brechen.');
+    }
+
+    public function test_verify_accepts_explicit_chain_option(): void {
+        $this->makeEntry('created', 1);
+
+        $this->assertSame(0, $this->artisan('audit:verify', ['--chain' => 'audit_logs'])->run());
+        $this->assertSame(
+            \Symfony\Component\Console\Command\Command::INVALID,
+            $this->artisan('audit:verify', ['--chain' => 'does_not_exist'])->run(),
+            'Unbekannte Kette wird als INVALID zurückgewiesen.',
+        );
+    }
+
     public function test_organization_audit_log_is_chained(): void {
         $a = OrganizationAuditLog::create([
             'organization_id' => 1,

@@ -158,13 +158,20 @@ class EconomicsReportBuilder {
 
         $customers = Customer::query()->orderBy('name')->get(['id', 'name']);
 
+        // Projekte (inkl. Budget-Felder) einmal laden und nach Kunde gruppieren,
+        // statt pro Kunde je drei Queries (Projekt-IDs + zwei Budget-Summen) zu
+        // feuern. Die Geld-Aggregate bleiben kundenweise, um die Semantik der
+        // Projekt-/Kundenfilter unverändert zu lassen.
+        $projectsByCustomer = Project::query()
+            ->get(['id', 'customer_id', 'time_budget', 'budget'])
+            ->groupBy(static fn (Project $p): int => (int) $p->customer_id);
+
         return array_values($customers
-            ->map(function (Customer $customer) use ($fromDate, $toDate): array {
-                $projectIds = array_values(Project::query()
-                    ->where('customer_id', $customer->id)
-                    ->pluck('id')
-                    ->map(static fn($v): int => (int) $v)
-                    ->all());
+            ->map(function (Customer $customer) use ($fromDate, $toDate, $projectsByCustomer): array {
+                /** @var \Illuminate\Support\Collection<int, Project> $customerProjects */
+                $customerProjects = $projectsByCustomer->get((int) $customer->id, collect());
+
+                $projectIds = $customerProjects->pluck('id')->map(static fn ($v): int => (int) $v)->all();
 
                 $time = $this->timeAggregate(
                     TimeEntry::query()
@@ -175,14 +182,8 @@ class EconomicsReportBuilder {
                 $material = $this->materialAggregate($fromDate, $toDate, projectIds: $projectIds);
                 $expense = $this->expenseAggregate($fromDate, $toDate, customerId: (int) $customer->id, projectIds: $projectIds);
 
-                $planMinutes = Project::query()
-                    ->where('customer_id', $customer->id)
-                    ->whereNotNull('time_budget')
-                    ->sum('time_budget');
-                $planBudget = Project::query()
-                    ->where('customer_id', $customer->id)
-                    ->whereNotNull('budget')
-                    ->sum('budget');
+                $planMinutes = $customerProjects->sum(static fn (Project $p): int => (int) $p->time_budget);
+                $planBudget = $customerProjects->sum(static fn (Project $p): float => (float) $p->budget);
 
                 $row = $this->composeRow(
                     $time,

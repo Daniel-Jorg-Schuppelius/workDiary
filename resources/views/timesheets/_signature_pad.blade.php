@@ -7,6 +7,15 @@
     nicht ins Leere läuft. requestAnimationFrame stellt sicher, dass offsetWidth > 0
     ist (Layout-Pass abgeschlossen). resize-Listener wird beim Alpine-destroy entfernt.
 --}}
+{{-- signature_pad ist aus dem globalen app.js-Bundle ausgelagert (eigenes
+     Lazy-Entry). Auf layoutbasierten Seiten (z. B. timesheets/show) hier über
+     den scripts-Stack nachladen; die öffentliche Signatur-Seite bindet
+     signature.js direkt im @vite-Aufruf ein. @once verhindert Doppel-Push. --}}
+@once
+    @push('scripts')
+        @vite('resources/js/signature.js')
+    @endpush
+@endonce
 <div x-data="signaturePad"
      data-name="{{ $timesheet->customer_name }}"
      data-role="{{ $timesheet->customer_role }}"

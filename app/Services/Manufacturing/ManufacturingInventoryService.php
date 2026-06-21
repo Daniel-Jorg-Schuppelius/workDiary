@@ -117,17 +117,22 @@ class ManufacturingInventoryService {
             throw new RuntimeException('Fertigerzeugnis ohne bestandsführende Variante.');
         }
 
-        $this->ledger->finishedGoodReceipt($variant, $warehouse, $this->positive($qty));
+        // Mengenbuchung und Seriennummern-Generierung gehören atomar zusammen:
+        // schlägt die Seriengenerierung fehl, darf die Gutmenge nicht eingebucht
+        // bleiben (sonst Bestand ohne zugehörige Seriennummern).
+        DB::transaction(function () use ($order, $variant, $warehouse, $qty): void {
+            $this->ledger->finishedGoodReceipt($variant, $warehouse, $this->positive($qty));
 
-        // Eigenfertigung: für seriennummernpflichtige Erzeugnisse je Stück eine
-        // Seriennummer erzeugen (E2). Greift nur bei ganzzahligen Stückmengen.
-        $article = $order->article;
-        if ($article instanceof Article && $article->serial_required) {
-            $count = (int) $this->positive($qty);
-            if ($count > 0) {
-                $this->serials->generate($variant, $count, $warehouse, $order, $order->created_by);
+            // Eigenfertigung: für seriennummernpflichtige Erzeugnisse je Stück eine
+            // Seriennummer erzeugen (E2). Greift nur bei ganzzahligen Stückmengen.
+            $article = $order->article;
+            if ($article instanceof Article && $article->serial_required) {
+                $count = (int) $this->positive($qty);
+                if ($count > 0) {
+                    $this->serials->generate($variant, $count, $warehouse, $order, $order->created_by);
+                }
             }
-        }
+        });
     }
 
     /** Löst die bestandsführende Variante auf: konkrete Variante oder Standard-/erste Variante des Artikels. */

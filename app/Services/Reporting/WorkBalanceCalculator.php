@@ -42,6 +42,18 @@ class WorkBalanceCalculator {
             ->whereDate('date', $dayStr)
             ->get();
 
+        return $this->computeDay($user, $day, $attendances, $entries);
+    }
+
+    /**
+     * Berechnet die Tagesbilanz aus bereits geladenen Attendances/TimeEntries.
+     * Ermöglicht {@see range()}, den gesamten Zeitraum mit zwei Queries zu laden
+     * (statt zwei pro Tag) und in PHP nach Datum zu gruppieren.
+     *
+     * @param  \Illuminate\Support\Collection<int, Attendance>  $attendances
+     * @param  \Illuminate\Support\Collection<int, TimeEntry>   $entries
+     */
+    protected function computeDay(User $user, CarbonInterface $day, $attendances, $entries): DailyBalance {
         $attendanceMinutes = 0;
         $breakMinutes = 0;
         foreach ($attendances as $a) {
@@ -101,8 +113,32 @@ class WorkBalanceCalculator {
         $byActivity = [];
         $byKind = [];
 
+        // Gesamten Zeitraum in zwei Queries laden und nach Datum gruppieren,
+        // statt pro Tag erneut die DB zu befragen (vormals N+1 über range()).
+        $fromStr = CarbonImmutable::parse($from->toDateString())->toDateString();
+        $toStr = CarbonImmutable::parse($to->toDateString())->toDateString();
+
+        $attendancesByDay = Attendance::query()
+            ->where('user_id', $user->id)
+            ->whereBetween('date', [$fromStr, $toStr])
+            ->where('status', '!=', AttendanceStatus::Cancelled->value)
+            ->get()
+            ->groupBy(fn (Attendance $a): string => CarbonImmutable::parse($a->date)->toDateString());
+
+        $entriesByDay = TimeEntry::query()
+            ->where('user_id', $user->id)
+            ->whereBetween('date', [$fromStr, $toStr])
+            ->get()
+            ->groupBy(fn (TimeEntry $e): string => CarbonImmutable::parse($e->date)->toDateString());
+
         for ($d = CarbonImmutable::parse($from->toDateString()); $d->lte($to); $d = $d->addDay()) {
-            $b = $this->daily($user, $d);
+            $dayStr = $d->toDateString();
+            $b = $this->computeDay(
+                $user,
+                $d,
+                $attendancesByDay->get($dayStr, collect()),
+                $entriesByDay->get($dayStr, collect()),
+            );
             $days[$b->date] = $b;
             $totalTarget += $b->targetMinutes;
             $totalAttendance += $b->attendanceMinutes;

@@ -55,6 +55,10 @@ class GoodsReceiptService {
         $organization = Organization::query()->find($order->organization_id);
 
         return DB::transaction(function () use ($line, $order, $variant, $warehouse, $qty, $cost, $organization, $actorUserId): StockMovement {
+            // Bestellzeile gesperrt neu laden: paralleler Wareneingang gegen dieselbe
+            // Zeile darf das read-modify-write von received_qty nicht überschreiben.
+            $line = PurchaseOrderLine::query()->lockForUpdate()->find($line->id) ?? $line;
+
             $movement = $organization instanceof Organization
                 ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $qty, (string) $cost, (string) $line->currency, $actorUserId, $line)
                 : $this->ledger->finishedGoodReceipt($variant, $warehouse, $qty);

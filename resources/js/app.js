@@ -6,7 +6,6 @@
 import Alpine from "alpinejs";
 import { registerAlpineComponents } from "./alpine/components.js";
 import flatpickr from "flatpickr";
-import SignaturePad from "signature_pad";
 import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
 import weekSelect from "flatpickr/dist/plugins/weekSelect/weekSelect.js";
@@ -30,7 +29,6 @@ if (typeof window !== "undefined") {
 }
 
 window.Alpine = Alpine;
-window.SignaturePad = SignaturePad;
 registerAlpineComponents(Alpine);
 Alpine.start();
 

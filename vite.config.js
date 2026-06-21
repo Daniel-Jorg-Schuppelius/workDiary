@@ -12,6 +12,7 @@ export default defineConfig({
                 "resources/js/map.js",
                 "resources/js/calendar.js",
                 "resources/js/chat.js",
+                "resources/js/signature.js",
             ],
             refresh: true,
         }),

@@ -244,7 +244,7 @@ class EventController extends Controller {
             'timezone' => ['nullable', 'string', 'max:64'],
             'status' => ['required', Rule::enum(EventStatus::class)],
             'visibility' => ['required', Rule::enum(EventVisibility::class)],
-            'responsible_user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'responsible_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
             'external_contact_note' => ['nullable', 'string', 'max:255'],
             'max_participants' => ['nullable', 'integer', 'min:1', 'max:9999'],

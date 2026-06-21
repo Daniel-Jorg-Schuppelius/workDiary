@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Diary\{Mode, Status as DiaryStatus};
 use App\Enums\Tour\TourStatus;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUser};
 use App\Http\Requests\SaveTourRequest;
 use App\Models\{Customer, DiaryEntry, Site, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
@@ -27,7 +27,7 @@ use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class TourController extends Controller {
-    use ResolvesGlobalDateRange;
+    use ResolvesGlobalDateRange, ResolvesRequestedUser;
 
     public function __construct(private readonly TourService $tours) {}
 
@@ -396,50 +396,13 @@ class TourController extends Controller {
         ]);
     }
 
-    /**
-     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
-     */
-    private function resolveRange(Request $request): array {
-        if ($request->filled('from') && $request->filled('to')) {
-            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
-            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
-
-            return [$from, $to];
-        }
-
-        $range = $this->globalDateRange();
-
-        return [$range['from']->startOfDay(), $range['to']->endOfDay()];
-    }
-
     private function resolveTargetUser(Request $request, User $authUser): ?User {
-        if (! $request->filled('user')) {
-            return $authUser;
-        }
-
-        $raw = (string) $request->query('user');
-        if ($raw === 'all') {
-            if (! $authUser->isAdmin()) {
-                throw new AccessDeniedHttpException('Nur Admins dürfen alle Touren einsehen.');
-            }
-
-            return null;
-        }
-
-        $requestedId = Sqid::decodeOrNumeric(User::class, $raw);
-        if ($requestedId === null || $requestedId === (int) $authUser->id) {
-            return $authUser;
-        }
-        if (! $authUser->isAdmin()) {
-            throw new AccessDeniedHttpException('Nur Admins dürfen fremde Touren einsehen.');
-        }
-
-        $target = User::query()->find($requestedId);
-        if (! $target instanceof User) {
-            throw new AccessDeniedHttpException('Nutzer nicht gefunden.');
-        }
-
-        return $target;
+        return $this->resolveRequestedUserOrAll(
+            $request,
+            $authUser,
+            'Nur Admins dürfen alle Touren einsehen.',
+            'Nur Admins dürfen fremde Touren einsehen.',
+        );
     }
 
     /** @return Collection<int, User> */

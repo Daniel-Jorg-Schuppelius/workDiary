@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
 
 /**
  * Resolves date hints for report controllers: query parameters take
@@ -24,6 +25,27 @@ trait ResolvesGlobalDateRange {
      */
     protected function globalDateRange(): array {
         return app(DateRangeContext::class)->current();
+    }
+
+    /**
+     * Effektiver [von, bis]-Zeitraum eines Listen-Requests: explizite
+     * from/to-Query-Parameter haben Vorrang (Bookmarks), sonst der global
+     * gewählte Zeitraum aus dem Header-Widget. Von startet am Tagesanfang,
+     * Bis endet am Tagesende.
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    protected function resolveRange(Request $request): array {
+        if ($request->filled('from') && $request->filled('to')) {
+            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
+            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
+
+            return [$from, $to];
+        }
+
+        $range = $this->globalDateRange();
+
+        return [$range['from']->startOfDay(), $range['to']->endOfDay()];
     }
 
     /**

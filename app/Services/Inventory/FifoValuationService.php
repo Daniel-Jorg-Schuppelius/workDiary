@@ -78,11 +78,13 @@ class FifoValuationService implements InventoryValuationStrategy {
     public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null): StockMovement {
         $qty = $this->positive($qty);
 
-        if (! $allowNegative && bccomp($this->ledger->available($variant, $warehouse), $qty, self::SCALE) < 0) {
-            throw new RuntimeException('Abgang übersteigt den verfügbaren Bestand.');
-        }
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $allowNegative, $actorUserId): StockMovement {
+            // Verfügbarkeit gesperrt und innerhalb der Transaktion prüfen, damit der
+            // Schichtverbrauch nicht gegen einen veralteten Saldo läuft.
+            if (! $allowNegative && bccomp($this->ledger->availableForUpdate($variant, $warehouse), $qty, self::SCALE) < 0) {
+                throw new RuntimeException('Abgang übersteigt den verfügbaren Bestand.');
+            }
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $actorUserId): StockMovement {
             $remaining = $qty;
             $costTotal = '0';
             $lastCost = '0';

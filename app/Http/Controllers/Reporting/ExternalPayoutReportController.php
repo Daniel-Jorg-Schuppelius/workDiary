@@ -68,7 +68,10 @@ class ExternalPayoutReportController extends Controller {
                     ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
                     ->sum('minutes');
                 $rate = (float) ($user->compensation_rate ?? 0);
-                $amount = $minutes / 60 * $rate;
+                // Auf 2 Dezimalstellen runden (Geldbetrag), damit die Summe der
+                // Zeilen mit dem ausgewiesenen Gesamtbetrag übereinstimmt und
+                // nicht durch akkumulierte Nachkommastellen abweicht.
+                $amount = round($minutes / 60 * $rate, 2);
                 $basis = __(':hours × :rate', [
                     'hours' => number_format($minutes / 60, 2, ',', '.') . ' h',
                     'rate' => number_format($rate, 2, ',', '.') . ' €',

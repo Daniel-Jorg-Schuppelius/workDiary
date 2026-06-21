@@ -440,6 +440,7 @@ class InstallationManager {
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
+                'is_new_system' => true,
             ]);
 
             if ($org->owner_id === null) {
@@ -475,7 +476,10 @@ class InstallationManager {
             }
 
             // Cast 'password' => 'hashed' übernimmt das Hashing beim Speichern.
+            // is_new_system aktivieren, damit der Login das neue bcrypt-Passwort
+            // prüft und nicht weiter auf das Legacy-Klartextpasswort zurückfällt.
             $user->password = $password;
+            $user->is_new_system = true;
             $user->save();
 
             if ($user->organization_id !== null) {
