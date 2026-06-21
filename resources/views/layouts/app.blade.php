@@ -1137,10 +1137,10 @@
                             @else
                                 <form method="POST" action="{{ route('attendance.clock-in') }}" class="leading-none">
                                     @csrf
-                                    <button type="submit" class="btn btn-xs btn-success gap-1" title="{{ __('Einstempeln') }}">
+                                    <x-button type="submit" tone="success" size="xs" class="gap-1" title="{{ __('Einstempeln') }}">
                                         <x-icon name="login" class="text-[1rem]" />
                                         <span class="hidden sm:inline">{{ __('Einstempeln') }}</span>
-                                    </button>
+                                    </x-button>
                                 </form>
                             @endif
                         @endisset
@@ -1191,13 +1191,13 @@
                                 <div tabindex="0" class="dropdown-content header-dropdown-panel z-50 mt-2 w-[min(20rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-0 shadow-lg overflow-hidden">
                                     <div class="px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2">
                                         <span class="text-xs uppercase tracking-wider opacity-60">{{ __('Lesezeichen') }}</span>
-                                        <a href="{{ route('bookmarks.create') }}?url={{ urlencode(request()->fullUrl()) }}"
+                                        <x-button href="{{ route('bookmarks.create') }}?url={{ urlencode(request()->fullUrl()) }}"
                                            data-entry-modal-trigger
-                                           class="btn btn-xs btn-ghost"
+                                           tone="ghost" size="xs"
                                            title="{{ __('Diese Seite merken') }}">
                                             <x-icon name="add" class="text-sm" />
                                             <span>{{ __('Merken') }}</span>
-                                        </a>
+                                        </x-button>
                                     </div>
                                     <div class="max-h-96 overflow-y-auto">
                                         @forelse ($_bookmarks as $_bm)
@@ -1244,10 +1244,10 @@
                                         @if ($_notifUnread > 0)
                                             <form method="POST" action="{{ route('notifications.readAll') }}">
                                                 @csrf
-                                                <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('notification.action.mark_all_read') }}">
+                                                <x-button type="submit" tone="ghost" size="xs" title="{{ __('notification.action.mark_all_read') }}">
                                                     <x-icon name="done_all" class="text-sm" />
                                                     <span>{{ __('notification.action.mark_all_read') }}</span>
-                                                </button>
+                                                </x-button>
                                             </form>
                                         @endif
                                     </div>
@@ -1460,7 +1460,7 @@
                                 <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
                             </button>
                             <x-locale-switcher />
-                            <a href="{{ route('login') }}" class="btn btn-sm btn-primary">⇢ {{ __('Anmelden') }}</a>
+                            <x-button href="{{ route('login') }}" tone="primary" size="sm">⇢ {{ __('Anmelden') }}</x-button>
                         </div>
                     @endauth
                 </div>
@@ -1929,12 +1929,8 @@
             <p id="action-confirm-message" class="text-sm text-base-content/75">{{ __('Möchtest du diese Aktion wirklich ausführen?') }}</p>
 
             <x-slot:actions>
-                <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
-                    <x-icon name="close" /> {{ __('Abbrechen') }}
-                </button>
-                <button id="action-confirm-submit" type="button" class="btn btn-error gap-2">
-                    <x-icon name="check" /> {{ __('Ausführen') }}
-                </button>
+                <x-button type="button" tone="ghost" class="gap-2" data-entry-modal-close icon="close">{{ __('Abbrechen') }}</x-button>
+                <x-button id="action-confirm-submit" type="button" tone="error" class="gap-2" icon="check">{{ __('Ausführen') }}</x-button>
             </x-slot:actions>
         </x-modal>
 
@@ -1951,9 +1947,7 @@
             <p id="action-notify-message" class="whitespace-pre-line text-sm text-base-content/80"></p>
 
             <x-slot:actions>
-                <button id="action-notify-ok" type="button" class="btn btn-primary gap-2" data-entry-modal-close>
-                    <x-icon name="check" /> {{ __('OK') }}
-                </button>
+                <x-button id="action-notify-ok" type="button" tone="primary" class="gap-2" data-entry-modal-close icon="check">{{ __('OK') }}</x-button>
             </x-slot:actions>
         </x-modal>
 

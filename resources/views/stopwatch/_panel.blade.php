@@ -9,7 +9,7 @@
             <div class="mt-1 text-xs text-base-content/60">{{ $current->description ?: __('Läuft…') }}</div>
             <form method="POST" action="{{ route('stopwatch.stop') }}" class="mt-2">
                 @csrf
-                <button class="btn btn-sm btn-error">{{ __('Stoppen') }}</button>
+                <x-button tone="error" size="sm">{{ __('Stoppen') }}</x-button>
             </form>
         </div>
     @else

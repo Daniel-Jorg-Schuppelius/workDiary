@@ -58,9 +58,9 @@
                            class="input input-bordered w-full" />
                 </x-form-group>
                 <div class="md:col-span-4 flex justify-end">
-                    <button type="submit" class="btn btn-primary btn-sm">
+                    <x-button type="submit" tone="primary">
                         {{ __('flex.eligibility.form.submit') }}
-                    </button>
+                    </x-button>
                 </div>
             </form>
         </div>
@@ -92,11 +92,8 @@
                             @csrf @method('PUT')
                             <input type="hidden" name="valid_to" value="{{ now()->toDateString() }}" />
                             <input type="hidden" name="note" value="{{ $period->note }}" />
-                            <button type="submit" class="btn btn-xs btn-ghost"
-                                    title="{{ __('flex.eligibility.form.end_today') }}">
-                                <x-icon name="event_busy" />
-                                {{ __('flex.eligibility.form.end_submit') }}
-                            </button>
+                            <x-button type="submit" tone="ghost" size="xs"
+                                    title="{{ __('flex.eligibility.form.end_today') }}" icon="event_busy">{{ __('flex.eligibility.form.end_submit') }}</x-button>
                         </form>
                     @endif
 

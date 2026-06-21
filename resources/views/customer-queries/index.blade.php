@@ -62,11 +62,11 @@
                                     <label class="label py-0"><span class="label-text text-xs">{{ __('customer-query.answer') }}</span></label>
                                     <textarea name="answer" class="textarea textarea-sm textarea-bordered" rows="2" required minlength="2" maxlength="5000">{{ old('answer') }}</textarea>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-primary">{{ __('customer-query.answerSubmit') }}</button>
+                                <x-button type="submit" size="sm" tone="primary">{{ __('customer-query.answerSubmit') }}</x-button>
                             </form>
                             <form method="POST" action="{{ route('customer-queries.close', $query) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-sm btn-ghost">{{ __('customer-query.close') }}</button>
+                                <x-button type="submit" size="sm" tone="ghost">{{ __('customer-query.close') }}</x-button>
                             </form>
                         </div>
                     @endif

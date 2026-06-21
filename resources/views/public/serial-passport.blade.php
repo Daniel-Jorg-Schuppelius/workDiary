@@ -17,7 +17,7 @@
                 <input name="serial" value="{{ $query }}" autofocus
                        placeholder="{{ __('inventory.serial.verify.placeholder') }}"
                        class="input input-bordered w-full font-mono">
-                <button type="submit" class="btn btn-primary">{{ __('inventory.serial.action.search') }}</button>
+                <x-button type="submit" tone="primary">{{ __('inventory.serial.action.search') }}</x-button>
             </form>
         </div>
     </div>

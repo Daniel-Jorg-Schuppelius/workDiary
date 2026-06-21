@@ -99,12 +99,14 @@
                             </p>
                         </div>
 
-                        <button
+                        <x-button
                             type="submit"
-                            class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold"
+                            tone="primary"
+                            size="md"
+                            class="w-full rounded-2xl font-['Space_Grotesk'] font-semibold"
                         >
                             ⇢ {{ __('Lizenz aktivieren') }}
-                        </button>
+                        </x-button>
                     </form>
                 </div>
 

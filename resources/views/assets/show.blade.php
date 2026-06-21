@@ -288,22 +288,16 @@
                                         @if ($canManageMaintenance)
                                             <div class="join">
                                                 <x-action-form :action="route('assets.maintenance-plans.complete', [$asset, $plan])" class="join-item">
-                                                    <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('Erledigt') }}">
-                                                        <x-icon name="check" />
-                                                    </button>
+                                                    <x-icon-btn type="submit" tone="ghost" size="xs" icon="check" :label="__('Erledigt')" />
                                                 </x-action-form>
                                                 <x-action-form :action="route('assets.maintenance-plans.toggle', [$asset, $plan])" class="join-item">
-                                                    <button type="submit" class="btn btn-xs btn-ghost" title="{{ $plan->is_active ? __('Pausieren') : __('Reaktivieren') }}">
-                                                        <x-icon :name="$plan->is_active ? 'pause' : 'play_arrow'" />
-                                                    </button>
+                                                    <x-icon-btn type="submit" tone="ghost" size="xs" :icon="$plan->is_active ? 'pause' : 'play_arrow'" :label="$plan->is_active ? __('Pausieren') : __('Reaktivieren')" />
                                                 </x-action-form>
                                                 <x-action-form :action="route('assets.maintenance-plans.destroy', [$asset, $plan])" class="join-item"
                                                       method="DELETE"
                                                       :confirm="__('Plan wirklich löschen?')"
                                                       :confirm-label="__('Löschen')">
-                                                    <button type="submit" class="btn btn-xs btn-ghost text-error" title="{{ __('Löschen') }}">
-                                                        <x-icon name="delete" />
-                                                    </button>
+                                                    <x-icon-btn type="submit" tone="error" size="xs" icon="delete" :label="__('Löschen')" />
                                                 </x-action-form>
                                             </div>
                                         @endif
@@ -457,7 +451,7 @@
                                                     @if ($defect->status === \App\Enums\Asset\DefectStatus::Open)
                                                         <x-action-form :action="route('assets.defects.transition', [$asset, $defect])" class="join-item">
                                                             <input type="hidden" name="action" value="inRepair" />
-                                                            <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('In Reparatur') }}"><x-icon name="build" /></button>
+                                                            <x-icon-btn type="submit" tone="ghost" size="xs" icon="build" :label="__('In Reparatur')" />
                                                         </x-action-form>
                                                     @endif
                                                     <a class="btn btn-xs btn-ghost text-success join-item" title="{{ __('Erledigen') }}"

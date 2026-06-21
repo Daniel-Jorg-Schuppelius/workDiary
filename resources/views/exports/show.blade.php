@@ -84,10 +84,7 @@
                         <textarea name="note" maxlength="2000" rows="2"
                                   class="textarea textarea-bordered w-full text-sm"
                                   placeholder="{{ __('Vermerk (optional)') }}"></textarea>
-                        <button type="submit" class="btn btn-sm btn-success w-full">
-                            <span class="material-symbols-outlined text-base">send</span>
-                            {{ __('Als übermittelt markieren') }}
-                        </button>
+                        <x-button type="submit" tone="success" class="w-full" icon="send">{{ __('Als übermittelt markieren') }}</x-button>
                     </form>
                 @endcan
 
@@ -97,10 +94,7 @@
                         <textarea name="note" required minlength="5" maxlength="2000" rows="2"
                                   class="textarea textarea-bordered w-full text-sm"
                                   placeholder="{{ __('Ablehnungsgrund (Pflicht)') }}"></textarea>
-                        <button type="submit" class="btn btn-sm btn-warning w-full">
-                            <span class="material-symbols-outlined text-base">block</span>
-                            {{ __('Export ablehnen') }}
-                        </button>
+                        <x-button type="submit" tone="warning" class="w-full" icon="block">{{ __('Export ablehnen') }}</x-button>
                     </form>
                 @endcan
 

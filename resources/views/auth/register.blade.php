@@ -32,7 +32,7 @@
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
-                    <a href="{{ route('login') }}" class="btn btn-sm btn-ghost">{{ __('Anmelden') }}</a>
+                    <x-button href="{{ route('login') }}" tone="ghost" size="sm">{{ __('Anmelden') }}</x-button>
                 </div>
             </div>
         </header>
@@ -135,12 +135,13 @@
                             >
                         </div>
 
-                        <button
+                        <x-button
                             type="submit"
-                            class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold"
+                            tone="primary"
+                            class="w-full rounded-2xl font-['Space_Grotesk'] font-semibold"
                         >
                             ⇢ {{ __('Organisation anlegen') }}
-                        </button>
+                        </x-button>
                     </form>
                 </div>
 

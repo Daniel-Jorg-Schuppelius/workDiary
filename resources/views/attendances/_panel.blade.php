@@ -31,9 +31,7 @@
                         <span class="join-item flex h-7 items-center border border-base-300 bg-base-200 px-2 text-xs text-base-content/60">{{ __('Pause') }}</span>
                         <input type="number" name="break_minutes" min="0" max="600" value="0" class="input input-bordered input-xs join-item h-7 min-h-7 w-16 px-2 text-right tabular-nums" aria-label="{{ __('Pause (Min.)') }}">
                     </div>
-                    <button type="submit" class="btn btn-xs btn-warning h-7 min-h-7 gap-1 px-2">
-                        <x-icon name="logout" /> {{ __('Ausstempeln') }}
-                    </button>
+                    <x-button type="submit" tone="warning" size="xs" class="h-7 min-h-7 gap-1 px-2" icon="logout">{{ __('Ausstempeln') }}</x-button>
                 </form>
 
                 <form method="POST" action="{{ route('attendance.cancel') }}" class="leading-none">
@@ -47,9 +45,9 @@
     @else
         <form method="POST" action="{{ route('attendance.clock-in') }}" class="mt-2 flex justify-end leading-none">
             @csrf
-            <button type="submit" class="btn btn-xs btn-success h-7 min-h-7 gap-1 px-2" title="{{ __('Einstempeln') }}">
+            <x-button type="submit" tone="success" size="xs" class="h-7 min-h-7 gap-1 px-2" title="{{ __('Einstempeln') }}">
                 <x-icon name="login" class="text-[0.95rem]" /> {{ __('Einstempeln') }}
-            </button>
+            </x-button>
         </form>
     @endif
 </div>

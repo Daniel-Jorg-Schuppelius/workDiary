@@ -23,12 +23,12 @@
     <div class="flex flex-wrap items-center gap-2">
         <x-status-badge tone="neutral" size="md" class="mr-1">{{ __('Archiv') }}</x-status-badge>
 
-        <a href="{{ route('legacy.archive.week', ['week' => $weekOffset - 1]) }}"
-           class="btn btn-sm btn-ghost" title="{{ __('1 Woche zurück') }}">«</a>
-        <a href="{{ route('legacy.archive.week') }}"
-           class="btn btn-sm btn-outline">{{ __('Heute') }}</a>
-        <a href="{{ route('legacy.archive.week', ['week' => $weekOffset + 1]) }}"
-           class="btn btn-sm btn-ghost" title="{{ __('1 Woche vor') }}">»</a>
+        <x-button href="{{ route('legacy.archive.week', ['week' => $weekOffset - 1]) }}"
+           tone="ghost" size="sm" title="{{ __('1 Woche zurück') }}">«</x-button>
+        <x-button href="{{ route('legacy.archive.week') }}"
+           tone="outline" size="sm">{{ __('Heute') }}</x-button>
+        <x-button href="{{ route('legacy.archive.week', ['week' => $weekOffset + 1]) }}"
+           tone="ghost" size="sm" title="{{ __('1 Woche vor') }}">»</x-button>
 
         <form method="GET" action="{{ route('legacy.archive.week') }}" class="flex items-center gap-2 ml-2">
             <input type="week" name="week_date" value="{{ $selectedWeek ?? $monday->format('o-\\WW') }}"
@@ -44,8 +44,8 @@
 
     <div class="flex flex-wrap items-center gap-3">
         {{-- Cross-Links --}}
-        <a href="{{ route('legacy.archive.index') }}" class="btn btn-sm btn-ghost">{{ __('Archivliste') }}</a>
-        <a href="{{ route('legacy.diary.week', ['week_date' => $selectedWeek ?? $monday->format('o-\\WW')]) }}" class="btn btn-sm btn-ghost">{{ __('Aktive Wochenansicht') }}</a>
+        <x-button href="{{ route('legacy.archive.index') }}" tone="ghost" size="sm">{{ __('Archivliste') }}</x-button>
+        <x-button href="{{ route('legacy.diary.week', ['week_date' => $selectedWeek ?? $monday->format('o-\\WW')]) }}" tone="ghost" size="sm">{{ __('Aktive Wochenansicht') }}</x-button>
 
         {{-- Legende --}}
         <div class="flex flex-wrap items-center gap-3 text-xs text-base-content/60">

@@ -11,9 +11,7 @@
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="__('Reihenfolge per Pfeil-Buttons ändern und Widgets ein- oder ausblenden.')">
                 <x-slot:actions>
-                    <a href="{{ route('dashboard') }}" class="btn btn-sm btn-ghost">
-                        <x-icon name="arrow_back" /> {{ __('Zurück zum Dashboard') }}
-                    </a>
+                    <x-button href="{{ route('dashboard') }}" tone="ghost" size="sm" icon="arrow_back">{{ __('Zurück zum Dashboard') }}</x-button>
                 </x-slot:actions>
             </x-page-toolbar>
         </x-slot:toolbar>
@@ -30,12 +28,8 @@
                     @foreach ($items as $idx => $item)
                         <li class="flex items-center gap-3 p-3" data-widget-key="{{ $item['key'] }}">
                             <div class="flex flex-col gap-1">
-                                <button type="button" class="btn btn-xs btn-ghost widget-move-up" aria-label="{{ __('Nach oben') }}">
-                                    <x-icon name="keyboard_arrow_up" />
-                                </button>
-                                <button type="button" class="btn btn-xs btn-ghost widget-move-down" aria-label="{{ __('Nach unten') }}">
-                                    <x-icon name="keyboard_arrow_down" />
-                                </button>
+                                <x-icon-btn type="button" tone="ghost" size="xs" icon="keyboard_arrow_up" :label="__('Nach oben')" class="widget-move-up" />
+                                <x-icon-btn type="button" tone="ghost" size="xs" icon="keyboard_arrow_down" :label="__('Nach unten')" class="widget-move-down" />
                             </div>
                             <span class="material-symbols-outlined text-base-content/70" aria-hidden="true">{{ $item['icon'] }}</span>
                             <span class="flex-1 font-semibold">{{ $item['label'] }}</span>
@@ -52,9 +46,7 @@
             </x-card>
 
             <div class="mt-4 flex justify-end">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <x-icon name="save" /> {{ __('Speichern') }}
-                </button>
+                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
             </div>
         </form>
     </x-page-shell>

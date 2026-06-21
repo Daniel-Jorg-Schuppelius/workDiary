@@ -43,10 +43,7 @@
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
-                    <a href="{{ route('login') }}" class="btn btn-sm btn-ghost gap-1">
-                        <x-icon name="login" />
-                        <span>{{ __('Anmelden') }}</span>
-                    </a>
+                    <x-button href="{{ route('login') }}" tone="ghost" size="sm" class="gap-1" icon="login">{{ __('Anmelden') }}</x-button>
                 </div>
             </div>
         </header>
@@ -75,9 +72,9 @@
                                    placeholder="{{ __('name@firma.de') }}">
                             @error('email')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror
                         </div>
-                        <button type="submit" class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
+                        <x-button type="submit" tone="primary" class="w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
                             ⇢ {{ __('Link senden') }}
-                        </button>
+                        </x-button>
                     </form>
                 </div>
 

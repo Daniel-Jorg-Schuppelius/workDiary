@@ -12,10 +12,7 @@
         @if (! $error->isAcknowledged())
             <form method="POST" action="{{ route('admin.plugin-errors.acknowledge', $error) }}">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-primary">
-                    <span class="material-symbols-outlined" aria-hidden="true">done</span>
-                    <span>{{ __('Als gesehen markieren') }}</span>
-                </button>
+                <x-button type="submit" tone="primary" size="sm" icon="done">{{ __('Als gesehen markieren') }}</x-button>
             </form>
         @endif
     </x-slot:actions>

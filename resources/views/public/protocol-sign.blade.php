@@ -32,6 +32,7 @@
     @if($protocol->items->isNotEmpty())
         <div class="mb-4 rounded-box bg-base-100 p-4 shadow">
             <h2 class="mb-2 text-sm font-semibold">{{ __('protocol.pdf.items') }}</h2>
+            <div class="overflow-x-auto">
             <table class="table table-sm">
                 <thead><tr><th>#</th><th>{{ __('protocol.pdf.col.label') }}</th><th>{{ __('protocol.pdf.col.result') }}</th></tr></thead>
                 <tbody>
@@ -44,6 +45,7 @@
                 @endforeach
                 </tbody>
             </table>
+            </div>
         </div>
     @endif
 
@@ -65,7 +67,7 @@
             <span class="label-text">{{ __('Ich bestätige die Richtigkeit der Angaben.') }}</span>
         </label>
         <div class="mt-4 flex justify-end">
-            <button type="submit" class="btn btn-primary">{{ __('Unterschreiben') }}</button>
+            <x-button type="submit" tone="primary">{{ __('Unterschreiben') }}</x-button>
         </div>
     </form>
 
@@ -87,7 +89,7 @@
             <textarea name="issues[]" class="textarea textarea-bordered mt-2" rows="2" maxlength="200"></textarea>
         </div>
         <div class="mt-4 flex justify-end">
-            <button type="submit" class="btn btn-outline btn-error">{{ __('protocol.signature.rejectSubmit') }}</button>
+            <x-button type="submit" tone="error" class="btn-outline">{{ __('protocol.signature.rejectSubmit') }}</x-button>
         </div>
     </form>
     @endif
@@ -104,7 +106,7 @@
             <textarea name="question" class="textarea textarea-bordered" rows="3" required minlength="3" maxlength="2000">{{ old('question') }}</textarea>
         </div>
         <div class="mt-4 flex justify-end">
-            <button type="submit" class="btn btn-secondary">{{ __('protocol.signature.querySubmit') }}</button>
+            <x-button type="submit" tone="secondary">{{ __('protocol.signature.querySubmit') }}</x-button>
         </div>
     </form>
 

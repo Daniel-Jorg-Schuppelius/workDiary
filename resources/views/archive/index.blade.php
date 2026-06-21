@@ -323,9 +323,12 @@ use App\Enums\Vacation\VacationType;
                     <p class="mb-3 text-sm text-base-content/70">
                         {{ __('Archiviert alle erledigten Auftragsbucheinträge und abgelaufenen Dienste, die älter als :days Tage sind.', ['days' => config('archive.threshold_days', 30)]) }}
                     </p>
-                    <button type="submit" class="btn btn-warning btn-sm"
-                            data-confirm-dialog
-                            data-confirm-title="{{ __('Archivierung starten') }}"
+                    <x-button type="submit" tone="warning" size="sm"
+                              data-confirm-dialog
+                              data-confirm-title="{{ __('Archivierung starten') }}"
+                              data-confirm-message="{{ __('Archivierung jetzt ausführen?') }}">
+                        {{ __('Archivierung starten') }}
+                    </x-button>
                 </form>
             </details>
         @endif

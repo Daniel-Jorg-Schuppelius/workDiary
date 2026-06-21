@@ -6,7 +6,7 @@
 <div class="w-full px-4 py-8">
 
     <div class="mb-4 flex items-center gap-3">
-        <a href="{{ route('schedule.import') }}" class="btn btn-sm btn-ghost">← {{ __('Zurück') }}</a>
+        <x-button :href="route('schedule.import')" tone="ghost">← {{ __('Zurück') }}</x-button>
     </div>
 
     {{-- ── File info ── --}}

@@ -43,10 +43,7 @@
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="text-base leading-none">◐</span>
                     </button>
-                    <a href="{{ route('login') }}" class="btn btn-sm btn-ghost gap-1">
-                        <x-icon name="login" />
-                        <span>{{ __('Anmelden') }}</span>
-                    </a>
+                    <x-button href="{{ route('login') }}" tone="ghost" size="sm" class="gap-1" icon="login">{{ __('Anmelden') }}</x-button>
                 </div>
             </div>
         </header>
@@ -86,9 +83,9 @@
                                    class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25">
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
+                        <x-button type="submit" tone="primary" class="w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
                             ⇢ {{ __('Passwort speichern') }}
-                        </button>
+                        </x-button>
                     </form>
                 </div>
             </div>

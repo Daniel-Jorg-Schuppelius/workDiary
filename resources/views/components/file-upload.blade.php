@@ -64,10 +64,9 @@
                 />
 
                 <div class="wd-file-upload__actions">
-                    <button type="submit" class="btn btn-primary btn-sm" x-bind:disabled="hasNoFile">
-                        <x-icon name="upload" />
-                        <span>{{ __('Hochladen') }}</span>
-                    </button>
+                    <x-button type="submit" tone="primary" size="sm" icon="upload" x-bind:disabled="hasNoFile">
+                        {{ __('Hochladen') }}
+                    </x-button>
                     <template x-if="fileName">
                         <span class="wd-file-upload__meta" x-text="fileLabel"></span>
                     </template>
@@ -82,10 +81,9 @@
                       confirm-icon="delete"
                       confirm-tone="error"
                       :confirm-label="__('Entfernen')">
-                    <button type="submit" class="btn btn-ghost btn-sm text-error">
-                        <x-icon name="delete" />
-                        <span>{{ __('Entfernen') }}</span>
-                    </button>
+                    <x-button type="submit" tone="ghost" size="sm" icon="delete" class="text-error">
+                        {{ __('Entfernen') }}
+                    </x-button>
                 </x-action-form>
             @endif
 

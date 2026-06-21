@@ -179,10 +179,7 @@
         </x-form-group>
 
         <div class="flex justify-end gap-2">
-            <button type="submit" class="btn btn-primary">
-                <x-icon name="save" />
-                {{ __('Speichern') }}
-            </button>
+            <x-button type="submit" tone="primary" size="md" icon="save">{{ __('Speichern') }}</x-button>
         </div>
     </form>
 </x-page-shell>

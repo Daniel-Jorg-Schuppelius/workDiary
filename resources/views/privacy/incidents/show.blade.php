@@ -78,7 +78,7 @@
                             @csrf
                             <label class="fieldset-label">{{ __('Verantwortlichen/Kunden informiert am') }}</label>
                             <input type="datetime-local" name="notified_at" class="input input-sm input-bordered w-full">
-                            <button class="btn btn-sm btn-primary w-full">{{ __('Als informiert vermerken') }}</button>
+                            <x-button tone="primary" type="submit" class="w-full">{{ __('Als informiert vermerken') }}</x-button>
                             <p class="text-xs text-base-content/60">{{ __('Die Behördenmeldung obliegt dem Verantwortlichen (Kunden).') }}</p>
                         </form>
                     @else
@@ -93,7 +93,7 @@
                         <form method="post" action="{{ route('dataprotection.incidents.close', $incident) }}" class="space-y-1 border-t border-base-300 pt-2">
                             @csrf
                             <textarea name="lessons" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Lessons Learned') }}"></textarea>
-                            <button class="btn btn-sm btn-primary w-full">{{ __('Abschließen') }}</button>
+                            <x-button tone="primary" type="submit" class="w-full">{{ __('Abschließen') }}</x-button>
                         </form>
                     @endif
                 </x-card>
@@ -188,7 +188,7 @@
                         <x-input-field name="reported_at" type="datetime-local" :label="__('Gemeldet am')" class="input-sm" />
                         <x-input-field name="report_reference" :label="__('Meldekennung / Bestätigungs-ID')" maxlength="255" class="input-sm" />
                         <x-input-field name="case_number" :label="__('Behördliches Aktenzeichen')" maxlength="255" class="input-sm" />
-                        <button class="btn btn-sm btn-primary md:col-span-2">{{ __('Behördenmeldung dokumentieren') }}</button>
+                        <x-button tone="primary" type="submit" class="md:col-span-2">{{ __('Behördenmeldung dokumentieren') }}</x-button>
                     </form>
                 @endcan
             </x-card>
@@ -199,10 +199,10 @@
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Meldungsentwürfe') }}</h2>
             <p class="text-xs text-base-content/60">{{ __('Vorbereitete Entwürfe – werden NICHT automatisch versendet.') }}</p>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('dataprotection.incidents.draft', [$incident, 'authority']) }}" class="btn btn-sm btn-outline">{{ __('Art. 33 TXT') }}</a>
-                <a href="{{ route('dataprotection.incidents.draft', [$incident, 'authority', 'format' => 'pdf']) }}" class="btn btn-sm btn-outline">{{ __('Art. 33 PDF') }}</a>
-                <a href="{{ route('dataprotection.incidents.draft', [$incident, 'subjects']) }}" class="btn btn-sm btn-outline">{{ __('Art. 34 TXT') }}</a>
-                <a href="{{ route('dataprotection.incidents.draft', [$incident, 'subjects', 'format' => 'pdf']) }}" class="btn btn-sm btn-outline">{{ __('Art. 34 PDF') }}</a>
+                <x-button tone="outline" :href="route('dataprotection.incidents.draft', [$incident, 'authority'])">{{ __('Art. 33 TXT') }}</x-button>
+                <x-button tone="outline" :href="route('dataprotection.incidents.draft', [$incident, 'authority', 'format' => 'pdf'])">{{ __('Art. 33 PDF') }}</x-button>
+                <x-button tone="outline" :href="route('dataprotection.incidents.draft', [$incident, 'subjects'])">{{ __('Art. 34 TXT') }}</x-button>
+                <x-button tone="outline" :href="route('dataprotection.incidents.draft', [$incident, 'subjects', 'format' => 'pdf'])">{{ __('Art. 34 PDF') }}</x-button>
             </div>
         </x-card>
 

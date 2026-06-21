@@ -46,9 +46,7 @@
                                     <form method="POST" action="{{ route('filter-presets.destroy', $preset) }}" class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-ghost btn-xs" data-confirm-dialog data-confirm-message="{{ __('Wirklich löschen?') }}">
-                                            <x-icon name="delete" /> {{ __('Löschen') }}
-                                        </button>
+                                        <x-button type="submit" tone="ghost" size="xs" data-confirm-dialog data-confirm-message="{{ __('Wirklich löschen?') }}" icon="delete">{{ __('Löschen') }}</x-button>
                                     </form>
                                 </td>
                             </tr>

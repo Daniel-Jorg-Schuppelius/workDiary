@@ -95,9 +95,9 @@
                                                       class="textarea textarea-bordered w-full"
                                                       placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
                                             <div class="modal-action">
-                                                <button type="button" class="btn btn-sm btn-ghost"
-                                                        onclick="document.getElementById('reject-{{ $c->id }}').close()">{{ __('Abbrechen') }}</button>
-                                                <button type="submit" class="btn btn-sm btn-warning">{{ __('Ablehnen') }}</button>
+                                                <x-button type="button" tone="ghost" size="sm"
+                                                        onclick="document.getElementById('reject-{{ $c->id }}').close()">{{ __('Abbrechen') }}</x-button>
+                                                <x-button type="submit" tone="warning" size="sm">{{ __('Ablehnen') }}</x-button>
                                             </div>
                                         </form>
                                     </dialog>
@@ -117,9 +117,9 @@
                                                           class="textarea textarea-bordered w-full"
                                                           placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
                                                 <div class="modal-action">
-                                                    <button type="button" class="btn btn-sm btn-ghost"
-                                                            onclick="document.getElementById('reopen-{{ $c->id }}').close()">{{ __('Abbrechen') }}</button>
-                                                    <button type="submit" class="btn btn-sm btn-warning">{{ __('Wieder öffnen') }}</button>
+                                                    <x-button type="button" tone="ghost" size="sm"
+                                                            onclick="document.getElementById('reopen-{{ $c->id }}').close()">{{ __('Abbrechen') }}</x-button>
+                                                    <x-button type="submit" tone="warning" size="sm">{{ __('Wieder öffnen') }}</x-button>
                                                 </div>
                                             </form>
                                         </dialog>

@@ -70,9 +70,7 @@
             @can('submit', $request)
                 <form method="POST" action="{{ route('corrections.submit', $request) }}">
                     @csrf
-                    <button class="btn btn-sm btn-primary" type="submit">
-                        <span class="material-symbols-outlined">send</span>{{ __('Einreichen') }}
-                    </button>
+                    <x-button tone="primary" type="submit" icon="send">{{ __('Einreichen') }}</x-button>
                 </form>
             @endcan
             @can('withdraw', $request)
@@ -83,9 +81,7 @@
                       data-confirm-tone="warning"
                       data-confirm-label="{{ __('Zurückziehen') }}">
                     @csrf
-                    <button class="btn btn-sm btn-ghost" type="submit">
-                        <span class="material-symbols-outlined">undo</span>{{ __('Zurückziehen') }}
-                    </button>
+                    <x-button tone="ghost" type="submit" icon="undo">{{ __('Zurückziehen') }}</x-button>
                 </form>
             @endcan
         </div>

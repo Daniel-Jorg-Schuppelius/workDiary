@@ -125,9 +125,7 @@
                         <td class="text-right whitespace-nowrap font-semibold" data-sort-value="{{ $day->amount }}">{{ number_format((float) $day->amount, 2, ',', '.') }} €</td>
                         <td class="text-right whitespace-nowrap">
                             @can('update', $trip)
-                                <button type="submit" form="{{ $fid }}" class="btn btn-primary btn-sm">
-                                    <x-icon name="save" /> {{ __('Speichern') }}
-                                </button>
+                                <x-button type="submit" form="{{ $fid }}" tone="primary" icon="save">{{ __('Speichern') }}</x-button>
                             @endcan
                         </td>
                     </tr>

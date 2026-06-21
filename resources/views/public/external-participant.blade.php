@@ -61,7 +61,7 @@
             <textarea name="body" class="textarea textarea-bordered w-full" rows="3" required minlength="2" maxlength="2000"
                       placeholder="{{ __('external.public.comment_placeholder') }}">{{ old('body') }}</textarea>
             <div class="flex justify-end">
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('external.public.comment_submit') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('external.public.comment_submit') }}</x-button>
             </div>
         </form>
     @endif
@@ -75,7 +75,7 @@
                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf">
             <p class="text-xs text-base-content/60">{{ __('external.public.upload_hint') }}</p>
             <div class="flex justify-end">
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('external.public.upload_submit') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('external.public.upload_submit') }}</x-button>
             </div>
         </form>
     @endif
@@ -91,7 +91,7 @@
                 <span class="label-text">{{ __('external.public.confirm_accept') }}</span>
             </label>
             <div class="flex justify-end">
-                <button type="submit" class="btn btn-success btn-sm">{{ __('external.public.confirm_submit') }}</button>
+                <x-button type="submit" tone="success" size="sm">{{ __('external.public.confirm_submit') }}</x-button>
             </div>
         </form>
     @endif

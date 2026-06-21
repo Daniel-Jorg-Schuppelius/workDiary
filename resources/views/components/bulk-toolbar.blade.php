@@ -38,8 +38,8 @@
     </div>
     <div class="flex flex-wrap items-center gap-2">
         {{ $actions ?? $slot }}
-        <button type="button" class="btn btn-ghost btn-xs" data-bulk-clear>
-            <x-icon name="close" /> {{ __('Auswahl aufheben') }}
-        </button>
+        <x-button type="button" tone="ghost" size="xs" icon="close" data-bulk-clear>
+            {{ __('Auswahl aufheben') }}
+        </x-button>
     </div>
 </div>

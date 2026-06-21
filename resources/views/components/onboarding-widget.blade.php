@@ -33,15 +33,15 @@
                 </p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('onboarding.index') }}" class="btn btn-sm btn-primary">
+                <x-button :href="route('onboarding.index')" tone="primary" size="sm">
                     {{ __('onboarding.widget.open_link') }}
-                </a>
+                </x-button>
                 @can(\App\Enums\User\Permission::OrgOnboardingDismissWidget->value)
                     <form method="POST" action="{{ route('onboarding.widget.dismiss') }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-ghost text-base-content/70">
+                        <x-button type="submit" tone="ghost" size="sm" class="text-base-content/70">
                             {{ __('onboarding.widget.dismiss') }}
-                        </button>
+                        </x-button>
                     </form>
                 @endcan
             </div>

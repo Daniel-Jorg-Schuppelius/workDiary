@@ -27,10 +27,7 @@
                     <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>
                     <form method="POST" action="{{ route('customer.logout') }}">
                         @csrf
-                        <button type="submit" class="btn btn-ghost btn-sm">
-                            <span class="material-symbols-outlined text-base">logout</span>
-                            <span>{{ __('Abmelden') }}</span>
-                        </button>
+                        <x-button type="submit" tone="ghost" size="sm" icon="logout"><span>{{ __('Abmelden') }}</span></x-button>
                     </form>
                 </nav>
             @endif

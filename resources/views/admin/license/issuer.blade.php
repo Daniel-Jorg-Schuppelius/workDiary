@@ -12,7 +12,7 @@
 @section('content')
 <x-index-page :subtitle="__('Signierte Lizenzen für Kunden erstellen und verteilen')">
     <x-slot:actions>
-        <a href="{{ route('admin.license.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurück zur Lizenz') }}</a>
+        <x-button :href="route('admin.license.index')" tone="ghost" size="sm">{{ __('Zurück zur Lizenz') }}</x-button>
     </x-slot:actions>
 
     @if ($issuedKey)
@@ -26,12 +26,12 @@
                 </p>
                 <textarea id="issued-key" rows="4" readonly class="textarea textarea-bordered w-full font-mono text-xs select-all">{{ $issuedKey }}</textarea>
                 <div class="flex flex-wrap gap-2">
-                    <button type="button" class="btn btn-sm btn-primary"
+                    <x-button type="button" tone="primary" size="sm"
                         onclick="navigator.clipboard.writeText(document.getElementById('issued-key').value); this.textContent='{{ __('Kopiert ✓') }}';">
                         {{ __('In Zwischenablage kopieren') }}
-                    </button>
-                    <a class="btn btn-sm btn-ghost" download="license.key"
-                        href="data:text/plain;charset=utf-8,{{ rawurlencode($issuedKey) }}">{{ __('Als Datei herunterladen') }}</a>
+                    </x-button>
+                    <x-button tone="ghost" size="sm" download="license.key"
+                        href="data:text/plain;charset=utf-8,{{ rawurlencode($issuedKey) }}">{{ __('Als Datei herunterladen') }}</x-button>
                 </div>
                 <p class="text-xs text-base-content/50">{{ __('Aus Sicherheitsgründen wird der Schlüssel nur jetzt angezeigt und nicht gespeichert.') }}</p>
             </div>
@@ -108,7 +108,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Lizenz erstellen') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('Lizenz erstellen') }}</x-button>
             </form>
         </div>
     </article>

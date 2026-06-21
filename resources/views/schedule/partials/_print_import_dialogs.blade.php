@@ -11,18 +11,12 @@
 <x-modal id="schedule-print-dialog" :embedded="false" icon="print" size="wide"
          :eyebrow="__('Schichtplan')" :title="__('Drucken')">
     <div class="flex flex-wrap gap-2">
-        <button type="button" class="btn btn-sm btn-outline schedule-print-pick"
-                data-print-src="{{ route('print.schedule', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
-            <x-icon name="print" />{{ __('Schichtplan (A4 quer)') }}
-        </button>
-        <button type="button" class="btn btn-sm btn-outline schedule-print-pick"
-                data-print-src="{{ route('print.on-call') }}">
-            <x-icon name="print" />{{ __('Bereitschaft & Notdienst (A4 quer)') }}
-        </button>
-        <button type="button" class="btn btn-sm btn-outline schedule-print-pick"
-                data-print-src="{{ route('print.vacations', ['year' => $anchor->year]) }}">
-            <x-icon name="print" />{{ __('Urlaubsübersicht ') . $anchor->year . __(' (A4 hoch)') }}
-        </button>
+        <x-button type="button" tone="outline" class="schedule-print-pick"
+                data-print-src="{{ route('print.schedule', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}" icon="print">{{ __('Schichtplan (A4 quer)') }}</x-button>
+        <x-button type="button" tone="outline" class="schedule-print-pick"
+                data-print-src="{{ route('print.on-call') }}" icon="print">{{ __('Bereitschaft & Notdienst (A4 quer)') }}</x-button>
+        <x-button type="button" tone="outline" class="schedule-print-pick"
+                data-print-src="{{ route('print.vacations', ['year' => $anchor->year]) }}" icon="print">{{ __('Urlaubsübersicht ') . $anchor->year . __(' (A4 hoch)') }}</x-button>
     </div>
 
     <iframe id="schedule-print-frame" title="{{ __('Druckvorschau') }}"
@@ -30,16 +24,10 @@
             style="height:60vh"></iframe>
 
     <x-slot:actions>
-        <a id="schedule-print-newtab" href="#" target="_blank" rel="noopener"
-           class="btn btn-ghost btn-sm gap-2 hidden">
-            <x-icon name="open_in_new" />{{ __('In neuem Tab öffnen') }}
-        </a>
-        <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
-            <x-icon name="close" />{{ __('Schließen') }}
-        </button>
-        <button type="button" id="schedule-print-now" class="btn btn-primary gap-2" disabled>
-            <x-icon name="print" />{{ __('Drucken') }}
-        </button>
+        <x-button id="schedule-print-newtab" href="#" target="_blank" rel="noopener"
+           tone="ghost" class="gap-2 hidden" icon="open_in_new">{{ __('In neuem Tab öffnen') }}</x-button>
+        <x-button type="button" tone="ghost" size="md" class="gap-2" data-entry-modal-close icon="close">{{ __('Schließen') }}</x-button>
+        <x-button type="button" id="schedule-print-now" tone="primary" size="md" class="gap-2" disabled icon="print">{{ __('Drucken') }}</x-button>
     </x-slot:actions>
 </x-modal>
 

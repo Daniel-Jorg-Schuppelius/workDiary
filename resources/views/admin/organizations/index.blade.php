@@ -126,14 +126,11 @@
                                                        required
                                                        placeholder="{{ $org->slug }}">
                                                 <div class="modal-action">
-                                                    <button type="button" class="btn btn-ghost"
+                                                    <x-button type="button" tone="ghost" size="md"
                                                             onclick="document.getElementById('purge-modal-{{ $org->id }}').close()">
                                                         {{ __('Abbrechen') }}
-                                                    </button>
-                                                    <button type="submit" class="btn btn-error">
-                                                        <x-icon name="delete_forever" />
-                                                        {{ __('Endgültig löschen') }}
-                                                    </button>
+                                                    </x-button>
+                                                    <x-button type="submit" tone="error" size="md" icon="delete_forever">{{ __('Endgültig löschen') }}</x-button>
                                                 </div>
                                             </form>
                                         </div>

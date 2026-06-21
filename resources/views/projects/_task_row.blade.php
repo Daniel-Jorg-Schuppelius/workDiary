@@ -45,8 +45,8 @@
     {{-- Aktionen --}}
     <div class="flex shrink-0 gap-1">
         @can('update', $task)
-            <a href="{{ route('projects.tasks.edit', [$project, $task]) }}"
-               data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
+            <x-button :href="route('projects.tasks.edit', [$project, $task])"
+               data-entry-modal-trigger tone="ghost" size="xs">{{ __('Edit') }}</x-button>
         @endcan
         @can('delete', $task)
             <form method="POST" action="{{ route('projects.tasks.destroy', [$project, $task]) }}"
@@ -55,7 +55,7 @@
                   data-confirm-message="{{ $task->subTasks->isNotEmpty() ? __('Sub-Aufgaben werden ebenfalls gelöscht.') : '' }}"
                   data-confirm-label="{{ __('Löschen') }}">
                 @csrf @method('DELETE')
-                <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
+                <x-button tone="ghost" size="xs" class="text-error">{{ __('Del') }}</x-button>
             </form>
         @endcan
     </div>

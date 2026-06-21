@@ -62,9 +62,9 @@
                             @can('completeFollowup', $note)
                                 <form method="POST" action="{{ route('communication-notes.followup-complete', $note) }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-xs btn-outline btn-success">
+                                    <x-button type="submit" size="xs" tone="success" class="btn-outline">
                                         {{ __('communication.action.complete_followup') }}
-                                    </button>
+                                    </x-button>
                                 </form>
                             @endcan
                         </div>

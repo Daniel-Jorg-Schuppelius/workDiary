@@ -126,7 +126,7 @@
 
             <div class="flex justify-end gap-2">
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.datev.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('finance.datev.action.save_config') }}</button>
+                <x-button type="submit" tone="primary">{{ __('finance.datev.action.save_config') }}</x-button>
             </div>
         </form>
     </x-index-page>

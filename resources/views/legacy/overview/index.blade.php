@@ -35,7 +35,7 @@
                     <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70">
                         {{ __('Bereitschaft heute') }} ({{ $today->fdate() }})
                     </h2>
-                    <a href="{{ route('legacy.oncall.index') }}" class="btn btn-xs btn-ghost">{{ __('Alle') }} →</a>
+                    <x-button href="{{ route('legacy.oncall.index') }}" tone="ghost" size="xs">{{ __('Alle') }} →</x-button>
                 </div>
                 @if ($oncallToday->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Niemand im Bereitschaftsdienst.') }}</p>
@@ -58,7 +58,7 @@
                     <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70">
                         {{ __('Notdienst heute') }} ({{ $today->fdate() }})
                     </h2>
-                    <a href="{{ route('legacy.notdienst.index') }}" class="btn btn-xs btn-ghost">{{ __('Alle') }} →</a>
+                    <x-button href="{{ route('legacy.notdienst.index') }}" tone="ghost" size="xs">{{ __('Alle') }} →</x-button>
                 </div>
                 @if ($notdienstToday->isEmpty())
                     <p class="text-sm text-base-content/60">{{ __('Niemand im Notdienst.') }}</p>
@@ -83,7 +83,7 @@
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-base-content/70">
                     {{ __('Nächste Feiertage') }}
                 </h2>
-                <a href="{{ route('holidays.index') }}" class="btn btn-xs btn-ghost">{{ __('Verwaltung') }} →</a>
+                <x-button href="{{ route('holidays.index') }}" tone="ghost" size="xs">{{ __('Verwaltung') }} →</x-button>
             </div>
             @if ($todayHolidayName)
                 <div class="alert alert-warning mb-3 py-2 text-sm">

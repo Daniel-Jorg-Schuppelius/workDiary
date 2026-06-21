@@ -64,7 +64,7 @@
                 @csrf
                 <input name="code" required maxlength="40" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered">
                 <input name="name" required maxlength="255" placeholder="{{ __('article.field.option_name') }}" class="input input-sm input-bordered">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('article.action.add_option') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('article.action.add_option') }}</x-button>
             </form>
         @endif
     </x-card>
@@ -118,7 +118,7 @@
                     <label class="fieldset-label">{{ __('article.field.sale_price') }}</label>
                     <input name="sale_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28">
                 </div>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('article.action.add_variant') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('article.action.add_variant') }}</x-button>
             </form>
         @endif
     </x-card>

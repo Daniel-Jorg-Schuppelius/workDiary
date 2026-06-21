@@ -88,7 +88,7 @@
                 <x-form-group :label="__('Aktionen (JSON)')" name="actions">
                     <textarea name="actions" rows="3" class="textarea textarea-bordered w-full font-mono text-xs" required>[{"type":"expense.approve","params":{}}]</textarea>
                 </x-form-group>
-                <button type="submit" class="btn btn-primary">{{ __('Regel anlegen') }}</button>
+                <x-button type="submit" tone="primary" size="md">{{ __('Regel anlegen') }}</x-button>
             </form>
         </div>
     </details>

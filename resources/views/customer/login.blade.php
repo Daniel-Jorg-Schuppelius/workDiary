@@ -25,7 +25,7 @@
                 <input type="checkbox" name="remember" value="1" class="checkbox checkbox-sm">
                 <span>{{ __('Angemeldet bleiben') }}</span>
             </label>
-            <button type="submit" class="btn btn-primary w-full">{{ __('Anmelden') }}</button>
+            <x-button type="submit" tone="primary" class="w-full">{{ __('Anmelden') }}</x-button>
         </form>
     </div>
 @endsection

@@ -109,9 +109,7 @@
                               :confirm="$installConfirm"
                               confirm-icon="playlist_add_check"
                               :confirm-label="__('Installieren')">
-                            <button type="submit" class="btn btn-sm btn-primary gap-2">
-                                <x-icon name="playlist_add_check" /> {{ __('Installieren') }}
-                            </button>
+                            <x-button type="submit" tone="primary" size="sm" class="gap-2" icon="playlist_add_check">{{ __('Installieren') }}</x-button>
                         </x-action-form>
                         <x-action-form :action="route('admin.branch-profiles.install', $profile['code'])"
                               :confirm="$reapplyConfirm"
@@ -119,9 +117,7 @@
                               confirm-tone="warning"
                               :confirm-label="__('Erneut anwenden')">
                             <input type="hidden" name="force" value="1" />
-                            <button type="submit" class="btn btn-sm btn-outline gap-2">
-                                <x-icon name="refresh" /> {{ __('Erneut anwenden') }}
-                            </button>
+                            <x-button type="submit" tone="outline" size="sm" class="gap-2" icon="refresh">{{ __('Erneut anwenden') }}</x-button>
                         </x-action-form>
                     </div>
                 </div>

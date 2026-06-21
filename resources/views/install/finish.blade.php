@@ -11,10 +11,7 @@
 
 <form method="POST" action="{{ route('install.complete') }}" class="mt-6 flex justify-between">
     @csrf
-    <a href="{{ route('install.integrations') }}" class="btn btn-sm btn-ghost">{{ __('Zurück') }}</a>
-    <button type="submit" class="btn btn-sm btn-primary">
-        <span class="material-symbols-outlined" aria-hidden="true">lock</span>
-        {{ __('Installation abschließen') }}
-    </button>
+    <x-button href="{{ route('install.integrations') }}" tone="ghost" size="sm">{{ __('Zurück') }}</x-button>
+    <x-button type="submit" tone="primary" size="sm" icon="lock">{{ __('Installation abschließen') }}</x-button>
 </form>
 @endsection

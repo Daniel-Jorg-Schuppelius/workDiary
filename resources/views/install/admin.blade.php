@@ -43,10 +43,7 @@
 
     <div class="card-actions justify-between pt-2">
         <span></span>
-        <button type="submit" class="btn btn-sm btn-primary">
-            {{ __('Administrator anlegen') }}
-            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-        </button>
+        <x-button type="submit" tone="primary" size="sm" iconTrailing="arrow_forward">{{ __('Administrator anlegen') }}</x-button>
     </div>
 </form>
 @endsection

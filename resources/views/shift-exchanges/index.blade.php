@@ -52,11 +52,11 @@
                             <td class="text-right whitespace-nowrap">
                                 <form method="POST" action="{{ route('schedule.exchanges.approve', $exchange) }}" class="inline">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-success btn-xs">{{ __('Freigeben') }}</button>
+                                    <x-button type="submit" tone="success" size="xs">{{ __('Freigeben') }}</x-button>
                                 </form>
                                 <form method="POST" action="{{ route('schedule.exchanges.reject', $exchange) }}" class="inline">
                                     @csrf @method('PATCH')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Ablehnen') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Ablehnen') }}</x-button>
                                 </form>
                             </td>
                         </tr>
@@ -93,7 +93,7 @@
                                 @if ($exchange->status->isOpen() && $exchange->status->value === 'requested')
                                     <form method="POST" action="{{ route('schedule.exchanges.accept', $exchange) }}" class="inline">
                                         @csrf @method('PATCH')
-                                        <button type="submit" class="btn btn-info btn-xs">{{ __('Annehmen') }}</button>
+                                        <x-button type="submit" tone="info" size="xs">{{ __('Annehmen') }}</x-button>
                                     </form>
                                 @endif
                             @endcan
@@ -101,7 +101,7 @@
                                 @if ($exchange->status->isOpen())
                                     <form method="POST" action="{{ route('schedule.exchanges.cancel', $exchange) }}" class="inline">
                                         @csrf @method('PATCH')
-                                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('Zurückziehen') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs">{{ __('Zurückziehen') }}</x-button>
                                     </form>
                                 @endif
                             @endcan

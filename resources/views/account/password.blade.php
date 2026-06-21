@@ -45,10 +45,7 @@
                     </button>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-ghost gap-1">
-                            <x-icon name="logout" />
-                            <span>{{ __('Abmelden') }}</span>
-                        </button>
+                        <x-button type="submit" tone="ghost" size="sm" class="gap-1" icon="logout">{{ __('Abmelden') }}</x-button>
                     </form>
                 </div>
             </div>
@@ -98,9 +95,9 @@
                                    class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25">
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
+                        <x-button type="submit" tone="primary" class="w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
                             ⇢ {{ __('Speichern') }}
-                        </button>
+                        </x-button>
                     </form>
                 </div>
             </div>

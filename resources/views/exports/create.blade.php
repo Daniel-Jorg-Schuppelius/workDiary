@@ -57,11 +57,8 @@
                 </div>
 
                 <div class="flex justify-end gap-2">
-                    <a href="{{ route('exports.index') }}" class="btn btn-sm btn-ghost">{{ __('Abbrechen') }}</a>
-                    <button type="submit" class="btn btn-sm btn-primary">
-                        <span class="material-symbols-outlined text-base">play_arrow</span>
-                        {{ __('Erstellen') }}
-                    </button>
+                    <x-button href="{{ route('exports.index') }}" tone="ghost">{{ __('Abbrechen') }}</x-button>
+                    <x-button type="submit" tone="primary" icon="play_arrow">{{ __('Erstellen') }}</x-button>
                 </div>
             </form>
         </div>

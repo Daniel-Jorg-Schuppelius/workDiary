@@ -194,7 +194,7 @@
                                                             show-label>{{ __('open-issue.action.' . $action) }}</x-icon-btn>
                                             @else
                                                 <x-action-form :action="route('open-issues.transition', ['issue' => $issue, 'action' => $action])">
-                                                    <button type="submit" class="btn btn-xs btn-outline">{{ __('open-issue.action.' . $action) }}</button>
+                                                    <x-button type="submit" size="xs" tone="outline">{{ __('open-issue.action.' . $action) }}</x-button>
                                                 </x-action-form>
                                             @endif
                                         @endforeach

@@ -235,8 +235,8 @@
             <textarea id="chat-edit-input" rows="3" class="textarea textarea-bordered w-full"></textarea>
         </div>
         <x-slot:actions>
-            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-            <button type="button" id="chat-edit-save" class="btn btn-primary">{{ __('Speichern') }}</button>
+            <x-button type="button" tone="ghost" size="md" data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
+            <x-button type="button" id="chat-edit-save" tone="primary" size="md">{{ __('Speichern') }}</x-button>
         </x-slot:actions>
     </x-modal>
 
@@ -260,8 +260,8 @@
             </select>
         </div>
         <x-slot:actions>
-            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-            <button type="button" id="chat-forward-send" class="btn btn-primary">{{ __('Weiterleiten') }}</button>
+            <x-button type="button" tone="ghost" size="md" data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
+            <x-button type="button" id="chat-forward-send" tone="primary" size="md">{{ __('Weiterleiten') }}</x-button>
         </x-slot:actions>
     </x-modal>
 
@@ -275,8 +275,8 @@
             </div>
         </div>
         <x-slot:actions>
-            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-            <button type="button" id="chat-schedule-send" class="btn btn-primary">{{ __('Planen') }}</button>
+            <x-button type="button" tone="ghost" size="md" data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
+            <x-button type="button" id="chat-schedule-send" tone="primary" size="md">{{ __('Planen') }}</x-button>
         </x-slot:actions>
     </x-modal>
 
@@ -308,8 +308,8 @@
             </div>
         </div>
         <x-slot:actions>
-            <button type="button" class="btn btn-ghost" data-entry-modal-close>{{ __('Abbrechen') }}</button>
-            <button type="button" id="chat-remind-save" class="btn btn-primary">{{ __('Erinnern') }}</button>
+            <x-button type="button" tone="ghost" size="md" data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
+            <x-button type="button" id="chat-remind-save" tone="primary" size="md">{{ __('Erinnern') }}</x-button>
         </x-slot:actions>
     </x-modal>
 
@@ -330,9 +330,9 @@
                     </div>
                 @endfor
             </div>
-            <button type="button" id="chat-poll-add" class="btn btn-ghost btn-sm mt-1 gap-1 self-start">
+            <x-button type="button" id="chat-poll-add" tone="ghost" class="mt-1 self-start">
                 <x-icon name="add" size="1rem" /> {{ __('Option hinzufügen') }}
-            </button>
+            </x-button>
         </div>
         <label class="label mt-2 cursor-pointer justify-start gap-2">
             <input type="checkbox" name="multiple" value="1" class="checkbox checkbox-sm">

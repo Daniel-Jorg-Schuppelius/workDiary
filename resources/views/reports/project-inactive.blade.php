@@ -64,15 +64,12 @@
                 </x-table>
 
                 <div class="mt-4 flex justify-end">
-                    <button type="submit" class="btn btn-sm btn-warning gap-2"
+                    <x-button type="submit" tone="warning" class="gap-2"
                             data-confirm-dialog
                             data-confirm-message="{{ __('Ausgewählte Projekte wirklich archivieren?') }}"
                             data-confirm-icon="archive"
                             data-confirm-tone="warning"
-                            data-confirm-label="{{ __('Archivieren') }}">
-                        <span class="material-symbols-outlined" aria-hidden="true">archive</span>
-                        {{ __('Ausgewählte archivieren') }}
-                    </button>
+                            data-confirm-label="{{ __('Archivieren') }}" icon="archive">{{ __('Ausgewählte archivieren') }}</x-button>
                 </div>
             </form>
         @endif

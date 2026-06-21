@@ -54,10 +54,7 @@
             </div>
 
             <div class="card-actions justify-end">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <span class="material-symbols-outlined" aria-hidden="true">download</span>
-                    {{ __('Export erstellen') }}
-                </button>
+                <x-button type="submit" tone="primary" size="sm" icon="download">{{ __('Export erstellen') }}</x-button>
             </div>
         </div>
     </form>

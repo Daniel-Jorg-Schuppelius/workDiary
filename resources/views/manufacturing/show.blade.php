@@ -129,7 +129,7 @@
                         <input name="scrap_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
                     <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.rework') }}</label>
                         <input name="rework_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('manufacturing.order.action.report') }}</button>
+                    <x-button type="submit" tone="primary" size="sm">{{ __('manufacturing.order.action.report') }}</x-button>
                 </form>
             </x-card>
             <x-card>

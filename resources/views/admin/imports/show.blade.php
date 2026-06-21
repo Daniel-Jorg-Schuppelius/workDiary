@@ -21,10 +21,7 @@
 
         @if ($run->state === \App\Enums\Import\ImportRunState::AwaitingApproval)
             <x-action-form :action="route('admin.imports.confirm', $run)">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <span class="material-symbols-outlined" aria-hidden="true">play_arrow</span>
-                    {{ __('Import bestätigen & starten') }}
-                </button>
+                <x-button type="submit" tone="primary" size="sm" icon="play_arrow">{{ __('Import bestätigen & starten') }}</x-button>
             </x-action-form>
         @endif
 
@@ -34,10 +31,7 @@
                   confirm-icon="delete"
                   confirm-tone="error"
                   :confirm-label="__('Verwerfen')">
-                <button type="submit" class="btn btn-error btn-sm btn-outline">
-                    <span class="material-symbols-outlined" aria-hidden="true">delete</span>
-                    {{ __('Verwerfen') }}
-                </button>
+                <x-button type="submit" tone="error" size="sm" class="btn-outline" icon="delete">{{ __('Verwerfen') }}</x-button>
             </x-action-form>
         @endif
 
@@ -85,10 +79,7 @@
             <span>
                 {{ __(':n Sitzungen konnten keinem Gerät zugeordnet werden und liegen in der Fernwartungs-Inbox. Ordne die Geräte-IDs einem Asset zu, um sie als Zeiteinträge zu buchen.', ['n' => $run->rows_skipped]) }}
             </span>
-            <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-primary">
-                <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-                {{ __('Zur Inbox') }}
-            </a>
+            <x-button :href="route('admin.remote-support.pending.index')" tone="primary" size="sm" icon="arrow_forward">{{ __('Zur Inbox') }}</x-button>
         </div>
     @endif
 

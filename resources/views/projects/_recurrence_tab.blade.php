@@ -56,17 +56,15 @@
                     <div class="flex gap-1">
                         @can('update', $project)
                             <x-action-form :action="route('projects.recurrence-rules.run', [$project, $rule])">
-                                <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('Jetzt Aufträge erzeugen') }}">
-                                    <x-icon name="play_arrow" />
-                                </button>
+                                <x-icon-btn type="submit" tone="ghost" size="xs" icon="play_arrow" :label="__('Jetzt Aufträge erzeugen')" />
                             </x-action-form>
-                            <a href="{{ route('projects.recurrence-rules.edit', [$project, $rule]) }}"
-                               data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
+                            <x-button :href="route('projects.recurrence-rules.edit', [$project, $rule])"
+                               data-entry-modal-trigger tone="ghost" size="xs">{{ __('Edit') }}</x-button>
                             <x-action-form :action="route('projects.recurrence-rules.destroy', [$project, $rule])" method="DELETE"
                                   :confirm="__('Bereits erzeugte Aufträge bleiben erhalten, die Regel wird entfernt.')"
                                   :confirm-label="__('Löschen')"
                                   data-confirm-title="{{ __('Regel löschen') }}">
-                                <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
+                                <x-button tone="ghost" size="xs" class="text-error">{{ __('Del') }}</x-button>
                             </x-action-form>
                         @endcan
                     </div>

@@ -69,15 +69,15 @@
                     </div>
                     <div class="flex gap-1">
                         @can('update', $milestone)
-                            <a href="{{ route('projects.milestones.edit', [$project, $milestone]) }}"
-                               data-entry-modal-trigger class="btn btn-xs btn-ghost">{{ __('Edit') }}</a>
+                            <x-button :href="route('projects.milestones.edit', [$project, $milestone])"
+                               data-entry-modal-trigger tone="ghost" size="xs">{{ __('Edit') }}</x-button>
                         @endcan
                         @can('delete', $milestone)
                             <x-action-form :action="route('projects.milestones.destroy', [$project, $milestone])" method="DELETE"
                                   :confirm="__('Aufgaben bleiben erhalten, werden aber vom Milestone getrennt.')"
                                   :confirm-label="__('Löschen')"
                                   data-confirm-title="{{ __('Milestone löschen') }}">
-                                <button class="btn btn-xs btn-ghost text-error">{{ __('Del') }}</button>
+                                <x-button tone="ghost" size="xs" class="text-error">{{ __('Del') }}</x-button>
                             </x-action-form>
                         @endcan
                     </div>

@@ -65,11 +65,8 @@
     </div>
 
     <div class="card-actions justify-between pt-2">
-        <a href="{{ route('install.admin') }}" class="btn btn-sm btn-ghost">{{ __('Zurück') }}</a>
-        <button type="submit" class="btn btn-sm btn-primary">
-            {{ __('Weiter') }}
-            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-        </button>
+        <x-button href="{{ route('install.admin') }}" tone="ghost" size="sm">{{ __('Zurück') }}</x-button>
+        <x-button type="submit" tone="primary" size="sm" iconTrailing="arrow_forward">{{ __('Weiter') }}</x-button>
     </div>
 </form>
 @endsection

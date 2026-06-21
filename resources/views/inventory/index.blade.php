@@ -75,7 +75,7 @@
                             <input type="checkbox" name="allow_negative" value="1" class="checkbox checkbox-sm">
                             <span class="label-text">{{ __('inventory.field.allow_negative') }}</span>
                         </label>
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('inventory.action.book') }}</button>
+                        <x-button type="submit" tone="primary" size="sm">{{ __('inventory.action.book') }}</x-button>
                     </form>
                 </x-card>
             @endif

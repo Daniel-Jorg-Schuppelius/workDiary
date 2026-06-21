@@ -19,10 +19,7 @@
 
     <div class="flex items-center justify-between gap-2">
         <p class="text-xs text-base-content/60">{{ __('Schlüsselpaar für Browser-Push. Kann automatisch erzeugt werden.') }}</p>
-        <button type="button" id="vapid-generate" class="btn btn-sm btn-outline">
-            <span class="material-symbols-outlined" aria-hidden="true">key</span>
-            {{ __('Schlüssel generieren') }}
-        </button>
+        <x-button type="button" id="vapid-generate" tone="outline" size="sm" icon="key">{{ __('Schlüssel generieren') }}</x-button>
     </div>
 
     <fieldset class="fieldset">
@@ -45,11 +42,8 @@
     </div>
 
     <div class="card-actions justify-between pt-2">
-        <a href="{{ route('install.mail') }}" class="btn btn-sm btn-ghost">{{ __('Zurück') }}</a>
-        <button type="submit" class="btn btn-sm btn-primary">
-            {{ __('Weiter') }}
-            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-        </button>
+        <x-button href="{{ route('install.mail') }}" tone="ghost" size="sm">{{ __('Zurück') }}</x-button>
+        <x-button type="submit" tone="primary" size="sm" iconTrailing="arrow_forward">{{ __('Weiter') }}</x-button>
     </div>
 </form>
 

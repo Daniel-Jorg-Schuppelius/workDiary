@@ -49,8 +49,8 @@
         </details>
 
         <div class="flex justify-end gap-2 pt-2">
-            <a href="{{ route('admin.invoice-mail-templates.index') }}" class="btn btn-ghost">{{ __('Abbrechen') }}</a>
-            <button type="submit" class="btn btn-primary">{{ __('Speichern') }}</button>
+            <x-button :href="route('admin.invoice-mail-templates.index')" tone="ghost" size="md">{{ __('Abbrechen') }}</x-button>
+            <x-button type="submit" tone="primary" size="md">{{ __('Speichern') }}</x-button>
         </div>
     </form>
 </x-page-shell>

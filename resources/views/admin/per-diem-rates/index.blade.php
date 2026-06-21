@@ -12,7 +12,7 @@
             <input type="text" name="country" maxlength="2" placeholder="DE"
                    value="{{ $country ?? '' }}"
                    class="input input-bordered input-sm w-20 uppercase">
-            <button type="submit" class="btn btn-ghost btn-sm">{{ __('Filtern') }}</button>
+            <x-button type="submit" tone="ghost" size="sm">{{ __('Filtern') }}</x-button>
         </form>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     data-entry-modal-trigger

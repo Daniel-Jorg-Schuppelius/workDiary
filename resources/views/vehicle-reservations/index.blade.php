@@ -48,7 +48,7 @@
                                 <form method="POST" action="{{ route('vehicle-reservations.destroy', $reservation) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('dispatch.vehicle.release') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('dispatch.vehicle.release') }}</x-button>
                                 </form>
                             @endcan
                         </td>

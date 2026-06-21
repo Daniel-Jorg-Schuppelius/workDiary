@@ -13,7 +13,7 @@
 <x-page-shell>
     <x-page-toolbar :title="$isEdit ? __('Vorlage bearbeiten') : __('Neue Vorlage')">
         <x-slot:actions>
-            <a href="{{ route('invoice-templates.index') }}" class="btn btn-secondary">{{ __('Zurück') }}</a>
+            <x-button href="{{ route('invoice-templates.index') }}" tone="secondary" size="md">{{ __('Zurück') }}</x-button>
         </x-slot:actions>
     </x-page-toolbar>
 
@@ -51,7 +51,7 @@
             </x-form-group>
 
             <div class="mt-4">
-                <button type="submit" class="btn btn-primary">{{ __('Speichern') }}</button>
+                <x-button type="submit" tone="primary" size="md">{{ __('Speichern') }}</x-button>
             </div>
         </form>
     </x-card>

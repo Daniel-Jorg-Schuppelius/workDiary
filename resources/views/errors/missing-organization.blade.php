@@ -58,14 +58,8 @@
                 {{ __('Bitte wenden Sie sich an Ihre Administration, damit Ihr Konto einer Organisation zugewiesen wird.') }}
             </p>
             <x-button-group center class="mt-6">
-                <a href="{{ url()->previous() }}" class="btn btn-ghost btn-sm gap-1">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">arrow_back</span>
-                    {{ __('Zurück') }}
-                </a>
-                <a href="{{ url('/') }}" class="btn btn-primary btn-sm gap-1">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">home</span>
-                    {{ __('Zur Startseite') }}
-                </a>
+                <x-button href="{{ url()->previous() }}" tone="ghost" size="sm" class="gap-1" icon="arrow_back">{{ __('Zurück') }}</x-button>
+                <x-button href="{{ url('/') }}" tone="primary" size="sm" class="gap-1" icon="home">{{ __('Zur Startseite') }}</x-button>
             </x-button-group>
             @if (config('app.debug') && ! empty($modelShortName))
                 <details class="mt-6 text-left text-xs">

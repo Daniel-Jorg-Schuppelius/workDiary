@@ -79,7 +79,7 @@
                         <option value="{{ $val }}" @selected($ticket->status->value === $val)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <button class="btn btn-primary btn-sm" type="submit">{{ __('Übernehmen') }}</button>
+                <x-button tone="primary" size="sm" type="submit">{{ __('Übernehmen') }}</x-button>
                 @error('status')<p class="text-error text-xs w-full">{{ $message }}</p>@enderror
             </form>
         </x-card>

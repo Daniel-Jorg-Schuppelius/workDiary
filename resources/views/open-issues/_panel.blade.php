@@ -92,9 +92,9 @@
                                     @else
                                         <form method="POST" action="{{ route('open-issues.transition', ['issue' => $issue, 'action' => $action]) }}">
                                             @csrf
-                                            <button type="submit" class="btn btn-xs btn-outline">
+                                            <x-button type="submit" size="xs" tone="outline">
                                                 {{ __('open-issue.action.' . $action) }}
-                                            </button>
+                                            </x-button>
                                         </form>
                                     @endif
                                 @endforeach

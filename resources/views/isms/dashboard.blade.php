@@ -109,6 +109,7 @@
                     @if ($readiness['soa']->isEmpty())
                         <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_soa') }}</p>
                     @else
+                        <div class="overflow-x-auto">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
@@ -135,6 +136,7 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        </div>
                     @endif
                 </x-card>
 

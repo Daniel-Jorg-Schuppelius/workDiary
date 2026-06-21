@@ -174,7 +174,7 @@
                                                   confirm-icon="logout"
                                                   confirm-tone="error"
                                                   :confirm-label="__('Widerrufen')">
-                                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Widerrufen') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Widerrufen') }}</x-button>
                                             </x-action-form>
                                         </td>
                                     @endif
@@ -227,7 +227,7 @@
                                                   confirm-icon="key_off"
                                                   confirm-tone="error"
                                                   :confirm-label="__('Widerrufen')">
-                                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Widerrufen') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Widerrufen') }}</x-button>
                                             </x-action-form>
                                         </td>
                                     @endif

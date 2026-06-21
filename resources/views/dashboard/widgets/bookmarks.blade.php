@@ -1,8 +1,8 @@
 <x-card :title="__('Lesezeichen')">
     <x-slot:actions>
-        <a href="{{ route('bookmarks.index') }}" class="btn btn-xs btn-ghost">
+        <x-button href="{{ route('bookmarks.index') }}" tone="ghost" size="xs">
             {{ __('Verwalten') }}
-        </a>
+        </x-button>
     </x-slot:actions>
 
     @if ($bookmarks->isEmpty())

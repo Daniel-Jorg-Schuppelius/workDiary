@@ -80,15 +80,11 @@
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
-                            <a href="{{ route('admin.plugin-errors.show', $err) }}" class="btn btn-sm btn-ghost" title="{{ __('Details') }}">
-                                <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
-                            </a>
+                            <x-icon-btn :href="route('admin.plugin-errors.show', $err)" tone="ghost" size="sm" icon="visibility" :label="__('Details')" />
                             @if (! $err->isAcknowledged())
                                 <form method="POST" action="{{ route('admin.plugin-errors.acknowledge', $err) }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-ghost" title="{{ __('Als gesehen markieren') }}">
-                                        <span class="material-symbols-outlined" aria-hidden="true">done</span>
-                                    </button>
+                                    <x-icon-btn type="submit" tone="ghost" size="sm" icon="done" :label="__('Als gesehen markieren')" />
                                 </form>
                             @endif
                         </div>

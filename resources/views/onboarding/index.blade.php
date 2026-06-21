@@ -20,7 +20,7 @@
         @if (empty($widgetDismissedAt))
             <form method="POST" action="{{ route('onboarding.widget.dismiss') }}">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-ghost text-base-content/70">{{ __('onboarding.widget.dismiss') }}</button>
+                <x-button type="submit" tone="ghost" size="sm" class="text-base-content/70">{{ __('onboarding.widget.dismiss') }}</x-button>
             </form>
         @else
             <span class="text-xs text-base-content/60">
@@ -82,7 +82,7 @@
                     <div class="flex items-center justify-end gap-3 border-t border-base-300/70 pt-3">
                         <div class="flex flex-wrap items-center justify-end gap-2">
                             @if (! empty($step['href']) && ! empty($step['label']))
-                                <a href="{{ $step['href'] }}" class="btn btn-sm btn-outline">{{ $step['label'] }}</a>
+                                <x-button href="{{ $step['href'] }}" tone="outline" size="sm">{{ $step['label'] }}</x-button>
                             @endif
                             @if (! $step['done'] && $step['skippable'])
                                 <form method="POST" action="{{ route('onboarding.steps.skip', ['step' => $step['code']]) }}" class="flex items-center gap-2">
@@ -93,7 +93,7 @@
                                            required
                                            class="input input-bordered input-sm w-64"
                                            placeholder="{{ __('onboarding.action.skip_placeholder') }}">
-                                    <button type="submit" class="btn btn-sm btn-ghost text-warning">{{ __('onboarding.action.skip') }}</button>
+                                    <x-button type="submit" tone="ghost" size="sm" class="text-warning">{{ __('onboarding.action.skip') }}</x-button>
                                 </form>
                             @endif
                         </div>

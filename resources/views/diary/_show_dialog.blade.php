@@ -18,15 +18,11 @@
         @can('archive', $diary)
             @if ($diary->is_archived)
                 <x-action-form :action="route('diary.restore', $diary)">
-                    <button type="submit" class="btn btn-outline gap-2">
-                        <x-icon name="restore" /> {{ __('Wiederherstellen') }}
-                    </button>
+                    <x-button type="submit" tone="outline" class="gap-2" icon="restore">{{ __('Wiederherstellen') }}</x-button>
                 </x-action-form>
             @else
                 <x-action-form :action="route('diary.archive', $diary)">
-                    <button type="submit" class="btn btn-outline gap-2">
-                        <x-icon name="archive" /> {{ __('Archivieren') }}
-                    </button>
+                    <x-button type="submit" tone="outline" class="gap-2" icon="archive">{{ __('Archivieren') }}</x-button>
                 </x-action-form>
             @endif
         @endcan
@@ -35,21 +31,15 @@
                 data-confirm-title="{{ __('Eintrag löschen') }}"
                 :confirm="__('Der Eintrag wird dauerhaft gelöscht. Möchtest du fortfahren?')"
                 :confirm-label="__('Löschen')">
-                <button type="submit" class="btn btn-ghost gap-2 text-error">
-                    <x-icon name="delete" /> {{ __('Löschen') }}
-                </button>
+                <x-button type="submit" tone="ghost" class="gap-2 text-error" icon="delete">{{ __('Löschen') }}</x-button>
             </x-action-form>
         @endcan
     </x-slot:footerExtra>
 
     <x-slot:actions>
-        <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
-            <x-icon name="close" /> {{ __('Schließen') }}
-        </button>
+        <x-button type="button" tone="ghost" class="gap-2" data-entry-modal-close icon="close">{{ __('Schließen') }}</x-button>
         @can('update', $diary)
-            <a href="{{ route('diary.edit', $diary) }}" class="btn btn-primary gap-2" data-entry-modal-trigger>
-                <x-icon name="edit" /> {{ __('Bearbeiten') }}
-            </a>
+            <x-button :href="route('diary.edit', $diary)" tone="primary" class="gap-2" data-entry-modal-trigger icon="edit">{{ __('Bearbeiten') }}</x-button>
         @endcan
     </x-slot:actions>
 </x-modal>

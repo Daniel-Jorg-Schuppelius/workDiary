@@ -82,10 +82,7 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <x-icon name="archive" />
-                        {{ __('Bericht generieren und herunterladen') }}
-                    </button>
+                    <x-button type="submit" tone="primary" size="sm" icon="archive">{{ __('Bericht generieren und herunterladen') }}</x-button>
                     <span class="text-xs text-base-content/60">
                         {{ __('Der Bericht wird erst beim Klick erzeugt. Vorher werden keine Daten geschrieben.') }}
                     </span>
@@ -93,14 +90,8 @@
             </form>
 
             <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
-                <a href="{{ route('admin.support.report.download') }}" class="btn btn-outline btn-sm">
-                    <x-icon name="download" />
-                    {{ __('Als JSON-Datei herunterladen') }}
-                </a>
-                <a href="{{ route('admin.support.report.preview') }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
-                    <x-icon name="visibility" />
-                    {{ __('Im Browser anzeigen') }}
-                </a>
+                <x-button :href="route('admin.support.report.download')" tone="outline" size="sm" icon="download">{{ __('Als JSON-Datei herunterladen') }}</x-button>
+                <x-button :href="route('admin.support.report.preview')" target="_blank" rel="noopener" tone="ghost" size="sm" icon="visibility">{{ __('Im Browser anzeigen') }}</x-button>
                 <span class="text-xs text-base-content/60">
                     {{ __('Reine JSON-Variante ohne ZIP — gleiche datensparsame Felder.') }}
                 </span>

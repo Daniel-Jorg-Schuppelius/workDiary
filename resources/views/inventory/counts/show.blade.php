@@ -25,7 +25,7 @@
                     <input name="code" autofocus autocomplete="off" class="input input-sm input-bordered w-full font-mono" placeholder="GTIN / SKU / SN / LOT"></div>
                 <div class="fieldset"><label class="fieldset-label">{{ __('inventory.count_ui.counted') }}</label>
                     <input name="qty" type="number" step="0.0001" min="0" value="1" class="input input-sm input-bordered w-24"></div>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('inventory.scan.title') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('inventory.scan.title') }}</x-button>
             </form>
         </x-card>
     @endif

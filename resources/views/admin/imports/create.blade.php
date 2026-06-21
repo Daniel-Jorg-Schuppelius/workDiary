@@ -34,10 +34,7 @@
             </div>
 
             <div class="card-actions justify-end">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <span class="material-symbols-outlined" aria-hidden="true">upload</span>
-                    {{ __('Vorprüfung starten') }}
-                </button>
+                <x-button type="submit" tone="primary" size="sm" icon="upload">{{ __('Vorprüfung starten') }}</x-button>
             </div>
         </div>
     </form>

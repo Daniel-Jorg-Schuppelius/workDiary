@@ -47,7 +47,7 @@
                     <input name="qty" type="number" step="0.0001" min="0.0001" value="1" class="input input-sm input-bordered w-24"></div>
                 <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.unit_price') }}</label>
                     <input name="unit_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28"></div>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('procurement.action.add_line') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('procurement.action.add_line') }}</x-button>
             </form>
         </x-card>
     @endif
@@ -118,7 +118,7 @@
                             </tr>
                         @endforeach
                     </x-table>
-                    <button type="submit" class="btn btn-sm btn-primary self-start">{{ __('procurement.advice.announce') }}</button>
+                    <x-button type="submit" tone="primary" size="sm" class="self-start">{{ __('procurement.advice.announce') }}</x-button>
                 </form>
             </x-card>
         @endif
@@ -144,7 +144,7 @@
                                 <td class="text-right">
                                     @if ($advice->status->isOpen())
                                         <form method="POST" action="{{ route('purchase-orders.advices.receive', $advice) }}" class="inline">@csrf
-                                            <button type="submit" class="btn btn-xs btn-primary">{{ __('procurement.advice.receive') }}</button>
+                                            <x-button type="submit" tone="primary" size="xs">{{ __('procurement.advice.receive') }}</x-button>
                                         </form>
                                         <form method="POST" action="{{ route('purchase-orders.advices.cancel', $advice) }}" class="inline">@csrf
                                             <button type="submit" class="btn btn-xs">{{ __('procurement.action.cancel') }}</button>

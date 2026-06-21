@@ -55,10 +55,7 @@
                 {{ __('Wir können die Datenbank gerade nicht erreichen. Bitte versuche es in wenigen Augenblicken erneut. Falls das Problem bestehen bleibt, wende dich an deine Administration.') }}
             </p>
             <div class="mt-6 flex justify-center gap-2">
-                <button type="button" onclick="window.location.reload()" class="btn btn-primary btn-sm gap-1">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">refresh</span>
-                    {{ __('Erneut versuchen') }}
-                </button>
+                <x-button type="button" onclick="window.location.reload()" tone="primary" size="sm" class="gap-1" icon="refresh">{{ __('Erneut versuchen') }}</x-button>
             </div>
             @if (config('app.debug') && ! empty($exceptionMessage))
                 <details class="mt-6 text-left text-xs">

@@ -41,30 +41,21 @@
         <form method="POST" action="{{ route('day-close.close') }}">
             @csrf
             <input type="hidden" name="date" value="{{ $day->toDateString() }}" />
-            <button type="submit" class="btn btn-sm btn-primary" @disabled(! $canCloseNow)>
-                <span class="material-symbols-outlined text-base" aria-hidden="true">task_alt</span>
-                {{ __('day-close.action.close_day') }}
-            </button>
+            <x-button type="submit" tone="primary" :disabled="! $canCloseNow" icon="task_alt">{{ __('day-close.action.close_day') }}</x-button>
         </form>
     </span>
 @endif
 
 @if ($isOwnDay && $isClosedState && ! $monthLocked && $pendingCorrections->isEmpty())
     @can('requestCorrection', $closure)
-        <button type="button" class="btn btn-sm btn-warning"
-                onclick="document.getElementById('day-correction-dialog').showModal()">
-            <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
-            {{ __('day-close.action.request_correction') }}
-        </button>
+        <x-button type="button" tone="warning"
+                onclick="document.getElementById('day-correction-dialog').showModal()" icon="edit_note">{{ __('day-close.action.request_correction') }}</x-button>
     @endcan
 @endif
 
 @if ($closure->exists && $isClosedState && ! $monthLocked)
     @can('reopen', $closure)
-        <button type="button" class="btn btn-sm btn-ghost"
-                onclick="document.getElementById('day-reopen-dialog').showModal()">
-            <span class="material-symbols-outlined text-base" aria-hidden="true">lock_open</span>
-            {{ __('day-close.action.reopen') }}
-        </button>
+        <x-button type="button" tone="ghost"
+                onclick="document.getElementById('day-reopen-dialog').showModal()" icon="lock_open">{{ __('day-close.action.reopen') }}</x-button>
     @endcan
 @endif

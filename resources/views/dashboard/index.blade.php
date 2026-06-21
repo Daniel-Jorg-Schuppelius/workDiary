@@ -173,7 +173,7 @@
                                 <h3 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                                     <x-icon name="calendar_month" class="text-primary" /> {{ __('Nächste geplante Schichten') }}
                                 </h3>
-                                <a href="{{ route('schedule.index') }}" class="btn btn-xs btn-ghost">{{ __('Alle →') }}</a>
+                                <x-button href="{{ route('schedule.index') }}" tone="ghost" size="xs">{{ __('Alle →') }}</x-button>
                             </div>
                             @if ($user['upcoming_scheduled']->isEmpty())
                                 <x-empty-state compact icon='<span class="material-symbols-outlined">calendar_month</span>'

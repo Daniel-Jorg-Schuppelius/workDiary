@@ -71,7 +71,7 @@
                     <input id="aw-end" type="time" name="end_time" class="input input-bordered input-sm w-full">
                 </div>
                 <div class="fieldset">
-                    <button type="submit" class="btn btn-primary btn-sm w-full">{{ __('Hinzufügen') }}</button>
+                    <x-button type="submit" tone="primary" class="w-full">{{ __('Hinzufügen') }}</x-button>
                 </div>
             </form>
 
@@ -109,7 +109,7 @@
                         <td class="text-right">
                             <form method="POST" action="{{ route('schedule.availability.windows.destroy', $window) }}" class="inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Löschen') }}</x-button>
                             </form>
                         </td>
                     </tr>
@@ -150,7 +150,7 @@
                     <input id="ds-note" type="text" name="note" class="input input-bordered input-sm w-full" maxlength="255">
                 </div>
                 <div class="fieldset">
-                    <button type="submit" class="btn btn-success btn-sm w-full">{{ __('Hinzufügen') }}</button>
+                    <x-button type="submit" tone="success" class="w-full">{{ __('Hinzufügen') }}</x-button>
                 </div>
             </form>
 
@@ -173,7 +173,7 @@
                         <td class="text-right">
                             <form method="POST" action="{{ route('schedule.availability.desired.destroy', $wish) }}" class="inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Löschen') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Löschen') }}</x-button>
                             </form>
                         </td>
                     </tr>

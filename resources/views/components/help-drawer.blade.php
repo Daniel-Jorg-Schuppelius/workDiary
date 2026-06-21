@@ -38,12 +38,12 @@
         <footer class="shrink-0 border-t border-base-300 px-4 py-3" data-help-footer>
             <p class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('War das hilfreich?') }}</p>
             <div class="flex flex-wrap items-center gap-2">
-                <button type="button" class="btn btn-sm btn-outline" data-help-feedback="1">
-                    <x-icon name="thumb_up" /> {{ __('Ja') }}
-                </button>
-                <button type="button" class="btn btn-sm btn-outline" data-help-feedback="0">
-                    <x-icon name="thumb_down" /> {{ __('Nein') }}
-                </button>
+                <x-button type="button" tone="outline" size="sm" icon="thumb_up" data-help-feedback="1">
+                    {{ __('Ja') }}
+                </x-button>
+                <x-button type="button" tone="outline" size="sm" icon="thumb_down" data-help-feedback="0">
+                    {{ __('Nein') }}
+                </x-button>
                 <span class="ml-2 text-xs text-base-content/60 hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
             </div>
             <div class="mt-3 hidden" data-help-related>
@@ -95,7 +95,7 @@
                        placeholder="{{ __('Hilfethemen durchsuchen…') }}"
                        aria-label="{{ __('Hilfethemen durchsuchen') }}">
             </label>
-            <button type="submit" class="btn btn-sm btn-outline">{{ __('Suchen') }}</button>
+            <x-button type="submit" tone="outline" size="sm">{{ __('Suchen') }}</x-button>
         </form>
         <ul class="space-y-1 text-sm" data-help-search-results></ul>
     </div>

@@ -54,9 +54,7 @@
                 <x-icon-btn icon="close" size="sm" tone="ghost" :href="route('corrections.index')" show-label>
                     {{ __('Abbrechen') }}
                 </x-icon-btn>
-                <button type="submit" class="btn btn-sm btn-primary">
-                    <span class="material-symbols-outlined">save</span>{{ __('Als Entwurf speichern') }}
-                </button>
+                <x-button type="submit" tone="primary" icon="save">{{ __('Als Entwurf speichern') }}</x-button>
             </div>
         </form>
 
@@ -84,9 +82,7 @@
                                       placeholder='{"minutes": 90}' />
                 </div>
                 <div class="text-right">
-                    <button type="button" class="btn btn-xs btn-ghost remove-item">
-                        <span class="material-symbols-outlined">delete</span>{{ __('Item entfernen') }}
-                    </button>
+                    <x-button type="button" tone="ghost" size="xs" class="remove-item" icon="delete">{{ __('Item entfernen') }}</x-button>
                 </div>
             </div>
         </template>

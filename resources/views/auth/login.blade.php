@@ -48,10 +48,7 @@
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
                     </button>
-                    <a href="{{ route('home') }}" class="btn btn-sm btn-ghost gap-1">
-                        <x-icon name="home" />
-                        <span>{{ __('Startseite') }}</span>
-                    </a>
+                    <x-button href="{{ route('home') }}" tone="ghost" size="sm" class="gap-1" icon="home">{{ __('Startseite') }}</x-button>
                 </div>
             </div>
         </header>
@@ -128,12 +125,13 @@
                         <a href="{{ route('password.request') }}" class="text-sm text-primary transition hover:opacity-80">{{ __('Passwort vergessen?') }}</a>
                     </div>
 
-                    <button
+                    <x-button
                         type="submit"
-                        class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold"
+                        tone="primary"
+                        class="w-full rounded-2xl font-['Space_Grotesk'] font-semibold"
                     >
                         ⇢ {{ __('Anmelden') }}
-                    </button>
+                    </x-button>
                 </form>
             </div>
 

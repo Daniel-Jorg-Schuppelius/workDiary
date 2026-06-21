@@ -148,23 +148,17 @@
                                 <span class="material-symbols-outlined" aria-hidden="true">settings</span>
                             </a>
                             <x-action-form :action="route('admin.plugins.toggle', $plugin->id())">
-                                <button type="submit" class="btn btn-sm btn-ghost" title="{{ $isEnabled ? __('Deaktivieren') : __('Aktivieren') }}">
-                                    <span class="material-symbols-outlined" aria-hidden="true">{{ $isEnabled ? 'toggle_on' : 'toggle_off' }}</span>
-                                </button>
+                                <x-icon-btn type="submit" tone="ghost" size="sm" :icon="$isEnabled ? 'toggle_on' : 'toggle_off'" :label="$isEnabled ? __('Deaktivieren') : __('Aktivieren')" />
                             </x-action-form>
                             <x-action-form :action="route('admin.plugins.health-check', $plugin->id())"
                                   data-health-check-form data-plugin-id="{{ $plugin->id() }}" data-plugin-name="{{ $plugin->name() }}">
-                                <button type="submit" class="btn btn-sm btn-ghost" title="{{ __('Healthcheck ausführen') }}">
-                                    <span class="material-symbols-outlined" aria-hidden="true">monitor_heart</span>
-                                </button>
+                                <x-icon-btn type="submit" tone="ghost" size="sm" icon="monitor_heart" :label="__('Healthcheck ausführen')" />
                             </x-action-form>
                             @if ($isAutoDisabled)
                                 <x-action-form :action="route('admin.plugins.reset-errors', $plugin->id())"
                                       :confirm="__('Failure-Counter zurücksetzen und Plugin wieder aktivieren?')"
                                       confirm-tone="primary">
-                                    <button type="submit" class="btn btn-sm btn-warning" title="{{ __('Reset & Reaktivieren') }}">
-                                        <span class="material-symbols-outlined" aria-hidden="true">restart_alt</span>
-                                    </button>
+                                    <x-icon-btn type="submit" tone="warning" size="sm" icon="restart_alt" :label="__('Reset & Reaktivieren')" />
                                 </x-action-form>
                             @endif
                         </div>

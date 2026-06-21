@@ -40,14 +40,14 @@
     </x-slot:note>
     <x-slot:actions>
         @if ($canIssue ?? false)
-            <a href="{{ route('admin.license.issuer') }}" class="btn btn-sm btn-secondary">
+            <x-button :href="route('admin.license.issuer')" tone="secondary" size="sm">
                 {{ __('Lizenzen ausstellen') }}
-            </a>
+            </x-button>
         @endif
         @if ($canInstall)
-            <a href="{{ route('license.show') }}" class="btn btn-sm btn-primary">
+            <x-button :href="route('license.show')" tone="primary" size="sm">
                 {{ __('Lizenz installieren / aktualisieren') }}
-            </a>
+            </x-button>
         @endif
     </x-slot:actions>
 
@@ -157,7 +157,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Übernehmen') }}</button>
+                        <x-button type="submit" tone="primary" size="sm">{{ __('Übernehmen') }}</x-button>
                     </form>
                 @endif
             </div>
@@ -243,9 +243,9 @@
                             <p class="text-xs text-error">{{ $message }}</p>
                         @enderror
                         <div class="flex items-center gap-2">
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Installieren') }}</button>
+                            <x-button type="submit" tone="primary" size="sm">{{ __('Installieren') }}</x-button>
                             @if ($op !== null)
-                                <button type="submit" form="org-license-remove" class="btn btn-sm btn-ghost text-error">{{ __('Entfernen') }}</button>
+                                <x-button type="submit" form="org-license-remove" tone="ghost" size="sm" class="text-error">{{ __('Entfernen') }}</x-button>
                             @endif
                         </div>
                     </form>
@@ -295,7 +295,7 @@
                                 </div>
                                 <p class="mt-1 text-xs text-base-content/50">{{ __('Tier-Module sind bereits enthalten; hier nur zusätzliche Module zubuchen.') }}</p>
                             </div>
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Ausstellen & installieren') }}</button>
+                            <x-button type="submit" tone="primary" size="sm">{{ __('Ausstellen & installieren') }}</x-button>
                         </form>
                     </details>
                 @endif

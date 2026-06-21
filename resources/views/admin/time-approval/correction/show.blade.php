@@ -74,9 +74,7 @@
                     @csrf
                     <input type="text" name="note" class="input input-sm input-bordered"
                            placeholder="{{ __('Optionaler Vermerk') }}" maxlength="500" />
-                    <button class="btn btn-sm btn-success" type="submit">
-                        <span class="material-symbols-outlined">check</span>{{ __('Genehmigen') }}
-                    </button>
+                    <x-button tone="success" size="sm" type="submit" icon="check">{{ __('Genehmigen') }}</x-button>
                 </form>
             @endcan
             @can('reject', $request)
@@ -84,9 +82,7 @@
                     @csrf
                     <input type="text" name="note" class="input input-sm input-bordered w-72"
                            placeholder="{{ __('Begründung ≥ 20 Zeichen') }}" minlength="20" maxlength="2000" required />
-                    <button class="btn btn-sm btn-error" type="submit">
-                        <span class="material-symbols-outlined">close</span>{{ __('Ablehnen') }}
-                    </button>
+                    <x-button tone="error" size="sm" type="submit" icon="close">{{ __('Ablehnen') }}</x-button>
                 </form>
             @endcan
             @can('apply', $request)
@@ -95,9 +91,7 @@
                       confirm-icon="play_arrow"
                       confirm-tone="primary"
                       :confirm-label="__('Anwenden')">
-                    <button class="btn btn-sm btn-primary" type="submit">
-                        <span class="material-symbols-outlined">play_arrow</span>{{ __('Anwenden') }}
-                    </button>
+                    <x-button tone="primary" size="sm" type="submit" icon="play_arrow">{{ __('Anwenden') }}</x-button>
                 </x-action-form>
             @endcan
         </div>

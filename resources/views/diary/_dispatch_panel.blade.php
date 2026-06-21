@@ -76,9 +76,9 @@
                                    class="input input-bordered input-sm w-64" placeholder="{{ __('dispatch.override_placeholder') }}">
                         </label>
                     @endif
-                    <button type="submit" class="btn btn-sm btn-outline">
+                    <x-button type="submit" tone="outline" size="sm">
                         {{ __('dispatch.set_status', ['status' => $target->label()]) }}
-                    </button>
+                    </x-button>
                 </form>
             @endforeach
         </div>
@@ -101,7 +101,7 @@
                             <form method="POST" action="{{ route('vehicle-reservations.destroy', $reservation) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('dispatch.vehicle.release') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('dispatch.vehicle.release') }}</x-button>
                             </form>
                         @endif
                     </li>
@@ -135,7 +135,7 @@
                            value="{{ optional($diary->end_at)->format('Y-m-d\TH:i') }}"
                            class="input input-bordered input-sm">
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('dispatch.vehicle.reserve') }}</button>
+                <x-button type="submit" tone="primary" size="sm">{{ __('dispatch.vehicle.reserve') }}</x-button>
                 @error('reserved_from')
                     <p class="text-error text-xs sm:col-span-2 lg:col-span-4">{{ $message }}</p>
                 @enderror

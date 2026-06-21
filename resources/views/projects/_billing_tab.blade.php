@@ -65,10 +65,7 @@
             </div>
 
             <div class="flex justify-end">
-                <button type="submit" class="btn btn-primary btn-sm">
-                    <span class="material-symbols-outlined" aria-hidden="true">save</span>
-                    <span>{{ __('Taktung speichern') }}</span>
-                </button>
+                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Taktung speichern') }}</x-button>
             </div>
         </form>
     </div>

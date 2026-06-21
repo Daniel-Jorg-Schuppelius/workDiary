@@ -35,10 +35,7 @@
 
 <div class="card-actions mt-6 justify-end">
     @if ($met)
-        <a href="{{ route('install.application') }}" class="btn btn-sm btn-primary">
-            {{ __('Weiter') }}
-            <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
-        </a>
+        <x-button href="{{ route('install.application') }}" tone="primary" size="sm" iconTrailing="arrow_forward">{{ __('Weiter') }}</x-button>
     @else
         <span class="text-sm text-error">{{ __('Bitte beheben Sie die markierten Punkte und laden Sie die Seite neu.') }}</span>
     @endif

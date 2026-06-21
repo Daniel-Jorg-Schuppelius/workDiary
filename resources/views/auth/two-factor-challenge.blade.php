@@ -47,13 +47,11 @@
                     @if ($hasWebauthn ?? false)
                         <div class="mb-5" data-webauthn-block>
                             <p id="passkey-error" class="mb-2 hidden text-sm text-error"></p>
-                            <button type="button" class="btn btn-primary w-full gap-2 rounded-2xl font-['Space_Grotesk'] font-semibold"
+                            <x-button type="button" tone="primary" class="w-full gap-2 rounded-2xl font-['Space_Grotesk'] font-semibold"
                                     data-webauthn-assert
                                     data-options="{{ route('two-factor.login.webauthn.options') }}"
                                     data-target="{{ route('two-factor.login.webauthn') }}"
-                                    data-error="passkey-error">
-                                <span class="material-symbols-outlined">key</span> {{ __('Mit Passkey / Sicherheitsschlüssel') }}
-                            </button>
+                                    data-error="passkey-error" icon="key">{{ __('Mit Passkey / Sicherheitsschlüssel') }}</x-button>
                             <div class="my-4 flex items-center gap-3 text-xs text-base-content/50"><span class="h-px flex-1 bg-base-300"></span>{{ __('oder Code eingeben') }}<span class="h-px flex-1 bg-base-300"></span></div>
                         </div>
                     @endif
@@ -72,9 +70,9 @@
                                    class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25">
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
+                        <x-button type="submit" tone="primary" class="w-full rounded-2xl font-['Space_Grotesk'] font-semibold">
                             {{ __('Bestätigen') }}
-                        </button>
+                        </x-button>
                     </form>
                     <button type="button" class="mt-4 w-full text-center text-sm text-primary transition hover:opacity-80"
                             x-on:click="toggle()">
@@ -87,13 +85,13 @@
                             <p class="mb-3 text-sm text-base-content/70">{{ __('Oder Code per E-Mail erhalten:') }}</p>
                             <form method="POST" action="{{ route('two-factor.login.email') }}" class="mb-3">
                                 @csrf
-                                <button type="submit" class="btn btn-outline btn-sm w-full rounded-2xl">{{ __('Code per E-Mail senden') }}</button>
+                                <x-button type="submit" tone="outline" size="sm" class="w-full rounded-2xl">{{ __('Code per E-Mail senden') }}</x-button>
                             </form>
                             <form method="POST" action="{{ route('two-factor.login.attempt') }}" class="space-y-3">
                                 @csrf
                                 <input name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="{{ __('E-Mail-Code') }}"
                                        class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-center text-xl tracking-[0.4em] text-base-content transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25">
-                                <button type="submit" class="btn btn-primary btn-sm w-full rounded-2xl">{{ __('Mit E-Mail-Code bestätigen') }}</button>
+                                <x-button type="submit" tone="primary" size="sm" class="w-full rounded-2xl">{{ __('Mit E-Mail-Code bestätigen') }}</x-button>
                             </form>
                         </div>
                     @endif

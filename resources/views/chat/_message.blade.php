@@ -142,7 +142,7 @@
                 <button type="button" class="btn btn-sm btn-ghost {{ $message->isStarredBy($me) ? 'text-warning' : '' }}" data-action="star" data-message-id="{{ $message->sqid }}" title="{{ __('Favorit') }}"><x-icon name="{{ $message->isStarredBy($me) ? 'star' : 'star_border' }}" size="1.15rem" /></button>
                 <button type="button" class="btn btn-sm btn-ghost" data-action="remind" data-message-id="{{ $message->sqid }}" title="{{ __('Erinnern') }}"><x-icon name="alarm" size="1.15rem" /></button>
                 @if (! $message->parent_id)
-                    <button type="button" class="btn btn-sm btn-ghost gap-1" data-action="thread" data-message-id="{{ $message->sqid }}"><x-icon name="forum" size="1.15rem" /> {{ __('Antworten') }}</button>
+                    <x-button type="button" tone="ghost" data-action="thread" data-message-id="{{ $message->sqid }}"><x-icon name="forum" size="1.15rem" /> {{ __('Antworten') }}</x-button>
                     <button type="button" class="btn btn-sm btn-ghost" data-action="pin" data-message-id="{{ $message->sqid }}" title="{{ __('Anpinnen') }}"><x-icon name="push_pin" size="1.15rem" /></button>
                 @endif
                 @if ($isMine)

@@ -21,9 +21,9 @@
             <div class="flex-1 text-sm">
                 {{ __('Für Verpflegung gilt im Regelfall die gesetzliche Pauschale (Verpflegungsmehraufwand). Tatsächliche Kosten sind hier nur abzurechnen, wenn ausdrücklich erlaubt.') }}
             </div>
-            <a href="{{ route('per-diem-trips.create') }}" class="btn btn-sm btn-primary">
+            <x-button :href="route('per-diem-trips.create')" tone="primary">
                 {{ __('Pauschale erfassen') }}
-            </a>
+            </x-button>
         </div>
     </div>
     <x-input-field name="vendor" :label="__('Beleg / Anbieter')" maxlength="160" placeholder="{{ __('z. B. Bahn, Hotel-Name …') }}" :value="old('vendor', $expense?->vendor)" />

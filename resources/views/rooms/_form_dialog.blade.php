@@ -157,9 +157,9 @@
                             @if ($req->level)<span class="badge badge-sm badge-outline">{{ $req->level }}</span>@endif
                             @unless ($req->is_active)<span class="badge badge-sm badge-ghost">{{ __('inaktiv') }}</span>@endunless
                             @if ($req->note)<span class="text-base-content/60">— {{ $req->note }}</span>@endif
-                            <a class="ml-auto btn btn-ghost btn-xs text-error"
+                            <x-button tone="ghost" size="xs" class="ml-auto text-error"
                                href="#"
-                               onclick="event.preventDefault(); document.getElementById('req-del-{{ $req->id }}').submit();">{{ __('Entfernen') }}</a>
+                               onclick="event.preventDefault(); document.getElementById('req-del-{{ $req->id }}').submit();">{{ __('Entfernen') }}</x-button>
                         </li>
                     @endforeach
                 </ul>
@@ -204,6 +204,6 @@
             <label class="fieldset-label" for="req-note">{{ __('Notiz') }}</label>
             <input id="req-note" type="text" name="note" maxlength="2000" class="input input-bordered input-sm w-full">
         </div>
-        <button type="submit" class="btn btn-warning btn-sm">{{ __('Hinzufügen') }}</button>
+        <x-button type="submit" tone="warning" size="sm">{{ __('Hinzufügen') }}</x-button>
     </form>
 @endif

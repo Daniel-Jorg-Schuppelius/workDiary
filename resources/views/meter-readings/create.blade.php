@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="flex gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('Erfassen') }}</button>
+                    <x-button type="submit" tone="primary" size="sm">{{ __('Erfassen') }}</x-button>
                 </div>
             </form>
         </div>

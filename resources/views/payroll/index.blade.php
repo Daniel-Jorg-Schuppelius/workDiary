@@ -78,7 +78,7 @@
                 </x-form-group>
 
                 <div class="mt-3 flex justify-end">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('Speichern') }}</button>
+                    <x-button type="submit" tone="primary">{{ __('Speichern') }}</x-button>
                 </div>
             </form>
         </div>
@@ -92,10 +92,7 @@
                 <form method="POST" action="{{ route('payroll.minimum-wages.seed') }}"
                       data-confirm-dialog data-confirm-message="{{ __('Gesetzliche Mindestlohn-Historie für das Land der Organisation laden? Bestehende Sätze bleiben erhalten.') }}">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-ghost">
-                        <span class="material-symbols-outlined text-[1.05rem]" aria-hidden="true">history</span>
-                        {{ __('Historie laden') }}
-                    </button>
+                    <x-button type="submit" tone="ghost" icon="history">{{ __('Historie laden') }}</x-button>
                 </form>
             </div>
             <p class="text-sm text-base-content/60">
@@ -129,7 +126,7 @@
                         <div class="flex gap-2">
                             <input type="text" name="note" maxlength="191"
                                    class="input input-bordered w-full" value="{{ old('note') }}">
-                            <button type="submit" class="btn btn-primary btn-sm shrink-0">{{ __('Hinzufügen') }}</button>
+                            <x-button type="submit" tone="primary" class="shrink-0">{{ __('Hinzufügen') }}</x-button>
                         </div>
                     </div>
                 </div>
@@ -173,10 +170,7 @@
                 <form method="POST" action="{{ route('payroll.references.import') }}"
                       data-confirm-dialog data-confirm-message="{{ __('Aktuelle EU-Mindestlöhne von Eurostat importieren?') }}">
                     @csrf
-                    <button type="submit" class="btn btn-sm btn-ghost">
-                        <span class="material-symbols-outlined text-[1.05rem]" aria-hidden="true">cloud_download</span>
-                        {{ __('Eurostat-Import') }}
-                    </button>
+                    <x-button type="submit" tone="ghost" icon="cloud_download">{{ __('Eurostat-Import') }}</x-button>
                 </form>
             </div>
             @if ($reference)
@@ -204,7 +198,7 @@
                     <form method="POST" action="{{ route('payroll.raise-to-minimum') }}"
                           data-confirm-dialog data-confirm-message="{{ __('Alle betroffenen Stundenlöhne auf den Mindestlohn anheben?') }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Alle anheben') }}</button>
+                        <x-button type="submit" tone="primary">{{ __('Alle anheben') }}</x-button>
                     </form>
                 @endif
             </div>
@@ -231,7 +225,7 @@
                             <td class="text-right">
                                 <x-action-form :action="route('payroll.raise-to-minimum')">
                                     <input type="hidden" name="user" value="{{ $u->sqid }}">
-                                    <button type="submit" class="btn btn-xs btn-ghost">{{ __('Anheben') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs">{{ __('Anheben') }}</x-button>
                                 </x-action-form>
                             </td>
                         </tr>

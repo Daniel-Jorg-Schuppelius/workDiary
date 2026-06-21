@@ -66,8 +66,8 @@
             </div>
 
             <div class="flex justify-end gap-2 pt-2">
-                <a href="{{ route('service-tickets.index') }}" class="btn btn-ghost">{{ __('Abbrechen') }}</a>
-                <button type="submit" class="btn btn-primary">{{ __('Ticket anlegen') }}</button>
+                <x-button href="{{ route('service-tickets.index') }}" tone="ghost">{{ __('Abbrechen') }}</x-button>
+                <x-button type="submit" tone="primary">{{ __('Ticket anlegen') }}</x-button>
             </div>
         </form>
     </x-card>
