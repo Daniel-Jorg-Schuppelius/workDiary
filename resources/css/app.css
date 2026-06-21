@@ -5,6 +5,10 @@
 @import "@fontsource/space-grotesk/latin-500.css";
 @import "@fontsource/space-grotesk/latin-700.css";
 @import "material-symbols/outlined.css";
+/* Strukturelles Layout-CSS (Sidebar/Header/Hilfe-Drawer …), ausgelagert aus
+   layouts/app.blade.php. Bewusst VOR tailwindcss, damit die Kaskade der
+   vormaligen Inline-Variante (stand vor @vite) erhalten bleibt. */
+@import "./layout.css";
 @import "tailwindcss";
 
 @plugin '../../node_modules/daisyui/index.js' {

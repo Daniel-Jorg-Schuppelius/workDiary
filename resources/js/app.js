@@ -17,6 +17,7 @@ import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./global-search.js";
 import "./help-drawer.js";
+import "./layout.js";
 // facility-picker.js / tag-picker.js / work-schedule-form.js wurden in
 // alpine/components.js als Alpine.data-Komponenten überführt (CSP-konform).
 
