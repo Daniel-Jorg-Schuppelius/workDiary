@@ -25,14 +25,18 @@ return [
         // Tagesübersicht, Kanban und interne Kommunikation
         'today.show' => 'work.overview',
         'kanban.*' => 'work.overview',
+        'tasks.global.*' => 'work.overview',
         'chat.*' => 'communication.chat',
 
         // Arbeitsliste und Auftragsbuch
         'duties.index' => 'duties.overview',
+        // Notfall-/Bereitschaftseinsätze münden in die Arbeitsliste.
+        'assignments.*' => 'duties.overview',
         'diary.index' => 'diary-entries.create',
         'diary.create' => 'diary-entries.create',
         'diary.show' => 'diary-entries.edit',
         'diary.edit' => 'diary-entries.edit',
+        'diary.case-file' => 'diary-entries.edit',
 
         // Leitstelle (Feature 029): Dispatch-Board + Karten-Sicht. Vor dem
         // breiten dispatch.*-Muster, weil eigenes Topic.
@@ -46,6 +50,7 @@ return [
         // Wochenansicht der Aufträge sowie separate Zeiterfassung
         'week.index' => 'week.overview',
         'time-entries.create' => 'time-entries.start',
+        'stopwatch.*' => 'time-entries.start',
         'admin-time-entries.*' => 'time-entries.edit',
         'projects.time-entries.*' => 'time-entries.edit',
         'attendance.*' => 'attendance.manage',
@@ -150,6 +155,7 @@ return [
         'suppliers.*' => 'contacts.manage',
         'projects.*' => 'projects.manage',
         'invoices.*' => 'invoices.manage',
+        'invoice-templates.*' => 'invoices.manage',
         'lexoffice.vouchers.*' => 'invoices.manage',
         'events.*' => 'events.manage',
         'assets.*' => 'assets.fleet',
@@ -170,6 +176,63 @@ return [
         'external.create' => 'external.participants',
         'external.store' => 'external.participants',
 
+        // Warenwirtschaft – Artikel & Lager (Feature 060/066)
+        'articles.*' => 'articles.master',
+        'lexoffice.articles.*' => 'articles.lexoffice',
+        'materials.*' => 'materials.manage',
+        'inventory.stock' => 'inventory.stock',
+        'inventory.lots' => 'inventory.stock',
+        'inventory.scan' => 'inventory.stock',
+        'inventory.counts.*' => 'inventory.counts',
+        'inventory.label-templates.*' => 'inventory.labels',
+        'inventory.labels.*' => 'inventory.labels',
+        'warehouses.*' => 'warehouses.manage',
+
+        // Warenwirtschaft – Fertigung, Beschaffung, Seriennummern
+        'manufacturing-orders.*' => 'manufacturing.orders',
+        'manufacturing-planning.*' => 'manufacturing.orders',
+        'work-centers.*' => 'manufacturing.work-centers',
+        'purchase-orders.*' => 'procurement.orders',
+        // serials.public-passport (öffentliche Token-Seite) hat kein
+        // App-Chrome, das breite Muster schadet dort aber nicht.
+        'serials.*' => 'serials.tracking',
+
+        // Stammdaten & Kataloge
+        'activity-categories.*' => 'catalog.activity-categories',
+        'event-categories.*' => 'catalog.event-categories',
+        'admin.entry-types.*' => 'catalog.entry-types',
+        'admin.expense-categories.*' => 'catalog.expense-categories',
+        'admin.per-diem-rates.*' => 'catalog.per-diem-rates',
+        'tags.*' => 'catalog.tags',
+        'holidays.*' => 'catalog.holidays',
+        'qualifications.*' => 'catalog.qualifications',
+        'admin.number-formats.*' => 'admin.number-formats',
+        // Klassifikationen und ihre Pflichtregeln teilen sich ein Topic
+        // (disjunkte Muster, da "classifications." ≠ "classification-").
+        'admin.classifications.*' => 'admin.classifications',
+        'admin.classification-requirements.*' => 'admin.classifications',
+
+        // Personal & operative Module
+        'org.members.*' => 'org.members',
+        'users.work-schedule.*' => 'org.members',
+        'teams.*' => 'org.teams',
+        'payroll.*' => 'payroll.overview',
+        'corrections.*' => 'corrections.requests',
+        'key-handovers.*' => 'key-handovers',
+        'meter-readings.*' => 'meter-readings',
+        'foreign-customers.*' => 'foreign-customers',
+        'open-issues.*' => 'open-issues',
+        // Eigenständiges Software-/Lizenzinventar (NICHT isms.software).
+        'software.*' => 'software.inventory',
+
+        // Compliance – Hinweisgebersystem & Audit
+        'whistleblowing.internal.*' => 'whistleblowing.cases',
+        'whistleblowing.portal.edit' => 'whistleblowing.portal',
+        'whistleblowing.portal' => 'whistleblowing.report',
+        'whistleblowing.receipt' => 'whistleblowing.report',
+        'whistleblowing.mailbox.*' => 'whistleblowing.report',
+        'audit.*' => 'audit.log',
+
         // Finance & Zeitexport
         'finance.transfers.*' => 'finance.transfers',
         'finance.reconciliation.*' => 'finance.reconciliation',
@@ -184,17 +247,69 @@ return [
         'admin.organizations.*' => 'admin.tenants',
         'admin.access.*' => 'admin.roles',
         'admin.license.*' => 'admin.license',
+        'license.show' => 'admin.license',
         'admin.imports.*' => 'admin.import',
         'admin.security.*' => 'admin.security',
         'admin.components.*' => 'admin.security',
         'admin.support.report.*' => 'admin.support',
+        'admin.support.access-audit.*' => 'admin.support',
         'admin.backup.*' => 'admin.backups',
         'admin.branch-profiles.*' => 'admin.branch-profiles',
 
-        // Hinweis: Das Dashboard hat bewusst KEINEN Auto-Kontext — der
-        // sinnvolle Einstieg ist rollenabhängig (roles.*-Topics) und damit
-        // nicht statisch über die Route auflösbar. Rollen-Einstiege sind
-        // über related-Verweise und die Hilfe-Suche erreichbar.
+        // Administration – Betrieb, Stammdaten-Pflege & Integrationen
+        'admin.automations.*' => 'admin.automations',
+        'admin.branding.*' => 'admin.branding',
+        'admin.data.*' => 'admin.data-transfer',
+        'admin.legacy-migration.*' => 'admin.legacy-migration',
+        'admin.demo.*' => 'admin.demo-data',
+        'admin.diagnostics.*' => 'admin.diagnostics',
+        'admin.metrics.*' => 'admin.metrics',
+        'admin.invoice-mail-templates.*' => 'admin.invoice-mail-templates',
+        'admin.plugins.*' => 'admin.plugins',
+        'admin.plugin-errors.*' => 'admin.plugins',
+        'admin.privacy.*' => 'admin.privacy-tools',
+        'admin.remote-support.*' => 'admin.remote-support',
+        'admin.report-targets.*' => 'admin.report-targets',
+        'admin.themes.*' => 'admin.themes',
+        'admin.toggl.*' => 'admin.toggl',
+        'admin.openproject.*' => 'admin.openproject',
+        'admin.lexoffice.*' => 'admin.lexoffice',
+
+        // Persönliches Konto & Dashboard. Das Dashboard erklärt jetzt die
+        // (rollenabhängig gefüllten) Widgets selbst; rollenspezifische
+        // Einstiege bleiben zusätzlich über related/Suche erreichbar.
+        'dashboard' => 'dashboard.overview',
+        'dashboard.customize' => 'dashboard.overview',
+        // account.2fa.* ist weiter oben bereits auf account.two-factor
+        // gemappt; die folgenden account.*-Muster sind dazu disjunkt.
+        'account.profile.*' => 'account.profile',
+        'account.password.*' => 'account.profile',
+        'account.work-schedule' => 'account.profile',
+        'account.calendar.*' => 'account.profile',
+        'notifications.*' => 'account.notifications',
+        'bookmarks.*' => 'account.bookmarks',
+        'filter-presets.*' => 'account.bookmarks',
+        'profile.api-tokens.*' => 'account.api-tokens',
+        'calendar.index' => 'account.calendar',
+
+        // Kundenportal (eigener customer-Guard, eigene Zielgruppe)
+        'customer.dashboard' => 'customer-portal.overview',
+        'customer.diary.*' => 'customer-portal.diary',
+        'customer.invoices.*' => 'customer-portal.invoices',
+        'customer.open-issues.*' => 'customer-portal.issues',
+        'customer.time-entries.*' => 'customer-portal.time',
+        'customer.login' => 'customer-portal.access',
+        'customer.2fa.*' => 'customer-portal.access',
+        'customer.two-factor.*' => 'customer-portal.access',
+
+        // Anmeldung, Registrierung, Setup-Assistent und Altsystem-Brücke
+        'login' => 'auth.login',
+        'register' => 'auth.register',
+        'password.request' => 'auth.password-reset',
+        'password.reset' => 'auth.password-reset',
+        'two-factor.login' => 'auth.two-factor',
+        'install.*' => 'install.wizard',
+        'legacy.*' => 'legacy.overview',
     ],
 
 ];
