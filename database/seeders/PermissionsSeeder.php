@@ -109,22 +109,30 @@ class PermissionsSeeder extends Seeder {
      * Org-Erstellungen vor dem ersten Permissions-Seeding nicht in eine
      * `PermissionDoesNotExist`-Exception laufen.
      *
-     * Fast-Path: Sind bereits ebenso viele 'web'-Permissions vorhanden wie
-     * Enum-Cases, überspringen wir die ~138 findOrCreate-Queries. Das ist
-     * für Tests relevant, in denen pro setUp() eine neue Organization
-     * angelegt wird und der Observer-Pfad sonst jedes Mal die volle Liste
-     * durchwalken würde.
+     * Fast-Path: Es werden nur die tatsächlich FEHLENDEN Permissions angelegt
+     * (Abgleich über die Namen, EINE whereIn-Query). Ein reiner Count-Vergleich
+     * wäre falsch — bei Permission-Änderungen (eine neue hinzu, eine alte weg)
+     * kann die Anzahl gleich bleiben, während ein neuer Name (z. B.
+     * `article.view`) fehlt und das spätere syncPermissions() in eine
+     * PermissionDoesNotExist-Exception liefe. Bleibt für Tests schnell, weil im
+     * Normalfall nichts fehlt und keine ~138 findOrCreate-Queries laufen.
      */
     private static function ensurePermissionsExist(): void {
-        $expected = count(PermissionEnum::cases());
-        $existing = Permission::query()->where('guard_name', 'web')->count();
+        $enumValues = array_map(static fn(PermissionEnum $p): string => $p->value, PermissionEnum::cases());
 
-        if ($existing >= $expected) {
+        $existing = Permission::query()
+            ->where('guard_name', 'web')
+            ->whereIn('name', $enumValues)
+            ->pluck('name')
+            ->all();
+
+        $missing = array_diff($enumValues, $existing);
+        if ($missing === []) {
             return;
         }
 
-        foreach (PermissionEnum::cases() as $permission) {
-            Permission::findOrCreate($permission->value, 'web');
+        foreach ($missing as $name) {
+            Permission::findOrCreate($name, 'web');
         }
     }
 
