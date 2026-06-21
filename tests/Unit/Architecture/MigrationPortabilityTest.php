@@ -117,6 +117,28 @@ class MigrationPortabilityTest extends TestCase {
                     }
                 }
 
+                // Foreign Keys: foreignId('col')->constrained(...) bzw.
+                // ->foreign('col') ohne expliziten Namen erzeugen den Constraint-
+                // Namen {table}_{col}_foreign (basiert auf der LOKALEN Spalte).
+                foreach (explode(';', $body) as $stmt) {
+                    $hasExplicitName = str_contains($stmt, 'indexName');
+                    if (! $hasExplicitName
+                        && preg_match('/->\s*constrained\(/', $stmt)
+                        && preg_match('/foreignId\(\s*[\'"]([a-z0-9_]+)[\'"]\s*\)/', $stmt, $fm)) {
+                        $name = $table . '_' . $fm[1] . '_foreign';
+                        if (strlen($name) > self::IDENTIFIER_LIMIT) {
+                            $violations[] = sprintf('%s: FK %s -> %s (%d Zeichen)', $base, $fm[1], $name, strlen($name));
+                        }
+                    }
+                    // ->foreign('col') ohne zweites Namens-Argument.
+                    if (preg_match('/->\s*foreign\(\s*[\'"]([a-z0-9_]+)[\'"]\s*\)/', $stmt, $fm2)) {
+                        $name = $table . '_' . $fm2[1] . '_foreign';
+                        if (strlen($name) > self::IDENTIFIER_LIMIT) {
+                            $violations[] = sprintf('%s: FK %s -> %s (%d Zeichen)', $base, $fm2[1], $name, strlen($name));
+                        }
+                    }
+                }
+
                 // morphs()/nullableMorphs()/uuidMorphs() ohne expliziten Indexnamen.
                 if (preg_match_all('/->\s*(morphs|nullableMorphs|uuidMorphs)\(\s*[\'"]([a-z0-9_]+)[\'"]\s*\)/', $body, $mm, PREG_SET_ORDER)) {
                     foreach ($mm as $m) {

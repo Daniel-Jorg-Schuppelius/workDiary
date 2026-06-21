@@ -24,7 +24,11 @@ return new class extends Migration {
     public function up(): void {
         Schema::create('procedure_material_requirements', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('procedure_template_version_id')->constrained('procedure_template_versions')->cascadeOnDelete();
+            // Expliziter kurzer FK-Name: der Auto-Name überschreitet sonst das
+            // 64-Zeichen-Limit von MySQL (SQLite-Dev verdeckt das).
+            $table->foreignId('procedure_template_version_id')
+                ->constrained('procedure_template_versions', indexName: 'pmr_ptv_fk')
+                ->cascadeOnDelete();
             $table->string('position_code', 40);
             $table->foreignId('article_id')->constrained('articles')->cascadeOnDelete();
             $table->foreignId('article_variant_id')->nullable()->constrained('article_variants')->nullOnDelete();
