@@ -171,7 +171,7 @@ class EconomicsReportBuilder {
                 /** @var \Illuminate\Support\Collection<int, Project> $customerProjects */
                 $customerProjects = $projectsByCustomer->get((int) $customer->id, collect());
 
-                $projectIds = $customerProjects->pluck('id')->map(static fn ($v): int => (int) $v)->all();
+                $projectIds = array_values($customerProjects->pluck('id')->map(static fn ($v): int => (int) $v)->all());
 
                 $time = $this->timeAggregate(
                     TimeEntry::query()

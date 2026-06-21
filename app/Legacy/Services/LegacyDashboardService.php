@@ -348,14 +348,24 @@ class LegacyDashboardService {
      * @return array{total:int,pending:int,approved:int,rejected:int}
      */
     private function vacationKpis(Builder $query, int $total): array {
+        // Drei Statuszählungen in EINER Aggregat-Query (SUM(CASE WHEN …)) statt
+        // drei separater count()-Abfragen; DB-agnostisch (MySQL + SQLite-Dev).
+        $agg = (clone $query)->selectRaw('
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = ? AND end_date >= ? THEN 1 ELSE 0 END) AS approved,
+            SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS rejected
+        ', [
+            VacationStatus::Pending->value,
+            VacationStatus::Approved->value,
+            now()->startOfYear()->toDateString(),
+            VacationStatus::Rejected->value,
+        ])->first();
+
         return [
             'total' => $total,
-            'pending' => (clone $query)->where('status', VacationStatus::Pending)->count(),
-            'approved' => (clone $query)
-                ->where('status', VacationStatus::Approved)
-                ->where('end_date', '>=', now()->startOfYear())
-                ->count(),
-            'rejected' => (clone $query)->where('status', VacationStatus::Rejected)->count(),
+            'pending' => (int) ($agg->pending ?? 0),
+            'approved' => (int) ($agg->approved ?? 0),
+            'rejected' => (int) ($agg->rejected ?? 0),
         ];
     }
 }

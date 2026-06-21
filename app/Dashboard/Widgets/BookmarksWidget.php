@@ -27,9 +27,13 @@ class BookmarksWidget extends Widget {
         return 'bookmarks';
     }
 
+    /** Dashboard-Kachel zeigt nur die ersten Lesezeichen (nach sort_order); die
+     *  vollständige Liste hat die Verwaltungsseite (bookmarks.index). */
+    private const PREVIEW_LIMIT = 10;
+
     public function render(User $user): View|string {
         return view('dashboard.widgets.bookmarks', [
-            'bookmarks' => $user->bookmarks()->get(),
+            'bookmarks' => $user->bookmarks()->limit(self::PREVIEW_LIMIT)->get(),
         ]);
     }
 }
