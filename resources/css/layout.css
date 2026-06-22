@@ -472,6 +472,30 @@
             #app-sidebar details.sidebar-section-collapsible > .menu {
                 padding-left: 1.25rem;
             }
+            /* Klappbare Untergruppen (analog zu den Sektionen, eine Ebene tiefer). */
+            #app-sidebar details.sidebar-subgroup-collapsible > summary {
+                cursor: pointer;
+                list-style: none;
+            }
+            #app-sidebar details.sidebar-subgroup-collapsible > summary::-webkit-details-marker { display: none; }
+            #app-sidebar details.sidebar-subgroup-collapsible > summary::marker { content: ''; }
+            #app-sidebar details.sidebar-subgroup-collapsible > summary:hover {
+                color: var(--color-base-content);
+            }
+            #app-sidebar .sidebar-subgroup-chevron {
+                margin-left: auto;
+                font-size: 1rem;
+                opacity: .55;
+                transition: transform .15s ease;
+            }
+            #app-sidebar details.sidebar-subgroup-collapsible[open] > summary .sidebar-subgroup-chevron {
+                transform: rotate(180deg);
+            }
+            /* Collapsed-Mode (Icon-Rail): Untergruppen zwangsweise öffnen und Chevron
+               ausblenden, damit alle Item-Icons als flache Liste sichtbar bleiben –
+               unabhängig vom gewählten Klappzustand. */
+            body.sidebar-collapsed #app-sidebar details.sidebar-subgroup-collapsible > ul { display: block !important; }
+            body.sidebar-collapsed #app-sidebar .sidebar-subgroup-chevron { display: none; }
 
             /* Collapsed-Mode: Section-Titel + Summary-Text/Chevron verschwinden, Details
                werden zwangsweise geöffnet, damit alle Item-Icons als flache Liste sichtbar
@@ -569,6 +593,7 @@
                 direction: ltr;
                 vertical-align: middle;
                 -webkit-font-feature-settings: 'liga';
+                font-feature-settings: 'liga';
                 -webkit-font-smoothing: antialiased;
                 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             }

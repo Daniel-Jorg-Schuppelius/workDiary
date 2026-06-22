@@ -166,14 +166,16 @@ class ModuleStatusResolver {
             return [];
         }
 
-        return LicenseFlagOverride::query()
-            ->where(function ($q) use ($organization): void {
-                $q->whereNull('organization_id')
-                    ->orWhere('organization_id', $organization->id);
-            })
-            ->pluck('flag')
-            ->map(static fn($v): string => (string) $v)
-            ->all();
+        return array_values(
+            LicenseFlagOverride::query()
+                ->where(function ($q) use ($organization): void {
+                    $q->whereNull('organization_id')
+                        ->orWhere('organization_id', $organization->id);
+                })
+                ->pluck('flag')
+                ->map(static fn($v): string => (string) $v)
+                ->all()
+        );
     }
 
     /**

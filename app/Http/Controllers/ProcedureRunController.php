@@ -340,7 +340,7 @@ class ProcedureRunController extends Controller {
      * @param  array<string, ProcedureStepRun>  $valuesByStepCode
      */
     private function isStepApplicable(ProcedureStepRun $stepRun, array $valuesByStepCode): bool {
-        $dependsCode = data_get($stepRun->stepDef->config, 'depends_on.step_code');
+        $dependsCode = data_get($stepRun->stepDef?->config, 'depends_on.step_code');
         if (! is_string($dependsCode) || $dependsCode === '') {
             return true;
         }
@@ -350,7 +350,7 @@ class ProcedureRunController extends Controller {
             return true; // Bezugsschritt unbekannt → nicht künstlich blockieren.
         }
 
-        $equals = data_get($stepRun->stepDef->config, 'depends_on.equals');
+        $equals = data_get($stepRun->stepDef?->config, 'depends_on.equals');
         if ($equals === null || $equals === '') {
             // Reine Existenzbedingung: Bezugsschritt muss erledigt sein.
             return $reference->status === ProcedureStepRunStatus::Done;
@@ -365,7 +365,7 @@ class ProcedureRunController extends Controller {
             return 0;
         }
 
-        return max(0, now()->diffInSeconds($stepRun->wait_until, false));
+        return (int) max(0, now()->diffInSeconds($stepRun->wait_until, false));
     }
 
     /**

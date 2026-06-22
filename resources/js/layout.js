@@ -355,6 +355,28 @@
                         });
                     })();
 
+                    // Persistenz pro Untergruppe (<details data-sidebar-subgroup-key="…">),
+                    // analog zu den Sektionen, eigener Storage-Schlüssel.
+                    (function () {
+                        var STORAGE_KEY = 'workDiarySidebarSubgroups';
+                        var store = {};
+                        try {
+                            var raw = localStorage.getItem(STORAGE_KEY);
+                            if (raw) { store = JSON.parse(raw) || {}; }
+                        } catch (e) { store = {}; }
+                        var groups = document.querySelectorAll('#app-sidebar details[data-sidebar-subgroup-key]');
+                        groups.forEach(function (details) {
+                            var key = details.getAttribute('data-sidebar-subgroup-key');
+                            if (key && Object.prototype.hasOwnProperty.call(store, key)) {
+                                details.open = store[key] === 1 || store[key] === '1' || store[key] === true;
+                            }
+                            details.addEventListener('toggle', function () {
+                                store[key] = details.open ? 1 : 0;
+                                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch (e) { /* ignore */ }
+                            });
+                        });
+                    })();
+
                     function isDesktop() {
                         return window.matchMedia('(min-width: 1024px)').matches;
                     }

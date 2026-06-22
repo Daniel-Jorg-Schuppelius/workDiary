@@ -488,38 +488,52 @@
                                     'key'         => 'work',
                                     'label'       => __('Tagesgeschäft'),
                                     'collapsible' => true,
-                                    'items'       => array_values(array_filter([
-                                        // „Heute" ist seit der Zusammenlegung auch die Tagesabschluss-Seite
-                                        // (MVP-015) für den eigenen Tag; daher matcht der Eintrag auch day-close.*
-                                        // (die day-close.*-Route bleibt für Fremdtage/Admin via ?user= erhalten).
-                                        ['route' => 'today.show',      'label' => __('Heute'),         'icon' => 'today',             'modal' => false, 'matches' => ['today.show', 'day-close.*']],
-                                        ['route' => $indexRoute,       'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
-                                        ['route' => 'week.index',      'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
-                                        ['route' => 'kanban.index',    'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
-                                        ['route' => 'attendance.index','label' => __('Stempeluhr'),    'icon' => 'punch_clock',       'modal' => false, 'matches' => ['attendance.*']],
-                                        // Dokumente & Formulare (MVP-031/032) sind auf der Seite per Tab-Leiste
-                                        // (documents/_tabs) zusammengelegt → ein Menüeintrag. Die Route zeigt auf
-                                        // die jeweils zugängliche Seite (Recht UND Modul), damit der Eintrag auch
-                                        // sichtbar bleibt, wenn nur eines von beiden verfügbar ist; der bestehende
-                                        // Filter (Modul + mayAccess) validiert die gewählte Route.
+                                    'groups'      => [
                                         [
-                                            'route' => (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Document::class)
-                                                    && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.documents'))
-                                                ? 'documents.index' : 'form-submissions.index',
-                                            'label' => __('document.title.index') . ' & ' . __('form.title.submissions'),
-                                            'icon' => 'folder_open', 'modal' => false,
-                                            'matches' => ['documents.*', 'form-submissions.*'],
+                                            'key'   => 'work-capture',
+                                            'label' => __('Erfassung'),
+                                            'icon'  => 'edit_note',
+                                            'items' => [
+                                                // „Heute" ist seit der Zusammenlegung auch die Tagesabschluss-Seite
+                                                // (MVP-015) für den eigenen Tag; daher matcht der Eintrag auch day-close.*
+                                                // (die day-close.*-Route bleibt für Fremdtage/Admin via ?user= erhalten).
+                                                ['route' => 'today.show',      'label' => __('Heute'),         'icon' => 'today',             'modal' => false, 'matches' => ['today.show', 'day-close.*']],
+                                                ['route' => $indexRoute,       'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
+                                                ['route' => 'week.index',      'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
+                                                ['route' => 'kanban.index',    'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
+                                                ['route' => 'attendance.index','label' => __('Stempeluhr'),    'icon' => 'punch_clock',       'modal' => false, 'matches' => ['attendance.*']],
+                                            ],
                                         ],
-                                        // Wissensbasis (Feature 011): Recht via NavGate (@can knowledge.viewAny
-                                        // über KnowledgeArticle-Policy), Modul-Gating via $moduleByItemRoute.
-                                        ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
-                                        // Sicherheitsereignisse (Arbeitsschutz, Feature 013): sichtbar
-                                        // für Melder (safety.report) und Register-Berechtigte (safety.viewAny/manage).
-                                        (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\SafetyEvent::class)
-                                            || \Illuminate\Support\Facades\Gate::allows('create', \App\Models\SafetyEvent::class))
-                                            ? ['route' => 'safety-events.index', 'label' => __('safety.title.index'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['safety-events.*']]
-                                            : null,
-                                    ])),
+                                        [
+                                            'key'   => 'work-knowledge',
+                                            'label' => __('Wissen & Doku'),
+                                            'icon'  => 'menu_book',
+                                            'items' => array_values(array_filter([
+                                                // Dokumente & Formulare (MVP-031/032) sind auf der Seite per Tab-Leiste
+                                                // (documents/_tabs) zusammengelegt → ein Menüeintrag. Die Route zeigt auf
+                                                // die jeweils zugängliche Seite (Recht UND Modul), damit der Eintrag auch
+                                                // sichtbar bleibt, wenn nur eines von beiden verfügbar ist; der bestehende
+                                                // Filter (Modul + mayAccess) validiert die gewählte Route.
+                                                [
+                                                    'route' => (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Document::class)
+                                                            && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.documents'))
+                                                        ? 'documents.index' : 'form-submissions.index',
+                                                    'label' => __('document.title.index') . ' & ' . __('form.title.submissions'),
+                                                    'icon' => 'folder_open', 'modal' => false,
+                                                    'matches' => ['documents.*', 'form-submissions.*'],
+                                                ],
+                                                // Wissensbasis (Feature 011): Recht via NavGate (@can knowledge.viewAny
+                                                // über KnowledgeArticle-Policy), Modul-Gating via $moduleByItemRoute.
+                                                ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
+                                                // Sicherheitsereignisse (Arbeitsschutz, Feature 013): sichtbar
+                                                // für Melder (safety.report) und Register-Berechtigte (safety.viewAny/manage).
+                                                (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\SafetyEvent::class)
+                                                    || \Illuminate\Support\Facades\Gate::allows('create', \App\Models\SafetyEvent::class))
+                                                    ? ['route' => 'safety-events.index', 'label' => __('safety.title.index'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['safety-events.*']]
+                                                    : null,
+                                            ])),
+                                        ],
+                                    ],
                                 ];
                                 $sidebarSections[] = [
                                     'key'         => 'plan',
@@ -582,29 +596,50 @@
                                     'key'         => 'sales',
                                     'label'       => __('Vertrieb & Abrechnung'),
                                     'collapsible' => true,
-                                    'items'       => [
-                                        ['route' => 'customers.index', 'label' => __('Kunden'),         'icon' => 'badge',           'modal' => false, 'matches' => ['customers.*']],
-                                        ['route' => 'suppliers.index', 'label' => __('Lieferanten'),    'icon' => 'local_shipping',  'modal' => false, 'matches' => ['suppliers.*']],
-                                        ['route' => 'articles.index',  'label' => __('article.title'),  'icon' => 'inventory_2',     'modal' => false, 'matches' => ['articles.*']],
-                                        ['route' => 'warehouses.index','label' => __('inventory.title'),'icon' => 'warehouse',       'modal' => false, 'matches' => ['warehouses.*', 'inventory.*']],
-                                        ['route' => 'manufacturing-orders.index','label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
-                                        ['route' => 'serials.index',   'label' => __('inventory.serial.title'), 'icon' => 'tag', 'modal' => false, 'matches' => ['serials.*']],
-                                        ['route' => 'purchase-orders.index','label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
-                                        ['route' => 'inventory.scan',  'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
-                                        ['route' => 'work-centers.index','label' => __('manufacturing.capacity.title'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['work-centers.*']],
-                                        ['route' => 'inventory.lots',  'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
-                                        ['route' => 'inventory.label-templates.index', 'label' => __('inventory.label_template.title'), 'icon' => 'label', 'modal' => false, 'matches' => ['inventory.label-templates.*']],
-                                        ['route' => 'projects.index',  'label' => __('Projekte'),       'icon' => 'folder_special',  'modal' => false, 'matches' => ['projects.*']],
-                                        ['route' => 'invoices.index',  'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote',   'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
-                                        // Faktura-Übergabe (Feature 045): Recht via NavGate (@can finance.viewAny
-                                        // über BillingTransfer-Policy), Modul-Gating via $moduleByItemRoute (module.finance).
-                                        ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
-                                        // DATEV-Buchungsstapel (Feature 045, Priorität 2): Recht via NavGate
-                                        // (@can finance.booking.export über DatevBookingBatch-Policy),
-                                        // Modul-Gating via $moduleByItemRoute (module.finance).
-                                        ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
-                                        ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
-                                        ['route' => 'events.index',    'label' => __('Veranstaltungen'),'icon' => 'event',           'modal' => false, 'matches' => ['events.*']],
+                                    'groups'      => [
+                                        [
+                                            'key'   => 'sales-crm',
+                                            'label' => __('Vertrieb'),
+                                            'icon'  => 'badge',
+                                            'items' => [
+                                                ['route' => 'customers.index', 'label' => __('Kunden'),          'icon' => 'badge',          'modal' => false, 'matches' => ['customers.*']],
+                                                ['route' => 'suppliers.index', 'label' => __('Lieferanten'),     'icon' => 'local_shipping', 'modal' => false, 'matches' => ['suppliers.*']],
+                                                ['route' => 'projects.index',  'label' => __('Projekte'),        'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
+                                                ['route' => 'events.index',    'label' => __('Veranstaltungen'), 'icon' => 'event',          'modal' => false, 'matches' => ['events.*']],
+                                            ],
+                                        ],
+                                        [
+                                            'key'   => 'sales-inventory',
+                                            'label' => __('Lager & Fertigung'),
+                                            'icon'  => 'warehouse',
+                                            'items' => [
+                                                ['route' => 'articles.index',  'label' => __('article.title'),  'icon' => 'inventory_2',     'modal' => false, 'matches' => ['articles.*']],
+                                                ['route' => 'warehouses.index','label' => __('inventory.title'),'icon' => 'warehouse',       'modal' => false, 'matches' => ['warehouses.*', 'inventory.*']],
+                                                ['route' => 'manufacturing-orders.index','label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
+                                                ['route' => 'serials.index',   'label' => __('inventory.serial.title'), 'icon' => 'tag', 'modal' => false, 'matches' => ['serials.*']],
+                                                ['route' => 'purchase-orders.index','label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
+                                                ['route' => 'inventory.scan',  'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
+                                                ['route' => 'work-centers.index','label' => __('manufacturing.capacity.title'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['work-centers.*']],
+                                                ['route' => 'inventory.lots',  'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
+                                                ['route' => 'inventory.label-templates.index', 'label' => __('inventory.label_template.title'), 'icon' => 'label', 'modal' => false, 'matches' => ['inventory.label-templates.*']],
+                                            ],
+                                        ],
+                                        [
+                                            'key'   => 'sales-billing',
+                                            'label' => __('Abrechnung & Finanzen'),
+                                            'icon'  => 'request_quote',
+                                            'items' => [
+                                                ['route' => 'invoices.index',  'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote',   'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
+                                                // Faktura-Übergabe (Feature 045): Recht via NavGate (@can finance.viewAny
+                                                // über BillingTransfer-Policy), Modul-Gating via $moduleByItemRoute (module.finance).
+                                                ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
+                                                // DATEV-Buchungsstapel (Feature 045, Priorität 2): Recht via NavGate
+                                                // (@can finance.booking.export über DatevBookingBatch-Policy),
+                                                // Modul-Gating via $moduleByItemRoute (module.finance).
+                                                ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
+                                                ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
+                                            ],
+                                        ],
                                     ],
                                 ];
                                 // Hinweisgeber/Meldestelle: nur fuer eigens Berechtigte
@@ -630,14 +665,28 @@
                                         'key'         => 'datenschutz',
                                         'label'       => __('Datenschutz'),
                                         'collapsible' => true,
-                                        'items'       => [
-                                            ['route' => 'dataprotection.activities.index', 'label' => __('Verarbeitungstätigkeiten'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['dataprotection.activities.*']],
-                                            ['route' => 'dataprotection.requests.index', 'label' => __('Betroffenenanfragen'), 'icon' => 'contact_mail', 'modal' => false, 'matches' => ['dataprotection.requests.*']],
-                                            ['route' => 'dataprotection.processors.index', 'label' => __('Dienstleister & AVV'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['dataprotection.processors.*', 'dataprotection.agreements.*']],
-                                            ['route' => 'dataprotection.gvv.index', 'label' => __('Gemeinsame Verantwortlichkeit'), 'icon' => 'diversity_3', 'modal' => false, 'matches' => ['dataprotection.gvv.*']],
-                                            ['route' => 'dataprotection.compliance.index', 'label' => __('Lückenanalyse'), 'icon' => 'rule', 'modal' => false, 'matches' => ['dataprotection.compliance.*']],
-                                            ['route' => 'dataprotection.incidents.index', 'label' => __('Datenschutzvorfälle'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['dataprotection.incidents.*']],
-                                            ['route' => 'dataprotection.tom.index', 'label' => __('TOM-Katalog'), 'icon' => 'shield_lock', 'modal' => false, 'matches' => ['dataprotection.tom.*']],
+                                        'groups'      => [
+                                            [
+                                                'key'   => 'datenschutz-records',
+                                                'label' => __('Verzeichnisse'),
+                                                'icon'  => 'fact_check',
+                                                'items' => [
+                                                    ['route' => 'dataprotection.activities.index', 'label' => __('Verarbeitungstätigkeiten'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['dataprotection.activities.*']],
+                                                    ['route' => 'dataprotection.processors.index', 'label' => __('Dienstleister & AVV'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['dataprotection.processors.*', 'dataprotection.agreements.*']],
+                                                    ['route' => 'dataprotection.gvv.index', 'label' => __('Gemeinsame Verantwortlichkeit'), 'icon' => 'diversity_3', 'modal' => false, 'matches' => ['dataprotection.gvv.*']],
+                                                    ['route' => 'dataprotection.tom.index', 'label' => __('TOM-Katalog'), 'icon' => 'shield_lock', 'modal' => false, 'matches' => ['dataprotection.tom.*']],
+                                                ],
+                                            ],
+                                            [
+                                                'key'   => 'datenschutz-cases',
+                                                'label' => __('Vorfälle & Prüfung'),
+                                                'icon'  => 'gpp_maybe',
+                                                'items' => [
+                                                    ['route' => 'dataprotection.requests.index', 'label' => __('Betroffenenanfragen'), 'icon' => 'contact_mail', 'modal' => false, 'matches' => ['dataprotection.requests.*']],
+                                                    ['route' => 'dataprotection.incidents.index', 'label' => __('Datenschutzvorfälle'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['dataprotection.incidents.*']],
+                                                    ['route' => 'dataprotection.compliance.index', 'label' => __('Lückenanalyse'), 'icon' => 'rule', 'modal' => false, 'matches' => ['dataprotection.compliance.*']],
+                                                ],
+                                            ],
                                         ],
                                     ];
                                 }
@@ -648,30 +697,51 @@
                                         'key'         => 'isms',
                                         'label'       => __('isms.title.section'),
                                         'collapsible' => true,
-                                        'items'       => array_values(array_filter([
-                                            // Auditbereitschaft (Feature 044, MVP 1): bewusst ERSTER Eintrag des Bereichs.
-                                            ['route' => 'isms.dashboard', 'label' => __('isms.title.dashboard'), 'icon' => 'monitoring', 'modal' => false, 'matches' => ['isms.dashboard']],
-                                            // Reifegrad-/Readiness-Assessment (Feature 044, MVP 3): begruendete Selbsteinschaetzung.
-                                            ['route' => 'isms.readiness', 'label' => __('isms.title.readiness'), 'icon' => 'speed', 'modal' => false, 'matches' => ['isms.readiness']],
-                                            ['route' => 'isms.requirements.index', 'label' => __('isms.title.requirements'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['isms.requirements.*', 'isms.statements.*']],
-                                            ['route' => 'isms.controls.index', 'label' => __('isms.title.controls'), 'icon' => 'verified_user', 'modal' => false, 'matches' => ['isms.controls.*']],
-                                            ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],
-                                            // Betrieb und Wirksamkeit (Feature 044, MVP 2): Vorfaelle, Schwachstellen, Advisories.
-                                            ['route' => 'isms.incidents.index', 'label' => __('isms.title.incidents'), 'icon' => 'report', 'modal' => false, 'matches' => ['isms.incidents.*']],
-                                            ['route' => 'isms.vulnerabilities.index', 'label' => __('isms.title.vulnerabilities'), 'icon' => 'bug_report', 'modal' => false, 'matches' => ['isms.vulnerabilities.*', 'isms.advisories.*']],
-                                            ['route' => 'isms.software.index', 'label' => __('isms.title.software'), 'icon' => 'apps', 'modal' => false, 'matches' => ['isms.software.*']],
-                                            // Lieferanten und Vertraege (Feature 044, MVP 2/3): Lieferantenbewertung.
-                                            ['route' => 'isms.suppliers.index', 'label' => __('isms.title.suppliers'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['isms.suppliers.*']],
-                                            ['route' => 'isms.conformity.index', 'label' => __('isms.title.conformity'), 'icon' => 'workspace_premium', 'modal' => false, 'matches' => ['isms.conformity.*']],
-                                            ['route' => 'isms.audits.index', 'label' => __('isms.title.audits'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['isms.audits.*']],
-                                            ['route' => 'isms.reviews.index', 'label' => __('isms.title.reviews'), 'icon' => 'grading', 'modal' => false, 'matches' => ['isms.reviews.*']],
-                                            ['route' => 'isms.packages.index', 'label' => __('isms.title.packages'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['isms.packages.*']],
-                                            ['route' => 'isms.soa', 'label' => __('isms.title.soa'), 'icon' => 'rule_folder', 'modal' => true, 'matches' => ['isms.soa']],
-                                            // Geltungsbereiche: Verwaltungsflaeche, nur isms.manage (IsmsScopePolicy).
-                                            \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Isms\IsmsScope::class)
-                                                ? ['route' => 'isms.scopes.index', 'label' => __('isms.title.scopes'), 'icon' => 'travel_explore', 'modal' => false, 'matches' => ['isms.scopes.*']]
-                                                : null,
-                                        ])),
+                                        'groups'      => [
+                                            [
+                                                'key'   => 'isms-governance',
+                                                'label' => __('Steuerung'),
+                                                'icon'  => 'monitoring',
+                                                'items' => [
+                                                    // Auditbereitschaft (Feature 044, MVP 1): bewusst ERSTER Eintrag des Bereichs.
+                                                    ['route' => 'isms.dashboard', 'label' => __('isms.title.dashboard'), 'icon' => 'monitoring', 'modal' => false, 'matches' => ['isms.dashboard']],
+                                                    // Reifegrad-/Readiness-Assessment (Feature 044, MVP 3): begruendete Selbsteinschaetzung.
+                                                    ['route' => 'isms.readiness', 'label' => __('isms.title.readiness'), 'icon' => 'speed', 'modal' => false, 'matches' => ['isms.readiness']],
+                                                    ['route' => 'isms.requirements.index', 'label' => __('isms.title.requirements'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['isms.requirements.*', 'isms.statements.*']],
+                                                    ['route' => 'isms.controls.index', 'label' => __('isms.title.controls'), 'icon' => 'verified_user', 'modal' => false, 'matches' => ['isms.controls.*']],
+                                                    ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],
+                                                ],
+                                            ],
+                                            [
+                                                'key'   => 'isms-operations',
+                                                'label' => __('Betrieb'),
+                                                'icon'  => 'report',
+                                                'items' => [
+                                                    // Betrieb und Wirksamkeit (Feature 044, MVP 2): Vorfaelle, Schwachstellen, Advisories.
+                                                    ['route' => 'isms.incidents.index', 'label' => __('isms.title.incidents'), 'icon' => 'report', 'modal' => false, 'matches' => ['isms.incidents.*']],
+                                                    ['route' => 'isms.vulnerabilities.index', 'label' => __('isms.title.vulnerabilities'), 'icon' => 'bug_report', 'modal' => false, 'matches' => ['isms.vulnerabilities.*', 'isms.advisories.*']],
+                                                    ['route' => 'isms.software.index', 'label' => __('isms.title.software'), 'icon' => 'apps', 'modal' => false, 'matches' => ['isms.software.*']],
+                                                ],
+                                            ],
+                                            [
+                                                'key'   => 'isms-audit',
+                                                'label' => __('Lieferanten & Audit'),
+                                                'icon'  => 'handshake',
+                                                'items' => array_values(array_filter([
+                                                    // Lieferanten und Vertraege (Feature 044, MVP 2/3): Lieferantenbewertung.
+                                                    ['route' => 'isms.suppliers.index', 'label' => __('isms.title.suppliers'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['isms.suppliers.*']],
+                                                    ['route' => 'isms.conformity.index', 'label' => __('isms.title.conformity'), 'icon' => 'workspace_premium', 'modal' => false, 'matches' => ['isms.conformity.*']],
+                                                    ['route' => 'isms.audits.index', 'label' => __('isms.title.audits'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['isms.audits.*']],
+                                                    ['route' => 'isms.reviews.index', 'label' => __('isms.title.reviews'), 'icon' => 'grading', 'modal' => false, 'matches' => ['isms.reviews.*']],
+                                                    ['route' => 'isms.packages.index', 'label' => __('isms.title.packages'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['isms.packages.*']],
+                                                    ['route' => 'isms.soa', 'label' => __('isms.title.soa'), 'icon' => 'rule_folder', 'modal' => true, 'matches' => ['isms.soa']],
+                                                    // Geltungsbereiche: Verwaltungsflaeche, nur isms.manage (IsmsScopePolicy).
+                                                    \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Isms\IsmsScope::class)
+                                                        ? ['route' => 'isms.scopes.index', 'label' => __('isms.title.scopes'), 'icon' => 'travel_explore', 'modal' => false, 'matches' => ['isms.scopes.*']]
+                                                        : null,
+                                                ])),
+                                            ],
+                                        ],
                                     ];
                                 }
                                 $sidebarSections[] = [
@@ -804,6 +874,17 @@
                                 'finance.reconciliation.index' => 'module.finance',
                                 'finance.bank-accounts.index' => 'module.finance',
                                 'finance.datev.index' => 'module.finance',
+                                // Lager & Fertigung (Untergruppe „Lager & Fertigung" in Vertrieb & Abrechnung):
+                                // ohne module.lager ausblenden, statt nur per Route-Gate (423) zu sperren.
+                                'articles.index' => 'module.lager',
+                                'warehouses.index' => 'module.lager',
+                                'manufacturing-orders.index' => 'module.lager',
+                                'serials.index' => 'module.lager',
+                                'purchase-orders.index' => 'module.lager',
+                                'inventory.scan' => 'module.lager',
+                                'work-centers.index' => 'module.lager',
+                                'inventory.lots' => 'module.lager',
+                                'inventory.label-templates.index' => 'module.lager',
                             ];
                             $moduleByGroupKey = [
                                 'reports-team' => 'module.auswertungen_team',
@@ -826,7 +907,11 @@
                                     foreach ($__groups as $__gi => $__grp) {
                                         $__groups[$__gi]['items'] = array_values(array_filter(
                                             $__grp['items'] ?? [],
-                                            fn ($it) => $nav->mayAccess($it['route'])
+                                            // Wie der flache items-Pfad: zusätzlich pro-Item-Modul-Gating
+                                            // (moduleByItemRoute), damit Untergruppen-Items ohne ihr Modul
+                                            // (z. B. Finanzen/Lager/Dokumente) ausgeblendet werden.
+                                            fn ($it) => (! isset($moduleByItemRoute[$it['route']]) || $features->isEnabled($moduleByItemRoute[$it['route']]))
+                                                && $nav->mayAccess($it['route'])
                                         ));
                                     }
                                     $sidebarSections[$__i]['groups'] = array_values(array_filter($__groups, fn ($g) => ! empty($g['items'])));
@@ -1601,12 +1686,14 @@
                                                     fn ($i) => collect($i['matches'] ?? [$i['route']])->contains(fn ($m) => request()->routeIs($m))
                                                 );
                                             @endphp
-                                            <div class="sidebar-subgroup"
-                                                 data-sidebar-subgroup-key="{{ $group['key'] ?? '' }}">
-                                                <div class="sidebar-subgroup-label flex items-center gap-2 px-2 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                                            <details class="sidebar-subgroup sidebar-subgroup-collapsible"
+                                                     data-sidebar-subgroup-key="{{ $group['key'] ?? '' }}"
+                                                     @if ($groupActive) open @endif>
+                                                <summary class="sidebar-subgroup-label flex items-center gap-2 px-2 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/60">
                                                     <x-icon :name="$group['icon'] ?? 'label'" class="text-[0.95rem] opacity-70" />
-                                                    <span data-sidebar-label class="truncate">{{ $group['label'] }}</span>
-                                                </div>
+                                                    <span data-sidebar-label class="truncate flex-1">{{ $group['label'] }}</span>
+                                                    <x-icon name="expand_more" class="sidebar-subgroup-chevron" />
+                                                </summary>
                                                 <ul class="menu menu-sm w-full gap-0.5 p-0">
                                                     @foreach (($group['items'] ?? []) as $item)
                                                         @php $active = collect($item['matches'] ?? [$item['route']])->contains(fn ($m) => request()->routeIs($m)); @endphp
@@ -1621,7 +1708,7 @@
                                                         </li>
                                                     @endforeach
                                                 </ul>
-                                            </div>
+                                            </details>
                                         @endforeach
                                     </div>
                                 @else

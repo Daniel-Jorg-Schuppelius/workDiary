@@ -87,6 +87,9 @@ class DataQualityInspector {
             ClassificationDomain::ReworkReason => (string) __('Nacharbeitsgründe'),
             ClassificationDomain::ProductGroup => (string) __('Produktgruppen'),
             ClassificationDomain::DienstmittelType => (string) __('Dienstmitteltypen'),
+            ClassificationDomain::Allergen => (string) __('Allergene'),
+            ClassificationDomain::Trade => (string) __('Gewerke'),
+            ClassificationDomain::PermitType => (string) __('Genehmigungsarten'),
             null => $domain,
         };
     }
