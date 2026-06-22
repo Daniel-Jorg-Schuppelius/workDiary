@@ -14,7 +14,7 @@ use App\Enums\Organization\TenantStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
-use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus};
+use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus, ModuleCatalog, ModuleStatusResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -26,6 +26,8 @@ class LicenseAdminController extends Controller {
     public function __construct(
         private readonly LicenseService $service,
         private readonly FeatureFlagResolver $resolver,
+        private readonly ModuleStatusResolver $moduleStatus,
+        private readonly ModuleCatalog $catalog,
     ) {}
 
     public function index(Request $request): View {
@@ -66,6 +68,109 @@ class LicenseAdminController extends Controller {
             'tenantStatusExplicit' => $org?->tenant_status,
             'tenantStatusOptions' => TenantStatus::assignable(),
             'canManageTenant' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
+            // MVP-052: org-bezogene Modulkonfiguration (4-Zustands-Modell).
+            'modules' => $org !== null ? $this->moduleStatus->forOrganization($org) : [],
+            'canConfigureModules' => $request->user()?->can(Permission::PlatformFeatureFlagOverride->value) ?? false,
+        ]);
+    }
+
+    /**
+     * Deaktiviert ein lizenziertes Modul für die EIGENE Organisation (MVP-052).
+     * Keine Datenlöschung, keine Downgrade-Karenz — nur ein Disable-Override.
+     * Org-Admin-Operation (`platform.featureFlag.override`), strikt org-gescopt.
+     */
+    public function disableModule(Request $request): RedirectResponse {
+        Gate::authorize(Permission::PlatformFeatureFlagOverride->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $organization = $user->organization;
+        abort_if($organization === null, Response::HTTP_NOT_FOUND);
+
+        $data = $request->validate([
+            'module' => ['required', 'string', Rule::in($this->catalog->codes())],
+            'reason' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $module = (string) $data['module'];
+
+        // Nur ein lizenziertes, aktuell aktives Modul darf deaktiviert werden.
+        // Verhindert per Request-Manipulation das „Deaktivieren" nicht
+        // lizenzierter Module (MVP-052 Akzeptanz 2).
+        $status = $this->moduleStatus->statusFor($organization, $module);
+        if (! $status->isConfigurable()) {
+            return back()->with('error', __('Nur lizenzierte, aktive Module können deaktiviert werden.'));
+        }
+
+        $reason = isset($data['reason']) && trim((string) $data['reason']) !== '' ? trim((string) $data['reason']) : null;
+
+        $existing = LicenseFlagOverride::query()
+            ->where('organization_id', $organization->id)
+            ->where('flag', $module)
+            ->first();
+
+        if ($existing === null) {
+            LicenseFlagOverride::query()->create([
+                'organization_id' => $organization->id,
+                'flag' => $module,
+                'reason' => $reason,
+                'disabled_at' => CarbonImmutable::now(),
+                'disabled_by_user_id' => $user->id,
+            ]);
+        }
+
+        $this->auditModule($organization, $user, 'license.moduleDisabled', $module, $reason);
+        $this->resolver->flush();
+
+        return back()->with('success', __('Modul „:modul" deaktiviert. Es wurden keine Daten gelöscht.', [
+            'modul' => $this->catalog->label($module),
+        ]));
+    }
+
+    /**
+     * Reaktiviert ein zuvor deaktiviertes Modul der EIGENEN Organisation
+     * (MVP-052). Stellt Navigation und Zugriff ohne Datenmigration wieder her.
+     */
+    public function enableModule(Request $request): RedirectResponse {
+        Gate::authorize(Permission::PlatformFeatureFlagOverride->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $organization = $user->organization;
+        abort_if($organization === null, Response::HTTP_NOT_FOUND);
+
+        $data = $request->validate([
+            'module' => ['required', 'string', Rule::in($this->catalog->codes())],
+        ]);
+        $module = (string) $data['module'];
+
+        // Org-Admin darf ausschließlich Overrides der eigenen Organisation
+        // entfernen — plattformweite Overrides bleiben dem Plattform-Admin.
+        $deleted = LicenseFlagOverride::query()
+            ->where('organization_id', $organization->id)
+            ->where('flag', $module)
+            ->delete();
+
+        if ($deleted > 0) {
+            $this->auditModule($organization, $user, 'license.moduleEnabled', $module, null);
+            $this->resolver->flush();
+        }
+
+        return back()->with('success', __('Modul „:modul" aktiviert.', [
+            'modul' => $this->catalog->label($module),
+        ]));
+    }
+
+    private function auditModule(Organization $organization, User $user, string $event, string $module, ?string $reason): void {
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'event' => $event,
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => [
+                'module' => $module,
+                'reason' => $reason,
+            ],
         ]);
     }
 

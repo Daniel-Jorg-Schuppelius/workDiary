@@ -306,6 +306,30 @@ class BranchProfileInstallerTest extends TestCase {
         ]);
     }
 
+    public function test_install_facility_and_cleaning_profiles_publish_reference_procedures(): void {
+        // MVP-034: Facility und Gebäudereinigung sind vollwertige Referenz-
+        // profile — ihre deklarativen Prozedurvorlagen werden veröffentlicht.
+        foreach (['facility' => 'FM_OBJEKTKONTROLLE', 'gebaeudereinigung' => 'GR_QS_KONTROLLE'] as $profile => $code) {
+            $org = Organization::factory()->create();
+            $result = $this->installer->install($org, $profile, $this->actor);
+
+            $this->assertSame($profile, $result['profile_code']);
+            $this->assertGreaterThan(0, $result['created']['procedure_templates']);
+
+            $template = ProcedureTemplate::query()
+                ->where('organization_id', $org->id)
+                ->where('code', $code)
+                ->first();
+            $this->assertNotNull($template, "Referenz-Prozedur {$code} fehlt im Profil {$profile}.");
+
+            $version = $template->versions()->firstOrFail();
+            $this->assertTrue($version->isPublished());
+            $this->assertGreaterThan(0, ProcedureStepDef::query()
+                ->where('procedure_template_version_id', $version->id)
+                ->count());
+        }
+    }
+
     public function test_install_facility_profile_creates_maintenance_plan_templates(): void {
         $result = $this->installer->install($this->org, 'facility', $this->actor);
 

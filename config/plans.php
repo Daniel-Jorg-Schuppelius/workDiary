@@ -85,6 +85,29 @@ return [
         'module.lager' => 'Lager & Artikel',
     ],
 
+    // Kurze deutsche Beschreibung je Modul (MVP-052 Modulkonfiguration).
+    // Nur Module mit Beschreibung gelten als konfigurierbarer Katalogeintrag.
+    'descriptions' => [
+        'module.kanban' => 'Aufgaben als Kanban-Board organisieren.',
+        'module.planung' => 'Dienst-/Schichtplanung, Stundenzettel, Touren und Disposition.',
+        'module.spesen' => 'Reisekosten, Spesen und Belegerfassung.',
+        'module.vertrieb' => 'Kunden, Projekte, Rechnungen und Abrechnung.',
+        'module.fuhrpark' => 'Fahrzeuge, Assets, Reservierungen und Energiedaten.',
+        'module.liegenschaften' => 'Standorte, Gebäude, Etagen und Räume.',
+        'module.auswertungen_team' => 'Team- und Auswertungs-Reports.',
+        'module.chat' => 'Interner Team-Chat.',
+        'module.datenschutz' => 'Datenschutzmanagement (VVT, AVV, Betroffenenrechte).',
+        'module.documents' => 'Dokumentenverwaltung mit Verträgen und Nachweisen.',
+        'module.knowledge' => 'Wissensbasis und Problemhistorie.',
+        'module.forms' => 'Formular- und Vorlagensystem.',
+        'module.theming' => 'Eigene Themes und Branding gestalten.',
+        'module.lohn' => 'Lohnzuschläge und Lohnexport.',
+        'module.compliance' => 'Hinweisgebersystem (HinSchG).',
+        'module.isms' => 'Informationssicherheits-Managementsystem (ISO 27001).',
+        'module.finance' => 'Finanz-/DATEV-Schnittstelle.',
+        'module.lager' => 'Lagerwirtschaft, Artikelstamm und Fertigung.',
+    ],
+
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
     // EnforcePlanModules). Erste passende Regel gewinnt. Nicht gelistete
     // Routen gelten als Core (immer erreichbar). Persoenliche Auswertungen

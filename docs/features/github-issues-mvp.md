@@ -127,6 +127,7 @@ Definition of Done:
 | MVP-049 | CSV-Import für Kunden, Projekte, Nutzer und Materialien minimalisieren                           | `mvp`, `feature`         | [020](./020-import-migration-onboarding.md)                                                                      |
 | MVP-050 | Demo-Mandant mit vollständigem Beispielauftrag erstellen                                         | `mvp`, `feature`         | [040](./040-demo-testdaten-musterbranchen.md)                                                                    |
 | MVP-051 | In-App-Hilfe für Zeiterfassung, Auftrag, Protokoll, Prozedur und Auswertung ergänzen             | `mvp`, `ux`              | [039](./039-hilfe-dokumentation-in-app.md)                                                                       |
+| MVP-052 | Lizenzierte Module organisationsbezogen aktivieren/deaktivieren und Oberfläche reduzieren         | `mvp`, `ops`, `ux`       | [021](./021-tarife-lizenzportal-abrechnung.md)                                                                   |
 
 Definition of Done:
 
@@ -134,6 +135,8 @@ Definition of Done:
 - Support kann ohne fachliche Kundendaten erste Diagnose durchführen.
 - Neuer Mandant kann initial befüllt werden.
 - Demo zeigt den kompletten Nachweisfluss von Auftrag bis Auswertung.
+- Organisationen sehen nur die lizenzierten Module, die sie tatsächlich
+  verwenden möchten.
 
 ## Phase 5 - Fertigung und Montage
 

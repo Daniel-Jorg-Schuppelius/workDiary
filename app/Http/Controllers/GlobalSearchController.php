@@ -85,6 +85,38 @@ class GlobalSearchController extends Controller {
                 ->all(),
         );
 
+        // Aufträge / Tagebucheinträge (MVP-014): durchsucht Titel, Beschreibung
+        // und Rückmeldung. Sichtbarkeit wie der Index — wer kein diary.viewAny
+        // besitzt (und kein Admin ist), sieht ausschließlich EIGENE oder ihm
+        // zugewiesene Aufträge. Mandantengrenze über den Organization-Scope.
+        $diaryQuery = DiaryEntry::query()
+            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where(fn($q) => $q->where('title', 'like', $like)
+                ->orWhere('content', 'like', $like)
+                ->orWhere('response', 'like', $like));
+        if (! ($user->isAdmin() || $user->can(Permission::DiaryViewAny->value))) {
+            $diaryQuery->where(fn($q) => $q->where('user_id', $user->id)
+                ->orWhere('assigned_user_id', $user->id));
+        }
+        $groups[] = $this->makeGroup(
+            'diary',
+            __('Aufträge'),
+            'assignment',
+            $diaryQuery->with('customer:id,name')
+                ->orderByDesc('start_at')
+                ->limit(self::PER_TYPE_LIMIT)
+                ->get()
+                ->map(fn(DiaryEntry $d) => [
+                    'id' => $d->id,
+                    'title' => $d->title ?: ($d->content ? mb_strimwidth($d->content, 0, 60, '…') : __('Auftrag #:id', ['id' => $d->id])),
+                    'subtitle' => trim($d->status->label()
+                        . ($d->customer ? ' · ' . $d->customer->name : '')
+                        . ($d->start_at ? ' · ' . $d->start_at->format('d.m.Y') : '')),
+                    'url' => route('diary.show', $d),
+                ])
+                ->all(),
+        );
+
         $expenseQuery = Expense::query()
             ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
             ->where(fn($q) => $q->where('vendor', 'like', $like)

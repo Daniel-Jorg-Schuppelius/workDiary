@@ -1,6 +1,6 @@
 # Branchenprofil Gebäudereinigung
 
-Status: Geplant • Quelle:
+Status: Aktiv (MVP-034, Issue #34) • Quelle:
 [Feature 042 — Gewerke / Branchenprofile](features/042-gewerke-branchenprofile.md).
 
 ## 1. Zweck

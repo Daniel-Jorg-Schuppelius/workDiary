@@ -10,8 +10,9 @@
 
 namespace App\Services\Diagnostics;
 
-use App\Models\{AuditLog, BackupHeartbeat};
-use App\Services\Licensing\{LicenseService, LicenseStatus};
+use App\Enums\Licensing\ModuleStatus;
+use App\Models\{AuditLog, BackupHeartbeat, Organization};
+use App\Services\Licensing\{LicenseService, LicenseStatus, ModuleStatusResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Cache, DB, File};
 use Throwable;
@@ -24,7 +25,7 @@ use Throwable;
  * Fehlermeldung zurückgegeben, wenn ein Check unerwartet wirft.
  */
 class DiagnosticsService {
-    public const SECTIONS = ['version', 'license', 'queue', 'scheduler', 'mail', 'storage', 'backup'];
+    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup'];
 
     /**
      * Cache-Key für den Scheduler-Heartbeat. Wird von einem geplanten Job
@@ -36,6 +37,7 @@ class DiagnosticsService {
 
     public function __construct(
         private readonly LicenseService $licenses,
+        private readonly ModuleStatusResolver $modules,
     ) {}
 
     public function collect(): DiagnosticsReport {
@@ -52,6 +54,7 @@ class DiagnosticsService {
             return match ($section) {
                 'version' => $this->checkVersion(),
                 'license' => $this->checkLicense(),
+                'modules' => $this->checkModules(),
                 'queue' => $this->checkQueue(),
                 'scheduler' => $this->checkScheduler(),
                 'mail' => $this->checkMail(),
@@ -111,6 +114,66 @@ class DiagnosticsService {
             status: $status,
             metrics: $metrics,
             messages: array_filter([$result->message ?? null]),
+            checkedAt: CarbonImmutable::now(),
+        );
+    }
+
+    /**
+     * Modulübersicht (MVP-052 §7): pro Modul lizenziert/aktiviert/effektiv +
+     * Sperrgrund. Bezugsorganisation ist die aktuell gebundene Organisation.
+     */
+    public function checkModules(): DiagnosticSection {
+        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        if (! $org instanceof Organization) {
+            return new DiagnosticSection(
+                code: 'modules',
+                status: DiagnosticStatus::Unknown,
+                metrics: [],
+                messages: ['Keine Organisation im Kontext gebunden.'],
+                checkedAt: CarbonImmutable::now(),
+            );
+        }
+
+        $rows = $this->modules->forOrganization($org);
+        $licensed = 0;
+        $active = 0;
+        $disabled = 0;
+        $blocked = 0;
+        /** @var array<string, array{licensed:bool, active:bool, blockReason:?string}> $detail */
+        $detail = [];
+        foreach ($rows as $row) {
+            /** @var ModuleStatus $st */
+            $st = $row['status'];
+            if ($st->isLicensed()) {
+                $licensed++;
+            }
+            if ($st === ModuleStatus::Active) {
+                $active++;
+            }
+            if ($st === ModuleStatus::InactiveByCustomer) {
+                $disabled++;
+            }
+            if ($st === ModuleStatus::Blocked) {
+                $blocked++;
+            }
+            $detail[$row['code']] = [
+                'licensed' => $st->isLicensed(),
+                'active' => $st->isAvailable(),
+                'blockReason' => $st === ModuleStatus::Active ? null : $st->value,
+            ];
+        }
+
+        return new DiagnosticSection(
+            code: 'modules',
+            status: DiagnosticStatus::Ok,
+            metrics: [
+                'licensed' => $licensed,
+                'active' => $active,
+                'disabled_by_customer' => $disabled,
+                'blocked' => $blocked,
+                'detail' => (string) json_encode($detail, JSON_UNESCAPED_UNICODE),
+            ],
+            messages: [],
             checkedAt: CarbonImmutable::now(),
         );
     }

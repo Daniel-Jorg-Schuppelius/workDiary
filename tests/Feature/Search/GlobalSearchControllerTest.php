@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Search;
 
-use App\Models\{CommunicationNote, Customer, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
+use App\Models\{CommunicationNote, Customer, DiaryEntry, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -81,6 +81,61 @@ class GlobalSearchControllerTest extends TestCase {
     public function test_requires_authentication(): void {
         $this->getJson(route('api.internal.search', ['q' => 'acme']))
             ->assertUnauthorized();
+    }
+
+    // ── Aufträge / Tagebucheinträge (MVP-014) ───────────────────────────────
+
+    public function test_finds_diary_entries_by_title_and_content(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Acme Industries GmbH',
+        ]);
+        $entry = DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'customer_id' => $customer->id,
+            'title' => 'Zuluwort Störungsbehebung Server',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
+            ->assertOk();
+
+        $group = collect($response->json('groups'))->firstWhere('key', 'diary');
+        $this->assertNotNull($group, 'Aufträge-Gruppe fehlt.');
+        $this->assertSame('Zuluwort Störungsbehebung Server', $group['items'][0]['title']);
+        $this->assertStringContainsString('Acme Industries GmbH', $group['items'][0]['subtitle']);
+        $this->assertSame(route('diary.show', $entry), $group['items'][0]['url']);
+    }
+
+    public function test_diary_entries_of_others_hidden_without_view_any(): void {
+        $colleague = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        DiaryEntry::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $colleague->id,
+            'assigned_user_id' => $colleague->id,
+            'title' => 'Zuluwort fremder Auftrag',
+        ]);
+
+        // Außendienst trägt KEIN diary.viewAny (PermissionsSeeder) …
+        $aussendienst = User::factory()->aussendienst()->create(['organization_id' => $this->organization->id]);
+        $response = $this->actingAs($aussendienst)
+            ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
+            ->assertOk();
+        $this->assertNull(
+            collect($response->json('groups'))->firstWhere('key', 'diary'),
+            'Ohne diary.viewAny dürfen fremde Aufträge nicht erscheinen.'
+        );
+
+        // … Teamleitung (diary.viewAny) dagegen schon.
+        $teamlead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        $response = $this->actingAs($teamlead)
+            ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
+            ->assertOk();
+        $this->assertNotNull(
+            collect($response->json('groups'))->firstWhere('key', 'diary'),
+            'Teamleitung muss alle Aufträge der Organisation finden.'
+        );
     }
 
     // ── Kommunikationsnotizen (MVP-012) ─────────────────────────────────────

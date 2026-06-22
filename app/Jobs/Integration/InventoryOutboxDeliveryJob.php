@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Jobs\Integration;
 
-use App\Models\{InventoryOutboxEntry, PendingExternalConflict, StockMovement};
+use App\Models\{InventoryOutboxEntry, Organization, PendingExternalConflict, StockMovement};
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};
+use App\Services\Licensing\ModuleStatusResolver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -45,6 +46,15 @@ class InventoryOutboxDeliveryJob implements ShouldQueue {
     public function handle(InventoryOutboxService $outbox, ExternalInventoryDispatcherResolver $resolver): void {
         $entry = InventoryOutboxEntry::query()->withoutGlobalScopes()->find($this->entryId);
         if ($entry === null || $entry->status->isTerminal()) {
+            return;
+        }
+
+        // MVP-052 §5: ein bereits eingequeue-ter Job prüft den Modulstatus VOR
+        // der fachlichen Wirkung. Ist „Lager" für die Organisation deaktiviert,
+        // beendet er sich nachvollziehbar ohne externe Zustellung. Der Eintrag
+        // bleibt unverändert offen und wird nach Reaktivierung erneut verarbeitet.
+        $org = Organization::query()->withoutGlobalScopes()->find($entry->organization_id);
+        if ($org !== null && ! app(ModuleStatusResolver::class)->isActiveFor($org, 'module.lager')) {
             return;
         }
 

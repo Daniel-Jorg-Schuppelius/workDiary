@@ -30,10 +30,20 @@
                             <span class="ml-1 text-xs text-base-content/50">v{{ $run->templateVersion?->version }}</span>
                             <x-status-badge :tone="$run->status->value === 'completed' ? 'success' : ($run->status->value === 'aborted' ? 'neutral' : 'warning')" class="ml-2">{{ $run->status->label() }}</x-status-badge>
                         </div>
-                        <x-icon-btn icon="print" tone="outline" size="xs"
-                                    :href="route('procedure-runs.print', $run)"
-                                    target="_blank"
-                                    :label="__('procedure.action.print')" />
+                        <div class="flex items-center gap-1">
+                            @if (in_array($run->status->value, ['open', 'inProgress', 'blocked'], true))
+                                <x-icon-btn icon="play_arrow" tone="primary" size="xs" show-label
+                                            :href="route('procedure-runs.show', $run)">{{ __('procedure.run.open') }}</x-icon-btn>
+                            @else
+                                <x-icon-btn icon="visibility" tone="ghost" size="xs"
+                                            :href="route('procedure-runs.show', $run)"
+                                            :label="__('procedure.run.open')" />
+                            @endif
+                            <x-icon-btn icon="print" tone="outline" size="xs"
+                                        :href="route('procedure-runs.print', $run)"
+                                        target="_blank"
+                                        :label="__('procedure.action.print')" />
+                        </div>
                     </li>
                 @endforeach
             </ul>

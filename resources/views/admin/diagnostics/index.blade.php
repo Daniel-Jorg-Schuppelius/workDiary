@@ -20,6 +20,7 @@
     $sectionTitles = [
         'version' => __('Version'),
         'license' => __('Lizenz'),
+        'modules' => __('Module'),
         'queue' => __('Queue'),
         'scheduler' => __('Scheduler'),
         'mail' => __('Mail'),
@@ -29,6 +30,7 @@
     $sectionIcons = [
         'version' => 'info',
         'license' => 'verified',
+        'modules' => 'widgets',
         'queue' => 'queue',
         'scheduler' => 'schedule',
         'mail' => 'mail',

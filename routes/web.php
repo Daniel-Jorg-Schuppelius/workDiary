@@ -585,6 +585,10 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/license/flags/{flag}/toggle', [LicenseAdminController::class, 'toggleFlag'])
             ->where('flag', '[A-Za-z0-9._-]+')
             ->name('admin.license.flags.toggle');
+        // MVP-052: org-bezogene Modulkonfiguration (lizenzierte Module
+        // aktivieren/deaktivieren). Org-Admin (platform.featureFlag.override).
+        Route::post('admin/license/modules/disable', [LicenseAdminController::class, 'disableModule'])->name('admin.license.modules.disable');
+        Route::post('admin/license/modules/enable', [LicenseAdminController::class, 'enableModule'])->name('admin.license.modules.enable');
         Route::post('admin/license/org', [LicenseAdminController::class, 'installOrg'])->name('admin.license.org.install');
         Route::delete('admin/license/org', [LicenseAdminController::class, 'removeOrg'])->name('admin.license.org.remove');
         Route::post('admin/license/org/issue', [LicenseAdminController::class, 'issueOrg'])->name('admin.license.org.issue');
@@ -1140,6 +1144,15 @@ Route::middleware('auth')->group(function () {
         Route::post('procedures/{template}/archive', [\App\Http\Controllers\ProcedureTemplateController::class, 'archive'])->name('procedures.archive');
         Route::get('procedure-runs/{run}/print', [\App\Http\Controllers\ProcedureRunController::class, 'print'])->name('procedure-runs.print');
         Route::post('diary/{diary}/procedures/{template}/start', [\App\Http\Controllers\ProcedureRunController::class, 'start'])->name('procedure-runs.start');
+        // Mobile Ausführung eines Prozedurlaufs (MVP-063): Schritt-für-Schritt,
+        // bedingte Schritte, Warteschritte (MVP-064), Vier-Augen und Medien.
+        Route::get('procedure-runs/{run}', [\App\Http\Controllers\ProcedureRunController::class, 'show'])->name('procedure-runs.show');
+        Route::post('procedure-runs/{run}/steps/{stepRun}/execute', [\App\Http\Controllers\ProcedureRunController::class, 'executeStep'])->name('procedure-runs.steps.execute');
+        Route::post('procedure-runs/{run}/steps/{stepRun}/wait/begin', [\App\Http\Controllers\ProcedureRunController::class, 'beginWait'])->name('procedure-runs.steps.wait.begin');
+        Route::post('procedure-runs/{run}/steps/{stepRun}/wait/continue', [\App\Http\Controllers\ProcedureRunController::class, 'continueWait'])->name('procedure-runs.steps.wait.continue');
+        Route::post('procedure-runs/{run}/steps/{stepRun}/second-person', [\App\Http\Controllers\ProcedureRunController::class, 'signSecondPerson'])->name('procedure-runs.steps.second-person');
+        Route::post('procedure-runs/{run}/complete', [\App\Http\Controllers\ProcedureRunController::class, 'complete'])->name('procedure-runs.complete');
+        Route::post('procedure-runs/{run}/abort', [\App\Http\Controllers\ProcedureRunController::class, 'abort'])->name('procedure-runs.abort');
 
         Route::get('form-submissions', [\App\Http\Controllers\FormSubmissionController::class, 'index'])->name('form-submissions.index');
         Route::get('form-submissions/create', [\App\Http\Controllers\FormSubmissionController::class, 'create'])->name('form-submissions.create');

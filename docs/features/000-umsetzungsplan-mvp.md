@@ -280,11 +280,15 @@ Issues:
 - `MVP-049`: CSV-Import für Kunden, Projekte, Nutzer, Materialien minimalisieren.
 - `MVP-050`: Demo-Mandant mit vollständigem Beispielauftrag erstellen.
 - `MVP-051`: In-App-Hilfe für Zeiterfassung, Auftrag, Protokoll, Prozedur und Auswertung ergänzen.
+- `MVP-052`: Lizenzierte Module organisationsbezogen aktivieren/deaktivieren und
+  die Oberfläche auf tatsächlich genutzte Module reduzieren.
 
 Definition of Done:
 
 - Neuer Mandant kann ohne Entwicklerhilfe initial befüllt werden.
 - Demo zeigt den kompletten Nachweisfluss von Auftrag bis Auswertung.
+- Kundenadmins können den lizenzierten Funktionsumfang ohne Datenverlust auf die
+  tatsächlich benötigten Module reduzieren.
 
 ## Phase 5: Fertigung und Montage
 

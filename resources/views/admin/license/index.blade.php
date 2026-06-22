@@ -385,5 +385,84 @@
             @endif
         </div>
     </article>
+
+    {{-- MVP-052: Modulkonfiguration (lizenzierte Module org-bezogen schalten) --}}
+    @if (count($modules) > 0)
+        <article class="card border border-base-300 bg-base-100 shadow-sm">
+            <div class="card-body gap-3">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Module der Organisation') }}</h2>
+                <p class="text-sm text-base-content/60">
+                    {{ __('Lizenzierte Module für diese Organisation ein- oder ausblenden. Deaktivieren löscht keine Daten und kann jederzeit rückgängig gemacht werden.') }}
+                </p>
+                <div class="grid gap-2 sm:grid-cols-2">
+                    @foreach ($modules as $module)
+                        @php
+                            /** @var \App\Enums\Licensing\ModuleStatus $status */
+                            $status = $module['status'];
+                            $dialogId = 'module-disable-' . \Illuminate\Support\Str::slug($module['code']);
+                        @endphp
+                        <div class="flex items-start justify-between gap-3 rounded-box border border-base-300 bg-base-200/30 p-3">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium">{{ $module['label'] }}</span>
+                                    <x-status-badge :tone="$status->tone()" size="sm" outline>{{ $status->label() }}</x-status-badge>
+                                </div>
+                                <p class="mt-1 text-xs text-base-content/60">{{ $module['description'] }}</p>
+                                @if ($module['licensed'] && $module['source'])
+                                    <p class="mt-1 text-[11px] uppercase tracking-wider text-base-content/40">
+                                        {{ __('Quelle') }}: {{ $module['source'] === 'plan' ? __('Plan') : __('Add-on') }}
+                                    </p>
+                                @endif
+                                @if ($module['reason'])
+                                    <p class="mt-1 text-xs text-warning">{{ $module['reason'] }}</p>
+                                @endif
+                            </div>
+                            @if ($canConfigureModules)
+                                <div class="shrink-0">
+                                    @if ($status === \App\Enums\Licensing\ModuleStatus::Active)
+                                        <button type="button" class="btn btn-sm btn-outline btn-warning"
+                                                onclick="document.getElementById('{{ $dialogId }}').showModal()">
+                                            {{ __('Deaktivieren') }}
+                                        </button>
+                                        <dialog id="{{ $dialogId }}" class="modal">
+                                            <div class="modal-box">
+                                                <h3 class="text-base font-semibold">{{ __('Modul deaktivieren') }}: {{ $module['label'] }}</h3>
+                                                <p class="mt-2 text-sm text-base-content/70">
+                                                    {{ __('Das Modul verschwindet aus Navigation, Dashboard, Suche, Onboarding und Hilfe. Direkte Aufrufe werden serverseitig gesperrt.') }}
+                                                </p>
+                                                <p class="mt-2 text-sm font-medium text-success">
+                                                    {{ __('Es werden keine Daten gelöscht. Eine Reaktivierung stellt den Zugriff sofort wieder her.') }}
+                                                </p>
+                                                <form method="POST" action="{{ route('admin.license.modules.disable') }}" class="mt-3 space-y-2">
+                                                    @csrf
+                                                    <input type="hidden" name="module" value="{{ $module['code'] }}">
+                                                    <textarea name="reason" rows="2" class="textarea textarea-bordered textarea-sm w-full"
+                                                              placeholder="{{ __('Interne Begründung (optional)') }}"></textarea>
+                                                    <div class="flex justify-end gap-2">
+                                                        <button type="button" class="btn btn-sm btn-ghost"
+                                                                onclick="document.getElementById('{{ $dialogId }}').close()">{{ __('Abbrechen') }}</button>
+                                                        <button type="submit" class="btn btn-sm btn-warning">{{ __('Deaktivieren') }}</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                            <form method="dialog" class="modal-backdrop"><button>{{ __('Schließen') }}</button></form>
+                                        </dialog>
+                                    @elseif ($status === \App\Enums\Licensing\ModuleStatus::InactiveByCustomer)
+                                        <form method="POST" action="{{ route('admin.license.modules.enable') }}">
+                                            @csrf
+                                            <input type="hidden" name="module" value="{{ $module['code'] }}">
+                                            <button type="submit" class="btn btn-sm btn-outline btn-success">{{ __('Aktivieren') }}</button>
+                                        </form>
+                                    @elseif ($status === \App\Enums\Licensing\ModuleStatus::NotLicensed)
+                                        <span class="text-xs text-base-content/40">{{ __('Nicht lizenziert') }}</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </article>
+    @endif
 </x-index-page>
 @endsection
