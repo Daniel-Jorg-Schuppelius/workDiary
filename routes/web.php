@@ -32,7 +32,8 @@ use Illuminate\Support\Facades\Route;
 // mehr → 404. Der Test SqidRoutePatternTest sichert diese Annahme ab.
 Route::pattern('project', '[A-Za-z0-9]+|[a-z0-9-]+/[a-z0-9-]+');
 
-// Lizenz-Aktivierung (umgeht EnsureValidLicense via bypass_paths)
+// Lizenz-Aktivierung (Key einspielen). EnsureValidLicense sperrt nur noch bei
+// Seal-/Integritätsverletzung; ohne Key läuft die App ohnehin als free.
 Route::get('/license', [LicenseController::class, 'show'])->name('license.show');
 Route::post('/license', [LicenseController::class, 'store'])->middleware('throttle:6,1')->name('license.store');
 

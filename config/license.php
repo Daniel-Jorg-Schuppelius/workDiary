@@ -49,18 +49,6 @@ return [
     // wirken Lizenzwechsel schneller, kosten aber Performance.
     'cache_ttl' => (int) env('LICENSE_CACHE_TTL', 300),
 
-    // Routen-Präfixe, die ohne gültige Lizenz erreichbar bleiben müssen
-    // (Login, Lizenzeingabe, Health-Check, Assets). Anpassbar via .env.
-    'bypass_paths' => [
-        'license',
-        'license/*',
-        'install',
-        'install/*',
-        'up',
-        'login',
-        'logout',
-    ],
-
     // Hosts, die ohne Lizenz nutzbar sind (Entwicklung, lokale Tests).
     // Unterstützt exakte Hostnamen sowie '*'-Wildcards (z. B. '*.test').
     // Über LICENSE_DEV_HOSTS in der .env als Komma-Liste überschreibbar.

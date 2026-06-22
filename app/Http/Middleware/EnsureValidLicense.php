@@ -10,7 +10,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\Licensing\{LicenseService, LicenseStatus};
+use App\Services\Licensing\{LicenseResult, LicenseService, LicenseStatus};
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,24 +29,29 @@ class EnsureValidLicense {
 
         $result = $this->service->current($request->getHost());
 
-        // Tampering darf nicht über Bypass-Pfade umgangen werden — sonst
-        // bleiben /login & Co. trotz manipulierter Lizenzdateien offen.
-        if ($result->status !== LicenseStatus::Tampered) {
-            foreach ((array) config('license.bypass_paths', []) as $pattern) {
-                if ($request->is($pattern)) {
-                    return $next($request);
-                }
-            }
+        // Lizenzmodell: free läuft IMMER ohne Lizenz. Eine fehlende oder
+        // ungültige (Missing/BadSignature/Malformed/Expired/OrgMismatch/…)
+        // installationsweite Lizenz sperrt die App daher NICHT mehr — der
+        // Tier-/Modul-Zugang wird ausschließlich über die org-gebundene Lizenz
+        // (FeatureFlagResolver + EnforcePlanModules) gesteuert. Das app-weite
+        // Gate schützt nur noch die Code-/Datei-Integrität: eine Seal-Verletzung
+        // (Tampered) sperrt weiterhin hart, auch über Bypass-Pfade (sonst
+        // bleiben /login & Co. trotz manipulierter Lizenzdateien offen).
+        if ($result->status === LicenseStatus::Tampered) {
+            return $this->blocked($request, $result);
         }
 
-        if ($result->isUsable()) {
-            if ($result->status === LicenseStatus::GracePeriod && $result->payload !== null) {
-                app()->instance('licenseGraceUntil', $result->payload->expiresAt?->addDays((int) config('license.grace_days', 14)));
-            }
-
-            return $next($request);
+        // Abgelaufene, aber noch in der Schonfrist befindliche Lizenz: Banner
+        // weiterhin anzeigen lassen (die App läuft mit dem gebuchten Tier weiter,
+        // bis die Frist endet — danach greift wieder hart free).
+        if ($result->status === LicenseStatus::GracePeriod && $result->payload !== null) {
+            app()->instance('licenseGraceUntil', $result->payload->expiresAt?->addDays((int) config('license.grace_days', 14)));
         }
 
+        return $next($request);
+    }
+
+    private function blocked(Request $request, LicenseResult $result): Response {
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'License required.',
