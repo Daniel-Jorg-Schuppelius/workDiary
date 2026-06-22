@@ -421,6 +421,12 @@ enum Permission: string implements HasLabel {
     case AssetTransferOwnership = 'asset.transferOwnership';
     case AssetCheckout = 'asset.checkout';
     case AssetDefectManage = 'asset.defect.manage';
+        // ── Genehmigungs-Register (Veranstalter-Permits) ──────
+    case PermitViewAny = 'permit.viewAny';
+    case PermitView = 'permit.view';
+    case PermitCreate = 'permit.create';
+    case PermitUpdate = 'permit.update';
+    case PermitDelete = 'permit.delete';
         // ── ServiceTicket-Workflow (FM-Tickets mit SLA) ───────
     case ServiceTicketView = 'serviceTicket.view';
     case ServiceTicketCreate = 'serviceTicket.create';
@@ -478,6 +484,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'foreignCustomer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'supplier.') => PermissionGroup::Customers,
+            str_starts_with($this->value, 'permit.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'project.'), str_starts_with($this->value, 'task.'), str_starts_with($this->value, 'milestone.') => PermissionGroup::Projects,
             str_starts_with($this->value, 'timeEntry.') => PermissionGroup::TimeEntries,
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,

@@ -26,4 +26,7 @@ enum ClassificationDomain: string {
     case ReworkReason = 'rework_reason';
     case ProductGroup = 'product_group';
     case DienstmittelType = 'dienstmittel_type';
+    case Allergen = 'allergen';
+    case Trade = 'trade';
+    case PermitType = 'permit_type';
 }

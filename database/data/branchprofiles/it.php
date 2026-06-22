@@ -173,6 +173,10 @@ return [
         ['code' => 'it_serverraum', 'kind' => 'accessRestriction', 'label' => 'Serverraum/Technik zutrittsbeschränkt', 'level' => 'admin'],
         ['code' => 'it_pruefung', 'kind' => 'technicalInspection', 'label' => 'Technische Prüfung (USV/Klima)', 'level' => 'jährlich'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'IT_CHANGE_PROTOCOL'],
         ['code' => 'IT_INCIDENT_REPORT'],

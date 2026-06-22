@@ -153,17 +153,58 @@ return [
         ],
     ],
     'procedure_templates' => [
+        [
+            'code' => 'STB_USTVA',
+            'name' => 'Umsatzsteuer-Voranmeldung',
+            'domain' => 'steuerberater',
+            'risk_level' => 'high',
+            'description' => 'USt-Voranmeldung mit Vier-Augen-Kontrolle und ELSTER-Übermittlung.',
+            'steps' => [
+                ['code' => 'belege', 'step_type' => 'confirm', 'label' => 'Belege/Vollständigkeit prüfen'],
+                ['code' => 'kontierung', 'step_type' => 'confirm', 'label' => 'Kontierung prüfen'],
+                ['code' => 'erstellen', 'step_type' => 'confirm', 'label' => 'Voranmeldung erstellen'],
+                ['code' => 'vierAugen', 'step_type' => 'confirm', 'label' => 'Vier-Augen-Kontrolle', 'requires_second_person' => true],
+                ['code' => 'elster', 'step_type' => 'confirm', 'label' => 'Per ELSTER übermitteln'],
+                ['code' => 'nachweis', 'step_type' => 'file', 'label' => 'Übertragungsprotokoll ablegen', 'requires_proof_type' => 'file'],
+            ],
+        ],
+        [
+            'code' => 'STB_FRISTEN_REVIEW',
+            'name' => 'Fristenkontrolle',
+            'domain' => 'steuerberater',
+            'risk_level' => 'normal',
+            'description' => 'Periodische Kontrolle laufender Fristen und Eskalation kritischer Termine.',
+            'steps' => [
+                ['code' => 'liste', 'step_type' => 'confirm', 'label' => 'Fristenliste durchgehen'],
+                ['code' => 'kritisch', 'step_type' => 'choice', 'label' => 'Kritische Fristen markieren'],
+                ['code' => 'info', 'step_type' => 'confirm', 'label' => 'Mandanten/Team informieren', 'required' => false, 'blocking' => false],
+            ],
+        ],
+        [
+            'code' => 'STB_GELDWAESCHE_CHECK',
+            'name' => 'Geldwäsche-Prüfung (GwG)',
+            'domain' => 'steuerberater',
+            'risk_level' => 'high',
+            'description' => 'Identifizierung und Risikoeinstufung nach GwG bei Mandatsannahme.',
+            'steps' => [
+                ['code' => 'identitaet', 'step_type' => 'confirm', 'label' => 'Identität feststellen (GwG §10)'],
+                ['code' => 'risiko', 'step_type' => 'choice', 'label' => 'Risikoeinstufung vornehmen'],
+                ['code' => 'wB', 'step_type' => 'confirm', 'label' => 'Wirtschaftlich Berechtigten ermitteln'],
+                ['code' => 'doku', 'step_type' => 'file', 'label' => 'Nachweise ablegen', 'requires_proof_type' => 'file'],
+            ],
+        ],
         ['code' => 'STB_FIBU_MONAT'],
         ['code' => 'STB_LOHN_MONAT'],
-        ['code' => 'STB_USTVA'],
         ['code' => 'STB_LSTAN'],
         ['code' => 'STB_JAHRESABSCHLUSS'],
         ['code' => 'STB_STEUERERKLAERUNG'],
-        ['code' => 'STB_FRISTEN_REVIEW'],
         ['code' => 'STB_MANDANTENANNAHME'],
         ['code' => 'STB_BETRIEBSPRUEFUNG'],
-        ['code' => 'STB_GELDWAESCHE_CHECK'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'STB_BERATUNGSPROTOKOLL'],
         ['code' => 'STB_TELEFONNOTIZ'],

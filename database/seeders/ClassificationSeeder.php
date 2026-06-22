@@ -112,6 +112,44 @@ class ClassificationSeeder extends Seeder {
                 'instrument' => 'Messgerät',
                 'device' => 'Gerät',
             ],
+            // 14 Hauptallergene nach LMIV (EU 1169/2011, Anhang II) — universelle
+            // gesetzliche Liste, daher als Plattform-Default.
+            ClassificationDomain::Allergen->value => [
+                'gluten' => 'Glutenhaltiges Getreide',
+                'krebstiere' => 'Krebstiere',
+                'ei' => 'Eier',
+                'fisch' => 'Fische',
+                'erdnuss' => 'Erdnüsse',
+                'soja' => 'Soja',
+                'milch' => 'Milch / Laktose',
+                'schalenfruechte' => 'Schalenfrüchte (Nüsse)',
+                'sellerie' => 'Sellerie',
+                'senf' => 'Senf',
+                'sesam' => 'Sesam',
+                'sulfite' => 'Schwefeldioxid / Sulfite',
+                'lupine' => 'Lupinen',
+                'weichtiere' => 'Weichtiere',
+            ],
+            // Gewerke (Dienstleister-Kategorien).
+            ClassificationDomain::Trade->value => [
+                'catering' => 'Catering',
+                'technik' => 'Veranstaltungstechnik',
+                'security' => 'Security',
+                'buehne' => 'Bühne / Rigging',
+                'transport' => 'Transport / Logistik',
+                'reinigung' => 'Reinigung',
+            ],
+            // Genehmigungsarten (Behördliche Genehmigungen).
+            ClassificationDomain::PermitType->value => [
+                'sondernutzung' => 'Sondernutzung öffentl. Raum',
+                'sperrzeit' => 'Sperrzeitverkürzung',
+                'gema' => 'GEMA-Anmeldung',
+                'schankerlaubnis' => 'Schankerlaubnis',
+                'sicherheitskonzept' => 'Sicherheitskonzept',
+                'brandschutz' => 'Brandschutz',
+                'laermschutz' => 'Lärmschutz / Ausnahme',
+                'lebensmittel' => 'Lebensmittel / Gaststätte',
+            ],
         ];
     }
 }

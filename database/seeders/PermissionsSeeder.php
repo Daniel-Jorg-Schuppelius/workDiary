@@ -210,6 +210,12 @@ class PermissionsSeeder extends Seeder {
         $teamleitung = [
             PermissionEnum::OrganizationView,
             PermissionEnum::NumberFormatManage,
+            // Genehmigungs-Register (Veranstalter): operative Pflege.
+            PermissionEnum::PermitViewAny,
+            PermissionEnum::PermitView,
+            PermissionEnum::PermitCreate,
+            PermissionEnum::PermitUpdate,
+            PermissionEnum::PermitDelete,
             PermissionEnum::UserViewAny,
             PermissionEnum::UserView,
             PermissionEnum::UserFlexManage,

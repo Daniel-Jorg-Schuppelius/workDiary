@@ -74,6 +74,18 @@ return [
             ['code' => 'schluessel', 'label' => 'Schlüssel'],
             ['code' => 'zaehler', 'label' => 'Zähler'],
         ],
+        // Gewerke / Nachunternehmer-Kategorien (Auswahl je Eintrag; konkreter
+        // Betrieb liegt im Lieferanten-/Nachunternehmer-Stamm).
+        'trade' => [
+            ['code' => 'reinigung', 'label' => 'Reinigung'],
+            ['code' => 'sicherheitsdienst', 'label' => 'Sicherheitsdienst'],
+            ['code' => 'haustechnik', 'label' => 'Haustechnik / HLK'],
+            ['code' => 'aufzug', 'label' => 'Aufzugswartung'],
+            ['code' => 'gruenpflege', 'label' => 'Grünpflege'],
+            ['code' => 'brandschutz', 'label' => 'Brandschutz'],
+            ['code' => 'schaedlingsbekaempfung', 'label' => 'Schädlingsbekämpfung'],
+            ['code' => 'entsorgung', 'label' => 'Entsorgung'],
+        ],
     ],
     'classification_requirements' => [
         [
@@ -184,6 +196,10 @@ return [
         ['code' => 'fm_gesperrt', 'kind' => 'accessRestriction', 'label' => 'Gesperrter Bereich', 'note' => 'Zutritt nur nach Freigabe.'],
         ['code' => 'fm_stoerungsmeldung', 'kind' => 'other', 'label' => 'Störungsmeldung hinterlegt'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'FM_OBJEKTBERICHT'],
         ['code' => 'FM_MAENGELPROTOKOLL'],

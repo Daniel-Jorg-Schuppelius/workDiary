@@ -75,8 +75,40 @@ return [
             ['code' => 'fliesen', 'label' => 'Fliesen'],
             ['code' => 'fassade', 'label' => 'Fassade'],
         ],
+        // Gewerke / Nachunternehmer-Kategorien (Auswahl je Eintrag; konkreter
+        // Betrieb liegt im Lieferanten-/Nachunternehmer-Stamm).
+        'trade' => [
+            ['code' => 'rohbau', 'label' => 'Rohbau'],
+            ['code' => 'trockenbau', 'label' => 'Trockenbau'],
+            ['code' => 'elektro', 'label' => 'Elektro'],
+            ['code' => 'sanitaer', 'label' => 'Sanitär / Heizung'],
+            ['code' => 'maler', 'label' => 'Maler / Lackierer'],
+            ['code' => 'bodenleger', 'label' => 'Bodenleger'],
+            ['code' => 'fenster_tueren', 'label' => 'Fenster / Türen'],
+            ['code' => 'dachdecker', 'label' => 'Dachdecker'],
+            ['code' => 'geruestbau', 'label' => 'Gerüstbau'],
+        ],
+        // Genehmigungsarten (Auswahl/Filter je Eintrag). Status, Frist und
+        // Nachweis werden im Genehmigungs-Register (Permit) geführt.
+        'permit_type' => [
+            ['code' => 'baugenehmigung', 'label' => 'Baugenehmigung'],
+            ['code' => 'abnahme_bauamt', 'label' => 'Bauamtliche Abnahme'],
+            ['code' => 'statik_freigabe', 'label' => 'Statik-Freigabe'],
+            ['code' => 'brandschutznachweis', 'label' => 'Brandschutznachweis'],
+            ['code' => 'geruestabnahme', 'label' => 'Gerüstabnahme'],
+            ['code' => 'entsorgungsnachweis', 'label' => 'Entsorgungsnachweis'],
+            ['code' => 'aufgrabung', 'label' => 'Aufgrabungsgenehmigung'],
+        ],
     ],
     'classification_requirements' => [
+        [
+            'entry_type_code' => 'montage',
+            'required_domain' => 'trade',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'allow_multi' => true,
+            'min_count' => 1,
+        ],
         [
             'entry_type_code' => 'bautagesbericht',
             'required_domain' => 'result',
@@ -128,13 +160,53 @@ return [
         ],
     ],
     'procedure_templates' => [
-        ['code' => 'BAU_TAGESBERICHT'],
-        ['code' => 'BAU_AUFMASS'],
+        [
+            'code' => 'BAU_TAGESBERICHT',
+            'name' => 'Bautagesbericht',
+            'domain' => 'bau-ausbau',
+            'risk_level' => 'normal',
+            'description' => 'Täglicher Bautagesbericht mit Wetter, Personal, Leistung und Behinderungen.',
+            'steps' => [
+                ['code' => 'wetter', 'step_type' => 'choice', 'label' => 'Wetterlage erfassen'],
+                ['code' => 'personal', 'step_type' => 'number', 'label' => 'Anzahl eingesetzter Arbeitskräfte'],
+                ['code' => 'leistung', 'step_type' => 'text', 'label' => 'Erbrachte Leistung beschreiben'],
+                ['code' => 'behinderung', 'step_type' => 'confirm', 'label' => 'Behinderung/Bedenken vermerken (falls vorhanden)', 'required' => false, 'blocking' => false],
+                ['code' => 'fotos', 'step_type' => 'photo', 'label' => 'Baufortschritt fotografieren', 'required' => false, 'blocking' => false, 'requires_proof_type' => 'photo'],
+            ],
+        ],
+        [
+            'code' => 'BAU_AUFMASS',
+            'name' => 'Aufmaß',
+            'domain' => 'bau-ausbau',
+            'risk_level' => 'normal',
+            'description' => 'Aufmaß der erbrachten Mengen mit Nachweis.',
+            'steps' => [
+                ['code' => 'bereich', 'step_type' => 'choice', 'label' => 'Bauteil/Bereich wählen'],
+                ['code' => 'masse', 'step_type' => 'messreihe', 'label' => 'Maße/Mengen erfassen'],
+                ['code' => 'foto', 'step_type' => 'photo', 'label' => 'Aufmaß dokumentieren', 'required' => false, 'blocking' => false, 'requires_proof_type' => 'photo'],
+                ['code' => 'bestaetigung', 'step_type' => 'signature', 'label' => 'Aufmaß bestätigen lassen', 'required' => false, 'blocking' => false, 'requires_proof_type' => 'signature'],
+            ],
+        ],
+        [
+            'code' => 'BAU_TEILABNAHME',
+            'name' => 'Teilabnahme',
+            'domain' => 'bau-ausbau',
+            'risk_level' => 'normal',
+            'description' => 'Förmliche Teilabnahme mit Mängelaufnahme und Abnahmeprotokoll.',
+            'steps' => [
+                ['code' => 'leistungPruefen', 'step_type' => 'confirm', 'label' => 'Leistung gegen Leistungsverzeichnis prüfen'],
+                ['code' => 'maengel', 'step_type' => 'confirm', 'label' => 'Mängel/Restpunkte aufnehmen (falls vorhanden)', 'required' => false, 'blocking' => false],
+                ['code' => 'protokoll', 'step_type' => 'signature', 'label' => 'Abnahmeprotokoll unterschreiben lassen', 'requires_proof_type' => 'signature'],
+            ],
+        ],
         ['code' => 'BAU_MANGEL'],
         ['code' => 'BAU_NACHTRAG'],
-        ['code' => 'BAU_TEILABNAHME'],
         ['code' => 'BAU_RESTARBEIT'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'BAU_TAGESBERICHT'],
         ['code' => 'BAU_AUFMASSPROTOKOLL'],

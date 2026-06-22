@@ -330,6 +330,74 @@ class BranchProfileInstallerTest extends TestCase {
         }
     }
 
+    public function test_install_partyservice_profile_creates_expected_entries_and_publishes_haccp_procedure(): void {
+        $result = $this->installer->install($this->org, 'partyservice', $this->actor);
+
+        $this->assertSame('partyservice', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+        $this->assertGreaterThan(0, $result['created']['procedure_templates']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'menueplanung',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'reklamation',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+
+        $template = ProcedureTemplate::query()
+            ->where('organization_id', $this->org->id)
+            ->where('code', 'PS_HACCP_KUEHLKETTE')
+            ->first();
+        $this->assertNotNull($template);
+
+        $version = $template->versions()->firstOrFail();
+        $this->assertTrue($version->isPublished());
+        $this->assertGreaterThan(0, ProcedureStepDef::query()
+            ->where('procedure_template_version_id', $version->id)
+            ->count());
+    }
+
+    public function test_install_veranstalter_profile_creates_expected_entries_and_requires_second_person(): void {
+        $result = $this->installer->install($this->org, 'veranstalter', $this->actor);
+
+        $this->assertSame('veranstalter', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+        $this->assertGreaterThan(0, $result['created']['procedure_templates']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'durchfuehrung',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'zwischenfall',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+
+        // Das Sicherheitskonzept wird im Vier-Augen-Prinzip freigegeben.
+        $template = ProcedureTemplate::query()
+            ->where('organization_id', $this->org->id)
+            ->where('code', 'VA_SICHERHEITSKONZEPT')
+            ->first();
+        $this->assertNotNull($template);
+
+        $version = $template->versions()->firstOrFail();
+        $this->assertTrue($version->isPublished());
+        $this->assertGreaterThan(0, ProcedureStepDef::query()
+            ->where('procedure_template_version_id', $version->id)
+            ->where('requires_second_person', true)
+            ->count());
+    }
+
     public function test_install_facility_profile_creates_maintenance_plan_templates(): void {
         $result = $this->installer->install($this->org, 'facility', $this->actor);
 

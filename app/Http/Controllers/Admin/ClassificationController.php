@@ -442,6 +442,9 @@ class ClassificationController extends Controller {
             ClassificationDomain::ReworkReason->value => __('Nacharbeitsgründe'),
             ClassificationDomain::ProductGroup->value => __('Produktgruppen'),
             ClassificationDomain::DienstmittelType->value => __('Dienstmitteltypen'),
+            ClassificationDomain::Allergen->value => __('Allergene'),
+            ClassificationDomain::Trade->value => __('Gewerke'),
+            ClassificationDomain::PermitType->value => __('Genehmigungsarten'),
         ];
     }
 }

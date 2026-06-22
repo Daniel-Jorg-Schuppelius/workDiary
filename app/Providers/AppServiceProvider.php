@@ -218,6 +218,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Material::class, MaterialPolicy::class);
         Gate::policy(Asset::class, AssetPolicy::class);
         Gate::policy(Software::class, SoftwarePolicy::class);
+        Gate::policy(\App\Models\Permit::class, \App\Policies\PermitPolicy::class);
         Gate::policy(Site::class, SitePolicy::class);
         Gate::policy(Building::class, BuildingPolicy::class);
         Gate::policy(Floor::class, FloorPolicy::class);

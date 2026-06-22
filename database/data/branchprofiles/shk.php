@@ -77,8 +77,25 @@ return [
             ['code' => 'klimaGeraet', 'label' => 'Klimageraet'],
             ['code' => 'lueftung', 'label' => 'Lueftung'],
         ],
+        // Genehmigungsarten (Auswahl/Filter je Eintrag). Status, Frist und
+        // Nachweis werden im Genehmigungs-Register (Permit) geführt.
+        'permit_type' => [
+            ['code' => 'schornsteinfeger', 'label' => 'Schornsteinfeger-Abnahme'],
+            ['code' => 'gasanmeldung', 'label' => 'Gas-Anmeldung (Netzbetreiber)'],
+            ['code' => 'wasserrecht', 'label' => 'Wasserrechtliche Erlaubnis'],
+            ['code' => 'emissionsschutz', 'label' => 'Emissionsschutz (BImSchV)'],
+            ['code' => 'dichtheitsnachweis', 'label' => 'Dichtheitsnachweis'],
+        ],
     ],
     'classification_requirements' => [
+        [
+            'entry_type_code' => 'inbetriebnahme',
+            'required_domain' => 'permit_type',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'allow_multi' => true,
+            'min_count' => 1,
+        ],
         [
             'entry_type_code' => 'wartung',
             'required_domain' => 'product_group',
@@ -178,11 +195,21 @@ return [
         ['code' => 'SHK_INBETRIEBNAHME'],
         ['code' => 'SHK_NOTDIENST'],
     ],
+    'maintenance_plans_seed' => [
+        ['code' => 'SHK-HEIZUNG-12M', 'label' => 'Heizungswartung jährlich', 'category_code' => 'heizung', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 30],
+        ['code' => 'SHK-THERME-12M', 'label' => 'Therme / Brennwertgerät Wartung', 'category_code' => 'therme', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 30],
+        ['code' => 'SHK-TRINKWASSER-12M', 'label' => 'Trinkwasser-/Legionellenprüfung', 'category_code' => 'trinkwasser', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 30],
+        ['code' => 'SHK-MESSGERAET-12M', 'label' => 'Abgas-/Druckmessgerät Kalibrierung', 'category_code' => 'messgeraet', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
+    ],
     'room_requirement_templates_seed' => [
         ['code' => 'shk_anlagenakte', 'kind' => 'operatorDuty', 'label' => 'Anlagenakte / Wartungsintervall', 'note' => 'Heizungs-/Sanitäranlage mit Wartungsintervall führen.'],
         ['code' => 'shk_pruefung', 'kind' => 'technicalInspection', 'label' => 'Wiederkehrende Prüfung (z. B. Trinkwasser)', 'level' => 'jährlich'],
         ['code' => 'shk_technikraum', 'kind' => 'accessRestriction', 'label' => 'Technikraum zutrittsbeschränkt', 'level' => 'fachkraft'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'SHK_WARTUNGSPROTOKOLL'],
         ['code' => 'SHK_DRUCKPROTOKOLL'],

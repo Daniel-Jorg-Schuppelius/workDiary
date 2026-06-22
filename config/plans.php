@@ -144,6 +144,7 @@ return [
         'lexoffice.*' => 'module.vertrieb',
         'events.*' => 'module.vertrieb',
         'event-categories.*' => 'module.vertrieb',
+        'permits.*' => 'module.vertrieb', // Veranstalter-Genehmigungen (Behörden/Fristen/Nachweise)
         'materials.*' => 'module.vertrieb', // Abrechnungskatalog (Preis/Steuer/lexoffice/Billing)
 
         'assets.*' => 'module.fuhrpark',

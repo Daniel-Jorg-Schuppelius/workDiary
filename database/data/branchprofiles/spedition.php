@@ -96,8 +96,26 @@ return [
             ['code' => 'scanner', 'label' => 'Scanner'],
             ['code' => 'spanngurt', 'label' => 'Spanngurt'],
         ],
+        // Genehmigungsarten (Auswahl/Filter je Eintrag). Status, Frist und
+        // Nachweis werden im Genehmigungs-Register (Permit) geführt.
+        'permit_type' => [
+            ['code' => 'grossraumtransport', 'label' => 'Großraumtransport'],
+            ['code' => 'schwertransport', 'label' => 'Schwertransport'],
+            ['code' => 'gefahrgut_adr', 'label' => 'Gefahrgut / ADR'],
+            ['code' => 'kabotage', 'label' => 'Kabotage'],
+            ['code' => 'gewichtsausnahme', 'label' => 'Gewichts-/Maßausnahme'],
+            ['code' => 'sondernutzung', 'label' => 'Sondernutzung Straße'],
+        ],
     ],
     'classification_requirements' => [
+        [
+            'entry_type_code' => 'transportauftrag',
+            'required_domain' => 'permit_type',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'allow_multi' => true,
+            'min_count' => 1,
+        ],
         [
             'entry_type_code' => 'transportauftrag',
             'required_domain' => 'product_group',
@@ -177,17 +195,57 @@ return [
         ],
     ],
     'procedure_templates' => [
+        [
+            'code' => 'SP_LADUNGSSICHERUNG',
+            'name' => 'Ladungssicherung',
+            'domain' => 'spedition',
+            'risk_level' => 'high',
+            'description' => 'Prüfung der Ladungssicherung vor Fahrtantritt mit Freigabe.',
+            'steps' => [
+                ['code' => 'ladung', 'step_type' => 'confirm', 'label' => 'Ladung/Verteilung prüfen'],
+                ['code' => 'sicherungsmittel', 'step_type' => 'confirm', 'label' => 'Zurrgurte/Sicherungsmittel prüfen'],
+                ['code' => 'gewicht', 'step_type' => 'confirm', 'label' => 'Achslasten/Gesamtgewicht prüfen'],
+                ['code' => 'foto', 'step_type' => 'photo', 'label' => 'Ladungssicherung dokumentieren', 'required' => false, 'blocking' => false, 'requires_proof_type' => 'photo'],
+                ['code' => 'freigabe', 'step_type' => 'freigabe', 'label' => 'Fahrt freigeben'],
+            ],
+        ],
+        [
+            'code' => 'SP_ZUSTELLUNG_POD',
+            'name' => 'Zustellung (POD)',
+            'domain' => 'spedition',
+            'risk_level' => 'normal',
+            'description' => 'Zustellung beim Empfänger mit Ablieferquittung (Proof of Delivery).',
+            'steps' => [
+                ['code' => 'empfaenger', 'step_type' => 'confirm', 'label' => 'Empfänger/Abladestelle prüfen'],
+                ['code' => 'uebergabe', 'step_type' => 'confirm', 'label' => 'Ware übergeben / Vollständigkeit prüfen'],
+                ['code' => 'pod', 'step_type' => 'signature', 'label' => 'Ablieferquittung (POD) unterschreiben lassen', 'requires_proof_type' => 'signature'],
+                ['code' => 'foto', 'step_type' => 'photo', 'label' => 'Abstellort/Übergabe fotografieren', 'required' => false, 'blocking' => false, 'requires_proof_type' => 'photo'],
+            ],
+        ],
+        [
+            'code' => 'SP_SCHADENSMELDUNG',
+            'name' => 'Schadensmeldung',
+            'domain' => 'spedition',
+            'risk_level' => 'normal',
+            'description' => 'Aufnahme eines Transportschadens mit Foto-Nachweis.',
+            'steps' => [
+                ['code' => 'schaden', 'step_type' => 'text', 'label' => 'Schaden beschreiben'],
+                ['code' => 'fotos', 'step_type' => 'photo', 'label' => 'Schaden fotografieren', 'requires_proof_type' => 'photo'],
+                ['code' => 'meldung', 'step_type' => 'confirm', 'label' => 'Disposition/Versicherung informieren'],
+            ],
+        ],
         ['code' => 'SP_TRANSPORTAUFTRAG'],
         ['code' => 'SP_DISPOSITION_TOUR'],
         ['code' => 'SP_ABHOLUNG'],
-        ['code' => 'SP_LADUNGSSICHERUNG'],
         ['code' => 'SP_TRANSPORTEREIGNIS'],
-        ['code' => 'SP_ZUSTELLUNG_POD'],
         ['code' => 'SP_PALETTENTAUSCH'],
-        ['code' => 'SP_SCHADENSMELDUNG'],
         ['code' => 'SP_WARTEZEIT_DOKU'],
         ['code' => 'SP_NACHKALKULATION'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'SP_TRANSPORTAUFTRAG'],
         ['code' => 'SP_ABHOLBELEG'],

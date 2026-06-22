@@ -170,6 +170,10 @@ return [
         ['code' => 'gr_zutritt', 'kind' => 'accessRestriction', 'label' => 'Zugangsbeschränkter Bereich', 'note' => 'Schlüssel/Begleitung nötig.'],
         ['code' => 'gr_fotopflicht', 'kind' => 'other', 'label' => 'Foto-/Abnahmepflicht', 'note' => 'Reinigung mit Foto- oder Abnahmenachweis dokumentieren.'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'GR_REINIGUNGSNACHWEIS'],
         ['code' => 'GR_OBJEKTPLAN'],

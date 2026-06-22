@@ -76,8 +76,37 @@ return [
             ['code' => 'aussenanlage', 'label' => 'Außenanlage'],
             ['code' => 'winterdienst', 'label' => 'Winterdienst'],
         ],
+        // Gewerke / Nachunternehmer-Kategorien (Auswahl je Eintrag; konkreter
+        // Betrieb liegt im Lieferanten-/Nachunternehmer-Stamm).
+        'trade' => [
+            ['code' => 'erdbau', 'label' => 'Erdbau'],
+            ['code' => 'pflasterbau', 'label' => 'Pflasterbau'],
+            ['code' => 'pflanzung', 'label' => 'Pflanzung / Begrünung'],
+            ['code' => 'baumpflege', 'label' => 'Baumpflege'],
+            ['code' => 'bewaesserung', 'label' => 'Bewässerung'],
+            ['code' => 'zaunbau', 'label' => 'Zaunbau'],
+            ['code' => 'teichbau', 'label' => 'Teich- / Wasserbau'],
+            ['code' => 'holzbau', 'label' => 'Holzbau'],
+        ],
+        // Genehmigungsarten (Auswahl/Filter je Eintrag). Status, Frist und
+        // Nachweis werden im Genehmigungs-Register (Permit) geführt.
+        'permit_type' => [
+            ['code' => 'baumfaellung', 'label' => 'Baumfällgenehmigung'],
+            ['code' => 'wasserrecht', 'label' => 'Wasserrechtliche Erlaubnis'],
+            ['code' => 'sondernutzung', 'label' => 'Sondernutzung öffentl. Raum'],
+            ['code' => 'naturschutz', 'label' => 'Naturschutzrechtliche Genehmigung'],
+            ['code' => 'entsorgungsnachweis', 'label' => 'Entsorgungsnachweis'],
+        ],
     ],
     'classification_requirements' => [
+        [
+            'entry_type_code' => 'baumpflege',
+            'required_domain' => 'permit_type',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'allow_multi' => true,
+            'min_count' => 1,
+        ],
         [
             'entry_type_code' => 'pflegegang',
             'required_domain' => 'product_group',
@@ -162,11 +191,21 @@ return [
         ['code' => 'GL_PFLASTER'],
         ['code' => 'GL_WINTERDIENST'],
     ],
+    'maintenance_plans_seed' => [
+        ['code' => 'GB-BAUMKONTROLLE-12M', 'label' => 'Baumkontrolle (Verkehrssicherungspflicht)', 'category_code' => 'baum', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 30],
+        ['code' => 'GB-SPIELPLATZ-12M', 'label' => 'Spielplatzprüfung (DIN EN 1176, Jahreshauptinspektion)', 'category_code' => 'spielplatz', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 30],
+        ['code' => 'GB-BEWAESSERUNG-12M', 'label' => 'Bewässerungsanlage Saisonwartung', 'category_code' => 'bewaesserung', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
+        ['code' => 'GB-MASCHINE-12M', 'label' => 'Maschinenwartung (Mäher/Geräte)', 'category_code' => 'maschine', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
+    ],
     'room_requirement_templates_seed' => [
         ['code' => 'gl_pflegeintervall', 'kind' => 'operatorDuty', 'label' => 'Pflegeintervall Außenanlage', 'note' => 'Grünfläche/Außenbereich mit Pflegeintervall führen.'],
         ['code' => 'gl_verkehrssicherung', 'kind' => 'technicalInspection', 'label' => 'Baumkontrolle / Verkehrssicherung', 'level' => 'jährlich'],
         ['code' => 'gl_winterdienst', 'kind' => 'other', 'label' => 'Winterdienstpflicht', 'note' => 'Fläche im Winterdienstplan berücksichtigen.'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'GL_PFLEGENACHWEIS'],
         ['code' => 'GL_PFLANZPROTOKOLL'],

@@ -71,6 +71,18 @@ return [
             ['code' => 'lift', 'label' => 'Hebebühne'],
             ['code' => 'instrument', 'label' => 'Messgerät'],
         ],
+        // Gewerke / Nachunternehmer-Kategorien (Auswahl je Eintrag; konkreter
+        // Betrieb liegt im Lieferanten-/Nachunternehmer-Stamm).
+        'trade' => [
+            ['code' => 'elektro', 'label' => 'Elektro'],
+            ['code' => 'sanitaer_heizung', 'label' => 'Sanitär / Heizung'],
+            ['code' => 'maler', 'label' => 'Maler'],
+            ['code' => 'fliesenleger', 'label' => 'Fliesenleger'],
+            ['code' => 'schreiner', 'label' => 'Schreiner / Tischler'],
+            ['code' => 'metallbau', 'label' => 'Metallbau'],
+            ['code' => 'dachdecker', 'label' => 'Dachdecker'],
+            ['code' => 'trockenbau', 'label' => 'Trockenbau'],
+        ],
     ],
     'classification_requirements' => [
         [
@@ -138,14 +150,54 @@ return [
         ],
     ],
     'procedure_templates' => [
-        ['code' => 'HW_SERVICE_CALL'],
+        [
+            'code' => 'HW_SERVICE_CALL',
+            'name' => 'Serviceeinsatz',
+            'domain' => 'handwerk',
+            'risk_level' => 'normal',
+            'description' => 'Serviceeinsatz beim Kunden: Aufnahme, Diagnose, Durchführung, Material.',
+            'steps' => [
+                ['code' => 'problem', 'step_type' => 'text', 'label' => 'Problem/Auftrag aufnehmen'],
+                ['code' => 'diagnose', 'step_type' => 'choice', 'label' => 'Diagnose/Ursache wählen'],
+                ['code' => 'arbeit', 'step_type' => 'confirm', 'label' => 'Arbeit durchführen'],
+                ['code' => 'material', 'step_type' => 'material', 'label' => 'Verbrauchtes Material erfassen', 'required' => false, 'blocking' => false],
+            ],
+        ],
+        [
+            'code' => 'HW_INSTALL_DEVICE',
+            'name' => 'Geräteinstallation',
+            'domain' => 'handwerk',
+            'risk_level' => 'normal',
+            'description' => 'Installation/Inbetriebnahme eines Geräts mit Funktionstest und Einweisung.',
+            'steps' => [
+                ['code' => 'geraetPruefen', 'step_type' => 'confirm', 'label' => 'Gerät/Lieferumfang prüfen'],
+                ['code' => 'montage', 'step_type' => 'confirm', 'label' => 'Montage/Anschluss durchführen'],
+                ['code' => 'funktionstest', 'step_type' => 'confirm', 'label' => 'Funktionstest durchführen'],
+                ['code' => 'einweisung', 'step_type' => 'confirm', 'label' => 'Kunden einweisen'],
+                ['code' => 'foto', 'step_type' => 'photo', 'label' => 'Installation dokumentieren', 'required' => false, 'blocking' => false, 'requires_proof_type' => 'photo'],
+            ],
+        ],
+        [
+            'code' => 'HW_HANDOVER_CUSTOMER',
+            'name' => 'Kundenübergabe',
+            'domain' => 'handwerk',
+            'risk_level' => 'normal',
+            'description' => 'Übergabe der Leistung an den Kunden mit Unterschrift.',
+            'steps' => [
+                ['code' => 'leistungZeigen', 'step_type' => 'confirm', 'label' => 'Erbrachte Leistung zeigen'],
+                ['code' => 'restpunkte', 'step_type' => 'confirm', 'label' => 'Offene Punkte vermerken (falls vorhanden)', 'required' => false, 'blocking' => false],
+                ['code' => 'unterschrift', 'step_type' => 'signature', 'label' => 'Abnahme durch Kunden', 'requires_proof_type' => 'signature'],
+            ],
+        ],
         ['code' => 'HW_MAINTENANCE'],
         ['code' => 'HW_REPAIR'],
-        ['code' => 'HW_INSTALL_DEVICE'],
         ['code' => 'HW_INSPECTION'],
         ['code' => 'HW_AUFMASS'],
-        ['code' => 'HW_HANDOVER_CUSTOMER'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'HW_SERVICEBERICHT'],
         ['code' => 'HW_WARTUNGSPROTOKOLL'],

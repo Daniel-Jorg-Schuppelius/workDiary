@@ -1255,6 +1255,15 @@ Route::middleware('auth')->group(function () {
         Route::put('software/{software}', [SoftwareController::class, 'update'])->name('software.update');
         Route::delete('software/{software}', [SoftwareController::class, 'destroy'])->name('software.destroy');
 
+        // Genehmigungs-Register (Veranstalter): behördliche Genehmigungen mit
+        // Status/Frist/Nachweis. Gated über config/plans.php (permits.* = module.vertrieb).
+        Route::get('permits', [\App\Http\Controllers\PermitController::class, 'index'])->name('permits.index');
+        Route::get('permits/create', [\App\Http\Controllers\PermitController::class, 'create'])->name('permits.create');
+        Route::post('permits', [\App\Http\Controllers\PermitController::class, 'store'])->name('permits.store');
+        Route::get('permits/{permit}/edit', [\App\Http\Controllers\PermitController::class, 'edit'])->name('permits.edit');
+        Route::put('permits/{permit}', [\App\Http\Controllers\PermitController::class, 'update'])->name('permits.update');
+        Route::delete('permits/{permit}', [\App\Http\Controllers\PermitController::class, 'destroy'])->name('permits.destroy');
+
         Route::get('service-tickets', [ServiceTicketController::class, 'index'])->name('service-tickets.index');
         Route::get('service-tickets/create', [ServiceTicketController::class, 'create'])->name('service-tickets.create');
         Route::post('service-tickets', [ServiceTicketController::class, 'store'])->name('service-tickets.store');

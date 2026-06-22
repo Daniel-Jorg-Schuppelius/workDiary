@@ -144,15 +144,55 @@ return [
         ],
     ],
     'procedure_templates' => [
+        [
+            'code' => 'VT_STROM_CHECK',
+            'name' => 'Stromcheck / Elektrosicherheit',
+            'domain' => 'veranstaltungstechnik',
+            'risk_level' => 'critical',
+            'description' => 'Prüfung der Stromversorgung mit Messung und Freigabe im Vier-Augen-Prinzip.',
+            'steps' => [
+                ['code' => 'verteiler', 'step_type' => 'confirm', 'label' => 'Verteiler/Einspeisung prüfen'],
+                ['code' => 'rcd', 'step_type' => 'confirm', 'label' => 'RCD/FI-Test durchführen'],
+                ['code' => 'messung', 'step_type' => 'messreihe', 'label' => 'Schutzleiter/Isolation messen'],
+                ['code' => 'freigabe', 'step_type' => 'signature', 'label' => 'Stromfreigabe', 'requires_proof_type' => 'signature', 'requires_second_person' => true],
+            ],
+        ],
+        [
+            'code' => 'VT_RIGGING_CHECK',
+            'name' => 'Rigging-Check',
+            'domain' => 'veranstaltungstechnik',
+            'risk_level' => 'critical',
+            'description' => 'Lastprüfung und Sichtkontrolle des Riggings mit Freigabe im Vier-Augen-Prinzip.',
+            'steps' => [
+                ['code' => 'lastberechnung', 'step_type' => 'confirm', 'label' => 'Lastberechnung/Traglasten prüfen'],
+                ['code' => 'anschlagmittel', 'step_type' => 'confirm', 'label' => 'Anschlagmittel/Traversen prüfen'],
+                ['code' => 'sichtpruefung', 'step_type' => 'confirm', 'label' => 'Sichtprüfung Aufhängepunkte'],
+                ['code' => 'freigabe', 'step_type' => 'signature', 'label' => 'Rigging-Freigabe', 'requires_proof_type' => 'signature', 'requires_second_person' => true],
+            ],
+        ],
+        [
+            'code' => 'VT_SOUNDCHECK',
+            'name' => 'Soundcheck',
+            'domain' => 'veranstaltungstechnik',
+            'risk_level' => 'normal',
+            'description' => 'Soundcheck inkl. Pegelmessung und Freigabe.',
+            'steps' => [
+                ['code' => 'aufbau', 'step_type' => 'confirm', 'label' => 'PA/Monitoring-Aufbau prüfen'],
+                ['code' => 'pegel', 'step_type' => 'number', 'label' => 'Schalldruckpegel (dB) messen'],
+                ['code' => 'check', 'step_type' => 'confirm', 'label' => 'Soundcheck durchführen'],
+                ['code' => 'freigabe', 'step_type' => 'freigabe', 'label' => 'Für Show freigeben'],
+            ],
+        ],
         ['code' => 'VT_EVENT_PLANUNG'],
         ['code' => 'VT_AUFBAU'],
-        ['code' => 'VT_STROM_CHECK'],
-        ['code' => 'VT_RIGGING_CHECK'],
-        ['code' => 'VT_SOUNDCHECK'],
         ['code' => 'VT_SHOWBETREUUNG'],
         ['code' => 'VT_ABBAU'],
         ['code' => 'VT_SCHADEN'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'VT_EVENTBRIEFING'],
         ['code' => 'VT_EQUIPMENTLISTE'],

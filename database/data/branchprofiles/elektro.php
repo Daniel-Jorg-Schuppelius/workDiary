@@ -79,8 +79,33 @@ return [
             ['code' => 'netzwerk', 'label' => 'Netzwerk'],
             ['code' => 'smartHome', 'label' => 'Smart Home'],
         ],
+        // Genehmigungsarten (Auswahl/Filter je Eintrag). Status, Frist und
+        // Nachweis werden im Genehmigungs-Register (Permit) geführt.
+        'permit_type' => [
+            ['code' => 'netzanmeldung', 'label' => 'Netzanmeldung (VNB)'],
+            ['code' => 'zaehlersetzung', 'label' => 'Zählersetzung'],
+            ['code' => 'anlagenanmeldung_pv', 'label' => 'PV-Anlagenanmeldung'],
+            ['code' => 'e_anmeldung', 'label' => 'E-Anmeldung / TAB'],
+            ['code' => 'abnahme_vnb', 'label' => 'Abnahme Netzbetreiber'],
+        ],
     ],
     'classification_requirements' => [
+        [
+            'entry_type_code' => 'pvAnschluss',
+            'required_domain' => 'permit_type',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'allow_multi' => true,
+            'min_count' => 1,
+        ],
+        [
+            'entry_type_code' => 'wallbox',
+            'required_domain' => 'permit_type',
+            'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
+            'severity' => ClassificationRequirementSeverity::Soft->value,
+            'allow_multi' => true,
+            'min_count' => 1,
+        ],
         [
             'entry_type_code' => 'stoerung',
             'required_domain' => 'defect_type',
@@ -180,11 +205,21 @@ return [
         ['code' => 'EL_WALLBOX'],
         ['code' => 'EL_INBETRIEBNAHME'],
     ],
+    'maintenance_plans_seed' => [
+        ['code' => 'EL-DGUVV3-GERAETE-12M', 'label' => 'DGUV V3 Prüfung ortsveränderlicher Geräte (jährlich)', 'category_code' => 'geraet', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 30],
+        ['code' => 'EL-DGUVV3-ANLAGE-48M', 'label' => 'DGUV V3 Prüfung ortsfester Anlagen (4 Jahre)', 'category_code' => 'anlage', 'interval_kind' => 'months', 'interval_value' => 48, 'tolerance_days' => 60],
+        ['code' => 'EL-MESSGERAET-12M', 'label' => 'Messgeräte-Kalibrierung', 'category_code' => 'messgeraet', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
+        ['code' => 'EL-LEITER-12M', 'label' => 'Leiter-/Tritt-Prüfung (DGUV)', 'category_code' => 'leiter', 'interval_kind' => 'months', 'interval_value' => 12, 'tolerance_days' => 14],
+    ],
     'room_requirement_templates_seed' => [
         ['code' => 'el_pruefintervall', 'kind' => 'technicalInspection', 'label' => 'Wiederkehrende Prüfung (DGUV V3)', 'level' => 'jährlich', 'note' => 'Ortsfeste elektrische Anlagen im Raum wiederkehrend prüfen.'],
         ['code' => 'el_betreiberpflicht', 'kind' => 'operatorDuty', 'label' => 'Betreiberpflicht Elektroinstallation', 'note' => 'Verteiler/Unterverteilung zugänglich halten und dokumentieren.'],
         ['code' => 'el_zutritt', 'kind' => 'accessRestriction', 'label' => 'Zutritt nur für Elektrofachkraft', 'level' => 'fachkraft', 'note' => 'Schalt-/Verteilerräume zutrittsbeschränkt.'],
     ],
+    // HINWEIS: 'protocol_templates' und 'asset_categories' werden vom
+    // BranchProfileInstaller NICHT installiert (kein ProtocolTemplate-Modell;
+    // Asset-Kategorien stammen aus config('asset_categories')). Sie dienen als
+    // Branchen-Taxonomie/Vorlage für künftige Features.
     'protocol_templates' => [
         ['code' => 'EL_PRUEFPROTOKOLL'],
         ['code' => 'EL_MESSPROTOKOLL'],
