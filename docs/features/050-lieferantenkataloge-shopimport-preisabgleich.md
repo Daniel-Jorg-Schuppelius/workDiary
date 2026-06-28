@@ -2,9 +2,37 @@
 
 ## Status
 
-Planned - fachlich geschnitten als MVP-090 bis MVP-096. Das Feature ergänzt den
-einheitlichen Artikelstamm und die Beschaffung um Lieferantenkataloge,
-Shop-Discovery, externe Warenkörbe, Preisbeobachtung und Margenregeln.
+Done (Stand 2026-06-28) - MVP-090 bis MVP-096 umgesetzt und getestet. Das
+Feature ergänzt den einheitlichen Artikelstamm und die Beschaffung um
+Lieferantenkataloge, Shop-Discovery, externe Warenkörbe, Preisbeobachtung und
+Margenregeln.
+
+### Umsetzungsstand (Code)
+
+- **MVP-090** Modul lizenzierbar (`supplier-catalogs.*` → `module.lager` in
+  `config/plans.php`), Datenführerschaft über bestehenden Beschaffungs-/
+  Lagerkern.
+- **MVP-091** Katalogquellen: `SupplierCatalogSource` (Format, Encoding,
+  Remote-/Schedule-Felder), `SupplierCatalogImport` als Importprotokoll,
+  Quellen-CRUD über `SupplierCatalogController`.
+- **MVP-092** Importstrecken: `ShopinfoParser`, `CatalogCsvImportService`,
+  `BMEcatImportService`, `DatanormImportService` + `CatalogImportDispatcher`,
+  `CatalogFetchService`, geplanter Abruf via `FetchDueCatalogsCommand`.
+- **MVP-093** Verknüpfung extern↔intern: `SupplierCatalogItem`/`-Price`/
+  `-PriceTier`, `CatalogLinkService` (Artikel/Variante/Bezugsquelle).
+- **MVP-094** Preis-/Verfügbarkeitsabgleich: `PriceChangeAlertService`,
+  `PricingChangeAlert`, Konfliktübersicht (`CatalogConflictTest`).
+- **MVP-095** Margen/Preisvorschläge: `PricingMarginRule`,
+  `PriceSuggestionService`, `PricingMarginRuleController`.
+- **MVP-096** OCI/IDS-Warenkorb: `OciCartImportService`, `OciCartController`,
+  Anbindung an den Purchase-Order-Flow.
+
+Tests: `tests/Feature/Procurement/Catalog*`, `SupplierCatalogControllerTest`,
+`PurchaseOrder*` (Procurement-Suite).
+
+Zusätzlich über den ursprünglichen Schnitt hinaus umgesetzt: UGL-Rechnungs-
+abgleich (`UglInvoiceReconciler`), Lieferavis-Import (`DespatchAdviceImportService`),
+Datanorm als weiteres Katalogformat.
 
 ## Ziel
 

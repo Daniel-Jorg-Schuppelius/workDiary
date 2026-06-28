@@ -1,0 +1,163 @@
+<?php
+/*
+ * Created on   : Sun Jun 28 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : gaeb.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+return [
+    'title' => 'Mediciones',
+    'subtitle' => 'Importar mediciones GAEB y seguir las partidas',
+    'empty' => 'Aún no se han importado mediciones.',
+    'import_button' => 'Importar archivo GAEB',
+
+    'columns' => [
+        'name' => 'Denominación',
+        'project' => 'Proyecto',
+        'phase' => 'Fase',
+        'version' => 'Versión GAEB',
+        'items' => 'Partidas',
+        'reference_no' => 'Ref.',
+        'short_text' => 'Texto corto',
+        'quantity' => 'Cantidad',
+        'unit' => 'Unidad',
+        'unit_price' => 'PU',
+        'total_price' => 'Total',
+        'type' => 'Tipo',
+        'status' => 'Estado',
+        'executed' => 'Medición',
+        'remaining' => 'Resto',
+    ],
+
+    'import' => [
+        'title' => 'Importar archivo GAEB',
+        'file' => 'Archivo GAEB DA XML',
+        'file_hint' => 'GAEB DA XML 3.x (p. ej. .x81, .x83, .x86 o .xml).',
+        'project' => 'Proyecto (opcional)',
+        'project_none' => '— sin proyecto —',
+        'name' => 'Denominación (opcional)',
+        'name_hint' => 'Sustituye el nombre del proyecto del archivo.',
+        'submit' => 'Importar',
+        'status' => [
+            'pending' => 'En verificación',
+            'preflight_failed' => 'Comprobación previa fallida',
+            'imported' => 'Importado',
+            'conflict' => 'Conflicto',
+        ],
+    ],
+
+    'show' => [
+        'positions' => 'Partidas',
+        'history' => 'Historial de importaciones',
+        'no_imports' => 'No hay importaciones registradas.',
+        'imported_at' => 'Importado el',
+        'back' => 'Volver al listado',
+    ],
+
+    'phase' => [
+        '81' => 'Medición',
+        '82' => 'Estimación de costes',
+        '83' => 'Solicitud de oferta',
+        '84' => 'Presentación de oferta',
+        '85' => 'Oferta alternativa',
+        '86' => 'Adjudicación',
+    ],
+
+    'item' => [
+        'type' => [
+            'standard' => 'Partida normal',
+            'alternative' => 'Partida alternativa',
+            'optional' => 'Partida opcional',
+            'lump_sum' => 'Partida a tanto alzado',
+            'markup' => 'Partida de recargo',
+            'note' => 'Nota',
+        ],
+        'status' => [
+            'draft' => 'Borrador',
+            'imported' => 'Importado',
+            'quoted' => 'Ofertado',
+            'ordered' => 'Adjudicado',
+            'in_progress' => 'En curso',
+            'completed' => 'Completado',
+            'replaced' => 'Sustituido',
+            'cancelled' => 'Cancelado',
+        ],
+    ],
+
+    'preflight' => [
+        'version_unknown' => 'No se pudo detectar la versión GAEB.',
+        'version_unsupported' => 'La versión GAEB :version no es compatible (línea objetivo 3.3).',
+        'phase_unknown' => 'La fase de intercambio «:code» es desconocida.',
+        'no_items' => 'El archivo no contiene partidas.',
+        'item_missing_ref' => 'Partida sin número de orden: :text',
+        'duplicate_ref' => 'El número de orden :ref aparece varias veces.',
+        'missing_quantity' => 'La partida :ref no tiene cantidad.',
+        'non_positive_quantity' => 'La partida :ref tiene una cantidad ≤ 0.',
+        'missing_unit' => 'La partida :ref no tiene unidad.',
+        'missing_price' => 'La partida :ref no tiene precio unitario en una fase con precios.',
+        'missing_text' => 'La partida :ref no tiene texto corto/largo.',
+    ],
+
+    'flash' => [
+        'imported' => 'Medición importada con :items partidas.',
+        'preflight_failed' => 'Importación cancelada: :count errores de comprobación previa. No se escribió ninguna partida.',
+        'conflict' => 'Reimportación cancelada: se sobrescribirían partidas en ejecución (:refs).',
+    ],
+
+    'progress' => [
+        'title' => 'Medición / avance',
+        'record' => 'Registrar medición',
+        'quantity' => 'Cantidad',
+        'note' => 'Nota',
+        'source' => [
+            'manual' => 'Manual',
+            'measurement' => 'Medición',
+            'protocol' => 'Acta',
+            'material' => 'Consumo de material',
+        ],
+        'flash' => [
+            'recorded' => 'Medición registrada.',
+        ],
+    ],
+
+    'mapping' => [
+        'title' => 'Vinculación',
+        'add' => 'Vincular',
+        'target_type' => 'Tipo de destino',
+        'article' => 'Artículo',
+        'material' => 'Material',
+        'factor' => 'Factor',
+        'flash' => [
+            'linked' => 'Partida vinculada.',
+        ],
+    ],
+
+    'workflow' => [
+        'status' => 'Establecer estado',
+        'add_addendum' => 'Añadir adenda',
+        'remaining_title' => 'Trabajo restante',
+        'no_remaining' => 'Sin trabajo restante abierto.',
+        'flash' => [
+            'item_updated' => 'Estado de partida cambiado.',
+            'bill_updated' => 'Estado de medición cambiado.',
+            'addendum_added' => 'Adenda añadida.',
+        ],
+    ],
+
+    'costing' => [
+        'title' => 'Seguimiento de costes',
+        'planned' => 'Previsto',
+        'executed' => 'Real (medido)',
+        'remaining' => 'Resto',
+        'progress' => 'Avance',
+    ],
+
+    'export' => [
+        'button' => 'Exportar GAEB',
+        'title' => 'Exportación GAEB',
+        'phase' => 'Fase',
+    ],
+];

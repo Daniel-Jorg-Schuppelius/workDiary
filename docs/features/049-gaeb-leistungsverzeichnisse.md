@@ -2,11 +2,56 @@
 
 ## Status
 
-Planned - fachlich geschnitten als MVP-080 bis MVP-086. Das Feature erweitert
-das Bau-/Ausbauprofil um importierbare und exportierbare
+Done (Stand 2026-06-28) - MVP-080 bis MVP-086 umgesetzt und getestet. Das
+Feature erweitert das Bau-/Ausbauprofil um importierbare und exportierbare
 Leistungsverzeichnisse, Angebotspositionen, Aufmaßbezug und
 Nachtragsstruktur. Grundlage ist GAEB DA XML; die aktuelle eingeführte
-Ziellinie ist GAEB DA XML 3.3, nicht die Beta-Version 3.4.
+Ziellinie ist GAEB DA XML 3.3, nicht die Beta-Version 3.4. Die unter „Später"
+gelisteten Ausbaustufen (X31/REB, Preisspiegel, Vergabeportal, BIM) bleiben
+bewusst außerhalb des MVP.
+
+### Umsetzungsstand (Code, Stand 2026-06-28)
+
+Fundament-Slice MVP-080/081/082 umgesetzt und getestet:
+
+- **MVP-080** Modul `module.bau` (Label „Bau & GAEB", Enterprise-Tier) in
+  `config/plans.php`; Route-Gating `bill-of-quantities.*` → `module.bau`,
+  Menüeintrag org-bezogen ausgeblendet ohne Lizenz.
+- **MVP-081** Parser + Preflight: `Services\Gaeb\GaebDaXmlParser` (formatneutral,
+  liefert `ParsedBoq` — perspektivisch toolkit-fähig), `GaebPreflight`
+  (Version/Phase, OZ-Eindeutigkeit, Mengen-/Einheiten-/Preisplausibilität),
+  `GaebImportService` (parsen → Preflight → schreiben; Befund im `gaeb_imports`-
+  Protokoll). Blockierende Befunde schreiben keine Positionen.
+- **MVP-082** Datenmodell: `bill_of_quantities`, `boq_sections` (OZ-Hierarchie),
+  `boq_items` (Typ/Status/Texte/Menge/Einheit/Preis, Nachtragskennzeichen,
+  OZ unique je LV), `boq_item_price_snapshots`, `gaeb_imports`. Enums
+  `GaebPhase`/`GaebImportStatus`/`BoqItemType`/`BoqItemStatus`; LV/Position
+  `Auditable` + `HasSqid`.
+- Reimport schützt Positionen mit Ausführungsbezug (`BoqItemStatus::
+  hasExecutionReference()`) vor stillem Überschreiben → `BoqImportConflictException`.
+
+Ausbau MVP-083/084/085/086 umgesetzt und getestet:
+
+- **MVP-083** Verknüpfung & Aufmaß: `boq_item_progress` (Mengenfortschritt je
+  Position, Quelle Aufmaß/Protokoll/Material/manuell) + `boq_item_mappings`
+  (polymorphe Verknüpfung zu Artikel/Material, nie autoritativ). Services
+  `BoqProgressService` (additive Meldung, Status → in Arbeit) und
+  `BoqCostingService` (Nachkalkulation Soll/Ist/Rest/Fortschritt).
+- **MVP-084** LV-Workflow: `BoqWorkflowService` mit gerichteter Statusmaschine
+  (Angebot→Auftrag→Ausführung→Abschluss, `BoqWorkflowException` bei
+  ungültigem Sprung), Nachträge als eigene Positionen (`is_addendum`),
+  Restleistungssicht. Bau-/Ausbauprofil deckt Aufmaß/Nachtrag/Restarbeit/
+  Teilabnahme bereits über Klassifikationen ab.
+- **MVP-085** GAEB-Export: `GaebDaXmlExporter` (deterministisch, Gegenstück zum
+  Parser) + `BoqExportService` mit Audit-Protokoll `boq_exports` (Inhalts-Hash,
+  reproduzierbar). Download-Route je Phase.
+- **MVP-086** Demo-Ablauf: `GaebDemoSeeder` (Import → Aufmaß → Nachtrag →
+  Statuswechsel → Export) auf Basis der Fixture.
+
+Tests: `tests/Unit/Gaeb/*` (Parser/Preflight), `tests/Feature/Gaeb/
+BillOfQuantityImportTest` (Import Service + HTTP), `tests/Feature/Gaeb/
+BoqLifecycleTest` (Aufmaß/Nachkalkulation/Workflow/Export/Demo) — 23 Tests grün,
+PHPStan Level 8 sauber. Fixture `tests/Fixtures/gaeb/sample_x86.xml`.
 
 ## Ziel
 

@@ -26,6 +26,7 @@
         'mail' => __('Mail'),
         'storage' => __('Storage'),
         'backup' => __('Backupstatus'),
+        'security' => __('Sicherheit'),
     ];
     $sectionIcons = [
         'version' => 'info',
@@ -36,6 +37,7 @@
         'mail' => 'mail',
         'storage' => 'sd_storage',
         'backup' => 'backup',
+        'security' => 'security',
     ];
 @endphp
 

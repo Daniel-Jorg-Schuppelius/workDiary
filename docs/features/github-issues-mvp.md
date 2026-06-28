@@ -44,6 +44,7 @@ nicht direkt über den GitHub-Connector angelegt werden können.
 | MVP-099 | Gesamte Anwendung manuell prüfen, Sicherheitsbefunde beheben und Regressionstests ergänzen                            | `mvp`, `security`           | [051](./051-sicherheitspruefung-release-gate.md)                                                                 |
 | MVP-100 | Authentifizierung, Sessions, Recovery und alle 2FA-Methoden beider Guards vertieft prüfen und härten                  | `mvp`, `security`           | [051](./051-sicherheitspruefung-release-gate.md), [016](./016-datenschutz-dsgvo-datenlebenszyklus.md)            |
 | MVP-101 | Fixes nachtesten, unabhängigen Penetrationstest abschließen und Security-Release-Gate freigeben                       | `mvp`, `security`, `ops`    | [051](./051-sicherheitspruefung-release-gate.md)                                                                 |
+| MVP-102 | Eigene Toolkits repo-weit prüfen, lokale Duplikate ersetzen und fehlende fachneutrale Funktionen im passenden Toolkit ergänzen | `mvp`, `ops` | [052](./052-toolkit-nutzung-konsolidierung.md) |
 
 Definition of Done:
 
@@ -56,6 +57,9 @@ Definition of Done:
   unabhängiger Test enthält keine offenen freigabesperrenden Befunde.
 - 2FA, Recovery, Sessions, Legacy-Login, Kundenportal, Rollen und
   Mandantengrenzen sind einschließlich Umgehungsversuchen geprüft.
+- App-lokale Helper, Parser, Formatter, Validatoren sowie Datei- und
+  API-Hilfen sind gegen die eigenen Toolkits geprüft; bestätigte Duplikate
+  wurden vollständig migriert und fachliche Ausnahmen begründet.
 
 ## Phase 1 - Aufzeichnung und Zeit
 

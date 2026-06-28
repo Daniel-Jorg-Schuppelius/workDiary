@@ -294,6 +294,7 @@
                                     ['route' => 'purchase-orders.index',    'label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
                                     ['route' => 'supplier-catalogs.index',  'label' => __('procurement.catalog.title'), 'icon' => 'import_export', 'modal' => false, 'matches' => ['supplier-catalogs.*']],
                                     ['route' => 'pricing-margin-rules.index','label' => __('procurement.margin.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['pricing-margin-rules.*']],
+                                    ['route' => 'bill-of-quantities.index', 'label' => __('gaeb.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['bill-of-quantities.*']],
                                     ['route' => 'inventory.scan',           'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
                                     ['route' => 'work-centers.index',       'label' => __('manufacturing.capacity.title'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['work-centers.*']],
                                     ['route' => 'inventory.lots',           'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
@@ -622,6 +623,7 @@
                                                 ['route' => 'purchase-orders.index','label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
                                                 ['route' => 'supplier-catalogs.index','label' => __('procurement.catalog.title'), 'icon' => 'import_export', 'modal' => false, 'matches' => ['supplier-catalogs.*']],
                                                 ['route' => 'pricing-margin-rules.index','label' => __('procurement.margin.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['pricing-margin-rules.*']],
+                                                ['route' => 'bill-of-quantities.index','label' => __('gaeb.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['bill-of-quantities.*']],
                                                 ['route' => 'inventory.scan',  'label' => __('inventory.scan.title'), 'icon' => 'qr_code_scanner', 'modal' => false, 'matches' => ['inventory.scan*']],
                                                 ['route' => 'work-centers.index','label' => __('manufacturing.capacity.title'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['work-centers.*']],
                                                 ['route' => 'inventory.lots',  'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
@@ -891,6 +893,7 @@
                                 'work-centers.index' => 'module.lager',
                                 'inventory.lots' => 'module.lager',
                                 'inventory.label-templates.index' => 'module.lager',
+                                'bill-of-quantities.index' => 'module.bau',
                             ];
                             $moduleByGroupKey = [
                                 'reports-team' => 'module.auswertungen_team',

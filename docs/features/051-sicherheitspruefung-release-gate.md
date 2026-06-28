@@ -2,9 +2,27 @@
 
 ## Status
 
-Planned — als verbindlicher P0-Querschnitt des MVP geschnitten (`MVP-097` bis
-`MVP-101`). Die Prüfung ist vor der produktiven Freigabe abzuschließen und nach
-wesentlichen Änderungen zu wiederholen.
+In Progress — verbindlicher P0-Querschnitt des MVP (`MVP-097` bis `MVP-101`).
+Die Prüfung ist vor der produktiven Freigabe abzuschließen und nach wesentlichen
+Änderungen zu wiederholen.
+
+### Umsetzungsstand (Stand 2026-06-28)
+
+- **MVP-097 (angelegt):** Angriffsflächen-Inventar und ASVS-5.0-Kontrollmatrix
+  in [docs/security/release-gate-2026-06.md](../security/release-gate-2026-06.md).
+- **MVP-098 (umgesetzt):** Reproduzierbares automatisiertes Gate —
+  `composer security:gate` (`scripts/security-gate.sh`) und CI-Job
+  „Security gate" (composer audit, npm audit, pint, SBOM). Aktuell grün: keine
+  Composer-/NPM-Advisories, PHPStan L8 und Pint sauber. **SBOM:** `composer sbom`
+  erzeugt eine deterministische CycloneDX-1.5-Stückliste (307 Komponenten,
+  Composer + npm) als reproduzierbares Release-Artefakt.
+- **Erste Behebung (MVP-099/100-Muster):** XML-Upload des neuen GAEB-Imports
+  gegen XXE gehärtet (DOCTYPE-Ablehnung + `LIBXML_NONET`, keine
+  Entity-Substitution) inkl. Regressionstest.
+- **Offen:** MVP-099 (vollständige manuelle Whitebox-/dynamische Prüfung),
+  MVP-100 (2FA-/Session-Vertiefung beider Guards), **MVP-101 (unabhängiger
+  Penetrationstest + formale Freigabe)** sowie der Secret-Historie-Scan
+  (gitleaks). Ohne diese Punkte erfolgt keine Produktivfreigabe.
 
 ## Ziel
 

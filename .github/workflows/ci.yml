@@ -50,6 +50,58 @@ jobs:
       - name: Run static analysis
         run: composer lint
 
+  security-gate:
+    name: Security gate (dependencies & format)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      # Feature 051, MVP-098: Abhängigkeits-Advisories und Code-Stil als
+      # reproduzierbares Gate. Die vollständige Testsuite läuft im tests-Job.
+      - name: Composer dependency audit
+        run: composer audit --no-interaction
+
+      - name: NPM dependency audit (prod)
+        run: npm audit --omit=dev
+
+      - name: Generate SBOM (CycloneDX)
+        run: composer sbom -- "${{ runner.temp }}/sbom.cdx.json"
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-cyclonedx
+          path: ${{ runner.temp }}/sbom.cdx.json
+          if-no-files-found: error
+
+      - name: Code style (pint)
+        run: composer format
+
   tests:
     name: Tests
     runs-on: ubuntu-latest

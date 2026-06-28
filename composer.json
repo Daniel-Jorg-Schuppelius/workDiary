@@ -80,6 +80,8 @@
         "format": "pint --test",
         "format:fix": "pint",
         "audit": "@composer audit",
+        "sbom": "@php scripts/generate-sbom.php",
+        "security:gate": "bash scripts/security-gate.sh",
         "i18n:check": "@php scripts/find-untranslated.php",
         "lang:check": "@php scripts/translations-diff.php",
         "lang:coverage": "@php scripts/translations-coverage.php",

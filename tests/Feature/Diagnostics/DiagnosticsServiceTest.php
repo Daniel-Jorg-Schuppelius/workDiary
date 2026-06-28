@@ -94,8 +94,33 @@ class DiagnosticsServiceTest extends TestCase {
         $report = $service->collect();
 
         $codes = array_map(static fn($s) => $s->code, $report->sections);
-        $this->assertSame(['version', 'license', 'queue', 'scheduler', 'mail', 'storage', 'backup'], $codes);
+        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security'], $codes);
         $this->assertSame(DiagnosticStatus::Critical, $report->overallStatus());
+    }
+
+    public function test_security_section_flags_debug_and_reports_sbom_metrics(): void {
+        config(['app.debug' => true]);
+
+        $service = app(DiagnosticsService::class);
+        $section = $service->checkSecurity();
+
+        $this->assertSame('security', $section->code);
+        // APP_DEBUG aktiv → mindestens Warnung (in Produktion kritisch).
+        $this->assertContains($section->status, [DiagnosticStatus::Warn, DiagnosticStatus::Critical]);
+        $this->assertTrue($section->metrics['app_debug']);
+        $this->assertArrayHasKey('sbom_components', $section->metrics);
+        $this->assertNotEmpty($section->messages);
+    }
+
+    public function test_security_section_ok_when_hardened_without_warnings(): void {
+        config(['app.debug' => false]);
+
+        $service = app(DiagnosticsService::class);
+        $section = $service->checkSecurity();
+
+        // Nicht-Produktion, Debug aus → keine kritischen/Warn-Härtungsbefunde.
+        $this->assertNotSame(DiagnosticStatus::Critical, $section->status);
+        $this->assertFalse($section->metrics['app_debug']);
     }
 
     public function test_backup_section_critical_when_no_heartbeat_and_no_audit(): void {

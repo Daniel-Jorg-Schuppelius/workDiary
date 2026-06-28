@@ -59,6 +59,7 @@ return [
             'module.isms',
             'module.finance',
             'module.lager',
+            'module.bau',
             'protocols.signed',
         ],
     ],
@@ -83,6 +84,7 @@ return [
         'module.isms' => 'ISMS',
         'module.finance' => 'Finanzschnittstelle',
         'module.lager' => 'Lager & Artikel',
+        'module.bau' => 'Bau & GAEB',
     ],
 
     // Kurze deutsche Beschreibung je Modul (MVP-052 Modulkonfiguration).
@@ -106,6 +108,7 @@ return [
         'module.isms' => 'Informationssicherheits-Managementsystem (ISO 27001).',
         'module.finance' => 'Finanz-/DATEV-Schnittstelle.',
         'module.lager' => 'Lagerwirtschaft, Artikelstamm und Fertigung.',
+        'module.bau' => 'Bau-/Ausbau: GAEB-Leistungsverzeichnisse, Ordnungszahlen, Aufmaß und Nachträge.',
     ],
 
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
@@ -139,6 +142,9 @@ return [
         'supplier-catalogs.*' => 'module.lager', // Feature 050 Lieferantenkataloge
         'pricing-margin-rules.*' => 'module.lager', // Feature 050 Margenregeln
         'oci-carts.*' => 'module.lager', // Feature 050 OCI-Warenkorb
+
+        'bill-of-quantities.*' => 'module.bau', // Feature 049 GAEB-Leistungsverzeichnisse
+        'gaeb.*' => 'module.bau',               // Feature 049 GAEB-Import/-Export
 
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',

@@ -124,6 +124,33 @@ Definition of Done:
 - Ohne dokumentierte Security-Freigabe wird der MVP nicht produktiv
   ausgerollt.
 
+### Epic 0.4: Nutzung der eigenen Toolkits
+
+Quelle:
+[052](./052-toolkit-nutzung-konsolidierung.md)
+
+Issue:
+
+- `MVP-102`: Nutzung der eigenen Toolkits repo-weit prüfen, Funde
+  klassifizieren, geeignete lokale Implementierungen durch Toolkit-APIs
+  ersetzen und fehlende fachneutrale Funktionen im zuständigen Toolkit
+  ergänzen.
+
+Definition of Done:
+
+- Der definierte produktive Codeumfang ist vollständig geprüft und jeder Fund
+  als bestehende Nutzung, Duplikat, Toolkit-Erweiterung, app-spezifische
+  Geschäftslogik, optionale Fähigkeit oder begründeter Prüfbedarf
+  klassifiziert.
+- Bestätigte Duplikate sind an allen produktiven Aufrufstellen ersetzt;
+  fehlende fachneutrale Funktionen werden zuerst im passenden Toolkit
+  getestet und veröffentlicht.
+- Geschäftsregeln, Mandantengrenzen und Laravel-Orchestrierung bleiben in
+  WorkDiary.
+- Das optionale private Finanzformat-Paket bleibt gegatet und außerhalb der
+  committeten `composer.lock`.
+- Qualitäts-Gates der geänderten Toolkits und von WorkDiary sind grün.
+
 ## Phase 1: Aufzeichnung und Zeit
 
 ### Epic 1.1: Auftrags- und Arbeitsnachweis

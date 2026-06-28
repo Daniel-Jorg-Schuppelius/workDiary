@@ -902,6 +902,20 @@ Route::middleware('auth')->group(function () {
         // ── OCI-/IDS-Warenkorb-Hook (Feature 050, MVP-096) ─ Gate oci-carts.* → module.lager
         Route::post('oci-carts/import', [\App\Http\Controllers\OciCartController::class, 'import'])->name('oci-carts.import');
 
+        // ── GAEB-Leistungsverzeichnisse (Feature 049, MVP-081/082) ─ Gate bill-of-quantities.* → module.bau
+        Route::get('bill-of-quantities', [\App\Http\Controllers\BillOfQuantityController::class, 'index'])->name('bill-of-quantities.index');
+        Route::get('bill-of-quantities/import', [\App\Http\Controllers\BillOfQuantityController::class, 'importForm'])->name('bill-of-quantities.import-form'); // vor show!
+        Route::post('bill-of-quantities/import', [\App\Http\Controllers\BillOfQuantityController::class, 'import'])->name('bill-of-quantities.import');
+        Route::get('bill-of-quantities/{billOfQuantity}', [\App\Http\Controllers\BillOfQuantityController::class, 'show'])->name('bill-of-quantities.show');
+        // MVP-084/085: LV-Workflow und GAEB-Export
+        Route::get('bill-of-quantities/{billOfQuantity}/export', [\App\Http\Controllers\BillOfQuantityController::class, 'export'])->name('bill-of-quantities.export');
+        Route::post('bill-of-quantities/{billOfQuantity}/transition', [\App\Http\Controllers\BillOfQuantityController::class, 'transition'])->name('bill-of-quantities.transition');
+        Route::post('bill-of-quantities/{billOfQuantity}/addenda', [\App\Http\Controllers\BillOfQuantityController::class, 'addAddendum'])->name('bill-of-quantities.addenda.add');
+        // MVP-083/084: Positionen — Aufmaß, Verknüpfung, Status
+        Route::post('bill-of-quantities/items/{boqItem}/progress', [\App\Http\Controllers\BillOfQuantityController::class, 'recordProgress'])->name('bill-of-quantities.items.progress');
+        Route::post('bill-of-quantities/items/{boqItem}/mappings', [\App\Http\Controllers\BillOfQuantityController::class, 'addMapping'])->name('bill-of-quantities.items.mappings.add');
+        Route::post('bill-of-quantities/items/{boqItem}/transition', [\App\Http\Controllers\BillOfQuantityController::class, 'transitionItem'])->name('bill-of-quantities.items.transition');
+
         // Plugin-spezifische Routen (z. B. Lexoffice customers.lexoffice.*) werden
         // vom jeweiligen Plugin-ServiceProvider geladen — siehe app/Plugins/*/routes.php.
 

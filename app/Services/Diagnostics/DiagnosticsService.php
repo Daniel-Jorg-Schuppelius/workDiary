@@ -25,7 +25,10 @@ use Throwable;
  * Fehlermeldung zurückgegeben, wenn ein Check unerwartet wirft.
  */
 class DiagnosticsService {
-    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup'];
+    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security'];
+
+    /** Warnschwelle für das Alter der SBOM (Feature 051). */
+    public const SBOM_STALE_DAYS = 30;
 
     /**
      * Cache-Key für den Scheduler-Heartbeat. Wird von einem geplanten Job
@@ -60,6 +63,7 @@ class DiagnosticsService {
                 'mail' => $this->checkMail(),
                 'storage' => $this->checkStorage(),
                 'backup' => $this->checkBackup(),
+                'security' => $this->checkSecurity(),
                 default => DiagnosticSection::unknown($section, 'Unbekannter Diagnose-Abschnitt.'),
             };
         } catch (Throwable $e) {
@@ -407,6 +411,73 @@ class DiagnosticsService {
                 'manifest_hash' => $manifestHash,
                 'size_bytes' => $sizeBytes,
                 'source' => $source,
+            ],
+            messages: $messages,
+            checkedAt: CarbonImmutable::now(),
+        );
+    }
+
+    /**
+     * Sicherheits-/Release-Gate-Posture (Feature 051): schnelle Config-Härtung
+     * und SBOM-Stand. Bewusst ohne Netzwerk/Composer-Aufruf — der vollständige
+     * Gate-Lauf bleibt CI/CLI (`composer security:gate`).
+     */
+    public function checkSecurity(): DiagnosticSection {
+        $status = DiagnosticStatus::Ok;
+        $messages = [];
+
+        $isProduction = app()->environment('production');
+        $debug = (bool) config('app.debug');
+        $sessionSecure = (bool) config('session.secure');
+        $appUrl = (string) config('app.url', '');
+        $https = str_starts_with($appUrl, 'https://');
+
+        if ($debug) {
+            $status = DiagnosticStatus::worst($status, $isProduction ? DiagnosticStatus::Critical : DiagnosticStatus::Warn);
+            $messages[] = $isProduction
+                ? 'APP_DEBUG ist in der Produktion aktiv — Informationsabfluss-Risiko.'
+                : 'APP_DEBUG ist aktiv (für Produktion deaktivieren).';
+        }
+        if ($isProduction && ! $sessionSecure) {
+            $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
+            $messages[] = 'Session-Cookies sind nicht auf "secure" gesetzt (SESSION_SECURE_COOKIE).';
+        }
+        if ($isProduction && ! $https) {
+            $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
+            $messages[] = 'APP_URL ist nicht https — produktiv TLS erzwingen.';
+        }
+
+        // SBOM-Artefakt (Feature 051, MVP-098): Vorhandensein, Umfang, Alter.
+        $sbomPath = storage_path('app/sbom.cdx.json');
+        $sbomComponents = null;
+        $sbomGeneratedAt = null;
+        if (File::exists($sbomPath)) {
+            try {
+                /** @var array{components?: array<int, mixed>}|null $sbom */
+                $sbom = json_decode(File::get($sbomPath), true);
+                $sbomComponents = is_array($sbom) ? count($sbom['components'] ?? []) : null;
+            } catch (Throwable) {
+                $sbomComponents = null;
+            }
+            $sbomGeneratedAt = CarbonImmutable::createFromTimestamp(File::lastModified($sbomPath));
+            if ($sbomGeneratedAt->diffInDays(CarbonImmutable::now(), true) > self::SBOM_STALE_DAYS) {
+                $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
+                $messages[] = sprintf('SBOM älter als %d Tage — neu erzeugen (composer sbom).', self::SBOM_STALE_DAYS);
+            }
+        } else {
+            $messages[] = 'Keine SBOM erzeugt (composer sbom / Security-Gate).';
+        }
+
+        return new DiagnosticSection(
+            code: 'security',
+            status: $status,
+            metrics: [
+                'environment' => (string) app()->environment(),
+                'app_debug' => $debug,
+                'session_secure_cookie' => $sessionSecure,
+                'https_app_url' => $https,
+                'sbom_components' => $sbomComponents,
+                'sbom_generated_at' => $sbomGeneratedAt?->toIso8601String(),
             ],
             messages: $messages,
             checkedAt: CarbonImmutable::now(),

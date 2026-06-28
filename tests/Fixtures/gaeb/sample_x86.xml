@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GAEB xmlns="http://www.gaeb.de/GAEB_DA_XML/DA86/3.3">
+  <GAEBInfo>
+    <Version>3</Version>
+    <VersDate>2026-01-01</VersDate>
+    <Date>2026-06-28</Date>
+    <ProgSystem>WorkDiary Test</ProgSystem>
+  </GAEBInfo>
+  <PrjInfo>
+    <NamePrj>Neubau Lagerhalle Musterstadt</NamePrj>
+    <Cur>EUR</Cur>
+  </PrjInfo>
+  <Award>
+    <DP>86</DP>
+    <Cur>EUR</Cur>
+    <BoQ ID="BOQ-1">
+      <BoQInfo>
+        <Name>Hauptangebot</Name>
+      </BoQInfo>
+      <BoQBody>
+        <BoQCtgy RNoPart="01" ID="C-01">
+          <LblTx><p><span>Erdarbeiten</span></p></LblTx>
+          <BoQBody>
+            <Itemlist>
+              <Item RNoPart="0001" ID="I-0001">
+                <Description>
+                  <CompleteText>
+                    <OutlineText><OutlTxt><TextOutlTxt><p><span>Vorbemerkung: Baustelle ist eingerichtet.</span></p></TextOutlTxt></OutlTxt></OutlineText>
+                  </CompleteText>
+                </Description>
+              </Item>
+              <Item RNoPart="0010" ID="I-0010">
+                <Qty>100.000</Qty>
+                <QU>m3</QU>
+                <Description>
+                  <CompleteText>
+                    <OutlineText><OutlTxt><TextOutlTxt><p><span>Boden lösen</span></p></TextOutlTxt></OutlTxt></OutlineText>
+                    <DetailTxt><Text><p><span>Boden der Bodenklasse 3-5 lösen und seitlich lagern.</span></p></Text></DetailTxt>
+                  </CompleteText>
+                </Description>
+                <UP>12.50</UP>
+                <IT>1250.00</IT>
+              </Item>
+              <Item RNoPart="0020" ID="I-0020">
+                <Provis>
+                  <ProvisQty>10.000</ProvisQty>
+                </Provis>
+                <Qty>10.000</Qty>
+                <QU>St</QU>
+                <Description>
+                  <CompleteText>
+                    <OutlineText><OutlTxt><TextOutlTxt><p><span>Findlinge bergen (Bedarfsposition)</span></p></TextOutlTxt></OutlTxt></OutlineText>
+                  </CompleteText>
+                </Description>
+                <UP>45.00</UP>
+              </Item>
+            </Itemlist>
+          </BoQBody>
+        </BoQCtgy>
+        <BoQCtgy RNoPart="02" ID="C-02">
+          <LblTx><p><span>Maurerarbeiten</span></p></LblTx>
+          <BoQBody>
+            <Itemlist>
+              <Item RNoPart="0010" ID="I-0210">
+                <Qty>250.000</Qty>
+                <QU>m2</QU>
+                <Description>
+                  <CompleteText>
+                    <OutlineText><OutlTxt><TextOutlTxt><p><span>Mauerwerk 24 cm herstellen</span></p></TextOutlTxt></OutlTxt></OutlineText>
+                  </CompleteText>
+                </Description>
+                <UP>89.90</UP>
+                <IT>22475.00</IT>
+              </Item>
+            </Itemlist>
+          </BoQBody>
+        </BoQCtgy>
+      </BoQBody>
+    </BoQ>
+  </Award>
+</GAEB>
