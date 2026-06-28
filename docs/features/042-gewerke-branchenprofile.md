@@ -127,9 +127,11 @@ Protokollen.
 
 ### Bau und Ausbau
 
-- Baustellenfotos, Mängel, Aufmaß, Nachtrag.
+- Baustellenfotos, Mängel, Aufmaß, Leistungsverzeichnis und Nachtrag.
 - Materialverbrauch, Wetter, Baufortschritt.
 - Teilabnahme, Restpunkte und Nacharbeit.
+- GAEB-Bezug für Ordnungszahlen, LV-Positionen, Angebote, Aufmaß und
+  Nachtragsstruktur.
 
 ## MVP
 
@@ -142,6 +144,8 @@ Protokollen.
 - Profile können raum- und objektbezogene Anforderungen vorbelegen, damit
   unterschiedliche Gewerke denselben Gebäudebereich fachlich unterschiedlich
   nutzen können.
+- Das Bau-/Ausbauprofil kann einen GAEB-fähigen LV-Workflow vorbereiten, ohne
+  den GAEB-Parser fest in das Profilsystem zu verdrahten.
 
 ## Akzeptanzkriterien
 

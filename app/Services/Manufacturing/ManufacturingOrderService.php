@@ -31,6 +31,7 @@ class ManufacturingOrderService {
         private readonly MaterialDemandCalculator $calculator = new MaterialDemandCalculator(),
         private readonly NumberSequenceService $numbers = new NumberSequenceService(),
         private readonly BomResolver $bomResolver = new BomResolver(),
+        private readonly ParameterResolver $parameters = new ParameterResolver(),
     ) {}
 
     /**
@@ -57,7 +58,7 @@ class ManufacturingOrderService {
             throw new RuntimeException('Auftrag kann aus dem aktuellen Status nicht freigegeben werden.');
         }
 
-        $version ??= $order->article?->defaultProcedureVersion;
+        $version ??= $order->article->defaultProcedureVersion;
         if ($version === null) {
             throw new RuntimeException('Keine Arbeitsplan-Version für die Freigabe vorhanden.');
         }
@@ -66,7 +67,11 @@ class ManufacturingOrderService {
         $bom = $this->bomResolver->resolve($version, $order->variant);
         $lines = $this->calculator->calculate($bom, (string) $order->target_qty);
 
-        return DB::transaction(function () use ($order, $version, $lines): ManufacturingOrder {
+        // Auftragsparameter gegen die Version validieren und einfrieren (MVP-061).
+        // Wirft vor der Transaktion bei Pflichtverletzung/ungültigem Wert.
+        $parameterSnapshot = $this->parameters->snapshot($version, $order->parameters ?? []);
+
+        return DB::transaction(function () use ($order, $version, $lines, $parameterSnapshot): ManufacturingOrder {
             $snapshot = [];
             foreach ($lines as $line) {
                 /** @var ProcedureMaterialRequirement $req */
@@ -101,6 +106,7 @@ class ManufacturingOrderService {
                 'procedure_template_version_id' => $version->id,
                 'bom_snapshot' => $snapshot,
                 'variant_snapshot' => $this->variantSnapshot($order->variant),
+                'parameter_snapshot' => $parameterSnapshot,
                 'released_at' => Carbon::now(),
             ])->save();
 

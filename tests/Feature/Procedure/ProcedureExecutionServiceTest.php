@@ -13,7 +13,7 @@ namespace Tests\Feature\Procedure;
 use App\Enums\Procedure\{ProcedureRunEventType, ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
 use App\Exceptions\{ProcedureRunIncompleteException, ProcedureStepBlockedException};
 use App\Models\{DiaryEntry, Organization, ProcedureRun, ProcedureTemplate, User};
-use App\Services\Procedure\{ProcedureExecutionService, ProcedureTemplateService};
+use App\Services\Procedure\{ProcedureExecutionService, ProcedureTemplateService, WaitStepService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -82,6 +82,31 @@ class ProcedureExecutionServiceTest extends TestCase {
             1,
             $run->events()->where('event_type', ProcedureRunEventType::StepCompleted->value)->count(),
         );
+    }
+
+    public function test_execute_is_blocked_while_wait_not_elapsed(): void {
+        // MVP-064: ein laufender Warteschritt darf auch über den allgemeinen
+        // Ausführungspfad nicht vorzeitig abgeschlossen werden (kein Umgehen
+        // der serverseitigen Frist durch Reload/anderen Client).
+        [$org, $user] = $this->makeOrgAndUser();
+        $template = $this->makePublishedTemplate($org, $user, ['A']);
+        $entry = DiaryEntry::factory()->for($user)->create();
+        $run = $this->executor->start($template, $entry, $user);
+        $stepRun = $run->stepRuns->first();
+
+        app(WaitStepService::class)->beginWait($stepRun, 3600);
+
+        $this->assertSame(
+            ProcedureStepBlockedException::REASON_WAIT_NOT_ELAPSED,
+            $this->executor->blockReasonFor($stepRun->fresh(), $user),
+        );
+
+        try {
+            $this->executor->execute($stepRun->fresh(), $user, ProcedureStepRunStatus::Done);
+            $this->fail('Warteschritt darf nicht vorzeitig ausführbar sein.');
+        } catch (ProcedureStepBlockedException $e) {
+            $this->assertSame(ProcedureStepBlockedException::REASON_WAIT_NOT_ELAPSED, $e->reason);
+        }
     }
 
     public function test_execute_unlocks_subsequent_step(): void {

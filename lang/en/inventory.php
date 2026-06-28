@@ -185,6 +185,34 @@ return [
         ],
     ],
 
+    'conflict' => [
+        'title' => 'Stock conflicts (external)',
+        'empty' => 'No open stock conflicts.',
+        'filter' => ['open' => 'Open', 'all' => 'All'],
+        'col' => [
+            'id' => 'Movement',
+            'operation' => 'Operation',
+            'qty' => 'Quantity',
+            'status' => 'Status',
+            'actions' => 'Actions',
+        ],
+        'status' => [
+            'open' => 'Open',
+            'resolved_local' => 'Kept local',
+            'resolved_remote' => 'Took external',
+            'compensated' => 'Compensated',
+            'dismissed' => 'Dismissed',
+        ],
+        'action' => [
+            'compensate' => 'Counter-booking',
+            'keep_local' => 'Keep local',
+        ],
+        'flash' => [
+            'kept_local' => 'Conflict closed — local stock kept.',
+            'compensated' => 'Conflict compensated — counter-booking posted.',
+        ],
+    ],
+
     'outbox' => [
         'status' => [
             'pending' => 'Pending',

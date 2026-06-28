@@ -11,8 +11,8 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Archivable, BelongsToOrganization, HasSqid, Searchable};
-use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\{Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\Carbon;
 
@@ -103,7 +103,6 @@ class ForeignCustomer extends Model {
     public function externalReferences(): MorphMany {
         return $this->morphMany(ExternalReference::class, 'referenceable');
     }
-
 
     /** @return list<string> */
     protected function searchableColumns(): array {

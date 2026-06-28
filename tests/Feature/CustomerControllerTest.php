@@ -428,4 +428,50 @@ class CustomerControllerTest extends TestCase {
     private function putAsAdmin(string $routeName, mixed $parameters = [], array $payload = []): TestResponse {
         return $this->actingAs($this->admin)->put(route($routeName, $parameters), $payload);
     }
+
+    public function test_customer_show_filters_lexoffice_vouchers_by_global_range(): void {
+        \App\Models\PluginSetting::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'enabled' => true,
+            'settings' => ['api_key' => 'test-key'],
+        ]);
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+        ]);
+
+        \App\Models\LexofficeVoucher::query()->create([
+            'organization_id' => $this->organization->id, 'external_id' => 'voucher-in',
+            'customer_id' => $customer->id, 'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
+            'voucher_number' => 'RE-IN-RANGE', 'voucher_date' => '2026-06-15',
+            'total_amount' => '100.00', 'currency' => 'EUR', 'archived' => false,
+        ]);
+        \App\Models\LexofficeVoucher::query()->create([
+            'organization_id' => $this->organization->id, 'external_id' => 'voucher-out',
+            'customer_id' => $customer->id, 'voucher_type' => 'orderconfirmation', 'voucher_status' => 'open',
+            'voucher_number' => 'AB-OUT-RANGE', 'voucher_date' => '2026-01-15',
+            'total_amount' => '50.00', 'currency' => 'EUR', 'archived' => false,
+        ]);
+
+        $response = $this->actingAs($this->admin)
+            ->withSession([
+                'ui.daterange.preset' => 'custom',
+                'ui.daterange.from' => '2026-06-01',
+                'ui.daterange.to' => '2026-06-30',
+            ])
+            ->get(route('customers.show', $customer));
+
+        $response->assertOk();
+        $response->assertSee('RE-IN-RANGE');
+        $response->assertDontSee('AB-OUT-RANGE');
+        // Belegbild-Aktion (Vorschau/Download) je Beleg vorhanden.
+        $response->assertSee('lexoffice-vouchers', false);
+    }
 }

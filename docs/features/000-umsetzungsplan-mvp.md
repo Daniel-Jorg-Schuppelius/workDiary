@@ -33,6 +33,9 @@ ist genau ein schreibend führendes System festgelegt.
   Anforderungen für unterschiedliche Gewerke.
 - Grundauswertungen für Kunde, Auftrag, Zeit, Material und Nacharbeit.
 - Datenschutzgrundsätze sichtbar und technisch unterstützt.
+- Vollständige Sicherheitsprüfung des finalen Release-Kandidaten einschließlich
+  Authentifizierung und 2FA, Behebung der Befunde und unabhängiger Nachtest als
+  verbindliches Produktiv-Release-Gate.
 - Einheitliche Bedienung für Listen, Filter, Formulare, Detailseiten und
   Protokolle.
 - Lokale Installation mit Lizenz, Diagnose und Backup-Hinweisen.
@@ -88,6 +91,38 @@ Definition of Done:
 - Neue Features haben eine UI-Checkliste.
 - Wiederkehrende UI-Elemente verwenden bestehende Komponenten oder definierte
   neue Komponenten.
+
+### Epic 0.3: Sicherheitsprüfung und Release-Gate
+
+Quelle:
+[051](./051-sicherheitspruefung-release-gate.md)
+
+Issues:
+
+- `MVP-097`: Angriffsflächen inventarisieren, Bedrohungsmodell erstellen und
+  ASVS-5.0-Kontrollmatrix für den Release-Kandidaten festlegen.
+- `MVP-098`: Automatisierte Abhängigkeits-, SAST-, Secret-, SBOM- und
+  Konfigurationsprüfungen reproduzierbar in CI und Releaseprozess integrieren.
+- `MVP-099`: Gesamte Anwendung manuell per Whitebox- und dynamischer Prüfung
+  untersuchen, Befunde beheben und Regressionstests ergänzen.
+- `MVP-100`: Authentifizierung, Sitzungen, Passwort-/Recovery-Flows und alle
+  2FA-Methoden in Hauptanwendung und Kundenportal auf Umgehungen prüfen und
+  härten.
+- `MVP-101`: Fixes nachtesten, unabhängigen Penetrationstest abschließen und
+  das Security-Release-Gate dokumentiert freigeben.
+
+Definition of Done:
+
+- Alle inventarisierten Angriffsflächen sind gegen OWASP ASVS 5.0 Level 2 und
+  risikobasiert ausgewählte Level-3-Anforderungen geprüft.
+- Kritische, hohe und mittlere Befunde sind behoben und nachgetestet; niedrige
+  Befunde sind behoben oder formal befristet behandelt.
+- 2FA, Recovery, Sessions, Legacy-Login, Kundenportal, Rollen- und
+  Mandantengrenzen besitzen positive sowie negative Umgehungs- und
+  Parallelitätstests.
+- Ein unabhängiger Nachtest enthält keine offenen freigabesperrenden Befunde.
+- Ohne dokumentierte Security-Freigabe wird der MVP nicht produktiv
+  ausgerollt.
 
 ## Phase 1: Aufzeichnung und Zeit
 
@@ -362,7 +397,104 @@ Definition of Done:
 - Externe Provider-Buchungen sind per Outbox idempotent und zeigen Fehler offen
   an.
 
+## Phase 6: GAEB, Leistungsverzeichnisse und Baukalkulation
+
+### Epic 6.1: Leistungsverzeichnis und GAEB-Austausch
+
+Quellen:
+[049](./049-gaeb-leistungsverzeichnisse.md),
+[042](./042-gewerke-branchenprofile.md),
+[014](./014-nachkalkulation-wirtschaftlichkeit.md),
+[020](./020-import-migration-onboarding.md),
+[008](./008-integrationen-api.md)
+
+Issues:
+
+- `MVP-080`: GAEB-Modul fachlich lizenzierbar schneiden und Datenführerschaft
+  für Leistungsverzeichnis, Preise, Aufmaß und Rechnung organisationsbezogen
+  definieren.
+- `MVP-081`: GAEB DA XML Import-Preflight für Leistungsverzeichnisse mit
+  Version, Austauschphase, Strukturprüfung und Fehlerprotokoll konzipieren.
+- `MVP-082`: Leistungsverzeichnis-Datenmodell mit Abschnitten,
+  Ordnungszahlen, Positionen, Texten, Mengen, Einheiten, Preis-Snapshots und
+  Nachtragskennzeichen umsetzen.
+- `MVP-083`: LV-Positionen mit Projekt, Auftrag, Protokoll, Aufmaß,
+  Materialverbrauch und Nachkalkulation verknüpfen.
+- `MVP-084`: Bau-/Ausbauprofil um LV-Workflows für Ausschreibung,
+  Angebotsbearbeitung, Aufmaß, Nachtrag und Restleistung erweitern.
+- `MVP-085`: GAEB-Export für freigegebene LV-Stände, Angebote,
+  Auftrag/Nachtrag oder Abrechnungsübergabe mit Audit und Wiederholungsschutz
+  ergänzen.
+- `MVP-086`: GAEB-Beispieldaten und Demo-Ablauf für Bau/Ausbau bereitstellen:
+  Import, Ausführung, Aufmaß, Nachtrag, Nachkalkulation und Export.
+
+Definition of Done:
+
+- GAEB-Dateien werden vor dem Import validiert und mit Fehlerprotokoll
+  abgelehnt oder kontrolliert übernommen.
+- Ordnungszahlen, LV-Hierarchie, Texte, Mengen, Einheiten und Preisdaten
+  bleiben als Snapshots nachvollziehbar.
+- Aufträge, Protokolle, Aufmaß und Materialverbrauch können auf konkrete
+  LV-Positionen verweisen.
+- Nachträge sind eigene nachvollziehbare Vorgänge und keine stillen
+  Freitextänderungen.
+- Reimporte überschreiben keine Positionen mit Ausführungs- oder
+  Abrechnungsbezug ohne sichtbaren Konfliktstand.
+- GAEB-Exporte sind versioniert, auditierbar und wiederholbar.
+
+## Phase 7: Lieferantenkataloge, Shopimport und Margen
+
+### Epic 7.1: Katalogimport, Preisabgleich und Warenkorbübernahme
+
+Quellen:
+[050](./050-lieferantenkataloge-shopimport-preisabgleich.md),
+[048](./048-lagerwirtschaft-bestandsintegration.md),
+[008](./008-integrationen-api.md),
+[014](./014-nachkalkulation-wirtschaftlichkeit.md),
+[020](./020-import-migration-onboarding.md)
+
+Issues:
+
+- `MVP-090`: Lieferantenkatalog- und Shopimport-Modul lizenzierbar schneiden
+  und Datenführerschaft für Artikel, Einkaufspreise, Verkaufspreise und Margen
+  organisationsbezogen definieren.
+- `MVP-091`: Katalogquellen verwalten: Lieferant, Quelltyp, Format, Encoding,
+  Aktualisierungsintervall, HTTP(S)-/FTP-/SFTP-Zugangsdaten, erlaubte Hosts
+  und Importprotokoll.
+- `MVP-092`: `shopinfo.xml` und Lieferanten-CSV als erste Discovery- und
+  Katalogimportstrecke mit Mapping-Vorschlägen, Header-Validierung, Preflight
+  und Fehlerprotokoll umsetzen.
+- `MVP-093`: Externe Katalogartikel mit internem Artikelstamm, Varianten,
+  Bezugsquellen und Lieferantenartikelnummern verknüpfen.
+- `MVP-094`: Preis-/Verfügbarkeitsabgleich mit Änderungshistorie,
+  Konfliktübersicht und Warnungen für Angebote, Aufträge, LV-Positionen und
+  Bestellungen ergänzen.
+- `MVP-095`: Margenregeln, Verkaufspreisvorschläge, Mindestmargen und
+  Freigabeflow für Preisübernahmen umsetzen.
+- `MVP-096`: Shop-Warenkorb-Import über OCI/IDS als Beschaffungsvorschlag oder
+  Bestellung vorbereiten und an den bestehenden Purchase-Order-Flow anbinden.
+
+Definition of Done:
+
+- Externe Shop- und Katalogartikel werden importiert, ohne den internen
+  Artikelstamm ungeprüft zu überschreiben.
+- Artikelnummern, GTIN, Herstellerdaten, Einkaufspreise, Verfügbarkeiten und
+  Lieferzeiten bleiben als Lieferanten-Snapshots historisiert.
+- `shopinfo.xml`-Mappings und FTP-/SFTP-Listen werden als Katalogquellen
+  unterstützt, aber vor Übernahme gegen Header, Pflichtfelder und erlaubte
+  Hosts validiert.
+- Preisänderungen erzeugen sichtbare Abgleichs- und Margenwarnungen für offene
+  Angebote, Aufträge, LV-Positionen und Bestellungen.
+- Verkaufspreisvorschläge folgen nachvollziehbaren Margenregeln und werden
+  erst nach Freigabe übernommen.
+- Externe Warenkörbe werden als Beschaffungsvorschlag oder Bestellung
+  übernommen und mit internen Artikeln/Bezugsquellen verknüpft.
+
 ## Querschnitt: Tests und Qualität
+
+Die Sicherheitsprüfung aus `MVP-097` bis `MVP-101` ist ein
+verbindliches Release-Gate. Sie läuft auf dem finalen Release-Kandidaten nach
+Abschluss der fachlichen MVP-Features und vor dem produktiven Rollout.
 
 Jeder MVP-Issue sollte mindestens eine dieser Prüfungen enthalten:
 
@@ -374,13 +506,21 @@ Jeder MVP-Issue sollte mindestens eine dieser Prüfungen enthalten:
 
 ## Reihenfolge
 
-1. Phase 0 zuerst: Mandant, Datenschutz, UX-Konventionen.
+1. Phase 0 zuerst: Mandant, Datenschutz, UX-Konventionen und Vorbereitung der
+   Sicherheits-Kontrollmatrix.
 2. Phase 1 danach: Auftragsverlauf und Zeiterfassung.
 3. Phase 2: Protokolle und Prozeduren.
 4. Phase 3: Klassifikationen, Assets, Auswertungen.
 5. Phase 4: Betrieb, Onboarding, Demo.
 6. Phase 5: dynamische Arbeitspläne, Fertigungs-/Montageaufträge und
    Lagerintegration.
+7. Phase 6: GAEB-Leistungsverzeichnisse für Bau-/Ausbauprojekte, sobald
+   Branchenprofil, Importbasis und Nachkalkulation stabil genug sind.
+8. Phase 7: Lieferantenkataloge, Shopimport und Preisabgleich, sobald
+   Artikelstamm, Beschaffung und Preis-Snapshots tragfähig sind.
+9. Abschließend `MVP-097` bis `MVP-101` auf dem eingefrorenen
+   Release-Kandidaten durchführen; ohne Security-Freigabe kein produktiver
+   Rollout.
 
 ## GitHub-Umsetzung
 
@@ -395,6 +535,8 @@ Empfohlene Labels:
 - `reporting`
 - `ux`
 - `ops`
+- `construction`
+- `procurement`
 
 Empfohlene Meilensteine:
 
@@ -404,3 +546,5 @@ Empfohlene Meilensteine:
 - `MVP Phase 3 - Auswertungen und Stammdaten`
 - `MVP Phase 4 - Betrieb und Onboarding`
 - `MVP Phase 5 - Fertigung und Montage`
+- `MVP Phase 6 - GAEB und Leistungsverzeichnisse`
+- `MVP Phase 7 - Lieferantenkataloge und Preisabgleich`

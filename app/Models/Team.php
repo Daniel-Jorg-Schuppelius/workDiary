@@ -12,9 +12,8 @@ namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\TeamFactory;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 use Illuminate\Support\{Carbon, Str};
 

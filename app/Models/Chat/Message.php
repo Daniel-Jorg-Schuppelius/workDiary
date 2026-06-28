@@ -10,13 +10,10 @@
 
 namespace App\Models\Chat;
 
-use App\Models\Attachment;
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasSqid;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\{Attachment, User};
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, HasOne, MorphMany};
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Chat-Nachricht. parent_id != null → Thread-Antwort (Kommentar).

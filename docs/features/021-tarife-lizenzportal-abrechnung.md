@@ -29,6 +29,9 @@ wann Lizenzen ablaufen und wie Nutzer- oder Featuregrenzen wirken.
 ## MVP
 
 - Tarif- und Featurepaket-Definition.
+- Fachmodule wie Fertigung/Lager, DATEV/Finanzformate und GAEB/AVA können
+  lizenzierbar getrennt und organisationsbezogen deaktivierbar angeboten
+  werden.
 - Lizenzportal für On-Premise-Kunden.
 - SaaS-Mandantenstatus: Testphase, aktiv, gesperrt, gekündigt.
 - Nutzerlimit und Feature-Flags aus Lizenz oder Tarif.

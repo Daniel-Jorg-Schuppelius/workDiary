@@ -27,6 +27,10 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('customers.lexoffice.contact');
     Route::post('customers/{customer}/lexoffice/time-export', [LexofficeCustomerController::class, 'exportTime'])
         ->name('customers.lexoffice.time-export');
+    Route::post('customers/{customer}/lexoffice/sync-vouchers', [LexofficeVoucherController::class, 'syncCustomer'])
+        ->name('customers.lexoffice.sync-vouchers');
+    Route::post('suppliers/{supplier}/lexoffice/sync-vouchers', [LexofficeVoucherController::class, 'syncSupplier'])
+        ->name('suppliers.lexoffice.sync-vouchers');
 
     // Rechnungs-bezogen
     Route::post('invoices/{invoice}/lexoffice/publish', [LexofficeInvoiceController::class, 'publish'])
@@ -51,6 +55,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
         ->name('lexoffice.vouchers.preview');
     Route::get('lexoffice-vouchers/{voucher}/file', [LexofficeVoucherController::class, 'file'])
         ->name('lexoffice.vouchers.file');
+    Route::post('lexoffice-vouchers/{voucher}/dunning', [LexofficeVoucherController::class, 'createDunning'])
+        ->name('lexoffice.vouchers.dunning'); // 045 Mahnung aus überfälliger Rechnung
 
     // Konflikt-Inbox
     Route::get('admin/lexoffice/conflicts', [LexofficeConflictInboxController::class, 'index'])

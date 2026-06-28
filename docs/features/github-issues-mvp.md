@@ -39,12 +39,23 @@ nicht direkt über den GitHub-Connector angelegt werden können.
 | MVP-007 | Bestehendes UI-Audit um neue Roadmap-Module erweitern                                                                 | `mvp`, `ux`                 | [037](./037-einheitliche-bedienung-ux-konventionen.md), [ui-audit](../ui-unification-audit.md)                   |
 | MVP-008 | Accessibility-Checkliste für neue Seiten definieren                                                                   | `mvp`, `ux`                 | [038](./038-barrierefreiheit-zugaenglichkeit.md)                                                                 |
 | MVP-009 | Einheitliche Status- und Aktionsnamen festlegen                                                                       | `mvp`, `ux`                 | [037](./037-einheitliche-bedienung-ux-konventionen.md)                                                           |
+| MVP-097 | Angriffsflächen, Bedrohungsmodell und ASVS-5.0-Kontrollmatrix für den Release-Kandidaten erstellen                    | `mvp`, `security`           | [051](./051-sicherheitspruefung-release-gate.md)                                                                 |
+| MVP-098 | Abhängigkeits-, SAST-, Secret-, SBOM- und Konfigurationsprüfungen in CI und Releaseprozess integrieren                | `mvp`, `security`, `ops`    | [051](./051-sicherheitspruefung-release-gate.md), [044](./044-isms-iso-27001-auditbereitschaft.md)               |
+| MVP-099 | Gesamte Anwendung manuell prüfen, Sicherheitsbefunde beheben und Regressionstests ergänzen                            | `mvp`, `security`           | [051](./051-sicherheitspruefung-release-gate.md)                                                                 |
+| MVP-100 | Authentifizierung, Sessions, Recovery und alle 2FA-Methoden beider Guards vertieft prüfen und härten                  | `mvp`, `security`           | [051](./051-sicherheitspruefung-release-gate.md), [016](./016-datenschutz-dsgvo-datenlebenszyklus.md)            |
+| MVP-101 | Fixes nachtesten, unabhängigen Penetrationstest abschließen und Security-Release-Gate freigeben                       | `mvp`, `security`, `ops`    | [051](./051-sicherheitspruefung-release-gate.md)                                                                 |
 
 Definition of Done:
 
 - Kernobjekte respektieren Mandantengrenzen.
 - Sensible Datenbereiche sind durch Rechte geschützt.
 - Neue Features haben UI- und Accessibility-Checklisten.
+- Der finale Release-Kandidat ist vollständig inventarisiert und gegen die
+  dokumentierte ASVS-Kontrollmatrix geprüft.
+- Sicherheitsbefunde sind gemäß Release-Gate behoben und nachgetestet; ein
+  unabhängiger Test enthält keine offenen freigabesperrenden Befunde.
+- 2FA, Recovery, Sessions, Legacy-Login, Kundenportal, Rollen und
+  Mandantengrenzen sind einschließlich Umgehungsversuchen geprüft.
 
 ## Phase 1 - Aufzeichnung und Zeit
 
@@ -177,3 +188,54 @@ Definition of Done:
   Status.
 - Ein externer Bestandsprovider kann denselben Fachablauf übernehmen, ohne
   Fertigungslogik in das Plugin zu verlagern.
+
+## Phase 6 - GAEB und Leistungsverzeichnisse
+
+| ID      | Titel                                                                                                                   | Labels                                  | Quellen                                                                                                                                                                                                 |
+| ------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MVP-080 | GAEB-Modul fachlich lizenzierbar schneiden und Datenführerschaft für LV, Preise, Aufmaß und Rechnung definieren         | `mvp`, `feature`, `construction`, `ux`  | [049](./049-gaeb-leistungsverzeichnisse.md), [021](./021-tarife-lizenzportal-abrechnung.md), [008](./008-integrationen-api.md)                                                                         |
+| MVP-081 | GAEB DA XML Import-Preflight für Leistungsverzeichnisse mit Version, Austauschphase und Fehlerprotokoll konzipieren     | `mvp`, `feature`, `construction`        | [049](./049-gaeb-leistungsverzeichnisse.md), [020](./020-import-migration-onboarding.md), [008](./008-integrationen-api.md)                                                                            |
+| MVP-082 | LV-Datenmodell mit Abschnitten, Ordnungszahlen, Positionen, Texten, Mengen, Einheiten und Preis-Snapshots umsetzen      | `mvp`, `feature`, `construction`        | [049](./049-gaeb-leistungsverzeichnisse.md), [014](./014-nachkalkulation-wirtschaftlichkeit.md)                                                                                                         |
+| MVP-083 | LV-Positionen mit Projekt, Auftrag, Protokoll, Aufmaß, Materialverbrauch und Nachkalkulation verknüpfen                 | `mvp`, `feature`, `construction`        | [049](./049-gaeb-leistungsverzeichnisse.md), [003](./003-dokumentation-abnahmeprotokolle.md), [014](./014-nachkalkulation-wirtschaftlichkeit.md), [048](./048-lagerwirtschaft-bestandsintegration.md) |
+| MVP-084 | Bau-/Ausbauprofil um LV-Workflows für Ausschreibung, Angebotsbearbeitung, Aufmaß, Nachtrag und Restleistung erweitern   | `mvp`, `documentation`, `construction`  | [049](./049-gaeb-leistungsverzeichnisse.md), [042](./042-gewerke-branchenprofile.md)                                                                                                                    |
+| MVP-085 | GAEB-Export für freigegebene LV-Stände, Angebote, Auftrag/Nachtrag oder Abrechnungsübergabe ergänzen                    | `mvp`, `feature`, `construction`        | [049](./049-gaeb-leistungsverzeichnisse.md), [008](./008-integrationen-api.md), [045](./045-datev-finanzschnittstelle.md)                                                                              |
+| MVP-086 | GAEB-Beispieldaten und Demo-Ablauf für Bau/Ausbau bereitstellen                                                         | `mvp`, `feature`, `construction`, `ux`  | [049](./049-gaeb-leistungsverzeichnisse.md), [040](./040-demo-testdaten-musterbranchen.md), [042](./042-gewerke-branchenprofile.md)                                                                    |
+
+Definition of Done:
+
+- GAEB-Dateien werden vor dem Import validiert und mit Fehlerprotokoll
+  verarbeitet.
+- Ordnungszahlen, LV-Hierarchie, Texte, Mengen, Einheiten und Preise bleiben
+  als Snapshots nachvollziehbar.
+- Aufträge, Protokolle, Aufmaß und Materialverbrauch können auf konkrete
+  LV-Positionen verweisen.
+- Nachträge sind eigene fachliche Vorgänge.
+- Reimporte erzeugen bei fachlichen Abweichungen sichtbare Konflikte statt
+  stiller Überschreibungen.
+- Exportierte GAEB-Stände sind versioniert, auditierbar und wiederholbar.
+
+## Phase 7 - Lieferantenkataloge und Preisabgleich
+
+| ID      | Titel                                                                                                                   | Labels                                    | Quellen                                                                                                                                       |
+| ------- | ----------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| MVP-090 | Lieferantenkatalog- und Shopimport-Modul lizenzierbar schneiden und Datenführerschaft für Preise und Margen definieren | `mvp`, `feature`, `procurement`, `ux`     | [050](./050-lieferantenkataloge-shopimport-preisabgleich.md), [021](./021-tarife-lizenzportal-abrechnung.md), [008](./008-integrationen-api.md) |
+| MVP-091 | Katalogquellen mit Quelltyp, Format, Encoding, Intervall, HTTP(S)-/FTP-/SFTP-Zugangsdaten und Importprotokoll verwalten | `mvp`, `feature`, `procurement`           | [050](./050-lieferantenkataloge-shopimport-preisabgleich.md), [008](./008-integrationen-api.md)                                                |
+| MVP-092 | `shopinfo.xml` und Lieferanten-CSV mit Mapping-Vorschlägen, Header-Validierung, Preflight und Fehlerprotokoll umsetzen  | `mvp`, `feature`, `procurement`           | [050](./050-lieferantenkataloge-shopimport-preisabgleich.md), [020](./020-import-migration-onboarding.md)                                      |
+| MVP-093 | Externe Katalogartikel mit internem Artikelstamm, Varianten, Bezugsquellen und Lieferantenartikelnummern verknüpfen    | `mvp`, `feature`, `procurement`           | [050](./050-lieferantenkataloge-shopimport-preisabgleich.md), [048](./048-lagerwirtschaft-bestandsintegration.md)                              |
+| MVP-094 | Preis-/Verfügbarkeitsabgleich mit Änderungshistorie, Konflikten und Margenwarnungen ergänzen                           | `mvp`, `reporting`, `procurement`         | [050](./050-lieferantenkataloge-shopimport-preisabgleich.md), [014](./014-nachkalkulation-wirtschaftlichkeit.md)                               |
+| MVP-095 | Margenregeln, Verkaufspreisvorschläge, Mindestmargen und Freigabeflow für Preisübernahmen umsetzen                     | `mvp`, `feature`, `reporting`             | [050](./050-lieferantenkataloge-shopimport-preisabgleich.md), [014](./014-nachkalkulation-wirtschaftlichkeit.md)                               |
+| MVP-096 | Shop-Warenkorb-Import über OCI/IDS als Beschaffungsvorschlag oder Bestellung vorbereiten                               | `mvp`, `feature`, `procurement`           | [050](./050-lieferantenkataloge-shopimport-preisabgleich.md), [048](./048-lagerwirtschaft-bestandsintegration.md)                              |
+
+Definition of Done:
+
+- Externe Shop- und Katalogartikel überschreiben den internen Artikelstamm
+  nicht ungeprüft.
+- Lieferantenartikelnummern, GTIN, Preise, Verfügbarkeiten und Lieferzeiten
+  bleiben als Snapshots historisiert.
+- `shopinfo.xml`-Mappings und FTP-/SFTP-Listen werden unterstützt, aber vor
+  Übernahme gegen Header, Pflichtfelder und erlaubte Hosts validiert.
+- Preisänderungen erzeugen sichtbare Abgleichs- und Margenwarnungen.
+- Verkaufspreisvorschläge folgen nachvollziehbaren Margenregeln und benötigen
+  Freigabe.
+- Externe Warenkörbe werden mit internen Artikeln oder Bezugsquellen
+  verknüpft und können in den Bestellprozess übergehen.

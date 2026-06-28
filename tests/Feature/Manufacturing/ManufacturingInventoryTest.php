@@ -105,6 +105,48 @@ final class ManufacturingInventoryTest extends TestCase {
         $this->assertSame('10.0000', $this->ledger->balance($this->productVariant, $this->warehouse, StockState::Physical));
     }
 
+    public function test_full_cycle_reserve_consume_receive(): void {
+        // Durchgehende Kette (MVP-071): Freigabe → Verfügbarkeit → Reservieren →
+        // Verbrauchen → Fertigerzeugnis einlagern, mit Bestandsprüfung je Phase.
+        $this->ledger->receipt($this->materialVariant, $this->warehouse, '100');
+        $order = $this->releasedOrder('10'); // Materialbedarf 2 × 10 = 20
+
+        $material = $order->materials()->first();
+        $this->assertSame('20.0000', $material->target_qty); // eingefrorener Bedarf
+
+        // Reservieren: 20 gesperrt, 80 verfügbar.
+        $this->link->reserveMaterials($order);
+        $this->assertSame('20.0000', $order->materials()->first()->reserved_qty);
+        $this->assertSame('80.0000', $this->ledger->available($this->materialVariant, $this->warehouse));
+
+        // Vollverbrauch: physischer Bestand 80, Reservierung aufgelöst.
+        $this->link->consume($order->materials()->first(), '20');
+        $this->assertSame('20.0000', $order->materials()->first()->consumed_qty);
+        $this->assertSame('80.0000', $this->ledger->balance($this->materialVariant, $this->warehouse, StockState::Physical));
+        $this->assertSame('0.0000', $this->ledger->balance($this->materialVariant, $this->warehouse, StockState::Reserved));
+
+        // Fertigerzeugnis einlagern.
+        $this->link->receiveFinishedGood($order, '10');
+        $this->assertSame('10.0000', $this->ledger->balance($this->productVariant, $this->warehouse, StockState::Physical));
+    }
+
+    public function test_release_remaining_reservations_frees_unused_stock(): void {
+        // Teilverbrauch lässt eine Restreservierung offen; deren Freigabe gibt den
+        // gesperrten Bestand zurück in die Verfügbarkeit (MVP-071).
+        $this->ledger->receipt($this->materialVariant, $this->warehouse, '100');
+        $order = $this->releasedOrder('10');
+        $this->link->reserveMaterials($order);
+
+        $this->link->consume($order->materials()->first(), '12'); // 8 bleiben reserviert
+        $this->assertSame('8.0000', $this->ledger->balance($this->materialVariant, $this->warehouse, StockState::Reserved));
+
+        $released = $this->link->releaseRemainingReservations($order);
+
+        $this->assertSame('8.0000', $released);
+        $this->assertSame('0.0000', $this->ledger->balance($this->materialVariant, $this->warehouse, StockState::Reserved));
+        $this->assertSame('88.0000', $this->ledger->available($this->materialVariant, $this->warehouse));
+    }
+
     public function test_reserve_without_warehouse_throws(): void {
         $order = $this->orders->createDraft($this->organization, $this->product, $this->productVariant, '10', 'Stk');
         $this->orders->release($order);

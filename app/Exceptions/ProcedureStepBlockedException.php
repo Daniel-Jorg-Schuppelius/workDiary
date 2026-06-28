@@ -36,6 +36,9 @@ class ProcedureStepBlockedException extends RuntimeException {
 
     public const REASON_PRIOR_BACKUP_MISSING = 'backupMissingOrExpired';
 
+    /** Serverseitige Warte-/Trockenzeit noch nicht abgelaufen (MVP-064). */
+    public const REASON_WAIT_NOT_ELAPSED = 'waitNotElapsed';
+
     public function __construct(
         public readonly string $reason,
         public readonly ?ProcedureStepRun $stepRun = null,

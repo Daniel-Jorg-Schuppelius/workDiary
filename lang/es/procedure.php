@@ -51,6 +51,7 @@ return [
         'secondPersonRequired' => 'Se requiere una segunda persona.',
         'backupNotVerified' => 'El registro de copia de seguridad falta o no está verificado.',
         'backupMissingOrExpired' => 'La última copia de seguridad falta o está fuera de la ventana de validez.',
+        'waitNotElapsed' => 'El tiempo de espera del servidor aún no ha transcurrido.',
     ],
     'title' => [
         'templates' => 'Plantillas de procedimiento',

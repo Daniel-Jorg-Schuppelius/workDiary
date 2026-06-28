@@ -100,6 +100,7 @@ return [
 
     'lexoffice' => [
         'introduction' => 'Consegna da WorkDiary — :channel, periodo :from – :to.',
+        'delivery_title' => 'Documento di trasporto',
     ],
 
     'flash' => [
@@ -118,6 +119,14 @@ return [
         'entry_already_transferred' => 'La registrazione oraria è già stata consegnata alla fatturazione e non può più essere corretta.',
         'target_not_allowed' => 'Questa destinazione non è consentita per il canale di fatturazione «:mode».',
         'lexoffice_not_configured' => 'Lexoffice non è configurato per questa organizzazione (chiave API mancante).',
+        'lexoffice_contact_missing' => 'Nessun contatto Lexoffice per il cliente — sincronizzare prima il contatto.',
+        'lexoffice_delivery_no_customer' => 'Una consegna senza cliente non può essere trasmessa come documento di trasporto.',
+        'lexoffice_delivery_not_linked' => 'Nessun documento di trasporto Lexoffice è collegato a questa consegna.',
+        'lexoffice_oc_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come conferma d\'ordine.',
+        'lexoffice_oc_not_linked' => 'Nessuna conferma d\'ordine Lexoffice è collegata a questo ordine di produzione.',
+        'lexoffice_quote_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come offerta.',
+        'lexoffice_quote_not_linked' => 'Nessuna offerta Lexoffice è collegata a questo ordine di produzione.',
+        'lexoffice_dunning_not_invoice' => 'Un sollecito può essere creato solo per una fattura.',
         'sources_missing' => 'Le fonti di questa ricevuta di trasferimento non sono più completamente disponibili.',
     ],
 

@@ -59,6 +59,7 @@ return [
         'secondPersonRequired' => 'Second person is required.',
         'backupNotVerified' => 'Backup record is missing or not verified.',
         'backupMissingOrExpired' => 'Last backup is missing or outside the valid time window.',
+        'waitNotElapsed' => 'The server-side waiting time has not yet elapsed.',
     ],
     'title' => [
         'templates' => 'Procedure templates',

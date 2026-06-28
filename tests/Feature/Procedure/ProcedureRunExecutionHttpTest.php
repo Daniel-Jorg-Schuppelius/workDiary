@@ -112,6 +112,33 @@ class ProcedureRunExecutionHttpTest extends TestCase {
             ->assertNotFound();
     }
 
+    public function test_wait_step_early_continue_requires_reason_and_records_deviation(): void {
+        // MVP-063/064: mobiler Warteschritt — Start blockiert, vorzeitige
+        // Fortsetzung nur mit Pflichtbegründung als auditierte Abweichung.
+        [$user, $run] = $this->startedRunWithWait();
+        $step = $run->stepRuns()->orderBy('id')->first();
+
+        $this->actingAs($user)
+            ->from(route('procedure-runs.show', $run))
+            ->post(route('procedure-runs.steps.wait.begin', [$run, $step]))
+            ->assertRedirect(route('procedure-runs.show', $run));
+        $this->assertSame(ProcedureStepRunStatus::Blocked, $step->refresh()->status);
+
+        // Ohne Begründung → Validierungsfehler, Schritt bleibt blockiert.
+        $this->actingAs($user)
+            ->from(route('procedure-runs.show', $run))
+            ->post(route('procedure-runs.steps.wait.continue', [$run, $step]), ['reason' => ''])
+            ->assertSessionHasErrors('reason');
+        $this->assertSame(ProcedureStepRunStatus::Blocked, $step->refresh()->status);
+
+        // Mit Begründung → auditierte Abweichung.
+        $this->actingAs($user)
+            ->from(route('procedure-runs.show', $run))
+            ->post(route('procedure-runs.steps.wait.continue', [$run, $step]), ['reason' => 'Dringend benötigt'])
+            ->assertRedirect();
+        $this->assertSame(ProcedureStepRunStatus::Deviated, $step->refresh()->status);
+    }
+
     /**
      * Startet einen echten Lauf über den Service und gibt [User, Run] zurück.
      *
@@ -152,5 +179,37 @@ class ProcedureRunExecutionHttpTest extends TestCase {
         $templates->publish($version, $user);
 
         return $template->fresh(['versions.steps']);
+    }
+
+    /**
+     * Startet einen Lauf mit einem einzelnen serverseitigen Warteschritt.
+     *
+     * @return array{0: User, 1: ProcedureRun}
+     */
+    private function startedRunWithWait(): array {
+        $user = User::factory()->teamleitung()->create();
+        app()->instance('currentOrganization', $user->organization);
+
+        $templates = app(ProcedureTemplateService::class);
+        $template = $templates->create($user->organization, $user, [
+            'code' => 'WAIT-' . uniqid(),
+            'name' => 'Warte-Test',
+        ]);
+        $version = $template->versions()->firstOrFail();
+        $templates->addStepDef($version, [
+            'code' => 'wait0',
+            'step_type' => ProcedureStepType::Wait->value,
+            'label' => 'Trockenzeit',
+            'config' => ['wait_seconds' => 3600],
+        ]);
+        $templates->publish($version, $user);
+
+        $diary = DiaryEntry::factory()->create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+        ]);
+        $run = app(ProcedureExecutionService::class)->start($template->fresh(['versions.steps']), $diary, $user);
+
+        return [$user, $run->fresh(['stepRuns.stepDef'])];
     }
 }

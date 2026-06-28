@@ -171,5 +171,46 @@
             </x-table>
         </x-card>
     @endif
+
+    @if ($supplies->isNotEmpty())
+        <x-card>
+            <h2 class="font-semibold mb-3">{{ __('article.supplies.title') }}</h2>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('article.supplies.supplier') }}</th>
+                        <th>{{ __('article.supplies.sku') }}</th>
+                        <th class="text-right">{{ __('article.supplies.price') }}</th>
+                        <th class="text-right">{{ __('article.supplies.lead_time') }}</th>
+                        <th class="text-right">{{ __('article.supplies.moq') }}</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($supplies as $supply)
+                    <tr @class(['bg-success/10' => $supply->id === $recommendedSupplyId])>
+                        <td>{{ $supply->supplier?->name }}</td>
+                        <td class="font-mono text-xs">{{ $supply->supplier_sku }}</td>
+                        <td class="text-right tabular-nums">{{ $supply->purchase_price !== null ? number_format((float) $supply->purchase_price, 2, ',', '.') . ' ' . $supply->currency : '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $supply->lead_time_days }} {{ __('article.supplies.days') }}</td>
+                        <td class="text-right tabular-nums">{{ rtrim(rtrim((string) $supply->moq, '0'), '.') }}</td>
+                        <td class="space-x-1">
+                            @if ($supply->is_preferred)<x-status-badge tone="success">{{ __('article.supplies.preferred') }}</x-status-badge>@endif
+                            @if ($supply->id === $recommendedSupplyId)<x-status-badge tone="info">{{ __('article.supplies.recommended') }}</x-status-badge>@endif
+                        </td>
+                        <td class="text-right">
+                            @can('update', $article)
+                                @unless ($supply->is_preferred)
+                                    <form method="POST" action="{{ route('articles.supplies.prefer', [$article, $supply]) }}">@csrf
+                                        <x-icon-btn icon="star" size="xs" type="submit" :title="__('article.supplies.set_preferred')" />
+                                    </form>
+                                @endunless
+                            @endcan
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+    @endif
 </x-page-shell>
 @endsection

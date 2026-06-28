@@ -103,6 +103,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // Token-Endpunkte ohne Session/CSRF: Backup-Heartbeat (MVP-046 §5).
         $middleware->validateCsrfTokens(except: [
             'admin/backup/heartbeat',
+            // OCI-/IDS-Punchout-Hook: der externe Shop POSTet den Warenkorb
+            // cross-site ohne CSRF-Token (Feature 050, MVP-096). Der Zugriff ist
+            // weiterhin auth- und berechtigungsgeschützt (inventory.post).
+            'oci-carts/import',
         ]);
 
         // Pro-Guard-Redirect fuer nicht authentifizierte Anfragen. Ohne

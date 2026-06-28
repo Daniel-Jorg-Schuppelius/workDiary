@@ -136,6 +136,9 @@ return [
         'work-centers.*' => 'module.lager',
         'serials.*' => 'module.lager',
         'purchase-orders.*' => 'module.lager',
+        'supplier-catalogs.*' => 'module.lager', // Feature 050 Lieferantenkataloge
+        'pricing-margin-rules.*' => 'module.lager', // Feature 050 Margenregeln
+        'oci-carts.*' => 'module.lager', // Feature 050 OCI-Warenkorb
 
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',

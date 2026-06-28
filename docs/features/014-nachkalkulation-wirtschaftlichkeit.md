@@ -37,11 +37,16 @@ zu billig angeboten werden oder welche Produktprobleme Marge zerstören.
 - Deckungsbeitragsnahe Übersicht, soweit Kosten- und Erlösdaten vorhanden sind.
 - Kunden-, Projekt- und Auftragstyp-Ranking nach Wirtschaftlichkeit.
 - Nacharbeits- und Kulanzzeiten sichtbar machen.
+- Bei Bau-/Ausbauprojekten optionale Auswertung je LV-Position,
+  Ordnungszahl, Aufmaß-Stand und Nachtrag, sobald GAEB/LV-Daten vorhanden
+  sind.
 - Export für Geschäftsführung oder Controlling.
 
 ## Akzeptanzkriterien
 
 - Ein Auftrag zeigt kalkulierten, erfassten und abgerechneten Aufwand.
+- Bei GAEB-geführten Projekten kann der Aufwand bis zur LV-Position und zum
+  Nachtrag zurückverfolgt werden.
 - Nicht abrechenbare Zeiten haben einen Grund.
 - Wiederkehrend defizitäre Kunden, Produkte oder Auftragstypen werden sichtbar.
 - Nachkalkulationen können bis auf einzelne Zeit-, Material- und Belegpositionen
@@ -50,6 +55,7 @@ zu billig angeboten werden oder welche Produktprobleme Marge zerstören.
 ## Abhängigkeiten
 
 - Auswertungen und Entscheidungsgrundlagen
+- GAEB-Leistungsverzeichnisse und AVA-Austausch
 - Lohn, Zuschläge und DATEV/Lexware
 - SLA, Verträge und Service-Level
 - `TimeEntry`

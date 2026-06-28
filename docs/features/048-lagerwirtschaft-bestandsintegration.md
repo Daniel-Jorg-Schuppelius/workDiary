@@ -199,6 +199,12 @@ Aufträge, Lagerbewegungen und Übergaben immer den tatsächlich verwendeten
 Preissnapshot.
 
 Spätere Preisänderungen verändern keine historische Kalkulation.
+Lieferantenkataloge, Shopimporte und Preisabgleiche werden im separaten
+Feature
+[Lieferantenkataloge, Shopimport und Preisabgleich](./050-lieferantenkataloge-shopimport-preisabgleich.md)
+geschnitten: Sie liefern neue Preisstände, Verfügbarkeiten und
+Verkaufspreisvorschläge, überschreiben aber keine bestehenden Vorgänge ohne
+Freigabe.
 
 Der bestehende `Material`-Stamm wird nicht parallel weiterentwickelt, sondern
 bei der Umsetzung kompatibel in den Artikelstamm überführt. Bestehende
@@ -281,6 +287,8 @@ Für einkaufbare Artikel werden Bezugsquellen strukturiert vorgesehen:
 - Standard- und Sicherheitslieferzeit
 - letzter beziehungsweise vereinbarter Einkaufspreis
 - bevorzugte Bezugsquelle und Aktivstatus
+- optionale externe Katalog-/Shopreferenz, Produkt-URL und letzter
+  Preisabgleich
 
 Der erste Lager-MVP erzeugt aus Fehlmengen einen Beschaffungsbedarf oder
 offenen Punkt. Vollständige Bestellungen, Wareneingang gegen Bestellung und

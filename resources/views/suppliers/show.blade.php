@@ -113,65 +113,14 @@
     <x-attachments-section :attachments="$attachments" upload-type="supplier"
                            :upload-id="$supplier->sqid" :can-upload="auth()->user()->can('update', $supplier)" />
 
-    {{-- Lexoffice-Belege --}}
-    @if ($lexofficePlugin && $lexofficePlugin->isEnabled() && $lexofficeVoucherCache->isNotEmpty())
-        @php
-            $lexofficeValueLabel = static function (?string $value, string $empty = '–'): string {
-                if ($value === null || $value === '') {
-                    return $empty;
-                }
-
-                $key = 'values.' . $value;
-                $label = __($key);
-
-                return $label === $key ? $value : $label;
-            };
-        @endphp
-        <x-card class="space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Lexoffice-Belege') }}
-                </h2>
-                <span class="text-sm text-base-content/60">
-                    {{ __('Summe') }}:
-                    <span class="font-semibold">{{ number_format((float) $lexofficeVoucherCache->sum('total_amount'), 2, ',', '.') }}&nbsp;&euro;</span>
-                </span>
-            </div>
-            <x-table table-sort="client">
-                <x-slot:head>
-                    <x-table.th sort type="string">{{ __('Nummer') }}</x-table.th>
-                    <x-table.th sort type="date">{{ __('Datum') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Typ') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                    <x-table.th sort type="number" align="right">{{ __('Betrag') }}</x-table.th>
-                </x-slot:head>
-                @foreach ($lexofficeVoucherCache as $voucher)
-                    <tr>
-                        <td class="font-mono text-xs">{{ $voucher->voucher_number ?? '–' }}</td>
-                        <td @if ($voucher->voucher_date) data-sort-value="{{ \Carbon\Carbon::parse($voucher->voucher_date)->format('Y-m-d') }}" @endif>{{ optional($voucher->voucher_date)->fdate() ?? '–' }}</td>
-                        <td>{{ $lexofficeValueLabel($voucher->voucher_type) }}</td>
-                        <td>
-                            <x-status-badge :tone="match ($voucher->voucher_status) {
-                                'paid' => 'success',
-                                'paidoff' => 'success',
-                                'accepted' => 'success',
-                                'transferred' => 'success',
-                                'open' => 'warning',
-                                'sent' => 'info',
-                                'overdue' => 'error',
-                                'rejected' => 'error',
-                                'checked' => 'success',
-                                'unchecked' => 'warning',
-                                'voided' => 'ghost',
-                                default => 'neutral',
-                            }">{{ $lexofficeValueLabel($voucher->voucher_status) }}</x-status-badge>
-                        </td>
-                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $voucher->total_amount }}">{{ number_format((float) $voucher->total_amount, 2, ',', '.') }}&nbsp;{{ $voucher->currency }}</td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
-    @endif
+    {{-- Lexoffice-Belege (Rechnungen/Aufträge/Angebote …), zeitraumgefiltert --}}
+    @include('partials._lexoffice_vouchers', [
+        'plugin' => $lexofficePlugin,
+        'contactRef' => $lexofficeContactRef,
+        'vouchers' => $lexofficeVoucherCache,
+        'range' => $lexofficeVoucherRange,
+        'syncRoute' => route('suppliers.lexoffice.sync-vouchers', $supplier),
+    ])
 
     {{-- Verlauf --}}
     @if ($auditLogs->isNotEmpty())

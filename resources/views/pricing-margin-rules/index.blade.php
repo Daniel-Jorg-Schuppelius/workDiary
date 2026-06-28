@@ -1,0 +1,60 @@
+@extends('layouts.app')
+@section('title', __('procurement.margin.title') . ' — ' . config('app.name', 'WorkDiary'))
+@section('nav-title', __('procurement.margin.title'))
+
+@section('content')
+<x-index-page :subtitle="__('procurement.margin.subtitle')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
+                    :href="route('pricing-margin-rules.create')" show-label>{{ __('procurement.margin.action.new_rule') }}</x-icon-btn>
+    </x-slot:actions>
+
+    @if ($rules->total() === 0)
+        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">percent</span>'
+                       :title="__('procurement.margin.empty')" />
+    @else
+        <x-card padding="p-0">
+            <x-table>
+                <x-slot:head>
+                    <th>{{ __('procurement.margin.col.name') }}</th>
+                    <th>{{ __('procurement.margin.col.scope') }}</th>
+                    <th class="text-right">{{ __('procurement.margin.col.calc') }}</th>
+                    <th class="text-right">{{ __('procurement.margin.col.min') }}</th>
+                    <th>{{ __('procurement.margin.col.rounding') }}</th>
+                    <th class="text-right">{{ __('procurement.margin.col.priority') }}</th>
+                    <th class="text-right">{{ __('procurement.catalog.col.actions') }}</th>
+                </x-slot:head>
+                @foreach ($rules as $rule)
+                    <tr @class(['opacity-50' => ! $rule->active])>
+                        <td class="font-medium">{{ $rule->name }}</td>
+                        <td class="text-sm">
+                            {{ $rule->supplier?->name ?: __('procurement.margin.scope_all_suppliers') }}
+                            @if ($rule->category)<span class="opacity-60">· {{ $rule->category }}</span>@endif
+                        </td>
+                        <td class="text-right tabular-nums">
+                            @if ($rule->target_margin !== null)
+                                {{ __('procurement.margin.target') }} {{ rtrim(rtrim($rule->target_margin, '0'), '.') }} %
+                            @elseif ($rule->markup_percent !== null)
+                                {{ __('procurement.margin.markup') }} {{ rtrim(rtrim($rule->markup_percent, '0'), '.') }} %
+                            @else — @endif
+                        </td>
+                        <td class="text-right tabular-nums text-sm opacity-70">
+                            {{ $rule->min_margin !== null ? rtrim(rtrim($rule->min_margin, '0'), '.') . ' %' : '—' }}
+                        </td>
+                        <td class="text-sm">{{ $rule->rounding->label() }}</td>
+                        <td class="text-right tabular-nums">{{ $rule->priority }}</td>
+                        <td class="text-right">
+                            <form method="POST" action="{{ route('pricing-margin-rules.destroy', $rule) }}"
+                                  onsubmit="return confirm('{{ __('procurement.margin.confirm_delete') }}')">
+                                @csrf @method('DELETE')
+                                <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Löschen')" />
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+        <div class="mt-3">{{ $rules->links() }}</div>
+    @endif
+</x-index-page>
+@endsection

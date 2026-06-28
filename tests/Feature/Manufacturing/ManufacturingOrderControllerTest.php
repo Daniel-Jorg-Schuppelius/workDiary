@@ -101,4 +101,140 @@ final class ManufacturingOrderControllerTest extends TestCase {
         ])->assertRedirect();
         $this->assertSame('5.0000', $order->fresh()->goodTotal());
     }
+
+    public function test_push_delivery_note_to_lexoffice(): void {
+        config()->set('plugins.lexoffice.api_key', 'test-key');
+        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+
+        $customer = \App\Models\Customer::factory()->create([
+            'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
+        ]);
+        \App\Models\ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+        ]);
+
+        $order = ManufacturingOrder::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $this->product->id,
+            'warehouse_id' => $this->warehouse->id,
+        ]);
+        $variant = ArticleVariant::query()->where('article_id', $this->product->id)->firstOrFail();
+        $delivery = \App\Models\StockDelivery::query()->create([
+            'organization_id' => $this->organization->id,
+            'manufacturing_order_id' => $order->id,
+            'article_variant_id' => $variant->id,
+            'warehouse_id' => $this->warehouse->id,
+            'customer_id' => $customer->id,
+            'quantity' => '2.0000', 'unit' => 'Stk', 'sku_snapshot' => 'S-1', 'name_snapshot' => 'Produkt',
+            'currency' => 'EUR', 'stock_status' => 'delivered',
+            'facturation_status' => \App\Enums\Manufacturing\DeliveryFacturationStatus::Pending->value,
+            'facturation_target' => 'lexoffice', 'delivered_at' => now(),
+        ]);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.lexoffice.io/v1/delivery-notes*' => \Illuminate\Support\Facades\Http::response(['id' => 'lex-dn-1'], 201),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('manufacturing-orders.deliveries.lexoffice', [$order, $delivery]))
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(
+            \App\Enums\Manufacturing\DeliveryFacturationStatus::HandedOver,
+            $delivery->fresh()->facturation_status,
+        );
+        $this->assertSame('lex-dn-1', $delivery->fresh()->external_id);
+    }
+
+    public function test_push_order_confirmation_to_lexoffice(): void {
+        config()->set('plugins.lexoffice.api_key', 'test-key');
+        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+
+        $customer = \App\Models\Customer::factory()->create([
+            'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
+        ]);
+        \App\Models\ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+        ]);
+
+        $variant = ArticleVariant::query()->where('article_id', $this->product->id)->firstOrFail();
+        $order = ManufacturingOrder::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $this->product->id,
+            'article_variant_id' => $variant->id,
+            'customer_id' => $customer->id,
+            'target_qty' => '3', 'unit' => 'Stk',
+            'status' => ManufacturingOrderStatus::Released->value,
+        ]);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.lexoffice.io/v1/order-confirmations*' => \Illuminate\Support\Facades\Http::response(['id' => 'lex-oc-1'], 201),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('manufacturing-orders.order-confirmation.lexoffice', $order))
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION,
+            'external_id' => 'lex-oc-1',
+            'referenceable_id' => $order->id,
+        ]);
+    }
+
+    public function test_push_quotation_to_lexoffice(): void {
+        config()->set('plugins.lexoffice.api_key', 'test-key');
+        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+
+        $customer = \App\Models\Customer::factory()->create([
+            'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
+        ]);
+        \App\Models\ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficePlugin::EXT_TYPE_CONTACT,
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+            'external_id' => 'lex-contact-1', 'synced_at' => now(),
+        ]);
+
+        $variant = ArticleVariant::query()->where('article_id', $this->product->id)->firstOrFail();
+        $order = ManufacturingOrder::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $this->product->id,
+            'article_variant_id' => $variant->id,
+            'customer_id' => $customer->id,
+            'target_qty' => '2', 'unit' => 'Stk',
+            'status' => ManufacturingOrderStatus::Draft->value,
+        ]);
+
+        \Illuminate\Support\Facades\Http::fake([
+            'https://api.lexoffice.io/v1/quotations*' => \Illuminate\Support\Facades\Http::response(['id' => 'lex-q-1'], 201),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('manufacturing-orders.quotation.lexoffice', $order))
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
+            'external_type' => \App\Plugins\Lexoffice\LexofficeQuotationService::EXT_TYPE_QUOTATION,
+            'external_id' => 'lex-q-1',
+            'referenceable_id' => $order->id,
+        ]);
+    }
 }

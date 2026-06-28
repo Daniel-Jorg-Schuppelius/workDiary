@@ -100,6 +100,15 @@ class Article extends Model {
         return $this->hasMany(ExternalArticleMapping::class);
     }
 
+    /**
+     * Bezugsquellen je Lieferant (Feature 048/050): Vergleich Preis/Lieferzeit/MOQ.
+     *
+     * @return HasMany<ArticleSupply, $this>
+     */
+    public function supplies(): HasMany {
+        return $this->hasMany(ArticleSupply::class);
+    }
+
     /** @return BelongsTo<ProcedureTemplateVersion, $this> */
     public function defaultProcedureVersion(): BelongsTo {
         return $this->belongsTo(ProcedureTemplateVersion::class, 'default_procedure_template_version_id');

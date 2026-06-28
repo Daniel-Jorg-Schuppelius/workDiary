@@ -61,6 +61,7 @@ return [
         'secondPersonRequired' => 'Zweite Person ist erforderlich.',
         'backupNotVerified' => 'Backup-Nachweis fehlt oder ist nicht verifiziert.',
         'backupMissingOrExpired' => 'Letztes Backup fehlt oder ist außerhalb des gültigen Zeitfensters.',
+        'waitNotElapsed' => 'Die serverseitige Wartezeit ist noch nicht abgelaufen.',
     ],
     'title' => [
         'templates' => 'Prozedurvorlagen',

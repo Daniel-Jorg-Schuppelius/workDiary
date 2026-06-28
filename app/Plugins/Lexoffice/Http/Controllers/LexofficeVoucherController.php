@@ -13,8 +13,8 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\{LexofficeVoucher, User};
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherFileService};
+use App\Models\{Customer, LexofficeVoucher, Supplier, User};
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -131,6 +131,62 @@ class LexofficeVoucherController extends Controller {
         } catch (\Throwable $e) {
             return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
         }
+    }
+
+    /**
+     * On-demand-Sync der Lexoffice-Belege EINES Kunden (Button auf der Detailseite).
+     */
+    public function syncCustomer(Customer $customer): \Illuminate\Http\RedirectResponse {
+        return $this->syncOwner($customer);
+    }
+
+    /**
+     * On-demand-Sync der Lexoffice-Belege EINES Lieferanten (Button auf der Detailseite).
+     */
+    public function syncSupplier(Supplier $supplier): \Illuminate\Http\RedirectResponse {
+        return $this->syncOwner($supplier);
+    }
+
+    private function syncOwner(Customer|Supplier $owner): \Illuminate\Http\RedirectResponse {
+        $user = $this->user();
+        abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
+        abort_unless((int) $owner->organization_id === (int) $user->organization_id, 403);
+
+        $config = LexofficeConfig::resolve($user->organization_id);
+        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+            return back()->with('error', __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
+        }
+
+        try {
+            $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url']))->syncFor($owner);
+
+            return back()->with('success', __('Belege synchronisiert: :created neu, :updated aktualisiert.', [
+                'created' => $result['created'],
+                'updated' => $result['updated'],
+            ]));
+        } catch (\Throwable $e) {
+            return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
+        }
+    }
+
+    /**
+     * Erstellt eine Lexoffice-Mahnung zu einer überfälligen Rechnung
+     * (Button am Beleg in der Kunden-/Lieferantenansicht).
+     */
+    public function createDunning(LexofficeVoucher $voucher, LexofficeDunningService $dunnings): \Illuminate\Http\RedirectResponse {
+        $user = $this->user();
+        abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);
+        abort_unless($voucher->organization_id === $user->organization_id, 403);
+
+        try {
+            $reference = $dunnings->push($voucher);
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('Mahnung in Lexoffice angelegt (ID :id).', [
+            'id' => $reference->external_id,
+        ]));
     }
 
     /**

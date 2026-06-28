@@ -66,6 +66,35 @@ return [
         'per_unit' => 'Quantità per unità',
         'ratio' => 'Proporzione (ricetta)',
     ],
+    'delivery_note' => [
+        'title' => 'Bolla di consegna',
+        'date' => 'Data di consegna',
+        'order' => 'Ordine',
+        'recipient' => 'Destinatario',
+        'warehouse' => 'Magazzino',
+        'no_customer' => 'Nessun cliente impostato',
+        'footer_note' => 'Solo prova di consegna — non è una fattura. Si prega di confermare la ricezione.',
+        'col' => [
+            'sku' => 'N. articolo',
+            'name' => 'Descrizione',
+            'qty' => 'Quantità',
+            'unit' => 'Unità',
+        ],
+    ],
+    'parameter_type' => [
+        'number' => 'Numero',
+        'measure' => 'Misura (con unità)',
+        'choice' => 'Scelta',
+        'text' => 'Testo',
+        'date' => 'Data',
+        'bool' => 'Sì/No',
+    ],
+    'parameter' => [
+        'error' => [
+            'required' => 'Parametro obbligatorio ":param" mancante.',
+            'invalid' => 'Il parametro ":param" ha un valore non valido.',
+        ],
+    ],
 
     'status' => [
         'draft' => 'Bozza',
@@ -114,6 +143,7 @@ return [
             'reserve' => 'Riserva materiale',
             'report' => 'Rendiconta',
             'deliver' => 'Consegna',
+            'push_lexoffice' => 'Invia a Lexoffice',
             'subcontract' => 'Conto lavoro',
             'cancel' => 'Annulla',
         ],
@@ -126,6 +156,9 @@ return [
             'quantity' => 'Quantità',
             'materials' => 'Materiale',
             'reports' => 'Rendicontazioni',
+            'article' => 'Articolo',
+            'deliveries' => 'Consegne',
+            'facturation_status' => 'Stato fatturazione',
         ],
         'flash' => [
             'created' => 'Ordine creato.',
@@ -134,6 +167,7 @@ return [
             'reserved' => 'Materiale riservato.',
             'reported' => 'Rendicontazione registrata.',
             'delivered' => 'Consegnato.',
+            'lexoffice_pushed' => 'Documento di trasporto inviato a Lexoffice.',
             'subcontracted' => 'Affidato al fornitore (ordine creato).',
             'subcontract_failed' => 'Conto lavoro non possibile.',
             'cancelled' => 'Ordine annullato.',

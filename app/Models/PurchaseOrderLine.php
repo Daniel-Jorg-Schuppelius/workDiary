@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string $received_qty
  * @property string $unit
  * @property numeric-string|null $unit_price
+ * @property-read Article $article
+ * @property-read ArticleVariant|null $variant
  */
 class PurchaseOrderLine extends Model {
     use BelongsToOrganization;
@@ -41,6 +43,7 @@ class PurchaseOrderLine extends Model {
         'article_variant_id',
         'supplier_sku',
         'description',
+        'note',
         'ordered_qty',
         'received_qty',
         'unit',

@@ -138,3 +138,10 @@ Schedule::command('payroll:import-minimum-wages')
     ->cron('0 4 15 1,7 *')
     ->withoutOverlapping()
     ->onOneServer();
+
+// Geplanter Lieferantenkatalog-Abruf (Feature 050): jede Viertelstunde fällige
+// Remote-Quellen ziehen; der Command prüft pro Quelle das Intervall selbst.
+Schedule::command('catalog:fetch-due')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping()
+    ->onOneServer();

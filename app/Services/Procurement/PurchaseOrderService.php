@@ -54,6 +54,7 @@ class PurchaseOrderService {
             'article_variant_id' => $variant instanceof ArticleVariant ? $variant->id : null,
             'supplier_sku' => $options['supplier_sku'] ?? null,
             'description' => $options['description'] ?? $article->name,
+            'note' => $options['note'] ?? null,
             'ordered_qty' => $this->positive($qty),
             'received_qty' => '0',
             'unit' => $options['unit'] ?? $article->base_unit,

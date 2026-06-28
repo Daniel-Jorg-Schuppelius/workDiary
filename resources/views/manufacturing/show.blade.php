@@ -29,6 +29,16 @@
                             <x-icon-btn icon="inventory" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.reserve') }}</x-icon-btn>
                         </form>
                     @endif
+                    @if ($order->customer_id && $status === 'draft')
+                        <form method="POST" action="{{ route('manufacturing-orders.quotation.lexoffice', $order) }}">@csrf
+                            <x-icon-btn icon="request_quote" size="sm" type="submit" show-label>{{ __('Angebot an Lexoffice') }}</x-icon-btn>
+                        </form>
+                    @endif
+                    @if ($order->customer_id && ! in_array($status, ['draft', 'cancelled'], true))
+                        <form method="POST" action="{{ route('manufacturing-orders.order-confirmation.lexoffice', $order) }}">@csrf
+                            <x-icon-btn icon="sync" size="sm" type="submit" show-label>{{ __('Auftragsbestätigung an Lexoffice') }}</x-icon-btn>
+                        </form>
+                    @endif
                     @if ($isOpen)
                         <x-action-form :action="route('manufacturing-orders.cancel', $order)" :confirm="__('manufacturing.order.action.cancel').'?'">
                             <x-icon-btn icon="cancel" tone="error" size="sm" type="submit" :title="__('manufacturing.order.action.cancel')" />
@@ -165,6 +175,43 @@
                         <td class="tabular-nums">{{ $report->scrap_qty }}</td>
                         <td class="tabular-nums">{{ $report->rework_qty }}</td>
                         <td>{{ $report->reported_at?->format('d.m.Y H:i') }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+    @endif
+
+    {{-- Auslieferungen (E4/045: Lieferschein an Lexoffice) --}}
+    @if ($order->deliveries->isNotEmpty())
+        <x-card padding="p-0">
+            <h2 class="font-semibold p-4 pb-0">{{ __('manufacturing.order.field.deliveries') }}</h2>
+            <x-table bare class="table-sm">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('manufacturing.order.field.article') }}</th>
+                        <th class="text-right">{{ __('manufacturing.order.field.quantity') }}</th>
+                        <th>{{ __('manufacturing.order.field.facturation_status') }}</th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($order->deliveries as $delivery)
+                    <tr>
+                        <td>{{ $delivery->name_snapshot }}</td>
+                        <td class="text-right tabular-nums">{{ $delivery->quantity }} {{ $delivery->unit }}</td>
+                        <td><span class="badge badge-sm">{{ $delivery->facturation_status->label() }}</span></td>
+                        <td class="text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ route('manufacturing-orders.deliveries.pdf', [$order, $delivery]) }}" target="_blank"
+                                   class="btn btn-xs btn-ghost">{{ __('manufacturing.delivery_note.title') }}</a>
+                                @if ($canManage && $delivery->facturation_target === 'lexoffice' && in_array($delivery->facturation_status->value, ['pending', 'failed'], true))
+                                    <form method="POST" action="{{ route('manufacturing-orders.deliveries.lexoffice', [$order, $delivery]) }}">@csrf
+                                        <button type="submit" class="btn btn-xs">{{ __('manufacturing.order.action.push_lexoffice') }}</button>
+                                    </form>
+                                @elseif ($delivery->facturation_status->value === 'handed_over' && $delivery->external_id)
+                                    <span class="text-xs text-base-content/60">Lexoffice: {{ $delivery->external_id }}</span>
+                                @endif
+                            </div>
+                        </td>
                     </tr>
                 @endforeach
             </x-table>

@@ -25,6 +25,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property numeric-string $target_qty
  * @property ManufacturingOrderStatus $status
  * @property array<string, mixed>|null $bom_snapshot
+ * @property int|null $customer_id
+ * @property string|null $unit
+ * @property-read Article $article
+ * @property-read ArticleVariant|null $variant
+ * @property-read Customer|null $customer
  */
 class ManufacturingOrder extends Model {
     use Auditable;
@@ -56,6 +61,7 @@ class ManufacturingOrder extends Model {
         'bom_snapshot',
         'variant_snapshot',
         'parameter_snapshot',
+        'parameters',
         'procedure_run_id',
         'created_by',
         'released_at',
@@ -76,6 +82,7 @@ class ManufacturingOrder extends Model {
         'bom_snapshot' => 'array',
         'variant_snapshot' => 'array',
         'parameter_snapshot' => 'array',
+        'parameters' => 'array',
     ];
 
     /** @return BelongsTo<Article, $this> */
@@ -86,6 +93,11 @@ class ManufacturingOrder extends Model {
     /** @return BelongsTo<ArticleVariant, $this> */
     public function variant(): BelongsTo {
         return $this->belongsTo(ArticleVariant::class, 'article_variant_id');
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo {
+        return $this->belongsTo(Customer::class);
     }
 
     /** @return BelongsTo<ProcedureTemplateVersion, $this> */
@@ -106,6 +118,11 @@ class ManufacturingOrder extends Model {
     /** @return HasMany<ManufacturingOrderReport, $this> */
     public function reports(): HasMany {
         return $this->hasMany(ManufacturingOrderReport::class);
+    }
+
+    /** @return HasMany<StockDelivery, $this> */
+    public function deliveries(): HasMany {
+        return $this->hasMany(StockDelivery::class);
     }
 
     /** @return HasMany<TimeEntry, $this> */

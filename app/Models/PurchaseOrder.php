@@ -41,6 +41,7 @@ class PurchaseOrder extends Model {
         'warehouse_id',
         'status',
         'currency',
+        'freight_cost',
         'ordered_at',
         'expected_at',
         'note',
@@ -49,6 +50,7 @@ class PurchaseOrder extends Model {
 
     protected $casts = [
         'status' => PurchaseOrderStatus::class,
+        'freight_cost' => 'decimal:4',
         'ordered_at' => 'datetime',
         'expected_at' => 'date',
     ];

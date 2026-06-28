@@ -13,8 +13,8 @@ namespace App\Models;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Concerns\{Archivable, BelongsToOrganization, HasAttachments, HasContactAndBankDetails, HasSqid, HasTags, Searchable};
 use App\Services\Numbering\NumberAuthority;
-use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
+use Illuminate\Database\Eloquent\{Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 use Illuminate\Support\{Carbon, Str};
 
@@ -62,10 +62,10 @@ class Supplier extends Model {
     use BelongsToOrganization;
     use HasAttachments;
 
+    use HasContactAndBankDetails;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
-
-    use HasContactAndBankDetails;
     use HasSqid;
     use HasTags;
     use Searchable;
@@ -224,7 +224,6 @@ class Supplier extends Model {
         return $this->bankAccounts()->where('is_primary', true)->first()
             ?? $this->bankAccounts()->first();
     }
-
 
     /** @return list<string> */
     protected function searchableColumns(): array {

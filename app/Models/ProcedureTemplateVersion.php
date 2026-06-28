@@ -65,6 +65,15 @@ class ProcedureTemplateVersion extends Model {
         return $this->hasMany(ProcedureStepDef::class)->orderBy('sort_order');
     }
 
+    /**
+     * Typisierte Auftragsparameter dieser Version (Feature 047, MVP-061).
+     *
+     * @return HasMany<ProcedureParameterDefinition, $this>
+     */
+    public function parameterDefinitions(): HasMany {
+        return $this->hasMany(ProcedureParameterDefinition::class)->orderBy('position')->orderBy('id');
+    }
+
     /** @return BelongsTo<User, $this> */
     public function publishedBy(): BelongsTo {
         return $this->belongsTo(User::class, 'published_by_user_id');

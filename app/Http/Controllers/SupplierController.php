@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
+use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveSupplierRequest;
 use App\Models\{AuditLog, ExternalReference, LexofficeVoucher, Supplier, Tag};
 use App\Plugins\Contracts\PluginCapability;
@@ -27,6 +27,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class SupplierController extends Controller {
     use ArchivesModels;
     use ParsesIndexQuery;
+    use ResolvesGlobalDateRange;
 
     private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
@@ -66,16 +67,24 @@ class SupplierController extends Controller {
             ->first()
             : null;
 
+        // Lexoffice-Belege auf den globalen Header-Zeitraum eingrenzen (analog Kunde).
+        $lexofficeVoucherRange = $this->globalDateRange();
+
         return view('suppliers.show', [
             'supplier' => $supplier,
             'lexofficePlugin' => $lexoffice,
             'lexofficeContactRef' => $lexofficeContactRef,
+            'lexofficeVoucherRange' => $lexofficeVoucherRange,
             'lexofficeVoucherCache' => $lexoffice
                 ? LexofficeVoucher::query()
                 ->where('supplier_id', $supplier->getKey())
                 ->where('archived', false)
+                ->whereBetween('voucher_date', [
+                    $lexofficeVoucherRange['from']->startOfDay(),
+                    $lexofficeVoucherRange['to']->endOfDay(),
+                ])
                 ->orderByDesc('voucher_date')
-                ->limit(25)
+                ->limit(500)
                 ->get()
                 : collect(),
             'attachments' => $supplier->attachments()->get(),

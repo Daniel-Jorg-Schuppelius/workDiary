@@ -100,6 +100,7 @@ return [
 
     'lexoffice' => [
         'introduction' => 'Handover from WorkDiary — :channel, period :from – :to.',
+        'delivery_title' => 'Delivery note',
     ],
 
     'flash' => [
@@ -118,6 +119,14 @@ return [
         'entry_already_transferred' => 'The time entry has already been handed over to invoicing and can no longer be corrected.',
         'target_not_allowed' => 'This target is not allowed for the billing channel ":mode".',
         'lexoffice_not_configured' => 'Lexoffice is not configured for this organisation (API key missing).',
+        'lexoffice_contact_missing' => 'No Lexoffice contact for the customer — please sync the contact first.',
+        'lexoffice_delivery_no_customer' => 'A delivery without a customer cannot be handed over as a delivery note.',
+        'lexoffice_delivery_not_linked' => 'No Lexoffice delivery note is linked to this delivery.',
+        'lexoffice_oc_no_customer' => 'A manufacturing order without a customer cannot be handed over as an order confirmation.',
+        'lexoffice_oc_not_linked' => 'No Lexoffice order confirmation is linked to this manufacturing order.',
+        'lexoffice_quote_no_customer' => 'A manufacturing order without a customer cannot be handed over as a quotation.',
+        'lexoffice_quote_not_linked' => 'No Lexoffice quotation is linked to this manufacturing order.',
+        'lexoffice_dunning_not_invoice' => 'A dunning can only be created for an invoice.',
         'sources_missing' => 'The sources of this transfer receipt are no longer fully available.',
     ],
 

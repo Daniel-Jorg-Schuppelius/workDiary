@@ -100,6 +100,7 @@ return [
 
     'lexoffice' => [
         'introduction' => 'Entrega desde WorkDiary — :channel, período :from – :to.',
+        'delivery_title' => 'Albarán',
     ],
 
     'flash' => [
@@ -118,6 +119,14 @@ return [
         'entry_already_transferred' => 'El registro de tiempo ya se ha entregado a la facturación y no puede corregirse más.',
         'target_not_allowed' => 'Este destino no está permitido para el canal de facturación «:mode».',
         'lexoffice_not_configured' => 'Lexoffice no está configurado para esta organización (falta la clave API).',
+        'lexoffice_contact_missing' => 'No hay contacto de Lexoffice para el cliente — sincronice primero el contacto.',
+        'lexoffice_delivery_no_customer' => 'Una entrega sin cliente no puede transferirse como albarán.',
+        'lexoffice_delivery_not_linked' => 'No hay ningún albarán de Lexoffice vinculado a esta entrega.',
+        'lexoffice_oc_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como confirmación de pedido.',
+        'lexoffice_oc_not_linked' => 'No hay ninguna confirmación de pedido de Lexoffice vinculada a esta orden de fabricación.',
+        'lexoffice_quote_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como oferta.',
+        'lexoffice_quote_not_linked' => 'No hay ninguna oferta de Lexoffice vinculada a esta orden de fabricación.',
+        'lexoffice_dunning_not_invoice' => 'Solo se puede crear un aviso de pago para una factura.',
         'sources_missing' => 'Las fuentes de este justificante de traspaso ya no están completamente disponibles.',
     ],
     'datev' => [

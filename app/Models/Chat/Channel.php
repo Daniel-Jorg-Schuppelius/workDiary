@@ -10,8 +10,7 @@
 
 namespace App\Models\Chat;
 
-use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Concerns\HasSqid;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};

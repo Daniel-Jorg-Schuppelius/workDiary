@@ -100,6 +100,7 @@ return [
 
     'lexoffice' => [
         'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
+        'delivery_title' => 'Lieferschein',
     ],
 
     'flash' => [
@@ -118,6 +119,14 @@ return [
         'entry_already_transferred' => 'Der Zeiteintrag wurde bereits an die Fakturierung übergeben und kann nicht mehr korrigiert werden.',
         'target_not_allowed' => 'Dieses Ziel ist für den Fakturierungsweg „:mode" nicht zulässig.',
         'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
+        'lexoffice_contact_missing' => 'Kein Lexoffice-Kontakt für den Kunden — bitte zuerst den Kontakt synchronisieren.',
+        'lexoffice_delivery_no_customer' => 'Auslieferung ohne Kunde kann nicht als Lieferschein übergeben werden.',
+        'lexoffice_delivery_not_linked' => 'Mit dieser Auslieferung ist kein Lexoffice-Lieferschein verknüpft.',
+        'lexoffice_oc_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Auftragsbestätigung übergeben werden.',
+        'lexoffice_oc_not_linked' => 'Mit diesem Fertigungsauftrag ist keine Lexoffice-Auftragsbestätigung verknüpft.',
+        'lexoffice_quote_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Angebot übergeben werden.',
+        'lexoffice_quote_not_linked' => 'Mit diesem Fertigungsauftrag ist kein Lexoffice-Angebot verknüpft.',
+        'lexoffice_dunning_not_invoice' => 'Eine Mahnung kann nur zu einer Rechnung erstellt werden.',
         'sources_missing' => 'Quellen des Übergabenachweises sind nicht mehr vollständig vorhanden.',
     ],
 

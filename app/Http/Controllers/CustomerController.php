@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery};
+use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveCustomerRequest;
 use App\Models\{AuditLog, Customer, ExternalReference, LexofficeVoucher, Tag, TimeEntry, User};
 use App\Plugins\Contracts\PluginCapability;
@@ -32,6 +32,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class CustomerController extends Controller {
     use ArchivesModels;
     use ParsesIndexQuery;
+    use ResolvesGlobalDateRange;
 
     private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
@@ -102,6 +103,10 @@ class CustomerController extends Controller {
             ->get()
             : collect();
 
+        // Lexoffice-Belege (Rechnungen/Aufträge/Angebote …) auf den globalen
+        // Header-Zeitraum eingrenzen — wie die übrigen zeitraumbezogenen Ansichten.
+        $lexofficeVoucherRange = $this->globalDateRange();
+
         return view('customers.show', [
             'customer' => $customer,
             'projects' => $projects,
@@ -113,12 +118,17 @@ class CustomerController extends Controller {
             'lexofficePlugin' => $lexoffice,
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVouchers' => $lexofficeVouchers,
+            'lexofficeVoucherRange' => $lexofficeVoucherRange,
             'lexofficeVoucherCache' => $lexoffice
                 ? LexofficeVoucher::query()
                 ->where('customer_id', $customer->getKey())
                 ->where('archived', false)
+                ->whereBetween('voucher_date', [
+                    $lexofficeVoucherRange['from']->startOfDay(),
+                    $lexofficeVoucherRange['to']->endOfDay(),
+                ])
                 ->orderByDesc('voucher_date')
-                ->limit(25)
+                ->limit(500)
                 ->get()
                 : collect(),
             'attachments' => $customer->attachments()->get(),

@@ -148,4 +148,53 @@ class LexofficeVoucherSyncTest extends TestCase {
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v2', 'archived' => true]);
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v1', 'archived' => false]);
     }
+
+    public function test_sync_for_customer_pulls_only_that_contact(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->linkContact('contact-1', $customer);
+
+        $this->fakeVoucherlist([[
+            'id' => 'voucher-1', 'voucherType' => 'salesinvoice', 'voucherStatus' => 'open',
+            'voucherNumber' => 'RE-1001', 'voucherDate' => '2026-05-01T00:00:00.000+02:00',
+            'totalAmount' => 119.00, 'currency' => 'EUR', 'archived' => false,
+        ]]);
+
+        $result = (new LexofficeVoucherSync('test-key'))->syncFor($customer);
+
+        $this->assertSame(1, $result['contacts']);
+        $this->assertSame(1, $result['created']);
+        $this->assertDatabaseHas('lexoffice_vouchers', [
+            'external_id' => 'voucher-1', 'customer_id' => $customer->id, 'voucher_number' => 'RE-1001',
+        ]);
+        Http::assertSent(fn ($request): bool => str_contains($request->url(), '/voucherlist')
+            && str_contains($request->url(), 'contactId=contact-1'));
+    }
+
+    public function test_sync_for_supplier_assigns_supplier_id(): void {
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $this->linkContact('contact-2', $supplier);
+
+        $this->fakeVoucherlist([[
+            'id' => 'voucher-2', 'voucherType' => 'purchaseinvoice', 'voucherStatus' => 'open',
+            'voucherNumber' => 'ER-2001', 'voucherDate' => '2026-05-02T00:00:00.000+02:00',
+            'totalAmount' => 50.00, 'currency' => 'EUR', 'archived' => false,
+        ]]);
+
+        $result = (new LexofficeVoucherSync('test-key'))->syncFor($supplier);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertDatabaseHas('lexoffice_vouchers', [
+            'external_id' => 'voucher-2', 'supplier_id' => $supplier->id,
+        ]);
+    }
+
+    public function test_sync_for_unlinked_owner_is_noop(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+
+        $result = (new LexofficeVoucherSync('test-key'))->syncFor($customer);
+
+        $this->assertSame(0, $result['contacts']);
+        $this->assertSame(0, $result['created']);
+        $this->assertDatabaseCount('lexoffice_vouchers', 0);
+    }
 }

@@ -66,6 +66,35 @@ return [
         'per_unit' => 'Quantité par unité',
         'ratio' => 'Proportion (recette)',
     ],
+    'delivery_note' => [
+        'title' => 'Bon de livraison',
+        'date' => 'Date de livraison',
+        'order' => 'Ordre',
+        'recipient' => 'Destinataire',
+        'warehouse' => 'Entrepôt',
+        'no_customer' => 'Aucun client renseigné',
+        'footer_note' => 'Preuve de remise uniquement — pas une facture. Veuillez confirmer la réception.',
+        'col' => [
+            'sku' => 'Réf. article',
+            'name' => 'Désignation',
+            'qty' => 'Quantité',
+            'unit' => 'Unité',
+        ],
+    ],
+    'parameter_type' => [
+        'number' => 'Nombre',
+        'measure' => 'Mesure (avec unité)',
+        'choice' => 'Choix',
+        'text' => 'Texte',
+        'date' => 'Date',
+        'bool' => 'Oui/Non',
+    ],
+    'parameter' => [
+        'error' => [
+            'required' => 'Le paramètre obligatoire « :param » est manquant.',
+            'invalid' => 'Le paramètre « :param » a une valeur non valide.',
+        ],
+    ],
 
     'status' => [
         'draft' => 'Brouillon',
@@ -114,6 +143,7 @@ return [
             'reserve' => 'Réserver le matériel',
             'report' => 'Déclarer',
             'deliver' => 'Livrer',
+            'push_lexoffice' => 'Envoyer à Lexoffice',
             'subcontract' => 'Sous-traiter',
             'cancel' => 'Annuler',
         ],
@@ -126,6 +156,9 @@ return [
             'quantity' => 'Quantité',
             'materials' => 'Matériel',
             'reports' => 'Déclarations',
+            'article' => 'Article',
+            'deliveries' => 'Livraisons',
+            'facturation_status' => 'Statut de facturation',
         ],
         'flash' => [
             'created' => 'Ordre créé.',
@@ -134,6 +167,7 @@ return [
             'reserved' => 'Matériel réservé.',
             'reported' => 'Déclaration enregistrée.',
             'delivered' => 'Livré.',
+            'lexoffice_pushed' => 'Bon de livraison envoyé à Lexoffice.',
             'subcontracted' => 'Confié au fournisseur (commande créée).',
             'subcontract_failed' => 'Sous-traitance impossible.',
             'cancelled' => 'Ordre annulé.',

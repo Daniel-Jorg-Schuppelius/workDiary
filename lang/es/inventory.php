@@ -185,6 +185,34 @@ return [
         ],
     ],
 
+    'conflict' => [
+        'title' => 'Conflictos de existencias (externo)',
+        'empty' => 'No hay conflictos de existencias abiertos.',
+        'filter' => ['open' => 'Abiertos', 'all' => 'Todos'],
+        'col' => [
+            'id' => 'Movimiento',
+            'operation' => 'Operación',
+            'qty' => 'Cantidad',
+            'status' => 'Estado',
+            'actions' => 'Acciones',
+        ],
+        'status' => [
+            'open' => 'Abierto',
+            'resolved_local' => 'Mantenido local',
+            'resolved_remote' => 'Tomado externo',
+            'compensated' => 'Compensado',
+            'dismissed' => 'Descartado',
+        ],
+        'action' => [
+            'compensate' => 'Contraasiento',
+            'keep_local' => 'Mantener local',
+        ],
+        'flash' => [
+            'kept_local' => 'Conflicto cerrado — se mantienen las existencias locales.',
+            'compensated' => 'Conflicto compensado — contraasiento registrado.',
+        ],
+    ],
+
     'outbox' => [
         'status' => [
             'pending' => 'Pendiente',

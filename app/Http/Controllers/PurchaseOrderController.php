@@ -15,12 +15,14 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\SavePurchaseOrderRequest;
 use App\Models\{Article, PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine, Supplier, Warehouse};
-use App\Services\Procurement\{AdviceService, GoodsReceiptService, ProcurementSuggestionService, PurchaseOrderService};
+use App\Services\Procurement\{AdviceService, DespatchAdviceImportService, GoodsReceiptService, ProcurementSuggestionService, PurchaseOrderExportService, PurchaseOrderPdfRenderer, PurchaseOrderService, UglInvoiceReconciler};
 use App\Services\SqidEncoder;
+use ERechnungToolkit\Parsers\UglInvoiceParser;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Beschaffungs-UI (Feature 048, E4): Bestellungen anlegen, Zeilen pflegen,
@@ -118,6 +120,59 @@ class PurchaseOrderController extends Controller {
             'order' => $purchaseOrder,
             'articles' => Article::query()->where('purchasable', true)->orderBy('name')->limit(500)->get(),
             'canManage' => Auth::user()?->can(P::InventoryPost->value) ?? false,
+            'canImportAdvice' => app(DespatchAdviceImportService::class)->available(),
+        ]);
+    }
+
+    /**
+     * Exportiert die Bestellung als elektronische Bestellung (Feature 048, E4):
+     * UBL XBestellung (Peppol BIS Order) bzw. CII Order-X über das
+     * php-erechnung-toolkit. Format per `?format=orderx` (Default: xbestellung).
+     */
+    public function downloadOrder(
+        PurchaseOrder $purchaseOrder,
+        Request $request,
+        PurchaseOrderExportService $export,
+    ): SymfonyResponse {
+        $this->canView();
+        abort_unless($export->available(), 404);
+
+        $format = $request->string('format')->lower()->toString();
+        if ($format === 'orderx' || $format === 'order-x') {
+            $xml = $export->toOrderX($purchaseOrder);
+            $prefix = 'OrderX';
+        } elseif ($format === 'opentrans' || $format === 'opentrans-order') {
+            $xml = $export->toOpenTrans($purchaseOrder);
+            $prefix = 'openTRANS';
+        } elseif ($format === 'ugl') {
+            // UGL ist ASCII-Festsatz (ISO-8859-1), kein XML.
+            $content = $export->toUgl($purchaseOrder);
+            $filename = 'UGL_' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $purchaseOrder->number) . '.ugl';
+
+            return response($content, 200, [
+                'Content-Type' => 'text/plain; charset=ISO-8859-1',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ]);
+        } else {
+            $xml = $export->toXBestellung($purchaseOrder);
+            $prefix = 'XBestellung';
+        }
+
+        $filename = $prefix . '_' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $purchaseOrder->number) . '.xml';
+
+        return response($xml, 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /** Bestellung als menschenlesbares PDF (Feature 048, E4) — für Lieferanten ohne E-Beschaffung. */
+    public function downloadPdf(PurchaseOrder $purchaseOrder, PurchaseOrderPdfRenderer $renderer): SymfonyResponse {
+        $this->canView();
+
+        return response($renderer->render($purchaseOrder), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $renderer->filename($purchaseOrder) . '.pdf"',
         ]);
     }
 
@@ -158,6 +213,63 @@ class PurchaseOrderController extends Controller {
         return back()->with('success', __('procurement.advice.flash.announced'));
     }
 
+    /**
+     * Importiert einen elektronischen Lieferschein (UBL Despatch Advice) als
+     * Lieferavis zur Bestellung (Feature 048, E4).
+     */
+    public function importAdvice(
+        Request $request,
+        PurchaseOrder $purchaseOrder,
+        DespatchAdviceImportService $import,
+    ): RedirectResponse {
+        $this->canManage();
+        abort_unless($import->available(), 404);
+
+        $request->validate([
+            'advice_xml' => ['required', 'file', 'mimetypes:application/xml,text/xml', 'max:2048'],
+        ]);
+
+        $xml = (string) file_get_contents((string) $request->file('advice_xml')?->getRealPath());
+
+        try {
+            $import->import($xml, Auth::id(), $purchaseOrder);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('procurement.advice.flash.imported'));
+    }
+
+    /**
+     * Gleicht eine hochgeladene UGL-Rechnung (GC-Gruppe / SHK) gegen die Bestellung
+     * ab (Feature 050): Positionen über Lieferanten-SKU, Mengen/Beträge mit Toleranz.
+     * Reiner Lesevorgang — keine Buchung, Rechnungshoheit bleibt extern.
+     */
+    public function reconcileInvoice(
+        Request $request,
+        PurchaseOrder $purchaseOrder,
+        UglInvoiceReconciler $reconciler,
+    ): View|RedirectResponse {
+        $this->canView();
+
+        $request->validate([
+            'invoice_ugl' => ['required', 'file', 'max:2048'],
+        ]);
+
+        $content = (string) file_get_contents((string) $request->file('invoice_ugl')?->getRealPath());
+
+        try {
+            $invoice = (new UglInvoiceParser)->parse($content);
+        } catch (RuntimeException) {
+            return back()->with('error', __('procurement.reconcile.error.parse'));
+        }
+
+        return view('purchase-orders.invoice-reconciliation', [
+            'order' => $purchaseOrder,
+            'result' => $reconciler->reconcile($purchaseOrder, $invoice),
+        ]);
+    }
+
     /** Bucht den Wareneingang aus einem Lieferavis. */
     public function receiveAdvice(PurchaseOrderAdvice $advice): RedirectResponse {
         $this->canManage();
@@ -183,6 +295,7 @@ class PurchaseOrderController extends Controller {
             'article' => ['required', 'string'],
             'qty' => ['required', 'numeric', 'gt:0'],
             'unit_price' => ['nullable', 'numeric', 'min:0'],
+            'note' => ['nullable', 'string', 'max:500'],
         ]);
 
         $articleId = app(SqidEncoder::class)->decode(Article::class, (string) $data['article']);
@@ -193,9 +306,26 @@ class PurchaseOrderController extends Controller {
 
         $this->orders->addLine($purchaseOrder, $article, (string) $data['qty'], [
             'unit_price' => isset($data['unit_price']) ? (string) $data['unit_price'] : null,
+            'note' => $data['note'] ?? null,
         ]);
 
         return back()->with('success', __('procurement.flash.line_added'));
+    }
+
+    /** Setzt die Frachtkosten der Bestellung (Entwurf) — Quelle für den UGL-Zuschlag (POZ). */
+    public function updateConditions(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse {
+        $this->canManage();
+        abort_unless($purchaseOrder->status === PurchaseOrderStatus::Draft, 403);
+
+        $data = $request->validate([
+            'freight_cost' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $purchaseOrder->update([
+            'freight_cost' => ($data['freight_cost'] ?? null) !== null ? (string) $data['freight_cost'] : null,
+        ]);
+
+        return back()->with('success', __('procurement.flash.conditions_saved'));
     }
 
     public function submit(PurchaseOrder $purchaseOrder): RedirectResponse {

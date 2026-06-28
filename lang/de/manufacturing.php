@@ -66,6 +66,35 @@ return [
         'per_unit' => 'Menge pro Stück',
         'ratio' => 'Anteil (Rezeptur)',
     ],
+    'delivery_note' => [
+        'title' => 'Lieferschein',
+        'date' => 'Lieferdatum',
+        'order' => 'Auftrag',
+        'recipient' => 'Empfänger',
+        'warehouse' => 'Lagerort',
+        'no_customer' => 'Kein Kunde hinterlegt',
+        'footer_note' => 'Reiner Übergabenachweis — keine Rechnung. Bitte Empfang bestätigen.',
+        'col' => [
+            'sku' => 'Artikel-Nr.',
+            'name' => 'Bezeichnung',
+            'qty' => 'Menge',
+            'unit' => 'Einheit',
+        ],
+    ],
+    'parameter_type' => [
+        'number' => 'Zahl',
+        'measure' => 'Maß (mit Einheit)',
+        'choice' => 'Auswahl',
+        'text' => 'Text',
+        'date' => 'Datum',
+        'bool' => 'Ja/Nein',
+    ],
+    'parameter' => [
+        'error' => [
+            'required' => 'Pflichtparameter „:param" fehlt.',
+            'invalid' => 'Parameter „:param" hat einen ungültigen Wert.',
+        ],
+    ],
 
     'status' => [
         'draft' => 'Entwurf',
@@ -114,6 +143,7 @@ return [
             'reserve' => 'Material reservieren',
             'report' => 'Rückmeldung',
             'deliver' => 'Ausliefern',
+            'push_lexoffice' => 'An Lexoffice übergeben',
             'subcontract' => 'Fremdfertigung vergeben',
             'cancel' => 'Abbrechen',
         ],
@@ -126,6 +156,9 @@ return [
             'quantity' => 'Menge',
             'materials' => 'Material',
             'reports' => 'Rückmeldungen',
+            'article' => 'Artikel',
+            'deliveries' => 'Auslieferungen',
+            'facturation_status' => 'Faktura-Status',
         ],
         'flash' => [
             'created' => 'Auftrag angelegt.',
@@ -134,6 +167,7 @@ return [
             'reserved' => 'Material reserviert.',
             'reported' => 'Rückmeldung erfasst.',
             'delivered' => 'Ausgeliefert.',
+            'lexoffice_pushed' => 'Lieferschein an Lexoffice übergeben.',
             'subcontracted' => 'An Lieferanten vergeben (Bestellung angelegt).',
             'subcontract_failed' => 'Fremdvergabe nicht möglich.',
             'cancelled' => 'Auftrag abgebrochen.',

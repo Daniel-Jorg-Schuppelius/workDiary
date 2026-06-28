@@ -185,6 +185,34 @@ return [
         ],
     ],
 
+    'conflict' => [
+        'title' => 'Conflitti di giacenza (esterno)',
+        'empty' => 'Nessun conflitto di giacenza aperto.',
+        'filter' => ['open' => 'Aperti', 'all' => 'Tutti'],
+        'col' => [
+            'id' => 'Movimento',
+            'operation' => 'Operazione',
+            'qty' => 'Quantità',
+            'status' => 'Stato',
+            'actions' => 'Azioni',
+        ],
+        'status' => [
+            'open' => 'Aperto',
+            'resolved_local' => 'Mantenuto locale',
+            'resolved_remote' => 'Preso esterno',
+            'compensated' => 'Compensato',
+            'dismissed' => 'Ignorato',
+        ],
+        'action' => [
+            'compensate' => 'Contromovimento',
+            'keep_local' => 'Mantieni locale',
+        ],
+        'flash' => [
+            'kept_local' => 'Conflitto chiuso — giacenza locale mantenuta.',
+            'compensated' => 'Conflitto compensato — contromovimento registrato.',
+        ],
+    ],
+
     'outbox' => [
         'status' => [
             'pending' => 'In attesa',

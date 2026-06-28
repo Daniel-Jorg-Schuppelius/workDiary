@@ -51,6 +51,7 @@ return [
         'secondPersonRequired' => 'È richiesta una seconda persona.',
         'backupNotVerified' => 'Il record di backup è mancante o non verificato.',
         'backupMissingOrExpired' => 'L\'ultimo backup è mancante o fuori dalla finestra di validità.',
+        'waitNotElapsed' => 'Il tempo di attesa lato server non è ancora trascorso.',
     ],
     'title' => [
         'templates' => 'Modelli di procedura',

@@ -768,6 +768,7 @@ Route::middleware('auth')->group(function () {
         // ── Artikelstamm (Feature 048, MVP-060) ─ Modul-Gate articles.* → module.lager
         Route::resource('articles', \App\Http\Controllers\ArticleController::class);
         Route::post('articles/{article}/retire', [\App\Http\Controllers\ArticleController::class, 'retire'])->name('articles.retire');
+        Route::post('articles/{article}/supplies/{supply}/prefer', [\App\Http\Controllers\ArticleController::class, 'setPreferredSupply'])->name('articles.supplies.prefer'); // Feature 050 Lieferantenvergleich
         Route::post('articles/{article}/options', [\App\Http\Controllers\ArticleController::class, 'storeOption'])->name('articles.options.store');
         Route::post('articles/{article}/options/{option}/values', [\App\Http\Controllers\ArticleController::class, 'storeOptionValue'])->name('articles.options.values.store');
         Route::post('articles/{article}/units', [\App\Http\Controllers\ArticleController::class, 'storeUnit'])->name('articles.units.store');
@@ -800,6 +801,11 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/labels/serial/{stockSerial}', [\App\Http\Controllers\LabelController::class, 'serial'])->name('inventory.labels.serial');
         Route::get('inventory/labels/lot/{stockLot}', [\App\Http\Controllers\LabelController::class, 'lot'])->name('inventory.labels.lot');
 
+        // Konflikt-Inbox externer Bestandsspiegelung (Feature 048, MVP-072)
+        Route::get('inventory/conflicts', [\App\Http\Controllers\InventoryConflictController::class, 'index'])->name('inventory.conflicts.index');
+        Route::post('inventory/conflicts/{conflict}/keep-local', [\App\Http\Controllers\InventoryConflictController::class, 'keepLocal'])->name('inventory.conflicts.keep-local');
+        Route::post('inventory/conflicts/{conflict}/compensate', [\App\Http\Controllers\InventoryConflictController::class, 'compensate'])->name('inventory.conflicts.compensate');
+
         // Etiketten-Layout-Designer (Feature 048, E5)
         Route::get('inventory/label-templates', [\App\Http\Controllers\LabelTemplateController::class, 'index'])->name('inventory.label-templates.index');
         Route::get('inventory/label-templates/create', [\App\Http\Controllers\LabelTemplateController::class, 'create'])->name('inventory.label-templates.create');
@@ -820,6 +826,10 @@ Route::middleware('auth')->group(function () {
         Route::post('manufacturing-orders/{order}/reserve', [\App\Http\Controllers\ManufacturingOrderController::class, 'reserve'])->name('manufacturing-orders.reserve');
         Route::post('manufacturing-orders/{order}/report', [\App\Http\Controllers\ManufacturingOrderController::class, 'report'])->name('manufacturing-orders.report');
         Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushDeliveryNote'])->name('manufacturing-orders.deliveries.lexoffice'); // E4/045 Lieferschein an Lexoffice
+        Route::get('manufacturing-orders/{order}/deliveries/{delivery}/delivery-note.pdf', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliveryNotePdf'])->name('manufacturing-orders.deliveries.pdf'); // MVP-074 Lieferschein-PDF
+        Route::post('manufacturing-orders/{order}/order-confirmation/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushOrderConfirmation'])->name('manufacturing-orders.order-confirmation.lexoffice'); // 045 Auftragsbestätigung an Lexoffice
+        Route::post('manufacturing-orders/{order}/quotation/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushQuotation'])->name('manufacturing-orders.quotation.lexoffice'); // 045 Angebot an Lexoffice
         Route::post('manufacturing-orders/{order}/cancel', [\App\Http\Controllers\ManufacturingOrderController::class, 'cancel'])->name('manufacturing-orders.cancel');
         Route::post('manufacturing-orders/{order}/subcontract', [\App\Http\Controllers\ManufacturingOrderController::class, 'subcontract'])->name('manufacturing-orders.subcontract'); // E7 Fremdfertigung
 
@@ -849,13 +859,48 @@ Route::middleware('auth')->group(function () {
         Route::get('purchase-orders/create', [\App\Http\Controllers\PurchaseOrderController::class, 'create'])->name('purchase-orders.create');
         Route::post('purchase-orders', [\App\Http\Controllers\PurchaseOrderController::class, 'store'])->name('purchase-orders.store');
         Route::get('purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'show'])->name('purchase-orders.show');
+        Route::get('purchase-orders/{purchaseOrder}/order-xml', [\App\Http\Controllers\PurchaseOrderController::class, 'downloadOrder'])->name('purchase-orders.order-xml'); // E4 XBestellung/Order-X Export
+        Route::get('purchase-orders/{purchaseOrder}/order.pdf', [\App\Http\Controllers\PurchaseOrderController::class, 'downloadPdf'])->name('purchase-orders.pdf'); // E4 Bestellung-PDF
         Route::post('purchase-orders/{purchaseOrder}/lines', [\App\Http\Controllers\PurchaseOrderController::class, 'addLine'])->name('purchase-orders.lines.add');
+        Route::post('purchase-orders/{purchaseOrder}/conditions', [\App\Http\Controllers\PurchaseOrderController::class, 'updateConditions'])->name('purchase-orders.conditions'); // Frachtkosten (UGL POZ)
         Route::post('purchase-orders/{purchaseOrder}/submit', [\App\Http\Controllers\PurchaseOrderController::class, 'submit'])->name('purchase-orders.submit');
         Route::post('purchase-orders/{purchaseOrder}/receive', [\App\Http\Controllers\PurchaseOrderController::class, 'receive'])->name('purchase-orders.receive');
         Route::post('purchase-orders/{purchaseOrder}/advices', [\App\Http\Controllers\PurchaseOrderController::class, 'announceAdvice'])->name('purchase-orders.advices.announce'); // E4 Lieferavis
+        Route::post('purchase-orders/{purchaseOrder}/advices/import', [\App\Http\Controllers\PurchaseOrderController::class, 'importAdvice'])->name('purchase-orders.advices.import'); // E4 Lieferschein-Import (Despatch Advice)
+        Route::post('purchase-orders/{purchaseOrder}/reconcile-invoice', [\App\Http\Controllers\PurchaseOrderController::class, 'reconcileInvoice'])->name('purchase-orders.reconcile-invoice'); // UGL-Rechnungsabgleich
         Route::post('purchase-orders/advices/{advice}/receive', [\App\Http\Controllers\PurchaseOrderController::class, 'receiveAdvice'])->name('purchase-orders.advices.receive');
         Route::post('purchase-orders/advices/{advice}/cancel', [\App\Http\Controllers\PurchaseOrderController::class, 'cancelAdvice'])->name('purchase-orders.advices.cancel');
         Route::post('purchase-orders/{purchaseOrder}/cancel', [\App\Http\Controllers\PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
+
+        // ── Lieferantenkataloge (Feature 050, MVP-091/092) ─ Gate supplier-catalogs.* → module.lager
+        Route::get('supplier-catalogs', [\App\Http\Controllers\SupplierCatalogController::class, 'index'])->name('supplier-catalogs.index');
+        Route::get('supplier-catalogs/create', [\App\Http\Controllers\SupplierCatalogController::class, 'create'])->name('supplier-catalogs.create');
+        Route::get('supplier-catalogs/alerts', [\App\Http\Controllers\SupplierCatalogController::class, 'alerts'])->name('supplier-catalogs.alerts'); // MVP-094 (vor show!)
+        Route::post('supplier-catalogs/alerts/{alert}/acknowledge', [\App\Http\Controllers\SupplierCatalogController::class, 'acknowledgeAlert'])->name('supplier-catalogs.alerts.acknowledge');
+        Route::post('supplier-catalogs', [\App\Http\Controllers\SupplierCatalogController::class, 'store'])->name('supplier-catalogs.store');
+        Route::get('supplier-catalogs/{supplierCatalog}/edit', [\App\Http\Controllers\SupplierCatalogController::class, 'edit'])->name('supplier-catalogs.edit');
+        Route::put('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\SupplierCatalogController::class, 'update'])->name('supplier-catalogs.update');
+        Route::delete('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\SupplierCatalogController::class, 'destroy'])->name('supplier-catalogs.destroy');
+        Route::post('supplier-catalogs/{supplierCatalog}/toggle', [\App\Http\Controllers\SupplierCatalogController::class, 'toggleActive'])->name('supplier-catalogs.toggle');
+        Route::get('supplier-catalogs/{supplierCatalog}', [\App\Http\Controllers\SupplierCatalogController::class, 'show'])->name('supplier-catalogs.show');
+        Route::post('supplier-catalogs/{supplierCatalog}/import', [\App\Http\Controllers\SupplierCatalogController::class, 'import'])->name('supplier-catalogs.import');
+        Route::post('supplier-catalogs/{supplierCatalog}/shopinfo', [\App\Http\Controllers\SupplierCatalogController::class, 'discoverShopinfo'])->name('supplier-catalogs.shopinfo'); // MVP-092 Discovery
+        Route::post('supplier-catalogs/{supplierCatalog}/fetch', [\App\Http\Controllers\SupplierCatalogController::class, 'fetchRemote'])->name('supplier-catalogs.fetch'); // Remote-Abruf (HTTP/FTP)
+        // Verknüpfung Katalogartikel ↔ interner Artikelstamm (MVP-093)
+        Route::get('supplier-catalogs/items/{catalogItem}/link', [\App\Http\Controllers\SupplierCatalogController::class, 'linkForm'])->name('supplier-catalogs.items.link-form');
+        Route::post('supplier-catalogs/items/{catalogItem}/link', [\App\Http\Controllers\SupplierCatalogController::class, 'link'])->name('supplier-catalogs.items.link');
+        Route::post('supplier-catalogs/items/{catalogItem}/unlink', [\App\Http\Controllers\SupplierCatalogController::class, 'unlink'])->name('supplier-catalogs.items.unlink');
+        Route::post('supplier-catalogs/items/{catalogItem}/propose', [\App\Http\Controllers\SupplierCatalogController::class, 'propose'])->name('supplier-catalogs.items.propose');
+        Route::post('supplier-catalogs/items/{catalogItem}/apply-price', [\App\Http\Controllers\SupplierCatalogController::class, 'applyPrice'])->name('supplier-catalogs.items.apply-price'); // MVP-095 Verkaufspreis-Freigabe
+
+        // ── Margenregeln (Feature 050, MVP-095) ─ Gate pricing-margin-rules.* → module.lager
+        Route::get('pricing-margin-rules', [\App\Http\Controllers\PricingMarginRuleController::class, 'index'])->name('pricing-margin-rules.index');
+        Route::get('pricing-margin-rules/create', [\App\Http\Controllers\PricingMarginRuleController::class, 'create'])->name('pricing-margin-rules.create');
+        Route::post('pricing-margin-rules', [\App\Http\Controllers\PricingMarginRuleController::class, 'store'])->name('pricing-margin-rules.store');
+        Route::delete('pricing-margin-rules/{pricingMarginRule}', [\App\Http\Controllers\PricingMarginRuleController::class, 'destroy'])->name('pricing-margin-rules.destroy');
+
+        // ── OCI-/IDS-Warenkorb-Hook (Feature 050, MVP-096) ─ Gate oci-carts.* → module.lager
+        Route::post('oci-carts/import', [\App\Http\Controllers\OciCartController::class, 'import'])->name('oci-carts.import');
 
         // Plugin-spezifische Routen (z. B. Lexoffice customers.lexoffice.*) werden
         // vom jeweiligen Plugin-ServiceProvider geladen — siehe app/Plugins/*/routes.php.

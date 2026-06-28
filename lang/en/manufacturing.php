@@ -66,6 +66,35 @@ return [
         'per_unit' => 'Quantity per unit',
         'ratio' => 'Ratio (recipe)',
     ],
+    'delivery_note' => [
+        'title' => 'Delivery note',
+        'date' => 'Delivery date',
+        'order' => 'Order',
+        'recipient' => 'Recipient',
+        'warehouse' => 'Warehouse',
+        'no_customer' => 'No customer set',
+        'footer_note' => 'Hand-over record only — not an invoice. Please confirm receipt.',
+        'col' => [
+            'sku' => 'Item no.',
+            'name' => 'Description',
+            'qty' => 'Quantity',
+            'unit' => 'Unit',
+        ],
+    ],
+    'parameter_type' => [
+        'number' => 'Number',
+        'measure' => 'Measure (with unit)',
+        'choice' => 'Choice',
+        'text' => 'Text',
+        'date' => 'Date',
+        'bool' => 'Yes/No',
+    ],
+    'parameter' => [
+        'error' => [
+            'required' => 'Required parameter ":param" is missing.',
+            'invalid' => 'Parameter ":param" has an invalid value.',
+        ],
+    ],
 
     'status' => [
         'draft' => 'Draft',
@@ -114,6 +143,7 @@ return [
             'reserve' => 'Reserve material',
             'report' => 'Report',
             'deliver' => 'Deliver',
+            'push_lexoffice' => 'Send to Lexoffice',
             'subcontract' => 'Subcontract',
             'cancel' => 'Cancel',
         ],
@@ -126,6 +156,9 @@ return [
             'quantity' => 'Quantity',
             'materials' => 'Materials',
             'reports' => 'Reports',
+            'article' => 'Article',
+            'deliveries' => 'Deliveries',
+            'facturation_status' => 'Invoicing status',
         ],
         'flash' => [
             'created' => 'Order created.',
@@ -134,6 +167,7 @@ return [
             'reserved' => 'Material reserved.',
             'reported' => 'Report recorded.',
             'delivered' => 'Delivered.',
+            'lexoffice_pushed' => 'Delivery note sent to Lexoffice.',
             'subcontracted' => 'Sent to supplier (order created).',
             'subcontract_failed' => 'Subcontracting not possible.',
             'cancelled' => 'Order cancelled.',

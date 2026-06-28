@@ -98,4 +98,149 @@ final class PurchaseOrderControllerTest extends TestCase {
 
         $this->actingAs($this->admin)->get(route('purchase-orders.incoming'))->assertOk()->assertSee($po->number);
     }
+
+    public function test_download_order_xml_returns_xbestellung(): void {
+        $orders = app(PurchaseOrderService::class);
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $orders->addLine($po, $this->article, '5', ['unit_price' => '12']);
+        $orders->submit($po);
+
+        $response = $this->actingAs($this->admin)->get(route('purchase-orders.order-xml', $po));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/xml; charset=UTF-8');
+        $this->assertStringContainsString('attachment; filename="XBestellung_', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('<Order', $response->getContent());
+        $this->assertStringContainsString('urn:fdc:peppol.eu:poacc:trns:order:3', $response->getContent());
+    }
+
+    public function test_download_order_xml_orderx_format(): void {
+        $orders = app(PurchaseOrderService::class);
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $orders->addLine($po, $this->article, '5', ['unit_price' => '12']);
+        $orders->submit($po);
+
+        $response = $this->actingAs($this->admin)->get(route('purchase-orders.order-xml', ['purchaseOrder' => $po, 'format' => 'orderx']));
+
+        $response->assertOk();
+        $this->assertStringContainsString('SCRDMCCBDACIOMessageStructure', $response->getContent());
+    }
+
+    public function test_download_order_xml_opentrans_format(): void {
+        $orders = app(PurchaseOrderService::class);
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $orders->addLine($po, $this->article, '5', ['unit_price' => '12']);
+        $orders->submit($po);
+
+        $response = $this->actingAs($this->admin)->get(route('purchase-orders.order-xml', ['purchaseOrder' => $po, 'format' => 'opentrans']));
+
+        $response->assertOk();
+        $this->assertStringContainsString('attachment; filename="openTRANS_', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('<ORDER', $response->getContent());
+        $this->assertStringContainsString('opentrans.org/XMLSchema/2.1', $response->getContent());
+    }
+
+    public function test_update_conditions_sets_freight_cost(): void {
+        $po = app(PurchaseOrderService::class)->createDraft($this->organization, $this->supplier, $this->warehouse);
+
+        $this->actingAs($this->admin)
+            ->post(route('purchase-orders.conditions', $po), ['freight_cost' => '25.50'])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertSame('25.5000', $po->fresh()->freight_cost);
+    }
+
+    public function test_download_order_xml_ugl_format(): void {
+        $orders = app(PurchaseOrderService::class);
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $orders->addLine($po, $this->article, '5', ['unit_price' => '12']);
+        $orders->submit($po);
+
+        $response = $this->actingAs($this->admin)->get(route('purchase-orders.order-xml', ['purchaseOrder' => $po, 'format' => 'ugl']));
+
+        $response->assertOk();
+        $this->assertStringContainsString('attachment; filename="UGL_', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('.ugl"', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringStartsWith('KOP', $response->getContent());
+    }
+
+    public function test_download_order_xml_requires_permission(): void {
+        $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $po = app(PurchaseOrderService::class)->createDraft($this->organization, $this->supplier, $this->warehouse);
+
+        $this->actingAs($stranger)->get(route('purchase-orders.order-xml', $po))->assertForbidden();
+    }
+
+    public function test_import_advice_upload_creates_advice(): void {
+        $orders = app(PurchaseOrderService::class);
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $orders->addLine($po, $this->article, '10', ['supplier_sku' => 'SUP-1']);
+        $orders->submit($po);
+
+        $xml = \ERechnungToolkit\Builders\DespatchAdviceBuilder::create('LS-IMP-1')
+            ->withOrderReference($po->number)
+            ->withSupplier((string) $this->supplier->name, 'DE222222222')
+            ->withSupplierAddress('Lieferweg 2', '54321', 'Lieferstadt')
+            ->withCustomer('Wir GmbH')
+            ->withCustomerAddress('Firmenweg 1', '10115', 'Berlin')
+            ->addLine('Ware', 4, \ERechnungToolkit\Enums\UnitCode::PIECE, '1', 'SUP-1')
+            ->build()
+            ->toUblXml();
+
+        $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('LS-IMP-1.xml', $xml);
+
+        $this->actingAs($this->admin)
+            ->post(route('purchase-orders.advices.import', $po), ['advice_xml' => $file])
+            ->assertRedirect();
+
+        $advice = $po->advices()->firstOrFail();
+        $this->assertSame('LS-IMP-1', $advice->reference);
+        $this->assertSame('4.0000', $advice->lines()->firstOrFail()->qty);
+    }
+
+    public function test_import_advice_rejects_mismatched_order_reference(): void {
+        $orders = app(PurchaseOrderService::class);
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $orders->addLine($po, $this->article, '10', ['supplier_sku' => 'SUP-1']);
+        $orders->submit($po);
+
+        $xml = \ERechnungToolkit\Builders\DespatchAdviceBuilder::create('LS-IMP-2')
+            ->withOrderReference('BE-OTHER-999')
+            ->withSupplier('X', 'DE222222222')
+            ->withSupplierAddress('a', '1', 'b')
+            ->withCustomer('Y')
+            ->withCustomerAddress('c', '2', 'd')
+            ->addLine('Ware', 1, \ERechnungToolkit\Enums\UnitCode::PIECE, '1', 'SUP-1')
+            ->build()
+            ->toUblXml();
+
+        $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('LS-IMP-2.xml', $xml);
+
+        $this->actingAs($this->admin)
+            ->post(route('purchase-orders.advices.import', $po), ['advice_xml' => $file])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, $po->advices()->count());
+    }
+
+    public function test_purchase_order_pdf_is_streamed(): void {
+        $orders = app(PurchaseOrderService::class);
+        $po = $orders->createDraft($this->organization, $this->supplier, $this->warehouse);
+        $orders->addLine($po, $this->article, '5', ['unit_price' => '12']);
+
+        $response = $this->actingAs($this->admin)->get(route('purchase-orders.pdf', $po));
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('%PDF', (string) $response->getContent());
+    }
+
+    public function test_pdf_requires_permission(): void {
+        $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $po = app(PurchaseOrderService::class)->createDraft($this->organization, $this->supplier, $this->warehouse);
+
+        $this->actingAs($stranger)->get(route('purchase-orders.pdf', $po))->assertForbidden();
+    }
 }

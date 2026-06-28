@@ -66,6 +66,35 @@ return [
         'per_unit' => 'Cantidad por unidad',
         'ratio' => 'Proporción (receta)',
     ],
+    'delivery_note' => [
+        'title' => 'Albarán',
+        'date' => 'Fecha de entrega',
+        'order' => 'Orden',
+        'recipient' => 'Destinatario',
+        'warehouse' => 'Almacén',
+        'no_customer' => 'Sin cliente asignado',
+        'footer_note' => 'Solo comprobante de entrega — no es una factura. Confirme la recepción.',
+        'col' => [
+            'sku' => 'N.º de artículo',
+            'name' => 'Descripción',
+            'qty' => 'Cantidad',
+            'unit' => 'Unidad',
+        ],
+    ],
+    'parameter_type' => [
+        'number' => 'Número',
+        'measure' => 'Medida (con unidad)',
+        'choice' => 'Selección',
+        'text' => 'Texto',
+        'date' => 'Fecha',
+        'bool' => 'Sí/No',
+    ],
+    'parameter' => [
+        'error' => [
+            'required' => 'Falta el parámetro obligatorio ":param".',
+            'invalid' => 'El parámetro ":param" tiene un valor no válido.',
+        ],
+    ],
 
     'status' => [
         'draft' => 'Borrador',
@@ -114,6 +143,7 @@ return [
             'reserve' => 'Reservar material',
             'report' => 'Notificar',
             'deliver' => 'Entregar',
+            'push_lexoffice' => 'Enviar a Lexoffice',
             'subcontract' => 'Subcontratar',
             'cancel' => 'Cancelar',
         ],
@@ -126,6 +156,9 @@ return [
             'quantity' => 'Cantidad',
             'materials' => 'Material',
             'reports' => 'Notificaciones',
+            'article' => 'Artículo',
+            'deliveries' => 'Entregas',
+            'facturation_status' => 'Estado de facturación',
         ],
         'flash' => [
             'created' => 'Orden creada.',
@@ -134,6 +167,7 @@ return [
             'reserved' => 'Material reservado.',
             'reported' => 'Notificación registrada.',
             'delivered' => 'Entregado.',
+            'lexoffice_pushed' => 'Albarán enviado a Lexoffice.',
             'subcontracted' => 'Asignado al proveedor (pedido creado).',
             'subcontract_failed' => 'Subcontratación no posible.',
             'cancelled' => 'Orden cancelada.',

@@ -80,15 +80,32 @@ class ArticleController extends Controller {
             ->with('success', __('article.flash.created'));
     }
 
-    public function show(Article $article): View {
+    public function show(Article $article, \App\Services\Procurement\SupplySourceComparator $comparator): View {
         Gate::authorize('view', $article);
 
         $article->load(['optionDefinitions.values', 'variants.optionValues', 'units', 'externalMappings']);
 
+        $supplies = $comparator->forArticle($article);
+
         return view('articles.show', [
             'article' => $article,
             'unitKinds' => ArticleUnitKind::cases(),
+            'supplies' => $supplies,
+            'recommendedSupplyId' => $comparator->recommend($article)?->id,
         ]);
+    }
+
+    /** Markiert eine Bezugsquelle als bevorzugt (Lieferantenvergleich, Feature 050). */
+    public function setPreferredSupply(Article $article, \App\Models\ArticleSupply $supply): RedirectResponse {
+        Gate::authorize('update', $article);
+        abort_unless($supply->article_id === $article->id, 404);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($article, $supply): void {
+            $article->supplies()->update(['is_preferred' => false]);
+            $supply->forceFill(['is_preferred' => true])->save();
+        });
+
+        return back()->with('success', __('article.supplies.flash.preferred_set'));
     }
 
     public function edit(Article $article): View {

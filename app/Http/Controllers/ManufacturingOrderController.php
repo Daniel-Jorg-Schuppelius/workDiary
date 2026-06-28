@@ -13,8 +13,9 @@ namespace App\Http\Controllers;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveManufacturingOrderRequest;
-use App\Models\{Article, ArticleVariant, Customer, ManufacturingOrder, Supplier, Warehouse, WorkCenter};
-use App\Services\Manufacturing\{CapacityService, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingReportService, SubcontractService};
+use App\Models\{Article, ArticleVariant, Customer, ManufacturingOrder, StockDelivery, Supplier, Warehouse, WorkCenter};
+use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficeOrderConfirmationService, LexofficeQuotationService};
+use App\Services\Manufacturing\{CapacityService, DeliveryNotePdfRenderer, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingReportService, SubcontractService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -89,13 +90,24 @@ class ManufacturingOrderController extends Controller {
 
     public function show(ManufacturingOrder $order): View {
         Gate::authorize('view', $order);
-        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports']);
+        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer']);
 
         return view('manufacturing.show', [
             'order' => $order,
             'suppliers' => Supplier::query()->orderBy('name')->limit(500)->get(),
             'workCenters' => WorkCenter::query()->where('active', true)->orderBy('name')->get(),
             'canManage' => Auth::user()?->can(\App\Enums\User\Permission::InventoryPost->value) ?? false,
+        ]);
+    }
+
+    /** Liefert die Auslieferung als Lieferschein-PDF (Feature 047, MVP-074). */
+    public function deliveryNotePdf(ManufacturingOrder $order, StockDelivery $delivery, DeliveryNotePdfRenderer $renderer): \Illuminate\Http\Response {
+        Gate::authorize('view', $order);
+        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
+
+        return response($renderer->render($delivery), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $renderer->number($delivery) . '.pdf"',
         ]);
     }
 
@@ -195,8 +207,74 @@ class ManufacturingOrderController extends Controller {
         return back()->with('success', __('manufacturing.order.flash.delivered'));
     }
 
+    /**
+     * Übergibt eine Auslieferung als Lexoffice-Lieferschein (Feature 045/047).
+     */
+    public function pushDeliveryNote(
+        ManufacturingOrder $order,
+        StockDelivery $delivery,
+        LexofficeDeliveryNoteService $deliveryNotes,
+    ): RedirectResponse {
+        Gate::authorize('update', $order);
+        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
+
+        try {
+            $deliveryNotes->push($delivery);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('manufacturing.order.flash.lexoffice_pushed'));
+    }
+
+    /**
+     * Übergibt einen kundenbezogenen Fertigungsauftrag als Lexoffice-
+     * Auftragsbestätigung (Feature 045/047).
+     */
+    public function pushOrderConfirmation(
+        ManufacturingOrder $order,
+        LexofficeOrderConfirmationService $orderConfirmations,
+    ): RedirectResponse {
+        Gate::authorize('update', $order);
+
+        try {
+            $reference = $orderConfirmations->push($order);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('Auftragsbestätigung in Lexoffice angelegt (ID :id).', [
+            'id' => $reference->external_id,
+        ]));
+    }
+
+    /**
+     * Übergibt einen kundenbezogenen Fertigungsauftrag als Lexoffice-Angebot
+     * (Feature 045/047).
+     */
+    public function pushQuotation(
+        ManufacturingOrder $order,
+        LexofficeQuotationService $quotations,
+    ): RedirectResponse {
+        Gate::authorize('update', $order);
+
+        try {
+            $reference = $quotations->push($order);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('Angebot in Lexoffice angelegt (ID :id).', [
+            'id' => $reference->external_id,
+        ]));
+    }
+
     public function cancel(ManufacturingOrder $order): RedirectResponse {
-        return $this->guarded($order, fn () => $this->orders->transition($order, ManufacturingOrderStatus::Cancelled), 'manufacturing.order.flash.cancelled');
+        return $this->guarded($order, function () use ($order): void {
+            $this->orders->transition($order, ManufacturingOrderStatus::Cancelled);
+            // Storno gibt verbliebene Materialreservierungen frei (MVP-071).
+            $this->inventory->releaseRemainingReservations($order);
+        }, 'manufacturing.order.flash.cancelled');
     }
 
     /** Führt eine Auftragsaktion mit Berechtigungsprüfung + Fehlerbehandlung aus. */

@@ -45,6 +45,9 @@ class PendingExternalConflict extends Model {
 
     public const STATUS_DISMISSED = 'dismissed';
 
+    /** Konflikt durch fachliche Gegenbuchung ausgeglichen (Inventory-Outbox, MVP-072). */
+    public const STATUS_COMPENSATED = 'compensated';
+
     protected $fillable = [
         'organization_id',
         'plugin_id',

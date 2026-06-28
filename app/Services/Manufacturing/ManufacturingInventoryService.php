@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Organization, Warehouse};
+use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Organization, Warehouse};
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService};
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -105,6 +105,35 @@ class ManufacturingInventoryService {
         });
     }
 
+    /**
+     * Gibt nach Abschluss/Stornierung verbliebene (nicht verbrauchte)
+     * Materialreservierungen wieder frei, sodass der gesperrte Bestand zurück in
+     * die Verfügbarkeit fällt (MVP-071, „Restreservierung frei").
+     *
+     * @return numeric-string  die insgesamt freigegebene Menge
+     */
+    public function releaseRemainingReservations(ManufacturingOrder $order): string {
+        return DB::transaction(function () use ($order): string {
+            $released = '0';
+            foreach ($order->materials()->whereNotNull('stock_reservation_id')->get() as $material) {
+                $reservation = $material->reservation;
+                if ($reservation === null) {
+                    continue;
+                }
+
+                $open = $reservation->openQuantity();
+                if (bccomp($open, '0', self::SCALE) <= 0) {
+                    continue;
+                }
+
+                $this->reservations->release($reservation);
+                $released = bcadd($released, $open, self::SCALE);
+            }
+
+            return $released;
+        });
+    }
+
     /** Lagert eine Gutmenge des Fertigerzeugnisses in das Auftrags-Lager ein. */
     public function receiveFinishedGood(ManufacturingOrder $order, string $qty): void {
         $warehouse = $order->warehouse;
@@ -126,7 +155,7 @@ class ManufacturingInventoryService {
             // Eigenfertigung: für seriennummernpflichtige Erzeugnisse je Stück eine
             // Seriennummer erzeugen (E2). Greift nur bei ganzzahligen Stückmengen.
             $article = $order->article;
-            if ($article instanceof Article && $article->serial_required) {
+            if ($article->serial_required) {
                 $count = (int) $this->positive($qty);
                 if ($count > 0) {
                     $this->serials->generate($variant, $count, $warehouse, $order, $order->created_by);

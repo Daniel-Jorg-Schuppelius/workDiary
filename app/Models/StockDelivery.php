@@ -66,6 +66,11 @@ class StockDelivery extends Model {
         return $this->belongsTo(ArticleVariant::class, 'article_variant_id');
     }
 
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo {
+        return $this->belongsTo(Customer::class);
+    }
+
     /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo {
         return $this->belongsTo(Warehouse::class);

@@ -7,7 +7,8 @@ Status: Geplant • Quelle:
 
 Referenzprofil für **Bau-, Ausbau- und Trockenbaubetriebe**. Bildet
 Baustellenfortschritt, Aufmaß, Nachträge, Mängel, Teilabnahmen, Wetter,
-Materialverbrauch, Bautagesberichte und Restarbeiten ab.
+Materialverbrauch, Bautagesberichte, Leistungsverzeichnisse, GAEB-Bezug und
+Restarbeiten ab.
 
 ## 2. Strukturparallele
 
@@ -34,6 +35,8 @@ Materialverbrauch, Bautagesberichte und Restarbeiten ab.
 - `entry_type=nachtrag`: Pflicht Anlass, Beschreibung, Aufwandsschätzung
   und Kundenfreigabe.
 - `entry_type=teilabnahme`: Pflicht Restpunkte und Unterschrift.
+- GAEB-/LV-Positionen sind optionaler Strukturbezug für Aufmaß, Nachtrag,
+  Materialverbrauch und Abrechnungsvorbereitung.
 
 ## 5. Prozedurvorlagen
 
@@ -53,10 +56,24 @@ Materialverbrauch, Bautagesberichte und Restarbeiten ab.
 ## 8. Tags-Seed
 
 `#baustelle`, `#aufmass`, `#nachtrag`, `#mangel`, `#restpunkte`,
-`#wetter`, `#fremdgewerk`, `#abnahme`.
+`#wetter`, `#fremdgewerk`, `#abnahme`, `#gaeb`, `#leistungsverzeichnis`.
 
-## 9. Akzeptanzkriterien
+## 9. GAEB-/LV-Erweiterung
+
+Quelle: [Feature 049 — GAEB-Leistungsverzeichnisse und AVA-Austausch](features/049-gaeb-leistungsverzeichnisse.md).
+
+- LV-Position als optionaler Bezug an Bautagesbericht, Aufmaß, Nachtrag,
+  Mangel, Teilabnahme, Materialverbrauch und Restarbeit.
+- Pflichtlogik pro Organisation: Aufmaß und Nachtrag können eine
+  LV-Position verlangen, wenn ein Projekt mit GAEB-LV geführt wird.
+- Demo-Ablauf: GAEB-LV importieren, Bauabschnitt bearbeiten, Aufmaß erfassen,
+  Nachtrag dokumentieren, Nachkalkulation prüfen und freigegebenen Stand
+  exportieren.
+
+## 10. Akzeptanzkriterien
 
 1. `database/data/branchprofiles/bau-ausbau.php` enthält Inhalte aus §3-§8.
 2. Pflichtfelder für Tagesbericht, Aufmaß, Mangel und Nachtrag greifen.
 3. Onboarding-Wizard listet „Bau, Ausbau und Trockenbau".
+4. GAEB-/LV-Bezug kann als optionaler Profilbaustein aktiviert werden, ohne
+   Organisationen ohne GAEB-Workflow zu belasten.

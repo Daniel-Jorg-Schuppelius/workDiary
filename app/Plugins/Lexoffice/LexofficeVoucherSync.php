@@ -33,8 +33,7 @@ class LexofficeVoucherSync {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {
-    }
+    ) {}
 
     /**
      * @return array{contacts: int, created: int, updated: int, archived: int}
@@ -53,38 +52,15 @@ class LexofficeVoucherSync {
 
         foreach ($contactMap as $contactExternalId => $owners) {
             foreach ($this->fetchVouchers($contactExternalId) as $item) {
-                if (empty($item['id'])) {
-                    continue;
+                if (! empty($item['id'])) {
+                    $seen[] = (string) $item['id'];
                 }
-                $externalId = (string) $item['id'];
-                $seen[] = $externalId;
-
-                $attrs = $this->itemToAttrs($item) + [
-                    'contact_external_id' => $contactExternalId,
-                    'customer_id' => $owners['customer_id'],
-                    'supplier_id' => $owners['supplier_id'],
-                    'archived' => (bool) ($item['archived'] ?? false),
-                    'payload' => $item,
-                    'synced_at' => now(),
-                ];
-
-                $existing = LexofficeVoucher::query()
-                    ->where('organization_id', $organization->id)
-                    ->where('external_id', $externalId)
-                    ->first();
-
-                if ($existing === null) {
-                    LexofficeVoucher::create($attrs + [
-                        'organization_id' => $organization->id,
-                        'external_id' => $externalId,
-                    ]);
+                $verb = $this->upsertVoucherItem($organization->id, $contactExternalId, $owners, $item);
+                if ($verb === 'created') {
                     $created++;
-
-                    continue;
+                } elseif ($verb === 'updated') {
+                    $updated++;
                 }
-
-                $existing->fill($attrs)->save();
-                $updated++;
             }
         }
 
@@ -101,6 +77,133 @@ class LexofficeVoucherSync {
             'updated' => $updated,
             'archived' => (int) $archived,
         ];
+    }
+
+    /**
+     * Synchronisiert die Lexoffice-Belege EINES Kontakts (Kunde oder Lieferant)
+     * on-demand — z. B. ausgelöst über den „Synchronisieren"-Button auf der
+     * Detailseite. Archiviert nur die nicht mehr sichtbaren Belege DIESES
+     * Kontakts (kontaktscoped, nicht org-weit).
+     *
+     * @return array{contacts: int, created: int, updated: int, archived: int}
+     */
+    public function syncFor(Customer|Supplier $owner): array {
+        if ($this->apiKey === null || $this->apiKey === '') {
+            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        }
+
+        $organizationId = (int) $owner->organization_id;
+
+        $ref = ExternalReference::query()
+            ->where('organization_id', $organizationId)
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('referenceable_type', $owner->getMorphClass())
+            ->where('referenceable_id', $owner->getKey())
+            ->first(['external_id']);
+
+        if ($ref === null) {
+            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0];
+        }
+
+        $contactExternalId = (string) $ref->external_id;
+        $owners = $this->ownersForContact($organizationId, $contactExternalId);
+
+        $created = 0;
+        $updated = 0;
+        /** @var array<int, string> $seen */
+        $seen = [];
+
+        foreach ($this->fetchVouchers($contactExternalId) as $item) {
+            if (! empty($item['id'])) {
+                $seen[] = (string) $item['id'];
+            }
+            $verb = $this->upsertVoucherItem($organizationId, $contactExternalId, $owners, $item);
+            if ($verb === 'created') {
+                $created++;
+            } elseif ($verb === 'updated') {
+                $updated++;
+            }
+        }
+
+        $archived = LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->where('contact_external_id', $contactExternalId)
+            ->where('archived', false)
+            ->when($seen !== [], fn (\Illuminate\Database\Eloquent\Builder $q) => $q->whereNotIn('external_id', $seen))
+            ->update(['archived' => true]);
+
+        return ['contacts' => 1, 'created' => $created, 'updated' => $updated, 'archived' => (int) $archived];
+    }
+
+    /**
+     * Legt einen einzelnen voucherlist-Eintrag an oder aktualisiert ihn.
+     *
+     * @param  array{customer_id: ?int, supplier_id: ?int}  $owners
+     * @param  array<string, mixed>  $item
+     * @return 'created'|'updated'|null  null, wenn der Eintrag keine id hat.
+     */
+    private function upsertVoucherItem(int $organizationId, string $contactExternalId, array $owners, array $item): ?string {
+        if (empty($item['id'])) {
+            return null;
+        }
+        $externalId = (string) $item['id'];
+
+        $attrs = $this->itemToAttrs($item) + [
+            'contact_external_id' => $contactExternalId,
+            'customer_id' => $owners['customer_id'],
+            'supplier_id' => $owners['supplier_id'],
+            'archived' => (bool) ($item['archived'] ?? false),
+            'payload' => $item,
+            'synced_at' => now(),
+        ];
+
+        $existing = LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->where('external_id', $externalId)
+            ->first();
+
+        if ($existing === null) {
+            LexofficeVoucher::create($attrs + [
+                'organization_id' => $organizationId,
+                'external_id' => $externalId,
+            ]);
+
+            return 'created';
+        }
+
+        $existing->fill($attrs)->save();
+
+        return 'updated';
+    }
+
+    /**
+     * Ermittelt die lokalen Eigentümer (Kunde/Lieferant) eines Kontakts; ein
+     * Kontakt mit Doppelrolle setzt beide.
+     *
+     * @return array{customer_id: ?int, supplier_id: ?int}
+     */
+    private function ownersForContact(int $organizationId, string $contactExternalId): array {
+        $refs = ExternalReference::query()
+            ->where('organization_id', $organizationId)
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+            ->where('external_id', $contactExternalId)
+            ->get(['referenceable_type', 'referenceable_id']);
+
+        $owners = ['customer_id' => null, 'supplier_id' => null];
+        $customerMorph = (new Customer)->getMorphClass();
+        $supplierMorph = (new Supplier)->getMorphClass();
+
+        foreach ($refs as $ref) {
+            if ($ref->referenceable_type === $customerMorph) {
+                $owners['customer_id'] = (int) $ref->referenceable_id;
+            } elseif ($ref->referenceable_type === $supplierMorph) {
+                $owners['supplier_id'] = (int) $ref->referenceable_id;
+            }
+        }
+
+        return $owners;
     }
 
     /**

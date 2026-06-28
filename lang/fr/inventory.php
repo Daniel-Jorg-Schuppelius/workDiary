@@ -185,6 +185,34 @@ return [
         ],
     ],
 
+    'conflict' => [
+        'title' => 'Conflits de stock (externe)',
+        'empty' => 'Aucun conflit de stock ouvert.',
+        'filter' => ['open' => 'Ouverts', 'all' => 'Tous'],
+        'col' => [
+            'id' => 'Mouvement',
+            'operation' => 'Opération',
+            'qty' => 'Quantité',
+            'status' => 'Statut',
+            'actions' => 'Actions',
+        ],
+        'status' => [
+            'open' => 'Ouvert',
+            'resolved_local' => 'Local conservé',
+            'resolved_remote' => 'Externe repris',
+            'compensated' => 'Compensé',
+            'dismissed' => 'Rejeté',
+        ],
+        'action' => [
+            'compensate' => 'Contre-écriture',
+            'keep_local' => 'Conserver local',
+        ],
+        'flash' => [
+            'kept_local' => 'Conflit clôturé — stock local conservé.',
+            'compensated' => 'Conflit compensé — contre-écriture enregistrée.',
+        ],
+    ],
+
     'outbox' => [
         'status' => [
             'pending' => 'En attente',

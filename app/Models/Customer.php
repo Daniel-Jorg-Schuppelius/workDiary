@@ -65,10 +65,10 @@ class Customer extends Model {
     use BelongsToOrganization;
     use HasAttachments;
 
+    use HasContactAndBankDetails;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
-
-    use HasContactAndBankDetails;
     use HasSqid;
     use HasTags;
     use Searchable;
@@ -309,7 +309,6 @@ class Customer extends Model {
     public function externalReferences(): MorphMany {
         return $this->morphMany(ExternalReference::class, 'referenceable');
     }
-
 
     public function hasProjects(): bool {
         return $this->projects()->exists();

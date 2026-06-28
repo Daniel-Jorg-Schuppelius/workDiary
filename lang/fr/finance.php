@@ -100,6 +100,7 @@ return [
 
     'lexoffice' => [
         'introduction' => 'Remise depuis WorkDiary — :channel, période :from – :to.',
+        'delivery_title' => 'Bon de livraison',
     ],
 
     'flash' => [
@@ -118,6 +119,14 @@ return [
         'entry_already_transferred' => 'L\'entrée de temps a déjà été remise à la facturation et ne peut plus être corrigée.',
         'target_not_allowed' => 'Cette cible n\'est pas autorisée pour le canal de facturation « :mode ».',
         'lexoffice_not_configured' => 'Lexoffice n\'est pas configuré pour cette organisation (clé API manquante).',
+        'lexoffice_contact_missing' => 'Aucun contact Lexoffice pour le client — veuillez d\'abord synchroniser le contact.',
+        'lexoffice_delivery_no_customer' => 'Une livraison sans client ne peut pas être transmise comme bon de livraison.',
+        'lexoffice_delivery_not_linked' => 'Aucun bon de livraison Lexoffice n\'est lié à cette livraison.',
+        'lexoffice_oc_no_customer' => 'Un ordre de fabrication sans client ne peut pas être transmis comme confirmation de commande.',
+        'lexoffice_oc_not_linked' => 'Aucune confirmation de commande Lexoffice n\'est liée à cet ordre de fabrication.',
+        'lexoffice_quote_no_customer' => 'Un ordre de fabrication sans client ne peut pas être transmis comme devis.',
+        'lexoffice_quote_not_linked' => 'Aucun devis Lexoffice n\'est lié à cet ordre de fabrication.',
+        'lexoffice_dunning_not_invoice' => 'Une relance ne peut être créée que pour une facture.',
         'sources_missing' => 'Les sources de ce justificatif de transfert ne sont plus toutes disponibles.',
     ],
     'datev' => [

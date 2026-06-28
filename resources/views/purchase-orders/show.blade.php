@@ -26,6 +26,23 @@
                             <x-icon-btn icon="cancel" tone="error" size="sm" type="submit" :title="__('procurement.action.cancel')" />
                         </x-action-form>
                     @endif
+                    <a href="{{ route('purchase-orders.pdf', $order) }}" target="_blank" class="btn btn-sm btn-ghost gap-1">
+                        <span class="material-symbols-rounded text-base">picture_as_pdf</span>{{ __('procurement.action.export_pdf') }}
+                    </a>
+                    @if ($status !== 'draft')
+                        <a href="{{ route('purchase-orders.order-xml', $order) }}" class="btn btn-sm btn-ghost gap-1">
+                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_xbestellung') }}
+                        </a>
+                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'orderx']) }}" class="btn btn-sm btn-ghost gap-1">
+                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_orderx') }}
+                        </a>
+                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'opentrans']) }}" class="btn btn-sm btn-ghost gap-1">
+                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_opentrans') }}
+                        </a>
+                        <a href="{{ route('purchase-orders.order-xml', ['purchaseOrder' => $order, 'format' => 'ugl']) }}" class="btn btn-sm btn-ghost gap-1">
+                            <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_ugl') }}
+                        </a>
+                    @endif
                 </x-slot:actions>
             @endif
         </x-page-toolbar>
@@ -47,7 +64,15 @@
                     <input name="qty" type="number" step="0.0001" min="0.0001" value="1" class="input input-sm input-bordered w-24"></div>
                 <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.unit_price') }}</label>
                     <input name="unit_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28"></div>
+                <div class="fieldset grow"><label class="fieldset-label">{{ __('procurement.field.line_note') }}</label>
+                    <input name="note" maxlength="500" class="input input-sm input-bordered w-full"></div>
                 <x-button type="submit" tone="primary" size="sm">{{ __('procurement.action.add_line') }}</x-button>
+            </form>
+            <form method="POST" action="{{ route('purchase-orders.conditions', $order) }}" class="flex flex-wrap items-end gap-2 mt-3 pt-3 border-t border-base-300">
+                @csrf
+                <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.freight_cost') }}</label>
+                    <input name="freight_cost" type="number" step="0.01" min="0" value="{{ $order->freight_cost !== null ? rtrim(rtrim(number_format((float) $order->freight_cost, 2, '.', ''), '0'), '.') : '' }}" class="input input-sm input-bordered w-32"></div>
+                <x-button type="submit" tone="ghost" size="sm">{{ __('procurement.action.save_conditions') }}</x-button>
             </form>
         </x-card>
     @endif
@@ -67,7 +92,10 @@
             </x-slot:head>
             @forelse ($order->lines as $line)
                 <tr>
-                    <td>{{ $line->description }}</td>
+                    <td>
+                        {{ $line->description }}
+                        @if (trim((string) $line->note) !== '')<div class="text-xs opacity-60">{{ $line->note }}</div>@endif
+                    </td>
                     <td class="text-right tabular-nums">{{ $line->ordered_qty }} {{ $line->unit }}</td>
                     <td class="text-right tabular-nums">{{ $line->received_qty }}</td>
                     @if ($canManage && in_array($status, ['ordered', 'partially_received'], true))
@@ -90,10 +118,35 @@
 
     {{-- Lieferavis / ASN (E4) --}}
     @if (in_array($status, ['ordered', 'partially_received'], true))
+        @if ($status !== 'draft')
+            <x-card>
+                <h2 class="font-semibold mb-3">{{ __('procurement.reconcile.title') }}</h2>
+                <p class="text-sm opacity-60 mb-2">{{ __('procurement.reconcile.hint') }}</p>
+                <form method="POST" action="{{ route('purchase-orders.reconcile-invoice', $order) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2">
+                    @csrf
+                    <div class="fieldset grow">
+                        <label class="fieldset-label">{{ __('procurement.reconcile.upload') }}</label>
+                        <input name="invoice_ugl" type="file" accept=".ugl,text/plain" required class="file-input file-input-sm file-input-bordered">
+                    </div>
+                    <x-button type="submit" tone="secondary" size="sm">{{ __('procurement.reconcile.submit') }}</x-button>
+                </form>
+            </x-card>
+        @endif
+
         @php $openLines = $order->lines->filter(fn ($l) => bccomp($l->openQty(), '0', 4) > 0); @endphp
         @if ($canManage && $openLines->isNotEmpty())
             <x-card>
                 <h2 class="font-semibold mb-3">{{ __('procurement.advice.announce') }}</h2>
+                @if ($canImportAdvice)
+                    <form method="POST" action="{{ route('purchase-orders.advices.import', $order) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2 mb-3">
+                        @csrf
+                        <div class="fieldset grow">
+                            <label class="fieldset-label">{{ __('procurement.advice.import') }}</label>
+                            <input name="advice_xml" type="file" accept=".xml,application/xml,text/xml" required class="file-input file-input-sm file-input-bordered">
+                        </div>
+                        <x-button type="submit" tone="secondary" size="sm">{{ __('procurement.advice.import_submit') }}</x-button>
+                    </form>
+                @endif
                 <form method="POST" action="{{ route('purchase-orders.advices.announce', $order) }}" class="flex flex-col gap-2">
                     @csrf
                     <div class="flex flex-wrap gap-2">

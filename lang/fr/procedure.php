@@ -51,6 +51,7 @@ return [
         'secondPersonRequired' => 'Une deuxième personne est requise.',
         'backupNotVerified' => 'L\'enregistrement de sauvegarde est manquant ou non vérifié.',
         'backupMissingOrExpired' => 'La dernière sauvegarde est manquante ou hors de la fenêtre de validité.',
+        'waitNotElapsed' => 'Le temps d\'attente côté serveur n\'est pas encore écoulé.',
     ],
     'title' => [
         'templates' => 'Modèles de procédure',

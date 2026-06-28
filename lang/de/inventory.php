@@ -185,6 +185,34 @@ return [
         ],
     ],
 
+    'conflict' => [
+        'title' => 'Bestandskonflikte (extern)',
+        'empty' => 'Keine offenen Bestandskonflikte.',
+        'filter' => ['open' => 'Offen', 'all' => 'Alle'],
+        'col' => [
+            'id' => 'Bewegung',
+            'operation' => 'Vorgang',
+            'qty' => 'Menge',
+            'status' => 'Status',
+            'actions' => 'Aktionen',
+        ],
+        'status' => [
+            'open' => 'Offen',
+            'resolved_local' => 'Lokal belassen',
+            'resolved_remote' => 'Extern übernommen',
+            'compensated' => 'Kompensiert',
+            'dismissed' => 'Verworfen',
+        ],
+        'action' => [
+            'compensate' => 'Gegenbuchung',
+            'keep_local' => 'Lokal belassen',
+        ],
+        'flash' => [
+            'kept_local' => 'Konflikt geschlossen — lokaler Bestand beibehalten.',
+            'compensated' => 'Konflikt kompensiert — Gegenbuchung gebucht.',
+        ],
+    ],
+
     'outbox' => [
         'status' => [
             'pending' => 'Ausstehend',
