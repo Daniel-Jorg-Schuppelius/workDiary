@@ -239,9 +239,9 @@
     <x-attachments-section :attachments="$attachments" upload-type="customer"
                            :upload-id="$customer->sqid" :can-upload="auth()->user()->can('update', $customer)" />
 
-    {{-- Verlauf --}}
+    {{-- Änderungsverlauf (Audit) — abgegrenzt vom Aktivitäts-„Verlauf" unten --}}
     @if ($auditLogs->isNotEmpty())
-    <x-card :title="__('Verlauf')" icon="history">
+    <x-card :title="__('Änderungsverlauf')" icon="history">
         <x-audit-log-list :logs="$auditLogs" />
     </x-card>
     @endif
@@ -321,6 +321,7 @@
         'contactRef' => $lexofficeContactRef,
         'range' => $lexofficeVoucherRange,
         'syncRoute' => route('customers.lexoffice.sync-vouchers', $customer),
+        'placeholder' => true,
     ])
 
     @include('customers._timeline_panel', ['customer' => $customer])

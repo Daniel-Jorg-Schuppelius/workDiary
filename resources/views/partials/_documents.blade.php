@@ -11,9 +11,15 @@
       $contactRef  — ExternalReference des verknüpften Lexoffice-Kontakts (oder null)
       $range       — array{label: string, ...} aus globalDateRange()
       $syncRoute   — (optional) Route zum Beleg-Sync
+      $placeholder — (optional) bool; true → Sektion auch ohne Belege als
+                     Leer-Zustand zeigen (z. B. Kunden mit Rechnungsrecht)
 --}}
 @php
     $lexofficeConnected = $plugin && $plugin->isEnabled() && $contactRef;
+
+    // Auch ohne Lexoffice-Verknüpfung als feste Sektion zeigen, sofern der
+    // Nutzer überhaupt Rechnungen sehen darf (sonst nur bei vorhandenen Daten).
+    $alwaysShow = ($placeholder ?? false) && (auth()->user()?->can('viewAny', \App\Models\Invoice::class) ?? false);
 
     $valueLabel = static function (?string $value, string $empty = '–'): string {
         if ($value === null || $value === '') {
@@ -72,7 +78,7 @@
     $invoiceSum = $rows->whereIn('type', ['invoice', 'salesinvoice'])->sum('amount');
 @endphp
 
-@if ($lexofficeConnected || $rows->isNotEmpty())
+@if ($lexofficeConnected || $rows->isNotEmpty() || $alwaysShow)
     <x-card class="space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
