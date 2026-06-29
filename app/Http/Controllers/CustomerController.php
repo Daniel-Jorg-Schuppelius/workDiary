@@ -36,11 +36,16 @@ class CustomerController extends Controller {
 
     private const ALLOWED_SORTS = ['name', 'number', 'company', 'created_at'];
 
-    public function index(Request $request): View {
+    public function index(Request $request, PluginManager $plugins): View {
         Gate::authorize('viewAny', Customer::class);
 
         ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
             = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
+
+        // Lexoffice „alle pushen" nur anbieten, wenn das Plugin in der aktiven
+        // Organisation tatsächlich aktiv ist (gleicher Check wie die Aktion) —
+        // sonst erscheint der Button, läuft aber in „nicht aktiviert".
+        $lexofficeEnabled = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID) !== null;
 
         $customers = Customer::query()
             ->search($search)
@@ -60,6 +65,7 @@ class CustomerController extends Controller {
             'search' => $search,
             'sort' => $sort,
             'dir' => $dir,
+            'lexofficeEnabled' => $lexofficeEnabled,
         ]);
     }
 
