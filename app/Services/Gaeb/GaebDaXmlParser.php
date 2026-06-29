@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\BoqItemType;
+use CommonToolkit\Helper\Data\XmlHelper;
 use SimpleXMLElement;
 
 /**
@@ -42,10 +43,9 @@ class GaebDaXmlParser {
 
         $stripped = $this->stripNamespaces($xml);
 
-        $previous = libxml_use_internal_errors(true);
-        // Kein LIBXML_NOENT (keine Entity-Substitution), kein Netzwerkzugriff.
-        $root = simplexml_load_string($stripped, options: LIBXML_NONET);
-        libxml_use_internal_errors($previous);
+        // Feature 052: XXE-sicheres Laden über das Common-Toolkit (LIBXML_NONET,
+        // keine Entity-Substitution). DOCTYPE wurde bereits oben abgewiesen.
+        $root = XmlHelper::safeLoadString($stripped);
 
         if ($root === false || $root->getName() !== 'GAEB') {
             throw new GaebParseException('Datei ist kein gültiges GAEB-DA-XML.');

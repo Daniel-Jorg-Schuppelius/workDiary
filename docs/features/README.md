@@ -19,7 +19,7 @@ Definition-of-Done steht unter
 | --------- | ------- | ------ | ------------- |
 | P0 | [Datenschutz, Sicherheit und Datenlebenszyklus](./016-datenschutz-dsgvo-datenlebenszyklus.md) | In Progress | Zentrales Produktversprechen: keine Datenverkäufe, keine versteckte Weitergabe, klare Datenhoheit |
 | P0 | [Sicherheitsprüfung und Release-Gate](./051-sicherheitspruefung-release-gate.md) | In Progress | Prüft den vollständigen MVP-Release-Kandidaten einschließlich 2FA, behebt Befunde und sperrt eine ungeprüfte Produktivfreigabe |
-| P0 | [Toolkit-Nutzung und Konsolidierung](./052-toolkit-nutzung-konsolidierung.md) | Planned | Prüft app-lokale Hilfslogik gegen die eigenen Toolkits, beseitigt bestätigte Duplikate und führt fehlende fachneutrale Funktionen im passenden Paket ein |
+| P0 | [Toolkit-Nutzung und Konsolidierung](./052-toolkit-nutzung-konsolidierung.md) | In Progress | Prüft app-lokale Hilfslogik gegen die eigenen Toolkits, beseitigt bestätigte Duplikate und führt fehlende fachneutrale Funktionen im passenden Paket ein |
 | P0 | [Mandantenfähigkeit und Betriebsmodelle](./015-mandantenfaehigkeit-betriebsmodelle.md) | Done | Grundlage für lokalen Verkauf, Private-Cloud-Instanzen und SaaS-Betrieb mit sicherer Datenisolation |
 | P0 | [Aufzeichnung und Zeiterfassung als Kernprodukt](./001-zeiterfassung-kernprodukt.md) | In Progress | Nachweis, wer wann welche Aufträge angenommen und bearbeitet hat, welche Zeit verbraucht wurde und welche Dienstmittel genutzt wurden |
 | P0 | [Auswertungen und Entscheidungsgrundlagen](./002-auswertungen-entscheidungsgrundlagen.md) | Done | Macht aus Aufzeichnungen belastbare Zahlen, Grafiken und Ableitungen zu Kunden, Produkten, Effizienz und Schulungsbedarf |

@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Procedure\{ProcedureStepRunStatus, ProcedureStepType};
+use App\Enums\Procedure\{ProcedureStepRunStatus};
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
 use App\Models\{Attachment, DiaryEntry, ProcedureRun, ProcedureStepRun, ProcedureTemplate, User};
 use App\Services\Procedure\{ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
@@ -375,7 +375,7 @@ class ProcedureRunController extends Controller {
      */
     private function storeProof(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, User $actor): int {
         $file = $request->file('proof');
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         $folder = 'attachments/procedure-runs/' . now()->format('Y/m');
         $filename = Str::uuid()->toString() . ($ext !== '' ? '.' . $ext : '');
         $path = $file->storeAs($folder, $filename, 'local');

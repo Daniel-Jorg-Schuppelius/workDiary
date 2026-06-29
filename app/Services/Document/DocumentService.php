@@ -150,7 +150,7 @@ class DocumentService {
      * Storage analog AttachmentController::store() (Date-Bucket + UUID).
      */
     private function storeVersion(Document $document, User $uploader, UploadedFile $file, int $versionNo, ?string $note): DocumentVersion {
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         $folder = 'documents/' . now()->format('Y/m');
         $filename = Str::uuid()->toString() . ($ext !== '' ? '.' . $ext : '');
         $path = $file->storeAs($folder, $filename, 'local');

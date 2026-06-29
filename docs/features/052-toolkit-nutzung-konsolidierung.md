@@ -2,10 +2,47 @@
 
 ## Status
 
-Planned — technischer P0-Querschnitt als `MVP-102`. Die bestehende Anwendung
+In Progress — technischer P0-Querschnitt als `MVP-102`. Die bestehende Anwendung
 wird systematisch auf app-lokale Implementierungen geprüft, die bereits durch
 die eigenen Toolkits abgedeckt sind oder als allgemein wiederverwendbare
 Funktion in das passende Toolkit gehören.
+
+### Umsetzungsstand (Stand 2026-06-28)
+
+- **Bestandsaufnahme erstellt:** Toolkit-Versionen erfasst, Duplikat-Funde über
+  drei Domänen (String/Datum, Zahl/Validierung, Datei/XML/Krypto) inventarisiert
+  und nach Fundklasse A–F klassifiziert in
+  [docs/toolkit-konsolidierung-2026-06.md](../toolkit-konsolidierung-2026-06.md).
+Detailinventar mit Begründungen:
+[docs/toolkit-konsolidierung-2026-06.md](../toolkit-konsolidierung-2026-06.md).
+
+**Migriert (Klasse B, getestet, PHPStan L8 + Pint grün):**
+
+- **Encoding/BOM** an 5 Stellen (CatalogCsv-/Datanorm-Import, HelpTopicLoader,
+  Toggl-CSV-Parser, RemoteSession-Spec) → `StringHelper::convertToUtf8`/`stripBom`.
+- **XML-Parsing** (GaebDaXmlParser, BMEcatImportService, ShopinfoParser) →
+  `XmlHelper::safeLoadString` — für die zuvor ungehärteten BMEcat/Shopinfo-Parser
+  zugleich ein XXE-Sicherheitsgewinn.
+- **CSV-Parsing** (CatalogCsvImportService) → `CSVDocumentParser::fromString`
+  (robustes Quoting/Multiline statt zeilenweisem `str_getcsv`).
+
+**Bewusst nicht migriert (Klasse D, nach Verhaltensvergleich):**
+
+- **Dezimal-Normalisierung** (~20 Stellen): `NumberHelper::normalizeDecimal` gibt
+  `float` zurück → verletzt die Decimal-String-Regel (bcmath); kein
+  string-rückgebendes Pendant. Optional als Klasse C: Toolkit ergänzen.
+- **Hash/`sha256`** (HashChained-Kette, Iban-Blindindex, ReleaseVerifier):
+  `CryptoHelper::secureHash` ist gesalzen/base64 → kein deterministisches Hex;
+  Migration würde Hash-Ketten brechen. `sodium_*` ebenso belassen.
+- **GAEB-Exporter** (DOMDocument): bewusste DOM-Konstruktion, kein Pendant.
+
+**Zurückgestellt:** JSON-`encode` (geänderte Fehlersemantik via
+`JSON_THROW_ON_ERROR`), ZIP/`ZipArchive` (AES-/Streaming-Äquivalenz für
+Export-/Compliance-Pfade erst belegen). DATANORM bleibt app-lokal (Satzformat,
+kein Standard-CSV).
+
+**Leitlinie:** keine dünnen Funktionsfassaden — Toolkits werden direkt an der
+Aufrufstelle genutzt.
 
 ## Ziel
 

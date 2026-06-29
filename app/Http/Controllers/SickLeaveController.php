@@ -181,7 +181,7 @@ class SickLeaveController extends Controller {
         $disk = (string) config('sickness.attachments.disk', 'local');
         $base = trim((string) config('sickness.attachments.path', 'sick-notes'), '/');
         $folder = $base . '/' . $sickLeave->user_id . '/' . $sickLeave->id;
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         $filename = Str::uuid()->toString() . '.' . $ext;
         $path = $file->storeAs($folder, $filename, $disk);
 

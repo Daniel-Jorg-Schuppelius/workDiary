@@ -44,7 +44,7 @@ class ImageMetaUploader {
             ]);
         }
 
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::IMAGE_EXTENSIONS, true)) {
             throw ValidationException::withMessages([
                 $fieldName => __('Nur JPG, PNG oder WEBP erlaubt.'),

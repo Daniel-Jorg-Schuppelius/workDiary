@@ -93,7 +93,7 @@ class AttachmentController extends Controller {
         ]);
 
         $file = $request->file('file');
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
         }

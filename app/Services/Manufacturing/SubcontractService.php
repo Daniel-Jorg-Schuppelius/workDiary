@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\ProcurementMode;
-use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, Organization, PurchaseOrder, Supplier, Warehouse};
+use App\Models\{ManufacturingOrder, ManufacturingOrderMaterial, Organization, PurchaseOrder, Supplier, Warehouse};
 use App\Services\Procurement\PurchaseOrderService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,9 +35,7 @@ class SubcontractService {
         if (! $warehouse instanceof Warehouse) {
             throw new RuntimeException('Fertigungsauftrag ohne Lagerort.');
         }
-        if (! $article instanceof Article) {
-            throw new RuntimeException('Fertigungsauftrag ohne Artikel.');
-        }
+        // $article ist über die nicht-nullbare FK article_id garantiert vorhanden.
         if (! $organization instanceof Organization) {
             throw new RuntimeException('Fertigungsauftrag ohne Organisation.');
         }

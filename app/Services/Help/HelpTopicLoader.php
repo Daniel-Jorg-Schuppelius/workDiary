@@ -10,6 +10,7 @@
 
 namespace App\Services\Help;
 
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\File;
 use League\CommonMark\GithubFlavoredMarkdownConverter;
 
@@ -178,7 +179,7 @@ class HelpTopicLoader {
      * @return array{0: array<string,mixed>, 1: string}
      */
     private function splitFrontMatter(string $raw): array {
-        $raw = preg_replace('/^\xEF\xBB\xBF/', '', $raw) ?? $raw;
+        $raw = StringHelper::stripBom($raw); // Feature 052
         if (! str_starts_with(ltrim($raw, "\r\n"), '---')) {
             return [[], $raw];
         }

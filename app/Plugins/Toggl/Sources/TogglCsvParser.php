@@ -13,6 +13,7 @@ namespace App\Plugins\Toggl\Sources;
 use App\Models\TogglPendingEntry;
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Parst einen Toggl „Detailed Report"-CSV-Export zu {@see TogglEntry}-DTOs.
@@ -42,8 +43,8 @@ class TogglCsvParser {
      * @return array<int, TogglEntry>
      */
     public function parse(string $content): array {
-        // BOM entfernen, in Zeilen zerlegen.
-        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content) ?? $content;
+        // BOM entfernen, in Zeilen zerlegen (Feature 052: Common-Toolkit).
+        $content = StringHelper::stripBom($content);
         $rows = $this->readRows($content);
         if (count($rows) < 2) {
             return [];

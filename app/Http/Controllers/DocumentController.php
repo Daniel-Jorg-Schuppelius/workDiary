@@ -272,7 +272,7 @@ class DocumentController extends Controller {
 
     /** Erweiterungs- und Server-MIME-Prüfung analog AttachmentController. */
     private function assertAllowedFile(UploadedFile $file): void {
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         $serverMime = $file->getMimeType() ?? '';
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true) || ! in_array($serverMime, self::ALLOWED_MIMES, true)) {
             throw \Illuminate\Validation\ValidationException::withMessages([

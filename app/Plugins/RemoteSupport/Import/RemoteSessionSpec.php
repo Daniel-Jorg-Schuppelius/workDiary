@@ -19,6 +19,7 @@ use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportService};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * CSV-Import-Spezifikation für Fernwartungs-Sitzungen (AnyDesk-Export), eingebunden
@@ -83,7 +84,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
     public function preprocessRaw(string $raw): string {
         // Excel-BOM und führende `sep=`-Hinweiszeile entfernen, damit der
         // generische CSV-Leser die echte Kopfzeile als Header erkennt.
-        $raw = (string) preg_replace('/^\xEF\xBB\xBF/', '', $raw);
+        $raw = StringHelper::stripBom($raw); // Feature 052
 
         return (string) preg_replace('/^\s*sep=.\s*\r?\n/i', '', $raw, 1);
     }

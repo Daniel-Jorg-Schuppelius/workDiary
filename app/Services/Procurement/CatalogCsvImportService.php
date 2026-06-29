@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\SupplierCatalogSource;
+use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Parsers\CSVDocumentParser;
 use RuntimeException;
 
 /**
@@ -109,31 +111,33 @@ class CatalogCsvImportService {
      * @return list<array<string, string>>
      */
     private function parse(SupplierCatalogSource $source, string $csv): array {
-        if (strtoupper($source->encoding) !== 'UTF-8') {
-            $converted = @mb_convert_encoding($csv, 'UTF-8', $source->encoding);
-            if (is_string($converted)) {
-                $csv = $converted;
-            }
-        }
-        $csv = preg_replace('/^\xEF\xBB\xBF/', '', $csv) ?? $csv; // BOM entfernen
-
-        $lines = preg_split('/\r\n|\r|\n/', trim($csv)) ?: [];
-        $lines = array_values(array_filter($lines, fn ($l) => trim($l) !== ''));
-        if ($lines === []) {
+        // Feature 052: Encoding-Konvertierung + BOM-Strip über das Common-Toolkit
+        // (mb/iconv-Fallback, alle BOM-Varianten) statt app-lokaler Helfer.
+        $csv = StringHelper::convertToUtf8($csv, $source->encoding);
+        $csv = StringHelper::stripBom($csv);
+        if (trim($csv) === '') {
             return [];
         }
 
+        // Feature 052: CSV über den Toolkit-Parser einlesen (logische Zeilen,
+        // RFC-konformes Quoting inkl. eingebetteter Trennzeichen/Zeilenumbrüche,
+        // Konsistenzprüfung) statt zeilenweisem str_getcsv.
         $delimiter = $source->delimiter !== '' ? $source->delimiter[0] : ';';
-        $header = $source->has_header
-            ? array_map(fn ($v): string => trim((string) $v), str_getcsv(array_shift($lines), $delimiter))
-            : array_map(fn (int $i): string => 'col' . $i, range(0, count(str_getcsv($lines[0], $delimiter)) - 1));
+        $document = CSVDocumentParser::fromString($csv, $delimiter, '"', $source->has_header);
+
+        // Spaltennamen aus der Kopfzeile bzw. synthetisch (col0..colN).
+        $columns = $source->has_header
+            ? array_map(static fn ($name): string => (string) $name, array_values($document->getColumnNames()))
+            : null;
 
         $records = [];
-        foreach ($lines as $line) {
-            $cells = str_getcsv($line, $delimiter);
+        foreach ($document->getRows() as $row) {
+            $values = array_map(static fn ($field): string => $field->getValue(), array_values($row->getFields()));
+            $names = $columns ?? array_map(static fn (int $i): string => 'col' . $i, array_keys($values));
+
             $record = [];
-            foreach ($header as $i => $name) {
-                $record[$name] = isset($cells[$i]) ? (string) $cells[$i] : '';
+            foreach ($names as $i => $name) {
+                $record[$name] = $values[$i] ?? '';
             }
             $records[] = $record;
         }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
+use CommonToolkit\Helper\Data\XmlHelper;
 use RuntimeException;
 use SimpleXMLElement;
 
@@ -55,9 +56,8 @@ class ShopinfoParser {
      * @throws RuntimeException Bei ungültigem XML.
      */
     public function parse(string $content): array {
-        $previous = libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($content);
-        libxml_use_internal_errors($previous);
+        // Feature 052: XXE-sicheres Laden über das Common-Toolkit (LIBXML_NONET).
+        $xml = XmlHelper::safeLoadString($content);
 
         if (! $xml instanceof SimpleXMLElement) {
             throw new RuntimeException((string) __('procurement.catalog.error.invalid_xml'));

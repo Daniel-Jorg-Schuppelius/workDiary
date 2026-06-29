@@ -55,7 +55,7 @@ class AttachmentController extends Controller {
 
         $request->validate(['file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)]]);
         $file = $request->file('file');
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
             return response()->json(['message' => __('Dateityp nicht erlaubt.')], 422);
         }

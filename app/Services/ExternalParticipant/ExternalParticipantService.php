@@ -158,7 +158,7 @@ class ExternalParticipantService {
             return ['ok' => false, 'error' => 'unsupported'];
         }
 
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::UPLOAD_EXTENSIONS, true)) {
             return ['ok' => false, 'error' => 'type'];
         }

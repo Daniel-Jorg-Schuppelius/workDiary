@@ -156,7 +156,7 @@ class PermitController extends Controller {
             return __('permit.evidence.too_large');
         }
 
-        $ext = strtolower($file->getClientOriginalExtension() ?: $file->extension());
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         $mime = $file->getMimeType() ?? '';
         if (! in_array($ext, self::EVIDENCE_EXTENSIONS, true) || ! in_array($mime, self::EVIDENCE_MIMES, true)) {
             return __('permit.evidence.invalid_type');

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\SupplierCatalogSource;
+use CommonToolkit\Helper\Data\StringHelper;
 use RuntimeException;
 
 /**
@@ -47,12 +48,8 @@ class DatanormImportService {
      * @return list<array<string, mixed>>
      */
     private function parse(SupplierCatalogSource $source, string $content): array {
-        if (strtoupper($source->encoding) !== 'UTF-8') {
-            $converted = @mb_convert_encoding($content, 'UTF-8', $source->encoding);
-            if (is_string($converted)) {
-                $content = $converted;
-            }
-        }
+        // Feature 052: Encoding-Konvertierung über das Common-Toolkit.
+        $content = StringHelper::convertToUtf8($content, $source->encoding);
 
         $lines = preg_split('/\r\n|\r|\n/', trim($content)) ?: [];
         $records = [];
