@@ -110,4 +110,47 @@ class DateRangeContextTest extends TestCase {
         $this->assertSame('2026-02-15', $range['from']->toDateString());
         $this->assertSame('2026-05-15', $range['to']->toDateString());
     }
+
+    public function test_this_quarter_preset(): void {
+        // 2026-05-15 liegt in Q2 (Apr–Jun).
+        $ctx = $this->app->make(DateRangeContext::class);
+        $ctx->set(DateRangeContext::PRESET_THIS_QUARTER);
+        $range = $ctx->current();
+
+        $this->assertSame(DateRangeContext::PRESET_THIS_QUARTER, $range['preset']);
+        $this->assertSame('2026-04-01', $range['from']->toDateString());
+        $this->assertSame('2026-06-30', $range['to']->toDateString());
+        $this->assertSame('quarter', $range['unit']);
+    }
+
+    public function test_last_quarter_preset(): void {
+        $ctx = $this->app->make(DateRangeContext::class);
+        $ctx->set(DateRangeContext::PRESET_LAST_QUARTER);
+        $range = $ctx->current();
+
+        $this->assertSame('2026-01-01', $range['from']->toDateString());
+        $this->assertSame('2026-03-31', $range['to']->toDateString());
+        $this->assertSame('quarter', $range['unit']);
+    }
+
+    public function test_quarter_shifts_by_whole_quarter(): void {
+        $ctx = $this->app->make(DateRangeContext::class);
+        $ctx->set(DateRangeContext::PRESET_THIS_QUARTER);
+        $ctx->shift(-1);
+        $range = $ctx->current();
+
+        // Q2 → Q1; als Custom persistiert, aber wieder als Quartal erkannt.
+        $this->assertSame('2026-01-01', $range['from']->toDateString());
+        $this->assertSame('2026-03-31', $range['to']->toDateString());
+        $this->assertSame('quarter', $range['unit']);
+        $this->assertSame(DateRangeContext::PRESET_LAST_QUARTER, $range['effectivePreset']);
+    }
+
+    public function test_custom_quarter_range_detected_as_preset(): void {
+        $ctx = $this->app->make(DateRangeContext::class);
+        $ctx->set(DateRangeContext::PRESET_CUSTOM, '2026-04-01', '2026-06-30');
+        $range = $ctx->current();
+
+        $this->assertSame(DateRangeContext::PRESET_THIS_QUARTER, $range['effectivePreset']);
+    }
 }

@@ -27,6 +27,10 @@ class DateRangeContext {
 
     public const PRESET_LAST_MONTH = 'last_month';
 
+    public const PRESET_THIS_QUARTER = 'this_quarter';
+
+    public const PRESET_LAST_QUARTER = 'last_quarter';
+
     public const PRESET_THIS_YEAR = 'this_year';
 
     public const PRESET_LAST_7_DAYS = 'last_7_days';
@@ -43,6 +47,8 @@ class DateRangeContext {
         self::PRESET_THIS_WEEK,
         self::PRESET_THIS_MONTH,
         self::PRESET_LAST_MONTH,
+        self::PRESET_THIS_QUARTER,
+        self::PRESET_LAST_QUARTER,
         self::PRESET_THIS_YEAR,
         self::PRESET_LAST_7_DAYS,
         self::PRESET_LAST_30_DAYS,
@@ -106,6 +112,8 @@ class DateRangeContext {
             self::PRESET_THIS_WEEK,
             self::PRESET_THIS_MONTH,
             self::PRESET_LAST_MONTH,
+            self::PRESET_THIS_QUARTER,
+            self::PRESET_LAST_QUARTER,
             self::PRESET_THIS_YEAR,
             self::PRESET_LAST_7_DAYS,
             self::PRESET_LAST_30_DAYS,
@@ -150,6 +158,10 @@ class DateRangeContext {
                 $newFrom = $from->addMonthsNoOverflow($direction)->startOfMonth();
                 $newTo = $newFrom->endOfMonth();
                 break;
+            case 'quarter':
+                $newFrom = $from->addQuarters($direction)->startOfQuarter();
+                $newTo = $newFrom->endOfQuarter();
+                break;
             case 'year':
                 $newFrom = $from->addYears($direction)->startOfYear();
                 $newTo = $newFrom->endOfYear();
@@ -175,6 +187,9 @@ class DateRangeContext {
             case self::PRESET_THIS_MONTH:
             case self::PRESET_LAST_MONTH:
                 return 'month';
+            case self::PRESET_THIS_QUARTER:
+            case self::PRESET_LAST_QUARTER:
+                return 'quarter';
             case self::PRESET_THIS_YEAR:
                 return 'year';
         }
@@ -191,6 +206,9 @@ class DateRangeContext {
         }
         if ($from->isSameDay($from->startOfMonth()) && $to->isSameDay($from->endOfMonth())) {
             return 'month';
+        }
+        if ($from->isSameDay($from->startOfQuarter()) && $to->isSameDay($from->endOfQuarter())) {
+            return 'quarter';
         }
         if ($from->isSameDay($from->startOfYear()) && $to->isSameDay($from->endOfYear())) {
             return 'year';
@@ -244,6 +262,11 @@ class DateRangeContext {
                 $now->subMonthNoOverflow()->startOfMonth(),
                 $now->subMonthNoOverflow()->endOfMonth(),
             ],
+            self::PRESET_THIS_QUARTER => [$now->startOfQuarter(), $now->endOfQuarter()],
+            self::PRESET_LAST_QUARTER => [
+                $now->subQuarters(1)->startOfQuarter(),
+                $now->subQuarters(1)->endOfQuarter(),
+            ],
             self::PRESET_THIS_YEAR => [$now->startOfYear(), $now->endOfYear()],
             self::PRESET_LAST_7_DAYS => [$now->subDays(6)->startOfDay(), $now->endOfDay()],
             self::PRESET_LAST_30_DAYS => [$now->subDays(29)->startOfDay(), $now->endOfDay()],
@@ -269,6 +292,8 @@ class DateRangeContext {
             self::PRESET_THIS_WEEK => __('Diese Woche'),
             self::PRESET_THIS_MONTH => __('Dieser Monat'),
             self::PRESET_LAST_MONTH => __('Letzter Monat'),
+            self::PRESET_THIS_QUARTER => __('Dieses Quartal'),
+            self::PRESET_LAST_QUARTER => __('Letztes Quartal'),
             self::PRESET_THIS_YEAR => __('Dieses Jahr'),
             self::PRESET_LAST_7_DAYS => __('Letzte 7 Tage'),
             self::PRESET_LAST_30_DAYS => __('Letzte 30 Tage'),

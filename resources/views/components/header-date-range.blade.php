@@ -12,6 +12,8 @@
         'last_30_days' => __('Letzte 30 Tage'),
         'this_month' => __('Dieser Monat'),
         'last_month' => __('Letzter Monat'),
+        'this_quarter' => __('Dieses Quartal'),
+        'last_quarter' => __('Letztes Quartal'),
         'last_90_days' => __('Letzte 90 Tage'),
         'this_year' => __('Dieses Jahr'),
     ];
@@ -115,6 +117,8 @@
                         this_week: @json(__('Diese Woche')),
                         this_month: @json(__('Dieser Monat')),
                         last_month: @json(__('Letzter Monat')),
+                        this_quarter: @json(__('Dieses Quartal')),
+                        last_quarter: @json(__('Letztes Quartal')),
                         this_year: @json(__('Dieses Jahr')),
                         last_7_days: @json(__('Letzte 7 Tage')),
                         last_30_days: @json(__('Letzte 30 Tage')),
@@ -178,6 +182,11 @@
                         var monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                         var lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
                         var lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+                        var quarterStartMonth = Math.floor(today.getMonth() / 3) * 3;
+                        var quarterStart = new Date(today.getFullYear(), quarterStartMonth, 1);
+                        var quarterEnd = new Date(today.getFullYear(), quarterStartMonth + 3, 0);
+                        var lastQuarterStart = new Date(today.getFullYear(), quarterStartMonth - 3, 1);
+                        var lastQuarterEnd = new Date(today.getFullYear(), quarterStartMonth, 0);
                         var yearStart = new Date(today.getFullYear(), 0, 1);
                         var yearEnd = new Date(today.getFullYear(), 11, 31);
                         function minusDays(n) {
@@ -190,6 +199,8 @@
                             this_week: [localMonday(today), localSunday(today)],
                             this_month: [monthStart, monthEnd],
                             last_month: [lastMonthStart, lastMonthEnd],
+                            this_quarter: [quarterStart, quarterEnd],
+                            last_quarter: [lastQuarterStart, lastQuarterEnd],
                             this_year: [yearStart, yearEnd],
                             last_7_days: [minusDays(6), today],
                             last_30_days: [minusDays(29), today],
