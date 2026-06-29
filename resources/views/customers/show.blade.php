@@ -314,15 +314,11 @@
         @endcan
     @endif
 
-    @include('partials._local_invoices', [
+    @include('partials._documents', [
         'invoices' => $localInvoices,
-        'range' => $lexofficeVoucherRange,
-    ])
-
-    @include('partials._lexoffice_vouchers', [
+        'vouchers' => $lexofficeVoucherCache,
         'plugin' => $lexofficePlugin,
         'contactRef' => $lexofficeContactRef,
-        'vouchers' => $lexofficeVoucherCache,
         'range' => $lexofficeVoucherRange,
         'syncRoute' => route('customers.lexoffice.sync-vouchers', $customer),
     ])

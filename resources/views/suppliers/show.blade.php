@@ -113,11 +113,13 @@
     <x-attachments-section :attachments="$attachments" upload-type="supplier"
                            :upload-id="$supplier->sqid" :can-upload="auth()->user()->can('update', $supplier)" />
 
-    {{-- Lexoffice-Belege (Rechnungen/Aufträge/Angebote …), zeitraumgefiltert --}}
-    @include('partials._lexoffice_vouchers', [
+    {{-- Rechnungen & Belege (Eingangsrechnungen/Aufträge/Angebote …), zeitraumgefiltert.
+         Lieferanten haben keine lokalen Rechnungen → nur Lexoffice-Belege. --}}
+    @include('partials._documents', [
+        'invoices' => collect(),
+        'vouchers' => $lexofficeVoucherCache,
         'plugin' => $lexofficePlugin,
         'contactRef' => $lexofficeContactRef,
-        'vouchers' => $lexofficeVoucherCache,
         'range' => $lexofficeVoucherRange,
         'syncRoute' => route('suppliers.lexoffice.sync-vouchers', $supplier),
     ])
