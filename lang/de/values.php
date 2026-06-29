@@ -33,6 +33,7 @@ return [
 
     // Lexoffice voucher types
     'invoice'                => 'Rechnung',
+    'credit_note'            => 'Gutschrift',
     'salesinvoice'           => 'Rechnung',
     'purchaseinvoice'        => 'Eingangsrechnung',
     'creditnote'             => 'Gutschrift',

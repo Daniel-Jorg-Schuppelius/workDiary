@@ -314,6 +314,11 @@
         @endcan
     @endif
 
+    @include('partials._local_invoices', [
+        'invoices' => $localInvoices,
+        'range' => $lexofficeVoucherRange,
+    ])
+
     @include('partials._lexoffice_vouchers', [
         'plugin' => $lexofficePlugin,
         'contactRef' => $lexofficeContactRef,

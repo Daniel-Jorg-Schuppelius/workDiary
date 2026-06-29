@@ -22,6 +22,7 @@ return [
 
     // Lexoffice voucher types
     'invoice'                => 'Invoice',
+    'credit_note'            => 'Credit note',
     'salesinvoice'           => 'Sales invoice',
     'purchaseinvoice'        => 'Purchase invoice',
     'creditnote'             => 'Credit note',

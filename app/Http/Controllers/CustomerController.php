@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveCustomerRequest;
-use App\Models\{AuditLog, Customer, ExternalReference, LexofficeVoucher, Tag, TimeEntry, User};
+use App\Models\{AuditLog, Customer, ExternalReference, Invoice, LexofficeVoucher, Tag, TimeEntry, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -107,6 +107,20 @@ class CustomerController extends Controller {
         // Header-Zeitraum eingrenzen — wie die übrigen zeitraumbezogenen Ansichten.
         $lexofficeVoucherRange = $this->globalDateRange();
 
+        // Lokale Rechnungen (App\Models\Invoice) desselben Kunden im Header-Zeitraum.
+        // Zusammen mit den Lexoffice-Belegen ergibt das die Rechnungssicht.
+        $localInvoices = Gate::allows('viewAny', Invoice::class)
+            ? Invoice::query()
+            ->where('customer_id', $customer->getKey())
+            ->whereBetween('issued_on', [
+                $lexofficeVoucherRange['from']->startOfDay(),
+                $lexofficeVoucherRange['to']->endOfDay(),
+            ])
+            ->orderByDesc('issued_on')
+            ->limit(500)
+            ->get()
+            : collect();
+
         return view('customers.show', [
             'customer' => $customer,
             'projects' => $projects,
@@ -119,6 +133,7 @@ class CustomerController extends Controller {
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVouchers' => $lexofficeVouchers,
             'lexofficeVoucherRange' => $lexofficeVoucherRange,
+            'localInvoices' => $localInvoices,
             'lexofficeVoucherCache' => $lexoffice
                 ? LexofficeVoucher::query()
                 ->where('customer_id', $customer->getKey())

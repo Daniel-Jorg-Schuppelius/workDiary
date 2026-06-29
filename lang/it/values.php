@@ -19,6 +19,7 @@ return [
     'transferred' => 'Trasferita',
     'paidoff' => 'Saldata',
     'invoice' => 'Fattura',
+    'credit_note' => 'Nota di credito',
     'salesinvoice' => 'Fattura di vendita',
     'purchaseinvoice' => 'Fattura di acquisto',
     'creditnote' => 'Nota di credito',
