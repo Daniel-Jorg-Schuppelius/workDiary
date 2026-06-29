@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, LexofficeVoucher, Supplier, User};
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -159,22 +160,16 @@ class LexofficeVoucherController extends Controller {
             return back()->with('error', __('Lexoffice ist für diese Organisation nicht konfiguriert.'));
         }
 
-        $organization = $user->organization;
-        if ($organization === null) {
+        if ($user->organization === null) {
             return back()->with('error', __('Keine Organisation zugeordnet.'));
         }
 
-        try {
-            $result = (new \App\Plugins\Lexoffice\LexofficeVoucherSync($config['api_key'], $config['base_url']))->sync($organization);
+        // Voll-Sync über ALLE Kontakte kann viele API-Calls bedeuten und das
+        // Web-Timeout überschreiten → im Hintergrund per Queue ausführen.
+        // ShouldBeUnique verhindert Parallelläufe (Klick + Cron) je Organisation.
+        SyncVouchersJob::dispatch((int) $user->organization_id);
 
-            return back()->with('success', __('Sync abgeschlossen: :created neu, :updated aktualisiert, :archived archiviert.', [
-                'created' => $result['created'],
-                'updated' => $result['updated'],
-                'archived' => $result['archived'],
-            ]));
-        } catch (\Throwable $e) {
-            return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => $e->getMessage()]));
-        }
+        return back()->with('info', __('Beleg-Sync gestartet — läuft im Hintergrund und ist in Kürze aktuell.'));
     }
 
     /**
