@@ -164,7 +164,7 @@ class DiaryController extends Controller {
             'attachments.uploader:id,name',
             'lifecycleEvents.actor:id,name',
             'protocols',
-            'entryType:id,slug,name',
+            'entryType:id,slug,label',
         ]);
 
         // Datenqualität (Feature 024): rein lesende Hinweise auf fehlende
