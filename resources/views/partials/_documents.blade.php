@@ -75,7 +75,12 @@
     $byType = $rows->groupBy('type')->sortBy(fn($g, $type) => ($i = array_search($type, $typeOrder, true)) === false ? 99 : $i);
 
     $rows = $rows->sortByDesc(fn($r) => optional($r['date'])->format('Y-m-d') ?? '');
-    $invoiceSum = $rows->whereIn('type', ['invoice', 'salesinvoice'])->sum('amount');
+    // Rechnungssumme: Ausgangs- (invoice/salesinvoice) UND Eingangsrechnungen
+    // (purchaseinvoice, z. B. bei Lieferanten); stornierte Belege zählen nicht.
+    $invoiceSum = $rows
+        ->whereIn('type', ['invoice', 'salesinvoice', 'purchaseinvoice'])
+        ->whereNotIn('status', ['voided', 'cancelled'])
+        ->sum('amount');
 @endphp
 
 @if ($lexofficeConnected || $rows->isNotEmpty() || $alwaysShow)
