@@ -110,7 +110,23 @@
         @endif
 
         @if ($rows->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Keine Belege im gewählten Zeitraum.') }}</p>
+            <x-empty-state
+                icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                :title="__('Keine Belege im gewählten Zeitraum')"
+                :message="$plugin && $plugin->isEnabled() && ! $contactRef
+                    ? __('Kein Lexoffice-Kontakt verknüpft — verknüpfte Belege erscheinen erst nach Verknüpfung und Synchronisierung.')
+                    : __('Für den im Kopf gewählten Zeitraum (:range) wurden keine Rechnungen oder Belege gefunden.', ['range' => $range['label']])">
+                @isset($syncRoute)
+                    @if ($lexofficeConnected)
+                        <x-slot:action>
+                            <form method="POST" action="{{ $syncRoute }}">
+                                @csrf
+                                <x-button size="sm" tone="ghost" icon="sync" type="submit">{{ __('Belege synchronisieren') }}</x-button>
+                            </form>
+                        </x-slot:action>
+                    @endif
+                @endisset
+            </x-empty-state>
         @else
             <x-table table-sort="client">
                 <x-slot:head>
