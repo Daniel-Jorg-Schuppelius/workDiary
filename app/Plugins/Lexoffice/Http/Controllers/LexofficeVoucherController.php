@@ -60,9 +60,24 @@ class LexofficeVoucherController extends Controller {
             ->orderByDesc('id');
 
         if ($search !== '') {
-            $query->where(function (Builder $q) use ($search): void {
-                $q->where('voucher_number', 'like', "%{$search}%")
-                    ->orWhere('voucher_type', 'like', "%{$search}%");
+            $like = "%{$search}%";
+            // Deutsche Betragseingabe (1.167,08) → 1167.08 für den Spaltenvergleich.
+            $amount = str_replace(',', '.', str_replace(['.', ' '], '', $search));
+            $datePatterns = $this->dateLikePatterns($search);
+
+            $query->where(function (Builder $q) use ($like, $amount, $datePatterns): void {
+                $q->where('voucher_number', 'like', $like)
+                    ->orWhere('voucher_type', 'like', $like)
+                    ->orWhereHas('customer', fn($c) => $c->where('name', 'like', $like))
+                    ->orWhereHas('supplier', fn($s) => $s->where('name', 'like', $like));
+
+                if (is_numeric($amount)) {
+                    $q->orWhere('total_amount', 'like', "%{$amount}%");
+                }
+
+                foreach ($datePatterns as $pattern) {
+                    $q->orWhere('voucher_date', 'like', $pattern);
+                }
             });
         }
 
@@ -99,6 +114,35 @@ class LexofficeVoucherController extends Controller {
             'rangeLabel' => $range['label'],
             'canSync' => $user->can(Permission::VoucherLexofficeSync->value),
         ]);
+    }
+
+    /**
+     * Übersetzt eine deutsche/ISO/teilweise Datumseingabe in LIKE-Muster gegen
+     * die (als `Y-m-d` gespeicherte) Spalte `voucher_date`. Unterstützt:
+     * `29.06.2026`, `06.2026`, `2026`, `29.06` (jahresunabhängig) sowie ISO.
+     *
+     * @return list<string>
+     */
+    private function dateLikePatterns(string $search): array {
+        $s = trim($search);
+
+        if (preg_match('/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/', $s, $m)) {
+            return [sprintf('%04d-%02d-%02d%%', (int) $m[3], (int) $m[2], (int) $m[1])];
+        }
+        if (preg_match('/^(\d{1,2})\.(\d{4})$/', $s, $m)) {
+            return [sprintf('%04d-%02d%%', (int) $m[2], (int) $m[1])];
+        }
+        if (preg_match('/^(\d{4})$/', $s, $m)) {
+            return [sprintf('%04d%%', (int) $m[1])];
+        }
+        if (preg_match('/^(\d{1,2})\.(\d{1,2})$/', $s, $m)) {
+            return [sprintf('%%-%02d-%02d', (int) $m[2], (int) $m[1])];
+        }
+        if (preg_match('/^\d{4}-\d{2}(-\d{2})?$/', $s)) {
+            return [$s . '%'];
+        }
+
+        return [];
     }
 
     /**
