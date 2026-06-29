@@ -5,6 +5,7 @@
     'tone'    => 'ghost',
     'compact' => false,
     'framed'  => false,
+    'wide'    => false,
 ])
 
 {{--
@@ -66,7 +67,7 @@
     @endif
 
     @if ($message)
-        <p class="max-w-prose text-sm text-base-content/70">{{ $message }}</p>
+        <p class="{{ $wide ? 'max-w-3xl' : 'max-w-prose' }} text-sm text-base-content/70">{{ $message }}</p>
     @endif
 
     @isset($action)

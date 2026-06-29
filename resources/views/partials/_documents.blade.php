@@ -110,7 +110,7 @@
         @endif
 
         @if ($rows->isEmpty())
-            <x-empty-state
+            <x-empty-state wide
                 icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
                 :title="__('Keine Belege im gewählten Zeitraum')"
                 :message="$plugin && $plugin->isEnabled() && ! $contactRef
