@@ -63,7 +63,7 @@
                 </a>
                 <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                        <span data-theme-label class="text-base leading-none">◐</span>
+                        <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
                     </button>
                     <x-icon-btn icon="login" tone="primary" size="sm" :href="route('login')" show-label>{{ __('Anmelden') }}</x-icon-btn>
                 </div>
@@ -160,7 +160,8 @@
                     root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
                     localStorage.setItem('workDiaryTheme', theme);
                     if (label) {
-                        label.textContent = theme === 'corporate' ? '☾' : '◐';
+                        // Material-Symbol: hell → Mond (Klick → dunkel), dunkel → Sonne.
+                        label.textContent = theme === 'corporate' ? 'dark_mode' : 'light_mode';
                     }
                 }
 
