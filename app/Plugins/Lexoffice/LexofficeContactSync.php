@@ -426,6 +426,20 @@ class LexofficeContactSync {
     }
 
     /**
+     * Normalisiert leere Strings zu null — Pflicht für `encrypted`-Felder, da
+     * Laravel einen leeren String zu entschlüsseln versucht und mit
+     * "The payload is invalid." abbricht.
+     */
+    private function nullIfBlank(mixed $value): ?string {
+        if ($value === null) {
+            return null;
+        }
+        $value = (string) $value;
+
+        return $value === '' ? null : $value;
+    }
+
+    /**
      * Spiegelt die Lexoffice-Adressen (billing/shipping) in contact_addresses.
      *
      * @param  array<string, mixed>  $remote
@@ -446,10 +460,13 @@ class LexofficeContactSync {
                     ['kind' => $kind, 'external_id' => $kind . '-' . $i],
                     [
                         'organization_id' => $orgId,
-                        'supplement' => $addr['supplement'] ?? null,
-                        'street' => $addr['street'] ?? null,
-                        'zip' => $addr['zip'] ?? null,
-                        'city' => $addr['city'] ?? null,
+                        // Verschlüsselte Felder NIE als leeren String speichern:
+                        // '' lässt sich nicht entschlüsseln und sprengt sonst
+                        // jeden späteren Lese-/Save-Zugriff (DecryptException).
+                        'supplement' => $this->nullIfBlank($addr['supplement'] ?? null),
+                        'street' => $this->nullIfBlank($addr['street'] ?? null),
+                        'zip' => $this->nullIfBlank($addr['zip'] ?? null),
+                        'city' => $this->nullIfBlank($addr['city'] ?? null),
                         'country_code' => $addr['countryCode'] ?? null,
                         'is_primary' => $i === 0 && $kind === ContactAddress::KIND_BILLING,
                     ],
