@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{IntegrationInboxItem, Project, User};
+use App\Models\{IntegrationInboxItem, Organization, Project, User};
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -28,6 +28,7 @@ use Illuminate\View\View;
 class IntegrationInboxController extends Controller {
     public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers): View {
         $user = $this->authorizeBilling();
+        $organization = $this->organizationOf($user);
 
         $status = (string) $request->input('status', IntegrationInboxItem::STATUS_OPEN);
         $caseType = (string) $request->input('case', 'all');
@@ -59,7 +60,7 @@ class IntegrationInboxController extends Controller {
                 }
                 $booker = $bookers->for($pid);
                 if ($booker !== null) {
-                    $groups = $groups->concat($booker->groups($user->organization));
+                    $groups = $groups->concat($booker->groups($organization));
                 }
             }
         }
@@ -102,7 +103,8 @@ class IntegrationInboxController extends Controller {
 
         // Validierung + Ziel-Auflösung + Buchung liegen im Booker; der Controller
         // bleibt plugin-agnostisch.
-        $result = DB::transaction(fn(): array => $booker->book($user->organization, (string) $data['group_key'], $data));
+        $organization = $this->organizationOf($user);
+        $result = DB::transaction(fn(): array => $booker->book($organization, (string) $data['group_key'], $data));
 
         return back()->with('success', __(':created gebucht, :skipped bereits vorhanden.', $result));
     }
@@ -117,7 +119,7 @@ class IntegrationInboxController extends Controller {
         $booker = $bookers->for($data['plugin']);
         abort_if($booker === null, 404);
 
-        $count = $booker->dismiss($user->organization, (string) $data['group_key']);
+        $count = $booker->dismiss($this->organizationOf($user), (string) $data['group_key']);
 
         return back()->with('success', __(':count Eintrag/Einträge verworfen.', ['count' => $count]));
     }
@@ -137,6 +139,7 @@ class IntegrationInboxController extends Controller {
             }
             /** @var array<string, string> $options */
             $options = [];
+            /** @var class-string<Model> $type */
             $rows = (new $type)->newQuery()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $user->organization_id)
@@ -202,6 +205,7 @@ class IntegrationInboxController extends Controller {
             return null;
         }
 
+        /** @var class-string<Model> $class */
         return (new $class)->resolveRouteBinding($sqid);
     }
 
@@ -212,7 +216,7 @@ class IntegrationInboxController extends Controller {
      * @return list<array{sqid: string, customer_id: int, name: string}>
      */
     private function projectOptions(User $user): array {
-        return Project::query()
+        $rows = Project::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $user->organization_id)
             ->whereNotNull('customer_id')
@@ -223,6 +227,8 @@ class IntegrationInboxController extends Controller {
                 'customer_id' => (int) $p->customer_id,
                 'name' => (string) $p->name,
             ])->all();
+
+        return array_values($rows);
     }
 
     private function authorizeBilling(): User {
@@ -231,6 +237,13 @@ class IntegrationInboxController extends Controller {
         abort_unless($user->canManageBilling(), 403);
 
         return $user;
+    }
+
+    private function organizationOf(User $user): Organization {
+        $organization = $user->organization;
+        abort_unless($organization instanceof Organization, 403);
+
+        return $organization;
     }
 
     private function guard(IntegrationInboxItem $item): void {

@@ -38,6 +38,10 @@ class ExactField extends MatchStrategy {
         // replace/lower/trim sind in SQLite (Dev) wie MySQL (Prod) vorhanden.
         $column = $this->safeColumn();
 
+        // $column ist über safeColumn() auf [a-z0-9_] beschränkt (injection-sicher);
+        // der Wert läuft als Bindung. PHPStan kann die literal-string-Eigenschaft
+        // nach der Laufzeit-Sanitisierung nicht beweisen.
+        // @phpstan-ignore argument.type
         return $base->whereRaw("replace(lower(trim($column)), ' ', '') = ?", [$value]);
     }
 

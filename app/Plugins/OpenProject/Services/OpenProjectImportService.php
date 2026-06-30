@@ -224,16 +224,21 @@ class OpenProjectImportService {
             ->groupBy('group_key')
             ->map(function ($group, $groupKey): array {
                 /** @var Collection<int, IntegrationInboxItem> $group */
-                $snap = $group->first()?->remote_snapshot ?? [];
+                $first = $group->first();
+                $snap = $first !== null ? $first->remote_snapshot : [];
+                /** @var \Illuminate\Support\Carbon|null $firstSeen */
+                $firstSeen = $group->min('occurred_at');
+                /** @var \Illuminate\Support\Carbon|null $lastSeen */
+                $lastSeen = $group->max('occurred_at');
 
                 return [
                     'group_key' => (string) $groupKey,
-                    'project_external_id' => $snap['project_external_id'] ?? null,
-                    'project_name' => $snap['project_name'] ?? null,
+                    'project_external_id' => isset($snap['project_external_id']) ? (string) $snap['project_external_id'] : null,
+                    'project_name' => isset($snap['project_name']) ? (string) $snap['project_name'] : null,
                     'count' => $group->count(),
                     'minutes' => (int) $group->sum(fn(IntegrationInboxItem $i): int => (int) (($i->remote_snapshot['minutes'] ?? 0))),
-                    'first_seen' => $group->min('occurred_at'),
-                    'last_seen' => $group->max('occurred_at'),
+                    'first_seen' => $firstSeen,
+                    'last_seen' => $lastSeen,
                 ];
             })
             ->values();

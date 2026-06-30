@@ -31,7 +31,8 @@ class RemoteSupportGroupBooker implements InboxGroupBooker {
     public function __construct(private readonly RemoteSupportService $service) {}
 
     public function groups(Organization $organization): Collection {
-        return $this->service->openPendingGroups($organization)->map(function (object $group): array {
+        /** @var Collection<int, array<string, mixed>> $groups */
+        $groups = $this->service->openPendingGroups($organization)->map(function (object $group): array {
             return [
                 'plugin_id' => RemoteSupportPlugin::ID,
                 'form' => 'asset',
@@ -45,6 +46,8 @@ class RemoteSupportGroupBooker implements InboxGroupBooker {
                 'last_seen' => $group->last_seen,
             ];
         })->values();
+
+        return $groups;
     }
 
     public function rules(): array {
@@ -75,6 +78,6 @@ class RemoteSupportGroupBooker implements InboxGroupBooker {
     private function split(string $groupKey): array {
         $parts = explode('|', $groupKey, 2);
 
-        return [$parts[0] ?? '', $parts[1] ?? ''];
+        return [$parts[0], $parts[1] ?? ''];
     }
 }

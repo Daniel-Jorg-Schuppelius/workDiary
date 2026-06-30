@@ -84,7 +84,7 @@ class LocationController extends Controller {
      * Session/Sanctum, nicht über ein Geräte-Token.
      */
     public function stamp(Request $request): JsonResponse {
-        $user = $request->user();
+        $user = $this->authUser();
 
         if (! $this->features->isEnabled(self::MODULE)) {
             return response()->json(['error' => 'module_disabled'], 403);

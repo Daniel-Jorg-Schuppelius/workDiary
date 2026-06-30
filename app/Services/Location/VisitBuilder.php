@@ -113,7 +113,7 @@ class VisitBuilder {
 
         // Kein Match: kurzen Aussetzer tolerieren, sonst Besuch beenden.
         $gapMinutes = $open->left_at ? $open->left_at->diffInMinutes($at) : 0;
-        $gapMerge = $open->geofence?->gap_merge_minutes ?? 0;
+        $gapMerge = $open->geofence->gap_merge_minutes ?? 0;
 
         if ($gapMinutes > $gapMerge) {
             $this->closeVisit($open);
@@ -150,7 +150,7 @@ class VisitBuilder {
         $leftAt = $visit->left_at ?? $enteredAt;
         $duration = (int) $enteredAt->diffInMinutes($leftAt);
 
-        $minDwell = $visit->geofence?->min_dwell_minutes ?? 0;
+        $minDwell = $visit->geofence->min_dwell_minutes ?? 0;
         if ($duration < $minDwell) {
             $visit->delete();
 

@@ -30,7 +30,8 @@ class OpenProjectGroupBooker implements InboxGroupBooker {
     public function __construct(private readonly OpenProjectImportService $service) {}
 
     public function groups(Organization $organization): Collection {
-        return $this->service->openInboxGroups($organization)->map(fn(array $group): array => [
+        /** @var Collection<int, array<string, mixed>> $groups */
+        $groups = $this->service->openInboxGroups($organization)->map(fn(array $group): array => [
             'plugin_id' => OpenProjectPlugin::ID,
             'form' => 'project',
             'group_key' => $group['group_key'],
@@ -41,6 +42,8 @@ class OpenProjectGroupBooker implements InboxGroupBooker {
             'last_seen' => $group['last_seen'],
             'suggested_project_sqid' => null,
         ])->values();
+
+        return $groups;
     }
 
     public function rules(): array {

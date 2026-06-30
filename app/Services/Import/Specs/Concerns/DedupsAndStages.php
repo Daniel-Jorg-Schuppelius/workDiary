@@ -172,6 +172,9 @@ trait DedupsAndStages {
         return $value !== '' ? $value : null;
     }
 
+    /**
+     * @param  class-string<Model>  $modelClass
+     */
     private function resolveByExternalId(Organization $organization, string $externalId, string $modelClass, string $externalType): ?Model {
         $morph = (new $modelClass)->getMorphClass();
         $ref = ExternalReference::query()

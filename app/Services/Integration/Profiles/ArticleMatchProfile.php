@@ -35,9 +35,12 @@ class ArticleMatchProfile extends AbstractMatchProfile {
 
     public function candidates(Organization $organization): Builder {
         // Article kennt kein archived_at — eigene Basis-Query ohne Archiv-Filter.
-        return Article::query()
+        /** @var Builder<Model> $query */
+        $query = Article::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id);
+
+        return $query;
     }
 
     public function display(array $mapped): array {

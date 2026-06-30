@@ -28,7 +28,7 @@ class LocationReviewController extends Controller {
 
     public function index(Request $request): View {
         $entries = LocationPendingEntry::query()
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', $this->authUser()->id)
             ->where('status', LocationPendingEntry::STATUS_OPEN)
             ->with(['customer', 'project'])
             ->orderBy('started_at')
@@ -40,7 +40,7 @@ class LocationReviewController extends Controller {
     public function confirm(Request $request, LocationPendingEntry $entry): RedirectResponse {
         $this->authorizeOwnership($request, $entry);
 
-        $this->materializer->confirm($entry, $request->user());
+        $this->materializer->confirm($entry, $this->authUser());
 
         return redirect()->route('location.review.index')
             ->with('success', __('Zeitbuchung erstellt.'));
@@ -49,13 +49,13 @@ class LocationReviewController extends Controller {
     public function dismiss(Request $request, LocationPendingEntry $entry): RedirectResponse {
         $this->authorizeOwnership($request, $entry);
 
-        $this->materializer->dismiss($entry, $request->user());
+        $this->materializer->dismiss($entry, $this->authUser());
 
         return redirect()->route('location.review.index')
             ->with('success', __('Vorschlag verworfen.'));
     }
 
     private function authorizeOwnership(Request $request, LocationPendingEntry $entry): void {
-        abort_unless($entry->user_id === $request->user()->id, Response::HTTP_FORBIDDEN);
+        abort_unless($entry->user_id === $this->authUser()->id, Response::HTTP_FORBIDDEN);
     }
 }

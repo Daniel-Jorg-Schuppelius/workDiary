@@ -169,8 +169,6 @@ class OpenProjectController extends Controller {
     /**
      * Liefert das zugeordnete Projekt: bestehendes (per Sqid) oder ein neu
      * angelegtes (Name aus dem Formular). Nie automatisch anlegen.
-     *
-     * @param  array<string, mixed>  $data
      */
     private function findMapping(Organization $organization, int $id): ExternalReference {
         return ExternalReference::query()

@@ -29,7 +29,11 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * ausschließlich auf bereits gemappten Wertesätzen (Schlüssel = lokale Spalten).
  */
 interface MatchProfile {
-    /** Vollqualifizierter Modell-Klassenname der Ziel-Entität. */
+    /**
+     * Vollqualifizierter Modell-Klassenname der Ziel-Entität.
+     *
+     * @return class-string<Model>
+     */
     public function targetType(): string;
 
     /** @return list<MatchStrategy> geordnet (first-confident gewinnt) */

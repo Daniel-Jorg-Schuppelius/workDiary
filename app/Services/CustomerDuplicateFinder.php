@@ -49,8 +49,8 @@ class CustomerDuplicateFinder {
         /** @var Collection<int, Customer> $customers */
         $customers = $this->profile->candidates($organization)->withCount('projects')->get();
 
-        $list = $customers->values();
-        $count = $list->count();
+        $list = $customers->values()->all();
+        $count = count($list);
 
         // Wertesätze einmal vorab extrahieren (statt O(n²)-mal).
         $fields = [];

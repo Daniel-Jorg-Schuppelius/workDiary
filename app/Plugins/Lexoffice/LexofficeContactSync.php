@@ -501,7 +501,7 @@ class LexofficeContactSync {
      * Liste der Felder, in denen sich lokaler Datensatz und Remote-Snapshot unterscheiden.
      *
      * @param  array<string, mixed>  $remote
-     * @return array<int, string>
+     * @return list<string>
      */
     private function diffFields(Model $record, array $remote): array {
         $remoteVals = $this->buildChangesFromRemote($remote);

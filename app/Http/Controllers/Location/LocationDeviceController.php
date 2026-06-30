@@ -27,20 +27,21 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class LocationDeviceController extends Controller {
     public function index(Request $request): View {
+        $user = $this->authUser();
         $tokens = LocationDeviceToken::query()
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->get();
 
         return view('location.devices', [
             'tokens' => $tokens,
-            'optedIn' => (bool) $request->user()->getPreference(LocationController::OPT_IN_PREFERENCE, false),
+            'optedIn' => (bool) $user->getPreference(LocationController::OPT_IN_PREFERENCE, false),
         ]);
     }
 
     public function consent(Request $request): RedirectResponse {
         $enabled = $request->boolean('enabled');
-        $request->user()->setPreference(LocationController::OPT_IN_PREFERENCE, $enabled);
+        $this->authUser()->setPreference(LocationController::OPT_IN_PREFERENCE, $enabled);
 
         return redirect()->route('location.devices.index')->with(
             'success',
@@ -54,7 +55,7 @@ class LocationDeviceController extends Controller {
         ]);
 
         // Token ausstellen impliziert die Einwilligung.
-        $user = $request->user();
+        $user = $this->authUser();
         if (! $user->getPreference(LocationController::OPT_IN_PREFERENCE, false)) {
             $user->setPreference(LocationController::OPT_IN_PREFERENCE, true);
         }
@@ -75,7 +76,7 @@ class LocationDeviceController extends Controller {
             'file' => ['required', 'file', 'max:51200'],
         ]);
 
-        $user = $request->user();
+        $user = $this->authUser();
         if (! $user->getPreference(LocationController::OPT_IN_PREFERENCE, false)) {
             $user->setPreference(LocationController::OPT_IN_PREFERENCE, true);
         }
@@ -88,7 +89,7 @@ class LocationDeviceController extends Controller {
     }
 
     public function destroy(Request $request, LocationDeviceToken $device): RedirectResponse {
-        abort_unless($device->user_id === $request->user()->id, Response::HTTP_FORBIDDEN);
+        abort_unless($device->user_id === $this->authUser()->id, Response::HTTP_FORBIDDEN);
 
         $device->forceFill(['revoked_at' => Carbon::now()])->save();
 

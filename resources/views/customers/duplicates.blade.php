@@ -43,6 +43,41 @@
         </form>
     </x-slot:actions>
 
+    <div class="mb-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <details @if (session('manual_open')) open @endif>
+            <summary class="cursor-pointer text-sm font-medium">
+                {{ __('Manuell zusammenführen') }}
+                <span class="ml-1 text-base-content/50">{{ __('— zwei Kunden frei wählen (für Dubletten, die der Abgleich nicht erkennt)') }}</span>
+            </summary>
+            <form method="GET" action="{{ route('customers.duplicates.compare') }}"
+                  class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                <div class="fieldset">
+                    <label class="fieldset-label" for="manual-target">
+                        <span class="badge badge-xs badge-success mr-1">{{ __('Bleibt') }}</span>{{ __('Ziel-Kunde') }}
+                    </label>
+                    <select name="target" id="manual-target" required class="select select-bordered w-full">
+                        <option value="">{{ __('— wählen —') }}</option>
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->sqid }}">{{ $customer->name }}@if ($customer->number) ({{ $customer->number }})@endif</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="fieldset">
+                    <label class="fieldset-label" for="manual-source">
+                        <span class="badge badge-xs badge-error mr-1">{{ __('Wird gelöscht') }}</span>{{ __('Quell-Kunde') }}
+                    </label>
+                    <select name="source" id="manual-source" required class="select select-bordered w-full">
+                        <option value="">{{ __('— wählen —') }}</option>
+                        @foreach ($customers as $customer)
+                            <option value="{{ $customer->sqid }}">{{ $customer->name }}@if ($customer->number) ({{ $customer->number }})@endif</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button class="btn btn-sm btn-primary">{{ __('Vergleichen →') }}</button>
+            </form>
+        </details>
+    </div>
+
     @if ($candidates->isEmpty())
         <p class="rounded-box border border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/60">
             {{ __('Keine Dubletten-Kandidaten im gewählten Filter. 🎉') }}
@@ -105,6 +140,8 @@
                     </div>
 
                     <div class="mt-3 flex flex-wrap justify-end gap-2">
+                        <a href="{{ route('customers.duplicates.compare', ['target' => $target->sqid, 'source' => $source->sqid]) }}"
+                           class="btn btn-sm btn-ghost">{{ __('Felder wählen…') }}</a>
                         <form method="POST" action="{{ route('customers.duplicates.merge') }}"
                               onsubmit="return confirm(@js(__('„:source" endgültig in „:target" zusammenführen? Der Quell-Kunde wird gelöscht.', ['source' => $source->name, 'target' => $target->name])));">
                             @csrf

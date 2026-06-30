@@ -29,7 +29,8 @@ class TogglGroupBooker implements InboxGroupBooker {
     public function __construct(private readonly TogglImportService $service) {}
 
     public function groups(Organization $organization): Collection {
-        return $this->service->openInboxGroups($organization)->map(function (array $group) use ($organization): array {
+        /** @var Collection<int, array<string, mixed>> $groups */
+        $groups = $this->service->openInboxGroups($organization)->map(function (array $group) use ($organization): array {
             $customer = $this->service->suggestCustomer($organization, $group['client_name']);
             $project = $this->service->suggestProject($organization, $customer, $group['project_name']);
 
@@ -47,6 +48,8 @@ class TogglGroupBooker implements InboxGroupBooker {
                 'suggested_project_sqid' => $project?->sqid,
             ];
         })->values();
+
+        return $groups;
     }
 
     public function rules(): array {

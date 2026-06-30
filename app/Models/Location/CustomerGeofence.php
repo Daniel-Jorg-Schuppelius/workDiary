@@ -97,6 +97,11 @@ class CustomerGeofence extends Model {
             return $this->project;
         }
 
-        return $this->customer->defaultProjectOrCreate();
+        $customer = $this->customer;
+        if (! $customer instanceof Customer) {
+            throw new \RuntimeException('CustomerGeofence ohne Kunde kann kein Zielprojekt auflösen.');
+        }
+
+        return $customer->defaultProjectOrCreate();
     }
 }

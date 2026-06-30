@@ -366,16 +366,20 @@ class TogglImportService {
             ->map(function ($group, $groupKey): array {
                 /** @var \Illuminate\Support\Collection<int, IntegrationInboxItem> $group */
                 $first = $group->first();
-                $snap = $first?->remote_snapshot ?? [];
+                $snap = $first !== null ? $first->remote_snapshot : [];
+                /** @var \Illuminate\Support\Carbon|null $firstSeen */
+                $firstSeen = $group->min('occurred_at');
+                /** @var \Illuminate\Support\Carbon|null $lastSeen */
+                $lastSeen = $group->max('occurred_at');
 
                 return [
                     'group_key' => (string) $groupKey,
-                    'client_name' => $snap['client_name'] ?? null,
-                    'project_name' => $snap['project_name'] ?? null,
+                    'client_name' => isset($snap['client_name']) ? (string) $snap['client_name'] : null,
+                    'project_name' => isset($snap['project_name']) ? (string) $snap['project_name'] : null,
                     'count' => $group->count(),
                     'minutes' => (int) $group->sum(fn(IntegrationInboxItem $i): int => $this->snapshotMinutes($i->remote_snapshot ?? [])),
-                    'first_seen' => $group->min('occurred_at'),
-                    'last_seen' => $group->max('occurred_at'),
+                    'first_seen' => $firstSeen,
+                    'last_seen' => $lastSeen,
                 ];
             })
             ->values();
@@ -400,7 +404,7 @@ class TogglImportService {
             return ['created' => 0, 'skipped' => 0];
         }
 
-        $firstSnap = $items->first()?->remote_snapshot ?? [];
+        $firstSnap = $items->first()->remote_snapshot;
         $clientName = trim((string) ($firstSnap['client_name'] ?? ''));
         $projectName = trim((string) ($firstSnap['project_name'] ?? ''));
 

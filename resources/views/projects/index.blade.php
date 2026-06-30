@@ -19,6 +19,11 @@
 @endphp
 <x-index-page overflow="clip" :subtitle="__('Projekte und ihre Zuordnungen verwalten.')">
     <x-slot:actions>
+        @if (auth()->user()?->canManageBilling())
+            <x-icon-btn icon="merge" size="sm"
+                        :href="route('projects.duplicates.index')"
+                        show-label>{{ __('Projekt-Abgleich') }}</x-icon-btn>
+        @endif
         @can('create', App\Models\Project::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

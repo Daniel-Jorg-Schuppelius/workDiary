@@ -3,13 +3,13 @@
 ## Status
 
 **Phase 0 in Umsetzung** — `MVP-103`. Ziel: eine **einheitliche
-Zuordnungs- und Staging-Schicht** für alle Datenimporte (CSV-Wizard *und*
+Zuordnungs- und Staging-Schicht** für alle Datenimporte (CSV-Wizard _und_
 Plugin-Syncs), damit die App als Schnittstelle zwischen Fremdsystemen dienen
 kann, ohne mit Dubletten/„Datenmüll" zugeschüttet zu werden.
 
 **Getroffene Richtungsentscheidungen (2026-06-29):**
 
-- **Voll-Konsolidierung jetzt:** gemeinsames Fundament *und* sofortige Migration
+- **Voll-Konsolidierung jetzt:** gemeinsames Fundament _und_ sofortige Migration
   aller bestehenden Integrationen (Toggl, Lexoffice, OpenProject, RemoteSupport)
   auf die gemeinsame Schicht.
 - **Inbox-First als Grundregel:** Importe legen niemals blind an. Unzuordenbares
@@ -41,14 +41,14 @@ Specs: Customer, Project, User, Material, Vehicle, ScheduledShift, RemoteSession
 
 ### 1.2 Plugin-Syncs (ExternalReference-basiert)
 
-| Plugin | Capability | Entitäten | Match-Strategie | Staging bei „unmatched" |
-|---|---|---|---|---|
-| Toggl | TimeImport | Client→Customer, Project→Project, Entry→TimeEntry | [matchCustomer](../../app/Plugins/Toggl/TogglImportService.php#L112): ExtRef → Name exact | `toggl_pending_entries` |
-| OpenProject | TimeImport | Project, WorkPackage→Task, Entry | ExtRef → Name exact | `openproject_pending_entries` |
-| RemoteSupport | TimeImport | Session→TimeEntry (Gerät→Asset→Kunde) | Geräte-ID (ExtRef auf Asset) | `remote_pending_sessions` |
-| Lexoffice | ContactSync, TimeExport | Contact↔Customer/Supplier, Voucher/Invoice/… | [findLocalMatch](../../app/Plugins/Lexoffice/LexofficeContactSync.php#L238): VAT→E-Mail→Firma+PLZ→Firma→Name | `pending_external_conflicts` (Feldkonflikt) |
+| Plugin        | Capability              | Entitäten                                         | Match-Strategie                                                                                              | Staging bei „unmatched"                     |
+| ------------- | ----------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| Toggl         | TimeImport              | Client→Customer, Project→Project, Entry→TimeEntry | [matchCustomer](../../app/Plugins/Toggl/TogglImportService.php#L112): ExtRef → Name exact                    | `toggl_pending_entries`                     |
+| OpenProject   | TimeImport              | Project, WorkPackage→Task, Entry                  | ExtRef → Name exact                                                                                          | `openproject_pending_entries`               |
+| RemoteSupport | TimeImport              | Session→TimeEntry (Gerät→Asset→Kunde)             | Geräte-ID (ExtRef auf Asset)                                                                                 | `remote_pending_sessions`                   |
+| Lexoffice     | ContactSync, TimeExport | Contact↔Customer/Supplier, Voucher/Invoice/…      | [findLocalMatch](../../app/Plugins/Lexoffice/LexofficeContactSync.php#L238): VAT→E-Mail→Firma+PLZ→Firma→Name | `pending_external_conflicts` (Feldkonflikt) |
 
-**Befund:** Das *Mapping-Fundament* ist bereits generisch —
+**Befund:** Das _Mapping-Fundament_ ist bereits generisch —
 [ExternalReference](../../app/Models/ExternalReference.php) mit Unique-Index
 `(plugin_id, external_type, referenceable_type, referenceable_id)` und
 `external_id`-Idempotenz wird von allen genutzt. **Darüber ist alles
@@ -118,7 +118,7 @@ Drei Fall-Typen (`case_type`):
 
 ### Die Grundregel (Inbox-First)
 
-```
+```text
 resolve(remote):
   1. ExternalReference(external_id) vorhanden? → LINK (+ ggf. conflict-Item bei Feld-Diff)
   2. sonst EntityMatcher → eindeutiger Treffer? → LINK + ExternalReference setzen
@@ -219,6 +219,7 @@ Jeder Importer ersetzt seine eigene Match-/Pending-Logik durch
 `IntegrationResolver` + `integration_inbox_items`.
 
 ### 4.1 Toggl
+
 - `matchCustomer/matchProject` → `EntityMatcher` mit `CustomerMatchProfile` /
   `ProjectMatchProfile`.
 - `recordPending()` → `IntegrationResolver` (case `unmatched`).
@@ -228,15 +229,18 @@ Jeder Importer ersetzt seine eigene Match-/Pending-Logik durch
   (`target_type=TimeEntry`, `remote_snapshot` aus Spalten).
 
 ### 4.2 OpenProject
+
 - Analog Toggl; zusätzlich `WorkPackage→Task` über `TaskMatchProfile`.
 - **Backfill** `openproject_pending_entries(open)`.
 
 ### 4.3 RemoteSupport
+
 - Geräte-ID→Asset bleibt (ExternalReference auf Asset); unbekannte Geräte →
   `unmatched`-Inbox (`target_type=TimeEntry`, Kandidat = Asset-Vorschlag).
 - **Backfill** `remote_pending_sessions(open)`.
 
 ### 4.4 Lexoffice
+
 - `findLocalMatch` → `EntityMatcher` (Customer/Supplier-Profile).
 - `recordConflict` → `IntegrationResolver` (case `conflict`).
 - Konflikt-Inbox `admin.lexoffice.conflicts` wird Spezial-Filter der neuen
@@ -244,6 +248,7 @@ Jeder Importer ersetzt seine eigene Match-/Pending-Logik durch
 - **Backfill** `pending_external_conflicts(open)` → `case_type=conflict`.
 
 ### 4.5 CSV-Wizard
+
 - `EntitySpec::upsert()` ruft künftig `IntegrationResolver` statt direktem
   Upsert. Natürliche Schlüssel (`number`) werden zu einer **Match-Strategie**
   (`ExactField('number')`), nicht mehr zur einzigen Logik.
@@ -252,6 +257,7 @@ Jeder Importer ersetzt seine eigene Match-/Pending-Logik durch
 - Import-Formular bekommt die Policy-Auswahl (Default `AutoLinkExactOnly`).
 
 ### 4.6 Alt-Tabellen
+
 Nach Code-Cutover + Backfill werden `toggl_pending_entries`,
 `openproject_pending_entries`, `remote_pending_sessions`,
 `pending_external_conflicts` in einer **separaten, späteren Migration**
@@ -262,6 +268,7 @@ entfernt (nicht im selben Release wie der Cutover — Rollback-Fenster).
 ## 5. Phasen & Akzeptanzkriterien
 
 **Phase 0 — Fundament**
+
 - `integration_inbox_items` + Modell; `EntityMatcher`, `MatchProfile`,
   `ImportMatchPolicy`, `IntegrationResolver`.
 - `CustomerDuplicateFinder` ([[project_customer_merge]]) wird auf `MatchProfile`
@@ -269,10 +276,11 @@ entfernt (nicht im selben Release wie der Cutover — Rollback-Fenster).
 - ✅ Resolver-Unit-Tests: Link / Create(Opt-in) / Staged / Conflict / Ambiguous.
 
 **Phase 1 — Inbox-UI + Zuordnungs-Register-UI** ✅ (2026-06-29, 8 Tests)
+
 - Inbox-Seite `admin.integration.inbox` mit Filtern (Status, Fall-Typ, Quelle,
-  Entität); Aktionen je Item: *Zuordnen* (Kandidat-Button oder Auswahl
-  bestehender), *Neu anlegen*, Konflikt *Remote übernehmen*/*Lokal behalten*,
-  *Verwerfen* — über `InboxActionService` + `MatchProfileRegistry`.
+  Entität); Aktionen je Item: _Zuordnen_ (Kandidat-Button oder Auswahl
+  bestehender), _Neu anlegen_, Konflikt _Remote übernehmen_/_Lokal behalten_,
+  _Verwerfen_ — über `InboxActionService` + `MatchProfileRegistry`.
 - „Zuordnungen"-Verwaltung `admin.integration.mappings` über `ExternalReference`
   (Liste + Verknüpfung lösen).
 - Menü-Eintrag mit Badge (offene Einträge), gated `canManageBilling`.
@@ -280,6 +288,7 @@ entfernt (nicht im selben Release wie der Cutover — Rollback-Fenster).
   Inbox migrieren (Backfill).
 
 **Phase 2 — Plugins migrieren (slice-weise)**
+
 - **Entscheidung (2026-06-29):** Zeit-Import-Trias (Toggl/OpenProject/
   RemoteSupport) wird NICHT per-Eintrag in die Inbox gezwungen (das würde die
   Gruppen-Zuordnung als UX zerstören) — stattdessen wird die universelle Inbox
@@ -303,16 +312,17 @@ entfernt (nicht im selben Release wie der Cutover — Rollback-Fenster).
   `toggl_pending_entries`-Tabelle bleibt vorerst (Drop später).
 - ✅ **OpenProject (2026-06-30, voller Port, 38 Tests):** `InboxGroupBooker` zu
   einem generischen Interface gemacht (`groups`/`rules`/`book(input)`/`dismiss`
-  + Trait `ResolvesInboxTargets`); jede Gruppe trägt einen `form`-Diskriminator
-  (`customer_project` für Toggl, `project` für OpenProject), die Inbox-View
-  rendert das passende Formular. `OpenProjectImportService` analog Toggl
-  umgebaut (recordPending → Inbox, `bookInboxGroup`/`dismissInboxGroup`/
-  `openInboxGroups`), `OpenProjectGroupBooker` + Registry-Eintrag, alte
-  Pending-UI/-Routen entfernt, Deep-Link, Backfill.
+    - Trait `ResolvesInboxTargets`); jede Gruppe trägt einen `form`-Diskriminator
+      (`customer_project` für Toggl, `project` für OpenProject), die Inbox-View
+      rendert das passende Formular. `OpenProjectImportService` analog Toggl
+      umgebaut (recordPending → Inbox, `bookInboxGroup`/`dismissInboxGroup`/
+      `openInboxGroups`), `OpenProjectGroupBooker` + Registry-Eintrag, alte
+      Pending-UI/-Routen entfernt, Deep-Link, Backfill.
 - ⏳ Offen: RemoteSupport (Geräte→Asset→Kunde-Standardprojekt — andere Form),
   CSV-Wizard.
 
 **Phase 3 — Lücken + CSV-Härtung**
+
 - ✅ **CSV-Kundenimport-Dedup (2026-06-30):** `CustomerSpec::upsert` dedupliziert
   nach der Kundennummer zusätzlich feldübergreifend über den gemeinsamen
   `EntityMatcher` (EXACT: USt-IdNr./Lexoffice-Nr.) — Reimport mit abweichender
@@ -355,6 +365,7 @@ entfernt (nicht im selben Release wie der Cutover — Rollback-Fenster).
 `InvoiceSpec` — Rechnungshoheit; RemoteSupport-Shared/Neuanlage — eigene RS-UI).
 
 **Phase 4 — Aufräumen**
+
 - Alt-Tabellen droppen; Doku/Plugin-Doctor aktualisieren.
 
 ---

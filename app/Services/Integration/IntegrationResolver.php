@@ -179,6 +179,9 @@ class IntegrationResolver {
         return $diff;
     }
 
+    /**
+     * @param  array<string, mixed>  $rawRemote
+     */
     private function writeReference(
         Organization $org, string $pluginId, string $externalType, string $morph,
         ?string $externalId, Model $model, array $rawRemote,
@@ -210,6 +213,7 @@ class IntegrationResolver {
      * @param  array<string, mixed>  $attributes
      * @param  array<string, mixed>  $rawRemote
      * @param  list<array{model: Model, confidence: string, reasons: list<string>}>  $candidates
+     * @param  array<string, mixed>|null  $localSnapshot
      * @param  list<string>  $diffFields
      */
     private function stageItem(
