@@ -24,7 +24,7 @@
 <x-index-page :subtitle="__('Eingegangene Importe, die nicht automatisch zugeordnet werden konnten. Pro Eintrag entscheidest du: einem bestehenden Datensatz zuordnen, neu anlegen oder verwerfen — nichts wird blind angelegt.')">
     <x-slot:actions>
         <a href="{{ route('admin.integration.mappings.index') }}" class="btn btn-sm btn-outline">{{ __('Zuordnungen verwalten') }}</a>
-        <form method="GET" action="{{ route('admin.integration.inbox') }}" class="flex flex-wrap items-center gap-2">
+        <form method="GET" action="{{ route('admin.integration.inbox') }}" class="flex flex-nowrap items-center gap-2">
             <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
                 @foreach ($statusLabels as $value => $label)
                     <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
