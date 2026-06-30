@@ -41,6 +41,8 @@ class MatchProfileRegistry {
             Customer::class => (string) __('Kunde'),
             Supplier::class => (string) __('Lieferant'),
             Article::class => (string) __('Artikel'),
+            \App\Models\Project::class => (string) __('Projekt'),
+            \App\Models\Asset::class => (string) __('Gerät'),
             default => class_basename($targetType),
         };
     }

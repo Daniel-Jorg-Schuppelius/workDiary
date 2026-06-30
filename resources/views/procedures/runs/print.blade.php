@@ -71,7 +71,7 @@
             @if ($subject instanceof \App\Models\DiaryEntry)
                 {{ __('procedure.print.diaryEntry') }} #{{ $subject->id }} — {{ \CommonToolkit\Helper\Data\StringHelper::truncate((string) $subject->content, 80) }}
             @else
-                {{ $run->subject_type }} #{{ $run->subject_id }}
+                {{ \App\Support\EntityType::label($run->subject_type) }} #{{ $run->subject_id }}
             @endif
         </td></tr>
         <tr><th>{{ __('procedure.field.status') }}</th><td>{{ $run->status->label() }}</td></tr>

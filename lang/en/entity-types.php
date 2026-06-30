@@ -8,6 +8,7 @@ declare(strict_types=1);
  */
 return [
     'ActivityCategory'              => 'Activity category',
+    'Article'                       => 'Article',
     'Asset'                         => 'Asset',
     'Attachment'                    => 'Attachment',
     'Attendance'                    => 'Attendance',

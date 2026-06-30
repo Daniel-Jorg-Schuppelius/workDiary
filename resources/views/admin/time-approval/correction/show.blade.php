@@ -53,7 +53,7 @@
         @foreach ($request->items as $item)
             <div class="border border-base-300 rounded-md p-3 mb-2">
                 <div class="text-xs text-base-content/60">
-                    {{ class_basename($item->target_type) }} #{{ $item->target_id ?? '—' }} · {{ $item->action }}
+                    {{ \App\Support\EntityType::label($item->target_type) }} #{{ $item->target_id ?? '—' }} · {{ \App\Support\Trans::or('attendance.correction.action.' . $item->action, $item->action) }}
                 </div>
                 <div class="grid md:grid-cols-2 gap-3 mt-2">
                     <div>

@@ -66,7 +66,7 @@
                         {{ $item->short_text ?: '—' }}
                         @if ($item->is_addendum)<span class="badge badge-xs badge-warning ml-1">N</span>@endif
                         @foreach ($item->mappings as $map)
-                            <span class="badge badge-xs badge-ghost ml-1">{{ class_basename($map->mappable_type) }}</span>
+                            <span class="badge badge-xs badge-ghost ml-1">{{ \App\Support\EntityType::label($map->mappable_type) }}</span>
                         @endforeach
                     </td>
                     <td><span class="badge badge-sm badge-ghost">{{ $item->type->label() }}</span></td>

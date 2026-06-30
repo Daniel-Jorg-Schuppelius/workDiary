@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\{ExternalReference, User};
+use App\Services\Integration\MatchProfileRegistry;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -24,7 +25,7 @@ use Illuminate\View\View;
  * Lösen einzelner Verknüpfungen.
  */
 class IntegrationMappingController extends Controller {
-    public function index(Request $request): View {
+    public function index(Request $request, MatchProfileRegistry $registry): View {
         $user = $this->authorizeBilling();
 
         $plugin = (string) $request->input('plugin', 'all');
@@ -41,6 +42,7 @@ class IntegrationMappingController extends Controller {
 
         return view('admin.integration.mappings', [
             'references' => $query->paginate(50)->withQueryString(),
+            'registry' => $registry,
             'filters' => ['plugin' => $plugin, 'type' => $type],
             'plugins' => (clone $base)->distinct()->orderBy('plugin_id')->pluck('plugin_id')->all(),
             'types' => (clone $base)->distinct()->orderBy('external_type')->pluck('external_type')->all(),

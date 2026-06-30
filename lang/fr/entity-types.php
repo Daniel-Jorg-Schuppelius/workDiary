@@ -2,6 +2,7 @@
 
 return [
     'ActivityCategory' => 'Catégorie d\'activité',
+    'Article'          => 'Article',
     'Asset' => 'Ressource',
     'Attachment' => 'Pièce jointe',
     'Attendance' => 'Présence',

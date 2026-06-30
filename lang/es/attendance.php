@@ -14,4 +14,11 @@ return [
         'import' => 'Importación',
         'auto_close' => 'Cierre automático',
     ],
+    'correction' => [
+        'action' => [
+            'create' => 'Crear',
+            'update' => 'Modificar',
+            'delete' => 'Eliminar',
+        ],
+    ],
 ];

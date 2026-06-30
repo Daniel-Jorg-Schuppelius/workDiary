@@ -16,7 +16,7 @@
             <select name="type" class="select select-sm select-bordered" onchange="this.form.submit()">
                 <option value="all" @selected($filters['type'] === 'all')>{{ __('Alle Typen') }}</option>
                 @foreach ($types as $t)
-                    <option value="{{ $t }}" @selected($filters['type'] === $t)>{{ $t }}</option>
+                    <option value="{{ $t }}" @selected($filters['type'] === $t)>{{ \App\Support\Trans::or('integration.external_type.' . $t, $t) }}</option>
                 @endforeach
             </select>
         </form>
@@ -43,11 +43,11 @@
                             @php $target = $ref->referenceable; @endphp
                             <tr>
                                 <td><span class="badge badge-sm badge-outline">{{ $ref->plugin_id }}</span></td>
-                                <td class="text-xs">{{ $ref->external_type }}</td>
+                                <td class="text-xs">{{ \App\Support\Trans::or('integration.external_type.' . $ref->external_type, $ref->external_type) }}</td>
                                 <td class="font-mono text-xs">{{ $ref->external_id }}</td>
                                 <td>
                                     @if ($target)
-                                        {{ class_basename($ref->referenceable_type) }}:
+                                        {{ $registry->label($ref->referenceable_type) }}:
                                         <span class="font-medium">{{ $target->name ?? ('#' . $target->getKey()) }}</span>
                                     @else
                                         <span class="text-error">{{ __('(verwaist)') }}</span>

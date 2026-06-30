@@ -9,6 +9,7 @@ declare(strict_types=1);
  */
 return [
     'ActivityCategory'              => 'Tätigkeitskategorie',
+    'Article'                       => 'Artikel',
     'Asset'                         => 'Asset',
     'Attachment'                    => 'Anhang',
     'Attendance'                    => 'Anwesenheit',

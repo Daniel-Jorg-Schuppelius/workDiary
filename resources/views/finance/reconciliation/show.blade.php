@@ -78,7 +78,7 @@
                                 <div class="flex items-center justify-between text-sm">
                                     <span>
                                         <x-status-badge size="xs" :tone="$allocation->kind->tone()" :label="$allocation->kind->label()" />
-                                        {{ class_basename($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
+                                        {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
                                         · {{ number_format((float) $allocation->amount, 2, ',', '.') }}
                                     </span>
                                     @if ($canReconcile)
