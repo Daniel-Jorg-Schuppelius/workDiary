@@ -83,15 +83,39 @@
             {{ __('Keine Dubletten-Kandidaten im gewählten Filter. 🎉') }}
         </p>
     @else
-        <div class="space-y-4">
+        <div x-data="{ selected: [] }">
+            <div x-cloak x-show="selected.length > 0"
+                 class="sticky top-2 z-10 mb-3 flex items-center justify-between gap-2 rounded-box border border-primary/40 bg-base-100 px-4 py-2 shadow-md">
+                <span class="text-sm text-base-content/70">
+                    <span class="font-semibold text-base-content" x-text="selected.length"></span> {{ __('Paar(e) ausgewählt') }}
+                </span>
+                <div class="flex items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-ghost" @click="selected = []">{{ __('Auswahl leeren') }}</button>
+                    <form method="POST" action="{{ route('customers.duplicates.bulk-merge') }}"
+                          data-confirm-dialog
+                          data-confirm-message="{{ __('Alle ausgewählten Paare zusammenführen? Die jeweils markierten Quell-Kunden werden gelöscht — das kann nicht rückgängig gemacht werden.') }}"
+                          data-confirm-icon="merge" data-confirm-tone="primary" data-confirm-label="{{ __('Zusammenführen') }}">
+                        @csrf
+                        <template x-for="pair in selected" :key="pair">
+                            <input type="hidden" name="pairs[]" :value="pair">
+                        </template>
+                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Ausgewählte zusammenführen →') }}</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="space-y-4">
             @foreach ($candidates as $pair)
                 @php
                     $target = $pair['target'];
                     $source = $pair['source'];
                     $conf = $pair['confidence'];
+                    $pairKey = $source->sqid . ':' . $target->sqid;
                 @endphp
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <div class="mb-3 flex flex-wrap items-center gap-2">
+                        <input type="checkbox" class="checkbox checkbox-sm" value="{{ $pairKey }}" x-model="selected"
+                               aria-label="{{ __('Für Bulk-Zusammenführung auswählen') }}">
                         <span class="badge badge-sm
                             @if ($conf === CustomerDuplicateFinder::CONF_EXACT) badge-error
                             @elseif ($conf === CustomerDuplicateFinder::CONF_LIKELY) badge-warning
@@ -143,14 +167,18 @@
                         <a href="{{ route('customers.duplicates.compare', ['target' => $target->sqid, 'source' => $source->sqid]) }}"
                            class="btn btn-sm btn-ghost">{{ __('Felder wählen…') }}</a>
                         <form method="POST" action="{{ route('customers.duplicates.merge') }}"
-                              onsubmit="return confirm(@js(__('„:source" endgültig in „:target" zusammenführen? Der Quell-Kunde wird gelöscht.', ['source' => $source->name, 'target' => $target->name])));">
+                              data-confirm-dialog
+                              data-confirm-message="{{ __('„:source“ endgültig in „:target“ zusammenführen? Der Quell-Kunde wird gelöscht.', ['source' => $source->name, 'target' => $target->name]) }}"
+                              data-confirm-icon="merge" data-confirm-tone="primary" data-confirm-label="{{ __('Zusammenführen') }}">
                             @csrf
                             <input type="hidden" name="source" value="{{ $source->sqid }}">
                             <input type="hidden" name="target" value="{{ $target->sqid }}">
                             <button class="btn btn-sm btn-primary">{{ __('Zusammenführen →') }}</button>
                         </form>
                         <form method="POST" action="{{ route('customers.duplicates.merge') }}"
-                              onsubmit="return confirm(@js(__('Richtung tauschen: „:source" in „:target" zusammenführen?', ['source' => $target->name, 'target' => $source->name])));">
+                              data-confirm-dialog
+                              data-confirm-message="{{ __('Richtung tauschen: „:source“ in „:target“ zusammenführen? Der Quell-Kunde wird gelöscht.', ['source' => $target->name, 'target' => $source->name]) }}"
+                              data-confirm-icon="swap_horiz" data-confirm-tone="warning" data-confirm-label="{{ __('Zusammenführen') }}">
                             @csrf
                             <input type="hidden" name="source" value="{{ $target->sqid }}">
                             <input type="hidden" name="target" value="{{ $source->sqid }}">
@@ -165,6 +193,7 @@
                     </div>
                 </div>
             @endforeach
+            </div>
         </div>
     @endif
 </x-index-page>

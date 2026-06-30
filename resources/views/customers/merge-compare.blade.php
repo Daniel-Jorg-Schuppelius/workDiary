@@ -42,7 +42,9 @@
     </x-slot:actions>
 
     <form method="POST" action="{{ route('customers.duplicates.merge') }}"
-          onsubmit="return confirm(@js(__('„:source" endgültig in „:target" zusammenführen? Der Quell-Kunde wird gelöscht.', ['source' => $source->name, 'target' => $target->name])));">
+          data-confirm-dialog
+          data-confirm-message="{{ __('„:source“ endgültig in „:target“ zusammenführen? Der Quell-Kunde wird gelöscht.', ['source' => $source->name, 'target' => $target->name]) }}"
+          data-confirm-icon="merge" data-confirm-tone="primary" data-confirm-label="{{ __('Zusammenführen') }}">
         @csrf
         <input type="hidden" name="source" value="{{ $source->sqid }}">
         <input type="hidden" name="target" value="{{ $target->sqid }}">

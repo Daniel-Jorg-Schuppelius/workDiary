@@ -216,6 +216,43 @@ class ProjectMergeTest extends TestCase {
         $this->assertNull(Project::query()->find($source->id));
     }
 
+    public function test_bulk_merge_processes_multiple_pairs_and_skips_stale(): void {
+        $targetA = $this->project('Wartung');
+        $sourceA = $this->project('Wartung');
+        $targetB = $this->project('Support');
+        $sourceB = $this->project('Support');
+
+        // Veraltetes Paar: Quelle existiert nicht mehr → muss still übersprungen werden.
+        $ghost = $this->project('Weg');
+        $ghostSqid = $ghost->sqid;
+        $ghost->delete();
+
+        $this->actingAs($this->admin)
+            ->post(route('projects.duplicates.bulk-merge'), ['pairs' => [
+                $sourceA->sqid . ':' . $targetA->sqid,
+                $sourceB->sqid . ':' . $targetB->sqid,
+                $ghostSqid . ':' . $targetA->sqid,
+            ]])
+            ->assertRedirect(route('projects.duplicates.index'));
+
+        $this->assertNull(Project::query()->find($sourceA->id), 'Paar A zusammengeführt');
+        $this->assertNull(Project::query()->find($sourceB->id), 'Paar B zusammengeführt');
+        $this->assertNotNull(Project::query()->find($targetA->id));
+        $this->assertNotNull(Project::query()->find($targetB->id));
+    }
+
+    public function test_bulk_merge_requires_billing_permission(): void {
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $target = $this->project('Wartung');
+        $source = $this->project('Wartung');
+
+        $this->actingAs($user)
+            ->post(route('projects.duplicates.bulk-merge'), ['pairs' => [$source->sqid . ':' . $target->sqid]])
+            ->assertForbidden();
+
+        $this->assertNotNull(Project::query()->find($source->id));
+    }
+
     public function test_endpoint_surfaces_validation_error_for_cross_customer(): void {
         $customerA = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $customerB = Customer::factory()->create(['organization_id' => $this->organization->id]);

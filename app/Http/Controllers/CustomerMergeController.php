@@ -86,6 +86,54 @@ class CustomerMergeController extends Controller {
             ]));
     }
 
+    /**
+     * Bulk-Merge mehrerer Auto-Vorschläge in einem Rutsch. Jedes Paar kommt als
+     * „quelle:ziel"-Sqid-Paar; die Richtung entspricht dem Vorschlag. Paare, deren
+     * Quelle/Ziel durch einen vorherigen Merge derselben Aktion bereits weg ist
+     * (überlappende Vorschläge) oder die der Service ablehnt, werden übersprungen.
+     */
+    public function bulkMerge(Request $request, CustomerMergeService $merger): RedirectResponse {
+        $this->authorizeBilling();
+
+        $data = $request->validate([
+            'pairs' => ['required', 'array', 'min:1'],
+            'pairs.*' => ['string'],
+        ]);
+
+        $binder = new Customer;
+        $merged = 0;
+        $skipped = 0;
+
+        foreach ($data['pairs'] as $raw) {
+            [$sourceSqid, $targetSqid] = array_pad(explode(':', (string) $raw, 2), 2, null);
+            if ((string) $sourceSqid === '' || (string) $targetSqid === '') {
+                $skipped++;
+                continue;
+            }
+
+            $source = $binder->resolveRouteBinding((string) $sourceSqid);
+            $target = $binder->resolveRouteBinding((string) $targetSqid);
+            if (! $source instanceof Customer || ! $target instanceof Customer || $source->getKey() === $target->getKey()) {
+                $skipped++;
+                continue;
+            }
+
+            try {
+                $merger->merge($source, $target);
+                $merged++;
+            } catch (\InvalidArgumentException) {
+                $skipped++;
+            }
+        }
+
+        return redirect()
+            ->route('customers.duplicates.index')
+            ->with('success', __(':merged Paar(e) zusammengeführt, :skipped übersprungen.', [
+                'merged' => $merged,
+                'skipped' => $skipped,
+            ]));
+    }
+
     public function dismiss(Request $request): RedirectResponse {
         $user = $this->authorizeBilling();
 

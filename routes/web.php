@@ -766,6 +766,7 @@ Route::middleware('auth')->group(function () {
         Route::get('customers/duplicates', [CustomerMergeController::class, 'index'])->name('customers.duplicates.index');
         Route::get('customers/duplicates/compare', [CustomerMergeController::class, 'compare'])->name('customers.duplicates.compare');
         Route::post('customers/duplicates/merge', [CustomerMergeController::class, 'merge'])->name('customers.duplicates.merge');
+        Route::post('customers/duplicates/bulk-merge', [CustomerMergeController::class, 'bulkMerge'])->name('customers.duplicates.bulk-merge');
         Route::post('customers/duplicates/dismiss', [CustomerMergeController::class, 'dismiss'])->name('customers.duplicates.dismiss');
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/archive', [CustomerController::class, 'archive'])->name('customers.archive');
@@ -961,6 +962,7 @@ Route::middleware('auth')->group(function () {
         Route::get('projects/duplicates', [ProjectMergeController::class, 'index'])->name('projects.duplicates.index');
         Route::get('projects/duplicates/compare', [ProjectMergeController::class, 'compare'])->name('projects.duplicates.compare');
         Route::post('projects/duplicates/merge', [ProjectMergeController::class, 'merge'])->name('projects.duplicates.merge');
+        Route::post('projects/duplicates/bulk-merge', [ProjectMergeController::class, 'bulkMerge'])->name('projects.duplicates.bulk-merge');
         Route::post('projects/duplicates/dismiss', [ProjectMergeController::class, 'dismiss'])->name('projects.duplicates.dismiss');
         Route::resource('projects', ProjectController::class);
         Route::get('projects/{project}/planning', [ProjectController::class, 'planning'])->name('projects.planning');
