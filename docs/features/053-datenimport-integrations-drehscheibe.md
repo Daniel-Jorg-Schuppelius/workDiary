@@ -343,9 +343,16 @@ entfernt (nicht im selben Release wie der Cutover — Rollback-Fenster).
   (ExtRef → Nummer → Matcher → anlegen/Inbox); die drei Specs delegieren nur noch.
   Gestagte Inbox-Items tragen die Fremd-ID → beim „Neu anlegen" wird die Bindung
   geschrieben. Tests: Refactor + Fremd-ID-Reimport grün.
-- ⏳ **Einziger Restpunkt:** RemoteSupport-Port — komplexe Multi-Mode-Auflösung
-  (Gerät→Asset / assignNew / Shared-Sessions→Kunde+Projekt), braucht einen
-  eigenen Form-Typ; bewusst als eigener, fokussierter Slice.
+- ✅ **RemoteSupport (2026-06-30):** Hauptfall (unbekanntes Gerät) in der
+  universellen Inbox — `RemoteSupportGroupBooker` liest `openPendingGroups()` und
+  bucht über das bewährte `assignPending()` (Form-Typ `asset`: Bindung an
+  bestehendes Asset), **ohne Storage-Umbau/Backfill**. Asset-Neuanlage und der
+  Mehrkundengeräte-/Shared-Flow bleiben in der RemoteSupport-UI (Deep-Link).
+  Generischer Inbox-Controller liefert Asset-Optionen; Inbox-View hat einen
+  `asset`-Form-Zweig. Test: Booker bindet Asset + bucht.
+
+**Damit ist der geplante Scope von MVP-103 abgeschlossen** (bewusste Ausnahmen:
+`InvoiceSpec` — Rechnungshoheit; RemoteSupport-Shared/Neuanlage — eigene RS-UI).
 
 **Phase 4 — Aufräumen**
 - Alt-Tabellen droppen; Doku/Plugin-Doctor aktualisieren.

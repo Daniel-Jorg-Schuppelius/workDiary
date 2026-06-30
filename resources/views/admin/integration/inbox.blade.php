@@ -58,22 +58,44 @@
         <div class="mb-4 space-y-4">
             <h3 class="text-sm font-semibold text-base-content/70">{{ __('Zeit-Import-Gruppen') }}</h3>
             @foreach ($groups as $g)
+                @php $form = $g['form'] ?? 'customer_project'; @endphp
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <div class="mb-3 flex flex-wrap items-center gap-2">
                         <span class="badge badge-sm badge-info">{{ $g['plugin_id'] }}</span>
-                        <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
-                        @if ($g['client_name'])<span class="text-sm text-base-content/60">· {{ $g['client_name'] }}</span>@endif
+                        @if ($form === 'asset')
+                            <span class="font-semibold">{{ $g['alias'] ?: $g['remote_id'] }}</span>
+                            <span class="text-sm text-base-content/60">· {{ $g['provider'] }}</span>
+                        @else
+                            <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
+                            @if ($g['client_name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['client_name'] }}</span>@endif
+                        @endif
                         <span class="ml-auto text-xs text-base-content/50">
                             {{ trans_choice(':count Eintrag|:count Einträge', $g['count'], ['count' => $g['count']]) }} · {{ $g['minutes'] }} {{ __('Min') }}
                         </span>
                     </div>
 
+                    @if ($form === 'asset')
+                        {{-- Fernwartung: unbekanntes Gerät an ein bestehendes Asset binden --}}
+                        <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="flex flex-wrap items-end gap-2">
+                            @csrf
+                            <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
+                            <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
+                            <select name="asset" required class="select select-sm select-bordered">
+                                <option value="">{{ __('… Gerät auswählen') }}</option>
+                                @foreach (($assignTargets[\App\Models\Asset::class] ?? []) as $sqid => $label)
+                                    <option value="{{ $sqid }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
+                            <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
+                        </form>
+                    @else
                     <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="grid gap-3 md:grid-cols-2">
                         @csrf
                         <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
                         <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
 
-                        @if (($g['form'] ?? 'customer_project') === 'customer_project')
+                        @if ($form === 'customer_project')
                         <fieldset class="rounded-box border border-base-300 p-3">
                             <legend class="px-1 text-xs font-semibold">{{ __('Kunde') }}</legend>
                             <label class="label cursor-pointer justify-start gap-2 py-1">
@@ -115,6 +137,7 @@
                             <button type="submit" class="btn btn-sm btn-primary">{{ __('Gruppe buchen') }}</button>
                         </div>
                     </form>
+                    @endif
                     <form method="POST" action="{{ route('admin.integration.inbox.group.dismiss') }}" class="mt-2 flex justify-end"
                           onsubmit="return confirm(@js(__('Diese Gruppe verwerfen?')));">
                         @csrf

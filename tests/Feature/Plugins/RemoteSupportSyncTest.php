@@ -235,6 +235,43 @@ class RemoteSupportSyncTest extends TestCase {
         ]);
     }
 
+    public function test_inbox_group_booker_binds_asset_and_books(): void {
+        // MVP-103: Auflösung der unbekannt-Geräte-Gruppe über die universelle
+        // Zuordnungs-Inbox (Booker) — delegiert an assignPending.
+        $this->enableTeamViewer();
+
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'provider' => 'teamviewer',
+            'remote_id' => 'inbox-dev',
+            'session_id' => 'tv-inbox-1',
+            'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 10:30:00'),
+            'status' => RemotePendingSession::STATUS_OPEN,
+        ]);
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $asset = Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_class' => AssetClass::Device->value,
+            'customer_id' => $customer->id,
+        ]);
+
+        $booker = app(\App\Plugins\RemoteSupport\RemoteSupportGroupBooker::class);
+
+        $groups = $booker->groups($this->organization);
+        $this->assertTrue($groups->contains(fn(array $g): bool => $g['group_key'] === 'teamviewer|inbox-dev'));
+
+        $result = $booker->book($this->organization, 'teamviewer|inbox-dev', ['asset' => $asset->sqid]);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame('inbox-dev', $this->service()->remoteId($asset, TeamViewerClient::ID), 'Geräte-ID gebunden');
+
+        $entry = TimeEntry::query()->where('project_id', $asset->customer->defaultProject()->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(30, $entry->minutes);
+    }
+
     public function test_panel_renders_only_for_remote_capable_categories(): void {
         config(['plugins.remote-support.enabled' => true]);
         $plugin = new RemoteSupportPlugin;

@@ -4299,5 +4299,8 @@
     "Nicht automatisch zuordenbare OpenProject-Einträge werden jetzt in der zentralen Zuordnungs-Inbox bearbeitet (Gruppe → Projekt zuordnen und buchen).": "Las entradas de OpenProject que no se pueden asignar automáticamente ahora se gestionan en la bandeja de conciliación central (asignar un grupo a un proyecto y contabilizar).",
     "Bei unzuordenbaren Zeilen": "Para filas no asignables",
     "Direkt anlegen bzw. aktualisieren (Standard)": "Crear o actualizar directamente (predeterminado)",
-    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Poner en la bandeja de conciliación en lugar de crear (solo clientes/proveedores/artículos)"
+    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Poner en la bandeja de conciliación en lugar de crear (solo clientes/proveedores/artículos)",
+    "An Gerät binden & buchen": "Vincular al dispositivo y contabilizar",
+    "… Gerät auswählen": "… seleccionar dispositivo",
+    "Neues Gerät / Mehrkundengerät …": "Nuevo dispositivo / dispositivo multicliente …"
 }

@@ -4299,5 +4299,8 @@
     "Nicht automatisch zuordenbare OpenProject-Einträge werden jetzt in der zentralen Zuordnungs-Inbox bearbeitet (Gruppe → Projekt zuordnen und buchen).": "Les entrées OpenProject non rapprochables automatiquement sont désormais traitées dans la boîte de rapprochement centrale (affecter un groupe à un projet puis comptabiliser).",
     "Bei unzuordenbaren Zeilen": "Pour les lignes non rapprochées",
     "Direkt anlegen bzw. aktualisieren (Standard)": "Créer ou mettre à jour directement (par défaut)",
-    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Placer dans la boîte de rapprochement au lieu de créer (clients/fournisseurs/articles uniquement)"
+    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Placer dans la boîte de rapprochement au lieu de créer (clients/fournisseurs/articles uniquement)",
+    "An Gerät binden & buchen": "Lier à l'appareil & comptabiliser",
+    "… Gerät auswählen": "… choisir l'appareil",
+    "Neues Gerät / Mehrkundengerät …": "Nouvel appareil / appareil multi-clients …"
 }

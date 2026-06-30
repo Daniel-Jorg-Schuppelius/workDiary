@@ -4299,5 +4299,8 @@
     "Nicht automatisch zuordenbare OpenProject-Einträge werden jetzt in der zentralen Zuordnungs-Inbox bearbeitet (Gruppe → Projekt zuordnen und buchen).": "OpenProject entries that can't be matched automatically are now handled in the central mapping inbox (assign a group to a project and book it).",
     "Bei unzuordenbaren Zeilen": "For unmatched rows",
     "Direkt anlegen bzw. aktualisieren (Standard)": "Create or update directly (default)",
-    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Put into the mapping inbox instead of creating (customers/suppliers/articles only)"
+    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Put into the mapping inbox instead of creating (customers/suppliers/articles only)",
+    "An Gerät binden & buchen": "Bind to device & book",
+    "… Gerät auswählen": "… select device",
+    "Neues Gerät / Mehrkundengerät …": "New device / multi-customer device …"
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Plugins\OpenProject\OpenProjectGroupBooker;
+use App\Plugins\RemoteSupport\RemoteSupportGroupBooker;
 use App\Plugins\Toggl\TogglGroupBooker;
 
 /**
@@ -25,6 +26,7 @@ class InboxGroupBookerRegistry {
     private array $map = [
         'toggl' => TogglGroupBooker::class,
         'openproject' => OpenProjectGroupBooker::class,
+        'remote-support' => RemoteSupportGroupBooker::class,
     ];
 
     public function for(string $pluginId): ?InboxGroupBooker {

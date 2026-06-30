@@ -4299,5 +4299,8 @@
     "Nicht automatisch zuordenbare OpenProject-Einträge werden jetzt in der zentralen Zuordnungs-Inbox bearbeitet (Gruppe → Projekt zuordnen und buchen).": "Le voci OpenProject non associabili automaticamente vengono ora gestite nella inbox di riconciliazione centrale (associa un gruppo a un progetto e registra).",
     "Bei unzuordenbaren Zeilen": "Per le righe non associabili",
     "Direkt anlegen bzw. aktualisieren (Standard)": "Crea o aggiorna direttamente (predefinito)",
-    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Metti nella inbox di riconciliazione invece di creare (solo clienti/fornitori/articoli)"
+    "In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)": "Metti nella inbox di riconciliazione invece di creare (solo clienti/fornitori/articoli)",
+    "An Gerät binden & buchen": "Associa al dispositivo e registra",
+    "… Gerät auswählen": "… seleziona dispositivo",
+    "Neues Gerät / Mehrkundengerät …": "Nuovo dispositivo / dispositivo multi-cliente …"
 }

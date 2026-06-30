@@ -64,6 +64,19 @@ class IntegrationInboxController extends Controller {
             }
         }
 
+        $assignTargets = $this->buildAssignTargets($user, $registry);
+        // Asset-Optionen für den Fernwartungs-Form-Typ „asset" (Geräte-Bindung).
+        if ($groups->contains(fn(array $g): bool => ($g['form'] ?? null) === 'asset')) {
+            $assignTargets[\App\Models\Asset::class] = \App\Models\Asset::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $user->organization_id)
+                ->orderBy('name')
+                ->limit(1000)
+                ->get(['id', 'name'])
+                ->mapWithKeys(fn(\App\Models\Asset $a): array => [$a->getRouteKey() => (string) $a->name])
+                ->all();
+        }
+
         return view('admin.integration.inbox', [
             'items' => $query->paginate(25)->withQueryString(),
             'groups' => $groups,
@@ -71,7 +84,7 @@ class IntegrationInboxController extends Controller {
             'filters' => ['status' => $status, 'case' => $caseType, 'plugin' => $plugin, 'target' => $target],
             'plugins' => $plugins,
             'targets' => $registry->options(),
-            'assignTargets' => $this->buildAssignTargets($user, $registry),
+            'assignTargets' => $assignTargets,
             'openCount' => $this->openCount($user),
         ]);
     }
