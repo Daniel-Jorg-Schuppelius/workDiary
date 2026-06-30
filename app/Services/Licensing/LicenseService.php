@@ -10,8 +10,7 @@
 
 namespace App\Services\Licensing;
 
-use App\Models\AuditLog;
-use App\Models\Organization;
+use App\Models\{AuditLog, Organization};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -28,8 +27,7 @@ class LicenseService {
     public function __construct(
         private readonly Filesystem $files,
         private readonly CacheRepository $cache,
-    ) {
-    }
+    ) {}
 
     public function isEnforced(): bool {
         return (bool) config('license.enforce', true);

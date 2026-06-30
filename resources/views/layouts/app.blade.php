@@ -1423,10 +1423,14 @@
                                             @endphp
                                             <a href="{{ $_r['url'] }}"
                                                class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0">
-                                                <span class="material-symbols-outlined text-base
-                                                    @if ($_r['severity'] === 'error') text-error
-                                                    @elseif ($_r['severity'] === 'warning') text-warning
-                                                    @else text-info @endif"
+                                                @php
+                                                    $sevColor = match ($_r['severity']) {
+                                                        'error' => 'text-error',
+                                                        'warning' => 'text-warning',
+                                                        default => 'text-info',
+                                                    };
+                                                @endphp
+                                                <span class="material-symbols-outlined text-base {{ $sevColor }}"
                                                       aria-hidden="true">{{ $_r['icon'] }}</span>
                                                 <span class="flex-1 min-w-0">
                                                     <span class="block text-sm font-medium">{{ $_r['title'] }}</span>

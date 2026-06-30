@@ -33,8 +33,7 @@ use Throwable;
  * EncryptCookies und StartSession.
  */
 class PrepareInstaller {
-    public function __construct(private readonly InstallationManager $installer) {
-    }
+    public function __construct(private readonly InstallationManager $installer) {}
 
     public function handle(Request $request, Closure $next): Response {
         if ($this->installer->isInstalled()) {

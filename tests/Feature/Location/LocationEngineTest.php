@@ -10,9 +10,8 @@
 
 namespace Tests\Feature\Location;
 
-use App\Models\Customer;
+use App\Models\{Customer, User};
 use App\Models\Location\{CustomerGeofence, LocationPoint, LocationVisit};
-use App\Models\User;
 use App\Services\Location\{GeofenceMatcher, VisitBuilder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

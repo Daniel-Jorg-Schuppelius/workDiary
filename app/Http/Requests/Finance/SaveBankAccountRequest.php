@@ -13,7 +13,6 @@ namespace App\Http\Requests\Finance;
 use App\Http\Requests\BaseFormRequest;
 
 class SaveBankAccountRequest extends BaseFormRequest {
-
     /**
      * @return array<string, mixed>
      */

@@ -12,10 +12,9 @@ namespace Tests\Feature;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
 use App\Models\{Customer, ExternalReference, IntegrationInboxItem};
-use App\Services\Integration\IntegrationResolver;
+use App\Services\Integration\{IntegrationResolver, ResolveOutcome};
 use App\Services\Integration\Match\EntityMatcher;
 use App\Services\Integration\Profiles\CustomerMatchProfile;
-use App\Services\Integration\ResolveOutcome;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

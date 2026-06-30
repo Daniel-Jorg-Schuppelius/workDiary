@@ -166,10 +166,14 @@
                 @endphp
                 <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                     <div class="mb-2 flex flex-wrap items-center gap-2">
-                        <span class="badge badge-sm
-                            @if ($item->case_type === IntegrationInboxItem::CASE_CONFLICT) badge-warning
-                            @elseif ($item->case_type === IntegrationInboxItem::CASE_AMBIGUOUS) badge-info
-                            @else badge-ghost @endif">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</span>
+                        @php
+                            $caseBadge = match ($item->case_type) {
+                                IntegrationInboxItem::CASE_CONFLICT => 'badge-warning',
+                                IntegrationInboxItem::CASE_AMBIGUOUS => 'badge-info',
+                                default => 'badge-ghost',
+                            };
+                        @endphp
+                        <span class="badge badge-sm {{ $caseBadge }}">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</span>
                         <span class="badge badge-sm badge-outline">{{ $item->plugin_id }}</span>
                         <span class="badge badge-sm badge-outline">{{ $targetLabel }}</span>
                         @unless ($item->isOpen())

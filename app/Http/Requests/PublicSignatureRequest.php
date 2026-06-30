@@ -11,7 +11,6 @@
 namespace App\Http\Requests;
 
 class PublicSignatureRequest extends BaseFormRequest {
-
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

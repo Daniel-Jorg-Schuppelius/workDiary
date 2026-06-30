@@ -15,7 +15,6 @@ use App\Models\{EntryType, Organization};
 use Illuminate\Validation\Rule;
 
 class SaveEntryTypeRequest extends BaseFormRequest {
-
     protected function prepareForValidation(): void {
         $this->merge([
             'is_active' => $this->boolean('is_active'),

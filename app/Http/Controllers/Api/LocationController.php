@@ -11,13 +11,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Location\LocationDeviceToken;
-use App\Models\Location\LocationPoint;
+use App\Models\Location\{LocationDeviceToken, LocationPoint};
 use App\Models\Organization;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Location\LocationIngestService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
 
 /**

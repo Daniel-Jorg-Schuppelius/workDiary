@@ -10,8 +10,7 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Http\Requests\Concerns\PartyFormFields;
+use App\Http\Requests\Concerns\{DecodesSqidInputs, PartyFormFields};
 use App\Models\Customer;
 use Illuminate\Validation\Rule;
 

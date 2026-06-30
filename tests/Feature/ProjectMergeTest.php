@@ -16,7 +16,6 @@ use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
 use App\Services\{ProjectDuplicateFinder, ProjectMergeService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Validation\ValidationException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 

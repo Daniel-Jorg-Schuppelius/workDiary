@@ -10,8 +10,7 @@
 
 namespace Tests\Feature\Whistleblowing;
 
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use App\Models\Whistleblowing\{CaseAssignment, WhistleblowingCase};
 use App\Services\Whistleblowing\{ReporterCredentialService, WhistleblowingPermissions};
 use Illuminate\Foundation\Testing\RefreshDatabase;

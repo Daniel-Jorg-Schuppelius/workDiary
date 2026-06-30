@@ -14,5 +14,4 @@ namespace App\Http\Requests;
  * Bearbeiten einer Bedarfsregel — identische Validierung, Autorisierung und
  * Sqid-Dekodierung wie beim Anlegen (PUT ersetzt den Datensatz vollständig).
  */
-class UpdateCoverageRequirementRequest extends StoreCoverageRequirementRequest {
-}
+class UpdateCoverageRequirementRequest extends StoreCoverageRequirementRequest {}

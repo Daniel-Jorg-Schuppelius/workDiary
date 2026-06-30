@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Whistleblowing;
 
 use App\Models\Whistleblowing\WhistleblowingCase;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\{Carbon, Collection};
 
 /**
  * Ermittelt faellige Fristen (Abschnitt 15): ueberfaellige Eingangsbestaetigung

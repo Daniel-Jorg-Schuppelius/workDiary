@@ -24,7 +24,7 @@
                 <div class="text-xs uppercase opacity-60">{{ __('gaeb.costing.remaining') }}</div>
                 <div class="text-lg font-semibold tabular-nums">{{ number_format($costing['remaining'], 2, ',', '.') }} {{ $costing['currency'] }}</div>
             </div>
-            <div class="flex-1 min-w-[12rem]">
+            <div class="flex-1 min-w-48">
                 <div class="text-xs uppercase opacity-60 mb-1">{{ __('gaeb.costing.progress') }} ({{ round($costing['progress'] * 100) }}%)</div>
                 <progress class="progress progress-primary w-full" value="{{ round($costing['progress'] * 100) }}" max="100"></progress>
             </div>
@@ -95,7 +95,7 @@
             <h2 class="text-sm font-semibold mb-2">{{ __('gaeb.workflow.add_addendum') }}</h2>
             <form method="POST" action="{{ route('bill-of-quantities.addenda.add', $bill) }}" class="flex flex-wrap items-end gap-2">@csrf
                 <input type="text" name="reference_no" class="input input-bordered input-sm w-28" placeholder="{{ __('gaeb.columns.reference_no') }}" required>
-                <input type="text" name="short_text" class="input input-bordered input-sm flex-1 min-w-[12rem]" placeholder="{{ __('gaeb.columns.short_text') }}">
+                <input type="text" name="short_text" class="input input-bordered input-sm flex-1 min-w-48" placeholder="{{ __('gaeb.columns.short_text') }}">
                 <input type="number" step="0.001" name="quantity" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.quantity') }}">
                 <input type="text" name="unit" class="input input-bordered input-sm w-20" placeholder="{{ __('gaeb.columns.unit') }}">
                 <input type="number" step="0.01" name="unit_price" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.unit_price') }}">

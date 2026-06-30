@@ -12,7 +12,6 @@ namespace Tests\Feature\Privacy;
 
 use App\Enums\Privacy\{ControllerRole, MeasureCategory, ReviewResult};
 use App\Models\{Organization, User};
-use App\Models\Privacy\TechnicalMeasure;
 use App\Services\Privacy\{DataProtectionPermissions, ProcessingActivityService, TechnicalMeasureService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;

@@ -10,10 +10,9 @@
 
 namespace App\Http\Controllers\Admin\Access;
 
-use App\Enums\User\Permission as PermissionEnum;
+use App\Enums\User\{Permission as PermissionEnum, UserRole};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Enums\User\UserRole;
 use App\Models\{User, UserGroup};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;

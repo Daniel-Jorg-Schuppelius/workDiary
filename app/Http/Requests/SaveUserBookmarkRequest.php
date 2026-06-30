@@ -11,7 +11,6 @@
 namespace App\Http\Requests;
 
 class SaveUserBookmarkRequest extends BaseFormRequest {
-
     /** @return array<string, array<int, string>> */
     public function rules(): array {
         return [

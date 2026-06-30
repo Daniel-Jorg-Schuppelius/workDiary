@@ -23,8 +23,7 @@ use Illuminate\View\View;
 class KeyHandoverController extends Controller {
     private const ALLOWED_SORTS = ['occurred_at', 'direction', 'person_name', 'expected_return_at'];
 
-    public function __construct(private readonly KeyHandoverService $service) {
-    }
+    public function __construct(private readonly KeyHandoverService $service) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', KeyHandover::class);

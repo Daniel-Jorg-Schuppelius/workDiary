@@ -30,8 +30,7 @@ use Illuminate\View\View;
 class TimeCorrectionController extends Controller {
     private const ALLOWED_SORTS = ['scope_date', 'status'];
 
-    public function __construct(private readonly TimeCorrectionService $service) {
-    }
+    public function __construct(private readonly TimeCorrectionService $service) {}
 
     public function index(Request $request): View {
         /** @var User $user */

@@ -12,11 +12,9 @@ namespace App\Models\Location;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
+use Illuminate\Support\{Carbon, Str};
 
 /**
  * Pro-Gerät-Token für den Standort-Ingest. Der Klartext wird nur einmal bei der

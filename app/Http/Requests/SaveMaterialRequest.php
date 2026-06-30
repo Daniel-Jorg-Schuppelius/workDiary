@@ -14,7 +14,6 @@ use App\Models\Material;
 use Illuminate\Validation\Rule;
 
 class SaveMaterialRequest extends BaseFormRequest {
-
     /** @return array<string, mixed> */
     public function rules(): array {
         $material = $this->route('material');

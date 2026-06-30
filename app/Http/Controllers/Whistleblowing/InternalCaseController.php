@@ -26,10 +26,10 @@ use App\Services\Whistleblowing\{
     WhistleblowingMessageService,
 };
 use Illuminate\Http\{RedirectResponse, Request};
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Interne Fallbearbeitung (Abschnitt 7.3 / 13.2). Jeder Zugriff wird ueber die

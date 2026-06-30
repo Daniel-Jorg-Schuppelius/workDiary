@@ -23,8 +23,7 @@ use InvalidArgumentException;
 class MeterReadingController extends Controller {
     private const ALLOWED_SORTS = ['read_at', 'value', 'consumption', 'unit'];
 
-    public function __construct(private readonly MeterReadingService $service) {
-    }
+    public function __construct(private readonly MeterReadingService $service) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', MeterReading::class);

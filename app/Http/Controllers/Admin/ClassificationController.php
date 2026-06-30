@@ -14,7 +14,7 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Exceptions\ClassificationValidationException;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Classification};
+use App\Models\Classification;
 use App\Services\Classification\ClassificationManager;
 use App\Support\Setting;
 use App\Support\Toolkit\CsvFacade;

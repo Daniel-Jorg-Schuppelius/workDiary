@@ -14,7 +14,6 @@ use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource};
 use Illuminate\Validation\Rules\Enum;
 
 class SaveServiceTicketRequest extends BaseFormRequest {
-
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

@@ -14,7 +14,6 @@ use App\Enums\Timesheet\TimesheetStatus;
 use Illuminate\Validation\Rule;
 
 class SaveTimesheetRequest extends BaseFormRequest {
-
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

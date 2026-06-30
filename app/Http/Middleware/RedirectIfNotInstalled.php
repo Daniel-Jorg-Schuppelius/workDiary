@@ -23,8 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
  * (Health-Check, gebaute Assets), damit der Wizard überhaupt bedienbar ist.
  */
 class RedirectIfNotInstalled {
-    public function __construct(private readonly InstallationManager $installer) {
-    }
+    public function __construct(private readonly InstallationManager $installer) {}
 
     public function handle(Request $request, Closure $next): Response {
         if ($this->installer->isInstalled()) {

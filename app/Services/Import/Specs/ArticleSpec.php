@@ -15,8 +15,8 @@ namespace App\Services\Import\Specs;
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Organization;
-use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
+use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Integration\Profiles\ArticleMatchProfile;
 use Throwable;
 
@@ -90,8 +90,7 @@ class ArticleSpec extends AbstractEntitySpec implements InboxFirstSpec {
         foreach ($this->columns() as $col) {
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
-                'stockable', 'purchasable', 'sellable', 'manufacturable'
-                    => $raw === null || $raw === '' ? null : $this->boolish($raw),
+                'stockable', 'purchasable', 'sellable', 'manufacturable' => $raw === null || $raw === '' ? null : $this->boolish($raw),
                 'default_purchase_price', 'default_sale_price' => $this->decimal($this->trimmedString($raw)),
                 'currency' => $this->upperOrNull($this->trimmedString($raw)),
                 'type', 'status' => $this->lowerOrNull($this->trimmedString($raw)),

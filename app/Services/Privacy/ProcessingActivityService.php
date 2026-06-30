@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Privacy;
 
 use App\Enums\Privacy\{ControllerRole, ProcessingActivityStatus};
-use App\Models\Organization;
+use App\Models\{Organization, User};
 use App\Models\Privacy\{ProcessingActivity, ProcessingActivityVersion};
-use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 

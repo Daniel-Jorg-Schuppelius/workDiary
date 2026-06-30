@@ -13,9 +13,8 @@ namespace App\Services\Location;
 use App\Jobs\Location\ProcessLocationBatch;
 use App\Models\Location\LocationPoint;
 use App\Models\User;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 /**
  * Nimmt rohe Standortpunkte entgegen, persistiert sie und stößt die

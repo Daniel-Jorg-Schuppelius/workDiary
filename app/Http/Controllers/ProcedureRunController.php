@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Procedure\{ProcedureStepRunStatus};
+use App\Enums\Procedure\ProcedureStepRunStatus;
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
 use App\Models\{Attachment, DiaryEntry, ProcedureRun, ProcedureStepRun, ProcedureTemplate, User};
 use App\Services\Procedure\{ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};

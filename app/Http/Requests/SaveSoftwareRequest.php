@@ -15,7 +15,6 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveSoftwareRequest extends BaseFormRequest {
-
     /** @return array<string, mixed> */
     public function rules(): array {
         $orgId = $this->user()?->organization_id;

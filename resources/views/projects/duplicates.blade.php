@@ -153,10 +153,14 @@
                     <div class="mb-3 flex flex-wrap items-center gap-2">
                         <input type="checkbox" class="checkbox checkbox-sm" value="{{ $pairKey }}" x-model="selected"
                                aria-label="{{ __('Für Bulk-Zusammenführung auswählen') }}">
-                        <span class="badge badge-sm
-                            @if ($conf === ProjectDuplicateFinder::CONF_EXACT) badge-error
-                            @elseif ($conf === ProjectDuplicateFinder::CONF_LIKELY) badge-warning
-                            @else badge-ghost @endif">{{ $confidenceLabels[$conf] ?? $conf }}</span>
+                        @php
+                            $confBadge = match ($conf) {
+                                ProjectDuplicateFinder::CONF_EXACT => 'badge-error',
+                                ProjectDuplicateFinder::CONF_LIKELY => 'badge-warning',
+                                default => 'badge-ghost',
+                            };
+                        @endphp
+                        <span class="badge badge-sm {{ $confBadge }}">{{ $confidenceLabels[$conf] ?? $conf }}</span>
                         @foreach ($pair['reasons'] as $reason)
                             <span class="badge badge-sm badge-outline">{{ $reasonLabels[$reason] ?? $reason }}</span>
                         @endforeach

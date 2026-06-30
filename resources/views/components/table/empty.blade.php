@@ -27,7 +27,7 @@
 @endphp
 
 <tr data-sort-ignore>
-    <td colspan="{{ (int) $colspan }}" class="!bg-base-100 !p-4">
+    <td colspan="{{ (int) $colspan }}" class="bg-base-100! p-4!">
         <x-empty-state
             :icon="$iconResolved"
             :title="$titleResolved"

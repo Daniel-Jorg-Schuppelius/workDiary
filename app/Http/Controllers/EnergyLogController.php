@@ -15,12 +15,10 @@ use App\Http\Requests\SaveEnergyLogRequest;
 use App\Models\{EnergyLog, User, Vehicle};
 use App\Services\Fleet\EnergyLogService;
 use App\Support\{SortableQuery, Sqid};
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class EnergyLogController extends Controller {
     use ResolvesGlobalDateRange, ResolvesRequestedUser;

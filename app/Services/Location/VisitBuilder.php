@@ -13,8 +13,7 @@ namespace App\Services\Location;
 use App\Models\Location\{CustomerGeofence, LocationPoint, LocationVisit};
 use App\Models\Scopes\OrganizationScope;
 use App\Models\User;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\DB;
 
 /**

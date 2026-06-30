@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Models\{ContactAddress, Customer, ExternalReference, IntegrationInboxItem, Organization, Supplier};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -164,7 +164,11 @@ class LexofficeContactSync {
             $this->bump($kind, 'matched');
             if ($this->applyRemote($record, $remote, $policy, $externalId)) {
                 $this->bump($kind, 'updated');
-            } elseif ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($record, $remote)) {
+            }
+            // Konflikt-Erfassung ist unabhängig vom (Metadaten-)Update: auch wenn
+            // gerade die Kontaktnummer aktualisiert wurde, kann es offene
+            // Nutzerdaten-Konflikte geben, die der Mensch prüfen muss.
+            if ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($record, $remote)) {
                 $this->recordConflict($record, $remote, $externalId, $organization);
                 $this->bump($kind, 'conflicts');
             }
@@ -199,7 +203,8 @@ class LexofficeContactSync {
             $this->bump($kind, 'linked');
             if ($this->applyRemote($match, $remote, $policy, $externalId)) {
                 $this->bump($kind, 'updated');
-            } elseif ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($match, $remote)) {
+            }
+            if ($policy === LexofficeMatchPolicy::ManualReview && $this->hasConflict($match, $remote)) {
                 $this->recordConflict($match, $remote, $externalId, $organization);
                 $this->bump($kind, 'conflicts');
             }
@@ -287,21 +292,36 @@ class LexofficeContactSync {
             }
         }
 
+        // Schwache Heuristiken (Name allein) nur akzeptieren, wenn sie EINDEUTIG
+        // sind. Bei mehreren Gleichnamigen nicht raten → die Inbox entscheidet.
         if ($company !== '') {
-            $byCompany = $base()->where('company', $company)->first();
+            $byCompany = $this->uniqueMatch($base()->where('company', $company));
             if ($byCompany instanceof Model) {
                 return $byCompany;
             }
         }
 
         if ($personName !== '') {
-            $byName = $base()->where('name', $personName)->first();
+            $byName = $this->uniqueMatch($base()->where('name', $personName));
             if ($byName instanceof Model) {
                 return $byName;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Liefert den Treffer nur, wenn er eindeutig ist (genau ein Datensatz).
+     * Null bei null oder mehr als einem Kandidaten — verhindert das Raten bei
+     * mehrdeutigen Namens-Matches.
+     *
+     * @param  Builder<Customer>|Builder<Supplier>  $query
+     */
+    private function uniqueMatch(Builder $query): ?Model {
+        $hits = $query->limit(2)->get();
+
+        return $hits->count() === 1 ? $hits->first() : null;
     }
 
     /**
@@ -336,7 +356,7 @@ class LexofficeContactSync {
             'currency' => 'EUR',
         ];
 
-        $contactNumber = $this->extractContactNumber($remote);
+        $contactNumber = $this->extractContactNumber($remote, $kind);
         if ($kind === 'vendor') {
             if ($contactNumber !== '') {
                 $attributes['vendor_number'] = $contactNumber;
@@ -377,7 +397,9 @@ class LexofficeContactSync {
             }
             $this->touchSnapshot($record, $remote, $externalId);
 
-            return false;
+            // Nutzerdaten bleiben unberührt, aber die Kontaktnummer (Metadaten)
+            // kann sich geändert haben — das ist ein echtes Update und wird gezählt.
+            return $changed;
         }
 
         $changes = $this->buildChangesFromRemote($remote);
@@ -401,7 +423,8 @@ class LexofficeContactSync {
      * @param  array<string, mixed>  $remote
      */
     private function applyContactNumber(Model $record, array $remote): bool {
-        $number = $this->extractContactNumber($remote);
+        $kind = $record instanceof Supplier ? 'vendor' : 'customer';
+        $number = $this->extractContactNumber($remote, $kind);
         if ($number === '') {
             return false;
         }
@@ -662,15 +685,17 @@ class LexofficeContactSync {
         $title = (string) ($mapped['name'] ?? $mapped['company'] ?? $externalId);
         $subtitle = (string) ($mapped['email'] ?? $mapped['vat_id'] ?? '');
 
+        // $values (2. Arg) greifen nur bei Neuanlage — ein bereits vorhandenes
+        // Item behält seinen Status (wird nicht reaktiviert).
         /** @var IntegrationInboxItem $item */
-        $item = IntegrationInboxItem::query()->firstOrNew([
-            'organization_id' => $organization->id,
-            'plugin_id' => LexofficePlugin::ID,
-            'dedupe_key' => $dedupeKey,
-        ]);
-        if (! $item->exists) {
-            $item->status = IntegrationInboxItem::STATUS_OPEN;
-        }
+        $item = IntegrationInboxItem::query()->firstOrNew(
+            [
+                'organization_id' => $organization->id,
+                'plugin_id' => LexofficePlugin::ID,
+                'dedupe_key' => $dedupeKey,
+            ],
+            ['status' => IntegrationInboxItem::STATUS_OPEN],
+        );
         $item->fill([
             'source' => 'api',
             'target_type' => $morphClass,
@@ -724,12 +749,10 @@ class LexofficeContactSync {
      * @param  array<string, mixed>  $remote
      */
     private function extractVatId(array $remote): string {
-        $vat = (string) data_get($remote, 'company.vatRegistrationId', '');
-        if ($vat !== '') {
-            return $vat;
-        }
-
-        return (string) data_get($remote, 'company.taxNumber', '');
+        // NUR die USt-IdNr. — kein Fallback auf company.taxNumber, sonst
+        // landet eine Steuernummer im vat_id-Feld (Fehl-Beschriftung) und
+        // verschmutzt obendrein den vat_id-Match in findLocalMatch().
+        return (string) data_get($remote, 'company.vatRegistrationId', '');
     }
 
     /**
@@ -742,17 +765,24 @@ class LexofficeContactSync {
     }
 
     /**
-     * Offizielle Lexoffice-Kontaktnummer (customer- oder vendor-Rolle).
+     * Offizielle Lexoffice-Kontaktnummer für die gerade verarbeitete Rolle.
+     * Bei Doppel-Rollen (customer + vendor) haben beide i. d. R. eigene
+     * Nummern — daher rollenbewusst: zuerst die passende Rolle, erst dann
+     * (als Notnagel) die andere.
      *
      * @param  array<string, mixed>  $remote
+     * @param  'customer'|'vendor'  $kind
      */
-    private function extractContactNumber(array $remote): string {
-        $customer = (string) data_get($remote, 'roles.customer.number', '');
-        if ($customer !== '') {
-            return $customer;
+    private function extractContactNumber(array $remote, string $kind): string {
+        $primary = $kind === 'vendor' ? 'vendor' : 'customer';
+        $secondary = $kind === 'vendor' ? 'customer' : 'vendor';
+
+        $number = (string) data_get($remote, 'roles.' . $primary . '.number', '');
+        if ($number !== '') {
+            return $number;
         }
 
-        return (string) data_get($remote, 'roles.vendor.number', '');
+        return (string) data_get($remote, 'roles.' . $secondary . '.number', '');
     }
 
     /**

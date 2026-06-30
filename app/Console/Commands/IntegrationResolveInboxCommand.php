@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization};
-use App\Services\Integration\InboxActionService;
+use App\Services\Integration\{InboxActionService, MatchProfileRegistry};
 use App\Services\Integration\Match\{EntityMatcher, MatchResult};
-use App\Services\Integration\MatchProfileRegistry;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 
@@ -209,6 +208,10 @@ class IntegrationResolveInboxCommand extends Command {
         }
 
         $best = $result->best();
+        if ($best === null) {
+            // Ohne Kandidaten gibt es nichts vorzuschlagen — nichts anfassen.
+            return;
+        }
         $item->update([
             'case_type' => IntegrationInboxItem::CASE_AMBIGUOUS,
             'referenceable_type' => $best['model']->getMorphClass(),

@@ -14,7 +14,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Models\Concerns\{Archivable, BelongsToOrganization, HasAttachments, HasContactAndBankDetails, HasSqid, HasTags, Searchable};
 use App\Services\Numbering\NumberAuthority;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
-use Illuminate\Database\Eloquent\{Model};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
 use Illuminate\Support\{Carbon, Str};
 

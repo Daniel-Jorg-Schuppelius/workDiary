@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Crypt, DB};
 
 /**
  * Verschlüsselt alle `encrypted`-Felder mit dem aktuellen APP_KEY neu.
@@ -36,16 +35,16 @@ class SecurityRekeyEncryptedCommand extends Command {
     /** @var array<class-string, list<string>> Model → verschlüsselte Felder */
     private const MAP = [
         \App\Models\User::class => ['two_factor_secret', 'two_factor_recovery_codes', 'tax_identification_number', 'social_security_number'],
-        \App\Models\TwoFactorCredential::class => ['secret', 'data'],
+        \App\Models\Auth\TwoFactorCredential::class => ['secret', 'data'],
         \App\Models\ContactAddress::class => ['street', 'supplement', 'zip', 'city'],
         \App\Models\ContactBankAccount::class => ['account_holder', 'iban', 'bic'],
-        \App\Models\BankAccount::class => ['iban', 'bic', 'account_holder'],
-        \App\Models\BankTransaction::class => ['counterparty_name', 'counterparty_iban', 'purpose'],
+        \App\Models\Finance\BankAccount::class => ['iban', 'bic', 'account_holder'],
+        \App\Models\Finance\BankTransaction::class => ['counterparty_name', 'counterparty_iban', 'purpose'],
         \App\Models\PluginSetting::class => ['settings'],
-        \App\Models\WebhookEndpoint::class => ['secret'],
+        \App\Models\Integration\WebhookEndpoint::class => ['secret'],
         \App\Models\SoftwareInstallation::class => ['license_key'],
         \App\Models\SupplierCatalogSource::class => ['remote_password'],
-        \App\Models\LocationPoint::class => ['lat', 'lng'],
+        \App\Models\Location\LocationPoint::class => ['lat', 'lng'],
     ];
 
     public function handle(): int {

@@ -21,8 +21,7 @@ use RuntimeException;
  * keine Session zur Verfügung steht (siehe InstallationManager).
  */
 final class EnvWriter {
-    public function __construct(private readonly string $path) {
-    }
+    public function __construct(private readonly string $path) {}
 
     public static function forApp(): self {
         return new self(base_path('.env'));

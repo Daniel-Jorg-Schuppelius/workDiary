@@ -27,8 +27,7 @@ class InstallController extends Controller {
     /** Reihenfolge der Wizard-Schritte für die Fortschrittsanzeige. */
     private const STEPS = ['requirements', 'application', 'database', 'admin', 'mail', 'integrations', 'finish'];
 
-    public function __construct(private readonly InstallationManager $installer) {
-    }
+    public function __construct(private readonly InstallationManager $installer) {}
 
     // ── Schritt 1: Voraussetzungen ───────────────────────────────────────
 

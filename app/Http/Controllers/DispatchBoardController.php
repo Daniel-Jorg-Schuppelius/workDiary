@@ -16,7 +16,6 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Customer, User};
 use App\Services\Dispatch\DispatchBoardService;
 use App\Support\Sqid;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

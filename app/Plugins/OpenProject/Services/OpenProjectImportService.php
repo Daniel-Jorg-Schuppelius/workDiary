@@ -12,8 +12,8 @@ namespace App\Plugins\OpenProject\Services;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, Task, TimeEntry, User};
-use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
+use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

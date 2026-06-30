@@ -11,8 +11,7 @@
 namespace App\Services\Payroll;
 
 use App\Models\MinimumWage;
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**
  * Liefert den für ein Datum gültigen gesetzlichen Mindestlohn (Gültig-ab-

@@ -10,8 +10,7 @@
 
 namespace App\Policies\Chat;
 
-use App\Models\Chat\Channel;
-use App\Models\Chat\Message;
+use App\Models\Chat\{Channel, Message};
 use App\Models\User;
 
 class MessagePolicy {

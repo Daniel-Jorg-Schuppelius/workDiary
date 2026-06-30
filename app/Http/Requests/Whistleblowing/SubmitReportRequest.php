@@ -23,7 +23,6 @@ use Illuminate\Validation\Rules\File;
  * serverseitig im WhistleblowingAttachmentService.
  */
 class SubmitReportRequest extends BaseFormRequest {
-
     /**
      * @return array<string, mixed>
      */

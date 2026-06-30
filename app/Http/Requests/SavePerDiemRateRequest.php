@@ -11,7 +11,6 @@
 namespace App\Http\Requests;
 
 class SavePerDiemRateRequest extends BaseFormRequest {
-
     /**
      * @return array<string, mixed>
      */

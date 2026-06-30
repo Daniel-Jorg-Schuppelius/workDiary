@@ -14,7 +14,6 @@ use App\Enums\WorkSchedule\ScheduleType;
 use Illuminate\Validation\Rule;
 
 class SaveWorkScheduleRequest extends BaseFormRequest {
-
     /**
      * Normalisiert die Eingaben je nach Arbeitszeit-Typ. Insbesondere werden
      * die Pro-Wochentag-Vorgaben (`day_targets`) serverseitig in Minuten

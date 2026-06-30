@@ -14,7 +14,6 @@ use App\Enums\Asset\MaintenanceIntervalKind;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveMaintenancePlanRequest extends BaseFormRequest {
-
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

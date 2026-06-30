@@ -11,8 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Events\Chat\MessageSent;
-use App\Models\Chat\Channel;
-use App\Models\Chat\ScheduledMessage;
+use App\Models\Chat\{Channel, ScheduledMessage};
 use App\Services\PushNotifier;
 use Illuminate\Console\Command;
 

@@ -15,7 +15,6 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class LogRestoreTestRequest extends BaseFormRequest {
-
     /**
      * @return array<string, mixed>
      */

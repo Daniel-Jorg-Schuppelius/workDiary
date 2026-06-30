@@ -17,7 +17,6 @@ use App\Http\Requests\SaveTourRequest;
 use App\Models\{Customer, DiaryEntry, Site, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
 use App\Support\{Setting, SortableQuery};
-use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request};

@@ -12,8 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{ExternalReference, PluginSetting, Project, TimeEntry, User};
-use App\Plugins\OpenProject\OpenProjectConfig;
-use App\Plugins\OpenProject\OpenProjectPlugin;
+use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectStructureSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;

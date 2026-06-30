@@ -12,14 +12,12 @@ declare(strict_types=1);
 
 namespace App\Jobs\Location;
 
-use App\Models\Organization;
-use App\Models\User;
+use App\Models\{Organization, User};
 use App\Services\Location\{VisitBuilder, VisitMaterializer};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
 
 /**
  * Verarbeitet die noch offene Standort-Spur eines Nutzers: bildet Aufenthalte

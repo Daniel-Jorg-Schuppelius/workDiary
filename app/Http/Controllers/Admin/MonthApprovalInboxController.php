@@ -30,8 +30,7 @@ use Illuminate\View\View;
 class MonthApprovalInboxController extends Controller {
     private const ALLOWED_SORTS = ['period_year', 'status', 'days_open', 'warnings_count', 'submitted_at'];
 
-    public function __construct(private readonly MonthClosureService $service) {
-    }
+    public function __construct(private readonly MonthClosureService $service) {}
 
     public function index(Request $request): View {
         /** @var User $admin */

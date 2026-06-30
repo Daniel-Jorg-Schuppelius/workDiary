@@ -16,7 +16,6 @@ use App\Services\SqidEncoder;
 use Illuminate\Validation\Rule;
 
 class SaveReportTargetRequest extends BaseFormRequest {
-
     protected function prepareForValidation(): void {
         $scope = $this->input('scope');
 

@@ -32,8 +32,7 @@ class LexofficeArticleSync {
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {
-    }
+    ) {}
 
     public function withPolicy(LexofficeMatchPolicy $policy): self {
         $clone = clone $this;

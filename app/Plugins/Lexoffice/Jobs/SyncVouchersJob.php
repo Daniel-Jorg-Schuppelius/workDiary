@@ -11,8 +11,7 @@
 namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\{Customer, ExternalReference, Supplier};
-use App\Plugins\Lexoffice\LexofficeConfig;
-use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};
 use Illuminate\Foundation\Bus\Dispatchable;

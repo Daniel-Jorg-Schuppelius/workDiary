@@ -11,8 +11,7 @@
 namespace Tests\Feature\Plugins;
 
 use App\Models\{IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
-use App\Plugins\OpenProject\OpenProjectConfig;
-use App\Plugins\OpenProject\OpenProjectPlugin;
+use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectImportService, OpenProjectStructureSync};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;

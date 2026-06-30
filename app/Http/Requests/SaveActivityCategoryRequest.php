@@ -14,7 +14,6 @@ use App\Enums\Activity\ActivityCategoryType;
 use Illuminate\Validation\Rule;
 
 class SaveActivityCategoryRequest extends BaseFormRequest {
-
     /** @return array<string, mixed> */
     public function rules(): array {
         return [

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Install;
 
 use App\Enums\User\UserRole;
-use App\Models\{Organization};
+use App\Models\Organization;
 use App\Services\Install\{EnvWriter, InstallationManager};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;

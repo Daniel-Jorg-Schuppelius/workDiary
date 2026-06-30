@@ -57,11 +57,15 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="badge badge-sm
-                                        @if ($conflict->status === 'open') badge-warning
-                                        @elseif ($conflict->status === 'resolved_local') badge-info
-                                        @elseif ($conflict->status === 'resolved_remote') badge-success
-                                        @else badge-ghost @endif">{{ $conflict->status }}</span>
+                                    @php
+                                        $statusBadge = match ($conflict->status) {
+                                            'open' => 'badge-warning',
+                                            'resolved_local' => 'badge-info',
+                                            'resolved_remote' => 'badge-success',
+                                            default => 'badge-ghost',
+                                        };
+                                    @endphp
+                                    <span class="badge badge-sm {{ $statusBadge }}">{{ $conflict->status }}</span>
                                 </td>
                                 <td class="text-right">
                                     @if ($conflict->isOpen())

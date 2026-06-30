@@ -15,7 +15,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SavePricingMarginRuleRequest;
 use App\Models\{PricingMarginRule, Supplier};
-use Illuminate\Http\{RedirectResponse};
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 

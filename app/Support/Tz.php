@@ -11,8 +11,7 @@
 namespace App\Support;
 
 use App\Models\{Organization, User};
-use Carbon\CarbonImmutable;
-use Carbon\CarbonInterface;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use DateTimeZone;
 use Illuminate\Support\Facades\Auth;
 

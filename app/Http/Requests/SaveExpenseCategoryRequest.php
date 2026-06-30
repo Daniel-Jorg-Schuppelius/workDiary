@@ -14,7 +14,6 @@ use App\Models\{ExpenseCategory, Organization};
 use Illuminate\Validation\Rule;
 
 class SaveExpenseCategoryRequest extends BaseFormRequest {
-
     protected function prepareForValidation(): void {
         $this->merge([
             'is_active' => $this->boolean('is_active'),

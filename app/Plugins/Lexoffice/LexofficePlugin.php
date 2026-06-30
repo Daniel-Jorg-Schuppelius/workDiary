@@ -40,8 +40,7 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
 
     public function __construct(
         private readonly LexofficeService $service,
-    ) {
-    }
+    ) {}
 
     public function id(): string {
         return self::ID;

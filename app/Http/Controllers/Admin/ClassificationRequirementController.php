@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{ClassificationRequirement};
+use App\Models\ClassificationRequirement;
 use App\Services\Classification\ClassificationResolver;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Builder;

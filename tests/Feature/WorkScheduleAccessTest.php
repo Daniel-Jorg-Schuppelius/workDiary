@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{User, WorkSchedule};
+use App\Models\{User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
