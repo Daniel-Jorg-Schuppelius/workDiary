@@ -27,13 +27,19 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration {
     public function up(): void {
+        // Selbstheilend: ein früherer Lauf konnte die Tabelle anlegen, scheiterte
+        // aber am zu langen Auto-Index-Namen von morphs() (MySQL-64-Zeichen-Limit).
+        // Die Tabelle ist neu und leer → gefahrlos neu aufsetzen.
+        Schema::dropIfExists('external_reference_aliases');
+
         Schema::create('external_reference_aliases', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
             $table->string('plugin_id', 64);
             $table->string('external_type', 64);
             $table->string('external_id');            // alte/zusätzliche Fremd-ID
-            $table->morphs('referenceable');          // heutiges Ziel-Modell (nach Merge)
+            // Kurzer expliziter Index-Name (MySQL-64-Zeichen-Limit; SQLite-Dev verdeckt es).
+            $table->morphs('referenceable', 'extref_alias_ref');   // heutiges Ziel-Modell (nach Merge)
             $table->timestamps();
 
             // Eine Fremd-ID darf je Org/Plugin/Typ nur auf EIN Ziel zeigen.
