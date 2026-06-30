@@ -295,7 +295,15 @@
 /*     Empty-States bleiben erhalten.                                    */
 /* ------------------------------------------------------------------ */
 .table:not(.week-table) :where(th, td):not([colspan]) {
-    padding-block: 0.625rem;
+    /* FESTE Mindest-Zeilenhöhe statt nur Padding: nur so sehen Tabellen
+       wirklich gleich aus. Sonst bestimmt der ZELLINHALT die Höhe — eine
+       reine Textzeile (~1.05rem) ist niedriger als eine Zeile mit Badge/
+       Icon-Button (btn-xs = 1.5rem). Beispiel: „Produkte & Leistungen" hat
+       in jeder Zeile Badges (→ hoch), „Kunden" meist nur Text (→ niedrig).
+       `height` wirkt bei Tabellenzellen als MINIMUM; mehrzeilige Zellen
+       dürfen weiter wachsen. vertical-align zentriert den Inhalt. */
+    height: 2.75rem;
+    padding-block: 0.375rem;
     vertical-align: middle;
 }
 .table:not(.week-table) tbody tr {
