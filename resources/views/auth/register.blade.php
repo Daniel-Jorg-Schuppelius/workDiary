@@ -30,7 +30,7 @@
                 <a href="{{ route('home') }}" class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary">WorkDiary</a>
                 <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                        <span data-theme-label class="text-base leading-none">◐</span>
+                        <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
                     </button>
                     <x-button href="{{ route('login') }}" tone="ghost" size="sm">{{ __('Anmelden') }}</x-button>
                 </div>
@@ -157,26 +157,10 @@
                 <x-footer-copyright />
             </div>
         </footer>
-        <script @cspNonce>
-            (function () {
-                var root = document.documentElement;
-                var toggle = document.querySelector('[data-theme-toggle]');
-                var label = document.querySelector('[data-theme-label]');
-                if (label) {
-                    var theme = root.getAttribute('data-theme') || 'dim';
-                    label.textContent = theme === 'corporate' ? '☀' : '◐';
-                }
-                if (toggle) {
-                    toggle.addEventListener('click', function () {
-                        var current = root.getAttribute('data-theme') || 'dim';
-                        var next = current === 'dim' ? 'corporate' : 'dim';
-                        root.setAttribute('data-theme', next);
-                        root.style.colorScheme = next === 'corporate' ? 'light' : 'dark';
-                        label.textContent = next === 'corporate' ? '☀' : '◐';
-                        localStorage.setItem('workDiaryTheme', next);
-                    });
-                }
-            })();
-        </script>
+        {{-- Theme-Toggle wird zentral von resources/js/layout.js (in app.js gebündelt)
+             gesteuert. Ein zusätzliches Inline-Script hier würde einen ZWEITEN
+             Click-Handler an denselben Button hängen → der Klick schaltet doppelt
+             um und das Theme bleibt scheinbar stehen. Das Anti-Flash-Skript im
+             <head> setzt nur das initiale Theme; den Umschalter macht layout.js. --}}
     </body>
 </html>

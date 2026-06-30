@@ -149,32 +149,10 @@
             </div>
         </footer>
 
-        <script @cspNonce>
-            (function () {
-                var root = document.documentElement;
-                var toggle = document.querySelector('[data-theme-toggle]');
-                var label = document.querySelector('[data-theme-label]');
-
-                function setTheme(theme) {
-                    root.setAttribute('data-theme', theme);
-                    root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
-                    localStorage.setItem('workDiaryTheme', theme);
-                    if (label) {
-                        // Material-Symbol: hell → Mond (Klick → dunkel), dunkel → Sonne.
-                        label.textContent = theme === 'corporate' ? 'dark_mode' : 'light_mode';
-                    }
-                }
-
-                var activeTheme = root.getAttribute('data-theme') === 'corporate' ? 'corporate' : 'dim';
-                setTheme(activeTheme);
-
-                if (toggle) {
-                    toggle.addEventListener('click', function () {
-                        var nextTheme = root.getAttribute('data-theme') === 'corporate' ? 'dim' : 'corporate';
-                        setTheme(nextTheme);
-                    });
-                }
-            })();
-        </script>
+        {{-- Theme-Toggle wird zentral von resources/js/layout.js (in app.js gebündelt)
+             gesteuert. Ein zusätzliches Inline-Script hier würde einen ZWEITEN
+             Click-Handler an denselben Button hängen → der Klick schaltet doppelt
+             um und das Theme bleibt scheinbar stehen. Das Anti-Flash-Skript im
+             <head> setzt nur das initiale Theme; den Umschalter macht layout.js. --}}
     </body>
 </html>
