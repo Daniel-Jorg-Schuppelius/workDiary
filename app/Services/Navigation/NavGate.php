@@ -45,6 +45,7 @@ class NavGate {
         'assets.*' => \App\Models\Asset::class,
         'energy-logs.*' => \App\Models\EnergyLog::class,
         'sites.*' => \App\Models\Site::class,
+        'geofences.*' => \App\Models\Location\CustomerGeofence::class,
         'buildings.*' => \App\Models\Building::class,
         'floors.*' => \App\Models\Floor::class,
         'rooms.*' => \App\Models\Room::class,

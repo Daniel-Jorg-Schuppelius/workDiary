@@ -33,6 +33,13 @@ Schedule::command('privacy:deadlines')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Standorterfassung: rohe GPS-Spur nach Aufbewahrungsfrist loeschen
+// (Datenminimierung). Besuche/Buchungen bleiben erhalten. Idempotent.
+Schedule::command('location:purge-points')
+    ->dailyAt('03:45')
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('chat:send-reminders')
     ->everyMinute()
     ->withoutOverlapping();

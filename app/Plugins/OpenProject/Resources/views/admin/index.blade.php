@@ -15,7 +15,7 @@
                 </div>
             </div>
             <p class="mb-4 text-sm text-base-content/60">
-                {{ __('Projekte und Work Packages werden mit workDiary abgeglichen, anschließend die Zeiteinträge importiert. Zuordenbare Einträge werden direkt im Projekt gebucht, der Rest landet unten in der Inbox.') }}
+                {{ __('Projekte und Work Packages werden mit workDiary abgeglichen, anschließend die Zeiteinträge importiert. Zuordenbare Einträge werden direkt im Projekt gebucht, der Rest landet in der zentralen Zuordnungs-Inbox.') }}
             </p>
 
             @if (session('status'))
@@ -48,75 +48,22 @@
             </div>
         </div>
 
-        {{-- Inbox: unzugeordnete Zeiteinträge --}}
+        {{-- Unzugeordnete Zeiteinträge → zentrale Zuordnungs-Inbox (MVP-103) --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="mb-3">
-                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Unzugeordnete Zeiteinträge') }}</h2>
-                <p class="text-sm text-base-content/60">
-                    {{ __('Diese OpenProject-Projekte ließen sich keinem workDiary-Projekt zuordnen. Ordne jede Gruppe einem bestehenden Projekt zu oder lege es direkt neu an — die Einträge werden dann gebucht und künftige Importe matchen automatisch.') }}
-                </p>
-            </div>
-
-            @if ($groups->isEmpty())
-                <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
-                    {{ __('Keine offenen Einträge. Alles zugeordnet.') }}
-                </p>
-            @else
-                <div class="space-y-3">
-                    @foreach ($groups as $group)
-                        <div class="rounded-box border border-base-300 p-3" x-data="{ newProject: {{ count($projects) > 0 ? 'false' : 'true' }} }">
-                            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                                <div>
-                                    <x-status-badge tone="neutral" size="md">{{ $group->project_name ?: __('(ohne Projekt)') }}</x-status-badge>
-                                    <span class="ml-2 text-sm text-base-content/60">
-                                        {{ trans_choice(':count Eintrag|:count Einträge', $group->count, ['count' => $group->count]) }},
-                                        {{ $group->minutes }} {{ __('Min.') }} ·
-                                        {{ \Illuminate\Support\Carbon::parse($group->first_seen)->isoFormat('L') }} – {{ \Illuminate\Support\Carbon::parse($group->last_seen)->isoFormat('L') }}
-                                    </span>
-                                </div>
-                                <form method="POST" action="{{ route('admin.openproject.pending.dismiss') }}"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Diese Einträge verwerfen? Sie werden nicht gebucht.') }}">
-                                    @csrf
-                                    <input type="hidden" name="project_external_id" value="{{ $group->project_external_id }}">
-                                    <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Verwerfen') }}</button>
-                                </form>
-                            </div>
-
-                            <form method="POST" action="{{ route('admin.openproject.pending.assign') }}"
-                                  class="grid gap-3 rounded-box bg-base-200/50 p-3 md:grid-cols-2">
-                                @csrf
-                                <input type="hidden" name="project_external_id" value="{{ $group->project_external_id }}">
-                                <input type="hidden" name="project_mode" :value="newProject ? 'new' : 'existing'">
-
-                                <div class="space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="label-text text-xs font-semibold">{{ __('workDiary-Projekt') }}</span>
-                                        <label class="label cursor-pointer gap-1 py-0">
-                                            <input type="checkbox" class="toggle toggle-xs" x-model="newProject" @disabled(count($projects) === 0)>
-                                            <span class="label-text text-xs">{{ __('neu anlegen') }}</span>
-                                        </label>
-                                    </div>
-                                    <select name="project_id" :disabled="newProject" x-show="!newProject"
-                                            class="select select-sm select-bordered w-full">
-                                        <option value="">{{ __('— Projekt wählen —') }}</option>
-                                        @foreach ($projects as $project)
-                                            <option value="{{ $project['sqid'] }}">{{ $project['name'] }}</option>
-                                        @endforeach
-                                    </select>
-                                    <input type="text" name="new_project_name" :disabled="!newProject" x-show="newProject"
-                                           value="{{ $group->project_name }}" placeholder="{{ __('Name des neuen Projekts') }}"
-                                           class="input input-sm input-bordered w-full" x-cloak>
-                                </div>
-
-                                <div class="flex items-end justify-end">
-                                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Zuordnen & buchen') }}</button>
-                                </div>
-                            </form>
-                        </div>
-                    @endforeach
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Unzugeordnete Zeiteinträge') }}</h2>
+                    <p class="text-sm text-base-content/60">
+                        {{ __('Nicht automatisch zuordenbare OpenProject-Einträge werden jetzt in der zentralen Zuordnungs-Inbox bearbeitet (Gruppe → Projekt zuordnen und buchen).') }}
+                    </p>
                 </div>
-            @endif
+                <a href="{{ route('admin.integration.inbox', ['plugin' => 'openproject']) }}" class="btn btn-sm btn-primary">
+                    {{ __('Zur Zuordnungs-Inbox') }}
+                    @if (($inboxOpenCount ?? 0) > 0)
+                        <span class="badge badge-sm badge-warning ml-1">{{ $inboxOpenCount }}</span>
+                    @endif
+                </a>
+            </div>
         </div>
     </div>
 </x-page-shell>

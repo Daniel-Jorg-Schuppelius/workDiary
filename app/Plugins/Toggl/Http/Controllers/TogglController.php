@@ -10,16 +10,15 @@
 
 namespace App\Plugins\Toggl\Http\Controllers;
 
-use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ExternalReference, Organization, Project, User};
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project, User};
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
 use App\Plugins\Toggl\{TogglConfig, TogglExportImporter, TogglImportService, TogglPlugin};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -39,39 +38,20 @@ class TogglController extends Controller {
         $admin = $this->admin();
         $organization = $admin->organization;
 
-        $groups = $organization !== null ? $this->service->openPendingGroups($organization) : collect();
-
-        if ($organization instanceof Organization) {
-            // Jede Inbox-Gruppe um einen Fuzzy-Vorschlag (Kunde + Projekt)
-            // ergänzen, der im Formular vorausgewählt wird — nie automatisch
-            // gebucht, nur als Vorbelegung.
-            $groups = $groups->map(function (object $group) use ($organization): object {
-                $customer = $this->service->suggestCustomer($organization, $group->client_name);
-                $project = $this->service->suggestProject($organization, $customer, $group->project_name);
-
-                return (object) [
-                    'client_name' => $group->client_name,
-                    'project_name' => $group->project_name,
-                    'count' => $group->count,
-                    'minutes' => $group->minutes,
-                    'first_seen' => $group->first_seen,
-                    'last_seen' => $group->last_seen,
-                    'suggested_customer_sqid' => $customer?->sqid,
-                    'suggested_project_sqid' => $project?->sqid,
-                ];
-            });
-        }
-
-        $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'company']);
-        $projects = Project::query()
-            ->whereNotNull('customer_id')
-            ->orderBy('name')
-            ->get(['id', 'name', 'customer_id']);
+        // Unzugeordnete Toggl-Einträge werden jetzt in der universellen
+        // Zuordnungs-Inbox (MVP-103) bearbeitet — hier nur noch die Anzahl
+        // offener Gruppen als Hinweis/Deep-Link.
+        $inboxOpenCount = $organization instanceof Organization
+            ? IntegrationInboxItem::query()
+                ->where('organization_id', $organization->id)
+                ->where('plugin_id', TogglPlugin::ID)
+                ->where('status', IntegrationInboxItem::STATUS_OPEN)
+                ->whereNotNull('group_key')
+                ->count()
+            : 0;
 
         return view('toggl::admin.import', [
-            'groups' => $groups,
-            'customers' => $this->customerOptions($customers),
-            'projects' => $this->projectOptions($projects),
+            'inboxOpenCount' => $inboxOpenCount,
         ]);
     }
 
@@ -104,40 +84,6 @@ class TogglController extends Controller {
         $result = $this->service->importFromCsv($this->organization($admin), $content, $config);
 
         return back()->with('status', $this->importMessage($result));
-    }
-
-    public function assign(Request $request): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $data = $request->validate([
-            'client_name' => ['nullable', 'string', 'max:191'],
-            'project_name' => ['nullable', 'string', 'max:191'],
-            'customer_mode' => ['required', 'in:existing,new'],
-            'customer_id' => ['nullable', 'string', 'required_if:customer_mode,existing'],
-            'new_customer_name' => ['nullable', 'string', 'max:191', 'required_if:customer_mode,new'],
-            'project_mode' => ['required', 'in:existing,new'],
-            'project_id' => ['nullable', 'string', 'required_if:project_mode,existing'],
-            'new_project_name' => ['nullable', 'string', 'max:191', 'required_if:project_mode,new'],
-        ]);
-
-        // Kunde + Projekt atomar auflösen bzw. anlegen, dann die Pendings buchen.
-        // Nie automatisch anlegen: Neuanlage passiert nur auf explizite Wahl,
-        // bestehende werden über die Auswahl referenziert (keine Duplikate).
-        $result = DB::transaction(function () use ($organization, $data): array {
-            $customer = $this->resolveCustomer($organization, $data);
-            $project = $this->resolveProject($organization, $customer, $data);
-
-            return $this->service->assignPending(
-                $organization,
-                $data['client_name'] ?? null,
-                $data['project_name'] ?? null,
-                $customer,
-                $project,
-            );
-        });
-
-        return back()->with('status', (string) __(':created gebucht, :skipped bereits vorhanden.', $result));
     }
 
     /** Mapping-Verwaltung: gemerkte Client-/Projekt-Zuordnungen einsehen/ändern. */
@@ -473,76 +419,9 @@ class TogglController extends Controller {
                 : (string) __('Import abgeschlossen.'));
     }
 
-    public function dismiss(Request $request): RedirectResponse {
-        $admin = $this->admin();
-
-        $validated = $request->validate([
-            'client_name' => ['nullable', 'string', 'max:191'],
-            'project_name' => ['nullable', 'string', 'max:191'],
-        ]);
-
-        $count = $this->service->dismissPending(
-            $this->organization($admin),
-            $validated['client_name'] ?? null,
-            $validated['project_name'] ?? null,
-        );
-
-        return back()->with('status', (string) __(':count Eintrag/Einträge verworfen.', ['count' => $count]));
-    }
-
     /** @param array{created: int, skipped: int, unmatched: int} $result */
     private function importMessage(array $result): string {
         return (string) __(':created gebucht, :skipped übersprungen, :unmatched in der Inbox.', $result);
-    }
-
-    /**
-     * Liefert den zugeordneten Kunden: bestehenden (per Sqid) oder einen neu
-     * angelegten (Name aus dem Formular, Default = Toggl-Client-Name).
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function resolveCustomer(Organization $organization, array $data): Customer {
-        if (($data['customer_mode'] ?? null) === 'new') {
-            return Customer::query()->create([
-                'organization_id' => $organization->id,
-                'name' => trim((string) $data['new_customer_name']),
-                'created_by' => Auth::id(),
-            ]);
-        }
-
-        $customer = Customer::query()
-            ->whereKey($this->decodeId(Customer::class, $data['customer_id'] ?? null))
-            ->firstOrFail();
-        abort_unless((int) $customer->organization_id === (int) $organization->id, 403);
-
-        return $customer;
-    }
-
-    /**
-     * Liefert das zugeordnete Projekt unter dem Kunden: bestehendes (per Sqid,
-     * muss zum Kunden gehören) oder ein neu angelegtes.
-     *
-     * @param  array<string, mixed>  $data
-     */
-    private function resolveProject(Organization $organization, Customer $customer, array $data): Project {
-        if (($data['project_mode'] ?? null) === 'new') {
-            return Project::query()->create([
-                'organization_id' => $organization->id,
-                'customer_id' => $customer->id,
-                'name' => trim((string) $data['new_project_name']),
-                'status' => ProjectStatus::Active->value,
-                'is_default' => false,
-                'created_by' => Auth::id(),
-            ]);
-        }
-
-        $project = Project::query()
-            ->whereKey($this->decodeId(Project::class, $data['project_id'] ?? null))
-            ->firstOrFail();
-        abort_unless((int) $project->organization_id === (int) $organization->id, 403);
-        abort_unless((int) $project->customer_id === (int) $customer->id, 422, __('Das gewählte Projekt gehört nicht zum gewählten Kunden.'));
-
-        return $project;
     }
 
     /** Lädt eine Toggl-Mapping-Reference der Organisation oder bricht mit 404 ab. */

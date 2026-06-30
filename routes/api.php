@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\Api\{AssetStatusVisibilityController, AssetTimelineController, AttachmentController, AttendanceController, CommentController, CustomerController, DashboardController, DiaryController, EmergencyAssignmentController, FlexController, MaterialController, MeController, OnCallShiftController, ProjectController, PushSubscriptionController, StopwatchController, TagController, TaskController, TimesheetController, TimesheetEntryController, TimesheetMaterialController};
+use App\Http\Controllers\Api\{AssetStatusVisibilityController, AssetTimelineController, AttachmentController, AttendanceController, CommentController, CustomerController, DashboardController, DiaryController, EmergencyAssignmentController, FlexController, LocationController, MaterialController, MeController, OnCallShiftController, ProjectController, PushSubscriptionController, StopwatchController, TagController, TaskController, TimesheetController, TimesheetEntryController, TimesheetMaterialController};
 use Illuminate\Support\Facades\Route;
 
 // Siehe routes/web.php: Projekt-Bindung akzeptiert ID/Sqid oder
@@ -16,8 +16,17 @@ use Illuminate\Support\Facades\Route;
 // voraus (abgesichert via SqidRoutePatternTest).
 Route::pattern('project', '[A-Za-z0-9]+|[a-z0-9-]+/[a-z0-9-]+');
 
+// Standort-Ingest von Geräte-Apps (OwnTracks/Traccar). Auth über Pro-Gerät-Token
+// im Pfad statt Sanctum – die Apps können sich nicht interaktiv anmelden.
+Route::match(['get', 'post'], 'location/ingest/{token}', [LocationController::class, 'ingest'])
+    ->where('token', '[A-Za-z0-9]+')
+    ->name('api.location.ingest');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('me', MeController::class)->name('api.me');
+
+    // Punktueller Browser-Standort-Stempel (navigator.geolocation).
+    Route::post('location/stamp', [LocationController::class, 'stamp'])->name('api.location.stamp');
 
     Route::get('diary', [DiaryController::class, 'index'])->name('api.diary.index');
     Route::post('diary', [DiaryController::class, 'store'])->name('api.diary.store');

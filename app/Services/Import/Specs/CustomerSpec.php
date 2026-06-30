@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Import\Specs;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
-use App\Models\{Customer, Organization};
-use App\Services\Import\{ImportOutcome, ValidationIssue};
+use App\Models\Organization;
+use App\Services\Import\Specs\Concerns\DedupsAndStages;
+use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
+use App\Services\Integration\Profiles\CustomerMatchProfile;
 use Throwable;
 
 /**
@@ -24,7 +26,9 @@ use Throwable;
  * Mandant. Ohne Nummer wird stets neu angelegt; doppelte Namen sind
  * erlaubt, doppelte Nummern werden geupdatet.
  */
-class CustomerSpec extends AbstractEntitySpec {
+class CustomerSpec extends AbstractEntitySpec implements InboxFirstSpec {
+    use DedupsAndStages;
+
     public function entity(): ImportEntity {
         return ImportEntity::Customers;
     }
@@ -52,6 +56,7 @@ class CustomerSpec extends AbstractEntitySpec {
             'comment',
             'invoice_text',
             'billable',
+            'external_id',
         ];
     }
 
@@ -62,6 +67,10 @@ class CustomerSpec extends AbstractEntitySpec {
     public function headerAliases(): array {
         return [
             'kunde' => 'name',
+            'fremd-id' => 'external_id',
+            'fremdid' => 'external_id',
+            'externe-id' => 'external_id',
+            'quell-id' => 'external_id',
             'nummer' => 'number',
             'kundennummer' => 'number',
             'firma' => 'company',
@@ -135,37 +144,40 @@ class CustomerSpec extends AbstractEntitySpec {
     }
 
     public function upsert(array $row, Organization $organization): array {
-        $payload = array_filter(
-            $row,
-            static fn($v): bool => $v !== null,
-        );
+        return $this->run($row, $organization, false);
+    }
+
+    public function upsertOrStage(array $row, Organization $organization): array {
+        return $this->run($row, $organization, true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array{0: ImportOutcome, 1: ?ValidationIssue}
+     */
+    private function run(array $row, Organization $organization, bool $inboxFirst): array {
+        try {
+            return $this->resolveImport(
+                $organization,
+                $this->payload($row, $organization),
+                app(CustomerMatchProfile::class),
+                $this->entity()->value,
+                $inboxFirst,
+            );
+        } catch (Throwable $e) {
+            return [ImportOutcome::Failed, new ValidationIssue(ImportErrorCode::Persist, null, $e->getMessage())];
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    private function payload(array $row, Organization $organization): array {
+        $payload = array_filter($row, static fn($v): bool => $v !== null);
         $payload['organization_id'] = $organization->id;
         $payload['currency'] ??= 'EUR';
 
-        try {
-            $existing = null;
-            $number = $payload['number'] ?? null;
-            if ($number !== null && $number !== '') {
-                $existing = Customer::query()
-                    ->where('organization_id', $organization->id)
-                    ->where('number', $number)
-                    ->first();
-            }
-
-            if ($existing !== null) {
-                $existing->fill($payload)->save();
-
-                return [ImportOutcome::Updated, null];
-            }
-
-            Customer::create($payload);
-
-            return [ImportOutcome::Created, null];
-        } catch (Throwable $e) {
-            return [
-                ImportOutcome::Failed,
-                new ValidationIssue(ImportErrorCode::Persist, null, $e->getMessage()),
-            ];
-        }
+        return $payload;
     }
 }

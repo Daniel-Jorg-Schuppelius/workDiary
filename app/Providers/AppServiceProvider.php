@@ -191,6 +191,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
         Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);
         Gate::policy(\App\Models\Integration\WebhookEndpoint::class, \App\Policies\Integration\WebhookEndpointPolicy::class);
+        Gate::policy(\App\Models\Location\CustomerGeofence::class, \App\Policies\Location\CustomerGeofencePolicy::class);
         Gate::policy(\App\Models\Isms\IsmsRisk::class, \App\Policies\Isms\IsmsRiskPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsControl::class, \App\Policies\Isms\IsmsControlPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsRequirement::class, \App\Policies\Isms\IsmsRequirementPolicy::class);

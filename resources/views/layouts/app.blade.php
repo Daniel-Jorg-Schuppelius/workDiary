@@ -376,6 +376,16 @@
                                         $adminNavItems[] = ['route' => 'procedures.index', 'label' => __('procedure.title.templates'), 'icon' => 'rule', 'modal' => false, 'matches' => ['procedures.*']];
                                     }
                                     $adminNavItems[]  = ['route' => 'admin.data.index',                'label' => __('Datentransfer'),    'icon' => 'sync_alt',         'modal' => false];
+                                    if (($_authUser?->canManageBilling() ?? false) && \Illuminate\Support\Facades\Route::has('admin.integration.inbox')) {
+                                        $_iiOrg = $_authUser?->organization_id;
+                                        $_iiOpen = $_iiOrg !== null
+                                            ? \App\Models\IntegrationInboxItem::query()
+                                                ->where('organization_id', $_iiOrg)
+                                                ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
+                                                ->count()
+                                            : 0;
+                                        $adminNavItems[] = ['route' => 'admin.integration.inbox', 'label' => __('Zuordnungs-Inbox'), 'icon' => 'rule', 'modal' => false, 'matches' => ['admin.integration.*'], 'badge' => $_iiOpen];
+                                    }
                                     if (\Illuminate\Support\Facades\Route::has('admin.remote-support.pending.index')) {
                                         $_rsOrg = $_authUser?->organization;
                                         $_rsPending = $_rsOrg !== null
@@ -593,6 +603,16 @@
                                         ['route' => 'buildings.index', 'label' => __('Gebäude'),    'icon' => 'apartment',   'modal' => false, 'matches' => ['buildings.*']],
                                         ['route' => 'floors.index',    'label' => __('Geschosse'),  'icon' => 'layers',      'modal' => false, 'matches' => ['floors.*']],
                                         ['route' => 'rooms.index',     'label' => __('Räume'),      'icon' => 'meeting_room','modal' => false, 'matches' => ['rooms.*']],
+                                    ],
+                                ];
+                                $sidebarSections[] = [
+                                    'key'         => 'location',
+                                    'label'       => __('Standorterfassung'),
+                                    'collapsible' => true,
+                                    'items'       => [
+                                        ['route' => 'geofences.index',      'label' => __('Geofences'),          'icon' => 'pin_drop',     'modal' => false, 'matches' => ['geofences.*']],
+                                        ['route' => 'location.review.index', 'label' => __('Standort-Vorschläge'), 'icon' => 'where_to_vote', 'modal' => false, 'matches' => ['location.review.*']],
+                                        ['route' => 'location.devices.index', 'label' => __('Meine Geräte'),       'icon' => 'smartphone',    'modal' => false, 'matches' => ['location.devices.*']],
                                     ],
                                 ];
                                 $sidebarSections[] = [
@@ -856,6 +876,7 @@
                                 'travel-expenses' => 'module.spesen',
                                 'fleet' => 'module.fuhrpark',
                                 'facility' => 'module.liegenschaften',
+                                'location' => 'module.standorterfassung',
                                 'sales' => 'module.vertrieb',
                                 'compliance' => 'module.compliance',
                                 'datenschutz' => 'module.datenschutz',

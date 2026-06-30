@@ -28,6 +28,9 @@ return [
         // Session keinen work_mode trägt (frische Session/F5). Wird über die
         // tatsächlichen Zugriffsrechte normalisiert (User::preferredWorkMode()).
         'work_mode' => 'legacy',
+        // Standortbasierte Zeiterfassung: ausdrückliches Opt-in pro Person.
+        // Ohne Einwilligung wird kein Standort-Push angenommen (PII).
+        'location_tracking_enabled' => false,
         // Benachrichtigungs-Präferenzen (MVP-018). ACHTUNG: User::preferences()
         // ersetzt Top-Level-Keys komplett — der Dispatcher liest die Sub-Keys
         // daher zusätzlich mit eigenen Fallbacks (data_get(..., default)).

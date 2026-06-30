@@ -13,9 +13,8 @@ namespace App\Plugins\Lexoffice\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, PendingExternalConflict, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
 
 /**
  * Admin-Inbox für offene Lexoffice-Konflikte aus dem Pull-Sync (Policy = manual_review).
@@ -26,27 +25,17 @@ use Illuminate\View\View;
  *  - dismiss: Konflikt wird ignoriert (z. B. bewusst abweichende Daten)
  */
 class LexofficeConflictInboxController extends Controller {
-    public function index(Request $request): View {
+    /**
+     * Die Lexoffice-Konflikte sind in die universelle Zuordnungs-Inbox
+     * (MVP-103) umgezogen. Diese Route leitet dorthin um — der Controller bleibt
+     * nur für die Auflösung etwaiger Alt-Konflikte (resolve/dismiss) erhalten.
+     */
+    public function index(): RedirectResponse {
         /** @var User $admin */
         $admin = Auth::user();
         abort_unless($admin->canManageBilling(), 403);
 
-        $statusFilter = (string) $request->input('status', PendingExternalConflict::STATUS_OPEN);
-
-        $query = PendingExternalConflict::query()
-            ->where('organization_id', $admin->organization_id)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->with('referenceable')
-            ->orderByDesc('id');
-
-        if ($statusFilter !== '' && $statusFilter !== 'all') {
-            $query->where('status', $statusFilter);
-        }
-
-        return view('lexoffice::conflicts.index', [
-            'conflicts' => $query->paginate(25)->withQueryString(),
-            'filters' => ['status' => $statusFilter],
-        ]);
+        return redirect()->route('admin.integration.inbox', ['plugin' => LexofficePlugin::ID, 'case' => 'conflict']);
     }
 
     public function resolveLocal(PendingExternalConflict $conflict): RedirectResponse {

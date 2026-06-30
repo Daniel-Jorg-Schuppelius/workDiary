@@ -1,0 +1,154 @@
+<?php
+/*
+ * Created on   : Mon Jun 29 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : IntegrationInboxTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace Tests\Feature;
+
+use App\Enums\User\UserRole;
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem, User};
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\WithOrganization;
+use Tests\TestCase;
+
+class IntegrationInboxTest extends TestCase {
+    use RefreshDatabase;
+    use WithOrganization;
+
+    private User $admin;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+        $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+    }
+
+    private function item(array $overrides = []): IntegrationInboxItem {
+        return IntegrationInboxItem::query()->create(array_merge([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'toggl',
+            'source' => 'api',
+            'target_type' => (new Customer)->getMorphClass(),
+            'external_type' => 'client',
+            'external_id' => 'tg-1',
+            'dedupe_key' => 'client:tg-1',
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'remote_snapshot' => ['client' => 'Neu AG'],
+            'mapped_snapshot' => ['name' => 'Neu AG', 'vat_id' => 'DE123'],
+            'display_title' => 'Neu AG',
+        ], $overrides));
+    }
+
+    public function test_index_renders(): void {
+        $this->item();
+        $this->actingAs($this->admin)->get(route('admin.integration.inbox'))->assertOk();
+    }
+
+    public function test_assign_links_to_existing_and_writes_reference(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Bestand GmbH']);
+        $item = $this->item();
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.assign', $item), ['target' => $customer->sqid])
+            ->assertRedirect();
+
+        $item->refresh();
+        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LINKED, $item->status);
+        $this->assertSame($customer->id, $item->resolved_to_id);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => 'toggl', 'external_type' => 'client', 'external_id' => 'tg-1',
+            'referenceable_id' => $customer->id,
+        ]);
+    }
+
+    public function test_create_makes_new_record(): void {
+        $item = $this->item();
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.create', $item))
+            ->assertRedirect();
+
+        $created = Customer::query()->where('name', 'Neu AG')->first();
+        $this->assertNotNull($created);
+        $this->assertSame('DE123', $created->vat_id);
+        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()->status);
+        $this->assertDatabaseHas('external_references', ['external_id' => 'tg-1', 'referenceable_id' => $created->id]);
+    }
+
+    public function test_accept_remote_updates_local(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'email' => 'old@x.test']);
+        $item = $this->item([
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'plugin_id' => 'lexoffice', 'external_type' => 'contact', 'external_id' => 'lx-1', 'dedupe_key' => 'contact:lx-1',
+            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id,
+            'mapped_snapshot' => ['email' => 'new@x.test'],
+            'local_snapshot' => ['email' => 'old@x.test'],
+            'diff_fields' => ['email'],
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.accept-remote', $item))
+            ->assertRedirect();
+
+        $this->assertSame('new@x.test', $customer->fresh()->email);
+        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_REMOTE, $item->fresh()->status);
+    }
+
+    public function test_keep_local_closes_without_change(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'email' => 'old@x.test']);
+        $item = $this->item([
+            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id,
+            'mapped_snapshot' => ['email' => 'new@x.test'], 'local_snapshot' => ['email' => 'old@x.test'], 'diff_fields' => ['email'],
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.keep-local', $item))
+            ->assertRedirect();
+
+        $this->assertSame('old@x.test', $customer->fresh()->email);
+        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LOCAL, $item->fresh()->status);
+    }
+
+    public function test_dismiss(): void {
+        $item = $this->item();
+        $this->actingAs($this->admin)->post(route('admin.integration.inbox.dismiss', $item))->assertRedirect();
+        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, $item->fresh()->status);
+    }
+
+    public function test_non_billing_user_forbidden(): void {
+        $user = User::factory()->create(['organization_id' => $this->organization->id]);
+        $user->assignRole(UserRole::Callcenter->value);
+        $item = $this->item();
+
+        $this->actingAs($user)
+            ->post(route('admin.integration.inbox.dismiss', $item))
+            ->assertForbidden();
+
+        $this->assertTrue($item->fresh()->isOpen());
+    }
+
+    public function test_mappings_index_and_unlink(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $ref = ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'toggl', 'external_type' => 'client',
+            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id,
+            'external_id' => 'tg-9',
+        ]);
+
+        $this->actingAs($this->admin)->get(route('admin.integration.mappings.index'))->assertOk();
+
+        $this->actingAs($this->admin)
+            ->delete(route('admin.integration.mappings.destroy', $ref))
+            ->assertRedirect();
+
+        $this->assertNull(ExternalReference::query()->find($ref->id));
+    }
+}

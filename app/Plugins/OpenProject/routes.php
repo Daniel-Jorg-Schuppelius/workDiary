@@ -23,10 +23,6 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/openproject/sync-structure', [OpenProjectController::class, 'syncStructure'])->name('admin.openproject.sync-structure');
     Route::post('admin/openproject/sync', [OpenProjectController::class, 'sync'])->name('admin.openproject.sync');
 
-    // Inbox unzugeordneter Zeiteinträge.
-    Route::post('admin/openproject/pending/assign', [OpenProjectController::class, 'assign'])->name('admin.openproject.pending.assign');
-    Route::post('admin/openproject/pending/dismiss', [OpenProjectController::class, 'dismiss'])->name('admin.openproject.pending.dismiss');
-
     // Rückbuchung erfasster Zeiten nach OpenProject.
     Route::get('admin/openproject/push', [OpenProjectController::class, 'push'])->name('admin.openproject.push');
     Route::post('admin/openproject/push', [OpenProjectController::class, 'runPush'])->name('admin.openproject.push.run');

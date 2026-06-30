@@ -198,7 +198,9 @@ class ProcessCsvImportJob implements ShouldQueue {
                     continue;
                 }
 
-                [$outcome, $issue] = $spec->upsert($entry['norm'], $organization);
+                [$outcome, $issue] = ($spec instanceof \App\Services\Import\InboxFirstSpec && $run->match_policy === 'inbox_first')
+                    ? $spec->upsertOrStage($entry['norm'], $organization)
+                    : $spec->upsert($entry['norm'], $organization);
                 switch ($outcome) {
                     case ImportOutcome::Created:
                         $created++;

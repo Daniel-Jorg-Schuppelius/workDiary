@@ -56,6 +56,7 @@ class ImportRun extends Model {
         'storage_path',
         'delimiter',
         'encoding',
+        'match_policy',
         'rows_total',
         'rows_created',
         'rows_updated',

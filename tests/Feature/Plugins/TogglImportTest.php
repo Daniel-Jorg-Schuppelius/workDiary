@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, PluginSetting, Project, TimeEntry, TogglPendingEntry, User};
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,6 +63,40 @@ class TogglImportTest extends TestCase {
             'customer_id' => $customer->id,
             'name' => $projectName,
             'is_default' => false,
+        ]);
+    }
+
+    /** group_key wie vom Import erzeugt (lower(client|project)). */
+    private function groupKey(string $client, string $project): string {
+        return mb_strtolower(trim($client) . '|' . trim($project));
+    }
+
+    private function seedInboxEntry(string $client, string $project, string $entryKey, string $start, string $end, bool $billable = true): IntegrationInboxItem {
+        return IntegrationInboxItem::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'source' => 'csv',
+            'target_type' => (new TimeEntry)->getMorphClass(),
+            'external_type' => 'entry',
+            'external_id' => $entryKey,
+            'dedupe_key' => 'entry:' . $entryKey,
+            'group_key' => $this->groupKey($client, $project),
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'remote_snapshot' => [
+                'source' => 'csv',
+                'entry_key' => $entryKey,
+                'client_name' => $client,
+                'project_name' => $project,
+                'description' => null,
+                'started_at' => CarbonImmutable::parse($start)->toIso8601String(),
+                'ended_at' => CarbonImmutable::parse($end)->toIso8601String(),
+                'billable' => $billable,
+                'user_email' => null,
+            ],
+            'display_title' => $project,
+            'display_subtitle' => $client,
+            'occurred_at' => CarbonImmutable::parse($start),
         ]);
     }
 
@@ -174,12 +208,15 @@ class TogglImportTest extends TestCase {
         $this->assertSame(1, $result['unmatched']);
         $this->assertSame(0, TimeEntry::query()->count());
 
-        $this->assertDatabaseHas('toggl_pending_entries', [
+        // MVP-103 Phase 2b: unmatched landet in der universellen Inbox (gruppiert).
+        $this->assertDatabaseHas('integration_inbox_items', [
             'organization_id' => $this->organization->id,
-            'client_name' => 'Unknown Co',
-            'project_name' => 'Mystery',
-            'entry_key' => 'toggl:222',
-            'status' => TogglPendingEntry::STATUS_OPEN,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => 'entry',
+            'external_id' => 'toggl:222',
+            'group_key' => $this->groupKey('Unknown Co', 'Mystery'),
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
         ]);
     }
 
@@ -195,34 +232,24 @@ class TogglImportTest extends TestCase {
 
         $this->assertSame(0, $result['created']);
         $this->assertSame(1, $result['unmatched']);
-        $this->assertDatabaseHas('toggl_pending_entries', [
+        $this->assertDatabaseHas('integration_inbox_items', [
             'organization_id' => $this->organization->id,
-            'source' => TogglPendingEntry::SOURCE_CSV,
-            'client_name' => 'Beta GmbH',
-            'project_name' => 'Intranet',
-            'status' => TogglPendingEntry::STATUS_OPEN,
+            'plugin_id' => TogglPlugin::ID,
+            'source' => 'csv',
+            'group_key' => $this->groupKey('Beta GmbH', 'Intranet'),
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
         ]);
     }
 
-    public function test_assign_pending_materializes_entries_and_remembers_reference(): void {
-        $config = $this->enableToggl();
+    public function test_book_inbox_group_materializes_entries_and_remembers_reference(): void {
+        $this->enableToggl();
         $project = $this->customerWithProject('Beta GmbH', 'Intranet');
         $customer = $project->customer;
 
-        TogglPendingEntry::query()->create([
-            'organization_id' => $this->organization->id,
-            'source' => TogglPendingEntry::SOURCE_CSV,
-            'entry_key' => 'csv:abc',
-            'client_name' => 'Beta GmbH',
-            'project_name' => 'Intranet',
-            'description' => 'Wartung',
-            'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
-            'ended_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
-            'billable' => true,
-            'status' => TogglPendingEntry::STATUS_OPEN,
-        ]);
+        $item = $this->seedInboxEntry('Beta GmbH', 'Intranet', 'csv:abc', '2026-05-26 09:00:00', '2026-05-26 10:00:00');
 
-        $result = $this->service()->assignPending($this->organization, 'Beta GmbH', 'Intranet', $customer, $project);
+        $result = $this->service()->bookInboxGroup($this->organization, $this->groupKey('Beta GmbH', 'Intranet'), $customer, $project);
 
         $this->assertSame(1, $result['created']);
 
@@ -230,11 +257,8 @@ class TogglImportTest extends TestCase {
         $this->assertNotNull($entry);
         $this->assertSame(60, $entry->minutes);
 
-        $this->assertDatabaseHas('toggl_pending_entries', [
-            'entry_key' => 'csv:abc',
-            'status' => TogglPendingEntry::STATUS_IMPORTED,
-            'time_entry_id' => $entry->id,
-        ]);
+        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()->status);
+        $this->assertSame($entry->id, $item->fresh()->resolved_to_id);
 
         // Reference gemerkt → künftiger Match.
         $this->assertDatabaseHas('external_references', [
@@ -273,24 +297,14 @@ class TogglImportTest extends TestCase {
         $this->assertNull($this->service()->suggestCustomer($this->organization, 'Völlig anderer Laden'));
     }
 
-    public function test_assign_creates_new_customer_and_project_when_requested(): void {
-        TogglPendingEntry::query()->create([
-            'organization_id' => $this->organization->id,
-            'source' => TogglPendingEntry::SOURCE_CSV,
-            'entry_key' => 'csv:new',
-            'client_name' => 'Neukunde AG',
-            'project_name' => 'Migration',
-            'description' => 'Setup',
-            'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
-            'ended_at' => CarbonImmutable::parse('2026-05-26 10:30:00'),
-            'billable' => true,
-            'status' => TogglPendingEntry::STATUS_OPEN,
-        ]);
+    public function test_book_group_creates_new_customer_and_project_when_requested(): void {
+        $this->enableToggl();
+        $this->seedInboxEntry('Neukunde AG', 'Migration', 'csv:new', '2026-05-26 09:00:00', '2026-05-26 10:30:00');
 
         $this->actingAs($this->admin)
-            ->post(route('admin.toggl.pending.assign'), [
-                'client_name' => 'Neukunde AG',
-                'project_name' => 'Migration',
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('Neukunde AG', 'Migration'),
                 'customer_mode' => 'new',
                 'new_customer_name' => 'Neukunde AG',
                 'project_mode' => 'new',
@@ -315,36 +329,27 @@ class TogglImportTest extends TestCase {
             'external_id' => 'Neukunde AG',
             'referenceable_id' => $customer->id,
         ]);
-        $this->assertDatabaseHas('toggl_pending_entries', [
-            'entry_key' => 'csv:new',
-            'status' => TogglPendingEntry::STATUS_IMPORTED,
+        $this->assertDatabaseHas('integration_inbox_items', [
+            'external_id' => 'csv:new',
+            'status' => IntegrationInboxItem::STATUS_RESOLVED_CREATED,
         ]);
     }
 
-    public function test_assign_to_existing_customer_with_new_project(): void {
+    public function test_book_group_to_existing_customer_with_new_project(): void {
+        $this->enableToggl();
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Bestand GmbH',
         ]);
 
-        TogglPendingEntry::query()->create([
-            'organization_id' => $this->organization->id,
-            'source' => TogglPendingEntry::SOURCE_CSV,
-            'entry_key' => 'csv:exist',
-            'client_name' => 'Bestand GmbH',
-            'project_name' => 'Support 2026',
-            'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
-            'ended_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
-            'billable' => false,
-            'status' => TogglPendingEntry::STATUS_OPEN,
-        ]);
+        $this->seedInboxEntry('Bestand GmbH', 'Support 2026', 'csv:exist', '2026-05-26 09:00:00', '2026-05-26 10:00:00', false);
 
         $this->actingAs($this->admin)
-            ->post(route('admin.toggl.pending.assign'), [
-                'client_name' => 'Bestand GmbH',
-                'project_name' => 'Support 2026',
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('Bestand GmbH', 'Support 2026'),
                 'customer_mode' => 'existing',
-                'customer_id' => $customer->sqid,
+                'customer' => $customer->sqid,
                 'project_mode' => 'new',
                 'new_project_name' => 'Support 2026',
             ])
@@ -385,11 +390,13 @@ class TogglImportTest extends TestCase {
         $this->assertDatabaseMissing('external_references', ['id' => $ref->id]);
     }
 
-    public function test_non_admin_cannot_assign(): void {
+    public function test_non_billing_user_cannot_book_group(): void {
         $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
         $this->actingAs($user)
-            ->post(route('admin.toggl.pending.assign'), [
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => 'x|y',
                 'customer_mode' => 'new',
                 'new_customer_name' => 'X',
                 'project_mode' => 'new',

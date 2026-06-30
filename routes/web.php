@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SecurityController, SupportAccessAuditController, SupportReportController};
 use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
@@ -743,12 +743,29 @@ Route::middleware('auth')->group(function () {
         Route::resource('buildings', \App\Http\Controllers\BuildingController::class);
         Route::resource('floors', \App\Http\Controllers\FloorController::class);
 
+        // ── Standortbasierte Zeiterfassung (gegated: module.standorterfassung) ──
+        Route::resource('geofences', \App\Http\Controllers\Location\GeofenceController::class)
+            ->except('show');
+        Route::get('location/review', [\App\Http\Controllers\Location\LocationReviewController::class, 'index'])->name('location.review.index');
+        Route::post('location/review/{entry}/confirm', [\App\Http\Controllers\Location\LocationReviewController::class, 'confirm'])->name('location.review.confirm');
+        Route::post('location/review/{entry}/dismiss', [\App\Http\Controllers\Location\LocationReviewController::class, 'dismiss'])->name('location.review.dismiss');
+        Route::get('location/devices', [\App\Http\Controllers\Location\LocationDeviceController::class, 'index'])->name('location.devices.index');
+        Route::post('location/devices', [\App\Http\Controllers\Location\LocationDeviceController::class, 'store'])->name('location.devices.store');
+        Route::post('location/consent', [\App\Http\Controllers\Location\LocationDeviceController::class, 'consent'])->name('location.devices.consent');
+        Route::post('location/import/google', [\App\Http\Controllers\Location\LocationDeviceController::class, 'importGoogle'])->name('location.devices.import-google');
+        Route::delete('location/devices/{device}', [\App\Http\Controllers\Location\LocationDeviceController::class, 'destroy'])->name('location.devices.destroy');
+
         Route::get('calendar/events.ics', [IcsFeedController::class, 'personal'])->name('events.ics.personal');
 
         // ── Kunden (Kimai-style customers) ──────────────────────────────────────
         Route::get('customers/export', [CustomerController::class, 'export'])->name('customers.export');
         Route::get('customers/import', [CustomerController::class, 'importForm'])->name('customers.import.form');
         Route::post('customers/import', [CustomerController::class, 'import'])->name('customers.import');
+        // Kunden-Abgleich (Dubletten-Bereinigung) — VOR der Resource-Route, damit
+        // "customers/duplicates" nicht als customers/{customer} interpretiert wird.
+        Route::get('customers/duplicates', [CustomerMergeController::class, 'index'])->name('customers.duplicates.index');
+        Route::post('customers/duplicates/merge', [CustomerMergeController::class, 'merge'])->name('customers.duplicates.merge');
+        Route::post('customers/duplicates/dismiss', [CustomerMergeController::class, 'dismiss'])->name('customers.duplicates.dismiss');
         Route::resource('customers', CustomerController::class);
         Route::post('customers/{customer}/archive', [CustomerController::class, 'archive'])->name('customers.archive');
         Route::post('customers/{customer}/restore', [CustomerController::class, 'restore'])->name('customers.restore');
@@ -1611,6 +1628,19 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/data/export', [\App\Http\Controllers\Admin\DataTransferController::class, 'export'])->name('admin.data.export');
         Route::get('admin/data/{export}/download', [\App\Http\Controllers\Admin\DataTransferController::class, 'download'])->name('admin.data.download');
         Route::delete('admin/data/{export}', [\App\Http\Controllers\Admin\DataTransferController::class, 'destroy'])->name('admin.data.destroy');
+
+        // Integrations-Drehscheibe: zentrale Zuordnungs-Inbox + Zuordnungs-Register (MVP-103)
+        Route::get('admin/integration/inbox', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'index'])->name('admin.integration.inbox');
+        Route::post('admin/integration/inbox/{item}/assign', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'assign'])->name('admin.integration.inbox.assign');
+        Route::post('admin/integration/inbox/{item}/create', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'create'])->name('admin.integration.inbox.create');
+        Route::post('admin/integration/inbox/{item}/accept-remote', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'acceptRemote'])->name('admin.integration.inbox.accept-remote');
+        Route::post('admin/integration/inbox/{item}/keep-local', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'keepLocal'])->name('admin.integration.inbox.keep-local');
+        Route::post('admin/integration/inbox/{item}/dismiss', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'dismiss'])->name('admin.integration.inbox.dismiss');
+        Route::post('admin/integration/inbox/group/book', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'bookGroup'])->name('admin.integration.inbox.group.book');
+        Route::post('admin/integration/inbox/group/dismiss', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'dismissGroup'])->name('admin.integration.inbox.group.dismiss');
+        Route::get('admin/integration/mappings', [\App\Http\Controllers\Admin\IntegrationMappingController::class, 'index'])->name('admin.integration.mappings.index');
+        Route::delete('admin/integration/mappings/{reference}', [\App\Http\Controllers\Admin\IntegrationMappingController::class, 'destroy'])->name('admin.integration.mappings.destroy');
+
         Route::get('admin/branch-profiles', [BranchProfileController::class, 'index'])
             ->name('admin.branch-profiles.index');
         Route::post('admin/branch-profiles/{profile}', [BranchProfileController::class, 'install'])

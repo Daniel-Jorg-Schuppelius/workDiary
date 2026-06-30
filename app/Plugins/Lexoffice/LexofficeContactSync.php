@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Models\{ContactAddress, Customer, ExternalReference, Organization, PendingExternalConflict, Supplier};
+use App\Models\{ContactAddress, Customer, ExternalReference, IntegrationInboxItem, Organization, Supplier};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
@@ -170,6 +170,7 @@ class LexofficeContactSync {
             // lokalen Datensatz matchen. Existiert bereits eine Contact-Ref mit
             // ANDERER external_id, würde ein zweiter Insert extref_unique verletzen.
             if ($this->hasConflictingRef($match, $morphClass, $externalId)) {
+                $this->recordAmbiguous($organization, $morphClass, $externalId, $remote, $match);
                 $this->bump($kind, 'ambiguous');
 
                 return;
@@ -524,22 +525,88 @@ class LexofficeContactSync {
             return;
         }
 
-        PendingExternalConflict::query()->updateOrCreate(
-            [
-                'plugin_id' => LexofficePlugin::ID,
-                'conflict_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-                'referenceable_type' => $record->getMorphClass(),
-                'referenceable_id' => $record->getKey(),
-                'external_id' => $externalId,
-                'status' => PendingExternalConflict::STATUS_OPEN,
-            ],
-            [
-                'organization_id' => $organization->id,
-                'local_snapshot' => $record->only(array_keys($this->buildChangesFromRemote($remote))),
-                'remote_snapshot' => $remote,
-                'diff_fields' => $diff,
-            ],
+        $mapped = $this->buildChangesFromRemote($remote);
+        $this->upsertInboxItem(
+            $organization,
+            $record->getMorphClass(),
+            $externalId,
+            IntegrationInboxItem::CASE_CONFLICT,
+            $remote,
+            $mapped,
+            $record,
+            $record->only(array_keys($mapped)),
+            $diff,
         );
+    }
+
+    /**
+     * Schreibt ein ambiguous-Inbox-Item: mehrere Remote-Kontakte zeigen auf
+     * denselben lokalen Datensatz (zuvor still gezählt).
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function recordAmbiguous(Organization $organization, string $morphClass, string $externalId, array $remote, Model $candidate): void {
+        $this->upsertInboxItem(
+            $organization,
+            $morphClass,
+            $externalId,
+            IntegrationInboxItem::CASE_AMBIGUOUS,
+            $remote,
+            $this->buildChangesFromRemote($remote),
+            $candidate,
+        );
+    }
+
+    /**
+     * Idempotentes Schreiben eines Lexoffice-Eintrags in die universelle
+     * Zuordnungs-Inbox. Bereits aufgelöste/verworfene Items werden nicht
+     * reaktiviert (nur Snapshots aktualisiert).
+     *
+     * @param  array<string, mixed>  $remote
+     * @param  array<string, mixed>  $mapped
+     * @param  array<string, mixed>|null  $localSnapshot
+     * @param  list<string>  $diffFields
+     */
+    private function upsertInboxItem(
+        Organization $organization,
+        string $morphClass,
+        string $externalId,
+        string $caseType,
+        array $remote,
+        array $mapped,
+        ?Model $referenceable = null,
+        ?array $localSnapshot = null,
+        array $diffFields = [],
+    ): void {
+        $dedupeKey = LexofficePlugin::EXT_TYPE_CONTACT . ':' . $externalId . ':' . class_basename($morphClass);
+        $title = (string) ($mapped['name'] ?? $mapped['company'] ?? $externalId);
+        $subtitle = (string) ($mapped['email'] ?? $mapped['vat_id'] ?? '');
+
+        /** @var IntegrationInboxItem $item */
+        $item = IntegrationInboxItem::query()->firstOrNew([
+            'organization_id' => $organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'dedupe_key' => $dedupeKey,
+        ]);
+        if (! $item->exists) {
+            $item->status = IntegrationInboxItem::STATUS_OPEN;
+        }
+        $item->fill([
+            'source' => 'api',
+            'target_type' => $morphClass,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => $externalId,
+            'case_type' => $caseType,
+            'referenceable_type' => $referenceable?->getMorphClass(),
+            'referenceable_id' => $referenceable?->getKey(),
+            'remote_snapshot' => $remote,
+            'mapped_snapshot' => $mapped,
+            'local_snapshot' => $localSnapshot,
+            'diff_fields' => $diffFields !== [] ? $diffFields : null,
+            'display_title' => $title,
+            'display_subtitle' => $subtitle !== '' ? $subtitle : null,
+        ]);
+        $item->save();
     }
 
     /**

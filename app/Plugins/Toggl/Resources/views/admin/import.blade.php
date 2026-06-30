@@ -16,7 +16,7 @@
                 </div>
             </div>
             <p class="mb-4 text-sm text-base-content/60">
-                {{ __('Zeiteinträge per API abrufen oder einen Detailed-Report-CSV-Export hochladen. Zuordenbare Einträge werden direkt im Kundenprojekt gebucht, der Rest landet unten in der Inbox.') }}
+                {{ __('Zeiteinträge per API abrufen oder einen Detailed-Report-CSV-Export hochladen. Zuordenbare Einträge werden direkt im Kundenprojekt gebucht, der Rest landet in der zentralen Zuordnungs-Inbox.') }}
             </p>
 
             @if (session('status'))
@@ -50,150 +50,23 @@
             </div>
         </div>
 
-        {{-- Inbox: unzugeordnete Einträge --}}
+        {{-- Unzugeordnete Einträge → zentrale Zuordnungs-Inbox (MVP-103) --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="mb-3">
-                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Unzugeordnete Einträge') }}</h2>
-                <p class="text-sm text-base-content/60">
-                    {{ __('Diese Toggl-Client/Projekt-Kombinationen ließen sich keinem Kunden bzw. Projekt zuordnen. Ordne jede Gruppe einem bestehenden Kunden + Projekt zu oder lege Kunde/Projekt direkt neu an — die Einträge werden dann gebucht und künftige Importe matchen automatisch.') }}
-                </p>
-            </div>
-
-            @if ($groups->isEmpty())
-                <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
-                    {{ __('Keine offenen Einträge. Alles zugeordnet.') }}
-                </p>
-            @else
-                <div class="space-y-3">
-                    @foreach ($groups as $group)
-                        <div class="rounded-box border border-base-300 p-3"
-                             x-data="togglAssign({
-                                customerSqid: @js($group->suggested_customer_sqid),
-                                projectSqid: @js($group->suggested_project_sqid),
-                             })">
-                            <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-                                <div>
-                                    <x-status-badge tone="neutral" size="md">{{ $group->client_name ?: __('(ohne Client)') }}</x-status-badge>
-                                    <span class="ml-2 font-semibold">{{ $group->project_name ?: __('(ohne Projekt)') }}</span>
-                                    <span class="ml-2 text-sm text-base-content/60">
-                                        {{ trans_choice(':count Eintrag|:count Einträge', $group->count, ['count' => $group->count]) }},
-                                        {{ $group->minutes }} {{ __('Min.') }} ·
-                                        {{ \Illuminate\Support\Carbon::parse($group->first_seen)->isoFormat('L') }} – {{ \Illuminate\Support\Carbon::parse($group->last_seen)->isoFormat('L') }}
-                                    </span>
-                                </div>
-                                <form method="POST" action="{{ route('admin.toggl.pending.dismiss') }}"
-                                      data-confirm-dialog
-                                      data-confirm-message="{{ __('Diese Einträge verwerfen? Sie werden nicht gebucht.') }}">
-                                    @csrf
-                                    <input type="hidden" name="client_name" value="{{ $group->client_name }}">
-                                    <input type="hidden" name="project_name" value="{{ $group->project_name }}">
-                                    <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Verwerfen') }}</button>
-                                </form>
-                            </div>
-
-                            <form method="POST" action="{{ route('admin.toggl.pending.assign') }}"
-                                  class="grid gap-3 rounded-box bg-base-200/50 p-3 md:grid-cols-2">
-                                @csrf
-                                <input type="hidden" name="client_name" value="{{ $group->client_name }}">
-                                <input type="hidden" name="project_name" value="{{ $group->project_name }}">
-                                <input type="hidden" name="customer_mode" :value="customerMode">
-                                <input type="hidden" name="project_mode" :value="projectMode">
-
-                                {{-- Kunde --}}
-                                <div class="space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="label-text text-xs font-semibold">{{ __('Kunde') }}</span>
-                                        <label class="label cursor-pointer gap-1 py-0">
-                                            <input type="checkbox" class="toggle toggle-xs" x-model="newCustomer">
-                                            <span class="label-text text-xs">{{ __('neu anlegen') }}</span>
-                                        </label>
-                                    </div>
-                                    <select name="customer_id" x-model="customerSqid" :disabled="newCustomer" x-show="!newCustomer"
-                                            class="select select-sm select-bordered w-full">
-                                        <option value="">{{ __('— Kunde wählen —') }}</option>
-                                        <template x-for="c in customers" :key="c.sqid">
-                                            <option :value="c.sqid" x-text="c.label"></option>
-                                        </template>
-                                    </select>
-                                    <input type="text" name="new_customer_name" :disabled="!newCustomer" x-show="newCustomer"
-                                           value="{{ $group->client_name }}" placeholder="{{ __('Name des neuen Kunden') }}"
-                                           class="input input-sm input-bordered w-full" x-cloak>
-                                </div>
-
-                                {{-- Projekt --}}
-                                <div class="space-y-1">
-                                    <div class="flex items-center justify-between">
-                                        <span class="label-text text-xs font-semibold">{{ __('Projekt') }}</span>
-                                        <label class="label cursor-pointer gap-1 py-0" :class="newCustomer && 'opacity-50'">
-                                            <input type="checkbox" class="toggle toggle-xs" x-model="newProject" :disabled="newCustomer">
-                                            <span class="label-text text-xs">{{ __('neu anlegen') }}</span>
-                                        </label>
-                                    </div>
-                                    <select name="project_id" x-model="projectSqid" :disabled="newProject" x-show="!newProject"
-                                            class="select select-sm select-bordered w-full">
-                                        <option value="">{{ __('— Projekt wählen —') }}</option>
-                                        <template x-for="p in filteredProjects" :key="p.sqid">
-                                            <option :value="p.sqid" x-text="p.name"></option>
-                                        </template>
-                                    </select>
-                                    <input type="text" name="new_project_name" :disabled="!newProject" x-show="newProject"
-                                           value="{{ $group->project_name }}" placeholder="{{ __('Name des neuen Projekts') }}"
-                                           class="input input-sm input-bordered w-full" x-cloak>
-                                </div>
-
-                                <div class="md:col-span-2 flex justify-end">
-                                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Zuordnen & buchen') }}</button>
-                                </div>
-                            </form>
-                        </div>
-                    @endforeach
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Unzugeordnete Einträge') }}</h2>
+                    <p class="text-sm text-base-content/60">
+                        {{ __('Nicht automatisch zuordenbare Toggl-Einträge werden jetzt in der zentralen Zuordnungs-Inbox bearbeitet (Gruppe → Kunde + Projekt zuordnen und buchen).') }}
+                    </p>
                 </div>
-            @endif
+                <a href="{{ route('admin.integration.inbox', ['plugin' => 'toggl']) }}" class="btn btn-sm btn-primary">
+                    {{ __('Zur Zuordnungs-Inbox') }}
+                    @if (($inboxOpenCount ?? 0) > 0)
+                        <span class="badge badge-sm badge-warning ml-1">{{ $inboxOpenCount }}</span>
+                    @endif
+                </a>
+            </div>
         </div>
     </div>
 </x-page-shell>
-
-@push('scripts')
-<script>
-    window.togglCustomers = @json($customers);
-    window.togglProjects = @json($projects);
-
-    window.togglAssign = function (init) {
-        return {
-            customers: window.togglCustomers || [],
-            customerSqid: init.customerSqid || '',
-            projectSqid: init.projectSqid || '',
-            newCustomer: !init.customerSqid,
-            newProject: !init.projectSqid,
-            init() {
-                // Ein neuer Kunde hat noch keine Projekte → Projekt muss neu angelegt werden.
-                this.$watch('newCustomer', (v) => { if (v) this.newProject = true; });
-                // Kundenwechsel: Projektvorauswahl verwerfen, wenn sie nicht zum Kunden passt.
-                this.$watch('customerSqid', () => {
-                    if (!this.filteredProjects.some((p) => p.sqid === this.projectSqid)) {
-                        this.projectSqid = '';
-                    }
-                });
-            },
-            get customerId() {
-                const c = this.customers.find((c) => c.sqid === this.customerSqid);
-                return c ? c.id : null;
-            },
-            get customerMode() {
-                return this.newCustomer ? 'new' : 'existing';
-            },
-            get projectMode() {
-                return this.newProject ? 'new' : 'existing';
-            },
-            get filteredProjects() {
-                const id = this.customerId;
-                if (!id) {
-                    return [];
-                }
-                return (window.togglProjects || []).filter((p) => p.customer_id === id);
-            },
-        };
-    };
-</script>
-@endpush
 @endsection

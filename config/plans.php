@@ -39,6 +39,7 @@ return [
             'module.knowledge',
             'module.forms',
             'module.theming',
+            'module.standorterfassung',
         ],
         'enterprise' => [
             'module.kanban',
@@ -60,6 +61,7 @@ return [
             'module.finance',
             'module.lager',
             'module.bau',
+            'module.standorterfassung',
             'protocols.signed',
         ],
     ],
@@ -109,6 +111,7 @@ return [
         'module.finance' => 'Finanz-/DATEV-Schnittstelle.',
         'module.lager' => 'Lagerwirtschaft, Artikelstamm und Fertigung.',
         'module.bau' => 'Bau-/Ausbau: GAEB-Leistungsverzeichnisse, Ordnungszahlen, Aufmaß und Nachträge.',
+        'module.standorterfassung' => 'Standortbasierte Zeiterfassung über Geofences (OwnTracks/Traccar).',
     ],
 
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
@@ -130,6 +133,9 @@ return [
         'expenses.*' => 'module.spesen',
         'per-diem-trips.*' => 'module.spesen',
         'expense-approvals.*' => 'module.spesen',
+
+        'location.*' => 'module.standorterfassung',
+        'geofences.*' => 'module.standorterfassung',
 
         'articles.*' => 'module.lager',
         'warehouses.*' => 'module.lager',

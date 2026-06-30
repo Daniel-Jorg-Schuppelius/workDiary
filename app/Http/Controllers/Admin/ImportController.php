@@ -73,10 +73,14 @@ class ImportController extends Controller {
         $entity = ImportEntity::tryFrom($request->string('entity', 'customers')->toString()) ?? ImportEntity::Customers;
         $this->authorizeImport($entity);
 
+        $supportsInboxFirst = app(\App\Services\Import\EntitySpecRegistry::class)->for($entity)
+            instanceof \App\Services\Import\InboxFirstSpec;
+
         return view('admin.imports.create', [
             'organization' => $organization,
             'entity' => $entity,
             'entities' => ImportEntity::cases(),
+            'supportsInboxFirst' => $supportsInboxFirst,
         ]);
     }
 
@@ -85,6 +89,7 @@ class ImportController extends Controller {
         $data = $request->validate([
             'entity' => ['required', 'string'],
             'file' => ['required', 'file', 'mimes:csv,txt', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
+            'match_policy' => ['nullable', 'in:auto_create,inbox_first'],
         ]);
         $entity = ImportEntity::from($data['entity']);
         $this->authorizeImport($entity);
@@ -94,6 +99,7 @@ class ImportController extends Controller {
             $entity,
             $organization,
             Auth::user(),
+            (string) ($data['match_policy'] ?? 'auto_create'),
         );
 
         if ($run->state === ImportRunState::Failed) {

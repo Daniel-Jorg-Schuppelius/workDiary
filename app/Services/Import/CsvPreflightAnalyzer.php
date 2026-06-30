@@ -52,6 +52,7 @@ class CsvPreflightAnalyzer {
         ImportEntity $entity,
         Organization $organization,
         ?User $actor = null,
+        string $matchPolicy = 'auto_create',
     ): ImportRun {
         $spec = $this->registry->for($entity);
 
@@ -79,6 +80,7 @@ class CsvPreflightAnalyzer {
             'input_filename' => $file->getClientOriginalName(),
             'input_hash' => $hash,
             'storage_path' => $stored,
+            'match_policy' => $matchPolicy === 'inbox_first' ? 'inbox_first' : 'auto_create',
             'created_by_user_id' => $actor?->id,
         ]);
         $run->save();

@@ -10,7 +10,6 @@
 
 namespace App\Plugins\OpenProject\Http\Controllers;
 
-use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Models\{ExternalReference, Organization, Project, Task, User};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
@@ -19,7 +18,7 @@ use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -38,11 +37,19 @@ class OpenProjectController extends Controller {
         $admin = $this->admin();
         $organization = $admin->organization;
 
-        $groups = $organization instanceof Organization ? $this->import->openPendingGroups($organization) : collect();
+        // Unzugeordnete OpenProject-Einträge werden jetzt in der universellen
+        // Zuordnungs-Inbox (MVP-103) bearbeitet — hier nur die offene Anzahl.
+        $inboxOpenCount = $organization instanceof Organization
+            ? \App\Models\IntegrationInboxItem::query()
+                ->where('organization_id', $organization->id)
+                ->where('plugin_id', OpenProjectPlugin::ID)
+                ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
+                ->whereNotNull('group_key')
+                ->count()
+            : 0;
 
         return view('openproject::admin.index', [
-            'groups' => $groups,
-            'projects' => $this->projectOptions(),
+            'inboxOpenCount' => $inboxOpenCount,
         ]);
     }
 
@@ -78,39 +85,6 @@ class OpenProjectController extends Controller {
         $result = $this->import->importFromApi($this->organization($admin), $config, $from, $to);
 
         return back()->with('status', (string) __(':created gebucht, :skipped übersprungen, :unmatched in der Inbox.', $result));
-    }
-
-    public function assign(Request $request): RedirectResponse {
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-        $config = OpenProjectConfig::resolve($organization->id);
-
-        $data = $request->validate([
-            'project_external_id' => ['nullable', 'string', 'max:64'],
-            'project_mode' => ['required', 'in:existing,new'],
-            'project_id' => ['nullable', 'string', 'required_if:project_mode,existing'],
-            'new_project_name' => ['nullable', 'string', 'max:191', 'required_if:project_mode,new'],
-        ]);
-
-        $result = DB::transaction(function () use ($organization, $config, $data): array {
-            $project = $this->resolveProject($organization, $data);
-
-            return $this->import->assignPending($organization, $data['project_external_id'] ?? null, $project, $config);
-        });
-
-        return back()->with('status', (string) __(':created gebucht, :skipped bereits vorhanden.', $result));
-    }
-
-    public function dismiss(Request $request): RedirectResponse {
-        $admin = $this->admin();
-
-        $data = $request->validate([
-            'project_external_id' => ['nullable', 'string', 'max:64'],
-        ]);
-
-        $count = $this->import->dismissPending($this->organization($admin), $data['project_external_id'] ?? null);
-
-        return back()->with('status', (string) __(':count Eintrag/Einträge verworfen.', ['count' => $count]));
     }
 
     /** Rückbuchungs-Seite (Datumsfenster + letzte Zusammenfassung). */
@@ -198,25 +172,6 @@ class OpenProjectController extends Controller {
      *
      * @param  array<string, mixed>  $data
      */
-    private function resolveProject(Organization $organization, array $data): Project {
-        if (($data['project_mode'] ?? null) === 'new') {
-            return Project::query()->create([
-                'organization_id' => $organization->id,
-                'name' => trim((string) $data['new_project_name']),
-                'status' => ProjectStatus::Active->value,
-                'is_default' => false,
-                'created_by' => Auth::id(),
-            ]);
-        }
-
-        $project = Project::query()
-            ->whereKey($this->decodeId(Project::class, $data['project_id'] ?? null))
-            ->firstOrFail();
-        abort_unless((int) $project->organization_id === (int) $organization->id, 403);
-
-        return $project;
-    }
-
     private function findMapping(Organization $organization, int $id): ExternalReference {
         return ExternalReference::query()
             ->withoutGlobalScopes()

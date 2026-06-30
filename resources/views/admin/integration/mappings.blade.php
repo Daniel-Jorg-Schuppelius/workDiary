@@ -1,0 +1,73 @@
+@extends('layouts.app')
+@section('title', __('Zuordnungen'))
+@section('nav-title', __('Zuordnungen'))
+
+@section('content')
+<x-index-page :subtitle="__('Alle gespeicherten Verknüpfungen zwischen lokalen Datensätzen und ihren Fremd-IDs in den angebundenen Systemen. Eine gelöste Verknüpfung führt beim nächsten Import zu einer erneuten Zuordnung über die Inbox.')">
+    <x-slot:actions>
+        <a href="{{ route('admin.integration.inbox') }}" class="btn btn-sm btn-outline">{{ __('Zur Inbox') }}</a>
+        <form method="GET" action="{{ route('admin.integration.mappings.index') }}" class="flex items-center gap-2">
+            <select name="plugin" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <option value="all" @selected($filters['plugin'] === 'all')>{{ __('Alle Quellen') }}</option>
+                @foreach ($plugins as $p)
+                    <option value="{{ $p }}" @selected($filters['plugin'] === $p)>{{ $p }}</option>
+                @endforeach
+            </select>
+            <select name="type" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <option value="all" @selected($filters['type'] === 'all')>{{ __('Alle Typen') }}</option>
+                @foreach ($types as $t)
+                    <option value="{{ $t }}" @selected($filters['type'] === $t)>{{ $t }}</option>
+                @endforeach
+            </select>
+        </form>
+    </x-slot:actions>
+
+    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        @if ($references->isEmpty())
+            <p class="p-6 text-center text-sm text-base-content/60">{{ __('Keine Zuordnungen im gewählten Filter.') }}</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>{{ __('Quelle') }}</th>
+                            <th>{{ __('Typ') }}</th>
+                            <th>{{ __('Fremd-ID') }}</th>
+                            <th>{{ __('Lokaler Datensatz') }}</th>
+                            <th>{{ __('Zuletzt synchronisiert') }}</th>
+                            <th class="text-right">{{ __('Aktion') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($references as $ref)
+                            @php $target = $ref->referenceable; @endphp
+                            <tr>
+                                <td><span class="badge badge-sm badge-outline">{{ $ref->plugin_id }}</span></td>
+                                <td class="text-xs">{{ $ref->external_type }}</td>
+                                <td class="font-mono text-xs">{{ $ref->external_id }}</td>
+                                <td>
+                                    @if ($target)
+                                        {{ class_basename($ref->referenceable_type) }}:
+                                        <span class="font-medium">{{ $target->name ?? ('#' . $target->getKey()) }}</span>
+                                    @else
+                                        <span class="text-error">{{ __('(verwaist)') }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-xs text-base-content/60">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</td>
+                                <td class="text-right">
+                                    <form method="POST" action="{{ route('admin.integration.mappings.destroy', $ref) }}"
+                                          onsubmit="return confirm(@js(__('Diese Verknüpfung wirklich lösen?')));">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-xs btn-ghost text-error">{{ __('Lösen') }}</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-3">{{ $references->links() }}</div>
+        @endif
+    </div>
+</x-index-page>
+@endsection

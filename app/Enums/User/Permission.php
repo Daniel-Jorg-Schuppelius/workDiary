@@ -460,6 +460,7 @@ enum Permission: string implements HasLabel {
         // (Lexoffice-Artikel-Cache); hier nur die neuen Detail-/Pflegerechte.
     case ArticleView = 'article.view';
     case ArticleManage = 'article.manage';
+    case ArticleImport = 'article.import';
         // ── Lagerwirtschaft (Feature 048, MVP-066/067) ──────────
     case InventoryViewAny = 'inventory.viewAny';
     case InventoryPost = 'inventory.post';

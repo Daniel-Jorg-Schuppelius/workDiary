@@ -20,6 +20,8 @@ enum ImportEntity: string implements HasLabel {
     use HasOptions;
 
     case Customers = 'customers';
+    case Suppliers = 'suppliers';
+    case Articles = 'articles';
     case Projects = 'projects';
     case Users = 'users';
     case Materials = 'materials';
@@ -34,6 +36,8 @@ enum ImportEntity: string implements HasLabel {
     public function permission(): string {
         return match ($this) {
             self::Customers => 'customer.import',
+            self::Suppliers => 'supplier.import',
+            self::Articles => 'article.import',
             self::Projects => 'project.import',
             self::Users => 'user.import',
             self::Materials => 'material.import',

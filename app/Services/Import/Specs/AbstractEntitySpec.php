@@ -46,6 +46,10 @@ abstract class AbstractEntitySpec implements EntitySpec {
         return $value === null ? null : mb_strtoupper($value);
     }
 
+    protected function lowerOrNull(?string $value): ?string {
+        return $value === null ? null : mb_strtolower($value);
+    }
+
     protected function decimal(?string $value): ?string {
         if ($value === null) {
             return null;

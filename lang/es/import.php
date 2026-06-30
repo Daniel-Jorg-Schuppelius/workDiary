@@ -3,6 +3,8 @@
 return [
     'entity' => [
         'customers' => 'Clientes',
+        'suppliers' => 'Proveedores',
+        'articles' => 'Artículos',
         'projects' => 'Proyectos',
         'users' => 'Usuarios',
         'materials' => 'Materiales',

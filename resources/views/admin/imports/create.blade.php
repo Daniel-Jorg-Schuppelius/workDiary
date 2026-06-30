@@ -20,6 +20,18 @@
                 @endforeach
             </x-select-field>
 
+            <fieldset class="form-control max-w-xl">
+                <legend class="label-text font-semibold">{{ __('Bei unzuordenbaren Zeilen') }}</legend>
+                <label class="label cursor-pointer justify-start gap-2 py-1">
+                    <input type="radio" name="match_policy" value="auto_create" class="radio radio-sm" checked>
+                    <span class="label-text">{{ __('Direkt anlegen bzw. aktualisieren (Standard)') }}</span>
+                </label>
+                <label class="label cursor-pointer justify-start gap-2 py-1">
+                    <input type="radio" name="match_policy" value="inbox_first" class="radio radio-sm">
+                    <span class="label-text">{{ __('In die Zuordnungs-Inbox legen statt anlegen (nur Kunden/Lieferanten/Artikel)') }}</span>
+                </label>
+            </fieldset>
+
             <label class="form-control">
                 <span class="label-text">{{ __('CSV-Datei (max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => number_format(50000, 0, ',', '.')]) }}</span>
                 <input type="file" name="file" required accept=".csv,.txt"

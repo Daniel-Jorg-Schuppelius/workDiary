@@ -11,11 +11,12 @@
 namespace App\Plugins\OpenProject\Services;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, OpenProjectPendingEntry, Organization, Project, Task, TimeEntry, User};
-use App\Plugins\OpenProject\OpenProjectPlugin;
+use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, Task, TimeEntry, User};
 use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
+use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Kernlogik des OpenProject-Imports:
@@ -23,8 +24,9 @@ use Illuminate\Support\Collection;
  *    ({@see OpenProjectStructureSync}).
  *  - {@see importTimes()} liest die Zeiteinträge im Fenster [$from, $to] und legt
  *    für gemappte Projekte einen {@see TimeEntry} an (idempotent über die
- *    `entry`-Reference); nicht gemappte Projekte → {@see OpenProjectPendingEntry}.
- *  - Die Inbox weist Gruppen einem Projekt zu ({@see assignPending()}), merkt die
+ *    `entry`-Reference); nicht gemappte Projekte → universelle Zuordnungs-Inbox
+ *    ({@see \App\Models\IntegrationInboxItem}, gruppiert nach Projekt).
+ *  - Die Inbox bucht Gruppen gegen ein Projekt ({@see bookInboxGroup()}), merkt die
  *    Projekt-Reference (→ Folgeimporte matchen automatisch) und bucht die Einträge.
  *
  * {@see importFromApi()} ist der vollständige Lauf (Struktur + Zeiten) für den
@@ -162,149 +164,178 @@ class OpenProjectImportService {
         return $timeEntry;
     }
 
-    /** Legt einen unmatchbaren Eintrag als offenes Pending ab (Dedupe über entry_key). */
+    /**
+     * Legt einen unmatchbaren Eintrag als offenen Eintrag in der universellen
+     * Zuordnungs-Inbox ab (gruppiert nach OpenProject-Projekt). Idempotent über
+     * den entry_key (dedupe_key).
+     */
     private function recordPending(Organization $organization, OpenProjectEntry $entry): void {
-        $exists = OpenProjectPendingEntry::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('entry_key', $entry->entryKey)
-            ->exists();
+        $dedupeKey = self::EXT_TYPE_ENTRY . ':' . $entry->entryKey;
 
+        $exists = IntegrationInboxItem::query()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', OpenProjectPlugin::ID)
+            ->where('dedupe_key', $dedupeKey)
+            ->exists();
         if ($exists) {
             return;
         }
 
-        OpenProjectPendingEntry::query()->create([
+        $projectExternalId = $entry->projectExternalId !== null ? trim($entry->projectExternalId) : '';
+        $project = trim((string) $entry->projectName);
+
+        IntegrationInboxItem::query()->create([
             'organization_id' => $organization->id,
-            'entry_key' => $entry->entryKey,
-            'project_external_id' => $entry->projectExternalId,
-            'project_name' => $entry->projectName,
-            'work_package_external_id' => $entry->workPackageExternalId,
-            'work_package_subject' => $entry->workPackageSubject,
-            'description' => $entry->description,
-            'spent_on' => $entry->spentOn->toDateString(),
-            'minutes' => $entry->minutes,
-            'user_external_id' => $entry->userExternalId,
-            'user_name' => $entry->userName,
-            'status' => OpenProjectPendingEntry::STATUS_OPEN,
+            'plugin_id' => OpenProjectPlugin::ID,
+            'source' => 'api',
+            'target_type' => (new TimeEntry)->getMorphClass(),
+            'external_type' => self::EXT_TYPE_ENTRY,
+            'external_id' => $entry->entryKey,
+            'dedupe_key' => $dedupeKey,
+            'group_key' => $projectExternalId !== '' ? 'project:' . $projectExternalId : 'op:none',
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'remote_snapshot' => [
+                'entry_key' => $entry->entryKey,
+                'project_external_id' => $entry->projectExternalId,
+                'project_name' => $entry->projectName,
+                'work_package_external_id' => $entry->workPackageExternalId,
+                'work_package_subject' => $entry->workPackageSubject,
+                'description' => $entry->description,
+                'spent_on' => $entry->spentOn->toDateString(),
+                'minutes' => $entry->minutes,
+                'user_external_id' => $entry->userExternalId,
+                'user_name' => $entry->userName,
+            ],
+            'display_title' => $project !== '' ? $project : (string) __('(ohne Projekt)'),
+            'display_subtitle' => $entry->workPackageSubject,
+            'occurred_at' => $entry->spentOn,
         ]);
     }
 
     /**
-     * Offene Pending-Einträge der Organisation, gruppiert nach OpenProject-Projekt.
+     * Offene OpenProject-Inbox-Einträge der Organisation, gruppiert nach Projekt
+     * (group_key), für die Gruppen-Auflösung in der universellen Inbox.
      *
-     * @return Collection<int, object{project_external_id: string|null, project_name: string|null, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon}>
+     * @return Collection<int, array{group_key: string, project_external_id: ?string, project_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon}>
      */
-    public function openPendingGroups(Organization $organization): Collection {
-        $groups = OpenProjectPendingEntry::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('status', OpenProjectPendingEntry::STATUS_OPEN)
-            ->orderByDesc('spent_on')
-            ->get()
-            ->groupBy(fn(OpenProjectPendingEntry $e): string => (string) ($e->project_external_id ?? ''))
-            ->map(function ($group): object {
-                /** @var Collection<int, OpenProjectPendingEntry> $group */
-                $first = $group->first();
-                assert($first instanceof OpenProjectPendingEntry);
+    public function openInboxGroups(Organization $organization): Collection {
+        return $this->openInboxItems($organization)
+            ->groupBy('group_key')
+            ->map(function ($group, $groupKey): array {
+                /** @var Collection<int, IntegrationInboxItem> $group */
+                $snap = $group->first()?->remote_snapshot ?? [];
 
-                return (object) [
-                    'project_external_id' => $first->project_external_id,
-                    'project_name' => $first->project_name,
-                    'count' => (int) $group->count(),
-                    'minutes' => (int) $group->sum(fn(OpenProjectPendingEntry $e): int => (int) $e->minutes),
-                    'first_seen' => $group->min('spent_on'),
-                    'last_seen' => $group->max('spent_on'),
+                return [
+                    'group_key' => (string) $groupKey,
+                    'project_external_id' => $snap['project_external_id'] ?? null,
+                    'project_name' => $snap['project_name'] ?? null,
+                    'count' => $group->count(),
+                    'minutes' => (int) $group->sum(fn(IntegrationInboxItem $i): int => (int) (($i->remote_snapshot['minutes'] ?? 0))),
+                    'first_seen' => $group->min('occurred_at'),
+                    'last_seen' => $group->max('occurred_at'),
                 ];
             })
             ->values();
-
-        /** @var Collection<int, object{project_external_id: string|null, project_name: string|null, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon}> $groups */
-        return $groups;
     }
 
     /**
-     * Weist alle offenen Pending-Einträge eines OpenProject-Projekts einem
-     * workDiary-Projekt zu: merkt die Projekt-Reference und bucht die Einträge
-     * als TimeEntries (idempotent). Vorhandene Work-Package-Mappings werden für
-     * die Aufgabenzuordnung berücksichtigt.
+     * Bucht alle offenen Inbox-Einträge einer Gruppe gegen ein Projekt: merkt die
+     * Projekt-Reference und materialisiert die Einträge als TimeEntries
+     * (idempotent). Work-Package-/Benutzer-Mappings werden je Eintrag aufgelöst.
      *
-     * @param  array<string, mixed>  $config
      * @return array{created: int, skipped: int}
      */
-    public function assignPending(Organization $organization, ?string $projectExternalId, Project $project, array $config): array {
+    public function bookInboxGroup(Organization $organization, string $groupKey, Project $project): array {
+        $config = OpenProjectConfig::resolve($organization->id);
         $fallbackUserId = $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
         if ($fallbackUserId === null) {
             return ['created' => 0, 'skipped' => 0];
         }
 
-        if ($projectExternalId !== null && $projectExternalId !== '') {
+        $items = $this->openInboxItems($organization)->where('group_key', $groupKey)->values();
+        if ($items->isEmpty()) {
+            return ['created' => 0, 'skipped' => 0];
+        }
+
+        $projectExternalId = trim((string) (($items->first()?->remote_snapshot['project_external_id']) ?? ''));
+        if ($projectExternalId !== '') {
             $this->structure->linkProject($organization, $projectExternalId, $project, $project->name);
         }
 
         $created = 0;
         $skipped = 0;
 
-        foreach ($this->openPendingFor($organization, $projectExternalId) as $row) {
-            if ($this->alreadyImported($organization, $row->entry_key)) {
-                $row->update(['status' => OpenProjectPendingEntry::STATUS_IMPORTED, 'resolved_at' => now()]);
+        foreach ($items as $item) {
+            $snap = (array) $item->remote_snapshot;
+            $entry = $this->entryFromSnapshot($snap);
+
+            if ($this->alreadyImported($organization, $entry->entryKey)) {
+                $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_LINKED, null);
                 $skipped++;
 
                 continue;
             }
 
-            $entry = $this->entryFromPending($row);
-            $task = $this->structure->resolveTask($organization, $row->work_package_external_id);
-            $userId = $this->structure->resolveUserId($organization, $row->user_external_id) ?? $fallbackUserId;
+            $task = $this->structure->resolveTask($organization, $snap['work_package_external_id'] ?? null);
+            $userId = $this->structure->resolveUserId($organization, $snap['user_external_id'] ?? null) ?? $fallbackUserId;
 
             $timeEntry = $this->createTimeEntry($organization, $project, $task, $entry, $userId, (bool) $config['default_billable']);
-            $row->update([
-                'status' => OpenProjectPendingEntry::STATUS_IMPORTED,
-                'time_entry_id' => $timeEntry->id,
-                'resolved_at' => now(),
-            ]);
+            $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
             $created++;
         }
 
         return ['created' => $created, 'skipped' => $skipped];
     }
 
-    /** Verwirft alle offenen Pending-Einträge eines OpenProject-Projekts. */
-    public function dismissPending(Organization $organization, ?string $projectExternalId): int {
-        return $this->openPendingFor($organization, $projectExternalId)
-            ->each(fn(OpenProjectPendingEntry $row) => $row->update([
-                'status' => OpenProjectPendingEntry::STATUS_DISMISSED,
-                'resolved_at' => now(),
-            ]))
-            ->count();
+    /** Verwirft alle offenen Inbox-Einträge einer Gruppe. */
+    public function dismissInboxGroup(Organization $organization, string $groupKey): int {
+        $items = $this->openInboxItems($organization)->where('group_key', $groupKey);
+        foreach ($items as $item) {
+            $this->resolveItem($item, IntegrationInboxItem::STATUS_DISMISSED, null);
+        }
+
+        return $items->count();
     }
 
     /**
-     * @return Collection<int, OpenProjectPendingEntry>
+     * @return Collection<int, IntegrationInboxItem>
      */
-    private function openPendingFor(Organization $organization, ?string $projectExternalId): Collection {
-        $projectExternalId = $projectExternalId !== null ? trim($projectExternalId) : '';
-
-        return OpenProjectPendingEntry::query()
-            ->withoutGlobalScopes()
+    private function openInboxItems(Organization $organization): Collection {
+        return IntegrationInboxItem::query()
             ->where('organization_id', $organization->id)
-            ->where('status', OpenProjectPendingEntry::STATUS_OPEN)
-            ->where(fn($q) => $projectExternalId === '' ? $q->whereNull('project_external_id') : $q->where('project_external_id', $projectExternalId))
+            ->where('plugin_id', OpenProjectPlugin::ID)
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->whereNotNull('group_key')
+            ->orderByDesc('occurred_at')
             ->get();
     }
 
-    private function entryFromPending(OpenProjectPendingEntry $row): OpenProjectEntry {
+    private function resolveItem(IntegrationInboxItem $item, string $status, ?TimeEntry $timeEntry): void {
+        $item->update([
+            'status' => $status,
+            'resolved_to_type' => $timeEntry?->getMorphClass(),
+            'resolved_to_id' => $timeEntry?->getKey(),
+            'resolved_by' => Auth::id(),
+            'resolved_at' => now(),
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $snap
+     */
+    private function entryFromSnapshot(array $snap): OpenProjectEntry {
         return new OpenProjectEntry(
-            entryKey: $row->entry_key,
-            projectExternalId: $row->project_external_id,
-            projectName: $row->project_name,
-            workPackageExternalId: $row->work_package_external_id,
-            workPackageSubject: $row->work_package_subject,
-            description: $row->description,
-            spentOn: CarbonImmutable::parse($row->spent_on),
-            minutes: (int) $row->minutes,
-            userExternalId: $row->user_external_id,
-            userName: $row->user_name,
+            entryKey: (string) ($snap['entry_key'] ?? ''),
+            projectExternalId: $snap['project_external_id'] ?? null,
+            projectName: $snap['project_name'] ?? null,
+            workPackageExternalId: $snap['work_package_external_id'] ?? null,
+            workPackageSubject: $snap['work_package_subject'] ?? null,
+            description: $snap['description'] ?? null,
+            spentOn: CarbonImmutable::parse((string) $snap['spent_on']),
+            minutes: (int) ($snap['minutes'] ?? 0),
+            userExternalId: $snap['user_external_id'] ?? null,
+            userName: $snap['user_name'] ?? null,
         );
     }
 

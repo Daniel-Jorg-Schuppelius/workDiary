@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, PendingExternalConflict};
+use App\Models\{Customer, ExternalReference};
 use App\Plugins\Lexoffice\{LexofficeContactSync, LexofficeMatchPolicy, LexofficePlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -124,17 +124,23 @@ class LexofficeContactSyncTest extends TestCase {
         $customer->refresh();
         $this->assertSame('orig@example.test', $customer->email, 'Local data must remain unchanged in manual_review mode');
 
-        $this->assertDatabaseHas('pending_external_conflicts', [
+        // MVP-103: Konflikte landen jetzt in der universellen Zuordnungs-Inbox
+        // (statt pending_external_conflicts).
+        $this->assertDatabaseHas('integration_inbox_items', [
             'plugin_id' => LexofficePlugin::ID,
-            'conflict_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'case_type' => \App\Models\IntegrationInboxItem::CASE_CONFLICT,
             'referenceable_id' => $customer->id,
             'external_id' => 'lex-3',
-            'status' => PendingExternalConflict::STATUS_OPEN,
+            'status' => \App\Models\IntegrationInboxItem::STATUS_OPEN,
         ]);
+        $this->assertDatabaseMissing('pending_external_conflicts', ['plugin_id' => LexofficePlugin::ID]);
 
-        $conflict = PendingExternalConflict::query()->first();
-        $this->assertNotNull($conflict);
-        $this->assertContains('email', $conflict->diff_fields ?? []);
+        $item = \App\Models\IntegrationInboxItem::query()->first();
+        $this->assertNotNull($item);
+        $this->assertContains('email', $item->diff_fields ?? []);
+        // mapped_snapshot trägt den Remote-Wert für die spätere „Remote übernehmen"-Aktion.
+        $this->assertSame('remote-changed@example.test', $item->mapped_snapshot['email'] ?? null);
     }
 
     public function test_create_missing_local_creates_new_customer_when_no_match_found(): void {

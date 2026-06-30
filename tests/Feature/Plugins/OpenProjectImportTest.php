@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{OpenProjectPendingEntry, PluginSetting, Project, TimeEntry, User};
+use App\Models\{IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
 use App\Plugins\OpenProject\OpenProjectConfig;
 use App\Plugins\OpenProject\OpenProjectPlugin;
 use App\Plugins\OpenProject\Services\{OpenProjectImportService, OpenProjectStructureSync};
@@ -176,13 +176,18 @@ class OpenProjectImportTest extends TestCase {
         $this->assertSame(1, $result['unmatched']);
         $this->assertSame(0, TimeEntry::query()->count());
 
-        $this->assertDatabaseHas('openproject_pending_entries', [
+        // MVP-103 Phase 2b: unmatched landet in der universellen Inbox (gruppiert nach Projekt).
+        $this->assertDatabaseHas('integration_inbox_items', [
             'organization_id' => $this->organization->id,
-            'entry_key' => 'openproject:te:222',
-            'project_external_id' => '9',
-            'project_name' => 'Website', // aus dem time-entry project-link title
-            'status' => OpenProjectPendingEntry::STATUS_OPEN,
+            'plugin_id' => OpenProjectPlugin::ID,
+            'external_type' => 'entry',
+            'external_id' => 'openproject:te:222',
+            'group_key' => 'project:9',
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
         ]);
+        $item = IntegrationInboxItem::query()->where('external_id', 'openproject:te:222')->first();
+        $this->assertSame('Website', $item->remote_snapshot['project_name'] ?? null);
     }
 
     public function test_create_missing_projects_auto_creates_and_books(): void {
@@ -207,37 +212,51 @@ class OpenProjectImportTest extends TestCase {
         $this->assertSame(60, TimeEntry::query()->where('project_id', $project->id)->value('minutes'));
     }
 
-    public function test_assign_pending_books_and_remembers_reference(): void {
-        $config = $this->enable();
+    public function test_book_inbox_group_books_and_remembers_reference(): void {
+        $this->enable();
         $project = Project::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Support',
             'is_default' => false,
         ]);
 
-        OpenProjectPendingEntry::query()->create([
+        $item = IntegrationInboxItem::query()->create([
             'organization_id' => $this->organization->id,
-            'entry_key' => 'openproject:te:900',
-            'project_external_id' => '42',
-            'project_name' => 'Externes Projekt',
-            'description' => 'Wartung',
-            'spent_on' => '2026-05-26',
-            'minutes' => 90,
-            'status' => OpenProjectPendingEntry::STATUS_OPEN,
+            'plugin_id' => OpenProjectPlugin::ID,
+            'source' => 'api',
+            'target_type' => (new TimeEntry)->getMorphClass(),
+            'external_type' => 'entry',
+            'external_id' => 'openproject:te:900',
+            'dedupe_key' => 'entry:openproject:te:900',
+            'group_key' => 'project:42',
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'remote_snapshot' => [
+                'entry_key' => 'openproject:te:900',
+                'project_external_id' => '42',
+                'project_name' => 'Externes Projekt',
+                'work_package_external_id' => null,
+                'work_package_subject' => null,
+                'description' => 'Wartung',
+                'spent_on' => '2026-05-26',
+                'minutes' => 90,
+                'user_external_id' => null,
+                'user_name' => null,
+            ],
+            'display_title' => 'Externes Projekt',
+            'occurred_at' => '2026-05-26',
         ]);
 
-        $result = $this->service()->assignPending($this->organization, '42', $project, $config);
+        $result = $this->service()->bookInboxGroup($this->organization, 'project:42', $project);
 
         $this->assertSame(1, $result['created']);
         $entry = TimeEntry::query()->where('project_id', $project->id)->first();
         $this->assertNotNull($entry);
         $this->assertSame(90, $entry->minutes);
 
-        $this->assertDatabaseHas('openproject_pending_entries', [
-            'entry_key' => 'openproject:te:900',
-            'status' => OpenProjectPendingEntry::STATUS_IMPORTED,
-            'time_entry_id' => $entry->id,
-        ]);
+        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()->status);
+        $this->assertSame($entry->id, $item->fresh()->resolved_to_id);
+
         // Projekt-Reference gemerkt → künftiger Import matcht automatisch.
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => OpenProjectPlugin::ID,
@@ -245,6 +264,45 @@ class OpenProjectImportTest extends TestCase {
             'external_id' => '42',
             'referenceable_id' => $project->id,
         ]);
+    }
+
+    public function test_book_group_via_inbox_creates_new_project(): void {
+        $this->enable();
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        IntegrationInboxItem::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => OpenProjectPlugin::ID,
+            'source' => 'api',
+            'target_type' => (new TimeEntry)->getMorphClass(),
+            'external_type' => 'entry',
+            'external_id' => 'openproject:te:777',
+            'dedupe_key' => 'entry:openproject:te:777',
+            'group_key' => 'project:7',
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'remote_snapshot' => [
+                'entry_key' => 'openproject:te:777', 'project_external_id' => '7',
+                'project_name' => 'Neu OP', 'work_package_external_id' => null, 'work_package_subject' => null,
+                'description' => null, 'spent_on' => '2026-05-26', 'minutes' => 30,
+                'user_external_id' => null, 'user_name' => null,
+            ],
+            'display_title' => 'Neu OP',
+            'occurred_at' => '2026-05-26',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => OpenProjectPlugin::ID,
+                'group_key' => 'project:7',
+                'project_mode' => 'new',
+                'new_project_name' => 'Neu OP',
+            ])
+            ->assertRedirect();
+
+        $project = Project::query()->where('name', 'Neu OP')->first();
+        $this->assertNotNull($project);
+        $this->assertSame(1, TimeEntry::query()->where('project_id', $project->id)->count());
     }
 
     public function test_health_check_is_degraded_without_credentials(): void {

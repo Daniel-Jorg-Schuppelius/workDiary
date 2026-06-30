@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, Organization, Project, TimeEntry, TogglPendingEntry, User};
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser, TogglEntry};
 use Carbon\CarbonImmutable;
 
@@ -22,8 +22,9 @@ use Carbon\CarbonImmutable;
  *  - Toggl-Client → Kunde und Toggl-Projekt → Projekt ausschließlich über
  *    bestehende {@see ExternalReference} bzw. Namensgleichheit matchen
  *    (kein Auto-Anlegen). Treffer → TimeEntry (idempotent über die
- *    `entry`-Reference); kein Treffer → {@see TogglPendingEntry} (Inbox).
- *  - Die Inbox weist Gruppen einem Kunden + Projekt zu ({@see assignPending()}),
+ *    `entry`-Reference); kein Treffer → universelle Zuordnungs-Inbox
+ *    ({@see \App\Models\IntegrationInboxItem}, gruppiert nach Client + Projekt).
+ *  - Die Inbox bucht Gruppen gegen einen Kunden + Projekt ({@see bookInboxGroup()}),
  *    persistiert dabei die `client`/`project`-Reference (→ Folgeimporte matchen
  *    automatisch) und materialisiert die Einträge.
  */
@@ -306,83 +307,104 @@ class TogglImportService {
     }
 
     /**
-     * Legt einen unmatchbaren Eintrag als offenes Pending ab (Dedupe über entry_key).
+     * Legt einen unmatchbaren Eintrag als offenen Eintrag in der universellen
+     * Zuordnungs-Inbox ab (gruppiert nach Client + Projekt). Idempotent über den
+     * entry_key (dedupe_key).
      */
     private function recordPending(Organization $organization, TogglEntry $entry): void {
-        $exists = TogglPendingEntry::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('entry_key', $entry->entryKey)
-            ->exists();
+        $dedupeKey = self::EXT_TYPE_ENTRY . ':' . $entry->entryKey;
 
+        $exists = IntegrationInboxItem::query()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('dedupe_key', $dedupeKey)
+            ->exists();
         if ($exists) {
             return;
         }
 
-        TogglPendingEntry::query()->create([
+        $client = trim((string) $entry->clientName);
+        $project = trim((string) $entry->projectName);
+
+        IntegrationInboxItem::query()->create([
             'organization_id' => $organization->id,
+            'plugin_id' => TogglPlugin::ID,
             'source' => $entry->source,
-            'entry_key' => $entry->entryKey,
-            'client_name' => $entry->clientName,
-            'project_name' => $entry->projectName,
-            'description' => $entry->description,
-            'started_at' => $entry->startedAt,
-            'ended_at' => $entry->endedAt,
-            'billable' => $entry->billable,
-            'user_email' => $entry->userEmail,
-            'status' => TogglPendingEntry::STATUS_OPEN,
+            'target_type' => (new TimeEntry)->getMorphClass(),
+            'external_type' => self::EXT_TYPE_ENTRY,
+            'external_id' => $entry->entryKey,
+            'dedupe_key' => $dedupeKey,
+            'group_key' => $this->projectKey($client, $project),
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'remote_snapshot' => [
+                'source' => $entry->source,
+                'entry_key' => $entry->entryKey,
+                'client_name' => $entry->clientName,
+                'project_name' => $entry->projectName,
+                'description' => $entry->description,
+                'started_at' => $entry->startedAt->toIso8601String(),
+                'ended_at' => $entry->endedAt->toIso8601String(),
+                'billable' => $entry->billable,
+                'user_email' => $entry->userEmail,
+            ],
+            'display_title' => $project !== '' ? $project : (string) __('(ohne Projekt)'),
+            'display_subtitle' => $client !== '' ? $client : null,
+            'occurred_at' => $entry->startedAt,
         ]);
     }
 
     /**
-     * Offene Pending-Einträge der Organisation, gruppiert nach Client + Projekt.
+     * Offene Toggl-Inbox-Einträge der Organisation, gruppiert nach Client +
+     * Projekt (group_key), für die Gruppen-Auflösung in der universellen Inbox.
      *
-     * @return \Illuminate\Support\Collection<int, object{client_name: ?string, project_name: ?string, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon}>
+     * @return \Illuminate\Support\Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon}>
      */
-    public function openPendingGroups(Organization $organization): \Illuminate\Support\Collection {
-        $groups = TogglPendingEntry::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('status', TogglPendingEntry::STATUS_OPEN)
-            ->orderByDesc('ended_at')
-            ->get()
-            ->groupBy(fn(TogglPendingEntry $e): string => ($e->client_name ?? '') . '|' . ($e->project_name ?? ''))
-            ->map(function ($group): object {
-                /** @var \Illuminate\Support\Collection<int, TogglPendingEntry> $group */
+    public function openInboxGroups(Organization $organization): \Illuminate\Support\Collection {
+        return $this->openInboxItems($organization)
+            ->groupBy('group_key')
+            ->map(function ($group, $groupKey): array {
+                /** @var \Illuminate\Support\Collection<int, IntegrationInboxItem> $group */
                 $first = $group->first();
-                assert($first instanceof TogglPendingEntry);
+                $snap = $first?->remote_snapshot ?? [];
 
-                return (object) [
-                    'client_name' => $first->client_name,
-                    'project_name' => $first->project_name,
-                    'count' => (int) $group->count(),
-                    'minutes' => (int) $group->sum(fn(TogglPendingEntry $e): int => $e->minutes()),
-                    'first_seen' => $group->min('started_at'),
-                    'last_seen' => $group->max('ended_at'),
+                return [
+                    'group_key' => (string) $groupKey,
+                    'client_name' => $snap['client_name'] ?? null,
+                    'project_name' => $snap['project_name'] ?? null,
+                    'count' => $group->count(),
+                    'minutes' => (int) $group->sum(fn(IntegrationInboxItem $i): int => $this->snapshotMinutes($i->remote_snapshot ?? [])),
+                    'first_seen' => $group->min('occurred_at'),
+                    'last_seen' => $group->max('occurred_at'),
                 ];
             })
             ->values();
-
-        /** @var \Illuminate\Support\Collection<int, object{client_name: string|null, project_name: string|null, count: int, minutes: int, first_seen: \Illuminate\Support\Carbon, last_seen: \Illuminate\Support\Carbon}> $groups */
-        return $groups;
     }
 
     /**
-     * Weist alle offenen Pending-Einträge einer (client, project)-Gruppe einem
-     * Kunden + Projekt zu: persistiert die Referenzen und materialisiert die
-     * Einträge als TimeEntries (idempotent). Markiert die Pendings als imported.
+     * Bucht alle offenen Inbox-Einträge einer Gruppe gegen Kunde + Projekt:
+     * merkt die client-/project-Referenzen und materialisiert die Einträge als
+     * TimeEntries (idempotent). Markiert die Items als aufgelöst.
      *
      * @return array{created: int, skipped: int}
      */
-    public function assignPending(Organization $organization, ?string $clientName, ?string $projectName, Customer $customer, Project $project, ?int $userId = null): array {
+    public function bookInboxGroup(Organization $organization, string $groupKey, Customer $customer, Project $project, ?int $userId = null): array {
         $config = TogglConfig::resolve($organization->id);
         $userId ??= $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
         if ($userId === null) {
             return ['created' => 0, 'skipped' => 0];
         }
 
+        $items = $this->openInboxItems($organization)->where('group_key', $groupKey)->values();
+        if ($items->isEmpty()) {
+            return ['created' => 0, 'skipped' => 0];
+        }
+
+        $firstSnap = $items->first()?->remote_snapshot ?? [];
+        $clientName = trim((string) ($firstSnap['client_name'] ?? ''));
+        $projectName = trim((string) ($firstSnap['project_name'] ?? ''));
+
         // Referenzen merken, damit künftige Imports automatisch matchen.
-        $clientName = $clientName !== null ? trim($clientName) : '';
         if ($clientName !== '') {
             $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $customer);
         }
@@ -391,68 +413,87 @@ class TogglImportService {
         $created = 0;
         $skipped = 0;
 
-        foreach ($this->openPendingFor($organization, $clientName, $projectName) as $row) {
-            $entry = $this->entryFromPending($row);
+        foreach ($items as $item) {
+            $entry = $this->entryFromSnapshot((array) $item->remote_snapshot);
 
             if ($this->alreadyImported($organization, $entry->entryKey)) {
-                $row->update([
-                    'status' => TogglPendingEntry::STATUS_IMPORTED,
-                    'resolved_at' => now(),
-                ]);
+                $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_LINKED, null);
                 $skipped++;
 
                 continue;
             }
 
             $timeEntry = $this->createTimeEntry($organization, $project, $entry, $userId, (bool) $config['default_billable']);
-            $row->update([
-                'status' => TogglPendingEntry::STATUS_IMPORTED,
-                'time_entry_id' => $timeEntry->id,
-                'resolved_at' => now(),
-            ]);
+            $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
             $created++;
         }
 
         return ['created' => $created, 'skipped' => $skipped];
     }
 
-    /** Verwirft alle offenen Pending-Einträge einer (client, project)-Gruppe. */
-    public function dismissPending(Organization $organization, ?string $clientName, ?string $projectName): int {
-        return $this->openPendingFor($organization, $clientName !== null ? trim($clientName) : '', $projectName)
-            ->each(fn(TogglPendingEntry $row) => $row->update([
-                'status' => TogglPendingEntry::STATUS_DISMISSED,
-                'resolved_at' => now(),
-            ]))
-            ->count();
+    /** Verwirft alle offenen Inbox-Einträge einer Gruppe. */
+    public function dismissInboxGroup(Organization $organization, string $groupKey): int {
+        $items = $this->openInboxItems($organization)->where('group_key', $groupKey);
+        foreach ($items as $item) {
+            $this->resolveItem($item, IntegrationInboxItem::STATUS_DISMISSED, null);
+        }
+
+        return $items->count();
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, TogglPendingEntry>
+     * @return \Illuminate\Support\Collection<int, IntegrationInboxItem>
      */
-    private function openPendingFor(Organization $organization, string $clientName, ?string $projectName): \Illuminate\Support\Collection {
-        $projectName = $projectName !== null ? trim($projectName) : '';
-
-        return TogglPendingEntry::query()
-            ->withoutGlobalScopes()
+    private function openInboxItems(Organization $organization): \Illuminate\Support\Collection {
+        return IntegrationInboxItem::query()
             ->where('organization_id', $organization->id)
-            ->where('status', TogglPendingEntry::STATUS_OPEN)
-            ->where(fn($q) => $clientName === '' ? $q->whereNull('client_name') : $q->where('client_name', $clientName))
-            ->where(fn($q) => $projectName === '' ? $q->whereNull('project_name') : $q->where('project_name', $projectName))
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->whereNotNull('group_key')
+            ->orderByDesc('occurred_at')
             ->get();
     }
 
-    private function entryFromPending(TogglPendingEntry $row): TogglEntry {
+    private function resolveItem(IntegrationInboxItem $item, string $status, ?TimeEntry $timeEntry): void {
+        $item->update([
+            'status' => $status,
+            'resolved_to_type' => $timeEntry?->getMorphClass(),
+            'resolved_to_id' => $timeEntry?->getKey(),
+            'resolved_by' => \Illuminate\Support\Facades\Auth::id(),
+            'resolved_at' => now(),
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $snap
+     */
+    private function entryFromSnapshot(array $snap): TogglEntry {
         return new TogglEntry(
-            source: $row->source,
-            entryKey: $row->entry_key,
-            clientName: $row->client_name,
-            projectName: $row->project_name,
-            description: $row->description,
-            startedAt: CarbonImmutable::parse($row->started_at),
-            endedAt: CarbonImmutable::parse($row->ended_at),
-            billable: (bool) $row->billable,
-            userEmail: $row->user_email,
+            source: (string) ($snap['source'] ?? 'api'),
+            entryKey: (string) ($snap['entry_key'] ?? ''),
+            clientName: $snap['client_name'] ?? null,
+            projectName: $snap['project_name'] ?? null,
+            description: $snap['description'] ?? null,
+            startedAt: CarbonImmutable::parse((string) $snap['started_at']),
+            endedAt: CarbonImmutable::parse((string) $snap['ended_at']),
+            billable: (bool) ($snap['billable'] ?? false),
+            userEmail: $snap['user_email'] ?? null,
         );
+    }
+
+    /**
+     * Dauer eines Snapshot-Eintrags in Minuten (aus started_at/ended_at).
+     *
+     * @param  array<string, mixed>  $snap
+     */
+    private function snapshotMinutes(array $snap): int {
+        $start = $snap['started_at'] ?? null;
+        $end = $snap['ended_at'] ?? null;
+        if (! is_string($start) || ! is_string($end) || $start === '' || $end === '') {
+            return 0;
+        }
+
+        return (int) round(CarbonImmutable::parse($start)->diffInSeconds(CarbonImmutable::parse($end)) / 60);
     }
 
     private function rememberReference(Organization $organization, string $type, string $externalId, \Illuminate\Database\Eloquent\Model $referenceable): void {

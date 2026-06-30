@@ -5,6 +5,8 @@ declare(strict_types=1);
 return [
     'entity' => [
         'customers' => 'Kunden',
+        'suppliers' => 'Lieferanten',
+        'articles' => 'Artikel',
         'projects' => 'Projekte',
         'users' => 'Benutzer',
         'materials' => 'Material',

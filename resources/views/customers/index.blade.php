@@ -19,6 +19,9 @@
                     :href="route('customers.export', array_filter(['status' => $status, 'q' => $search]))"
                     show-label>{{ __('CSV-Export') }}</x-icon-btn>
         @if (auth()->user()?->canManageBilling())
+            <x-icon-btn icon="merge" size="sm"
+                        :href="route('customers.duplicates.index')"
+                        show-label>{{ __('Kunden-Abgleich') }}</x-icon-btn>
             <x-icon-btn icon="upload" size="sm"
                         :href="route('admin.imports.create', ['entity' => 'customers'])"
                         show-label>{{ __('CSV-Import') }}</x-icon-btn>
