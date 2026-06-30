@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins;
 
 use App\Models\{Customer, ExternalReference, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
+use App\Plugins\Toggl\Sources\TogglEntry;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -279,6 +280,132 @@ class TogglImportTest extends TestCase {
                 endedAt: CarbonImmutable::now(),
             ),
         ));
+    }
+
+    public function test_match_project_prefers_stable_toggl_id_over_name(): void {
+        $project = $this->customerWithProject('Acme', 'Altname');
+
+        // Stabile Projekt-ID-Referenz (wie sie API-Import/Backfill schreiben).
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_PROJECT_ID,
+            'referenceable_type' => $project->getMorphClass(),
+            'referenceable_id' => $project->id,
+            'external_id' => '777',
+        ]);
+
+        // In Toggl umbenannt: der Name passt nicht mehr, die ID schon → trifft trotzdem.
+        $matched = $this->service()->matchProject(
+            $this->organization,
+            new TogglEntry(
+                source: 'api', entryKey: 'toggl:1', clientName: 'Acme', projectName: 'Komplett anderer Name',
+                description: null, startedAt: CarbonImmutable::now(), endedAt: CarbonImmutable::now(),
+                projectId: 777,
+            ),
+        );
+
+        $this->assertNotNull($matched);
+        $this->assertSame($project->id, $matched->id);
+    }
+
+    public function test_book_inbox_group_remembers_stable_id_references(): void {
+        $this->enableToggl();
+        $project = $this->customerWithProject('Gamma', 'App');
+        $customer = $project->customer;
+
+        // Inbox-Eintrag mit Toggl-IDs im Snapshot (API-Herkunft).
+        IntegrationInboxItem::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'source' => 'api',
+            'target_type' => (new TimeEntry)->getMorphClass(),
+            'external_type' => 'entry',
+            'external_id' => 'toggl:42',
+            'dedupe_key' => 'entry:toggl:42',
+            'group_key' => $this->groupKey('Gamma', 'App'),
+            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
+            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'remote_snapshot' => [
+                'source' => 'api', 'entry_key' => 'toggl:42',
+                'client_name' => 'Gamma', 'project_name' => 'App',
+                'client_id' => 5, 'project_id' => 50,
+                'description' => null,
+                'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00')->toIso8601String(),
+                'ended_at' => CarbonImmutable::parse('2026-05-26 10:00:00')->toIso8601String(),
+                'billable' => false, 'user_email' => null,
+            ],
+            'display_title' => 'App',
+            'display_subtitle' => 'Gamma',
+            'occurred_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
+        ]);
+
+        $this->service()->bookInboxGroup($this->organization, $this->groupKey('Gamma', 'App'), $customer, $project);
+
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_PROJECT_ID,
+            'external_id' => '50',
+            'referenceable_id' => $project->id,
+        ]);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT_ID,
+            'external_id' => '5',
+            'referenceable_id' => $customer->id,
+        ]);
+    }
+
+    public function test_backfill_writes_id_references_for_existing_name_links(): void {
+        // Toggl aktiviert mit fixem Workspace (kein /workspaces-Aufruf nötig).
+        PluginSetting::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'enabled' => true,
+            'settings' => ['api_token' => 'test-token', 'workspace_id' => 100],
+        ]);
+
+        // Bestehende, namensbasiert verknüpfte Datensätze.
+        $project = $this->customerWithProject('Acme', 'Website');
+        $customer = $project->customer;
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id, 'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+            'referenceable_type' => $customer->getMorphClass(), 'referenceable_id' => $customer->id,
+            'external_id' => 'Acme',
+        ]);
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id, 'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_PROJECT,
+            'referenceable_type' => $project->getMorphClass(), 'referenceable_id' => $project->id,
+            'external_id' => 'acme|website',
+        ]);
+
+        Http::fake([
+            'https://api.track.toggl.com/api/v9/workspaces/100/clients*' => Http::response([
+                ['id' => 1, 'name' => 'Acme', 'archived' => false],
+            ]),
+            'https://api.track.toggl.com/api/v9/workspaces/100/projects*' => Http::response([
+                ['id' => 10, 'name' => 'Website', 'client_id' => 1, 'active' => true],
+            ]),
+        ]);
+
+        $result = $this->service()->backfillIdReferences($this->organization);
+
+        $this->assertSame(1, $result['projects']);
+        $this->assertSame(1, $result['clients']);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT_ID,
+            'external_id' => '1',
+            'referenceable_id' => $customer->id,
+        ]);
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_PROJECT_ID,
+            'external_id' => '10',
+            'referenceable_id' => $project->id,
+        ]);
     }
 
     public function test_suggest_customer_and_project_return_close_matches(): void {

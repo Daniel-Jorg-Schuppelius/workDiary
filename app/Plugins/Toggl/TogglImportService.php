@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser, TogglEntry};
 use Carbon\CarbonImmutable;
 
@@ -34,6 +34,11 @@ class TogglImportService {
     public const EXT_TYPE_PROJECT = 'project';
 
     public const EXT_TYPE_ENTRY = 'entry';
+
+    /** Stabile Toggl-IDs (nur API) — bevorzugt vor den namensbasierten Schlüsseln. */
+    public const EXT_TYPE_CLIENT_ID = 'client_id';
+
+    public const EXT_TYPE_PROJECT_ID = 'project_id';
 
     /**
      * Ähnlichkeitsschwelle (0..1), ab der ein Toggl-Name in der Inbox als
@@ -99,6 +104,10 @@ class TogglImportService {
                 continue;
             }
 
+            // Self-Upgrade: liegt eine stabile Toggl-ID vor (API), sie als bevorzugte
+            // Referenz nachtragen — auch wenn der Treffer über den Namen kam.
+            $this->rememberIdReferences($organization, $project, $entry);
+
             $this->createTimeEntry($organization, $project, $entry, $userId, (bool) $config['default_billable']);
             $created++;
         }
@@ -110,24 +119,28 @@ class TogglImportService {
      * Matcht den Toggl-Client eines Eintrags auf einen Kunden — zuerst über die
      * gespeicherte `client`-Reference, sonst über Name/Firma (case-insensitiv).
      */
-    public function matchCustomer(Organization $organization, ?string $clientName): ?Customer {
+    public function matchCustomer(Organization $organization, ?string $clientName, ?int $clientId = null): ?Customer {
         $clientName = $clientName !== null ? trim($clientName) : '';
+
+        // 1. Stabile Toggl-Client-ID (nur API) — robust gegen Umbenennungen.
+        if ($clientId !== null) {
+            $byId = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId);
+            if ($byId instanceof Customer) {
+                return $byId;
+            }
+        }
+
         if ($clientName === '') {
             return null;
         }
 
-        $ref = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_CLIENT)
-            ->where('external_id', $clientName)
-            ->first();
-
-        if ($ref?->referenceable instanceof Customer) {
-            return $ref->referenceable;
+        // 2. Namens-Referenz (CSV/Bestand) inkl. Merge-Alias.
+        $byName = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT, $clientName);
+        if ($byName instanceof Customer) {
+            return $byName;
         }
 
+        // 3. Name-/Firmen-Fallback.
         return Customer::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -139,28 +152,33 @@ class TogglImportService {
     }
 
     /**
-     * Matcht den Toggl-Eintrag auf ein Projekt — über die `project`-Reference,
-     * sonst über den Projektnamen (innerhalb des gematchten Kunden, sofern bekannt).
+     * Matcht den Toggl-Eintrag auf ein Projekt. Reihenfolge: stabile Toggl-Projekt-ID
+     * (nur API) → Namens-Reference (inkl. Merge-Alias) → Projektname im gematchten
+     * Kunden. Die ID gewinnt, weil sie Umbenennungen in Toggl übersteht.
      */
     public function matchProject(Organization $organization, TogglEntry $entry): ?Project {
         $projectName = $entry->projectName !== null ? trim($entry->projectName) : '';
+
+        // 1. Stabile Toggl-Projekt-ID (nur API).
+        if ($entry->projectId !== null) {
+            $byId = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $entry->projectId);
+            if ($byId instanceof Project) {
+                return $byId;
+            }
+        }
+
         if ($projectName === '') {
             return null;
         }
 
-        $ref = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_PROJECT)
-            ->where('external_id', $this->projectKey($entry->clientName, $projectName))
-            ->first();
-
-        if ($ref?->referenceable instanceof Project) {
-            return $ref->referenceable;
+        // 2. Namens-Referenz (CSV/Bestand) inkl. Merge-Alias.
+        $byName = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($entry->clientName, $projectName));
+        if ($byName instanceof Project) {
+            return $byName;
         }
 
-        $customer = $this->matchCustomer($organization, $entry->clientName);
+        // 3. Name-Fallback innerhalb des gematchten Kunden.
+        $customer = $this->matchCustomer($organization, $entry->clientName, $entry->clientId);
 
         $query = Project::query()
             ->withoutGlobalScopes()
@@ -172,6 +190,31 @@ class TogglImportService {
         }
 
         return $query->first();
+    }
+
+    /**
+     * Löst eine Toggl-Fremd-ID auf ihr lokales Modell auf: erst die Primär-Reference,
+     * dann (per Merge umgeleitet) der Alias. Bewusst ohne Global Scopes — der Import
+     * läuft auch ohne gebundenen Org-Kontext.
+     */
+    private function resolveByReference(Organization $organization, string $externalType, string $externalId): ?\Illuminate\Database\Eloquent\Model {
+        if ($externalId === '') {
+            return null;
+        }
+
+        $ref = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('external_type', $externalType)
+            ->where('external_id', $externalId)
+            ->first();
+
+        if ($ref?->referenceable instanceof \Illuminate\Database\Eloquent\Model) {
+            return $ref->referenceable;
+        }
+
+        return ExternalReferenceAlias::resolveModel($organization->id, TogglPlugin::ID, $externalType, $externalId);
     }
 
     /**
@@ -342,6 +385,8 @@ class TogglImportService {
                 'entry_key' => $entry->entryKey,
                 'client_name' => $entry->clientName,
                 'project_name' => $entry->projectName,
+                'client_id' => $entry->clientId,
+                'project_id' => $entry->projectId,
                 'description' => $entry->description,
                 'started_at' => $entry->startedAt->toIso8601String(),
                 'ended_at' => $entry->endedAt->toIso8601String(),
@@ -407,12 +452,22 @@ class TogglImportService {
         $firstSnap = $items->first()->remote_snapshot;
         $clientName = trim((string) ($firstSnap['client_name'] ?? ''));
         $projectName = trim((string) ($firstSnap['project_name'] ?? ''));
+        $clientId = isset($firstSnap['client_id']) ? (int) $firstSnap['client_id'] : null;
+        $projectId = isset($firstSnap['project_id']) ? (int) $firstSnap['project_id'] : null;
 
         // Referenzen merken, damit künftige Imports automatisch matchen.
         if ($clientName !== '') {
             $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $customer);
         }
         $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($clientName, $projectName), $project);
+
+        // Bevorzugte stabile ID-Referenzen (nur API) zusätzlich vermerken.
+        if ($clientId !== null) {
+            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $customer);
+        }
+        if ($projectId !== null) {
+            $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $projectId, $project);
+        }
 
         $created = 0;
         $skipped = 0;
@@ -482,6 +537,8 @@ class TogglImportService {
             endedAt: CarbonImmutable::parse((string) $snap['ended_at']),
             billable: (bool) ($snap['billable'] ?? false),
             userEmail: $snap['user_email'] ?? null,
+            clientId: isset($snap['client_id']) ? (int) $snap['client_id'] : null,
+            projectId: isset($snap['project_id']) ? (int) $snap['project_id'] : null,
         );
     }
 
@@ -514,6 +571,65 @@ class TogglImportService {
                 'synced_at' => now(),
             ],
         );
+    }
+
+    /**
+     * Trägt die stabilen Toggl-ID-Referenzen (project_id/client_id) nach, sofern der
+     * Eintrag sie trägt (API). Der Kunde wird über das gematchte Projekt aufgelöst.
+     */
+    private function rememberIdReferences(Organization $organization, Project $project, TogglEntry $entry): void {
+        if ($entry->projectId !== null) {
+            $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $entry->projectId, $project);
+        }
+        if ($entry->clientId !== null) {
+            $customer = $project->customer;
+            if ($customer instanceof Customer) {
+                $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $entry->clientId, $customer);
+            }
+        }
+    }
+
+    /**
+     * Trägt für bestehende, namensbasiert verknüpfte Projekte/Kunden die stabilen
+     * Toggl-ID-Referenzen nach (einmaliger Sync gegen den Workspace). Bestehende
+     * Namens-Referenzen bleiben unberührt; künftige Importe matchen dann ID-first.
+     *
+     * @return array{projects: int, clients: int}
+     */
+    public function backfillIdReferences(Organization $organization): array {
+        $config = TogglConfig::resolve($organization->id);
+        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id']);
+        if (! $client->isConfigured()) {
+            return ['projects' => 0, 'clients' => 0];
+        }
+
+        $workspaceIds = $config['workspace_id'] !== null
+            ? [$config['workspace_id']]
+            : array_map(static fn(array $w): int => $w['id'], $client->workspaces());
+
+        $projects = 0;
+        $clients = 0;
+
+        foreach ($workspaceIds as $workspaceId) {
+            foreach ($client->workspaceClients($workspaceId) as $remoteClient) {
+                $customer = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT, $remoteClient['name']);
+                if ($customer instanceof Customer) {
+                    $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $remoteClient['id'], $customer);
+                    $clients++;
+                }
+            }
+
+            foreach ($client->workspaceProjects($workspaceId) as $remoteProject) {
+                $key = $this->projectKey($remoteProject['client_name'] ?? null, $remoteProject['name']);
+                $project = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT, $key);
+                if ($project instanceof Project) {
+                    $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $remoteProject['id'], $project);
+                    $projects++;
+                }
+            }
+        }
+
+        return ['projects' => $projects, 'clients' => $clients];
     }
 
     /**

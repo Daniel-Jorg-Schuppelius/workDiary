@@ -161,6 +161,8 @@ class TogglApiClient {
             endedAt: CarbonImmutable::parse($stop),
             billable: (bool) ($record['billable'] ?? false),
             userEmail: $email,
+            clientId: $clientId !== null ? (int) $clientId : null,
+            projectId: $projectId,
         );
     }
 
@@ -328,6 +330,7 @@ class TogglApiClient {
             $projects[(int) $project['id']] = [
                 'name' => $project['name'],
                 'client_name' => $project['client_name'],
+                'client_id' => $project['client_id'] ?? null,
             ];
             if ($project['start_date'] !== null) {
                 $start = CarbonImmutable::parse($project['start_date']);
@@ -406,7 +409,7 @@ class TogglApiClient {
      * bündeln (z. B. gestoppte/fortgesetzte Timer); je Position entsteht ein DTO.
      *
      * @param  array<string, mixed>  $row
-     * @param  array<int, array{name: string, client_name: ?string}>  $projects
+     * @param  array<int, array{name: string, client_name: ?string, client_id: ?int}>  $projects
      * @return array<int, TogglEntry>
      */
     private function mapReportRow(array $row, array $projects): array {
@@ -419,6 +422,7 @@ class TogglApiClient {
         $project = $projectId !== null ? ($projects[$projectId] ?? null) : null;
         $clientName = $project['client_name'] ?? null;
         $projectName = $project['name'] ?? null;
+        $clientId = $project['client_id'] ?? null;
 
         $description = isset($row['description']) ? trim((string) $row['description']) : null;
         $billable = (bool) ($row['billable'] ?? false);
@@ -426,7 +430,7 @@ class TogglApiClient {
 
         $entries = [];
         foreach ($items as $item) {
-            $entry = $this->reportItemToEntry((array) $item, $clientName, $projectName, $description, $billable, $userEmail);
+            $entry = $this->reportItemToEntry((array) $item, $clientName, $projectName, $description, $billable, $userEmail, $clientId, $projectId);
             if ($entry !== null) {
                 $entries[] = $entry;
             }
@@ -440,7 +444,7 @@ class TogglApiClient {
      *
      * @param  array<string, mixed>  $item
      */
-    private function reportItemToEntry(array $item, ?string $clientName, ?string $projectName, ?string $description, bool $billable, ?string $userEmail): ?TogglEntry {
+    private function reportItemToEntry(array $item, ?string $clientName, ?string $projectName, ?string $description, bool $billable, ?string $userEmail, ?int $clientId = null, ?int $projectId = null): ?TogglEntry {
         $start = $item['start'] ?? null;
         $stop = $item['stop'] ?? null;
         if (! is_string($start) || $start === '') {
@@ -463,6 +467,8 @@ class TogglApiClient {
             endedAt: CarbonImmutable::parse($stop),
             billable: $billable,
             userEmail: $userEmail,
+            clientId: $clientId,
+            projectId: $projectId,
         );
     }
 

@@ -11,6 +11,7 @@
 namespace Tests\Feature;
 
 use App\Models\{Customer, CustomerMergeDismissal, ExternalReference, Project, User};
+use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
 use App\Services\{CustomerDuplicateFinder, CustomerMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -103,6 +104,33 @@ class CustomerMergeTest extends TestCase {
             ->where('referenceable_type', $target->getMorphClass())
             ->where('referenceable_id', $target->id)
             ->where('external_type', 'client')->count());
+    }
+
+    public function test_merge_keeps_alternate_toggl_client_as_alias(): void {
+        $target = $this->customer();
+        $source = $this->customer();
+
+        // Beide tragen eine eigene Toggl-Client-Referenz → Kollision beim Merge.
+        $this->ref($target, TogglPlugin::ID, 'client', 'Kunde X');
+        $this->ref($source, TogglPlugin::ID, 'client', 'Kunde Y');
+
+        app(CustomerMergeService::class)->merge($source, $target);
+
+        // Der abweichende Quell-Client lebt als Alias weiter und zeigt aufs Ziel.
+        $this->assertDatabaseHas('external_reference_aliases', [
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => 'client',
+            'external_id' => 'Kunde Y',
+            'referenceable_type' => (new Customer)->getMorphClass(),
+            'referenceable_id' => $target->id,
+        ]);
+
+        // Ein Re-Import mit dem alten Client-Namen ordnet ohne Inbox-Umweg dem
+        // Ziel-Kunden zu (Name-Fallback griffe hier nicht).
+        $matched = app(TogglImportService::class)->matchCustomer($this->organization, 'Kunde Y');
+        $this->assertNotNull($matched, 'Alter Toggl-Client muss über den Alias auflösen');
+        $this->assertSame($target->id, $matched->id);
     }
 
     public function test_finder_detects_exact_match_by_vat_id(): void {

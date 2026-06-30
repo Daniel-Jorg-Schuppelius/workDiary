@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization};
+use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization};
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use Illuminate\Database\Eloquent\Model;
 
@@ -108,7 +108,14 @@ class IntegrationResolver {
             ->where('external_id', $externalId)
             ->first();
 
-        return $ref?->referenceable;
+        if ($ref?->referenceable instanceof Model) {
+            return $ref->referenceable;
+        }
+
+        // Alias-Fallback: per Merge umgeleitete Fremd-ID direkt aufs heutige Ziel.
+        $alias = ExternalReferenceAlias::resolveModel($org->id, $pluginId, $externalType, $externalId);
+
+        return $alias instanceof Model && $alias->getMorphClass() === $morph ? $alias : null;
     }
 
     /**

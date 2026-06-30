@@ -134,6 +134,7 @@ class ProjectMergeService {
             $this->repointScalarTables($sourceId, $targetId);
             $this->repointPivots($sourceId, $targetId);
             $this->repointExternalReferences($morph, $sourceId, $targetId);
+            $this->repointAliases($morph, $sourceId, $targetId);
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
@@ -193,7 +194,7 @@ class ProjectMergeService {
         $sourceRefs = DB::table('external_references')
             ->where('referenceable_type', $morph)
             ->where('referenceable_id', $sourceId)
-            ->get(['id', 'plugin_id', 'external_type']);
+            ->get(['id', 'organization_id', 'plugin_id', 'external_type', 'external_id']);
 
         foreach ($sourceRefs as $ref) {
             $collision = DB::table('external_references')
@@ -204,14 +205,89 @@ class ProjectMergeService {
                 ->exists();
 
             if ($collision) {
-                // Ziel hat bereits eine Referenz für dieses Plugin/diesen Typ —
-                // die Quell-Referenz würde den Unique-Index verletzen.
+                // Ziel hat bereits eine Primär-Referenz für dieses Plugin/diesen Typ
+                // (Unique-Index). Die abweichende Quell-Fremd-ID (z. B. anderer
+                // Toggl-Projektname) als Alias aufs Ziel sichern, damit künftige
+                // Importe mit dem alten Schlüssel ohne Inbox-Umweg direkt landen.
+                $this->writeAlias($morph, $targetId, $ref);
                 DB::table('external_references')->where('id', $ref->id)->delete();
                 continue;
             }
 
             DB::table('external_references')->where('id', $ref->id)->update(['referenceable_id' => $targetId]);
         }
+    }
+
+    /**
+     * Bereits bestehende Aliase des Quell-Projekts (aus früheren Merges) auf das
+     * Ziel umhängen, damit Alias-Ketten über mehrere Zusammenführungen gültig
+     * bleiben. Würde ein Alias mit dem Ziel kollidieren (gleiche Fremd-ID), wird
+     * die Quell-Zeile verworfen (Ziel-Alias gewinnt).
+     */
+    private function repointAliases(string $morph, int $sourceId, int $targetId): void {
+        if (! Schema::hasTable('external_reference_aliases')) {
+            return;
+        }
+
+        $targetKeys = DB::table('external_reference_aliases')
+            ->where('referenceable_type', $morph)
+            ->where('referenceable_id', $targetId)
+            ->get(['plugin_id', 'external_type', 'external_id'])
+            ->map(fn($a): string => $a->plugin_id . '|' . $a->external_type . '|' . $a->external_id)
+            ->all();
+
+        $sourceAliases = DB::table('external_reference_aliases')
+            ->where('referenceable_type', $morph)
+            ->where('referenceable_id', $sourceId)
+            ->get(['id', 'plugin_id', 'external_type', 'external_id']);
+
+        foreach ($sourceAliases as $alias) {
+            $key = $alias->plugin_id . '|' . $alias->external_type . '|' . $alias->external_id;
+            if (in_array($key, $targetKeys, true)) {
+                DB::table('external_reference_aliases')->where('id', $alias->id)->delete();
+                continue;
+            }
+            DB::table('external_reference_aliases')->where('id', $alias->id)->update(['referenceable_id' => $targetId]);
+        }
+    }
+
+    /**
+     * Schreibt/aktualisiert einen Alias (Fremd-ID → Ziel). Idempotent über den
+     * Unique-Schlüssel (organization_id, plugin_id, external_type, external_id).
+     */
+    private function writeAlias(string $morph, int $targetId, \stdClass $ref): void {
+        if (! Schema::hasTable('external_reference_aliases')) {
+            return;
+        }
+
+        $now = now();
+        $exists = DB::table('external_reference_aliases')
+            ->where('organization_id', $ref->organization_id)
+            ->where('plugin_id', $ref->plugin_id)
+            ->where('external_type', $ref->external_type)
+            ->where('external_id', $ref->external_id)
+            ->first(['id']);
+
+        if ($exists !== null) {
+            DB::table('external_reference_aliases')->where('id', $exists->id)->update([
+                'referenceable_type' => $morph,
+                'referenceable_id' => $targetId,
+                'updated_at' => $now,
+            ]);
+
+            return;
+        }
+
+        DB::table('external_reference_aliases')->insert([
+            'organization_id' => $ref->organization_id,
+            'plugin_id' => $ref->plugin_id,
+            'external_type' => $ref->external_type,
+            'external_id' => $ref->external_id,
+            'referenceable_type' => $morph,
+            'referenceable_id' => $targetId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
     }
 
     private function repointMorphTables(string $morph, int $sourceId, int $targetId): void {

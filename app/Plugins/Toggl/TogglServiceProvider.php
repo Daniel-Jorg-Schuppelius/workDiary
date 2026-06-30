@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Toggl;
 
-use App\Plugins\Toggl\Console\TogglImportCommand;
+use App\Plugins\Toggl\Console\{TogglBackfillReferencesCommand, TogglImportCommand};
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -33,6 +33,7 @@ class TogglServiceProvider extends ServiceProvider {
         if ($this->app->runningInConsole()) {
             $this->commands([
                 TogglImportCommand::class,
+                TogglBackfillReferencesCommand::class,
             ]);
         }
     }

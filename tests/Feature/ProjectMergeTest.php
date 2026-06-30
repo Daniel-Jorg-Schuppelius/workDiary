@@ -292,4 +292,48 @@ class ProjectMergeTest extends TestCase {
         $this->assertNotNull($matched);
         $this->assertSame($target->id, $matched->id);
     }
+
+    public function test_reimport_with_ref_collision_routes_via_alias(): void {
+        // Beide Projekte tragen eine EIGENE Toggl-Projekt-Referenz (unterschiedliche
+        // Namen) → beim Merge kollidieren sie auf dem Unique-Index.
+        $target = $this->project('Wartung');
+        $source = $this->project('Wartung Alt');
+        $this->projectRef($target, 'project', 'client x|wartung');
+        $this->projectRef($source, 'project', 'client x|wartung alt');
+
+        app(ProjectMergeService::class)->merge($source, $target);
+
+        // Die abweichende Quell-Fremd-ID lebt als Alias weiter und zeigt aufs Ziel.
+        $this->assertDatabaseHas('external_reference_aliases', [
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => 'project',
+            'external_id' => 'client x|wartung alt',
+            'referenceable_type' => (new Project)->getMorphClass(),
+            'referenceable_id' => $target->id,
+        ]);
+
+        // Re-Import mit dem ALTEN Projektnamen → über den Alias direkt aufs Ziel
+        // (der Name-Fallback griffe hier nicht, da das Ziel anders heißt).
+        $entryOld = new TogglEntry(
+            source: 'csv', entryKey: 'csv:old', clientName: 'Client X', projectName: 'Wartung Alt',
+            description: null,
+            startedAt: CarbonImmutable::parse('2026-06-01 08:00:00'),
+            endedAt: CarbonImmutable::parse('2026-06-01 09:00:00'),
+        );
+        $matchedOld = app(TogglImportService::class)->matchProject($this->organization, $entryOld);
+        $this->assertNotNull($matchedOld, 'Alter Toggl-Schlüssel muss über den Alias auflösen');
+        $this->assertSame($target->id, $matchedOld->id);
+
+        // Der Ziel-Schlüssel löst weiterhin direkt über die Primär-Referenz auf.
+        $entryNew = new TogglEntry(
+            source: 'csv', entryKey: 'csv:new', clientName: 'Client X', projectName: 'Wartung',
+            description: null,
+            startedAt: CarbonImmutable::parse('2026-06-01 10:00:00'),
+            endedAt: CarbonImmutable::parse('2026-06-01 11:00:00'),
+        );
+        $matchedNew = app(TogglImportService::class)->matchProject($this->organization, $entryNew);
+        $this->assertNotNull($matchedNew);
+        $this->assertSame($target->id, $matchedNew->id);
+    }
 }

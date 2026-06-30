@@ -35,6 +35,10 @@ final class TogglEntry {
         public readonly bool $billable = false,
         /** Toggl-User-E-Mail (informativ, für die Inbox-Anzeige). */
         public readonly ?string $userEmail = null,
+        /** Stabile Toggl-Client-ID (nur API; CSV liefert keine) → bevorzugter Kunden-Schlüssel. */
+        public readonly ?int $clientId = null,
+        /** Stabile Toggl-Projekt-ID (nur API; CSV liefert keine) → bevorzugter Projekt-Schlüssel. */
+        public readonly ?int $projectId = null,
     ) {}
 
     /** Verbindungsdauer in Minuten (mind. 1, falls > 0 Sekunden). */
