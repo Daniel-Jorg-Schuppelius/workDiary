@@ -23,7 +23,7 @@ use InvalidArgumentException;
  * Einzige Stelle fuer Statuswechsel eines Falls (Abschnitt 8). Controller setzen
  * Statusfelder NIE direkt. Prueft erlaubte Uebergaenge, fuehrt Seiteneffekte aus
  * (acknowledged_at, closed_at, retention_due_at, legal_hold_at) und schreibt ein
- * inhaltsfreies Status-Event. Begruendungen werden als verschluesselte interne
+ * inhaltsfreies Status-Event. Begründungen werden als verschluesselte interne
  * Notiz abgelegt – NICHT in den Event-Metadaten (die bleiben content-frei).
  */
 class WhistleblowingCaseWorkflowService {
@@ -68,14 +68,14 @@ class WhistleblowingCaseWorkflowService {
 
     /**
      * Generischer Statuswechsel. Abschluss-Status (closed_*) verlangen eine
-     * Begruendung; diese wird als interne Notiz verschluesselt abgelegt.
+     * Begründung; diese wird als interne Notiz verschluesselt abgelegt.
      */
     public function transition(WhistleblowingCase $case, CaseStatus $to, ?User $actor = null, ?string $reason = null): void {
         $from = $this->status($case);
         $this->assertAllowed($from, $to);
 
         if ($to->isClosed() && ($reason === null || trim($reason) === '')) {
-            throw new InvalidArgumentException('Ein Abschluss verlangt eine Begruendung.');
+            throw new InvalidArgumentException('Ein Abschluss verlangt eine Begründung.');
         }
 
         DB::transaction(function () use ($case, $from, $to, $actor, $reason): void {

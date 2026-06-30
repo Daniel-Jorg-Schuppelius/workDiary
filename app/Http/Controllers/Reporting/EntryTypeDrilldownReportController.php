@@ -221,7 +221,7 @@ class EntryTypeDrilldownReportController extends Controller {
         );
 
         $rows = [];
-        $rows[] = ['ID', 'Titel', 'Status', 'Severity', 'Faellig', 'Zugewiesen'];
+        $rows[] = ['ID', 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen'];
         foreach ($issues as $issue) {
             $rows[] = [
                 $issue->id,

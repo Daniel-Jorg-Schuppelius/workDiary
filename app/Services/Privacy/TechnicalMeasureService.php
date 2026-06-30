@@ -97,7 +97,7 @@ class TechnicalMeasureService {
             'due_at' => $dueAt?->toDateString(),
             'reviewer_id' => $reviewer?->id,
         ]);
-        // Naechsten Wirksamkeitsreview terminieren (Faelligkeit der Folgemassnahme bzw. +1 Jahr).
+        // Naechsten Wirksamkeitsreview terminieren (Fälligkeit der Folgemassnahme bzw. +1 Jahr).
         $measure->forceFill([
             'next_review_at' => ($dueAt ?? Carbon::now()->addYear())->toDateString(),
         ])->save();

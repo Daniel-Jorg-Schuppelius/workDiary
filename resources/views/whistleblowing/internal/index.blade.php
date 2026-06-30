@@ -16,9 +16,9 @@
                         <x-table.th>{{ __('Fallnummer') }}</x-table.th>
                         <x-table.th>{{ __('Kategorie') }}</x-table.th>
                         <x-table.th>{{ __('Status') }}</x-table.th>
-                        <x-table.th>{{ __('Prioritaet') }}</x-table.th>
+                        <x-table.th>{{ __('Priorität') }}</x-table.th>
                         <x-table.th>{{ __('Eingang bis') }}</x-table.th>
-                        <x-table.th>{{ __('Rueckmeldung bis') }}</x-table.th>
+                        <x-table.th>{{ __('Rückmeldung bis') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @forelse ($cases as $case)

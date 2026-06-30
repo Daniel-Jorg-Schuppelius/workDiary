@@ -44,7 +44,7 @@ enum CaseStatus: string {
         };
     }
 
-    /** Ist dies ein fachlicher Abschlusszustand (verlangt Begruendung)? */
+    /** Ist dies ein fachlicher Abschlusszustand (verlangt Begründung)? */
     public function isClosed(): bool {
         return in_array($this, [
             self::ClosedSubstantiated,

@@ -38,20 +38,20 @@
     </section>
 
     <section class="wb-card">
-        <h2>{{ __('Ihre Anhaenge') }}</h2>
+        <h2>{{ __('Ihre Anhänge') }}</h2>
         <ul>
             @forelse ($attachments as $a)
                 <li>{{ $a->original_name_ciphertext }}</li>
             @empty
-                <li>{{ __('Keine Anhaenge.') }}</li>
+                <li>{{ __('Keine Anhänge.') }}</li>
             @endforelse
         </ul>
 
         <form method="post" action="{{ route('whistleblowing.mailbox.attachment.store') }}" enctype="multipart/form-data">
             @csrf
-            <label for="file">{{ __('Datei hinzufuegen') }}</label>
+            <label for="file">{{ __('Datei hinzufügen') }}</label>
             <input id="file" name="file" type="file" required>
-            <p class="wb-hint">{{ __('Achtung: Dokumente koennen Metadaten enthalten, die Sie identifizieren.') }}</p>
+            <p class="wb-hint">{{ __('Achtung: Dokumente können Metadaten enthalten, die Sie identifizieren.') }}</p>
             <button type="submit">{{ __('Hochladen') }}</button>
         </form>
     </section>

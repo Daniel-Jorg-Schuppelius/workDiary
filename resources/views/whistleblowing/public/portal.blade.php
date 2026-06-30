@@ -10,8 +10,8 @@
     @endif
 
     <section class="wb-card">
-        <h2>{{ __('Wofuer ist dieser Kanal?') }}</h2>
-        <p>{{ __('Hinweise auf Rechtsverstoesse, Korruption, Betrug und andere erhebliche Compliance-Verstoesse. Nicht jeder Konflikt am Arbeitsplatz faellt darunter.') }}</p>
+        <h2>{{ __('Wofür ist dieser Kanal?') }}</h2>
+        <p>{{ __('Hinweise auf Rechtsverstöße, Korruption, Betrug und andere erhebliche Compliance-Verstöße. Nicht jeder Konflikt am Arbeitsplatz fällt darunter.') }}</p>
         @if (is_array($portal->external_channels) && count($portal->external_channels) > 0)
             <h3>{{ __('Externe Meldewege') }}</h3>
             <ul>
@@ -66,9 +66,9 @@
         <label for="contact">{{ __('Kontaktdaten (nur bei vertraulicher Meldung, freiwillig)') }}</label>
         <input id="contact" name="contact" type="text" maxlength="500">
 
-        <label for="attachments">{{ __('Anhaenge (optional)') }}</label>
+        <label for="attachments">{{ __('Anhänge (optional)') }}</label>
         <input id="attachments" name="attachments[]" type="file" multiple>
-        <p class="wb-hint">{{ __('Achtung: Dokumente koennen Namen, Benutzerkonten und Metadaten enthalten, die Sie identifizieren.') }}</p>
+        <p class="wb-hint">{{ __('Achtung: Dokumente können Namen, Benutzerkonten und Metadaten enthalten, die Sie identifizieren.') }}</p>
 
         <label class="wb-consent"><input type="checkbox" name="consent" value="1" required> {{ __('Ich mache die Angaben nach bestem Wissen und Gewissen.') }}</label>
 

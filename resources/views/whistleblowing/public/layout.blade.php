@@ -17,7 +17,7 @@
         @yield('content')
 
         <footer class="wb-footer">
-            <p>{{ __('Dieses Portal speichert keine IP-Adresse zur Meldung. Echte Anonymitaet haengt auch von Ihrem Netzwerk und Geraet ab. Nutzen Sie es bei Bedarf aus einem privaten Netz.') }}</p>
+            <p>{{ __('Dieses Portal speichert keine IP-Adresse zur Meldung. Echte Anonymität hängt auch von Ihrem Netzwerk und Gerät ab. Nutzen Sie es bei Bedarf aus einem privaten Netz.') }}</p>
         </footer>
     </main>
 </body>

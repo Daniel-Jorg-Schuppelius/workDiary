@@ -66,7 +66,7 @@ class WhistleblowingPortalController extends Controller {
         $portal->forceFill(['public_slug' => $this->freshSlug()])->save();
 
         return redirect()->route('whistleblowing.portal.edit')
-            ->with('success', __('Portal-Link wurde rotiert. Bereits verteilte Links sind jetzt ungueltig.'));
+            ->with('success', __('Portal-Link wurde rotiert. Bereits verteilte Links sind jetzt ungültig.'));
     }
 
     private function portal(): Portal {

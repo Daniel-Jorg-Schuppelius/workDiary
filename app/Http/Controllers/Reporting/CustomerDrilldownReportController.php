@@ -274,7 +274,7 @@ class CustomerDrilldownReportController extends Controller {
         );
 
         $out = [];
-        $out[] = ['ID', 'Titel', 'Status', 'Severity', 'Faellig', 'Zugewiesen'];
+        $out[] = ['ID', 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen'];
         foreach ($issues as $issue) {
             /** @var OpenIssue $issue */
             $out[] = [

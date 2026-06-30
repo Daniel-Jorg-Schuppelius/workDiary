@@ -4,7 +4,7 @@
 @section('nav-title', __('Hinweisgeber-Meldeportal'))
 
 @section('content')
-    <x-index-page :subtitle="__('Oeffentliches Meldeportal fuer Hinweisgeber konfigurieren.')">
+    <x-index-page :subtitle="__('Öffentliches Meldeportal für Hinweisgeber konfigurieren.')">
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif
@@ -22,19 +22,19 @@
                             {{ $portal->is_enabled ? __('aktiv') : __('inaktiv') }}
                         </x-status-badge>
                     </p>
-                    <p class="text-sm text-base-content/70">{{ __('Diesen Link veroeffentlichen Sie fuer Hinweisgeber. Er ist nicht aus dem Organisationsnamen ableitbar.') }}</p>
+                    <p class="text-sm text-base-content/70">{{ __('Diesen Link veröffentlichen Sie für Hinweisgeber. Er ist nicht aus dem Organisationsnamen ableitbar.') }}</p>
                     <form method="post" action="{{ route('whistleblowing.portal.rotate') }}"
                           data-confirm-dialog
                           data-confirm-icon="autorenew"
                           data-confirm-tone="warning"
-                          data-confirm-message="{{ __('Link wirklich rotieren? Bereits verteilte Links werden ungueltig.') }}">
+                          data-confirm-message="{{ __('Link wirklich rotieren? Bereits verteilte Links werden ungültig.') }}">
                         @csrf
                         <x-icon-btn icon="autorenew" tone="ghost" size="sm" type="submit" show-label>{{ __('Link rotieren') }}</x-icon-btn>
                     </form>
                 </div>
             </x-card>
         @else
-            <div class="alert">{{ __('Es ist noch kein Meldeportal angelegt. Speichern Sie, um eines mit einem zufaelligen Link zu erstellen.') }}</div>
+            <div class="alert">{{ __('Es ist noch kein Meldeportal angelegt. Speichern Sie, um eines mit einem zufälligen Link zu erstellen.') }}</div>
         @endif
 
         <x-card>
@@ -47,7 +47,7 @@
                     <x-input-field name="is_enabled">
                         <label class="label cursor-pointer justify-start gap-3">
                             <input type="checkbox" id="is_enabled" name="is_enabled" value="1" class="checkbox checkbox-sm" @checked(old('is_enabled', $portal->is_enabled))>
-                            <span class="fieldset-label">{{ __('Portal aktiv (oeffentlich erreichbar)') }}</span>
+                            <span class="fieldset-label">{{ __('Portal aktiv (öffentlich erreichbar)') }}</span>
                         </label>
                     </x-input-field>
                     <x-input-field name="allow_anonymous">

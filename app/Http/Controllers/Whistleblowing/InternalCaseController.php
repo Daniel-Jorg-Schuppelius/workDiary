@@ -63,7 +63,7 @@ class InternalCaseController extends Controller {
         Gate::authorize('process', $case);
         $workflow->acknowledge($case, $this->user());
 
-        return back()->with('success', __('Eingang bestaetigt.'));
+        return back()->with('success', __('Eingang bestätigt.'));
     }
 
     public function status(Request $request, WhistleblowingCase $case, WhistleblowingCaseWorkflowService $workflow): RedirectResponse {
@@ -146,7 +146,7 @@ class InternalCaseController extends Controller {
         $user = User::query()->findOrFail($data['user_id']);
         $access->markSubject($case, $user, $this->user(), $data['note'] ?? null);
 
-        return back()->with('success', __('Betroffene Person markiert (fuer den Fall gesperrt).'));
+        return back()->with('success', __('Betroffene Person markiert (für den Fall gesperrt).'));
     }
 
     public function export(Request $request, WhistleblowingCase $case, WhistleblowingExportService $export): BinaryFileResponse {
@@ -169,7 +169,7 @@ class InternalCaseController extends Controller {
 
         return redirect()
             ->route('whistleblowing.internal.index')
-            ->with('success', __('Fall kontrolliert geloescht (Crypto-Shredding).'));
+            ->with('success', __('Fall kontrolliert gelöscht (Crypto-Shredding).'));
     }
 
     private function user(): User {

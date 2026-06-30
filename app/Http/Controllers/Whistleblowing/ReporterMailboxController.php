@@ -45,7 +45,7 @@ class ReporterMailboxController extends Controller {
 
         if ($case === null) {
             // Konstante Fehlermeldung – keine Information ueber Existenz.
-            return back()->withErrors(['secret' => __('Zugang nicht moeglich. Bitte pruefen Sie Ihr Geheimnis.')]);
+            return back()->withErrors(['secret' => __('Zugang nicht möglich. Bitte prüfen Sie Ihr Geheimnis.')]);
         }
 
         $request->session()->regenerate(); // Fixation verhindern
@@ -82,7 +82,7 @@ class ReporterMailboxController extends Controller {
 
         $messages->receiveFromReporter($this->case($request), (string) $request->input('body'));
 
-        return redirect()->route('whistleblowing.mailbox.show')->with('success', __('Ihre Nachricht wurde uebermittelt.'));
+        return redirect()->route('whistleblowing.mailbox.show')->with('success', __('Ihre Nachricht wurde übermittelt.'));
     }
 
     public function attachment(Request $request, WhistleblowingAttachmentService $attachments): RedirectResponse {

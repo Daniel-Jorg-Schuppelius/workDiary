@@ -115,7 +115,7 @@ class WhistleblowingAccessService {
             throw new RuntimeException('Beguenstigter ist fuer diesen Fall gesperrt (Interessenkonflikt oder Betroffener).');
         }
         if (trim($reason) === '') {
-            throw new RuntimeException('Notfallfreigabe verlangt eine Begruendung.');
+            throw new RuntimeException('Notfallfreigabe verlangt eine Begründung.');
         }
 
         $ttl = $ttlMinutes ?? (int) config('whistleblowing.emergency_ttl_minutes', 240);

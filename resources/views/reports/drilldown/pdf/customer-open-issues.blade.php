@@ -19,7 +19,7 @@
                 <th>Titel</th>
                 <th>Status</th>
                 <th>Severity</th>
-                <th>Faellig</th>
+                <th>Fällig</th>
                 <th>Zugewiesen</th>
             </tr>
         </thead>

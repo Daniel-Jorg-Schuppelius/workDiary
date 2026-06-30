@@ -32,10 +32,10 @@ class PublicReportController extends Controller {
 
         $mode = (string) $request->input('reporter_mode');
         if ($mode === ReporterMode::Anonymous->value && ! $portal->allow_anonymous) {
-            return back()->withErrors(['reporter_mode' => __('Anonyme Meldungen sind fuer dieses Portal nicht aktiviert.')])->withInput();
+            return back()->withErrors(['reporter_mode' => __('Anonyme Meldungen sind für dieses Portal nicht aktiviert.')])->withInput();
         }
         if ($mode === ReporterMode::Confidential->value && ! $portal->allow_confidential) {
-            return back()->withErrors(['reporter_mode' => __('Vertrauliche Meldungen sind fuer dieses Portal nicht aktiviert.')])->withInput();
+            return back()->withErrors(['reporter_mode' => __('Vertrauliche Meldungen sind für dieses Portal nicht aktiviert.')])->withInput();
         }
 
         /** @var array<int, \Illuminate\Http\UploadedFile> $files */

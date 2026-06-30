@@ -8,7 +8,7 @@
         <x-slot:actions>
             <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
                         :href="route('whistleblowing.internal.index')"
-                        show-label>{{ __('Zurueck zur Liste') }}</x-icon-btn>
+                        show-label>{{ __('Zurück zur Liste') }}</x-icon-btn>
         </x-slot:actions>
 
         @if (session('success'))
@@ -20,13 +20,13 @@
             <div class="mt-2 space-y-1">
                 <p class="text-sm">
                     {{ __('Status') }}: <strong>{{ __('whistleblowing.status.' . $case->status->value) }}</strong> ·
-                    {{ __('Prioritaet') }}: {{ $case->priority->value }} ·
+                    {{ __('Priorität') }}: {{ $case->priority->value }} ·
                     {{ __('Kategorie') }}: {{ __('whistleblowing.category.' . $case->category->value) }}
                 </p>
                 <p class="text-sm">
                     {{ __('Eingang bis') }}: {{ optional($case->acknowledgement_due_at)->format('d.m.Y') }} ·
-                    {{ __('Rueckmeldung bis') }}: {{ optional($case->feedback_due_at)->format('d.m.Y') }}
-                    @if ($case->acknowledged_at) · {{ __('bestaetigt am') }} {{ $case->acknowledged_at->format('d.m.Y') }} @endif
+                    {{ __('Rückmeldung bis') }}: {{ optional($case->feedback_due_at)->format('d.m.Y') }}
+                    @if ($case->acknowledged_at) · {{ __('bestätigt am') }} {{ $case->acknowledged_at->format('d.m.Y') }} @endif
                 </p>
             </div>
         </x-card>
@@ -62,7 +62,7 @@
                         <p class="whitespace-pre-line">{{ $m->body_ciphertext }}</p>
                     </div>
                 @empty
-                    <p>{{ __('Noch keine Eintraege.') }}</p>
+                    <p>{{ __('Noch keine Einträge.') }}</p>
                 @endforelse
             </div>
         </x-card>
@@ -73,13 +73,13 @@
                     <x-card>
                         <form method="post" action="{{ route('whistleblowing.internal.acknowledge', $case) }}">
                             @csrf
-                            <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Eingang bestaetigen') }}</x-icon-btn>
+                            <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Eingang bestätigen') }}</x-icon-btn>
                         </form>
                     </x-card>
                 @endif
 
                 <x-card>
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Status aendern') }}</h2>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Status ändern') }}</h2>
                     <form method="post" action="{{ route('whistleblowing.internal.status', $case) }}" class="mt-2 space-y-2">
                         @csrf
                         <x-form-group tone="ghost" cols="1">
@@ -90,8 +90,8 @@
                                     @endforeach
                                 </select>
                             </x-input-field>
-                            <x-input-field name="reason" :label="__('Begruendung')">
-                                <textarea id="reason" name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begruendung (bei Abschluss erforderlich)') }}"></textarea>
+                            <x-input-field name="reason" :label="__('Begründung')">
+                                <textarea id="reason" name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begründung (bei Abschluss erforderlich)') }}"></textarea>
                             </x-input-field>
                         </x-form-group>
                         <x-icon-btn icon="edit" tone="ghost" size="sm" type="submit" show-label>{{ __('Status setzen') }}</x-icon-btn>

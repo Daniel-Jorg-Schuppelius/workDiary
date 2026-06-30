@@ -201,7 +201,7 @@ class AssetDrilldownReportController extends Controller {
             $escalatedOnly ? '-escalated' : ''
         );
         $rows = [];
-        $rows[] = ['ID', 'AssetID', 'Titel', 'Status', 'Severity', 'Faellig', 'Zugewiesen'];
+        $rows[] = ['ID', 'AssetID', 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen'];
         foreach ($issues as $issue) {
             $rows[] = [
                 $issue->id,

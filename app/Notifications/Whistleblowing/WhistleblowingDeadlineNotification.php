@@ -17,7 +17,7 @@ use Illuminate\Notifications\Notification;
 
 /**
  * Inhaltsarme Fristen-Erinnerung an Fallbearbeiter (Abschnitt 15). Enthaelt
- * NUR Fallnummer, Prioritaet, Art der Frist, Faelligkeit und einen Link – NIE
+ * NUR Fallnummer, Priorität, Art der Frist, Fälligkeit und einen Link – NIE
  * Betreff, Beschreibung, Namen oder Anhaenge.
  */
 class WhistleblowingDeadlineNotification extends Notification {
@@ -36,16 +36,16 @@ class WhistleblowingDeadlineNotification extends Notification {
 
     public function toMail(object $notifiable): MailMessage {
         $label = $this->kind === 'acknowledge'
-            ? __('Eingangsbestaetigung ueberfaellig')
-            : __('Rueckmeldung faellig');
+            ? __('Eingangsbestätigung überfällig')
+            : __('Rückmeldung fällig');
 
         return (new MailMessage)
             ->subject(__('Hinweisgeber-Frist') . ': ' . $this->caseNumber)
             ->line($label)
             ->line(__('Fallnummer') . ': ' . $this->caseNumber)
-            ->line(__('Prioritaet') . ': ' . $this->priority)
-            ->line(__('Faellig') . ': ' . (string) $this->dueAt)
-            ->action(__('Fall oeffnen'), $this->url);
+            ->line(__('Priorität') . ': ' . $this->priority)
+            ->line(__('Fällig') . ': ' . (string) $this->dueAt)
+            ->action(__('Fall öffnen'), $this->url);
     }
 
     /** @return array<string, string|null> */

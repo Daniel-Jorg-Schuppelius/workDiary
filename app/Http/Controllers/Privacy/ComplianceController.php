@@ -58,7 +58,7 @@ class ComplianceController extends Controller {
             'due_at' => ['nullable', 'date'],
         ]);
 
-        // Begruendungspflicht fuer „nicht anwendbar"/„Abweichung akzeptiert".
+        // Begründungspflicht fuer „nicht anwendbar"/„Abweichung akzeptiert".
         if (in_array($data['status'], ['not_applicable', 'deviation_accepted'], true) && empty($data['justification'])) {
             return back()->withErrors(['justification' => __('Für diesen Status ist eine Begründung erforderlich.')]);
         }

@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Dokumentierte Wirksamkeitspruefung einer TOM (Ergebnis, Abweichung,
- * Folgemassnahme, Faelligkeit).
+ * Folgemassnahme, Fälligkeit).
  *
  * @property int $organization_id
  */
