@@ -41,7 +41,7 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Doppelte Projekte (z. B. mehrfach „Wartung" nach dem Toggl-Import) werden hier je Kunde gegenübergestellt. Pro Paar entscheidest du, welches Projekt bestehen bleibt — alle Zeiten, Aufträge, Rechnungen und Import-Referenzen werden auf es umgehängt, das andere wird gelöscht. Künftige Importe ordnen sich dann automatisch dem Ziel zu.')">
+<x-index-page :subtitle="__('Doppelte Projekte (z. B. mehrfach „Wartung“ nach dem Toggl-Import) werden hier je Kunde gegenübergestellt. Pro Paar entscheidest du, welches Projekt bestehen bleibt — alle Zeiten, Aufträge, Rechnungen und Import-Referenzen werden auf es umgehängt, das andere wird gelöscht. Künftige Importe ordnen sich dann automatisch dem Ziel zu.')">
     <x-slot:actions>
         <form method="GET" action="{{ route('projects.duplicates.index') }}" class="flex items-center gap-2">
             <select name="confidence" class="select select-sm select-bordered" onchange="this.form.submit()">
