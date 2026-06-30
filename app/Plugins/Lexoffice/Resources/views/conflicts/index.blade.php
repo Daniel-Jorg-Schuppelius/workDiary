@@ -106,7 +106,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $conflicts->links() }}</div>
+            <x-pagination :paginator="$conflicts" standing />
         @endif
     </div>
 </x-index-page>

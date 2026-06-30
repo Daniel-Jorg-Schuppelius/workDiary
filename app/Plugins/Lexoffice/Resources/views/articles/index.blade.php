@@ -112,7 +112,7 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$articles" />
+        <x-pagination :paginator="$articles" standing />
     @endif
 </x-index-page>
 @endsection

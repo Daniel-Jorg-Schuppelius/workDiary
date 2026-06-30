@@ -156,6 +156,6 @@
             </x-slot:foot>
         @endif
     </x-table>
-    <x-pagination :paginator="$vouchers" />
+    <x-pagination :paginator="$vouchers" standing />
 </x-index-page>
 @endsection
