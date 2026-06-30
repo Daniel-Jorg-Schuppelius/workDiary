@@ -279,6 +279,32 @@
     scrollbar-width: thin;
 }
 
+/* ------------------------------------------------------------------ */
+/* Einheitliche Zeilenhöhe für ALLE DaisyUI-Tabellen (.table).          */
+/* DaisyUI staffelt das Zell-Padding pro Größe (table-xs .25rem /        */
+/* table-sm .5rem / table-md .75rem …) → dadurch sehen Tabellen je nach  */
+/* Size-Modifier verschieden hoch aus. Hier zentral auf EIN gemeinsames, */
+/* leicht erhöhtes Maß gesetzt, damit alle Tabellen app-weit gleich      */
+/* wirken — unabhängig vom Size-Modifier und Zellinhalt.                 */
+/* Ungelayert, damit es DaisyUIs gelayerte Size-Regeln zuverlässig       */
+/* sticht (gleiches Muster wie .tabs.tabs-box / .wd-surface oben).       */
+/* Ausnahmen:                                                            */
+/*   • .week-table (dichter Kalender) — eigene Spezialtabelle, unberührt. */
+/*   • Zellen mit colspan (Empty-/„keine Daten"-Zeilen, z. B.            */
+/*     <x-table.empty>) behalten ihr eigenes Padding → luftige           */
+/*     Empty-States bleiben erhalten.                                    */
+/* ------------------------------------------------------------------ */
+.table:not(.week-table) :where(th, td):not([colspan]) {
+    padding-block: 0.625rem;
+    vertical-align: middle;
+}
+.table:not(.week-table) tbody tr {
+    /* einheitliche Basis-Schriftgröße der Datenzeilen (gleicht die kleineren
+       table-xs-Zeilen an); per-Zelle bleibt text-xs/text-sm möglich, da das
+       die Zelle direkt adressiert. thead/tfoot bleiben unberührt. */
+    font-size: 0.75rem;
+}
+
 @theme {
     --font-sans:
         "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif,
