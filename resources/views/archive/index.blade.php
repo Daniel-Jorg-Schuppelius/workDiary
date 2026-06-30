@@ -298,19 +298,7 @@ use App\Enums\Vacation\VacationType;
                 default        => $diaryEntries,
             };
         @endphp
-        @if ($activePaginator->total() > 0)
-            <div class="flex-none">
-                <p class="mb-1 text-xs text-base-content/60">
-                    {{ __('Seite') }} {{ $activePaginator->currentPage() }} / {{ $activePaginator->lastPage() }}
-                    · {{ $activePaginator->total() }} {{ __('Einträge') }}
-                </p>
-                @if ($activePaginator->hasPages())
-                    <div class="rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
-                        {{ $activePaginator->links('vendor.pagination.daisyui-simple') }}
-                    </div>
-                @endif
-            </div>
-        @endif
+        <x-pagination :paginator="$activePaginator" standing />
 
         {{-- Admin: Archivierung starten --}}
         @if ($isAdmin)

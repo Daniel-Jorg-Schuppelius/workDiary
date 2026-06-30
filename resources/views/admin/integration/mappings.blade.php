@@ -66,7 +66,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $references->links() }}</div>
+            <x-pagination :paginator="$references" standing />
         @endif
     </div>
 </x-index-page>

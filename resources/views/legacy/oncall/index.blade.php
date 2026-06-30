@@ -106,16 +106,6 @@
                 @endforelse
     </x-table>
 
-    <div class="flex-none rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="text-xs text-base-content/60">
-                {{ __('Seite') }} {{ $items->currentPage() }} / {{ $items->lastPage() }}
-                ({{ $items->total() }} {{ __('Einträge') }})
-            </span>
-            @if ($items->hasPages())
-                {{ $items->links('vendor.pagination.daisyui-simple') }}
-            @endif
-        </div>
-    </div>
+    <x-pagination :paginator="$items" standing />
 </div>
 @endsection

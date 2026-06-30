@@ -49,6 +49,6 @@
             @endforelse
         </x-table>
     </x-card>
-    <div class="mt-3">{{ $serials->links() }}</div>
+    <x-pagination :paginator="$serials" standing />
 </x-index-page>
 @endsection

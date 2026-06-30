@@ -143,7 +143,7 @@
                         </tr>
                     @endforeach
                 </x-table>
-                <div class="mt-3">{{ $errors->links() }}</div>
+                <x-pagination :paginator="$errors" standing />
             </div>
         </div>
     @endif

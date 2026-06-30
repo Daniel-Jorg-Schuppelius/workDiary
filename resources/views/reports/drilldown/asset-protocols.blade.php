@@ -58,9 +58,7 @@
                 @endforeach
             </x-table>
 
-            @if ($protocols->hasPages())
-                <div class="mt-4">{{ $protocols->links('pagination::simple-tailwind') }}</div>
-            @endif
+            <x-pagination :paginator="$protocols" standing />
         @endif
     </x-card>
 </x-page-shell>

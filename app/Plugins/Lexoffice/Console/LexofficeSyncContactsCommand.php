@@ -19,7 +19,8 @@ class LexofficeSyncContactsCommand extends Command {
         {--organization= : ID einer einzelnen Organisation, sonst alle}
         {--policy= : Override für die Match-Policy (lexoffice_wins|local_wins|manual_review)}
         {--only=both : Welche Rollen synchronisiert werden (both|customers|suppliers)}
-        {--create-missing : Lokale Kunden/Lieferanten für Remote-Kontakte ohne Match neu anlegen}';
+        {--create-missing : Lokale Kunden/Lieferanten für Remote-Kontakte ohne Match neu anlegen}
+        {--stage-unmatched : Remote-Kontakte ohne Match nicht verwerfen, sondern als Unmatched-Eintrag in die Zuordnungs-Inbox stellen (zum Sichten/Mergen vor dem Pull). Wirkt nur ohne --create-missing.}';
 
     protected $description = 'Pull-Sync der Lexoffice-Kontakte: matcht remote Kontakte rollen-bewusst auf lokale Kunden (customer) bzw. Lieferanten (vendor) und führt je nach Policy Updates oder Konflikt-Einträge durch.';
 
@@ -48,6 +49,7 @@ class LexofficeSyncContactsCommand extends Command {
             $policyValue = (string) ($this->option('policy') ?: $config['match_policy']);
             $policy = LexofficeMatchPolicy::fromSetting($policyValue);
             $createMissing = (bool) $this->option('create-missing') || $config['create_missing_local'];
+            $stageUnmatched = (bool) $this->option('stage-unmatched');
             $only = (string) ($this->option('only') ?: 'both');
             if (! in_array($only, ['both', 'customers', 'suppliers'], true)) {
                 $only = 'both';
@@ -58,9 +60,9 @@ class LexofficeSyncContactsCommand extends Command {
 
             $this->info("Sync Lexoffice-Kontakte für Organisation #{$org->id} ({$org->name}) [policy={$policy->value}, only={$only}]...");
             try {
-                $result = $sync->sync($org, $policy, $config['api_key'], $config['base_url'], $createMissing, $only);
-                $this->line("  Kunden    — matched: {$result['matched']}, linked: {$result['linked']}, created: {$result['created']}, conflicts: {$result['conflicts']}, updated: {$result['updated']}");
-                $this->line("  Lieferanten — matched: {$result['supplier_matched']}, linked: {$result['supplier_linked']}, created: {$result['supplier_created']}, conflicts: {$result['supplier_conflicts']}, updated: {$result['supplier_updated']}");
+                $result = $sync->sync($org, $policy, $config['api_key'], $config['base_url'], $createMissing, $only, $stageUnmatched);
+                $this->line("  Kunden    — matched: {$result['matched']}, linked: {$result['linked']}, created: {$result['created']}, conflicts: {$result['conflicts']}, updated: {$result['updated']}, unmatched: {$result['unmatched']}");
+                $this->line("  Lieferanten — matched: {$result['supplier_matched']}, linked: {$result['supplier_linked']}, created: {$result['supplier_created']}, conflicts: {$result['supplier_conflicts']}, updated: {$result['supplier_updated']}, unmatched: {$result['supplier_unmatched']}");
                 $this->line("  ambiguous (übersprungen): {$result['ambiguous']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");

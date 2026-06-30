@@ -86,7 +86,7 @@
                 @endforeach
             </x-table>
         </x-card>
-        <div class="mt-3">{{ $articles->links() }}</div>
+        <x-pagination :paginator="$articles" standing />
     @endif
 </x-index-page>
 @endsection

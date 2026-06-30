@@ -251,7 +251,7 @@
                 </div>
             @endforeach
         </div>
-        <div class="mt-3">{{ $items->links() }}</div>
+        <x-pagination :paginator="$items" standing />
     @endif
 </x-index-page>
 @endsection

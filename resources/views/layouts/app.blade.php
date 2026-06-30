@@ -1993,6 +1993,14 @@
             <main class="wd-surface @yield('main-class', '')">
                 @yield('content')
             </main>
+
+            {{-- Seitenfuß: stehendes Pagination-Panel — Gegenstück zum page-header.
+                 <x-pagination standing> hebt seinen Block per @push('page-footer')
+                 hierher; das Layout rendert ihn als eigenes, stehendes Panel UNTER
+                 dem main (volle Content-Breite, scrollt nicht mit). Ohne Pagination
+                 (keine Einträge) wird nichts gepusht → kein Leerraum, der Inhalt
+                 füllt wie gehabt. --}}
+            @stack('page-footer')
         </div>
 
         <footer id="app-footer" class="fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs">

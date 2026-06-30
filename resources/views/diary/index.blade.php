@@ -56,10 +56,6 @@
     </div>
 
     {{-- Pagination --}}
-    @if ($entries->hasPages())
-        <div class="flex-none">
-            {{ $entries->links('pagination::simple-tailwind') }}
-        </div>
-    @endif
+    <x-pagination :paginator="$entries" standing />
 </x-index-page>
 @endsection

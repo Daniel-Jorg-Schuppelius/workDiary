@@ -46,7 +46,7 @@
             </x-table>
         </x-card>
 
-        <div class="mt-4">{{ $bills->links() }}</div>
+        <x-pagination :paginator="$bills" standing />
     @endif
 </x-index-page>
 @endsection

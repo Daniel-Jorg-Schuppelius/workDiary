@@ -259,16 +259,7 @@
                     return true;
                 }
             </script>
-            @if ($entries->total() > 0)
-                <div class="flex-none">
-                    <p class="mb-1 text-xs text-base-content/60">{{ __('Seite') }} {{ $entries->currentPage() }} / {{ $entries->lastPage() }} · {{ $entries->total() }} {{ __('Einträge') }}</p>
-                    @if ($entries->hasPages())
-                        <div class="rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
-                            {{ $entries->links('vendor.pagination.daisyui-simple') }}
-                        </div>
-                    @endif
-                </div>
-            @endif
+            <x-pagination :paginator="$entries" standing />
 
         {{-- ══ TAB: BEREITSCHAFT ══════════════════════════════════════════════ --}}
         @break
@@ -346,16 +337,7 @@
                     @endforelse
                 </x-table>
             </div>
-            @if ($oncallItems->total() > 0)
-                <div class="flex-none">
-                    <p class="mb-1 text-xs text-base-content/60">{{ __('Seite') }} {{ $oncallItems->currentPage() }} / {{ $oncallItems->lastPage() }} · {{ $oncallItems->total() }} {{ __('Einträge') }}</p>
-                    @if ($oncallItems->hasPages())
-                        <div class="rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
-                            {{ $oncallItems->links('vendor.pagination.daisyui-simple') }}
-                        </div>
-                    @endif
-                </div>
-            @endif
+            <x-pagination :paginator="$oncallItems" standing />
 
         {{-- ══ TAB: NOTDIENST ═════════════════════════════════════════════════ --}}
         @break
@@ -433,16 +415,7 @@
                     @endforelse
                 </x-table>
             </div>
-            @if ($notdienstItems->total() > 0)
-                <div class="flex-none">
-                    <p class="mb-1 text-xs text-base-content/60">{{ __('Seite') }} {{ $notdienstItems->currentPage() }} / {{ $notdienstItems->lastPage() }} · {{ $notdienstItems->total() }} {{ __('Einträge') }}</p>
-                    @if ($notdienstItems->hasPages())
-                        <div class="rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
-                            {{ $notdienstItems->links('vendor.pagination.daisyui-simple') }}
-                        </div>
-                    @endif
-                </div>
-            @endif
+            <x-pagination :paginator="$notdienstItems" standing />
         {{-- ══ TAB: URLAUB ════════════════════════════════════════════════════ --}}
         @break
         @case('urlaub')
@@ -572,16 +545,7 @@
                     @endforelse
                 </x-table>
             </div>
-            @if ($vacations->total() > 0)
-                <div class="flex-none">
-                    <p class="mb-1 text-xs text-base-content/60">{{ __('Seite') }} {{ $vacations->currentPage() }} / {{ $vacations->lastPage() }} · {{ $vacations->total() }} {{ __('Einträge') }}</p>
-                    @if ($vacations->hasPages())
-                        <div class="rounded-box border border-base-300 bg-base-100 px-3 py-2 shadow-xs">
-                            {{ $vacations->links('vendor.pagination.daisyui-simple') }}
-                        </div>
-                    @endif
-                </div>
-            @endif
+            <x-pagination :paginator="$vacations" standing />
         @break
         @endswitch
 

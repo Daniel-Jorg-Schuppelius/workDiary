@@ -36,7 +36,10 @@ class LexofficeContactSync {
 
     /**
      * @param  'both'|'customers'|'suppliers'  $only
-     * @return array{matched: int, linked: int, created: int, conflicts: int, updated: int, ambiguous: int, supplier_matched: int, supplier_linked: int, supplier_created: int, supplier_conflicts: int, supplier_updated: int}
+     * @param  bool  $stageUnmatched  Remote-Kontakte ohne lokalen Match nicht verwerfen,
+     *                                 sondern als CASE_UNMATCHED in die Zuordnungs-Inbox stellen.
+     *                                 Greift nur, wenn $createMissingLocal === false.
+     * @return array{matched: int, linked: int, created: int, conflicts: int, updated: int, unmatched: int, ambiguous: int, supplier_matched: int, supplier_linked: int, supplier_created: int, supplier_conflicts: int, supplier_updated: int, supplier_unmatched: int}
      */
     public function sync(
         Organization $organization,
@@ -45,6 +48,7 @@ class LexofficeContactSync {
         string $baseUrl = 'https://api.lexoffice.io/v1',
         bool $createMissingLocal = false,
         string $only = 'both',
+        bool $stageUnmatched = false,
     ): array {
         if ($apiKey === null || $apiKey === '') {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
@@ -56,12 +60,14 @@ class LexofficeContactSync {
             'created' => 0,
             'conflicts' => 0,
             'updated' => 0,
+            'unmatched' => 0,
             'ambiguous' => 0,
             'supplier_matched' => 0,
             'supplier_linked' => 0,
             'supplier_created' => 0,
             'supplier_conflicts' => 0,
             'supplier_updated' => 0,
+            'supplier_unmatched' => 0,
         ];
 
         $page = 0;
@@ -88,7 +94,7 @@ class LexofficeContactSync {
                     continue;
                 }
                 foreach ($this->kindsFor($remote, $only) as $kind) {
-                    $this->processKind($kind, $organization, $remote, $policy, $createMissingLocal);
+                    $this->processKind($kind, $organization, $remote, $policy, $createMissingLocal, $stageUnmatched);
                 }
             }
 
@@ -96,7 +102,7 @@ class LexofficeContactSync {
             $page++;
         } while ($page < $totalPages);
 
-        /** @var array{matched: int, linked: int, created: int, conflicts: int, updated: int, ambiguous: int, supplier_matched: int, supplier_linked: int, supplier_created: int, supplier_conflicts: int, supplier_updated: int} $result */
+        /** @var array{matched: int, linked: int, created: int, conflicts: int, updated: int, unmatched: int, ambiguous: int, supplier_matched: int, supplier_linked: int, supplier_created: int, supplier_conflicts: int, supplier_updated: int, supplier_unmatched: int} $result */
         $result = $this->counters;
 
         return $result;
@@ -134,7 +140,7 @@ class LexofficeContactSync {
      * @param  'customer'|'vendor'  $kind
      * @param  array<string, mixed>  $remote
      */
-    private function processKind(string $kind, Organization $organization, array $remote, LexofficeMatchPolicy $policy, bool $createMissingLocal): void {
+    private function processKind(string $kind, Organization $organization, array $remote, LexofficeMatchPolicy $policy, bool $createMissingLocal, bool $stageUnmatched = false): void {
         $modelClass = $kind === 'vendor' ? Supplier::class : Customer::class;
         $morphClass = (new $modelClass)->getMorphClass();
         $externalId = (string) $remote['id'];
@@ -153,6 +159,8 @@ class LexofficeContactSync {
             if ($record === null) {
                 return;
             }
+            // Bereits verknüpft: ein evtl. noch offenes Staging-Item ist erledigt.
+            $this->resolveUnmatchedInbox($organization, $morphClass, $externalId, $record);
             $this->bump($kind, 'matched');
             if ($this->applyRemote($record, $remote, $policy, $externalId)) {
                 $this->bump($kind, 'updated');
@@ -186,6 +194,8 @@ class LexofficeContactSync {
                 'payload' => $remote,
                 'synced_at' => now(),
             ]);
+            // Frischer Match: ein evtl. zuvor gestagtes Unmatched-Item ist erledigt.
+            $this->resolveUnmatchedInbox($organization, $morphClass, $externalId, $match);
             $this->bump($kind, 'linked');
             if ($this->applyRemote($match, $remote, $policy, $externalId)) {
                 $this->bump($kind, 'updated');
@@ -210,8 +220,19 @@ class LexofficeContactSync {
                     'payload' => $remote,
                     'synced_at' => now(),
                 ]);
+                // Aus dem Staging heraus angelegt → offenes Unmatched-Item schließen.
+                $this->resolveUnmatchedInbox($organization, $morphClass, $externalId, $new);
                 $this->bump($kind, 'created');
             }
+
+            return;
+        }
+
+        // Inbox-First: Remote-Kontakt ohne lokales Pendant nicht verwerfen,
+        // sondern zur manuellen Zuordnung/Zusammenführung in die Inbox stellen.
+        if ($stageUnmatched) {
+            $this->recordUnmatched($organization, $morphClass, $externalId, $remote);
+            $this->bump($kind, 'unmatched');
         }
     }
 
@@ -537,6 +558,48 @@ class LexofficeContactSync {
             $record->only(array_keys($mapped)),
             $diff,
         );
+    }
+
+    /**
+     * Schreibt ein unmatched-Inbox-Item: ein Remote-Kontakt ohne lokales
+     * Pendant. Statt ihn zu verwerfen, wird er zur manuellen Zuordnung
+     * (Zusammenführung) oder Neuanlage in die Inbox gestellt.
+     *
+     * @param  array<string, mixed>  $remote
+     */
+    private function recordUnmatched(Organization $organization, string $morphClass, string $externalId, array $remote): void {
+        $this->upsertInboxItem(
+            $organization,
+            $morphClass,
+            $externalId,
+            IntegrationInboxItem::CASE_UNMATCHED,
+            $remote,
+            $this->buildChangesFromRemote($remote),
+        );
+    }
+
+    /**
+     * Schließt ein zuvor gestagtes, noch offenes Unmatched-Inbox-Item, sobald
+     * der Remote-Kontakt einem lokalen Datensatz zugeordnet (oder daraus
+     * angelegt) wurde — verhindert Karteileichen beim späteren Pull.
+     */
+    private function resolveUnmatchedInbox(Organization $organization, string $morphClass, string $externalId, Model $target): void {
+        $dedupeKey = LexofficePlugin::EXT_TYPE_CONTACT . ':' . $externalId . ':' . class_basename($morphClass);
+
+        IntegrationInboxItem::query()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('dedupe_key', $dedupeKey)
+            ->where('case_type', IntegrationInboxItem::CASE_UNMATCHED)
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->update([
+                'status' => IntegrationInboxItem::STATUS_RESOLVED_LINKED,
+                'referenceable_type' => $target->getMorphClass(),
+                'referenceable_id' => $target->getKey(),
+                'resolved_to_type' => $target->getMorphClass(),
+                'resolved_to_id' => $target->getKey(),
+                'resolved_at' => now(),
+            ]);
     }
 
     /**

@@ -166,8 +166,6 @@
             @endif
         </x-card>
 
-        @if ($expenses->hasPages())
-            {{ $expenses->links() }}
-        @endif
+        <x-pagination :paginator="$expenses" standing />
     </x-index-page>
 @endsection

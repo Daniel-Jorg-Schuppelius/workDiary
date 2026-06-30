@@ -63,7 +63,7 @@
                 @endforelse
             </x-table>
         </x-card>
-        <div class="mt-3">{{ $lots->links() }}</div>
+        <x-pagination :paginator="$lots" standing />
     @endif
 </x-index-page>
 @endsection
