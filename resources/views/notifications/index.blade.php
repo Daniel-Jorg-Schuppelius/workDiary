@@ -74,6 +74,6 @@
         </ul>
     </div>
 
-    <x-pagination :paginator="$notifications" />
+    <x-pagination :paginator="$notifications" standing />
 </x-index-page>
 @endsection

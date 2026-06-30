@@ -109,6 +109,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$logs" />
+        <x-pagination :paginator="$logs" standing />
     </x-index-page>
 @endsection

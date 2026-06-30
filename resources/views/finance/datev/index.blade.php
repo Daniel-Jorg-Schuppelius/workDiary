@@ -68,6 +68,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$batches" />
+        <x-pagination :paginator="$batches" standing />
     </x-index-page>
 @endsection

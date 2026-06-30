@@ -75,7 +75,7 @@
         </div>
 
         <div class="mt-4">
-            <x-pagination :paginator="$queries" />
+            <x-pagination :paginator="$queries" standing />
         </div>
     @endif
 </x-index-page>

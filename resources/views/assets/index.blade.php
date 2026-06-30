@@ -135,6 +135,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$assets" />
+        <x-pagination :paginator="$assets" standing />
     </x-index-page>
 @endsection

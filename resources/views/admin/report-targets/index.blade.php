@@ -71,6 +71,6 @@
         @endforelse
     </x-table>
 
-    <x-pagination :paginator="$targets" />
+    <x-pagination :paginator="$targets" standing />
 </x-index-page>
 @endsection

@@ -43,6 +43,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$requests" />
+        <x-pagination :paginator="$requests" standing />
     </x-index-page>
 @endsection

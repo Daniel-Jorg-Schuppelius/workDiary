@@ -71,6 +71,6 @@
         </x-table>
     </x-card>
 
-    <x-pagination :paginator="$invoices" />
+    <x-pagination :paginator="$invoices" standing />
 </x-index-page>
 @endsection

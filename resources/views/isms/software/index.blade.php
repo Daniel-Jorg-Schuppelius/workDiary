@@ -177,6 +177,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$products" />
+        <x-pagination :paginator="$products" standing />
     </x-index-page>
 @endsection

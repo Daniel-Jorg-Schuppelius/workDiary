@@ -127,7 +127,7 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$customers" />
+        <x-pagination :paginator="$customers" standing />
     @endif
 </x-index-page>
 @endsection

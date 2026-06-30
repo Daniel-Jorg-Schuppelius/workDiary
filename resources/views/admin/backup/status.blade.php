@@ -164,7 +164,7 @@
                 </table>
             </div>
             <div class="mt-3">
-                <x-pagination :paginator="$restoreTests" />
+                <x-pagination :paginator="$restoreTests" standing />
             </div>
         @else
             <x-empty-state

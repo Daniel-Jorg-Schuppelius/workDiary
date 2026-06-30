@@ -64,7 +64,7 @@
                 </tr>
             @endforeach
         </x-table>
-        <x-pagination :paginator="$geofences" />
+        <x-pagination :paginator="$geofences" standing />
     @endif
 </x-index-page>
 @endsection

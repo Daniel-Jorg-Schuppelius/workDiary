@@ -112,6 +112,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$reviews" />
+        <x-pagination :paginator="$reviews" standing />
     </x-index-page>
 @endsection

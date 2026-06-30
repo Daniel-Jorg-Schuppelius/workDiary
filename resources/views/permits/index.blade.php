@@ -93,7 +93,7 @@
             @endforeach
         </x-table>
 
-        <x-pagination :paginator="$permits" />
+        <x-pagination :paginator="$permits" standing />
     @endif
 </x-index-page>
 @endsection

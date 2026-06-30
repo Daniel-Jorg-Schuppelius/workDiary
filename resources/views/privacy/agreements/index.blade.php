@@ -39,6 +39,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$agreements" />
+        <x-pagination :paginator="$agreements" standing />
     </x-index-page>
 @endsection

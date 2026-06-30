@@ -117,7 +117,7 @@
             @endforeach
         </x-table>
 
-        <x-pagination :paginator="$exports" />
+        <x-pagination :paginator="$exports" standing />
     @endif
 </x-index-page>
 @endsection

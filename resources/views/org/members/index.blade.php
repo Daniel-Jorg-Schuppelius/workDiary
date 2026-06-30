@@ -73,7 +73,7 @@
                     </tr>
                 @endforeach
         </x-table>
-        <x-pagination :paginator="$members" />
+        <x-pagination :paginator="$members" standing />
     @endif
 </x-index-page>
 @endsection

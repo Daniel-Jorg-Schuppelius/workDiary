@@ -40,6 +40,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$cases" />
+        <x-pagination :paginator="$cases" standing />
     </x-index-page>
 @endsection

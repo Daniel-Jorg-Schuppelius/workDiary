@@ -80,6 +80,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$vehicles" />
+        <x-pagination :paginator="$vehicles" standing />
     </x-index-page>
 @endsection

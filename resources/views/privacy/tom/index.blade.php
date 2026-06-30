@@ -35,6 +35,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$measures" />
+        <x-pagination :paginator="$measures" standing />
     </x-index-page>
 @endsection

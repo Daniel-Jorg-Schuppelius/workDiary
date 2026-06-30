@@ -86,6 +86,6 @@
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>' :colspan="6" :title="__('Noch keine Dienstpläne vorhanden')" compact />
             @endforelse
     </x-table>
-    <x-pagination :paginator="$plans" />
+    <x-pagination :paginator="$plans" standing />
 </x-index-page>
 @endsection

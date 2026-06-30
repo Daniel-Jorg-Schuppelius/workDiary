@@ -62,6 +62,6 @@
         @endforelse
     </x-table>
 
-    <x-pagination :paginator="$teams" />
+    <x-pagination :paginator="$teams" standing />
 </x-index-page>
 @endsection

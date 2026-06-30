@@ -76,6 +76,6 @@
             <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">health_and_safety</span>' :colspan="8" :title="__('safety.empty')" compact />
         @endforelse
     </x-table>
-    <x-pagination :paginator="$events" />
+    <x-pagination :paginator="$events" standing />
 </x-index-page>
 @endsection

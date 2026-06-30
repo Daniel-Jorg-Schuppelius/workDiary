@@ -121,6 +121,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$expenses" />
+        <x-pagination :paginator="$expenses" standing />
     </x-index-page>
 @endsection

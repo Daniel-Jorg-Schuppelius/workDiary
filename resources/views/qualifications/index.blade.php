@@ -63,6 +63,6 @@
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>' :colspan="6" :title="__('Noch keine Qualifikationen vorhanden')" compact />
             @endforelse
     </x-table>
-    <x-pagination :paginator="$qualifications" />
+    <x-pagination :paginator="$qualifications" standing />
 </x-index-page>
 @endsection

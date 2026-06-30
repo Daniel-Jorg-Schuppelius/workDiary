@@ -138,7 +138,7 @@
                 @endforeach
             </x-table>
 
-            <x-pagination :paginator="$closures" />
+            <x-pagination :paginator="$closures" standing />
         @endif
     </x-index-page>
 @endsection

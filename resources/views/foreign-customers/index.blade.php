@@ -101,7 +101,7 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$foreignCustomers" />
+        <x-pagination :paginator="$foreignCustomers" standing />
     @endif
 </x-index-page>
 @endsection

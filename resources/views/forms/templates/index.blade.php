@@ -123,6 +123,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$templates" />
+        <x-pagination :paginator="$templates" standing />
     </x-index-page>
 @endsection

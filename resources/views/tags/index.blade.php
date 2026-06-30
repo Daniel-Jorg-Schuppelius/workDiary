@@ -63,6 +63,6 @@
                 @endforelse
     </x-table>
 
-    <x-pagination :paginator="$tags" />
+    <x-pagination :paginator="$tags" standing />
 </x-index-page>
 @endsection

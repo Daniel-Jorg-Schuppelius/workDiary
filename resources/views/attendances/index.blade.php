@@ -59,7 +59,7 @@
                     <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :colspan="7" :title="__('Keine Stempelungen im Zeitraum')" compact />
                 @endforelse
             </x-table>
-            <x-pagination :paginator="$attendances" :framed="false" />
+            <x-pagination :paginator="$attendances" standing />
         </x-card>
     </x-index-page>
 @endsection

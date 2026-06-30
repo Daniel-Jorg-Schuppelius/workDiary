@@ -83,7 +83,7 @@
             @endforeach
         </x-table>
 
-        <x-pagination :paginator="$handovers" />
+        <x-pagination :paginator="$handovers" standing />
     @endif
 </x-index-page>
 @endsection

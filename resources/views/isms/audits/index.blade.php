@@ -333,6 +333,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$audits" />
+        <x-pagination :paginator="$audits" standing />
     </x-index-page>
 @endsection

@@ -79,6 +79,6 @@
         @endforelse
     </x-table>
 
-    <x-pagination :paginator="$groups" />
+    <x-pagination :paginator="$groups" standing />
 </x-index-page>
 @endsection

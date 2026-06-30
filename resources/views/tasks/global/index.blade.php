@@ -90,6 +90,6 @@
             </tbody>
         </x-table>
 
-        <x-pagination :paginator="$tasks" />
+        <x-pagination :paginator="$tasks" standing />
     </x-index-page>
 @endsection

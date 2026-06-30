@@ -180,6 +180,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$vulnerabilities" />
+        <x-pagination :paginator="$vulnerabilities" standing />
     </x-index-page>
 @endsection

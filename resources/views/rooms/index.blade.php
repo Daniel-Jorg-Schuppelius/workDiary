@@ -184,7 +184,7 @@
                     @endforelse
             </x-table>
 
-            <x-pagination :paginator="$rooms" />
+            <x-pagination :paginator="$rooms" standing />
         @endif
     </x-index-page>
 @endsection

@@ -99,6 +99,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$submissions" />
+        <x-pagination :paginator="$submissions" standing />
     </x-index-page>
 @endsection

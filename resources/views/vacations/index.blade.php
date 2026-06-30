@@ -162,7 +162,7 @@
     </x-table>
 
     {{-- Pagination --}}
-    <x-pagination :paginator="$vacations" />
+    <x-pagination :paginator="$vacations" standing />
 
 </x-index-page>
 @endsection

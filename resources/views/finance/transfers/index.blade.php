@@ -107,6 +107,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$transfers" />
+        <x-pagination :paginator="$transfers" standing />
     </x-index-page>
 @endsection

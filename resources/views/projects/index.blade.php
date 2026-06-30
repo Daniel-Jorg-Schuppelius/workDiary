@@ -138,7 +138,7 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$projects" />
+        <x-pagination :paginator="$projects" standing />
     @endif
 </x-index-page>
 @endsection

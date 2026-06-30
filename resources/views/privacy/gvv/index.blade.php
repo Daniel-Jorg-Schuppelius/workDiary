@@ -49,7 +49,7 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$agreements" />
+        <x-pagination :paginator="$agreements" standing />
 
         @can('create', \App\Models\Privacy\JointControllerAgreement::class)
             <x-modal :embedded="false" id="dlg-gvv" :title="__('Neue GVV anlegen')"

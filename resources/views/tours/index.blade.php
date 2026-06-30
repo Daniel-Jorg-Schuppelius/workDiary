@@ -93,6 +93,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$tours" />
+        <x-pagination :paginator="$tours" standing />
     </x-index-page>
 @endsection

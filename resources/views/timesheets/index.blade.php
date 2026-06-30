@@ -78,7 +78,7 @@
                     </tr>
                 @endforeach
         </x-table>
-        <x-pagination :paginator="$timesheets" />
+        <x-pagination :paginator="$timesheets" standing />
     @endif
 </x-index-page>
 

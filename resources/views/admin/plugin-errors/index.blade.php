@@ -93,7 +93,7 @@
             @endforeach
         </x-table>
 
-        <x-pagination :paginator="$errors" />
+        <x-pagination :paginator="$errors" standing />
     @endif
 </x-index-page>
 @endsection

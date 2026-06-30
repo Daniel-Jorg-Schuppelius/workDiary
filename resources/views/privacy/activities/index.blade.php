@@ -51,6 +51,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$activities" />
+        <x-pagination :paginator="$activities" standing />
     </x-index-page>
 @endsection

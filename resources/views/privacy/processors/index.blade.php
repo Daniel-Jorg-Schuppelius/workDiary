@@ -40,6 +40,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$processors" />
+        <x-pagination :paginator="$processors" standing />
     </x-index-page>
 @endsection

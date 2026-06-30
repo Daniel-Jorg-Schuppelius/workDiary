@@ -89,7 +89,7 @@
             @endforeach
         </x-table>
 
-        <x-pagination :paginator="$softwareItems" />
+        <x-pagination :paginator="$softwareItems" standing />
     @endif
 </x-index-page>
 @endsection

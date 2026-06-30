@@ -97,7 +97,7 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$suppliers" />
+        <x-pagination :paginator="$suppliers" standing />
     @endif
 </x-index-page>
 @endsection

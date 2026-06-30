@@ -70,7 +70,7 @@
             @endforeach
         </x-table>
 
-        <x-pagination :paginator="$readings" />
+        <x-pagination :paginator="$readings" standing />
     @endif
 </x-index-page>
 @endsection

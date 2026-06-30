@@ -183,6 +183,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$incidents" />
+        <x-pagination :paginator="$incidents" standing />
     </x-index-page>
 @endsection

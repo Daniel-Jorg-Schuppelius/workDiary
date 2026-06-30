@@ -59,6 +59,6 @@
             </x-table>
         </x-card>
 
-        <x-pagination :paginator="$reservations" />
+        <x-pagination :paginator="$reservations" standing />
     </x-index-page>
 @endsection

@@ -88,6 +88,6 @@
             @endforelse
         </x-table>
 
-        <x-pagination :paginator="$statements" />
+        <x-pagination :paginator="$statements" standing />
     </x-index-page>
 @endsection

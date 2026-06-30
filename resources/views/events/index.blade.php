@@ -180,6 +180,6 @@
             </tbody>
         </x-table>
 
-        <x-pagination :paginator="$events" />
+        <x-pagination :paginator="$events" standing />
     </x-index-page>
 @endsection

@@ -89,6 +89,6 @@
             @endforelse
     </x-table>
 
-    <x-pagination :paginator="$entryTypes" />
+    <x-pagination :paginator="$entryTypes" standing />
 </x-index-page>
 @endsection
