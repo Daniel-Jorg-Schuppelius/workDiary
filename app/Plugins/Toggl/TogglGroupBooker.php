@@ -54,7 +54,9 @@ class TogglGroupBooker implements InboxGroupBooker {
 
     public function rules(): array {
         return [
-            'customer_mode' => ['required', 'in:existing,new'],
+            // 'internal' bucht auf ein kundenloses (unternehmenseigenes) Projekt —
+            // typisch für Toggl-Einträge ganz ohne Client.
+            'customer_mode' => ['required', 'in:existing,new,internal'],
             'customer' => ['nullable', 'string', 'required_if:customer_mode,existing'],
             'new_customer_name' => ['nullable', 'string', 'max:191', 'required_if:customer_mode,new'],
             'project_mode' => ['required', 'in:existing,new'],
@@ -64,6 +66,13 @@ class TogglGroupBooker implements InboxGroupBooker {
     }
 
     public function book(Organization $organization, string $groupKey, array $input): array {
+        // Intern: kein Kunde — kundenloses Projekt auflösen (existierend oder neu).
+        if (($input['customer_mode'] ?? null) === 'internal') {
+            $project = $this->resolveStandaloneProject($organization, $input);
+
+            return $this->service->bookInboxGroup($organization, $groupKey, null, $project);
+        }
+
         $customer = $this->resolveCustomerTarget($organization, $input);
         $project = $this->resolveProjectUnderCustomer($organization, $customer, $input);
 

@@ -78,7 +78,7 @@
                                                 @else
                                                     @foreach ($projects as $p)
                                                         <option value="{{ $p['sqid'] }}" @selected($p['sqid'] === $currentSqid)>
-                                                            {{ $p['name'] }} ({{ $customerLabel[$p['customer_id']] ?? '—' }})
+                                                            {{ $p['name'] }} ({{ $p['customer_id'] === null ? __('Intern') : ($customerLabel[$p['customer_id']] ?? '—') }})
                                                         </option>
                                                     @endforeach
                                                 @endif

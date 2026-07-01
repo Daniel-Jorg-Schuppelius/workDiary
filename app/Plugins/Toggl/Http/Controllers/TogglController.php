@@ -17,6 +17,7 @@ use App\Plugins\Toggl\{TogglConfig, TogglExportImporter, TogglImportService, Tog
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -94,8 +95,9 @@ class TogglController extends Controller {
         $mappings = $organization instanceof Organization ? $this->service->mappings($organization) : collect();
 
         $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'company']);
+        // Inkl. kundenloser (interner) Projekte, damit eine Name-Zuordnung auch auf ein
+        // unternehmenseigenes Projekt zeigen kann.
         $projects = Project::query()
-            ->whereNotNull('customer_id')
             ->orderBy('name')
             ->get(['id', 'name', 'customer_id']);
 
@@ -275,27 +277,20 @@ class TogglController extends Controller {
         $target = $base . '/' . now()->format('Ymd_His') . '_' . Str::random(8);
         @mkdir($target, 0775, true);
 
-        $zip = new \ZipArchive;
-        if ($zip->open((string) $request->file('archive')->getRealPath()) !== true) {
+        $archivePath = (string) $request->file('archive')->getRealPath();
+        if (! ZipFile::isZipFile($archivePath)) {
             $this->rrmdir($target);
 
             return back()->withErrors(['archive' => (string) __('Keine gültige ZIP-Datei.')]);
         }
 
-        // Zip-Slip-Schutz: keine Pfade mit „..“ oder absoluten Wurzeln zulassen.
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $name = (string) $zip->getNameIndex($i);
-            if (str_contains($name, '..') || str_starts_with($name, '/') || str_starts_with($name, '\\')) {
-                $zip->close();
-                $this->rrmdir($target);
-
-                return back()->withErrors(['archive' => (string) __('ZIP konnte nicht entpackt werden.')]);
-            }
-        }
-
-        $ok = $zip->extractTo($target);
-        $zip->close();
-        if (! $ok) {
+        try {
+            // Zip-Slip-Schutz über das Toolkit: jeder Eintrag wird gegen das
+            // normalisierte Zielverzeichnis (realpath-Containment) geprüft —
+            // strenger als ein „..“-/Wurzel-String-Check. Die hochgeladene
+            // Temp-Datei wird nicht gelöscht (Laravel räumt sie selbst auf).
+            ZipFile::extract($archivePath, $target, deleteSourceFile: false);
+        } catch (\Throwable $e) {
             $this->rrmdir($target);
 
             return back()->withErrors(['archive' => (string) __('ZIP konnte nicht entpackt werden.')]);
@@ -561,7 +556,7 @@ class TogglController extends Controller {
     private function projectOptions(\Illuminate\Support\Collection $projects): array {
         return $projects->map(fn(Project $p): array => [
             'sqid' => $p->sqid,
-            'customer_id' => (int) $p->customer_id,
+            'customer_id' => $p->customer_id !== null ? (int) $p->customer_id : null,
             'name' => (string) $p->name,
         ])->all();
     }

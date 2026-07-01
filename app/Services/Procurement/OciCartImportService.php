@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\{Article, ArticleSupply, Organization, PurchaseOrder, Supplier, Warehouse};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -85,7 +86,7 @@ class OciCartImportService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value) || (float) $value <= 0) {
             return '1';
         }

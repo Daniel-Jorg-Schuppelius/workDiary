@@ -17,6 +17,7 @@ use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\{Article, ArticleVariant, Customer, ManufacturingOrder, Organization, StockDelivery, StockSerial, Warehouse};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Inventory\{ExternalStockMirror, InventoryLedger, InventoryValuationManager, SerialService};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -133,7 +134,7 @@ class DeliveryService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

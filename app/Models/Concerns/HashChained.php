@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
+use CommonToolkit\Helper\Data\JsonHelper;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -136,7 +137,7 @@ trait HashChained {
             $normalized[$key] = $value;
         }
 
-        return (string) json_encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return JsonHelper::encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**

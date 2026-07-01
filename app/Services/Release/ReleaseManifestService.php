@@ -14,6 +14,7 @@ use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Licensing\{LicenseSeal, LicenseService};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 
@@ -186,7 +187,7 @@ class ReleaseManifestService {
      * @param  array<string, mixed>  $payload
      */
     public static function canonicalJson(array $payload): string {
-        return (string) json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**

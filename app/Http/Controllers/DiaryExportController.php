@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DiaryEntry;
 use App\Services\UI\DateRangeContext;
-use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -30,7 +30,7 @@ class DiaryExportController extends Controller {
             assert($out !== false);
             // BOM für Excel-UTF8
             fwrite($out, "\xEF\xBB\xBF");
-            fwrite($out, CsvFacade::line([
+            fwrite($out, StringHelper::encodeLine([
                 __('ID'),
                 __('Status'),
                 __('Mitarbeiter'),
@@ -46,7 +46,7 @@ class DiaryExportController extends Controller {
             $query->chunk(500, function ($rows) use ($out) {
                 foreach ($rows as $entry) {
                     /** @var DiaryEntry $entry */
-                    fwrite($out, CsvFacade::line([
+                    fwrite($out, StringHelper::encodeLine([
                         $entry->id,
                         $this->csvSafe($entry->statusLabel()),
                         $this->csvSafe(optional($entry->user)->name ?? ''),

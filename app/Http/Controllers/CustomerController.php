@@ -18,7 +18,7 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\{CustomerCsvImporter, CustomerStatsService};
 use App\Support\Setting;
-use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 // HINWEIS: Lexoffice-Push-Logik ist in das Plugin verlagert
 // (App\Plugins\Lexoffice\Http\Controllers\LexofficeCustomerController).
 // Die Imports oben werden nur noch für die Show-View (Anzeige der bisherigen
@@ -270,7 +270,7 @@ class CustomerController extends Controller {
             }
             // UTF-8 BOM für Excel
             fwrite($out, "\xEF\xBB\xBF");
-            fwrite($out, CsvFacade::line([
+            fwrite($out, StringHelper::encodeLine([
                 'Nummer',
                 'Name',
                 'Firma',
@@ -291,7 +291,7 @@ class CustomerController extends Controller {
             $query->chunk(500, function ($chunk) use ($out): void {
                 /** @var Collection<int, Customer> $chunk */
                 foreach ($chunk as $c) {
-                    fwrite($out, CsvFacade::line([
+                    fwrite($out, StringHelper::encodeLine([
                         $c->number,
                         $c->name,
                         $c->company,

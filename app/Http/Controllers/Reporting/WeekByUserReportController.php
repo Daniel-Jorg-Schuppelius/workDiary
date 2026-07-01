@@ -13,9 +13,10 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{TimeEntry, User};
-use App\Support\{CsvNumber, XlsxExport};
+use App\Support\XlsxExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\{Carbon, CarbonImmutable};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -203,7 +204,7 @@ class WeekByUserReportController extends Controller {
         $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
         $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
         foreach ($this->buildRows($byUser, $users, $dayTotals, $weekTotal, $weekRate) as $row) {
-            $rows[] = array_map(static fn($v) => is_float($v) ? CsvNumber::decimal($v) : $v, $row);
+            $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
         $csv = '';

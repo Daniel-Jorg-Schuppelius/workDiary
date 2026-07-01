@@ -211,20 +211,20 @@ class IntegrationInboxController extends Controller {
 
     /**
      * Bestehende Projekte der Organisation als Auswahloptionen für die
-     * Gruppen-Buchung (kundengefiltert in der UI).
+     * Gruppen-Buchung — inkl. kundenloser (interner) Projekte, damit unter „Intern"
+     * ein vorhandenes Firmenprojekt gewählt werden kann (customer_id = null).
      *
-     * @return list<array{sqid: string, customer_id: int, name: string}>
+     * @return list<array{sqid: string, customer_id: ?int, name: string}>
      */
     private function projectOptions(User $user): array {
         $rows = Project::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $user->organization_id)
-            ->whereNotNull('customer_id')
             ->orderBy('name')
             ->get(['id', 'name', 'customer_id'])
             ->map(fn(Project $p): array => [
                 'sqid' => $p->getRouteKey(),
-                'customer_id' => (int) $p->customer_id,
+                'customer_id' => $p->customer_id !== null ? (int) $p->customer_id : null,
                 'name' => (string) $p->name,
             ])->all();
 

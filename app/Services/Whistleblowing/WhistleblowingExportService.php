@@ -15,6 +15,7 @@ namespace App\Services\Whistleblowing;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\User;
 use App\Models\Whistleblowing\WhistleblowingCase;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -102,6 +103,6 @@ class WhistleblowingExportService {
     }
 
     private function json(mixed $data): string {
-        return (string) json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        return JsonHelper::encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     }
 }

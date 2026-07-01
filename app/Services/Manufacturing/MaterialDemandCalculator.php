@@ -14,6 +14,7 @@ namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\QuantityKind;
 use App\Models\ProcedureMaterialRequirement;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 
 /**
@@ -112,7 +113,7 @@ class MaterialDemandCalculator {
 
     /** @return numeric-string */
     private function numeric(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
 
         return $value === '' || ! is_numeric($value) ? '0' : $value;
     }

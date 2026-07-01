@@ -14,6 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ReservationStatus};
 use App\Models\{ArticleVariant, StockReservation, Warehouse};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -166,7 +167,7 @@ class ReservationService {
 
     /** @return numeric-string */
     private function positive(string $qty): string {
-        $qty = str_replace(',', '.', trim($qty));
+        $qty = NumberHelper::normalizeDecimalString($qty);
         if ($qty === '' || ! is_numeric($qty)) {
             return '0';
         }

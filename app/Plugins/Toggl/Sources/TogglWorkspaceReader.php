@@ -10,6 +10,8 @@
 
 namespace App\Plugins\Toggl\Sources;
 
+use CommonToolkit\Helper\FileSystem\File;
+
 /**
  * Liest einen einzelnen Toggl-Workspace-Export-Ordner ein, wie ihn der
  * „Export workspace data"-Download erzeugt:
@@ -140,7 +142,7 @@ class TogglWorkspaceReader {
 
         $entries = [];
         foreach ($files as $file) {
-            $content = (string) file_get_contents($file);
+            $content = File::read($file);
             if (trim($content) === '') {
                 continue;
             }
@@ -159,7 +161,7 @@ class TogglWorkspaceReader {
         if (! is_file($path)) {
             return [];
         }
-        $decoded = json_decode((string) file_get_contents($path), true);
+        $decoded = json_decode(File::read($path), true);
 
         return \is_array($decoded) ? $decoded : [];
     }

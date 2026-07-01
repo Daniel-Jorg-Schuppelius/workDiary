@@ -15,6 +15,7 @@ namespace App\Services\Inventory;
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
 use App\Models\{ArticleVariant, StockMovement, StockValuation, Warehouse};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -62,7 +63,7 @@ class ValuationService implements InventoryValuationStrategy {
             $oldValue = bcmul($oldQty, $oldAvg, self::SCALE);
             $addValue = bcmul($qty, $unitCost, self::SCALE);
             $newValue = bcadd($oldValue, $addValue, self::SCALE);
-            $newAvg = bccomp($newQty, '0', self::SCALE) > 0 ? bcdiv($newValue, $newQty, self::SCALE) : $unitCost;
+            $newAvg = NumberHelper::divideOrDefault($newValue, $newQty, self::SCALE, $unitCost);
 
             $valuation->fill([
                 'organization_id' => $variant->organization_id,
@@ -136,7 +137,7 @@ class ValuationService implements InventoryValuationStrategy {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

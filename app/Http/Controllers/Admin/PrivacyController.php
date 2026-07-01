@@ -14,7 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
-use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
 use Illuminate\Support\Facades\{DB, Gate};
@@ -117,18 +117,18 @@ class PrivacyController extends Controller {
             if ($out === false) {
                 return;
             }
-            fwrite($out, CsvFacade::line(['section', 'id', 'user_id', 'event', 'extra'], ',') . "\r\n");
+            fwrite($out, StringHelper::encodeLine(['section', 'id', 'user_id', 'event', 'extra'], ',') . "\r\n");
             foreach ($payload['sessions'] as $s) {
-                fwrite($out, CsvFacade::line(['session', $s['id'], $s['user_id'], '', (string) $s['ip_address']], ',') . "\r\n");
+                fwrite($out, StringHelper::encodeLine(['session', $s['id'], $s['user_id'], '', (string) $s['ip_address']], ',') . "\r\n");
             }
             foreach ($payload['tokens'] as $t) {
-                fwrite($out, CsvFacade::line(['token', (string) $t['id'], (string) $t['user_id'], '', (string) $t['name']], ',') . "\r\n");
+                fwrite($out, StringHelper::encodeLine(['token', (string) $t['id'], (string) $t['user_id'], '', (string) $t['name']], ',') . "\r\n");
             }
             foreach ($payload['exports'] as $e) {
-                fwrite($out, CsvFacade::line(['export', (string) $e['id'], (string) ($e['user_id'] ?? ''), $e['event'], (string) ($e['created_at'] ?? '')], ',') . "\r\n");
+                fwrite($out, StringHelper::encodeLine(['export', (string) $e['id'], (string) ($e['user_id'] ?? ''), $e['event'], (string) ($e['created_at'] ?? '')], ',') . "\r\n");
             }
             foreach ($payload['support_accesses'] as $a) {
-                fwrite($out, CsvFacade::line(['support', (string) $a['id'], (string) ($a['user_id'] ?? ''), $a['event'], (string) ($a['created_at'] ?? '')], ',') . "\r\n");
+                fwrite($out, StringHelper::encodeLine(['support', (string) $a['id'], (string) ($a['user_id'] ?? ''), $a['event'], (string) ($a['created_at'] ?? '')], ',') . "\r\n");
             }
             fclose($out);
         }, Response::HTTP_OK, [

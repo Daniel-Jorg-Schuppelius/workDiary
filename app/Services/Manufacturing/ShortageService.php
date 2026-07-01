@@ -14,6 +14,7 @@ namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\{ProcurementStatus, SubstituteStatus};
 use App\Models\{Article, ArticleVariant, ManufacturingOrderMaterial, MaterialSubstitute, ProcurementRequest, Warehouse};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -101,7 +102,7 @@ class ShortageService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

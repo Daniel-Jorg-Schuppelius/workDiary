@@ -14,6 +14,7 @@ namespace App\Services\Procurement;
 
 use App\Enums\Procurement\AdviceStatus;
 use App\Models\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -93,7 +94,7 @@ class AdviceService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

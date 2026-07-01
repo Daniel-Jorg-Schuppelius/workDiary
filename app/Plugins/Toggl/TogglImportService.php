@@ -437,7 +437,7 @@ class TogglImportService {
      *
      * @return array{created: int, skipped: int}
      */
-    public function bookInboxGroup(Organization $organization, string $groupKey, Customer $customer, Project $project, ?int $userId = null): array {
+    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null): array {
         $config = TogglConfig::resolve($organization->id);
         $userId ??= $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
         if ($userId === null) {
@@ -455,14 +455,15 @@ class TogglImportService {
         $clientId = isset($firstSnap['client_id']) ? (int) $firstSnap['client_id'] : null;
         $projectId = isset($firstSnap['project_id']) ? (int) $firstSnap['project_id'] : null;
 
-        // Referenzen merken, damit künftige Imports automatisch matchen.
-        if ($clientName !== '') {
+        // Referenzen merken, damit künftige Imports automatisch matchen. Ohne Kunde
+        // (interne Projekte) entfällt die Client-Referenz — nur das Projekt wird gemerkt.
+        if ($customer !== null && $clientName !== '') {
             $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $customer);
         }
         $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($clientName, $projectName), $project);
 
         // Bevorzugte stabile ID-Referenzen (nur API) zusätzlich vermerken.
-        if ($clientId !== null) {
+        if ($customer !== null && $clientId !== null) {
             $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $customer);
         }
         if ($projectId !== null) {

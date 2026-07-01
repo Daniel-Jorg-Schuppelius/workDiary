@@ -17,6 +17,7 @@ use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService};
 use App\Services\Release\{ReleaseManifestService, ReleaseVerifier};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Gate, Storage};
@@ -91,7 +92,7 @@ class ComponentsController extends Controller {
         Gate::authorize(Permission::MetricsView->value);
 
         $document = $service->build();
-        $json = (string) json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $json = JsonHelper::encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         Storage::disk('local')->put(ReleaseManifestService::STORAGE_PATH, $json);
 
         return redirect()

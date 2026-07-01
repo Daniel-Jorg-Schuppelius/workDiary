@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Console\Commands\Release;
 
 use App\Services\Release\ReleaseManifestService;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,7 +35,7 @@ class ManifestCommand extends Command {
 
     public function handle(ReleaseManifestService $service): int {
         $manifest = $service->build();
-        $json = (string) json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $json = JsonHelper::encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $signed = ($manifest['signature']['signed'] ?? false) === true;
         $signNote = $signed
@@ -49,13 +51,14 @@ class ManifestCommand extends Command {
 
         $output = $this->option('output');
         if (is_string($output) && $output !== '') {
-            $dir = dirname($output);
-            if (! is_dir($dir) && ! mkdir($dir, 0775, true) && ! is_dir($dir)) {
-                $this->error('Verzeichnis konnte nicht angelegt werden: ' . $dir);
+            try {
+                Folder::create(dirname($output), 0775, true);
+                File::write($output, $json);
+            } catch (\Throwable $e) {
+                $this->error('Release-Manifest konnte nicht geschrieben werden: ' . $e->getMessage());
 
                 return self::FAILURE;
             }
-            file_put_contents($output, $json);
             $this->info('Release-Manifest geschrieben: ' . $output);
             $this->info('Manifest ' . $signNote . '.');
 

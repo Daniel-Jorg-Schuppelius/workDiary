@@ -14,9 +14,9 @@ namespace App\Services\Export;
 
 use App\Enums\Export\{ExportFormat, ExportRunState};
 use App\Models\{ExportRun, Organization, User};
-use App\Support\Toolkit\CsvFacade;
 use App\Support\XlsxExport;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -95,11 +95,11 @@ final class ExportRunner {
                 throw new \RuntimeException('Export-Datei konnte nicht geöffnet werden.');
             }
             fwrite($handle, self::BOM);
-            fwrite($handle, CsvFacade::line($columns) . "\r\n");
+            fwrite($handle, StringHelper::encodeLine($columns, ';') . "\r\n");
             foreach ($spec->query($organization, $filters) as $model) {
                 $row = $spec->toRow($model);
                 $cells = array_map(static fn(string $code): mixed => $row[$code] ?? '', $columns);
-                fwrite($handle, CsvFacade::line($cells) . "\r\n");
+                fwrite($handle, StringHelper::encodeLine($cells, ';') . "\r\n");
                 $rowsTotal++;
             }
             fclose($handle);

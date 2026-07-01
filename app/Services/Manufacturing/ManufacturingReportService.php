@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\{ManufacturingOrder, ManufacturingOrderReport};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -60,7 +61,7 @@ class ManufacturingReportService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

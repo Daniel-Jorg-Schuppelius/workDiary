@@ -14,6 +14,7 @@ namespace App\Services\Manufacturing;
 
 use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Organization, Warehouse};
 use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -179,7 +180,7 @@ class ManufacturingInventoryService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

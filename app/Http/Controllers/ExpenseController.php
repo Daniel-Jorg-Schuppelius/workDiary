@@ -16,8 +16,8 @@ use App\Http\Requests\SaveExpenseRequest;
 use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
 use App\Services\Expense\ExpenseService;
 use App\Support\SortableQuery;
-use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -204,7 +204,7 @@ class ExpenseController extends Controller {
             }
             // UTF-8 BOM für Excel-Kompatibilität
             fwrite($out, "\xEF\xBB\xBF");
-            fwrite($out, CsvFacade::line([
+            fwrite($out, StringHelper::encodeLine([
                 'Datum',
                 'Mitarbeiter',
                 'Kategorie',
@@ -225,7 +225,7 @@ class ExpenseController extends Controller {
                 'Beschreibung',
             ], ';') . "\r\n");
             foreach ($expenses as $expense) {
-                fwrite($out, CsvFacade::line([
+                fwrite($out, StringHelper::encodeLine([
                     $expense->date->format('Y-m-d'),
                     $expense->user->name ?? '',
                     $expense->category->label ?? '',

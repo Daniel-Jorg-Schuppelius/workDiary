@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\{ManufacturingOrder, ManufacturingOrderReport};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 
 /**
@@ -74,7 +75,7 @@ class ManufacturingQualityService {
      * @return numeric-string
      */
     private function rate(string $part, string $total): string {
-        return bccomp($total, '0', self::SCALE) > 0 ? bcdiv($part, $total, self::SCALE) : '0.0000';
+        return NumberHelper::divideOrDefault($part, $total, self::SCALE, '0.0000');
     }
 
     /** @return numeric-string */

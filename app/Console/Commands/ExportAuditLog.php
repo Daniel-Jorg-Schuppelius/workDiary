@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Schema, Storage};
@@ -80,7 +81,7 @@ class ExportAuditLog extends Command {
             ];
         }
 
-        $zip->addFromString('manifest.json', (string) json_encode(
+        $zip->addFromString('manifest.json', JsonHelper::encode(
             $manifest,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT,
         ));

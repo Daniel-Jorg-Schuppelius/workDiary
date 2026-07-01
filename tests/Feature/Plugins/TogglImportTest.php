@@ -487,6 +487,48 @@ class TogglImportTest extends TestCase {
         $this->assertSame(1, TimeEntry::query()->where('project_id', $project->id)->count());
     }
 
+    public function test_book_group_as_internal_project_without_customer(): void {
+        $this->enableToggl();
+        // Toggl-Eintrag ganz ohne Client → internes Firmenprojekt.
+        $this->seedInboxEntry('', 'Interne Weiterbildung', 'csv:intern', '2026-05-26 09:00:00', '2026-05-26 11:00:00');
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('', 'Interne Weiterbildung'),
+                'customer_mode' => 'internal',
+                'project_mode' => 'new',
+                'new_project_name' => 'Interne Weiterbildung',
+            ])
+            ->assertRedirect();
+
+        $project = Project::query()->where('name', 'Interne Weiterbildung')->first();
+        $this->assertNotNull($project);
+        $this->assertNull($project->customer_id, 'Internes Projekt darf keinen Kunden haben.');
+
+        $entry = TimeEntry::query()->where('project_id', $project->id)->first();
+        $this->assertNotNull($entry);
+        $this->assertSame(120, $entry->minutes);
+
+        // Kein Kunde angelegt und keine Client-Referenz gemerkt.
+        $this->assertSame(0, Customer::query()->count());
+        $this->assertDatabaseMissing('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+        ]);
+
+        // Projekt-Referenz wird gemerkt → künftiger Import matcht automatisch.
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_PROJECT,
+            'referenceable_id' => $project->id,
+        ]);
+        $this->assertDatabaseHas('integration_inbox_items', [
+            'external_id' => 'csv:intern',
+            'status' => IntegrationInboxItem::STATUS_RESOLVED_CREATED,
+        ]);
+    }
+
     public function test_update_and_delete_mapping(): void {
         $beta = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta']);
         $gamma = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gamma']);

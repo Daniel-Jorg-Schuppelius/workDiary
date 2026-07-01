@@ -13,9 +13,10 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, Project, Task, TimeEntry};
-use App\Support\{CsvNumber, XlsxExport};
+use App\Support\XlsxExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -141,7 +142,7 @@ class MyMonthReportController extends Controller {
         $rows = [$this->exportHeaders()];
         foreach ($this->exportRows($entries) as $row) {
             // Floats für CSV als DE-Decimal-String serialisieren.
-            $row = array_map(static fn($v) => is_float($v) ? CsvNumber::decimal($v) : $v, $row);
+            $row = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
             $rows[] = $row;
         }
 

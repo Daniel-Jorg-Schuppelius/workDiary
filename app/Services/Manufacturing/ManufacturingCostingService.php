@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\{Article, ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Nachkalkulation eines Fertigungsauftrags (Feature 047/048, E7): stellt die
@@ -55,7 +56,7 @@ class ManufacturingCostingService {
 
         $total = bcadd($actual, $labor, self::SCALE);
         $good = $order->goodTotal();
-        $unitCost = bccomp($good, '0', self::SCALE) > 0 ? bcdiv($total, $good, self::SCALE) : '0.0000';
+        $unitCost = NumberHelper::divideOrDefault($total, $good, self::SCALE, '0.0000');
 
         return ['planned' => $planned, 'actual' => $actual, 'labor' => $labor, 'total' => $total, 'good' => $good, 'unit_cost' => $unitCost];
     }

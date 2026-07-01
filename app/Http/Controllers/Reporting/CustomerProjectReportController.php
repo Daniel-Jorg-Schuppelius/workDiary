@@ -13,9 +13,10 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, Project, TimeEntry, User};
-use App\Support\{CsvNumber, XlsxExport};
+use App\Support\XlsxExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -194,7 +195,7 @@ class CustomerProjectReportController extends Controller {
         $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
         $rows = [['Kunde', 'Endkunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
         foreach ($this->buildRows($bucket, $totalMinutes, $totalRate) as $row) {
-            $rows[] = array_map(static fn($v) => is_float($v) ? CsvNumber::decimal($v) : $v, $row);
+            $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
         $csv = '';

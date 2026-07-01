@@ -13,8 +13,8 @@ namespace App\Services\Finance\Targets;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\Finance\BillingTransfer;
 use App\Models\{MaterialUsage, TimeEntry};
-use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -100,7 +100,7 @@ class FileTarget implements FacturationTarget {
             ->orderBy('date')
             ->get();
 
-        $rows = [CsvFacade::line([
+        $rows = [StringHelper::encodeLine([
             (string) __('finance.csv.date'),
             (string) __('finance.csv.employee'),
             (string) __('finance.csv.project'),
@@ -109,11 +109,11 @@ class FileTarget implements FacturationTarget {
             (string) __('finance.csv.rate'),
             (string) __('finance.csv.amount'),
             (string) __('finance.csv.comment'),
-        ])];
+        ], ';')];
 
         foreach ($entries as $entry) {
             $item = $items->get($entry->id);
-            $rows[] = CsvFacade::line([
+            $rows[] = StringHelper::encodeLine([
                 $entry->date?->toDateString() ?? '',
                 $entry->user->name ?? '',
                 $entry->project->name ?? '',
@@ -122,14 +122,14 @@ class FileTarget implements FacturationTarget {
                 self::num($entry->hourly_rate),
                 self::num($item?->amount),
                 trim((string) $entry->description),
-            ]);
+            ], ';');
         }
 
-        $rows[] = CsvFacade::line([
+        $rows[] = StringHelper::encodeLine([
             (string) __('finance.csv.total'), '', '', '',
             self::num($transfer->total_quantity), '',
             self::num($transfer->total_amount), '',
-        ]);
+        ], ';');
 
         return $rows;
     }
@@ -150,7 +150,7 @@ class FileTarget implements FacturationTarget {
             ->sortBy(fn(MaterialUsage $u) => $u->timesheet?->work_date?->toDateString() ?? '')
             ->values();
 
-        $rows = [CsvFacade::line([
+        $rows = [StringHelper::encodeLine([
             (string) __('finance.csv.date'),
             (string) __('finance.csv.product'),
             (string) __('finance.csv.quantity'),
@@ -158,11 +158,11 @@ class FileTarget implements FacturationTarget {
             (string) __('finance.csv.unit_price_net'),
             (string) __('finance.csv.amount'),
             (string) __('finance.csv.project'),
-        ])];
+        ], ';')];
 
         foreach ($usages as $usage) {
             $item = $items->get($usage->id);
-            $rows[] = CsvFacade::line([
+            $rows[] = StringHelper::encodeLine([
                 $usage->timesheet?->work_date?->toDateString() ?? '',
                 trim((string) $usage->description),
                 self::num($item?->quantity),
@@ -170,14 +170,14 @@ class FileTarget implements FacturationTarget {
                 self::num($usage->unit_price),
                 self::num($item?->amount),
                 $usage->timesheet->project->name ?? '',
-            ]);
+            ], ';');
         }
 
-        $rows[] = CsvFacade::line([
+        $rows[] = StringHelper::encodeLine([
             (string) __('finance.csv.total'), '',
             self::num($transfer->total_quantity), '', '',
             self::num($transfer->total_amount), '',
-        ]);
+        ], ';');
 
         return $rows;
     }

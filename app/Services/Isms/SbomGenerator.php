@@ -11,6 +11,7 @@
 namespace App\Services\Isms;
 
 use App\Plugins\PluginManager;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Str;
 
@@ -102,7 +103,7 @@ class SbomGenerator {
     public function toJson(?array $document = null): string {
         $document ??= $this->generate();
 
-        return (string) json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return JsonHelper::encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /** Dateiname je Release-Stand, z. B. workdiary-1.2.3-20260611-120000.cdx.json. */

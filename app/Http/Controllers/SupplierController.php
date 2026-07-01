@@ -17,7 +17,7 @@ use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Support\Setting;
-use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -195,7 +195,7 @@ class SupplierController extends Controller {
             }
             // UTF-8 BOM für Excel
             fwrite($out, "\xEF\xBB\xBF");
-            fwrite($out, CsvFacade::line([
+            fwrite($out, StringHelper::encodeLine([
                 'Nummer',
                 'Lieferantennummer',
                 'Name',
@@ -216,7 +216,7 @@ class SupplierController extends Controller {
             $query->chunk(500, function ($chunk) use ($out): void {
                 /** @var Collection<int, Supplier> $chunk */
                 foreach ($chunk as $s) {
-                    fwrite($out, CsvFacade::line([
+                    fwrite($out, StringHelper::encodeLine([
                         $s->number,
                         $s->vendor_number,
                         $s->name,

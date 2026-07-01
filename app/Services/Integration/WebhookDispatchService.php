@@ -15,6 +15,7 @@ namespace App\Services\Integration;
 use App\Enums\Integration\{WebhookDeliveryStatus, WebhookEvent};
 use App\Jobs\Integration\WebhookDeliveryJob;
 use App\Models\Integration\{WebhookDelivery, WebhookEndpoint};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -103,7 +104,7 @@ class WebhookDispatchService {
     private function queueDelivery(WebhookEndpoint $endpoint, WebhookEvent $event, array $data): WebhookDelivery {
         $occurredAt = Carbon::now();
         $payload = $this->buildPayload($event, (int) $endpoint->organization_id, $data, $occurredAt);
-        $body = (string) json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $body = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $delivery = new WebhookDelivery([
             'webhook_endpoint_id' => $endpoint->id,

@@ -14,6 +14,7 @@ namespace App\Services\Manufacturing;
 
 use App\Models\{Article, ArticleVariant, ProcedureTemplateVersion, Warehouse};
 use App\Services\Inventory\InventoryLedger;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Mehrstufige Materialbedarfsplanung (Feature 047/048, E7). Löst die Stückliste
@@ -109,7 +110,7 @@ class MrpService {
 
     /** @return numeric-string */
     private function numeric(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

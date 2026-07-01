@@ -14,6 +14,7 @@ use App\Enums\Licensing\ModuleStatus;
 use App\Models\{AuditLog, BackupHeartbeat, Organization};
 use App\Services\Licensing\{LicenseService, LicenseStatus, ModuleStatusResolver};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\{Cache, DB, File};
 use Throwable;
 
@@ -175,7 +176,7 @@ class DiagnosticsService {
                 'active' => $active,
                 'disabled_by_customer' => $disabled,
                 'blocked' => $blocked,
-                'detail' => (string) json_encode($detail, JSON_UNESCAPED_UNICODE),
+                'detail' => JsonHelper::encode($detail, JSON_UNESCAPED_UNICODE),
             ],
             messages: [],
             checkedAt: CarbonImmutable::now(),
@@ -454,7 +455,7 @@ class DiagnosticsService {
         if (File::exists($sbomPath)) {
             try {
                 /** @var array{components?: array<int, mixed>}|null $sbom */
-                $sbom = json_decode(File::get($sbomPath), true);
+                $sbom = JsonHelper::decode(File::get($sbomPath));
                 $sbomComponents = is_array($sbom) ? count($sbom['components'] ?? []) : null;
             } catch (Throwable) {
                 $sbomComponents = null;

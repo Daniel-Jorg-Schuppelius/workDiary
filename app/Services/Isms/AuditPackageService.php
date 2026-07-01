@@ -13,6 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AssessmentStatus, AuditPackageStatus, ReviewStatus};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsAudit, IsmsAuditFinding, IsmsAuditPackage, IsmsAuditPackageToken, IsmsCertificate, IsmsControl, IsmsCorrectiveAction, IsmsManagementReview, IsmsNormStatus, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope, IsmsSoftwareProduct};
 use App\Models\User;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;
@@ -90,10 +91,7 @@ class AuditPackageService {
         }
 
         $snapshot = $this->buildSnapshot($package, $actor);
-        $json = json_encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($json === false) {
-            throw new RuntimeException('Auditpaket-Snapshot konnte nicht serialisiert werden.');
-        }
+        $json = JsonHelper::encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $relativePath = sprintf(
             '%s/%d/auditpaket-%d-%s-%s.json',

@@ -12,9 +12,9 @@ namespace App\Services\Isms;
 
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsControl, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope};
 use App\Models\User;
-use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
-use RuntimeException;
 
 /**
  * Direkt-Exporte der ISMS-Register (Feature 044, MVP 1, „Versionierte
@@ -195,16 +195,10 @@ class RegisterExportService {
      * @param  array{columns: array<string, string>, rows: array<int, array<string, scalar|null>>}  $register
      */
     public function toJson(string $registerKey, User $actor, ?IsmsScope $scope, array $register): string {
-        $json = json_encode([
+        return JsonHelper::encode([
             'meta' => $this->meta($registerKey, $actor, $scope) + ['row_count' => count($register['rows'])],
             'rows' => $register['rows'],
         ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        if ($json === false) {
-            throw new RuntimeException('ISMS-Registerexport konnte nicht serialisiert werden: ' . $registerKey);
-        }
-
-        return $json;
     }
 
     /**
@@ -222,7 +216,7 @@ class RegisterExportService {
             '# ' . __('isms.export.meta_scope') . ': ' . ($meta['scope'] ?? '—'),
             '# ' . __('isms.export.meta_generated_at') . ': ' . $meta['generated_at'],
             '# ' . __('isms.export.meta_app_version') . ': ' . $meta['app_version'],
-            CsvFacade::line(array_values($register['columns'])),
+            StringHelper::encodeLine(array_values($register['columns']), ';'),
         ];
 
         foreach ($register['rows'] as $row) {
@@ -230,7 +224,7 @@ class RegisterExportService {
             foreach (array_keys($register['columns']) as $key) {
                 $cells[] = $row[$key] ?? '';
             }
-            $lines[] = CsvFacade::line($cells);
+            $lines[] = StringHelper::encodeLine($cells, ';');
         }
 
         return self::BOM . implode("\r\n", $lines) . "\r\n";

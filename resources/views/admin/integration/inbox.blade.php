@@ -96,10 +96,13 @@
                         <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
 
                         @if ($form === 'customer_project')
+                        {{-- Ohne Client (leerer Client-Name) ist der Eintrag typisch ein internes
+                             Firmenprojekt → „Intern" als Default, sonst Kundenauswahl. --}}
+                        @php $noClient = trim((string) ($g['client_name'] ?? '')) === ''; @endphp
                         <fieldset class="rounded-box border border-base-300 p-3">
                             <legend class="px-1 text-xs font-semibold">{{ __('Kunde') }}</legend>
                             <label class="label cursor-pointer justify-start gap-2 py-1">
-                                <input type="radio" name="customer_mode" value="existing" class="radio radio-sm" checked>
+                                <input type="radio" name="customer_mode" value="existing" class="radio radio-sm" @checked(!$noClient)>
                                 <select name="customer" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
                                     @foreach ($customerOptions as $sqid => $label)
@@ -111,6 +114,10 @@
                                 <input type="radio" name="customer_mode" value="new" class="radio radio-sm">
                                 <input type="text" name="new_customer_name" class="input input-sm input-bordered w-full"
                                        placeholder="{{ __('neuer Kunde') }}" value="{{ $g['client_name'] ?? '' }}">
+                            </label>
+                            <label class="label cursor-pointer justify-start gap-2 py-1">
+                                <input type="radio" name="customer_mode" value="internal" class="radio radio-sm" @checked($noClient)>
+                                <span class="text-sm">{{ __('Intern (ohne Kunde)') }}</span>
                             </label>
                         </fieldset>
                         @endif

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Models\{StockLot, StockValuationLayer};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -110,7 +111,7 @@ class LotSplitService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

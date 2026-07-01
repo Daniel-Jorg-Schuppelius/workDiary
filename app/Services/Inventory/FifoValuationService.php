@@ -15,6 +15,7 @@ namespace App\Services\Inventory;
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
 use App\Models\{ArticleVariant, StockLot, StockMovement, StockValuationLayer, Warehouse};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -109,7 +110,7 @@ class FifoValuationService implements InventoryValuationStrategy {
                 $costTotal = bcadd($costTotal, bcmul($remaining, $lastCost, self::SCALE), self::SCALE);
             }
 
-            $unitCost = bccomp($qty, '0', self::SCALE) > 0 ? bcdiv($costTotal, $qty, self::SCALE) : '0';
+            $unitCost = NumberHelper::divideOrDefault($costTotal, $qty, self::SCALE);
 
             return $this->ledger->post(new StockPosting(
                 $variant, $warehouse, StockState::Physical, bcmul($qty, '-1', self::SCALE), StockMovementType::Issue,
@@ -166,7 +167,7 @@ class FifoValuationService implements InventoryValuationStrategy {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }

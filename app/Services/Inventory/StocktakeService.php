@@ -14,6 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{StockCountStatus, StockCountType};
 use App\Models\{ArticleVariant, StockCount, StockCountLine, StockMovement, Warehouse};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -174,7 +175,7 @@ class StocktakeService {
 
     /** @return numeric-string */
     private function numeric(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
 
         return $value === '' || ! is_numeric($value) ? '0' : $value;
     }

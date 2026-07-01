@@ -15,6 +15,7 @@ namespace App\Services\Integration;
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
 use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization};
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -233,7 +234,7 @@ class IntegrationResolver {
         $targetType = (new $modelClass)->getMorphClass();
         $dedupeKey = $externalId !== null
             ? $externalType . ':' . $externalId
-            : 'hash:' . sha1((string) json_encode($attributes));
+            : 'hash:' . sha1(JsonHelper::encode($attributes));
 
         $display = $profile->display($attributes);
         $mainCandidate = $referenceable ?? ($candidates[0]['model'] ?? null);

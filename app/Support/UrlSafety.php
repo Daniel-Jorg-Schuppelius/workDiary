@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use CommonToolkit\Helper\Data\IPHelper;
+
 /**
  * SSRF-Schutz für ausgehende, von Nutzern konfigurierte Ziel-URLs (z. B.
  * Webhooks). Lässt nur öffentlich routbare http(s)-Ziele zu und blockiert
@@ -46,7 +48,7 @@ final class UrlSafety {
         // IP-Literal? Dann muss es bereits hier öffentlich sein (kein DNS nötig).
         $literal = trim($host, '[]');
         if (filter_var($literal, FILTER_VALIDATE_IP) !== false) {
-            return self::isPublicIp($literal);
+            return IPHelper::isPublicIP($literal);
         }
 
         return true; // Hostname: finale Prüfung (DNS) erfolgt zur Laufzeit.
@@ -71,7 +73,7 @@ final class UrlSafety {
         // auflöst. Ein nicht auflösbarer Host ist KEIN SSRF-Ziel (es gibt nichts
         // Internes zu erreichen) – die Verbindung scheitert dann ohnehin harmlos.
         foreach (self::resolveHost($host) as $ip) {
-            if (! self::isPublicIp($ip)) {
+            if (! IPHelper::isPublicIP($ip)) {
                 return false;
             }
         }
@@ -130,13 +132,5 @@ final class UrlSafety {
         }
 
         return array_values(array_unique($ips));
-    }
-
-    private static function isPublicIp(string $ip): bool {
-        return filter_var(
-            $ip,
-            FILTER_VALIDATE_IP,
-            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE,
-        ) !== false;
     }
 }

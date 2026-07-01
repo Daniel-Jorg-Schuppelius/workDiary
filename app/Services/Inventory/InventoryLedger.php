@@ -14,6 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -222,7 +223,7 @@ class InventoryLedger {
 
     /** @return numeric-string */
     private function numeric(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
 
         return $value === '' || ! is_numeric($value) ? '0' : $value;
     }

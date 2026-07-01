@@ -10,6 +10,8 @@
 
 namespace App\Support;
 
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Support\Arr;
 
 /**
@@ -47,7 +49,7 @@ class Translations {
         }
 
         /** @var array<string, string> $data */
-        $data = (array) json_decode((string) file_get_contents($path), true);
+        $data = (array) json_decode(File::read($path), true);
 
         return $data;
     }
@@ -101,8 +103,8 @@ class Translations {
      * @param  array<string, string>  $data
      */
     public static function writeJson(string $code, array $data): void {
-        $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-        file_put_contents(self::jsonPath($code), $json . "\n");
+        $json = JsonHelper::encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        File::write(self::jsonPath($code), $json . "\n");
     }
 
     /**
@@ -112,12 +114,10 @@ class Translations {
      */
     public static function writePhp(string $code, string $file, array $data): void {
         $dir = self::langPath($code);
-        if (! is_dir($dir)) {
-            mkdir($dir, 0775, true);
-        }
+        Folder::create($dir, 0775, true);
         $header = "<?php\n/*\n * Übersetzungen ($code) — gepflegt via `php artisan lang:sync`.\n * Referenzstruktur: lang/de/$file\n */\n\n";
         $body = $header . 'return ' . self::exportArray($data, 1) . ";\n";
-        file_put_contents($dir . '/' . $file, $body);
+        File::write($dir . '/' . $file, $body);
     }
 
     /**
@@ -128,13 +128,11 @@ class Translations {
      */
     public static function writeRequireStub(string $code, string $file): void {
         $dir = self::langPath($code);
-        if (! is_dir($dir)) {
-            mkdir($dir, 0775, true);
-        }
+        Folder::create($dir, 0775, true);
         $body = "<?php\n/*\n * Übersetzungen ($code) — Fallback auf Englisch, bis übersetzt.\n"
             . " * Für echte Übersetzungen dieses require durch ein Array ersetzen.\n */\n\n"
             . "return require __DIR__ . '/../en/$file';\n";
-        file_put_contents($dir . '/' . $file, $body);
+        File::write($dir . '/' . $file, $body);
     }
 
     /**

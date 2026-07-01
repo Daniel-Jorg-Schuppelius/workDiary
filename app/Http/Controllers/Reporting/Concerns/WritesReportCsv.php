@@ -10,8 +10,8 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
-use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\Response;
 
@@ -48,7 +48,7 @@ trait WritesReportCsv {
         }
 
         foreach ($rows as $row) {
-            $csv .= CsvFacade::line($row, $delimiter) . "\r\n";
+            $csv .= StringHelper::encodeLine($row, $delimiter) . "\r\n";
         }
 
         return response("\xEF\xBB\xBF" . $csv, 200, [

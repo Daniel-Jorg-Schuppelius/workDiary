@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Isms;
 
 use App\Services\Isms\SbomGenerator;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -44,13 +45,14 @@ class SbomGenerateCommand extends Command {
 
         $output = $this->option('output');
         if (is_string($output) && $output !== '') {
-            $dir = dirname($output);
-            if (! is_dir($dir) && ! mkdir($dir, 0775, true) && ! is_dir($dir)) {
-                $this->error('Verzeichnis konnte nicht angelegt werden: ' . $dir);
+            try {
+                Folder::create(dirname($output), 0775, true);
+                File::write($output, $json);
+            } catch (\Throwable $e) {
+                $this->error('SBOM konnte nicht geschrieben werden: ' . $e->getMessage());
 
                 return self::FAILURE;
             }
-            file_put_contents($output, $json);
             $this->info('SBOM geschrieben: ' . $output);
             $this->info('SHA-256: ' . $hash);
 

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Article;
 
 use App\Models\{Article, ArticleUnit};
+use CommonToolkit\Helper\Data\NumberHelper;
 use RuntimeException;
 
 /**
@@ -70,7 +71,7 @@ class UnitConverter {
 
     /** @return numeric-string */
     private function normalize(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
 
         return $value === '' || ! is_numeric($value) ? '0' : $value;
     }

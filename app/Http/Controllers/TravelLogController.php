@@ -16,8 +16,8 @@ use App\Http\Requests\SaveTravelLogRequest;
 use App\Models\{Customer, Project, TravelLog, User};
 use App\Services\Travel\TravelLogService;
 use App\Support\SortableQuery;
-use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -163,7 +163,7 @@ class TravelLogController extends Controller {
             if ($out === false) {
                 return;
             }
-            fwrite($out, CsvFacade::line([
+            fwrite($out, StringHelper::encodeLine([
                 'Datum',
                 'Von',
                 'Nach',
@@ -178,7 +178,7 @@ class TravelLogController extends Controller {
                 'Dauer min',
             ], ';') . "\r\n");
             foreach ($logs as $log) {
-                fwrite($out, CsvFacade::line([
+                fwrite($out, StringHelper::encodeLine([
                     $log->date?->format('Y-m-d'),
                     (string) $log->from_address,
                     (string) $log->to_address,

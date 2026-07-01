@@ -13,10 +13,10 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{Project, TimeEntry, User};
-use App\Support\{CsvNumber, XlsxExport};
-use App\Support\Sqid;
+use App\Support\{Sqid, XlsxExport};
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -196,15 +196,15 @@ class ProjectDetailsReportController extends Controller {
         $filename = sprintf('projekt-%d-%d.csv', $project->id, $year);
         $rows = [['Monat', 'Minuten', 'Erloes']];
         foreach ($monthMatrix as $idx => $row) {
-            $rows[] = [$monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], CsvNumber::decimal((float) $row['rate'])];
+            $rows[] = [$monthLabels[$idx] ?? (string) $idx, (int) $row['minutes'], NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true)];
         }
-        $rows[] = ['Gesamt', $yearMinutes, CsvNumber::decimal($yearRate)];
+        $rows[] = ['Gesamt', $yearMinutes, NumberHelper::toGermanFormat($yearRate, 2, withThousandsSeparator: true)];
         $rows[] = [];
         $rows[] = ['Mitarbeiter', 'Minuten', 'Erloes'];
         foreach ($byUser as $uid => $row) {
             $userModel = $users->get($uid);
             $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
-            $rows[] = [(string) $name, (int) $row['minutes'], CsvNumber::decimal((float) $row['rate'])];
+            $rows[] = [(string) $name, (int) $row['minutes'], NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true)];
         }
 
         $csv = '';

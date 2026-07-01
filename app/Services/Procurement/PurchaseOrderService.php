@@ -16,6 +16,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\{Article, ArticleVariant, Organization, PurchaseOrder, PurchaseOrderLine, Supplier, Warehouse};
 use App\Services\Numbering\NumberSequenceService;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 
@@ -89,7 +90,7 @@ class PurchaseOrderService {
 
     /** @return numeric-string */
     private function positive(string $value): string {
-        $value = str_replace(',', '.', trim($value));
+        $value = NumberHelper::normalizeDecimalString($value);
         if ($value === '' || ! is_numeric($value)) {
             return '0';
         }
