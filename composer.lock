@@ -1592,16 +1592,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.12.2",
+            "version": "v1.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "ff05bbd1401ca5457e195b6f36210a6ec1e93dd5"
+                "reference": "d3e9a7482c640b037eab980ce6f976c91b9b52bf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/ff05bbd1401ca5457e195b6f36210a6ec1e93dd5",
-                "reference": "ff05bbd1401ca5457e195b6f36210a6ec1e93dd5",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/d3e9a7482c640b037eab980ce6f976c91b9b52bf",
+                "reference": "d3e9a7482c640b037eab980ce6f976c91b9b52bf",
                 "shasum": ""
             },
             "require": {
@@ -1636,9 +1636,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.12.2"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.14"
             },
-            "time": "2026-07-01T12:58:49+00:00"
+            "time": "2026-07-02T07:38:41+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
