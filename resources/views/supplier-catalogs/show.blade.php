@@ -20,13 +20,32 @@
             <div><span class="opacity-60">{{ __('procurement.catalog.field.decimal_separator') }}:</span> <code>{{ $source->decimal_separator }}</code></div>
             <div><span class="opacity-60">{{ __('procurement.catalog.col.last_import') }}:</span> {{ optional($source->last_imported_at)->format('d.m.Y H:i') ?: '—' }}</div>
         </div>
-        @if ($canManage && $source->hasRemoteFetch())
-            <form method="POST" action="{{ route('supplier-catalogs.fetch', $source) }}" class="mt-3">
-                @csrf
-                <button type="submit" class="btn btn-sm btn-outline gap-1">
-                    <span class="material-symbols-rounded text-base">cloud_download</span>{{ __('procurement.catalog.remote.fetch') }}
-                </button>
-            </form>
+        @if ($canManage && ($source->hasRemoteFetch() || $source->hasPunchout()))
+            <div class="mt-3 flex flex-wrap items-end gap-3">
+                @if ($source->hasRemoteFetch())
+                    <form method="POST" action="{{ route('supplier-catalogs.fetch', $source) }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline gap-1">
+                            <span class="material-symbols-rounded text-base">cloud_download</span>{{ __('procurement.catalog.remote.fetch') }}
+                        </button>
+                    </form>
+                @endif
+                @if ($source->hasPunchout())
+                    <form method="GET" action="{{ route('supplier-catalogs.punchout', $source) }}" class="flex items-end gap-2">
+                        <div class="fieldset">
+                            <label class="fieldset-label">{{ __('inventory.field.warehouse') }}</label>
+                            <select name="warehouse" class="select select-sm select-bordered" required>
+                                @foreach ($warehouses as $warehouse)
+                                    <option value="{{ $warehouse->sqid }}">{{ $warehouse->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline gap-1">
+                            <span class="material-symbols-rounded text-base">shopping_cart_checkout</span>{{ __('procurement.oci.punchout.action') }}
+                        </button>
+                    </form>
+                @endif
+            </div>
         @endif
     </x-card>
 
@@ -180,7 +199,8 @@
                                     @if ($item->article_id)
                                         @if ($sug)
                                             <form method="POST" action="{{ route('supplier-catalogs.items.apply-price', $item) }}">@csrf
-                                                <x-icon-btn icon="sell" size="xs" tone="success" type="submit" :title="__('procurement.margin.action.apply')" />
+                                                <x-icon-btn icon="sell" size="xs" tone="success" type="submit"
+                                                            :title="($approvalMode ?? 'direct') === 'four_eyes' ? __('procurement.approval.action.request') : __('procurement.margin.action.apply')" />
                                             </form>
                                         @endif
                                         <form method="POST" action="{{ route('supplier-catalogs.items.unlink', $item) }}">@csrf

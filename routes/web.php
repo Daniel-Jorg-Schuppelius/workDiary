@@ -82,6 +82,13 @@ Route::get('serial-passport/{token}', [\App\Http\Controllers\PublicSerialControl
     ->middleware('throttle:30,1')
     ->name('serials.public-passport');
 
+// OCI-Punchout-Rücksprung (Feature 050, MVP-096): Der Shop POSTet den Warenkorb
+// cross-site ohne Session-Cookie — Autorisierung über die beim Absprung erzeugte,
+// zeitlich begrenzte signierte HOOK_URL (CSRF-Ausnahme in bootstrap/app.php).
+Route::post('oci-carts/return', [\App\Http\Controllers\OciCartController::class, 'hookReturn'])
+    ->middleware(['signed', 'throttle:12,1'])
+    ->name('oci-carts.return');
+
 Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])
     ->middleware('throttle:30,1')
     ->name('timesheets.public-sign');
@@ -913,10 +920,15 @@ Route::middleware('auth')->group(function () {
         Route::post('supplier-catalogs/items/{catalogItem}/unlink', [\App\Http\Controllers\SupplierCatalogController::class, 'unlink'])->name('supplier-catalogs.items.unlink');
         Route::post('supplier-catalogs/items/{catalogItem}/propose', [\App\Http\Controllers\SupplierCatalogController::class, 'propose'])->name('supplier-catalogs.items.propose');
         Route::post('supplier-catalogs/items/{catalogItem}/apply-price', [\App\Http\Controllers\SupplierCatalogController::class, 'applyPrice'])->name('supplier-catalogs.items.apply-price'); // MVP-095 Verkaufspreis-Freigabe
+        Route::get('supplier-catalogs/{supplierCatalog}/punchout', [\App\Http\Controllers\SupplierCatalogController::class, 'punchout'])->name('supplier-catalogs.punchout'); // MVP-096 aktiver Punchout-Absprung
 
         // ── Margenregeln (Feature 050, MVP-095) ─ Gate pricing-margin-rules.* → module.lager
         Route::get('pricing-margin-rules', [\App\Http\Controllers\PricingMarginRuleController::class, 'index'])->name('pricing-margin-rules.index');
         Route::get('pricing-margin-rules/create', [\App\Http\Controllers\PricingMarginRuleController::class, 'create'])->name('pricing-margin-rules.create');
+        Route::get('pricing-margin-rules/approvals', [\App\Http\Controllers\PricingMarginRuleController::class, 'approvals'])->name('pricing-margin-rules.approvals'); // MVP-095 Vier-Augen-Anträge
+        Route::post('pricing-margin-rules/approvals/{priceRequest}/approve', [\App\Http\Controllers\PricingMarginRuleController::class, 'approveRequest'])->name('pricing-margin-rules.approvals.approve');
+        Route::post('pricing-margin-rules/approvals/{priceRequest}/reject', [\App\Http\Controllers\PricingMarginRuleController::class, 'rejectRequest'])->name('pricing-margin-rules.approvals.reject');
+        Route::post('pricing-margin-rules/approval-mode', [\App\Http\Controllers\PricingMarginRuleController::class, 'saveApprovalMode'])->name('pricing-margin-rules.approval-mode'); // MVP-095 Freigabemodus
         Route::post('pricing-margin-rules', [\App\Http\Controllers\PricingMarginRuleController::class, 'store'])->name('pricing-margin-rules.store');
         Route::delete('pricing-margin-rules/{pricingMarginRule}', [\App\Http\Controllers\PricingMarginRuleController::class, 'destroy'])->name('pricing-margin-rules.destroy');
 

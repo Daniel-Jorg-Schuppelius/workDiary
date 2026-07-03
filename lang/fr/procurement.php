@@ -49,10 +49,20 @@ return [
     ],
 
     'oci' => [
+        'punchout' => [
+            'legend' => 'Punchout OCI (accès boutique)',
+            'url' => 'URL de connexion boutique (OCI)',
+            'hint' => 'Avec une URL de connexion configurée, les achats accèdent directement à la boutique du fournisseur ; le panier revient comme brouillon de commande via une URL de retour signée.',
+            'action' => 'Ouvrir la boutique (punchout)',
+            'title' => 'Redirection vers la boutique',
+            'redirecting' => 'Vous êtes redirigé vers la boutique « :shop » …',
+            'continue' => 'Continuer vers la boutique',
+        ],
         'note' => 'Importé du panier OCI',
         'flash' => [
             'missing_context' => 'Le fournisseur ou l\'entrepôt du panier est manquant.',
             'empty_cart' => 'Le panier ne contient aucun article.',
+            'no_punchout' => 'Aucun punchout n\'est configuré pour cette source.',
             'imported' => 'Panier importé : :matched articles, :unmatched non associés.',
         ],
     ],
@@ -82,6 +92,45 @@ return [
         ],
         'flash' => [
             'acknowledged' => 'Alerte marquée comme traitée.',
+        ],
+    ],
+
+    'approval' => [
+        'title' => 'Validations de prix',
+        'subtitle' => 'Demandes à quatre yeux pour la reprise des prix de vente',
+        'empty' => 'Aucune demande de validation de prix.',
+        'mode' => [
+            'label' => 'Mode de validation des reprises de prix',
+            'direct' => 'Appliquer directement',
+            'four_eyes' => 'Quatre yeux (demande + validation)',
+            'hint' => 'En mode quatre yeux, le bouton de reprise crée une demande qu\'une seconde personne doit valider.',
+        ],
+        'col' => [
+            'suggested' => 'Prix proposé',
+            'requested_by' => 'Demandé par',
+        ],
+        'status' => [
+            'requested' => 'Demandé',
+            'approved' => 'Validé',
+            'rejected' => 'Rejeté',
+            'expired' => 'Expiré',
+        ],
+        'action' => [
+            'approve' => 'Valider',
+            'request' => 'Demander la validation',
+            'reject' => 'Rejeter',
+        ],
+        'note_placeholder' => 'Motif (facultatif)',
+        'flash' => [
+            'requested' => 'Validation de prix demandée.',
+            'approved' => 'Prix :price validé et appliqué.',
+            'rejected' => 'Demande rejetée.',
+            'mode_saved' => 'Mode de validation enregistré.',
+        ],
+        'error' => [
+            'self_approval' => 'Vous ne pouvez pas valider votre propre demande (principe des quatre yeux).',
+            'stale' => 'La proposition a changé depuis la demande — demande expirée, veuillez la renouveler.',
+            'not_open' => 'La demande n\'est plus ouverte.',
         ],
     ],
 

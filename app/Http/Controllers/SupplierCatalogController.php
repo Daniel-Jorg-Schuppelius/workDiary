@@ -14,7 +14,7 @@ use App\Enums\Procurement\{CatalogItemStatus, CatalogSourceFormat};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveSupplierCatalogSourceRequest;
-use App\Models\{Article, ArticleVariant, PricingChangeAlert, Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
+use App\Models\{Article, ArticleVariant, PricingChangeAlert, Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource, Warehouse};
 use App\Services\Procurement\{CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -109,6 +109,9 @@ class SupplierCatalogController extends Controller {
             'remote_username' => $data['remote_username'] ?? null,
             'remote_password' => ($data['remote_password'] ?? '') !== '' ? $data['remote_password'] : null,
             'fetch_interval_minutes' => $data['fetch_interval_minutes'] ?? null,
+            'punchout_url' => $data['punchout_url'] ?? null,
+            'punchout_username' => $data['punchout_username'] ?? null,
+            'punchout_password' => ($data['punchout_password'] ?? '') !== '' ? $data['punchout_password'] : null,
         ]);
 
         return redirect()->route('supplier-catalogs.show', $source)
@@ -146,10 +149,15 @@ class SupplierCatalogController extends Controller {
             'remote_path' => $data['remote_path'] ?? null,
             'remote_username' => $data['remote_username'] ?? null,
             'fetch_interval_minutes' => $data['fetch_interval_minutes'] ?? null,
+            'punchout_url' => $data['punchout_url'] ?? null,
+            'punchout_username' => $data['punchout_username'] ?? null,
         ]);
-        // Passwort nur ersetzen, wenn ein neues angegeben wurde (sonst bestehendes behalten).
+        // Passwörter nur ersetzen, wenn neue angegeben wurden (sonst bestehende behalten).
         if (($data['remote_password'] ?? '') !== '') {
             $supplierCatalog->remote_password = $data['remote_password'];
+        }
+        if (($data['punchout_password'] ?? '') !== '') {
+            $supplierCatalog->punchout_password = $data['punchout_password'];
         }
         $supplierCatalog->save();
 
@@ -204,6 +212,8 @@ class SupplierCatalogController extends Controller {
             'statuses' => CatalogItemStatus::cases(),
             'mappingFields' => self::MAPPING_FIELDS,
             'canManage' => Auth::user()?->can(P::InventoryPost->value) ?? false,
+            'approvalMode' => $this->currentOrganization()->pricingApprovalMode(),
+            'warehouses' => $supplierCatalog->hasPunchout() ? Warehouse::query()->orderBy('name')->get() : collect(),
         ]);
     }
 
@@ -326,6 +336,21 @@ class SupplierCatalogController extends Controller {
         $this->canManage();
         $this->assertOrg($catalogItem);
 
+        // Vier-Augen-Modus (MVP-095): statt direkter Übernahme entsteht ein
+        // Freigabe-Antrag, den eine zweite Person genehmigen muss.
+        if ($this->currentOrganization()->pricingApprovalMode() === 'four_eyes') {
+            /** @var \App\Models\User $requester */
+            $requester = Auth::user();
+
+            try {
+                app(\App\Services\Procurement\PriceApprovalService::class)->request($catalogItem, $requester);
+            } catch (\RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
+            }
+
+            return back()->with('success', __('procurement.approval.flash.requested'));
+        }
+
         try {
             $suggestion = $pricing->applyToArticle($catalogItem);
         } catch (\RuntimeException $e) {
@@ -333,6 +358,45 @@ class SupplierCatalogController extends Controller {
         }
 
         return back()->with('success', __('procurement.margin.flash.applied', ['price' => $suggestion['price']]));
+    }
+
+    /**
+     * Aktiver OCI-Punchout-Absprung in den Lieferanten-Shop (MVP-096): rendert
+     * eine selbst absendende POST-Form an die Shop-Login-URL mit den
+     * OCI-Setup-Feldern. Die HOOK_URL für den Warenkorb-Rücksprung ist eine
+     * zeitlich begrenzte signierte URL — sie trägt Quelle, Ziel-Lager und den
+     * absprungberechtigten Nutzer, da der Cross-Site-POST des Shops keine
+     * Session mitbringt.
+     */
+    public function punchout(Request $request, SupplierCatalogSource $supplierCatalog): \Illuminate\Contracts\View\View|RedirectResponse {
+        $this->canManage();
+        $this->assertSourceOrg($supplierCatalog);
+
+        if (! $supplierCatalog->hasPunchout()) {
+            return redirect()->route('supplier-catalogs.show', $supplierCatalog)->with('error', __('procurement.oci.flash.no_punchout'));
+        }
+
+        $warehouseId = app(SqidEncoder::class)->decode(Warehouse::class, (string) $request->query('warehouse'));
+        $warehouse = $warehouseId !== null ? Warehouse::query()->find($warehouseId) : null;
+        if (! $warehouse instanceof Warehouse) {
+            return redirect()->route('supplier-catalogs.show', $supplierCatalog)->with('error', __('procurement.oci.flash.missing_context'));
+        }
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Quelle als ID (kein Sqid am Modell): die HMAC-Signatur der URL
+        // verhindert Manipulation/Enumeration.
+        $hookUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute('oci-carts.return', now()->addHours(2), [
+            'source' => $supplierCatalog->id,
+            'warehouse' => $warehouse->sqid,
+            'user' => $user->sqid,
+        ]);
+
+        return view('supplier-catalogs.punchout', [
+            'source' => $supplierCatalog,
+            'hookUrl' => $hookUrl,
+        ]);
     }
 
     private function assertOrg(SupplierCatalogItem $item): void {

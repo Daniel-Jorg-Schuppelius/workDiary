@@ -57,6 +57,15 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
             'remote_username' => ['nullable', 'string', 'max:191'],
             'remote_password' => ['nullable', 'string', 'max:512'],
             'fetch_interval_minutes' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            // OCI-Punchout-Absprung (MVP-096): Browser-Redirect, aber derselbe
+            // Guard gegen interne Ziele wie beim Remote-Abruf.
+            'punchout_url' => ['nullable', 'string', 'url', 'max:1024', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (is_string($value) && trim($value) !== '' && ! UrlSafety::isAcceptableExternalHttpUrl($value)) {
+                    $fail((string) __('procurement.catalog.error.host_not_allowed'));
+                }
+            }],
+            'punchout_username' => ['nullable', 'string', 'max:191'],
+            'punchout_password' => ['nullable', 'string', 'max:512'],
         ];
     }
 }

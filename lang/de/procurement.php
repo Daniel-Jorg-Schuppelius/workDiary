@@ -49,10 +49,20 @@ return [
     ],
 
     'oci' => [
+        'punchout' => [
+            'legend' => 'OCI-Punchout (Shop-Absprung)',
+            'url' => 'Shop-Login-URL (OCI)',
+            'hint' => 'Mit konfigurierter Login-URL springt der Einkauf direkt in den Lieferanten-Shop; der Warenkorb kommt über eine signierte Rücksprung-URL als Bestellentwurf zurück.',
+            'action' => 'Zum Shop (Punchout)',
+            'title' => 'Weiterleitung zum Shop',
+            'redirecting' => 'Sie werden zum Shop „:shop“ weitergeleitet …',
+            'continue' => 'Weiter zum Shop',
+        ],
         'note' => 'Aus OCI-Warenkorb übernommen',
         'flash' => [
             'missing_context' => 'Lieferant oder Lagerort des Warenkorbs fehlt.',
             'empty_cart' => 'Der Warenkorb enthält keine Positionen.',
+            'no_punchout' => 'Für diese Quelle ist kein Punchout konfiguriert.',
             'imported' => 'Warenkorb übernommen: :matched Positionen, :unmatched ohne Zuordnung.',
         ],
     ],
@@ -82,6 +92,45 @@ return [
         ],
         'flash' => [
             'acknowledged' => 'Warnung als erledigt markiert.',
+        ],
+    ],
+
+    'approval' => [
+        'title' => 'Preisfreigaben',
+        'subtitle' => 'Vier-Augen-Anträge für Verkaufspreisübernahmen',
+        'empty' => 'Keine Preisfreigabe-Anträge.',
+        'mode' => [
+            'label' => 'Freigabemodus für Preisübernahmen',
+            'direct' => 'Direkt übernehmen',
+            'four_eyes' => 'Vier-Augen (Antrag + Genehmigung)',
+            'hint' => 'Im Vier-Augen-Modus erzeugt der Übernehmen-Button einen Antrag, den eine zweite Person genehmigen muss.',
+        ],
+        'col' => [
+            'suggested' => 'VK-Vorschlag',
+            'requested_by' => 'Beantragt von',
+        ],
+        'status' => [
+            'requested' => 'Beantragt',
+            'approved' => 'Genehmigt',
+            'rejected' => 'Abgelehnt',
+            'expired' => 'Verfallen',
+        ],
+        'action' => [
+            'approve' => 'Genehmigen',
+            'request' => 'Freigabe beantragen',
+            'reject' => 'Ablehnen',
+        ],
+        'note_placeholder' => 'Begründung (optional)',
+        'flash' => [
+            'requested' => 'Preisfreigabe beantragt.',
+            'approved' => 'Preis :price freigegeben und übernommen.',
+            'rejected' => 'Antrag abgelehnt.',
+            'mode_saved' => 'Freigabemodus gespeichert.',
+        ],
+        'error' => [
+            'self_approval' => 'Eigene Anträge können nicht selbst genehmigt werden (Vier-Augen-Prinzip).',
+            'stale' => 'Der Vorschlag hat sich seit dem Antrag geändert — Antrag verfallen, bitte neu beantragen.',
+            'not_open' => 'Der Antrag ist nicht mehr offen.',
         ],
     ],
 

@@ -68,5 +68,13 @@
                        :value="$val('fetch_interval_minutes')" :placeholder="__('procurement.catalog.remote.interval_off')" />
     </x-form-group>
     <p class="text-xs opacity-60">{{ __('procurement.catalog.remote.hint') }}</p>
+
+    <x-form-group :legend="__('procurement.oci.punchout.legend')" icon="shopping_cart_checkout" tone="primary" cols="2">
+        <x-input-field name="punchout_url" type="url" :label="__('procurement.oci.punchout.url')" :value="$val('punchout_url')" />
+        <x-input-field name="punchout_username" :label="__('procurement.catalog.remote.username')" :value="$val('punchout_username')" autocomplete="off" />
+        <x-input-field name="punchout_password" type="password" :label="__('procurement.catalog.remote.password')"
+                       :placeholder="$editing ? __('procurement.catalog.remote.password_keep') : null" autocomplete="new-password" />
+    </x-form-group>
+    <p class="text-xs opacity-60">{{ __('procurement.oci.punchout.hint') }}</p>
 </x-modal>
 </content>

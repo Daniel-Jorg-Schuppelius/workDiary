@@ -49,10 +49,20 @@ return [
     ],
 
     'oci' => [
+        'punchout' => [
+            'legend' => 'OCI punchout (shop hand-off)',
+            'url' => 'Shop login URL (OCI)',
+            'hint' => 'With a configured login URL, purchasing jumps straight into the supplier shop; the cart returns as a purchase order draft via a signed return URL.',
+            'action' => 'Open shop (punchout)',
+            'title' => 'Redirecting to shop',
+            'redirecting' => 'You are being redirected to the shop ":shop" …',
+            'continue' => 'Continue to shop',
+        ],
         'note' => 'Imported from OCI cart',
         'flash' => [
             'missing_context' => 'Supplier or warehouse of the cart is missing.',
             'empty_cart' => 'The cart contains no items.',
+            'no_punchout' => 'No punchout is configured for this source.',
             'imported' => 'Cart imported: :matched items, :unmatched unmatched.',
         ],
     ],
@@ -82,6 +92,45 @@ return [
         ],
         'flash' => [
             'acknowledged' => 'Alert marked as done.',
+        ],
+    ],
+
+    'approval' => [
+        'title' => 'Price approvals',
+        'subtitle' => 'Four-eyes requests for sale price adoptions',
+        'empty' => 'No price approval requests.',
+        'mode' => [
+            'label' => 'Approval mode for price adoptions',
+            'direct' => 'Apply directly',
+            'four_eyes' => 'Four eyes (request + approval)',
+            'hint' => 'In four-eyes mode the apply button creates a request that a second person must approve.',
+        ],
+        'col' => [
+            'suggested' => 'Suggested price',
+            'requested_by' => 'Requested by',
+        ],
+        'status' => [
+            'requested' => 'Requested',
+            'approved' => 'Approved',
+            'rejected' => 'Rejected',
+            'expired' => 'Expired',
+        ],
+        'action' => [
+            'approve' => 'Approve',
+            'request' => 'Request approval',
+            'reject' => 'Reject',
+        ],
+        'note_placeholder' => 'Note (optional)',
+        'flash' => [
+            'requested' => 'Price approval requested.',
+            'approved' => 'Price :price approved and applied.',
+            'rejected' => 'Request rejected.',
+            'mode_saved' => 'Approval mode saved.',
+        ],
+        'error' => [
+            'self_approval' => 'You cannot approve your own request (four-eyes principle).',
+            'stale' => 'The suggestion changed since the request — request expired, please request again.',
+            'not_open' => 'The request is no longer open.',
         ],
     ],
 

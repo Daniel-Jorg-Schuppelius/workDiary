@@ -5,9 +5,27 @@
 @section('content')
 <x-index-page :subtitle="__('procurement.margin.subtitle')">
     <x-slot:actions>
+        <x-icon-btn icon="fact_check" size="sm" :href="route('pricing-margin-rules.approvals')" show-label>
+            {{ __('procurement.approval.title') }}@if ($openApprovals > 0) <span class="badge badge-warning badge-sm">{{ $openApprovals }}</span>@endif
+        </x-icon-btn>
         <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                     :href="route('pricing-margin-rules.create')" show-label>{{ __('procurement.margin.action.new_rule') }}</x-icon-btn>
     </x-slot:actions>
+
+    <x-card>
+        <form method="POST" action="{{ route('pricing-margin-rules.approval-mode') }}" class="flex flex-wrap items-end gap-3">
+            @csrf
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('procurement.approval.mode.label') }}</label>
+                <select name="mode" class="select select-sm select-bordered">
+                    <option value="direct" @selected($approvalMode === 'direct')>{{ __('procurement.approval.mode.direct') }}</option>
+                    <option value="four_eyes" @selected($approvalMode === 'four_eyes')>{{ __('procurement.approval.mode.four_eyes') }}</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-sm">{{ __('Speichern') }}</button>
+            <p class="text-xs opacity-60 basis-full">{{ __('procurement.approval.mode.hint') }}</p>
+        </form>
+    </x-card>
 
     @if ($rules->total() === 0)
         <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">percent</span>'

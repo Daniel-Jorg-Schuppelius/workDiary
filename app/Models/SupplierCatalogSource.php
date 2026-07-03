@@ -68,6 +68,9 @@ class SupplierCatalogSource extends Model {
         'remote_path',
         'remote_username',
         'remote_password',
+        'punchout_url',
+        'punchout_username',
+        'punchout_password',
         'mapping',
         'fetch_interval_minutes',
         'next_fetch_at',
@@ -81,6 +84,7 @@ class SupplierCatalogSource extends Model {
         'last_imported_at' => 'datetime',
         'remote_port' => 'integer',
         'remote_password' => 'encrypted', // verschlüsselt at-rest (APP_KEY)
+        'punchout_password' => 'encrypted', // verschlüsselt at-rest (APP_KEY)
         'mapping' => 'array',
         'fetch_interval_minutes' => 'integer',
         'next_fetch_at' => 'datetime',
@@ -89,6 +93,11 @@ class SupplierCatalogSource extends Model {
     /** Hat die Quelle einen automatischen Abrufweg (kein manueller Upload)? */
     public function hasRemoteFetch(): bool {
         return in_array($this->source_type, ['http', 'ftp', 'sftp'], true);
+    }
+
+    /** Ist ein aktiver OCI-Punchout-Absprung konfiguriert (MVP-096)? */
+    public function hasPunchout(): bool {
+        return trim((string) $this->punchout_url) !== '';
     }
 
     /** @return BelongsTo<Supplier, $this> */

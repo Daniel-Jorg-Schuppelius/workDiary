@@ -182,6 +182,18 @@ class Organization extends Model {
             : (string) config('timesheet.defaults.schedule_type', 'flextime');
     }
 
+    /**
+     * Freigabemodus für Verkaufspreisübernahmen (Feature 050, MVP-095):
+     * `direct` übernimmt sofort (Standard), `four_eyes` verlangt Antrag und
+     * Genehmigung durch eine zweite Person. Ablage in
+     * settings['pricing']['approval_mode'].
+     */
+    public function pricingApprovalMode(): string {
+        $stored = $this->settings['pricing']['approval_mode'] ?? null;
+
+        return $stored === 'four_eyes' ? 'four_eyes' : 'direct';
+    }
+
     /** @return HasMany<User, $this> */
     public function users(): HasMany {
         return $this->hasMany(User::class);

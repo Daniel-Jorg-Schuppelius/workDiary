@@ -107,6 +107,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // cross-site ohne CSRF-Token (Feature 050, MVP-096). Der Zugriff ist
             // weiterhin auth- und berechtigungsgeschützt (inventory.post).
             'oci-carts/import',
+            // Aktiver Punchout-Rücksprung (MVP-096): sessionloser Cross-Site-POST,
+            // Autorisierung über die signierte HOOK_URL ('signed'-Middleware).
+            'oci-carts/return',
         ]);
 
         // Pro-Guard-Redirect fuer nicht authentifizierte Anfragen. Ohne

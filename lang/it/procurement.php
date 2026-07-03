@@ -49,10 +49,20 @@ return [
     ],
 
     'oci' => [
+        'punchout' => [
+            'legend' => 'Punchout OCI (accesso al negozio)',
+            'url' => 'URL di accesso al negozio (OCI)',
+            'hint' => 'Con un URL di accesso configurato, gli acquisti passano direttamente al negozio del fornitore; il carrello torna come bozza d\'ordine tramite un URL di ritorno firmato.',
+            'action' => 'Apri negozio (punchout)',
+            'title' => 'Reindirizzamento al negozio',
+            'redirecting' => 'Stai per essere reindirizzato al negozio ":shop" …',
+            'continue' => 'Continua verso il negozio',
+        ],
         'note' => 'Importato dal carrello OCI',
         'flash' => [
             'missing_context' => 'Manca il fornitore o il magazzino del carrello.',
             'empty_cart' => 'Il carrello non contiene articoli.',
+            'no_punchout' => 'Nessun punchout configurato per questa fonte.',
             'imported' => 'Carrello importato: :matched articoli, :unmatched non associati.',
         ],
     ],
@@ -82,6 +92,45 @@ return [
         ],
         'flash' => [
             'acknowledged' => 'Avviso contrassegnato come completato.',
+        ],
+    ],
+
+    'approval' => [
+        'title' => 'Approvazioni prezzi',
+        'subtitle' => 'Richieste a quattro occhi per l\'adozione dei prezzi di vendita',
+        'empty' => 'Nessuna richiesta di approvazione prezzi.',
+        'mode' => [
+            'label' => 'Modalità di approvazione per le adozioni di prezzo',
+            'direct' => 'Applica direttamente',
+            'four_eyes' => 'Quattro occhi (richiesta + approvazione)',
+            'hint' => 'In modalità quattro occhi il pulsante di adozione crea una richiesta che una seconda persona deve approvare.',
+        ],
+        'col' => [
+            'suggested' => 'Prezzo proposto',
+            'requested_by' => 'Richiesto da',
+        ],
+        'status' => [
+            'requested' => 'Richiesto',
+            'approved' => 'Approvato',
+            'rejected' => 'Rifiutato',
+            'expired' => 'Scaduto',
+        ],
+        'action' => [
+            'approve' => 'Approva',
+            'request' => 'Richiedi approvazione',
+            'reject' => 'Rifiuta',
+        ],
+        'note_placeholder' => 'Motivazione (facoltativa)',
+        'flash' => [
+            'requested' => 'Approvazione prezzo richiesta.',
+            'approved' => 'Prezzo :price approvato e applicato.',
+            'rejected' => 'Richiesta rifiutata.',
+            'mode_saved' => 'Modalità di approvazione salvata.',
+        ],
+        'error' => [
+            'self_approval' => 'Non puoi approvare la tua stessa richiesta (principio dei quattro occhi).',
+            'stale' => 'La proposta è cambiata dalla richiesta — richiesta scaduta, si prega di richiedere di nuovo.',
+            'not_open' => 'La richiesta non è più aperta.',
         ],
     ],
 
