@@ -13,8 +13,9 @@ namespace Tests\Feature;
 use App\Services\Material\MaterialProviderRegistry;
 use App\Services\Material\Provider\LexofficeMaterialProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Config, Http};
+use Illuminate\Support\Facades\Config;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class LexofficeMaterialProviderTest extends TestCase {
@@ -28,8 +29,8 @@ class LexofficeMaterialProviderTest extends TestCase {
     }
 
     public function test_search_calls_lexoffice_and_upserts_local_materials(): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/articles*' => Http::response([
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [
                     [
                         'id' => 'lex-1',

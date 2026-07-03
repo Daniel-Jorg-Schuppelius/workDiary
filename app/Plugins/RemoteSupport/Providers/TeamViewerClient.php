@@ -10,7 +10,8 @@
 
 namespace App\Plugins\RemoteSupport\Providers;
 
-use App\Plugins\Support\PluginHttp;
+use APIToolkit\API\Authentication\BearerAuthentication;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 
 /**
@@ -22,6 +23,8 @@ use Carbon\CarbonImmutable;
  */
 class TeamViewerClient implements RemoteProvider {
     public const ID = 'teamviewer';
+
+    private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly ?string $apiKey,
@@ -41,10 +44,8 @@ class TeamViewerClient implements RemoteProvider {
             return false;
         }
 
-        return PluginHttp::for('remote-support')->withToken((string) $this->apiKey)
-            ->acceptJson()
-            ->timeout(5)
-            ->get($this->baseUrl . '/ping')
+        return $this->api()
+            ->getResponse($this->baseUrl . '/ping', [], ['timeout' => 5])
             ->successful();
     }
 
@@ -65,10 +66,7 @@ class TeamViewerClient implements RemoteProvider {
                 $query['offset_id'] = $offset;
             }
 
-            $response = PluginHttp::for('remote-support')->withToken((string) $this->apiKey)
-                ->acceptJson()
-                ->timeout(15)
-                ->get($this->baseUrl . '/reports/connections', $query);
+            $response = $this->api()->getResponse($this->baseUrl . '/reports/connections', $query, ['timeout' => 15]);
 
             if (! $response->successful()) {
                 break;
@@ -111,5 +109,14 @@ class TeamViewerClient implements RemoteProvider {
             endedAt: CarbonImmutable::parse($end),
             note: $note !== '' ? $note : null,
         );
+    }
+
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('remote-support', $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
+        }
+
+        return $this->api;
     }
 }

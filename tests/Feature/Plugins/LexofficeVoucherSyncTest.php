@@ -14,8 +14,9 @@ use App\Models\{Customer, ExternalReference, LexofficeVoucher, Supplier};
 use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherSync};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class LexofficeVoucherSyncTest extends TestCase {
@@ -41,9 +42,9 @@ class LexofficeVoucherSyncTest extends TestCase {
     /**
      * @param  array<int, array<string, mixed>>  $items
      */
-    private function fakeVoucherlist(array $items): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => Http::response([
+    private function fakeVoucherlist(array $items): FakePluginHttp {
+        return FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response([
                 'content' => $items,
                 'totalPages' => 1,
             ], 200),
@@ -119,21 +120,22 @@ class LexofficeVoucherSyncTest extends TestCase {
         ]);
         $this->linkContact('contact-1', $customer);
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => Http::sequence()
-                ->push([
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => [
+                FakePluginHttp::response([
                     'content' => [
                         ['id' => 'v1', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'A', 'totalAmount' => 10.0],
                         ['id' => 'v2', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'B', 'totalAmount' => 20.0],
                     ],
                     'totalPages' => 1,
-                ], 200)
-                ->push([
+                ], 200),
+                FakePluginHttp::response([
                     'content' => [
                         ['id' => 'v1', 'voucherType' => 'salesinvoice', 'voucherNumber' => 'A', 'totalAmount' => 15.0],
                     ],
                     'totalPages' => 1,
                 ], 200),
+            ],
         ]);
 
         $first = (new LexofficeVoucherSync('test-key'))->sync($this->organization);
@@ -153,7 +155,7 @@ class LexofficeVoucherSyncTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $this->linkContact('contact-1', $customer);
 
-        $this->fakeVoucherlist([[
+        $fake = $this->fakeVoucherlist([[
             'id' => 'voucher-1', 'voucherType' => 'salesinvoice', 'voucherStatus' => 'open',
             'voucherNumber' => 'RE-1001', 'voucherDate' => '2026-05-01T00:00:00.000+02:00',
             'totalAmount' => 119.00, 'currency' => 'EUR', 'archived' => false,
@@ -166,8 +168,8 @@ class LexofficeVoucherSyncTest extends TestCase {
         $this->assertDatabaseHas('lexoffice_vouchers', [
             'external_id' => 'voucher-1', 'customer_id' => $customer->id, 'voucher_number' => 'RE-1001',
         ]);
-        Http::assertSent(fn ($request): bool => str_contains($request->url(), '/voucherlist')
-            && str_contains($request->url(), 'contactId=contact-1'));
+        $fake->assertSent(fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), '/voucherlist')
+            && str_contains((string) $request->getUri(), 'contactId=contact-1'));
     }
 
     public function test_sync_for_supplier_assigns_supplier_id(): void {

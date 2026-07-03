@@ -10,11 +10,11 @@
 
 namespace App\Services\Material\Provider;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\Material;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Material\MaterialProviderInterface;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Http;
 
 /**
  * Lexoffice-Artikel als Material-Provider.
@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Http;
  * Doku: https://developers.lexoffice.io/docs/#articles-endpoint-articles
  */
 class LexofficeMaterialProvider implements MaterialProviderInterface {
+    private ?PluginApiClient $api = null;
+
     public function __construct(
         protected string $apiKey,
         protected string $baseUrl = 'https://api.lexoffice.io/v1',
@@ -39,7 +41,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
             return collect();
         }
 
-        $response = $this->client()->get('/articles', [
+        $response = $this->api()->getResponse($this->baseUrl . '/articles', [
             'query' => $query,
             'size' => $limit,
         ]);
@@ -67,7 +69,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
         $page = 0;
 
         do {
-            $response = $this->client()->get('/articles', ['page' => $page, 'size' => 100]);
+            $response = $this->api()->getResponse($this->baseUrl . '/articles', ['page' => $page, 'size' => 100]);
             if (! $response->ok()) {
                 break;
             }
@@ -106,9 +108,12 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
         );
     }
 
-    protected function client(): PendingRequest {
-        return Http::baseUrl($this->baseUrl)
-            ->withToken($this->apiKey)
-            ->acceptJson();
+    protected function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication($this->apiKey));
+        }
+
+        return $this->api;
     }
 }

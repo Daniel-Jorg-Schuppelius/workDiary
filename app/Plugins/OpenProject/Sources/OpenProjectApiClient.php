@@ -10,10 +10,11 @@
 
 namespace App\Plugins\OpenProject\Sources;
 
+use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\OpenProject\Exceptions\{OpenProjectApiException, OpenProjectRateLimitException};
-use App\Plugins\Support\PluginHttp;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Client\{PendingRequest, Response};
+use Illuminate\Http\Client\Response;
 
 /**
  * Client für die OpenProject API v3 (HAL+JSON, https://www.openproject.org/docs/api/).
@@ -26,6 +27,8 @@ use Illuminate\Http\Client\{PendingRequest, Response};
 class OpenProjectApiClient {
     /** Elemente pro Seite bei Sammel-Abfragen. */
     public const PAGE_SIZE = 200;
+
+    private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly ?string $apiToken,
@@ -44,7 +47,7 @@ class OpenProjectApiClient {
             return false;
         }
 
-        return $this->request()->timeout(8)->get($this->baseUrl . '/users/me')->successful();
+        return $this->api()->getResponse($this->baseUrl . '/users/me', [], ['timeout' => 8])->successful();
     }
 
     /**
@@ -185,7 +188,7 @@ class OpenProjectApiClient {
             '_links' => $links,
         ];
 
-        $response = $this->request()->timeout(20)->post($this->baseUrl . '/time_entries', $payload);
+        $response = $this->api()->postJson($this->baseUrl . '/time_entries', $payload, ['timeout' => 20]);
         $this->guard($response, 'POST /time_entries');
 
         $id = $this->stringId($response->json('id'));
@@ -244,9 +247,8 @@ class OpenProjectApiClient {
         $offset = 1;
 
         do {
-            $response = $this->request()
-                ->timeout(30)
-                ->get($this->baseUrl . $path, array_merge($query, ['offset' => $offset, 'pageSize' => self::PAGE_SIZE]));
+            $response = $this->api()
+                ->getResponse($this->baseUrl . $path, array_merge($query, ['offset' => $offset, 'pageSize' => self::PAGE_SIZE]), ['timeout' => 30]);
 
             $this->guard($response, 'GET ' . $path);
 
@@ -299,9 +301,12 @@ class OpenProjectApiClient {
         return is_string($value) && trim($value) !== '' ? trim($value) : null;
     }
 
-    private function request(): PendingRequest {
-        return PluginHttp::for('openproject')
-            ->withBasicAuth('apikey', (string) $this->apiToken)
-            ->acceptJson();
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('openproject', (string) $this->baseUrl);
+            $this->api->setAuthentication(new BasicAuthentication('apikey', (string) $this->apiToken));
+        }
+
+        return $this->api;
     }
 }

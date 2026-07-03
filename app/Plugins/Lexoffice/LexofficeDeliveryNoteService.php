@@ -10,11 +10,11 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\{Customer, ExternalReference, StockDelivery};
-use App\Plugins\Support\PluginHttp;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Manufacturing\DeliveryService;
-use Illuminate\Http\Client\PendingRequest;
 use RuntimeException;
 
 /**
@@ -29,8 +29,8 @@ use RuntimeException;
  * zurück — z. B. für Status/Belegnummer.
  *
  * HTTP läuft — analog {@see \App\Services\Finance\Targets\LexofficeTarget} —
- * über {@see PluginHttp} (Laravel-HTTP-Client, mit Http::fake() testbar), nicht
- * über das Guzzle-basierte SDK.
+ * über {@see PluginApiClient} (php-api-toolkit, mit FakePluginHttp testbar),
+ * nicht über das SDK.
  */
 class LexofficeDeliveryNoteService {
     public const EXT_TYPE_DELIVERY_NOTE = 'delivery_note';
@@ -59,7 +59,7 @@ class LexofficeDeliveryNoteService {
         $contactId = $this->resolveContactId($customer, $config);
         $payload = $this->buildPayload($delivery, $contactId);
 
-        $response = $this->http($config)->post($config['base_url'] . '/delivery-notes', $payload);
+        $response = $this->api($config)->postJson($config['base_url'] . '/delivery-notes', $payload);
 
         if (! $response->successful()) {
             $this->deliveries->markFacturationResult($delivery, DeliveryFacturationStatus::Failed);
@@ -108,7 +108,7 @@ class LexofficeDeliveryNoteService {
             throw new RuntimeException((string) __('finance.error.lexoffice_delivery_not_linked'));
         }
 
-        $response = $this->http($config)->get($config['base_url'] . '/delivery-notes/' . $reference->external_id);
+        $response = $this->api($config)->getResponse($config['base_url'] . '/delivery-notes/' . $reference->external_id);
         if (! $response->successful()) {
             throw new RuntimeException(sprintf('Lexoffice delivery note fetch failed: HTTP %d', $response->status()));
         }
@@ -175,8 +175,8 @@ class LexofficeDeliveryNoteService {
 
         $email = (string) $customer->email;
         if ($email !== '') {
-            $response = $this->http($config)
-                ->get($config['base_url'] . '/contacts', ['email' => $email, 'page' => 0, 'size' => 1]);
+            $response = $this->api($config)
+                ->getResponse($config['base_url'] . '/contacts', ['email' => $email, 'page' => 0, 'size' => 1]);
 
             if ($response->successful()) {
                 $first = ((array) ($response->json('content') ?? []))[0] ?? null;
@@ -204,10 +204,10 @@ class LexofficeDeliveryNoteService {
     }
 
     /** @param  array{api_key: ?string, base_url: string}  $config */
-    private function http(array $config): PendingRequest {
-        return PluginHttp::for('lexoffice')
-            ->withToken((string) $config['api_key'])
-            ->acceptJson()
-            ->asJson();
+    private function api(array $config): PluginApiClient {
+        $client = app(PluginHttpFactory::class)->client('lexoffice', (string) $config['base_url']);
+        $client->setAuthentication(new BearerAuthentication((string) $config['api_key']));
+
+        return $client;
     }
 }

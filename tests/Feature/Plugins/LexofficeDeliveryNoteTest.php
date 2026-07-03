@@ -15,14 +15,15 @@ use App\Models\{Article, ArticleVariant, Customer, ExternalReference, StockDeliv
 use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficePlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
  * Lexoffice-Lieferschein (Feature 045/047): Push einer Auslieferung als
- * Lexoffice-Lieferschein und Pull des verknüpften Belegs — HTTP über Http::fake.
+ * Lexoffice-Lieferschein und Pull des verknüpften Belegs — HTTP über FakePluginHttp.
  */
 final class LexofficeDeliveryNoteTest extends TestCase {
     use RefreshDatabase;
@@ -84,8 +85,8 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         $this->seedContactReference();
         $delivery = $this->makeDelivery();
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/delivery-notes*' => Http::response(['id' => 'lex-dn-1'], 201),
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/delivery-notes*' => FakePluginHttp::response(['id' => 'lex-dn-1'], 201),
         ]);
 
         $reference = app(LexofficeDeliveryNoteService::class)->push($delivery);
@@ -98,14 +99,15 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         $this->assertSame(DeliveryFacturationStatus::HandedOver, $fresh->facturation_status);
         $this->assertSame('lex-dn-1', $fresh->external_id);
 
-        Http::assertSent(function ($request): bool {
-            if (! str_contains($request->url(), '/delivery-notes')) {
+        $fake->assertSent(function (RequestInterface $request): bool {
+            if (! str_contains((string) $request->getUri(), '/delivery-notes')) {
                 return false;
             }
-            $body = $request->data();
+            $body = json_decode((string) $request->getBody(), true);
 
+            // json_decode liefert für ganzzahlige Floats int → für den Vergleich casten.
             return data_get($body, 'address.contactId') === 'lex-contact-1'
-                && data_get($body, 'lineItems.0.quantity') === 3.0
+                && (float) data_get($body, 'lineItems.0.quantity') === 3.0
                 && str_contains((string) data_get($body, 'lineItems.0.name'), 'Bürostuhl');
         });
     }
@@ -113,9 +115,9 @@ final class LexofficeDeliveryNoteTest extends TestCase {
     public function test_push_resolves_contact_via_email_search(): void {
         $delivery = $this->makeDelivery();
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/contacts*' => Http::response(['content' => [['id' => 'lex-contact-2']]], 200),
-            'https://api.lexoffice.io/v1/delivery-notes*' => Http::response(['id' => 'lex-dn-2'], 201),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'lex-contact-2']]], 200),
+            'https://api.lexoffice.io/v1/delivery-notes*' => FakePluginHttp::response(['id' => 'lex-dn-2'], 201),
         ]);
 
         $reference = app(LexofficeDeliveryNoteService::class)->push($delivery);
@@ -133,8 +135,8 @@ final class LexofficeDeliveryNoteTest extends TestCase {
         $this->seedContactReference();
         $delivery = $this->makeDelivery();
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/delivery-notes*' => Http::response(['message' => 'bad'], 400),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/delivery-notes*' => FakePluginHttp::response(['message' => 'bad'], 400),
         ]);
 
         try {
@@ -159,8 +161,8 @@ final class LexofficeDeliveryNoteTest extends TestCase {
             'synced_at' => now(),
         ]);
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/delivery-notes/lex-dn-9' => Http::response(['id' => 'lex-dn-9', 'voucherStatus' => 'open'], 200),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/delivery-notes/lex-dn-9' => FakePluginHttp::response(['id' => 'lex-dn-9', 'voucherStatus' => 'open'], 200),
         ]);
 
         $result = app(LexofficeDeliveryNoteService::class)->pull($delivery);

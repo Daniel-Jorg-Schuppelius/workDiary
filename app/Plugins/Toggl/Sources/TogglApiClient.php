@@ -10,8 +10,9 @@
 
 namespace App\Plugins\Toggl\Sources;
 
+use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Models\TogglPendingEntry;
-use App\Plugins\Support\PluginHttp;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 
 /**
@@ -30,6 +31,8 @@ class TogglApiClient {
     /** Maximale Historie (Jahre) beim „alles"-Import, falls kein Floor bestimmbar ist. */
     public const MAX_HISTORY_YEARS = 12;
 
+    private ?PluginApiClient $api = null;
+
     public function __construct(
         private readonly ?string $apiToken,
         private readonly string $baseUrl = 'https://api.track.toggl.com/api/v9',
@@ -47,9 +50,8 @@ class TogglApiClient {
             return false;
         }
 
-        return $this->request()
-            ->timeout(5)
-            ->get($this->baseUrl . '/me')
+        return $this->api()
+            ->getResponse($this->baseUrl . '/me', [], ['timeout' => 5])
             ->successful();
     }
 
@@ -65,12 +67,11 @@ class TogglApiClient {
 
         [$projects, $clients, $email] = $this->fetchRelatedData();
 
-        $response = $this->request()
-            ->timeout(20)
-            ->get($this->baseUrl . '/me/time_entries', [
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/me/time_entries', [
                 'start_date' => $from->toIso8601String(),
                 'end_date' => $to->toIso8601String(),
-            ]);
+            ], ['timeout' => 20]);
 
         if (! $response->successful()) {
             return [];
@@ -93,9 +94,8 @@ class TogglApiClient {
      * @return array{0: array<int, array{name: string, client_id: ?int}>, 1: array<int, string>, 2: ?string}
      */
     private function fetchRelatedData(): array {
-        $response = $this->request()
-            ->timeout(20)
-            ->get($this->baseUrl . '/me', ['with_related_data' => 'true']);
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/me', ['with_related_data' => 'true'], ['timeout' => 20]);
 
         if (! $response->successful()) {
             return [[], [], null];
@@ -176,7 +176,7 @@ class TogglApiClient {
             return [];
         }
 
-        $response = $this->request()->timeout(20)->get($this->baseUrl . '/workspaces');
+        $response = $this->api()->getResponse($this->baseUrl . '/workspaces', [], ['timeout' => 20]);
         if (! $response->successful()) {
             return [];
         }
@@ -202,9 +202,8 @@ class TogglApiClient {
      * @return array<int, array{id: int, name: string, archived: bool}>
      */
     public function workspaceClients(int $workspaceId): array {
-        $response = $this->request()
-            ->timeout(20)
-            ->get($this->baseUrl . '/workspaces/' . $workspaceId . '/clients', ['status' => 'both']);
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/workspaces/' . $workspaceId . '/clients', ['status' => 'both'], ['timeout' => 20]);
 
         if (! $response->successful()) {
             return [];
@@ -241,13 +240,12 @@ class TogglApiClient {
         $out = [];
         $page = 1;
         do {
-            $response = $this->request()
-                ->timeout(20)
-                ->get($this->baseUrl . '/workspaces/' . $workspaceId . '/projects', [
+            $response = $this->api()
+                ->getResponse($this->baseUrl . '/workspaces/' . $workspaceId . '/projects', [
                     'active' => 'both',
                     'per_page' => 200,
                     'page' => $page,
-                ]);
+                ], ['timeout' => 20]);
 
             if (! $response->successful()) {
                 break;
@@ -284,9 +282,8 @@ class TogglApiClient {
      * @return array<int, array{email: string, name: string, timezone: ?string}>
      */
     public function workspaceUsers(int $workspaceId): array {
-        $response = $this->request()
-            ->timeout(20)
-            ->get($this->baseUrl . '/workspaces/' . $workspaceId . '/users');
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/workspaces/' . $workspaceId . '/users', [], ['timeout' => 20]);
 
         if (! $response->successful()) {
             return [];
@@ -387,7 +384,7 @@ class TogglApiClient {
                 $payload['first_row_number'] = $firstRow;
             }
 
-            $response = $this->request()->timeout(60)->post($url, $payload);
+            $response = $this->api()->postJson($url, $payload, ['timeout' => 60]);
             if (! $response->successful()) {
                 break;
             }
@@ -491,7 +488,12 @@ class TogglApiClient {
         return $replaced ?? ($base . '/reports/api/v3');
     }
 
-    private function request(): \Illuminate\Http\Client\PendingRequest {
-        return PluginHttp::for('toggl')->withBasicAuth((string) $this->apiToken, 'api_token')->acceptJson();
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('toggl', $this->baseUrl);
+            $this->api->setAuthentication(new BasicAuthentication((string) $this->apiToken, 'api_token'));
+        }
+
+        return $this->api;
     }
 }

@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{Customer, ExternalReference, ManufacturingOrder};
-use App\Plugins\Support\PluginHttp;
-use Illuminate\Http\Client\PendingRequest;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 
 /**
@@ -24,7 +24,7 @@ use RuntimeException;
  * Netto-Verkaufspreis) und unterscheiden sich nur in Endpoint, Titel,
  * ExternalReference-Typ und Fehlermeldungen — diese liefern die Subklassen.
  *
- * HTTP über {@see PluginHttp} (Laravel-HTTP-Client, Http::fake()-testbar).
+ * HTTP über {@see PluginApiClient} (php-api-toolkit, FakePluginHttp-testbar).
  */
 abstract class LexofficeOrderDocumentService {
     /** Lexoffice-Voucher-Endpoint (z. B. `order-confirmations`, `quotations`). */
@@ -63,7 +63,7 @@ abstract class LexofficeOrderDocumentService {
         $contactId = $this->resolveContactId($customer, $config);
         $payload = $this->buildPayload($order, $contactId, (array) $config['defaults']);
 
-        $response = $this->http($config)->post($config['base_url'] . '/' . $this->endpointPath(), $payload);
+        $response = $this->api($config)->postJson($config['base_url'] . '/' . $this->endpointPath(), $payload);
 
         if (! $response->successful()) {
             throw new RuntimeException(sprintf(
@@ -108,7 +108,7 @@ abstract class LexofficeOrderDocumentService {
             throw new RuntimeException((string) __($this->notLinkedErrorKey()));
         }
 
-        $response = $this->http($config)->get($config['base_url'] . '/' . $this->endpointPath() . '/' . $reference->external_id);
+        $response = $this->api($config)->getResponse($config['base_url'] . '/' . $this->endpointPath() . '/' . $reference->external_id);
         if (! $response->successful()) {
             throw new RuntimeException(sprintf('Lexoffice %s fetch failed: HTTP %d', $this->endpointPath(), $response->status()));
         }
@@ -185,8 +185,8 @@ abstract class LexofficeOrderDocumentService {
 
         $email = (string) $customer->email;
         if ($email !== '') {
-            $response = $this->http($config)
-                ->get($config['base_url'] . '/contacts', ['email' => $email, 'page' => 0, 'size' => 1]);
+            $response = $this->api($config)
+                ->getResponse($config['base_url'] . '/contacts', ['email' => $email, 'page' => 0, 'size' => 1]);
 
             if ($response->successful()) {
                 $first = ((array) ($response->json('content') ?? []))[0] ?? null;
@@ -214,10 +214,10 @@ abstract class LexofficeOrderDocumentService {
     }
 
     /** @param  array{api_key: ?string, base_url: string}  $config */
-    private function http(array $config): PendingRequest {
-        return PluginHttp::for('lexoffice')
-            ->withToken((string) $config['api_key'])
-            ->acceptJson()
-            ->asJson();
+    private function api(array $config): PluginApiClient {
+        $client = app(PluginHttpFactory::class)->client('lexoffice', (string) $config['base_url']);
+        $client->setAuthentication(new BearerAuthentication((string) $config['api_key']));
+
+        return $client;
     }
 }

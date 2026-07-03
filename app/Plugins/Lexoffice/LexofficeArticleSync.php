@@ -10,8 +10,9 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{LexofficeArticle, Organization, PendingExternalConflict};
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 
 /**
@@ -29,10 +30,21 @@ use RuntimeException;
 class LexofficeArticleSync {
     private LexofficeMatchPolicy $policy = LexofficeMatchPolicy::LexofficeWins;
 
+    private ?PluginApiClient $api = null;
+
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
     ) {}
+
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
+        }
+
+        return $this->api;
+    }
 
     public function withPolicy(LexofficeMatchPolicy $policy): self {
         $clone = clone $this;
@@ -57,9 +69,8 @@ class LexofficeArticleSync {
         $pageSize = 100;
 
         do {
-            $response = Http::withToken($this->apiKey)
-                ->acceptJson()
-                ->get($this->baseUrl . '/articles', [
+            $response = $this->api()
+                ->getResponse($this->baseUrl . '/articles', [
                     'page' => $page,
                     'size' => $pageSize,
                 ]);
@@ -152,17 +163,13 @@ class LexofficeArticleSync {
         $payload = $this->articleToPayload($article);
 
         if ($article->external_id === '') {
-            $response = Http::withToken($this->apiKey)
-                ->acceptJson()
-                ->post($this->baseUrl . '/articles', $payload);
+            $response = $this->api()->postJson($this->baseUrl . '/articles', $payload);
         } else {
             // Beim PUT muss die aktuelle Version mitgesendet werden (optimistic locking).
             $version = $article->external_version ?? $this->fetchRemoteVersion($article->external_id);
             $payload['version'] = $version;
             $payload['id'] = $article->external_id;
-            $response = Http::withToken($this->apiKey)
-                ->acceptJson()
-                ->put($this->baseUrl . '/articles/' . $article->external_id, $payload);
+            $response = $this->api()->putJson($this->baseUrl . '/articles/' . $article->external_id, $payload);
         }
 
         if (! $response->successful()) {
@@ -295,9 +302,7 @@ class LexofficeArticleSync {
     }
 
     private function fetchRemoteVersion(string $externalId): int {
-        $response = Http::withToken((string) $this->apiKey)
-            ->acceptJson()
-            ->get($this->baseUrl . '/articles/' . $externalId);
+        $response = $this->api()->getResponse($this->baseUrl . '/articles/' . $externalId);
 
         if (! $response->successful()) {
             return 0;

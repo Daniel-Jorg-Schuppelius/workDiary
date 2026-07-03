@@ -16,8 +16,8 @@ use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
 use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportPlugin, RemoteSupportService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class RemoteSupportSyncTest extends TestCase {
@@ -63,8 +63,8 @@ class RemoteSupportSyncTest extends TestCase {
     }
 
     private function fakeConnections(array $records): void {
-        Http::fake([
-            'https://webapi.teamviewer.com/api/v1/reports/connections*' => Http::response([
+        FakePluginHttp::fake([
+            'https://webapi.teamviewer.com/api/v1/reports/connections*' => FakePluginHttp::response([
                 'records' => $records,
                 'next_offset' => null,
             ], 200),

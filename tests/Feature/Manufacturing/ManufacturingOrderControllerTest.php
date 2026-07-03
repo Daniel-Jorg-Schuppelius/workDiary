@@ -136,8 +136,8 @@ final class ManufacturingOrderControllerTest extends TestCase {
             'facturation_target' => 'lexoffice', 'delivered_at' => now(),
         ]);
 
-        \Illuminate\Support\Facades\Http::fake([
-            'https://api.lexoffice.io/v1/delivery-notes*' => \Illuminate\Support\Facades\Http::response(['id' => 'lex-dn-1'], 201),
+        \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/delivery-notes*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-dn-1'], 201),
         ]);
 
         $this->actingAs($this->admin)
@@ -178,8 +178,8 @@ final class ManufacturingOrderControllerTest extends TestCase {
             'status' => ManufacturingOrderStatus::Released->value,
         ]);
 
-        \Illuminate\Support\Facades\Http::fake([
-            'https://api.lexoffice.io/v1/order-confirmations*' => \Illuminate\Support\Facades\Http::response(['id' => 'lex-oc-1'], 201),
+        \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/order-confirmations*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-oc-1'], 201),
         ]);
 
         $this->actingAs($this->admin)
@@ -221,8 +221,8 @@ final class ManufacturingOrderControllerTest extends TestCase {
             'status' => ManufacturingOrderStatus::Draft->value,
         ]);
 
-        \Illuminate\Support\Facades\Http::fake([
-            'https://api.lexoffice.io/v1/quotations*' => \Illuminate\Support\Facades\Http::response(['id' => 'lex-q-1'], 201),
+        \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/quotations*' => \Tests\Support\FakePluginHttp::response(['id' => 'lex-q-1'], 201),
         ]);
 
         $this->actingAs($this->admin)

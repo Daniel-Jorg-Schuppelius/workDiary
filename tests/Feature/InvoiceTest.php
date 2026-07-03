@@ -451,12 +451,12 @@ class InvoiceTest extends TestCase {
             'position' => 1,
         ]);
 
-        \Illuminate\Support\Facades\Http::fake([
-            'https://api.lexoffice.io/v1/invoices?finalize=true' => \Illuminate\Support\Facades\Http::response([
+        \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/invoices?finalize=true' => \Tests\Support\FakePluginHttp::response([
                 'id' => 'lex-inv-1',
                 'resourceUri' => 'https://api.lexoffice.io/v1/invoices/lex-inv-1',
             ], 201),
-            'https://api.lexoffice.io/v1/invoices/lex-inv-1' => \Illuminate\Support\Facades\Http::response([
+            'https://api.lexoffice.io/v1/invoices/lex-inv-1' => \Tests\Support\FakePluginHttp::response([
                 'id' => 'lex-inv-1',
                 'voucherNumber' => 'RE-2030-007',
                 'voucherStatus' => 'open',
@@ -552,11 +552,11 @@ class InvoiceTest extends TestCase {
             'synced_at' => now(),
         ]);
 
-        \Illuminate\Support\Facades\Http::fake([
-            'https://api.lexoffice.io/v1/invoices/lex-inv-9/document' => \Illuminate\Support\Facades\Http::response([
+        \Tests\Support\FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/invoices/lex-inv-9/document' => \Tests\Support\FakePluginHttp::response([
                 'documentFileId' => 'file-abc',
             ], 200),
-            'https://api.lexoffice.io/v1/files/file-abc' => \Illuminate\Support\Facades\Http::response('%PDF-1.4 fake', 200),
+            'https://api.lexoffice.io/v1/files/file-abc' => \Tests\Support\FakePluginHttp::response('%PDF-1.4 fake', 200),
         ]);
 
         $response = $this->actingAs($this->admin)->get(route('invoices.lexoffice.pdf', $invoice));

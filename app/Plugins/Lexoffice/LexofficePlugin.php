@@ -14,7 +14,7 @@ use App\Models\{Customer, ExternalReference, Organization, PluginSetting, Suppli
 use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use Carbon\CarbonImmutable;
-use Illuminate\Http\Client\ConnectionException;
+use GuzzleHttp\Exception\ConnectException;
 use Throwable;
 
 /**
@@ -117,7 +117,9 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
             return PluginHealth::failing(__('Lexoffice-API antwortet nicht erwartungsgemäß (HTTP :status).', ['status' => $status ?? '—']));
         } catch (LexofficeRateLimitException $e) {
             return PluginHealth::degraded($e->getMessage());
-        } catch (ConnectionException $e) {
+        } catch (ConnectException $e) {
+            // Verbindungsfehler propagieren seit der php-api-toolkit-Migration
+            // als Guzzle-ConnectException (nach ausgeschöpften Retries).
             return PluginHealth::degraded(__('Lexoffice ist momentan nicht erreichbar (Netzwerk-/Timeout-Fehler).'));
         } catch (Throwable $e) {
             return PluginHealth::failing($e->getMessage());

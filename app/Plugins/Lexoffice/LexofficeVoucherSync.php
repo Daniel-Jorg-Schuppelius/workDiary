@@ -10,9 +10,10 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{Customer, ExternalReference, LexofficeVoucher, Organization, Supplier};
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
@@ -30,10 +31,21 @@ use RuntimeException;
  * Quelle: https://developers.lexoffice.io/docs/#voucherlist-endpoint
  */
 class LexofficeVoucherSync {
+    private ?PluginApiClient $api = null;
+
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
     ) {}
+
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
+        }
+
+        return $this->api;
+    }
 
     /**
      * @return array{contacts: int, created: int, updated: int, archived: int}
@@ -278,9 +290,8 @@ class LexofficeVoucherSync {
             // Sanftes Throttling, um das Ratelimit (2 req/s) nicht zu reißen.
             usleep(600_000);
 
-            $response = Http::withToken((string) $this->apiKey)
-                ->acceptJson()
-                ->get($this->baseUrl . '/voucherlist', [
+            $response = $this->api()
+                ->getResponse($this->baseUrl . '/voucherlist', [
                     'voucherType' => 'any',
                     'voucherStatus' => 'any',
                     'contactId' => $contactExternalId,

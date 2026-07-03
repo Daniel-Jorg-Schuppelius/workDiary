@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\LexofficeVoucher;
-use Illuminate\Http\Client\{ConnectionException, PendingRequest, RequestException};
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 
 /**
@@ -46,6 +46,8 @@ class LexofficeVoucherFileService {
         'deliverynote' => 'delivery-notes',
     ];
 
+    private ?PluginApiClient $api = null;
+
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
@@ -67,9 +69,11 @@ class LexofficeVoucherFileService {
 
         $fileId = $this->resolveFileId($voucher);
 
-        $response = $this->http()
-            ->withHeaders(['Accept' => 'application/pdf, image/png, image/jpeg, image/gif, image/tiff, application/xml, */*'])
-            ->get($this->baseUrl . '/files/' . $fileId);
+        $response = $this->api()->getResponse(
+            $this->baseUrl . '/files/' . $fileId,
+            [],
+            ['headers' => ['Accept' => 'application/pdf, image/png, image/jpeg, image/gif, image/tiff, application/xml, */*']],
+        );
 
         if ($response->status() === 429) {
             throw new LexofficeRateLimitException();
@@ -124,9 +128,7 @@ class LexofficeVoucherFileService {
     }
 
     private function fileIdFromVoucher(string $externalId): string {
-        $response = $this->http()
-            ->acceptJson()
-            ->get($this->baseUrl . '/vouchers/' . $externalId);
+        $response = $this->api()->getResponse($this->baseUrl . '/vouchers/' . $externalId);
 
         if (! $response->successful()) {
             return '';
@@ -147,9 +149,7 @@ class LexofficeVoucherFileService {
     }
 
     private function fileIdFromDocument(string $endpoint, string $externalId): string {
-        $response = $this->http()
-            ->acceptJson()
-            ->get($this->baseUrl . '/' . $endpoint . '/' . $externalId . '/document');
+        $response = $this->api()->getResponse($this->baseUrl . '/' . $endpoint . '/' . $externalId . '/document');
 
         // 406 = kein gerendertes Dokument verfügbar (z. B. Entwurf). Das ist
         // kein harter Fehler — der Aufrufer fällt auf andere Quellen zurück.
@@ -161,35 +161,18 @@ class LexofficeVoucherFileService {
     }
 
     /**
-     * Basis-HTTP-Client mit automatischem Retry bei Rate-Limit (429) und
-     * transienten Verbindungsfehlern. Lexoffice erlaubt nur 2 Anfragen/Sekunde;
-     * `throw: false` → die (Fehler-)Antwort kommt regulär zurück und wird vom
-     * Aufrufer behandelt.
+     * Basis-HTTP-Client auf dem `php-api-toolkit`-Fundament: Retry bei
+     * Rate-Limit (429, inkl. `Retry-After`) und transienten Verbindungsfehlern
+     * bringt {@see PluginApiClient} bereits mit; die (Fehler-)Antwort kommt
+     * regulär zurück und wird vom Aufrufer behandelt.
      */
-    private function http(): PendingRequest {
-        return Http::withToken((string) $this->apiKey)
-            ->retry(3, $this->retryDelayMs(...), $this->shouldRetry(...), throw: false);
-    }
-
-    /** Nur bei Rate-Limit (429) und Verbindungsfehlern erneut versuchen. */
-    private function shouldRetry(\Throwable $e): bool {
-        if ($e instanceof ConnectionException) {
-            return true;
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
         }
 
-        return $e instanceof RequestException && $e->response->status() === 429;
-    }
-
-    /** Backoff in Millisekunden; respektiert den `Retry-After`-Header. */
-    private function retryDelayMs(int $attempt, \Throwable $e): int {
-        if ($e instanceof RequestException) {
-            $retryAfter = (int) $e->response->header('Retry-After');
-            if ($retryAfter > 0) {
-                return $retryAfter * 1000;
-            }
-        }
-
-        return $attempt * 500;
+        return $this->api;
     }
 
     private function extensionFor(string $contentType): string {

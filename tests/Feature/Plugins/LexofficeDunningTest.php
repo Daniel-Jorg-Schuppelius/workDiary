@@ -14,10 +14,11 @@ use App\Models\{LexofficeVoucher, User};
 use App\Plugins\Lexoffice\{LexofficeDunningService, LexofficePlugin};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -49,9 +50,9 @@ final class LexofficeDunningTest extends TestCase {
         ]);
     }
 
-    private function fakeInvoiceAndDunning(): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/invoices/inv-1' => Http::response([
+    private function fakeInvoiceAndDunning(): FakePluginHttp {
+        return FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response([
                 'id' => 'inv-1',
                 'address' => ['contactId' => 'lex-contact-1'],
                 'lineItems' => [[
@@ -61,13 +62,13 @@ final class LexofficeDunningTest extends TestCase {
                 'totalPrice' => ['currency' => 'EUR'],
                 'taxConditions' => ['taxType' => 'net'],
             ], 200),
-            'https://api.lexoffice.io/v1/dunnings*' => Http::response(['id' => 'dun-1'], 201),
+            'https://api.lexoffice.io/v1/dunnings*' => FakePluginHttp::response(['id' => 'dun-1'], 201),
         ]);
     }
 
     public function test_push_creates_dunning_from_overdue_invoice(): void {
         $voucher = $this->overdueInvoice();
-        $this->fakeInvoiceAndDunning();
+        $fake = $this->fakeInvoiceAndDunning();
 
         $reference = app(LexofficeDunningService::class)->push($voucher);
 
@@ -75,14 +76,16 @@ final class LexofficeDunningTest extends TestCase {
         $this->assertSame('dun-1', $reference->external_id);
         $this->assertSame($voucher->getMorphClass(), $reference->referenceable_type);
 
-        Http::assertSent(function ($request): bool {
-            if (! str_contains($request->url(), '/dunnings')) {
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $url = (string) $request->getUri();
+            if (! str_contains($url, '/dunnings')) {
                 return false;
             }
+            $body = json_decode((string) $request->getBody(), true);
 
-            return str_contains($request->url(), 'precedingSalesVoucherId=inv-1')
-                && str_contains((string) data_get($request->data(), 'lineItems.0.name'), 'Leistung')
-                && data_get($request->data(), 'address.contactId') === 'lex-contact-1';
+            return str_contains($url, 'precedingSalesVoucherId=inv-1')
+                && str_contains((string) data_get($body, 'lineItems.0.name'), 'Leistung')
+                && data_get($body, 'address.contactId') === 'lex-contact-1';
         });
     }
 

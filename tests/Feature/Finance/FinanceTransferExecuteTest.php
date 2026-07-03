@@ -20,13 +20,15 @@ use App\Services\Finance\BillingTransferService;
 use App\Services\Finance\Targets\{FileTarget, LexofficeTarget};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\{Http, Storage};
+use Illuminate\Support\Facades\Storage;
+use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
  * Ziel-Adapter der Faktura-Übergabe (Feature 045, Teil B): Lexoffice-
- * Rechnungsentwurf über Http::fake (PluginHttp = Laravel-HTTP-Client) und
+ * Rechnungsentwurf über FakePluginHttp (PluginApiClient = php-api-toolkit) und
  * Datei-Übergabepaket (Storage::fake) inkl. Gate-geprüftem Download.
  */
 class FinanceTransferExecuteTest extends TestCase {
@@ -127,13 +129,13 @@ class FinanceTransferExecuteTest extends TestCase {
         $entry = $this->makeTimeEntry();
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
-        Http::fake([
+        $fake = FakePluginHttp::fake([
             // Contact-Lookup (kein bestehender Kontakt → Suche per E-Mail)
-            'https://api.lexoffice.io/v1/contacts*' => Http::response([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response([
                 'content' => [['id' => 'contact-uuid-1']],
             ], 200),
             // Invoice-Create (Entwurf) → 201
-            'https://api.lexoffice.io/v1/invoices*' => Http::response([
+            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response([
                 'id' => 'lex-invoice-1',
                 'resourceUri' => 'https://api.lexoffice.io/v1/invoices/lex-invoice-1',
             ], 201),
@@ -162,18 +164,20 @@ class FinanceTransferExecuteTest extends TestCase {
         $this->assertTrue((bool) $entry->fresh()->exported);
 
         // Entwurf — kein finalize, korrekter Payload-Kern.
-        Http::assertSent(function ($request): bool {
-            if (! str_contains($request->url(), '/invoices')) {
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $url = (string) $request->getUri();
+            if (! str_contains($url, '/invoices')) {
                 return false;
             }
-            $data = $request->data();
+            $data = json_decode((string) $request->getBody(), true);
 
-            return ! str_contains($request->url(), 'finalize')
+            // json_decode liefert für ganzzahlige Floats int → für den Vergleich casten.
+            return ! str_contains($url, 'finalize')
                 && $data['address']['contactId'] === 'contact-uuid-1'
                 && $data['lineItems'][0]['type'] === 'custom'
-                && $data['lineItems'][0]['quantity'] === 2.0
+                && (float) $data['lineItems'][0]['quantity'] === 2.0
                 && $data['lineItems'][0]['unitName'] === 'h'
-                && $data['lineItems'][0]['unitPrice']['netAmount'] === 90.0;
+                && (float) $data['lineItems'][0]['unitPrice']['netAmount'] === 90.0;
         });
     }
 
@@ -191,26 +195,26 @@ class FinanceTransferExecuteTest extends TestCase {
             'synced_at' => now(),
         ]);
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/invoices*' => Http::response(['id' => 'lex-invoice-2'], 201),
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-2'], 201),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasNoErrors();
 
         $this->assertSame(TransferStatus::Transferred, $transfer->fresh()->status);
-        Http::assertSent(fn($request) => str_contains($request->url(), '/invoices')
-            && $request->data()['address']['contactId'] === 'contact-existing');
+        $fake->assertSent(fn(RequestInterface $request) => str_contains((string) $request->getUri(), '/invoices')
+            && json_decode((string) $request->getBody(), true)['address']['contactId'] === 'contact-existing');
         // Kein Contact-Lookup nötig.
-        Http::assertNotSent(fn($request) => str_contains($request->url(), '/contacts'));
+        $fake->assertNotSent(fn(RequestInterface $request) => str_contains((string) $request->getUri(), '/contacts'));
     }
 
     public function test_execute_lexoffice_failure_marks_failed_and_keeps_sources(): void {
         $entry = $this->makeTimeEntry();
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/contacts*' => Http::response(['content' => [['id' => 'contact-uuid-1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => Http::response(['message' => 'boom'], 500),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['message' => 'boom'], 500),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))
@@ -235,7 +239,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $entry = $this->makeTimeEntry();
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
-        Http::fake();
+        $fake = FakePluginHttp::fake();
 
         $this->post(route('finance.transfers.execute', $transfer))
             ->assertSessionHasErrors('transfer');
@@ -244,7 +248,7 @@ class FinanceTransferExecuteTest extends TestCase {
         $this->assertSame(TransferStatus::Failed, $transfer->status);
         $this->assertNotNull($transfer->failure_reason);
         $this->assertFalse((bool) $entry->fresh()->exported);
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 
     public function test_execute_lexoffice_without_invoice_id_marks_failed(): void {
@@ -252,9 +256,9 @@ class FinanceTransferExecuteTest extends TestCase {
         $this->makeTimeEntry();
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/contacts*' => Http::response(['content' => [['id' => 'c1']]], 200),
-            'https://api.lexoffice.io/v1/invoices*' => Http::response([], 201),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'c1']]], 200),
+            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response([], 201),
         ]);
 
         $this->post(route('finance.transfers.execute', $transfer))
@@ -276,13 +280,13 @@ class FinanceTransferExecuteTest extends TestCase {
             $this->accountant,
         );
 
-        Http::fake();
+        $fake = FakePluginHttp::fake();
 
         $this->post(route('finance.transfers.execute', $transfer))
             ->assertSessionHasErrors('status');
 
         $this->assertSame(TransferStatus::Draft, $transfer->fresh()->status);
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 
     // ── File-Target ─────────────────────────────────────────────────────

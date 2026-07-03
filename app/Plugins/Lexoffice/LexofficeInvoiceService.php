@@ -10,8 +10,9 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{ExternalReference, Invoice};
-use Illuminate\Support\Facades\Http;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 
 /**
@@ -29,6 +30,8 @@ use RuntimeException;
 class LexofficeInvoiceService {
     public const EXT_TYPE_INVOICE = 'invoice';
 
+    private ?PluginApiClient $api = null;
+
     public function __construct(
         private readonly LexofficeInvoiceMapper $mapper,
         private readonly ?string $apiKey,
@@ -39,6 +42,15 @@ class LexofficeInvoiceService {
 
     public function isConfigured(): bool {
         return $this->apiKey !== null && $this->apiKey !== '';
+    }
+
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
+        }
+
+        return $this->api;
     }
 
     /**
@@ -56,10 +68,7 @@ class LexofficeInvoiceService {
         $payload = $this->mapper->toPayload($invoice, $externalContactId, $this->defaults);
 
         $url = $this->baseUrl . '/invoices' . ($finalize ? '?finalize=true' : '');
-        $response = Http::withToken((string) $this->apiKey)
-            ->acceptJson()
-            ->asJson()
-            ->post($url, $payload);
+        $response = $this->api()->postJson($url, $payload);
 
         if (! $response->successful()) {
             throw new RuntimeException('Lexoffice invoice create failed: ' . $response->status() . ' ' . $response->body());
@@ -106,9 +115,7 @@ class LexofficeInvoiceService {
         if (! $this->isConfigured()) {
             throw new RuntimeException('Lexoffice API key is not configured.');
         }
-        $response = Http::withToken((string) $this->apiKey)
-            ->acceptJson()
-            ->get($this->baseUrl . '/invoices/' . $externalId);
+        $response = $this->api()->getResponse($this->baseUrl . '/invoices/' . $externalId);
 
         if (! $response->successful()) {
             throw new RuntimeException('Lexoffice invoice fetch failed: ' . $response->status() . ' ' . $response->body());
@@ -128,9 +135,7 @@ class LexofficeInvoiceService {
             throw new RuntimeException('Lexoffice API key is not configured.');
         }
 
-        $meta = Http::withToken((string) $this->apiKey)
-            ->acceptJson()
-            ->get($this->baseUrl . '/invoices/' . $externalId . '/document');
+        $meta = $this->api()->getResponse($this->baseUrl . '/invoices/' . $externalId . '/document');
 
         if (! $meta->successful()) {
             throw new RuntimeException('Lexoffice invoice document metadata fetch failed: ' . $meta->status());
@@ -140,9 +145,11 @@ class LexofficeInvoiceService {
             throw new RuntimeException('Lexoffice invoice document has no documentFileId.');
         }
 
-        $pdf = Http::withToken((string) $this->apiKey)
-            ->withHeaders(['Accept' => 'application/pdf'])
-            ->get($this->baseUrl . '/files/' . $fileId);
+        $pdf = $this->api()->getResponse(
+            $this->baseUrl . '/files/' . $fileId,
+            [],
+            ['headers' => ['Accept' => 'application/pdf']],
+        );
 
         if (! $pdf->successful()) {
             throw new RuntimeException('Lexoffice file fetch failed: ' . $pdf->status());

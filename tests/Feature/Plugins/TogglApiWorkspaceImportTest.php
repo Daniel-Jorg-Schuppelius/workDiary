@@ -15,8 +15,8 @@ use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient};
 use App\Plugins\Toggl\TogglExportImporter;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -139,23 +139,23 @@ class TogglApiWorkspaceImportTest extends TestCase {
     }
 
     private function fakeApi(): void {
-        Http::fake([
-            self::BASE . '/workspaces' => Http::response([
+        FakePluginHttp::fake([
+            self::BASE . '/workspaces' => FakePluginHttp::response([
                 ['id' => 100, 'name' => 'Own Workspace'],
                 ['id' => 200, 'name' => 'BigCorp Workspace'],
             ]),
 
             // --- Workspace 100 (eigener Workspace) ---
-            self::BASE . '/workspaces/100/clients*' => Http::response([
+            self::BASE . '/workspaces/100/clients*' => FakePluginHttp::response([
                 ['id' => 1, 'name' => 'Acme', 'archived' => false],
             ]),
-            self::BASE . '/workspaces/100/projects*' => Http::response([
+            self::BASE . '/workspaces/100/projects*' => FakePluginHttp::response([
                 ['id' => 10, 'name' => 'Website', 'client_id' => 1, 'color' => '#112233', 'billable' => false, 'active' => true, 'start_date' => '2025-01-01'],
             ]),
-            self::BASE . '/workspaces/100/users*' => Http::response([
+            self::BASE . '/workspaces/100/users*' => FakePluginHttp::response([
                 ['id' => 1, 'email' => 'dev@example.com', 'fullname' => 'Dev', 'timezone' => 'Europe/Berlin'],
             ]),
-            'api.track.toggl.com/reports/api/v3/workspace/100/search/time_entries*' => Http::response([
+            'api.track.toggl.com/reports/api/v3/workspace/100/search/time_entries*' => FakePluginHttp::response([
                 [
                     'project_id' => 10,
                     'description' => 'Arbeit',
@@ -168,16 +168,16 @@ class TogglApiWorkspaceImportTest extends TestCase {
             ]),
 
             // --- Workspace 200 (als ein Kunde) ---
-            self::BASE . '/workspaces/200/clients*' => Http::response([
+            self::BASE . '/workspaces/200/clients*' => FakePluginHttp::response([
                 ['id' => 2, 'name' => 'Internal', 'archived' => false],
             ]),
-            self::BASE . '/workspaces/200/projects*' => Http::response([
+            self::BASE . '/workspaces/200/projects*' => FakePluginHttp::response([
                 ['id' => 20, 'name' => 'Rollout', 'client_id' => 2, 'billable' => true, 'active' => true, 'start_date' => '2025-02-01'],
             ]),
-            self::BASE . '/workspaces/200/users*' => Http::response([
+            self::BASE . '/workspaces/200/users*' => FakePluginHttp::response([
                 ['id' => 1, 'email' => 'dev@example.com', 'fullname' => 'Dev'],
             ]),
-            'api.track.toggl.com/reports/api/v3/workspace/200/search/time_entries*' => Http::response([
+            'api.track.toggl.com/reports/api/v3/workspace/200/search/time_entries*' => FakePluginHttp::response([
                 [
                     'project_id' => 20,
                     'description' => 'Kram',

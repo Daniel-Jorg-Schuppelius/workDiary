@@ -15,8 +15,8 @@ use App\Models\{ExternalReference, PluginSetting, Project, TimeEntry, User};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectStructureSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class OpenProjectExportTest extends TestCase {
@@ -93,7 +93,7 @@ class OpenProjectExportTest extends TestCase {
         $project = $this->mappedProject('9');
         $entry = $this->timeEntry($project);
 
-        Http::fake([self::BASE . '/time_entries' => Http::response(['id' => 9001], 201)]);
+        $fake = FakePluginHttp::fake([self::BASE . '/time_entries' => FakePluginHttp::response(['id' => 9001], 201)]);
 
         $result = $this->service()->exportPending($this->organization, $config);
 
@@ -109,12 +109,14 @@ class OpenProjectExportTest extends TestCase {
         ]);
 
         // Korrekte ISO-8601-Dauer im Request-Body.
-        Http::assertSent(function ($request): bool {
-            return str_ends_with($request->url(), '/time_entries')
-                && $request['hours'] === 'PT1H30M'
-                && $request['spentOn'] === '2026-05-26'
-                && data_get($request->data(), '_links.project.href') === '/api/v3/projects/9'
-                && data_get($request->data(), '_links.activity.href') === '/api/v3/time_entries/activities/1';
+        $fake->assertSent(function ($request): bool {
+            $data = json_decode((string) $request->getBody(), true);
+
+            return str_ends_with((string) $request->getUri(), '/time_entries')
+                && data_get($data, 'hours') === 'PT1H30M'
+                && data_get($data, 'spentOn') === '2026-05-26'
+                && data_get($data, '_links.project.href') === '/api/v3/projects/9'
+                && data_get($data, '_links.activity.href') === '/api/v3/time_entries/activities/1';
         });
     }
 
@@ -123,7 +125,7 @@ class OpenProjectExportTest extends TestCase {
         $project = $this->mappedProject('9');
         $this->timeEntry($project);
 
-        Http::fake([self::BASE . '/time_entries' => Http::response(['id' => 9001], 201)]);
+        FakePluginHttp::fake([self::BASE . '/time_entries' => FakePluginHttp::response(['id' => 9001], 201)]);
 
         $first = $this->service()->exportPending($this->organization, $config);
         $second = $this->service()->exportPending($this->organization, $config);
@@ -140,13 +142,13 @@ class OpenProjectExportTest extends TestCase {
         $project = $this->mappedProject('9');
         $this->timeEntry($project);
 
-        Http::fake([self::BASE . '/time_entries' => Http::response(['id' => 9001], 201)]);
+        $fake = FakePluginHttp::fake([self::BASE . '/time_entries' => FakePluginHttp::response(['id' => 9001], 201)]);
 
         $result = $this->service()->exportPending($this->organization, $config);
 
         $this->assertSame(0, $result['pushed']);
         $this->assertNotEmpty($result['errors']);
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 
     public function test_unmapped_project_is_skipped(): void {
@@ -159,11 +161,11 @@ class OpenProjectExportTest extends TestCase {
         ]);
         $this->timeEntry($project);
 
-        Http::fake([self::BASE . '/time_entries' => Http::response(['id' => 9001], 201)]);
+        $fake = FakePluginHttp::fake([self::BASE . '/time_entries' => FakePluginHttp::response(['id' => 9001], 201)]);
 
         $result = $this->service()->exportPending($this->organization, $config);
 
         $this->assertSame(0, $result['pushed']);
-        Http::assertNothingSent();
+        $fake->assertNothingSent();
     }
 }

@@ -10,11 +10,12 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{Customer, Supplier, TimeEntry};
-use App\Plugins\Support\PluginHttp;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
-use Illuminate\Http\Client\{ConnectionException, PendingRequest};
+use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Collection;
 use Lexoffice\API\Client;
 use Lexoffice\API\Endpoints\{ContactsEndpoint, VouchersEndpoint};
@@ -31,6 +32,8 @@ use RuntimeException;
  */
 class LexofficeService {
     private ?Client $client = null;
+
+    private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly ?string $apiKey,
@@ -52,9 +55,9 @@ class LexofficeService {
      * Exception nach oben gereicht, damit der Caller (PluginHealth) sie als
      * `degraded` einstufen kann und das Plugin nicht auto-deaktiviert wird:
      *   - 429 (Rate-Limit) → {@see LexofficeRateLimitException}
-     *   - Netz-/Timeout-Fehler → {@see ConnectionException}
+     *   - Netz-/Timeout-Fehler → {@see ConnectException}
      *
-     * @throws LexofficeRateLimitException|ConnectionException
+     * @throws LexofficeRateLimitException|ConnectException
      */
     public function ping(): bool {
         $status = $this->profileStatus();
@@ -68,16 +71,13 @@ class LexofficeService {
      * konfiguriert ist. Ein 429 (Rate-Limit) führt — wie bei {@see ping()} —
      * weiterhin zur {@see LexofficeRateLimitException}.
      *
-     * @throws LexofficeRateLimitException|ConnectionException
+     * @throws LexofficeRateLimitException|ConnectException
      */
     public function profileStatus(): ?int {
         if (! $this->isConfigured()) {
             return null;
         }
-        $response = $this->http()
-            ->acceptJson()
-            ->timeout(5)
-            ->get($this->baseUrl . '/profile');
+        $response = $this->api()->getResponse($this->baseUrl . '/profile', [], ['timeout' => 5]);
 
         if ($response->status() === 429) {
             throw new LexofficeRateLimitException();
@@ -88,13 +88,19 @@ class LexofficeService {
 
     /**
      * Basis-HTTP-Client für die rohen REST-Aufrufe. Nutzt die gemeinsame
-     * {@see PluginHttp}-Basis (einheitlicher User-Agent, Default-Timeout,
+     * {@see PluginApiClient}-Basis (einheitlicher User-Agent, Default-Timeout,
      * Retry bei Rate-Limit/Verbindungsfehlern mit Backoff inkl. `Retry-After`,
-     * `throw: false`). Lexoffice erlaubt nur 2 Anfragen/Sekunde → 429 wird
-     * automatisch wiederholt; danach kommt die (Fehler-)Antwort regulär zurück.
+     * Fehlerstatus als reguläre Response). Lexoffice erlaubt nur 2 Anfragen/
+     * Sekunde → 429 wird automatisch wiederholt; danach kommt die
+     * (Fehler-)Antwort regulär zurück.
      */
-    private function http(): PendingRequest {
-        return PluginHttp::for('lexoffice')->withToken((string) $this->apiKey);
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
+        }
+
+        return $this->api;
     }
 
     private function client(): Client {
@@ -179,9 +185,8 @@ class LexofficeService {
         if (! $this->isConfigured()) {
             return null;
         }
-        $response = $this->http()
-            ->acceptJson()
-            ->get($this->baseUrl . '/contacts', $query + ['page' => 0, 'size' => 1]);
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/contacts', $query + ['page' => 0, 'size' => 1]);
 
         if (! $response->successful()) {
             return null;
@@ -199,9 +204,7 @@ class LexofficeService {
         if (! $this->isConfigured()) {
             return 0;
         }
-        $response = $this->http()
-            ->acceptJson()
-            ->get($this->baseUrl . '/contacts/' . $externalId);
+        $response = $this->api()->getResponse($this->baseUrl . '/contacts/' . $externalId);
 
         if (! $response->successful()) {
             return 0;

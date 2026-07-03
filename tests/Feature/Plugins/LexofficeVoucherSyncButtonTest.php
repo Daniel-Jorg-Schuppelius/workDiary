@@ -15,9 +15,9 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -51,8 +51,8 @@ final class LexofficeVoucherSyncButtonTest extends TestCase {
     }
 
     private function fakeVoucherlist(array $items): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/voucherlist*' => Http::response(['content' => $items, 'totalPages' => 1], 200),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response(['content' => $items, 'totalPages' => 1], 200),
         ]);
     }
 

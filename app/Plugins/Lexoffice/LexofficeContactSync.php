@@ -10,9 +10,10 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{ContactAddress, Customer, ExternalReference, IntegrationInboxItem, Organization, Supplier};
+use App\Plugins\Support\PluginHttpFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
-use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 /**
@@ -70,16 +71,17 @@ class LexofficeContactSync {
             'supplier_unmatched' => 0,
         ];
 
+        $api = app(PluginHttpFactory::class)->client('lexoffice', $baseUrl);
+        $api->setAuthentication(new BearerAuthentication($apiKey));
+
         $page = 0;
         $pageSize = 100;
 
         do {
-            $response = Http::withToken($apiKey)
-                ->acceptJson()
-                ->get($baseUrl . '/contacts', [
-                    'page' => $page,
-                    'size' => $pageSize,
-                ]);
+            $response = $api->getResponse($baseUrl . '/contacts', [
+                'page' => $page,
+                'size' => $pageSize,
+            ]);
 
             if (! $response->successful()) {
                 throw LexofficeApiException::fromResponse($response, __('Kontakte'), __('Kontakte abrufen'));

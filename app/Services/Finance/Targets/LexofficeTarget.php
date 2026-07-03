@@ -10,13 +10,13 @@
 
 namespace App\Services\Finance\Targets;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry};
 use App\Models\Finance\BillingTransfer;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeMapper, LexofficePlugin, LexofficeService};
-use App\Plugins\Support\PluginHttp;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Invoicing\{BillableTimeAggregator, BillingBlock};
-use Illuminate\Http\Client\PendingRequest;
 use RuntimeException;
 
 /**
@@ -34,8 +34,8 @@ use RuntimeException;
  *   Lookup über die Lexoffice-Kontaktsuche; als letzter Weg der bestehende
  *   pushContact-Mechanismus des {@see LexofficePlugin}.
  *
- * HTTP läuft über {@see PluginHttp} (Laravel-HTTP-Client) — damit bleibt der
- * Adapter mit Http::fake() testbar. Fehler werden als RuntimeException
+ * HTTP läuft über {@see PluginApiClient} (php-api-toolkit) — damit bleibt der
+ * Adapter mit FakePluginHttp testbar. Fehler werden als RuntimeException
  * hochgereicht; der Controller ruft dann markFailed().
  */
 class LexofficeTarget implements FacturationTarget {
@@ -90,7 +90,7 @@ class LexofficeTarget implements FacturationTarget {
         ];
 
         // Rechnungsentwurf — bewusst KEIN ?finalize=true (Hoheit bei Lexoffice).
-        $response = $this->http($config)->post($config['base_url'] . '/invoices', $payload);
+        $response = $this->api($config)->postJson($config['base_url'] . '/invoices', $payload);
 
         if (! $response->successful()) {
             throw new RuntimeException(sprintf(
@@ -271,8 +271,8 @@ class LexofficeTarget implements FacturationTarget {
 
         $email = (string) $customer->email;
         if ($email !== '') {
-            $response = $this->http($config)
-                ->get($config['base_url'] . '/contacts', ['email' => $email, 'page' => 0, 'size' => 1]);
+            $response = $this->api($config)
+                ->getResponse($config['base_url'] . '/contacts', ['email' => $email, 'page' => 0, 'size' => 1]);
 
             if ($response->successful()) {
                 $first = ((array) ($response->json('content') ?? []))[0] ?? null;
@@ -309,10 +309,10 @@ class LexofficeTarget implements FacturationTarget {
     }
 
     /** @param  array{api_key: ?string, base_url: string}  $config */
-    private function http(array $config): PendingRequest {
-        return PluginHttp::for('lexoffice')
-            ->withToken((string) $config['api_key'])
-            ->acceptJson()
-            ->asJson();
+    private function api(array $config): PluginApiClient {
+        $client = app(PluginHttpFactory::class)->client('lexoffice', (string) $config['base_url']);
+        $client->setAuthentication(new BearerAuthentication((string) $config['api_key']));
+
+        return $client;
     }
 }

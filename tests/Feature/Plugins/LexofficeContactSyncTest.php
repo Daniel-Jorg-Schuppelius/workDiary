@@ -13,8 +13,8 @@ namespace Tests\Feature\Plugins;
 use App\Models\{Customer, ExternalReference};
 use App\Plugins\Lexoffice\{LexofficeContactSync, LexofficeMatchPolicy, LexofficePlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class LexofficeContactSyncTest extends TestCase {
@@ -27,8 +27,8 @@ class LexofficeContactSyncTest extends TestCase {
     }
 
     private function fakeContacts(array $items): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/contacts*' => Http::response([
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response([
                 'content' => $items,
                 'totalPages' => 1,
             ], 200),

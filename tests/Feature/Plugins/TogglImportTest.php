@@ -15,8 +15,8 @@ use App\Plugins\Toggl\Sources\TogglEntry;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class TogglImportTest extends TestCase {
@@ -102,9 +102,9 @@ class TogglImportTest extends TestCase {
     }
 
     private function fakeApi(array $timeEntries, array $clients, array $projects): void {
-        Http::fake([
-            'https://api.track.toggl.com/api/v9/me/time_entries*' => Http::response($timeEntries, 200),
-            'https://api.track.toggl.com/api/v9/me*' => Http::response([
+        FakePluginHttp::fake([
+            'https://api.track.toggl.com/api/v9/me/time_entries*' => FakePluginHttp::response($timeEntries, 200),
+            'https://api.track.toggl.com/api/v9/me*' => FakePluginHttp::response([
                 'email' => 'tech@example.com',
                 'clients' => $clients,
                 'projects' => $projects,
@@ -381,11 +381,11 @@ class TogglImportTest extends TestCase {
             'external_id' => 'acme|website',
         ]);
 
-        Http::fake([
-            'https://api.track.toggl.com/api/v9/workspaces/100/clients*' => Http::response([
+        FakePluginHttp::fake([
+            'https://api.track.toggl.com/api/v9/workspaces/100/clients*' => FakePluginHttp::response([
                 ['id' => 1, 'name' => 'Acme', 'archived' => false],
             ]),
-            'https://api.track.toggl.com/api/v9/workspaces/100/projects*' => Http::response([
+            'https://api.track.toggl.com/api/v9/workspaces/100/projects*' => FakePluginHttp::response([
                 ['id' => 10, 'name' => 'Website', 'client_id' => 1, 'active' => true],
             ]),
         ]);

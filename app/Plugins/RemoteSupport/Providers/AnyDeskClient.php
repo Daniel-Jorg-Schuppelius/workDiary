@@ -10,21 +10,22 @@
 
 namespace App\Plugins\RemoteSupport\Providers;
 
-use App\Plugins\Support\PluginHttp;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Client für die AnyDesk REST-API v1 (https://v1.api.anydesk.com).
  *
  * AnyDesk signiert jeden Request per HMAC-SHA1 mit dem API-Passwort der Lizenz;
  * der Lizenz-Schlüssel wandert mit in den Authorization-Header. Das Signieren
- * ist in {@see authHeaders()} gekapselt. Verbindungen werden über `/sessions`
- * gelesen; gematcht wird das Asset über die kontrollierte Client-ID (`to.cid`).
+ * ist in {@see AnyDeskAuthentication} gekapselt. Verbindungen werden über
+ * `/sessions` gelesen; gematcht wird das Asset über die kontrollierte
+ * Client-ID (`to.cid`).
  */
 class AnyDeskClient implements RemoteProvider {
     public const ID = 'anydesk';
+
+    private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly ?string $licenseId,
@@ -46,10 +47,8 @@ class AnyDeskClient implements RemoteProvider {
             return false;
         }
 
-        return PluginHttp::for('remote-support')->withHeaders($this->authHeaders('GET', '/auth'))
-            ->acceptJson()
-            ->timeout(5)
-            ->get($this->baseUrl . '/auth')
+        return $this->api()
+            ->getResponse($this->baseUrl . '/auth', [], ['timeout' => 5])
             ->successful();
     }
 
@@ -64,10 +63,7 @@ class AnyDeskClient implements RemoteProvider {
             'to' => $to->getTimestamp(),
         ];
 
-        $response = PluginHttp::for('remote-support')->withHeaders($this->authHeaders('GET', $resource))
-            ->acceptJson()
-            ->timeout(15)
-            ->get($this->baseUrl . $resource, $query);
+        $response = $this->api()->getResponse($this->baseUrl . $resource, $query, ['timeout' => 15]);
 
         if (! $response->successful()) {
             return [];
@@ -116,32 +112,12 @@ class AnyDeskClient implements RemoteProvider {
         );
     }
 
-    /**
-     * Baut die für die AnyDesk-API erforderlichen Authentifizierungs-Header.
-     * Signatur = base64(HMAC-SHA1(request-string, api_password)), wobei der
-     * request-string Methode, Ressource, Timestamp und ein Einmal-Token bindet.
-     *
-     * @return array<string, string>
-     */
-    private function authHeaders(string $method, string $resource): array {
-        $token = base64_encode(random_bytes(16));
-        $timestamp = (string) now()->getTimestamp();
-        $contentHash = base64_encode(CryptoHelper::hash('', HashAlgorithm::SHA1, true));
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = app(PluginHttpFactory::class)->client('remote-support', $this->baseUrl);
+            $this->api->setAuthentication(new AnyDeskAuthentication((string) $this->licenseId, (string) $this->apiPassword));
+        }
 
-        $requestString = implode("\n", [
-            strtoupper($method),
-            $resource,
-            $contentHash,
-            $timestamp,
-            $token,
-        ]);
-
-        $signature = base64_encode(
-            hash_hmac('sha1', $requestString, (string) $this->apiPassword, true),
-        );
-
-        return [
-            'Authorization' => sprintf('AD %s:%s:%s:%s', $this->licenseId, $token, $timestamp, $signature),
-        ];
+        return $this->api;
     }
 }

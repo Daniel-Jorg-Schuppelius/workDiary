@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Lexoffice;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\{ExternalReference, LexofficeVoucher};
-use App\Plugins\Support\PluginHttp;
-use Illuminate\Http\Client\PendingRequest;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 
 /**
@@ -23,7 +23,7 @@ use RuntimeException;
  * als Folgebeleg einer Vorgänger-Rechnung: `POST /v1/dunnings?precedingSalesVoucherId={id}`.
  * Der Body wird aus der geladenen Rechnung abgeleitet (Adresse/Positionen).
  *
- * HTTP über {@see PluginHttp} (Laravel-HTTP-Client, Http::fake()-testbar).
+ * HTTP über {@see PluginApiClient} (php-api-toolkit, FakePluginHttp-testbar).
  */
 class LexofficeDunningService {
     public const EXT_TYPE_DUNNING = 'dunning';
@@ -50,7 +50,7 @@ class LexofficeDunningService {
         $precedingId = (string) $voucher->external_id;
 
         // Vorgänger-Rechnung laden (Adresse/Positionen für den Mahnungs-Body).
-        $invoiceResponse = $this->http($config)->get($config['base_url'] . '/invoices/' . $precedingId);
+        $invoiceResponse = $this->api($config)->getResponse($config['base_url'] . '/invoices/' . $precedingId);
         if (! $invoiceResponse->successful()) {
             throw new RuntimeException(sprintf('Lexoffice invoice fetch failed: HTTP %d', $invoiceResponse->status()));
         }
@@ -65,8 +65,8 @@ class LexofficeDunningService {
             'title' => (string) __('Mahnung'),
         ];
 
-        $response = $this->http($config)
-            ->post($config['base_url'] . '/dunnings?precedingSalesVoucherId=' . $precedingId, $payload);
+        $response = $this->api($config)
+            ->postJson($config['base_url'] . '/dunnings?precedingSalesVoucherId=' . $precedingId, $payload);
 
         if (! $response->successful()) {
             throw new RuntimeException(sprintf(
@@ -107,10 +107,10 @@ class LexofficeDunningService {
     }
 
     /** @param  array{api_key: ?string, base_url: string}  $config */
-    private function http(array $config): PendingRequest {
-        return PluginHttp::for('lexoffice')
-            ->withToken((string) $config['api_key'])
-            ->acceptJson()
-            ->asJson();
+    private function api(array $config): PluginApiClient {
+        $client = app(PluginHttpFactory::class)->client('lexoffice', (string) $config['base_url']);
+        $client->setAuthentication(new BearerAuthentication((string) $config['api_key']));
+
+        return $client;
     }
 }

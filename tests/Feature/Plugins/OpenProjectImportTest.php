@@ -15,8 +15,8 @@ use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectImportService, OpenProjectStructureSync};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class OpenProjectImportTest extends TestCase {
@@ -62,11 +62,11 @@ class OpenProjectImportTest extends TestCase {
      * @param  array<int, array<string, mixed>>  $timeEntries
      */
     private function fakeApi(array $projects, array $workPackages, array $timeEntries): void {
-        Http::fake([
-            self::BASE . '/projects*' => Http::response($this->hal($projects), 200),
-            self::BASE . '/work_packages*' => Http::response($this->hal($workPackages), 200),
-            self::BASE . '/users*' => Http::response($this->hal([]), 200),
-            self::BASE . '/time_entries*' => Http::response($this->hal($timeEntries), 200),
+        FakePluginHttp::fake([
+            self::BASE . '/projects*' => FakePluginHttp::response($this->hal($projects), 200),
+            self::BASE . '/work_packages*' => FakePluginHttp::response($this->hal($workPackages), 200),
+            self::BASE . '/users*' => FakePluginHttp::response($this->hal([]), 200),
+            self::BASE . '/time_entries*' => FakePluginHttp::response($this->hal($timeEntries), 200),
         ]);
     }
 
@@ -310,14 +310,14 @@ class OpenProjectImportTest extends TestCase {
 
     public function test_health_check_is_ok_when_reachable(): void {
         $this->enable();
-        Http::fake([self::BASE . '/users/me*' => Http::response(['_type' => 'User'], 200)]);
+        FakePluginHttp::fake([self::BASE . '/users/me*' => FakePluginHttp::response(['_type' => 'User'], 200)]);
 
         $this->assertTrue((new OpenProjectPlugin)->healthCheck()->isOk());
     }
 
     public function test_health_check_is_failing_on_unauthorized(): void {
         $this->enable();
-        Http::fake([self::BASE . '/users/me*' => Http::response(['_type' => 'Error'], 401)]);
+        FakePluginHttp::fake([self::BASE . '/users/me*' => FakePluginHttp::response(['_type' => 'Error'], 401)]);
 
         $this->assertTrue((new OpenProjectPlugin)->healthCheck()->isFailing());
     }

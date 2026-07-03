@@ -13,8 +13,9 @@ namespace Tests\Feature\Plugins;
 use App\Models\LexofficeArticle;
 use App\Plugins\Lexoffice\LexofficeArticleSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class LexofficeArticleSyncTest extends TestCase {
@@ -27,39 +28,42 @@ class LexofficeArticleSyncTest extends TestCase {
     }
 
     public function test_sync_creates_articles_from_paginated_response(): void {
-        Http::fakeSequence('https://api.lexoffice.io/v1/articles*')
-            ->push([
-                'content' => [
-                    [
-                        'id' => 'lex-1',
-                        'title' => 'Beratung',
-                        'type' => 'service',
-                        'unitName' => 'Stunde',
-                        'price' => ['netPrice' => 100.00, 'currency' => 'EUR', 'taxRate' => 19.0],
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/articles*' => [
+                FakePluginHttp::response([
+                    'content' => [
+                        [
+                            'id' => 'lex-1',
+                            'title' => 'Beratung',
+                            'type' => 'service',
+                            'unitName' => 'Stunde',
+                            'price' => ['netPrice' => 100.00, 'currency' => 'EUR', 'taxRate' => 19.0],
+                        ],
+                        [
+                            'id' => 'lex-2',
+                            'title' => 'Switch 24-Port',
+                            'type' => 'product',
+                            'unitName' => 'Stk',
+                            'articleNumber' => 'SW24',
+                            'price' => ['netPrice' => 250.00, 'currency' => 'EUR', 'taxRate' => 19.0],
+                        ],
                     ],
-                    [
-                        'id' => 'lex-2',
-                        'title' => 'Switch 24-Port',
-                        'type' => 'product',
-                        'unitName' => 'Stk',
-                        'articleNumber' => 'SW24',
-                        'price' => ['netPrice' => 250.00, 'currency' => 'EUR', 'taxRate' => 19.0],
+                    'totalPages' => 2,
+                ], 200),
+                FakePluginHttp::response([
+                    'content' => [
+                        [
+                            'id' => 'lex-3',
+                            'title' => 'Reisezeit',
+                            'type' => 'service',
+                            'unitName' => 'Stunde',
+                            'price' => ['netPrice' => 60.00, 'currency' => 'EUR', 'taxRate' => 19.0],
+                        ],
                     ],
-                ],
-                'totalPages' => 2,
-            ], 200)
-            ->push([
-                'content' => [
-                    [
-                        'id' => 'lex-3',
-                        'title' => 'Reisezeit',
-                        'type' => 'service',
-                        'unitName' => 'Stunde',
-                        'price' => ['netPrice' => 60.00, 'currency' => 'EUR', 'taxRate' => 19.0],
-                    ],
-                ],
-                'totalPages' => 2,
-            ], 200);
+                    'totalPages' => 2,
+                ], 200),
+            ],
+        ]);
 
         $sync = new LexofficeArticleSync('test-key');
         $result = $sync->sync($this->organization);
@@ -78,25 +82,27 @@ class LexofficeArticleSyncTest extends TestCase {
 
     public function test_sync_archives_missing_articles_and_is_idempotent(): void {
         $callCount = 0;
-        Http::fake(function () use (&$callCount) {
-            $callCount++;
-            if ($callCount === 1) {
-                return Http::response([
+        FakePluginHttp::fake([
+            '*' => function () use (&$callCount) {
+                $callCount++;
+                if ($callCount === 1) {
+                    return FakePluginHttp::response([
+                        'content' => [
+                            ['id' => 'lex-1', 'title' => 'A', 'type' => 'service', 'price' => ['netPrice' => 1, 'currency' => 'EUR']],
+                            ['id' => 'lex-2', 'title' => 'B', 'type' => 'service', 'price' => ['netPrice' => 2, 'currency' => 'EUR']],
+                        ],
+                        'totalPages' => 1,
+                    ], 200);
+                }
+
+                return FakePluginHttp::response([
                     'content' => [
-                        ['id' => 'lex-1', 'title' => 'A', 'type' => 'service', 'price' => ['netPrice' => 1, 'currency' => 'EUR']],
-                        ['id' => 'lex-2', 'title' => 'B', 'type' => 'service', 'price' => ['netPrice' => 2, 'currency' => 'EUR']],
+                        ['id' => 'lex-1', 'title' => 'A neu', 'type' => 'service', 'price' => ['netPrice' => 1.5, 'currency' => 'EUR']],
                     ],
                     'totalPages' => 1,
                 ], 200);
-            }
-
-            return Http::response([
-                'content' => [
-                    ['id' => 'lex-1', 'title' => 'A neu', 'type' => 'service', 'price' => ['netPrice' => 1.5, 'currency' => 'EUR']],
-                ],
-                'totalPages' => 1,
-            ], 200);
-        });
+            },
+        ]);
 
         $sync = new LexofficeArticleSync('test-key');
         $sync->sync($this->organization);
@@ -116,8 +122,8 @@ class LexofficeArticleSyncTest extends TestCase {
     }
 
     public function test_push_creates_new_article_via_post_when_external_id_missing(): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/articles' => Http::response([
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/articles' => FakePluginHttp::response([
                 'id' => 'lex-new', 'version' => 1,
             ], 201),
         ]);
@@ -144,8 +150,8 @@ class LexofficeArticleSyncTest extends TestCase {
     }
 
     public function test_push_updates_existing_article_via_put_with_version(): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/articles/lex-7' => Http::response([
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/articles/lex-7' => FakePluginHttp::response([
                 'id' => 'lex-7', 'version' => 3,
             ], 200),
         ]);
@@ -166,10 +172,12 @@ class LexofficeArticleSyncTest extends TestCase {
         $this->assertSame(3, $article->external_version);
         $this->assertFalse($article->is_dirty);
 
-        Http::assertSent(function ($request) {
-            return $request->method() === 'PUT'
-                && $request->url() === 'https://api.lexoffice.io/v1/articles/lex-7'
-                && ($request->data()['version'] ?? null) === 2;
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $data = json_decode((string) $request->getBody(), true);
+
+            return strtoupper($request->getMethod()) === 'PUT'
+                && (string) $request->getUri() === 'https://api.lexoffice.io/v1/articles/lex-7'
+                && ($data['version'] ?? null) === 2;
         });
     }
 
@@ -185,8 +193,8 @@ class LexofficeArticleSyncTest extends TestCase {
             'is_dirty' => true,
         ]);
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/articles*' => Http::response([
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-8', 'version' => 2, 'title' => 'Remote geändert',
                     'type' => 'service', 'price' => ['netPrice' => 120.00, 'currency' => 'EUR'],
@@ -223,8 +231,8 @@ class LexofficeArticleSyncTest extends TestCase {
             'is_dirty' => true,
         ]);
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/articles*' => Http::response([
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/articles*' => FakePluginHttp::response([
                 'content' => [[
                     'id' => 'lex-9', 'version' => 5, 'title' => 'Remote-Version',
                     'type' => 'service', 'price' => ['netPrice' => 50.0, 'currency' => 'EUR'],

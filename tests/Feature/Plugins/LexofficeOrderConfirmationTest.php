@@ -13,9 +13,10 @@ namespace Tests\Feature\Plugins;
 use App\Models\{Article, ArticleVariant, Customer, ExternalReference, ManufacturingOrder};
 use App\Plugins\Lexoffice\{LexofficeOrderConfirmationService, LexofficePlugin, LexofficeQuotationService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -74,8 +75,8 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         $this->seedContactReference();
         $order = $this->makeOrder();
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/order-confirmations*' => Http::response(['id' => 'lex-oc-1'], 201),
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/order-confirmations*' => FakePluginHttp::response(['id' => 'lex-oc-1'], 201),
         ]);
 
         $reference = app(LexofficeOrderConfirmationService::class)->push($order);
@@ -84,15 +85,16 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         $this->assertSame('lex-oc-1', $reference->external_id);
         $this->assertSame($order->getMorphClass(), $reference->referenceable_type);
 
-        Http::assertSent(function ($request): bool {
-            if (! str_contains($request->url(), '/order-confirmations')) {
+        $fake->assertSent(function (RequestInterface $request): bool {
+            if (! str_contains((string) $request->getUri(), '/order-confirmations')) {
                 return false;
             }
-            $body = $request->data();
+            $body = json_decode((string) $request->getBody(), true);
 
+            // json_decode liefert für ganzzahlige Floats int → für den Vergleich casten.
             return data_get($body, 'address.contactId') === 'lex-contact-1'
-                && data_get($body, 'lineItems.0.quantity') === 5.0
-                && data_get($body, 'lineItems.0.unitPrice.netAmount') === 200.0
+                && (float) data_get($body, 'lineItems.0.quantity') === 5.0
+                && (float) data_get($body, 'lineItems.0.unitPrice.netAmount') === 200.0
                 && str_contains((string) data_get($body, 'lineItems.0.name'), 'Spezialteil');
         });
     }
@@ -101,8 +103,8 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         $this->seedContactReference();
         $order = $this->makeOrder();
 
-        Http::fake([
-            'https://api.lexoffice.io/v1/quotations*' => Http::response(['id' => 'lex-q-1'], 201),
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/quotations*' => FakePluginHttp::response(['id' => 'lex-q-1'], 201),
         ]);
 
         $reference = app(LexofficeQuotationService::class)->push($order);
@@ -110,10 +112,12 @@ final class LexofficeOrderConfirmationTest extends TestCase {
         $this->assertSame(LexofficeQuotationService::EXT_TYPE_QUOTATION, $reference->external_type);
         $this->assertSame('lex-q-1', $reference->external_id);
 
-        Http::assertSent(function ($request): bool {
-            return str_contains($request->url(), '/quotations')
-                && data_get($request->data(), 'lineItems.0.unitPrice.netAmount') === 200.0
-                && data_get($request->data(), 'address.contactId') === 'lex-contact-1';
+        $fake->assertSent(function (RequestInterface $request): bool {
+            $body = json_decode((string) $request->getBody(), true);
+
+            return str_contains((string) $request->getUri(), '/quotations')
+                && (float) data_get($body, 'lineItems.0.unitPrice.netAmount') === 200.0
+                && data_get($body, 'address.contactId') === 'lex-contact-1';
         });
     }
 

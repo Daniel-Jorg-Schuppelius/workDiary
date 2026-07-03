@@ -12,8 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Plugins\Lexoffice\{LexofficeMapper, LexofficePlugin, LexofficeRateLimitException, LexofficeService};
 use App\Plugins\PluginHealth;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Sleep;
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -23,30 +22,25 @@ use Tests\TestCase;
  * versuchen es bei 429 automatisch erneut.
  */
 class LexofficeRateLimitTest extends TestCase {
-    protected function setUp(): void {
-        parent::setUp();
-        Sleep::fake(); // Backoff nicht real abwarten
-    }
-
     private function service(): LexofficeService {
         return new LexofficeService('test-key', new LexofficeMapper);
     }
 
     public function test_healthcheck_returns_degraded_on_persistent_rate_limit(): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/profile' => Http::response('rate limited', 429),
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
         ]);
 
         $health = (new LexofficePlugin($this->service()))->healthCheck();
 
         $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
-        // Drei Versuche gegen denselben Endpunkt (retry(3) = 3 Versuche gesamt).
-        Http::assertSentCount(3);
+        // Drei Versuche gegen denselben Endpunkt (maxRetries=3 = 3 Versuche gesamt).
+        $fake->assertSentCount(3);
     }
 
     public function test_ping_throws_rate_limit_exception_after_exhausting_retries(): void {
-        Http::fake([
-            'https://api.lexoffice.io/v1/profile' => Http::response('rate limited', 429),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('rate limited', 429),
         ]);
 
         $this->expectException(LexofficeRateLimitException::class);
@@ -55,17 +49,20 @@ class LexofficeRateLimitTest extends TestCase {
     }
 
     public function test_ping_recovers_when_rate_limit_clears_on_retry(): void {
-        Http::fakeSequence('https://api.lexoffice.io/v1/profile')
-            ->push('rate limited', 429)
-            ->push(['organizationId' => 'org-1'], 200);
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/profile' => [
+                FakePluginHttp::response('rate limited', 429),
+                FakePluginHttp::response(['organizationId' => 'org-1'], 200),
+            ],
+        ]);
 
         $this->assertTrue($this->service()->ping());
     }
 
     public function test_healthcheck_returns_degraded_on_server_error(): void {
         // 5xx ist serverseitig/transient → degraded (kein Auto-Disable).
-        Http::fake([
-            'https://api.lexoffice.io/v1/profile' => Http::response('boom', 503),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('boom', 503),
         ]);
 
         $health = (new LexofficePlugin($this->service()))->healthCheck();
@@ -76,8 +73,8 @@ class LexofficeRateLimitTest extends TestCase {
 
     public function test_healthcheck_returns_failing_with_status_on_client_error(): void {
         // 403 (z. B. fehlender Scope/Tarif) → failing, Status in der Meldung.
-        Http::fake([
-            'https://api.lexoffice.io/v1/profile' => Http::response('forbidden', 403),
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response('forbidden', 403),
         ]);
 
         $health = (new LexofficePlugin($this->service()))->healthCheck();

@@ -639,26 +639,23 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",
-            "version": "v2.2.4.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit.git",
-                "reference": "4115d15f38396683cb09d445584c7ba8748b1ffb"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/4115d15f38396683cb09d445584c7ba8748b1ffb",
-                "reference": "4115d15f38396683cb09d445584c7ba8748b1ffb",
-                "shasum": ""
+                "type": "path",
+                "url": "../php-api-toolkit",
+                "reference": "03b5eef81b704afd7c7a7d83c2dcfbd8b783ec74"
             },
             "require": {
                 "dschuppelius/php-common-toolkit": "^1.0",
+                "dschuppelius/php-error-toolkit": "^2.4",
                 "guzzlehttp/guzzle": "^7.10",
                 "php": ">=8.1 <8.6",
                 "ramsey/uuid": "^4.9"
             },
             "require-dev": {
-                "phpunit/phpunit": "^11.3@dev"
+                "laravel/pint": "^1.27",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.3"
             },
             "type": "library",
             "autoload": {
@@ -666,7 +663,30 @@
                     "APIToolkit\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "format": [
+                    "vendor/bin/pint --test"
+                ],
+                "format:fix": [
+                    "vendor/bin/pint"
+                ],
+                "lint": [
+                    "vendor/bin/phpstan analyse --memory-limit=1G"
+                ],
+                "qa": [
+                    "@format",
+                    "@lint",
+                    "@test"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -677,11 +697,10 @@
                 }
             ],
             "description": "Reused codes for my api php sdks",
-            "support": {
-                "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.2.4.2"
-            },
-            "time": "2026-03-20T09:07:17+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
@@ -750,6 +769,71 @@
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.4.4"
             },
             "time": "2026-06-28T16:06:39+00:00"
+        },
+        {
+            "name": "daniel-jorg-schuppelius/php-financial-formats",
+            "version": "v1.6",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:Daniel-Jorg-Schuppelius/php-financial-formats.git",
+                "reference": "7fd43ad76aa13236c9a84c7bc5b93db4e7e30ab3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-financial-formats/zipball/7fd43ad76aa13236c9a84c7bc5b93db4e7e30ab3",
+                "reference": "7fd43ad76aa13236c9a84c7bc5b93db4e7e30ab3",
+                "shasum": ""
+            },
+            "require": {
+                "dschuppelius/php-common-toolkit": "^1.11",
+                "php": ">=8.2 <8.6"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.27",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "CommonToolkit\\FinancialFormats\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "format": [
+                    "vendor/bin/pint --test"
+                ],
+                "format:fix": [
+                    "vendor/bin/pint"
+                ],
+                "lint": [
+                    "vendor/bin/phpstan analyse --memory-limit=1G"
+                ],
+                "qa": [
+                    "@format",
+                    "@lint",
+                    "@test"
+                ]
+            },
+            "license": [
+                "AGPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Joerg Schuppelius",
+                    "email": "info@schuppelius.org"
+                }
+            ],
+            "description": "PHP library for parsing, validating and processing financial and banking file formats such as CAMT, MT and PAIN.",
+            "time": "2026-07-01T11:25:37+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
@@ -13737,9 +13821,18 @@
             "time": "2023-04-15T19:07:00+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "daniel-jorg-schuppelius/php-api-toolkit",
+            "version": "dev-main",
+            "alias": "2.3.0",
+            "alias_normalized": "2.3.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "daniel-jorg-schuppelius/php-api-toolkit": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
