@@ -551,7 +551,7 @@ class TogglController extends Controller {
 
     /**
      * @param  \Illuminate\Support\Collection<int, Project>  $projects
-     * @return array<int, array{sqid: string, customer_id: int, name: string}>
+     * @return array<int, array{sqid: string, customer_id: int|null, name: string}>
      */
     private function projectOptions(\Illuminate\Support\Collection $projects): array {
         return $projects->map(fn(Project $p): array => [

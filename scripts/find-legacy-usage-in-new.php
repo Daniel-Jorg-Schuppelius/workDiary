@@ -32,20 +32,29 @@ $allowList = [
     '#^app/Legacy/#',
     '#^resources/views/legacy/#',
     '#^resources/views/components/legacy-week-grid\.blade\.php$#',
-    // Migrations-Bridge im User-Modell (legacy_user_id + legacyUser()).
-    '#^app/Models/User\.php$#',
-    // Diary-Show zieht bewusst die Legacy-Quelle eines importierten Eintrags.
-    '#^app/Http/Controllers/DiaryController\.php$#',
     // Layout zeigt Legacy-Nav für isLegacyMode-User.
     '#^resources/views/layouts/app\.blade\.php$#',
     // Bewusste Migrations-/Bridge-Controller.
     '#^app/Http/Controllers/Admin/LegacyMigration#',
 ];
 
+// Symbole, die überall erlaubt sind: die LegacyBridge ist der einzige
+// vorgesehene Legacy-Einstiegspunkt für neuen Code.
+$allowedSymbols = [
+    '#^App\\\\Legacy\\\\LegacyBridge$#',
+];
+
+// Datei-spezifisch zusätzlich erlaubte Symbole (Rückgabetypen von
+// Bridge-Delegationen, die den konkreten Legacy-Typ deklarieren müssen).
+$allowedSymbolsPerFile = [
+    // User::legacyUser() deklariert den Rückgabetyp der Bridge-Delegation.
+    '#^app/Models/User\.php$#' => ['#^App\\\\Legacy\\\\Models\\\\LegacyUser$#'],
+];
+
 $pattern = '/App\\\\Legacy\\\\[A-Za-z0-9_\\\\]+/';
 $hits = [];
 
-$iter = function (string $dir) use (&$iter, $root, $pattern, $allowList, &$hits): void {
+$iter = function (string $dir) use (&$iter, $root, $pattern, $allowList, $allowedSymbols, $allowedSymbolsPerFile, &$hits): void {
     $abs = $root . '/' . $dir;
     if (! is_dir($abs)) {
         return;
@@ -77,7 +86,20 @@ $iter = function (string $dir) use (&$iter, $root, $pattern, $allowList, &$hits)
             continue;
         }
 
+        $fileSymbolRules = $allowedSymbols;
+        foreach ($allowedSymbolsPerFile as $fileRx => $symbolRules) {
+            if (preg_match($fileRx, $rel)) {
+                $fileSymbolRules = array_merge($fileSymbolRules, $symbolRules);
+            }
+        }
+
         foreach ($matches[0] as [$symbol, $offset]) {
+            foreach ($fileSymbolRules as $rx) {
+                if (preg_match($rx, $symbol)) {
+                    continue 2;
+                }
+            }
+
             $line = substr_count(substr($content, 0, $offset), "\n") + 1;
             $hits[] = ['file' => $rel, 'line' => $line, 'symbol' => $symbol];
         }

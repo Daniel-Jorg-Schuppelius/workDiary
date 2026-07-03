@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
  * isms_audit_packages.organization_id; zusätzlich muss der öffentliche
  * Prüfer-Download (ohne Login, ohne Org-Session) den Token über den Hash
  * auflösen können. Allow-List-Eintrag im TenantTraitCoverageTest,
- * Begründung in docs/security/tenant-audit-2026.md.
+ * Begründung in ../WorkDiary-Architecture/security/tenant-audit-2026.md.
  *
  * @property int $id
  * @property int $isms_audit_package_id

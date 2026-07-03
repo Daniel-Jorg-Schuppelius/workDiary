@@ -29,7 +29,7 @@ class ProcedureMaterialRequirementFactory extends Factory {
             'quantity_kind' => QuantityKind::PerUnit->value,
             'quantity' => '1',
             'unit' => 'Stk',
-            'rounding' => 'none',
+            'rounding' => null,
             'is_tool' => false,
             'position' => 0,
             'active' => true,

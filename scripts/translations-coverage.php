@@ -114,9 +114,13 @@ foreach ($lookDirs as $dir) {
             // Statisch nicht auflösbar — Laufzeit-Validierung via Lang::has() bzw. Catalog liegt im Code.
             if (preg_match('/[$\{]/', $key)) { continue; }
             $offset = (int) $m[0][$i][1];
+            // Concatenated prefix ("'foo.bar_' . $x") — the literal is a key
+            // prefix, not the full key; validated as prefix in the missing pass.
+            $matchEnd = $offset + strlen((string) $m[0][$i][0]);
+            $isConcat = (bool) preg_match('/^\s*\./', substr($content, $matchEnd, 24));
             $line = substr_count(substr($content, 0, $offset), "\n") + 1;
             $rel = str_replace(ROOT . '/', '', $file->getPathname());
-            $usedKeys[$key][] = ['file' => $rel, 'line' => $line];
+            $usedKeys[$key][] = ['file' => $rel, 'line' => $line, 'concat' => $isConcat];
         }
     }
 }
@@ -128,10 +132,25 @@ foreach ($usedKeys as $key => $occ) {
     // Dotted key with leading module-like segment "alpha[._]" -> check PHP catalog
     $isDotted = (bool) preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)+$/', $key);
     if ($isDotted) {
-        if (isset($definedPhp[$key])) { continue; }
-        // Accept array-parent usage (e.g. trans('access.permission') returns nested array).
-        if (isset($definedPhpPrefix[$key])) { continue; }
-        $missing[$key] = $occ;
+        $exactOcc = array_values(array_filter($occ, fn ($o) => empty($o['concat'])));
+        $concatOcc = array_values(array_filter($occ, fn ($o) => ! empty($o['concat'])));
+        $bad = [];
+        if ($exactOcc && ! isset($definedPhp[$key]) && ! isset($definedPhpPrefix[$key])) {
+            // Accept array-parent usage (e.g. trans('access.permission') returns nested array).
+            $bad = $exactOcc;
+        }
+        if ($concatOcc) {
+            // Concatenated prefix key: defined if at least one catalog key starts with it.
+            $resolves = false;
+            foreach ($definedPhp as $defined => $_) {
+                if (str_starts_with($defined, $key)) {
+                    $resolves = true;
+                    break;
+                }
+            }
+            if (! $resolves) { $bad = array_merge($bad, $concatOcc); }
+        }
+        if ($bad) { $missing[$key] = $bad; }
         continue;
     }
     // Plain text key → JSON

@@ -71,6 +71,7 @@ class MonthByUserTeamReportTest extends TestCase {
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('monat-team-2030.csv', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('#report:month-by-user-team', (string) $response->getContent());
     }
 
     public function test_xlsx_export_returns_download(): void {

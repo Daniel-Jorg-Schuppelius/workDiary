@@ -10,10 +10,11 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
+use App\Models\{AuditLog, User};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\Helper\Data\CSV\StringHelper;
-use CommonToolkit\Helper\Data\JsonHelper;
-use Illuminate\Http\Response;
+use Illuminate\Http\{Request, Response};
 
 /**
  * MVP-043: Zentrales Helper-Trait für CSV-Exporte der Report-Controller.
@@ -51,9 +52,37 @@ trait WritesReportCsv {
             $csv .= StringHelper::encodeLine($row, $delimiter) . "\r\n";
         }
 
-        return response("\xEF\xBB\xBF" . $csv, 200, [
+        return response(\CommonToolkit\Helper\Data\StringHelper::prependBom($csv), 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Audit-Eintrag `report.exported` mit vollem Filter-Hash (vgl. Meta-Zeile).
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    protected function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
+        $user = $request->user();
+        if (! $user instanceof User || $user->organization_id === null) {
+            return;
+        }
+
+        AuditLog::create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'event' => 'report.exported',
+            'auditable_type' => self::class, // bindet im Trait an den konkreten Controller
+            'auditable_id' => 0,
+            'changes' => [
+                'report_code' => $reportCode,
+                'format' => $format,
+                'filter_hash' => $this->reportFilterHashFull($filters),
+                'filters' => $filters,
+            ],
+            'ip' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ]);
     }
 
@@ -75,7 +104,9 @@ trait WritesReportCsv {
         $normalized = $this->normalizeForHash($filters);
         $payload = JsonHelper::encode($normalized, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        return hash('sha256', $payload);
+        $hash = CryptoHelper::hash($payload);
+
+        return $hash;
     }
 
     /**

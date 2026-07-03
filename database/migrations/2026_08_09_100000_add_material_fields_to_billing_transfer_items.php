@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Schema;
  * DATEV-Kostenposition werden ergänzt, damit der Nachweis die Materialzeile zum
  * Übergabezeitpunkt vollständig dokumentiert (Zeit-Positionen lassen die Felder
  * leer). Kind-Tabelle ohne eigene organization_id — Mandantengrenze transitiv
- * über billing_transfers (siehe docs/security/tenant-audit-2026.md).
+ * über billing_transfers (siehe ../WorkDiary-Architecture/security/tenant-audit-2026.md).
  */
 return new class extends Migration {
     public function up(): void {

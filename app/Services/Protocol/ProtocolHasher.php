@@ -11,7 +11,7 @@
 namespace App\Services\Protocol;
 
 use App\Models\Protocol;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 
 /**
  * Reproduzierbarer Inhalts-Hash eines Protokolls (MVP-022 §4).
@@ -60,7 +60,7 @@ class ProtocolHasher {
      * SHA-256-Hash über kanonisierten Inhalt + Signer-Daten.
      */
     public function contentHash(Protocol $protocol, string $signerName, string $role, string $signedAtIso): string {
-        return hash('sha256', implode('|', [
+        return CryptoHelper::hash(implode('|', [
             $this->canonicalize($protocol),
             $signerName,
             $role,

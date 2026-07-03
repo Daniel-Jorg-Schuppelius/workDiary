@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 /**
- * Auftrags-Timeline (MVP-010, docs/auftrags-timeline.md): aggregiert read-only
+ * Auftrags-Timeline (MVP-010, ../WorkDiary-Architecture/auftrags-timeline.md): aggregiert read-only
  * und on demand alle relevanten Ereignisse eines Auftrags (DiaryEntry) aus den
  * Originaltabellen — pro Quelle genau EINE Query, danach mergen + sortieren.
  * Gleiche Bauart wie {@see \App\Services\Asset\AssetTimelineService}.

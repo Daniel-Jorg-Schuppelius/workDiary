@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
  * und SHA-256-Prüfsummen relevanter Artefakte (SBOM, composer.lock,
  * package-lock.json). Signiert mit Ed25519 (Lizenz-Private-Key), falls
  * vorhanden — sonst unsigniert (Prüfsummen-Integrität bleibt). Siehe
- * docs/release-prozess.md.
+ * ../WorkDiary-Architecture/release-prozess.md.
  */
 class ManifestCommand extends Command {
     protected $signature = 'release:manifest

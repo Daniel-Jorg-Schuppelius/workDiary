@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Customer;
-use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Auth, DB};
 use Throwable;
@@ -89,7 +89,8 @@ class CustomerCsvImporter {
         }
 
         try {
-            $headerRow = CsvFacade::readHeader($path);
+            $delimiter = CSVDocumentParser::detectDelimiter($path);
+            $headerRow = array_values(CSVDocumentParser::readHeader($path, $delimiter)->getColumnNames());
         } catch (Throwable $e) {
             return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => [(string) __('errors.csv.header_missing', ['error' => $e->getMessage()])]];
         }
@@ -106,8 +107,8 @@ class CustomerCsvImporter {
 
         $userId = Auth::id();
 
-        DB::transaction(function () use ($path, $columns, $organizationId, $userId, &$created, &$updated, &$skipped, &$errors): void {
-            foreach (CsvFacade::streamRows($path) as $lineNumber => $dataLine) {
+        DB::transaction(function () use ($path, $delimiter, $columns, $organizationId, $userId, &$created, &$updated, &$skipped, &$errors): void {
+            foreach (CSVDocumentParser::streamRows($path, $delimiter) as $lineNumber => $dataLine) {
                 $fields = $dataLine->getFields();
                 $data = [];
                 foreach ($columns as $i => $col) {

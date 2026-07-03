@@ -22,7 +22,7 @@ use ReflectionClass;
  *   - entweder den Trait App\Models\Concerns\BelongsToOrganization nutzen,
  *   - oder explizit in der Allow-List unten geführt sein.
  *
- * Hintergrund: docs/security/tenant-audit-2026.md
+ * Hintergrund: ../WorkDiary-Architecture/security/tenant-audit-2026.md
  *
  * Schlägt dieser Test bei einem neuen Modell fehl, ist das ein Hinweis,
  * dass die Mandantengrenze für dieses Modell entschieden werden muss
@@ -33,7 +33,7 @@ class TenantTraitCoverageTest extends TestCase {
     /**
      * Modelle, die bewusst KEIN BelongsToOrganization-Trait nutzen.
      * Erweiterungen brauchen einen Audit-Eintrag in
-     * docs/security/tenant-audit-2026.md (Abschnitt „Allow-List").
+     * ../WorkDiary-Architecture/security/tenant-audit-2026.md (Abschnitt „Allow-List").
      *
      * @var array<int, class-string>
      */
@@ -197,6 +197,49 @@ class TenantTraitCoverageTest extends TestCase {
         // ausschließlich über die ExternalParticipant-Relation. Siehe
         // Allow-List im Audit-Doc.
         \App\Models\ExternalParticipantEvent::class,
+        // Artikelstamm (MVP-060): Optionsdefinitionen/-werte und alternative
+        // Einheiten sind Kind-Tabellen des tenant-gebundenen Article —
+        // Mandantengrenze transitiv über articles.organization_id
+        // (ArticleOptionValue über Definition → Article; der VariantResolver
+        // validiert Optionswerte zusätzlich gegen article_id). Siehe
+        // Allow-List im Audit-Doc.
+        \App\Models\ArticleOptionDefinition::class,
+        \App\Models\ArticleOptionValue::class,
+        \App\Models\ArticleUnit::class,
+        // Varianten-Stücklisten-Abweichung (MVP-061): Kind-Tabelle des
+        // tenant-gebundenen ArticleVariant — Mandantengrenze transitiv über
+        // article_variants.organization_id; Auflösung ausschließlich im
+        // BomResolver gegen die übergebene Variante.
+        \App\Models\ArticleVariantBomOverride::class,
+        // Zähl-Zeile einer Inventur (MVP-068/E6): Kind-Tabelle des
+        // tenant-gebundenen StockCount — Mandantengrenze transitiv über
+        // stock_counts.organization_id (analog TimeExportLine); Zugriff
+        // ausschließlich über $count->lines() bzw. den StocktakeService.
+        \App\Models\StockCountLine::class,
+        // Lieferanten-Katalogpreise und Staffelpreise (E4/Beschaffung):
+        // Kind-Tabellen des tenant-gebundenen SupplierCatalogItem —
+        // Mandantengrenze transitiv über supplier_catalog_items.organization_id;
+        // gelesen/geschrieben nur in Kombination mit dem Katalog-Item.
+        \App\Models\SupplierCatalogItemPrice::class,
+        \App\Models\SupplierCatalogItemPriceTier::class,
+        // Fertigung (MVP-061/062): Material-Snapshot und Rückmeldungen sind
+        // Kind-Tabellen des tenant-gebundenen ManufacturingOrder —
+        // Mandantengrenze transitiv über manufacturing_orders.organization_id;
+        // Zugriff ausschließlich über den Auftrag bzw. dessen Services.
+        \App\Models\ManufacturingOrderMaterial::class,
+        \App\Models\ManufacturingOrderReport::class,
+        // Stücklisten-Positionen und Parameter-Definitionen je Vorlagen-Version
+        // (MVP-061): Kind-Tabellen der ProcedureTemplateVersion —
+        // Mandantengrenze transitiv über Version → Vorlage →
+        // procedure_templates.organization_id (analog ProcedureStepDef);
+        // Queries filtern immer auf die Eltern-Version.
+        \App\Models\ProcedureMaterialRequirement::class,
+        \App\Models\ProcedureParameterDefinition::class,
+        // Preis-Snapshot einer LV-Position (Feature 049/GAEB): append-only
+        // Kind-Tabelle des tenant-gebundenen BoqItem — Mandantengrenze
+        // transitiv über boq_items.organization_id; wird nur beim
+        // Import/Reimport über das Item geschrieben.
+        \App\Models\BoqItemPriceSnapshot::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {
@@ -249,7 +292,7 @@ class TenantTraitCoverageTest extends TestCase {
             [],
             $offenders,
             'Folgende Modelle nutzen weder BelongsToOrganization noch sind sie in der Allow-List '
-                . "(siehe docs/security/tenant-audit-2026.md):\n - " . implode("\n - ", $offenders),
+                . "(siehe ../WorkDiary-Architecture/security/tenant-audit-2026.md):\n - " . implode("\n - ", $offenders),
         );
     }
 

@@ -22,7 +22,7 @@ use Illuminate\View\View;
  * Plan/Ist-Anwesenheits-Report — persönliche Sicht (MVP-018).
  *
  * Team-/Org-Sichten (mit Permissions `report.presence.team`/.organization)
- * folgen in einem späteren Schritt; siehe docs/plan-ist-abgleich.md §4.2.
+ * folgen in einem späteren Schritt; siehe ../WorkDiary-Architecture/plan-ist-abgleich.md §4.2.
  */
 class PlanIstReportController extends Controller {
     public function __construct(private readonly PlanIstReportBuilder $builder) {}

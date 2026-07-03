@@ -14,14 +14,14 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\{AuditLog, DiaryEntry, EntryType, OpenIssue, Protocol, User};
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Models\{DiaryEntry, EntryType, OpenIssue, Protocol};
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeDrilldownReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
@@ -248,12 +248,12 @@ class EntryTypeDrilldownReportController extends Controller {
             $escalatedOnly ? '-escalated' : ''
         );
 
-        return Pdf::loadView('reports.drilldown.pdf.entry-type-open-issues', [
+        return $this->pdfDownload('reports.drilldown.pdf.entry-type-open-issues', [
             'issues' => $issues,
             'entryTypeLabel' => $entryTypeLabel,
             'label' => $label,
             'escalatedOnly' => $escalatedOnly,
-        ])->setPaper('a4')->download($filename);
+        ], $filename);
     }
 
     /**
@@ -286,38 +286,10 @@ class EntryTypeDrilldownReportController extends Controller {
     private function exportProtocolsPdf(array $protocols, string $entryTypeLabel, string $label, int $entryTypeId, string $from, string $to): SymfonyResponse {
         $filename = sprintf('auftragstyp-drilldown-defektprotokolle-%d-%s-%s.pdf', $entryTypeId, $from, $to);
 
-        return Pdf::loadView('reports.drilldown.pdf.entry-type-protocols', [
+        return $this->pdfDownload('reports.drilldown.pdf.entry-type-protocols', [
             'protocols' => $protocols,
             'entryTypeLabel' => $entryTypeLabel,
             'label' => $label,
-        ])->setPaper('a4')->download($filename);
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
-        $user = $request->user();
-        if (! $user instanceof User || $user->organization_id === null) {
-            return;
-        }
-
-        $filterHash = $this->reportFilterHashFull($filters);
-
-        AuditLog::create([
-            'organization_id' => $user->organization_id,
-            'user_id' => $user->id,
-            'event' => 'report.exported',
-            'auditable_type' => self::class,
-            'auditable_id' => 0,
-            'changes' => [
-                'report_code' => $reportCode,
-                'format' => $format,
-                'filter_hash' => $filterHash,
-                'filters' => $filters,
-            ],
-            'ip' => $request->ip(),
-            'user_agent' => substr((string) $request->userAgent(), 0, 255),
-        ]);
+        ], $filename);
     }
 }

@@ -14,6 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\GaebPhase;
 use App\Models\{BillOfQuantity, BoqExport};
+use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * GAEB-Export inkl. Audit (Feature 049, MVP-085): erzeugt den GAEB-Stand über
@@ -35,7 +36,7 @@ class BoqExportService {
             'bill_of_quantity_id' => $boq->id,
             'phase' => $phase,
             'gaeb_version' => '3.3',
-            'file_hash' => hash('sha256', $xml),
+            'file_hash' => CryptoHelper::hash($xml),
             'item_count' => $boq->items()->count(),
             'created_by' => $createdBy,
         ]);
@@ -45,6 +46,8 @@ class BoqExportService {
 
     /** Reiner Inhalts-Hash ohne Protokollierung (z. B. für Idempotenzprüfungen). */
     public function contentHash(BillOfQuantity $boq, GaebPhase $phase): string {
-        return hash('sha256', $this->exporter->export($boq, $phase));
+        $hash = CryptoHelper::hash($this->exporter->export($boq, $phase));
+
+        return $hash;
     }
 }

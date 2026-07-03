@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\{DB, Schema};
 
 /**
  * Hinweisgebersystem – technisches Fundament (Phase 1). Siehe
- * docs/hinweisgebersystem.md (inkl. Red-Team-Entscheidungen, Abschnitt 25):
+ * ../WorkDiary-Architecture/hinweisgebersystem.md (inkl. Red-Team-Entscheidungen, Abschnitt 25):
  * per-Fall-DEK (`dek_wrapped`) fuer Crypto-Shredding, voll-zufaellige public_id,
  * keine Reporter-IP/-UA, append-only Event-Hash-Kette, Tombstone-Ledger.
  */

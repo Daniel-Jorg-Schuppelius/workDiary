@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Schema;
  * Quellnachweis je Übergabeposition (Feature 045): morphte Referenz auf
  * TimeEntry|MaterialUsage plus Mengen-/Betrags-Snapshot zum Übergabezeitpunkt.
  * Kind-Tabelle ohne eigene organization_id — Mandantengrenze transitiv über
- * billing_transfers.organization_id (siehe docs/security/tenant-audit-2026.md).
+ * billing_transfers.organization_id (siehe ../WorkDiary-Architecture/security/tenant-audit-2026.md).
  */
 return new class extends Migration {
     public function up(): void {

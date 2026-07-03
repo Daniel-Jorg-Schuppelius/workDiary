@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string $target_qty
  * @property numeric-string $reserved_qty
  * @property numeric-string $consumed_qty
+ * @property RoundingMode|null $rounding
  * @property bool $is_tool
  * @property int|null $stock_reservation_id
  */
@@ -55,6 +57,7 @@ class ManufacturingOrderMaterial extends Model {
         'consumed_qty' => 'decimal:4',
         'cost_snapshot' => 'decimal:4',
         'actual_cost' => 'decimal:4',
+        'rounding' => RoundingMode::class,
         'is_tool' => 'boolean',
     ];
 

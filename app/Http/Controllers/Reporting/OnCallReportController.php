@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{EmergencyAssignment, OnCallShift, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -26,7 +26,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Einsatzzeiten je Mitarbeiter im gewählten Zeitraum.
  */
 class OnCallReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -44,7 +47,7 @@ class OnCallReportController extends Controller {
         $totals = $this->totals($rows);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to);
+            return $this->exportCsv($rows, $totals, $from, $to, $scope);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($rows, $totals, $from, $to, $scope);
@@ -59,16 +62,6 @@ class OnCallReportController extends Controller {
             'totals' => $totals,
         ]);
     }
-
-    private function resolveScope(Request $request, bool $isAdmin): string {
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
-
-        return $scope;
-    }
-
     /**
      * @return array<int, array{
      *   user: User,
@@ -182,7 +175,7 @@ class OnCallReportController extends Controller {
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @param  array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope): Response {
         $filename = sprintf('notdienst_%s_%s.csv', $from, $to);
         $fmt = static function (int $minutes): string {
             $h = intdiv($minutes, 60);
@@ -211,21 +204,10 @@ class OnCallReportController extends Controller {
             $totals['ratio'] !== null ? number_format($totals['ratio'] * 100, 1, '.', '') : '',
         ];
 
-        $csv = '';
-        foreach ($out as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        return $this->csvWithMetadata($out, $filename, 'on-call', [
+            'from' => $from,
+            'to' => $to,
+            'scope' => $scope,
         ]);
     }
 
@@ -235,15 +217,12 @@ class OnCallReportController extends Controller {
      */
     private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('notdienst_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.on-call', [
+        return $this->pdfDownload('reports.pdf.on-call', [
             'rows' => $rows,
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

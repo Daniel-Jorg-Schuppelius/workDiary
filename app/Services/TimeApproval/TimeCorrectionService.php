@@ -17,7 +17,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Auth, DB};
 
 /**
- * Statusmaschine für Zeit-Korrekturanträge (MVP-017, docs/zeit-korrekturen.md).
+ * Statusmaschine für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md).
  *
  * Übergänge:
  *  draft → submitted → approved → applied

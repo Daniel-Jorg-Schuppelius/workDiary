@@ -87,6 +87,7 @@ return [
         'module.finance' => 'Finanzschnittstelle',
         'module.lager' => 'Lager & Artikel',
         'module.bau' => 'Bau & GAEB',
+        'module.standorterfassung' => 'Standorterfassung',
     ],
 
     // Kurze deutsche Beschreibung je Modul (MVP-052 Modulkonfiguration).

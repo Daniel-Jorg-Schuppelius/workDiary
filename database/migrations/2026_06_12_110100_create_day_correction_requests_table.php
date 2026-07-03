@@ -13,7 +13,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * MVP-015 — Korrekturanträge zum Tagesabschluss (docs/tagesabschluss.md §5).
+ * MVP-015 — Korrekturanträge zum Tagesabschluss (../WorkDiary-Architecture/tagesabschluss.md §5).
  *
  * Org-scoped (eigene organization_id + BelongsToOrganization) statt reiner
  * Kind-Datensatz — konsistent mit time_correction_requests (MVP-017), damit

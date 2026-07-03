@@ -19,6 +19,7 @@ use App\Services\Surcharge\SurchargeCalculator;
 use App\Services\TimeApproval\MonthClosureService;
 use App\Services\TimeExport\Profiles\ExportProfile;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\{Auth, DB, Storage};
 
 /**
@@ -39,7 +40,7 @@ use Illuminate\Support\Facades\{Auth, DB, Storage};
  * Aggregation im MVP:
  *   - work.normal aus Attendance.duration_minutes (Stunden, 4 Nachkommastellen)
  *   - Erweiterungen (Nacht/Sonn/Feiertag/Urlaub/Krank/Bereitschaft/Reise)
- *     sind im docs/zeit-export.md vorgesehen und greifen via gleicher Pipeline.
+ *     sind im ../WorkDiary-Architecture/zeit-export.md vorgesehen und greifen via gleicher Pipeline.
  */
 class TimeExportService {
     public function __construct(
@@ -154,7 +155,7 @@ class TimeExportService {
             $export->refresh();
             $content = $profile->render($export);
 
-            $hash = hash('sha256', $content);
+            $hash = CryptoHelper::hash($content);
             $path = $this->buildPath($export, $hash);
             $disk = (string) config('exports.storage.disk', 'local');
             Storage::disk($disk)->put($path, $content);

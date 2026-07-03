@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Manufacturing\QuantityKind;
+use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string|null $ratio_part
  * @property numeric-string|null $waste_surcharge
  * @property string $unit
- * @property string $rounding
+ * @property RoundingMode|null $rounding Rundung auf ganze Einheiten; null = keine (SCALE-genau)
  * @property bool $is_tool
  * @property bool $active
  */
@@ -57,6 +58,7 @@ class ProcedureMaterialRequirement extends Model {
         'quantity' => 'decimal:4',
         'ratio_part' => 'decimal:4',
         'waste_surcharge' => 'decimal:3',
+        'rounding' => RoundingMode::class,
         'is_tool' => 'boolean',
         'active' => 'boolean',
         'position' => 'integer',

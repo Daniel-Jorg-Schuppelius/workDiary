@@ -12,11 +12,10 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\{Asset, AuditLog, Customer, User};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Models\{Asset, Customer};
 use App\Services\Reporting\AssetAnalysisReportBuilder;
 use App\Support\Sqid;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -25,10 +24,11 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Produkt-/Objektanalyse (MVP-041).
  *
  * Aggregiert Aufträge, offene Punkte und Defekte je Asset / Produktgruppe / Modell.
- * Vereinfachtes MVP gemäss docs/produkt-analyse.md auf Basis der vorhandenen
+ * Vereinfachtes MVP gemäss ../WorkDiary-Architecture/produkt-analyse.md auf Basis der vorhandenen
  * Strukturen (Asset, DiaryEntry.asset_id, OpenIssue subject, Protocol Defect).
  */
 class AssetAnalysisReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
@@ -156,36 +156,10 @@ class AssetAnalysisReportController extends Controller {
     private function exportPdf(array $rows, string $groupBy, string $label, string $from, string $to): SymfonyResponse {
         $filename = sprintf('produktanalyse_%s_%s_%s.pdf', $groupBy, $from, $to);
 
-        return Pdf::loadView('reports.pdf.assets', [
+        return $this->pdfDownload('reports.pdf.assets', [
             'rows' => $rows,
             'label' => $label,
             'groupBy' => $groupBy,
-        ])->setPaper('a4', 'landscape')->download($filename);
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
-        $user = $request->user();
-        if (! $user instanceof User || $user->organization_id === null) {
-            return;
-        }
-
-        $filterHash = $this->reportFilterHashFull($filters);
-
-        AuditLog::create([
-            'organization_id' => $user->organization_id,
-            'user_id' => $user->id,
-            'event' => 'report.exported',
-            'auditable_type' => self::class,
-            'auditable_id' => 0,
-            'changes' => [
-                'report_code' => $reportCode,
-                'format' => $format,
-                'filters' => $filters,
-                'filter_hash' => $filterHash,
-            ],
-        ]);
+        ], $filename, 'landscape');
     }
 }

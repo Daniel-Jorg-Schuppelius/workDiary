@@ -8,7 +8,7 @@
 --}}
 
 {{--
-  Tagesabschluss (MVP-015, docs/tagesabschluss.md §2/§8):
+  Tagesabschluss (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §2/§8):
   EINE Seite pro Mitarbeitendem mit den Sektionen
   A) Anwesenheit  B) Auftrags-/Projektzeiten  C) Lücken & Warnungen
   D) Bilanz (inkl. Pausen Ist/Soll)  E) Aktionen (sticky auf Mobile).

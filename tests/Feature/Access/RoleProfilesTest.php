@@ -27,7 +27,7 @@ use Tests\TestCase;
  * Stellt sicher, dass die in `PermissionsSeeder::defaultRoleMatrix()`
  * verankerten Profile genau die Rechte erhalten (positives Setup) und
  * NICHT versehentlich um schreibende Rechte erweitert werden, die
- * gemäß `docs/security/rollen-matrix.md` ausgeschlossen sind
+ * gemäß `../WorkDiary-Architecture/security/rollen-matrix.md` ausgeschlossen sind
  * (negative Absicherung).
  */
 class RoleProfilesTest extends TestCase {

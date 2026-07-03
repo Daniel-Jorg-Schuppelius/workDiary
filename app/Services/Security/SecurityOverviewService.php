@@ -239,7 +239,7 @@ class SecurityOverviewService {
     /**
      * Jüngste Supportzugriffe / Plattform-Admin-Zugriffe aus dem AuditLog
      * (Event-Präfix `support.`, siehe
-     * docs/security/supportzugriff-grundsaetze.md §4.2). Ausgegeben werden
+     * ../WorkDiary-Architecture/security/supportzugriff-grundsaetze.md §4.2). Ausgegeben werden
      * nur Metadaten — der `changes`-Block enthält per Definition keine
      * personenbezogenen Nutzdaten.
      *

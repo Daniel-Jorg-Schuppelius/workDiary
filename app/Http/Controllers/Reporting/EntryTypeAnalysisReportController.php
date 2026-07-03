@@ -13,16 +13,16 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Diary\Status as DiaryStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\{AuditLog, Customer, EntryType, User};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Models\{Customer, EntryType, User};
 use App\Services\Reporting\EntryTypeAnalysisReportBuilder;
 use App\Support\Sqid;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeAnalysisReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
@@ -167,10 +167,10 @@ class EntryTypeAnalysisReportController extends Controller {
     private function exportPdf(array $rows, string $label, string $from, string $to): SymfonyResponse {
         $filename = sprintf('auftragstypanalyse_%s_%s.pdf', $from, $to);
 
-        return Pdf::loadView('reports.pdf.entry-types', [
+        return $this->pdfDownload('reports.pdf.entry-types', [
             'rows' => $rows,
             'label' => $label,
-        ])->setPaper('a4', 'landscape')->download($filename);
+        ], $filename, 'landscape');
     }
 
     /**
@@ -183,33 +183,5 @@ class EntryTypeAnalysisReportController extends Controller {
         }
 
         return $options;
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
-        $user = $request->user();
-        if (! $user instanceof User || $user->organization_id === null) {
-            return;
-        }
-
-        $filterHash = $this->reportFilterHashFull($filters);
-
-        AuditLog::create([
-            'organization_id' => $user->organization_id,
-            'user_id' => $user->id,
-            'event' => 'report.exported',
-            'auditable_type' => self::class,
-            'auditable_id' => 0,
-            'changes' => [
-                'report_code' => $reportCode,
-                'format' => $format,
-                'filter_hash' => $filterHash,
-                'filters' => $filters,
-            ],
-            'ip' => $request->ip(),
-            'user_agent' => substr((string) $request->userAgent(), 0, 255),
-        ]);
     }
 }

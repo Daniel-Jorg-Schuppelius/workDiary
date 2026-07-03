@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\{Auth, DB};
 /**
  * Statusmaschine für Monatsfreigaben (MVP-016).
  *
- * Implementiert die in docs/monatsfreigabe.md §4 definierten Übergänge:
+ * Implementiert die in ../WorkDiary-Architecture/monatsfreigabe.md §4 definierten Übergänge:
  * draft → submitted → approved|rejected → reopened|locked.
  * Jede Methode kapselt
  *  - die Vorbedingungen (offene Tage, Begründungslänge, …),

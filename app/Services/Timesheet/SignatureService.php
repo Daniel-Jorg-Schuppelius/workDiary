@@ -13,6 +13,7 @@ namespace App\Services\Timesheet;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
 use App\Models\{Attachment, Timesheet, User};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Mail, Storage};
 use Illuminate\Support\Str;
@@ -51,7 +52,7 @@ class SignatureService {
             'size' => strlen($binary),
         ]);
 
-        $hash = hash('sha256', $binary);
+        $hash = CryptoHelper::hash($binary);
         $ip = $request?->ip();
 
         $timesheet->forceFill([

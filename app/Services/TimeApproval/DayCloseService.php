@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, DB};
 
 /**
- * Statusmaschine für Tagesabschlüsse (MVP-015, docs/tagesabschluss.md §3/§5).
+ * Statusmaschine für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3/§5).
  *
  * Übergänge: open → closed → correction → open; `locked` ist abgeleitet
  * (Monat submitted|approved|locked, MVP-016). Jede Methode kapselt die

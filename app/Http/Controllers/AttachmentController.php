@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, KnowledgeArticle, OnCallShift, Organization, Supplier, Task, User};
 use App\Services\Attachments\ImageMetaUploader;
+use App\Support\Filename;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage, URL};
@@ -113,7 +114,7 @@ class AttachmentController extends Controller {
             'user_id' => Auth::id(),
             'disk' => 'local',
             'path' => $path,
-            'original_name' => $this->sanitizeFilename($file->getClientOriginalName()),
+            'original_name' => Filename::sanitize($file->getClientOriginalName()),
             'mime' => $serverMime,
             'size' => $file->getSize(),
         ]);
@@ -248,19 +249,5 @@ class AttachmentController extends Controller {
         }
 
         return $resolved;
-    }
-
-    /**
-     * Bereinigt einen vom Client gelieferten Dateinamen:
-     * entfernt Pfad-Traversal-Sequenzen und behält nur druckbare Zeichen.
-     */
-    private function sanitizeFilename(string $name): string {
-        // Nur den Dateinamen ohne Verzeichnis-Anteile verwenden
-        $name = basename($name);
-        // Null-Bytes, Steuerzeichen und bekannte Traversal-Muster entfernen
-        $name = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '_', $name) ?? 'file';
-
-        // Auf 255 Zeichen begrenzen
-        return mb_substr($name, 0, 255);
     }
 }

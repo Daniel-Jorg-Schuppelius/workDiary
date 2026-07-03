@@ -16,7 +16,7 @@ use App\Models\{TimeCorrectionRequest, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
- * Berechtigungen für Zeit-Korrekturanträge (MVP-017, docs/zeit-korrekturen.md §7).
+ * Berechtigungen für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md §7).
  */
 class TimeCorrectionRequestPolicy {
     use HasAdminBypass;

@@ -60,6 +60,23 @@ class AbsencesReportSickLeaveTest extends TestCase {
         });
     }
 
+    public function test_absences_csv_export_contains_report_meta_line(): void {
+        SickLeave::factory()->create([
+            'user_id' => $this->user->id,
+            'start_date' => '2026-05-04',
+            'end_date' => '2026-05-08',
+            'kind' => SickLeaveKind::Initial->value,
+        ]);
+
+        $response = $this->getWithYearRange('reports.absences', ['export' => 'csv']);
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $body = $response->getContent() ?: '';
+        $this->assertStringContainsString('#report:absences', $body);
+        $this->assertStringContainsString('Mitarbeiter', $body);
+    }
+
     public function test_sickness_report_route_renders(): void {
         SickLeave::factory()->create([
             'user_id' => $this->user->id,
@@ -73,6 +90,10 @@ class AbsencesReportSickLeaveTest extends TestCase {
         $response->assertOk();
     }
 
+    /**
+     * @param  array<string, string>  $parameters
+     * @return TestResponse<\Illuminate\Http\Response>
+     */
     private function getWithYearRange(string $routeName, array $parameters = []): TestResponse {
         return $this->actingAs($this->user)
             ->withSession($this->dateRangeYear(2026))

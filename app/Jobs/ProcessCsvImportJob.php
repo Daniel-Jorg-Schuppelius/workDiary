@@ -17,6 +17,7 @@ use App\Models\{AuditLog, ImportRun, ImportRunError};
 use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -96,8 +97,8 @@ class ProcessCsvImportJob implements ShouldQueue {
         $failed = 0;
 
         try {
-            $delimiter = $run->delimiter ?: CsvFacade::detectDelimiter($path);
-            $rawHeader = CsvFacade::readHeader($path, $delimiter);
+            $delimiter = $run->delimiter ?: CSVDocumentParser::detectDelimiter($path);
+            $rawHeader = array_values(CSVDocumentParser::readHeader($path, $delimiter)->getColumnNames());
             $headerMap = $this->buildHeaderMap($rawHeader, $spec);
 
             $rowNumber = 0;

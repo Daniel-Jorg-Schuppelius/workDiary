@@ -14,11 +14,10 @@ use App\Enums\Reporting\{ReportTargetMetric, ReportTargetScope};
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaViolationKind};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{ServiceTicket, SlaViolation, User};
 use App\Services\Reporting\ReportTargetEvaluator;
 use App\Services\ServiceTicket\SlaViolationService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -35,6 +34,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Modul zugeordnet; die Sichtbarkeit steuert allein die Permission sla.viewAny.
  */
 class SlaReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
@@ -219,12 +219,9 @@ class SlaReportController extends Controller {
      * @param  array<string, mixed>  $metrics
      */
     private function exportPdf(array $metrics, string $from, string $to): SymfonyResponse {
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.sla', array_merge($metrics, [
+        return $this->pdfDownload('reports.pdf.sla', array_merge($metrics, [
             'from' => $from,
             'to' => $to,
-        ]))->setPaper('a4', 'portrait');
-
-        return $pdf->download(sprintf('sla_%s_%s.pdf', $from, $to));
+        ]), sprintf('sla_%s_%s.pdf', $from, $to));
     }
 }

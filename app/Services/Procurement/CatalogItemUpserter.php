@@ -14,6 +14,8 @@ namespace App\Services\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\{SupplierCatalogItem, SupplierCatalogItemPrice, SupplierCatalogSource};
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -56,7 +58,7 @@ class CatalogItemUpserter {
                 $seen[] = $externalNo;
 
                 // Staffeln gehen in den Hash ein, damit reine Staffeländerungen erkannt werden.
-                $hash = sha1(implode('|', array_map(fn ($v) => (string) $v, $values)) . '#' . $this->tierSignature($tiers));
+                $hash = CryptoHelper::hash(implode('|', array_map(fn ($v) => (string) $v, $values)) . '#' . $this->tierSignature($tiers), HashAlgorithm::SHA1);
 
                 $item = SupplierCatalogItem::query()
                     ->where('supplier_catalog_source_id', $source->id)
@@ -134,7 +136,7 @@ class CatalogItemUpserter {
 
             $source->forceFill([
                 'last_imported_at' => $now,
-                'last_file_hash' => sha1($rawContent),
+                'last_file_hash' => CryptoHelper::hash($rawContent, HashAlgorithm::SHA1),
             ])->save();
 
             return [

@@ -10,11 +10,11 @@
                 <th>{{ match($groupBy) { 'group' => 'Produktgruppe', 'model' => 'Modell', default => 'Asset' } }}</th>
                 <th class="num">Assets</th>
                 <th class="num">Auftraege</th>
-                <th class="num">Offene Punkte</th>
+                <th class="num">{{ __('Offene Punkte') }}</th>
                 <th class="num">Eskaliert</th>
                 <th class="num">Defekte</th>
                 <th class="num">Defektrate %</th>
-                <th>Letzter Vorfall</th>
+                <th>{{ __('Letzter Vorfall') }}</th>
             </tr>
         </thead>
         <tbody>

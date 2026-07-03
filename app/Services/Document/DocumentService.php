@@ -12,6 +12,7 @@ namespace App\Services\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Document, DocumentVersion, User};
+use App\Support\Filename;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\{Carbon, Str};
@@ -29,7 +30,7 @@ use Illuminate\Validation\ValidationException;
  *
  * Dateien werden über denselben Storage-Mechanismus wie Attachments
  * abgelegt (Disk `local`, Date-Buckets, UUID-Dateinamen — siehe
- * docs/security/adr-attachment-paths.md: kein Org-Präfix, Mandanten-
+ * ../WorkDiary-Architecture/security/adr-attachment-paths.md: kein Org-Präfix, Mandanten-
  * trennung ausschließlich auf Anwendungsebene).
  */
 class DocumentService {
@@ -160,7 +161,7 @@ class DocumentService {
             'version_no' => $versionNo,
             'disk' => 'local',
             'path' => $path,
-            'original_name' => $this->sanitizeFilename($file->getClientOriginalName()),
+            'original_name' => Filename::sanitize($file->getClientOriginalName()),
             'mime' => $file->getMimeType(),
             'size' => (int) $file->getSize(),
             'uploaded_by_user_id' => $uploader->id,
@@ -204,16 +205,5 @@ class DocumentService {
         }
 
         return $type;
-    }
-
-    /**
-     * Bereinigt den Client-Dateinamen (analog AttachmentController):
-     * keine Pfadanteile, keine Steuerzeichen, max. 255 Zeichen.
-     */
-    private function sanitizeFilename(string $name): string {
-        $name = basename($name);
-        $name = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '_', $name) ?? 'file';
-
-        return mb_substr($name, 0, 255);
     }
 }

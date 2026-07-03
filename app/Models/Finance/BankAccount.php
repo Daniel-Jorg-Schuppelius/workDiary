@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Finance;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Support\Iban;
+use CommonToolkit\Helper\Data\BankHelper;
 use Database\Factories\Finance\BankAccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
@@ -72,7 +72,7 @@ class BankAccount extends Model {
         static::saving(function (self $account): void {
             // iban_hash IMMER aus der (entschlüsselten) IBAN ableiten — nie
             // aus Klient-Eingabe übernehmen.
-            $account->iban_hash = (string) Iban::hash($account->iban);
+            $account->iban_hash = (string) BankHelper::hashIBAN($account->iban);
         });
     }
 

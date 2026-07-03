@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Attachments;
 
 use App\Models\Attachment;
+use App\Support\Filename;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -56,18 +57,11 @@ final class FileAttacher {
             'user_id' => $userId,
             'disk' => 'local',
             'path' => $path,
-            'original_name' => $this->sanitizeFilename($file->getClientOriginalName()),
+            'original_name' => Filename::sanitize($file->getClientOriginalName()),
             'mime' => $file->getMimeType() ?? '',
             'size' => $file->getSize(),
         ]);
 
         return $attachment;
-    }
-
-    private function sanitizeFilename(string $name): string {
-        $name = basename($name);
-        $name = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '_', $name) ?? 'file';
-
-        return mb_substr($name, 0, 255);
     }
 }

@@ -12,6 +12,7 @@ namespace App\Services\Release;
 
 use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\LicenseService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Verifiziert ein Release-Manifest (Feature 022, MVP):
@@ -60,7 +61,7 @@ class ReleaseVerifier {
 
                 continue;
             }
-            $actual = hash('sha256', $contents);
+            $actual = CryptoHelper::hash($contents);
             if (! hash_equals($expected, $actual)) {
                 $issues[] = sprintf('Prüfsumme von "%s" weicht ab (erwartet %s, ist %s).', $name, $expected, $actual);
             }

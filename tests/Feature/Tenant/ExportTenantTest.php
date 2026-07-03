@@ -22,7 +22,7 @@ use Tests\TestCase;
  * Datensätze in Organisation B (Cross-Tenant-Setup) und prüfen, dass der
  * Export ausschließlich Daten der eigenen Organisation liefert.
  *
- * Referenz: docs/security/tenant-audit-2026.md (Abschnitt „Exporte").
+ * Referenz: ../WorkDiary-Architecture/security/tenant-audit-2026.md (Abschnitt „Exporte").
  */
 class ExportTenantTest extends TestCase {
     use RefreshDatabase;

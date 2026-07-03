@@ -23,7 +23,7 @@ use Tests\TestCase;
  * - Signed-URL-Download wird zusätzlich durch die AttachmentPolicy
  *   abgefangen (siehe AttachmentController::download()).
  *
- * Hintergrund/Referenz: docs/security/tenant-audit-2026.md
+ * Hintergrund/Referenz: ../WorkDiary-Architecture/security/tenant-audit-2026.md
  * (Abschnitt „Attachment-/Storage-Pfade").
  */
 class AttachmentTenantTest extends TestCase {

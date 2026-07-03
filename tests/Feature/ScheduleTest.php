@@ -73,7 +73,7 @@ class ScheduleTest extends TestCase {
 
     public function test_admin_can_create_shift(): void {
         $admin = User::factory()->admin()->create();
-        $target = User::factory()->user()->create();
+        $target = User::factory()->user()->create(['organization_id' => $admin->organization_id]);
 
         $this->actingAs($admin)
             ->postJson(route('schedule.shifts.store'), [

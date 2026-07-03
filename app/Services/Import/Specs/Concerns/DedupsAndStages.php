@@ -15,7 +15,8 @@ namespace App\Services\Import\Specs\Concerns;
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization};
 use App\Services\Import\ImportOutcome;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -134,7 +135,7 @@ trait DedupsAndStages {
         $targetType = (new $modelClass)->getMorphClass();
         $dedupeKey = $externalId !== null
             ? $externalType . ':' . $externalId
-            : 'hash:' . sha1(JsonHelper::encode($payload));
+            : 'hash:' . CryptoHelper::hash(JsonHelper::encode($payload), HashAlgorithm::SHA1);
         $display = $profile->display($payload);
 
         /** @var IntegrationInboxItem $item */

@@ -15,7 +15,7 @@ namespace App\Services\Integration;
 use App\Enums\Integration\{WebhookDeliveryStatus, WebhookEvent};
 use App\Jobs\Integration\WebhookDeliveryJob;
 use App\Models\Integration\{WebhookDelivery, WebhookEndpoint};
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -109,7 +109,7 @@ class WebhookDispatchService {
         $delivery = new WebhookDelivery([
             'webhook_endpoint_id' => $endpoint->id,
             'event' => $event->value,
-            'payload_hash' => hash('sha256', $body),
+            'payload_hash' => CryptoHelper::hash($body),
             'status' => WebhookDeliveryStatus::Pending,
             'attempt' => 1,
             'dispatched_at' => $occurredAt,

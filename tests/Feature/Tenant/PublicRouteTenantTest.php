@@ -26,7 +26,7 @@ use Tests\TestCase;
  *   - Personal-Schedule-ICS-Feed (calendar/feed/{token}.ics) liefert
  *     ausschließlich dem Tokeninhaber zugehörige Daten.
  *
- * Referenz: docs/security/tenant-audit-2026.md, Abschnitt „Public-Routes".
+ * Referenz: ../WorkDiary-Architecture/security/tenant-audit-2026.md, Abschnitt „Public-Routes".
  */
 class PublicRouteTenantTest extends TestCase {
     use RefreshDatabase;

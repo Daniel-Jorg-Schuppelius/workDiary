@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  *
  * Eine Implementierung pro Entität ersetzt die heute pro Plugin duplizierte
  * Match-Logik ({@see \App\Plugins\Lexoffice\LexofficeContactSync::findLocalMatch}
- * etc.). Siehe docs/features/053-datenimport-integrations-drehscheibe.md.
+ * etc.). Siehe ../WorkDiary-Architecture/features/053-datenimport-integrations-drehscheibe.md.
  *
  * Wichtig: Die QUELLSPEZIFISCHE Übersetzung (Lexoffice-JSON, Toggl-flat, CSV-Zeile
  * …) ins lokale Feldschema bleibt beim jeweiligen Importer. Das Profil arbeitet

@@ -16,6 +16,7 @@ use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
 use App\Models\{ImportRun, ImportRunError, Organization, User};
 use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
 use Throwable;
@@ -86,10 +87,10 @@ class CsvPreflightAnalyzer {
         $run->save();
 
         try {
-            $delimiter = CsvFacade::detectDelimiter($absolutePath);
+            $delimiter = CSVDocumentParser::detectDelimiter($absolutePath);
             $run->delimiter = $delimiter;
 
-            $rawHeader = CsvFacade::readHeader($absolutePath, $delimiter);
+            $rawHeader = array_values(CSVDocumentParser::readHeader($absolutePath, $delimiter)->getColumnNames());
             [$headerMap, $headerIssues] = $this->mapHeader($rawHeader, $spec);
 
             if ($headerIssues !== []) {

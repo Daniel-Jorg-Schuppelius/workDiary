@@ -14,7 +14,7 @@ use App\Enums\Finance\{TransferChannel, TransferStatus, TransferTarget};
 use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry, User};
 use App\Models\Finance\{BillingTransfer, BillingTransferEvent, BillingTransferItem};
 use Carbon\CarbonInterface;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\{Auth, DB};
 
@@ -231,7 +231,9 @@ class BillingTransferService {
             return [$a['type'], (int) $a['id']] <=> [$b['type'], (int) $b['id']];
         });
 
-        return hash('sha256', JsonHelper::encode($positions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        $hash = CryptoHelper::hash(JsonHelper::encode($positions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+
+        return $hash;
     }
 
     // ── intern ─────────────────────────────────────────────────────────

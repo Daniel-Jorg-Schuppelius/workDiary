@@ -96,7 +96,14 @@ class CatalogCsvImportService {
         return $values;
     }
 
-    /** Normalisiert eine Dezimalzahl gemäß Dezimaltrenner der Quelle. */
+    /**
+     * Normalisiert eine Dezimalzahl gemäß Dezimaltrenner der Quelle.
+     *
+     * Bewusst app-lokal (Klasse D, geprüft 2026-07): Der explizit konfigurierte
+     * `source.decimal_separator` schlägt die Format-Heuristik von
+     * `NumberHelper::normalizeDecimalString` — Parity-Check ergab Diffs, z.B.
+     * "1,234" bei Separator "." → hier 1234 (Tausender), Toolkit 1.234.
+     */
     private function decimal(string $raw, string $separator): ?string {
         $normalized = $separator === ','
             ? str_replace(['.', ','], ['', '.'], $raw)  // 1.234,56 → 1234.56

@@ -15,8 +15,8 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Enums\Tour\TourStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{DiaryEntry, EntryType, Task, Tour, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -29,7 +29,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * "service"), Tasks und Touren im Zeitraum.
  */
 class OperationsReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -48,7 +51,7 @@ class OperationsReportController extends Controller {
         $tours = $this->aggregateTours($fromDate, $toDate, $scope, $userId);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($orders, $tasks, $tours, $from, $to);
+            return $this->exportCsv($orders, $tasks, $tours, $from, $to, $scope);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($orders, $tasks, $tours, $from, $to, $scope);
@@ -64,16 +67,6 @@ class OperationsReportController extends Controller {
             'tours' => $tours,
         ]);
     }
-
-    private function resolveScope(Request $request, bool $isAdmin): string {
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
-
-        return $scope;
-    }
-
     /**
      * @return array{
      *   total:int,
@@ -259,7 +252,7 @@ class OperationsReportController extends Controller {
      * @param  array{total:int, by_status: array<string,int>, by_priority: array<string,int>, overdue:int, completion_rate: float|null}  $tasks
      * @param  array{total:int, completed:int, planned_distance_km:float, planned_minutes:int, per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>}  $tours
      */
-    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to): Response {
+    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to, string $scope): Response {
         $filename = sprintf('operations_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Kennzahl', 'Wert'];
@@ -295,21 +288,10 @@ class OperationsReportController extends Controller {
             ];
         }
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        return $this->csvWithMetadata($rows, $filename, 'operations', [
+            'from' => $from,
+            'to' => $to,
+            'scope' => $scope,
         ]);
     }
 
@@ -320,16 +302,13 @@ class OperationsReportController extends Controller {
      */
     private function exportPdf(array $orders, array $tasks, array $tours, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('operations_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.operations', [
+        return $this->pdfDownload('reports.pdf.operations', [
             'orders' => $orders,
             'tasks' => $tasks,
             'tours' => $tours,
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

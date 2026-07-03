@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{Customer, Project, TimeEntry, User};
 use App\Support\XlsxExport;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -30,7 +30,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * — eigene Implementierung, kein Code-Reuse.
  */
 class CustomerProjectReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -54,7 +57,7 @@ class CustomerProjectReportController extends Controller {
         $totalRate = array_sum(array_column($bucket, 'rate'));
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($bucket, $totalMinutes, $totalRate, $from, $to);
+            return $this->exportCsv($bucket, $totalMinutes, $totalRate, $from, $to, $scope, $foreignCustomerId);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($bucket, $totalMinutes, $totalRate, $from, $to);
@@ -73,16 +76,6 @@ class CustomerProjectReportController extends Controller {
             'totalRate' => $totalRate,
         ]);
     }
-
-    private function resolveScope(Request $request, bool $isAdmin): string {
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
-
-        return $scope;
-    }
-
     /**
      * @return array<int, array{minutes: int, rate: float}>
      */
@@ -191,29 +184,14 @@ class CustomerProjectReportController extends Controller {
     /**
      * @param  array<int|string, array{customer: ?Customer, projects: array<int, array{project: Project, minutes: int, rate: float}>, minutes: int, rate: float}>  $bucket
      */
-    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to): Response {
+    private function exportCsv(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope, ?int $foreignCustomerId): Response {
         $filename = sprintf('kunden-projekte_%s_%s.csv', $from, $to);
         $rows = [['Kunde', 'Endkunde', 'Projekt', 'Projektnummer', 'Minuten', 'Erloes']];
         foreach ($this->buildRows($bucket, $totalMinutes, $totalRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($rows, $filename, 'customer-project', ['from' => $from, 'to' => $to, 'scope' => $scope, 'foreign_customer' => $foreignCustomerId]);
     }
 
     /**
@@ -231,16 +209,13 @@ class CustomerProjectReportController extends Controller {
      */
     private function exportPdf(array $bucket, int $totalMinutes, float $totalRate, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('kunden-projekte_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.customer-project', [
+        return $this->pdfDownload('reports.pdf.customer-project', [
             'bucket' => $bucket,
             'totalMinutes' => $totalMinutes,
             'totalRate' => $totalRate,
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ])->setPaper('a4');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

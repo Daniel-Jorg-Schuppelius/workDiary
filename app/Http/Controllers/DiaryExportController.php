@@ -29,7 +29,7 @@ class DiaryExportController extends Controller {
             $out = fopen('php://output', 'wb');
             assert($out !== false);
             // BOM für Excel-UTF8
-            fwrite($out, "\xEF\xBB\xBF");
+            fwrite($out, \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8);
             fwrite($out, StringHelper::encodeLine([
                 __('ID'),
                 __('Status'),

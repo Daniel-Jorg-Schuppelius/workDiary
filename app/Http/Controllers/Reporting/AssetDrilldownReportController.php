@@ -14,9 +14,8 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\{Asset, AuditLog, DiaryEntry, OpenIssue, Protocol, User};
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol};
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -29,6 +28,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Defektprotokolle für eine Kennzahl der Produktanalyse.
  */
 class AssetDrilldownReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
@@ -224,12 +224,12 @@ class AssetDrilldownReportController extends Controller {
     private function exportOpenIssuesPdf(array $issues, array $filters, string $label, string $from, string $to, bool $escalatedOnly): SymfonyResponse {
         $filename = sprintf('produktanalyse-drilldown-open-issues_%s_%s%s.pdf', $from, $to, $escalatedOnly ? '-escalated' : '');
 
-        return Pdf::loadView('reports.drilldown.pdf.asset-open-issues', [
+        return $this->pdfDownload('reports.drilldown.pdf.asset-open-issues', [
             'issues' => $issues,
             'scopeLabel' => $this->scopeLabel($filters),
             'label' => $label,
             'escalatedOnly' => $escalatedOnly,
-        ])->setPaper('a4')->download($filename);
+        ], $filename);
     }
 
     /**
@@ -262,38 +262,10 @@ class AssetDrilldownReportController extends Controller {
     private function exportProtocolsPdf(array $protocols, array $filters, string $label, string $from, string $to): SymfonyResponse {
         $filename = sprintf('produktanalyse-drilldown-defektprotokolle_%s_%s.pdf', $from, $to);
 
-        return Pdf::loadView('reports.drilldown.pdf.asset-protocols', [
+        return $this->pdfDownload('reports.drilldown.pdf.asset-protocols', [
             'protocols' => $protocols,
             'scopeLabel' => $this->scopeLabel($filters),
             'label' => $label,
-        ])->setPaper('a4')->download($filename);
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
-        $user = $request->user();
-        if (! $user instanceof User || $user->organization_id === null) {
-            return;
-        }
-
-        $filterHash = $this->reportFilterHashFull($filters);
-
-        AuditLog::create([
-            'organization_id' => $user->organization_id,
-            'user_id' => $user->id,
-            'event' => 'report.exported',
-            'auditable_type' => self::class,
-            'auditable_id' => 0,
-            'changes' => [
-                'report_code' => $reportCode,
-                'format' => $format,
-                'filter_hash' => $filterHash,
-                'filters' => $filters,
-            ],
-            'ip' => $request->ip(),
-            'user_agent' => substr((string) $request->userAgent(), 0, 255),
-        ]);
+        ], $filename);
     }
 }

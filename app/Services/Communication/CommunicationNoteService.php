@@ -21,7 +21,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * Domain-Service für Kommunikationsnotizen (MVP-012).
  *
- * Erzwingt die Geschäftsregeln aus docs/kommunikationsnotizen.md §10
+ * Erzwingt die Geschäftsregeln aus ../WorkDiary-Architecture/kommunikationsnotizen.md §10
  * (Internal-Kaskade, Vertraulichkeit, Fristen) und schreibt die fachlichen
  * Audit-Events aus §8 über den Auditable-Mechanismus — nie roh in audit_logs.
  */

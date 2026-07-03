@@ -30,7 +30,7 @@ use Throwable;
  */
 final class ExportRunner {
     public const DISK = 'local';
-    private const BOM = "\xEF\xBB\xBF";
+    private const BOM = \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8;
 
     /**
      * @param  array<string, mixed>  $filters

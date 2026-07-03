@@ -16,8 +16,8 @@ use App\Enums\Finance\{BalanceCheck, MatchStatus};
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction};
 use App\Models\User;
 use App\Services\Finance\Banking\{BankStatementParser, NormalizedStatement, NormalizedTransaction};
-use App\Support\Iban;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\{BankHelper, CryptoHelper};
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Auth, DB, Storage};
 
@@ -55,7 +55,9 @@ class BankImportService {
             throw new BankImportException('emptyFile', (string) __('bank.import.error.empty_file'), []);
         }
 
-        $fileHash = hash('sha256', $content);
+        // CryptoHelper::hash liefert null nur bei null-Input; $content ist hier
+        // garantiert ein nicht-leerer String — der Fallback ist reine Typ-Ebene.
+        $fileHash = CryptoHelper::hash($content);
 
         if (BankStatement::query()
             ->where('organization_id', $organizationId)
@@ -97,7 +99,7 @@ class BankImportService {
         string $fileHash,
         ?int $actorId,
     ): BankStatement {
-        $statementIbanHash = Iban::hash($normalized->accountIban);
+        $statementIbanHash = BankHelper::hashIBAN($normalized->accountIban);
         $resolvedAccount = $bankAccount ?? $this->resolveAccount($organizationId, $statementIbanHash);
 
         return DB::transaction(function () use (
@@ -169,7 +171,7 @@ class BankImportService {
             'mandate_ref' => $tx->mandateRef,
             'counterparty_name' => $tx->counterpartyName,
             'counterparty_iban' => $tx->counterpartyIban,
-            'counterparty_iban_hash' => Iban::hash($tx->counterpartyIban),
+            'counterparty_iban_hash' => BankHelper::hashIBAN($tx->counterpartyIban),
             'purpose' => $tx->purpose,
             'extracted_refs' => $tx->extractedRefs,
             'is_reversal' => $tx->isReversal,
@@ -188,7 +190,9 @@ class BankImportService {
         $refs = $tx->extractedRefs;
         sort($refs);
 
-        return hash('sha256', implode('|', [
+        // implode liefert nie null — der Fallback ist reine Typ-Ebene
+        // (CryptoHelper::hash ist nur für null-Input nullable).
+        return CryptoHelper::hash(implode('|', [
             $statement->file_hash,
             $tx->lineIndex,
             number_format($tx->amount, 2, '.', ''),

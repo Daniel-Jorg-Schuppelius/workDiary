@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AssessmentStatus, AuditPackageStatus, ReviewStatus};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsAudit, IsmsAuditFinding, IsmsAuditPackage, IsmsAuditPackageToken, IsmsCertificate, IsmsControl, IsmsCorrectiveAction, IsmsManagementReview, IsmsNormStatus, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope, IsmsSoftwareProduct};
 use App\Models\User;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;
@@ -110,7 +110,7 @@ class AuditPackageService {
             $package->update([
                 'status' => AuditPackageStatus::Finalized->value,
                 'file_path' => $relativePath,
-                'file_hash' => hash('sha256', $json),
+                'file_hash' => CryptoHelper::hash($json),
                 'finalized_by_user_id' => $actor->id,
                 'finalized_at' => Carbon::now(),
             ]);
@@ -140,8 +140,13 @@ class AuditPackageService {
         }
 
         $content = $disk->get($package->file_path);
+        if ($content === null) {
+            return false;
+        }
 
-        return $content !== null && hash_equals($package->file_hash, hash('sha256', $content));
+        $contentHash = CryptoHelper::hash($content);
+
+        return hash_equals($package->file_hash, $contentHash);
     }
 
     /**
@@ -166,7 +171,7 @@ class AuditPackageService {
 
         $model = IsmsAuditPackageToken::query()->create([
             'isms_audit_package_id' => $package->id,
-            'token_hash' => hash('sha256', $token),
+            'token_hash' => CryptoHelper::hash($token),
             'label' => trim($label),
             'expires_at' => Carbon::now()->addDays($days),
             'created_by_user_id' => $actor->id,
@@ -204,7 +209,7 @@ class AuditPackageService {
      */
     public function resolveUsableToken(string $plainToken): ?IsmsAuditPackageToken {
         $token = IsmsAuditPackageToken::query()
-            ->where('token_hash', hash('sha256', $plainToken))
+            ->where('token_hash', CryptoHelper::hash($plainToken))
             ->first();
 
         return $token !== null && $token->isUsable() ? $token : null;

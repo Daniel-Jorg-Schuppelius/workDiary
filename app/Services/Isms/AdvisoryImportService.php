@@ -13,6 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AdvisoryFormat, Exploitability, VulnerabilitySource, VulnerabilityStatus};
 use App\Models\Isms\{IsmsAdvisory, IsmsSoftwareProduct, IsmsVulnerability};
 use App\Models\{Organization, User};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;
 
@@ -67,7 +68,7 @@ class AdvisoryImportService {
             ]);
         }
 
-        $hash = hash('sha256', $jsonContent);
+        $hash = CryptoHelper::hash($jsonContent);
 
         // Re-Import-Idempotenz: identische Datei ⇒ bestehende Advisory zurückgeben.
         $existing = IsmsAdvisory::query()

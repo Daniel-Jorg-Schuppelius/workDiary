@@ -16,7 +16,7 @@ use App\Models\{TimeExport, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
- * Berechtigungen für ApprovedTimeExporter (MVP-019, docs/zeit-export.md §7).
+ * Berechtigungen für ApprovedTimeExporter (MVP-019, ../WorkDiary-Architecture/zeit-export.md §7).
  */
 class TimeExportPolicy {
     use HasAdminBypass;

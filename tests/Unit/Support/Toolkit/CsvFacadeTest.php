@@ -32,11 +32,6 @@ final class CsvFacadeTest extends TestCase {
     }
 
     #[Test]
-    public function it_reads_header(): void {
-        self::assertSame(['name', 'email', 'number'], CsvFacade::readHeader($this->tmpFile));
-    }
-
-    #[Test]
     public function it_streams_assoc_rows(): void {
         $rows = iterator_to_array(CsvFacade::streamAssoc($this->tmpFile), false);
 
@@ -58,10 +53,5 @@ final class CsvFacadeTest extends TestCase {
         self::assertStringContainsString('name', $csv);
         self::assertStringContainsString('Alpha', $csv);
         self::assertStringContainsString('Beta', $csv);
-    }
-
-    #[Test]
-    public function it_detects_semicolon_delimiter(): void {
-        self::assertSame(';', CsvFacade::detectDelimiter($this->tmpFile));
     }
 }

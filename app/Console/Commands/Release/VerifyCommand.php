@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Storage;
  * SHA-256-Prüfsummen gegen die aktuellen Artefakte und — falls signiert —
  * die Ed25519-Signatur gegen den (versiegelten/konfigurierten) Public Key.
  * Exit-Code 0 = gültig, 1 = manipuliert/abweichend. Geeignet für
- * Update-Skripte und Monitoring. Siehe docs/release-prozess.md.
+ * Update-Skripte und Monitoring. Siehe ../WorkDiary-Architecture/release-prozess.md.
  */
 class VerifyCommand extends Command {
     protected $signature = 'release:verify

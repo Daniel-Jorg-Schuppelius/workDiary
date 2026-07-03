@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
- * Fallakte (MVP-013, docs/fallakte.md): zusammenhängende Read-Only-Gesamtsicht
+ * Fallakte (MVP-013, ../WorkDiary-Architecture/fallakte.md): zusammenhängende Read-Only-Gesamtsicht
  * eines Auftrags inkl. vollständiger Timeline — druckbar über Print-CSS
  * (Muster: diary/export-pdf). Zugriff wie die Auftragsdetailseite
  * (auth + Organisations-Scope, Cross-Org → 404 via HasSqid/Tenant-Scope).

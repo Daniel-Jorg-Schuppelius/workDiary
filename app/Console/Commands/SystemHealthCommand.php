@@ -25,7 +25,7 @@ use Throwable;
  * Health-Check für „nach dem Update" (Feature 022, MVP): prüft die
  * Grundkonfiguration der Installation und endet mit Exit-Code 0 (gesund)
  * bzw. 1 (mindestens ein Check rot) — geeignet für Update-Skripte, CI und
- * Monitoring. Siehe docs/release-prozess.md §3.
+ * Monitoring. Siehe ../WorkDiary-Architecture/release-prozess.md §3.
  *
  * Bewusst NUR Konfigurations-/Erreichbarkeits-Checks: es wird keine Mail
  * versendet, kein Job dispatcht und nichts verändert (bis auf eine

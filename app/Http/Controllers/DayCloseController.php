@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
- * Tagesabschluss-Seite (MVP-015, docs/tagesabschluss.md).
+ * Tagesabschluss-Seite (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md).
  *
  * EINE Seite pro Mitarbeitendem (`/tagesabschluss?date=YYYY-MM-DD`):
  * Anwesenheit, Pausen, Buchungen, Warnungen und Bilanz auf einen Blick,

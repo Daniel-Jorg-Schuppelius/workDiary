@@ -14,7 +14,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Status eines Tages-Korrekturantrags (MVP-015, docs/tagesabschluss.md §5).
+ * Status eines Tages-Korrekturantrags (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §5).
  */
 enum DayCorrectionStatus: string implements HasLabel {
     use HasOptions;

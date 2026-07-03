@@ -83,6 +83,7 @@ class MyMonthReportTest extends TestCase {
         $this->assertStringContainsString('mein-monat-2030-04.csv', (string) $response->headers->get('Content-Disposition'));
         $this->assertStringContainsString('Workshop', $response->getContent() ?: '');
         $this->assertStringContainsString('120', $response->getContent() ?: ''); // 2h = 120 min
+        $this->assertStringContainsString('#report:my-month', $response->getContent() ?: '');
     }
 
     public function test_xlsx_export_returns_download(): void {

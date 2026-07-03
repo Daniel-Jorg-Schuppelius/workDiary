@@ -14,10 +14,13 @@ namespace App\Services\Whistleblowing;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Whistleblowing\{Attachment, WhistleblowingCase};
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use RuntimeException;
+use Throwable;
 
 /**
  * Nimmt Meldeanhaenge entgegen (Abschnitt 11 / 25): privater Disk, zufaelliger
@@ -56,7 +59,12 @@ class WhistleblowingAttachmentService {
         $attachment->original_name_ciphertext = $file->getClientOriginalName();
         $attachment->mime_detected = $file->getMimeType(); // serverseitig aus Inhalt
         $attachment->size = (int) $file->getSize();
-        $attachment->sha256 = hash_file('sha256', $file->getRealPath()) ?: null;
+        try {
+            $attachment->sha256 = File::hash($file->getRealPath(), HashAlgorithm::SHA256);
+        } catch (Throwable) {
+            // Null-Semantik wie zuvor (hash_file(...) ?: null): Lesefehler ⇒ kein Hash.
+            $attachment->sha256 = null;
+        }
         $attachment->scan_status = AttachmentScanStatus::Pending;
         $attachment->metadata_scrubbed = false;
         $attachment->save();

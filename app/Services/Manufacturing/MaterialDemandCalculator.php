@@ -14,6 +14,7 @@ namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\QuantityKind;
 use App\Models\ProcedureMaterialRequirement;
+use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 
@@ -79,36 +80,12 @@ class MaterialDemandCalculator {
      * @param  numeric-string  $value
      * @return numeric-string
      */
-    private function round(string $value, string $rounding): string {
-        return match ($rounding) {
-            'up' => $this->ceil($value),
-            'down' => bcadd($this->truncate($value), '0', self::SCALE),
-            default => bcadd($value, '0', self::SCALE),
-        };
-    }
-
-    /**
-     * @param  numeric-string  $value
-     * @return numeric-string
-     */
-    private function ceil(string $value): string {
-        $truncated = $this->truncate($value);
-
-        $whole = bccomp($value, $truncated, self::WORK) > 0
-            ? bcadd($truncated, '1', 0)
-            : $truncated;
-
-        return bcadd($whole, '0', self::SCALE);
-    }
-
-    /**
-     * Schneidet auf eine ganze Zahl ab (Mengen sind nicht-negativ).
-     *
-     * @param  numeric-string  $value
-     * @return numeric-string
-     */
-    private function truncate(string $value): string {
-        return bcadd($value, '0', 0);
+    private function round(string $value, ?RoundingMode $rounding): string {
+        // Ohne Modus (null): auf SCALE abschneiden. Mit Modus: auf ganze Einheiten
+        // runden (Mengen sind nicht-negativ) und wieder auf SCALE formatieren.
+        return $rounding === null
+            ? bcadd($value, '0', self::SCALE)
+            : bcadd(NumberHelper::roundPrecise($value, 0, $rounding), '0', self::SCALE);
     }
 
     /** @return numeric-string */

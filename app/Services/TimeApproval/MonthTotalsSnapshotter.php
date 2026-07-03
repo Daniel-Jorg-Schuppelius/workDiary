@@ -17,7 +17,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * Erzeugt den unveränderlichen Totals-Snapshot einer Monatsfreigabe
- * (MVP-016, docs/monatsfreigabe.md §3). Wird beim Übergang draft→submitted
+ * (MVP-016, ../WorkDiary-Architecture/monatsfreigabe.md §3). Wird beim Übergang draft→submitted
  * und beim Übergang submitted→approved erneut gebaut, damit der zuletzt
  * eingefrorene Zustand exakt das ist, was genehmigt wurde.
  *

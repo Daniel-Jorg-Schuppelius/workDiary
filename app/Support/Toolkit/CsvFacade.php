@@ -13,51 +13,19 @@ declare(strict_types=1);
 namespace App\Support\Toolkit;
 
 use CommonToolkit\Contracts\Interfaces\CSV\FieldInterface;
-use CommonToolkit\Entities\CSV\DataLine;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use Generator;
 
 /**
- * Aggregations-API für die zusammengesetzten CSV-Operationen im App-Code
- * (Lesen: Delimiter-Erkennung, Encoding, logische Zeilen). Delegiert
- * durchgehend an das php-common-toolkit ({@see CSVDocumentParser} zum Parsen,
- * {@see StringHelper::encodeLine} zum Serialisieren). Einzelne Ausgabezeilen
- * nutzen den Toolkit-Encoder direkt an der Aufrufstelle; hier bleibt nur die
- * zusammengesetzte {@see buildCsv}.
+ * Zusammengesetzte CSV-Operationen im App-Code, die mehrere Toolkit-Aufrufe
+ * kombinieren ({@see CSVDocumentParser} zum Parsen, {@see StringHelper::encodeLine}
+ * zum Serialisieren). Reine 1:1-Delegationen an das Toolkit gehören nicht
+ * hierher — direkte Toolkit-Aufrufe an der Aufrufstelle nutzen.
  */
 final class CsvFacade {
-    public static function detectDelimiter(string $file, int $maxLines = 10): string {
-        return CSVDocumentParser::detectDelimiter($file, $maxLines);
-    }
-
     /**
-     * @return list<string>
-     */
-    public static function readHeader(string $file, ?string $delimiter = null): array {
-        $delimiter ??= self::detectDelimiter($file);
-
-        return array_values(CSVDocumentParser::readHeader($file, $delimiter)->getColumnNames());
-    }
-
-    /**
-     * Streamt Datenzeilen als DataLine-Objekte.
-     *
-     * @return Generator<int, DataLine>
-     */
-    public static function streamRows(
-        string $file,
-        ?string $delimiter = null,
-        string $enclosure = FieldInterface::DEFAULT_ENCLOSURE,
-        bool $hasHeader = true,
-    ): Generator {
-        $delimiter ??= self::detectDelimiter($file);
-
-        return CSVDocumentParser::streamRows($file, $delimiter, $enclosure, $hasHeader);
-    }
-
-    /**
-     * Streamt Datenzeilen als assoziative Arrays.
+     * Streamt Datenzeilen als assoziative Arrays (Header-Spalten als Keys).
      *
      * @return Generator<int, array<string, string>>
      */
@@ -66,8 +34,8 @@ final class CsvFacade {
         ?string $delimiter = null,
         string $enclosure = FieldInterface::DEFAULT_ENCLOSURE,
     ): Generator {
-        $delimiter ??= self::detectDelimiter($file);
-        $columns = self::readHeader($file, $delimiter);
+        $delimiter ??= CSVDocumentParser::detectDelimiter($file);
+        $columns = array_values(CSVDocumentParser::readHeader($file, $delimiter)->getColumnNames());
         $columnCount = count($columns);
 
         foreach (CSVDocumentParser::streamRows($file, $delimiter, $enclosure, true) as $lineNumber => $row) {

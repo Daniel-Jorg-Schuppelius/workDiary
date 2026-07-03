@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
  * billing_transfers.organization_id durchgesetzt (analog TimeExportLine);
  * Zugriff erfolgt ausschließlich über den BillingTransfer. Siehe Allow-List in
  * tests/Unit/Architecture/TenantTraitCoverageTest.php und
- * docs/security/tenant-audit-2026.md.
+ * ../WorkDiary-Architecture/security/tenant-audit-2026.md.
  *
  * @property int $id
  * @property int $billing_transfer_id

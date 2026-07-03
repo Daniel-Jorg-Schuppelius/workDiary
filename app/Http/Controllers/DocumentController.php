@@ -202,7 +202,7 @@ class DocumentController extends Controller {
      * Download der aktuellen oder einer spezifischen Version. Pfade kommen
      * ausschließlich aus der DB (UUID-Dateinamen aus dem Upload-Pfad) und
      * werden über den Storage-Disk aufgelöst — kein Client-Input im Pfad,
-     * Pfad-Traversal ausgeschlossen (vgl. docs/security/adr-attachment-paths.md).
+     * Pfad-Traversal ausgeschlossen (vgl. ../WorkDiary-Architecture/security/adr-attachment-paths.md).
      */
     public function download(Document $document, ?DocumentVersion $version = null): BinaryFileResponse {
         Gate::authorize('view', $document);

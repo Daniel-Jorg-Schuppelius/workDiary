@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Isms;
 
 use App\Services\Isms\SbomGenerator;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +21,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Release-SBOM erzeugen (Feature 044, Ebene 2): CycloneDX-1.5-JSON aus
  * composer.lock, package-lock.json, Laufzeitumgebung, Modulen und Plugins
- * — siehe docs/release-prozess.md. Standard-Ablage:
+ * — siehe ../WorkDiary-Architecture/release-prozess.md. Standard-Ablage:
  * storage/app/sbom/workdiary-{version}-{Ymd-His}.cdx.json plus stabiler
  * Alias workdiary-latest.cdx.json; der SHA-256 der Datei wird ausgegeben
  * (Release-Notes/Prüfsumme).
@@ -34,7 +35,7 @@ class SbomGenerateCommand extends Command {
 
     public function handle(SbomGenerator $generator): int {
         $json = $generator->toJson();
-        $hash = hash('sha256', $json);
+        $hash = CryptoHelper::hash($json);
 
         if ((bool) $this->option('print')) {
             $this->line($json);

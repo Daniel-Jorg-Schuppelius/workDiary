@@ -85,7 +85,7 @@ class BomResolver {
                 'quantity' => $add->quantity ?? '0',
                 'ratio_part' => $add->ratio_part,
                 'unit' => $add->unit ?? 'Stk',
-                'rounding' => 'none',
+                'rounding' => null,
                 'waste_surcharge' => $add->waste_surcharge,
                 'is_tool' => $add->is_tool,
                 'active' => true,

@@ -19,7 +19,7 @@
                 <th>Titel</th>
                 <th>Status</th>
                 <th>Severity</th>
-                <th>Fällig</th>
+                <th>{{ __('Fällig') }}</th>
                 <th>Zugewiesen</th>
             </tr>
         </thead>

@@ -67,7 +67,7 @@
                         </div>
 
                         {{-- Zuordnung: Tabs zwischen bestehendem und neuem Gerät --}}
-                        @php $tabName = 'assign_'.md5($group->provider.'|'.$group->remote_id); @endphp
+                        @php $tabName = 'assign_'.\CommonToolkit\Helper\Data\CryptoHelper::hash($group->provider.'|'.$group->remote_id, \CommonToolkit\Enums\HashAlgorithm::MD5); @endphp
                         <div class="tabs tabs-box tabs-sm bg-base-200/50 p-2">
                             <input type="radio" name="{{ $tabName }}" class="tab" aria-label="{{ __('Bestehendes Gerät') }}" checked />
                             <div class="tab-content pt-3">

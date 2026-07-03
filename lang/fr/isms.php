@@ -64,6 +64,7 @@ return [
         'status' => 'Statut',
         'owner' => 'Responsable',
         'review_due_on' => 'Revue prévue',
+        'assessment_valid_until' => 'Évaluation valable jusqu\'au',
         'controls' => 'Mesures liées',
         'requirements' => 'Exigences satisfaites',
         'ref_no' => 'N° de réf.',

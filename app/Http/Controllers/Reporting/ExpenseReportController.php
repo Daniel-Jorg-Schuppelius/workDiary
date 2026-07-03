@@ -50,7 +50,7 @@ class ExpenseReportController extends Controller {
 
         if ($scope === 'mine') {
             $query->where('user_id', Auth::id());
-        } elseif ($authUser instanceof User && $authUser->organization_id !== null) {
+        } elseif ($authUser->organization_id !== null) {
             $query->where('organization_id', $authUser->organization_id);
         }
 

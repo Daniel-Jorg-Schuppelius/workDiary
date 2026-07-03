@@ -39,7 +39,7 @@ class RegisterExportService {
 
     public const REGISTER_CONTROLS = 'controls';
 
-    private const BOM = "\xEF\xBB\xBF";
+    private const BOM = \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8;
 
     // ── Registerstände (Spalten + Zeilen) ──────────────────────────────
 

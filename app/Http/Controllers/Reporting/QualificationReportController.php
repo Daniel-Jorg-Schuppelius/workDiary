@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Qualification, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -24,6 +24,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Qualifikationsmatrix: Mitarbeiter × Qualifikationen mit Ablaufdaten.
  */
 class QualificationReportController extends Controller {
+    use RendersReportPdf;
+    use WritesReportCsv;
+
     private const EXPIRY_WARN_DAYS = 30;
 
     public function index(Request $request): View|SymfonyResponse {
@@ -138,21 +141,8 @@ class QualificationReportController extends Controller {
             $rows[] = $line;
         }
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        return $this->csvWithMetadata($rows, $filename, 'qualifications', [
+            'date' => Carbon::today()->toDateString(),
         ]);
     }
 
@@ -164,14 +154,11 @@ class QualificationReportController extends Controller {
      */
     private function exportPdf($users, $qualifications, array $matrix, array $totals): SymfonyResponse {
         $filename = 'qualifikationen_' . Carbon::today()->toDateString() . '.pdf';
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.qualifications', [
+        return $this->pdfDownload('reports.pdf.qualifications', [
             'users' => $users,
             'qualifications' => $qualifications,
             'matrix' => $matrix,
             'totals' => $totals,
-        ])->setPaper('a4', 'landscape');
-
-        return $pdf->download($filename);
+        ], $filename, 'landscape');
     }
 }

@@ -37,7 +37,7 @@ Installationen.
   Audit-Log, Backup-Heartbeat, Diagnose-Seite, Datenschutz-Export,
   Lizenz-/Feature-Gates, Demo-Mandanten und In-App-Hilfe.
 
-Die Produkt-Roadmap liegt unter [`docs/features`](docs/features/README.md).
+Die Produkt-Roadmap liegt im Doku-Repository [WorkDiary-Architecture](https://github.com/Daniel-Jorg-Schuppelius/WorkDiary-Architecture/blob/main/features/README.md).
 
 ## Lizenz und kommerzielle Leistungen
 
@@ -445,7 +445,7 @@ neu starten, falls abgestuerzt):
 ```
 
 Wer auf Reverb verzichtet, bleibt beim Polling — der Chat funktioniert
-vollstaendig, nur eben mit ~3 s statt sofort. Details: `docs/chat.md`.
+vollstaendig, nur eben mit ~3 s statt sofort. Details: [chat.md](https://github.com/Daniel-Jorg-Schuppelius/WorkDiary-Architecture/blob/main/chat.md).
 
 ## Wichtige Konfiguration
 
@@ -587,7 +587,7 @@ Vor dem Produktiv-Deployment:
 ## Roadmap
 
 Die fachliche Roadmap und MVP-Zerlegung werden in
-[`docs/features`](docs/features/README.md) gepflegt. Dort sind Datenschutz,
+[WorkDiary-Architecture/features](https://github.com/Daniel-Jorg-Schuppelius/WorkDiary-Architecture/blob/main/features/README.md) gepflegt. Dort sind Datenschutz,
 Mandantenfaehigkeit, Zeiterfassung, Auswertungen, Dokumentation,
 Kundenportal, Integrationen, Backup/Restore, Hilfe, UX und weitere
 Produktbereiche priorisiert.

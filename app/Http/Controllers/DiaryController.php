@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveDiaryEntryRequest;
-use App\Legacy\Models\LegacyDiaryEntry;
+use App\Legacy\LegacyBridge;
 use App\Models\{Customer, DiaryEntry, EntryType, Tag, Tour, User};
 use App\Services\Archive\ArchiveService;
 use App\Services\SqidEncoder;
@@ -174,14 +174,7 @@ class DiaryController extends Controller {
             ->diaryEntryGaps($diary);
 
         // Falls der Eintrag aus einem Legacy-Import stammt, auch die Legacy-Daten laden
-        $legacyEntry = null;
-        if ($diary->legacy_id && filled(config('database.connections.legacy.database'))) {
-            try {
-                $legacyEntry = LegacyDiaryEntry::with('author:id,uname')->find($diary->legacy_id);
-            } catch (\Exception) {
-                // Legacy nicht erreichbar
-            }
-        }
+        $legacyEntry = LegacyBridge::findDiaryEntryWithAuthor($diary->legacy_id);
 
         if ($request->boolean('dialog')) {
             return view('diary._show_dialog', compact('diary', 'legacyEntry', 'dataQualityGaps'));

@@ -14,7 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Support\{SupportReportBuilder, SupportReportPackager};
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -108,7 +108,7 @@ class SupportReportController extends Controller {
             'auditable_id' => $user->id,
             'changes' => [
                 'format' => 'json',
-                'sha256' => hash('sha256', $json),
+                'sha256' => CryptoHelper::hash($json),
                 'bytes' => strlen($json),
             ],
         ]);

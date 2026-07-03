@@ -13,8 +13,8 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Attendance, TimeEntry, User, WorkSchedule};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\{CarbonImmutable, CarbonInterface, CarbonPeriod};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -27,7 +27,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * und gebuchte TimeEntry-Minuten je Mitarbeiter.
  */
 class AttendanceReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -47,7 +49,7 @@ class AttendanceReportController extends Controller {
         $rows = $this->aggregate($from, $to, $scope, $userId);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $fromStr, $toStr);
+            return $this->exportCsv($rows, $fromStr, $toStr, $scope);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($rows, $fromStr, $toStr, $scope);
@@ -214,7 +216,7 @@ class AttendanceReportController extends Controller {
     /**
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      */
-    private function exportCsv(array $rows, string $from, string $to): Response {
+    private function exportCsv(array $rows, string $from, string $to, string $scope): Response {
         $filename = sprintf('anwesenheit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = ['Mitarbeiter', 'Arbeitstage', 'Soll (min)', 'Anwesend (min)', 'Gebucht (min)', 'Saldo (min)'];
@@ -224,22 +226,7 @@ class AttendanceReportController extends Controller {
         $totals = $this->totals($rows);
         $out[] = ['GESAMT', '', $totals['target'], $totals['attendance'], $totals['time_entry'], $totals['variance']];
 
-        $csv = '';
-        foreach ($out as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($out, $filename, 'attendance', ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 
     /**
@@ -247,15 +234,12 @@ class AttendanceReportController extends Controller {
      */
     private function exportPdf(array $rows, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('anwesenheit_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.attendance', [
+        return $this->pdfDownload('reports.pdf.attendance', [
             'rows' => $rows,
             'totals' => $this->totals($rows),
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

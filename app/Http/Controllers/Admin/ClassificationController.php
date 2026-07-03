@@ -17,7 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Classification;
 use App\Services\Classification\ClassificationManager;
 use App\Support\Setting;
-use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -351,14 +351,14 @@ class ClassificationController extends Controller {
 
         // Delimiter-Erkennung und Zeilen-Parsing über das gemeinsame CSV-Toolkit.
         try {
-            $delimiter = CsvFacade::detectDelimiter($path);
+            $delimiter = CSVDocumentParser::detectDelimiter($path);
         } catch (\Throwable) {
             throw ClassificationValidationException::importInvalid(1, 'CSV-Datei ist leer.');
         }
 
         $headers = array_map(
             fn(string $header): string => $this->normalizeHeader($header),
-            CsvFacade::readHeader($path, $delimiter),
+            array_values(CSVDocumentParser::readHeader($path, $delimiter)->getColumnNames()),
         );
 
         foreach (['domain', 'code', 'label'] as $requiredHeader) {
@@ -368,7 +368,7 @@ class ClassificationController extends Controller {
         }
 
         $rows = [];
-        foreach (CsvFacade::streamRows($path, $delimiter) as $dataLine) {
+        foreach (CSVDocumentParser::streamRows($path, $delimiter) as $dataLine) {
             $fields = $dataLine->getFields();
 
             $row = [];

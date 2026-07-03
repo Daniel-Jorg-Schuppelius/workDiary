@@ -580,6 +580,31 @@ return [
             'escalate' => 'Escalation',
         ],
     ],
+    'duty_plan' => [
+        'status' => [
+            'draft' => 'Bozza',
+            'published' => 'Pubblicato',
+        ],
+    ],
+    'export' => [
+        'entity' => [
+            'customers' => 'Clienti',
+            'projects' => 'Progetti',
+            'users' => 'Utenti',
+            'materials' => 'Materiali',
+            'scheduled_shifts' => 'Turni pianificati',
+            'tours' => 'Giri',
+        ],
+        'format' => [
+            'csv' => 'CSV',
+            'xlsx' => 'XLSX',
+        ],
+        'state' => [
+            'preparing' => 'In preparazione',
+            'ready' => 'Pronto',
+            'failed' => 'Non riuscito',
+        ],
+    ],
     'isms' => [
         'security-incident-category' => [
             'malware' => 'Malware',

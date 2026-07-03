@@ -14,7 +14,7 @@ use Carbon\CarbonImmutable;
 
 /**
  * Konsistenzprüfungen für den Tagesabschluss (MVP-015,
- * docs/tagesabschluss.md §4) — bewusst PURE: keine DB-Zugriffe, alle
+ * ../WorkDiary-Architecture/tagesabschluss.md §4) — bewusst PURE: keine DB-Zugriffe, alle
  * Daten (Stempel, Buchungen, Tagessoll, Pausenregeln) werden injiziert,
  * damit die 7 Checks isoliert testbar sind.
  *

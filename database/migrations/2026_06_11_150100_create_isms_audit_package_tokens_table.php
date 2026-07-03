@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Schema;
  * SHA-256-Hash (Muster ProtocolSignatureToken / Laravel Password-Reset).
  * Kind-Tabelle des tenant-gebundenen Auditpakets — Mandantengrenze
  * transitiv über isms_audit_packages.organization_id (Allow-List im
- * TenantTraitCoverageTest, Begründung in docs/security/tenant-audit-2026.md).
+ * TenantTraitCoverageTest, Begründung in ../WorkDiary-Architecture/security/tenant-audit-2026.md).
  */
 return new class extends Migration {
     public function up(): void {

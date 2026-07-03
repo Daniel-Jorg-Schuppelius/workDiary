@@ -15,11 +15,10 @@ use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Attendance, Organization, TimeCorrectionRequest, User};
 use App\Services\Compliance\{AttendanceComplianceChecker, AttendanceComplianceFinding};
 use App\Support\{Sqid, Tz};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -39,6 +38,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * revisionssicher).
  */
 class ArbZgComplianceReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
@@ -280,16 +280,13 @@ class ArbZgComplianceReportController extends Controller {
      */
     private function exportPdf(array $rows, array $summary, string $from, string $to): SymfonyResponse {
         $filename = sprintf('arbzg_compliance_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.arbzg-compliance', [
+        return $this->pdfDownload('reports.pdf.arbzg-compliance', [
             'rows' => $rows,
             'summary' => $summary,
             'from' => $from,
             'to' => $to,
             'kinds' => $this->kinds(),
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 
     private function fmtMinutes(int $minutes): string {

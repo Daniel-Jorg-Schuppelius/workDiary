@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use CommonToolkit\Enums\Common\CSV\QuotingStyle;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -96,23 +98,16 @@ class ExportAuditLog extends Command {
      * @param array<int, string> $columns
      */
     private function toCsv(string $table, array $columns): string {
-        $stream = fopen('php://temp', 'r+');
-        if ($stream === false) {
-            throw new RuntimeException('Konnte CSV-Stream nicht öffnen.');
-        }
-
-        fputcsv($stream, $columns);
+        // GoBD: QuotingStyle::FPUTCSV + "\n" ist byte-identisch zum früheren
+        // fputcsv (Paritätstest im Toolkit) — Export-Bytes bleiben stabil.
+        $csv = StringHelper::encodeLine($columns, ',', '"', QuotingStyle::FPUTCSV) . "\n";
         foreach (DB::table($table)->orderBy('id')->cursor() as $row) {
             $line = [];
             foreach ($columns as $col) {
-                $line[] = $row->{$col} ?? '';
+                $line[] = (string) ($row->{$col} ?? '');
             }
-            fputcsv($stream, $line);
+            $csv .= StringHelper::encodeLine($line, ',', '"', QuotingStyle::FPUTCSV) . "\n";
         }
-
-        rewind($stream);
-        $csv = (string) stream_get_contents($stream);
-        fclose($stream);
 
         return $csv;
     }

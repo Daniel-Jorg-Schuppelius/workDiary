@@ -13,6 +13,7 @@ namespace Tests\Feature\Manufacturing;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Models\{Article, ManufacturingOrder, Organization, ProcedureMaterialRequirement, ProcedureTemplateVersion};
 use App\Services\Manufacturing\{ManufacturingOrderService, MaterialDemandCalculator};
+use CommonToolkit\Enums\RoundingMode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -77,6 +78,27 @@ final class ManufacturingOrderTest extends TestCase {
         ]);
 
         $this->assertSame('110.0000', collect($this->calculator->calculate($this->bom(), '100'))->first()['demand']);
+    }
+
+    public function test_rounding_mode_rounds_to_whole_units(): void {
+        // Bedarf 2,5 × 3 = 7,5 → Ceil rundet auf ganze Einheit auf, Floor ab,
+        // ohne Modus bleibt SCALE-genau.
+        $cases = [
+            [RoundingMode::Ceil, '8.0000'],
+            [RoundingMode::Floor, '7.0000'],
+            [null, '7.5000'],
+        ];
+
+        foreach ($cases as [$mode, $expected]) {
+            $req = ProcedureMaterialRequirement::factory()->perUnit('2.5')->make([
+                'procedure_template_version_id' => $this->version->id,
+                'article_id' => $this->material()->id,
+                'rounding' => $mode,
+            ]);
+
+            $demand = $this->calculator->calculate(collect([$req]), '3')[0]['demand'];
+            $this->assertSame($expected, $demand, sprintf('rounding=%s', $mode?->value ?? 'null'));
+        }
     }
 
     public function test_release_freezes_workplan_and_creates_material_snapshot(): void {

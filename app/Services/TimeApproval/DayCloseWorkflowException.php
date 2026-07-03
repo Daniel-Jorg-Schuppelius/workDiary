@@ -13,7 +13,7 @@ namespace App\Services\TimeApproval;
 use RuntimeException;
 
 /**
- * Wirft jeder DayCloseService-Übergang, der die in docs/tagesabschluss.md
+ * Wirft jeder DayCloseService-Übergang, der die in ../WorkDiary-Architecture/tagesabschluss.md
  * §3/§5 definierte Statusmaschine verletzt oder eine fachliche
  * Vorbedingung nicht erfüllt (⛔-Warnungen, Zukunftstag, gesperrter
  * Monat, zu kurze Begründung).

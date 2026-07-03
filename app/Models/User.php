@@ -11,8 +11,8 @@
 namespace App\Models;
 
 use App\Enums\User\{CompensationModel, UserRole};
+use App\Legacy\LegacyBridge;
 use App\Legacy\Models\LegacyUser;
-use App\Legacy\Support\LegacyRoleResolver;
 use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
 use App\Services\Sickness\ContinuedPaymentService;
 use App\Support\Sickness\ContinuedPaymentStatus;
@@ -79,7 +79,7 @@ class User extends Authenticatable {
             return true;
         }
 
-        return LegacyRoleResolver::isAdmin($this);
+        return LegacyBridge::isLegacyAdmin($this);
     }
 
     /** @return HasMany<\App\Models\Auth\TwoFactorCredential, $this> */
@@ -122,7 +122,7 @@ class User extends Authenticatable {
      * Schreibrechte sind davon NICHT betroffen (siehe `isAdmin()` / Policies).
      */
     public function canViewAllLegacyData(): bool {
-        return LegacyRoleResolver::isAdmin($this) || $this->hasRole(UserRole::Buchhaltung->value);
+        return LegacyBridge::isLegacyAdmin($this) || $this->hasRole(UserRole::Buchhaltung->value);
     }
 
     /**
@@ -539,11 +539,7 @@ class User extends Authenticatable {
     }
 
     public function legacyUser(): ?LegacyUser {
-        if (! $this->legacy_user_id) {
-            return null;
-        }
-
-        return LegacyUser::find($this->legacy_user_id);
+        return LegacyBridge::userFor($this);
     }
 
     /**

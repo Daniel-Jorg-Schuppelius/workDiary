@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Whistleblowing;
 
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use RuntimeException;
 use SensitiveParameter;
 
@@ -101,6 +103,6 @@ class WhistleblowingCryptoService {
             return $configured;
         }
 
-        return hash('sha256', $configured, true);
+        return CryptoHelper::hash($configured, HashAlgorithm::SHA256, true);
     }
 }

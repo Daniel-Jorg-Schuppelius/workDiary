@@ -12,7 +12,7 @@ namespace App\Enums\Procedure;
 
 /**
  * Definiert die in MVP-025 unterstuetzten Schritt-Typen einer
- * Prozedurvorlage (siehe docs/prozedurvorlagen.md §5).
+ * Prozedurvorlage (siehe ../WorkDiary-Architecture/prozedurvorlagen.md §5).
  */
 enum ProcedureStepType: string {
     case Confirm = 'confirm';

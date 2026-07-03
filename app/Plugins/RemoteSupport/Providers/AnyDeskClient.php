@@ -12,6 +12,8 @@ namespace App\Plugins\RemoteSupport\Providers;
 
 use App\Plugins\Support\PluginHttp;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Client für die AnyDesk REST-API v1 (https://v1.api.anydesk.com).
@@ -124,7 +126,7 @@ class AnyDeskClient implements RemoteProvider {
     private function authHeaders(string $method, string $resource): array {
         $token = base64_encode(random_bytes(16));
         $timestamp = (string) now()->getTimestamp();
-        $contentHash = base64_encode(sha1('', true));
+        $contentHash = base64_encode(CryptoHelper::hash('', HashAlgorithm::SHA1, true));
 
         $requestString = implode("\n", [
             strtoupper($method),

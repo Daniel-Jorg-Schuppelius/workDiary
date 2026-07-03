@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Schema;
  * Bewusst polymorphe Ziel-Spalten OHNE FK (mehrere Ziel-Entitäten möglich);
  * referentielle Integrität über IntegrationResolver + Tests.
  *
- * @see docs/features/053-datenimport-integrations-drehscheibe.md
+ * @see ../WorkDiary-Architecture/features/053-datenimport-integrations-drehscheibe.md
  */
 return new class extends Migration {
     public function up(): void {

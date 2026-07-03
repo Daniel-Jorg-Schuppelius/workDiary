@@ -15,7 +15,8 @@ namespace App\Services\Integration;
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
 use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization};
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * automatisch verlinkt, wenn er eindeutig zuzuordnen ist; ansonsten entsteht ein
  * Eintrag in der universellen Zuordnungs-Inbox — niemals blind anlegen.
  *
- * Reihenfolge (siehe docs/features/053):
+ * Reihenfolge (siehe ../WorkDiary-Architecture/features/053):
  *   1. ExternalReference(external_id) vorhanden → LINK (+ ggf. Conflict-Item)
  *   2. eindeutiger Match → LINK + ExternalReference
  *   3. mehrere/unsichere Kandidaten → AMBIGUOUS-Inbox-Item
@@ -234,7 +235,7 @@ class IntegrationResolver {
         $targetType = (new $modelClass)->getMorphClass();
         $dedupeKey = $externalId !== null
             ? $externalType . ':' . $externalId
-            : 'hash:' . sha1(JsonHelper::encode($attributes));
+            : 'hash:' . CryptoHelper::hash(JsonHelper::encode($attributes), HashAlgorithm::SHA1);
 
         $display = $profile->display($attributes);
         $mainCandidate = $referenceable ?? ($candidates[0]['model'] ?? null);

@@ -20,7 +20,7 @@ use Tests\TestCase;
  * Belegt für jedes Modell, dass eine Eloquent-Default-Query unter
  * Organization A keinen Datensatz aus Organization B sieht.
  *
- * Verbindet sich mit dem Audit unter docs/security/tenant-audit-2026.md.
+ * Verbindet sich mit dem Audit unter ../WorkDiary-Architecture/security/tenant-audit-2026.md.
  */
 class TenantBoundaryTest extends TestCase {
     use RefreshDatabase;

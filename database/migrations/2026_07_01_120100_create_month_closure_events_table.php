@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * MVP-016 — Append-only Audit pro Statuswechsel einer Monatsfreigabe.
- * Siehe docs/monatsfreigabe.md §2.2 + §5.
+ * Siehe ../WorkDiary-Architecture/monatsfreigabe.md §2.2 + §5.
  */
 return new class extends Migration {
     public function up(): void {

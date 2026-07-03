@@ -16,7 +16,7 @@ use App\Models\{DayClosure, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
- * Berechtigungen für Tagesabschlüsse (MVP-015, docs/tagesabschluss.md §7).
+ * Berechtigungen für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §7).
  *
  * Fachliche Vorbedingungen (Zukunftstag, Monats-Sperre, ⛔-Warnungen)
  * erzwingt zusätzlich der {@see \App\Services\TimeApproval\DayCloseService};

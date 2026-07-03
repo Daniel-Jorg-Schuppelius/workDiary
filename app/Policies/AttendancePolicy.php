@@ -41,7 +41,7 @@ class AttendancePolicy {
     }
 
     /**
-     * Tagesabschluss (MVP-015, docs/tagesabschluss.md §2.1/§5): Stempel
+     * Tagesabschluss (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §2.1/§5): Stempel
      * sind für den Eigentümer gesperrt, sobald der Tag abgeschlossen/in
      * Korrektur ist, nach einer Korrektur-Freigabe (attendance_locked)
      * oder wenn der Monat freigegeben ist. Admins umgehen das über

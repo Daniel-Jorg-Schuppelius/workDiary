@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{EnergyLog, TravelLog, User, Vehicle};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -26,7 +26,10 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * pro Fahrzeug im gewählten Zeitraum.
  */
 class FleetReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -44,7 +47,7 @@ class FleetReportController extends Controller {
         $totals = $this->totals($rows);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to);
+            return $this->exportCsv($rows, $totals, $from, $to, $scope);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($rows, $totals, $from, $to, $scope);
@@ -59,16 +62,6 @@ class FleetReportController extends Controller {
             'totals' => $totals,
         ]);
     }
-
-    private function resolveScope(Request $request, bool $isAdmin): string {
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
-
-        return $scope;
-    }
-
     /**
      * @return array<int, array{
      *   vehicle: Vehicle,
@@ -204,7 +197,7 @@ class FleetReportController extends Controller {
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @param  array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope): Response {
         $filename = sprintf('fuhrpark_%s_%s.csv', $from, $to);
         $out = [['Kennzeichen', 'Bezeichnung', 'Antrieb', 'Fahrten', 'km', 'Erstattung', 'Tankungen', 'Liter', 'kWh', 'Energiekosten', '€/km', 'Tachostand']];
         foreach ($rows as $r) {
@@ -239,22 +232,7 @@ class FleetReportController extends Controller {
             '',
         ];
 
-        $csv = '';
-        foreach ($out as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($out, $filename, 'fleet', ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 
     /**
@@ -263,15 +241,12 @@ class FleetReportController extends Controller {
      */
     private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('fuhrpark_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.fleet', [
+        return $this->pdfDownload('reports.pdf.fleet', [
             'rows' => $rows,
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ])->setPaper('a4', 'landscape');
-
-        return $pdf->download($filename);
+        ], $filename, 'landscape');
     }
 }

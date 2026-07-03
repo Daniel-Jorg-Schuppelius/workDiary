@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Korrekturantrag zu einem Tagesabschluss (MVP-015, docs/tagesabschluss.md §5).
+ * Korrekturantrag zu einem Tagesabschluss (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §5).
  *
  * Org-scoped (konsistent mit {@see TimeCorrectionRequest}): eigene
  * organization_id + OrganizationScope, damit Anträge nie mandanten-

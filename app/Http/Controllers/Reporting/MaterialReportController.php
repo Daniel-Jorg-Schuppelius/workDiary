@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{MaterialUsage, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +24,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Materialverbrauch im Zeitraum, basierend auf MaterialUsage über Timesheet.work_date.
  */
 class MaterialReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -42,7 +44,7 @@ class MaterialReportController extends Controller {
         $aggregation = $this->aggregate($from, $to, $scope, $userId);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($aggregation, $from, $to);
+            return $this->exportCsv($aggregation, $from, $to, $scope);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($aggregation, $from, $to, $scope);
@@ -131,7 +133,7 @@ class MaterialReportController extends Controller {
     /**
      * @param  array{rows: array<int, array{material_id:int|null, sku:string|null, name:string, unit:string, quantity:float, line_total_net:float, usage_count:int}>, totals: array{materials:int, usage_count:int, line_total_net:float}}  $agg
      */
-    private function exportCsv(array $agg, string $from, string $to): Response {
+    private function exportCsv(array $agg, string $from, string $to, string $scope): Response {
         $filename = sprintf('materialien_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['SKU', 'Material', 'Einheit', 'Menge', 'Verwendungen', 'Netto €'];
@@ -147,21 +149,10 @@ class MaterialReportController extends Controller {
         }
         $rows[] = ['', 'GESAMT', '', '', $agg['totals']['usage_count'], number_format($agg['totals']['line_total_net'], 2, '.', '')];
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        return $this->csvWithMetadata($rows, $filename, 'materials', [
+            'from' => $from,
+            'to' => $to,
+            'scope' => $scope,
         ]);
     }
 
@@ -170,15 +161,12 @@ class MaterialReportController extends Controller {
      */
     private function exportPdf(array $agg, string $from, string $to, string $scope): SymfonyResponse {
         $filename = sprintf('materialien_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.materials', [
+        return $this->pdfDownload('reports.pdf.materials', [
             'rows' => $agg['rows'],
             'totals' => $agg['totals'],
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

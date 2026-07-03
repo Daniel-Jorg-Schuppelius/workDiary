@@ -13,7 +13,7 @@ namespace App\Enums\Classification;
 /**
  * Kern-Domänen der Klassifikationen (MVP-030).
  *
- * Quelle: docs/kernklassifikationen.md §2.
+ * Quelle: ../WorkDiary-Architecture/kernklassifikationen.md §2.
  */
 enum ClassificationDomain: string {
     case EntryType = 'entry_type';

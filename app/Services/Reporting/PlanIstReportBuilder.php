@@ -15,7 +15,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 /**
- * Plan/Ist-Report Builder (MVP-018, docs/plan-ist-abgleich.md).
+ * Plan/Ist-Report Builder (MVP-018, ../WorkDiary-Architecture/plan-ist-abgleich.md).
  *
  * Liefert Aggregate für drei Ebenen — initial nur Anwesenheits-Ebene
  * implementiert (§2.1). Projektzeit (§2.2) und Schicht (§2.3) folgen

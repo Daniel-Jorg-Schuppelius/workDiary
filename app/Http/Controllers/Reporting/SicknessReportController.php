@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Sickness\SickLeaveKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\ResolvesReportScope;
 use App\Models\{SickLeave, User};
 use App\Services\HolidayService;
 use App\Services\Sickness\ContinuedPaymentService;
@@ -31,6 +32,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class SicknessReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
 
     public function __construct(
         private readonly HolidayService $holidayService,
@@ -59,16 +61,6 @@ class SicknessReportController extends Controller {
             'totals' => $totals,
         ]);
     }
-
-    private function resolveScope(Request $request, bool $isAdmin): string {
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
-
-        return $scope;
-    }
-
     /**
      * @return array<int, array{
      *   user: User,

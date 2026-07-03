@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -48,7 +49,9 @@ class GeocodeCache extends Model {
     ];
 
     public static function hashFor(string $query): string {
-        return hash('sha256', mb_strtolower(trim($query)));
+        $hash = CryptoHelper::hash(mb_strtolower(trim($query)));
+
+        return $hash;
     }
 
     public function isExpired(?Carbon $now = null): bool {

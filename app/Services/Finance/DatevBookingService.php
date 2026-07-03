@@ -16,6 +16,7 @@ use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource
 use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use DateTimeImmutable;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\{Auth, DB, Storage};
@@ -366,7 +367,7 @@ class DatevBookingService {
             );
         }
 
-        $hash = hash('sha256', $csv);
+        $hash = CryptoHelper::hash($csv);
 
         $relativePath = sprintf(
             '%s/%d/%s/datev-buchungsstapel-%d-%s.csv',

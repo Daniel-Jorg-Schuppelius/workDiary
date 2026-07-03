@@ -11,6 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AuditLog;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
@@ -66,7 +67,7 @@ class BackupRotateTokenCommand extends Command {
             'auditable_type' => self::class,
             'auditable_id' => 0,
             'changes' => [
-                'token_hash' => hash('sha256', $token),
+                'token_hash' => CryptoHelper::hash($token),
                 'length' => $length,
             ],
             'ip' => null,

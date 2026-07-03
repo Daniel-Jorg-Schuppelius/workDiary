@@ -14,6 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, GaebImportStatus, GaebPhase};
 use App\Models\{BillOfQuantity, BoqItem, BoqItemPriceSnapshot, BoqSection, GaebImport};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -42,7 +43,7 @@ class GaebImportService {
      * } $options
      */
     public function import(string $xml, string $filename, int $organizationId, array $options = []): GaebImport {
-        $fileHash = hash('sha256', $xml);
+        $fileHash = CryptoHelper::hash($xml);
 
         try {
             $parsed = $this->parser->parse($xml);

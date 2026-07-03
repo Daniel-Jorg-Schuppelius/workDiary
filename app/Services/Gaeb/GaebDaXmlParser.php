@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\BoqItemType;
-use CommonToolkit\Helper\Data\XmlHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, XmlHelper};
 use SimpleXMLElement;
 
 /**
@@ -304,15 +304,12 @@ class GaebDaXmlParser {
         if ($value === null) {
             return null;
         }
-        $value = trim($value);
+        // NBSP vor der Normalisierung entfernen (Toolkit strippt nur ASCII-Spaces).
+        $value = str_replace([' ', "\u{00A0}"], '', trim($value));
         if ($value === '') {
             return null;
         }
-        // Komma als Dezimaltrenner zulassen, Leerzeichen entfernen.
-        $value = str_replace([' ', "\u{00A0}"], '', $value);
-        if (str_contains($value, ',') && !str_contains($value, '.')) {
-            $value = str_replace(',', '.', $value);
-        }
+        $value = NumberHelper::normalizeDecimalString($value);
 
         return is_numeric($value) ? $value : null;
     }

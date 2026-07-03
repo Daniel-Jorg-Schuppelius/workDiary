@@ -16,6 +16,7 @@ use App\Enums\Finance\AllocationKind;
 use App\Models\{Expense, Invoice};
 use App\Models\Finance\BankTransaction;
 use App\Services\Finance\Banking\ReferenceExtractor;
+use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -253,7 +254,7 @@ class MatchingService {
         }
 
         foreach ($invoice->customer->bankAccounts as $account) {
-            if (\App\Support\Iban::hash($account->iban) === $hash) {
+            if (BankHelper::hashIBAN($account->iban) === $hash) {
                 return true;
             }
         }

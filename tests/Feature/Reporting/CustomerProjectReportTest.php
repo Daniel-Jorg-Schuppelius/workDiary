@@ -93,6 +93,7 @@ class CustomerProjectReportTest extends TestCase {
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $body = $response->getContent() ?: '';
+        $this->assertStringContainsString('#report:customer-project', $body);
         $this->assertStringContainsString('Acme GmbH', $body);
         $this->assertStringContainsString('Website-Relaunch', $body);
         $this->assertStringContainsString('120', $body);
@@ -136,6 +137,10 @@ class CustomerProjectReportTest extends TestCase {
         $this->assertStringStartsWith('%PDF', (string) $response->getContent());
     }
 
+    /**
+     * @param  array<string, string>  $parameters
+     * @return TestResponse<\Illuminate\Http\Response>
+     */
     private function getWithDateRange(string $routeName, array $parameters = []): TestResponse {
         return $this->actingAs($this->user)
             ->withSession($this->dateRangeSession(now()->startOfYear()->toDateString(), now()->endOfYear()->toDateString()))

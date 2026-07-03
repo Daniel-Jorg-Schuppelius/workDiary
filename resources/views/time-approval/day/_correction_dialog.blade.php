@@ -8,7 +8,7 @@
 --}}
 
 {{--
-  Korrektur anfordern (MVP-015, docs/tagesabschluss.md §5):
+  Korrektur anfordern (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §5):
   Standalone-<x-modal> mit Pflicht-Begründung (≥ REASON_MIN_LENGTH Zeichen);
   serverseitig erzwungen in DayCloseController::requestCorrection().
   Erwartet $day (CarbonImmutable) aus show.blade.php.

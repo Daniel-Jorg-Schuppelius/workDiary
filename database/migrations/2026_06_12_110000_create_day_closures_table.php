@@ -13,7 +13,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * MVP-015 — Tagesabschluss (siehe docs/tagesabschluss.md §3).
+ * MVP-015 — Tagesabschluss (siehe ../WorkDiary-Architecture/tagesabschluss.md §3).
  *
  * Eine Zeile pro Mitarbeitenden × Kalendertag, angelegt beim ersten Öffnen
  * der Tagesabschluss-Seite. Hält den Tagesstatus (open → closed →

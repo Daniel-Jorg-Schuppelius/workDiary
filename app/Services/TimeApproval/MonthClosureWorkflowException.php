@@ -14,7 +14,7 @@ use RuntimeException;
 
 /**
  * Wirft jeder MonthClosureService-Übergang, der die in
- * docs/monatsfreigabe.md §4 definierte Statusmaschine verletzt
+ * ../WorkDiary-Architecture/monatsfreigabe.md §4 definierte Statusmaschine verletzt
  * oder eine fachliche Vorbedingung nicht erfüllt
  * (z. B. offene Tage / ⛔ Warnungen vor Submit).
  */

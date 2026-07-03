@@ -12,6 +12,8 @@ namespace App\Plugins\Toggl\Sources;
 
 use App\Models\TogglPendingEntry;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Normalisierte Repräsentation eines einzelnen Toggl-Zeiteintrags, unabhängig
@@ -50,6 +52,6 @@ final class TogglEntry {
 
     /** Baut den Idempotenz-Schlüssel für einen CSV-Eintrag (keine Toggl-ID vorhanden). */
     public static function csvKey(string $start, string $end, ?string $client, ?string $project, ?string $description): string {
-        return 'csv:' . sha1(implode('|', [$start, $end, (string) $client, (string) $project, (string) $description]));
+        return 'csv:' . CryptoHelper::hash(implode('|', [$start, $end, (string) $client, (string) $project, (string) $description]), HashAlgorithm::SHA1);
     }
 }

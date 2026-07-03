@@ -15,7 +15,7 @@ use Carbon\CarbonImmutable;
 use Tests\TestCase;
 
 /**
- * Alle 7 Checks aus docs/tagesabschluss.md §4 — je positiv (Befund) und
+ * Alle 7 Checks aus ../WorkDiary-Architecture/tagesabschluss.md §4 — je positiv (Befund) und
  * negativ (kein Befund). Der Validator ist pure: Stempel/Buchungen/Soll
  * und die Pausenregeln (ArbZG §4) werden injiziert, keine DB.
  */

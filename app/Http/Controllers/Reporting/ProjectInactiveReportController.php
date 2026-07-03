@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{Customer, Project, TimeEntry, User};
 use App\Support\{Sqid, XlsxExport};
 use Carbon\CarbonImmutable;
@@ -31,6 +32,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class ProjectInactiveReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', Project::class);
@@ -178,21 +180,9 @@ class ProjectInactiveReportController extends Controller {
             ];
         }
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        return $this->csvWithMetadata($rows, $filename, 'project-inactive', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
         ]);
     }
 

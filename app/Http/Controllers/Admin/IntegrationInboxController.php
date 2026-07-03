@@ -23,7 +23,7 @@ use Illuminate\View\View;
 /**
  * Zentrale Zuordnungs-Inbox (Datenimport-Drehscheibe): listet offene
  * Import-Einträge (unmatched/conflict/ambiguous) und führt die Anwender-
- * Entscheidungen aus. Siehe docs/features/053.
+ * Entscheidungen aus. Siehe ../WorkDiary-Architecture/features/053.
  */
 class IntegrationInboxController extends Controller {
     public function index(Request $request, MatchProfileRegistry $registry, InboxGroupBookerRegistry $bookers): View {

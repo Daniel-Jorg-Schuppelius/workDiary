@@ -15,10 +15,10 @@
 | Thema                             | Quelle                                                                  |
 | --------------------------------- | ----------------------------------------------------------------------- |
 | **Arbeitsanweisung (kanonisch)**  | [AGENTS.md](../AGENTS.md)                                               |
-| UX-Pattern-Katalog (Leitdokument) | [docs/ux-pattern-katalog.md](../docs/ux-pattern-katalog.md)             |
-| Status- & Aktionssemantik         | [docs/status-aktionsglossar.md](../docs/status-aktionsglossar.md)       |
-| Barrierefreiheit                  | [docs/accessibility-checkliste.md](../docs/accessibility-checkliste.md) |
-| UI-Vereinheitlichung / Ausnahmen  | [docs/ui-unification-audit.md](../docs/ui-unification-audit.md)         |
+| UX-Pattern-Katalog (Leitdokument) | [ux-pattern-katalog.md](../../WorkDiary-Architecture/ux-pattern-katalog.md)             |
+| Status- & Aktionssemantik         | [status-aktionsglossar.md](../../WorkDiary-Architecture/status-aktionsglossar.md)       |
+| Barrierefreiheit                  | [accessibility-checkliste.md](../../WorkDiary-Architecture/accessibility-checkliste.md) |
+| UI-Vereinheitlichung / Ausnahmen  | [ui-unification-audit.md](../../WorkDiary-Architecture/ui-unification-audit.md)         |
 
 ## Wichtigste Regeln (Kurzfassung)
 

@@ -75,7 +75,7 @@ class GenericCsvProfile implements ExportProfile {
 
         $body = implode($this->opts['eol'], $rows) . $this->opts['eol'];
 
-        return $this->opts['bom'] ? "\xEF\xBB\xBF" . $body : $body;
+        return $this->opts['bom'] ? \CommonToolkit\Helper\Data\StringHelper::prependBom($body) : $body;
     }
 
     /** @param  array<int,string>  $fields */

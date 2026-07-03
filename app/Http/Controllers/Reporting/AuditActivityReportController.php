@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{AuditLog, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -26,7 +26,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Nur für Administratoren.
  */
 class AuditActivityReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     private const RECENT_LIMIT = 100;
 
@@ -160,22 +162,7 @@ class AuditActivityReportController extends Controller {
             ];
         }
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($rows, $filename, 'audit-activity', ['from' => $from, 'to' => $to]);
     }
 
     /**
@@ -187,8 +174,7 @@ class AuditActivityReportController extends Controller {
      */
     private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to): SymfonyResponse {
         $filename = sprintf('audit_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.audit-activity', [
+        return $this->pdfDownload('reports.pdf.audit-activity', [
             'byEvent' => $byEvent,
             'byType' => $byType,
             'byUser' => $byUser,
@@ -196,9 +182,7 @@ class AuditActivityReportController extends Controller {
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 
     private function shortType(string $fqcn): string {

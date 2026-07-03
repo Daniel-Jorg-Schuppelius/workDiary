@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttachmentResource;
 use App\Models\{Asset, Attachment, Comment, DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Support\Filename;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\Support\Str;
@@ -68,7 +69,7 @@ class AttachmentController extends Controller {
             'user_id' => Auth::id(),
             'disk' => 'local',
             'path' => $path,
-            'original_name' => $this->sanitizeFilename($file->getClientOriginalName()),
+            'original_name' => Filename::sanitize($file->getClientOriginalName()),
             'mime' => $serverMime,
             'size' => $file->getSize(),
         ]);
@@ -90,12 +91,5 @@ class AttachmentController extends Controller {
         $attachment->delete();
 
         return response()->json(['status' => 'deleted']);
-    }
-
-    private function sanitizeFilename(string $name): string {
-        $name = basename($name);
-        $name = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '_', $name) ?? 'file';
-
-        return mb_substr($name, 0, 255);
     }
 }

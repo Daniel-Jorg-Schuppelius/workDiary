@@ -64,6 +64,7 @@ return [
         'status' => 'Status',
         'owner' => 'Owner',
         'review_due_on' => 'Review due',
+        'assessment_valid_until' => 'Assessment valid until',
         'controls' => 'Linked controls',
         'requirements' => 'Fulfilled requirements',
         'ref_no' => 'Ref no.',

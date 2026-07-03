@@ -12,6 +12,7 @@ namespace App\Services\Protocol;
 
 use App\Models\Protocol;
 use Barryvdh\DomPDF\Facade\Pdf;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -31,7 +32,7 @@ class ProtocolPdfRenderer {
         $protocol->loadMissing(['items', 'signatures', 'subject']);
 
         $canonical = $this->hasher->canonicalize($protocol);
-        $hash = hash('sha256', $canonical);
+        $hash = CryptoHelper::hash($canonical);
         $relativePath = $this->pathFor($protocol, $hash);
 
         $disk = Storage::disk(self::DISK);
@@ -56,7 +57,7 @@ class ProtocolPdfRenderer {
      * (z. B. zur Verifikation nach dem Signieren).
      */
     public function hashFor(Protocol $protocol): string {
-        return hash('sha256', $this->hasher->canonicalize($protocol));
+        return CryptoHelper::hash($this->hasher->canonicalize($protocol));
     }
 
     private function pathFor(Protocol $protocol, string $hash): string {

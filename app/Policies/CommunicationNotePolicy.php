@@ -15,7 +15,7 @@ use App\Models\{CommunicationNote, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
- * Zugriffsregeln für Kommunikationsnotizen (MVP-012, docs/kommunikationsnotizen.md §7):
+ * Zugriffsregeln für Kommunikationsnotizen (MVP-012, ../WorkDiary-Architecture/kommunikationsnotizen.md §7):
  * - vertrauliche Notizen sehen nur Erfasser + Inhaber von communication.confidential.manage
  *   (Org-Admin via HasAdminBypass),
  * - bearbeiten darf der Erfasser < 24 h nach Anlage, danach nur der Org-Admin.

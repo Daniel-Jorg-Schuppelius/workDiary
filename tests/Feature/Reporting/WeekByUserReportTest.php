@@ -76,6 +76,7 @@ class WeekByUserReportTest extends TestCase {
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $this->assertStringContainsString('woche_2030-W14.csv', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString('#report:week-by-user', $response->getContent() ?: '');
         $this->assertStringContainsString('120', $response->getContent() ?: '');
     }
 

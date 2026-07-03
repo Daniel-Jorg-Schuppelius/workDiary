@@ -14,9 +14,8 @@ use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPha
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\ClassificationRequirement;
-use App\Services\Classification\ClassificationResolver;
+use App\Services\Classification\{ClassificationResolver, RequirementIndexFilter, RequirementPresets};
 use CommonToolkit\Helper\Data\JsonHelper;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -27,6 +26,8 @@ class ClassificationRequirementController extends Controller {
 
     public function __construct(
         private readonly ClassificationResolver $resolver,
+        private readonly RequirementIndexFilter $indexFilter,
+        private readonly RequirementPresets $presets,
     ) {}
 
     public function index(Request $request): View {
@@ -34,14 +35,14 @@ class ClassificationRequirementController extends Controller {
 
         $organization = $this->currentOrganization();
         $query = trim($request->string('q')->toString());
-        $domainFilter = $this->normalizeDomainFilter($request->string('domain')->toString());
-        $conditionFilter = $this->normalizeConditionFilter($request->string('condition')->toString());
-        $allowMultiFilter = $this->normalizeAllowMultiFilter($request->string('allow_multi')->toString());
-        $noteFilter = $this->normalizeNoteFilter($request->string('note')->toString());
-        $maxCountFilter = $this->normalizeMaxCountFilter($request->string('max_count')->toString());
-        $phaseFilter = $this->normalizePhaseFilter($request->string('phase')->toString());
-        $severityFilter = $this->normalizeSeverityFilter($request->string('severity')->toString());
-        $sortField = $this->normalizeSortField($request->string('sort')->toString());
+        $domainFilter = $this->indexFilter->normalizeDomainFilter($request->string('domain')->toString());
+        $conditionFilter = $this->indexFilter->normalizeConditionFilter($request->string('condition')->toString());
+        $allowMultiFilter = $this->indexFilter->normalizeAllowMultiFilter($request->string('allow_multi')->toString());
+        $noteFilter = $this->indexFilter->normalizeNoteFilter($request->string('note')->toString());
+        $maxCountFilter = $this->indexFilter->normalizeMaxCountFilter($request->string('max_count')->toString());
+        $phaseFilter = $this->indexFilter->normalizePhaseFilter($request->string('phase')->toString());
+        $severityFilter = $this->indexFilter->normalizeSeverityFilter($request->string('severity')->toString());
+        $sortField = $this->indexFilter->normalizeSortField($request->string('sort')->toString());
 
         $requirementsQuery = ClassificationRequirement::query()
             ->where('organization_id', $organization->id);
@@ -100,17 +101,17 @@ class ClassificationRequirementController extends Controller {
             $requirementsQuery->where('severity', $severityFilter);
         }
 
-        $this->applySorting($requirementsQuery, $sortField);
+        $this->indexFilter->applySorting($requirementsQuery, $sortField);
 
         $requirements = $requirementsQuery->get();
-        $phaseLabels = $this->phaseLabels();
-        $severityLabels = $this->severityLabels();
-        $domainLabels = $this->domainLabels();
-        $conditionOptions = $this->conditionOptions();
-        $allowMultiOptions = $this->allowMultiOptions();
-        $noteOptions = $this->noteOptions();
-        $maxCountOptions = $this->maxCountOptions();
-        $sortOptions = $this->sortOptions();
+        $phaseLabels = $this->indexFilter->phaseLabels();
+        $severityLabels = $this->indexFilter->severityLabels();
+        $domainLabels = $this->indexFilter->domainLabels();
+        $conditionOptions = $this->indexFilter->conditionOptions();
+        $allowMultiOptions = $this->indexFilter->allowMultiOptions();
+        $noteOptions = $this->indexFilter->noteOptions();
+        $maxCountOptions = $this->indexFilter->maxCountOptions();
+        $sortOptions = $this->indexFilter->sortOptions();
 
         return view('admin.classification-requirements.index', [
             'organization' => $organization,
@@ -158,11 +159,11 @@ class ClassificationRequirementController extends Controller {
                 'min_count' => 1,
             ]),
             'entryTypeOptions' => $this->entryTypeOptions(),
-            'entryTypePresets' => $this->entryTypePresets(),
-            'requiredDomainPresets' => $this->requiredDomainPresets(),
-            'requiredDomainOptions' => $this->requiredDomainOptions(),
-            'phaseLabels' => $this->phaseLabels(),
-            'severityLabels' => $this->severityLabels(),
+            'entryTypePresets' => $this->presets->entryTypePresets(),
+            'requiredDomainPresets' => $this->presets->requiredDomainPresets(),
+            'requiredDomainOptions' => $this->indexFilter->requiredDomainOptions(),
+            'phaseLabels' => $this->indexFilter->phaseLabels(),
+            'severityLabels' => $this->indexFilter->severityLabels(),
             'onlyIfJsonText' => null,
         ]);
     }
@@ -188,11 +189,11 @@ class ClassificationRequirementController extends Controller {
         return view('admin.classification-requirements._form_dialog', [
             'requirement' => $classificationRequirement,
             'entryTypeOptions' => $this->entryTypeOptions(),
-            'entryTypePresets' => $this->entryTypePresets(),
-            'requiredDomainPresets' => $this->requiredDomainPresets(),
-            'requiredDomainOptions' => $this->requiredDomainOptions(),
-            'phaseLabels' => $this->phaseLabels(),
-            'severityLabels' => $this->severityLabels(),
+            'entryTypePresets' => $this->presets->entryTypePresets(),
+            'requiredDomainPresets' => $this->presets->requiredDomainPresets(),
+            'requiredDomainOptions' => $this->indexFilter->requiredDomainOptions(),
+            'phaseLabels' => $this->indexFilter->phaseLabels(),
+            'severityLabels' => $this->indexFilter->severityLabels(),
             'onlyIfJsonText' => $classificationRequirement->only_if_json !== null
                 ? JsonHelper::encode($classificationRequirement->only_if_json, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
                 : null,
@@ -228,11 +229,11 @@ class ClassificationRequirementController extends Controller {
      * @return array<string, mixed>
      */
     private function validatePayload(Request $request, ?ClassificationRequirement $requirement = null): array {
-        $request->merge($this->applyRequirementPresetFallbacks($request));
+        $request->merge($this->presets->applyFallbacks($request->all()));
 
         $organization = $this->currentOrganization();
         $entryTypeCodes = array_keys($this->entryTypeOptions());
-        $requiredDomains = array_keys($this->requiredDomainOptions());
+        $requiredDomains = array_keys($this->indexFilter->requiredDomainOptions());
         $phases = array_map(static fn(ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
         $severities = array_map(static fn(ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
 
@@ -325,60 +326,6 @@ class ClassificationRequirementController extends Controller {
         return $trimmed === '' ? null : $trimmed;
     }
 
-    private function normalizePhaseFilter(string $value): ?string {
-        foreach (ClassificationRequirementPhase::cases() as $phase) {
-            if ($phase->value === $value) {
-                return $value;
-            }
-        }
-
-        return null;
-    }
-
-    private function normalizeDomainFilter(string $value): ?string {
-        foreach (ClassificationDomain::cases() as $domain) {
-            if ($domain === ClassificationDomain::EntryType) {
-                continue;
-            }
-
-            if ($domain->value === $value) {
-                return $value;
-            }
-        }
-
-        return null;
-    }
-
-    private function normalizeConditionFilter(string $value): ?string {
-        return array_key_exists($value, $this->conditionOptions()) ? $value : null;
-    }
-
-    private function normalizeAllowMultiFilter(string $value): ?string {
-        return array_key_exists($value, $this->allowMultiOptions()) ? $value : null;
-    }
-
-    private function normalizeNoteFilter(string $value): ?string {
-        return array_key_exists($value, $this->noteOptions()) ? $value : null;
-    }
-
-    private function normalizeMaxCountFilter(string $value): ?string {
-        return array_key_exists($value, $this->maxCountOptions()) ? $value : null;
-    }
-
-    private function normalizeSortField(string $value): string {
-        return array_key_exists($value, $this->sortOptions()) ? $value : 'entry_type_code';
-    }
-
-    private function normalizeSeverityFilter(string $value): ?string {
-        foreach (ClassificationRequirementSeverity::cases() as $severity) {
-            if ($severity->value === $value) {
-                return $value;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * @return array<string, string>
      */
@@ -390,321 +337,5 @@ class ClassificationRequirementController extends Controller {
         }
 
         return $options;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function applyRequirementPresetFallbacks(Request $request): array {
-        $entryTypeCode = trim((string) $request->input('entry_type_code', ''));
-        $requiredDomain = trim((string) $request->input('required_domain', ''));
-        $preset = $this->resolveRequirementPreset($entryTypeCode, $requiredDomain);
-
-        if ($preset === []) {
-            return [];
-        }
-
-        $merged = [];
-
-        foreach (['enforce_phase', 'severity', 'min_count', 'max_count'] as $field) {
-            $value = $request->input($field);
-            if (($value === null || $value === '') && array_key_exists($field, $preset)) {
-                $merged[$field] = $preset[$field];
-            }
-        }
-
-        if (! $request->has('allow_multi') && array_key_exists('allow_multi', $preset)) {
-            $merged['allow_multi'] = $preset['allow_multi'];
-        }
-
-        return $merged;
-    }
-
-    /**
-     * @return array{enforce_phase?: string, severity?: string, min_count?: int, max_count?: int|null, allow_multi?: bool}
-     */
-    private function resolveRequirementPreset(string $entryTypeCode, string $requiredDomain): array {
-        $preset = [];
-
-        if ($requiredDomain !== '' && isset($this->requiredDomainPresets()[$requiredDomain])) {
-            $preset = $this->requiredDomainPresets()[$requiredDomain];
-        }
-
-        if ($entryTypeCode !== '' && isset($this->entryTypePresets()[$entryTypeCode])) {
-            $preset = array_merge($preset, $this->entryTypePresets()[$entryTypeCode]);
-        }
-
-        return $preset;
-    }
-
-    /**
-     * @return array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}>
-     */
-    private function entryTypePresets(): array {
-        return [
-            'service' => [
-                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
-                'severity' => ClassificationRequirementSeverity::Soft->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            'incident' => [
-                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            'change' => [
-                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            'repair' => [
-                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            'installation' => [
-                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            'wartung' => [
-                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            'reklamation' => [
-                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
-                'severity' => ClassificationRequirementSeverity::Soft->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-        ];
-    }
-
-    /**
-     * @return array<string, array{enforce_phase: string, severity: string, min_count: int, max_count: int|null, allow_multi: bool}>
-     */
-    private function requiredDomainPresets(): array {
-        return [
-            ClassificationDomain::DefectType->value => [
-                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            ClassificationDomain::Priority->value => [
-                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            ClassificationDomain::ProductGroup->value => [
-                'enforce_phase' => ClassificationRequirementPhase::OnCreate->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            ClassificationDomain::Result->value => [
-                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-            ClassificationDomain::RootCause->value => [
-                'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
-                'severity' => ClassificationRequirementSeverity::Hard->value,
-                'min_count' => 1,
-                'max_count' => null,
-                'allow_multi' => false,
-            ],
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function requiredDomainOptions(): array {
-        $options = [];
-        foreach (ClassificationDomain::cases() as $domain) {
-            if ($domain === ClassificationDomain::EntryType) {
-                continue;
-            }
-
-            $options[$domain->value] = $this->domainLabels()[$domain->value] ?? $domain->value;
-        }
-
-        return $options;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function domainLabels(): array {
-        return [
-            ClassificationDomain::EntryType->value => __('Auftragstypen'),
-            ClassificationDomain::Activity->value => __('Tätigkeiten'),
-            ClassificationDomain::DefectType->value => __('Fehlertypen'),
-            ClassificationDomain::RootCause->value => __('Ursachen'),
-            ClassificationDomain::Result->value => __('Ergebnisse'),
-            ClassificationDomain::Priority->value => __('Prioritäten'),
-            ClassificationDomain::GoodwillReason->value => __('Kulanzgründe'),
-            ClassificationDomain::ReworkReason->value => __('Nacharbeitsgründe'),
-            ClassificationDomain::ProductGroup->value => __('Produktgruppen'),
-            ClassificationDomain::DienstmittelType->value => __('Dienstmitteltypen'),
-        ];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function sortColumns(string $sortField): array {
-        return match ($sortField) {
-            'required_domain' => ['required_domain', 'entry_type_code', 'enforce_phase'],
-            'enforce_phase' => ['enforce_phase', 'entry_type_code', 'required_domain'],
-            'severity' => ['severity', 'entry_type_code', 'required_domain'],
-            'max_count' => ['max_count', 'entry_type_code', 'required_domain'],
-            default => ['entry_type_code', 'enforce_phase', 'required_domain'],
-        };
-    }
-
-    /**
-     * @param  Builder<ClassificationRequirement>  $requirementsQuery
-     */
-    private function applySorting(Builder $requirementsQuery, string $sortField): void {
-        if ($sortField === 'enforce_phase') {
-            $requirementsQuery
-                ->orderByRaw(
-                    'case enforce_phase when ? then 0 when ? then 1 when ? then 2 else 3 end',
-                    [
-                        ClassificationRequirementPhase::OnCreate->value,
-                        ClassificationRequirementPhase::BeforeComplete->value,
-                        ClassificationRequirementPhase::BeforeSign->value,
-                    ]
-                )
-                ->orderBy('entry_type_code')
-                ->orderBy('required_domain');
-
-            return;
-        }
-
-        if ($sortField === 'severity') {
-            $requirementsQuery
-                ->orderByRaw(
-                    'case severity when ? then 0 when ? then 1 else 2 end',
-                    [
-                        ClassificationRequirementSeverity::Hard->value,
-                        ClassificationRequirementSeverity::Soft->value,
-                    ]
-                )
-                ->orderBy('entry_type_code')
-                ->orderBy('required_domain');
-
-            return;
-        }
-
-        if ($sortField === 'max_count') {
-            $requirementsQuery
-                ->orderByRaw('case when max_count is null then 0 else 1 end')
-                ->orderBy('max_count')
-                ->orderBy('entry_type_code')
-                ->orderBy('required_domain');
-
-            return;
-        }
-
-        foreach ($this->sortColumns($sortField) as $column) {
-            $requirementsQuery->orderBy($column);
-        }
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function sortOptions(): array {
-        return [
-            'entry_type_code' => __('Auftragstyp'),
-            'required_domain' => __('Pflicht-Domain'),
-            'enforce_phase' => __('Phase'),
-            'severity' => __('Schweregrad'),
-            'max_count' => __('Maximalanzahl'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function conditionOptions(): array {
-        return [
-            'always' => __('Immer'),
-            'conditional' => __('Mit Bedingung'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function allowMultiOptions(): array {
-        return [
-            'single' => __('Einzelauswahl'),
-            'multi' => __('Mehrfachauswahl'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function noteOptions(): array {
-        return [
-            'with_note' => __('Mit Hinweis'),
-            'without_note' => __('Ohne Hinweis'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function maxCountOptions(): array {
-        return [
-            'open' => __('Offen'),
-            'bounded' => __('Begrenzt'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function phaseLabels(): array {
-        return [
-            ClassificationRequirementPhase::OnCreate->value => __('Bei Erstellung'),
-            ClassificationRequirementPhase::BeforeComplete->value => __('Vor Abschluss'),
-            ClassificationRequirementPhase::BeforeSign->value => __('Vor Signatur'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function severityLabels(): array {
-        return [
-            ClassificationRequirementSeverity::Hard->value => __('Blockierend'),
-            ClassificationRequirementSeverity::Soft->value => __('Hinweis'),
-        ];
     }
 }

@@ -36,7 +36,7 @@ class FileTarget implements FacturationTarget {
 
     public const BASE_PATH = 'exports/finance';
 
-    private const BOM = "\xEF\xBB\xBF";
+    private const BOM = \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8;
 
     public function supports(TransferTarget $target): bool {
         return $target === TransferTarget::Datev || $target === TransferTarget::File;

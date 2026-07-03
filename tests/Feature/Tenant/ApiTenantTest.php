@@ -22,7 +22,7 @@ use Tests\TestCase;
  * Mandantengrenze gilt: ein Token aus Organisation A darf weder Listen
  * noch einzelne Records aus Organisation B sehen oder verändern.
  *
- * Referenz: docs/security/tenant-audit-2026.md (Abschnitt „API").
+ * Referenz: ../WorkDiary-Architecture/security/tenant-audit-2026.md (Abschnitt „API").
  */
 class ApiTenantTest extends TestCase {
     use RefreshDatabase;

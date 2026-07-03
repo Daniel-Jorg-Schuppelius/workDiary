@@ -1,0 +1,55 @@
+<?php
+/*
+ * Created on   : Wed Jul 02 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : MaterialReportTest.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace Tests\Feature\Reporting;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
+use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
+use Tests\TestCase;
+
+class MaterialReportTest extends TestCase {
+    use RefreshDatabase;
+    use WithGlobalDateRange;
+    use WithOrganization;
+
+    private User $user;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->setUpOrganization();
+        $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+    }
+
+    public function test_route_renders(): void {
+        $this->getWithRange('reports.materials')->assertOk();
+    }
+
+    public function test_requires_authentication(): void {
+        $this->get(route('reports.materials'))->assertRedirect(route('login'));
+    }
+
+    public function test_csv_export_returns_download_with_metadata(): void {
+        $response = $this->getWithRange('reports.materials', ['export' => 'csv']);
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $this->assertStringContainsString('materialien_2030-04-01_2030-04-30.csv', (string) $response->headers->get('Content-Disposition'));
+        $body = $response->getContent() ?: '';
+        $this->assertStringContainsString('#report:materials', $body);
+        $this->assertStringContainsString('GESAMT', $body);
+    }
+
+    private function getWithRange(string $routeName, array $parameters = []): TestResponse {
+        return $this->actingAs($this->user)
+            ->withSession($this->dateRangeMonth(2030, 4))
+            ->get(route($routeName, $parameters));
+    }
+}

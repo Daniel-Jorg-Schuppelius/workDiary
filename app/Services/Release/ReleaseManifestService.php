@@ -14,7 +14,7 @@ use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Licensing\{LicenseSeal, LicenseService};
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 
@@ -163,10 +163,11 @@ class ReleaseManifestService {
             if ($contents === false) {
                 continue;
             }
+            $sha256 = CryptoHelper::hash($contents);
             $artifacts[] = [
                 'name' => $name,
                 'path' => $this->relativeArtifactPath($name, $path),
-                'sha256' => hash('sha256', $contents),
+                'sha256' => $sha256,
                 'bytes' => strlen($contents),
             ];
         }

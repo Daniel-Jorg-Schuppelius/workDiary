@@ -13,7 +13,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * MVP-016 — Monatsfreigabe (siehe docs/monatsfreigabe.md §2.1).
+ * MVP-016 — Monatsfreigabe (siehe ../WorkDiary-Architecture/monatsfreigabe.md §2.1).
  *
  * Eine Zeile pro Mitarbeitenden × Kalendermonat. Hält den aktuellen Status
  * (draft → submitted → approved/rejected → reopened → locked), einen
@@ -48,7 +48,7 @@ return new class extends Migration {
                 ->constrained('users')->nullOnDelete();
 
             // Immutable Snapshot der Summen (Soll/Ist/Saldo/Zuschläge/Warnungen).
-            // Struktur: siehe docs/monatsfreigabe.md §3.
+            // Struktur: siehe ../WorkDiary-Architecture/monatsfreigabe.md §3.
             $table->json('totals')->nullable();
 
             $table->unsignedSmallInteger('days_total')->default(0);

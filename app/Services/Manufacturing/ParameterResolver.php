@@ -14,6 +14,7 @@ namespace App\Services\Manufacturing;
 
 use App\Enums\Manufacturing\ParameterType;
 use App\Models\{ProcedureParameterDefinition, ProcedureTemplateVersion};
+use CommonToolkit\Helper\Data\DateHelper;
 use RuntimeException;
 
 /**
@@ -105,7 +106,8 @@ class ParameterResolver {
                 break;
 
             case ParameterType::Date:
-                if (strtotime((string) $value) === false) {
+                // Nur echte Datumsangaben — relative Ausdrücke wie "tomorrow" sind ungültig.
+                if (! is_scalar($value) || ! DateHelper::isDate((string) $value)) {
                     $invalid();
                 }
                 break;

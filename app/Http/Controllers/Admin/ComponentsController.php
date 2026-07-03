@@ -17,7 +17,7 @@ use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService};
 use App\Services\Release\{ReleaseManifestService, ReleaseVerifier};
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Gate, Storage};
@@ -182,7 +182,7 @@ class ComponentsController extends Controller {
             ->route('admin.components.index')
             ->with('success', __('isms.components.flash_generated', [
                 'file' => $name,
-                'hash' => hash('sha256', $json),
+                'hash' => CryptoHelper::hash($json),
             ]));
     }
 
@@ -229,10 +229,11 @@ class ComponentsController extends Controller {
         }
 
         $timestamp = $document['metadata']['timestamp'] ?? null;
+        $sha256 = CryptoHelper::hash($json);
 
         return [
             'generated_at' => is_string($timestamp) ? $timestamp : null,
-            'sha256' => hash('sha256', $json),
+            'sha256' => $sha256,
             'composer' => $composer,
             'npm' => $npm,
             'total' => count($components),

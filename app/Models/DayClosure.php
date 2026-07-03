@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**
- * Tagesabschluss (MVP-015, docs/tagesabschluss.md §3).
+ * Tagesabschluss (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3).
  *
  * Eine Zeile pro Mitarbeitenden × Kalendertag; entsteht beim ersten Öffnen
  * der Tagesabschluss-Seite (Audit `dayClose.opened`). Statusmaschine:

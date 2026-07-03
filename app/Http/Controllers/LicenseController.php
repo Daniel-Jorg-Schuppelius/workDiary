@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{AuditLog, User};
 use App\Services\Licensing\LicenseService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -49,7 +50,7 @@ class LicenseController extends Controller {
 
     private function writeInstalledAudit(?User $user, \App\Services\Licensing\LicenseResult $result): void {
         $payload = $result->payload;
-        $licenseHash = $payload !== null ? hash('sha256', $payload->licenseId) : null;
+        $licenseHash = $payload !== null ? CryptoHelper::hash($payload->licenseId) : null;
 
         // Der Audit-Eintrag ist Protokollierung – ein fehlgeschlagener
         // Schreibvorgang (z. B. nicht erreichbare DB) darf die erfolgreiche

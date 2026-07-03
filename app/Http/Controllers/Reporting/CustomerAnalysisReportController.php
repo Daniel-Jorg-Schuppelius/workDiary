@@ -12,16 +12,16 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
-use App\Models\{AuditLog, Project, User};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Models\{Project, User};
 use App\Services\Reporting\CustomerAnalysisReportBuilder;
 use App\Support\Sqid;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerAnalysisReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
@@ -159,37 +159,9 @@ class CustomerAnalysisReportController extends Controller {
     private function exportPdf(array $rows, string $label, string $from, string $to): SymfonyResponse {
         $filename = sprintf('kundenanalyse_%s_%s.pdf', $from, $to);
 
-        return Pdf::loadView('reports.pdf.customers', [
+        return $this->pdfDownload('reports.pdf.customers', [
             'rows' => $rows,
             'label' => $label,
-        ])->setPaper('a4', 'landscape')->download($filename);
-    }
-
-    /**
-     * @param  array<string, mixed>  $filters
-     */
-    private function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
-        $user = $request->user();
-        if (! $user instanceof User || $user->organization_id === null) {
-            return;
-        }
-
-        $filterHash = $this->reportFilterHashFull($filters);
-
-        AuditLog::create([
-            'organization_id' => $user->organization_id,
-            'user_id' => $user->id,
-            'event' => 'report.exported',
-            'auditable_type' => self::class,
-            'auditable_id' => 0,
-            'changes' => [
-                'report_code' => $reportCode,
-                'format' => $format,
-                'filter_hash' => $filterHash,
-                'filters' => $filters,
-            ],
-            'ip' => $request->ip(),
-            'user_agent' => substr((string) $request->userAgent(), 0, 255),
-        ]);
+        ], $filename, 'landscape');
     }
 }

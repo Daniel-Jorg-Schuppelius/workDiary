@@ -15,7 +15,7 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * Einheitlicher Read-Model-Eintrag der Auftrags-Timeline (MVP-010,
- * docs/auftrags-timeline.md §4). Read-only — die Timeline schreibt nichts.
+ * ../WorkDiary-Architecture/auftrags-timeline.md §4). Read-only — die Timeline schreibt nichts.
  *
  * @implements Arrayable<string, mixed>
  */

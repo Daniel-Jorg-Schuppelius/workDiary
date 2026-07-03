@@ -12,6 +12,7 @@ namespace App\Models\Location;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\User;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\{Carbon, Str};
@@ -47,7 +48,7 @@ class LocationDeviceToken extends Model {
     ];
 
     public static function hashToken(string $plain): string {
-        return hash('sha256', $plain);
+        return CryptoHelper::hash($plain);
     }
 
     /**

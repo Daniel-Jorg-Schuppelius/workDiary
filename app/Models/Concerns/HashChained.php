@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -146,7 +146,7 @@ trait HashChained {
      * @param array<string, mixed> $data
      */
     public static function chainHash(?string $prevHash, array $data): string {
-        return hash('sha256', (string) $prevHash . '|' . self::canonicalPayload($data));
+        return CryptoHelper::hash((string) $prevHash . '|' . self::canonicalPayload($data));
     }
 
     /**

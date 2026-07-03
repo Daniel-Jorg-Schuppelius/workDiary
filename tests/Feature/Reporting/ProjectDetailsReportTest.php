@@ -74,6 +74,7 @@ class ProjectDetailsReportTest extends TestCase {
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
         $body = $response->getContent() ?: '';
         $this->assertStringContainsString('120', $body);
+        $this->assertStringContainsString('#report:project-details', $body);
     }
 
     public function test_xlsx_export(): void {

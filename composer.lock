@@ -752,71 +752,6 @@
             "time": "2026-06-28T16:06:39+00:00"
         },
         {
-            "name": "daniel-jorg-schuppelius/php-financial-formats",
-            "version": "v1.6",
-            "source": {
-                "type": "git",
-                "url": "git@github.com:Daniel-Jorg-Schuppelius/php-financial-formats.git",
-                "reference": "7fd43ad76aa13236c9a84c7bc5b93db4e7e30ab3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-financial-formats/zipball/7fd43ad76aa13236c9a84c7bc5b93db4e7e30ab3",
-                "reference": "7fd43ad76aa13236c9a84c7bc5b93db4e7e30ab3",
-                "shasum": ""
-            },
-            "require": {
-                "dschuppelius/php-common-toolkit": "^1.11",
-                "php": ">=8.2 <8.6"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.27",
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^11.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "CommonToolkit\\FinancialFormats\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "format": [
-                    "vendor/bin/pint --test"
-                ],
-                "format:fix": [
-                    "vendor/bin/pint"
-                ],
-                "lint": [
-                    "vendor/bin/phpstan analyse --memory-limit=1G"
-                ],
-                "qa": [
-                    "@format",
-                    "@lint",
-                    "@test"
-                ]
-            },
-            "license": [
-                "AGPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Joerg Schuppelius",
-                    "email": "info@schuppelius.org"
-                }
-            ],
-            "description": "PHP library for parsing, validating and processing financial and banking file formats such as CAMT, MT and PAIN.",
-            "time": "2026-07-01T11:25:37+00:00"
-        },
-        {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
             "version": "v0.12.3",
             "source": {
@@ -1592,16 +1527,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.14",
+            "version": "v1.15.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "d3e9a7482c640b037eab980ce6f976c91b9b52bf"
+                "reference": "35e05ed85d42c0ff5d5fd7aaa6741f1c7a61f77e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/d3e9a7482c640b037eab980ce6f976c91b9b52bf",
-                "reference": "d3e9a7482c640b037eab980ce6f976c91b9b52bf",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/35e05ed85d42c0ff5d5fd7aaa6741f1c7a61f77e",
+                "reference": "35e05ed85d42c0ff5d5fd7aaa6741f1c7a61f77e",
                 "shasum": ""
             },
             "require": {
@@ -1636,9 +1571,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.14"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.15.3"
             },
-            "time": "2026-07-02T07:38:41+00:00"
+            "time": "2026-07-03T05:39:06+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -2396,16 +2331,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v13.18.0",
+            "version": "v13.18.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "138e5806ed7e4e21591948b661119d3810f052cf"
+                "reference": "7d66044819e269f05924793a6800022dc181d850"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/138e5806ed7e4e21591948b661119d3810f052cf",
-                "reference": "138e5806ed7e4e21591948b661119d3810f052cf",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/7d66044819e269f05924793a6800022dc181d850",
+                "reference": "7d66044819e269f05924793a6800022dc181d850",
                 "shasum": ""
             },
             "require": {
@@ -2616,7 +2551,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-06-30T12:54:13+00:00"
+            "time": "2026-07-02T18:35:20+00:00"
         },
         {
             "name": "laravel/prompts",

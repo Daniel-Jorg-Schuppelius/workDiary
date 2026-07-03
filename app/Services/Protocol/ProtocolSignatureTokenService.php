@@ -14,6 +14,7 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility
 use App\Enums\Protocol\{ProtocolEventType, ProtocolSignatureMethod, ProtocolSignatureRole};
 use App\Models\{Protocol, ProtocolEvent, ProtocolSignatureToken, User};
 use App\Services\OpenIssue\OpenIssueService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,7 @@ class ProtocolSignatureTokenService {
     public function issue(Protocol $protocol, User $actor, array $data): array {
         $role = $this->parseRole($data['role'] ?? ProtocolSignatureRole::Customer->value);
         $token = Str::random(48);
-        $hash = hash('sha256', $token);
+        $hash = CryptoHelper::hash($token);
 
         $ttlDays = (int) ($data['ttl_days'] ?? self::DEFAULT_TTL_DAYS);
         $expiresAt = Carbon::now()->addDays(max(1, $ttlDays));
@@ -75,7 +76,7 @@ class ProtocolSignatureTokenService {
 
     public function find(string $token): ?ProtocolSignatureToken {
         return ProtocolSignatureToken::query()
-            ->where('token_hash', hash('sha256', $token))
+            ->where('token_hash', CryptoHelper::hash($token))
             ->first();
     }
 

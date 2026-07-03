@@ -12,8 +12,8 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Customer, Invoice, InvoiceItem, TimeEntry, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -26,7 +26,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Nur für Administratoren (Org-weite Finanzdaten).
  */
 class BillingReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $authUser = Auth::user();
@@ -248,22 +250,7 @@ class BillingReportController extends Controller {
         $rows[] = ['Unbillte Zeit', 'Minuten', $unbilled['minutes'], ''];
         $rows[] = ['Unbillte Zeit', 'Projiziert', '', number_format($unbilled['projected_revenue'], 2, '.', '')];
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($rows, $filename, 'billing', ['from' => $from, 'to' => $to]);
     }
 
     /**
@@ -274,16 +261,13 @@ class BillingReportController extends Controller {
      */
     private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): SymfonyResponse {
         $filename = sprintf('billing_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.billing', [
+        return $this->pdfDownload('reports.pdf.billing', [
             'status' => $status,
             'aging' => $aging,
             'perCustomer' => $perCustomer,
             'unbilled' => $unbilled,
             'from' => $from,
             'to' => $to,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

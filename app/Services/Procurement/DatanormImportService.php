@@ -95,6 +95,10 @@ class DatanormImportService {
         }
         $unit = max(1, (int) preg_replace('/\D/', '', $priceUnit));
 
+        // Bewusst float/number_format (Klasse F): eine bcmath-Variante rundet
+        // exakte .00005-Ties (Preiseinheit 1000) anders als das etablierte
+        // float-Verhalten — Umstellung nur nach fachlicher Abnahme der
+        // Tie-Semantik (siehe ../WorkDiary-Architecture/toolkit-audit-2026-06.md).
         return number_format(($cents / 100) / $unit, 4, '.', '');
     }
 }

@@ -15,6 +15,8 @@ namespace App\Services\Auth;
 use App\Enums\Auth\TwoFactorType;
 use App\Models\Auth\TwoFactorCredential;
 use App\Models\User;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\{AttestationStatementSupportManager, NoneAttestationStatementSupport};
 use Webauthn\{AuthenticatorAssertionResponse, AuthenticatorAssertionResponseValidator, AuthenticatorAttestationResponse, AuthenticatorAttestationResponseValidator, AuthenticatorSelectionCriteria, PublicKeyCredential, PublicKeyCredentialCreationOptions, PublicKeyCredentialDescriptor, PublicKeyCredentialParameters, PublicKeyCredentialRequestOptions, PublicKeyCredentialRpEntity, PublicKeyCredentialSource, PublicKeyCredentialUserEntity};
@@ -68,7 +70,7 @@ class WebAuthnService {
 
     /** Stabiler, nicht erratbarer User-Handle (binär) je Nutzer. */
     private function userHandle(User $user): string {
-        return hash('sha256', 'wauh:' . $user->getKey(), true);
+        return CryptoHelper::hash('wauh:' . $user->getKey(), HashAlgorithm::SHA256, true);
     }
 
     private function userEntity(User $user): PublicKeyCredentialUserEntity {

@@ -12,6 +12,7 @@ namespace App\Services\ExternalParticipant;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
 use App\Models\{Comment, ExternalParticipant, ExternalParticipantEvent, User};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\{Carbon, Str};
@@ -67,7 +68,7 @@ class ExternalParticipantService {
             'email' => isset($data['email']) && $data['email'] !== '' ? trim((string) $data['email']) : null,
             'role' => isset($data['role']) && $data['role'] !== '' ? trim((string) $data['role']) : null,
             'party' => $party->value,
-            'token_hash' => hash('sha256', $token),
+            'token_hash' => CryptoHelper::hash($token),
             'abilities' => $abilities,
             'expires_at' => Carbon::now()->addDays($ttl),
             'invited_by_user_id' => $actor->id,
@@ -113,7 +114,7 @@ class ExternalParticipantService {
     public function resolveUsable(string $plainToken): ?ExternalParticipant {
         $record = ExternalParticipant::query()
             ->withoutGlobalScopes()
-            ->where('token_hash', hash('sha256', $plainToken))
+            ->where('token_hash', CryptoHelper::hash($plainToken))
             ->first();
 
         return $record !== null && $record->isUsable() ? $record : null;

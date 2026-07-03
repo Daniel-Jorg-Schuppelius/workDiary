@@ -15,7 +15,7 @@ use App\Enums\Contracts\HasLabel;
 
 /**
  * Status einer Monatsfreigabe (MVP-016).
- * Siehe docs/monatsfreigabe.md §4 für die Übergänge.
+ * Siehe ../WorkDiary-Architecture/monatsfreigabe.md §4 für die Übergänge.
  */
 enum MonthClosureStatus: string implements HasLabel {
     use HasOptions;

@@ -13,8 +13,8 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{CoverageRequirement, ScheduledShift, ShiftType, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\{Carbon, CarbonPeriod};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -27,7 +27,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * gegen ScheduledShifts pro Schichttyp und Tag.
  */
 class CoverageReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $authUser = Auth::user();
@@ -218,22 +220,7 @@ class CoverageReportController extends Controller {
             $totals['days_under'],
         ];
 
-        $csv = '';
-        foreach ($out as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return $this->csvWithMetadata($out, $filename, 'coverage', ['from' => $from, 'to' => $to]);
     }
 
     /**
@@ -243,15 +230,12 @@ class CoverageReportController extends Controller {
      */
     private function exportPdf(array $rows, array $underfilled, array $totals, string $from, string $to): SymfonyResponse {
         $filename = sprintf('coverage_%s_%s.pdf', $from, $to);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.coverage', [
+        return $this->pdfDownload('reports.pdf.coverage', [
             'rows' => $rows,
             'underfilled' => $underfilled,
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
-        ])->setPaper('a4', 'portrait');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

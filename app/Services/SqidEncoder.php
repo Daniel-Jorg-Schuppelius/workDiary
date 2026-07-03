@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use CommonToolkit\Helper\Data\CryptoHelper;
 use InvalidArgumentException;
 use Sqids\Sqids;
 
@@ -109,14 +110,14 @@ final class SqidEncoder {
      * @param  class-string  $modelClass
      */
     private function permuteAlphabet(string $modelClass): string {
-        $seed = hash('sha256', $this->salt . '|' . $modelClass);
+        $seed = CryptoHelper::hash($this->salt . '|' . $modelClass);
         $chars = mb_str_split($this->alphabet);
         $count = count($chars);
 
         // Fisher–Yates Shuffle mit Hash-basierter Pseudozufalls-Sequenz.
         $stream = '';
         for ($i = 0; mb_strlen($stream) < $count * 8; $i++) {
-            $stream .= hash('sha256', $seed . '|' . $i);
+            $stream .= CryptoHelper::hash($seed . '|' . $i);
         }
 
         for ($i = $count - 1; $i > 0; $i--) {

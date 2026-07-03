@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Customer, Project, Task, TimeEntry};
 use App\Support\XlsxExport;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -31,7 +31,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Implementierung.
  */
 class MyMonthReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -146,21 +148,9 @@ class MyMonthReportController extends Controller {
             $rows[] = $row;
         }
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        return $this->csvWithMetadata($rows, $filename, 'my-month', [
+            'year' => $year,
+            'month' => $month,
         ]);
     }
 
@@ -178,14 +168,11 @@ class MyMonthReportController extends Controller {
      */
     private function exportPdf(array $byDay, string $monthLabel, int $monthMinutes, float $monthRate, int $year, int $month): SymfonyResponse {
         $filename = sprintf('mein-monat-%04d-%02d.pdf', $year, $month);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.my-month', [
+        return $this->pdfDownload('reports.pdf.my-month', [
             'byDay' => $byDay,
             'monthLabel' => $monthLabel,
             'monthMinutes' => $monthMinutes,
             'monthRate' => $monthRate,
-        ])->setPaper('a4');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

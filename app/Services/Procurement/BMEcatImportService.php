@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\SupplierCatalogSource;
-use CommonToolkit\Helper\Data\XmlHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, XmlHelper};
 use RuntimeException;
 use SimpleXMLElement;
 
@@ -110,8 +110,7 @@ class BMEcatImportService {
             return [null, 'EUR'];
         }
 
-        $raw = trim((string) $first);
-        $price = is_numeric($raw) ? number_format((float) $raw, 4, '.', '') : null;
+        $price = $this->scaledDecimal(trim((string) $first));
 
         $currencyNodes = $article->xpath('.//*[local-name()="PRICE_CURRENCY"]') ?: [];
         $currency = isset($currencyNodes[0]) ? trim((string) $currencyNodes[0]) : '';
@@ -147,18 +146,44 @@ class BMEcatImportService {
         foreach ($prices as $price) {
             $amountNodes = $price->xpath('.//*[local-name()="PRICE_AMOUNT"]') ?: [];
             $boundNodes = $price->xpath('.//*[local-name()="LOWER_BOUND"]') ?: [];
-            $amount = trim((string) ($amountNodes[0] ?? ''));
-            $bound = trim((string) ($boundNodes[0] ?? '1'));
-            if ($amount === '' || ! is_numeric($amount) || ! is_numeric($bound) || (float) $bound <= 1.0) {
+            $unitPrice = $this->scaledDecimal(trim((string) ($amountNodes[0] ?? '')));
+            $minQty = $this->scaledDecimal(trim((string) ($boundNodes[0] ?? '1')));
+            if ($unitPrice === null || $minQty === null || bccomp($minQty, '1', 4) <= 0) {
                 continue;
             }
             $tiers[] = [
-                'min_qty' => number_format((float) $bound, 4, '.', ''),
-                'unit_price' => number_format((float) $amount, 4, '.', ''),
+                'min_qty' => $minQty,
+                'unit_price' => $unitPrice,
             ];
         }
 
         return $tiers;
+    }
+
+    /**
+     * Normalisiert einen Roh-Zahlwert präzisionswahrend (ohne float-Roundtrip)
+     * auf einen Decimal-String mit 4 Nachkommastellen; Nicht-Zahlen → null.
+     * bcadd allein würde trunkieren — der Halbschritt erzwingt kaufmännische
+     * Rundung (half-up, deterministisch statt float-repräsentationsabhängig).
+     * Exponentialnotation geht weiter über den float-Pfad, da bcmath sie nicht
+     * versteht und Lieferanten-Exporte sie liefern können.
+     *
+     * @return numeric-string|null
+     */
+    private function scaledDecimal(string $raw): ?string {
+        if ($raw === '') {
+            return null;
+        }
+        if (is_numeric($raw) && stripos($raw, 'e') !== false) {
+            return number_format((float) $raw, 4, '.', '');
+        }
+        $normalized = NumberHelper::normalizeDecimalString($raw);
+        if (! is_numeric($normalized) || stripos($normalized, 'e') !== false) {
+            return null;
+        }
+        $halfStep = str_starts_with($normalized, '-') ? '-0.00005' : '0.00005';
+
+        return bcadd($normalized, $halfStep, 4);
     }
 
     /** Erster Wert eines Elements (an beliebiger Stelle) innerhalb des Artikels. */

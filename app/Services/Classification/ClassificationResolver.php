@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Liefert effektive Klassifikationen pro Organisation und Domäne.
  *
- * Lookup-Logik (siehe docs/kernklassifikationen.md §4):
+ * Lookup-Logik (siehe ../WorkDiary-Architecture/kernklassifikationen.md §4):
  *  1) Aktive Org-Datensätze (organization_id = $org) für $domain.
  *  2) Aktive Plattform-Defaults (organization_id = NULL), deren Code
  *     in (1) NICHT vorkommt → Org-Override-Mechanik.

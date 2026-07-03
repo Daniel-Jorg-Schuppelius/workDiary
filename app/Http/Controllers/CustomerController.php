@@ -269,7 +269,7 @@ class CustomerController extends Controller {
                 return;
             }
             // UTF-8 BOM für Excel
-            fwrite($out, "\xEF\xBB\xBF");
+            fwrite($out, \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8);
             fwrite($out, StringHelper::encodeLine([
                 'Nummer',
                 'Name',

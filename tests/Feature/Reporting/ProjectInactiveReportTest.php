@@ -75,6 +75,7 @@ class ProjectInactiveReportTest extends TestCase {
             ->get(route('reports.project-inactive', ['export' => 'csv']));
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+        $this->assertStringContainsString('#report:project-inactive', (string) $response->getContent());
         $this->assertStringContainsString('Schlummert', (string) $response->getContent());
     }
 

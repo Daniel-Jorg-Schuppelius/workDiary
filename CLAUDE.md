@@ -9,9 +9,9 @@ Dieses Projekt besitzt eigene, gepflegte Toolkits. **Bevor** ein Helfer,
 Service, Parser, Formatter, Validator, Konverter oder Generator app-lokal
 geschrieben wird, gilt:
 
-1. **Erst die Toolkits prüfen.** Nachschlagen in
-   [docs/toolkit-capability-map.md](docs/toolkit-capability-map.md)
-   (öffentliche API-Oberfläche aller sechs Toolkits). Bei Unsicherheit die
+1. **Erst die Toolkits prüfen.** Nachschlagen in der Capability-Map im
+   Schwester-Repo: [toolkit-capability-map.md](../WorkDiary-Architecture/toolkit-capability-map.md)
+   (öffentliche API-Oberfläche aller acht Toolkits). Bei Unsicherheit die
    Zielklasse unter `vendor/<paket>/src/...` gegenlesen.
 2. **Existiert die Funktion → direkt nutzen** (an der Aufrufstelle, **keine
    dünnen Wrapper/Fassaden** um Einzelaufrufe).
@@ -36,6 +36,8 @@ Rückwärtskompatibilität vergleichen. Nach einer Migration: betroffene Tests +
 | php-pdf-toolkit | `PDFToolkit\` | PDF erzeugen (HTML/Text→PDF), Textextraktion + OCR, Merge/Split, ZUGFeRD-PDF/A-3 |
 | datev-php-sdk | `Datev\` | DATEV Desktop API: Buchungsstapel, Stammdaten, Belege (kein EXTF-CSV-Export) |
 | lexoffice-php-sdk | `Lexoffice\` | Lexoffice REST-API: Kontakte, Belege, Rechnungen, Artikel, Webhooks |
+| php-api-toolkit | `APIToolkit\` | HTTP-/API-Client-Fundament (Basis der SDKs): `ClientAbstract` mit Retry/Backoff/Retry-After und injizierbarem Guzzle, Auth inkl. OAuth2 (PKCE/Revocation), `CursorPaginator`, typisierte HTTP-Exceptions — Standard für **neue** API-Plugins; Bestands-Plugins bleiben auf `PluginHttp` |
+| php-error-toolkit | `ERRORToolkit\` | Logging-Fundament aller Toolkits: `LoggerRegistry` (+ Laravel-Bridge: auto-discovertes ServiceProvider leitet Toolkit-Logs in den Laravel-Log-Channel, ENV `ERROR_TOOLKIT_LOG_CHANNEL`), `ErrorLog`-Trait, Datei-/Konsolen-Logger, FileSystem-Exceptions |
 
 ### Bewusst app-lokal (nicht erneut vorschlagen)
 
@@ -43,10 +45,15 @@ Rückwärtskompatibilität vergleichen. Nach einer Migration: betroffene Tests +
 `CurrencyHelper::normalizeAmount` (DE-Format), `CryptoHelper::secureHash`
 (gesalzen/base64 statt Hex für Hash-Ketten), `CreditCardHelper`-Luhn (validiert
 nur, erzeugt keine Prüfziffer). Begründungen:
-[docs/toolkit-konsolidierung-2026-06.md](docs/toolkit-konsolidierung-2026-06.md).
+[toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/toolkit-konsolidierung-2026-06.md).
 
 ## Verweise
 
-- Toolkit-API-Referenz: [docs/toolkit-capability-map.md](docs/toolkit-capability-map.md)
-- Migrationslog & A–F-Klassifikation: [docs/toolkit-konsolidierung-2026-06.md](docs/toolkit-konsolidierung-2026-06.md)
-- Audit-Befunde (offene Migrations-/Erweiterungskandidaten): [docs/toolkit-audit-2026-06.md](docs/toolkit-audit-2026-06.md)
+Die gesamte Entwicklungs-/Architekturdoku liegt im Schwester-Repo
+**WorkDiary-Architecture** (`../WorkDiary-Architecture/`, im Workspace
+eingebunden): Feature-/MVP-Doku unter `features/`, Security-Doku unter
+`security/`, Querschnittsdoku auf Root-Ebene.
+
+- Toolkit-API-Referenz: [toolkit-capability-map.md](../WorkDiary-Architecture/toolkit-capability-map.md)
+- Migrationslog & A–F-Klassifikation: [toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/toolkit-konsolidierung-2026-06.md)
+- Audit-Befunde (offene Migrations-/Erweiterungskandidaten): [toolkit-audit-2026-06.md](../WorkDiary-Architecture/toolkit-audit-2026-06.md)

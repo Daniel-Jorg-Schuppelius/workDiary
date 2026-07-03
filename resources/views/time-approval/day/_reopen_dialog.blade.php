@@ -8,7 +8,7 @@
 --}}
 
 {{--
-  Admin-Reopen ohne Antrag (MVP-015, docs/tagesabschluss.md §2.6/§6):
+  Admin-Reopen ohne Antrag (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §2.6/§6):
   Standalone-<x-modal> mit Pflicht-Begründung — landet als
   `dayClose.reopened` im Audit-Protokoll. Erwartet $day, $isOwnDay und
   $targetUser aus show.blade.php.

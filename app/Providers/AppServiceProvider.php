@@ -13,7 +13,7 @@ namespace App\Providers;
 use App\Auth\CustomerUserProvider;
 use App\Automation\Actions\ApproveExpenseAction;
 use App\Automation\{ConditionEvaluator, RuleEngine};
-use App\Legacy\Auth\LegacyUserProvider;
+use App\Legacy\LegacyBridge;
 use App\Listeners\AuthEventSubscriber;
 use App\Models\{ActivityCategory, Asset, Attachment, Building, Classification, ClassificationRequirement, Comment, CommunicationNote, CoverageRequirement, Customer, DiaryEntry, DutyPlan, EmergencyAssignment, Event, EventCategory, Expense, ExpenseCategory, FlexEligibility, Floor, ForeignCustomer, KeyHandover, MaintenancePlan, Material, MaterialUsage, MeterReading, Milestone, MonthClosure, NumberFormat, OpenIssue, Organization, PerDiemRate, PerDiemTrip, ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate, Protocol, Qualification, Room, ScheduledShift, ServiceTicket, ShiftType, Site, Software, Supplier, Tag, Task, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, TravelLog, User, UserGroup, WorkSchedule};
 use App\Observers\{AttachmentObserver, CommentObserver, CustomerObserver, DiaryEntryObserver, EmergencyAssignmentObserver, ForeignCustomerObserver, MaterialUsageObserver, OrganizationObserver, SupplierObserver, TagObserver, TimeEntryObserver, TimesheetObserver, UserObserver};
@@ -29,6 +29,8 @@ use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\DateRangeContext;
 use App\Support\{CarbonFmt, Setting};
 use Carbon\{Carbon as CarbonMutable, CarbonImmutable};
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
@@ -164,7 +166,7 @@ class AppServiceProvider extends ServiceProvider {
         \Illuminate\Support\Carbon::macro('ftime', fn () => CarbonFmt::ftime($this));
 
         Auth::provider('legacy', function ($app) {
-            return new LegacyUserProvider($app['hash']);
+            return LegacyBridge::makeAuthProvider($app['hash']);
         });
         Auth::provider('customer-eloquent', function ($app) {
             return new CustomerUserProvider($app['hash']);
@@ -347,12 +349,12 @@ class AppServiceProvider extends ServiceProvider {
         // Hinweisgeber-Portal (Abschnitt 19): Anzeige moderat, Absenden streng.
         // IP nur als kurzlebiger, gehashter Cache-Key (datensparsam) – nie im
         // Fachmodell gespeichert.
-        RateLimiter::for('wb-view', fn(Request $request) => Limit::perMinute(30)->by('wbv:' . sha1((string) $request->ip())));
-        RateLimiter::for('wb-submit', fn(Request $request) => Limit::perMinute(5)->by('wbs:' . sha1((string) $request->ip())));
+        RateLimiter::for('wb-view', fn(Request $request) => Limit::perMinute(30)->by('wbv:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
+        RateLimiter::for('wb-submit', fn(Request $request) => Limit::perMinute(5)->by('wbs:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
         // Postfach-Login: streng gegen Brute-Force des Geheimnisses.
         RateLimiter::for('wb-login', fn(Request $request) => [
-            Limit::perMinute(5)->by('wbl:' . sha1((string) $request->ip())),
-            Limit::perHour(30)->by('wblh:' . sha1((string) $request->ip())),
+            Limit::perMinute(5)->by('wbl:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
+            Limit::perHour(30)->by('wblh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
         ]);
 
         RateLimiter::for('password', function (Request $request) {

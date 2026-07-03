@@ -203,7 +203,7 @@ class ExpenseController extends Controller {
                 return;
             }
             // UTF-8 BOM für Excel-Kompatibilität
-            fwrite($out, "\xEF\xBB\xBF");
+            fwrite($out, \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8);
             fwrite($out, StringHelper::encodeLine([
                 'Datum',
                 'Mitarbeiter',

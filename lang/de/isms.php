@@ -64,6 +64,7 @@ return [
         'status' => 'Status',
         'owner' => 'Verantwortlich',
         'review_due_on' => 'Review fällig',
+        'assessment_valid_until' => 'Bewertung gültig bis',
         'controls' => 'Verknüpfte Maßnahmen',
         'requirements' => 'Erfüllte Anforderungen',
         'ref_no' => 'Ref-Nr.',

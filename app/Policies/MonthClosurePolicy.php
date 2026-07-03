@@ -16,7 +16,7 @@ use App\Models\{MonthClosure, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
- * Berechtigungen für Monatsfreigaben (MVP-016, docs/monatsfreigabe.md §6).
+ * Berechtigungen für Monatsfreigaben (MVP-016, ../WorkDiary-Architecture/monatsfreigabe.md §6).
  */
 class MonthClosurePolicy {
     use HasAdminBypass;

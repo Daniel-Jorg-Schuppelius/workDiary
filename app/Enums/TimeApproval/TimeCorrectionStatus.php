@@ -14,7 +14,7 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Status eines Zeit-Korrekturantrags (MVP-017, docs/zeit-korrekturen.md §4).
+ * Status eines Zeit-Korrekturantrags (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md §4).
  */
 enum TimeCorrectionStatus: string implements HasLabel {
     use HasOptions;

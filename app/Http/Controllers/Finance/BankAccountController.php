@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveBankAccountRequest;
 use App\Models\Finance\BankAccount;
-use App\Support\Iban;
+use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -86,7 +86,7 @@ class BankAccountController extends Controller {
     }
 
     private function ibanExists(string $iban, ?int $ignoreId = null): bool {
-        $hash = Iban::hash($iban);
+        $hash = BankHelper::hashIBAN($iban);
         if ($hash === null) {
             return false;
         }

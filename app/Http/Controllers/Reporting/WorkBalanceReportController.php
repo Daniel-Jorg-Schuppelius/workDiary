@@ -12,10 +12,10 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\RendersReportPdf;
 use App\Models\User;
 use App\Services\Reporting\WorkBalanceCalculator;
 use App\Support\Sqid;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -31,6 +31,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * (Header-Widget) or an explicit `?from=&to=` / `?year=&month=` override.
  */
 class WorkBalanceReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
 
     public function __construct(protected WorkBalanceCalculator $calc) {}
@@ -46,12 +47,6 @@ class WorkBalanceReportController extends Controller {
         $period = $this->calc->range($user, $from, $to);
 
         if ($request->query('export') === 'pdf') {
-            $pdf = Pdf::loadView('reports.work-balance-pdf', [
-                'user' => $user,
-                'period' => $period,
-                'label' => $label,
-            ])->setPaper('a4', 'portrait');
-
             $filename = sprintf(
                 'arbeitsbilanz-%s-%s_%s.pdf',
                 $user->id,
@@ -59,7 +54,11 @@ class WorkBalanceReportController extends Controller {
                 $to->format('Ymd'),
             );
 
-            return $pdf->download($filename);
+            return $this->pdfDownload('reports.work-balance-pdf', [
+                'user' => $user,
+                'period' => $period,
+                'label' => $label,
+            ], $filename);
         }
 
         /** @var View $view */

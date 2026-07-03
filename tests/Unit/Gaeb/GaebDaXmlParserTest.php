@@ -76,6 +76,26 @@ final class GaebDaXmlParserTest extends TestCase {
         $this->assertSame(BoqItemType::Note->value, $byRef['01.0001']['type']);      // ohne Menge/Einheit
     }
 
+    /**
+     * Feature 052 (bewusste Lockerung, A2): DE-Tausenderformat "1.234,56" wird
+     * jetzt als 1234.56 geparst (vorher null); NBSP-Gruppierung ebenso.
+     * Nicht-numerischer Müll bleibt weiterhin null.
+     */
+    public function test_parses_thousand_separated_numbers_and_keeps_garbage_null(): void {
+        $nbsp = "\u{00A0}";
+        $payload = <<<XML
+<?xml version="1.0"?>
+<GAEB xmlns="http://www.gaeb.de/GAEB_DA_XML/DA86/3.3"><Award><BoQ><BoQBody><Itemlist><Item RNoPart="1"><Qty>1.234,56</Qty><QU>m3</QU><UP>1{$nbsp}234,50</UP><IT>abc</IT></Item></Itemlist></BoQBody></BoQ></Award></GAEB>
+XML;
+
+        $boq = (new GaebDaXmlParser)->parse($payload);
+        $item = $boq->items[0];
+
+        $this->assertSame('1234.56', $item['quantity']);
+        $this->assertSame('1234.50', $item['unit_price']);
+        $this->assertNull($item['total_price']);
+    }
+
     public function test_rejects_non_gaeb_xml(): void {
         $this->expectException(GaebParseException::class);
         (new GaebDaXmlParser)->parse('<root><foo/></root>');

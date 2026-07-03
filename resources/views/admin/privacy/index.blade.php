@@ -342,13 +342,11 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Folge-Sektionen') }}</h2>
             <p class="text-sm text-base-content/70">
-                {{ __('Externe Integrationen und der DSGVO-PDF-Bericht folgen in separaten MVPs (siehe Doku-Verweis unten).') }}
+                {{ __('Externe Integrationen und der DSGVO-PDF-Bericht folgen in separaten MVPs.') }}
             </p>
-            <ul class="list-disc pl-6 text-sm text-base-content/70">
-                <li><a class="link" href="{{ asset('docs/security/datenschutzseite-konzept.md') }}">{{ __('Datenschutzseite-Konzept (Quelle)') }}</a></li>
-                <li><a class="link" href="{{ asset('docs/security/supportzugriff-grundsaetze.md') }}">{{ __('Supportzugriff-Grundsätze') }}</a></li>
-                <li><a class="link" href="{{ asset('docs/security/rollen-matrix.md') }}">{{ __('Rollen-Matrix') }}</a></li>
-            </ul>
+            <p class="text-sm text-base-content/70">
+                {{ __('Konzeptdokumente (Datenschutzseite-Konzept, Supportzugriff-Grundsätze, Rollen-Matrix) liegen im internen Architektur-Repository unter security/.') }}
+            </p>
         </div>
     </article>
 </x-index-page>

@@ -21,7 +21,7 @@ use Tests\TestCase;
  * Suchbegriffen in Org B an und prüfen, dass ein Suchaufruf eines Org-A-Users
  * keinen Treffer enthält.
  *
- * Referenz: docs/security/tenant-audit-2026.md (Abschnitt „Globale Suche").
+ * Referenz: ../WorkDiary-Architecture/security/tenant-audit-2026.md (Abschnitt „Globale Suche").
  */
 class SearchTenantTest extends TestCase {
     use RefreshDatabase;

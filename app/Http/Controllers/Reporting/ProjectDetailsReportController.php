@@ -12,9 +12,9 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Project, TimeEntry, User};
 use App\Support\{Sqid, XlsxExport};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -31,7 +31,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Implementierung, kein Code-Reuse.
  */
 class ProjectDetailsReportController extends Controller {
+    use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -207,21 +209,9 @@ class ProjectDetailsReportController extends Controller {
             $rows[] = [(string) $name, (int) $row['minutes'], NumberHelper::toGermanFormat((float) $row['rate'], 2, withThousandsSeparator: true)];
         }
 
-        $csv = '';
-        foreach ($rows as $row) {
-            $csv .= implode(';', array_map(static function ($v): string {
-                $s = (string) $v;
-                if (str_contains($s, ';') || str_contains($s, '"') || str_contains($s, "\n")) {
-                    $s = '"' . str_replace('"', '""', $s) . '"';
-                }
-
-                return $s;
-            }, $row)) . "\r\n";
-        }
-
-        return response("\xEF\xBB\xBF" . $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        return $this->csvWithMetadata($rows, $filename, 'project-details', [
+            'project_id' => (int) $project->id,
+            'year' => $year,
         ]);
     }
 
@@ -258,8 +248,7 @@ class ProjectDetailsReportController extends Controller {
      */
     private function exportPdf(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): SymfonyResponse {
         $filename = sprintf('projekt-%d-%d.pdf', $project->id, $year);
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('reports.pdf.project-details', [
+        return $this->pdfDownload('reports.pdf.project-details', [
             'project' => $project,
             'year' => $year,
             'monthMatrix' => $monthMatrix,
@@ -268,8 +257,6 @@ class ProjectDetailsReportController extends Controller {
             'users' => $users,
             'yearMinutes' => $yearMinutes,
             'yearRate' => $yearRate,
-        ])->setPaper('a4');
-
-        return $pdf->download($filename);
+        ], $filename);
     }
 }

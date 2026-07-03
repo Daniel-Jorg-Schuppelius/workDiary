@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Plattformweit (kein organization_id) — analog {@see BackupHeartbeat}: der
  * Restore-Vorgang findet außerhalb des Mandanten-Kontexts statt. Bewusst in der
  * Allow-List von TenantTraitCoverageTest geführt (siehe
- * docs/security/tenant-audit-2026.md).
+ * ../WorkDiary-Architecture/security/tenant-audit-2026.md).
  *
  * Dies ist ein nachvollziehbares REGISTER — die eigentliche, automatisierte
  * Wiederherstellung ist out-of-scope (Eintrag erfolgt manuell oder per Skript).
