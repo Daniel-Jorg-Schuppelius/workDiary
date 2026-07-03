@@ -844,6 +844,8 @@ Route::middleware('auth')->group(function () {
         Route::post('manufacturing-orders/{order}/start', [\App\Http\Controllers\ManufacturingOrderController::class, 'start'])->name('manufacturing-orders.start');
         Route::post('manufacturing-orders/{order}/reserve', [\App\Http\Controllers\ManufacturingOrderController::class, 'reserve'])->name('manufacturing-orders.reserve');
         Route::post('manufacturing-orders/{order}/report', [\App\Http\Controllers\ManufacturingOrderController::class, 'report'])->name('manufacturing-orders.report');
+        Route::post('manufacturing-orders/{order}/materials/{material}/consume', [\App\Http\Controllers\ManufacturingOrderController::class, 'consumeMaterial'])->name('manufacturing-orders.materials.consume'); // MVP-065 Ist-Verbrauch
+        Route::get('manufacturing-orders/{order}/record.pdf', [\App\Http\Controllers\ManufacturingOrderController::class, 'recordPdf'])->name('manufacturing-orders.record.pdf'); // MVP-065 Fertigungsnachweis
         Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushDeliveryNote'])->name('manufacturing-orders.deliveries.lexoffice'); // E4/045 Lieferschein an Lexoffice
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/delivery-note.pdf', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliveryNotePdf'])->name('manufacturing-orders.deliveries.pdf'); // MVP-074 Lieferschein-PDF

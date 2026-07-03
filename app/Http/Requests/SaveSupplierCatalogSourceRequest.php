@@ -12,6 +12,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Support\UrlSafety;
 use Illuminate\Validation\Rule;
 
 /**
@@ -38,8 +39,19 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
             'decimal_separator' => ['required', Rule::in([',', '.'])],
             'encoding' => ['required', 'string', 'max:32'],
             'has_header' => ['nullable', 'boolean'],
-            'remote_url' => ['nullable', 'string', 'url', 'max:1024'],
-            'remote_host' => ['nullable', 'string', 'max:191'],
+            // SSRF-Konfigurationszeit-Guard: keine internen/privaten Ziele als
+            // Katalogquelle (verbindliche DNS-sichere Prüfung erneut zur
+            // Laufzeit im CatalogFetchService).
+            'remote_url' => ['nullable', 'string', 'url', 'max:1024', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (is_string($value) && trim($value) !== '' && ! UrlSafety::isAcceptableExternalHttpUrl($value)) {
+                    $fail((string) __('procurement.catalog.error.host_not_allowed'));
+                }
+            }],
+            'remote_host' => ['nullable', 'string', 'max:191', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (is_string($value) && trim($value) !== '' && ! UrlSafety::isAcceptableExternalHost($value)) {
+                    $fail((string) __('procurement.catalog.error.host_not_allowed'));
+                }
+            }],
             'remote_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
             'remote_path' => ['nullable', 'string', 'max:1024'],
             'remote_username' => ['nullable', 'string', 'max:191'],

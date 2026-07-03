@@ -81,6 +81,15 @@ return [
             'unit' => 'Einheit',
         ],
     ],
+    'record' => [
+        'title' => 'Fertigungsnachweis',
+        'generated_at' => 'Erstellt am',
+        'reported_at' => 'Zeitpunkt',
+        'reported_by' => 'Gemeldet von',
+        'no_reports' => 'Noch keine Rückmeldungen.',
+        'procedure' => 'Prozedur / Arbeitsplan',
+        'footer_note' => 'Fertigungsnachweis auf Basis der erfassten Teilrückmeldungen — kein Faktura-Beleg.',
+    ],
     'parameter_type' => [
         'number' => 'Zahl',
         'measure' => 'Maß (mit Einheit)',
@@ -146,6 +155,8 @@ return [
             'push_lexoffice' => 'An Lexoffice übergeben',
             'subcontract' => 'Fremdfertigung vergeben',
             'cancel' => 'Abbrechen',
+            'consume' => 'Verbrauch buchen',
+            'procedure_run' => 'Prozedurlauf',
         ],
         'field' => [
             'target_qty' => 'Sollmenge',
@@ -159,6 +170,8 @@ return [
             'article' => 'Artikel',
             'deliveries' => 'Auslieferungen',
             'facturation_status' => 'Faktura-Status',
+            'consumed' => 'Verbraucht',
+            'actual_cost' => 'Ist-Kosten',
         ],
         'flash' => [
             'created' => 'Auftrag angelegt.',
@@ -172,6 +185,8 @@ return [
             'subcontract_failed' => 'Fremdvergabe nicht möglich.',
             'cancelled' => 'Auftrag abgebrochen.',
             'deliver_needs_variant_warehouse' => 'Auslieferung benötigt Variante und Lagerort.',
+            'consumed' => 'Verbrauch gebucht.',
+            'consume_not_allowed' => 'Verbrauch ist nur bei freigegebenen oder laufenden Aufträgen möglich.',
         ],
     ],
 ];

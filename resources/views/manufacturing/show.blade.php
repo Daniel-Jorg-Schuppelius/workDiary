@@ -6,6 +6,7 @@
     /** @var \App\Models\ManufacturingOrder $order */
     $status = $order->status->value;
     $isOpen = ! $order->status->isTerminal();
+    $canConsume = $canManage && in_array($status, ['released', 'in_progress'], true);
 @endphp
 
 @section('content')
@@ -13,6 +14,10 @@
     <x-slot:toolbar>
         <x-page-toolbar :title="$order->article?->name . ($order->variant ? ' — ' . ($order->variant->name ?? $order->variant->option_signature) : '')">
             <x-slot:actions>
+                @if ($order->procedureRun)
+                    <x-icon-btn icon="checklist" size="sm" :href="route('procedure-runs.show', $order->procedureRun)" show-label>{{ __('manufacturing.order.action.procedure_run') }}</x-icon-btn>
+                @endif
+                <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('manufacturing-orders.record.pdf', $order)" target="_blank" show-label>{{ __('manufacturing.record.title') }}</x-icon-btn>
                 @if ($canManage)
                     @if ($status === 'draft')
                         <form method="POST" action="{{ route('manufacturing-orders.release', $order) }}">@csrf
@@ -70,7 +75,11 @@
                     <th>{{ __('Artikel') }}</th>
                     <th class="text-right">{{ __('manufacturing.order.field.target_qty') }}</th>
                     <th class="text-right">{{ __('inventory.field.reserved') }}</th>
-                    <th class="text-right">{{ __('manufacturing.order.field.produced') }}</th>
+                    <th class="text-right">{{ __('manufacturing.order.field.consumed') }}</th>
+                    <th class="text-right">{{ __('manufacturing.order.field.actual_cost') }}</th>
+                    @if ($canConsume)
+                        <th class="text-right">{{ __('manufacturing.order.action.consume') }}</th>
+                    @endif
                 </tr>
             </x-slot:head>
             @forelse ($order->materials as $material)
@@ -79,9 +88,22 @@
                     <td class="text-right tabular-nums">{{ $material->target_qty }} {{ $material->unit_snapshot }}</td>
                     <td class="text-right tabular-nums">{{ $material->reserved_qty }}</td>
                     <td class="text-right tabular-nums">{{ $material->consumed_qty }}</td>
+                    <td class="text-right tabular-nums">{{ number_format((float) $material->actual_cost, 2, ',', '.') }}</td>
+                    @if ($canConsume)
+                        <td class="text-right">
+                            @unless ($material->is_tool)
+                                <form method="POST" action="{{ route('manufacturing-orders.materials.consume', [$order, $material]) }}" class="inline-flex items-center justify-end gap-1">
+                                    @csrf
+                                    <input name="quantity" type="number" step="0.0001" min="0.0001" required
+                                           class="input input-xs input-bordered w-20" aria-label="{{ __('manufacturing.order.field.quantity') }}">
+                                    <button type="submit" class="btn btn-xs">{{ __('manufacturing.order.action.consume') }}</button>
+                                </form>
+                            @endunless
+                        </td>
+                    @endif
                 </tr>
             @empty
-                <x-table.empty :colspan="4" icon="build" :title="__('article.no_options')" />
+                <x-table.empty :colspan="$canConsume ? 6 : 5" icon="build" :title="__('article.no_options')" />
             @endforelse
         </x-table>
     </x-card>
@@ -178,6 +200,13 @@
                     </tr>
                 @endforeach
             </x-table>
+            @if ($quality !== null)
+                <div class="flex flex-wrap gap-x-6 gap-y-1 p-4 pt-3 text-sm border-t border-base-200">
+                    <div>{{ __('manufacturing.planning.yield') }}: <strong>{{ number_format((float) $quality['yield'] * 100, 1) }} %</strong></div>
+                    <div>{{ __('manufacturing.planning.scrap_rate') }}: <strong>{{ number_format((float) $quality['scrap_rate'] * 100, 1) }} %</strong></div>
+                    <div>{{ __('manufacturing.planning.rework_rate') }}: <strong>{{ number_format((float) $quality['rework_rate'] * 100, 1) }} %</strong></div>
+                </div>
+            @endif
         </x-card>
     @endif
 

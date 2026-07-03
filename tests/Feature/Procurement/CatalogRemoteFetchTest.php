@@ -98,6 +98,44 @@ final class CatalogRemoteFetchTest extends TestCase {
             ->assertRedirect()->assertSessionHas('error');
     }
 
+    public function test_http_fetch_blocks_internal_targets(): void {
+        // SSRF-Guard (MVP-091): interne/private Ziele werden nie abgerufen.
+        $source = $this->source(['source_type' => 'http', 'remote_url' => 'https://127.0.0.1/secret.csv']);
+        Http::fake();
+
+        $this->actingAs($this->admin)
+            ->post(route('supplier-catalogs.fetch', $source))
+            ->assertRedirect()->assertSessionHas('error');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_ftp_fetch_blocks_internal_hosts(): void {
+        $source = $this->source(['source_type' => 'ftp', 'remote_host' => '10.0.0.5', 'remote_path' => '/cat.csv']);
+
+        $this->actingAs($this->admin)
+            ->post(route('supplier-catalogs.fetch', $source))
+            ->assertRedirect()->assertSessionHas('error');
+    }
+
+    public function test_source_form_rejects_internal_remote_targets(): void {
+        $payload = [
+            'supplier' => $this->supplier->sqid, 'name' => 'Quelle', 'format' => 'csv',
+            'delimiter' => ';', 'decimal_separator' => ',', 'encoding' => 'UTF-8',
+            'source_type' => 'http', 'remote_url' => 'https://192.168.1.10/cat.csv',
+        ];
+
+        $this->actingAs($this->admin)
+            ->post(route('supplier-catalogs.store'), $payload)
+            ->assertSessionHasErrors('remote_url');
+
+        $this->actingAs($this->admin)
+            ->post(route('supplier-catalogs.store'), array_merge($payload, [
+                'source_type' => 'sftp', 'remote_url' => null, 'remote_host' => 'localhost', 'remote_path' => '/x.csv',
+            ]))
+            ->assertSessionHasErrors('remote_host');
+    }
+
     public function test_fetch_requires_permission(): void {
         $source = $this->source(['source_type' => 'http', 'remote_url' => 'https://feed.example.com/cat.001']);
         $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);

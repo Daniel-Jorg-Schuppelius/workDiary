@@ -16,18 +16,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Kalkulationswarnung bei einer Einkaufspreisänderung (Feature 050, MVP-094).
+ * Abgleichwarnung eines Katalogartikels (Feature 050, MVP-094): Marge bei
+ * Einkaufspreisänderung oder Verfügbarkeitsänderung mit betroffenen offenen
+ * Vorgängen (`impacts`-Snapshot: Bestellungen, LV-Positionen,
+ * Fertigungsaufträge).
  *
  * @property int $id
  * @property int $organization_id
  * @property int $supplier_catalog_item_id
  * @property int $article_id
  * @property int|null $supplier_id
+ * @property string $type
  * @property numeric-string|null $old_purchase_price
- * @property numeric-string $new_purchase_price
- * @property numeric-string $sale_price
- * @property numeric-string $new_margin
+ * @property numeric-string|null $new_purchase_price
+ * @property numeric-string|null $sale_price
+ * @property numeric-string|null $new_margin
  * @property numeric-string|null $min_margin
+ * @property array<string, mixed>|null $impacts
  * @property string $status
  */
 class PricingChangeAlert extends Model {
@@ -39,16 +44,22 @@ class PricingChangeAlert extends Model {
 
     public const STATUS_ACKNOWLEDGED = 'acknowledged';
 
+    public const TYPE_MARGIN = 'margin';
+
+    public const TYPE_AVAILABILITY = 'availability';
+
     protected $fillable = [
         'organization_id',
         'supplier_catalog_item_id',
         'article_id',
         'supplier_id',
+        'type',
         'old_purchase_price',
         'new_purchase_price',
         'sale_price',
         'new_margin',
         'min_margin',
+        'impacts',
         'status',
         'acknowledged_by',
         'acknowledged_at',
@@ -61,6 +72,7 @@ class PricingChangeAlert extends Model {
         'sale_price' => 'decimal:4',
         'new_margin' => 'decimal:3',
         'min_margin' => 'decimal:3',
+        'impacts' => 'array',
         'acknowledged_at' => 'datetime',
     ];
 

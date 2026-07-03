@@ -38,13 +38,14 @@ class ManufacturingReportService {
         bool $receiveGood = true,
     ): ManufacturingOrderReport {
         $good = $this->positive($goodQty);
+        $scrap = $this->positive($scrapQty);
 
-        return DB::transaction(function () use ($order, $producedQty, $good, $scrapQty, $reworkQty, $reportedBy, $note, $receiveGood): ManufacturingOrderReport {
+        return DB::transaction(function () use ($order, $producedQty, $good, $scrap, $reworkQty, $reportedBy, $note, $receiveGood): ManufacturingOrderReport {
             /** @var ManufacturingOrderReport $report */
             $report = $order->reports()->create([
                 'produced_qty' => $this->positive($producedQty),
                 'good_qty' => $good,
-                'scrap_qty' => $this->positive($scrapQty),
+                'scrap_qty' => $scrap,
                 'rework_qty' => $this->positive($reworkQty),
                 'note' => $note,
                 'reported_by' => $reportedBy,
@@ -53,6 +54,11 @@ class ManufacturingReportService {
 
             if ($receiveGood && bccomp($good, '0', self::SCALE) > 0 && $order->warehouse_id !== null) {
                 $this->inventory->receiveFinishedGood($order, $good);
+            }
+
+            // Ausschuss zusätzlich als Journalbewegung festhalten (MVP-071).
+            if (bccomp($scrap, '0', self::SCALE) > 0) {
+                $this->inventory->recordScrap($order, $scrap, (int) $report->id);
             }
 
             return $report;

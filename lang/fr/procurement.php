@@ -65,7 +65,17 @@ return [
             'old_ek' => 'Coût anc.',
             'new_ek' => 'Coût nouv.',
             'sale' => 'PV',
+            'type' => 'Type',
             'margin' => 'Nouvelle marge',
+        ],
+        'type' => [
+            'margin' => 'Marge',
+            'availability' => 'Disponibilité',
+        ],
+        'impacts' => [
+            'purchase_orders' => 'Commandes',
+            'boq_items' => 'Positions de DQE',
+            'manufacturing_orders' => 'Ordres de fabrication',
         ],
         'action' => [
             'acknowledge' => 'Fait',
@@ -152,6 +162,7 @@ return [
             'sftp_unavailable' => 'SFTP n\'est pas disponible (paquet flysystem-sftp-v3 requis).',
             'no_remote' => 'Aucune récupération distante n\'est configurée pour cette source.',
             'fetch_failed' => 'Échec de la récupération du fichier catalogue.',
+            'host_not_allowed' => 'L\'hôte distant n\'est pas autorisé (cible interne/privée).',
         ],
         'subtitle' => 'Gérer les sources de catalogue et importer des listes de prix CSV',
         'empty' => 'Aucune source de catalogue.',

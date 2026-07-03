@@ -95,6 +95,7 @@ class CatalogItemUpserter {
 
                 $oldPrice = $item->purchase_price;
                 $oldGtin = $item->gtin;
+                $oldAvailability = $item->availability;
                 $wasLinked = $item->article_id !== null;
                 $item->fill($values);
                 $item->raw_hash = $hash;
@@ -113,6 +114,13 @@ class CatalogItemUpserter {
                     $summary['price_changed']++;
                     ($this->alerts ?? app(PriceChangeAlertService::class))
                         ->evaluate($item, $oldPrice, (string) $item->purchase_price);
+                }
+
+                // Verfügbarkeitsänderung eines verknüpften Artikels → Warnung,
+                // sofern offene Vorgänge betroffen sind (MVP-094).
+                if (trim((string) $oldAvailability) !== trim((string) $item->availability)) {
+                    ($this->alerts ?? app(PriceChangeAlertService::class))
+                        ->evaluateAvailability($item, $oldAvailability, $item->availability);
                 }
                 $this->syncTiers($item, $tiers);
                 $summary['updated']++;

@@ -81,6 +81,15 @@ return [
             'unit' => 'Unité',
         ],
     ],
+    'record' => [
+        'title' => 'Justificatif de fabrication',
+        'generated_at' => 'Créé le',
+        'reported_at' => 'Horodatage',
+        'reported_by' => 'Déclaré par',
+        'no_reports' => 'Aucune déclaration pour le moment.',
+        'procedure' => 'Procédure / gamme de fabrication',
+        'footer_note' => 'Justificatif de fabrication basé sur les déclarations partielles enregistrées — pas un document de facturation.',
+    ],
     'parameter_type' => [
         'number' => 'Nombre',
         'measure' => 'Mesure (avec unité)',
@@ -146,6 +155,8 @@ return [
             'push_lexoffice' => 'Envoyer à Lexoffice',
             'subcontract' => 'Sous-traiter',
             'cancel' => 'Annuler',
+            'consume' => 'Enregistrer la consommation',
+            'procedure_run' => 'Exécution de procédure',
         ],
         'field' => [
             'target_qty' => 'Quantité cible',
@@ -159,6 +170,8 @@ return [
             'article' => 'Article',
             'deliveries' => 'Livraisons',
             'facturation_status' => 'Statut de facturation',
+            'consumed' => 'Consommé',
+            'actual_cost' => 'Coûts réels',
         ],
         'flash' => [
             'created' => 'Ordre créé.',
@@ -172,6 +185,8 @@ return [
             'subcontract_failed' => 'Sous-traitance impossible.',
             'cancelled' => 'Ordre annulé.',
             'deliver_needs_variant_warehouse' => 'La livraison nécessite une variante et un entrepôt.',
+            'consumed' => 'Consommation enregistrée.',
+            'consume_not_allowed' => 'La consommation n\'est possible que pour les ordres libérés ou en cours.',
         ],
     ],
 ];

@@ -81,6 +81,15 @@ return [
             'unit' => 'Unità',
         ],
     ],
+    'record' => [
+        'title' => 'Attestato di produzione',
+        'generated_at' => 'Creato il',
+        'reported_at' => 'Data/ora',
+        'reported_by' => 'Segnalato da',
+        'no_reports' => 'Ancora nessuna rendicontazione.',
+        'procedure' => 'Procedura / ciclo di lavoro',
+        'footer_note' => 'Attestato di produzione basato sulle rendicontazioni parziali registrate — non è un documento di fatturazione.',
+    ],
     'parameter_type' => [
         'number' => 'Numero',
         'measure' => 'Misura (con unità)',
@@ -146,6 +155,8 @@ return [
             'push_lexoffice' => 'Invia a Lexoffice',
             'subcontract' => 'Conto lavoro',
             'cancel' => 'Annulla',
+            'consume' => 'Registra consumo',
+            'procedure_run' => 'Esecuzione procedura',
         ],
         'field' => [
             'target_qty' => 'Quantità obiettivo',
@@ -159,6 +170,8 @@ return [
             'article' => 'Articolo',
             'deliveries' => 'Consegne',
             'facturation_status' => 'Stato fatturazione',
+            'consumed' => 'Consumato',
+            'actual_cost' => 'Costi effettivi',
         ],
         'flash' => [
             'created' => 'Ordine creato.',
@@ -172,6 +185,8 @@ return [
             'subcontract_failed' => 'Conto lavoro non possibile.',
             'cancelled' => 'Ordine annullato.',
             'deliver_needs_variant_warehouse' => 'La consegna richiede una variante e un magazzino.',
+            'consumed' => 'Consumo registrato.',
+            'consume_not_allowed' => 'Il consumo è possibile solo per ordini rilasciati o in lavorazione.',
         ],
     ],
 ];

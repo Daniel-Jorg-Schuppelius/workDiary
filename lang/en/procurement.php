@@ -65,7 +65,17 @@ return [
             'old_ek' => 'Old cost',
             'new_ek' => 'New cost',
             'sale' => 'Sale',
+            'type' => 'Type',
             'margin' => 'New margin',
+        ],
+        'type' => [
+            'margin' => 'Margin',
+            'availability' => 'Availability',
+        ],
+        'impacts' => [
+            'purchase_orders' => 'Purchase orders',
+            'boq_items' => 'BoQ items',
+            'manufacturing_orders' => 'Manufacturing orders',
         ],
         'action' => [
             'acknowledge' => 'Done',
@@ -152,6 +162,7 @@ return [
             'sftp_unavailable' => 'SFTP is not available (package flysystem-sftp-v3 required).',
             'no_remote' => 'No remote fetch is configured for this source.',
             'fetch_failed' => 'Fetching the catalog file failed.',
+            'host_not_allowed' => 'The remote host is not allowed (internal/private target).',
         ],
         'subtitle' => 'Manage catalog sources and import CSV price lists',
         'empty' => 'No catalog sources yet.',

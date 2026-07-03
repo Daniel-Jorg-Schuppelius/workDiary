@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\SupplierCatalogSource;
+use App\Support\UrlSafety;
 use Illuminate\Support\Facades\Http;
 use League\Flysystem\{Filesystem, FilesystemAdapter};
 use League\Flysystem\Ftp\{FtpAdapter, FtpConnectionOptions};
@@ -45,7 +46,15 @@ class CatalogFetchService {
             throw new RuntimeException((string) __('procurement.catalog.error.no_remote'));
         }
 
-        $request = Http::timeout(60)->withHeaders(['Accept' => '*/*']);
+        // SSRF-Laufzeit-Guard (auch gegen DNS-Rebinding / Altbestand-Quellen):
+        // niemals interne/private/reservierte Ziele abrufen. Redirects bleiben
+        // deaktiviert, damit ein externer Server nicht auf interne Ziele
+        // weiterleiten kann.
+        if (! UrlSafety::isPubliclyRoutableHttpUrl($url)) {
+            throw new RuntimeException((string) __('procurement.catalog.error.host_not_allowed'));
+        }
+
+        $request = Http::timeout(60)->withHeaders(['Accept' => '*/*'])->withOptions(['allow_redirects' => false]);
         $username = trim((string) $source->remote_username);
         if ($username !== '') {
             $request = $request->withBasicAuth($username, (string) $source->remote_password);
@@ -103,6 +112,11 @@ class CatalogFetchService {
     private function requireHostPath(SupplierCatalogSource $source): void {
         if (trim((string) $source->remote_host) === '' || trim((string) $source->remote_path) === '') {
             throw new RuntimeException((string) __('procurement.catalog.error.no_remote'));
+        }
+
+        // SSRF-Laufzeit-Guard für FTP/SFTP: kein Abruf gegen interne Ziele.
+        if (! UrlSafety::isPubliclyRoutableHost((string) $source->remote_host)) {
+            throw new RuntimeException((string) __('procurement.catalog.error.host_not_allowed'));
         }
     }
 }

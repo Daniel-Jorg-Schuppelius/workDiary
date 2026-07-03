@@ -11,7 +11,6 @@
 namespace App\Plugins\Toggl\Sources;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
-use App\Models\TogglPendingEntry;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 
@@ -152,7 +151,7 @@ class TogglApiClient {
         $id = $record['id'] ?? null;
 
         return new TogglEntry(
-            source: TogglPendingEntry::SOURCE_API,
+            source: TogglEntry::SOURCE_API,
             entryKey: 'toggl:' . ($id ?? ($start . '|' . $stop)),
             clientName: $clientId !== null ? ($clients[$clientId] ?? null) : null,
             projectName: $project['name'] ?? null,
@@ -455,7 +454,7 @@ class TogglApiClient {
         $id = $item['id'] ?? null;
 
         return new TogglEntry(
-            source: TogglPendingEntry::SOURCE_API,
+            source: TogglEntry::SOURCE_API,
             entryKey: 'toggl:' . ($id ?? ($start . '|' . $stop)),
             clientName: $clientName,
             projectName: $projectName,

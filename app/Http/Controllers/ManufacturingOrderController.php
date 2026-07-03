@@ -13,9 +13,9 @@ namespace App\Http\Controllers;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveManufacturingOrderRequest;
-use App\Models\{Article, ArticleVariant, Customer, ManufacturingOrder, StockDelivery, Supplier, Warehouse, WorkCenter};
+use App\Models\{Article, ArticleVariant, Customer, ManufacturingOrder, ManufacturingOrderMaterial, StockDelivery, Supplier, Warehouse, WorkCenter};
 use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficeOrderConfirmationService, LexofficeQuotationService};
-use App\Services\Manufacturing\{CapacityService, DeliveryNotePdfRenderer, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingReportService, SubcontractService};
+use App\Services\Manufacturing\{CapacityService, DeliveryNotePdfRenderer, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingQualityService, ManufacturingRecordPdfRenderer, ManufacturingReportService, SubcontractService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -88,16 +88,51 @@ class ManufacturingOrderController extends Controller {
         return redirect()->route('manufacturing-orders.show', $order)->with('success', __('manufacturing.order.flash.created'));
     }
 
-    public function show(ManufacturingOrder $order): View {
+    public function show(ManufacturingOrder $order, ManufacturingQualityService $quality): View {
         Gate::authorize('view', $order);
-        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer']);
+        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer', 'procedureRun']);
 
         return view('manufacturing.show', [
             'order' => $order,
             'suppliers' => Supplier::query()->orderBy('name')->limit(500)->get(),
             'workCenters' => WorkCenter::query()->where('active', true)->orderBy('name')->get(),
             'canManage' => Auth::user()?->can(\App\Enums\User\Permission::InventoryPost->value) ?? false,
+            'quality' => $order->reports->isNotEmpty() ? $quality->metricsFor($order) : null,
         ]);
+    }
+
+    /** Liefert den Fertigungsnachweis als PDF (Feature 047, MVP-065). */
+    public function recordPdf(ManufacturingOrder $order, ManufacturingRecordPdfRenderer $renderer): \Illuminate\Http\Response {
+        Gate::authorize('view', $order);
+
+        return response($renderer->render($order), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $renderer->number($order) . '.pdf"',
+        ]);
+    }
+
+    /**
+     * Bucht den Ist-Verbrauch einer Materialposition über den Lagerkern
+     * (Feature 047, MVP-065): Reservierung erfüllen bzw. direkte Entnahme,
+     * Ist-Kosten aus dem Bewertungsverfahren.
+     */
+    public function consumeMaterial(Request $request, ManufacturingOrder $order, ManufacturingOrderMaterial $material): RedirectResponse {
+        Gate::authorize('update', $order);
+        abort_unless($material->manufacturing_order_id === $order->id, 404);
+
+        if (! in_array($order->status->value, ['released', 'in_progress'], true)) {
+            return back()->with('error', __('manufacturing.order.flash.consume_not_allowed'));
+        }
+
+        $data = $request->validate(['quantity' => ['required', 'numeric', 'gt:0']]);
+
+        try {
+            $this->inventory->consume($material, (string) $data['quantity']);
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('manufacturing.order.flash.consumed'));
     }
 
     /** Liefert die Auslieferung als Lieferschein-PDF (Feature 047, MVP-074). */

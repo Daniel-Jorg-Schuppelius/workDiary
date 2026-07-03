@@ -81,6 +81,15 @@ return [
             'unit' => 'Unidad',
         ],
     ],
+    'record' => [
+        'title' => 'Comprobante de fabricación',
+        'generated_at' => 'Creado el',
+        'reported_at' => 'Fecha/hora',
+        'reported_by' => 'Notificado por',
+        'no_reports' => 'Aún no hay notificaciones.',
+        'procedure' => 'Procedimiento / plan de trabajo',
+        'footer_note' => 'Comprobante de fabricación basado en las notificaciones parciales registradas — no es un documento de facturación.',
+    ],
     'parameter_type' => [
         'number' => 'Número',
         'measure' => 'Medida (con unidad)',
@@ -146,6 +155,8 @@ return [
             'push_lexoffice' => 'Enviar a Lexoffice',
             'subcontract' => 'Subcontratar',
             'cancel' => 'Cancelar',
+            'consume' => 'Registrar consumo',
+            'procedure_run' => 'Ejecución de procedimiento',
         ],
         'field' => [
             'target_qty' => 'Cantidad objetivo',
@@ -159,6 +170,8 @@ return [
             'article' => 'Artículo',
             'deliveries' => 'Entregas',
             'facturation_status' => 'Estado de facturación',
+            'consumed' => 'Consumido',
+            'actual_cost' => 'Costes reales',
         ],
         'flash' => [
             'created' => 'Orden creada.',
@@ -172,6 +185,8 @@ return [
             'subcontract_failed' => 'Subcontratación no posible.',
             'cancelled' => 'Orden cancelada.',
             'deliver_needs_variant_warehouse' => 'La entrega requiere una variante y un almacén.',
+            'consumed' => 'Consumo registrado.',
+            'consume_not_allowed' => 'El consumo solo es posible para órdenes liberadas o en curso.',
         ],
     ],
 ];

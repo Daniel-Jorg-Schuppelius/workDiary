@@ -82,6 +82,46 @@ final class UrlSafety {
     }
 
     /**
+     * Schnelle Konfigurationszeit-Prüfung eines bloßen Hostnamens (FTP/SFTP)
+     * OHNE DNS-Auflösung: kein Loopback-Name und kein IP-Literal im privaten/
+     * reservierten Bereich. Die verbindliche Prüfung erfolgt zur Laufzeit in
+     * {@see isPubliclyRoutableHost}.
+     */
+    public static function isAcceptableExternalHost(string $host): bool {
+        $host = strtolower(trim($host));
+        if ($host === '' || in_array($host, ['localhost', 'localhost.localdomain', 'ip6-localhost'], true)) {
+            return false;
+        }
+
+        $literal = trim($host, '[]');
+        if (filter_var($literal, FILTER_VALIDATE_IP) !== false) {
+            return IPHelper::isPublicIP($literal);
+        }
+
+        return true;
+    }
+
+    /**
+     * Verbindliche Laufzeit-Prüfung eines bloßen Hostnamens (FTP/SFTP): der
+     * Host muss zu ausschließlich öffentlichen IPs auflösen (DNS-Rebinding-
+     * sicher). Ein nicht auflösbarer Host ist kein SSRF-Ziel und bleibt zulässig.
+     */
+    public static function isPubliclyRoutableHost(string $host): bool {
+        $host = trim($host);
+        if (! self::isAcceptableExternalHost($host)) {
+            return false;
+        }
+
+        foreach (self::resolveHost($host) as $ip) {
+            if (! IPHelper::isPublicIP($ip)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Sicheres Redirect-Ziel? Nur absolute Pfade auf demselben Host bzw.
      * relative Pfade (beginnend mit „/", aber kein protokoll-relatives „//host").
      * Verhindert Open-Redirects auf fremde Domains.

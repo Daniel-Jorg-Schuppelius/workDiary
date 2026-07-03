@@ -102,6 +102,82 @@ final class ManufacturingOrderControllerTest extends TestCase {
         $this->assertSame('5.0000', $order->fresh()->goodTotal());
     }
 
+    public function test_consume_material_books_actual_consumption(): void {
+        $order = app(ManufacturingOrderService::class)->createDraft(
+            $this->organization, $this->product, null, '5', 'Stk', ['warehouse_id' => $this->warehouse->id],
+        );
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.release', $order));
+        $material = $order->materials()->firstOrFail();
+
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.materials.consume', [$order, $material]), [
+            'quantity' => '2',
+        ])->assertRedirect()->assertSessionHas('success');
+
+        $this->assertSame('2.0000', $material->fresh()->consumed_qty);
+    }
+
+    public function test_consume_is_rejected_for_cancelled_order(): void {
+        $order = app(ManufacturingOrderService::class)->createDraft(
+            $this->organization, $this->product, null, '5', 'Stk', ['warehouse_id' => $this->warehouse->id],
+        );
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.release', $order));
+        $material = $order->materials()->firstOrFail();
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.cancel', $order));
+
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.materials.consume', [$order, $material]), [
+            'quantity' => '2',
+        ])->assertRedirect()->assertSessionHas('error');
+
+        $this->assertSame('0.0000', $material->fresh()->consumed_qty);
+    }
+
+    public function test_consume_rejects_material_of_other_order(): void {
+        $service = app(ManufacturingOrderService::class);
+        $orderA = $service->createDraft($this->organization, $this->product, null, '5', 'Stk', ['warehouse_id' => $this->warehouse->id]);
+        $orderB = $service->createDraft($this->organization, $this->product, null, '5', 'Stk', ['warehouse_id' => $this->warehouse->id]);
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.release', $orderB));
+        $foreignMaterial = $orderB->materials()->firstOrFail();
+
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.materials.consume', [$orderA, $foreignMaterial]), [
+            'quantity' => '1',
+        ])->assertNotFound();
+    }
+
+    public function test_record_pdf_renders(): void {
+        $order = ManufacturingOrder::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $this->product->id,
+            'warehouse_id' => $this->warehouse->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('manufacturing-orders.record.pdf', $order))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_show_links_procedure_run_and_run_links_back(): void {
+        $order = app(ManufacturingOrderService::class)->createDraft(
+            $this->organization, $this->product, null, '5', 'Stk', ['warehouse_id' => $this->warehouse->id],
+        );
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.release', $order));
+        $this->actingAs($this->admin)->post(route('manufacturing-orders.start', $order));
+
+        $order->refresh();
+        $this->assertNotNull($order->procedure_run_id);
+        $run = $order->procedureRun;
+
+        // MVP-063: Einstieg vom Auftrag in die mobile Lauf-Ansicht …
+        $this->actingAs($this->admin)->get(route('manufacturing-orders.show', $order))
+            ->assertOk()
+            ->assertSee(route('procedure-runs.show', $run), false);
+
+        // … und zurück vom Lauf zum Auftrag (backUrl).
+        $this->actingAs($this->admin)->get(route('procedure-runs.show', $run))
+            ->assertOk()
+            ->assertSee(route('manufacturing-orders.show', $order), false);
+    }
+
     public function test_push_delivery_note_to_lexoffice(): void {
         config()->set('plugins.lexoffice.api_key', 'test-key');
         config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');

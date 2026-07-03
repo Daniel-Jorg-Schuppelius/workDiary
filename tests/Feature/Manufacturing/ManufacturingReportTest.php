@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\Manufacturing;
 
-use App\Enums\Inventory\StockState;
-use App\Models\{Article, ArticleVariant, ManufacturingOrder, ManufacturingOrderReport, Organization, Warehouse};
+use App\Enums\Inventory\{StockMovementType, StockState};
+use App\Models\{Article, ArticleVariant, ManufacturingOrder, ManufacturingOrderReport, Organization, StockMovement, Warehouse};
 use App\Services\Inventory\InventoryLedger;
 use App\Services\Manufacturing\ManufacturingReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -76,6 +76,28 @@ final class ManufacturingReportTest extends TestCase {
 
         $this->assertSame('0.0000', $this->ledger->balance($this->productVariant, $this->warehouse, StockState::Physical));
         $this->assertSame('5.0000', $this->order->goodTotal());
+    }
+
+    public function test_scrap_is_recorded_as_stock_movement(): void {
+        $this->reports->report($this->order, producedQty: '5', goodQty: '4', scrapQty: '1');
+
+        // Ausschuss steht als eigene Journalbewegung im Zustand `scrap` …
+        $this->assertSame('1.0000', $this->ledger->balance($this->productVariant, $this->warehouse, StockState::Scrap));
+
+        // … ohne physischen oder verfügbaren Bestand zu verändern.
+        $this->assertSame('4.0000', $this->ledger->balance($this->productVariant, $this->warehouse, StockState::Physical));
+        $this->assertSame('4.0000', $this->ledger->available($this->productVariant, $this->warehouse));
+
+        $movement = StockMovement::query()->where('movement_type', StockMovementType::Scrap->value)->first();
+        $this->assertNotNull($movement);
+        $this->assertSame($this->order->id, (int) $movement->source_id);
+        $this->assertSame($this->order->getMorphClass(), $movement->source_type);
+    }
+
+    public function test_zero_scrap_creates_no_scrap_movement(): void {
+        $this->reports->report($this->order, producedQty: '5', goodQty: '5');
+
+        $this->assertSame(0, StockMovement::query()->where('movement_type', StockMovementType::Scrap->value)->count());
     }
 
     public function test_parent_order_is_isolated_per_organization(): void {

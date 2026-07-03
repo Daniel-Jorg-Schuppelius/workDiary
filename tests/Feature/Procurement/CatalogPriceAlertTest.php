@@ -11,8 +11,8 @@
 namespace Tests\Feature\Procurement;
 
 use App\Enums\Procurement\CatalogItemStatus;
-use App\Models\{Article, PricingChangeAlert, PricingMarginRule, Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
-use App\Services\Procurement\CatalogCsvImportService;
+use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, PricingChangeAlert, PricingMarginRule, Supplier, SupplierCatalogItem, SupplierCatalogSource, User, Warehouse};
+use App\Services\Procurement\{CatalogCsvImportService, PurchaseOrderService};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -103,6 +103,90 @@ final class CatalogPriceAlertTest extends TestCase {
         $this->importPrice('90,00');
 
         $this->assertSame(0, PricingChangeAlert::query()->count());
+    }
+
+    public function test_margin_alert_carries_open_document_impacts(): void {
+        $this->linkedItem('50.0000');
+        $warehouse = Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $service = app(PurchaseOrderService::class);
+        $po = $service->createDraft($this->organization, $this->supplier, $warehouse);
+        $service->addLine($po, $this->article, '5');
+
+        $this->importPrice('90,00');
+
+        $alert = PricingChangeAlert::query()->firstOrFail();
+        $this->assertSame(PricingChangeAlert::TYPE_MARGIN, $alert->type);
+        $this->assertContains($po->number, $alert->impacts['purchase_orders'] ?? []);
+    }
+
+    public function test_availability_change_with_open_documents_creates_availability_alert(): void {
+        $item = $this->linkedItem('50.0000');
+        $item->forceFill(['availability' => 'lieferbar'])->save();
+
+        $order = ManufacturingOrder::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => Article::factory()->create(['organization_id' => $this->organization->id])->id,
+            'number' => 'FA-TEST-1',
+        ]);
+        ManufacturingOrderMaterial::query()->create([
+            'manufacturing_order_id' => $order->id,
+            'article_id' => $this->article->id,
+            'name_snapshot' => $this->article->name,
+            'target_qty' => '3',
+            'unit_snapshot' => 'Stk',
+        ]);
+
+        $csv = "ArtNr;Bezeichnung;EK;Verf\nA-1;Schraube;50,00;ausverkauft";
+        app(CatalogCsvImportService::class)->import($this->source, $csv, [
+            'external_no' => 'ArtNr', 'name' => 'Bezeichnung', 'purchase_price' => 'EK', 'availability' => 'Verf',
+        ]);
+
+        $alert = PricingChangeAlert::query()->where('type', PricingChangeAlert::TYPE_AVAILABILITY)->firstOrFail();
+        $this->assertSame(['old' => 'lieferbar', 'new' => 'ausverkauft'], $alert->impacts['availability']);
+        $this->assertContains($order->number, $alert->impacts['manufacturing_orders']);
+    }
+
+    public function test_availability_change_without_open_documents_creates_no_alert(): void {
+        $item = $this->linkedItem('50.0000');
+        $item->forceFill(['availability' => 'lieferbar'])->save();
+
+        $csv = "ArtNr;Bezeichnung;EK;Verf\nA-1;Schraube;50,00;ausverkauft";
+        app(CatalogCsvImportService::class)->import($this->source, $csv, [
+            'external_no' => 'ArtNr', 'name' => 'Bezeichnung', 'purchase_price' => 'EK', 'availability' => 'Verf',
+        ]);
+
+        $this->assertSame(0, PricingChangeAlert::query()->where('type', PricingChangeAlert::TYPE_AVAILABILITY)->count());
+    }
+
+    public function test_alerts_page_renders_both_alert_types_with_impacts(): void {
+        $item = $this->linkedItem('90.0000');
+        PricingChangeAlert::query()->create([
+            'organization_id' => $this->organization->id,
+            'supplier_catalog_item_id' => $item->id,
+            'article_id' => $this->article->id, 'supplier_id' => $this->supplier->id,
+            'type' => PricingChangeAlert::TYPE_MARGIN,
+            'new_purchase_price' => '90.0000', 'sale_price' => '100.0000', 'new_margin' => '10',
+            'min_margin' => '30', 'status' => PricingChangeAlert::STATUS_OPEN,
+            'impacts' => ['purchase_orders' => ['B-000042'], 'boq_items' => [], 'manufacturing_orders' => []],
+        ]);
+        PricingChangeAlert::query()->create([
+            'organization_id' => $this->organization->id,
+            'supplier_catalog_item_id' => $item->id,
+            'article_id' => $this->article->id, 'supplier_id' => $this->supplier->id,
+            'type' => PricingChangeAlert::TYPE_AVAILABILITY,
+            'status' => PricingChangeAlert::STATUS_OPEN,
+            'impacts' => [
+                'purchase_orders' => [], 'boq_items' => [], 'manufacturing_orders' => ['FA-000007'],
+                'availability' => ['old' => 'lieferbar', 'new' => 'ausverkauft'],
+            ],
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('supplier-catalogs.alerts'))
+            ->assertOk()
+            ->assertSee('B-000042')
+            ->assertSee('FA-000007')
+            ->assertSee('ausverkauft');
     }
 
     public function test_acknowledge_route_marks_done(): void {

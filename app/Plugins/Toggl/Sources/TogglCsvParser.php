@@ -10,7 +10,6 @@
 
 namespace App\Plugins\Toggl\Sources;
 
-use App\Models\TogglPendingEntry;
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\StringHelper;
@@ -125,7 +124,7 @@ class TogglCsvParser {
         $description = $this->nullIfBlank($get('description'));
 
         return new TogglEntry(
-            source: TogglPendingEntry::SOURCE_CSV,
+            source: TogglEntry::SOURCE_CSV,
             entryKey: TogglEntry::csvKey($startedAt->toIso8601String(), $endedAt->toIso8601String(), $client, $project, $description),
             clientName: $client,
             projectName: $project,

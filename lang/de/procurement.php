@@ -65,7 +65,17 @@ return [
             'old_ek' => 'EK alt',
             'new_ek' => 'EK neu',
             'sale' => 'VK',
+            'type' => 'Typ',
             'margin' => 'Neue Marge',
+        ],
+        'type' => [
+            'margin' => 'Marge',
+            'availability' => 'Verfügbarkeit',
+        ],
+        'impacts' => [
+            'purchase_orders' => 'Bestellungen',
+            'boq_items' => 'LV-Positionen',
+            'manufacturing_orders' => 'Fertigungsaufträge',
         ],
         'action' => [
             'acknowledge' => 'Erledigt',
@@ -152,6 +162,7 @@ return [
             'sftp_unavailable' => 'SFTP ist nicht verfügbar (Paket flysystem-sftp-v3 erforderlich).',
             'no_remote' => 'Für diese Quelle ist kein Remote-Abruf konfiguriert.',
             'fetch_failed' => 'Der Abruf der Katalogdatei ist fehlgeschlagen.',
+            'host_not_allowed' => 'Der Remote-Host ist nicht zulässig (internes/privates Ziel).',
         ],
         'subtitle' => 'Katalogquellen und CSV-Preislisten importieren',
         'empty' => 'Keine Katalogquellen vorhanden.',

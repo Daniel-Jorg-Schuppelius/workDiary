@@ -18,11 +18,18 @@ use App\Models\{Article, PricingChangeAlert, SupplierCatalogItem};
  * Erzeugt Kalkulationswarnungen bei Einkaufspreisänderungen (Feature 050,
  * MVP-094): Steigt der Lieferanten-EK eines verknüpften Artikels so, dass der
  * hinterlegte Verkaufspreis unter die greifende Mindestmarge (oder unter 0)
- * fällt, entsteht eine offene Warnung. Verkaufspreise werden nicht automatisch
- * geändert — die Reaktion bleibt beim Anwender.
+ * fällt, entsteht eine offene Warnung. Zusätzlich entsteht bei einer
+ * Verfügbarkeitsänderung eines verknüpften Artikels mit offenen Vorgängen eine
+ * Verfügbarkeitswarnung. Beide Warnungen tragen die betroffenen offenen
+ * Vorgänge (Bestellungen, LV-Positionen, Fertigungsaufträge) als Snapshot.
+ * Verkaufspreise werden nicht automatisch geändert — die Reaktion bleibt beim
+ * Anwender.
  */
 class PriceChangeAlertService {
-    public function __construct(private readonly PriceSuggestionService $pricing) {}
+    public function __construct(
+        private readonly PriceSuggestionService $pricing,
+        private readonly DocumentImpactScanner $impacts,
+    ) {}
 
     /**
      * Bewertet eine Preisänderung eines Katalogartikels und legt bei
@@ -52,16 +59,56 @@ class PriceChangeAlertService {
             return null;
         }
 
+        $impacts = $this->impacts->scan((int) $item->organization_id, (int) $article->id);
+
         return PricingChangeAlert::query()->create([
             'organization_id' => $item->organization_id,
             'supplier_catalog_item_id' => $item->id,
             'article_id' => $article->id,
             'supplier_id' => $item->supplier_id,
+            'type' => PricingChangeAlert::TYPE_MARGIN,
             'old_purchase_price' => $oldPrice,
             'new_purchase_price' => $newPrice,
             'sale_price' => $article->default_sale_price,
             'new_margin' => round($newMargin, 3),
             'min_margin' => $minMargin,
+            'impacts' => $this->impacts->isEmpty($impacts) ? null : $impacts,
+            'status' => PricingChangeAlert::STATUS_OPEN,
+        ]);
+    }
+
+    /**
+     * Bewertet eine Verfügbarkeitsänderung eines verknüpften Katalogartikels.
+     * Eine Warnung entsteht nur, wenn offene Vorgänge den Artikel referenzieren
+     * (Rauschschutz) — die Änderung selbst bleibt sonst im Katalogstand
+     * sichtbar.
+     */
+    public function evaluateAvailability(SupplierCatalogItem $item, ?string $oldAvailability, ?string $newAvailability): ?PricingChangeAlert {
+        $old = trim((string) $oldAvailability);
+        $new = trim((string) $newAvailability);
+        if ($item->article_id === null || $old === $new) {
+            return null;
+        }
+
+        $impacts = $this->impacts->scan((int) $item->organization_id, (int) $item->article_id);
+        if ($this->impacts->isEmpty($impacts)) {
+            return null;
+        }
+
+        $impacts['availability'] = ['old' => $old !== '' ? $old : null, 'new' => $new !== '' ? $new : null];
+
+        return PricingChangeAlert::query()->create([
+            'organization_id' => $item->organization_id,
+            'supplier_catalog_item_id' => $item->id,
+            'article_id' => $item->article_id,
+            'supplier_id' => $item->supplier_id,
+            'type' => PricingChangeAlert::TYPE_AVAILABILITY,
+            'old_purchase_price' => null,
+            'new_purchase_price' => null,
+            'sale_price' => null,
+            'new_margin' => null,
+            'min_margin' => null,
+            'impacts' => $impacts,
             'status' => PricingChangeAlert::STATUS_OPEN,
         ]);
     }

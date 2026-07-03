@@ -105,6 +105,11 @@ class ManufacturingOrder extends Model {
         return $this->belongsTo(ProcedureTemplateVersion::class, 'procedure_template_version_id');
     }
 
+    /** @return BelongsTo<ProcedureRun, $this> */
+    public function procedureRun(): BelongsTo {
+        return $this->belongsTo(ProcedureRun::class);
+    }
+
     /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo {
         return $this->belongsTo(Warehouse::class);

@@ -81,6 +81,15 @@ return [
             'unit' => 'Unit',
         ],
     ],
+    'record' => [
+        'title' => 'Production record',
+        'generated_at' => 'Generated at',
+        'reported_at' => 'Reported at',
+        'reported_by' => 'Reported by',
+        'no_reports' => 'No reports yet.',
+        'procedure' => 'Procedure / work plan',
+        'footer_note' => 'Production record based on the recorded partial reports — not an invoicing document.',
+    ],
     'parameter_type' => [
         'number' => 'Number',
         'measure' => 'Measure (with unit)',
@@ -146,6 +155,8 @@ return [
             'push_lexoffice' => 'Send to Lexoffice',
             'subcontract' => 'Subcontract',
             'cancel' => 'Cancel',
+            'consume' => 'Post consumption',
+            'procedure_run' => 'Procedure run',
         ],
         'field' => [
             'target_qty' => 'Target quantity',
@@ -159,6 +170,8 @@ return [
             'article' => 'Article',
             'deliveries' => 'Deliveries',
             'facturation_status' => 'Invoicing status',
+            'consumed' => 'Consumed',
+            'actual_cost' => 'Actual cost',
         ],
         'flash' => [
             'created' => 'Order created.',
@@ -172,6 +185,8 @@ return [
             'subcontract_failed' => 'Subcontracting not possible.',
             'cancelled' => 'Order cancelled.',
             'deliver_needs_variant_warehouse' => 'Delivery requires a variant and a warehouse.',
+            'consumed' => 'Consumption posted.',
+            'consume_not_allowed' => 'Consumption is only possible for released or running orders.',
         ],
     ],
 ];

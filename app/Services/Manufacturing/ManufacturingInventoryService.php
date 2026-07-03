@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
+use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Models\{ArticleVariant, ManufacturingOrder, ManufacturingOrderMaterial, Organization, Warehouse};
-use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService};
+use App\Services\Inventory\{InventoryLedger, InventoryValuationManager, ReservationService, SerialService, StockPosting};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -163,6 +164,37 @@ class ManufacturingInventoryService {
                 }
             }
         });
+    }
+
+    /**
+     * Verbucht gemeldeten Ausschuss des Fertigerzeugnisses als eigene
+     * Journalbewegung im Zustand `scrap` (MVP-071): je Variante/Lager
+     * nachvollziehbar, ohne physischen oder verfügbaren Bestand zu verändern
+     * (Ausschuss ist kein verwendbarer Bestand). Ohne Lager oder
+     * bestandsführende Variante bleibt die Menge nur in der Rückmeldung
+     * dokumentiert.
+     */
+    public function recordScrap(ManufacturingOrder $order, string $qty, ?int $reportId = null): void {
+        $qty = $this->positive($qty);
+        if (bccomp($qty, '0', self::SCALE) <= 0) {
+            return;
+        }
+
+        $warehouse = $order->warehouse;
+        $variant = $this->resolveVariant($order->article_id, $order->article_variant_id);
+        if ($warehouse === null || $variant === null) {
+            return;
+        }
+
+        $this->ledger->post(new StockPosting(
+            $variant,
+            $warehouse,
+            StockState::Scrap,
+            $qty,
+            StockMovementType::Scrap,
+            idempotencyKey: $reportId !== null ? 'mfg-scrap:' . $reportId : null,
+            source: $order,
+        ));
     }
 
     /** Löst die bestandsführende Variante auf: konkrete Variante oder Standard-/erste Variante des Artikels. */

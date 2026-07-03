@@ -65,7 +65,17 @@ return [
             'old_ek' => 'Coste ant.',
             'new_ek' => 'Coste nuevo',
             'sale' => 'PV',
+            'type' => 'Tipo',
             'margin' => 'Nuevo margen',
+        ],
+        'type' => [
+            'margin' => 'Margen',
+            'availability' => 'Disponibilidad',
+        ],
+        'impacts' => [
+            'purchase_orders' => 'Pedidos',
+            'boq_items' => 'Posiciones de presupuesto',
+            'manufacturing_orders' => 'Órdenes de fabricación',
         ],
         'action' => [
             'acknowledge' => 'Hecho',
@@ -152,6 +162,7 @@ return [
             'sftp_unavailable' => 'SFTP no está disponible (se requiere el paquete flysystem-sftp-v3).',
             'no_remote' => 'No hay obtención remota configurada para esta fuente.',
             'fetch_failed' => 'Error al obtener el archivo del catálogo.',
+            'host_not_allowed' => 'El host remoto no está permitido (destino interno/privado).',
         ],
         'subtitle' => 'Gestionar fuentes de catálogo e importar listas de precios CSV',
         'empty' => 'No hay fuentes de catálogo.',

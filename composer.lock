@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7643b10386956c7eeefc5970b549a811",
+    "content-hash": "d2f06cba33132c704f72ca810516724b",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -547,16 +547,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/datev-php-sdk",
-            "version": "v0.4.6",
+            "version": "v1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk.git",
-                "reference": "ff6de2888af81f22c958b5d0c422959ac047199f"
+                "reference": "2460d9282ad18f94bee30a8a4f72123741d49638"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/datev-php-sdk/zipball/ff6de2888af81f22c958b5d0c422959ac047199f",
-                "reference": "ff6de2888af81f22c958b5d0c422959ac047199f",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/datev-php-sdk/zipball/2460d9282ad18f94bee30a8a4f72123741d49638",
+                "reference": "2460d9282ad18f94bee30a8a4f72123741d49638",
                 "shasum": ""
             },
             "require": {
@@ -587,9 +587,9 @@
             "description": "DATEV SDK for PHP",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/tree/v0.4.6"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/datev-php-sdk/tree/v1.0"
             },
-            "time": "2026-06-23T20:37:08+00:00"
+            "time": "2026-07-03T11:42:19+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/lexoffice-php-sdk",
@@ -643,7 +643,7 @@
             "dist": {
                 "type": "path",
                 "url": "../php-api-toolkit",
-                "reference": "03b5eef81b704afd7c7a7d83c2dcfbd8b783ec74"
+                "reference": "0025e0adafca16808890df58c358d66da633a974"
             },
             "require": {
                 "dschuppelius/php-common-toolkit": "^1.0",
@@ -1705,16 +1705,16 @@
         },
         {
             "name": "dschuppelius/php-error-toolkit",
-            "version": "v2.4.2",
+            "version": "v2.5.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-error-toolkit.git",
-                "reference": "1363a104c1f4e17994e45990b8f068a5330da18e"
+                "reference": "9e67ae1ea34dbfb16e9249ace0d5c4928b0286ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-error-toolkit/zipball/1363a104c1f4e17994e45990b8f068a5330da18e",
-                "reference": "1363a104c1f4e17994e45990b8f068a5330da18e",
+                "url": "https://api.github.com/repos/DSchuppelius/php-error-toolkit/zipball/9e67ae1ea34dbfb16e9249ace0d5c4928b0286ff",
+                "reference": "9e67ae1ea34dbfb16e9249ace0d5c4928b0286ff",
                 "shasum": ""
             },
             "require": {
@@ -1722,11 +1722,23 @@
                 "psr/log": "^3.0"
             },
             "require-dev": {
+                "illuminate/support": "^10.0|^11.0|^12.0",
                 "laravel/pint": "^1.27",
                 "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^11.0"
+                "phpunit/phpunit": "^11.0",
+                "vlucas/phpdotenv": "^5.6"
+            },
+            "suggest": {
+                "illuminate/support": "Aktiviert die Laravel-Bridge: auto-discovertes ServiceProvider bindet die LoggerRegistry an den Laravel-Log-Channel"
             },
             "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ERRORToolkit\\Laravel\\ErrorToolkitServiceProvider"
+                    ]
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "ERRORToolkit\\": "src/"
@@ -1742,12 +1754,12 @@
                     "email": "info@schuppelius.org"
                 }
             ],
-            "description": "Reused codes for my api php sdks",
+            "description": "Logging and error handling foundation for the Schuppelius PHP toolkits (PSR-3 loggers, global error handler, LoggerRegistry, Laravel bridge)",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-error-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-error-toolkit/tree/v2.4.2"
+                "source": "https://github.com/DSchuppelius/php-error-toolkit/tree/v2.5.4"
             },
-            "time": "2026-06-23T20:35:53+00:00"
+            "time": "2026-07-03T13:52:49+00:00"
         },
         {
             "name": "egulias/email-validator",
@@ -12256,11 +12268,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.3",
+            "version": "2.2.4",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/4048833dd47b377287818841877fb3087289509c",
-                "reference": "4048833dd47b377287818841877fb3087289509c",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/f0fe3fb03bb53ce68cc2416785b260e62226ec27",
+                "reference": "f0fe3fb03bb53ce68cc2416785b260e62226ec27",
                 "shasum": ""
             },
             "require": {
@@ -12316,7 +12328,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-06-30T21:15:26+00:00"
+            "time": "2026-07-03T07:00:23+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",

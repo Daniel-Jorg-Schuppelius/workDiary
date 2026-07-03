@@ -10,7 +10,6 @@
 
 namespace App\Plugins\Toggl\Sources;
 
-use App\Models\TogglPendingEntry;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -22,8 +21,12 @@ use CommonToolkit\Helper\Data\CryptoHelper;
  * {@see \App\Plugins\Toggl\TogglImportService} verarbeitet ausschließlich diese Struktur.
  */
 final class TogglEntry {
+    public const SOURCE_API = 'api';
+
+    public const SOURCE_CSV = 'csv';
+
     public function __construct(
-        /** Quelle: TogglPendingEntry::SOURCE_API | SOURCE_CSV. */
+        /** Quelle: {@see self::SOURCE_API} | {@see self::SOURCE_CSV}. */
         public readonly string $source,
         /** Stabiler Idempotenz-Schlüssel ("toggl:<id>" bzw. "csv:<hash>"). */
         public readonly string $entryKey,
