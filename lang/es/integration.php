@@ -97,4 +97,13 @@ return [
         'anydesk_id' => 'ID de AnyDesk',
         'teamviewer_id' => 'ID de TeamViewer',
     ],
+    'outbox' => [
+        'status' => [
+            'pending' => 'Pendiente',
+            'processing' => 'En transferencia',
+            'confirmed' => 'Confirmado',
+            'failed' => 'Fallido',
+            'compensation_required' => 'Compensación necesaria',
+        ],
+    ],
 ];

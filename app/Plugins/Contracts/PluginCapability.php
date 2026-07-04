@@ -29,6 +29,9 @@ enum PluginCapability: string {
     /** Kann Zahlungs-/Abgleichdaten zurücklesen. */
     case PaymentSync = 'payment_sync';
 
+    /** Kann Aufgaben mit einem externen Aufgabensystem abgleichen (Feature 055). */
+    case TaskSync = 'task_sync';
+
     /**
      * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren muss.
      *
@@ -40,6 +43,7 @@ enum PluginCapability: string {
             self::TimeExport => TimeExporter::class,
             self::TimeImport => TimeImporter::class,
             self::PaymentSync => PaymentSyncer::class,
+            self::TaskSync => TaskSyncer::class,
         };
     }
 }

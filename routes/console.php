@@ -93,6 +93,13 @@ Schedule::command('openproject:import')
     ->withoutOverlapping()
     ->onOneServer();
 
+// Todoist-Aufgabenabgleich (Feature 055, MVP-115): Polling ist die
+// verlässliche Quelle (cursor-basiertes Delta), Webhooks nur Beschleuniger.
+Schedule::command('todoist:sync')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('openproject:push')
     ->hourly()
     ->withoutOverlapping()

@@ -41,6 +41,7 @@ enum PermissionGroup: string implements HasLabel {
     case Communication = 'communication';
     case Documents = 'documents';
     case Knowledge = 'knowledge';
+    case Ideas = 'ideas';
     case Isms = 'isms';
     case Forms = 'forms';
     case Protocols = 'protocols';
@@ -76,6 +77,7 @@ enum PermissionGroup: string implements HasLabel {
             self::Communication => 'forum',
             self::Documents => 'folder_open',
             self::Knowledge => 'school',
+            self::Ideas => 'emoji_objects',
             self::Isms => 'verified_user',
             self::Forms => 'assignment',
             self::Protocols => 'description',

@@ -146,4 +146,33 @@
     @include('communication-notes._panel', ['notable' => $project, 'notableKind' => 'project'])
 
     @include('documents._panel', ['documentable' => $project, 'documentableKind' => 'project'])
+
+    {{-- Ideenlandkarten mit Projektbezug (Feature 054, MVP-109): Sichtbarkeit
+         wird NIE vererbt — gelistet wird nur, was der Betrachter laut
+         IdeaMapPolicy ohnehin sehen darf (visibleTo). --}}
+    @php
+        $projectIdeaMaps = (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.ideas')
+                && auth()->user()?->can(\App\Enums\User\Permission::IdeasViewAny->value))
+            ? \App\Models\IdeaMap::query()
+                ->visibleTo(auth()->user())
+                ->where('project_id', $project->id)
+                ->whereNull('archived_at')
+                ->latest('updated_at')
+                ->limit(10)
+                ->get(['id', 'title', 'updated_at'])
+            : collect();
+    @endphp
+    @if ($projectIdeaMaps->isNotEmpty())
+        <x-card>
+            <h2 class="font-semibold mb-2">{{ __('ideas.title.index') }}</h2>
+            <ul class="space-y-1">
+                @foreach ($projectIdeaMaps as $ideaMap)
+                    <li>
+                        <a href="{{ route('ideas.show', $ideaMap) }}" class="link text-sm">{{ $ideaMap->title }}</a>
+                        <span class="text-xs opacity-60">{{ $ideaMap->updated_at?->format('d.m.Y') }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </x-card>
+    @endif
 </div>

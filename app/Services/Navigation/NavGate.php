@@ -63,6 +63,7 @@ class NavGate {
         'qualifications.*' => \App\Models\Qualification::class,
         'documents.*' => \App\Models\Document::class,
         'knowledge.*' => \App\Models\KnowledgeArticle::class,
+        'ideas.*' => \App\Models\IdeaMap::class,
         'form-templates.*' => \App\Models\FormTemplate::class,
         'form-submissions.*' => \App\Models\FormSubmission::class,
         'procedures.*' => \App\Models\ProcedureTemplate::class,

@@ -1222,6 +1222,35 @@ Route::middleware('auth')->group(function () {
         Route::delete('knowledge/{article}/links/{link}', [\App\Http\Controllers\KnowledgeArticleController::class, 'destroyLink'])->name('knowledge.links.destroy');
         Route::delete('knowledge/{article}', [\App\Http\Controllers\KnowledgeArticleController::class, 'destroy'])->name('knowledge.destroy');
 
+        // ── Ideenlandkarten (Feature 054, MVP-104/105) ─ Gate ideas.* → module.ideas
+        Route::get('ideas', [\App\Http\Controllers\IdeaMapController::class, 'index'])->name('ideas.index');
+        Route::get('ideas/create', [\App\Http\Controllers\IdeaMapController::class, 'create'])->name('ideas.create');
+        Route::post('ideas', [\App\Http\Controllers\IdeaMapController::class, 'store'])->name('ideas.store');
+        Route::get('ideas/{map}', [\App\Http\Controllers\IdeaMapController::class, 'show'])->name('ideas.show');
+        Route::get('ideas/{map}/edit', [\App\Http\Controllers\IdeaMapController::class, 'edit'])->name('ideas.edit');
+        Route::put('ideas/{map}', [\App\Http\Controllers\IdeaMapController::class, 'update'])->name('ideas.update');
+        Route::post('ideas/{map}/archive', [\App\Http\Controllers\IdeaMapController::class, 'archive'])->name('ideas.archive');
+        Route::post('ideas/{map}/unarchive', [\App\Http\Controllers\IdeaMapController::class, 'unarchive'])->name('ideas.unarchive');
+        Route::post('ideas/{map}/transfer-ownership', [\App\Http\Controllers\IdeaMapController::class, 'transferOwnership'])->name('ideas.transfer-ownership'); // manageLifecycle (Austritt)
+        Route::post('ideas/{map}/shares', [\App\Http\Controllers\IdeaMapController::class, 'storeShare'])->name('ideas.shares.store'); // MVP-107 Freigaben
+        Route::delete('ideas/{map}/shares/{share}', [\App\Http\Controllers\IdeaMapController::class, 'destroyShare'])->name('ideas.shares.destroy');
+        // Knotenbezogene Editor-API (MVP-106/108): kleine JSON-Operationen, nie „ganze Karte speichern".
+        Route::get('ideas/{map}/tree', [\App\Http\Controllers\IdeaNodeController::class, 'tree'])->name('ideas.maps.tree');
+        Route::get('ideas/{map}/export.json', [\App\Http\Controllers\IdeaMapController::class, 'exportJson'])->name('ideas.export.json'); // MVP-110
+        Route::get('ideas/{map}/export.pdf', [\App\Http\Controllers\IdeaMapController::class, 'exportPdf'])->name('ideas.export.pdf'); // MVP-110
+        Route::post('ideas/{map}/presence', [\App\Http\Controllers\IdeaMapController::class, 'presence'])->name('ideas.maps.presence'); // MVP-108 Bearbeitungspräsenz
+        Route::get('ideas/{map}/history', [\App\Http\Controllers\IdeaMapController::class, 'history'])->name('ideas.maps.history'); // MVP-108 Änderungsverlauf
+        Route::post('ideas/{map}/nodes', [\App\Http\Controllers\IdeaNodeController::class, 'store'])->name('ideas.nodes.store');
+        Route::patch('ideas/{map}/nodes/{node}', [\App\Http\Controllers\IdeaNodeController::class, 'update'])->name('ideas.nodes.update');
+        Route::post('ideas/{map}/nodes/{node}/move', [\App\Http\Controllers\IdeaNodeController::class, 'move'])->name('ideas.nodes.move');
+        Route::post('ideas/{map}/nodes/{node}/reorder', [\App\Http\Controllers\IdeaNodeController::class, 'reorder'])->name('ideas.nodes.reorder');
+        Route::post('ideas/{map}/nodes/{nodeSqid}/restore', [\App\Http\Controllers\IdeaNodeController::class, 'restore'])->name('ideas.nodes.restore');
+        Route::post('ideas/{map}/nodes/{node}/convert', [\App\Http\Controllers\IdeaNodeController::class, 'convert'])->name('ideas.nodes.convert'); // MVP-109 Überführung
+        Route::post('ideas/{map}/nodes/{node}/link', [\App\Http\Controllers\IdeaNodeController::class, 'link'])->name('ideas.nodes.link');
+        Route::delete('ideas/{map}/nodes/{node}', [\App\Http\Controllers\IdeaNodeController::class, 'destroy'])->name('ideas.nodes.destroy');
+        Route::post('ideas/{mapSqid}/restore', [\App\Http\Controllers\IdeaMapController::class, 'restore'])->name('ideas.restore'); // manuelles Sqid-Decoding (SoftDeleted bindet nicht implizit)
+        Route::delete('ideas/{map}', [\App\Http\Controllers\IdeaMapController::class, 'destroy'])->name('ideas.destroy');
+
         // ── Vorlagen- & Formularsystem (Feature 032) ───────────────────────
         Route::get('form-templates', [\App\Http\Controllers\FormTemplateController::class, 'index'])->name('form-templates.index');
         Route::get('form-templates/create', [\App\Http\Controllers\FormTemplateController::class, 'create'])->name('form-templates.create');

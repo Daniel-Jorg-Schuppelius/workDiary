@@ -261,6 +261,9 @@ return [
             'customer' => [
                 'queryRaised' => 'El cliente ha planteado una consulta',
             ],
+            'ideaMap' => [
+                'shared' => 'Mapa de ideas compartido con usted',
+            ],
         ],
         'channel' => [
             'inApp' => 'En la aplicación',

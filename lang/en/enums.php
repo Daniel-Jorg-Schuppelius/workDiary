@@ -261,6 +261,9 @@ return [
             'customer' => [
                 'queryRaised' => 'Customer raised a query',
             ],
+            'ideaMap' => [
+                'shared' => 'Idea map shared with you',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-app',

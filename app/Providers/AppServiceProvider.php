@@ -111,6 +111,9 @@ class AppServiceProvider extends ServiceProvider {
         // damit Plugins beim Booten registrieren und der Outbox-Job auflösen kann.
         $this->app->singleton(\App\Services\Inventory\ExternalInventoryDispatcherResolver::class);
 
+        // Generische Integrations-Outbox (MVP-114): gleiche Registry-Mechanik.
+        $this->app->singleton(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class);
+
         // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
         $this->app->singleton(ConditionEvaluator::class);
         $this->app->singleton(RuleEngine::class, function ($app): RuleEngine {
@@ -189,6 +192,7 @@ class AppServiceProvider extends ServiceProvider {
         MaterialUsage::observe(MaterialUsageObserver::class);
         Organization::observe(OrganizationObserver::class);
 
+        Gate::policy(\App\Models\IdeaMap::class, \App\Policies\IdeaMapPolicy::class);
         Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
         Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);

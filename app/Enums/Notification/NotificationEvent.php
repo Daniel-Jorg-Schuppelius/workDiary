@@ -74,6 +74,8 @@ enum NotificationEvent: string implements HasLabel {
     /** Synchron: Kunde stellt über Portal/Token eine Rückfrage (Feature 012) — an Verantwortlichen/Teamleitung */
     case CustomerQueryRaised = 'customer.queryRaised';
 
+    case IdeaMapShared = 'ideaMap.shared';
+
     public function label(): string {
         return (string) __('enums.notification.event.' . $this->value);
     }
@@ -175,6 +177,9 @@ enum NotificationEvent: string implements HasLabel {
             self::ShiftExchangeRequested,
             self::ShiftExchangeDecided => 'swap_horiz',
             self::CustomerQueryRaised => 'contact_support',
+            // Karten-Freigabe (Feature 054): Payload bewusst nur Titel + Link —
+            // die IdeaMapPolicy greift beim Klick.
+            self::IdeaMapShared => 'emoji_objects',
         };
     }
 

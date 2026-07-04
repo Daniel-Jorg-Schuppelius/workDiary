@@ -5,6 +5,7 @@
 // aller interaktiven Seiten produktiv schalten (zusammen mit CSP_SCRIPT_NONCE).
 import Alpine from "alpinejs";
 import { registerAlpineComponents } from "./alpine/components.js";
+import { registerIdeaEditor } from "./idea-editor.js";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
@@ -30,6 +31,7 @@ if (typeof window !== "undefined") {
 
 window.Alpine = Alpine;
 registerAlpineComponents(Alpine);
+registerIdeaEditor(Alpine);
 Alpine.start();
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();

@@ -261,6 +261,9 @@ return [
             'customer' => [
                 'queryRaised' => 'Kunde hat eine Rückfrage gestellt',
             ],
+            'ideaMap' => [
+                'shared' => 'Ideenlandkarte für Sie freigegeben',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-App',

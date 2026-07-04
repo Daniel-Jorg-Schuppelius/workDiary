@@ -336,6 +336,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeCreate,
             PermissionEnum::KnowledgeUpdate,
             PermissionEnum::KnowledgePublish,
+            // Ideenlandkarten (Feature 054): eigene Karten anlegen; Inhalte
+            // regeln Eigentum + Freigaben (IdeaMapPolicy), nicht das Recht.
+            PermissionEnum::IdeasViewAny,
+            PermissionEnum::IdeasCreate,
             // Formularsystem (Feature 032): Teamleitung pflegt Vorlagen
             // und sieht alle ausgefüllten Formulare.
             PermissionEnum::FormTemplateViewAny,
@@ -591,6 +595,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeView,
             PermissionEnum::KnowledgeCreate,
             PermissionEnum::KnowledgeUpdate,
+            // Ideenlandkarten (Feature 054): eigene Karten anlegen; Inhalte
+            // regeln Eigentum + Freigaben (IdeaMapPolicy), nicht das Recht.
+            PermissionEnum::IdeasViewAny,
+            PermissionEnum::IdeasCreate,
             // Formularsystem (Feature 032): ausfüllen + EIGENE Submissions
             // einsehen (FormSubmissionPolicy beschränkt view entsprechend).
             PermissionEnum::FormSubmissionViewAny,
@@ -684,6 +692,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeViewAny,
             PermissionEnum::KnowledgeView,
             PermissionEnum::KnowledgeCreate,
+            // Ideenlandkarten (Feature 054): eigene Karten auch mobil.
+            PermissionEnum::IdeasViewAny,
+            PermissionEnum::IdeasCreate,
             // Formularsystem (Feature 032): Außendienst füllt Formulare im
             // Einsatz aus; Vorlagenpflege bleibt Teamleitung/Admin.
             PermissionEnum::FormSubmissionViewAny,

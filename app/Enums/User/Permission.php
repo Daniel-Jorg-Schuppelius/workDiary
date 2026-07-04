@@ -343,6 +343,14 @@ enum Permission: string implements HasLabel {
     case KnowledgePublish = 'knowledge.publish';
     case KnowledgeDelete = 'knowledge.delete';
 
+        // ── Ideenlandkarten (Feature 054, MVP-104) ─────────────────────────
+        // Inhaltszugriff (view/update/delete) läuft NICHT über Permissions,
+        // sondern über Eigentum + Freigaben (IdeaMapPolicy). Diese Rechte
+        // steuern nur Menü/Anlage bzw. die Metadaten-Verwaltung für Admins.
+    case IdeasViewAny = 'ideas.viewAny';
+    case IdeasCreate = 'ideas.create';
+    case IdeasManageLifecycle = 'ideas.manageLifecycle';
+
         // ── ISMS / ISO-27001-Auditbereitschaft (Feature 044) ───────────────
     case IsmsViewAny = 'isms.viewAny';
     case IsmsView = 'isms.view';
@@ -524,6 +532,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'communication.') => PermissionGroup::Communication,
             str_starts_with($this->value, 'document.') => PermissionGroup::Documents,
             str_starts_with($this->value, 'knowledge.') => PermissionGroup::Knowledge,
+            str_starts_with($this->value, 'ideas.') => PermissionGroup::Ideas,
             str_starts_with($this->value, 'isms.') => PermissionGroup::Isms,
             str_starts_with($this->value, 'formTemplate.'), str_starts_with($this->value, 'formSubmission.') => PermissionGroup::Forms,
             str_starts_with($this->value, 'slaContract.') => PermissionGroup::Customers,

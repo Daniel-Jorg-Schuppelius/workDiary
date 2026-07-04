@@ -40,6 +40,7 @@ return [
             'module.forms',
             'module.theming',
             'module.standorterfassung',
+            'module.ideas',
         ],
         'enterprise' => [
             'module.kanban',
@@ -62,6 +63,7 @@ return [
             'module.lager',
             'module.bau',
             'module.standorterfassung',
+            'module.ideas',
             'protocols.signed',
         ],
     ],
@@ -88,6 +90,7 @@ return [
         'module.lager' => 'Lager & Artikel',
         'module.bau' => 'Bau & GAEB',
         'module.standorterfassung' => 'Standorterfassung',
+        'module.ideas' => 'Ideenlandkarten',
     ],
 
     // Kurze deutsche Beschreibung je Modul (MVP-052 Modulkonfiguration).
@@ -113,6 +116,7 @@ return [
         'module.lager' => 'Lagerwirtschaft, Artikelstamm und Fertigung.',
         'module.bau' => 'Bau-/Ausbau: GAEB-Leistungsverzeichnisse, Ordnungszahlen, Aufmaß und Nachträge.',
         'module.standorterfassung' => 'Standortbasierte Zeiterfassung über Geofences (OwnTracks/Traccar).',
+        'module.ideas' => 'Private und gemeinsame Ideenlandkarten (Mindmaps) mit Überführung in Aufgaben, Projekte und Wissen.',
     ],
 
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
@@ -181,6 +185,8 @@ return [
 
         'knowledge.*' => 'module.knowledge',
 
+        'ideas.*' => 'module.ideas', // Feature 054 Ideenlandkarten
+
         'form-templates.*' => 'module.forms',
         'form-submissions.*' => 'module.forms',
 
@@ -241,6 +247,7 @@ return [
         'module.compliance' => false,       // Hinweisgeber → HinSchG (3 J.)
         'module.isms' => false,             // Risikoregister/SoA → Compliance-Nachweise (Auditfähigkeit)
         'module.finance' => false,          // Übergabenachweise/Exportpakete → GoBD / §147 AO (10 J.)
+        'module.ideas' => false,            // Karten werden bei Downgrade NIE gelöscht, nur unzugänglich (DoD Feature 054)
     ],
 
     // Modul → org-scoped Modelle, die `plans:purge` nach Ablauf der Karenz

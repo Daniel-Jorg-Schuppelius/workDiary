@@ -538,6 +538,9 @@
                                                 // Wissensbasis (Feature 011): Recht via NavGate (@can knowledge.viewAny
                                                 // über KnowledgeArticle-Policy), Modul-Gating via $moduleByItemRoute.
                                                 ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
+                                                // Ideenlandkarten (Feature 054): Recht via NavGate (ideas.viewAny),
+                                                // Modul-Gating via $moduleByItemRoute.
+                                                ['route' => 'ideas.index', 'label' => __('ideas.title.index'), 'icon' => 'emoji_objects', 'modal' => false, 'matches' => ['ideas.*']],
                                                 // Sicherheitsereignisse (Arbeitsschutz, Feature 013): sichtbar
                                                 // für Melder (safety.report) und Register-Berechtigte (safety.viewAny/manage).
                                                 (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\SafetyEvent::class)
@@ -896,6 +899,7 @@
                                 'kanban.index' => 'module.kanban',
                                 'documents.index' => 'module.documents',
                                 'knowledge.index' => 'module.knowledge',
+                                'ideas.index' => 'module.ideas',
                                 'form-submissions.index' => 'module.forms',
                                 'finance.transfers.index' => 'module.finance',
                                 'finance.reconciliation.index' => 'module.finance',

@@ -175,4 +175,11 @@
                 @endif
             </x-form-group>
         @endif
+
+    {{-- Deep-Link zur verknüpften Todoist-Aufgabe (Feature 055, MVP-116) --}}
+    @if ($task && ($todoistUrl = \App\Plugins\Todoist\TodoistPlugin::taskUrl($task)) !== null)
+        <a href="{{ $todoistUrl }}" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm inline-flex items-center gap-1">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">open_in_new</span>{{ __('todoist.task_link') }}
+        </a>
+    @endif
 </x-modal>

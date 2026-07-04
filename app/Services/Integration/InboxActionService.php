@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization};
+use App\Models\{AuditLog, ExternalReference, IntegrationInboxItem, Organization};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Request};
 use RuntimeException;
 
 /**
@@ -65,9 +65,30 @@ class InboxActionService {
         $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_REMOTE, $model);
     }
 
-    /** Konflikt zugunsten der lokalen Werte schließen (keine Änderung). */
+    /** Konflikt zugunsten der lokalen Werte schließen — und lokal auch extern durchsetzen. */
     public function keepLocal(IntegrationInboxItem $item): void {
         $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_LOCAL, $item->referenceable);
+
+        // „Lokal behalten" heißt: der lokale Stand soll auch extern gelten —
+        // sonst meldet der nächste Abgleich denselben Konflikt erneut. Hat das
+        // Plugin einen Outbox-Dispatcher (MVP-114), wird die Übertragung der
+        // Konfliktfelder enqueued; Plugins ohne Rückkanal bleiben unberührt.
+        $model = $item->referenceable;
+        if ($model instanceof Model
+            && $item->case_type === IntegrationInboxItem::CASE_CONFLICT
+            && app(IntegrationOutboxDispatcherResolver::class)->for($item->plugin_id) !== null) {
+            app(IntegrationOutboxService::class)->enqueue(
+                (int) $item->organization_id,
+                $item->plugin_id,
+                strtolower(class_basename($model)) . '.update',
+                [
+                    'external_id' => $item->external_id,
+                    'fields' => (array) ($item->diff_fields ?? []),
+                ],
+                'inbox-keep-local:' . $item->getKey(),
+                $model,
+            );
+        }
     }
 
     /** Eintrag verwerfen (bewusst nicht zuordnen). */
@@ -103,6 +124,27 @@ class InboxActionService {
             'resolved_to_id' => $resolvedTo?->getKey(),
             'resolved_by' => Auth::id(),
             'resolved_at' => now(),
+        ]);
+
+        // Nachvollziehbare Entscheidung (MVP-116): wer hat welchen Fall wie
+        // gelöst — inkl. Konfliktfeldern, ohne Snapshot-Inhalte. user_id über
+        // Auth::user() statt Auth::id() (vgl. Auditable::resolveAuditUserId).
+        $actor = Auth::user();
+        AuditLog::create([
+            'organization_id' => $item->organization_id,
+            'user_id' => $actor instanceof \App\Models\User ? (int) $actor->getKey() : null,
+            'event' => 'integration.inbox_resolved',
+            'auditable_type' => $item->getMorphClass(),
+            'auditable_id' => $item->getKey(),
+            'changes' => [
+                'status' => $status,
+                'case_type' => $item->case_type,
+                'plugin_id' => $item->plugin_id,
+                'external_id' => $item->external_id,
+                'diff_fields' => $item->diff_fields,
+            ],
+            'ip' => Request::ip(),
+            'user_agent' => substr((string) Request::userAgent(), 0, 255),
         ]);
     }
 }
