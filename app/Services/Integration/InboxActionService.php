@@ -96,6 +96,15 @@ class InboxActionService {
         $this->close($item, IntegrationInboxItem::STATUS_DISMISSED, null);
     }
 
+    /**
+     * Schließt einen Eintrag mit gegebenem Status + Audit (`integration.inbox_resolved`)
+     * für plugin-spezifische Auflöser, die die Fachlogik selbst erledigen (z. B.
+     * die WebDAV-Konfliktauflösung, Rang 18). Zentraler Abschluss statt Nachbau.
+     */
+    public function markResolved(IntegrationInboxItem $item, string $status, ?Model $resolvedTo = null): void {
+        $this->close($item, $status, $resolvedTo);
+    }
+
     private function writeReference(IntegrationInboxItem $item, Model $target): void {
         if ($item->external_id === null || $item->external_id === '') {
             return; // ohne stabile Fremd-ID keine dauerhafte Bindung

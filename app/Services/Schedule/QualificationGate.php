@@ -12,15 +12,17 @@ declare(strict_types=1);
 
 namespace App\Services\Schedule;
 
-use App\Models\{Qualification, ScheduledShift};
-use Illuminate\Support\Collection;
+use App\Models\{Qualification, ScheduledShift, User};
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\{Carbon, Collection};
 
 /**
  * Prüft, ob der zugewiesene Mitarbeitende die für den Schichttyp hinterlegten
- * Pflichtqualifikationen besitzt (Feature 013, MVP „Sperrhinweis, wenn
- * Pflichtqualifikation fehlt"). Bewusst gleiche „hält/hält-nicht"-Semantik wie
- * {@see StaffingSuggester::isQualified()} — der Ablauf (Gültigkeit) wird separat
- * über den Deadline-Scanner (`QualificationExpiring`) gewarnt.
+ * Pflichtqualifikationen besitzt UND ob diese am Schichttag gültig sind
+ * (Feature 013). Eine abgelaufene oder noch nicht gültige Qualifikation zählt
+ * nicht als „gehalten" — die Schicht wird wie bei fehlender Qualifikation
+ * gesperrt (nicht nur über den Deadline-Scanner gewarnt).
  */
 final class QualificationGate {
     /**
@@ -46,10 +48,87 @@ final class QualificationGate {
             return collect();
         }
 
-        $heldIds = array_map('intval', $user->qualifications->pluck('id')->all());
+        // Am Schichttag gültige Qualifikationen zählen als „gehalten". Eine
+        // abgelaufene/noch nicht gültige Qualifikation wird ignoriert → die
+        // Pflichtqualifikation gilt als fehlend und die Schicht ist gesperrt.
+        $shiftDate = $shift->date; // date-Cast → Carbon (Schichttag), sonst null
+
+        $heldIds = [];
+        foreach ($user->qualifications as $qualification) {
+            if ($this->validOn($qualification, $shiftDate)) {
+                $heldIds[] = (int) $qualification->id;
+            }
+        }
 
         return $required
             ->reject(fn(Qualification $q): bool => in_array((int) $q->id, $heldIds, true))
             ->values();
+    }
+
+    /** Vorwarnfenster der Matrix: „läuft ab", wenn valid_until < Stichtag + 30 Tage. */
+    public const EXPIRING_DAYS = 30;
+
+    /**
+     * Status je geforderter Qualifikation für einen Mitarbeitenden am
+     * Stichtag (Rang 53, Auftrags-Qualifikationsmatrix) — dieselbe
+     * Gültigkeitslogik wie {@see missingFor()} (keine Doppellogik):
+     * `ok` (gültig, kein baldiger Ablauf), `expiring` (gültig, läuft binnen
+     * 30 Tagen ab), `missing` (nicht gehalten / abgelaufen / noch nicht gültig).
+     *
+     * @param  Collection<int, Qualification>  $required
+     * @return array<int, 'ok'|'expiring'|'missing'>  qualification_id → Status
+     */
+    public function statusFor(User $user, Collection $required, ?CarbonInterface $date): array {
+        $held = [];
+        foreach ($user->qualifications as $qualification) {
+            if (! $this->validOn($qualification, $date)) {
+                continue;
+            }
+
+            $status = 'ok';
+            $pivot = $qualification->getRelationValue('pivot');
+            if ($date !== null && $pivot instanceof Pivot) {
+                $until = $pivot->getAttribute('valid_until');
+                if (is_string($until) && $until !== ''
+                    && Carbon::parse($until)->startOfDay()->lt($date->copy()->startOfDay()->addDays(self::EXPIRING_DAYS))) {
+                    $status = 'expiring';
+                }
+            }
+
+            $held[(int) $qualification->id] = $status;
+        }
+
+        $result = [];
+        foreach ($required as $qualification) {
+            $result[(int) $qualification->id] = $held[(int) $qualification->id] ?? 'missing';
+        }
+
+        return $result;
+    }
+
+    /** Ist die (über die Pivot-Daten befristete) Qualifikation am Stichtag gültig? */
+    private function validOn(Qualification $qualification, ?CarbonInterface $date): bool {
+        if ($date === null) {
+            return true; // ohne Schichttag keine Befristungsprüfung
+        }
+
+        $pivot = $qualification->getRelationValue('pivot');
+        if (! $pivot instanceof Pivot) {
+            return true; // kein Pivot geladen → keine Befristung
+        }
+
+        $day = $date->copy()->startOfDay();
+
+        $from = $pivot->getAttribute('valid_from');
+        if (is_string($from) && $from !== '' && Carbon::parse($from)->startOfDay()->gt($day)) {
+            return false; // noch nicht gültig
+        }
+
+        $until = $pivot->getAttribute('valid_until');
+        if (is_string($until) && $until !== '' && Carbon::parse($until)->startOfDay()->lt($day)) {
+            return false; // abgelaufen
+        }
+
+        return true;
     }
 }

@@ -88,4 +88,25 @@ enum WebhookEvent: string implements HasLabel {
     public function icon(): string {
         return $this->source()->icon();
     }
+
+    /**
+     * Beispiel-`data`-Objekt je Ereignis (Feature 008 → Rang 61). Spiegelt die
+     * Struktur eines real publizierten Payloads (subject_type/subject_id/title)
+     * und dient dem Event-Katalog (`GET /api/hooks/events`), an dem n8n/Make/
+     * Zapier das Schema lernen. Rein illustrativ, keine echten Daten.
+     *
+     * @return array<string, mixed>
+     */
+    public function sampleData(): array {
+        return match ($this) {
+            self::OpenIssueAssigned => ['subject_type' => 'OpenIssue', 'subject_id' => 42, 'title' => 'Aufzug prüfen'],
+            self::OpenIssueOverdue => ['subject_type' => 'OpenIssue', 'subject_id' => 42, 'title' => 'Aufzug prüfen'],
+            self::SafetyEventReported => ['subject_type' => 'SafetyEvent', 'subject_id' => 7, 'title' => 'Beinaheunfall Halle 2'],
+            self::IsmsIncidentCritical => ['subject_type' => 'IsmsIncident', 'subject_id' => 3, 'title' => 'Kritischer Sicherheitsvorfall'],
+            self::TimeCorrectionRequested => ['subject_type' => 'TimeCorrectionRequest', 'subject_id' => 11, 'title' => 'Zeitkorrektur 12.06.'],
+            self::MonthClosureSubmitted => ['subject_type' => 'MonthClosure', 'subject_id' => 5, 'title' => 'Monatsabschluss Juni 2026'],
+            self::SlaBreached => ['subject_type' => 'ServiceTicket', 'subject_id' => 88, 'title' => 'ST-2026-00088'],
+            self::DocumentExpired => ['subject_type' => 'Document', 'subject_id' => 15, 'title' => 'Prüfzertifikat abgelaufen'],
+        };
+    }
 }

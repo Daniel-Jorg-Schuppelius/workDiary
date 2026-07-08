@@ -10,10 +10,13 @@
 
 namespace App\Services\Form;
 
-use App\Enums\Form\FormTemplateStatus;
+use App\Enums\Form\{FormFieldType, FormTemplateStatus};
 use App\Models\{FormSubmission, FormTemplate, User};
+use App\Services\Attachments\FileAttacher;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\{DB, Validator};
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\{DB, Storage, Validator};
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -121,10 +124,12 @@ class FormService {
      *
      * @param  Model|null  $subject  optionaler Bezug (DiaryEntry/Customer/Asset/Project)
      * @param  array<string, mixed>  $values  Eingaben, keyed by Feld-Key
+     * @param  array<string, UploadedFile>  $files  Datei-/Foto-Uploads je Feld-Key (Rang 32)
+     * @param  array<string, string>  $signatures  Base64-PNG je Unterschriftsfeld (Rang 32)
      *
      * @throws ValidationException bei inaktiver Vorlage oder ungültigen Werten
      */
-    public function submit(FormTemplate $template, ?Model $subject, array $values, User $user): FormSubmission {
+    public function submit(FormTemplate $template, ?Model $subject, array $values, User $user, array $files = [], array $signatures = []): FormSubmission {
         if ($template->status !== FormTemplateStatus::Active) {
             throw ValidationException::withMessages([
                 'form_template_id' => (string) __('form.validation.template_not_active'),
@@ -133,24 +138,34 @@ class FormService {
 
         $fields = (array) $template->fields;
 
+        // Bedingungslogik (Rang 33): nur aktuell sichtbare Felder werden
+        // validiert — unsichtbare Pflichtfelder blockieren nicht und ihre
+        // Werte/Dateien werden nicht gespeichert.
+        $visibleFields = FormFieldDefinition::visibleFields($fields, $values);
+
         $validated = Validator::make(
             ['values' => $values],
-            FormFieldDefinition::rules($fields),
+            FormFieldDefinition::rules($visibleFields),
             [],
-            FormFieldDefinition::attributeNames($fields),
+            FormFieldDefinition::attributeNames($visibleFields),
         )->validate();
 
-        $submission = DB::transaction(function () use ($template, $subject, $fields, $validated, $user): FormSubmission {
+        // Pflicht-Prüfung für Attachment-Felder (Rang 32): required + kein Inhalt.
+        $this->assertRequiredAttachments($visibleFields, $files, $signatures);
+
+        $submission = DB::transaction(function () use ($template, $subject, $fields, $visibleFields, $validated, $user, $files, $signatures): FormSubmission {
             $submission = FormSubmission::query()->create([
                 'organization_id' => $user->organization_id,
                 'form_template_id' => $template->id,
                 'fields_snapshot' => $fields,
-                'values' => FormFieldDefinition::normalizeValues($fields, (array) ($validated['values'] ?? [])),
+                'values' => FormFieldDefinition::normalizeValues($visibleFields, (array) ($validated['values'] ?? [])),
                 'subject_type' => $subject?->getMorphClass(),
                 'subject_id' => $subject?->getKey(),
                 'submitted_by_user_id' => $user->id,
                 'submitted_at' => now(),
             ]);
+
+            $this->storeFieldAttachments($submission, $visibleFields, $files, $signatures, $user);
 
             $template->audit('form.submitted', [
                 'actor_user_id' => $user->id,
@@ -172,5 +187,99 @@ class FormService {
         $description = trim((string) $description);
 
         return $description === '' ? null : $description;
+    }
+
+    /**
+     * Erzwingt Inhalt für Pflicht-Attachment-Felder (Foto/Datei/Unterschrift).
+     *
+     * @param  list<array<string, mixed>>  $fields
+     * @param  array<string, UploadedFile>  $files
+     * @param  array<string, string>  $signatures
+     *
+     * @throws ValidationException
+     */
+    private function assertRequiredAttachments(array $fields, array $files, array $signatures): void {
+        $errors = [];
+        foreach ($fields as $field) {
+            $type = FormFieldType::from((string) $field['type']);
+            if (! $type->storesAttachment() || ! ($field['required'] ?? false)) {
+                continue;
+            }
+            $key = (string) $field['key'];
+            $present = $type->isSignature()
+                ? (isset($signatures[$key]) && trim($signatures[$key]) !== '')
+                : (($files[$key] ?? null) instanceof UploadedFile);
+            if (! $present) {
+                $errors['values.' . $key] = (string) __('validation.required', ['attribute' => (string) $field['label']]);
+            }
+        }
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+    }
+
+    /**
+     * Legt Foto-/Datei-/Unterschrift-Inhalte als Attachment (meta_type
+     * `field:<key>`) am Submission ab und schreibt einen Anzeige-Marker in
+     * `values` (Dateiname bzw. „signed").
+     *
+     * @param  list<array<string, mixed>>  $fields
+     * @param  array<string, UploadedFile>  $files
+     * @param  array<string, string>  $signatures
+     */
+    private function storeFieldAttachments(FormSubmission $submission, array $fields, array $files, array $signatures, User $user): void {
+        $markers = [];
+        foreach ($fields as $field) {
+            $key = (string) $field['key'];
+            $type = FormFieldType::from((string) $field['type']);
+
+            if ($type->isUpload() && ($files[$key] ?? null) instanceof UploadedFile) {
+                $attachment = app(FileAttacher::class)->store($submission, $files[$key], (int) $user->id);
+                $attachment->forceFill(['meta_type' => 'field:' . $key])->save();
+                $markers[$key] = $files[$key]->getClientOriginalName();
+            } elseif ($type->isSignature() && isset($signatures[$key]) && trim($signatures[$key]) !== '') {
+                if ($this->storeSignature($submission, $key, $signatures[$key], $user)) {
+                    $markers[$key] = 'signed';
+                }
+            }
+        }
+
+        if ($markers !== []) {
+            $submission->update(['values' => array_merge((array) $submission->values, $markers)]);
+        }
+    }
+
+    /** Base64-PNG einer Unterschrift → Storage + Attachment (meta_type field:<key>). */
+    private function storeSignature(FormSubmission $submission, string $key, string $base64, User $user): bool {
+        $binary = $this->decodePng($base64);
+        if ($binary === null) {
+            return false;
+        }
+
+        $path = 'form-signatures/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.png';
+        Storage::disk('local')->put($path, $binary);
+
+        $submission->attachments()->create([
+            'user_id' => $user->id,
+            'disk' => 'local',
+            'path' => $path,
+            'original_name' => 'signature.png',
+            'mime' => 'image/png',
+            'size' => strlen($binary),
+            'meta_type' => 'field:' . $key,
+        ]);
+
+        return true;
+    }
+
+    /** Dekodiert und prüft ein Base64-PNG (Magic-Bytes, Größenlimit 1 MB). */
+    private function decodePng(string $base64): ?string {
+        $base64 = preg_replace('#^data:image/png;base64,#', '', trim($base64)) ?? '';
+        $binary = base64_decode($base64, true);
+        if ($binary === false || strlen($binary) > 1_000_000 || ! str_starts_with($binary, "\x89PNG\r\n\x1a\n")) {
+            return null;
+        }
+
+        return $binary;
     }
 }

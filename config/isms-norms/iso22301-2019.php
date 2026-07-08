@@ -26,6 +26,9 @@ return [
     'norm' => 'ISO 22301',
     'edition' => '2019',
     'label' => 'ISO 22301:2019 — Business Continuity Management',
+    // Profilrevision + Stichtag der Normfassung (Nachtrag 046a).
+    'version' => '1.0',
+    'as_of' => '2019-10-30',
     'requirements' => [
         ['ref_no' => '4', 'title' => 'Kontext der Organisation'],
         ['ref_no' => '4.1', 'title' => 'Organisation und ihr Kontext verstehen'],

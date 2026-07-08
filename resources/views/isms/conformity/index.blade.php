@@ -61,7 +61,34 @@
             </div>
         @endif
 
-        <x-table>
+            {{-- Stichtags-Rekonstruktion (Nachtrag 046b). --}}
+    <x-card>
+        <form method="GET" class="flex flex-wrap items-end gap-2">
+            @if ($scope !== null)
+                <input type="hidden" name="scope" value="{{ $scope->sqid }}">
+            @endif
+            <label class="fieldset">
+                <span class="fieldset-label text-xs">{{ __('Bewertungsstand zum Stichtag') }}</span>
+                <input type="date" name="as_of" value="{{ request('as_of') }}" class="input input-sm input-bordered">
+            </label>
+            <x-icon-btn icon="history" tone="outline" size="sm" type="submit" show-label>{{ __('Rekonstruieren') }}</x-icon-btn>
+        </form>
+        @if (($reconstruction ?? null) !== null)
+            <div class="mt-3 rounded-box border border-base-300 p-3 text-sm">
+                <p class="font-medium">{{ __('Stand zum :date', ['date' => $reconstruction['as_of']]) }}</p>
+                <p class="text-base-content/70">{{ __(':total SoA-Aussagen erfasst, davon :applicable anwendbar.', ['total' => $reconstruction['statements']['total'], 'applicable' => $reconstruction['statements']['applicable']]) }}</p>
+                @if ($reconstruction['norm_statuses'] !== [])
+                    <ul class="mt-1 space-y-0.5 text-xs text-base-content/70">
+                        @foreach ($reconstruction['norm_statuses'] as $entry)
+                            <li>{{ $entry['norm'] }} {{ $entry['edition'] }} — {{ $entry['status'] }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        @endif
+    </x-card>
+
+<x-table>
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.norm') }}</th>
@@ -89,6 +116,21 @@
                         <details>
                             <summary class="cursor-pointer font-medium">{{ $status->normLabel() }}</summary>
                             <div class="mt-2 space-y-2 text-xs text-base-content/70">
+                                {{-- Normprofil-Versionsmetadaten (Nachtrag 046a). --}}
+                                @php
+                                    $currentProfile = app(\App\Services\Isms\NormProfileRegistry::class)->findByNorm((string) $status->norm, (string) $status->edition);
+                                @endphp
+                                @if ($status->profile_version !== null)
+                                    <p>
+                                        {{ __('Bewertet gegen Profilversion :version', ['version' => $status->profile_version]) }}
+                                        @if ($status->profile_as_of){{ ' ' }}({{ __('Stand') }} {{ $status->profile_as_of->format('d.m.Y') }})@endif
+                                        @if ($currentProfile !== null && $currentProfile['version'] !== $status->profile_version)
+                                            <x-status-badge tone="warning" size="xs" class="ml-1">{{ __('Profil aktualisiert: :version', ['version' => $currentProfile['version']]) }}</x-status-badge>
+                                        @endif
+                                    </p>
+                                @elseif ($currentProfile !== null)
+                                    <p>{{ __('Aktuelle Profilversion: :version', ['version' => $currentProfile['version']]) }}</p>
+                                @endif
                                 <p class="font-semibold">{{ __('isms.field.certificates') }}:</p>
                                 @forelse ($status->certificates as $certificate)
                                     <div class="rounded border border-base-300 p-2 space-y-1">

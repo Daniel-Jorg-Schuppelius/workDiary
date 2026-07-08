@@ -60,6 +60,31 @@ return [
         'info' => 'Teal',
     ],
 
+    'node_status' => [
+        'open' => 'Open',
+        'in_review' => 'In review',
+        'decided' => 'Decided',
+        'rejected' => 'Rejected',
+        'done' => 'Done',
+    ],
+
+    'import' => [
+        'action' => 'Import',
+        'title' => 'Import idea map',
+        'submit' => 'Import',
+        'file' => 'File',
+        'hint' => 'FreeMind/Freeplane (.mm) or OPML. Creates a new, private map.',
+        'done' => 'Map imported.',
+        'default_title' => 'Imported map',
+        'error' => [
+            'invalid' => 'The file is not valid XML.',
+            'unsupported' => 'Unsupported format (only FreeMind .mm and OPML).',
+            'empty' => 'The file contains no nodes.',
+            'too_deep' => 'The structure is nested too deeply.',
+            'too_large' => 'The map has too many nodes.',
+        ],
+    ],
+
     'legend' => [
         'context' => 'Context (optional)',
         'map' => 'Map',
@@ -144,12 +169,23 @@ return [
         'collapse' => 'Collapse branch',
         'zoom_in' => 'Zoom in',
         'zoom_out' => 'Zoom out',
+        'zoom_reset' => 'Reset zoom to 100%',
+        'fit' => 'Fit view',
+        'arrange' => 'Arrange',
+        'arrange_hint' => 'Automatically arrange all nodes as a tree',
+        'canvas_large' => 'Large workspace',
+        'canvas_small' => 'Compact workspace',
+        'canvas_keys_hint' => 'Tab: child node · Enter: sibling · double-click canvas: new idea · drag onto a node: re-attach',
+        'canvas_a11y_hint' => 'Accessible editing in the outline view.',
+        'export_svg' => 'Export as SVG image',
+        'export_png' => 'Export as PNG image',
         'history' => 'History',
         'history_empty' => 'No changes yet.',
         'presence_suffix' => 'currently editing',
         'note' => 'Note',
         'color' => 'Color',
         'status' => 'Status',
+        'status_none' => '— no status',
     ],
 
     'error' => [

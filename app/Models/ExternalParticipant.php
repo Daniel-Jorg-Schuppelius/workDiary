@@ -66,6 +66,7 @@ class ExternalParticipant extends Model {
         'organization_id',
         'subject_type',
         'subject_id',
+        'external_contact_id',
         'name',
         'email',
         'role',
@@ -98,6 +99,11 @@ class ExternalParticipant extends Model {
     /** @return BelongsTo<User, $this> */
     public function invitedBy(): BelongsTo {
         return $this->belongsTo(User::class, 'invited_by_user_id');
+    }
+
+    /** @return BelongsTo<ExternalContact, $this> Wiederverwendbares Kontaktprofil (Rang 30), sofern gewählt. */
+    public function externalContact(): BelongsTo {
+        return $this->belongsTo(ExternalContact::class);
     }
 
     /** @return HasMany<ExternalParticipantEvent, $this> */

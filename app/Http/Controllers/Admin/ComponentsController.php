@@ -186,6 +186,29 @@ class ComponentsController extends Controller {
             ]));
     }
 
+    /**
+     * CSAF-VEX-Dokument für das aktuelle Release erzeugen und herunterladen
+     * (Nachtrag 044c): Ausnutzbarkeitsbewertung aus dem ISMS-Schwachstellen-
+     * register der aktuellen Organisation.
+     */
+    public function vex(\App\Services\Isms\VexExportService $vex): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize(Permission::MetricsView->value);
+
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        abort_unless($organization instanceof \App\Models\Organization, 404);
+
+        $document = $vex->generate($organization);
+        $json = (string) json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $name = $vex->fileName();
+
+        Storage::disk('local')->put(self::SBOM_DIR . '/' . $name, $json);
+
+        return response($json, 200, [
+            'Content-Type' => 'application/json',
+            'Content-Disposition' => 'attachment; filename="' . $name . '"',
+        ]);
+    }
+
     /** Letzte SBOM herunterladen (fester Alias-Pfad, Gate-geprüft). */
     public function download(): StreamedResponse {
         Gate::authorize(Permission::MetricsView->value);

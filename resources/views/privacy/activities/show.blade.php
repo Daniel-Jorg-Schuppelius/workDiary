@@ -88,6 +88,75 @@
         @endcan
 
         @can('create', \App\Models\Privacy\Dpia::class)
+            @php
+                /** @var \App\Models\Privacy\Dpia|null $dpiaModel */
+                $dpiaModel = $activity->dpia;
+                $dpiaSteps = $dpiaModel?->steps ?? collect();
+                $nextDpiaStep = $dpiaSteps->first(fn ($s) => ! $s->isDone());
+            @endphp
+            {{-- Geführter DSFA-Workflow (Nachtrag 043a): erzwungene Schrittfolge
+                 mit Freigabe; das Formular darunter bleibt als Direktbearbeitung. --}}
+            <x-card>
+                <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('DSFA-Workflow (geführt)') }}</h2>
+                    @if ($dpiaModel && $dpiaModel->outcome->value !== 'open')
+                        <a href="{{ route('dataprotection.activities.dpia.report', $activity) }}" class="btn btn-ghost btn-sm">
+                            <x-icon name="picture_as_pdf" class="text-base" />
+                            {{ __('Bericht (PDF)') }}
+                        </a>
+                    @endif
+                </div>
+                <ol class="space-y-2">
+                    @foreach (\App\Models\Privacy\DpiaStep::STEPS as $idx => $stepCode)
+                        @php $stepModel = $dpiaSteps->firstWhere('step', $stepCode); @endphp
+                        <li class="rounded-box border border-base-300 px-3 py-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-sm font-medium">
+                                    {{ $idx + 1 }}. {{ ($stepModel ?? new \App\Models\Privacy\DpiaStep(['step' => $stepCode]))->label() }}
+                                </span>
+                                @php
+                                    $isActionable = ($stepModel === null && $idx === $dpiaSteps->count())
+                                        || ($stepModel !== null && ! $stepModel->isDone() && $stepModel->step === $nextDpiaStep?->step);
+                                @endphp
+                                @if ($stepModel?->isDone())
+                                    <x-status-badge tone="success" size="xs">{{ __('erledigt') }}</x-status-badge>
+                                @elseif ($isActionable)
+                                    <x-status-badge tone="warning" size="xs">{{ __('nächster Schritt') }}</x-status-badge>
+                                @else
+                                    <x-status-badge tone="neutral" size="xs">{{ __('offen') }}</x-status-badge>
+                                @endif
+                            </div>
+                            @if ($stepModel?->isDone() && $stepModel->content)
+                                <p class="mt-1 whitespace-pre-wrap text-xs text-base-content/70">{{ $stepModel->content }}</p>
+                            @endif
+                            @if ($isActionable)
+                                <form method="post" action="{{ route('dataprotection.activities.dpia.step', [$activity, $stepCode]) }}" class="mt-2 space-y-2">
+                                    @csrf
+                                    <textarea name="content" rows="2" class="textarea textarea-bordered w-full"
+                                              placeholder="{{ __('Ergebnis dieses Schritts …') }}">{{ old('content') }}</textarea>
+                                    @if ($stepCode === 'approval')
+                                        <div class="flex flex-wrap gap-2">
+                                            <select name="outcome" class="select select-bordered select-sm" required>
+                                                <option value="proceed">{{ __('Verarbeitung zulässig') }}</option>
+                                                <option value="consult">{{ __('Aufsichtsbehörde konsultieren') }}</option>
+                                                <option value="abort">{{ __('Verarbeitung nicht durchführen') }}</option>
+                                            </select>
+                                            <select name="residual_risk" class="select select-bordered select-sm">
+                                                <option value="">{{ __('Restrisiko …') }}</option>
+                                                <option value="low">{{ __('gering') }}</option>
+                                                <option value="medium">{{ __('mittel') }}</option>
+                                                <option value="high">{{ __('hoch') }}</option>
+                                            </select>
+                                        </div>
+                                    @endif
+                                    <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Schritt abschließen') }}</x-icon-btn>
+                                </form>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            </x-card>
+
             @php $d = $activity->dpia; @endphp
             <x-card>
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold mb-3">{{ __('Datenschutz-Folgenabschätzung (Art. 35)') }}

@@ -138,7 +138,7 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Aktive Sessions') }}</h2>
             @if ($sessions->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine aktiven Sessions.') }}</p>
+                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">devices</span>' :title="__('Keine aktiven Sessions.')" compact />
             @else
                 <div class="overflow-x-auto">
                     <table class="table table-sm">
@@ -192,7 +192,7 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('API-Tokens') }}</h2>
             @if ($tokens->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine API-Tokens aktiv.') }}</p>
+                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :title="__('Keine API-Tokens aktiv.')" compact />
             @else
                 <div class="overflow-x-auto">
                     <table class="table table-sm">
@@ -249,7 +249,7 @@
                     {{ __('Letzte 20 Export-Ereignisse aus dem Audit-Protokoll dieser Organisation.') }}
                 </p>
                 @if ($exports->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Keine Exporte verzeichnet.') }}</p>
+                    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">download</span>' :title="__('Keine Exporte verzeichnet.')" compact />
                 @else
                     <div class="overflow-x-auto">
                         <table class="table table-sm">
@@ -299,7 +299,7 @@
                     {{ __('Letzte 20 Audit-Ereignisse aus dem Support-Kontext dieser Organisation.') }}
                 </p>
                 @if ($supportAccesses->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Keine Supportzugriffe verzeichnet.') }}</p>
+                    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">support_agent</span>' :title="__('Keine Supportzugriffe verzeichnet.')" compact />
                 @else
                     <div class="overflow-x-auto">
                         <table class="table table-sm">

@@ -33,7 +33,7 @@ use RuntimeException;
  */
 class NormProfileRegistry {
     /**
-     * @var array<string, array{key: string, norm: string, edition: string, label: string, requirements: list<array{ref_no: string, title: string}>}>|null
+     * @var array<string, array{key: string, norm: string, edition: string, label: string, version: string, as_of: ?string, requirements: list<array{ref_no: string, title: string}>}>|null
      */
     private ?array $profiles = null;
 
@@ -47,7 +47,7 @@ class NormProfileRegistry {
     /**
      * Alle Profile: key → Metadaten (ohne Anforderungsliste).
      *
-     * @return array<string, array{key: string, norm: string, edition: string, label: string, requirements_count: int}>
+     * @return array<string, array{key: string, norm: string, edition: string, label: string, version: string, as_of: ?string, requirements_count: int}>
      */
     public function all(): array {
         $all = [];
@@ -70,7 +70,7 @@ class NormProfileRegistry {
     /**
      * Metadaten eines Profils.
      *
-     * @return array{key: string, norm: string, edition: string, label: string, requirements_count: int}
+     * @return array{key: string, norm: string, edition: string, label: string, version: string, as_of: ?string, requirements_count: int}
      *
      * @throws InvalidArgumentException bei unbekanntem Profil-Key
      */
@@ -104,7 +104,7 @@ class NormProfileRegistry {
     /**
      * Lädt und validiert alle Profil-Dateien (einmal pro Instanz).
      *
-     * @return array<string, array{key: string, norm: string, edition: string, label: string, requirements: list<array{ref_no: string, title: string}>}>
+     * @return array<string, array{key: string, norm: string, edition: string, label: string, version: string, as_of: ?string, requirements: list<array{ref_no: string, title: string}>}>
      *
      * @throws RuntimeException bei Schema-Verstößen
      */
@@ -134,7 +134,7 @@ class NormProfileRegistry {
     /**
      * Validiert das Profil-Schema einer Datei.
      *
-     * @return array{key: string, norm: string, edition: string, label: string, requirements: list<array{ref_no: string, title: string}>}
+     * @return array{key: string, norm: string, edition: string, label: string, version: string, as_of: ?string, requirements: list<array{ref_no: string, title: string}>}
      *
      * @throws RuntimeException bei Schema-Verstößen
      */
@@ -185,18 +185,28 @@ class NormProfileRegistry {
             $requirements[] = ['ref_no' => $refNo, 'title' => (string) $entry['title']];
         }
 
+        // Versionsmetadaten (Nachtrag 046a): Profilrevision + Stichtag der
+        // zugrunde liegenden Normfassung — optional, Default '1.0'/null.
+        $version = isset($data['version']) ? trim((string) $data['version']) : '1.0';
+        $asOf = isset($data['as_of']) ? trim((string) $data['as_of']) : null;
+        if ($asOf !== null && $asOf !== '' && strtotime($asOf) === false) {
+            $fail("'as_of' ('{$asOf}') ist kein gültiges Datum.");
+        }
+
         return [
             'key' => $key,
             'norm' => (string) $data['norm'],
             'edition' => (string) $data['edition'],
             'label' => (string) $data['label'],
+            'version' => $version !== '' ? $version : '1.0',
+            'as_of' => $asOf !== '' ? $asOf : null,
             'requirements' => $requirements,
         ];
     }
 
     /**
-     * @param  array{key: string, norm: string, edition: string, label: string, requirements: list<array{ref_no: string, title: string}>}  $profile
-     * @return array{key: string, norm: string, edition: string, label: string, requirements_count: int}
+     * @param  array{key: string, norm: string, edition: string, label: string, version: string, as_of: ?string, requirements: list<array{ref_no: string, title: string}>}  $profile
+     * @return array{key: string, norm: string, edition: string, label: string, version: string, as_of: ?string, requirements_count: int}
      */
     private function meta(array $profile): array {
         return [
@@ -204,7 +214,25 @@ class NormProfileRegistry {
             'norm' => $profile['norm'],
             'edition' => $profile['edition'],
             'label' => $profile['label'],
+            'version' => $profile['version'],
+            'as_of' => $profile['as_of'],
             'requirements_count' => count($profile['requirements']),
         ];
+    }
+
+    /**
+     * Profil-Versionsmetadaten zu einer Norm/Edition (Nachtrag 046a) —
+     * null, wenn kein kuratiertes Profil zur Kombination existiert.
+     *
+     * @return array{version: string, as_of: ?string}|null
+     */
+    public function findByNorm(string $norm, string $edition): ?array {
+        foreach ($this->all() as $profile) {
+            if ($profile['norm'] === $norm && $profile['edition'] === $edition) {
+                return ['version' => $profile['version'], 'as_of' => $profile['as_of']];
+            }
+        }
+
+        return null;
     }
 }

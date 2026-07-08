@@ -86,4 +86,15 @@ class TechnicalMeasure extends Model {
 
         return $due !== null && $due->isPast();
     }
+
+    /**
+     * Nachweisanhänge (Nachtrag 043b): Zertifikate/Auditberichte mit
+     * optionalem Gültig-bis — abgelaufene Nachweise meldet der
+     * Compliance-Check (tom_proof_current).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<PrivacyAttachment, $this>
+     */
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany {
+        return $this->morphMany(PrivacyAttachment::class, 'attachable');
+    }
 }

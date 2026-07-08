@@ -84,6 +84,63 @@
         </div>
     @endif
 
+    {{-- Qualifikations-Anforderungen (Feature 028, Rang 53) --}}
+    @php($requiredQualifications = $diary->requiredQualifications()->orderBy('name')->get())
+    @php($allQualifications = \App\Models\Qualification::query()->where('is_active', true)->orderBy('name')->get())
+    <div class="border-t border-base-200 pt-4 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-semibold text-base-content">{{ __('Qualifikationen') }}</h3>
+            @if ($requiredQualifications->isNotEmpty())
+                <x-icon-btn icon="grid_on" tone="outline" size="sm"
+                            :href="route('dispatch.qualifications', $diary)"
+                            show-label>{{ __('Matrix öffnen') }}</x-icon-btn>
+            @endif
+        </div>
+
+        @if ($requiredQualifications->isNotEmpty() && $diary->assignedUser !== null)
+            @php($assigneeStatus = app(\App\Services\Schedule\QualificationGate::class)->statusFor(
+                $diary->assignedUser->load('qualifications'),
+                $requiredQualifications,
+                $diary->start_at !== null ? \Carbon\CarbonImmutable::parse((string) $diary->start_at) : null,
+            ))
+            <div class="flex flex-wrap gap-1">
+                @foreach ($requiredQualifications as $qualification)
+                    @php($qStatus = $assigneeStatus[$qualification->id] ?? 'missing')
+                    <span @class([
+                        'badge badge-sm gap-1',
+                        'badge-success' => $qStatus === 'ok',
+                        'badge-warning' => $qStatus === 'expiring',
+                        'badge-error' => $qStatus === 'missing',
+                    ])>
+                        <span class="material-symbols-outlined text-xs">{{ $qStatus === 'ok' ? 'check' : ($qStatus === 'expiring' ? 'schedule' : 'close') }}</span>
+                        {{ $qualification->abbreviation ?? $qualification->name }}
+                    </span>
+                @endforeach
+            </div>
+        @elseif ($requiredQualifications->isEmpty())
+            <p class="text-sm text-base-content/60">{{ __('Keine Qualifikationen gefordert.') }}</p>
+        @endif
+
+        @if ($canDispatch && $allQualifications->isNotEmpty())
+            <form method="POST" action="{{ route('diary.qualifications.update', $diary) }}" class="flex flex-wrap items-end gap-2">
+                @csrf
+                @method('PUT')
+                <label class="form-control">
+                    <span class="label-text text-xs">{{ __('Geforderte Qualifikationen') }}</span>
+                    <select name="qualifications[]" multiple size="4" class="select select-bordered select-sm min-w-56">
+                        @foreach ($allQualifications as $qualification)
+                            <option value="{{ $qualification->sqid }}"
+                                    @selected($requiredQualifications->contains('id', $qualification->id))>
+                                {{ $qualification->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </label>
+                <x-button type="submit" tone="outline" size="sm">{{ __('Speichern') }}</x-button>
+            </form>
+        @endif
+    </div>
+
     {{-- Fahrzeug-Reservierung --}}
     <div class="border-t border-base-200 pt-4 space-y-3">
         <h3 class="font-semibold text-base-content">{{ __('dispatch.vehicle.heading') }}</h3>

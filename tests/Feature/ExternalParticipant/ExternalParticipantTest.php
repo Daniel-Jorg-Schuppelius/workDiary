@@ -11,8 +11,10 @@
 namespace Tests\Feature\ExternalParticipant;
 
 use App\Enums\ExternalParticipant\ExternalAbility;
+use App\Mail\ExternalParticipantInvitedMail;
 use App\Models\{DiaryEntry, ExternalParticipant, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -184,6 +186,38 @@ class ExternalParticipantTest extends TestCase {
             ->assertNotFound();
 
         $this->assertSame(0, ExternalParticipant::query()->count());
+    }
+
+    public function test_invite_emails_link_when_email_present(): void {
+        Mail::fake();
+        $manager = $this->manager();
+        $entry = DiaryEntry::factory()->for($manager)->create();
+
+        $this->actingAs($manager)
+            ->post(route('external.store', ['type' => 'diary', 'id' => $entry->getRouteKey()]), [
+                'name' => 'Prüfer Meier',
+                'email' => 'pruefer@example.test',
+                'party' => 'inspector',
+                'ttl_days' => 7,
+            ])->assertRedirect();
+
+        Mail::assertQueued(ExternalParticipantInvitedMail::class, fn (ExternalParticipantInvitedMail $m): bool => $m->hasTo('pruefer@example.test'));
+        $this->assertDatabaseHas('external_participant_events', ['event' => 'invite_emailed']);
+    }
+
+    public function test_invite_without_email_does_not_send(): void {
+        Mail::fake();
+        $manager = $this->manager();
+        $entry = DiaryEntry::factory()->for($manager)->create();
+
+        $this->actingAs($manager)
+            ->post(route('external.store', ['type' => 'diary', 'id' => $entry->getRouteKey()]), [
+                'name' => 'Ohne Mail',
+                'party' => 'other',
+                'ttl_days' => 7,
+            ])->assertRedirect();
+
+        Mail::assertNothingQueued();
     }
 
     public function test_invite_requires_manage_permission(): void {

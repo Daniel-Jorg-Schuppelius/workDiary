@@ -16,6 +16,7 @@ enum ServiceTicketSource: string {
     case OpenIssue = 'open_issue';
     case Email = 'email';
     case CustomerPortal = 'customer_portal';
+    case Api = 'api';
 
     public function label(): string {
         return match ($this) {
@@ -24,6 +25,7 @@ enum ServiceTicketSource: string {
             self::OpenIssue => __('Offene Punkte'),
             self::Email => __('E-Mail'),
             self::CustomerPortal => __('Kundenportal'),
+            self::Api => __('API'),
         };
     }
 }

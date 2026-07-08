@@ -139,6 +139,36 @@
                        class="input input-bordered w-full"
                        value="{{ old('description', $entry?->description) }}">
             </div>
+
+            {{-- Nacharbeit/Kulanz (Feature 014, Rang 59): nur anzeigen, wenn Gründe gepflegt sind. --}}
+            @php
+                $reworkOptions = app(\App\Services\Classification\ClassificationResolver::class)
+                    ->list(app()->bound('currentOrganization') ? app('currentOrganization') : null, \App\Enums\Classification\ClassificationDomain::ReworkReason);
+                $goodwillOptions = app(\App\Services\Classification\ClassificationResolver::class)
+                    ->list(app()->bound('currentOrganization') ? app('currentOrganization') : null, \App\Enums\Classification\ClassificationDomain::GoodwillReason);
+            @endphp
+            @if ($reworkOptions->isNotEmpty())
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Nacharbeitsgrund') }}</label>
+                    <select name="rework_reason_classification_id" class="select select-bordered w-full">
+                        <option value="">{{ __('— keiner —') }}</option>
+                        @foreach ($reworkOptions as $option)
+                            <option value="{{ $option->id }}" @selected((string) old('rework_reason_classification_id', $entry?->rework_reason_classification_id) === (string) $option->id)>{{ $option->label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+            @if ($goodwillOptions->isNotEmpty())
+                <div class="fieldset">
+                    <label class="fieldset-label">{{ __('Kulanzgrund') }}</label>
+                    <select name="goodwill_reason_classification_id" class="select select-bordered w-full">
+                        <option value="">{{ __('— keiner —') }}</option>
+                        @foreach ($goodwillOptions as $option)
+                            <option value="{{ $option->id }}" @selected((string) old('goodwill_reason_classification_id', $entry?->goodwill_reason_classification_id) === (string) $option->id)>{{ $option->label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
         </x-form-group>
 
         @include('time-entries._edit_extras', ['entry' => $entry])

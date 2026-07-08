@@ -165,6 +165,14 @@ class ReconciliationService {
             $invoice->status = Invoice::STATUS_PAID;
             $invoice->paid_on = $transaction->booking_date;
             $invoice->saveQuietly();
+        } elseif (
+            // Teilzahlung (MVP-162): sichtbarer Zwischenstatus statt „offen".
+            $allocated > 0
+            && $allocated + MatchingService::CENT_TOLERANCE < $minWithSkonto
+            && $invoice->status === Invoice::STATUS_ISSUED
+        ) {
+            $invoice->status = Invoice::STATUS_PARTIALLY_PAID;
+            $invoice->saveQuietly();
         }
     }
 

@@ -26,8 +26,13 @@ use Throwable;
  * Mandant. Ohne Nummer wird stets neu angelegt; doppelte Namen sind
  * erlaubt, doppelte Nummern werden geupdatet.
  */
-class CustomerSpec extends AbstractEntitySpec implements InboxFirstSpec {
+class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\HasMappableValues, InboxFirstSpec {
+    use \App\Services\Import\Specs\Concerns\AppliesValueMappings;
     use DedupsAndStages;
+
+    public function mappableColumn(): string {
+        return 'tags';
+    }
 
     public function entity(): ImportEntity {
         return ImportEntity::Customers;
@@ -57,6 +62,7 @@ class CustomerSpec extends AbstractEntitySpec implements InboxFirstSpec {
             'invoice_text',
             'billable',
             'external_id',
+            'tags',
         ];
     }
 
@@ -68,6 +74,12 @@ class CustomerSpec extends AbstractEntitySpec implements InboxFirstSpec {
         return [
             'kunde' => 'name',
             'fremd-id' => 'external_id',
+            'schlagworte' => 'tags',
+            'schlagwörter' => 'tags',
+            'kategorien' => 'tags',
+            'kategorie' => 'tags',
+            'category' => 'tags',
+            'categories' => 'tags',
             'fremdid' => 'external_id',
             'externe-id' => 'external_id',
             'quell-id' => 'external_id',
@@ -157,6 +169,11 @@ class CustomerSpec extends AbstractEntitySpec implements InboxFirstSpec {
      */
     private function run(array $row, Organization $organization, bool $inboxFirst): array {
         try {
+            // Tag-Anwendung nach dem Persistieren (Rang 58): Mapping bzw.
+            // Namens-Treffer; unbekannte Werte werden nie blind angelegt.
+            $tagsRaw = isset($row['tags']) ? (string) $row['tags'] : null;
+            $this->afterPersist = fn (\Illuminate\Database\Eloquent\Model $model) => $this->applyMappedTags($model, $organization, $tagsRaw, $this->entity()->value);
+
             return $this->resolveImport(
                 $organization,
                 $this->payload($row, $organization),
@@ -175,6 +192,7 @@ class CustomerSpec extends AbstractEntitySpec implements InboxFirstSpec {
      */
     private function payload(array $row, Organization $organization): array {
         $payload = array_filter($row, static fn($v): bool => $v !== null);
+        unset($payload['tags']); // wird nach dem Persistieren via Mapping angewendet
         $payload['organization_id'] = $organization->id;
         $payload['currency'] ??= 'EUR';
 

@@ -15,6 +15,7 @@ use App\Enums\User\Permission;
 use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
 use App\Models\{Asset, Customer, DiaryEntry, Project, Protocol, ProtocolItem, ProtocolItemPhoto, User};
 use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService};
+use App\Services\Weather\WeatherService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -39,6 +40,29 @@ class ProtocolController extends Controller {
     public function __construct(
         private readonly ProtocolService $service,
     ) {}
+
+    /**
+     * Read-only-Detailseite (Rang 28): Trägerseite für Positionen, Signaturen,
+     * Wetter-Nachweis, Anhänge, Verlauf und das Externe-Beteiligte-Panel.
+     */
+    public function show(Protocol $protocol): \Illuminate\View\View {
+        Gate::authorize('view', $protocol);
+
+        $protocol->load([
+            'items.children',
+            'signatures',
+            'subject',
+            'weatherSnapshot',
+            'creator:id,name',
+            'events.actor:id,name',
+            'attachments',
+            'tags',
+        ]);
+
+        return view('protocols.show', [
+            'protocol' => $protocol,
+        ]);
+    }
 
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Protocol::class);
@@ -326,6 +350,23 @@ class ProtocolController extends Controller {
         $disk = Storage::disk(ProtocolPdfRenderer::DISK);
 
         return $disk->download($path, sprintf('protokoll-%d-r%d.pdf', $protocol->id, $protocol->revision));
+    }
+
+    /**
+     * Wetter-Messwert des Protokolltags anhängen (Feature 062, MVP-131):
+     * Koordinaten aus dem Subjekt (Kunde/Projekt/Baustelle), unveränderlicher
+     * Snapshot. Ausfall/kein Ort blockiert nicht — sichtbare Meldung.
+     */
+    public function attachWeather(Protocol $protocol, WeatherService $weather): RedirectResponse {
+        Gate::authorize('update', $protocol);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $snapshot = $weather->snapshotForProtocol($protocol, $actor);
+
+        return $snapshot !== null
+            ? back()->with('success', __('weather.attach.success'))
+            : back()->withErrors(['weather' => __('weather.attach.unavailable')]);
     }
 
     /**

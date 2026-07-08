@@ -21,6 +21,9 @@ enum NumberScope: string {
     case Supplier = 'supplier';
     case Invoice = 'invoice';
     case CreditNote = 'credit_note';
+    case Cancellation = 'cancellation';
+    case Quote = 'quote';
+    case Proforma = 'proforma';
 
     public function label(): string {
         return match ($this) {
@@ -34,6 +37,9 @@ enum NumberScope: string {
             self::Supplier => __('Lieferant'),
             self::Invoice => __('Rechnung'),
             self::CreditNote => __('Gutschrift'),
+            self::Cancellation => __('Stornorechnung'),
+            self::Quote => __('Angebot'),
+            self::Proforma => __('Pro-forma-Rechnung'),
         };
     }
 
@@ -43,7 +49,8 @@ enum NumberScope: string {
      */
     public function isAccountingRelevant(): bool {
         return match ($this) {
-            self::Customer, self::Supplier, self::Invoice, self::CreditNote => true,
+            self::Customer, self::Supplier, self::Invoice, self::CreditNote, self::Cancellation => true,
+            self::Quote, self::Proforma => false, // keine steuerliche Belegwirkung
             self::ServiceTicket, self::Asset, self::Article, self::ManufacturingOrder, self::Serial, self::PurchaseOrder => false,
         };
     }

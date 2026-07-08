@@ -339,9 +339,7 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Feature-Flags') }}</h2>
             @if (count($features) === 0)
-                <p class="text-sm text-base-content/60">
-                    {{ __('Diese Lizenz enthält keine expliziten Feature-Flags.') }}
-                </p>
+                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">flag</span>' :title="__('Diese Lizenz enthält keine expliziten Feature-Flags.')" compact />
             @else
                 <div class="overflow-x-auto">
                     <table class="table table-sm">

@@ -11,8 +11,10 @@
 namespace App\Services\Timesheet;
 
 use App\Models\Timesheet;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\{Storage, View};
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 class PdfRenderer {
     public function render(Timesheet $timesheet): string {
@@ -33,10 +35,8 @@ class PdfRenderer {
             'signaturePng' => $signaturePng,
         ])->render();
 
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadHTML($html)->setPaper('a4');
-
-        return (string) $pdf->output();
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.timesheet).');
     }
 
     public function store(Timesheet $timesheet): string {

@@ -106,7 +106,15 @@ class AttendanceClockService {
                 $attendance->note = trim(($attendance->note ?? '') . "\n" . $context['note']);
             }
             if (isset($context['break_minutes'])) {
+                // Expliziter Gesamt-Pausenwert (Browser-Ausstempeln) gewinnt.
                 $attendance->break_minutes_manual = (int) $context['break_minutes'];
+                $attendance->break_started_at = null;
+            } elseif ($attendance->break_started_at !== null) {
+                // Noch laufende Terminal-Pause wird zum Gehen-Zeitpunkt beendet und
+                // die verstrichenen Minuten mitgezählt.
+                $attendance->break_minutes_manual = (int) $attendance->break_minutes_manual
+                    + max(0, (int) $attendance->break_started_at->diffInMinutes($end));
+                $attendance->break_started_at = null;
             }
             $attendance->status = AttendanceStatus::Closed;
             $attendance->closed_by = $user->id;
@@ -127,12 +135,47 @@ class AttendanceClockService {
         }
         $attendance->ended_at = $attendance->started_at; // zero-length
         $attendance->status = AttendanceStatus::Cancelled;
+        $attendance->break_started_at = null;
         $attendance->note = trim(($attendance->note ?? '') . "\nCancelled: " . ($reason ?? ''));
         $attendance->closed_by = $user->id;
         $attendance->updated_by = $user->id;
         $attendance->save();
 
         return $attendance->refresh();
+    }
+
+    /**
+     * Toggelt eine laufende Pause der offenen Anwesenheit (Terminal-Pausen-Scan,
+     * Feature 061, Rang 13): erster Scan startet die Pause (`break_started_at`),
+     * der nächste beendet sie und verbucht die verstrichenen Minuten auf
+     * `break_minutes_manual`. Gibt die (aktualisierte) Anwesenheit zurück bzw.
+     * null, wenn gerade kein offener Stempel existiert (Pause ohne Kommen).
+     *
+     * @param  array<string, mixed>  $context  optional: occurred_at (Offline-Nachlieferung)
+     */
+    public function toggleBreak(User $user, array $context = []): ?Attendance {
+        return DB::transaction(function () use ($user, $context) {
+            $attendance = $this->current($user);
+            if (! $attendance) {
+                return null;
+            }
+
+            $at = isset($context['occurred_at']) && $context['occurred_at'] !== ''
+                ? CarbonImmutable::parse($context['occurred_at'])
+                : CarbonImmutable::now();
+
+            if ($attendance->break_started_at === null) {
+                $attendance->break_started_at = Carbon::instance($at);
+            } else {
+                $attendance->break_minutes_manual = (int) $attendance->break_minutes_manual
+                    + max(0, (int) $attendance->break_started_at->diffInMinutes($at));
+                $attendance->break_started_at = null;
+            }
+            $attendance->updated_by = $user->id;
+            $attendance->save();
+
+            return $attendance->refresh();
+        });
     }
 
     /**

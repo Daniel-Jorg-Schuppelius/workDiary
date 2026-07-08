@@ -64,7 +64,7 @@ class SbomGenerator {
 
         return [
             'bomFormat' => 'CycloneDX',
-            'specVersion' => '1.5',
+            'specVersion' => '1.6',
             'serialNumber' => 'urn:uuid:' . Str::uuid()->toString(),
             'version' => 1,
             'metadata' => [
@@ -81,18 +81,112 @@ class SbomGenerator {
                 ],
             ],
             'components' => $components,
-            // Flache Abhängigkeitsbeziehung: das Primärprodukt hängt von allen
-            // gelisteten Komponenten ab (vollständiger Graph ist MVP-2+).
-            'dependencies' => [
-                [
-                    'ref' => $rootRef,
-                    'dependsOn' => array_map(
-                        static fn(array $c): string => (string) $c['bom-ref'],
-                        $components,
-                    ),
-                ],
-            ],
+            // Echter Abhängigkeitsgraph (Feature 044e, NTIA-Minimum): Kanten
+            // aus den require-/dependencies-Feldern der Lockfiles; Komponenten
+            // ohne bekannte Kanten (Runtime/Module/Plugins) hängen an der Root.
+            'dependencies' => $this->dependencyGraph(
+                $rootRef,
+                $components,
+                $composerLockJson ?? $this->readLockfile('composer.lock'),
+                $packageLockJson ?? $this->readLockfile('package-lock.json'),
+            ),
         ];
+    }
+
+    /**
+     * Baut den dependencies[]-Graph: Root → direkte Abhängigkeiten +
+     * Paket→Paket-Kanten aus composer.lock (packages[].require) und
+     * package-lock.json (packages[].dependencies). Nur Kanten auf tatsächlich
+     * enthaltene Komponenten (bom-ref-Abgleich); Nicht-Paket-Komponenten
+     * (Runtime, Module, Plugins) hängen direkt an der Root.
+     *
+     * @param list<array<string, mixed>> $components
+     * @return list<array{ref: string, dependsOn?: list<string>}>
+     */
+    private function dependencyGraph(string $rootRef, array $components, string $composerLockJson, string $packageLockJson): array {
+        $refs = [];
+        foreach ($components as $component) {
+            $refs[(string) $component['bom-ref']] = true;
+        }
+
+        $composerRefByName = [];
+        $npmRefByName = [];
+        foreach (array_keys($refs) as $ref) {
+            if (str_starts_with($ref, 'pkg:composer/')) {
+                $name = (string) preg_replace('/@[^@]*$/', '', substr($ref, strlen('pkg:composer/')));
+                $composerRefByName[$name] = $ref;
+            } elseif (str_starts_with($ref, 'pkg:npm/')) {
+                $name = rawurldecode((string) preg_replace('/@[^@]*$/', '', substr($ref, strlen('pkg:npm/'))));
+                $npmRefByName[$name] = $ref;
+            }
+        }
+
+        /** @var array<string, list<string>> $edges */
+        $edges = [];
+        $childRefs = [];
+
+        $composerLock = json_decode($composerLockJson, true);
+        if (is_array($composerLock)) {
+            foreach (['packages', 'packages-dev'] as $section) {
+                foreach ((array) ($composerLock[$section] ?? []) as $pkg) {
+                    if (! is_array($pkg) || ! isset($pkg['name'])) {
+                        continue;
+                    }
+                    $fromRef = $composerRefByName[(string) $pkg['name']] ?? null;
+                    if ($fromRef === null) {
+                        continue;
+                    }
+                    foreach (array_keys((array) ($pkg['require'] ?? [])) as $depName) {
+                        $toRef = $composerRefByName[(string) $depName] ?? null;
+                        if ($toRef !== null && $toRef !== $fromRef) {
+                            $edges[$fromRef][] = $toRef;
+                            $childRefs[$toRef] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        $npmLock = json_decode($packageLockJson, true);
+        if (is_array($npmLock)) {
+            foreach ((array) ($npmLock['packages'] ?? []) as $path => $info) {
+                if (! is_string($path) || $path === '' || ! is_array($info)) {
+                    continue;
+                }
+                $name = (string) preg_replace('#^.*node_modules/#', '', $path);
+                $fromRef = $npmRefByName[$name] ?? null;
+                if ($fromRef === null) {
+                    continue;
+                }
+                foreach (array_keys((array) ($info['dependencies'] ?? [])) as $depName) {
+                    $toRef = $npmRefByName[(string) $depName] ?? null;
+                    if ($toRef !== null && $toRef !== $fromRef) {
+                        $edges[$fromRef][] = $toRef;
+                        $childRefs[$toRef] = true;
+                    }
+                }
+            }
+        }
+
+        // Root: alles ohne eingehende Kante (direkte Abhängigkeiten +
+        // Runtime/Module/Plugins).
+        $rootChildren = [];
+        foreach (array_keys($refs) as $ref) {
+            if (! isset($childRefs[$ref])) {
+                $rootChildren[] = $ref;
+            }
+        }
+
+        $graph = [['ref' => $rootRef, 'dependsOn' => $rootChildren]];
+        foreach (array_keys($refs) as $ref) {
+            $entry = ['ref' => $ref];
+            if (isset($edges[$ref])) {
+                $entry['dependsOn'] = array_values(array_unique($edges[$ref]));
+            }
+            $graph[] = $entry;
+        }
+
+        return $graph;
     }
 
     /**

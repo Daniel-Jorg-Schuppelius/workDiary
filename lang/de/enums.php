@@ -213,6 +213,11 @@ return [
     ],
     'notification' => [
         'event' => [
+            'ticket' => [
+                'assigned' => 'Ticket zugewiesen',
+                'customerReplied' => 'Kunde hat geantwortet',
+                'waitingExpired' => 'Ticket-Wiedervorlage fällig',
+            ],
             'openIssue' => [
                 'assigned' => 'Offener Punkt zugewiesen',
                 'dueSoon' => 'Offener Punkt bald fällig',
@@ -244,6 +249,7 @@ return [
             'sla' => [
                 'atRisk' => 'SLA-Frist gefährdet',
                 'breached' => 'SLA-Frist verletzt',
+                'quotaWarning' => 'SLA-Kontingent bald erschöpft',
             ],
             'asset' => [
                 'returnOverdue' => 'Asset-Rückgabe überfällig',
@@ -264,11 +270,23 @@ return [
             'ideaMap' => [
                 'shared' => 'Ideenlandkarte für Sie freigegeben',
             ],
+            'shipment' => [
+                'deliveryProblem' => 'Zustellproblem bei einer Sendung',
+            ],
+            'cti' => [
+                'incomingCall' => 'Eingehender Anruf',
+            ],
+            'maintenance' => [
+                'dueSoon' => 'Wartung/Prüfung wird fällig',
+                'overdue' => 'Wartung/Prüfung überfällig',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-App',
             'mail' => 'E-Mail',
             'push' => 'Push',
+            'teams' => 'Microsoft Teams',
+            'mattermost' => 'Mattermost',
         ],
     ],
 
@@ -412,6 +430,9 @@ return [
             'date' => 'Datum',
             'select' => 'Auswahl',
             'checkbox' => 'Checkbox',
+            'photo' => 'Foto',
+            'file' => 'Datei',
+            'signature' => 'Unterschrift',
         ],
     ],
     'document' => [
@@ -424,6 +445,7 @@ return [
             'manufacturerDoc' => 'Herstellerdokument',
             'permit' => 'Genehmigung',
             'insurance' => 'Versicherung',
+            'invoice' => 'Rechnung',
             'other' => 'Sonstiges',
         ],
         'status' => [
@@ -856,6 +878,14 @@ return [
             'passed' => 'Bestanden',
             'partial' => 'Mit Auflagen',
             'failed' => 'Fehlgeschlagen',
+        ],
+    ],
+
+    // Fälligkeits-Aktion eines Wartungsplans (Feature 010 → Rang 43).
+    'maintenance' => [
+        'due_action' => [
+            'none' => 'Nur Hinweis (kein Vorgang)',
+            'ticket' => 'Service-Ticket anlegen',
         ],
     ],
 ];

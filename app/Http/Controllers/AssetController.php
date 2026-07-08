@@ -263,7 +263,7 @@ class AssetController extends Controller {
             ->limit(12)
             ->get();
         $defects = $asset->defects()
-            ->with(['reportedBy:id,name', 'resolvedBy:id,name'])
+            ->with(['reportedBy:id,name', 'resolvedBy:id,name', 'attachments'])
             ->limit(20)
             ->get();
 

@@ -202,6 +202,9 @@ class PermissionsSeeder extends Seeder {
                     // MVP-015: Tagesabschluss-Lesezugriff auf Org-Ebene —
                     // analog zu month.view.organization explizit.
                     PermissionEnum::DayCloseViewOrganization->value,
+                    // Rang 38: Plan/Ist-Anwesenheit org-weit — die .view-
+                    // Heuristik trifft `report.presence.organization` nicht.
+                    PermissionEnum::ReportPresenceOrganization->value,
                 ], true);
             }
         ));
@@ -295,6 +298,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AttendanceManage,
             // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
             PermissionEnum::ComplianceViewAny,
+            // Plan/Ist-Anwesenheit der eigenen Teams (Rang 38).
+            PermissionEnum::ReportPresenceTeam,
             // Arbeitszeit-Modell pflegen jetzt exklusiv Personalverwaltung +
             // Geschäftsführung (work-schedule.manage daher hier entfernt).
             PermissionEnum::FlexBalanceView,
@@ -352,6 +357,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ServiceTicketUpdate,
             PermissionEnum::ServiceTicketAssign,
             PermissionEnum::ServiceTicketClose,
+            PermissionEnum::HelpdeskQueueManage,
+            PermissionEnum::HelpdeskTicketInternalNote,
             PermissionEnum::SlaContractView,
             PermissionEnum::SlaContractManage,
             PermissionEnum::SlaViewAny,
@@ -425,6 +432,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::OrganizationView,
             PermissionEnum::UserViewAny,
             PermissionEnum::UserView,
+            // Plan/Ist-Anwesenheit org-weit (Rang 38).
+            PermissionEnum::ReportPresenceTeam,
+            PermissionEnum::ReportPresenceOrganization,
             PermissionEnum::UserPayrollManage,
             PermissionEnum::UserFlexManage,
             PermissionEnum::WorkScheduleManage,
@@ -519,9 +529,15 @@ class PermissionsSeeder extends Seeder {
             // Steuerschlüssel, Beraternummer) bleibt über finance.config dem
             // Admin vorbehalten.
             PermissionEnum::FinanceBookingExport,
+            // GoBD-Z3-Datenträgerüberlassung (Feature 063): steuerrelevante
+            // Daten für die Betriebsprüfung als GDPdU-Paket ausleiten.
+            PermissionEnum::FinanceGobdExport,
             // Zuschlagsregeln (Feature 005): Lohnbüro pflegt die Regeln.
             PermissionEnum::SurchargeRuleViewAny,
             PermissionEnum::SurchargeRuleManage,
+            // Kostenstellen-Regeln für den Zeitexport (Rang 35): gleiche Zielgruppe.
+            PermissionEnum::CostCenterRuleViewAny,
+            PermissionEnum::CostCenterRuleManage,
             PermissionEnum::ReportView,
             PermissionEnum::ReportExport,
             // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
@@ -793,6 +809,22 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::CustomerPortalOpenIssueView,
         ];
 
+        // Agiles Projektmanagement (Feature 064): Teamleitung führt Boards/
+        // Sprints, User arbeiten auf dem Board (View + Move); GF erhält
+        // agile.view/agile.report.view über die .view-Heuristik.
+        $agileWork = [
+            PermissionEnum::AgileView,
+            PermissionEnum::AgileWorkItemMove,
+        ];
+        $agileLead = [
+            ...$agileWork,
+            PermissionEnum::AgileBoardManage,
+            PermissionEnum::AgileBacklogPrioritize,
+            PermissionEnum::AgileSprintManage,
+            PermissionEnum::AgileWorkflowOverride,
+            PermissionEnum::AgileReportView,
+        ];
+
         // Lese-Rollen, die Kunden sehen, sehen auch deren Fremdkunden.
         $foreignCustomerRead = [
             PermissionEnum::ForeignCustomerViewAny,
@@ -818,9 +850,9 @@ class PermissionsSeeder extends Seeder {
             UserRole::Admin->value => $all,
             UserRole::Geschaeftsfuehrung->value => $geschaeftsfuehrung,
             UserRole::Personalverwaltung->value => [...$personalverwaltung, ...$teamRead],
-            UserRole::Teamleitung->value => [...$teamleitung, ...$foreignCustomerRead, ...$teamManage],
+            UserRole::Teamleitung->value => [...$teamleitung, ...$foreignCustomerRead, ...$teamManage, ...$agileLead],
             UserRole::Buchhaltung->value => [...$buchhaltung, ...$teamRead],
-            UserRole::User->value => [...$user, ...$foreignCustomerRead, ...$teamRead],
+            UserRole::User->value => [...$user, ...$foreignCustomerRead, ...$teamRead, ...$agileWork],
             UserRole::Aussendienst->value => [...$aussendienst, ...$foreignCustomerRead, ...$teamRead],
             UserRole::Callcenter->value => [...$callcenter, ...$foreignCustomerRead, ...$teamRead],
             UserRole::Support->value => [...$support, ...$foreignCustomerRead, ...$teamRead],

@@ -55,6 +55,11 @@ class LocationController extends Controller {
         $org = $user->organization;
         if ($org instanceof Organization) {
             app()->instance('currentOrganization', $org);
+
+            // Wartungsmodus (Rang 65): nur bei explizitem block_ingest pausieren.
+            if ($org->maintenanceBlocksIngest()) {
+                return response()->json(['status' => 'maintenance'], 503, ['Retry-After' => '3600']);
+            }
         }
 
         // Lizenzmodul der Organisation.

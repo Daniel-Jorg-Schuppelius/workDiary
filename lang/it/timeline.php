@@ -36,6 +36,8 @@ return [
         'attachment_added' => 'Allegato caricato',
         'material_added' => 'Materiale registrato',
         'communication_added' => 'Nota di comunicazione registrata',
+        'shipment' => 'Spedizione: :status',
+        'shipment_tracking' => 'Numero di tracciamento :number',
         'document_linked' => 'Documento collegato',
         'protocol' => [
             'created' => 'Protocollo creato',

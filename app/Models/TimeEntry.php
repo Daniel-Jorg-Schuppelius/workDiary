@@ -74,6 +74,24 @@ class TimeEntry extends Model {
 
     // High-level distribution category. When ACTIVITY_PROJECT, project_id
     // must be set. Other values use activity_category_id for reporting.
+    /**
+     * Nacharbeitsgrund (Rang 59, Domäne rework_reason).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Classification, $this>
+     */
+    public function reworkReason(): \Illuminate\Database\Eloquent\Relations\BelongsTo {
+        return $this->belongsTo(\App\Models\Classification::class, 'rework_reason_classification_id');
+    }
+
+    /**
+     * Kulanzgrund (Rang 59, Domäne goodwill_reason).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<\App\Models\Classification, $this>
+     */
+    public function goodwillReason(): \Illuminate\Database\Eloquent\Relations\BelongsTo {
+        return $this->belongsTo(\App\Models\Classification::class, 'goodwill_reason_classification_id');
+    }
+
     protected $fillable = [
         'organization_id',
         'project_id',
@@ -82,6 +100,8 @@ class TimeEntry extends Model {
         'diary_entry_id',
         'user_id',
         'activity_category_id',
+        'rework_reason_classification_id',
+        'goodwill_reason_classification_id',
         'attendance_id',
         'travel_log_id',
         'manufacturing_order_id',

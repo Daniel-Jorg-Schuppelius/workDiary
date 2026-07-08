@@ -124,6 +124,43 @@ class PlanIstReportBuilder {
         return $rows;
     }
 
+    /**
+     * Team-/Org-Aggregation (Rang 38): Summen je Mitarbeiter:in über den
+     * Zeitraum — gerechnet aus derselben Tageslogik wie die Personen-Sicht
+     * (keine Doppel-Implementierung), damit Summen == Einzelwerte gilt.
+     *
+     * @param  iterable<int, User>  $users
+     * @return array{
+     *     rows: list<array{user: User, plan_minutes: int, actual_minutes: int, delta_minutes: int, warnings: int, days_with_plan: int}>,
+     *     totals: array{plan_minutes: int, actual_minutes: int, delta_minutes: int, warnings: int},
+     * }
+     */
+    public function presenceSummaryFor(iterable $users, CarbonImmutable $from, CarbonImmutable $to): array {
+        $rows = [];
+        $totals = ['plan_minutes' => 0, 'actual_minutes' => 0, 'delta_minutes' => 0, 'warnings' => 0];
+
+        foreach ($users as $user) {
+            $days = $this->presenceFor($user, $from, $to);
+
+            $row = [
+                'user' => $user,
+                'plan_minutes' => array_sum(array_column($days, 'plan_minutes')),
+                'actual_minutes' => array_sum(array_column($days, 'actual_minutes')),
+                'delta_minutes' => array_sum(array_column($days, 'delta_minutes')),
+                'warnings' => array_sum(array_map(fn (array $d): int => count($d['warnings']), $days)),
+                'days_with_plan' => count(array_filter($days, fn (array $d): bool => ! $d['no_plan'])),
+            ];
+
+            $rows[] = $row;
+            $totals['plan_minutes'] += $row['plan_minutes'];
+            $totals['actual_minutes'] += $row['actual_minutes'];
+            $totals['delta_minutes'] += $row['delta_minutes'];
+            $totals['warnings'] += $row['warnings'];
+        }
+
+        return ['rows' => $rows, 'totals' => $totals];
+    }
+
     /** @param Collection<int, WorkSchedule> $schedules */
     private function scheduleFor(Collection $schedules, CarbonImmutable $date): ?WorkSchedule {
         $dateStr = $date->toDateString();

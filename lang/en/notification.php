@@ -93,9 +93,12 @@ return [
         'supplier_review_overdue' => 'Supplier review overdue since :date.',
         'sla_at_risk' => 'SLA resolution deadline at risk — due on :date.',
         'sla_breached' => 'SLA resolution deadline breached — was due :date.',
+        'sla_quota_warning' => 'SLA quota :percent% used (:consumed of :included min) in period :period.',
         'asset_return_overdue' => 'Asset return overdue — was expected :date.',
         'incident_critical' => 'New critical security incident reported.',
         'safety_critical_event' => 'Critical safety event (:severity) reported at :location.',
         'qualification_expiring' => 'Qualification/training expires on :date.',
+        'maintenance_due_soon' => 'Maintenance plan :label is due on :date.',
+        'maintenance_overdue' => 'Maintenance plan :label has been overdue since :date.',
     ],
 ];

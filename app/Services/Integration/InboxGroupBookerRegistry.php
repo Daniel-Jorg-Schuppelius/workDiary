@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
+use App\Plugins\Clockify\ClockifyGroupBooker;
+use App\Plugins\Kimai\KimaiGroupBooker;
 use App\Plugins\OpenProject\OpenProjectGroupBooker;
 use App\Plugins\RemoteSupport\RemoteSupportGroupBooker;
 use App\Plugins\Toggl\TogglGroupBooker;
@@ -25,6 +27,8 @@ class InboxGroupBookerRegistry {
     /** @var array<string, class-string<InboxGroupBooker>> */
     private array $map = [
         'toggl' => TogglGroupBooker::class,
+        'kimai' => KimaiGroupBooker::class,
+        'clockify' => ClockifyGroupBooker::class,
         'openproject' => OpenProjectGroupBooker::class,
         'remote-support' => RemoteSupportGroupBooker::class,
     ];

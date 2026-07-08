@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\CustomerPortal\{DashboardController, DiaryController, InvoiceController, LoginController, OpenIssueController, TimeEntryController, TwoFactorChallengeController, TwoFactorController};
+use App\Http\Controllers\CustomerPortal\{AssetController, DashboardController, DiaryController, DiaryDetailController, InvoiceController, LoginController, OpenIssueController, PhotoConfirmationController, TimeEntryController, TwoFactorChallengeController, TwoFactorController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -28,12 +28,32 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
     Route::post('/two-factor-challenge/webauthn/options', [TwoFactorChallengeController::class, 'webauthnOptions'])->name('two-factor.login.webauthn.options');
     Route::post('/two-factor-challenge/webauthn', [TwoFactorChallengeController::class, 'webauthnVerify'])->middleware('throttle:login')->name('two-factor.login.webauthn');
 
+    // Fallakte-PDF über signierten, kurzlebigen Link (Rang 54): teilbar ohne
+    // Portal-Session — Schutz ausschließlich über die 24-h-Signatur, Inhalt
+    // strikt kundensichtbar.
+    Route::get('/diary/{diary}/pdf', [DiaryDetailController::class, 'pdf'])->name('diary.pdf');
+
     Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
         Route::get('/diary', [DiaryController::class, 'index'])->name('diary.index');
+        // Auftragsdetail read-only (Rang 54) + Foto-Bestätigung/-Beanstandung (Rang 55).
+        Route::get('/diary/{diary}', [DiaryDetailController::class, 'show'])->name('diary.show');
+        Route::post('/diary/{diary}/photos/{attachment}/confirm', [PhotoConfirmationController::class, 'confirm'])->name('diary.photos.confirm');
+        Route::post('/diary/{diary}/photos/{attachment}/complain', [PhotoConfirmationController::class, 'complain'])->name('diary.photos.complain');
         Route::get('/time-entries', [TimeEntryController::class, 'index'])->name('time-entries.index');
         Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/open-issues', [OpenIssueController::class, 'index'])->name('open-issues.index');
+        // Portal-Tickets (Feature 065, MVP-160): nur eigene, nur public.
+        Route::get('/tickets', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'index'])->name('tickets.index');
+        Route::post('/tickets', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'store'])->name('tickets.store');
+        Route::get('/tickets/{ticket}', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'show'])->name('tickets.show');
+        Route::post('/tickets/{ticket}/reply', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reply'])->name('tickets.reply');
+        Route::post('/tickets/{ticket}/accept', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'accept'])->name('tickets.accept');
+        Route::post('/tickets/{ticket}/reopen', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reopen'])->name('tickets.reopen');
+        Route::post('/tickets/{ticket}/rate', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'rate'])->name('tickets.rate');
+        // Objektakte read-only (Rang 50): eigene Objekte des Kunden.
+        Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
+        Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show');
 
         // 2FA-Selbstverwaltung.
         Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('2fa.show');

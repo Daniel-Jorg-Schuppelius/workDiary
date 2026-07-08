@@ -44,7 +44,10 @@ class WidgetRegistryTest extends TestCase {
         $registry->register($this->makeWidget('public', null));
         $registry->register($this->makeWidget('restricted', 'manage.things'));
 
-        $user = $this->createPartialMock(User::class, ['hasEffectivePermission', 'isAdmin']);
+        // Reiner Stub (keine Interaktions-Erwartungen) — availableFor() fragt am
+        // User nur hasEffectivePermission()/isAdmin() ab. createStub statt
+        // createPartialMock vermeidet die PHPUnit-12-Notice „use a test stub".
+        $user = $this->createStub(User::class);
         $user->method('hasEffectivePermission')->willReturn(false);
         $user->method('isAdmin')->willReturn(false);
 

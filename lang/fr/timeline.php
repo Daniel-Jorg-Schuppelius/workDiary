@@ -36,6 +36,8 @@ return [
         'attachment_added' => 'Pièce jointe téléversée',
         'material_added' => 'Matériel enregistré',
         'communication_added' => 'Note de communication enregistrée',
+        'shipment' => 'Expédition : :status',
+        'shipment_tracking' => 'Numéro de suivi :number',
         'document_linked' => 'Document lié',
         'protocol' => [
             'created' => 'Protocole créé',

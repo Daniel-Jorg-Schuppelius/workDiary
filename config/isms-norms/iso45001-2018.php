@@ -26,6 +26,9 @@ return [
     'norm' => 'ISO 45001',
     'edition' => '2018',
     'label' => 'ISO 45001:2018 — Arbeits- und Gesundheitsschutz',
+    // Profilrevision + Stichtag der Normfassung (Nachtrag 046a).
+    'version' => '1.0',
+    'as_of' => '2018-03-12',
     'requirements' => [
         ['ref_no' => '4', 'title' => 'Kontext der Organisation'],
         ['ref_no' => '4.1', 'title' => 'Organisation und ihr Kontext verstehen'],

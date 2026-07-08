@@ -11,7 +11,7 @@
 namespace App\Mail;
 
 use App\Models\Invoice;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\Invoicing\InvoicePdfRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -59,9 +59,9 @@ class InvoiceMail extends Mailable implements ShouldQueue {
     public function attachments(): array {
         $this->invoice->loadMissing(['items', 'customer', 'project', 'parent']);
 
-        $bytes = Pdf::loadView('invoices.pdf', ['invoice' => $this->invoice])
-            ->setPaper('a4')
-            ->output();
+        // Geteilter Renderer: Mail-Anhang = exakt das Dokument des Downloads
+        // (gleiche Vorlage + Rechtsangaben).
+        $bytes = app(InvoicePdfRenderer::class)->output($this->invoice);
 
         $prefix = $this->invoice->isCreditNote() ? 'gutschrift' : 'rechnung';
         $filename = sprintf('%s-%s.pdf', $prefix, $this->invoice->number);

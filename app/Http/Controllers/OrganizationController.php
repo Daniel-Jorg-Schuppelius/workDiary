@@ -184,6 +184,15 @@ class OrganizationController extends Controller {
             'settings.travel.origin_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'settings.travel.origin_lng' => ['nullable', 'numeric', 'between:-180,180'],
             'settings.travel.label' => ['nullable', 'string', 'max:50'],
+            // Wetter-Auto-Abruf (Feature 062, Rang 12): org-weiter Default-Schalter.
+            'settings.weather' => ['sometimes', 'array'],
+            'settings.weather.auto_fetch' => ['nullable', 'in:0,1'],
+            // Wartungsmodus pro Mandant (Rang 65).
+            'settings.maintenance' => ['sometimes', 'array'],
+            'settings.maintenance.enabled' => ['nullable', 'in:0,1'],
+            'settings.maintenance.message' => ['nullable', 'string', 'max:300'],
+            'settings.maintenance.until' => ['nullable', 'date'],
+            'settings.maintenance.block_ingest' => ['nullable', 'in:0,1'],
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);
@@ -257,7 +266,18 @@ class OrganizationController extends Controller {
         // Checkbox: unchecked wird nicht gesendet → explizit aus dem Request lesen.
         $data['two_factor_required'] = $request->boolean('two_factor_required');
 
+        // Wartungsmodus-Umschaltung nachvollziehbar machen (Rang 65).
+        $maintenanceBefore = (string) data_get($existingSettings, 'maintenance.enabled', '0') === '1';
+        $maintenanceAfter = (string) data_get($mergedSettings, 'maintenance.enabled', '0') === '1';
+
         $organization->update($data);
+
+        if ($maintenanceBefore !== $maintenanceAfter) {
+            $organization->audit('organization.maintenance_toggled', [
+                'enabled' => $maintenanceAfter,
+                'until' => data_get($mergedSettings, 'maintenance.until'),
+            ]);
+        }
 
         return redirect()->route('admin.organizations.index')
             ->with('success', __('Organisation wurde aktualisiert.'));

@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Task, TodoistConnection, TodoistProjectLink, User};
-use App\Plugins\Todoist\Services\TodoistImportService;
+use App\Plugins\Todoist\Services\{TodoistImportService, TodoistOutboxDispatcher};
 use App\Plugins\Todoist\TodoistPlugin;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,6 +72,96 @@ final class TodoistOutboxTest extends TestCase {
     /** @return array<string, mixed> */
     private function requestJson(RequestInterface $request): array {
         return (array) json_decode((string) $request->getBody(), true);
+    }
+
+    private function localTask(string $title): Task {
+        return Task::query()->create([
+            'organization_id' => $this->organization->id,
+            'is_global' => true,
+            'title' => $title,
+            'status' => TaskStatus::Open->value,
+            'priority' => TaskPriority::High->value,
+            'due_date' => '2026-09-01',
+        ]);
+    }
+
+    public function test_local_task_creation_exports_to_todoist(): void {
+        $fake = FakePluginHttp::fake([
+            'https://api.todoist.com/api/v1/tasks*' => FakePluginHttp::response(['id' => 't-new', 'content' => 'Neu lokal']),
+        ]);
+
+        $task = $this->localTask('Neu lokal');
+
+        $entry = IntegrationOutboxEntry::withoutGlobalScopes()->firstOrFail();
+        $this->assertSame(TodoistOutboxDispatcher::OP_TASK_CREATE, $entry->operation);
+        $this->assertSame(IntegrationOutboxStatus::Confirmed, $entry->status);
+
+        $fake->assertSent(function (RequestInterface $r): bool {
+            $body = $this->requestJson($r);
+
+            return str_ends_with((string) $r->getUri(), '/tasks')
+                && ($body['content'] ?? null) === 'Neu lokal'
+                && ($body['project_id'] ?? null) === 'tp-1'
+                && ($body['priority'] ?? null) === 3; // high = API-Wert 3
+        });
+
+        // Neue Referenz + initialer Konfliktbasis-Snapshot (kein Phantom-Update).
+        $reference = ExternalReference::query()
+            ->where('external_id', 't-new')
+            ->where('external_type', TodoistPlugin::EXT_TYPE_TASK)
+            ->firstOrFail();
+        $this->assertSame($task->id, (int) $reference->referenceable_id);
+        $base = (array) ((array) $reference->payload)['base'];
+        $this->assertSame('Neu lokal', $base['title']);
+        $this->assertSame(TaskPriority::High->value, $base['priority']);
+    }
+
+    public function test_imported_task_does_not_echo_create(): void {
+        $this->importRemote([['id' => 't-1', 'content' => 'Importiert', 'priority' => 1]]);
+
+        // Der Import legt die Aufgabe in suppressed() an → kein task.create-Echo.
+        $this->assertSame(0, IntegrationOutboxEntry::withoutGlobalScopes()->count());
+        $this->assertSame(1, Task::query()->count());
+    }
+
+    public function test_no_create_export_in_import_only_mode(): void {
+        $this->link->forceFill(['sync_mode' => TodoistProjectLink::MODE_TODOIST_TO_WORKDIARY])->save();
+
+        $fake = FakePluginHttp::fake();
+        $this->localTask('Nur lokal');
+
+        $this->assertSame(0, IntegrationOutboxEntry::withoutGlobalScopes()->count());
+        $fake->assertNothingSent();
+    }
+
+    public function test_status_change_moves_task_to_mapped_section(): void {
+        \App\Models\TodoistSectionLink::query()->create([
+            'organization_id' => $this->organization->id,
+            'todoist_project_link_id' => $this->link->id,
+            'todoist_section_id' => 'sec-progress',
+            'name' => 'In Arbeit',
+            'task_status' => TaskStatus::InProgress->value,
+        ]);
+        $this->importRemote([['id' => 't-1', 'content' => 'A', 'priority' => 1]]);
+
+        $fake = FakePluginHttp::fake();
+        Task::query()->firstOrFail()->forceFill(['status' => TaskStatus::InProgress->value])->save();
+
+        $fake->assertSent(fn (RequestInterface $r): bool => str_ends_with((string) $r->getUri(), '/tasks/t-1/move')
+            && ($this->requestJson($r)['section_id'] ?? null) === 'sec-progress');
+
+        // Konfliktbasis fortgeschrieben → kein Ping-Pong beim nächsten Import.
+        $reference = ExternalReference::query()->where('external_id', 't-1')->firstOrFail();
+        $this->assertSame(TaskStatus::InProgress->value, ((array) $reference->payload)['base']['status']);
+    }
+
+    public function test_unmapped_status_does_not_move(): void {
+        $this->importRemote([['id' => 't-1', 'content' => 'A', 'priority' => 1]]);
+
+        $fake = FakePluginHttp::fake();
+        Task::query()->firstOrFail()->forceFill(['status' => TaskStatus::InProgress->value])->save();
+
+        $fake->assertNotSent(fn (RequestInterface $r): bool => str_contains((string) $r->getUri(), '/move'));
     }
 
     public function test_local_change_exports_and_advances_base(): void {

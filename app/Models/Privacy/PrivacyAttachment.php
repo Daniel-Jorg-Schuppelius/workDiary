@@ -35,7 +35,13 @@ class PrivacyAttachment extends Model {
         'path',
         'size',
         'mime',
+        'valid_until',
         'uploaded_by',
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'valid_until' => 'date',
     ];
 
     /** @return MorphTo<Model, $this> */

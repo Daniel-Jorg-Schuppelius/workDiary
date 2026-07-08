@@ -60,6 +60,31 @@ return [
         'info' => 'Turquoise',
     ],
 
+    'node_status' => [
+        'open' => 'Ouverte',
+        'in_review' => 'En examen',
+        'decided' => 'Décidée',
+        'rejected' => 'Rejetée',
+        'done' => 'Réalisée',
+    ],
+
+    'import' => [
+        'action' => 'Importer',
+        'title' => 'Importer une carte d\'idées',
+        'submit' => 'Importer',
+        'file' => 'Fichier',
+        'hint' => 'FreeMind/Freeplane (.mm) ou OPML. Crée une nouvelle carte privée.',
+        'done' => 'Carte importée.',
+        'default_title' => 'Carte importée',
+        'error' => [
+            'invalid' => 'Le fichier n\'est pas un XML valide.',
+            'unsupported' => 'Format non pris en charge (uniquement FreeMind .mm et OPML).',
+            'empty' => 'Le fichier ne contient aucun nœud.',
+            'too_deep' => 'La structure est trop profondément imbriquée.',
+            'too_large' => 'La carte comporte trop de nœuds.',
+        ],
+    ],
+
     'legend' => [
         'context' => 'Contexte (facultatif)',
         'map' => 'Carte',
@@ -144,12 +169,23 @@ return [
         'collapse' => 'Replier la branche',
         'zoom_in' => 'Agrandir',
         'zoom_out' => 'Réduire',
+        'zoom_reset' => 'Zoom à 100 %',
+        'fit' => 'Ajuster la vue',
+        'arrange' => 'Réorganiser',
+        'arrange_hint' => 'Réorganiser automatiquement tous les nœuds en arbre',
+        'canvas_large' => 'Grand espace de travail',
+        'canvas_small' => 'Espace de travail compact',
+        'canvas_keys_hint' => 'Tab : sous-nœud · Entrée : nœud frère · double-clic sur la zone : nouvelle idée · glisser sur un nœud : rattacher',
+        'canvas_a11y_hint' => 'Édition accessible dans la vue plan.',
+        'export_svg' => 'Exporter en image SVG',
+        'export_png' => 'Exporter en image PNG',
         'history' => 'Historique',
         'history_empty' => 'Aucune modification pour le moment.',
         'presence_suffix' => 'modifie actuellement',
         'note' => 'Note',
         'color' => 'Couleur',
         'status' => 'Statut',
+        'status_none' => '— aucun statut',
     ],
 
     'error' => [

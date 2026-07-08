@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy;
 
 use App\Models\Organization;
-use App\Models\Privacy\{ComplianceFinding, Dpia, JointControllerAgreement, MeasureAssignment, ProcessingActivity, ProcessingAgreement, Processor};
+use App\Models\Privacy\{ComplianceFinding, Dpia, JointControllerAgreement, MeasureAssignment, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, ProcessingAgreement, Processor, TechnicalMeasure};
 use Illuminate\Support\Carbon;
 
 /**
@@ -26,46 +26,20 @@ class ComplianceAnalysisService {
     /** @return int Anzahl aktuell erkannter Luecken */
     public function run(Organization $organization): int {
         $now = Carbon::now();
-        $defs = (array) config('dataprotection.compliance.requirements', []);
         $warnDays = (int) config('dataprotection.expiry_warning_days', 30);
         $orgId = $organization->id;
 
         /** @var list<array<string, mixed>> $gaps */
         $gaps = [];
-
-        // 1) Auftragsverarbeiter ohne AVV
-        foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'processor')->get() as $p) {
-            if (! ProcessingAgreement::query()->where('processor_id', $p->id)->exists()) {
-                $gaps[] = ['key' => 'avv_required', 'status' => 'missing', 'processor_id' => $p->id,
-                    'trigger' => "Auftragsverarbeiter „{$p->name}“ ohne AVV"];
+        foreach ($this->catalog($organization) as $requirement) {
+            if (! $requirement->active) {
+                continue;
             }
-        }
-        // 2) Ablaufende/abgelaufene AVV
-        foreach (ProcessingAgreement::query()->where('organization_id', $orgId)
-            ->whereNotNull('valid_until')->whereDate('valid_until', '<=', $now->copy()->addDays($warnDays))->get() as $a) {
-            $gaps[] = ['key' => 'avv_current', 'status' => 'expiring', 'agreement_id' => $a->id,
-                'trigger' => "AVV „{$a->title}“ läuft ab oder ist abgelaufen"];
-        }
-        // 3) Gemeinsam Verantwortliche ohne GVV
-        foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'joint_controller')->get() as $p) {
-            if (! JointControllerAgreement::query()->where('partner_id', $p->id)->exists()) {
-                $gaps[] = ['key' => 'gvv_required', 'status' => 'missing', 'processor_id' => $p->id,
-                    'trigger' => "Gemeinsam Verantwortlicher „{$p->name}“ ohne GVV"];
-            }
-        }
-        // 4) DSFA-Bedarf ohne abgeschlossene DSFA
-        foreach (ProcessingActivity::query()->where('organization_id', $orgId)->where('dsfa_required', true)->get() as $act) {
-            $dpia = Dpia::query()->where('activity_id', $act->id)->first();
-            if ($dpia === null || $dpia->outcome->value === 'open') {
-                $gaps[] = ['key' => 'dpia_required', 'status' => 'missing', 'activity_id' => $act->id,
-                    'trigger' => "„{$act->name}“ mit DSFA-Bedarf ohne abgeschlossene DSFA"];
-            }
-        }
-        // 5) Verarbeitungstaetigkeit ohne zugeordnete TOM
-        foreach (ProcessingActivity::query()->where('organization_id', $orgId)->get() as $act) {
-            if (! MeasureAssignment::query()->where('activity_id', $act->id)->exists()) {
-                $gaps[] = ['key' => 'tom_assigned', 'status' => 'missing', 'activity_id' => $act->id,
-                    'trigger' => "„{$act->name}“ ohne zugeordnete TOM"];
+            foreach ($this->detectGaps($requirement->check_type, (int) $orgId, $now, $warnDays) as $gap) {
+                $gap['key'] = $requirement->requirement_key;
+                $gap['label'] = $requirement->label;
+                $gap['category'] = $requirement->category;
+                $gaps[] = $gap;
             }
         }
 
@@ -79,10 +53,9 @@ class ComplianceAnalysisService {
                 'processor_id' => $g['processor_id'] ?? null,
             ]);
             $isAuto = ! $finding->exists || (bool) $finding->auto_detected;
-            $def = $defs[$g['key']] ?? ['label' => $g['key'], 'category' => null];
             $finding->fill([
-                'label' => $def['label'],
-                'category' => $def['category'] ?? null,
+                'label' => $g['label'],
+                'category' => $g['category'],
                 'trigger' => $g['trigger'],
                 'detected_at' => $now,
             ]);
@@ -103,6 +76,107 @@ class ComplianceAnalysisService {
             ->update(['status' => 'present', 'trigger' => null, 'detected_at' => $now]);
 
         return count($gaps);
+    }
+
+    /**
+     * Konfigurierbarer Anforderungskatalog (Nachtrag 043c): liest die
+     * org-eigenen Katalogeinträge; beim ersten Lauf werden die
+     * config-Defaults materialisiert (source=default), damit Admins sie
+     * anschließend deaktivieren/umbenennen können. Branchenprofile können
+     * weitere Vorlagen liefern (source=profile, BranchProfileInstaller).
+     *
+     * @return \Illuminate\Support\Collection<int, PrivacyRequirement>
+     */
+    public function catalog(Organization $organization): \Illuminate\Support\Collection {
+        $existing = PrivacyRequirement::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('id')
+            ->get();
+
+        /** @var array<string, array{label?: string, category?: ?string}> $defaults */
+        $defaults = (array) config('dataprotection.compliance.requirements', []);
+        $missing = array_diff_key($defaults, $existing->keyBy('requirement_key')->all());
+        foreach ($missing as $key => $def) {
+            $existing->push(PrivacyRequirement::query()->create([
+                'organization_id' => $organization->id,
+                'requirement_key' => $key,
+                'label' => (string) ($def['label'] ?? $key),
+                'category' => $def['category'] ?? null,
+                'check_type' => $key,
+                'active' => true,
+                'source' => 'default',
+            ]));
+        }
+
+        return $existing->values();
+    }
+
+    /**
+     * Prüf-Implementierungen je check_type. Liefert Lücken als Arrays mit
+     * status/trigger und optionalem Bezug (activity_id/agreement_id/processor_id).
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function detectGaps(string $checkType, int $orgId, Carbon $now, int $warnDays): array {
+        $gaps = [];
+
+        switch ($checkType) {
+            case 'avv_required': // Auftragsverarbeiter ohne AVV
+                foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'processor')->get() as $p) {
+                    if (! ProcessingAgreement::query()->where('processor_id', $p->id)->exists()) {
+                        $gaps[] = ['status' => 'missing', 'processor_id' => $p->id,
+                            'trigger' => "Auftragsverarbeiter „{$p->name}“ ohne AVV"];
+                    }
+                }
+                break;
+            case 'avv_current': // Ablaufende/abgelaufene AVV
+                foreach (ProcessingAgreement::query()->where('organization_id', $orgId)
+                    ->whereNotNull('valid_until')->whereDate('valid_until', '<=', $now->copy()->addDays($warnDays))->get() as $a) {
+                    $gaps[] = ['status' => 'expiring', 'agreement_id' => $a->id,
+                        'trigger' => "AVV „{$a->title}“ läuft ab oder ist abgelaufen"];
+                }
+                break;
+            case 'gvv_required': // Gemeinsam Verantwortliche ohne GVV
+                foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'joint_controller')->get() as $p) {
+                    if (! JointControllerAgreement::query()->where('partner_id', $p->id)->exists()) {
+                        $gaps[] = ['status' => 'missing', 'processor_id' => $p->id,
+                            'trigger' => "Gemeinsam Verantwortlicher „{$p->name}“ ohne GVV"];
+                    }
+                }
+                break;
+            case 'dpia_required': // DSFA-Bedarf ohne abgeschlossene DSFA
+                foreach (ProcessingActivity::query()->where('organization_id', $orgId)->where('dsfa_required', true)->get() as $act) {
+                    $dpia = Dpia::query()->where('activity_id', $act->id)->first();
+                    if ($dpia === null || $dpia->outcome->value === 'open') {
+                        $gaps[] = ['status' => 'missing', 'activity_id' => $act->id,
+                            'trigger' => "„{$act->name}“ mit DSFA-Bedarf ohne abgeschlossene DSFA"];
+                    }
+                }
+                break;
+            case 'tom_assigned': // Verarbeitungstaetigkeit ohne zugeordnete TOM
+                foreach (ProcessingActivity::query()->where('organization_id', $orgId)->get() as $act) {
+                    if (! MeasureAssignment::query()->where('activity_id', $act->id)->exists()) {
+                        $gaps[] = ['status' => 'missing', 'activity_id' => $act->id,
+                            'trigger' => "„{$act->name}“ ohne zugeordnete TOM"];
+                    }
+                }
+                break;
+            case 'tom_proof_current': // TOM-Nachweise mit abgelaufenem Gültig-bis (043b)
+                $expiring = PrivacyAttachment::query()
+                    ->where('organization_id', $orgId)
+                    ->where('attachable_type', TechnicalMeasure::class)
+                    ->whereNotNull('valid_until')
+                    ->whereDate('valid_until', '<=', $now->copy()->addDays($warnDays))
+                    ->get();
+                if ($expiring->isNotEmpty()) {
+                    $names = $expiring->map(fn(PrivacyAttachment $a): string => $a->filename)->implode(', ');
+                    $gaps[] = ['status' => 'expiring',
+                        'trigger' => 'TOM-Nachweise laufen ab oder sind abgelaufen: ' . $names];
+                }
+                break;
+        }
+
+        return $gaps;
     }
 
     /** Manuelle Statusentscheidung (z. B. „nicht anwendbar"/„Abweichung akzeptiert"). */

@@ -11,6 +11,7 @@
 return [
     'remaining' => 'noch :min Min.',
     'overdue_by' => ':min Min. überfällig',
+    'diary_panel_heading' => 'Verknüpfte Service-Tickets',
 
     'report' => [
         'title' => 'SLA-Auswertung',
@@ -43,5 +44,9 @@ return [
         'metric' => 'Kennzahl',
         'value' => 'Wert',
         'overview' => 'Überblick',
+        'quotas_heading' => 'Inklusivzeit-Kontingente',
+        'no_quotas' => 'Keine Kontingente hinterlegt.',
+        'quota_usage' => ':consumed / :included Std. (:period)',
+        'quota_over' => ':min Min. über Kontingent',
     ],
 ];

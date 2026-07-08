@@ -254,6 +254,26 @@ class DiaryEntry extends Model {
         return $this->hasMany(DiaryEntryEvent::class)->orderBy('occurred_at');
     }
 
+    /**
+     * Service-Tickets, die aus diesem Auftrag/Tagebucheintrag heraus angelegt
+     * wurden (Feature 010 → Rang 42) — für SLA-Status in der Fallakte.
+     *
+     * @return HasMany<ServiceTicket, $this>
+     */
+    public function serviceTickets(): HasMany {
+        return $this->hasMany(ServiceTicket::class)->latest('id');
+    }
+
+    /**
+     * Qualifikations-Anforderungen des Auftrags (Feature 028, Rang 53) —
+     * Grundlage der Auftrags-Qualifikationsmatrix in der Disposition.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Qualification, $this>
+     */
+    public function requiredQualifications(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
+        return $this->belongsToMany(Qualification::class, 'diary_entry_qualifications')->withTimestamps();
+    }
+
     /** @return MorphMany<Protocol, $this> */
     public function protocols(): MorphMany {
         return $this->morphMany(Protocol::class, 'subject')->latest('occurred_at');

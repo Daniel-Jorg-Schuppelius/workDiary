@@ -38,8 +38,10 @@ class FlexController extends Controller {
         // Admins/Buchhaltung dürfen via ?user=… (Sqid) die Gleitzeit eines anderen Users sehen.
         $rawTarget = (string) $request->input('user', '');
         $targetId = Sqid::decodeOrNumeric(User::class, $rawTarget, (int) $authUser->id);
+        // Mandantengrenze: das Ziel muss zur eigenen Organisation gehören — User
+        // hat keinen globalen OrganizationScope (Whitebox-Befund 2026-07).
         $user = ($canSeeOthers && $targetId !== (int) $authUser->id)
-            ? User::findOrFail($targetId)
+            ? User::query()->where('organization_id', $authUser->organization_id)->findOrFail($targetId)
             : $authUser;
 
         $range = $this->globalDateRange();

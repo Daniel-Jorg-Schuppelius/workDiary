@@ -16,7 +16,7 @@ use App\Support\Filename;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -80,6 +80,53 @@ class DocumentService {
             $nextNo = (int) $document->versions()->max('version_no') + 1;
 
             return $this->storeVersion($document, $actor, $file, $nextNo, $note);
+        });
+    }
+
+    /**
+     * Hängt eine neue Version aus einem bereits vorliegenden Inhalts-String an
+     * (statt einer UploadedFile) — etwa ein von WebDAV heruntergeladenes Dokument
+     * bei der Konfliktauflösung „Remote als neue lokale Version importieren"
+     * (Feature 058, Rang 18). Speicherung/Versionierung analog {@see storeVersion}.
+     */
+    public function addVersionFromContents(Document $document, User $actor, string $contents, string $originalName, ?string $mime = null, ?string $note = null): DocumentVersion {
+        return DB::transaction(function () use ($document, $actor, $contents, $originalName, $mime, $note): DocumentVersion {
+            $nextNo = (int) $document->versions()->max('version_no') + 1;
+
+            $ext = '';
+            if (str_contains($originalName, '.')) {
+                $candidate = strtolower((string) Str::of($originalName)->afterLast('.'));
+                if (preg_match('/^[a-z0-9]{1,8}$/', $candidate) === 1) {
+                    $ext = '.' . $candidate;
+                }
+            }
+            $folder = 'documents/' . now()->format('Y/m');
+            $filename = Str::uuid()->toString() . $ext;
+            $path = $folder . '/' . $filename;
+            Storage::disk('local')->put($path, $contents);
+
+            /** @var DocumentVersion $version */
+            $version = $document->versions()->create([
+                'version_no' => $nextNo,
+                'disk' => 'local',
+                'path' => $path,
+                'original_name' => Filename::sanitize($originalName),
+                'mime' => $mime !== null && $mime !== '' ? $mime : 'application/octet-stream',
+                'size' => strlen($contents),
+                'uploaded_by_user_id' => $actor->id,
+                'note' => $note !== null && trim($note) !== '' ? trim($note) : null,
+            ]);
+
+            $document->forceFill(['current_version_id' => $version->id])->save();
+
+            $document->audit('document.version.added', [
+                'actor_user_id' => $actor->id,
+                'version_no' => $nextNo,
+                'original_name' => $version->original_name,
+                'source' => 'webdav-import',
+            ]);
+
+            return $version;
         });
     }
 

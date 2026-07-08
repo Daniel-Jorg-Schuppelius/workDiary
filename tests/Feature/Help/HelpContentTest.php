@@ -82,6 +82,30 @@ class HelpContentTest extends TestCase {
         );
     }
 
+    /**
+     * Feature 039: jede aktive App-Sprache besitzt den vollständigen
+     * Topic-Satz (fr/it/es als Stubs) — sonst fällt der Nutzer still auf
+     * die de-Hilfe zurück.
+     */
+    public function test_every_enabled_locale_has_the_full_topic_set(): void {
+        $de = $this->loader->topicsForLocale('de');
+        $this->assertNotSame([], $de);
+
+        foreach (\App\Support\Locales::enabledCodes() as $locale) {
+            $topics = $this->loader->topicsForLocale($locale);
+            $this->assertSame(
+                [],
+                array_values(array_diff($de, $topics)),
+                "Locale {$locale}: fehlende Hilfe-Topics gegenüber de."
+            );
+            $this->assertSame(
+                [],
+                array_values(array_diff($topics, $de)),
+                "Locale {$locale}: überzählige Hilfe-Topics ohne de-Pendant."
+            );
+        }
+    }
+
     public function test_related_references_point_to_existing_topics(): void {
         $allCodes = $this->loader->allTopicCodes();
 

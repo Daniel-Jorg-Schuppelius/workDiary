@@ -159,11 +159,22 @@ class ConformityService {
 
         return DB::transaction(function () use ($status, $target, $actor): IsmsNormStatus {
             $from = $status->status;
-            $status->update(['status' => $target->value]);
+
+            // Normprofil-Versionsmetadaten (Nachtrag 046a): beim Übergang die
+            // aktuell installierte Profilrevision einfrieren — „bewertet
+            // gegen Version X".
+            $profile = app(NormProfileRegistry::class)->findByNorm((string) $status->norm, (string) $status->edition);
+
+            $status->update([
+                'status' => $target->value,
+                'profile_version' => $profile['version'] ?? $status->profile_version,
+                'profile_as_of' => $profile['as_of'] ?? $status->profile_as_of,
+            ]);
             $status->audit('isms.norm_status.transitioned', [
                 'actor_user_id' => $actor->id,
                 'from' => $from->value,
                 'to' => $target->value,
+                'profile_version' => $profile['version'] ?? null,
             ]);
 
             return $status;

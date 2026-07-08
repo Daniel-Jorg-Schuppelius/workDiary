@@ -162,7 +162,9 @@ class TodoistImportService {
 
         if ($reference === null) {
             // Anlage ist durch die bewusst aktivierte Zuordnung gedeckt (Preflight).
-            $task = Task::query()->create([
+            // In suppressed() gekapselt, damit der created-Export-Trigger den
+            // frisch importierten Task nicht sofort nach Todoist zurückspiegelt.
+            $task = TodoistTaskObserver::suppressed(fn (): Task => Task::query()->create([
                 'organization_id' => $link->organization_id,
                 'project_id' => $link->target_kind === TodoistProjectLink::KIND_PROJECT ? $link->project_id : null,
                 'is_global' => $link->target_kind === TodoistProjectLink::KIND_GLOBAL_KANBAN,
@@ -174,7 +176,7 @@ class TodoistImportService {
                 'due_date' => $mapped['due_date'],
                 'time_budget' => $mapped['time_budget'],
                 'assigned_to' => $mapped['assigned_to'],
-            ]);
+            ]));
 
             $newReference = ExternalReference::query()->create([
                 'organization_id' => $link->organization_id,

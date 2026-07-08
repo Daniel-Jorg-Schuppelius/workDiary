@@ -267,6 +267,81 @@
         @endif
     </x-card>
 
+    {{-- ── Sicherheitslage der Abhängigkeiten (OSV, Rang 70) ──────────── --}}
+    <x-card :title="__('security.section.advisories')">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <p class="text-xs italic text-base-content/50">
+                {{ __('security.hint.advisories') }}
+                @if ($advisoriesLastPull)
+                    · {{ __('security.field.last_pull') }}: {{ \Illuminate\Support\Carbon::parse($advisoriesLastPull)->translatedFormat('d.m.Y H:i') }}
+                @endif
+            </p>
+            <form method="POST" action="{{ route('admin.security.advisories.pull') }}">
+                @csrf
+                <button type="submit" class="btn btn-primary btn-xs">
+                    <x-icon name="refresh" class="text-sm" />
+                    {{ __('security.action.pull_advisories') }}
+                </button>
+            </form>
+        </div>
+        @if ($advisories->isNotEmpty())
+            <div class="overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>{{ __('security.field.severity') }}</th>
+                            <th>{{ __('security.field.package') }}</th>
+                            <th>{{ __('security.field.advisory') }}</th>
+                            <th>{{ __('security.field.fixed_in') }}</th>
+                            <th>{{ __('security.field.statement') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($advisories as $advisory)
+                            <tr>
+                                <td>
+                                    @php
+                                        $advisoryTone = match ($advisory->severity) {
+                                            'critical' => 'badge-error',
+                                            'high' => 'badge-error badge-outline',
+                                            'medium' => 'badge-warning',
+                                            'low' => 'badge-info',
+                                            default => 'badge-ghost',
+                                        };
+                                    @endphp
+                                    <span class="badge badge-sm {{ $advisoryTone }}">{{ $advisory->severity }}</span>
+                                </td>
+                                <td class="font-mono text-xs">{{ $advisory->package . '@' . $advisory->installed_version }}</td>
+                                <td class="text-xs">
+                                    <a href="https://osv.dev/vulnerability/{{ $advisory->external_id }}" target="_blank" rel="noopener noreferrer" class="link font-mono">{{ $advisory->external_id }}</a>
+                                    @if ($advisory->summary)
+                                        <div class="max-w-md truncate text-base-content/60">{{ $advisory->summary }}</div>
+                                    @endif
+                                </td>
+                                <td class="font-mono text-xs">{{ $advisory->fixed_in ?? '—' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ route('admin.security.advisories.statement', $advisory) }}" class="flex items-center gap-1">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="text" name="statement" maxlength="1000"
+                                               class="input input-bordered input-xs w-56"
+                                               placeholder="{{ __('security.field.statement_placeholder') }}"
+                                               value="{{ $advisory->statement }}">
+                                        <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('Speichern') }}">
+                                            <x-icon name="save" class="text-sm" />
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <x-empty-state icon="verified_user" :title="__('security.empty.advisories')" />
+        @endif
+    </x-card>
+
     {{-- ── Verschlüsselung (at-rest) ──────────────────────────────────── --}}
     <x-card :title="__('security.section.encryption')">
         <div class="mb-3 flex flex-wrap items-center gap-2">

@@ -141,6 +141,7 @@
                     <th>{{ __('timeline.case.title_col') }}</th>
                     <th>{{ __('timeline.case.status') }}</th>
                     <th>{{ __('timeline.case.signature_state') }}</th>
+                    <th>{{ __('weather.block.title') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -148,7 +149,7 @@
                     <tr>
                         <td>{{ $protocol->occurred_at?->fdatetime() ?? '—' }}</td>
                         <td>
-                            {{ $protocol->title }}
+                            <a class="link link-hover" href="{{ route('protocols.show', $protocol) }}">{{ $protocol->title }}</a>
                             @if ($protocol->tags->isNotEmpty())
                                 <div class="text-xs text-base-content/60">{{ $protocol->tags->pluck('name')->map(fn ($n) => '#' . $n)->implode(' ') }}</div>
                             @endif
@@ -159,6 +160,24 @@
                                 {{ __('timeline.case.signed_at') }} {{ $protocol->signed_at->fdatetime() }} ({{ $protocol->signatures_count }})
                             @else
                                 {{ __('timeline.case.unsigned') }}
+                            @endif
+                        </td>
+                        {{-- Wetter des Protokolltags (Feature 062 → Rang 10): Snapshot als
+                             Beweiswert; sonst Abruf-Button (idempotent) für Berechtigte. --}}
+                        <td>
+                            @php $ws = $protocol->weatherSnapshot; @endphp
+                            @if ($ws)
+                                <div class="text-xs">
+                                    <div>{{ $ws->temp_min }}–{{ $ws->temp_max }} °C · {{ $ws->precipitation_mm }} mm · {{ $ws->wind_gust_kmh }} km/h</div>
+                                    <div class="text-base-content/50">{{ __('weather.source') }}: {{ $ws->provider }} · {{ $ws->fetched_at?->fdatetime() }}</div>
+                                </div>
+                            @elseif (auth()->user()?->can('update', $protocol))
+                                <form method="POST" action="{{ route('protocols.weather', $protocol) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-ghost btn-xs">{{ __('weather.attach.button') }}</button>
+                                </form>
+                            @else
+                                <span class="text-base-content/40">—</span>
                             @endif
                         </td>
                     </tr>
@@ -253,6 +272,7 @@
                     <th>{{ __('timeline.case.date') }}</th>
                     <th>{{ __('timeline.case.title_col') }}</th>
                     <th>{{ __('timeline.case.person') }}</th>
+                    <th>{{ __('Kundenportal') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -261,6 +281,24 @@
                         <td>{{ $attachment->created_at?->fdatetime() ?? '—' }}</td>
                         <td>{{ $attachment->original_name }}</td>
                         <td>{{ $attachment->uploader?->name ?? '—' }}</td>
+                        <td>
+                            {{-- Kundenfreigabe (Rang 54) + Bestätigungsstatus (Rang 55). --}}
+                            @can('update', $diary)
+                                <form method="POST" action="{{ route('attachments.customer-visibility', $attachment) }}" class="inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-ghost btn-xs">
+                                        {{ $attachment->customer_visible ? __('Freigegeben') : __('Intern') }}
+                                    </button>
+                                </form>
+                            @else
+                                {{ $attachment->customer_visible ? __('Freigegeben') : __('Intern') }}
+                            @endcan
+                            @php $confirmation = $attachment->confirmations->first(); @endphp
+                            @if ($confirmation !== null)
+                                <span class="badge badge-success badge-xs">{{ __('Vom Kunden bestätigt am :date', ['date' => $confirmation->confirmed_at->fdate()]) }}</span>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>

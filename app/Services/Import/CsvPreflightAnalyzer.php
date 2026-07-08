@@ -104,8 +104,10 @@ class CsvPreflightAnalyzer {
             $preview = [];
             $rowsTotal = 0;
             $rowsFailed = 0;
+            // Rang 58: unbekannte Tag-/Kategorie-Quellwerte fürs Mapping-Formular.
+            $unresolvedValues = [];
 
-            DB::transaction(function () use ($run, $absolutePath, $delimiter, $headerMap, $spec, $organization, &$preview, &$rowsTotal, &$rowsFailed): void {
+            DB::transaction(function () use ($run, $absolutePath, $delimiter, $headerMap, $spec, $organization, &$preview, &$rowsTotal, &$rowsFailed, &$unresolvedValues): void {
                 foreach (CsvFacade::streamAssoc($absolutePath, $delimiter) as $lineNumber => $rawRow) {
                     if ($rowsTotal >= self::MAX_ROWS) {
                         ImportRunError::create([
@@ -126,6 +128,13 @@ class CsvPreflightAnalyzer {
 
                     $mapped = $this->applyHeaderMap($rawRow, $headerMap);
                     $normalized = $spec->normalize($mapped);
+
+                    if ($spec instanceof \App\Services\Import\HasMappableValues) {
+                        $raw = $normalized[$spec->mappableColumn()] ?? null;
+                        foreach ($spec->splitMappableValues(is_string($raw) ? $raw : null) as $value) {
+                            $unresolvedValues[\App\Models\ImportValueMapping::normalize($value)] = $value;
+                        }
+                    }
 
                     $issues = $spec->validateRow($normalized, $organization);
                     foreach ($issues as $issue) {
@@ -155,6 +164,27 @@ class CsvPreflightAnalyzer {
                     }
                 }
             });
+
+            // Rang 58: nur wirklich unbekannte Werte behalten (kein Mapping,
+            // kein Namens-Tag) — sie blockieren die Bestätigung bis zur Zuordnung.
+            if ($spec instanceof \App\Services\Import\HasMappableValues && $unresolvedValues !== []) {
+                $pending = [];
+                foreach ($unresolvedValues as $value) {
+                    if (\App\Models\ImportValueMapping::resolveValue((int) $organization->id, $spec->entity()->value, $value) !== null) {
+                        continue;
+                    }
+                    $known = \App\Models\Tag::query()
+                        ->withoutGlobalScopes()
+                        ->where('organization_id', $organization->id)
+                        ->whereRaw('LOWER(name) = ?', [\App\Models\ImportValueMapping::normalize($value)])
+                        ->exists();
+                    if (! $known) {
+                        $pending[] = $value;
+                    }
+                }
+                sort($pending);
+                $run->unresolved_values = $pending === [] ? null : [$spec->mappableColumn() => $pending];
+            }
 
             $run->rows_total = $rowsTotal;
             $run->rows_failed = $rowsFailed;

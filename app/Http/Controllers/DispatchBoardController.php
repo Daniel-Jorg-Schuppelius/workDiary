@@ -74,6 +74,71 @@ class DispatchBoardController extends Controller {
         ]);
     }
 
+    /**
+     * Kalender-/Tagesansicht (Rang 52): Zeilen = Mitarbeitende, Zellen =
+     * geplante Aufträge mit Dispositions-Tone + SLA-Risiko-Marker; Klick
+     * öffnet den Auftrag. Fenster wird auf 14 Tage gekappt (Lesbarkeit).
+     */
+    public function calendar(Request $request): View {
+        $this->authorizeView();
+
+        /** @var User $auth */
+        $auth = Auth::user();
+        $target = $this->resolveTargetUser($request, $auth);
+        [$from, $to] = $this->resolveRange($request);
+
+        $capped = false;
+        if ($from->diffInDays($to) > 13) {
+            $to = $from->addDays(13);
+            $capped = true;
+        }
+
+        $entries = $this->board->entries($from, $to, $target?->id);
+        $items = $this->board->items($entries);
+        $matrix = $this->board->calendar($items, $from, $to);
+
+        return view('dispatch.calendar', [
+            'from' => $from,
+            'to' => $to,
+            'capped' => $capped,
+            'days' => $matrix['days'],
+            'rows' => $matrix['rows'],
+            'targetUser' => $target,
+            'selectableUsers' => $auth->isAdmin() ? $this->loadSelectableUsers() : null,
+            'total' => count($items),
+        ]);
+    }
+
+    /**
+     * Auftrags-Qualifikationsmatrix (Rang 53): Anforderungen des Auftrags ×
+     * Mitarbeitende; Zellen erfüllt/läuft ab (< 30 Tage)/fehlt — Datenquelle
+     * ausschließlich {@see \App\Services\Schedule\QualificationGate}.
+     */
+    public function qualifications(\App\Models\DiaryEntry $diary, \App\Services\Schedule\QualificationGate $gate): View {
+        $this->authorizeView();
+
+        $required = $diary->requiredQualifications()->orderBy('name')->get();
+        $date = $diary->start_at !== null ? \Carbon\CarbonImmutable::parse((string) $diary->start_at) : null;
+
+        $rows = [];
+        if ($required->isNotEmpty()) {
+            $users = User::query()->with('qualifications')->orderBy('name')->get();
+            foreach ($users as $user) {
+                $rows[] = [
+                    'user' => $user,
+                    'status' => $gate->statusFor($user, $required, $date),
+                ];
+            }
+        }
+
+        return view('dispatch.qualifications', [
+            'diary' => $diary,
+            'required' => $required,
+            'rows' => $rows,
+            'date' => $date,
+        ]);
+    }
+
     /** Karten-Sicht: Auftrags-Marker nach Disposition/SLA-Risiko. */
     public function map(Request $request): View {
         $this->authorizeView();
@@ -195,7 +260,11 @@ class DispatchBoardController extends Controller {
             return null;
         }
 
-        $target = User::query()->find($requestedId);
+        // Mandantengrenze: nur Nutzer der eigenen Organisation (User hat keinen
+        // globalen OrganizationScope — Whitebox-Befund 2026-07).
+        $target = User::query()
+            ->where('organization_id', $authUser->organization_id)
+            ->find($requestedId);
         if (! $target instanceof User) {
             throw new AccessDeniedHttpException('Nutzer nicht gefunden.');
         }
@@ -205,8 +274,14 @@ class DispatchBoardController extends Controller {
 
     /** @return Collection<int, User> */
     private function loadSelectableUsers(): Collection {
+        $authUser = auth()->user();
+        $orgId = $authUser instanceof User ? $authUser->organization_id : null;
+
         /** @var Collection<int, User> $users */
-        $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $users = User::query()
+            ->when($orgId !== null, fn ($q) => $q->where('organization_id', $orgId))
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return $users;
     }

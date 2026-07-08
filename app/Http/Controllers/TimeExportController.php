@@ -203,6 +203,32 @@ class TimeExportController extends Controller {
         return back()->with('status', __('Export als ausgeliefert markiert.'));
     }
 
+    /**
+     * Kostenstellen-Override je Zeile im Prüf-UI (Rang 35): nur im Status
+     * ready; die Export-Datei wird neu gerendert (neuer Hash, auditiert).
+     */
+    public function updateLine(Request $request, TimeExport $export, \App\Models\TimeExportLine $line): RedirectResponse {
+        Gate::authorize('deliver', $export);
+        abort_unless((int) $line->time_export_id === (int) $export->id, 404);
+        /** @var User $user */
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'cost_center' => ['nullable', 'string', 'max:32'],
+        ]);
+        $costCenter = isset($data['cost_center']) && trim((string) $data['cost_center']) !== ''
+            ? trim((string) $data['cost_center'])
+            : null;
+
+        try {
+            $this->service->updateLineCostCenter($export, $line, $costCenter, $user);
+        } catch (TimeExportException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('Kostenstelle aktualisiert — Export-Datei neu erzeugt.'));
+    }
+
     public function reject(Request $request, TimeExport $export): RedirectResponse {
         Gate::authorize('reject', $export);
         /** @var User $user */

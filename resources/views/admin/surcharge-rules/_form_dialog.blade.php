@@ -83,6 +83,26 @@
             <p class="text-xs text-base-content/60">{{ __('surcharge.field.priority_help') }}</p>
             @error('priority')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="surcharge-tax-free-limit">{{ __('surcharge.field.tax_free_limit_pct') }}</label>
+            <input id="surcharge-tax-free-limit" type="number" name="tax_free_limit_pct" min="0" max="999.99" step="0.01"
+                   value="{{ old('tax_free_limit_pct', $rule->tax_free_limit_pct) }}"
+                   class="input input-bordered w-full tabular-nums"
+                   placeholder="25">
+            <p class="text-xs text-base-content/60">{{ __('surcharge.field.tax_free_limit_pct_help') }}</p>
+            @error('tax_free_limit_pct')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="fieldset">
+            <label class="fieldset-label" for="surcharge-taxable-wage-type">{{ __('surcharge.field.taxable_wage_type_code') }}</label>
+            <input id="surcharge-taxable-wage-type" type="text" name="taxable_wage_type_code" maxlength="20"
+                   value="{{ old('taxable_wage_type_code', $rule->taxable_wage_type_code) }}"
+                   class="input input-bordered w-full font-mono"
+                   placeholder="2011">
+            <p class="text-xs text-base-content/60">{{ __('surcharge.field.taxable_wage_type_code_help') }}</p>
+            @error('taxable_wage_type_code')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
     </x-form-group>
 
     <x-form-group :legend="__('surcharge.field.validity')" icon="event_available" tone="success" cols="2">

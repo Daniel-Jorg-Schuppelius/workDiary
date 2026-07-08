@@ -398,6 +398,42 @@ class BranchProfileInstallerTest extends TestCase {
             ->count());
     }
 
+    public function test_install_pflege_profile_creates_expected_entries_and_publishes_five_r_procedure(): void {
+        $result = $this->installer->install($this->org, 'pflege', $this->actor);
+
+        $this->assertSame('pflege', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+        $this->assertGreaterThan(0, $result['created']['procedure_templates']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'behandlungspflege',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'behandlungspflege',
+            'required_domain' => 'activity',
+            'enforce_phase' => 'onCreate',
+        ]);
+
+        // Die Medikamentengabe (5-R) wird veröffentlicht; die BtM-Kontrolle
+        // erzwingt eine zweite Person (Vier-Augen-Prinzip).
+        $template = ProcedureTemplate::query()
+            ->where('organization_id', $this->org->id)
+            ->where('code', 'PF_MEDIKAMENTENGABE')
+            ->first();
+        $this->assertNotNull($template);
+
+        $version = $template->versions()->firstOrFail();
+        $this->assertTrue($version->isPublished());
+        $this->assertGreaterThan(0, ProcedureStepDef::query()
+            ->where('procedure_template_version_id', $version->id)
+            ->where('requires_second_person', true)
+            ->count());
+    }
+
     public function test_install_facility_profile_creates_maintenance_plan_templates(): void {
         $result = $this->installer->install($this->org, 'facility', $this->actor);
 

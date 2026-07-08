@@ -196,4 +196,43 @@ class EconomicsReportController extends Controller {
             'label' => $label,
         ], $filename, 'landscape');
     }
+    /**
+     * Beleg-Drilldown (Rang 59c): Zeiteinträge einer Report-Zelle — Zugriff
+     * nur über signierten, kurzlebigen Link (temporarySignedRoute) PLUS
+     * Report-Recht (Whitebox-Leitplanke Export-Authz); org-Scope über die
+     * Global Scopes. Summen-Konsistenz: Fußzeile == Zellenwert.
+     */
+    public function drilldown(Request $request): View {
+        abort_unless($request->hasValidSignature(), 403);
+
+        $authUser = Auth::user();
+        $allowed = $authUser instanceof User
+            && ($authUser->isAdmin() || $authUser->can(Permission::ReportView->value));
+        abort_unless($allowed, 403);
+
+        $kind = (string) $request->query('kind');
+        abort_unless(in_array($kind, ['rework', 'goodwill'], true), 404);
+
+        $project = Project::query()->findOrFail((int) $request->query('project'));
+        $from = (string) $request->query('from');
+        $to = (string) $request->query('to');
+
+        $column = $kind === 'rework' ? 'rework_reason_classification_id' : 'goodwill_reason_classification_id';
+        $entries = \App\Models\TimeEntry::query()
+            ->where('project_id', $project->id)
+            ->whereBetween('date', [$from, $to])
+            ->whereNotNull($column)
+            ->with(['user:id,name', $kind === 'rework' ? 'reworkReason:id,label' : 'goodwillReason:id,label'])
+            ->orderBy('date')
+            ->get();
+
+        return view('reports.economics-drilldown', [
+            'kind' => $kind,
+            'project' => $project,
+            'entries' => $entries,
+            'from' => $from,
+            'to' => $to,
+            'totalMinutes' => (int) $entries->sum('minutes'),
+        ]);
+    }
 }

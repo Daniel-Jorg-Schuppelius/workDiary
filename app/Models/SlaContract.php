@@ -10,10 +10,10 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
 
 /**
@@ -34,8 +34,10 @@ class SlaContract extends Model {
     use Auditable, BelongsToOrganization;
     /** @use HasFactory<\Database\Factories\SlaContractFactory> */
     use HasFactory;
+    use HasSqid;
 
     protected $fillable = [
+        'pause_rules',
         'organization_id',
         'customer_id',
         'code',
@@ -45,18 +47,37 @@ class SlaContract extends Model {
         'escalation_chain',
         'is_default',
         'is_active',
+        'is_ola',
+        'ola_team_id',
     ];
 
     protected $casts = [
+        'pause_rules' => 'array',
         'priority_table' => 'array',
         'business_hours' => 'array',
         'escalation_chain' => 'array',
         'is_default' => 'bool',
+        'is_ola' => 'bool',
         'is_active' => 'bool',
     ];
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return HasMany<SlaContractQuota, $this> */
+    public function quotas(): HasMany {
+        return $this->hasMany(SlaContractQuota::class);
+    }
+
+    /**
+     * Wartungspläne, die eine Vertragspflicht dieses SLA-Vertrags abbilden
+     * (Feature 010 → Rang 43).
+     *
+     * @return HasMany<MaintenancePlan, $this>
+     */
+    public function maintenancePlans(): HasMany {
+        return $this->hasMany(MaintenancePlan::class);
     }
 }

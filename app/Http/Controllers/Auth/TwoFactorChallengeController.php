@@ -147,7 +147,7 @@ class TwoFactorChallengeController extends Controller {
         $emailCode = trim((string) $request->input('email_code', ''));
         $passed = false;
 
-        if ($code !== '' && filled($user->two_factor_secret) && $this->twoFactor->verify((string) $user->two_factor_secret, $code)) {
+        if ($code !== '' && filled($user->two_factor_secret) && $this->twoFactor->verifyForUser($user, (string) $user->two_factor_secret, $code)) {
             $passed = true;
         } elseif ($emailCode !== '' && $this->emailOtp->verify($user, $emailCode)) {
             $passed = true;

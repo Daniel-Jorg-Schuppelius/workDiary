@@ -248,6 +248,49 @@ class Organization extends Model {
     }
 
     /**
+     * Wartungsmodus-Einstellungen (Rang 65) aus `settings.maintenance`.
+     * `until` wird — falls gesetzt — als Carbon geparst; ungültige Werte
+     * fallen auf null zurück (Wartung dann ohne Endzeitpunkt).
+     *
+     * @return array{enabled:bool, message:?string, until:?\Carbon\CarbonInterface, block_ingest:bool}
+     */
+    public function maintenanceSettings(): array {
+        $settings = (array) ($this->settings ?? []);
+        $stored = is_array($settings['maintenance'] ?? null) ? $settings['maintenance'] : [];
+
+        $until = null;
+        if (! empty($stored['until']) && is_string($stored['until'])) {
+            try {
+                $until = \Carbon\CarbonImmutable::parse($stored['until'], config('app.timezone'));
+            } catch (\Throwable) {
+                $until = null;
+            }
+        }
+
+        return [
+            'enabled' => (string) ($stored['enabled'] ?? '0') === '1',
+            'message' => isset($stored['message']) && is_string($stored['message']) && $stored['message'] !== '' ? $stored['message'] : null,
+            'until' => $until,
+            'block_ingest' => (string) ($stored['block_ingest'] ?? '0') === '1',
+        ];
+    }
+
+    /** Ist der Mandant aktuell im Wartungsmodus (Endzeitpunkt berücksichtigt)? */
+    public function inMaintenance(): bool {
+        $settings = $this->maintenanceSettings();
+        if (! $settings['enabled']) {
+            return false;
+        }
+
+        return $settings['until'] === null || $settings['until']->isFuture();
+    }
+
+    /** Sollen während der Wartung auch Terminal-/Webhook-Ingests pausieren? */
+    public function maintenanceBlocksIngest(): bool {
+        return $this->inMaintenance() && $this->maintenanceSettings()['block_ingest'];
+    }
+
+    /**
      * Compliance-Settings inkl. Defaults (rekursiv gemerged).
      *
      * @return array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, rules:array<string,bool>}

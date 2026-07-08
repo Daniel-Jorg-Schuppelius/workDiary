@@ -15,7 +15,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\{Cache, Hash};
 use Illuminate\Support\Str;
 use PragmaRX\Google2FAQRCode\Google2FA;
 
@@ -39,6 +39,29 @@ class TwoFactorService {
 
         // verifyKey() liefert bei Treffer den Zeitschritt (int), sonst false.
         return $this->engine->verifyKey($secret, $code, 1) !== false;
+    }
+
+    /**
+     * Wie {@see verify()}, aber einmalig je Nutzer: derselbe Zeitschritt wird
+     * pro Nutzer nur EINMAL akzeptiert. Verhindert das Replay eines
+     * abgefangenen TOTP-Codes innerhalb seines Gültigkeitsfensters (~90 s) an
+     * der Login-Challenge (Whitebox-Befund 2026-07). `Cache::add` ist atomar:
+     * existiert der Schlüssel bereits, war der Code schon in Gebrauch.
+     */
+    public function verifyForUser(User $user, string $secret, string $code): bool {
+        $code = preg_replace('/\D/', '', $code) ?? '';
+        if ($code === '') {
+            return false;
+        }
+
+        $timestep = $this->engine->verifyKey($secret, $code, 1);
+        if ($timestep === false) {
+            return false;
+        }
+
+        $key = '2fa:totp-used:' . $user->getKey() . ':' . $timestep;
+
+        return Cache::add($key, true, now()->addSeconds(120));
     }
 
     /** otpauth://-URI für Authenticator-Apps (TOTP, RFC 6238). */

@@ -13,6 +13,8 @@
         'routing' => ['icon' => 'route', 'tone' => 'info', 'label' => __('settings.tabs.routing')],
         'travel' => ['icon' => 'local_shipping', 'tone' => 'success', 'label' => __('Anfahrt')],
         'region' => ['icon' => 'public', 'tone' => 'info', 'label' => __('settings.tabs.region')],
+        'weather' => ['icon' => 'partly_cloudy_day', 'tone' => 'info', 'label' => __('settings.tabs.weather')],
+        'maintenance' => ['icon' => 'engineering', 'tone' => 'warning', 'label' => __('settings.tabs.maintenance')],
     ];
 @endphp
 
@@ -408,6 +410,62 @@
                     @endforeach
                 </select>
                 <p class="fieldset-label text-base-content/60">{{ __('settings.region.holiday_provider_hint') }}</p>
+            </div>
+        </x-form-group>
+    </div>
+
+    {{-- WETTER / WEATHER (Feature 062, Rang 12) --}}
+    <div x-show="isTab('weather')" x-cloak>
+        <x-form-group :legend="__('settings.weather.heading')" icon="partly_cloudy_day" tone="info" cols="1" compact
+                      :description="__('settings.weather.description')">
+            <div class="fieldset">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input type="hidden" name="settings[weather][auto_fetch]" value="0">
+                    <input type="checkbox" name="settings[weather][auto_fetch]" value="1" class="toggle toggle-info"
+                           @checked((string) old('settings.weather.auto_fetch', data_get($stored, 'weather.auto_fetch', '0')) === '1')>
+                    <span class="label-text">{{ __('settings.weather.auto_fetch') }}</span>
+                </label>
+                <p class="fieldset-label text-base-content/60">{{ __('settings.weather.auto_fetch_hint') }}</p>
+            </div>
+        </x-form-group>
+    </div>
+
+    {{-- WARTUNGSMODUS (Rang 65) --}}
+    <div x-show="isTab('maintenance')" x-cloak>
+        <x-form-group :legend="__('settings.maintenance.heading')" icon="engineering" tone="warning" cols="2" compact
+                      :description="__('settings.maintenance.description')">
+            <div class="fieldset md:col-span-2">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input type="hidden" name="settings[maintenance][enabled]" value="0">
+                    <input type="checkbox" name="settings[maintenance][enabled]" value="1" class="toggle toggle-warning"
+                           @checked((string) old('settings.maintenance.enabled', data_get($stored, 'maintenance.enabled', '0')) === '1')>
+                    <span class="label-text">{{ __('settings.maintenance.enabled') }}</span>
+                </label>
+            </div>
+            <div class="fieldset md:col-span-2">
+                <label class="fieldset-label">{{ __('settings.maintenance.message') }}</label>
+                <input type="text" maxlength="300"
+                       name="settings[maintenance][message]"
+                       value="{{ old('settings.maintenance.message', data_get($stored, 'maintenance.message', '')) }}"
+                       placeholder="{{ __('settings.maintenance.message_placeholder') }}"
+                       class="input input-bordered w-full">
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.maintenance.until') }}</label>
+                <input type="datetime-local"
+                       name="settings[maintenance][until]"
+                       value="{{ old('settings.maintenance.until', data_get($stored, 'maintenance.until', '')) }}"
+                       class="input input-bordered w-full">
+                <p class="fieldset-label text-base-content/60">{{ __('settings.maintenance.until_hint') }}</p>
+            </div>
+            <div class="fieldset">
+                <label class="label cursor-pointer justify-start gap-3">
+                    <input type="hidden" name="settings[maintenance][block_ingest]" value="0">
+                    <input type="checkbox" name="settings[maintenance][block_ingest]" value="1" class="toggle toggle-warning"
+                           @checked((string) old('settings.maintenance.block_ingest', data_get($stored, 'maintenance.block_ingest', '0')) === '1')>
+                    <span class="label-text">{{ __('settings.maintenance.block_ingest') }}</span>
+                </label>
+                <p class="fieldset-label text-base-content/60">{{ __('settings.maintenance.block_ingest_hint') }}</p>
             </div>
         </x-form-group>
     </div>

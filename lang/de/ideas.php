@@ -60,6 +60,31 @@ return [
         'info' => 'Türkis',
     ],
 
+    'node_status' => [
+        'open' => 'Offen',
+        'in_review' => 'In Prüfung',
+        'decided' => 'Beschlossen',
+        'rejected' => 'Verworfen',
+        'done' => 'Umgesetzt',
+    ],
+
+    'import' => [
+        'action' => 'Importieren',
+        'title' => 'Ideenlandkarte importieren',
+        'submit' => 'Importieren',
+        'file' => 'Datei',
+        'hint' => 'FreeMind/Freeplane (.mm) oder OPML. Erzeugt eine neue, private Karte.',
+        'done' => 'Karte importiert.',
+        'default_title' => 'Importierte Karte',
+        'error' => [
+            'invalid' => 'Die Datei ist kein gültiges XML.',
+            'unsupported' => 'Nicht unterstütztes Format (nur FreeMind .mm und OPML).',
+            'empty' => 'Die Datei enthält keine Knoten.',
+            'too_deep' => 'Die Struktur ist zu tief verschachtelt.',
+            'too_large' => 'Die Karte hat zu viele Knoten.',
+        ],
+    ],
+
     'legend' => [
         'context' => 'Kontext (optional)',
         'map' => 'Karte',
@@ -144,12 +169,23 @@ return [
         'collapse' => 'Zweig zuklappen',
         'zoom_in' => 'Vergrößern',
         'zoom_out' => 'Verkleinern',
+        'zoom_reset' => 'Zoom auf 100 %',
+        'fit' => 'Ansicht einpassen',
+        'arrange' => 'Anordnen',
+        'arrange_hint' => 'Alle Knoten automatisch als Baum anordnen',
+        'canvas_large' => 'Große Arbeitsfläche',
+        'canvas_small' => 'Kompakte Arbeitsfläche',
+        'canvas_keys_hint' => 'Tab: Unterknoten · Enter: Geschwister · Doppelklick auf Fläche: neue Idee · Knoten auf Knoten ziehen: umhängen',
+        'canvas_a11y_hint' => 'Barrierefreie Bearbeitung in der Gliederung.',
+        'export_svg' => 'Als SVG-Bild exportieren',
+        'export_png' => 'Als PNG-Bild exportieren',
         'history' => 'Verlauf',
         'history_empty' => 'Noch keine Änderungen.',
         'presence_suffix' => 'bearbeitet gerade',
         'note' => 'Notiz',
         'color' => 'Farbe',
         'status' => 'Status',
+        'status_none' => '— kein Status',
     ],
 
     'error' => [

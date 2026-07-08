@@ -103,6 +103,8 @@ class SurchargeRuleController extends Controller {
             'window_end' => ['nullable', 'date_format:H:i'],
             'percentage' => ['required', 'numeric', 'min:0', 'max:999.99'],
             'wage_type_code' => ['nullable', 'string', 'max:20'],
+            'tax_free_limit_pct' => ['nullable', 'numeric', 'min:0', 'max:999.99'],
+            'taxable_wage_type_code' => ['nullable', 'string', 'max:20'],
             'priority' => ['required', 'integer', 'min:0', 'max:1000'],
             'active' => ['required', 'boolean'],
             'valid_from' => ['nullable', 'date'],
@@ -118,6 +120,20 @@ class SurchargeRuleController extends Controller {
         } else {
             $data['window_start'] = null;
             $data['window_end'] = null;
+        }
+
+        // Steuer-Split (Rang 36): liegt die steuerfreie Obergrenze unter dem
+        // Prozentsatz, entsteht ein steuerpflichtiger Anteil — der braucht
+        // eine eigene Lohnart.
+        $limit = isset($data['tax_free_limit_pct']) && $data['tax_free_limit_pct'] !== null
+            ? (float) $data['tax_free_limit_pct']
+            : null;
+        if ($limit !== null && $limit < (float) $data['percentage']) {
+            $request->validate([
+                'taxable_wage_type_code' => ['required', 'string', 'max:20'],
+            ], [
+                'taxable_wage_type_code.required' => (string) __('surcharge.validation.taxable_wage_type_required'),
+            ]);
         }
 
         $data['active'] = (bool) $data['active'];

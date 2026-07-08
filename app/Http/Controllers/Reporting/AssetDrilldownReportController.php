@@ -15,7 +15,8 @@ use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol};
+use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol, User};
+use App\Services\Asset\RecurringDefectService;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -31,6 +32,40 @@ class AssetDrilldownReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
+
+    /**
+     * Wiederholdefekt-Statistik (Feature 009 → Rang 47): Pareto der Assets nach
+     * Defektzahl im Zeitraum, mit Wiederholdefekt-Flag (≥ 3 in 12 Monaten) und
+     * Drilldown ins Asset-Dossier.
+     */
+    public function recurringDefects(Request $request, RecurringDefectService $service): View|Response|SymfonyResponse {
+        $user = $request->user();
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $range = $this->globalDateRange();
+        $from = $range['from']->startOfDay();
+        $to = $range['to']->endOfDay();
+
+        $rows = $service->pareto((int) $user->organization_id, $from, $to);
+
+        if ($request->query('export') === 'csv') {
+            $exportFilters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
+            $this->auditExport($request, 'assets-drilldown-recurring-defects', 'csv', $exportFilters);
+
+            return $this->exportRecurringDefectsCsv($rows, $exportFilters, $from->toDateString(), $to->toDateString());
+        }
+
+        return view('reports.drilldown.asset-recurring-defects', [
+            'rows' => $rows,
+            'label' => $range['label'],
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'threshold' => RecurringDefectService::THRESHOLD,
+            'windowMonths' => RecurringDefectService::WINDOW_MONTHS,
+        ]);
+    }
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
@@ -215,6 +250,28 @@ class AssetDrilldownReportController extends Controller {
         }
 
         return $this->csvWithMetadata($rows, $filename, 'assets-drilldown-open-issues', $filters);
+    }
+
+    /**
+     * @param  list<array{asset_id:int, asset_name:string, asset_no:string|null, total:int, by_severity:array<string,int>, recent_total:int, is_recurring:bool}>  $rows
+     * @param  array{from:string, to:string}  $filters
+     */
+    private function exportRecurringDefectsCsv(array $rows, array $filters, string $from, string $to): Response {
+        $filename = sprintf('produktanalyse-drilldown-wiederholdefekte_%s_%s.csv', $from, $to);
+        $csv = [];
+        $csv[] = ['AssetID', 'Asset', 'Inventarnr', 'Defekte_Zeitraum', 'Defekte_12Monate', 'Wiederholdefekt'];
+        foreach ($rows as $r) {
+            $csv[] = [
+                $r['asset_id'],
+                $r['asset_name'],
+                $r['asset_no'] ?? '',
+                $r['total'],
+                $r['recent_total'],
+                $r['is_recurring'] ? 'ja' : 'nein',
+            ];
+        }
+
+        return $this->csvWithMetadata($csv, $filename, 'assets-drilldown-recurring-defects', $filters);
     }
 
     /**

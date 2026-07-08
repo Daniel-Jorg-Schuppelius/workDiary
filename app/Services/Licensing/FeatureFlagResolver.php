@@ -147,6 +147,16 @@ class FeatureFlagResolver {
             }
         }
 
+        // Modul-Abhängigkeiten (Feature 065): ein abhängiges Modul ist nur
+        // wirksam, wenn seine Voraussetzung aktiv ist (z. B. service_desk
+        // setzt helpdesk voraus) — greift NACH allen Overrides, damit auch
+        // ein deaktiviertes Basis-Modul das abhängige mitzieht.
+        foreach ((array) config('plans.requires', []) as $module => $requirement) {
+            if (($map[$module] ?? false) === true && ($map[(string) $requirement] ?? false) !== true) {
+                $map[$module] = false;
+            }
+        }
+
         return $this->resolved = $map;
     }
 

@@ -13,8 +13,13 @@ declare(strict_types=1);
 namespace App\Services\Ideas;
 
 use App\Models\{IdeaMap, IdeaNode};
-use Barryvdh\DomPDF\Facade\Pdf;
+use CommonToolkit\Builders\XmlDocumentBuilder;
+use CommonToolkit\Entities\XML\{Attribute, Element};
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Exporte einer Ideenlandkarte (Feature 054, MVP-110). Das JSON-Schema ist
@@ -73,7 +78,92 @@ class IdeaMapExportService {
         ];
     }
 
-    /** Gliederungs-PDF (DomPDF). */
+    /**
+     * OPML 2.0 (Standard-Gliederungsformat, öffnet in Freeplane/XMind/Outlinern).
+     * XML wird über den Toolkit-`XmlDocumentBuilder` erzeugt (toolkit-first);
+     * Notiz/Status als `_note`/`_status`-Attribute (OPML-Konvention für Extras).
+     */
+    public function opml(IdeaMap $map): string {
+        $map->loadMissing(['nodes' => fn ($q) => $q->orderBy('sort_order')]);
+        $byParent = $map->nodes->groupBy('parent_id');
+        $root = $map->nodes->firstWhere('is_root', true);
+
+        $head = new Element('head', null, null, null, [], [new Element('title', $map->title)]);
+        $bodyChildren = $root !== null ? [$this->opmlOutline($root, $byParent)] : [];
+        $body = new Element('body', null, null, null, [], $bodyChildren);
+
+        return XmlDocumentBuilder::create('opml')
+            ->withEncoding('UTF-8')
+            ->withFormatOutput(true)
+            ->addAttribute('version', '2.0')
+            ->addElement($head)
+            ->addElement($body)
+            ->toString();
+    }
+
+    /**
+     * @param  Collection<int|string, \Illuminate\Database\Eloquent\Collection<int, IdeaNode>>  $byParent
+     */
+    private function opmlOutline(IdeaNode $node, Collection $byParent): Element {
+        $attributes = [new Attribute('text', (string) $node->title)];
+        if ($node->note !== null && $node->note !== '') {
+            $attributes[] = new Attribute('_note', (string) $node->note);
+        }
+        if ($node->node_status !== null && $node->node_status !== '') {
+            $attributes[] = new Attribute('_status', (string) $node->node_status);
+        }
+
+        $children = $byParent->get($node->id, collect())
+            ->sortBy('sort_order')
+            ->map(fn (IdeaNode $child): Element => $this->opmlOutline($child, $byParent))
+            ->values()
+            ->all();
+
+        return new Element('outline', null, null, null, $attributes, $children);
+    }
+
+    /**
+     * Markdown-Gliederung (eingerückte Liste). Titel als H1, Beschreibung als
+     * Absatz, dann der Baum als verschachtelte Aufzählung; Status als Suffix,
+     * Notiz eingerückt darunter. Reines workDiary-Format (kein Toolkit nötig).
+     */
+    public function markdown(IdeaMap $map): string {
+        $map->loadMissing(['nodes' => fn ($q) => $q->orderBy('sort_order')]);
+        $byParent = $map->nodes->groupBy('parent_id');
+        $root = $map->nodes->firstWhere('is_root', true);
+
+        $lines = ['# ' . $map->title, ''];
+        if ($map->description !== null && $map->description !== '') {
+            $lines[] = $map->description;
+            $lines[] = '';
+        }
+        if ($root !== null) {
+            $this->markdownNode($root, $byParent, 0, $lines);
+        }
+
+        return implode("\n", $lines) . "\n";
+    }
+
+    /**
+     * @param  Collection<int|string, \Illuminate\Database\Eloquent\Collection<int, IdeaNode>>  $byParent
+     * @param  list<string>  $lines
+     */
+    private function markdownNode(IdeaNode $node, Collection $byParent, int $depth, array &$lines): void {
+        $indent = str_repeat('  ', $depth);
+        $status = $node->node_status !== null && $node->node_status !== '' ? ' `' . $node->node_status . '`' : '';
+        $lines[] = $indent . '- ' . $node->title . $status;
+        if ($node->note !== null && $node->note !== '') {
+            foreach (preg_split('/\R/', (string) $node->note) ?: [] as $noteLine) {
+                $lines[] = $indent . '  > ' . $noteLine;
+            }
+        }
+
+        foreach ($byParent->get($node->id, collect())->sortBy('sort_order') as $child) {
+            $this->markdownNode($child, $byParent, $depth + 1, $lines);
+        }
+    }
+
+    /** Gliederungs-PDF (pdf-toolkit PDFWriterRegistry). */
     public function pdf(IdeaMap $map): string {
         $map->loadMissing(['owner:id,name', 'nodes' => fn ($q) => $q->orderBy('sort_order')]);
 
@@ -84,9 +174,7 @@ class IdeaMapExportService {
             'generatedAt' => now(),
         ])->render();
 
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadHTML($html)->setPaper('a4');
-
-        return (string) $pdf->output();
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.idea-map).');
     }
 }

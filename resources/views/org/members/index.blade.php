@@ -61,6 +61,15 @@
                                             data-entry-modal-trigger
                                             :href="route('org.members.edit', $member)"
                                             :label="__('Bearbeiten')" />
+                                {{-- Support-Impersonation (Rang 64): nur mit user.impersonate;
+                                     der Server verlangt zusätzlich eine aktive Supportfreigabe. --}}
+                                @if (Gate::allows(\App\Enums\User\Permission::UserImpersonate->value) && ! session()->has(\App\Http\Controllers\Admin\SupportImpersonationController::SESSION_KEY) && $member->id !== auth()->id())
+                                    <x-action-form :action="route('admin.support.impersonate.start', $member)" method="POST"
+                                          :confirm="__('Support-Sitzung als :name starten? Alle Aktionen werden auditiert.', ['name' => $member->name])"
+                                          :confirm-label="__('Starten')">
+                                        <x-icon-btn icon="switch_account" tone="warning" type="submit" :label="__('Als Nutzer anmelden (Support)')" />
+                                    </x-action-form>
+                                @endif
                                 @if ($canManageMembers ?? true)
                                     <x-action-form :action="route('org.members.destroy', $member)" method="DELETE"
                                           :confirm="__('Mitarbeiter wirklich entfernen?')"

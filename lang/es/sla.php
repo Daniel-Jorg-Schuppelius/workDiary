@@ -11,6 +11,7 @@
 return [
     'remaining' => 'quedan :min min',
     'overdue_by' => ':min min de retraso',
+    'diary_panel_heading' => 'Tickets de servicio vinculados',
 
     'report' => [
         'title' => 'Informe de SLA',
@@ -43,5 +44,9 @@ return [
         'metric' => 'Métrica',
         'value' => 'Valor',
         'overview' => 'Resumen',
+        'quotas_heading' => 'Cuotas de tiempo incluido',
+        'no_quotas' => 'No hay cuotas configuradas.',
+        'quota_usage' => ':consumed / :included h (:period)',
+        'quota_over' => ':min min por encima de la cuota',
     ],
 ];

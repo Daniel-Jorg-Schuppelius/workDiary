@@ -19,6 +19,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Laravel\Sanctum\Sanctum;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -128,7 +129,10 @@ class AttendanceTest extends TestCase {
     }
 
     public function test_api_clock_in_returns_attendance_payload(): void {
-        $this->actingAs($this->user, 'sanctum');
+        // Token mit vollen Abilities: die API-Routen sind seit MVP-133/Rang 60
+        // scope-geschützt (ability:attendance:write); actingAs ohne AccessToken
+        // führt sonst zu 401 (kein currentAccessToken).
+        Sanctum::actingAs($this->user, ['*']);
 
         $res = $this->postJson(route('api.attendance.clock-in'), []);
         $res->assertCreated()

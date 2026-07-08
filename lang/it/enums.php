@@ -213,6 +213,11 @@ return [
     ],
     'notification' => [
         'event' => [
+            'ticket' => [
+                'assigned' => 'Ticket assegnato',
+                'customerReplied' => 'Il cliente ha risposto',
+                'waitingExpired' => 'Richiamo ticket scaduto',
+            ],
             'openIssue' => [
                 'assigned' => 'Punto aperto assegnato',
                 'dueSoon' => 'Punto aperto in scadenza',
@@ -244,6 +249,7 @@ return [
             'sla' => [
                 'atRisk' => 'Scadenza SLA a rischio',
                 'breached' => 'Scadenza SLA violata',
+                'quotaWarning' => 'Quota SLA quasi esaurita',
             ],
             'asset' => [
                 'returnOverdue' => 'Restituzione asset in ritardo',
@@ -264,11 +270,23 @@ return [
             'ideaMap' => [
                 'shared' => 'Mappa delle idee condivisa con te',
             ],
+            'shipment' => [
+                'deliveryProblem' => 'Problema di consegna di una spedizione',
+            ],
+            'cti' => [
+                'incomingCall' => 'Chiamata in arrivo',
+            ],
+            'maintenance' => [
+                'dueSoon' => 'Manutenzione/controllo in scadenza',
+                'overdue' => 'Manutenzione/controllo scaduto',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-app',
             'mail' => 'E-mail',
             'push' => 'Push',
+            'teams' => 'Microsoft Teams',
+            'mattermost' => 'Mattermost',
         ],
     ],
 
@@ -412,6 +430,9 @@ return [
             'date' => 'Data',
             'select' => 'Selezione',
             'checkbox' => 'Casella di controllo',
+            'photo' => 'Foto',
+            'file' => 'File',
+            'signature' => 'Firma',
         ],
     ],
     'document' => [
@@ -424,6 +445,7 @@ return [
             'manufacturerDoc' => 'Documento del produttore',
             'permit' => 'Autorizzazione',
             'insurance' => 'Assicurazione',
+            'invoice' => 'Fattura',
             'other' => 'Altro',
         ],
         'status' => [
@@ -855,6 +877,14 @@ return [
             'passed' => 'Superato',
             'partial' => 'Con riserve',
             'failed' => 'Fallito',
+        ],
+    ],
+
+    // Azione alla scadenza di un piano di manutenzione (Feature 010 → Rango 43).
+    'maintenance' => [
+        'due_action' => [
+            'none' => 'Solo avviso (nessun record)',
+            'ticket' => 'Crea un ticket di servizio',
         ],
     ],
 ];

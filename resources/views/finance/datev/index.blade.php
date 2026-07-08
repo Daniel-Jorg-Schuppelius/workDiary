@@ -20,6 +20,14 @@
                             :href="route('finance.datev.config')"
                             show-label>{{ __('finance.datev.action.configure') }}</x-icon-btn>
             @endif
+            @if ($canCreate && $importAvailable)
+                {{-- EXTF-Stammdatenexport Kategorie 16 (Nachtrag 045a). --}}
+                <form method="POST" action="{{ route('finance.datev.debtors.export') }}">
+                    @csrf
+                    <x-icon-btn icon="contacts" tone="outline" size="sm" type="submit"
+                                show-label>{{ __('Debitoren-Stammdaten (EXTF)') }}</x-icon-btn>
+                </form>
+            @endif
             @if ($canCreate)
                 @if ($importAvailable)
                     <x-icon-btn icon="add" tone="primary" size="sm"

@@ -132,6 +132,14 @@
                                                     :aria-label="__('Sperren')" />
                                     </form>
                                 @endcan
+                                @can('bundle', $c)
+                                    {{-- Prüfexport-Bundle (Rang 40): ZIP mit Manifest, abgelegt am Monat. --}}
+                                    <form method="POST" action="{{ route('admin.month-approval.bundle', $c) }}">
+                                        @csrf
+                                        <x-icon-btn icon="folder_zip" tone="ghost" size="sm" type="submit"
+                                                    :aria-label="__('Prüfpaket erzeugen')" />
+                                    </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>

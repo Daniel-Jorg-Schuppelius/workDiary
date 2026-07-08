@@ -67,9 +67,21 @@ class Invoice extends Model {
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    public const STATUS_PARTIALLY_PAID = 'partially_paid';
+
     public const TYPE_INVOICE = 'invoice';
 
     public const TYPE_CREDIT_NOTE = 'credit_note';
+
+    public const TYPE_CANCELLATION = 'cancellation';
+
+    public const TYPE_DOWN_PAYMENT = 'down_payment';
+
+    public const TYPE_PARTIAL = 'partial';
+
+    public const TYPE_FINAL = 'final';
+
+    public const TYPE_PROFORMA = 'proforma';
 
     public const CATEGORY_SERVICE = 'service';
 
@@ -79,10 +91,23 @@ class Invoice extends Model {
     public const CATEGORIES = [self::CATEGORY_SERVICE, self::CATEGORY_MATERIAL];
 
     /** @var array<int, string> */
-    public const STATUSES = [self::STATUS_DRAFT, self::STATUS_ISSUED, self::STATUS_PAID, self::STATUS_CANCELLED];
+    public const STATUSES = [self::STATUS_DRAFT, self::STATUS_ISSUED, self::STATUS_PARTIALLY_PAID, self::STATUS_PAID, self::STATUS_CANCELLED];
 
     /** @var array<int, string> */
-    public const TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE];
+    public const TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION, self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL, self::TYPE_FINAL, self::TYPE_PROFORMA];
+
+    /**
+     * Nach der Ausstellung fachlich unveränderlich (MVP-162) — nur diese
+     * Felder dürfen sich über normale save()-Wege noch ändern.
+     * (saveQuietly interner Abgleichspfade umgeht den Guard bewusst.)
+     */
+    public const MUTABLE_AFTER_ISSUE = [
+        'status', 'paid_on', 'sent_at', 'sent_count',
+        'cancelled_at', 'cancelled_by', 'cancel_reason',
+        'external_number', 'number_source', 'updated_at',
+        'dunning_level', 'dunned_at', // Mahnstatus ist Lifecycle, kein Beleginhalt
+        'objection_at', 'objection_note', // Widerspruch (§ 14 Abs. 2 UStG) ist Lifecycle
+    ];
 
     protected $fillable = [
         'organization_id',
@@ -105,14 +130,31 @@ class Invoice extends Model {
         'currency',
         'subtotal',
         'tax_rate',
+        'is_reverse_charge',
         'tax_amount',
         'total',
         'notes',
         'created_by',
+        'party_snapshot',
+        'tax_breakdown',
+        'payment_terms_days',
+        'approved_at',
+        'approved_by',
+        'dunning_level',
+        'dunned_at',
+        'objection_at',
+        'objection_note',
+        'quote_id',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
+        'is_reverse_charge' => 'boolean',
+        'party_snapshot' => 'array',
+        'tax_breakdown' => 'array',
+        'approved_at' => 'datetime',
+        'dunned_at' => 'datetime',
+        'objection_at' => 'datetime',
         'issued_on' => 'date',
         'due_on' => 'date',
         'paid_on' => 'date',
@@ -156,15 +198,72 @@ class Invoice extends Model {
             ->where('type', self::TYPE_CREDIT_NOTE);
     }
 
+    /**
+     * Summen inkl. Steueraufriss (MVP-162): Positionen MIT eigenem
+     * tax_rate werden je Satz gruppiert (mehrere Steuersätze je Rechnung);
+     * Positionen ohne Satz fallen auf den Kopfsatz zurück (Alt-Verhalten).
+     * Rundung PRO SATZ (§ 14 UStG-üblich), Kopf trägt die Summe.
+     */
     public function recalculate(): void {
-        $sub = 0.0;
+        $byRate = [];
         foreach ($this->items as $item) {
-            $sub += (float) $item->amount;
+            $rate = $item->tax_rate !== null ? (float) $item->tax_rate : (float) $this->tax_rate;
+            $key = number_format($rate, 2, '.', '');
+            $byRate[$key] = ($byRate[$key] ?? 0.0) + (float) $item->amount;
         }
-        $tax = round($sub * ((float) $this->tax_rate) / 100, 2);
+
+        $sub = 0.0;
+        $tax = 0.0;
+        $breakdown = [];
+        ksort($byRate);
+        foreach ($byRate as $key => $net) {
+            $net = round($net, 2);
+            $rateTax = $this->is_reverse_charge ? 0.0 : round($net * ((float) $key) / 100, 2);
+            $breakdown[] = ['rate' => (float) $key, 'net' => $net, 'tax' => $rateTax];
+            $sub += $net;
+            $tax += $rateTax;
+        }
+
         $this->subtotal = (string) round($sub, 2);
-        $this->tax_amount = (string) $tax;
+        $this->tax_amount = (string) round($tax, 2);
         $this->total = (string) round($sub + $tax, 2);
+        $this->tax_breakdown = $breakdown;
+    }
+
+    protected static function booted(): void {
+        // Ausstellungs-Unveränderlichkeit (MVP-162): Anker ist der beim
+        // OFFIZIELLEN Ausstellen eingefrorene Partei-Snapshot (issue()/
+        // markSent() → freezeParties) — ab dann sind fachliche Felder
+        // gesperrt, nur die MUTABLE_AFTER_ISSUE-Whitelist bleibt änderbar.
+        static::updating(function (self $invoice): void {
+            if ($invoice->getRawOriginal('party_snapshot') === null) {
+                return; // noch nicht offiziell ausgestellt (z. B. Alt-/Testdaten)
+            }
+            $blocked = array_diff(array_keys($invoice->getDirty()), self::MUTABLE_AFTER_ISSUE);
+            if ($blocked !== []) {
+                throw new \RuntimeException(
+                    'Ausgestellte Rechnungen sind unveränderlich (Felder: ' . implode(', ', $blocked) . ').',
+                );
+            }
+        });
+    }
+
+    /**
+     * Empfänger-/Verkäufer-Snapshot einfrieren (MVP-162) — beim Ausstellen;
+     * spätere Stammdatenänderungen deuten den Beleg nie um.
+     */
+    public function freezeParties(): void {
+        if ($this->party_snapshot !== null) {
+            return; // bereits eingefroren
+        }
+        $this->party_snapshot = app(\App\Services\Invoicing\InvoicePartySnapshot::class)->capture($this);
+    }
+
+    /** Überfällig = ausgestellt/teilbezahlt und Fälligkeit überschritten. */
+    public function isOverdue(): bool {
+        return in_array($this->status, [self::STATUS_ISSUED, self::STATUS_PARTIALLY_PAID], true)
+            && $this->due_on !== null
+            && $this->due_on->isPast();
     }
 
     public function isCreditNote(): bool {
@@ -238,7 +337,8 @@ class Invoice extends Model {
         if ($this->status === self::STATUS_DRAFT && ! $this->isCreditNote()) {
             $this->status = self::STATUS_ISSUED;
             $this->issued_on ??= now();
-            $this->due_on ??= now()->addDays(14);
+            $this->due_on ??= now()->addDays($this->payment_terms_days ?? 14);
+            $this->freezeParties();
         }
         $this->save();
     }

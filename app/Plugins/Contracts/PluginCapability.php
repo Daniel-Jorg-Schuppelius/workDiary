@@ -32,6 +32,12 @@ enum PluginCapability: string {
     /** Kann Aufgaben mit einem externen Aufgabensystem abgleichen (Feature 055). */
     case TaskSync = 'task_sync';
 
+    /** Kann Termine/Dienstpläne in einen externen Kalender publizieren (Feature 058, z. B. CalDAV). */
+    case CalendarPublish = 'calendar_publish';
+
+    /** Kann Versandlabels erzeugen/stornieren und Sendungen verfolgen (Feature 059, z. B. DHL). */
+    case ShippingProvider = 'shipping_provider';
+
     /**
      * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren muss.
      *
@@ -44,6 +50,8 @@ enum PluginCapability: string {
             self::TimeImport => TimeImporter::class,
             self::PaymentSync => PaymentSyncer::class,
             self::TaskSync => TaskSyncer::class,
+            self::CalendarPublish => CalendarPublisher::class,
+            self::ShippingProvider => ShippingProvider::class,
         };
     }
 }

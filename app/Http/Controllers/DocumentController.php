@@ -105,6 +105,25 @@ class DocumentController extends Controller {
         ]);
     }
 
+    /**
+     * Read-only-Detailseite (Rang 28): Trägerseite für Stammdaten, Versionen
+     * und das Externe-Beteiligte-Panel.
+     */
+    public function show(Document $document): View {
+        Gate::authorize('view', $document);
+
+        $document->load([
+            'versions.uploader:id,name',
+            'currentVersion',
+            'documentable',
+            'creator:id,name',
+        ]);
+
+        return view('documents.show', [
+            'document' => $document,
+        ]);
+    }
+
     public function create(Request $request): View {
         Gate::authorize('create', Document::class);
 

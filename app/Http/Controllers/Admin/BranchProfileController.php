@@ -72,6 +72,8 @@ class BranchProfileController extends Controller {
             'organization' => $organization,
             'profiles' => $profiles,
             'installedCodes' => $installedCodes,
+            // Restpunkt 042: angewandte Version je Profil → Update-Erkennung.
+            'installedVersions' => (array) data_get((array) ($organization->settings ?? []), 'branch_profile_versions', []),
             'activeFilters' => [
                 'q' => $query,
                 'installed' => $installedFilter,
@@ -100,6 +102,53 @@ class BranchProfileController extends Controller {
                 'classifications' => $result['created']['classifications'] + $result['updated']['classifications'],
                 'requirements' => $result['created']['classification_requirements'] + $result['updated']['classification_requirements'],
                 'tags' => $result['created']['tags'] + $result['updated']['tags'],
+            ]));
+    }
+
+    /**
+     * Marketplace-Import (Restpunkt 042): hochgeladenes JSON-Profil wird
+     * gegen das Profil-Schema UND die harten Klassifikations-Domänen
+     * (ClassificationDomain-Enum) validiert und dann über denselben
+     * Installer-Kern angewendet wie die mitgelieferten Profile.
+     */
+    public function import(Request $request): RedirectResponse {
+        $this->authorizeViewCatalog();
+
+        $request->validate([
+            'file' => ['required', 'file', 'max:2048', 'mimetypes:application/json,text/plain'],
+        ]);
+
+        $profile = json_decode((string) $request->file('file')->get(), true);
+        if (! is_array($profile)) {
+            return back()->with('error', __('Die Datei enthält kein gültiges JSON-Profil.'));
+        }
+
+        foreach (['code', 'label'] as $field) {
+            if (! is_string($profile[$field] ?? null) || trim((string) $profile[$field]) === '') {
+                return back()->with('error', __('Profil unvollständig: Feld :field fehlt.', ['field' => $field]));
+            }
+        }
+
+        // Klassifikations-Domänen bleiben hart begrenzt (Branchenprofile-Regel).
+        foreach (array_keys((array) ($profile['classifications'] ?? [])) as $domain) {
+            if (\App\Enums\Classification\ClassificationDomain::tryFrom((string) $domain) === null) {
+                return back()->with('error', __('Unbekannte Klassifikations-Domäne ":domain" — Profil abgelehnt.', ['domain' => $domain]));
+            }
+        }
+
+        /** @var \App\Models\User $actor */
+        $actor = $request->user();
+
+        try {
+            $result = $this->installer->installProfile($this->currentOrganization(), $profile, $actor, force: false);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('admin.branch-profiles.index')
+            ->with('success', __('Profil ":label" (v:version) importiert und installiert.', [
+                'label' => (string) $profile['label'],
+                'version' => (string) $result['version'],
             ]));
     }
 

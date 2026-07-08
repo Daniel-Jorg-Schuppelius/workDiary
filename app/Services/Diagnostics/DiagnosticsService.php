@@ -11,7 +11,7 @@
 namespace App\Services\Diagnostics;
 
 use App\Enums\Licensing\ModuleStatus;
-use App\Models\{AuditLog, BackupHeartbeat, Organization};
+use App\Models\{AttendanceTerminal, AuditLog, BackupHeartbeat, Organization};
 use App\Services\Licensing\{LicenseService, LicenseStatus, ModuleStatusResolver};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -26,7 +26,10 @@ use Throwable;
  * Fehlermeldung zurückgegeben, wenn ein Check unerwartet wirft.
  */
 class DiagnosticsService {
-    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security'];
+    public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security', 'terminals'];
+
+    /** Warnschwelle: aktives Terminal ohne Kontakt seit … Stunden gilt als „stale". */
+    public const TERMINAL_STALE_HOURS = 24;
 
     /** Warnschwelle für das Alter der SBOM (Feature 051). */
     public const SBOM_STALE_DAYS = 30;
@@ -65,6 +68,7 @@ class DiagnosticsService {
                 'storage' => $this->checkStorage(),
                 'backup' => $this->checkBackup(),
                 'security' => $this->checkSecurity(),
+                'terminals' => $this->checkTerminals(),
                 default => DiagnosticSection::unknown($section, 'Unbekannter Diagnose-Abschnitt.'),
             };
         } catch (Throwable $e) {
@@ -469,6 +473,18 @@ class DiagnosticsService {
             $messages[] = 'Keine SBOM erzeugt (composer sbom / Security-Gate).';
         }
 
+        // OSV-Sicherheitslage (Rang 70): DB-Stand, kein Netzwerkaufruf —
+        // gepflegt durch `security:advisories-pull` (Scheduler/Sicherheitsseite).
+        $openAdvisories = \App\Models\SecurityAdvisory::query()->whereNull('resolved_at')->count();
+        $openHighAdvisories = \App\Models\SecurityAdvisory::openHighOrCritical();
+        if ($openHighAdvisories > 0) {
+            $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
+            $messages[] = sprintf(
+                '%d offene high/critical-Sicherheitshinweise (OSV) — Admin → Sicherheit prüfen.',
+                $openHighAdvisories,
+            );
+        }
+
         return new DiagnosticSection(
             code: 'security',
             status: $status,
@@ -479,6 +495,55 @@ class DiagnosticsService {
                 'https_app_url' => $https,
                 'sbom_components' => $sbomComponents,
                 'sbom_generated_at' => $sbomGeneratedAt?->toIso8601String(),
+                'advisories_open' => $openAdvisories,
+                'advisories_high_or_critical' => $openHighAdvisories,
+            ],
+            messages: $messages,
+            checkedAt: CarbonImmutable::now(),
+        );
+    }
+
+    /**
+     * Gesundheitsstatus der Stempelterminals der aktuellen Organisation
+     * (Feature 061): warnt, wenn ein aktives Terminal seit über
+     * {@see TERMINAL_STALE_HOURS} Stunden keinen Kontakt mehr hatte. Ohne
+     * konfigurierte Terminals ist die Sektion rein informativ (Unknown).
+     */
+    public function checkTerminals(): DiagnosticSection {
+        /** @var \Illuminate\Support\Collection<int, AttendanceTerminal> $terminals */
+        $terminals = AttendanceTerminal::query()->get(['id', 'name', 'active', 'last_seen_at']);
+        $total = $terminals->count();
+
+        if ($total === 0) {
+            return new DiagnosticSection(
+                code: 'terminals',
+                status: DiagnosticStatus::Unknown,
+                metrics: ['total' => 0],
+                messages: ['Keine Stempelterminals konfiguriert.'],
+                checkedAt: CarbonImmutable::now(),
+            );
+        }
+
+        $threshold = CarbonImmutable::now()->subHours(self::TERMINAL_STALE_HOURS);
+        $active = $terminals->where('active', true);
+        $stale = $active->filter(
+            static fn (AttendanceTerminal $terminal): bool => $terminal->last_seen_at === null || $terminal->last_seen_at->lt($threshold),
+        );
+
+        $messages = [];
+        $status = DiagnosticStatus::Ok;
+        if ($stale->isNotEmpty()) {
+            $status = DiagnosticStatus::Warn;
+            $messages[] = sprintf('%d aktive(s) Terminal(s) seit über %d h ohne Kontakt.', $stale->count(), self::TERMINAL_STALE_HOURS);
+        }
+
+        return new DiagnosticSection(
+            code: 'terminals',
+            status: $status,
+            metrics: [
+                'total' => $total,
+                'active' => $active->count(),
+                'stale' => $stale->count(),
             ],
             messages: $messages,
             checkedAt: CarbonImmutable::now(),

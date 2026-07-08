@@ -37,6 +37,7 @@ return [
             'gvv_required' => ['label' => 'GVV mit gemeinsam Verantwortlichem', 'category' => 'contracts'],
             'dpia_required' => ['label' => 'DSFA bei DSFA-Bedarf', 'category' => 'assessment'],
             'tom_assigned' => ['label' => 'TOM je Verarbeitungstätigkeit', 'category' => 'security'],
+            'tom_proof_current' => ['label' => 'TOM-Nachweise gültig (nicht abgelaufen)', 'category' => 'security'],
         ],
         // Gewerk => erwartete Anforderungs-Keys (informativ; die Regeln laufen generisch).
         'profiles' => [

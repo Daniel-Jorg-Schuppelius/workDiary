@@ -11,7 +11,7 @@
 namespace Tests\Feature\Sla;
 
 use App\Enums\ServiceTicket\SlaViolationKind;
-use App\Models\{ServiceTicket, SlaViolation, User};
+use App\Models\{Customer, Project, ServiceTicket, SlaContract, SlaContractQuota, SlaViolation, TimeEntry, User};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -84,6 +84,53 @@ class SlaReportTest extends TestCase {
         $byKind = $response->viewData('by_kind');
         $this->assertSame(1, $byKind[SlaViolationKind::ResolutionTime->value]);
         $this->assertSame(1, $byKind[SlaViolationKind::ResponseTime->value]);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_report_shows_quota_usage(): void {
+        Carbon::setTestNow('2026-06-10 12:00:00');
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $project = Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id]);
+        $contract = SlaContract::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'is_active' => true,
+            'is_default' => false,
+        ]);
+        SlaContractQuota::query()->create([
+            'organization_id' => $this->organization->id,
+            'sla_contract_id' => $contract->id,
+            'period_kind' => 'month',
+            'included_minutes' => 600,
+            'warn_threshold_pct' => 80,
+        ]);
+        $worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        foreach ([300, 200] as $minutes) {
+            TimeEntry::factory()->create([
+                'organization_id' => $this->organization->id,
+                'user_id' => $worker->id,
+                'project_id' => $project->id,
+                'activity_type' => 'project',
+                'date' => '2026-06-05',
+                'minutes' => $minutes,
+                'billable' => true,
+            ]);
+        }
+
+        $response = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeMonth(2026, 6))
+            ->get(route('reports.sla'));
+
+        $response->assertOk();
+        $quotas = $response->viewData('quotas');
+        $this->assertCount(1, $quotas);
+        $this->assertSame(500, $quotas[0]['consumed']);   // 300 + 200 (Projekt-verknüpft, billable, in Periode)
+        $this->assertSame(600, $quotas[0]['included']);
+        $this->assertSame(83, $quotas[0]['percentage']);
+        $this->assertTrue($quotas[0]['threshold_reached']);
+        $response->assertSee(__('sla.report.quotas_heading'));
 
         Carbon::setTestNow();
     }

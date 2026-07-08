@@ -18,9 +18,11 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Etikettendruck (Feature 048, E5): erzeugt ein druckbares Etikett (PDF) für
@@ -63,11 +65,21 @@ class LabelController extends Controller {
             $fields = LabelTemplate::FIELDS;
         }
 
-        return Pdf::loadView('inventory.labels.label', [
+        $html = view('inventory.labels.label', [
             'label' => $data,
             'qr' => $withQr ? $this->qrDataUri($data['code']) : null,
             'fields' => $fields,
-        ])->setPaper($paper, $orientation)->stream('label-' . $data['code'] . '.pdf');
+        ])->render();
+
+        $bytes = PDFWriterRegistry::getInstance()->createPdfString(
+            PDFContent::fromHtml($html),
+            ['paper_size' => $paper, 'orientation' => $orientation],
+        ) ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (inventory.labels.label).');
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="label-' . $data['code'] . '.pdf"',
+        ]);
     }
 
     /** Wählt die Etikettenvorlage: ?template (Sqid) oder die Standardvorlage der Org. */

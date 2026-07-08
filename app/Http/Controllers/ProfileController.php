@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ManagesUserContactDetails;
 use App\Models\{Attachment, User};
 use App\Services\Attachments\ImageMetaUploader;
+use CommonToolkit\Helper\Data\PhoneNumberHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Validation\Rule;
@@ -59,10 +60,22 @@ class ProfileController extends Controller {
             'preferences.notifications.quiet_to' => ['nullable', 'date_format:H:i'],
             'avatar' => ['nullable', 'file'],
             'remove_avatar' => ['nullable', 'boolean'],
+            // CTI-Anrufer-Pop-up (MVP-118): eigene Durchwahl als Opt-in.
+            'cti_extension' => ['nullable', 'string', 'max:40', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (is_string($value) && trim($value) !== '' && PhoneNumberHelper::toE164(trim($value), 'DE') === null) {
+                    $fail((string) __('cti.profile.invalid'));
+                }
+            }],
         ] + $this->contactDetailRules());
 
         $user->fill(['name' => $data['name'], 'email' => $data['email']]);
         $this->fillUserContactFields($user, $data);
+
+        // Durchwahl (Opt-in) verschlüsselt + Hash setzen; leere Eingabe hebt das
+        // Opt-in auf. Nur berühren, wenn das Feld Teil des Formulars war.
+        if ($request->has('cti_extension')) {
+            $user->setCtiExtension(is_string($data['cti_extension'] ?? null) ? $data['cti_extension'] : null);
+        }
 
         if ($request->has('preferences')) {
             $submitted = array_filter(

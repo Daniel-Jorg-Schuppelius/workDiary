@@ -43,6 +43,7 @@
 <body>
     <div class="actions no-print">
         <button class="btn" onclick="window.print()">{{ __('form.action.print') }}</button>
+        <a class="btn" href="{{ route('form-submissions.pdf', $submission) }}">{{ __('form.action.download_pdf') }}</a>
         <a class="btn" href="{{ route('form-submissions.index') }}">{{ __('form.action.back') }}</a>
     </div>
 
@@ -60,6 +61,8 @@
     <h2>{{ __('form.title.values') }}</h2>
     <table class="kv">
         @foreach ((array) $submission->fields_snapshot as $field)
+            {{-- Bedingungslogik (Rang 33): ausgeblendete Felder gar nicht zeigen. --}}
+            @continue(! \App\Services\Form\FormFieldDefinition::isVisible((array) $field, $values))
             <tr>
                 <th>
                     {{ $field['label'] ?? $field['key'] ?? '—' }}
@@ -67,7 +70,13 @@
                         <span class="muted">({{ $field['unit'] }})</span>
                     @endif
                 </th>
-                <td class="pre">{{ \App\Services\Form\FormFieldDefinition::displayValue((array) $field, $values[$field['key'] ?? ''] ?? null) }}</td>
+                <td class="pre">
+                    {{ \App\Services\Form\FormFieldDefinition::displayValue((array) $field, $values[$field['key'] ?? ''] ?? null) }}
+                    @php $att = $submission->attachmentByMeta('field:' . ($field['key'] ?? '')); @endphp
+                    @if ($att && \Illuminate\Support\Str::startsWith((string) $att->mime, 'image/'))
+                        <br><img src="data:{{ $att->mime }};base64,{{ base64_encode((string) \Illuminate\Support\Facades\Storage::disk($att->disk)->get($att->path)) }}" style="max-height:140px; max-width:100%; margin-top:4px;">
+                    @endif
+                </td>
             </tr>
         @endforeach
     </table>

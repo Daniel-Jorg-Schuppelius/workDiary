@@ -11,9 +11,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Ideas\IdeaNodeColor;
-use App\Exceptions\IdeaNodeConflictException;
+use App\Exceptions\{IdeaMapConflictException, IdeaNodeConflictException};
 use App\Models\{IdeaMap, IdeaNode, IdeaNodeReference, KnowledgeArticle, Project, Task, User};
-use App\Services\Ideas\{IdeaNodeService, NodeConversionService};
+use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -35,13 +35,85 @@ class IdeaNodeController extends Controller {
     public function tree(IdeaMap $map): JsonResponse {
         Gate::authorize('view', $map);
 
-        $nodes = $map->nodes()->with('references.target')->orderBy('sort_order')->get();
+        return response()->json($this->treePayload($map));
+    }
+
+    /**
+     * Whole-Map-Sync des Canvas (MVP-136): der Canvas schickt den kompletten
+     * Baum; {@see IdeaMapSyncService} gleicht ihn gegen `idea_nodes` ab
+     * (Sqid-Identität stabil) und sichert per karten-weiter `lock_version`.
+     * Ein veralteter Stand liefert HTTP 409 mit dem aktuellen Serverbaum —
+     * nie stilles Last-write-wins.
+     */
+    public function sync(Request $request, IdeaMap $map, IdeaMapSyncService $sync): JsonResponse {
+        Gate::authorize('update', $map);
+
+        $data = $request->validate([
+            'lock_version' => ['required', 'integer', 'min:1'],
+            'tree' => ['required', 'array'],
+            'tree.sqid' => ['required', 'string'],
+            'links' => ['sometimes', 'nullable', 'array'],
+            'summaries' => ['sometimes', 'nullable', 'array'],
+        ]);
+
+        // Rohen Baum/Links/Summaries verwenden: `validate()` liefert nur die
+        // geprüften Pfade zurück und würde die verschachtelten Felder (u. a.
+        // `sqid`) verwerfen. Der Sync-Service sanitisiert alle Felder selbst.
+        $tree = (array) $request->input('tree');
+        // weglassen (null) = unverändert lassen; leeres Array = alle löschen.
+        $links = $request->has('links') ? (array) $request->input('links', []) : null;
+        $summaries = $request->has('summaries') ? (array) $request->input('summaries', []) : null;
+
+        try {
+            $result = $sync->sync($map, $tree, $links, $summaries, (int) $data['lock_version'], Auth::user());
+        } catch (IdeaMapConflictException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'current' => $this->treePayload($e->currentMap->loadMissing('nodes')),
+            ], 409);
+        } catch (RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         return response()->json([
-            'map' => ['sqid' => $map->sqid, 'title' => $map->title, 'archived' => $map->isArchived()],
+            'lock_version' => $result['lock_version'],
+            'created' => $result['created'],
+        ]);
+    }
+
+    /**
+     * Baum-Payload einer Karte inkl. karten-weiter `lock_version` (Sync-Basis).
+     *
+     * @return array<string, mixed>
+     */
+    private function treePayload(IdeaMap $map): array {
+        $nodes = $map->nodes()->with('references.target')->orderBy('sort_order')->get();
+        $encoder = app(SqidEncoder::class);
+
+        return [
+            'map' => [
+                'sqid' => $map->sqid,
+                'title' => $map->title,
+                'archived' => $map->isArchived(),
+                'lock_version' => (int) $map->lock_version,
+            ],
             'can_update' => Gate::allows('update', $map),
             'nodes' => $nodes->map(fn (IdeaNode $node): array => $this->serialize($node))->values(),
-        ]);
+            // Querverbindungen (MVP-137): Endpunkte als Sqid (nie interne IDs).
+            'links' => $map->links()->get()->map(fn (\App\Models\IdeaNodeLink $l): array => [
+                'from' => $encoder->encode(IdeaNode::class, (int) $l->source_node_id),
+                'to' => $encoder->encode(IdeaNode::class, (int) $l->target_node_id),
+                'label' => $l->label,
+                'color' => $l->color,
+            ])->values(),
+            // Boundaries/Zusammenfassungen (MVP-137): Elternknoten als Sqid, Bereich start..end.
+            'summaries' => $map->summaries()->get()->map(fn (\App\Models\IdeaNodeSummary $s): array => [
+                'parent' => $encoder->encode(IdeaNode::class, (int) $s->parent_node_id),
+                'start' => (int) $s->start_index,
+                'end' => (int) $s->end_index,
+                'label' => $s->label,
+            ])->values(),
+        ];
     }
 
     public function store(Request $request, IdeaMap $map): JsonResponse {
@@ -59,6 +131,8 @@ class IdeaNodeController extends Controller {
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
+
+        $this->bumpMapVersion($map);
 
         return response()->json(['node' => $this->serialize($node)], 201);
     }
@@ -92,6 +166,8 @@ class IdeaNodeController extends Controller {
             ], 409);
         }
 
+        $this->bumpMapVersion($map);
+
         return response()->json(['node' => $this->serialize($node)]);
     }
 
@@ -107,6 +183,8 @@ class IdeaNodeController extends Controller {
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }
+
+        $this->bumpMapVersion($map);
 
         return response()->json(['node' => $this->serialize($node)]);
     }
@@ -130,6 +208,7 @@ class IdeaNodeController extends Controller {
             }
         }
         $this->nodes->reorder($node, $ids);
+        $this->bumpMapVersion($map);
 
         return response()->json(['ok' => true]);
     }
@@ -144,6 +223,8 @@ class IdeaNodeController extends Controller {
             return response()->json(['message' => $e->getMessage()], 422);
         }
 
+        $this->bumpMapVersion($map);
+
         return response()->json(['ok' => true]);
     }
 
@@ -156,6 +237,7 @@ class IdeaNodeController extends Controller {
         abort_unless($node instanceof IdeaNode, 404);
 
         $this->nodes->restoreSubtree($node);
+        $this->bumpMapVersion($map);
 
         return response()->json(['node' => $this->serialize($node->refresh())]);
     }
@@ -268,5 +350,16 @@ class IdeaNodeController extends Controller {
 
     private function assertNodeOfMap(IdeaMap $map, IdeaNode $node): void {
         abort_unless((int) $node->idea_map_id === (int) $map->id, 404);
+    }
+
+    /**
+     * Hebt die karten-weite `lock_version` nach jeder Knoten-Mutation aus der
+     * Gliederung (MVP-136) — so erkennt der Whole-Map-Sync des Canvas eine
+     * zwischenzeitliche Gliederungs-Änderung als Konflikt (HTTP 409) statt sie
+     * still zu überschreiben. Die feingranulare per-Knoten-Sperre bleibt davon
+     * unberührt.
+     */
+    private function bumpMapVersion(IdeaMap $map): void {
+        $map->increment('lock_version');
     }
 }

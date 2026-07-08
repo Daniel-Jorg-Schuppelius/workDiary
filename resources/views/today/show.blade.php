@@ -130,6 +130,9 @@
         @include('time-approval.day._balance', ['compact' => true])
         @include('time-approval.day._issues')
 
+        {{-- Quick-Buchung offener Zeitblöcke (Rang 37) — nur bei offenen Blöcken. --}}
+        @include('today._quick_book')
+
         @if ($byActivity->isNotEmpty())
             <x-card as="section">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufteilung nach Tätigkeit') }}</h2>

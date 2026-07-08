@@ -48,7 +48,7 @@ class ExternalParticipantService {
      * (wird sonst nirgends gespeichert — nur der Hash landet in der DB).
      *
      * @param  Model  $subject  DiaryEntry|Protocol|Document — muss organization_id besitzen
-     * @param  array{name: string, email?: ?string, role?: ?string, party?: string, abilities?: list<string>, ttl_days?: int}  $data
+     * @param  array{name: string, email?: ?string, role?: ?string, party?: string, abilities?: list<string>, ttl_days?: int, external_contact_id?: ?int}  $data
      * @return array{token: string, model: ExternalParticipant}
      */
     public function invite(Model $subject, User $actor, array $data): array {
@@ -64,6 +64,7 @@ class ExternalParticipantService {
             'organization_id' => $subject->getAttribute('organization_id'),
             'subject_type' => $subject->getMorphClass(),
             'subject_id' => $subject->getKey(),
+            'external_contact_id' => isset($data['external_contact_id']) ? (int) $data['external_contact_id'] : null,
             'name' => trim((string) $data['name']),
             'email' => isset($data['email']) && $data['email'] !== '' ? trim((string) $data['email']) : null,
             'role' => isset($data['role']) && $data['role'] !== '' ? trim((string) $data['role']) : null,

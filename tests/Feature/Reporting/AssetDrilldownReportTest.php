@@ -13,8 +13,10 @@ namespace Tests\Feature\Reporting;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\ProtocolType;
-use App\Models\{Asset, DiaryEntry, OpenIssue, Project, Protocol, User};
+use App\Models\{Asset, AssetDefect, DiaryEntry, OpenIssue, Project, Protocol, User};
+use App\Services\Asset\RecurringDefectService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
@@ -130,6 +132,89 @@ class AssetDrilldownReportTest extends TestCase {
             ]));
         $response->assertOk();
         $response->assertSee('Lager defekt');
+    }
+
+    private function defect(string $reportedAt): AssetDefect {
+        return AssetDefect::factory()->create([
+            'organization_id' => $this->organization->id,
+            'asset_id' => $this->asset->id,
+            'reported_by_user_id' => $this->user->id,
+            'reported_at' => $reportedAt,
+        ]);
+    }
+
+    public function test_recurring_flag_uses_twelve_month_window_not_period(): void {
+        Carbon::setTestNow('2026-06-15 12:00:00');
+        // 1 Defekt im Berichtszeitraum (Juni) + 2 weitere im 12-Monats-Fenster.
+        $this->defect('2026-06-10');
+        $this->defect('2026-01-10');
+        $this->defect('2025-08-10');
+
+        $rows = app(RecurringDefectService::class)->pareto(
+            $this->organization->id,
+            Carbon::parse('2026-06-01'),
+            Carbon::parse('2026-06-30 23:59:59'),
+        );
+
+        $this->assertCount(1, $rows);
+        $this->assertSame(1, $rows[0]['total']);        // nur Juni
+        $this->assertSame(3, $rows[0]['recent_total']); // 12-Monats-Fenster
+        $this->assertTrue($rows[0]['is_recurring']);    // >= 3 in 12 Monaten
+
+        Carbon::setTestNow();
+    }
+
+    public function test_recurring_defects_drilldown_lists_pareto(): void {
+        Carbon::setTestNow('2026-06-15 12:00:00');
+        foreach (['2026-06-01', '2026-06-05', '2026-06-10'] as $d) {
+            $this->defect($d);
+        }
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(Carbon::parse('2026-06-01'), Carbon::parse('2026-06-30')))
+            ->get(route('reports.assets.drilldown.recurring-defects'));
+
+        $response->assertOk();
+        $rows = $response->viewData('rows');
+        $this->assertSame($this->asset->id, $rows[0]['asset_id']);
+        $this->assertSame(3, $rows[0]['total']);
+        $this->assertTrue($rows[0]['is_recurring']);
+        $response->assertSee('Pumpe X');
+        $response->assertSee(__('Wiederholdefekt'));
+
+        Carbon::setTestNow();
+    }
+
+    public function test_recurring_defects_csv_writes_audit_log(): void {
+        Carbon::setTestNow('2026-06-15 12:00:00');
+        $this->defect('2026-06-10');
+
+        $response = $this->actingAs($this->user)
+            ->withSession($this->dateRangeSession(Carbon::parse('2026-06-01'), Carbon::parse('2026-06-30')))
+            ->get(route('reports.assets.drilldown.recurring-defects', ['export' => 'csv']));
+
+        $response->assertOk();
+        $this->assertStringContainsString('text/csv', (string) $response->headers->get('Content-Type'));
+        $this->assertDatabaseHas('audit_logs', [
+            'organization_id' => $this->organization->id,
+            'event' => 'report.exported',
+        ]);
+
+        Carbon::setTestNow();
+    }
+
+    public function test_dossier_shows_recurring_defect_badge(): void {
+        Carbon::setTestNow('2026-06-15 12:00:00');
+        foreach (['2026-06-01', '2026-04-01', '2026-02-01'] as $d) {
+            $this->defect($d);
+        }
+
+        $response = $this->actingAs($this->user)->get(route('assets.dossier', $this->asset));
+
+        $response->assertOk();
+        $response->assertSee(__('Wiederholdefekt'));
+
+        Carbon::setTestNow();
     }
 
     public function test_csv_export_writes_audit_log(): void {

@@ -13,10 +13,11 @@ namespace App\Http\Controllers;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Asset, Customer, DiaryEntry, FormSubmission, FormTemplate, Project, User};
-use App\Services\Form\FormService;
+use App\Services\Attachments\FileAttacher;
+use App\Services\Form\{FormService, FormSubmissionPdfRenderer};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
@@ -116,6 +117,11 @@ class FormSubmissionController extends Controller {
             'subject_kind' => ['nullable', 'string', 'in:' . implode(',', array_keys(self::SUBJECT_MAP))],
             'subject_id' => ['nullable', 'string', 'required_with:subject_kind'],
             'values' => ['nullable', 'array'],
+            // Foto-/Datei-Felder (Rang 32) je Feld-Key, Unterschrift als Base64-PNG.
+            'files' => ['nullable', 'array'],
+            'files.*' => FileAttacher::rule(),
+            'signatures' => ['nullable', 'array'],
+            'signatures.*' => ['nullable', 'string', 'max:2000000'],
         ]);
 
         $template = $this->findActiveTemplate((string) $data['form_template_id']);
@@ -125,9 +131,14 @@ class FormSubmissionController extends Controller {
             $subject = $this->findSubject((string) $data['subject_kind'], (string) ($data['subject_id'] ?? ''));
         }
 
+        /** @var array<string, \Illuminate\Http\UploadedFile> $files */
+        $files = (array) $request->file('files', []);
+        /** @var array<string, string> $signatures */
+        $signatures = array_filter((array) $request->input('signatures', []), 'is_string');
+
         /** @var User $user */
         $user = Auth::user();
-        $submission = $this->service->submit($template, $subject, (array) ($data['values'] ?? []), $user);
+        $submission = $this->service->submit($template, $subject, (array) ($data['values'] ?? []), $user, $files, $signatures);
 
         return redirect()
             ->back()
@@ -144,6 +155,18 @@ class FormSubmissionController extends Controller {
         return view('forms.submissions.show', [
             'submission' => $submission,
             'subjectLabel' => $this->subjectLabel($submission),
+        ]);
+    }
+
+    /** PDF-Ausgabe des ausgefüllten Formulars (Feature 032, Rang 31). */
+    public function pdf(FormSubmission $submission, FormSubmissionPdfRenderer $renderer): Response {
+        Gate::authorize('view', $submission);
+
+        $pdf = $renderer->output($submission, $this->subjectLabel($submission));
+
+        return response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="formular-' . $submission->id . '.pdf"',
         ]);
     }
 

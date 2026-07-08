@@ -13,9 +13,10 @@ namespace App\Http\Controllers;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveManufacturingOrderRequest;
-use App\Models\{Article, ArticleVariant, Customer, ManufacturingOrder, ManufacturingOrderMaterial, StockDelivery, Supplier, Warehouse, WorkCenter};
+use App\Models\{Article, ArticleVariant, CarrierConnection, Customer, ManufacturingOrder, ManufacturingOrderMaterial, Shipment, StockDelivery, Supplier, Warehouse, WorkCenter};
 use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficeOrderConfirmationService, LexofficeQuotationService};
 use App\Services\Manufacturing\{CapacityService, DeliveryNotePdfRenderer, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingQualityService, ManufacturingRecordPdfRenderer, ManufacturingReportService, SubcontractService};
+use App\Services\Shipping\{ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -90,13 +91,15 @@ class ManufacturingOrderController extends Controller {
 
     public function show(ManufacturingOrder $order, ManufacturingQualityService $quality): View {
         Gate::authorize('view', $order);
-        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer', 'procedureRun']);
+        $order->load(['article', 'variant', 'warehouse', 'materials', 'reports', 'deliveries.customer', 'deliveries.shipment', 'procedureRun']);
 
         return view('manufacturing.show', [
             'order' => $order,
             'suppliers' => Supplier::query()->orderBy('name')->limit(500)->get(),
             'workCenters' => WorkCenter::query()->where('active', true)->orderBy('name')->get(),
             'canManage' => Auth::user()?->can(\App\Enums\User\Permission::InventoryPost->value) ?? false,
+            // Aktive Versandanbindungen für die „Versandauftrag erzeugen"-Aktion (Rang 20).
+            'carriers' => CarrierConnection::query()->where('active', true)->orderBy('name')->get(),
             'quality' => $order->reports->isNotEmpty() ? $quality->metricsFor($order) : null,
         ]);
     }
@@ -109,6 +112,75 @@ class ManufacturingOrderController extends Controller {
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $renderer->number($order) . '.pdf"',
         ]);
+    }
+
+    /**
+     * Erzeugt aus einer Auslieferung einen Versandauftrag und ruft (idempotent)
+     * das Label beim gewählten Carrier ab (Feature 059, MVP-128, Rang 20).
+     * Empfänger aus dem Kunden der Auslieferung; Paketgewicht aus dem Formular.
+     * Serien der Auslieferung sind bereits beim Ausliefern an den Empfänger
+     * gebunden (SerialService::ship) — der Versandbezug ergibt sich transitiv über
+     * `stock_delivery_id`.
+     */
+    public function createShipment(Request $request, ManufacturingOrder $order, StockDelivery $delivery, ShipmentService $shipping): RedirectResponse {
+        Gate::authorize('update', $order);
+        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
+
+        $customer = $delivery->customer;
+        if (! $customer instanceof Customer) {
+            return back()->with('error', __('shipping.flash.no_recipient'));
+        }
+        if ($delivery->shipment()->exists()) {
+            return back()->with('error', __('shipping.flash.already_created'));
+        }
+
+        $data = $request->validate([
+            'carrier' => ['required', 'string', 'max:24'],
+            'weight_grams' => ['required', 'integer', 'min:1', 'max:1000000'],
+        ]);
+
+        // Aktive Anbindung für den gewählten Carrier muss existieren.
+        $hasConnection = CarrierConnection::query()
+            ->where('carrier', $data['carrier'])
+            ->where('active', true)
+            ->exists();
+        if (! $hasConnection) {
+            return back()->with('error', __('shipping.flash.no_connection'));
+        }
+
+        $shipment = Shipment::query()->create([
+            'organization_id' => $order->organization_id,
+            'stock_delivery_id' => $delivery->id,
+            'carrier' => (string) $data['carrier'],
+            'status' => \App\Enums\Shipping\ShipmentStatus::Draft->value,
+            'created_by' => Auth::id() !== null ? (int) Auth::id() : null,
+        ]);
+
+        $recipient = new ShipmentRecipient(
+            name: (string) ($customer->company ?: $customer->name),
+            street: (string) $customer->address_street,
+            zip: (string) $customer->address_zip,
+            city: (string) $customer->address_city,
+            country: (string) ($customer->country ?: 'DE'),
+            contactName: $customer->company ? $customer->name : null,
+            email: $customer->email,
+            phone: $customer->phone,
+        );
+
+        $shipmentRequest = new ShipmentRequest(
+            $recipient,
+            [new ShipmentPackage((int) $data['weight_grams'])],
+            'MO-' . $order->id . '/D-' . $delivery->id,
+        );
+
+        try {
+            $shipping->createLabel($shipment, $shipmentRequest);
+        } catch (RuntimeException $e) {
+            $shipment->delete(); // Entwurf verwerfen, wenn der Carrier ablehnt
+            return back()->with('error', __('shipping.flash.label_failed', ['reason' => $e->getMessage()]));
+        }
+
+        return back()->with('success', __('shipping.flash.label_created'));
     }
 
     /**

@@ -14,8 +14,9 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Feldtypen des Formularsystems (Feature 032, MVP). Foto/Datei/Unterschrift
- * sind bewusst Folgeausbau (siehe Feature-Doku Out-of-Scope).
+ * Feldtypen des Formularsystems (Feature 032). Foto/Datei/Unterschrift (Rang 32)
+ * legen ihren Inhalt als Attachment am Submission ab (meta_type `field:<key>`),
+ * nicht als Skalar im `values`-JSON.
  */
 enum FormFieldType: string implements HasLabel {
     use HasOptions;
@@ -26,6 +27,9 @@ enum FormFieldType: string implements HasLabel {
     case Date = 'date';
     case Select = 'select';
     case Checkbox = 'checkbox';
+    case Photo = 'photo';
+    case File = 'file';
+    case Signature = 'signature';
 
     public function label(): string {
         return (string) __('enums.form.field_type.' . $this->value);
@@ -39,5 +43,20 @@ enum FormFieldType: string implements HasLabel {
     /** Erlaubt dieser Typ eine Einheit (z. B. kWh, °C)? */
     public function supportsUnit(): bool {
         return $this === self::Number;
+    }
+
+    /** Datei-/Fotoupload (Rang 32) — Inhalt kommt als hochgeladene Datei. */
+    public function isUpload(): bool {
+        return $this === self::Photo || $this === self::File;
+    }
+
+    /** Unterschrift (Rang 32) — Inhalt kommt als Base64-PNG vom Signatur-Pad. */
+    public function isSignature(): bool {
+        return $this === self::Signature;
+    }
+
+    /** Legt dieser Typ seinen Inhalt als Attachment ab (statt als Skalar)? */
+    public function storesAttachment(): bool {
+        return $this->isUpload() || $this->isSignature();
     }
 }

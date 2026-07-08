@@ -89,5 +89,32 @@
                 @endforelse
             </x-table>
         </x-card>
+
+        {{-- Konfigurierbarer Anforderungskatalog (Nachtrag 043c). --}}
+        @can('manage', \App\Models\Privacy\ComplianceFinding::class)
+            <x-card>
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Anforderungskatalog') }}</h2>
+                <p class="mb-2 text-xs text-base-content/60">{{ __('Welche Prüfungen die Lückenanalyse ausführt. Deaktivierte Anforderungen werden übersprungen; Branchenprofile können Vorlagen liefern.') }}</p>
+                <ul class="space-y-1">
+                    @foreach ($requirements as $requirement)
+                        <li class="rounded-box border border-base-300 px-3 py-2">
+                            <form method="post" action="{{ route('dataprotection.compliance.requirement.update', $requirement) }}" class="flex flex-wrap items-center gap-2">
+                                @csrf @method('PUT')
+                                <label class="label cursor-pointer gap-2">
+                                    <input type="hidden" name="active" value="0">
+                                    <input type="checkbox" name="active" value="1" class="toggle toggle-sm toggle-primary" @checked($requirement->active)>
+                                </label>
+                                <input name="label" class="input input-sm input-bordered flex-1" value="{{ $requirement->label }}" maxlength="255" required>
+                                <span class="font-mono text-xs text-base-content/50">{{ $requirement->requirement_key }}</span>
+                                @if ($requirement->source === 'profile')
+                                    <x-status-badge tone="info" size="xs">{{ __('Branchenprofil') }}</x-status-badge>
+                                @endif
+                                <x-icon-btn icon="check" tone="ghost" size="sm" type="submit" :label="__('Speichern')" />
+                            </form>
+                        </li>
+                    @endforeach
+                </ul>
+            </x-card>
+        @endcan
     </x-index-page>
 @endsection

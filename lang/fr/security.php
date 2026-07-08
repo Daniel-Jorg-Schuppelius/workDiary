@@ -25,6 +25,7 @@ return [
     'deferred_notice' => "Les traitements automatisés de suppression et de conservation ne font pas partie de cet aperçu et suivront ultérieurement (Fonctionnalité 016, « Plus tard »).",
 
     'section' => [
+        'advisories' => 'Posture de sécurité des dépendances',
         'sessions' => 'Sessions actives',
         'tokens' => 'Jetons API',
         'integrations' => 'Intégrations externes',
@@ -35,6 +36,13 @@ return [
     ],
 
     'field' => [
+        'severity' => 'Gravité',
+        'package' => 'Paquet',
+        'advisory' => 'Avis',
+        'fixed_in' => 'Corrigé dans',
+        'statement' => 'Évaluation (VEX)',
+        'statement_placeholder' => 'p. ex. non exploitable — fonction non utilisée',
+        'last_pull' => 'Dernière récupération',
         'user' => 'Utilisateur',
         'guest' => 'Non connecté',
         'ip' => 'Adresse IP',
@@ -81,6 +89,7 @@ return [
     ],
 
     'hint' => [
+        'advisories' => 'Source : OSV.dev pour composer.lock/package-lock.json — récupération quotidienne (security:advisories-pull) ; évaluation (VEX) manuelle.',
         'sessions_driver' => "Pilote de session « :driver » — aucun aperçu en base de données possible. Seul le pilote « database » fournit une liste de sessions.",
         'tokens_no_secret' => "Seules les métadonnées sont affichées — jamais la valeur du jeton ni son hachage.",
         'support_access' => "Source : journal d'audit, préfixe d'événement « support. » (voir les principes d'accès du support).",
@@ -89,6 +98,7 @@ return [
     ],
 
     'empty' => [
+        'advisories' => 'Aucun avis de sécurité ouvert.',
         'sessions' => 'Aucune session trouvée.',
         'tokens' => 'Aucun jeton API actif.',
         'integrations' => 'Aucune intégration externe active.',
@@ -97,4 +107,7 @@ return [
     ],
 
     'generated_at' => 'Généré : :at',
+    'action' => [
+        'pull_advisories' => 'Récupérer maintenant',
+    ],
 ];

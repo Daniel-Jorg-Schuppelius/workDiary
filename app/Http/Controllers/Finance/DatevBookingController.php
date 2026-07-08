@@ -315,4 +315,33 @@ class DatevBookingController extends Controller {
 
         return $user instanceof User ? $user : null;
     }
+
+    /**
+     * EXTF-Stammdatenexport Kategorie 16 (Nachtrag 045a): Debitoren aus dem
+     * Kundenstamm als DATEV-CSV (CP1252) — Konto folgt der
+     * Buchungsstapel-Logik (debtor_no bzw. Nummernkreis-Basis + Kunden-ID).
+     */
+    public function exportDebtors(): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('create', DatevBookingBatch::class);
+
+        $org = $this->organization();
+        abort_unless($org !== null, 404);
+
+        $config = DatevBookingConfig::forOrganization($org);
+        if (! $config->hasClientNumbers()) {
+            return redirect()->route('finance.datev.config')
+                ->with('error', __('finance.datev.preflight.missing_client_numbers'));
+        }
+
+        $result = app(\App\Services\Finance\Datev\DatevMasterDataExporter::class)->generateDebtors($org, $config);
+
+        $org->audit('finance.datev.debtors_exported', ['count' => $result['count']]);
+
+        $name = 'EXTF_Debitoren_' . now()->format('Ymd_His') . '.csv';
+
+        return response($result['csv'], 200, [
+            'Content-Type' => 'text/csv; charset=windows-1252',
+            'Content-Disposition' => 'attachment; filename="' . $name . '"',
+        ]);
+    }
 }

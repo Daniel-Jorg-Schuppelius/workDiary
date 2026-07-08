@@ -213,6 +213,11 @@ return [
     ],
     'notification' => [
         'event' => [
+            'ticket' => [
+                'assigned' => 'Ticket asignado',
+                'customerReplied' => 'El cliente respondió',
+                'waitingExpired' => 'Seguimiento de ticket vencido',
+            ],
             'openIssue' => [
                 'assigned' => 'Punto abierto asignado',
                 'dueSoon' => 'Punto abierto vence pronto',
@@ -244,6 +249,7 @@ return [
             'sla' => [
                 'atRisk' => 'Plazo de SLA en riesgo',
                 'breached' => 'Plazo de SLA incumplido',
+                'quotaWarning' => 'Cuota de SLA casi agotada',
             ],
             'asset' => [
                 'returnOverdue' => 'Devolución de activo vencida',
@@ -264,11 +270,23 @@ return [
             'ideaMap' => [
                 'shared' => 'Mapa de ideas compartido con usted',
             ],
+            'shipment' => [
+                'deliveryProblem' => 'Problema de entrega de un envío',
+            ],
+            'cti' => [
+                'incomingCall' => 'Llamada entrante',
+            ],
+            'maintenance' => [
+                'dueSoon' => 'Mantenimiento/inspección próximo',
+                'overdue' => 'Mantenimiento/inspección vencido',
+            ],
         ],
         'channel' => [
             'inApp' => 'En la aplicación',
             'mail' => 'Correo electrónico',
             'push' => 'Push',
+            'teams' => 'Microsoft Teams',
+            'mattermost' => 'Mattermost',
         ],
     ],
 
@@ -412,6 +430,9 @@ return [
             'date' => 'Fecha',
             'select' => 'Selección',
             'checkbox' => 'Casilla de verificación',
+            'photo' => 'Foto',
+            'file' => 'Archivo',
+            'signature' => 'Firma',
         ],
     ],
     'document' => [
@@ -424,6 +445,7 @@ return [
             'manufacturerDoc' => 'Documento del fabricante',
             'permit' => 'Permiso',
             'insurance' => 'Seguro',
+            'invoice' => 'Factura',
             'other' => 'Otro',
         ],
         'status' => [
@@ -855,6 +877,14 @@ return [
             'passed' => 'Superada',
             'partial' => 'Con condiciones',
             'failed' => 'Fallida',
+        ],
+    ],
+
+    // Acción al vencer un plan de mantenimiento (Feature 010 → Rango 43).
+    'maintenance' => [
+        'due_action' => [
+            'none' => 'Solo aviso (sin registro)',
+            'ticket' => 'Crear un ticket de servicio',
         ],
     ],
 ];

@@ -127,16 +127,89 @@ class ImportController extends Controller {
             ->paginate(50, ['*'], 'errors_page')
             ->withQueryString();
 
+        // Rang 58: Tag-Auswahl fürs Wert-Mapping-Formular.
+        $tagOptions = $import->unresolved_values !== null && $import->unresolved_values !== []
+            ? \App\Models\Tag::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
+
         return view('admin.imports.show', [
             'run' => $import,
             'errors' => $errors,
+            'tagOptions' => $tagOptions,
         ]);
+    }
+
+    /**
+     * Wert-Mapping (Rang 58): unbekannte Tag-/Kategorie-Quellwerte zuordnen —
+     * bestehendes Tag, neu anlegen oder ignorieren. Persistiert je Org +
+     * Entität (import_value_mappings), Wiederholimporte lösen automatisch auf.
+     */
+    public function mapping(Request $request, ImportRun $import): RedirectResponse {
+        $this->ensureOwned($import);
+        $this->authorizeImport($import->entity);
+
+        $data = $request->validate([
+            'mappings' => ['required', 'array'],
+            'mappings.*.value' => ['required', 'string', 'max:191'],
+            'mappings.*.action' => ['required', 'in:tag,new,ignore'],
+            'mappings.*.tag_id' => ['nullable', 'integer'],
+        ]);
+
+        $pendingColumn = array_key_first((array) $import->unresolved_values) ?? 'tags';
+        $pending = collect((array) (($import->unresolved_values ?? [])[$pendingColumn] ?? []));
+
+        foreach ($data['mappings'] as $entry) {
+            $value = (string) $entry['value'];
+            $normalized = \App\Models\ImportValueMapping::normalize($value);
+            if (! $pending->contains(fn (string $p): bool => \App\Models\ImportValueMapping::normalize($p) === $normalized)) {
+                continue; // nur offene Werte dieses Laufs
+            }
+
+            $tagId = null;
+            $kind = \App\Models\ImportValueMapping::KIND_IGNORE;
+            if ($entry['action'] === 'new') {
+                $tagId = \App\Models\Tag::findOrCreateByName($value, is_int(Auth::id()) ? Auth::id() : null)->id;
+                $kind = \App\Models\ImportValueMapping::KIND_TAG;
+            } elseif ($entry['action'] === 'tag') {
+                $tag = \App\Models\Tag::query()
+                    ->where('organization_id', $import->organization_id)
+                    ->whereKey((int) ($entry['tag_id'] ?? 0))
+                    ->first();
+                if ($tag === null) {
+                    continue;
+                }
+                $tagId = $tag->id;
+                $kind = \App\Models\ImportValueMapping::KIND_TAG;
+            }
+
+            \App\Models\ImportValueMapping::query()->updateOrCreate(
+                [
+                    'organization_id' => $import->organization_id,
+                    'entity' => $import->entity->value,
+                    'source_value' => $normalized,
+                ],
+                ['target_kind' => $kind, 'tag_id' => $tagId],
+            );
+
+            $pending = $pending->reject(fn (string $p): bool => \App\Models\ImportValueMapping::normalize($p) === $normalized)->values();
+        }
+
+        $import->unresolved_values = $pending->isEmpty() ? null : [$pendingColumn => $pending->all()];
+        $import->save();
+
+        return redirect()->route('admin.imports.show', $import)
+            ->with('success', __('Wert-Zuordnung gespeichert.'));
     }
 
     public function confirm(Request $request, ImportRun $import): RedirectResponse {
         $this->ensureOwned($import);
         $this->authorizeImport($import->entity);
         abort_unless($import->state === ImportRunState::AwaitingApproval, 409);
+        // Rang 58: erst bestätigen, wenn alle Tag-/Kategorie-Werte zugeordnet sind.
+        if ($import->unresolved_values !== null && $import->unresolved_values !== []) {
+            return redirect()->route('admin.imports.show', $import)
+                ->with('error', __('Bitte zuerst die unbekannten Tag-/Kategorie-Werte zuordnen.'));
+        }
 
         AuditLog::create([
             'organization_id' => $import->organization_id,

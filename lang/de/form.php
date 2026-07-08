@@ -55,6 +55,8 @@ return [
         'submit' => 'Absenden',
         'show' => 'Ansehen',
         'print' => 'Drucken',
+        'download_pdf' => 'PDF herunterladen',
+        'clear_signature' => 'Signatur leeren',
         'back' => 'Zurück',
     ],
 
@@ -80,6 +82,19 @@ return [
     'value' => [
         'yes' => 'Ja',
         'no' => 'Nein',
+        'signed' => 'Unterschrieben',
+    ],
+
+    'condition' => [
+        'legend' => 'Sichtbar wenn',
+        'always' => '— immer sichtbar —',
+        'value_placeholder' => 'Vergleichswert',
+        'op' => [
+            'eq' => 'gleich',
+            'ne' => 'ungleich',
+            'in' => 'einer von (Komma)',
+            'filled' => 'ausgefüllt',
+        ],
     ],
 
     'validation' => [
@@ -92,6 +107,8 @@ return [
         'fields_required' => 'Die Vorlage braucht mindestens ein Feld.',
         'too_many_fields' => 'Maximal :max Felder je Vorlage.',
         'template_not_active' => 'Diese Vorlage ist nicht aktiv und kann nicht ausgefüllt werden.',
+        'condition_unknown_field' => 'Bedingung von Feld „:label" verweist auf ein unbekanntes Feld „:field".',
+        'condition_cycle' => 'Bedingungen bilden einen Zyklus (Feld „:field" hängt indirekt von sich selbst ab).',
     ],
 
     'flash' => [

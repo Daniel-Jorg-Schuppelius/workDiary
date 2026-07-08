@@ -68,6 +68,11 @@ class EconomicsReportBuilder {
      *   contribution:float,
      *   margin:float,
      *   costRateMissing:bool,
+     *   reworkMinutes:int,
+     *   goodwillMinutes:int,
+     *   reworkCost:float,
+     *   goodwillCost:float,
+     *   reworkShare:float,
      *   planMinutes:int|null,
      *   actualMinutes:int,
      *   planMinutesDelta:int|null,
@@ -144,6 +149,11 @@ class EconomicsReportBuilder {
      *   contribution:float,
      *   margin:float,
      *   costRateMissing:bool,
+     *   reworkMinutes:int,
+     *   goodwillMinutes:int,
+     *   reworkCost:float,
+     *   goodwillCost:float,
+     *   reworkShare:float,
      *   planMinutes:int|null,
      *   actualMinutes:int,
      *   planMinutesDelta:int|null,
@@ -209,18 +219,24 @@ class EconomicsReportBuilder {
      * @param  \Illuminate\Database\Eloquent\Builder<TimeEntry>  $query
      * @return array{
      *   billableMinutes:int, nonBillableMinutes:int, totalMinutes:int,
-     *   revenue:float, cost:float, costRateMissing:bool
+     *   revenue:float, cost:float, costRateMissing:bool,
+     *   reworkMinutes:int, goodwillMinutes:int, reworkCost:float, goodwillCost:float
      * }
      */
     private function timeAggregate($query): array {
         /** @var Collection<int, TimeEntry> $entries */
-        $entries = $query->get(['minutes', 'billable', 'rate', 'internal_rate']);
+        $entries = $query->get(['minutes', 'billable', 'rate', 'internal_rate', 'rework_reason_classification_id', 'goodwill_reason_classification_id']);
 
         $billableMinutes = 0;
         $nonBillableMinutes = 0;
         $revenue = 0.0;
         $cost = 0.0;
         $costRateMissing = false;
+        // Rang 59a: klassifizierte Nacharbeit/Kulanz getrennt ausweisen.
+        $reworkMinutes = 0;
+        $goodwillMinutes = 0;
+        $reworkCost = 0.0;
+        $goodwillCost = 0.0;
 
         foreach ($entries as $e) {
             $minutes = (int) $e->minutes;
@@ -236,6 +252,15 @@ class EconomicsReportBuilder {
             if ($minutes > 0 && $internal <= 0.0) {
                 $costRateMissing = true;
             }
+
+            if ($e->rework_reason_classification_id !== null) {
+                $reworkMinutes += $minutes;
+                $reworkCost += $internal;
+            }
+            if ($e->goodwill_reason_classification_id !== null) {
+                $goodwillMinutes += $minutes;
+                $goodwillCost += $internal;
+            }
         }
 
         return [
@@ -245,6 +270,10 @@ class EconomicsReportBuilder {
             'revenue' => round($revenue, 2),
             'cost' => round($cost, 2),
             'costRateMissing' => $costRateMissing,
+            'reworkMinutes' => $reworkMinutes,
+            'goodwillMinutes' => $goodwillMinutes,
+            'reworkCost' => round($reworkCost, 2),
+            'goodwillCost' => round($goodwillCost, 2),
         ];
     }
 
@@ -321,7 +350,7 @@ class EconomicsReportBuilder {
     /**
      * Setzt eine Ergebniszeile aus den drei Aggregaten zusammen.
      *
-     * @param  array{billableMinutes:int, nonBillableMinutes:int, totalMinutes:int, revenue:float, cost:float, costRateMissing:bool}  $time
+     * @param  array{billableMinutes:int, nonBillableMinutes:int, totalMinutes:int, revenue:float, cost:float, costRateMissing:bool, reworkMinutes:int, goodwillMinutes:int, reworkCost:float, goodwillCost:float}  $time
      * @param  array{revenue:float, cost:float}  $material
      * @param  array{revenue:float, cost:float}  $expense
      * @return array{
@@ -329,6 +358,7 @@ class EconomicsReportBuilder {
      *   revenueTime:float, revenueMaterial:float, revenueExpense:float, revenue:float,
      *   costTime:float, costMaterial:float, costExpense:float, cost:float,
      *   contribution:float, margin:float, costRateMissing:bool,
+     *   reworkMinutes:int, goodwillMinutes:int, reworkCost:float, goodwillCost:float, reworkShare:float,
      *   planMinutes:int|null, actualMinutes:int, planMinutesDelta:int|null,
      *   planBudget:float|null, actualCost:float, planBudgetDelta:float|null
      * }
@@ -363,6 +393,11 @@ class EconomicsReportBuilder {
             'contribution' => $contribution,
             'margin' => $margin,
             'costRateMissing' => $time['costRateMissing'],
+            'reworkMinutes' => $time['reworkMinutes'],
+            'goodwillMinutes' => $time['goodwillMinutes'],
+            'reworkCost' => $time['reworkCost'],
+            'goodwillCost' => $time['goodwillCost'],
+            'reworkShare' => $totalMinutes > 0 ? round(($time['reworkMinutes'] / $totalMinutes) * 100, 2) : 0.0,
             'planMinutes' => $planMinutes,
             'actualMinutes' => $actualMinutes,
             'planMinutesDelta' => $planMinutes !== null ? $actualMinutes - $planMinutes : null,

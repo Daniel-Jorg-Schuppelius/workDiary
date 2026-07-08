@@ -187,6 +187,9 @@
                         <x-table.th sort type="number" align="right">{{ __('Kosten') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Deckungsbeitrag') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Marge') }}</x-table.th>
+                        <x-table.th sort type="number" align="right"><x-term glossary="nacharbeit">{{ __('Nacharbeit (Min.)') }}</x-term></x-table.th>
+                        <x-table.th sort type="number" align="right"><x-term glossary="kulanz">{{ __('Kulanz (Min.)') }}</x-term></x-table.th>
+                        <x-table.th sort type="number" align="right"><x-term glossary="nacharbeit">{{ __('Nacharbeit %') }}</x-term></x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Plan (Min.)') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Ist (Min.)') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Δ Min.') }}</x-table.th>
@@ -202,6 +205,13 @@
                         <td class="text-right tabular-nums">{{ $eur($row['cost']) }}@if($row['costRateMissing'])<span class="text-warning" title="{{ __('Kostensätze nicht vollständig gepflegt') }}"> *</span>@endif</td>
                         <td class="text-right tabular-nums font-medium {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td>
                         <td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td>
+                        <td class="text-right tabular-nums">
+                            <a class="link link-hover" href="{{ \Illuminate\Support\Facades\URL::temporarySignedRoute('reports.economics.drilldown', now()->addHours(2), ['kind' => 'rework', 'project' => $row['projectId'], 'from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">{{ $row['reworkMinutes'] }}</a>
+                        </td>
+                        <td class="text-right tabular-nums">
+                            <a class="link link-hover" href="{{ \Illuminate\Support\Facades\URL::temporarySignedRoute('reports.economics.drilldown', now()->addHours(2), ['kind' => 'goodwill', 'project' => $row['projectId'], 'from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">{{ $row['goodwillMinutes'] }}</a>
+                        </td>
+                        <td class="text-right tabular-nums">{{ $pct($row['reworkShare']) }}</td>
                         <td class="text-right tabular-nums">{{ $min($row['planMinutes']) }}</td>
                         <td class="text-right tabular-nums">{{ $row['actualMinutes'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['planMinutesDelta'] === null ? '–' : (($row['planMinutesDelta'] > 0 ? '+' : '') . $row['planMinutesDelta']) }}</td>

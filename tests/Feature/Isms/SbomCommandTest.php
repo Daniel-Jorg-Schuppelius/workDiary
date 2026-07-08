@@ -34,7 +34,7 @@ class SbomCommandTest extends TestCase {
 
         $this->assertIsArray($document);
         $this->assertSame('CycloneDX', $document['bomFormat']);
-        $this->assertSame('1.5', $document['specVersion']);
+        $this->assertSame('1.6', $document['specVersion']);
         $this->assertNotEmpty($document['components']);
 
         // Echte Lockfiles: laravel/framework muss als Composer-Komponente enthalten sein.

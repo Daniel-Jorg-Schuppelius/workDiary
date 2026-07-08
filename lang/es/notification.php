@@ -93,9 +93,12 @@ return [
         'supplier_review_overdue' => 'Revisión de proveedor vencida desde :date.',
         'sla_at_risk' => 'Plazo de resolución de SLA en riesgo — vence el :date.',
         'sla_breached' => 'Plazo de resolución de SLA incumplido — vencía el :date.',
+        'sla_quota_warning' => 'Cuota de SLA al :percent % (:consumed de :included min) en el periodo :period.',
         'asset_return_overdue' => 'Devolución del activo vencida — se esperaba el :date.',
         'incident_critical' => 'Nuevo incidente de seguridad crítico notificado.',
         'safety_critical_event' => 'Evento de seguridad crítico (:severity) notificado en :location.',
         'qualification_expiring' => 'La cualificación/formación caduca el :date.',
+        'maintenance_due_soon' => 'El plan de mantenimiento :label vence el :date.',
+        'maintenance_overdue' => 'El plan de mantenimiento :label está vencido desde el :date.',
     ],
 ];

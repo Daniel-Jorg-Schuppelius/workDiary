@@ -39,7 +39,10 @@ class Tag extends Model {
         $base = Str::slug($name) ?: 'tag';
         $slug = $base;
         $i = 2;
-        while (static::query()
+        // Der slug-Unique gilt DB-weit (tags.slug unique) — die Prüfung muss
+        // daher am OrganizationScope vorbei, sonst kollidiert die zweite Org
+        // mit gleichnamigen Tags (z. B. Branchenprofil auf Demo-Mandant).
+        while (static::query()->withoutGlobalScopes()
             ->where('slug', $slug)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
             ->exists()

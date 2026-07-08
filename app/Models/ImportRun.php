@@ -63,6 +63,7 @@ class ImportRun extends Model {
         'rows_skipped',
         'rows_failed',
         'preview',
+        'unresolved_values',
         'started_at',
         'finished_at',
         'created_by_user_id',
@@ -73,6 +74,7 @@ class ImportRun extends Model {
         'entity' => ImportEntity::class,
         'state' => ImportRunState::class,
         'preview' => 'array',
+        'unresolved_values' => 'array',
         'started_at' => 'immutable_datetime',
         'finished_at' => 'immutable_datetime',
     ];

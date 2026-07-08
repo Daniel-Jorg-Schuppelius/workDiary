@@ -79,9 +79,7 @@
     </div>
 
     @if ($candidates->isEmpty())
-        <p class="rounded-box border border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/60">
-            {{ __('Keine Dubletten-Kandidaten im gewählten Filter. 🎉') }}
-        </p>
+        <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">difference</span>' :title="__('Keine Dubletten-Kandidaten im gewählten Filter.')" tone="success" framed />
     @else
         <div x-data="{ selected: [] }">
             <div x-cloak x-show="selected.length > 0"

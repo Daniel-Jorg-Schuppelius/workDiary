@@ -17,6 +17,8 @@ use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
 use App\Services\Sickness\ContinuedPaymentService;
 use App\Support\Sickness\ContinuedPaymentStatus;
 use Carbon\CarbonInterface;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\{CryptoHelper, PhoneNumberHelper};
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,6 +39,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $payroll_hourly_wage
  * @property string|null $tax_identification_number
  * @property string|null $social_security_number
+ * @property string|null $cti_extension
+ * @property string|null $cti_extension_hash
  * @property Carbon|null $date_of_birth
  * @property string|null $health_insurance
  * @property string|null $tax_class
@@ -166,6 +170,20 @@ class User extends Authenticatable {
         return $this->isAdmin() || $this->existsInNewSystem();
     }
 
+    /** Konto zentral deaktiviert (Offboarding via Verzeichnisdienst, Feature 057). */
+    public function isDeactivated(): bool {
+        return $this->deactivated_at !== null;
+    }
+
+    /**
+     * Darf sich dieses Konto überhaupt anmelden? Zentraler Sperr-Punkt, der in
+     * beiden Auth-Providern geprüft wird — ein deaktiviertes Konto ist überall
+     * gesperrt (neu, legacy, Portal).
+     */
+    public function canLogin(): bool {
+        return ! $this->isDeactivated();
+    }
+
     /**
      * Persistierter Arbeitsmodus des Users, normalisiert auf einen tatsächlich
      * erlaubten Wert. Dient als Default, wenn die Session (noch) keinen
@@ -205,6 +223,31 @@ class User extends Authenticatable {
         $this->save();
     }
 
+    /**
+     * Setzt die eigene CTI-Durchwahl (Opt-in fürs Anrufer-Pop-up, MVP-118).
+     * Speichert die E164-Normalform verschlüsselt und pflegt den SHA-256-Hash
+     * für den Rückwärts-Lookup. Leere/ungültige Eingabe hebt das Opt-in auf
+     * (beide Felder auf null). Persistiert NICHT selbst — der Aufrufer speichert.
+     */
+    public function setCtiExtension(?string $raw): void {
+        $e164 = $raw !== null && trim($raw) !== '' ? PhoneNumberHelper::toE164(trim($raw), 'DE') : null;
+
+        if ($e164 === null) {
+            $this->cti_extension = null;
+            $this->cti_extension_hash = null;
+
+            return;
+        }
+
+        $this->cti_extension = $e164;
+        $this->cti_extension_hash = CryptoHelper::hash($e164, HashAlgorithm::SHA256);
+    }
+
+    /** Hat der Nutzer eine Durchwahl hinterlegt (→ Anrufer-Pop-up aktiv)? */
+    public function hasCtiOptIn(): bool {
+        return $this->cti_extension_hash !== null;
+    }
+
     protected $fillable = [
         'organization_id',
         'customer_id',
@@ -235,6 +278,7 @@ class User extends Authenticatable {
         'password',
         'legacy_user_id',
         'is_new_system',
+        'deactivated_at',
         'must_change_password',
         'hourly_rate',
         'internal_rate',
@@ -243,6 +287,8 @@ class User extends Authenticatable {
         'home_lng',
         'preferences',
         'calendar_feed_token',
+        'cti_extension',
+        'cti_extension_hash',
     ];
 
     /** @var array<string, string> */
@@ -257,6 +303,7 @@ class User extends Authenticatable {
         'social_security_number' => 'encrypted',
         'must_change_password' => 'boolean',
         'is_new_system' => 'boolean',
+        'deactivated_at' => 'datetime',
         'payroll_hourly_wage' => 'decimal:2',
         'date_of_birth' => 'date',
         'child_allowances' => 'decimal:2',
@@ -273,6 +320,9 @@ class User extends Authenticatable {
         'home_lat' => 'decimal:7',
         'home_lng' => 'decimal:7',
         'preferences' => 'array',
+        // Eigene CTI-Durchwahl (Opt-in) at-rest verschlüsselt (Spalte als text);
+        // Lookup läuft über cti_extension_hash (SHA-256 der E164-Form).
+        'cti_extension' => 'encrypted',
     ];
 
     /** @return BelongsTo<Organization, $this> */

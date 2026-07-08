@@ -93,9 +93,12 @@ return [
         'supplier_review_overdue' => 'Riesame fornitore scaduto dal :date.',
         'sla_at_risk' => 'Scadenza di risoluzione SLA a rischio — entro il :date.',
         'sla_breached' => 'Scadenza di risoluzione SLA superata — era prevista il :date.',
+        'sla_quota_warning' => 'Quota SLA al :percent% (:consumed di :included min) nel periodo :period.',
         'asset_return_overdue' => 'Restituzione dell\'asset in ritardo — prevista il :date.',
         'incident_critical' => 'Nuovo incidente di sicurezza critico segnalato.',
         'safety_critical_event' => 'Evento di sicurezza critico (:severity) segnalato a :location.',
         'qualification_expiring' => 'La qualifica/formazione scade il :date.',
+        'maintenance_due_soon' => 'Il piano di manutenzione :label scade il :date.',
+        'maintenance_overdue' => 'Il piano di manutenzione :label è scaduto dal :date.',
     ],
 ];

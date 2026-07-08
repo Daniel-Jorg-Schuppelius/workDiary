@@ -62,7 +62,7 @@ class SbomGeneratorTest extends TestCase {
         $document = $this->generate();
 
         $this->assertSame('CycloneDX', $document['bomFormat']);
-        $this->assertSame('1.5', $document['specVersion']);
+        $this->assertSame('1.6', $document['specVersion']);
         $this->assertSame(1, $document['version']);
         $this->assertStringStartsWith('urn:uuid:', $document['serialNumber']);
         $this->assertArrayHasKey('timestamp', $document['metadata']);

@@ -61,8 +61,14 @@ enum NotificationEvent: string implements HasLabel {
     case SlaAtRisk = 'sla.atRisk';
     /** Scanner: Service-Ticket mit überschrittener SLA-Frist (verletzt) */
     case SlaBreached = 'sla.breached';
+    /** Scanner: SLA-Inklusivzeit-Kontingent eines Vertrags erreicht die Warnschwelle (Feature 010 → Rang 44) */
+    case SlaQuotaWarning = 'sla.quotaWarning';
     /** Scanner: Asset-Ausgabe mit überschrittener erwarteter Rückgabe (Feature 009) */
     case AssetReturnOverdue = 'asset.returnOverdue';
+    /** Scanner: Wartungs-/Prüfplan fällig innerhalb des Vorlaufs (Feature 009) */
+    case MaintenanceDueSoon = 'maintenance.dueSoon';
+    /** Scanner: Wartungs-/Prüfplan mit überschrittener Fälligkeit (Feature 009) */
+    case MaintenanceOverdue = 'maintenance.overdue';
     /** Synchron: neues kritisches Sicherheitsereignis (Unfall/critical) — SafetyEventService::create (Feature 013) */
     case SafetyCriticalEvent = 'safety.criticalEvent';
     /** Scanner: Mitarbeiter-Qualifikation/Unterweisung läuft innerhalb des Vorlaufs (30 Tage) ab (Feature 013) */
@@ -75,6 +81,16 @@ enum NotificationEvent: string implements HasLabel {
     case CustomerQueryRaised = 'customer.queryRaised';
 
     case IdeaMapShared = 'ideaMap.shared';
+
+    /** Zustellproblem einer Sendung (Feature 059, MVP-128). */
+    case ShipmentDeliveryProblem = 'shipment.deliveryProblem';
+
+    /** Synchron: eingehender Anruf auf die Opt-in-Durchwahl eines Mitarbeiters (Feature 056, MVP-118) — gezielt an genau diese Person. */
+    case CtiIncomingCall = 'cti.incomingCall';
+        // Helpdesk (Feature 065, P3) — sla.atRisk/breached existieren bereits.
+    case TicketAssigned = 'ticket.assigned';
+    case TicketCustomerReplied = 'ticket.customerReplied';
+    case TicketWaitingExpired = 'ticket.waitingExpired';
 
     public function label(): string {
         return (string) __('enums.notification.event.' . $this->value);
@@ -95,7 +111,7 @@ enum NotificationEvent: string implements HasLabel {
      * der Antragsteller selbst — Empfänger sind hier die Entscheider (Rolle).
      */
     public function defaultNotifyAffected(): bool {
-        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised], true);
+        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::MaintenanceDueSoon, self::MaintenanceOverdue, self::SlaQuotaWarning], true);
     }
 
     /**
@@ -129,9 +145,16 @@ enum NotificationEvent: string implements HasLabel {
             // (notify_affected), die Teamleitung als Fallback/Eskalationskette.
             self::SlaAtRisk,
             self::SlaBreached => [UserRole::Teamleitung->value],
+            // Kontingent-Warnung (Rang 44): betrifft keine Einzelperson —
+            // Default an die Teamleitung (Vertrags-/Auftragssteuerung).
+            self::SlaQuotaWarning => [UserRole::Teamleitung->value],
             // Überfällige Asset-Rückgabe: primär die ausleihende Person
             // (notify_affected), Fallback/Eskalationskette die Teamleitung.
             self::AssetReturnOverdue => [UserRole::Teamleitung->value],
+            // Wartungs-/Prüffälligkeit betrifft keine Einzelperson — an die
+            // Teamleitung, Eskalation der Überfälligkeit zusätzlich an Admin.
+            self::MaintenanceDueSoon,
+            self::MaintenanceOverdue => [UserRole::Teamleitung->value],
             // Kritisches Sicherheitsereignis: betrifft keine einzelne Person —
             // synchron an die Leitungs-/Admin-Rollen der Organisation.
             self::SafetyCriticalEvent => [UserRole::Teamleitung->value, UserRole::Admin->value],
@@ -146,6 +169,9 @@ enum NotificationEvent: string implements HasLabel {
             // Kunden-Rückfrage (Feature 012): betrifft keinen einzelnen
             // Mitarbeiter — Default an die Leitung zur Bearbeitung.
             self::CustomerQueryRaised => [UserRole::Teamleitung->value],
+            // Zustellproblem (Feature 059): betrifft keine Einzelperson —
+            // Default an die Leitung, die die Sendung/Auslieferung verantwortet.
+            self::ShipmentDeliveryProblem => [UserRole::Teamleitung->value],
             default => [],
         };
     }
@@ -171,7 +197,10 @@ enum NotificationEvent: string implements HasLabel {
             self::IsmsIncidentCritical => 'report',
             self::SlaAtRisk => 'timer',
             self::SlaBreached => 'timer_off',
+            self::SlaQuotaWarning => 'data_usage',
             self::AssetReturnOverdue => 'assignment_return',
+            self::MaintenanceDueSoon,
+            self::MaintenanceOverdue => 'handyman',
             self::SafetyCriticalEvent => 'e911_emergency',
             self::QualificationExpiring => 'workspace_premium',
             self::ShiftExchangeRequested,
@@ -180,6 +209,11 @@ enum NotificationEvent: string implements HasLabel {
             // Karten-Freigabe (Feature 054): Payload bewusst nur Titel + Link —
             // die IdeaMapPolicy greift beim Klick.
             self::IdeaMapShared => 'emoji_objects',
+            self::ShipmentDeliveryProblem => 'local_shipping',
+            self::CtiIncomingCall => 'ring_volume',
+            self::TicketAssigned => 'confirmation_number',
+            self::TicketCustomerReplied => 'mark_email_unread',
+            self::TicketWaitingExpired => 'alarm',
         };
     }
 
@@ -197,6 +231,7 @@ enum NotificationEvent: string implements HasLabel {
             self::IsmsSupplierReviewOverdue,
             self::SlaBreached,
             self::AssetReturnOverdue,
+            self::MaintenanceOverdue,
         ], true);
     }
 }

@@ -15,9 +15,9 @@ use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaViolationKind};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{ServiceTicket, SlaViolation, User};
+use App\Models\{ServiceTicket, SlaContractQuota, SlaViolation, User};
 use App\Services\Reporting\ReportTargetEvaluator;
-use App\Services\ServiceTicket\SlaViolationService;
+use App\Services\ServiceTicket\{SlaQuotaService, SlaViolationService};
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -38,7 +38,10 @@ class SlaReportController extends Controller {
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
-    public function __construct(private readonly ReportTargetEvaluator $targets) {}
+    public function __construct(
+        private readonly ReportTargetEvaluator $targets,
+        private readonly SlaQuotaService $quotas,
+    ) {}
 
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', SlaViolation::class);
@@ -73,7 +76,39 @@ class SlaReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'canManage' => Gate::allows('acknowledge', new SlaViolation),
+            'quotas' => $this->quotaUsage($toDate),
         ]));
+    }
+
+    /**
+     * Inklusivzeit-Kontingente (Feature 010 → Rang 44): Verbrauch je aktivem
+     * Vertrags-Kontingent für die Periode, in der das Berichtsende liegt
+     * (org-gescopt über den globalen Scope im HTTP-Kontext).
+     *
+     * @return list<array{contract: string, period: string, period_key: string, included: int, consumed: int, remaining: int, over: int, percentage: int, threshold_reached: bool}>
+     */
+    private function quotaUsage(Carbon $reference): array {
+        $out = [];
+        foreach (SlaContractQuota::query()->with('slaContract')->get() as $quota) {
+            $contract = $quota->slaContract;
+            if ($contract === null || ! $contract->is_active) {
+                continue;
+            }
+            $usage = $this->quotas->usage($contract, $quota, $reference);
+            $out[] = [
+                'contract' => trim($contract->code . ' — ' . $contract->label, ' —'),
+                'period' => $quota->period_kind->value,
+                'period_key' => $usage['period_key'],
+                'included' => $usage['included_minutes'],
+                'consumed' => $usage['consumed_minutes'],
+                'remaining' => $usage['remaining_minutes'],
+                'over' => $usage['over_minutes'],
+                'percentage' => $usage['percentage'],
+                'threshold_reached' => $usage['threshold_reached'],
+            ];
+        }
+
+        return $out;
     }
 
     /** Verletzung quittieren (Sichtung dokumentieren, optional Ursache). */

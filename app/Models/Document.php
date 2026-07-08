@@ -59,6 +59,7 @@ class Document extends Model {
         'description',
         'created_by_user_id',
         'current_version_id',
+        'webdav_mirror_detached',
     ];
 
     protected $casts = [
@@ -66,6 +67,7 @@ class Document extends Model {
         'status' => DocumentStatus::class,
         'valid_from' => 'date',
         'valid_until' => 'date',
+        'webdav_mirror_detached' => 'boolean',
     ];
 
     /** @return MorphTo<Model, $this> */

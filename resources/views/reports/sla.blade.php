@@ -128,6 +128,38 @@
         @endif
     </x-card>
 
+    {{-- SLA-Inklusivzeit-Kontingente (Feature 010 → Rang 44): Verbrauch je Vertrag
+         in der Periode, in der das Berichtsende liegt. --}}
+    <x-card>
+        <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.quotas_heading') }}</h3>
+        @if (empty($quotas))
+            <p class="text-sm text-base-content/60">{{ __('sla.report.no_quotas') }}</p>
+        @else
+            <div class="space-y-3">
+                @foreach ($quotas as $q)
+                    <div>
+                        <div class="mb-1 flex items-center justify-between gap-2 text-sm">
+                            <span class="font-medium">{{ $q['contract'] }}</span>
+                            <span class="text-xs tabular-nums text-base-content/60">{{ $q['percentage'] }} %</span>
+                        </div>
+                        <progress class="progress w-full {{ $q['threshold_reached'] ? 'progress-warning' : 'progress-success' }}"
+                                  value="{{ min(100, $q['percentage']) }}" max="100"></progress>
+                        <div class="mt-0.5 text-xs tabular-nums text-base-content/60">
+                            {{ __('sla.report.quota_usage', [
+                                'consumed' => number_format($q['consumed'] / 60, 1),
+                                'included' => number_format($q['included'] / 60, 1),
+                                'period' => $q['period_key'],
+                            ]) }}
+                            @if ($q['over'] > 0)
+                                <span class="text-error"> · {{ __('sla.report.quota_over', ['min' => $q['over']]) }}</span>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </x-card>
+
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.violation_list') }}</h3>
         @if ($violations->isEmpty())

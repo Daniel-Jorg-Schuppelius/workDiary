@@ -33,6 +33,13 @@
     display: none !important;
 }
 
+/* Quick-Buchung (Rang 37): Drop-Ziel-Hervorhebung beim Drag eines Blocks. */
+.qb-target-over {
+    border-style: solid;
+    border-color: var(--color-primary, currentColor);
+    background-color: color-mix(in oklab, var(--color-primary, currentColor) 15%, transparent);
+}
+
 /* ------------------------------------------------------------------ */
 /* Schwebende „Badge"-Panels: gemeinsame Optik für die Sidebars (links  */
 /* + rechts) und für Content-Flächen, damit sich alle Panels gleichen.  */

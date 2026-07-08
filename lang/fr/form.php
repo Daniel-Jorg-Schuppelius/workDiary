@@ -55,6 +55,8 @@ return [
         'submit' => 'Envoyer',
         'show' => 'Consulter',
         'print' => 'Imprimer',
+        'download_pdf' => 'Télécharger le PDF',
+        'clear_signature' => 'Effacer la signature',
         'back' => 'Retour',
     ],
 
@@ -80,6 +82,19 @@ return [
     'value' => [
         'yes' => 'Oui',
         'no' => 'Non',
+        'signed' => 'Signé',
+    ],
+
+    'condition' => [
+        'legend' => 'Visible si',
+        'always' => '— toujours visible —',
+        'value_placeholder' => 'Valeur de comparaison',
+        'op' => [
+            'eq' => 'égal à',
+            'ne' => 'différent de',
+            'in' => 'l’un de (virgule)',
+            'filled' => 'renseigné',
+        ],
     ],
 
     'validation' => [
@@ -92,6 +107,8 @@ return [
         'fields_required' => 'Le modèle nécessite au moins un champ.',
         'too_many_fields' => 'Au maximum :max champs par modèle.',
         'template_not_active' => 'Ce modèle n’est pas actif et ne peut pas être rempli.',
+        'condition_unknown_field' => 'La condition du champ « :label » référence un champ inconnu « :field ».',
+        'condition_cycle' => 'Les conditions forment un cycle (le champ « :field » dépend indirectement de lui-même).',
     ],
 
     'flash' => [

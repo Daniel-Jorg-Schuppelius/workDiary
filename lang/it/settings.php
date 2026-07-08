@@ -10,12 +10,20 @@ return [
         'ui' => 'Interfaccia',
         'routing' => 'Routing e mappe',
         'region' => 'Regione e festività',
+        'weather' => 'Meteo',
+        'maintenance' => 'Manutenzione',
     ],
     'region' => [
         'heading' => 'Giurisdizione e festività',
         'description' => 'Determina quali festività si applicano. Influisce sulle maggiorazioni per festività, sulla conformità dei turni e sulla visualizzazione delle festività.',
         'holiday_provider' => 'Regione delle festività (Paese / Land)',
         'holiday_provider_hint' => 'Le festività regionali come il Corpus Domini o il giorno della Riforma si applicano solo in determinati Länder. Vuoto = predefinito di sistema.',
+    ],
+    'weather' => [
+        'heading' => 'Recupero meteo automatico',
+        'description' => 'Alla creazione di un verbale, recupera automaticamente uno snapshot meteo (Open-Meteo) per luogo e orario — come prova. I progetti possono sovrascriverlo.',
+        'auto_fetch' => 'Recupera il meteo automaticamente alla creazione di un verbale',
+        'auto_fetch_hint' => 'Solo se sono disponibili le coordinate del luogo; altrimenti non succede nulla. Predefinito: disattivato.',
     ],
     'hint' => 'Lascia vuoto per usare il valore predefinito del sistema.',
     'pagination' => [
@@ -131,5 +139,16 @@ return [
             'url' => 'Modello URL tile',
             'max_zoom' => 'Zoom massimo',
         ],
+    ],
+    'maintenance' => [
+        'heading' => 'Modalità manutenzione',
+        'description' => "Blocca l'applicazione per tutti i non amministratori di questo tenant (pagina di manutenzione 503). Gli amministratori continuano a lavorare e vedono un banner di avviso.",
+        'enabled' => 'Attiva la modalità manutenzione',
+        'message' => 'Messaggio mostrato sulla pagina di manutenzione',
+        'message_placeholder' => 'ad es. Manutenzione programmata — torniamo a breve.',
+        'until' => 'Fine prevista',
+        'until_hint' => 'Facoltativo. Dopo questo orario la modalità manutenzione termina automaticamente.',
+        'block_ingest' => 'Sospendi anche gli ingressi terminale/webhook',
+        'block_ingest_hint' => 'Predefinito: disattivato — terminali di timbratura, telefonia e posizione continuano durante la manutenzione.',
     ],
 ];

@@ -14,11 +14,12 @@ use App\Enums\Ideas\IdeaShareRole;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveIdeaMapRequest;
 use App\Models\{AuditLog, IdeaMap, IdeaMapShare, IdeaNode, Team, User};
-use App\Services\Ideas\IdeaMapService;
+use App\Services\Ideas\{IdeaMapImportService, IdeaMapService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Cache, Gate};
 use Illuminate\View\View;
+use RuntimeException;
 
 /**
  * Ideenlandkarten (Feature 054, MVP-104/105). Datenschutz-Grundsatz: Die
@@ -76,6 +77,35 @@ class IdeaMapController extends Controller {
         return redirect()->route('ideas.show', $map)->with('success', __('ideas.flash.created'));
     }
 
+    /**
+     * Import aus FreeMind/Freeplane (`.mm`) oder OPML (MVP-138): erzeugt eine
+     * neue, private Karte des Importeurs. XML wird XXE-gehärtet gelesen
+     * ({@see IdeaMapImportService}); Fehler (Format/Größe) kommen als
+     * Formular-Fehlermeldung zurück.
+     */
+    public function import(Request $request, IdeaMapImportService $import): RedirectResponse {
+        Gate::authorize('create', IdeaMap::class);
+
+        $request->validate([
+            'file' => ['required', 'file', 'max:4096'], // 4 MB
+        ]);
+
+        /** @var \Illuminate\Http\UploadedFile $file */
+        $file = $request->file('file');
+        $content = (string) file_get_contents($file->getRealPath());
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        try {
+            $map = $import->import($this->currentOrganization(), $user, $content, $file->getClientOriginalName());
+        } catch (RuntimeException $e) {
+            return back()->withErrors(['file' => $e->getMessage()]);
+        }
+
+        return redirect()->route('ideas.show', $map)->with('success', __('ideas.import.done'));
+    }
+
     /** Editor-Seite (P3); bis dahin Gliederungs-Rohliste als Platzhalter. */
     public function show(IdeaMap $map): View {
         Gate::authorize('view', $map);
@@ -114,6 +144,30 @@ class IdeaMapController extends Controller {
         return response($exports->pdf($map), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="idea-map-' . $map->sqid . '.pdf"',
+        ]);
+    }
+
+    /** OPML-Export (MVP-138): Standard-Gliederungsformat — nur Eigentümer, auditiert. */
+    public function exportOpml(IdeaMap $map, \App\Services\Ideas\IdeaMapExportService $exports): \Illuminate\Http\Response {
+        Gate::authorize('export', $map);
+
+        $map->audit('idea_map.exported', ['format' => 'opml']);
+
+        return response($exports->opml($map), 200, [
+            'Content-Type' => 'text/x-opml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="idea-map-' . $map->sqid . '.opml"',
+        ]);
+    }
+
+    /** Markdown-Export (MVP-138): eingerückte Gliederung — nur Eigentümer, auditiert. */
+    public function exportMarkdown(IdeaMap $map, \App\Services\Ideas\IdeaMapExportService $exports): \Illuminate\Http\Response {
+        Gate::authorize('export', $map);
+
+        $map->audit('idea_map.exported', ['format' => 'markdown']);
+
+        return response($exports->markdown($map), 200, [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="idea-map-' . $map->sqid . '.md"',
         ]);
     }
 

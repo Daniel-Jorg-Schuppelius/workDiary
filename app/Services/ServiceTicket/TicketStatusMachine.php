@@ -17,12 +17,19 @@ class TicketStatusMachine {
     /** @var array<string, list<string>> */
     private const TRANSITIONS = [
         'reported' => ['triaged', 'scheduled', 'in_progress', 'rejected'],
-        'triaged' => ['scheduled', 'in_progress', 'rejected'],
+        // Warten nur aus triaged/in_progress; zurück NUR nach in_progress
+        // (Feature 065 — additiv, Bestandsübergänge unverändert).
+        'triaged' => ['scheduled', 'in_progress', 'rejected', 'waiting_customer', 'waiting_external', 'paused'],
         'scheduled' => ['in_progress', 'triaged', 'rejected'],
-        'in_progress' => ['done', 'scheduled', 'rejected'],
+        'in_progress' => ['done', 'scheduled', 'rejected', 'waiting_customer', 'waiting_external', 'paused'],
+        'waiting_customer' => ['in_progress'],
+        'waiting_external' => ['in_progress'],
+        'paused' => ['in_progress'],
+        // done→in_progress bleibt die Wiederöffnung; accepted/closed
+        // öffnen ebenfalls nur nach in_progress (mit Pflichtgrund im Service).
         'done' => ['accepted', 'in_progress', 'closed'],
-        'accepted' => ['closed'],
-        'closed' => [],
+        'accepted' => ['closed', 'in_progress'],
+        'closed' => ['in_progress'],
         'rejected' => ['reported'],
     ];
 

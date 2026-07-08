@@ -150,15 +150,7 @@ class TimeExportService {
             $userIds = $closures->pluck('user_id')->unique()->values()->all();
             $rowCount = $this->aggregateLines($export, $userIds);
 
-            /** @var ExportProfile $profile */
-            $profile = $this->makeProfile($export->profile);
-            $export->refresh();
-            $content = $profile->render($export);
-
-            $hash = CryptoHelper::hash($content);
-            $path = $this->buildPath($export, $hash);
-            $disk = (string) config('exports.storage.disk', 'local');
-            Storage::disk($disk)->put($path, $content);
+            $rendered = $this->renderToStorage($export);
 
             // Frühere Ready/Delivered-Exporte für gleichen Scope/Period: superseded.
             $this->supersedeOlder($export, $actorId);
@@ -167,17 +159,17 @@ class TimeExportService {
 
             $export->fill([
                 'rows_count' => $rowCount,
-                'payload_hash' => $hash,
-                'file_path' => $path,
-                'file_format' => $profile->format(),
+                'payload_hash' => $rendered['hash'],
+                'file_path' => $rendered['path'],
+                'file_format' => $rendered['format'],
                 'totals' => $totals,
                 'status' => TimeExportStatus::Ready,
             ])->save();
 
             $this->logEvent($export, 'export.ready', $actorId, null, [
-                'hash' => $hash,
+                'hash' => $rendered['hash'],
                 'rows' => $rowCount,
-                'bytes' => mb_strlen($content, '8bit'),
+                'bytes' => $rendered['bytes'],
             ]);
 
             // MonthClosures von approved → locked führen.
@@ -194,6 +186,73 @@ class TimeExportService {
         app(\App\Services\Metrics\OperationsMetricsService::class)->increment('timeExports.built', (int) $export->organization_id);
 
         return $export;
+    }
+
+    /**
+     * Rendert das Profil des Exports und legt die Datei ab (geteilt von
+     * {@see build()} und {@see updateLineCostCenter()}).
+     *
+     * @return array{hash: string, path: string, format: string, bytes: int}
+     */
+    private function renderToStorage(TimeExport $export): array {
+        /** @var ExportProfile $profile */
+        $profile = $this->makeProfile($export->profile);
+        $export->refresh();
+        $content = $profile->render($export);
+
+        $hash = CryptoHelper::hash($content);
+        $path = $this->buildPath($export, $hash);
+        $disk = (string) config('exports.storage.disk', 'local');
+        Storage::disk($disk)->put($path, $content);
+
+        return [
+            'hash' => $hash,
+            'path' => $path,
+            'format' => $profile->format(),
+            'bytes' => mb_strlen($content, '8bit'),
+        ];
+    }
+
+    /**
+     * Kostenstellen-Override im Prüf-UI (Rang 35): Zeile korrigieren und die
+     * Export-Datei neu rendern — nur solange der Export `ready` (noch nicht
+     * ausgeliefert) ist. Bei einem Re-Export (superseded) gelten wieder die
+     * Regeln; der Override gilt je Datei-Stand und ist auditiert.
+     */
+    public function updateLineCostCenter(TimeExport $export, TimeExportLine $line, ?string $costCenter, ?User $actor = null): TimeExport {
+        if ($export->status !== TimeExportStatus::Ready) {
+            throw new TimeExportException(
+                'wrongState',
+                __('Zeilen sind nur im Status ready korrigierbar.'),
+                ['status' => $export->status->value],
+            );
+        }
+        if ((int) $line->time_export_id !== (int) $export->id) {
+            throw new TimeExportException('wrongExport', __('Zeile gehört nicht zu diesem Export.'));
+        }
+
+        $actorId = $this->resolveActorId($actor);
+
+        return DB::transaction(function () use ($export, $line, $costCenter, $actorId): TimeExport {
+            $previous = $line->cost_center;
+            $line->update(['cost_center' => $costCenter]);
+
+            $rendered = $this->renderToStorage($export);
+            $export->fill([
+                'payload_hash' => $rendered['hash'],
+                'file_path' => $rendered['path'],
+            ])->save();
+
+            $this->logEvent($export, 'export.line_updated', $actorId, null, [
+                'line_id' => $line->id,
+                'field' => 'cost_center',
+                'from' => $previous,
+                'to' => $costCenter,
+                'hash' => $rendered['hash'],
+            ]);
+
+            return $export->refresh();
+        });
     }
 
     public function markDelivered(TimeExport $export, ?User $actor = null, ?string $note = null): TimeExport {
@@ -292,6 +351,9 @@ class TimeExportService {
             ->orderBy('id')
             ->get();
 
+        // Kostenstellen-Regeln (Rang 35): Benutzer > Team > Org-Default.
+        $costCenters = new CostCenterResolver((int) $export->organization_id);
+
         $rows = 0;
         foreach ($userIds as $uid) {
             $minutes = (int) Attendance::query()
@@ -305,12 +367,13 @@ class TimeExportService {
             }
 
             $hours = round($minutes / 60, 4);
+            $costCenter = $costCenters->forUser((int) $uid);
 
             TimeExportLine::query()->create([
                 'time_export_id' => $export->id,
                 'user_id' => $uid,
                 'wage_type' => 'work.normal',
-                'cost_center' => null,
+                'cost_center' => $costCenter,
                 'quantity' => $hours,
                 'unit' => 'h',
                 'period_start' => $start->toDateString(),
@@ -321,7 +384,7 @@ class TimeExportService {
 
             $rows++;
 
-            $rows += $this->aggregateSurchargeLines($export, $uid, $start, $end, $surchargeRules);
+            $rows += $this->aggregateSurchargeLines($export, $uid, $start, $end, $surchargeRules, $costCenter);
         }
 
         return $rows;
@@ -346,6 +409,7 @@ class TimeExportService {
         CarbonImmutable $start,
         CarbonImmutable $end,
         \Illuminate\Support\Collection $rules,
+        ?string $costCenter = null,
     ): int {
         if ($rules->isEmpty()) {
             return 0;
@@ -393,23 +457,48 @@ class TimeExportService {
                 continue;
             }
 
-            TimeExportLine::query()->create([
+            $base = [
                 'time_export_id' => $export->id,
                 'user_id' => $uid,
                 'wage_type' => $row['rule']->wageType(),
-                'cost_center' => null,
+                'cost_center' => $costCenter,
                 'quantity' => round($row['minutes'] / 60, 4),
                 'unit' => 'h',
                 'period_start' => $row['date'],
                 'period_end' => $row['date'],
-                'note' => $row['rule']->label,
                 'source_refs' => ['attendance_ids' => array_values(array_unique($row['sources']))],
                 'surcharge_rule_id' => $row['rule']->id,
+            ];
+
+            // Steuerfrei/-pflichtig-Split (Rang 36): über der steuerfreien
+            // Obergrenze wird der Prozentsatz in zwei Zeilen mit getrennten
+            // Lohnarten geteilt — gleiche Stunden, die externe Lohnrechnung
+            // rechnet je Anteil (€-Deckel bleibt dort).
+            $split = $row['rule']->taxSplit();
+            if ($split === null) {
+                TimeExportLine::query()->create($base + [
+                    'note' => $row['rule']->label,
+                    'wage_type_code' => $row['rule']->wage_type_code,
+                    'percentage' => $row['rule']->percentage,
+                ]);
+
+                $rows++;
+
+                continue;
+            }
+
+            TimeExportLine::query()->create($base + [
+                'note' => $row['rule']->label . ' — ' . __('steuerfrei'),
                 'wage_type_code' => $row['rule']->wage_type_code,
-                'percentage' => $row['rule']->percentage,
+                'percentage' => $split['free_pct'],
+            ]);
+            TimeExportLine::query()->create($base + [
+                'note' => $row['rule']->label . ' — ' . __('steuerpflichtig'),
+                'wage_type_code' => $row['rule']->taxable_wage_type_code ?? $row['rule']->wage_type_code,
+                'percentage' => $split['taxable_pct'],
             ]);
 
-            $rows++;
+            $rows += 2;
         }
 
         return $rows;

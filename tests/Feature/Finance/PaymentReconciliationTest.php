@@ -157,7 +157,9 @@ class PaymentReconciliationTest extends TestCase {
         ]]);
 
         $invoice->refresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        // MVP-162 (Feature 066): Teilzahlung ist jetzt ein sichtbarer
+        // Zwischenstatus — vorher blieb die Rechnung stumm auf issued.
+        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $invoice->status);
         $this->assertNull($invoice->paid_on);
     }
 

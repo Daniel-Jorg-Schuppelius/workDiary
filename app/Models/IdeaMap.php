@@ -53,6 +53,7 @@ class IdeaMap extends Model {
         'title',
         'description',
         'visibility',
+        'lock_version',
         'customer_id',
         'project_id',
         'diary_entry_id',
@@ -62,6 +63,7 @@ class IdeaMap extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'visibility' => IdeaMapVisibility::class,
+        'lock_version' => 'integer',
         'archived_at' => 'datetime',
     ];
 
@@ -114,6 +116,16 @@ class IdeaMap extends Model {
     /** @return HasMany<IdeaMapShare, $this> */
     public function shares(): HasMany {
         return $this->hasMany(IdeaMapShare::class);
+    }
+
+    /** @return HasMany<IdeaNodeLink, $this> Querverbindungen (MVP-137). */
+    public function links(): HasMany {
+        return $this->hasMany(IdeaNodeLink::class);
+    }
+
+    /** @return HasMany<IdeaNodeSummary, $this> Boundaries/Zusammenfassungen (MVP-137). */
+    public function summaries(): HasMany {
+        return $this->hasMany(IdeaNodeSummary::class);
     }
 
     /** @return BelongsTo<Customer, $this> */

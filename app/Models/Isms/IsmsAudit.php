@@ -60,6 +60,7 @@ class IsmsAudit extends Model {
     protected $fillable = [
         'organization_id',
         'isms_scope_id',
+        'isms_audit_program_id',
         'audit_no',
         'title',
         'norm',
@@ -119,5 +120,10 @@ class IsmsAudit extends Model {
     /** @return HasMany<IsmsAuditFinding, $this> */
     public function openFindings(): HasMany {
         return $this->findings()->where('status', '!=', \App\Enums\Isms\FindingStatus::Closed->value);
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\BelongsTo<IsmsAuditProgram, $this> */
+    public function program(): \Illuminate\Database\Eloquent\Relations\BelongsTo {
+        return $this->belongsTo(IsmsAuditProgram::class, 'isms_audit_program_id');
     }
 }

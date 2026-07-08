@@ -52,7 +52,13 @@ trait ResolvesRequestedUser {
             throw new AccessDeniedHttpException($foreignDeniedMessage);
         }
 
-        $target = User::query()->find($requestedId);
+        // Mandantengrenze: auch Admins lösen nur Nutzer der EIGENEN Organisation
+        // auf. User trägt keinen globalen OrganizationScope, daher hier explizit
+        // filtern — sonst ist der Fremd-Nutzer-Parameter ein Cross-Tenant-Zugriff
+        // (Whitebox-Befund 2026-07). Org-übergreifend geht nur per Org-Wechsel.
+        $target = User::query()
+            ->where('organization_id', $authUser->organization_id)
+            ->find($requestedId);
         if (! $target instanceof User) {
             throw new AccessDeniedHttpException('Nutzer nicht gefunden.');
         }

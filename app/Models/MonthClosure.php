@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 use Illuminate\Support\Carbon;
@@ -42,6 +42,9 @@ use Illuminate\Support\Carbon;
 class MonthClosure extends Model {
     use Auditable;
     use BelongsToOrganization;
+
+    // Prüfpaket-ZIP (Rang 40) hängt als Attachment (meta_type=audit_bundle).
+    use HasAttachments;
 
     protected $fillable = [
         'organization_id',

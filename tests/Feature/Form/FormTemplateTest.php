@@ -103,7 +103,7 @@ class FormTemplateTest extends TestCase {
             ->postJson(route('form-templates.store'), [
                 'name' => 'Unbekannter Typ',
                 'fields' => [
-                    ['label' => 'Foto', 'type' => 'photo'],
+                    ['label' => 'Sternzeichen', 'type' => 'sternzeichen'],
                 ],
             ])
             ->assertStatus(422)

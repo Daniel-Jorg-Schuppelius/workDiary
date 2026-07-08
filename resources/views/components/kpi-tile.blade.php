@@ -6,6 +6,8 @@
     'href' => null,
     'active' => false,
     'format' => 'int',
+    // Glossar-Key (Feature 039): hängt einen Begriffs-Tooltip ans Label.
+    'term' => null,
 ])
 
 @php
@@ -48,7 +50,7 @@
 
 @if ($href)
     <a href="{{ $href }}" {{ $attributes->class([$base]) }}>
-        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
+        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60"><x-term :glossary="$term">{{ $label }}</x-term></p>
         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $valueTone }}">{{ $displayValue }}</p>
         @if ($hint)
             <p class="mt-1 text-xs text-base-content/55">{{ $hint }}</p>
@@ -56,7 +58,7 @@
     </a>
 @else
     <div {{ $attributes->class([$base]) }}>
-        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
+        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60"><x-term :glossary="$term">{{ $label }}</x-term></p>
         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $valueTone }}">{{ $displayValue }}</p>
         @if ($hint)
             <p class="mt-1 text-xs text-base-content/55">{{ $hint }}</p>

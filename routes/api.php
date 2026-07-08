@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\Api\{AssetStatusVisibilityController, AssetTimelineController, AttachmentController, AttendanceController, CommentController, CustomerController, DashboardController, DiaryController, EmergencyAssignmentController, FlexController, LocationController, MaterialController, MeController, OnCallShiftController, ProjectController, PushSubscriptionController, StopwatchController, TagController, TaskController, TimesheetController, TimesheetEntryController, TimesheetMaterialController};
+use App\Http\Controllers\Api\{AssetStatusVisibilityController, AssetTimelineController, AttachmentController, AttendanceController, CommentController, CustomerController, DashboardController, DiaryController, EmergencyAssignmentController, FlexController, HookController, LocationController, MaterialController, MeController, OnCallShiftController, ProjectController, PushSubscriptionController, StopwatchController, TagController, TaskController, TimesheetController, TimesheetEntryController, TimesheetMaterialController};
 use Illuminate\Support\Facades\Route;
 
 // Siehe routes/web.php: Projekt-Bindung akzeptiert ID/Sqid oder
@@ -22,20 +22,38 @@ Route::match(['get', 'post'], 'location/ingest/{token}', [LocationController::cl
     ->where('token', '[A-Za-z0-9]+')
     ->name('api.location.ingest');
 
+// CTI-Webhook (Feature 056, MVP-118): Telefonanlagen/Provider (sipgate u. a.)
+// POSTen Anruf-Ereignisse. Auth über einen Token im Pfad; nur Metadaten,
+// nie Gesprächsinhalte.
+Route::match(['get', 'post'], 'cti/webhook/{token}', \App\Http\Controllers\Api\CtiWebhookController::class)
+    ->where('token', '[A-Za-z0-9_]+')
+    ->name('api.cti.webhook');
+
+// Terminal-Ingest (Feature 061, MVP-130): Hardware-Stempelterminals POSTen
+// Badge-Scans. Auth über einen Gerätetoken im Pfad (Muster location/ingest).
+Route::post('terminal/ingest/{token}', \App\Http\Controllers\Api\TerminalIngestController::class)
+    ->where('token', '[A-Za-z0-9_]+')
+    ->name('api.terminal.ingest');
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('me', MeController::class)->name('api.me');
 
     // Punktueller Browser-Standort-Stempel (navigator.geolocation).
     Route::post('location/stamp', [LocationController::class, 'stamp'])->name('api.location.stamp');
 
-    Route::get('diary', [DiaryController::class, 'index'])->name('api.diary.index');
-    Route::post('diary', [DiaryController::class, 'store'])->name('api.diary.store');
-    Route::get('diary/{diary}', [DiaryController::class, 'show'])->name('api.diary.show');
-    Route::put('diary/{diary}', [DiaryController::class, 'update'])->name('api.diary.update');
-    Route::patch('diary/{diary}', [DiaryController::class, 'update']);
-    Route::delete('diary/{diary}', [DiaryController::class, 'destroy'])->name('api.diary.destroy');
-    Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->name('api.diary.archive');
-    Route::post('diary/{diary}/restore', [DiaryController::class, 'restore'])->name('api.diary.restore');
+    // Aufträge (Feature 008 → Rang 60): Lesen vs. Schreiben getrennt gescopt.
+    // Bestandstokens (`*`) matchen weiterhin jede Ability.
+    Route::get('diary', [DiaryController::class, 'index'])->middleware('ability:diary:read')->name('api.diary.index');
+    Route::get('diary/{diary}', [DiaryController::class, 'show'])->middleware('ability:diary:read')->name('api.diary.show');
+    Route::post('diary', [DiaryController::class, 'store'])->middleware('ability:diary:write')->name('api.diary.store');
+    Route::put('diary/{diary}', [DiaryController::class, 'update'])->middleware('ability:diary:write')->name('api.diary.update');
+    Route::patch('diary/{diary}', [DiaryController::class, 'update'])->middleware('ability:diary:write');
+    Route::delete('diary/{diary}', [DiaryController::class, 'destroy'])->middleware('ability:diary:write')->name('api.diary.destroy');
+    Route::post('diary/{diary}/archive', [DiaryController::class, 'archive'])->middleware('ability:diary:write')->name('api.diary.archive');
+    Route::post('diary/{diary}/restore', [DiaryController::class, 'restore'])->middleware('ability:diary:write')->name('api.diary.restore');
+
+    // Ticketeingang (Feature 065, MVP-152): minimal, org-gebunden.
+    Route::post('tickets', [\App\Http\Controllers\Api\TicketController::class, 'store'])->middleware('ability:tickets:write')->name('api.tickets.store');
 
     Route::post('diary/{diary}/comments', [CommentController::class, 'store'])->name('api.diary.comments.store');
     Route::put('comments/{comment}', [CommentController::class, 'update'])->name('api.comments.update');
@@ -58,10 +76,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard', DashboardController::class)->name('api.dashboard');
 
     Route::get('assets/{asset}/timeline', AssetTimelineController::class)
-        ->name('api.assets.timeline');
+        ->middleware('ability:assets:read')->name('api.assets.timeline');
 
     Route::get('assets/{asset}/status-visibility', AssetStatusVisibilityController::class)
-        ->name('api.assets.status-visibility');
+        ->middleware('ability:assets:read')->name('api.assets.status-visibility');
 
     Route::get('push/vapid', [PushSubscriptionController::class, 'vapid'])->name('api.push.vapid');
     Route::post('push/subscribe', [PushSubscriptionController::class, 'store'])->name('api.push.subscribe');
@@ -93,18 +111,29 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('stopwatch/start', [StopwatchController::class, 'start'])->name('api.stopwatch.start');
     Route::post('stopwatch/stop', [StopwatchController::class, 'stop'])->name('api.stopwatch.stop');
 
-    Route::get('attendance/current', [AttendanceController::class, 'current'])->name('api.attendance.current');
-    Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])->name('api.attendance.clock-in');
-    Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut'])->name('api.attendance.clock-out');
+    Route::get('attendance/current', [AttendanceController::class, 'current'])->middleware('ability:attendance:read')->name('api.attendance.current');
+    Route::post('attendance/clock-in', [AttendanceController::class, 'clockIn'])->middleware('ability:attendance:write')->name('api.attendance.clock-in');
+    Route::post('attendance/clock-out', [AttendanceController::class, 'clockOut'])->middleware('ability:attendance:write')->name('api.attendance.clock-out');
 
     Route::get('flex/summary', [FlexController::class, 'summary'])->name('api.flex.summary');
 
     // ── Customers / Projects / Tasks (Kimai-Parity) ────────────────────────
     Route::apiResource('customers', CustomerController::class)->names('api.customers');
     Route::apiResource('projects', ProjectController::class)->names('api.projects');
-    Route::get('tasks', [TaskController::class, 'index'])->name('api.tasks.index');
-    Route::get('tasks/{task}', [TaskController::class, 'show'])->name('api.tasks.show');
-    Route::put('tasks/{task}', [TaskController::class, 'update'])->name('api.tasks.update');
-    Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->name('api.tasks.destroy');
-    Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->name('api.tasks.store');
+    Route::get('tasks', [TaskController::class, 'index'])->middleware('ability:tasks:read')->name('api.tasks.index');
+    Route::get('tasks/{task}', [TaskController::class, 'show'])->middleware('ability:tasks:read')->name('api.tasks.show');
+    Route::put('tasks/{task}', [TaskController::class, 'update'])->middleware('ability:tasks:write')->name('api.tasks.update');
+    Route::delete('tasks/{task}', [TaskController::class, 'destroy'])->middleware('ability:tasks:write')->name('api.tasks.destroy');
+    Route::post('projects/{project}/tasks', [TaskController::class, 'store'])->middleware('ability:tasks:write')->name('api.tasks.store');
+
+    // ── REST-Hooks für n8n/Make/Zapier (Feature 008 → Rang 61) ─────────────
+    // Eigene Ability `hooks:manage`; Zustellung/Signatur/Auto-Disable liegen in
+    // der bestehenden Webhook-Infrastruktur. `events` VOR `{hook}` registrieren.
+    Route::middleware('ability:hooks:manage')->group(function (): void {
+        Route::get('hooks', [HookController::class, 'index'])->name('api.hooks.index');
+        Route::get('hooks/events', [HookController::class, 'events'])->name('api.hooks.events');
+        Route::post('hooks', [HookController::class, 'store'])->name('api.hooks.store');
+        Route::post('hooks/{hook}/test', [HookController::class, 'test'])->name('api.hooks.test');
+        Route::delete('hooks/{hook}', [HookController::class, 'destroy'])->name('api.hooks.destroy');
+    });
 });

@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\PasswordResetLink;
+use App\Services\Auth\UserSessionInvalidator;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Hash};
@@ -61,7 +62,7 @@ class PasswordResetController extends Controller {
         ]);
     }
 
-    public function update(Request $request): RedirectResponse {
+    public function update(Request $request, UserSessionInvalidator $sessions): RedirectResponse {
         $data = $request->validate([
             'token' => ['required', 'string'],
             'email' => ['required', 'email'],
@@ -91,6 +92,11 @@ class PasswordResetController extends Controller {
             'is_new_system' => true,
             'must_change_password' => false,
         ])->save();
+
+        // Passwort-Reset entwertet ALLE bestehenden Sitzungen des Kontos
+        // (Account-Takeover-Schutz: ein Angreifer mit bestehender Session wird
+        // durch den Reset ausgesperrt).
+        $sessions->invalidateAll($user);
 
         DB::table('password_reset_tokens')->where('email', $row->email)->delete();
 

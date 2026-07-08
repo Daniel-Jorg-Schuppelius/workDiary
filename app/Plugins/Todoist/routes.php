@@ -19,7 +19,8 @@ use Illuminate\Support\Facades\Route;
 
 // Webhook (MVP-115): sessionlos ohne CSRF ('api'-Gruppe) — Autorisierung über
 // HMAC-Signatur des Raw-Bodys im Controller, Org-Zuordnung erst danach.
-Route::middleware('api')
+// throttle gegen Flooding des unauthentifizierten Endpunkts (Polling heilt).
+Route::middleware(['api', 'throttle:todoist-webhook'])
     ->post('api/webhooks/todoist', TodoistWebhookController::class)
     ->name('api.webhooks.todoist');
 

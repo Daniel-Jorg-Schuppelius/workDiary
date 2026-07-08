@@ -36,6 +36,8 @@ return [
         'attachment_added' => 'Attachment uploaded',
         'material_added' => 'Material booked',
         'communication_added' => 'Communication note recorded',
+        'shipment' => 'Shipping: :status',
+        'shipment_tracking' => 'Tracking number :number',
         'document_linked' => 'Document linked',
         'protocol' => [
             'created' => 'Protocol created',

@@ -12,7 +12,7 @@ namespace Tests\Feature\Notification;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Models\{Document, OpenIssue, User};
+use App\Models\{Document, MaintenancePlan, OpenIssue, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -130,5 +130,68 @@ class DeadlineScannerTest extends TestCase {
         $this->assertSame(1, $this->assignee->notifications()->count());
         $data = (array) $this->assignee->notifications()->first()?->data;
         $this->assertSame(NotificationEvent::DocumentExpiringSoon->value, $data['event'] ?? null);
+    }
+
+    public function test_maintenance_due_soon_notifies_team_lead_once(): void {
+        $teamlead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        MaintenancePlan::factory()->create([
+            'organization_id' => $this->organization->id,
+            'is_active' => true,
+            'next_due_on' => now()->addDays(5)->toDateString(),
+        ]);
+
+        $this->artisan('notifications:scan-deadlines', ['--expiring-days' => 30])->assertExitCode(0);
+        $this->artisan('notifications:scan-deadlines', ['--expiring-days' => 30])->assertExitCode(0);
+
+        $this->assertSame(1, $teamlead->notifications()->count());
+        $data = (array) $teamlead->notifications()->first()?->data;
+        $this->assertSame(NotificationEvent::MaintenanceDueSoon->value, $data['event'] ?? null);
+    }
+
+    public function test_maintenance_overdue_notifies_team_lead(): void {
+        $teamlead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        MaintenancePlan::factory()->create([
+            'organization_id' => $this->organization->id,
+            'is_active' => true,
+            'next_due_on' => now()->subDays(3)->toDateString(),
+        ]);
+
+        $this->artisan('notifications:scan-deadlines')->assertExitCode(0);
+
+        $this->assertSame(1, $teamlead->notifications()->count());
+        $data = (array) $teamlead->notifications()->first()?->data;
+        $this->assertSame(NotificationEvent::MaintenanceOverdue->value, $data['event'] ?? null);
+    }
+
+    public function test_maintenance_overdue_escalates_to_admin_after_window(): void {
+        $teamlead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        NotificationRule::factory()
+            ->forEvent(NotificationEvent::MaintenanceOverdue)
+            ->create([
+                'organization_id' => $this->organization->id,
+                'notify_affected' => false,
+                'recipient_roles' => ['teamleitung'],
+                'escalation_enabled' => true,
+                'escalate_after_hours' => 2,
+                'escalation_role' => 'admin',
+            ]);
+        MaintenancePlan::factory()->create([
+            'organization_id' => $this->organization->id,
+            'is_active' => true,
+            'next_due_on' => now()->subDays(3)->toDateString(),
+        ]);
+
+        // Erst-Lauf: Initialstufe (Admin ist kein initialer Empfänger).
+        $this->artisan('notifications:scan-deadlines')->assertExitCode(0);
+        $this->assertSame(0, $admin->notifications()->count());
+
+        // Eskalationsfenster überschreiten.
+        NotificationDispatchLog::query()->withoutGlobalScopes()->update(['created_at' => now()->subHours(3)]);
+        $this->artisan('notifications:scan-deadlines')->assertExitCode(0);
+
+        $this->assertSame(1, $admin->notifications()->count());
+        $data = (array) $admin->notifications()->first()?->data;
+        $this->assertSame('escalation', $data['stage'] ?? null);
     }
 }

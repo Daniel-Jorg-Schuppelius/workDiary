@@ -71,11 +71,21 @@ class ConformityController extends Controller {
             ->sort()
             ->values();
 
+        // Stichtags-Rekonstruktion (Nachtrag 046b): ?as_of=YYYY-MM-DD zeigt
+        // den Bewertungsstand zu Datum T aus den append-only Snapshots.
+        $reconstruction = null;
+        $asOf = trim((string) $request->query('as_of', ''));
+        if ($asOf !== '' && $scope !== null && strtotime($asOf) !== false) {
+            $reconstruction = app(\App\Services\Isms\AssessmentSnapshotService::class)
+                ->stateAt($scope, \Carbon\CarbonImmutable::parse($asOf)->endOfDay());
+        }
+
         return view('isms.conformity.index', [
             'statuses' => $statuses,
             'scope' => $scope,
             'scopes' => $scopes,
             'missingPairs' => $missingPairs,
+            'reconstruction' => $reconstruction,
             'canManage' => Gate::allows('create', IsmsNormStatus::class),
         ]);
     }

@@ -52,9 +52,14 @@ class VehicleController extends Controller {
     public function create(): View {
         Gate::authorize('create', Vehicle::class);
 
+        /** @var User $auth */
+        $auth = Auth::user();
+
         return view('vehicles._form_dialog', [
             'vehicle' => null,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            // Nur Nutzer der eigenen Organisation (kein globaler OrganizationScope
+            // auf User — Whitebox-Befund 2026-07).
+            'users' => User::query()->where('organization_id', $auth->organization_id)->orderBy('name')->get(['id', 'name']),
             'types' => VehicleType::cases(),
             'propulsions' => VehiclePropulsion::cases(),
             'ownerships' => VehicleOwnership::cases(),
@@ -78,9 +83,12 @@ class VehicleController extends Controller {
     public function edit(Vehicle $vehicle): View {
         Gate::authorize('update', $vehicle);
 
+        /** @var User $auth */
+        $auth = Auth::user();
+
         return view('vehicles._form_dialog', [
             'vehicle' => $vehicle,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::query()->where('organization_id', $auth->organization_id)->orderBy('name')->get(['id', 'name']),
             'types' => VehicleType::cases(),
             'propulsions' => VehiclePropulsion::cases(),
             'ownerships' => VehicleOwnership::cases(),

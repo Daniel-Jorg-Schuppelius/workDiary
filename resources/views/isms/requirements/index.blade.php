@@ -59,6 +59,19 @@
                     <x-icon-btn icon="library_add" tone="outline" size="sm" type="submit"
                                 show-label>{{ __('isms.action.import_catalog') }}</x-icon-btn>
                 </form>
+                {{-- OSCAL-Katalog-Upload (Nachtrag 044a): NIST/BSI-SdT-JSON mit Volltext. --}}
+                <form method="POST" action="{{ route('isms.requirements.import-oscal') }}"
+                      enctype="multipart/form-data" class="flex items-center gap-2">
+                    @csrf
+                    @if ($scope !== null)
+                        <input type="hidden" name="scope" value="{{ $scope->sqid }}">
+                    @endif
+                    <input type="file" name="file" accept="application/json,.json"
+                           class="file-input file-input-bordered file-input-sm max-w-56" required
+                           aria-label="{{ __('OSCAL-Katalog (JSON)') }}">
+                    <x-icon-btn icon="upload_file" tone="outline" size="sm" type="submit"
+                                show-label>{{ __('OSCAL importieren') }}</x-icon-btn>
+                </form>
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('isms.requirements.create')"

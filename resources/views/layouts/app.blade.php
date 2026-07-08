@@ -351,6 +351,9 @@
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SurchargeRuleViewAny->value)) {
                                         $adminNavItems[] = ['route' => 'admin.surcharge-rules.index', 'label' => __('surcharge.title.rules'), 'icon' => 'percent', 'modal' => false];
                                     }
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::CostCenterRuleViewAny->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.cost-center-rules.index', 'label' => __('costcenter.title.rules'), 'icon' => 'account_balance', 'modal' => false];
+                                    }
                                     // Feature 002: Zielwerte & Benchmarks pflegen (GF/Admin).
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ReportTargetManage->value)) {
                                         $adminNavItems[] = ['route' => 'admin.report-targets.index', 'label' => __('reporting.target.nav'), 'icon' => 'flag', 'modal' => false];
@@ -417,6 +420,10 @@
                                     // Backup- & Restore-Status (Feature 017) — plattformweite Admin-Sicht.
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::BackupView->value)) {
                                         $adminNavItems[] = ['route' => 'admin.backup.status',            'label' => __('backup.title.status'), 'icon' => 'backup',        'modal' => false];
+                                    }
+                                    // Temporäre Supportfreigaben (Rang 64) — Kundenadmin-Sicht.
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SupportGrantManage->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.support.grants.index',     'label' => __('Supportfreigaben'), 'icon' => 'support_agent',    'modal' => false];
                                     }
                                     if (\Illuminate\Support\Facades\Gate::allows('whistleblowing.settings.manage')) {
                                         $adminNavItems[] = ['route' => 'whistleblowing.portal.edit',     'label' => __('Meldeportal'),      'icon' => 'campaign',         'modal' => false];
@@ -609,6 +616,28 @@
                                     ],
                                 ];
                                 $sidebarSections[] = [
+                                    'key'         => 'servicedesk',
+                                    'label'       => __('Service Desk'),
+                                    'collapsible' => true,
+                                    'items'       => array_values(array_filter([
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ServiceTicketView->value)
+                                            ? ['route' => 'service-tickets.index', 'label' => __('Tickets'), 'icon' => 'confirmation_number', 'modal' => false, 'matches' => ['service-tickets.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::HelpdeskQueueManage->value)
+                                            ? ['route' => 'helpdesk.queues.index', 'label' => __('Queues'), 'icon' => 'inbox', 'modal' => false, 'matches' => ['helpdesk.queues.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::HelpdeskQueueManage->value)
+                                            ? ['route' => 'helpdesk.routing.index', 'label' => __('Ticket-Routing'), 'icon' => 'alt_route', 'modal' => false, 'matches' => ['helpdesk.routing.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SlaContractView->value)
+                                            ? ['route' => 'sla-contracts.index', 'label' => __('SLA-Verträge'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['sla-contracts.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SlaViewAny->value)
+                                            ? ['route' => 'helpdesk.reports.index', 'label' => __('Helpdesk-Bericht'), 'icon' => 'monitoring', 'modal' => false, 'matches' => ['helpdesk.reports.*']]
+                                            : null,
+                                    ])),
+                                ];
+                                $sidebarSections[] = [
                                     'key'         => 'location',
                                     'label'       => __('Standorterfassung'),
                                     'collapsible' => true,
@@ -666,6 +695,10 @@
                                                 // (@can finance.booking.export über DatevBookingBatch-Policy),
                                                 // Modul-Gating via $moduleByItemRoute (module.finance).
                                                 ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
+                                                // GoBD-Z3-Datenträgerüberlassung (Feature 063): Recht via NavGate
+                                                // (finance.gobd.* → GobdExport::viewAny = finance.gobd.export),
+                                                // Modul-Gating via $moduleByItemRoute (module.finance).
+                                                ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
                                                 ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                                             ],
                                         ],
@@ -825,6 +858,10 @@
                                                 auth()->user()?->can(\App\Enums\User\Permission::SlaViewAny->value)
                                                     ? ['route' => 'reports.sla',        'label' => __('sla.report.nav'),    'icon' => 'timer', 'modal' => false, 'matches' => ['reports.sla', 'reports.sla.*']]
                                                     : null,
+                                                // SLA-Verträge (Feature 010): read-only Detailseite, eigenes Recht.
+                                                auth()->user()?->can(\App\Enums\User\Permission::SlaContractView->value)
+                                                    ? ['route' => 'sla-contracts.index', 'label' => __('SLA-Verträge'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['sla-contracts.index', 'sla-contracts.show']]
+                                                    : null,
                                             ])),
                                         ],
                                         [
@@ -905,6 +942,7 @@
                                 'finance.reconciliation.index' => 'module.finance',
                                 'finance.bank-accounts.index' => 'module.finance',
                                 'finance.datev.index' => 'module.finance',
+                                'finance.gobd.index' => 'module.finance',
                                 // Lager & Fertigung (Untergruppe „Lager & Fertigung" in Vertrieb & Abrechnung):
                                 // ohne module.lager ausblenden, statt nur per Route-Gate (423) zu sperren.
                                 'articles.index' => 'module.lager',
@@ -1927,6 +1965,8 @@
         @endphp
         @auth
             <x-demo-banner :organization="$_activeOrg" />
+            <x-maintenance-banner :organization="$_activeOrg" />
+            <x-support-banner />
         @endauth
         <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
             @if (session('success'))

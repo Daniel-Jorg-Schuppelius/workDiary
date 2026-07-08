@@ -21,12 +21,20 @@ return [
         'ui' => 'Oberfläche',
         'routing' => 'Routing & Karten',
         'region' => 'Region & Feiertage',
+        'weather' => 'Wetter',
+        'maintenance' => 'Wartung',
     ],
     'region' => [
         'heading' => 'Rechtsraum & Feiertage',
         'description' => 'Bestimmt, welche gesetzlichen Feiertage gelten. Wirkt auf Feiertagszuschläge, die Dienstplan-Compliance und Feiertagsanzeigen.',
         'holiday_provider' => 'Feiertagsregion (Land / Bundesland)',
         'holiday_provider_hint' => 'Regionale Feiertage wie Fronleichnam oder Reformationstag gelten nur in bestimmten Bundesländern. Leer = systemweiter Standard.',
+    ],
+    'weather' => [
+        'heading' => 'Wetter-Auto-Abruf',
+        'description' => 'Bei Anlage eines Protokolls automatisch einen Wetter-Snapshot (Open-Meteo) für Standort und Zeitpunkt ziehen — als Beweiswert. Projekte können das überschreiben.',
+        'auto_fetch' => 'Wetter bei Protokoll-Anlage automatisch abrufen',
+        'auto_fetch_hint' => 'Nur wenn Standort-Koordinaten vorliegen; sonst passiert nichts. Standard: aus.',
     ],
     'hint' => 'Leer lassen, um den systemweiten Standardwert zu nutzen.',
     'pagination' => [
@@ -142,5 +150,16 @@ return [
             'url' => 'Tile-URL-Vorlage',
             'max_zoom' => 'Maximaler Zoom',
         ],
+    ],
+    'maintenance' => [
+        'heading' => 'Wartungsmodus',
+        'description' => 'Sperrt die Anwendung für alle Nicht-Administratoren dieses Mandanten (503-Wartungsseite). Administratoren arbeiten weiter und sehen einen Hinweis-Banner.',
+        'enabled' => 'Wartungsmodus aktivieren',
+        'message' => 'Hinweistext für die Wartungsseite',
+        'message_placeholder' => 'z. B. Geplante Wartung — wir sind in Kürze wieder da.',
+        'until' => 'Voraussichtliches Ende',
+        'until_hint' => 'Optional. Nach diesem Zeitpunkt endet der Wartungsmodus automatisch.',
+        'block_ingest' => 'Auch Terminal-/Webhook-Eingänge pausieren',
+        'block_ingest_hint' => 'Standard: aus — Stempelterminals, Telefonie- und Standort-Eingänge laufen während der Wartung weiter.',
     ],
 ];

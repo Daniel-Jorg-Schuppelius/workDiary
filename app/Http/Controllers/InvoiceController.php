@@ -17,7 +17,6 @@ use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Mail};
@@ -138,12 +137,74 @@ class InvoiceController extends Controller {
         return redirect()->route('invoices.index')->with('status', __('Rechnung gelöscht.'));
     }
 
+    /** Validierungsbericht (MVP-164): Preflight + XSD + KoSIT VOR Ausstellung. */
+    public function einvoiceValidation(Invoice $invoice): \Illuminate\View\View {
+        Gate::authorize('view', $invoice);
+
+        return view('invoices.einvoice-validation', [
+            'invoice' => $invoice,
+            'report' => app(\App\Services\Invoicing\EInvoice\EInvoiceValidationService::class)->validate($invoice),
+        ]);
+    }
+
+    /** Prüfung/Freigabe (MVP-163): optionaler Schritt vor der Ausstellung. */
+    public function approve(Invoice $invoice): RedirectResponse {
+        Gate::authorize('issue', $invoice);
+        abort_unless($invoice->status === Invoice::STATUS_DRAFT, 422);
+
+        $invoice->update(['approved_at' => now(), 'approved_by' => (int) Auth::id()]);
+        $invoice->audit('invoice.approved', ['by' => (int) Auth::id()]);
+
+        return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung freigegeben.'));
+    }
+
+    /** Mahnstufe erhöhen (MVP-163): nur für überfällige Rechnungen, max. 3. */
+    public function dun(Invoice $invoice): RedirectResponse {
+        // Mahnen betrifft AUSGESTELLTE Rechnungen — die issue-Policy (nur
+        // draft) passt nicht; Maßstab ist das Abrechnungsrecht.
+        abort_unless(\Illuminate\Support\Facades\Auth::user()?->canManageBilling() ?? false, 403);
+        if (! $invoice->isOverdue()) {
+            return back()->with('error', __('Nur überfällige Rechnungen können gemahnt werden.'));
+        }
+        if ((int) $invoice->dunning_level >= 3) {
+            return back()->with('error', __('Höchste Mahnstufe bereits erreicht.'));
+        }
+
+        $newLevel = (int) $invoice->dunning_level + 1;
+        $invoice->update(['dunning_level' => $newLevel, 'dunned_at' => now()]);
+        $invoice->audit('invoice.dunned', ['level' => $newLevel]);
+
+        return redirect()->route('invoices.show', $invoice)->with('status', __('Mahnstufe :level vermerkt.', ['level' => $newLevel]));
+    }
+
     public function issue(Invoice $invoice): RedirectResponse {
         Gate::authorize('issue', $invoice);
+
+        // MVP-163 (Opt-in): Prüfung/Freigabe vor Ausstellung erzwingen.
+        $invoicingSettings = (array) data_get($invoice->organization?->settings, 'invoicing', []);
+        if ((string) ($invoicingSettings['require_approval'] ?? '0') === '1' && $invoice->approved_at === null) {
+            return back()->with('error', __('Die Rechnung braucht vor der Ausstellung eine Freigabe.'));
+        }
+
+        // MVP-164 (Opt-in): erzwungene E-Rechnungs-Validierung vor der
+        // Ausstellung — Fehler blocken; ohne das Setting bleibt das
+        // Bestandsverhalten (Bericht jederzeit manuell abrufbar).
+        $einvoiceSettings = (array) data_get($invoice->organization?->settings, 'einvoice', []);
+        if ((string) ($einvoiceSettings['enforce_validation'] ?? '0') === '1') {
+            $report = app(\App\Services\Invoicing\EInvoice\EInvoiceValidationService::class)->validate($invoice);
+            if (! $report['valid'] || $report['preflight_errors'] !== []) {
+                return redirect()->route('invoices.einvoice-validation', $invoice)
+                    ->with('error', __('Die Rechnung besteht die E-Rechnungs-Validierung nicht — Ausstellung abgebrochen.'));
+            }
+        }
+
+        // MVP-162: Zahlungsziel je Rechnung + Partei-Snapshot einfrieren —
+        // ab jetzt ist der Beleg fachlich unveränderlich (Model-Guard).
+        $invoice->freezeParties();
         $invoice->update([
             'status' => Invoice::STATUS_ISSUED,
             'issued_on' => now(),
-            'due_on' => now()->addDays(14),
+            'due_on' => now()->addDays($invoice->payment_terms_days ?? 14),
         ]);
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung gestellt.'));
@@ -179,9 +240,12 @@ class InvoiceController extends Controller {
             }
         }
 
-        return Pdf::loadView('invoices.pdf', $this->pdfViewData($invoice))
-            ->setPaper('a4')
-            ->download('rechnung-' . $invoice->number . '.pdf');
+        $bytes = app(\App\Services\Invoicing\InvoicePdfRenderer::class)->output($invoice);
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="rechnung-' . $invoice->number . '.pdf"',
+        ]);
     }
 
     /**
@@ -191,18 +255,9 @@ class InvoiceController extends Controller {
      * @return array{invoice: Invoice, template: \App\Models\InvoiceTemplate|null, orgLegal: mixed}
      */
     private function pdfViewData(Invoice $invoice): array {
-        $template = $invoice->customer->invoice_template_id
-            ? \App\Models\InvoiceTemplate::find($invoice->customer->invoice_template_id)
-            : \App\Models\InvoiceTemplate::query()
-            ->where('organization_id', $invoice->organization_id)
-            ->where('is_default', true)
-            ->first();
-
-        return [
-            'invoice' => $invoice,
-            'template' => $template,
-            'orgLegal' => app(\App\Services\BrandingService::class)->legal(),
-        ];
+        // Geteilt mit der WebDAV-Spiegelung (Rang 19), damit Download und
+        // gespiegeltes PDF identisch sind.
+        return app(\App\Services\Invoicing\InvoicePdfRenderer::class)->viewData($invoice);
     }
 
     /**
@@ -227,6 +282,13 @@ class InvoiceController extends Controller {
 
         $xml = $generator->generate($invoice);
         $filename = 'XRechnung_' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number) . '.xml';
+
+        // Übergabenachweis (MVP-168): Format + Dateihash revisionsfest im Audit.
+        $invoice->audit('invoice.einvoice_exported', [
+            'format' => 'xrechnung_ubl',
+            'filename' => $filename,
+            'sha256' => hash('sha256', $xml),
+        ]);
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',

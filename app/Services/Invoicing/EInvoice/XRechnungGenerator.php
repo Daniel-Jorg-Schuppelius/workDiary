@@ -180,9 +180,15 @@ class XRechnungGenerator {
             }
         }
 
-        // XRechnung verlangt Verkäufer-Kontakt (BR-DE-2: Name, Telefon, E-Mail).
+        // XRechnung verlangt Verkäufer-Kontakt (BR-DE-2: Name, Telefon,
+        // E-Mail) — KoSIT wertet das als FEHLER, der Preflight seit MVP-164
+        // konsistent auch (vorher nur Warnung).
         if ($seller['contact_name'] === '' || $seller['contact_email'] === '' || $seller['contact_phone'] === '') {
-            $warnings[] = (string) __('invoicing.einvoice.warning.missing_seller_contact');
+            if ($profile === ERechnungProfile::XRECHNUNG) {
+                $errors[] = (string) __('invoicing.einvoice.warning.missing_seller_contact');
+            } else {
+                $warnings[] = (string) __('invoicing.einvoice.warning.missing_seller_contact');
+            }
         }
 
         // Käuferanschrift (BG-8) — für ein valides Dokument nötig, aber der
@@ -378,7 +384,7 @@ class XRechnungGenerator {
      *               contact_phone: string, iban: string, bic: string, account_holder: string,
      *               payment_terms_days: int, small_business: bool}
      */
-    private function sellerData(Invoice $invoice): array {
+    public function sellerData(Invoice $invoice): array {
         $organization = $invoice->organization;
         $settings = $organization !== null && is_array($organization->settings) ? $organization->settings : [];
         $einvoice = is_array($settings['einvoice'] ?? null) ? $settings['einvoice'] : [];

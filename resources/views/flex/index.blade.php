@@ -117,7 +117,7 @@
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <x-kpi-tile :label="__('Soll')" :value="$fmt($summary['target'])" />
             <x-kpi-tile :label="__('Ist')" :value="$fmt($summary['actual'])" />
-            <x-kpi-tile :label="__('Saldo')" :value="$fmt($summary['balance'])" :tone="$summary['balance'] < 0 ? 'error' : 'success'" />
+            <x-kpi-tile :label="__('Saldo')" term="flexzeit" :value="$fmt($summary['balance'])" :tone="$summary['balance'] < 0 ? 'error' : 'success'" />
         </div>
     @else
         {{-- Vertrauensarbeitszeit: kein Soll/Saldo --}}

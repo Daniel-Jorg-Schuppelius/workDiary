@@ -12,8 +12,9 @@ namespace App\Services\Notification;
 
 use App\Enums\Integration\WebhookEvent;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
+use App\Jobs\Notification\ChatWebhookDeliveryJob;
+use App\Models\{ChatWebhook, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use App\Models\User;
 use App\Notifications\GenericEventNotification;
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\WebPushService;
@@ -63,6 +64,7 @@ class NotificationDispatcher {
         // Stufe wird publiziert (Eskalationen sind rein interne Vorgänge).
         if ($stage === NotificationDispatchLog::STAGE_INITIAL) {
             $this->publishWebhook($event, $subject, $payload);
+            $this->publishChatChannels($event, $subject, $payload);
         }
 
         try {
@@ -210,7 +212,11 @@ class NotificationDispatcher {
         try {
             return User::query()
                 ->where('organization_id', $organizationId)
-                ->role($roles)
+                // Guard explizit pinnen: läuft der Request über den
+                // customer-Guard (Portal, z. B. Foto-Beanstandung), würde
+                // Spatie sonst die Org-Rollen im Guard `customer` suchen
+                // und mit RoleDoesNotExist abbrechen.
+                ->role($roles, 'web')
                 ->get();
         } finally {
             $registrar->setPermissionsTeamId($previousTeamId);
@@ -354,6 +360,54 @@ class NotificationDispatcher {
                 throw $e;
             }
             Log::warning('webhook: hook failed', [
+                'event' => $event->value,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Additiver Team-Messenger-Hook (Feature 056, MVP-119): fächert das Ereignis
+     * an die aktiven, ausgehenden Chat-Kanäle (Teams/Mattermost) der Organisation
+     * — org-weit (eine Kanal-URL je Kanal), nicht empfängerbezogen. Ausgewählt
+     * über dieselbe Ereignis→Kanal-Matrix ({@see NotificationRule}). Zustellung
+     * erfolgt asynchron mit Retry ({@see ChatWebhookDeliveryJob}).
+     *
+     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null}  $payload
+     */
+    private function publishChatChannels(NotificationEvent $event, Model $subject, array $payload): void {
+        try {
+            $organizationId = $this->organizationIdOf($subject, null);
+            if ($organizationId === null) {
+                return;
+            }
+
+            $rule = NotificationRule::resolveFor($organizationId, $event);
+            if (! $rule->enabled) {
+                return;
+            }
+
+            $webhooks = ChatWebhook::query()
+                ->where('organization_id', $organizationId)
+                ->where('active', true)
+                ->get();
+
+            foreach ($webhooks as $webhook) {
+                if (! $webhook->isActive() || ! $rule->usesChannel($webhook->channel())) {
+                    continue;
+                }
+
+                ChatWebhookDeliveryJob::dispatch((int) $webhook->id, (string) $event->label(), [
+                    'title' => (string) $payload['title'],
+                    'message' => isset($payload['message']) ? (string) $payload['message'] : null,
+                    'url' => isset($payload['url']) && $payload['url'] !== '' ? (string) $payload['url'] : null,
+                ]);
+            }
+        } catch (Throwable $e) {
+            if (app()->runningUnitTests()) {
+                throw $e;
+            }
+            Log::warning('chat: hook failed', [
                 'event' => $event->value,
                 'error' => $e->getMessage(),
             ]);

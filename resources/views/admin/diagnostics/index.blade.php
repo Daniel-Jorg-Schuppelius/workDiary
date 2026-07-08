@@ -27,6 +27,7 @@
         'storage' => __('Storage'),
         'backup' => __('Backupstatus'),
         'security' => __('Sicherheit'),
+        'terminals' => __('Stempelterminals'),
     ];
     $sectionIcons = [
         'version' => 'info',
@@ -38,6 +39,7 @@
         'storage' => 'sd_storage',
         'backup' => 'backup',
         'security' => 'security',
+        'terminals' => 'point_of_sale',
     ];
 @endphp
 

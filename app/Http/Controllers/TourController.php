@@ -91,7 +91,11 @@ class TourController extends Controller {
         $auth = Auth::user();
         $data = $request->validated();
 
-        $driver = User::query()->findOrFail((int) $data['user_id']);
+        // Mandantengrenze: der Fahrer muss zur eigenen Organisation gehören
+        // (kein globaler OrganizationScope auf User — Whitebox-Befund 2026-07).
+        $driver = User::query()
+            ->where('organization_id', $auth->organization_id)
+            ->findOrFail((int) $data['user_id']);
         if (! $auth->isAdmin() && (int) $driver->id !== (int) $auth->id) {
             throw new AccessDeniedHttpException('Nur Admins dürfen Touren für andere Nutzer anlegen.');
         }

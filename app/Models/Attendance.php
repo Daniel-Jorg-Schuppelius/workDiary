@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $date
  * @property int $break_minutes_auto
  * @property int $break_minutes_manual
+ * @property Carbon|null $break_started_at
  * @property int $duration_minutes
  * @property AttendanceSource|null $source
  * @property AttendanceStatus|null $status
@@ -64,6 +65,7 @@ class Attendance extends Model {
         'date',
         'break_minutes_auto',
         'break_minutes_manual',
+        'break_started_at',
         'duration_minutes',
         'source',
         'status',
@@ -86,6 +88,7 @@ class Attendance extends Model {
         'date' => 'date',
         'break_minutes_auto' => 'integer',
         'break_minutes_manual' => 'integer',
+        'break_started_at' => 'datetime',
         'duration_minutes' => 'integer',
         'started_lat' => 'float',
         'started_lng' => 'float',
@@ -150,6 +153,11 @@ class Attendance extends Model {
 
     public function isOpen(): bool {
         return $this->ended_at === null;
+    }
+
+    /** Läuft gerade eine (Terminal-)Pause? (Feature 061, Rang 13) */
+    public function isOnBreak(): bool {
+        return $this->break_started_at !== null;
     }
 
     /**

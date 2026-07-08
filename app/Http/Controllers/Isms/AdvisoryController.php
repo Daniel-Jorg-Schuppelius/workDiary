@@ -85,4 +85,38 @@ class AdvisoryController extends Controller {
                 'count' => $advisory->vuln_count,
             ]));
     }
+
+    /**
+     * CSAF-Feed-Pull (Nachtrag 044b): lädt die neuesten Advisories eines
+     * Trusted Providers (Default: BSI WID) über provider-metadata.json —
+     * ROLIE-Feeds und verzeichnisbasierte Verteilung (changes.csv).
+     */
+    public function pullFeed(Request $request, \App\Services\Isms\CsafFeedService $feed): RedirectResponse {
+        Gate::authorize('create', IsmsAdvisory::class);
+
+        $data = $request->validate([
+            'provider_url' => ['nullable', 'url', 'max:255'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        /** @var User $importer */
+        $importer = Auth::user();
+        /** @var Organization $organization */
+        $organization = $importer->organization()->firstOrFail();
+
+        try {
+            $result = $feed->pull(
+                $data['provider_url'] ?? \App\Services\Isms\CsafFeedService::DEFAULT_PROVIDER,
+                $organization,
+                $importer,
+                (int) ($data['limit'] ?? \App\Services\Isms\CsafFeedService::DEFAULT_LIMIT),
+            );
+        } catch (\Throwable $e) {
+            return redirect()->route('isms.advisories.index')
+                ->with('error', __('Feed-Abruf fehlgeschlagen: :message', ['message' => $e->getMessage()]));
+        }
+
+        return redirect()->route('isms.advisories.index')
+            ->with('success', __(':documents Dokument(e) geprüft — :imported neu importiert, :skipped bereits vorhanden, :errors fehlerhaft.', $result));
+    }
 }

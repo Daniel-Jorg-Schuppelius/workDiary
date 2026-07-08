@@ -30,6 +30,20 @@
             <input id="name" name="name" type="text" class="input input-bordered" maxlength="64" required>
         </div>
         @error('name')<div class="text-error text-sm">{{ $message }}</div>@enderror
+
+        {{-- Fähigkeiten (Feature 008 → Rang 60): leer = voller Zugriff (`*`). --}}
+        <div class="form-control mt-3">
+            <span class="label-text mb-1">{{ __('Fähigkeiten (leer = voller Zugriff)') }}</span>
+            <div class="grid gap-1 sm:grid-cols-2">
+                @foreach ($abilities as $ability)
+                    <label class="flex items-center gap-2 text-sm">
+                        <input type="checkbox" name="abilities[]" value="{{ $ability->value }}" class="checkbox checkbox-sm">
+                        <span>{{ $ability->label() }} <code class="text-xs opacity-60">{{ $ability->value }}</code></span>
+                    </label>
+                @endforeach
+            </div>
+        </div>
+
         <div class="card-actions justify-end mt-3">
             <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erstellen') }}</x-icon-btn>
         </div>
@@ -39,6 +53,7 @@
         <x-slot:head>
             <tr>
                 <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('Fähigkeiten') }}</x-table.th>
                 <x-table.th sort type="date">{{ __('Erstellt') }}</x-table.th>
                 <x-table.th sort type="date">{{ __('Zuletzt benutzt') }}</x-table.th>
                 <th></th>
@@ -48,6 +63,13 @@
         @forelse ($tokens as $token)
             <tr>
                 <td>{{ $token->name }}</td>
+                <td class="text-xs">
+                    @if (in_array('*', (array) $token->abilities, true))
+                        <span class="badge badge-warning badge-sm" title="{{ __('Für eingeschränkten Zugriff neu ausstellen.') }}">{{ __('Voller Zugriff') }}</span>
+                    @else
+                        {{ implode(', ', (array) $token->abilities) }}
+                    @endif
+                </td>
                 <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->fdatetime() }}</td>
                 <td data-sort-value="{{ optional($token->last_used_at)->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
                 <td class="text-right">
@@ -59,7 +81,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="4" :title="__('Keine API-Token vorhanden')" compact />
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="5" :title="__('Keine API-Token vorhanden')" compact />
         @endforelse
     </x-table>
 </x-page-shell>

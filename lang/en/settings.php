@@ -18,12 +18,20 @@ return [
         'ui' => 'Interface',
         'routing' => 'Routing & maps',
         'region' => 'Region & holidays',
+        'weather' => 'Weather',
+        'maintenance' => 'Maintenance',
     ],
     'region' => [
         'heading' => 'Jurisdiction & holidays',
         'description' => 'Determines which public holidays apply. Affects holiday surcharges, duty-roster compliance and holiday displays.',
         'holiday_provider' => 'Holiday region (country / state)',
         'holiday_provider_hint' => 'Regional holidays such as Corpus Christi or Reformation Day only apply in certain states. Empty = system default.',
+    ],
+    'weather' => [
+        'heading' => 'Automatic weather fetch',
+        'description' => 'When a protocol is created, automatically pull a weather snapshot (Open-Meteo) for its location and time — as evidence. Projects can override this.',
+        'auto_fetch' => 'Fetch weather automatically when a protocol is created',
+        'auto_fetch_hint' => 'Only when location coordinates are available; otherwise nothing happens. Default: off.',
     ],
     'hint' => 'Leave empty to use the system default.',
     'pagination' => [
@@ -139,5 +147,16 @@ return [
             'url' => 'Tile URL template',
             'max_zoom' => 'Maximum zoom',
         ],
+    ],
+    'maintenance' => [
+        'heading' => 'Maintenance mode',
+        'description' => 'Locks the application for all non-administrators of this tenant (503 maintenance page). Administrators keep working and see a notice banner.',
+        'enabled' => 'Enable maintenance mode',
+        'message' => 'Notice shown on the maintenance page',
+        'message_placeholder' => 'e.g. Scheduled maintenance — we will be back shortly.',
+        'until' => 'Expected end',
+        'until_hint' => 'Optional. After this time the maintenance mode ends automatically.',
+        'block_ingest' => 'Also pause terminal/webhook ingest',
+        'block_ingest_hint' => 'Default: off — clock-in terminals, telephony and location ingest keep running during maintenance.',
     ],
 ];

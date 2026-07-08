@@ -100,6 +100,9 @@ class WebhookDeliveryJob implements ShouldQueue {
                 'User-Agent' => 'WorkDiary-Webhook/1',
             ])
                 ->timeout(10)
+                // Keine Redirects folgen: ein 30x auf einen internen Host würde
+                // sonst den SSRF-Guard oben umgehen (Whitebox-Befund 2026-07).
+                ->withoutRedirecting()
                 ->withBody($this->body, 'application/json')
                 ->post($endpoint->url);
 
@@ -109,6 +112,14 @@ class WebhookDeliveryJob implements ShouldQueue {
 
             if ($response->successful()) {
                 $this->markSuccess($delivery, $endpoint);
+
+                return;
+            }
+
+            // 410 Gone: der Empfänger (n8n/Make/Zapier) hat die Subscription
+            // entfernt → sofortiges Auto-Unsubscribe, KEIN Retry (Selbstheilung).
+            if ($status === 410) {
+                $this->autoUnsubscribe($delivery, $endpoint);
 
                 return;
             }
@@ -159,6 +170,23 @@ class WebhookDeliveryJob implements ShouldQueue {
             'last_delivery_at' => Carbon::now(),
             'consecutive_failures' => 0,
         ])->saveQuietly();
+    }
+
+    /**
+     * REST-Hooks-Selbstheilung (Feature 008 → Rang 61): Antwortet der Empfänger
+     * mit 410 Gone, ist die Subscription dort gelöscht. Wir bestellen sofort ab
+     * (deaktivieren + Soft-Delete), ohne Retry — ein erneuter Zustellversuch wäre
+     * sinnlos. Der `active`/`disabled_at`-Filter greift auch dort, wo der
+     * Dispatch-Service `withoutGlobalScopes()` nutzt (Soft-Delete allein reicht
+     * dort nicht).
+     */
+    private function autoUnsubscribe(WebhookDelivery $delivery, WebhookEndpoint $endpoint): void {
+        $delivery->status = WebhookDeliveryStatus::Failed;
+        $delivery->completed_at = Carbon::now();
+        $delivery->save();
+
+        $endpoint->forceFill(['active' => false, 'disabled_at' => Carbon::now()])->saveQuietly();
+        $endpoint->delete();
     }
 
     private function markFailure(WebhookDelivery $delivery, WebhookEndpoint $endpoint, string $reason): void {

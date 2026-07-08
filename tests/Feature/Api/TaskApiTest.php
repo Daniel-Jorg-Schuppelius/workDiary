@@ -41,7 +41,7 @@ class TaskApiTest extends TestCase {
     }
 
     public function test_store_under_project(): void {
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
 
         $this->postJson(route('api.tasks.store', $this->project), [
             'title' => 'T1',
@@ -57,7 +57,7 @@ class TaskApiTest extends TestCase {
     }
 
     public function test_validation_errors_on_store(): void {
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
 
         $this->postJson(route('api.tasks.store', $this->project), [])
             ->assertUnprocessable()
@@ -67,7 +67,7 @@ class TaskApiTest extends TestCase {
     public function test_owner_can_update_and_delete_but_other_cannot(): void {
         $task = $this->makeTask($this->owner);
 
-        Sanctum::actingAs($this->other);
+        Sanctum::actingAs($this->other, ['*']);
         $this->putJson(route('api.tasks.update', $task), [
             'title' => 'Hijacked',
             'status' => TaskStatus::Open->value,
@@ -75,7 +75,7 @@ class TaskApiTest extends TestCase {
         ])->assertForbidden();
         $this->deleteJson(route('api.tasks.destroy', $task))->assertForbidden();
 
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
         $this->putJson(route('api.tasks.update', $task), [
             'title' => 'Renamed',
             'status' => TaskStatus::InProgress->value,
@@ -98,7 +98,7 @@ class TaskApiTest extends TestCase {
         ]);
         $this->makeTask($this->owner, ['title' => 'Ausreißer'], $otherProject);
 
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
 
         $this->getJson(route('api.tasks.index', ['project' => $this->project->sqid, 'per_page' => 2]))
             ->assertOk()

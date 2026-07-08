@@ -1,9 +1,17 @@
-// Ideenlandkarten-Editor (Feature 054, MVP-106/108): Gliederungs- und
-// Canvas-Ansicht über denselben Alpine-Store. Kleine, knotenbezogene
-// API-Aufrufe (nie "ganze Karte speichern"); jede Mutation sendet die geladene
-// lock_version — ein 409 öffnet den sichtbaren Konfliktdialog (kein stilles
-// Last-write-wins). Gliederung ist vollständig per Tastatur bedienbar
-// (Enter = neuer Knoten, Tab/Shift+Tab = ein-/ausrücken, Alt+Pfeil = verschieben).
+// Ideenlandkarten-Gliederungseditor (Feature 054, MVP-106/108/135): die
+// barrierefreie, vollständig tastaturbedienbare Baum-Ansicht. Kleine,
+// knotenbezogene API-Aufrufe (nie "ganze Karte speichern"); jede Mutation
+// sendet die geladene lock_version — ein 409 öffnet den sichtbaren
+// Konfliktdialog (kein stilles Last-write-wins). Tastatur: Enter = neuer
+// Knoten, Tab/Shift+Tab = ein-/ausrücken, Alt+Pfeil = verschieben, F2 =
+// umbenennen.
+//
+// Die Canvas-Ansicht ist eine EIGENE Komponente (idea-canvas.js, Mind Elixir);
+// dieser Editor stößt sie beim Tab-Wechsel nur über ein Fenster-Event an.
+// Sicht-Synchronisation ohne F5: jede erfolgreiche Gliederungs-Mutation meldet
+// "idea-outline-changed" (der Canvas lädt beim nächsten Anzeigen neu); nach
+// einem Canvas-Sync kommt "idea-map-synced" zurück und die Gliederung lädt den
+// Serverbaum nach — sofort, wenn sie sichtbar ist, sonst beim Tab-Wechsel.
 export function registerIdeaEditor(Alpine) {
     Alpine.data("ideaEditor", (configElId) => ({
         cfg: {},
@@ -19,24 +27,42 @@ export function registerIdeaEditor(Alpine) {
         error: null,
         conflict: null, // {node(sqid), mine(payload), current(server-node)}
         lastDeleted: null,
+        canvasDirty: false, // Canvas hat gespeichert, während die Gliederung verborgen war
         editing: [], // Präsenz (MVP-108): Namen anderer aktiver Bearbeiter
         historyOpen: false,
         history: [],
         convertResult: null, // MVP-109: {reference, existing} nach Überführung
-        // Canvas-Zustand
-        zoom: 1,
-        panX: 40,
-        panY: 40,
-        dragging: null,
 
         init() {
             const el = document.getElementById(configElId);
             this.cfg = JSON.parse(el?.textContent || "{}");
             (this.cfg.nodes || []).forEach((n) => (this.nodes[n.sqid] = n));
             this.rootSqid = (this.cfg.nodes || []).find((n) => n.is_root)?.sqid || null;
-            this.autoLayout();
             this.rebuildOrder();
             this.selected = this.rootSqid;
+
+            // Canvas (idea-canvas.js, Mind Elixir) beim Wechsel auf den
+            // Canvas-Tab über ein Fenster-Event zum idempotenten Mount anstoßen;
+            // zurück zur Gliederung ggf. den vom Canvas geänderten Stand nachladen.
+            this.$watch("view", (v) => {
+                if (v === "canvas") window.dispatchEvent(new CustomEvent("idea-canvas-show"));
+                if (v === "outline" && this.canvasDirty) {
+                    this.canvasDirty = false;
+                    this.reload();
+                }
+            });
+
+            // Canvas hat gespeichert (Whole-Map-Sync): sichtbare Gliederung
+            // sofort nachladen — der debounced Sync kann auch NACH dem
+            // Tab-Wechsel zur Gliederung noch eintreffen. Verborgen reicht
+            // das Nachladen beim nächsten Tab-Wechsel.
+            window.addEventListener("idea-map-synced", () => {
+                if (this.view === "outline") {
+                    this.reload();
+                } else {
+                    this.canvasDirty = true;
+                }
+            });
 
             // Präsenz-Heartbeat (MVP-108): alle 30 s, nur solange die Seite offen ist.
             if (this.cfg.urls.presence) {
@@ -124,7 +150,10 @@ export function registerIdeaEditor(Alpine) {
                     return { conflict: json.current };
                 }
                 if (!res.ok) {
-                    this.error = json.message || res.statusText;
+                    // 422: Laravel liefert {message, errors:{feld:[…]}} — erste
+                    // konkrete Feldmeldung zeigen statt des generischen Rohtexts.
+                    const firstFieldError = json.errors ? Object.values(json.errors)[0]?.[0] : null;
+                    this.error = firstFieldError || json.message || res.statusText;
                     return null;
                 }
                 return json;
@@ -136,9 +165,16 @@ export function registerIdeaEditor(Alpine) {
             return (this.cfg.urls[action] || "").replace("__NODE__", sqid || "");
         },
 
+        // Canvas über eine Gliederungs-Änderung informieren: er lädt beim
+        // nächsten Anzeigen den Serverbaum neu statt seinen Mount-Stand zu zeigen.
+        notifyCanvas() {
+            window.dispatchEvent(new CustomEvent("idea-outline-changed"));
+        },
+
         applyNode(node) {
             this.nodes[node.sqid] = node;
             this.rebuildOrder();
+            this.notifyCanvas();
         },
 
         async addChild(parentSqid) {
@@ -147,6 +183,7 @@ export function registerIdeaEditor(Alpine) {
                 title: this.t("new_node"),
             });
             if (json?.node) {
+                if (this.collapsed[parentSqid]) this.toggleCollapse(parentSqid);
                 this.applyNode(json.node);
                 this.selected = json.node.sqid;
                 this.editingTitle = json.node.sqid;
@@ -165,7 +202,7 @@ export function registerIdeaEditor(Alpine) {
             this.$nextTick(() => this.focusTitleInput(sqid));
         },
         focusTitleInput(sqid) {
-            const input = this.$root.querySelector(`[data-title-input="${sqid}"]`);
+            const input = this.$root?.querySelector(`[data-title-input="${sqid}"]`);
             if (input) {
                 input.focus();
                 input.select();
@@ -190,6 +227,36 @@ export function registerIdeaEditor(Alpine) {
                 return;
             }
             if (json?.node) this.applyNode(json.node);
+        },
+
+        // Detail-Ansicht speichern (MVP-135): Notiz + Status werden explizit
+        // gesichert (nicht mehr per change-Event, das beim Schließen verloren
+        // ging). Nur bei tatsächlicher Änderung patchen.
+        async saveDetails(note, status) {
+            if (!this.selected || !this.cfg.can_update) return;
+            const n = this.node(this.selected);
+            if (!n) return;
+            const payload = {};
+            if ((note ?? "") !== (n.note ?? "")) payload.note = note || null;
+            const st = status || null;
+            if (st !== (n.node_status ?? null)) payload.node_status = st;
+            if (Object.keys(payload).length > 0) await this.patchNode(this.selected, payload);
+        },
+        async closeDetails(note, status) {
+            await this.saveDetails(note, status);
+            this.detailOpen = false;
+        },
+
+        // Farb-Swatches der Detail-Ansicht (MVP-135): Farbwert → DaisyUI-bg-Klasse.
+        swatchClass(color) {
+            return {
+                default: "bg-base-300",
+                primary: "bg-primary",
+                success: "bg-success",
+                warning: "bg-warning",
+                error: "bg-error",
+                info: "bg-info",
+            }[color] || "bg-base-300";
         },
 
         // Konfliktdialog (MVP-108): fremden Stand übernehmen ODER eigenen
@@ -246,6 +313,7 @@ export function registerIdeaEditor(Alpine) {
                     if (this.nodes[s]) this.nodes[s].sort_order = i;
                 });
                 this.rebuildOrder();
+                this.notifyCanvas();
             }
         },
 
@@ -263,6 +331,7 @@ export function registerIdeaEditor(Alpine) {
                 removeTree(sqid);
                 this.selected = n.parent || this.rootSqid;
                 this.rebuildOrder();
+                this.notifyCanvas();
             }
         },
         async undoDelete() {
@@ -271,6 +340,7 @@ export function registerIdeaEditor(Alpine) {
             if (json?.node) {
                 this.lastDeleted = null;
                 await this.reload();
+                this.notifyCanvas();
             }
         },
         async reload() {
@@ -278,8 +348,12 @@ export function registerIdeaEditor(Alpine) {
             if (json?.nodes) {
                 this.nodes = {};
                 json.nodes.forEach((n) => (this.nodes[n.sqid] = n));
-                this.autoLayout();
                 this.rebuildOrder();
+                // Auswahl kann durch den neuen Stand verschwunden sein
+                // (z. B. Knoten im Canvas gelöscht) → zurück auf die Wurzel.
+                if (this.selected && !this.nodes[this.selected]) {
+                    this.selected = this.rootSqid;
+                }
             }
         },
 
@@ -315,82 +389,6 @@ export function registerIdeaEditor(Alpine) {
                 if (next) {
                     this.selected = next;
                     this.$nextTick(() => this.$root.querySelector(`[data-node-row="${next}"]`)?.focus());
-                }
-            }
-        },
-
-        // ── Canvas ──────────────────────────────────────────────────────
-        autoLayout() {
-            // Positionen nur für Knoten ohne gespeicherte Position ableiten:
-            // x nach Tiefe, y nach Gliederungsreihenfolge.
-            let row = 0;
-            const walk = (sqid, depth) => {
-                const n = this.node(sqid);
-                if (!n) return;
-                if (n.pos_x === null || n.pos_y === null) {
-                    n.pos_x = depth * 240;
-                    n.pos_y = row * 72;
-                }
-                row++;
-                this.childrenOf(sqid).forEach((c) => walk(c.sqid, depth + 1));
-            };
-            if (this.rootSqid) walk(this.rootSqid, 0);
-        },
-        canvasNodes() {
-            const visible = [];
-            const walk = (sqid) => {
-                visible.push(sqid);
-                if (!this.collapsed[sqid]) this.childrenOf(sqid).forEach((c) => walk(c.sqid));
-            };
-            if (this.rootSqid) walk(this.rootSqid);
-            return visible.map((s) => this.node(s)).filter(Boolean);
-        },
-        edges() {
-            return this.canvasNodes()
-                .filter((n) => n.parent && this.canvasNodes().some((p) => p.sqid === n.parent))
-                .map((n) => {
-                    const p = this.node(n.parent);
-                    return { x1: p.pos_x + 90, y1: p.pos_y + 20, x2: n.pos_x + 90, y2: n.pos_y + 20, key: n.sqid };
-                });
-        },
-        canvasTransform() {
-            return `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
-        },
-        zoomIn() {
-            this.zoom = Math.min(2, this.zoom + 0.1);
-        },
-        zoomOut() {
-            this.zoom = Math.max(0.3, this.zoom - 0.1);
-        },
-        startPan(event) {
-            if (event.target.closest("[data-canvas-node]")) return;
-            this.dragging = { pan: true, x: event.clientX, y: event.clientY, panX: this.panX, panY: this.panY };
-        },
-        startNodeDrag(event, sqid) {
-            if (!this.cfg.can_update) return;
-            const n = this.node(sqid);
-            this.dragging = { node: sqid, x: event.clientX, y: event.clientY, posX: n.pos_x, posY: n.pos_y };
-        },
-        onPointerMove(event) {
-            if (!this.dragging) return;
-            const dx = event.clientX - this.dragging.x;
-            const dy = event.clientY - this.dragging.y;
-            if (this.dragging.pan) {
-                this.panX = this.dragging.panX + dx;
-                this.panY = this.dragging.panY + dy;
-            } else if (this.dragging.node) {
-                const n = this.node(this.dragging.node);
-                n.pos_x = Math.round(this.dragging.posX + dx / this.zoom);
-                n.pos_y = Math.round(this.dragging.posY + dy / this.zoom);
-            }
-        },
-        async endPointer() {
-            const d = this.dragging;
-            this.dragging = null;
-            if (d?.node) {
-                const n = this.node(d.node);
-                if (n && (n.pos_x !== d.posX || n.pos_y !== d.posY)) {
-                    await this.patchNode(d.node, { pos_x: n.pos_x, pos_y: n.pos_y });
                 }
             }
         },

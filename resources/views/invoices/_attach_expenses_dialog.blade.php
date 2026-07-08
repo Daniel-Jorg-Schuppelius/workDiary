@@ -10,9 +10,7 @@
     size="lg">
 
     @if ($expenses->isEmpty())
-        <div class="alert alert-info">
-            {{ __('Keine genehmigten, weiterberechenbaren Spesen für diesen Kunden gefunden.') }}
-        </div>
+        <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :title="__('Keine passenden Spesen')" :message="__('Keine genehmigten, weiterberechenbaren Spesen für diesen Kunden gefunden.')" tone="info" compact />
     @else
         <p class="text-sm text-base-content/70">
             {{ __('Wähle die Spesen, die als Position der Rechnung hinzugefügt werden sollen. Brutto-Betrag wird als Einzelpreis übernommen.') }}

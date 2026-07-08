@@ -10,12 +10,20 @@ return [
         'ui' => 'Interface',
         'routing' => 'Routage et cartes',
         'region' => 'Région et jours fériés',
+        'weather' => 'Météo',
+        'maintenance' => 'Maintenance',
     ],
     'region' => [
         'heading' => 'Juridiction et jours fériés',
         'description' => 'Détermine les jours fériés applicables. Affecte les majorations pour jours fériés, la conformité des plannings et l’affichage des jours fériés.',
         'holiday_provider' => 'Région des jours fériés (pays / Land)',
         'holiday_provider_hint' => 'Les jours fériés régionaux comme la Fête-Dieu ou le jour de la Réforme ne s’appliquent que dans certains Länder. Vide = valeur par défaut du système.',
+    ],
+    'weather' => [
+        'heading' => 'Récupération météo automatique',
+        'description' => 'À la création d’un compte rendu, récupère automatiquement un instantané météo (Open-Meteo) pour son lieu et son horaire — comme preuve. Les projets peuvent le remplacer.',
+        'auto_fetch' => 'Récupérer la météo automatiquement à la création d’un compte rendu',
+        'auto_fetch_hint' => 'Uniquement si des coordonnées de lieu sont disponibles ; sinon rien ne se passe. Par défaut : désactivé.',
     ],
     'hint' => 'Laisser vide pour utiliser la valeur par défaut du système.',
     'pagination' => [
@@ -131,5 +139,16 @@ return [
             'url' => 'Modèle d\'URL de tuile',
             'max_zoom' => 'Zoom maximum',
         ],
+    ],
+    'maintenance' => [
+        'heading' => 'Mode maintenance',
+        'description' => "Verrouille l'application pour tous les non-administrateurs de ce locataire (page de maintenance 503). Les administrateurs continuent de travailler et voient une bannière d'information.",
+        'enabled' => 'Activer le mode maintenance',
+        'message' => 'Message affiché sur la page de maintenance',
+        'message_placeholder' => 'p. ex. Maintenance planifiée — nous revenons bientôt.',
+        'until' => 'Fin prévue',
+        'until_hint' => "Facultatif. Après cette date, le mode maintenance se termine automatiquement.",
+        'block_ingest' => 'Suspendre aussi les entrées terminal/webhook',
+        'block_ingest_hint' => "Par défaut : désactivé — les terminaux de pointage, la téléphonie et la localisation continuent pendant la maintenance.",
     ],
 ];

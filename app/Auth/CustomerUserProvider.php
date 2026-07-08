@@ -52,6 +52,7 @@ class CustomerUserProvider extends EloquentUserProvider {
         return User::query()
             ->where('email', $email)
             ->whereNotNull('customer_id')
+            ->whereNull('deactivated_at') // zentral deaktivierte Konten (Feature 057) nicht anmeldbar
             ->first();
     }
 }

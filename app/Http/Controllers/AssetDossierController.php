@@ -10,8 +10,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, Protocol, User};
+use App\Enums\ServiceTicket\ServiceTicketStatus;
+use App\Enums\User\Permission;
+use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, Protocol, ServiceTicket, User};
 use App\Services\Asset\{AssetLifecycleService, AssetTimelineService};
+use App\Services\ServiceTicket\SlaTimer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -124,7 +127,24 @@ class AssetDossierController extends Controller {
             'openIssues' => $openIssues,
             'assignments' => $assignments,
             'defects' => $defects,
+            'recurringDefect' => app(\App\Services\Asset\RecurringDefectService::class)->isRecurring($asset),
             'maintenancePlans' => $maintenancePlans,
+            // Eigentümerwechsel-Historie (Feature 027 → Rang 49), append-only.
+            'ownershipChanges' => $asset->ownershipChanges()
+                ->with(['changedBy:id,name', 'toCustomer:id,name', 'fromCustomer:id,name'])
+                ->get(),
+            // SLA-/Vertrags-Sektion (Feature 027 → Rang 48): geltender Vertrag =
+            // direkter Override, sonst Kunden-/Default-Auflösung. Anzeige nur mit
+            // Recht slaContract.view.
+            'canViewSla' => $user->can(Permission::SlaContractView->value),
+            'slaContract' => $asset->slaContract
+                ?? app(SlaTimer::class)->resolveContract((int) $asset->organization_id, $asset->customer_id),
+            'slaTickets' => ServiceTicket::query()
+                ->where('asset_id', $asset->id)
+                ->whereNotIn('status', [ServiceTicketStatus::Closed->value, ServiceTicketStatus::Rejected->value])
+                ->orderByDesc('reported_at')
+                ->limit(20)
+                ->get(),
             'roomRequirements' => $asset->room_id !== null && $asset->room !== null ? $asset->room->requirements : collect(),
             'timelineItems' => $timelineItems,
             'autoPrint' => $request->boolean('print'),

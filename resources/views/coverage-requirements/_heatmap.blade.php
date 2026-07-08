@@ -35,7 +35,7 @@
 @endphp
 
 @if ($types->isEmpty())
-    <div class="text-sm text-base-content/40">{{ __('Keine Schichttypen im Plan vorhanden.') }}</div>
+    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">table_view</span>' :title="__('Keine Schichttypen im Plan vorhanden.')" compact />
 @else
     <div class="overflow-x-auto rounded-box border border-base-300">
         <table class="table table-xs w-full">

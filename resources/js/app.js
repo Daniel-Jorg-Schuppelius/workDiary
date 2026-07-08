@@ -6,6 +6,7 @@
 import Alpine from "alpinejs";
 import { registerAlpineComponents } from "./alpine/components.js";
 import { registerIdeaEditor } from "./idea-editor.js";
+import { registerIdeaCanvas } from "./idea-canvas.js";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
@@ -17,6 +18,7 @@ import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./global-search.js";
 import "./help-drawer.js";
+import "./quick-book.js";
 import "./layout.js";
 // facility-picker.js / tag-picker.js / work-schedule-form.js wurden in
 // alpine/components.js als Alpine.data-Komponenten überführt (CSP-konform).
@@ -32,6 +34,7 @@ if (typeof window !== "undefined") {
 window.Alpine = Alpine;
 registerAlpineComponents(Alpine);
 registerIdeaEditor(Alpine);
+registerIdeaCanvas(Alpine);
 Alpine.start();
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();

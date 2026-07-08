@@ -6,8 +6,10 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\Export\ExportRunState;
 use App\Models\{Customer, ExportRun, User};
+use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -85,6 +87,35 @@ class DataTransferControllerTest extends TestCase {
         $this->actingAs($admin)
             ->get(route('admin.data.download', $other))
             ->assertNotFound();
+    }
+
+    public function test_download_and_destroy_require_the_entitys_export_permission(): void {
+        $this->seed(PermissionsSeeder::class);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+
+        // Fremd-Entitäts-Export (Materials) in derselben Organisation.
+        $run = ExportRun::create([
+            'organization_id' => $this->organization->id,
+            'entity' => 'materials',
+            'format' => 'csv',
+            'state' => ExportRunState::Ready,
+            'output_filename' => 'm.csv',
+            'storage_path' => 'exports/data/' . $this->organization->id . '/m.csv',
+            'rows_total' => 0,
+        ]);
+        Storage::disk('local')->put($run->storage_path, "a;b\n1;2\n");
+
+        // Nutzer mit NUR dem Kunden-Export-Recht: passiert den Hub, hat aber
+        // kein Materials-Recht → darf den fremden Entitäts-Export weder laden
+        // noch löschen (Broken-Access-Control-Regression, Whitebox-Befund #1).
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $user->givePermissionTo('customer.export');
+
+        $this->actingAs($user)->get(route('admin.data.download', $run))->assertForbidden();
+        $this->actingAs($user)->delete(route('admin.data.destroy', $run))->assertForbidden();
+
+        $this->assertModelExists($run);
+        $this->assertTrue(Storage::disk('local')->exists($run->storage_path));
     }
 
     public function test_destroy_removes_file_and_record(): void {

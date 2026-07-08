@@ -93,9 +93,12 @@ return [
         'supplier_review_overdue' => 'Examen fournisseur en retard depuis le :date.',
         'sla_at_risk' => 'Échéance de résolution SLA menacée — pour le :date.',
         'sla_breached' => 'Échéance de résolution SLA dépassée — était due le :date.',
+        'sla_quota_warning' => 'Quota SLA utilisé à :percent % (:consumed sur :included min) sur la période :period.',
         'asset_return_overdue' => 'Retour de la ressource en retard — attendu le :date.',
         'incident_critical' => 'Nouvel incident de sécurité critique signalé.',
         'safety_critical_event' => 'Événement de sécurité critique (:severity) signalé à :location.',
         'qualification_expiring' => 'La qualification/formation expire le :date.',
+        'maintenance_due_soon' => 'Le plan de maintenance :label est dû le :date.',
+        'maintenance_overdue' => 'Le plan de maintenance :label est en retard depuis le :date.',
     ],
 ];

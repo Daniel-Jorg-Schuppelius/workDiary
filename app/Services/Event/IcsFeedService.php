@@ -116,6 +116,87 @@ class IcsFeedService {
     }
 
     /**
+     * Stabile CalDAV-/ICS-UID eines Events (Feature 058) — identisch zu den
+     * Feed-UIDs, damit Feed-Abo und CalDAV-Publish denselben Termin meinen.
+     */
+    public static function eventUid(Event $event): string {
+        return 'event-' . $event->getKey() . '@workdiary';
+    }
+
+    /**
+     * Einzel-Event-ICS-Dokument (VCALENDAR mit genau einem VEVENT) für das
+     * idempotente CalDAV-Publish (Feature 058, MVP-126). Nutzt dieselbe TZ-/
+     * UID-/Sichtbarkeits-Abbildung wie die Lese-Feeds.
+     */
+    public function documentForEvent(Event $event): string {
+        $tz = new DateTimeZone((string) config('app.timezone', 'Europe/Berlin'));
+
+        return Calendar::create($event->title)
+            ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Events//DE'))
+            ->event($this->toIcsEvent($event, $tz))
+            ->get();
+    }
+
+    /**
+     * Stabile CalDAV-/ICS-UID einer Schicht bzw. eines Urlaubs (Feature 058,
+     * Rang 17). Sqid-basiert (opake ID, verrät der externen Collection keine
+     * laufenden Zähler).
+     */
+    public static function shiftUid(ScheduledShift $shift): string {
+        return 'shift-' . $shift->sqid . '@workdiary';
+    }
+
+    public static function vacationUid(Vacation $vacation): string {
+        return 'vacation-' . $vacation->sqid . '@workdiary';
+    }
+
+    /**
+     * Einzel-ICS-Dokument (ein VEVENT) einer Schicht für das CalDAV-Publish
+     * (Feature 058, Rang 17). Zeitbasiert, lokale TZ; über Mitternacht → +1 Tag.
+     * Voraussetzung: Start-/Endzeit gesetzt (der Aufrufer filtert das).
+     */
+    public function documentForShift(ScheduledShift $shift): string {
+        $tz = new DateTimeZone((string) config('app.timezone', 'Europe/Berlin'));
+        $date = $shift->date->format('Y-m-d');
+        $start = CarbonImmutable::parse($date . ' ' . $shift->start_time, $tz);
+        $end = CarbonImmutable::parse($date . ' ' . $shift->end_time, $tz);
+        if ($end->lessThanOrEqualTo($start)) {
+            $end = $end->addDay();
+        }
+
+        $label = $shift->shiftType->name ?? __('Schicht');
+        $ics = IcsEvent::create((string) $label)
+            ->uniqueIdentifier(self::shiftUid($shift))
+            ->startsAt($start->toDateTimeImmutable())
+            ->endsAt($end->toDateTimeImmutable())
+            ->withoutTimezone();
+
+        return Calendar::create((string) $label)
+            ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Schedule//DE'))
+            ->event($ics)
+            ->get();
+    }
+
+    /**
+     * Einzel-ICS-Dokument (ein Ganztags-VEVENT) eines Urlaubs für das
+     * CalDAV-Publish (Feature 058, Rang 17). DTEND ist bei VALUE=DATE exklusiv
+     * → +1 Tag (über fullDay()).
+     */
+    public function documentForVacation(Vacation $vacation): string {
+        $name = (string) __('Urlaub: :name', ['name' => $vacation->user->name ?? '']);
+        $vac = IcsEvent::create($name)
+            ->uniqueIdentifier(self::vacationUid($vacation))
+            ->fullDay()
+            ->startsAt($vacation->start_date->copy()->toDateTimeImmutable())
+            ->endsAt($vacation->end_date->copy()->addDay()->toDateTimeImmutable());
+
+        return Calendar::create($name)
+            ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Schedule//DE'))
+            ->event($vac)
+            ->get();
+    }
+
+    /**
      * @param array<int, Event> $events
      */
     private function build(array $events, string $name): string {
@@ -126,35 +207,40 @@ class IcsFeedService {
         $tz = new DateTimeZone((string) config('app.timezone', 'Europe/Berlin'));
 
         foreach ($events as $event) {
-            $start = $event->started_at->copy()->setTimezone($tz);
-            $end = $event->ended_at->copy()->setTimezone($tz);
-
-            $location = $event->rooms
-                ->map(fn($r) => trim($r->building . ' ' . $r->name))
-                ->filter()
-                ->implode(', ');
-
-            $ics = IcsEvent::create($event->title)
-                ->uniqueIdentifier('event-' . $event->getKey() . '@workdiary')
-                ->startsAt($start->toDateTimeImmutable())
-                ->endsAt($end->toDateTimeImmutable())
-                ->withoutTimezone(); // Zeiten in lokaler TZ persistiert
-
-            if (! empty($event->description)) {
-                $ics->description($event->description);
-            }
-            if ($location !== '') {
-                $ics->address($location);
-            }
-            $ics->classification(match ($event->visibility) {
-                EventVisibility::Public => Classification::Public,
-                EventVisibility::External => Classification::Public,
-                EventVisibility::Internal => Classification::Private,
-            });
-
-            $calendar->event($ics);
+            $calendar->event($this->toIcsEvent($event, $tz));
         }
 
         return $calendar->get();
+    }
+
+    /** Bildet ein Event auf eine ICS-Event-Komponente ab (Feed + CalDAV-Publish teilen diese Abbildung). */
+    private function toIcsEvent(Event $event, DateTimeZone $tz): IcsEvent {
+        $start = $event->started_at->copy()->setTimezone($tz);
+        $end = $event->ended_at->copy()->setTimezone($tz);
+
+        $location = $event->rooms
+            ->map(fn($r) => trim($r->building . ' ' . $r->name))
+            ->filter()
+            ->implode(', ');
+
+        $ics = IcsEvent::create($event->title)
+            ->uniqueIdentifier(self::eventUid($event))
+            ->startsAt($start->toDateTimeImmutable())
+            ->endsAt($end->toDateTimeImmutable())
+            ->withoutTimezone(); // Zeiten in lokaler TZ persistiert
+
+        if (! empty($event->description)) {
+            $ics->description($event->description);
+        }
+        if ($location !== '') {
+            $ics->address($location);
+        }
+        $ics->classification(match ($event->visibility) {
+            EventVisibility::Public => Classification::Public,
+            EventVisibility::External => Classification::Public,
+            EventVisibility::Internal => Classification::Private,
+        });
+
+        return $ics;
     }
 }

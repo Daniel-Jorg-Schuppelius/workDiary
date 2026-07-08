@@ -229,6 +229,22 @@ class AttachmentController extends Controller {
     }
 
     /**
+     * Kundenfreigabe fürs Portal umschalten (Feature 012, Rang 54): wer das
+     * Trägerobjekt bearbeiten darf, entscheidet über die Sichtbarkeit.
+     */
+    public function toggleCustomerVisibility(Attachment $attachment): RedirectResponse {
+        $parent = $attachment->attachable;
+        abort_if($parent === null, 404);
+        Gate::authorize('update', $parent);
+
+        $attachment->update(['customer_visible' => ! $attachment->customer_visible]);
+
+        return back()->with('success', $attachment->customer_visible
+            ? __('Anhang für das Kundenportal freigegeben.')
+            : __('Anhang auf intern gestellt.'));
+    }
+
+    /**
      * Generate a temporary signed download URL (15 min).
      */
     public static function downloadUrl(Attachment $attachment): string {

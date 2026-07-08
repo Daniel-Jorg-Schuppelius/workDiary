@@ -38,6 +38,7 @@ return [
             'models' => ['Timesheet', 'Attendance'],
             'sensitivity' => 'high',
             'retention' => '10 Jahre (GoBD)',
+            'retention_area' => 'gobd_financial',
             'delete_path' => 'nach Lock gesperrt, nicht löschbar',
         ],
         [
@@ -70,6 +71,7 @@ return [
             'models' => ['Expense', 'PerDiemTrip', 'PerDiemDay'],
             'sensitivity' => 'high',
             'retention' => '10 Jahre (GoBD)',
+            'retention_area' => 'gobd_financial',
             'delete_path' => 'gesperrt, archiviert',
         ],
         [

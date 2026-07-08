@@ -1046,6 +1046,45 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Bedingungslogik Formular-Ausfüllen (Feature 032, Rang 33): spiegelt
+    // FormFieldDefinition::isVisible clientseitig. conditions: {key: {field,op,value}},
+    // initial: {key: string}. Der Wrapper trackt Quelle-Werte generisch über name.
+    Alpine.data("formFill", (conditions, initial) => ({
+        vals: {},
+        conditions: {},
+        init() {
+            this.conditions = conditions || {};
+            this.vals = Object.assign({}, initial || {});
+        },
+        track(e) {
+            const t = e.target;
+            if (!t || !t.name) return;
+            const m = String(t.name).match(/^values\[([^\]]+)\]$/);
+            if (!m) return;
+            this.vals[m[1]] = t.type === "checkbox" ? (t.checked ? "1" : "0") : t.value;
+        },
+        visible(key) {
+            const c = this.conditions[key];
+            if (!c || !c.field) return true;
+            const actual = (this.vals[c.field] ?? "").toString().trim();
+            const val = (c.value ?? "").toString();
+            switch (c.op || "eq") {
+                case "filled":
+                    return actual !== "" && actual !== "0";
+                case "ne":
+                    return actual !== val;
+                case "in":
+                    return val
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                        .includes(actual);
+                default:
+                    return actual === val;
+            }
+        },
+    }));
+
     // Event-Kategorie: Liste von Erinnerungs-Offsets (hinzufügen/entfernen).
     // items als {value}-Objekte → CSP-konformes x-model="it.value" (kein items[i]).
     Alpine.data("reminderOffsets", () => ({

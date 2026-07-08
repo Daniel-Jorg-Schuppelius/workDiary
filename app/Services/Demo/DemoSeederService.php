@@ -15,16 +15,20 @@ use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, Comm
 use App\Enums\Demo\DemoIndustry;
 use App\Enums\Diary\{LocationMode, Mode, Priority, Status as DiaryStatus};
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
+use App\Enums\Procedure\{ProcedureBackupScope, ProcedureBackupStorageTarget, ProcedureBackupVerifyMethod, ProcedureProofType, ProcedureStepRunStatus};
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType, ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, Material, MaterialUsage, OpenIssue, Organization, Project, Protocol, ProtocolItem, TimeEntry, Timesheet, User};
+use App\Models\{Asset, Attachment, CommunicationNote, Customer, DiaryEntry, Material, MaterialUsage, OpenIssue, Organization, ProcedureRun, ProcedureTemplate, Project, Protocol, ProtocolItem, TimeEntry, Timesheet, User};
 use App\Services\Classification\BranchProfileInstaller;
+use App\Services\Procedure\{BackupProofService, ProcedureExecutionService, ProcedureTemplateService, SecondPersonGate};
 use Carbon\CarbonImmutable;
 use Faker\{Factory as FakerFactory, Generator as Faker};
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\{DB, Hash};
+use Illuminate\Support\Facades\{DB, Hash, Storage};
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
 use RuntimeException;
 
 /**
@@ -62,7 +66,8 @@ class DemoSeederService {
      * Zählt die Datensätze, die im aktuellen Seed-Lauf erzeugt wurden. Schlüssel:
      * organization_id, industry, branch_profile, customers, projects, users,
      * main_diary_entries, background_diary_entries, time_entries, open_issues,
-     * materials, material_usages, assets, protocols, communication_notes.
+     * materials, material_usages, assets, protocols, communication_notes,
+     * attachments, procedure_runs.
      *
      * @return array<string, int|string>
      */
@@ -97,6 +102,8 @@ class DemoSeederService {
             'assets' => 0,
             'protocols' => 0,
             'communication_notes' => 0,
+            'attachments' => 0,
+            'procedure_runs' => 0,
         ];
 
         DB::transaction(function () use ($organization, $faker, $actor, $industry, $blueprint, &$counts): void {
@@ -110,11 +117,14 @@ class DemoSeederService {
             $organization->demo_seeded_at = \Carbon\Carbon::now();
             $organization->save();
 
-            // Branchenprofil installieren (Klassifikationen, Tags, SLAs, Prozeduren …).
-            $this->branchProfileInstaller()->install($organization, $industry->branchProfileCode(), $actor);
-
             $users = $this->seedUsers($organization, $actor);
             $counts['users'] = $users->count();
+
+            // Branchenprofil installieren (Klassifikationen, Tags, SLAs, Prozeduren …).
+            // Ohne übergebenen Akteur dient der Demo-Admin als Versions-Autor —
+            // sonst überspringt der Installer sämtliche Prozedurvorlagen.
+            $profileActor = $actor ?? $users->first();
+            $this->branchProfileInstaller()->install($organization, $industry->branchProfileCode(), $profileActor);
 
             $customers = $this->seedCustomers($organization, $users->first(), $blueprint);
             $counts['customers'] = $customers->count();
@@ -152,6 +162,20 @@ class DemoSeederService {
 
             $background = $this->seedBackgroundEntries($organization, $customers, $projects, $users, $faker, $blueprint);
             $counts['background_diary_entries'] = $background;
+
+            // Vorführ-Ausbau (Feature 040 Nachtrag): Beispiel-Anhänge +
+            // vollständig durchgespielter Prozedurlauf inkl. Backup-Proof
+            // und Vier-Augen-Freigabe.
+            $counts['attachments'] = $this->seedAttachments($organization, $mainDiary, $users);
+            $counts['procedure_runs'] = $this->seedProcedureRun($organization, $mainDiary, $users);
+
+            // Agile Vorführ-Boards (Feature 064, P7): Scrum mit Sprint-
+            // Historie über mehrere Wochen + Kanban mit WIP/Blockierung.
+            $counts['agile_boards'] = $this->seedAgileBoards($projects, $users);
+
+            // IT-Demoszenario Helpdesk (Feature 065, P10):
+            // Anfrage → Incident → Problem → Change durchgängig.
+            $counts['helpdesk_tickets'] = $this->seedHelpdesk($organization, $mainCustomer, $users);
         });
 
         return $counts;
@@ -180,6 +204,20 @@ class DemoSeederService {
     private function doReset(Organization $organization, ?User $actor, ?DemoIndustry $industry): array {
         DB::transaction(function () use ($organization): void {
             $diaryIds = DiaryEntry::query()->where('organization_id', $organization->id)->pluck('id');
+
+            // Demo-Anhänge inkl. Storage-Dateien (query()->delete() der
+            // Aufträge feuert keine Model-Events — Leichen vermeiden).
+            $attachments = Attachment::query()
+                ->where('attachable_type', DiaryEntry::class)
+                ->whereIn('attachable_id', $diaryIds)
+                ->get();
+            foreach ($attachments as $attachment) {
+                Storage::disk($attachment->disk)->delete($attachment->path);
+                $attachment->delete();
+            }
+
+            // Prozedurläufe (Step-Runs/Events/Backup-Proofs via FK-Cascade).
+            ProcedureRun::query()->where('organization_id', $organization->id)->delete();
 
             // Protokolle der Demo-Aufträge (inkl. Items über DB-Cascade/explizit).
             $protocolIds = Protocol::query()
@@ -345,6 +383,206 @@ class DemoSeederService {
         }
 
         return $created;
+    }
+
+    /**
+     * IT-Demoszenario Helpdesk (Feature 065, P10): Portal-Queue + Incident
+     * mit Konversation und Wartezustand, gelöstes Ticket mit Bewertung,
+     * Problem aus Incidents, freigegebene Standard-Change-Vorlage + Change.
+     *
+     * @param \Illuminate\Support\Collection<int, User> $users
+     */
+    private function seedHelpdesk(Organization $organization, Customer $customer, Collection $users): int {
+        if (\App\Models\ServiceQueue::query()->where('organization_id', $organization->id)->exists()) {
+            return 0;
+        }
+        /** @var User $agent */
+        $agent = $users->first();
+
+        $queue = \App\Models\ServiceQueue::query()->create([
+            'organization_id' => $organization->id,
+            'name' => 'IT-Support',
+            'purpose' => 'Zentrale Anlaufstelle für Störungen und Anfragen.',
+            'is_default' => true,
+            'visibility' => 'portal',
+        ]);
+
+        $tickets = app(\App\Services\ServiceTicket\ServiceTicketService::class);
+        $conversation = app(\App\Services\ServiceTicket\TicketConversationService::class);
+
+        // Incident mit Konversation + Wartezustand.
+        $incident = $tickets->create($organization, $agent, [
+            'title' => 'VPN bricht mehrmals täglich ab',
+            'description' => 'Mehrere Nutzer melden Abbrüche seit dem letzten Update.',
+            'kind' => 'incident',
+            'queue_id' => $queue->id,
+            'customer_id' => $customer->id,
+        ]);
+        $tickets->assign($incident, $agent, $agent->id);
+        $conversation->reply($incident->fresh() ?? $incident, $agent, 'Wir haben das Problem reproduziert und analysieren die Ursache.');
+        $conversation->note($incident->fresh() ?? $incident, $agent, 'Verdacht: MTU-Problem nach Firmware 2.4.1.');
+
+        // Gelöstes zweites Ticket.
+        $solved = $tickets->create($organization, $agent, [
+            'title' => 'Neuer Arbeitsplatz für Auszubildende',
+            'kind' => 'service_request',
+            'queue_id' => $queue->id,
+            'customer_id' => $customer->id,
+        ]);
+        $tickets->assign($solved, $agent, $agent->id);
+        $solved = $tickets->transition($solved->fresh() ?? $solved, $agent, \App\Enums\ServiceTicket\ServiceTicketStatus::InProgress);
+        $solved = $tickets->transition($solved, $agent, \App\Enums\ServiceTicket\ServiceTicketStatus::Done);
+
+        // Problem aus dem Incident + freigegebene Standard-Change-Vorlage + Change.
+        $problem = app(\App\Services\ServiceTicket\ProblemService::class)
+            ->openFromIncidents([$incident->fresh() ?? $incident], 'Wiederkehrende VPN-Abbrüche nach Firmware-Update', $agent);
+        app(\App\Services\ServiceTicket\ProblemService::class)->transition($problem, 'analyzing', $agent);
+
+        $template = \App\Models\ChangeTemplate::query()->create([
+            'organization_id' => $organization->id,
+            'name' => 'Firmware-Rollout Netzwerkgeräte',
+            'implementation_plan' => 'Staging → Pilotgruppe → Flächenrollout.',
+            'test_plan' => 'VPN-Dauerlast über 24h.',
+            'rollback_plan' => 'Firmware-Downgrade auf 2.3.9.',
+            'approved' => true,
+        ]);
+        app(\App\Services\ServiceTicket\ChangeService::class)->submit([
+            'title' => 'Firmware-Downgrade VPN-Gateways',
+            'change_type' => 'standard',
+            'reason' => 'Behebt die VPN-Abbrüche (Problem-Analyse).',
+            'problem_id' => $problem->id,
+        ], $agent, [], $template);
+
+        return \App\Models\ServiceTicket::query()->where('organization_id', $organization->id)->count();
+    }
+
+    /**
+     * Agile Vorführ-Boards (Feature 064, P7): Projekt 1 als Scrum-Board mit
+     * abgeschlossenem und aktivem Sprint samt mehrwöchiger Event-Historie
+     * (Burndown/Velocity/CFD-Demos), Projekt 2 als Kanban-Board mit
+     * WIP-Limit und Blockierung. Rückdatierung via Carbon::setTestNow —
+     * im finally IMMER zurückgesetzt.
+     */
+    /**
+     * @param Collection<int, Project> $projects
+     * @param Collection<int, User> $users
+     */
+    private function seedAgileBoards(Collection $projects, Collection $users): int {
+        $scrumProject = $projects->get(0);
+        if ($scrumProject === null || \App\Models\Agile\AgileBoard::query()->where('project_id', $scrumProject->id)->exists()) {
+            return 0;
+        }
+        $kanbanProject = $projects->get(1);
+
+        $boards = app(\App\Services\Agile\AgileBoardService::class);
+        $items = app(\App\Services\Agile\AgileWorkItemService::class);
+        $sprints = app(\App\Services\Agile\AgileSprintService::class);
+        /** @var User $actor */
+        $actor = $users->first();
+        $base = \Illuminate\Support\Carbon::now()->subWeeks(4)->startOfWeek()->setTime(9, 0);
+        $at = fn(int $days, int $hour = 9) => \Illuminate\Support\Carbon::setTestNow($base->copy()->addDays($days)->setTime($hour, 0));
+
+        try {
+            // ── Scrum-Board mit zwei Sprints ─────────────────────────────
+            $at(0);
+            $board = $boards->activate($scrumProject, \App\Models\Agile\AgileBoard::METHOD_SCRUM, $actor);
+            $inProgress = $board->columns()->where('name', 'In Arbeit')->firstOrFail();
+            $done = $board->columns()->where('category', 'done')->firstOrFail();
+
+            $stories = collect([
+                ['Anmeldung mit Zwei-Faktor absichern', 5],
+                ['Dashboard-Kacheln konfigurierbar machen', 3],
+                ['Export nach XLSX bereitstellen', 8],
+                ['Benachrichtigungen zusammenfassen', 2],
+                ['Suche über alle Bereiche', 5],
+                ['Mobile Ansicht für die Zeiterfassung', 3],
+            ])->map(fn(array $row) => $items->create($board, [
+                'title' => $row[0],
+                'story_points' => $row[1],
+            ], $actor))->values()->all();
+
+            $sprintOne = $sprints->plan($board, [
+                'name' => 'Sprint 1', 'goal' => 'Grundfunktionen lieferfähig machen',
+                'starts_on' => $base->toDateString(), 'ends_on' => $base->copy()->addDays(11)->toDateString(),
+            ], $actor);
+            foreach (array_slice($stories, 0, 4) as $story) {
+                $sprints->assign($sprintOne, $story, $actor);
+            }
+            $at(0, 10);
+            $sprintOne = $sprints->start($sprintOne, $actor);
+
+            $move = function (int $index, $column, int $day, int $hour = 9) use ($boards, $stories, $actor, $at): void {
+                $at($day, $hour);
+                $item = $stories[$index]->fresh() ?? $stories[$index];
+                $boards->move($item, $column, (int) $item->lock_version, null, $actor);
+            };
+            $move(0, $inProgress, 2);
+            $move(0, $done, 4);
+            $move(1, $inProgress, 5);
+            $move(1, $done, 7);
+            $move(2, $inProgress, 8);
+
+            $at(10);
+            $sprintTwo = $sprints->plan($board, [
+                'name' => 'Sprint 2', 'goal' => 'Auswertung und Suche ausbauen',
+                'starts_on' => $base->copy()->addDays(14)->toDateString(),
+                'ends_on' => $base->copy()->addDays(31)->toDateString(),
+            ], $actor);
+
+            $at(11, 16);
+            $sprints->complete($sprintOne->fresh() ?? $sprintOne, [
+                (int) $stories[2]->id => (string) $sprintTwo->id, // Carry-over in Sprint 2
+                (int) $stories[3]->id => 'backlog',
+            ], $actor);
+
+            $sprintTwo = $sprintTwo->fresh() ?? $sprintTwo;
+            $sprints->assign($sprintTwo, $stories[4], $actor);
+            $at(14);
+            $sprints->start($sprintTwo, $actor);
+            $move(2, $inProgress, 15);
+            $move(4, $inProgress, 16);
+            $at(17);
+            $boards->block($stories[2]->fresh() ?? $stories[2], 'Warten auf Kundenfreigabe', $actor);
+            $at(18, 14);
+            $boards->unblock($stories[2]->fresh() ?? $stories[2], $actor);
+            $move(2, $done, 19);
+            $at(20);
+            $boards->block($stories[4]->fresh() ?? $stories[4], 'Testumgebung nicht erreichbar', $actor);
+
+            // ── Kanban-Board mit WIP-Limit ───────────────────────────────
+            if ($kanbanProject === null) {
+                return 1;
+            }
+            $at(3);
+            $kanban = $boards->activate($kanbanProject, \App\Models\Agile\AgileBoard::METHOD_KANBAN, $actor);
+            $kanbanProgress = $kanban->columns()->where('name', 'In Arbeit')->firstOrFail();
+            $boards->saveColumn($kanban, [
+                'name' => (string) $kanbanProgress->name,
+                'category' => 'in_progress',
+                'wip_limit' => 2,
+                'position' => (int) $kanbanProgress->position,
+            ], $kanbanProgress, $actor);
+            $kanbanDone = $kanban->columns()->where('category', 'done')->firstOrFail();
+
+            $tasks = collect([
+                'Serverwartung Standort Nord', 'Zertifikate erneuern',
+                'Backup-Konzept prüfen', 'Monitoring-Alarme entrümpeln',
+            ])->map(fn(string $title) => $items->create($kanban, ['title' => $title, 'item_type' => 'task'], $actor))->values()->all();
+
+            $kanbanMove = function (int $index, $column, int $day) use ($boards, $tasks, $actor, $at): void {
+                $at($day, 11);
+                $item = $tasks[$index]->fresh() ?? $tasks[$index];
+                $boards->move($item, $column, (int) $item->lock_version, null, $actor);
+            };
+            $kanbanMove(0, $kanbanProgress, 4);
+            $kanbanMove(0, $kanbanDone, 6);
+            $kanbanMove(1, $kanbanProgress, 7);
+            $kanbanMove(2, $kanbanProgress, 12);
+
+            return 2;
+        } finally {
+            \Illuminate\Support\Carbon::setTestNow();
+        }
     }
 
     /** @param array<string, mixed> $blueprint */
@@ -683,6 +921,139 @@ class DemoSeederService {
         }
 
         return $count;
+    }
+
+    /**
+     * Beispiel-Anhänge am Hauptauftrag (lizenzfrei, synthetisch erzeugt):
+     * ein Einsatzbericht-PDF (über das pdf-toolkit) und ein Vorher-Foto
+     * (Minimal-PNG). Liefert die Anzahl der angelegten Anhänge.
+     *
+     * @param Collection<int, User> $users
+     */
+    private function seedAttachments(Organization $organization, DiaryEntry $entry, Collection $users): int {
+        /** @var User $owner */
+        $owner = $users->first();
+        $dir = 'attachments/demo/' . $organization->id;
+        $created = 0;
+
+        $html = '<h1>Einsatzbericht (Demo)</h1>'
+            . '<p>Auftrag: ' . e((string) $entry->title) . '</p>'
+            . '<p>Dieser Beispielbericht wurde für Vorführzwecke erzeugt. '
+            . 'Er zeigt, wie Berichte und Nachweise als Anhang am Auftrag liegen.</p>';
+        $pdf = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html));
+        if ($pdf !== null) {
+            $path = $dir . '/einsatzbericht-demo.pdf';
+            Storage::disk('local')->put($path, $pdf);
+            $entry->attachments()->create([
+                'organization_id' => $organization->id,
+                'user_id' => $owner->id,
+                'disk' => 'local',
+                'path' => $path,
+                'original_name' => 'einsatzbericht-demo.pdf',
+                'mime' => 'application/pdf',
+                'size' => strlen($pdf),
+            ]);
+            $created++;
+        }
+
+        // Minimal gültiges 1×1-PNG (selbst erzeugt, lizenzfrei).
+        $png = (string) base64_decode(
+            'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+            true,
+        );
+        $path = $dir . '/vorher-foto-demo.png';
+        Storage::disk('local')->put($path, $png);
+        $entry->attachments()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $owner->id,
+            'disk' => 'local',
+            'path' => $path,
+            'original_name' => 'vorher-foto-demo.png',
+            'mime' => 'image/png',
+            'size' => strlen($png),
+        ]);
+        $created++;
+
+        return $created;
+    }
+
+    /**
+     * Spielt einen vollständigen Prozedurlauf auf dem Hauptauftrag durch —
+     * inkl. registriertem UND verifiziertem Backup-Proof sowie
+     * Vier-Augen-Freigabe (SecondPersonGate) durch einen zweiten Demo-User.
+     * Nutzt die Prozedurvorlagen des installierten Branchenprofils; ohne
+     * veröffentlichte Vorlage wird still übersprungen (0).
+     *
+     * @param Collection<int, User> $users
+     */
+    private function seedProcedureRun(Organization $organization, DiaryEntry $entry, Collection $users): int {
+        $templates = app(ProcedureTemplateService::class);
+        $executor = app(ProcedureExecutionService::class);
+        $gate = app(SecondPersonGate::class);
+        $backups = app(BackupProofService::class);
+
+        // Bevorzugt eine Vorlage mit Backup- und Freigabe-Schritten (IT),
+        // sonst die erste mit veröffentlichter Version.
+        $candidates = ProcedureTemplate::query()
+            ->where('organization_id', $organization->id)
+            ->orderByRaw("CASE WHEN code = 'IT_NETWORK_CHANGE' THEN 0 ELSE 1 END")
+            ->orderBy('id')
+            ->get();
+        $template = null;
+        foreach ($candidates as $candidate) {
+            if ($templates->currentVersionFor($candidate) !== null) {
+                $template = $candidate;
+                break;
+            }
+        }
+        if (! $template instanceof ProcedureTemplate) {
+            return 0;
+        }
+
+        /** @var User $executorUser Ausführender Techniker (zweiter Demo-User). */
+        $executorUser = $users->skip(1)->first() ?? $users->first();
+        /** @var User $approver Vier-Augen-Zweitperson/Verifizierer (Demo-Admin). */
+        $approver = $users->first();
+
+        $run = $executor->start($template, $entry, $approver, $executorUser);
+
+        foreach ($run->stepRuns()->with('stepDef')->orderBy('id')->get() as $stepRun) {
+            $def = $stepRun->stepDef;
+
+            if ($def?->requires_proof_type === ProcedureProofType::Backup) {
+                $proof = $backups->register($stepRun, $executorUser, [
+                    'backup_scope' => ProcedureBackupScope::Config->value,
+                    'source_label' => 'Demo-Konfigurationsbackup',
+                    'taken_at' => now()->toDateTimeString(),
+                    'size_bytes' => 1024 * 256,
+                    'storage_target' => ProcedureBackupStorageTarget::External->value,
+                    'external_ref' => '/srv/backup/demo-config.tar.gz',
+                    'verify_method' => ProcedureBackupVerifyMethod::ManagerConfirmation->value,
+                ]);
+                $backups->verify($proof, $approver, null, 'Demo: Backup geprüft.');
+            }
+
+            $fresh = $stepRun->fresh();
+            if ($fresh !== null && $gate->requiresSecondPerson($fresh)) {
+                $gate->request($fresh, $executorUser);
+                $gate->take($fresh->fresh() ?? $fresh, $approver);
+                $gate->sign($fresh->fresh() ?? $fresh, $approver);
+            }
+
+            $fresh = $stepRun->fresh();
+            if ($fresh !== null) {
+                $executor->execute($fresh, $executorUser, ProcedureStepRunStatus::Done, [
+                    'note' => 'Demo-Durchlauf',
+                ]);
+            }
+        }
+
+        $completed = $run->fresh();
+        if ($completed instanceof ProcedureRun) {
+            $executor->completeRun($completed, $executorUser);
+        }
+
+        return 1;
     }
 
     /**

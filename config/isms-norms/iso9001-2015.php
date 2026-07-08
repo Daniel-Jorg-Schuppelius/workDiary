@@ -26,6 +26,9 @@ return [
     'norm' => 'ISO 9001',
     'edition' => '2015',
     'label' => 'ISO 9001:2015 — Qualitätsmanagement',
+    // Profilrevision + Stichtag der Normfassung (Nachtrag 046a).
+    'version' => '1.0',
+    'as_of' => '2015-09-15',
     'requirements' => [
         ['ref_no' => '4', 'title' => 'Kontext der Organisation'],
         ['ref_no' => '4.1', 'title' => 'Organisation und ihr Kontext verstehen'],

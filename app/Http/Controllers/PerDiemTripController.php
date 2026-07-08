@@ -16,12 +16,14 @@ use App\Http\Requests\{SavePerDiemDayRequest, SavePerDiemTripRequest};
 use App\Models\{Customer, PerDiemDay, PerDiemTrip, Project, TravelLog, User};
 use App\Services\Expense\{PerDiemEligibilityChecker, PerDiemTripService};
 use App\Support\SortableQuery;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class PerDiemTripController extends Controller {
@@ -192,12 +194,14 @@ class PerDiemTripController extends Controller {
         $date = $perDiemTrip->started_at->format('Y-m-d');
         $filename = sprintf('verpflegungspauschale-%s-%s-%d.pdf', $date, $slug ?: 'reise', $perDiemTrip->id);
 
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('per-diem-trips.pdf', [
-            'trip' => $perDiemTrip,
-        ])->setPaper('a4', 'portrait');
+        $html = view('per-diem-trips.pdf', ['trip' => $perDiemTrip])->render();
+        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (per-diem-trips.pdf).');
 
-        return $pdf->download($filename);
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 
     public function fromTravelLog(TravelLog $travelLog): RedirectResponse {

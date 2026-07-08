@@ -28,6 +28,12 @@
                 <span class="material-symbols-outlined text-base" aria-hidden="true">groups</span>
                 {{ __('Nach Mitarbeiter') }}
             </a>
+            <a role="tab"
+               href="{{ route('dispatch.calendar', $baseQuery) }}"
+               class="tab gap-1">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">calendar_month</span>
+                {{ __('Kalender') }}
+            </a>
         </div>
 
         <x-filter-bar :action="route('dispatch.board')" :reset="route('dispatch.board')">

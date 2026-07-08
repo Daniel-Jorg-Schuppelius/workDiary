@@ -72,6 +72,35 @@ class DataQualityInspectorTest extends TestCase {
         $this->assertSame([], $this->inspector->diaryEntryGaps($this->entry()));
     }
 
+    public function test_report_aggregates_gaps_by_domain_phase_and_severity(): void {
+        ClassificationRequirement::factory()->create([
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'service',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => ClassificationRequirementPhase::BeforeComplete->value,
+            'severity' => ClassificationRequirementSeverity::Hard->value,
+            'min_count' => 1,
+        ]);
+
+        $report = $this->inspector->report([$this->entry()]);
+
+        $this->assertSame(1, $report['entries_with_gaps']);
+        $this->assertCount(1, $report['rows']);
+        $this->assertSame(1, $report['by_domain']['defect_type']['count']);
+        $this->assertSame(1, $report['by_severity']['hard']);
+        $this->assertSame(1, $report['by_phase']['beforeComplete']);
+        $this->assertSame('defect_type', $report['rows'][0]['gaps'][0]['domain']);
+        $this->assertSame('beforeComplete', $report['rows'][0]['gaps'][0]['phase']);
+    }
+
+    public function test_report_skips_entries_without_gaps(): void {
+        $report = $this->inspector->report([$this->entry()]);
+
+        $this->assertSame(0, $report['entries_with_gaps']);
+        $this->assertSame([], $report['rows']);
+        $this->assertSame([], $report['by_domain']);
+    }
+
     public function test_inspection_does_not_write_audit_logs(): void {
         ClassificationRequirement::factory()->create([
             'organization_id' => $this->org->id,

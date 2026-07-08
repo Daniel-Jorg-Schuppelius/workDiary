@@ -40,7 +40,12 @@
                             <p class="text-sm text-base-content/60 font-mono">{{ $profile['code'] }} · v{{ $profile['version'] }}</p>
                         </div>
                         @if (in_array($profile['code'], $installedCodes, true))
-                            <x-status-badge tone="info" size="sm">{{ __('Bereits installiert') }}</x-status-badge>
+                            @php $appliedVersion = (int) ($installedVersions[$profile['code']] ?? 0); @endphp
+                            @if ($appliedVersion > 0 && (int) $profile['version'] > $appliedVersion)
+                                <x-status-badge tone="warning" size="sm">{{ __('Update: v:new (installiert v:old)', ['new' => $profile['version'], 'old' => $appliedVersion]) }}</x-status-badge>
+                            @else
+                                <x-status-badge tone="info" size="sm">{{ __('Bereits installiert') }}</x-status-badge>
+                            @endif
                         @endif
                     </div>
 
@@ -125,5 +130,15 @@
             @endforeach
         </div>
     @endif
+
+    {{-- Marketplace-Import (Restpunkt 042): kuratiertes JSON-Profil hochladen. --}}
+    <x-card :title="__('Profil importieren')">
+        <p class="mb-2 text-xs text-base-content/60">{{ __('JSON-Profil (Struktur wie die mitgelieferten Branchenprofile). Klassifikations-Domänen sind hart begrenzt — unbekannte Domänen werden abgelehnt.') }}</p>
+        <form method="POST" action="{{ route('admin.branch-profiles.import') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2">
+            @csrf
+            <input type="file" name="file" accept=".json,application/json" class="file-input file-input-bordered file-input-sm max-w-64" required>
+            <x-icon-btn icon="upload_file" tone="primary" size="sm" type="submit" show-label>{{ __('Importieren & installieren') }}</x-icon-btn>
+        </form>
+    </x-card>
 </x-index-page>
 @endsection

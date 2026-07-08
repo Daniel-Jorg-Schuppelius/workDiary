@@ -51,6 +51,7 @@ class IsmsRequirement extends Model {
         'edition',
         'ref_no',
         'title',
+        'description',
         'source',
     ];
 

@@ -8,9 +8,9 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SecurityController, SupportAccessAuditController, SupportReportController};
+use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SecurityController, SupportAccessAuditController, SupportAccessGrantController, SupportImpersonationController, SupportReportController};
 use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
 use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController, TwoFactorChallengeController};
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
@@ -287,6 +287,7 @@ Route::middleware('auth')->group(function () {
             Route::post('avv/{agreement}/taetigkeiten', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'syncActivities'])->name('agreements.activities');
             Route::post('avv/{agreement}/subprozessoren', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'storeSubprocessor'])->name('agreements.subprocessor.store');
             Route::post('avv/{agreement}/subprozessoren/{subprocessor}/freigabe', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'approveSubprocessor'])->name('agreements.subprocessor.approve');
+            Route::delete('avv/{agreement}/subprozessoren/{subprocessor}', [\App\Http\Controllers\Privacy\ProcessingAgreementController::class, 'destroySubprocessor'])->name('agreements.subprocessor.destroy');
 
             // ── MVP 3: Datenschutzvorfaelle (Art. 33/34) + Massnahmen ────────
             Route::get('vorfaelle', [\App\Http\Controllers\Privacy\IncidentController::class, 'index'])->name('incidents.index');
@@ -304,6 +305,9 @@ Route::middleware('auth')->group(function () {
 
             // DSFA (Art. 35) je Verarbeitungstaetigkeit
             Route::post('vvt/{activity}/dsfa', [\App\Http\Controllers\Privacy\DpiaController::class, 'store'])->name('activities.dpia');
+            // Geführter DSFA-Schritt-Workflow + PDF-Bericht (Nachtrag 043a)
+            Route::post('vvt/{activity}/dsfa/schritt/{stepCode}', [\App\Http\Controllers\Privacy\DpiaController::class, 'completeStep'])->name('activities.dpia.step');
+            Route::get('vvt/{activity}/dsfa/bericht', [\App\Http\Controllers\Privacy\DpiaController::class, 'report'])->name('activities.dpia.report');
 
             // TOM-Katalog (Art. 32)
             Route::get('tom', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'index'])->name('tom.index');
@@ -314,6 +318,8 @@ Route::middleware('auth')->group(function () {
             Route::post('tom/{measure}/freigabe', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'approve'])->name('tom.approve');
             Route::post('tom/{measure}/zuordnung', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'assignActivity'])->name('tom.assign');
             Route::post('tom/{measure}/pruefung', [\App\Http\Controllers\Privacy\TechnicalMeasureController::class, 'review'])->name('tom.review');
+            // Nachweisanhänge mit Gültig-bis (Nachtrag 043b)
+            Route::post('tom/{measure}/anhang', [\App\Http\Controllers\Privacy\PrivacyAttachmentController::class, 'storeForMeasure'])->name('tom.attachment.store');
 
             // GVV – Gemeinsam Verantwortliche (Art. 26)
             Route::get('gvv', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'index'])->name('gvv.index');
@@ -324,9 +330,17 @@ Route::middleware('auth')->group(function () {
             Route::post('gvv/{gvv}/taetigkeiten', [\App\Http\Controllers\Privacy\JointControllerAgreementController::class, 'syncActivities'])->name('gvv.activities');
 
             // Compliance-/Lueckenanalyse
+            // Aufbewahrungs-Review (Restpunkt 66): Vorschläge sichten + bestätigen.
+            Route::get('aufbewahrung', [\App\Http\Controllers\Privacy\RetentionController::class, 'index'])->name('retention.index');
+            Route::post('aufbewahrung/scan', [\App\Http\Controllers\Privacy\RetentionController::class, 'scan'])->name('retention.scan');
+            Route::post('aufbewahrung/{proposal}', [\App\Http\Controllers\Privacy\RetentionController::class, 'decide'])->name('retention.decide');
+            Route::post('aufbewahrung-bereich/loeschen', [\App\Http\Controllers\Privacy\RetentionController::class, 'purgeArea'])->name('retention.purge-area');
+
             Route::get('luecken', [\App\Http\Controllers\Privacy\ComplianceController::class, 'index'])->name('compliance.index');
             Route::post('luecken/analyse', [\App\Http\Controllers\Privacy\ComplianceController::class, 'run'])->name('compliance.run');
             Route::put('luecken/{finding}', [\App\Http\Controllers\Privacy\ComplianceController::class, 'update'])->name('compliance.update');
+            // Konfigurierbarer Anforderungskatalog (Nachtrag 043c)
+            Route::put('luecken/katalog/{requirement}', [\App\Http\Controllers\Privacy\ComplianceController::class, 'updateRequirement'])->name('compliance.requirement.update');
 
             // Anhaenge an Fallakten (Anfragen/Vorfaelle)
             Route::post('anfragen/{dsr}/anhaenge', [\App\Http\Controllers\Privacy\PrivacyAttachmentController::class, 'storeForRequest'])->name('requests.attach');
@@ -392,9 +406,16 @@ Route::middleware('auth')->group(function () {
 
             // Advisories (Feature 044, MVP 2): CSAF/VEX-Import + Nachweis-Ablage
             // (SHA-256), Inventar-/SBOM-Abgleich (AdvisoryImportService).
+            // Mehrjähriges Auditprogramm (Nachtrag 044d)
+            Route::get('auditprogramme', [\App\Http\Controllers\Isms\AuditProgramController::class, 'index'])->name('audit-programs.index');
+            Route::post('auditprogramme', [\App\Http\Controllers\Isms\AuditProgramController::class, 'store'])->name('audit-programs.store');
+            Route::put('auditprogramme/{program}', [\App\Http\Controllers\Isms\AuditProgramController::class, 'update'])->name('audit-programs.update');
+            Route::delete('auditprogramme/{program}', [\App\Http\Controllers\Isms\AuditProgramController::class, 'destroy'])->name('audit-programs.destroy');
+
             Route::get('advisories', [\App\Http\Controllers\Isms\AdvisoryController::class, 'index'])->name('advisories.index');
             Route::get('advisories/import', [\App\Http\Controllers\Isms\AdvisoryController::class, 'create'])->name('advisories.create');
             Route::post('advisories/import', [\App\Http\Controllers\Isms\AdvisoryController::class, 'store'])->name('advisories.store');
+            Route::post('advisories/feed-pull', [\App\Http\Controllers\Isms\AdvisoryController::class, 'pullFeed'])->middleware('throttle:6,1')->name('advisories.feed-pull');
 
             // Lieferantenbewertung (Feature 044, MVP 2/3 „Lieferanten und
             // Verträge"): Kritikalitäts-/Risikobewertung, Sicherheits-
@@ -422,6 +443,7 @@ Route::middleware('auth')->group(function () {
             Route::get('anforderungen/neu', [\App\Http\Controllers\Isms\RequirementController::class, 'create'])->name('requirements.create');
             Route::post('anforderungen', [\App\Http\Controllers\Isms\RequirementController::class, 'store'])->name('requirements.store');
             Route::post('anforderungen/katalog', [\App\Http\Controllers\Isms\RequirementController::class, 'import'])->name('requirements.import');
+            Route::post('anforderungen/oscal', [\App\Http\Controllers\Isms\RequirementController::class, 'importOscal'])->name('requirements.import-oscal');
             Route::get('anforderungen/{requirement}/bearbeiten', [\App\Http\Controllers\Isms\RequirementController::class, 'edit'])->name('requirements.edit');
             Route::put('anforderungen/{requirement}', [\App\Http\Controllers\Isms\RequirementController::class, 'update'])->name('requirements.update');
             Route::delete('anforderungen/{requirement}', [\App\Http\Controllers\Isms\RequirementController::class, 'destroy'])->name('requirements.destroy');
@@ -550,7 +572,16 @@ Route::middleware('auth')->group(function () {
         // Admin-Sicherheitsübersicht (Feature 016) — read-only Aggregation
         // sicherheitsrelevanter Zustände (Sessions, API-Tokens, Integrationen,
         // letzte Exporte/Supportzugriffe, 2FA-/Verschlüsselungs-Status).
+        // Datenführerschaft-Matrix (Restpunkt 69).
+        Route::get('admin/datenfuehrerschaft', [\App\Http\Controllers\Admin\DataOwnershipController::class, 'index'])->name('admin.data-ownership.index');
+        Route::post('admin/datenfuehrerschaft', [\App\Http\Controllers\Admin\DataOwnershipController::class, 'update'])->name('admin.data-ownership.update');
         Route::get('admin/security', [SecurityController::class, 'index'])->name('admin.security.index');
+        // Sicherheitslage der Abhängigkeiten (Rang 70): OSV-Abruf + VEX-Bewertung.
+        Route::post('admin/security/advisories/pull', [SecurityController::class, 'pullAdvisories'])
+            ->middleware('throttle:6,1')
+            ->name('admin.security.advisories.pull');
+        Route::put('admin/security/advisories/{advisory}/statement', [SecurityController::class, 'updateAdvisoryStatement'])
+            ->name('admin.security.advisories.statement');
 
         // Backup- & Restore-Status (Feature 017) — plattformweite Admin-Sicht
         Route::get('admin/backup', [BackupStatusController::class, 'status'])->name('admin.backup.status');
@@ -565,6 +596,9 @@ Route::middleware('auth')->group(function () {
             ->middleware('throttle:6,1')
             ->name('admin.components.sbom.generate');
         Route::get('admin/components/sbom/download', [ComponentsController::class, 'download'])->name('admin.components.sbom.download');
+        Route::post('admin/components/vex', [ComponentsController::class, 'vex'])
+            ->middleware('throttle:6,1')
+            ->name('admin.components.vex');
         // Signiertes/integritätsgesichertes Release-Manifest (Feature 022)
         Route::post('admin/components/manifest', [ComponentsController::class, 'manifest'])
             ->middleware('throttle:6,1')
@@ -587,6 +621,22 @@ Route::middleware('auth')->group(function () {
         // Supportzugriffe-Audit (MVP-004)
         Route::get('admin/support/access-audit', [SupportAccessAuditController::class, 'index'])
             ->name('admin.support.access-audit.index');
+
+        // Temporäre Supportfreigabe + Impersonation (Rang 64). Der Stop-
+        // Endpunkt liegt bewusst NICHT unter einem gesperrten Namensraum,
+        // damit er in der Support-Sitzung erreichbar bleibt.
+        Route::get('admin/support/grants', [SupportAccessGrantController::class, 'index'])
+            ->name('admin.support.grants.index');
+        Route::get('admin/support/grants/create', [SupportAccessGrantController::class, 'create'])
+            ->name('admin.support.grants.create');
+        Route::post('admin/support/grants', [SupportAccessGrantController::class, 'store'])
+            ->name('admin.support.grants.store');
+        Route::post('admin/support/grants/{grant}/revoke', [SupportAccessGrantController::class, 'revoke'])
+            ->name('admin.support.grants.revoke');
+        Route::post('admin/support/impersonate/{user}', [SupportImpersonationController::class, 'store'])
+            ->name('admin.support.impersonate.start');
+        Route::post('admin/support/impersonate-stop', [SupportImpersonationController::class, 'destroy'])
+            ->name('admin.support.impersonate.stop');
 
         // Lizenz-Admin (MVP-047)
         Route::get('admin/license', [LicenseAdminController::class, 'index'])->name('admin.license.index');
@@ -644,6 +694,10 @@ Route::middleware('auth')->group(function () {
         // Route-Namen dispatch.* → Plan-Gating module.planung (config/plans.php).
         Route::get('dispatch-board', [DispatchBoardController::class, 'board'])->name('dispatch.board');
         Route::get('dispatch-board/map', [DispatchBoardController::class, 'map'])->name('dispatch.map');
+        // Kalender-/Tagesansicht (Rang 52) + Auftrags-Qualifikationsmatrix (Rang 53).
+        Route::get('dispatch-board/calendar', [DispatchBoardController::class, 'calendar'])->name('dispatch.calendar');
+        Route::get('dispatch-board/qualifications/{diary}', [DispatchBoardController::class, 'qualifications'])->name('dispatch.qualifications');
+        Route::put('diary/{diary}/qualifications', [\App\Http\Controllers\DiaryQualificationController::class, 'update'])->name('diary.qualifications.update');
         Route::post('diary/{diary}/comments', [CommentController::class, 'store'])->name('diary.comments.store');
         Route::post('time-entries/{timeEntry}/comments', [TimeEntryCommentController::class, 'store'])->name('time-entries.comments.store');
 
@@ -654,6 +708,13 @@ Route::middleware('auth')->group(function () {
         Route::get('extern/{type}/{id}/einladen', [ExternalParticipantController::class, 'create'])->name('external.create');
         Route::post('extern/{type}/{id}/einladen', [ExternalParticipantController::class, 'store'])->name('external.store');
         Route::post('extern/{participant}/widerrufen', [ExternalParticipantController::class, 'revoke'])->name('external.revoke');
+        // Wiederverwendbare externe Kontaktprofile (Feature 033, Rang 30).
+        Route::get('extern-kontakte', [\App\Http\Controllers\ExternalContactController::class, 'index'])->name('external-contacts.index');
+        Route::get('extern-kontakte/neu', [\App\Http\Controllers\ExternalContactController::class, 'create'])->name('external-contacts.create');
+        Route::post('extern-kontakte', [\App\Http\Controllers\ExternalContactController::class, 'store'])->name('external-contacts.store');
+        Route::get('extern-kontakte/{externalContact}/bearbeiten', [\App\Http\Controllers\ExternalContactController::class, 'edit'])->name('external-contacts.edit');
+        Route::put('extern-kontakte/{externalContact}', [\App\Http\Controllers\ExternalContactController::class, 'update'])->name('external-contacts.update');
+        Route::delete('extern-kontakte/{externalContact}', [\App\Http\Controllers\ExternalContactController::class, 'destroy'])->name('external-contacts.destroy');
         Route::put('comments/{comment}', [CommentController::class, 'update'])->name('comments.update');
         Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 
@@ -661,6 +722,8 @@ Route::middleware('auth')->group(function () {
             ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'task', 'customer', 'organization', 'user', 'asset'])
             ->name('attachments.store');
         Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->name('attachments.download');
+        // Kundenfreigabe je Anhang fürs Portal (Rang 54, Toggle).
+        Route::patch('attachments/{attachment}/customer-visibility', [AttachmentController::class, 'toggleCustomerVisibility'])->name('attachments.customer-visibility');
         Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])->name('attachments.destroy');
         Route::delete('attachments/{type}/{id}/meta/{meta}', [AttachmentController::class, 'destroyMeta'])
             ->whereIn('type', ['organization', 'user'])
@@ -670,6 +733,48 @@ Route::middleware('auth')->group(function () {
         Route::get('week', WeekController::class)->name('week.index');
         Route::get('calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar.index');
         Route::get('calendar/events', [\App\Http\Controllers\CalendarController::class, 'events'])->name('calendar.events');
+
+        // Agiles Projektmanagement (Feature 064) — eigenes Präfix agile.*
+        // (module.agile_projects; projects.* ist auf module.vertrieb gemappt).
+        // Org-weite Management-Übersicht (P10) — Projektfilter via Policy.
+        Route::get('agile/berichte', [\App\Http\Controllers\Reporting\AgileManagementReportController::class, 'index'])->name('agile.reports.overview');
+        Route::prefix('agile/projects/{project}')->name('agile.')->group(function (): void {
+            Route::get('board', [\App\Http\Controllers\Agile\AgileBoardController::class, 'board'])->name('board');
+            Route::post('aktivieren', [\App\Http\Controllers\Agile\AgileBoardController::class, 'activate'])->name('activate');
+            Route::patch('einstellungen', [\App\Http\Controllers\Agile\AgileBoardController::class, 'updateSettings'])->name('settings.update');
+            // Produkt-Backlog (P2/MVP-140).
+            Route::get('backlog', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'index'])->name('backlog');
+            Route::post('backlog', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'store'])->name('items.store');
+            Route::post('backlog/uebernehmen', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'adopt'])->name('items.adopt');
+            Route::patch('backlog/{item}/rang', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'rerank'])->name('items.rerank');
+            Route::patch('backlog/{item}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'updateItem'])->name('items.update');
+            Route::post('backlog/{item}/kriterien', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'storeCriterion'])->name('criteria.store');
+            Route::patch('backlog/{item}/kriterien/{criterion}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'toggleCriterion'])->name('criteria.toggle');
+            Route::delete('backlog/{item}/kriterien/{criterion}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'destroyCriterion'])->name('criteria.destroy');
+            // Board-Flussregeln (P3/MVP-141).
+            Route::patch('items/{item}/spalte', [\App\Http\Controllers\Agile\AgileBoardController::class, 'moveItem'])->name('items.move');
+            Route::post('items/{item}/blockieren', [\App\Http\Controllers\Agile\AgileBoardController::class, 'blockItem'])->name('items.block');
+            Route::post('items/{item}/entblocken', [\App\Http\Controllers\Agile\AgileBoardController::class, 'unblockItem'])->name('items.unblock');
+            // Berichtszentrum (P8/MVP-146).
+            Route::get('berichte/sprint', [\App\Http\Controllers\Reporting\AgileSprintReportController::class, 'index'])->name('reports.sprint');
+            Route::get('berichte/fluss', [\App\Http\Controllers\Reporting\AgileFlowReportController::class, 'index'])->name('reports.flow');
+            // Drilldown/Exporte (P11/MVP-149) — Drilldown nur signiert.
+            Route::get('berichte/drilldown', [\App\Http\Controllers\Reporting\AgileReportExportController::class, 'drilldown'])->name('reports.drilldown');
+            Route::get('berichte/export/{metric}.csv', [\App\Http\Controllers\Reporting\AgileReportExportController::class, 'csv'])->name('reports.export.csv');
+            Route::get('berichte/export/cockpit.pdf', [\App\Http\Controllers\Reporting\AgileReportExportController::class, 'pdf'])->name('reports.export.pdf');
+            // Sprints (P4/MVP-142).
+            Route::get('sprints', [\App\Http\Controllers\Agile\AgileSprintController::class, 'index'])->name('sprints');
+            Route::post('sprints', [\App\Http\Controllers\Agile\AgileSprintController::class, 'store'])->name('sprints.store');
+            Route::post('sprints/{sprint}/items', [\App\Http\Controllers\Agile\AgileSprintController::class, 'assignItem'])->name('sprints.items.assign');
+            Route::delete('sprints/{sprint}/items/{item}', [\App\Http\Controllers\Agile\AgileSprintController::class, 'removeItem'])->name('sprints.items.remove');
+            Route::post('sprints/{sprint}/start', [\App\Http\Controllers\Agile\AgileSprintController::class, 'start'])->name('sprints.start');
+            Route::post('sprints/{sprint}/abschliessen', [\App\Http\Controllers\Agile\AgileSprintController::class, 'complete'])->name('sprints.complete');
+            Route::post('sprints/{sprint}/abbrechen', [\App\Http\Controllers\Agile\AgileSprintController::class, 'cancel'])->name('sprints.cancel');
+            // Spalten-Verwaltung (P3).
+            Route::post('spalten', [\App\Http\Controllers\Agile\AgileBoardController::class, 'saveColumn'])->name('columns.store');
+            Route::patch('spalten/{column}', [\App\Http\Controllers\Agile\AgileBoardController::class, 'saveColumn'])->name('columns.update');
+            Route::delete('spalten/{column}', [\App\Http\Controllers\Agile\AgileBoardController::class, 'destroyColumn'])->name('columns.destroy');
+        });
 
         Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
         Route::patch('kanban/{entry}/status', [KanbanController::class, 'updateStatus'])->name('kanban.status');
@@ -856,6 +961,7 @@ Route::middleware('auth')->group(function () {
         Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
         Route::post('manufacturing-orders/{order}/deliveries/{delivery}/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushDeliveryNote'])->name('manufacturing-orders.deliveries.lexoffice'); // E4/045 Lieferschein an Lexoffice
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/delivery-note.pdf', [\App\Http\Controllers\ManufacturingOrderController::class, 'deliveryNotePdf'])->name('manufacturing-orders.deliveries.pdf'); // MVP-074 Lieferschein-PDF
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/shipment', [\App\Http\Controllers\ManufacturingOrderController::class, 'createShipment'])->name('manufacturing-orders.deliveries.shipment'); // 059/MVP-128 Rang 20 Versandauftrag
         Route::post('manufacturing-orders/{order}/order-confirmation/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushOrderConfirmation'])->name('manufacturing-orders.order-confirmation.lexoffice'); // 045 Auftragsbestätigung an Lexoffice
         Route::post('manufacturing-orders/{order}/quotation/lexoffice', [\App\Http\Controllers\ManufacturingOrderController::class, 'pushQuotation'])->name('manufacturing-orders.quotation.lexoffice'); // 045 Angebot an Lexoffice
         Route::post('manufacturing-orders/{order}/cancel', [\App\Http\Controllers\ManufacturingOrderController::class, 'cancel'])->name('manufacturing-orders.cancel');
@@ -960,6 +1066,44 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/plugins/{plugin}/health-check', [AdminPluginController::class, 'healthCheck'])->name('admin.plugins.health-check');
         Route::post('admin/plugins/{plugin}/reset-errors', [AdminPluginErrorController::class, 'reset'])->name('admin.plugins.reset-errors');
 
+        // ── SSO & Verzeichnisdienste (Admin, Feature 057) ───────────────────────
+        // Enterprise-gegatet über config/plans.php (admin.sso.* = module.sso).
+        Route::get('admin/sso', [\App\Http\Controllers\Admin\SsoAdminController::class, 'index'])->name('admin.sso.index');
+        Route::post('admin/sso/tokens', [\App\Http\Controllers\Admin\SsoAdminController::class, 'issueToken'])->name('admin.sso.tokens.issue');
+        Route::post('admin/sso/tokens/{token}/revoke', [\App\Http\Controllers\Admin\SsoAdminController::class, 'revokeToken'])->name('admin.sso.tokens.revoke');
+        // SCIM-Gruppe → Team (bewusster Admin-Schritt; SCIM selbst vergibt kein Team/Rollen).
+        Route::post('admin/sso/groups/{group}/team', [\App\Http\Controllers\Admin\SsoAdminController::class, 'mapGroupTeam'])->name('admin.sso.groups.map');
+
+        // ── E-Mail-Eingang (Admin, Feature 056) ─────────────────────────────────
+        Route::get('admin/mail', [\App\Http\Controllers\Admin\MailAdminController::class, 'index'])->name('admin.mail.index');
+        Route::post('admin/mail/connection', [\App\Http\Controllers\Admin\MailAdminController::class, 'store'])->name('admin.mail.connection.store');
+        Route::post('admin/mail/disconnect', [\App\Http\Controllers\Admin\MailAdminController::class, 'disconnect'])->name('admin.mail.disconnect');
+        Route::post('admin/mail/poll', [\App\Http\Controllers\Admin\MailAdminController::class, 'poll'])->name('admin.mail.poll');
+        Route::post('admin/mail/inbox/book', [\App\Http\Controllers\Admin\MailAdminController::class, 'book'])->name('admin.mail.inbox.book');
+
+        // ── Telefonie / CTI (Admin, Feature 056) ────────────────────────────────
+        Route::get('admin/cti', [\App\Http\Controllers\Admin\CtiAdminController::class, 'index'])->name('admin.cti.index');
+        Route::post('admin/cti/connection', [\App\Http\Controllers\Admin\CtiAdminController::class, 'store'])->name('admin.cti.connection.store');
+        Route::post('admin/cti/disconnect', [\App\Http\Controllers\Admin\CtiAdminController::class, 'disconnect'])->name('admin.cti.disconnect');
+
+        // ── Versand-/Carrier-Anbindungen (Admin, Feature 059, module.versand) ────
+        Route::get('admin/versand', [\App\Http\Controllers\Admin\ShipmentAdminController::class, 'index'])->name('admin.shipments.connections.index');
+        Route::post('admin/versand/connection', [\App\Http\Controllers\Admin\ShipmentAdminController::class, 'store'])->name('admin.shipments.connections.store');
+        Route::post('admin/versand/disconnect', [\App\Http\Controllers\Admin\ShipmentAdminController::class, 'disconnect'])->name('admin.shipments.connections.disconnect');
+
+        // ── Team-Messenger-Kanäle (Admin, Feature 056) ──────────────────────────
+        Route::get('admin/chat', [\App\Http\Controllers\Admin\ChatAdminController::class, 'index'])->name('admin.chat.index');
+        Route::post('admin/chat/connection', [\App\Http\Controllers\Admin\ChatAdminController::class, 'store'])->name('admin.chat.connection.store');
+        Route::post('admin/chat/test', [\App\Http\Controllers\Admin\ChatAdminController::class, 'test'])->name('admin.chat.test');
+        Route::post('admin/chat/disconnect', [\App\Http\Controllers\Admin\ChatAdminController::class, 'disconnect'])->name('admin.chat.disconnect');
+
+        // ── Hardware-Stempelterminals (Admin, Feature 061) ──────────────────────
+        Route::get('admin/terminals', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'index'])->name('admin.terminals.index');
+        Route::post('admin/terminals', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storeTerminal'])->name('admin.terminals.store');
+        Route::post('admin/terminals/disconnect', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'disconnectTerminal'])->name('admin.terminals.disconnect');
+        Route::post('admin/terminals/badges', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storeBadge'])->name('admin.terminals.badges.store');
+        Route::post('admin/terminals/badges/revoke', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'revokeBadge'])->name('admin.terminals.badges.revoke');
+
         // ── Plugin-Fehler-Inbox (Admin) ─────────────────────────────────────────
         Route::get('admin/plugin-errors', [AdminPluginErrorController::class, 'index'])->name('admin.plugin-errors.index');
         Route::get('admin/plugin-errors/{pluginError}', [AdminPluginErrorController::class, 'show'])->name('admin.plugin-errors.show');
@@ -1000,6 +1144,8 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])->name('invoices.show');
         Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
         Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
+        Route::post('invoices/{invoice}/approve', [InvoiceController::class, 'approve'])->name('invoices.approve');
+        Route::post('invoices/{invoice}/dun', [InvoiceController::class, 'dun'])->name('invoices.dun');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
         Route::post('invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
         Route::post('invoices/{invoice}/credit-note', [InvoiceController::class, 'creditNote'])->name('invoices.credit-note');
@@ -1007,6 +1153,7 @@ Route::middleware('auth')->group(function () {
         Route::post('invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
         Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
         Route::get('invoices/{invoice}/einvoice', [InvoiceController::class, 'einvoiceDownload'])->name('invoices.einvoice');
+        Route::get('invoices/{invoice}/einvoice-validierung', [\App\Http\Controllers\InvoiceController::class, 'einvoiceValidation'])->name('invoices.einvoice-validation');
         Route::get('invoices/{invoice}/zugferd', [InvoiceController::class, 'zugferdDownload'])->name('invoices.zugferd');
         Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
         Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
@@ -1071,6 +1218,23 @@ Route::middleware('auth')->group(function () {
             Route::get('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'show'])->name('show');
             Route::post('{batch}/finalisieren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'finalize'])->name('finalize');
             Route::get('{batch}/download', [\App\Http\Controllers\Finance\DatevBookingController::class, 'download'])->name('download');
+            // EXTF-Stammdatenexport Kategorie 16 (Nachtrag 045a): Debitoren aus dem Kundenstamm.
+            Route::post('stammdaten/debitoren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'exportDebtors'])
+                ->middleware('throttle:6,1')
+                ->name('debtors.export');
+        });
+        // Eingangs-E-Rechnung (Nachtrag 045b): XRechnung/ZUGFeRD empfangen,
+        // visualisieren und als Document ablegen — keine lokale Invoice.
+        Route::prefix('finanzen/eingangsrechnungen')->name('finance.incoming-invoices.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'store'])->name('store');
+            Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
+            Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');
+        });
+        // GoBD-Z3-Datenträgerüberlassung (Feature 063, MVP-132) — module.finance über finance.*
+        Route::prefix('finanzen/gobd')->name('finance.gobd.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\GobdExportController::class, 'index'])->name('index');
+            Route::post('export', [\App\Http\Controllers\Finance\GobdExportController::class, 'export'])->name('export');
         });
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');
         Route::get('time-entries/create', [TimeEntryController::class, 'pick'])->name('time-entries.create');
@@ -1125,6 +1289,8 @@ Route::middleware('auth')->group(function () {
 
         // ── Tages-Dashboard ───────────────────────────────────────────────────
         Route::get('today', [TodayController::class, 'show'])->name('today.show');
+        // Quick-Buchung offener Blöcke → Projekt (MVP-015, Rang 37).
+        Route::post('today/quick-book', [QuickBookController::class, 'store'])->name('today.quick-book');
 
         // ── Verwaltungszeiten ( nicht-projektgebundene TimeEntries ) ───────────────────────
         Route::get('time-entries/admin/create', [AdminTimeEntryController::class, 'create'])->name('admin-time-entries.create');
@@ -1200,6 +1366,8 @@ Route::middleware('auth')->group(function () {
         Route::get('documents', [\App\Http\Controllers\DocumentController::class, 'index'])->name('documents.index');
         Route::get('documents/create', [\App\Http\Controllers\DocumentController::class, 'create'])->name('documents.create');
         Route::post('documents', [\App\Http\Controllers\DocumentController::class, 'store'])->name('documents.store');
+        // Detailseite (Rang 28) — nach documents/create registriert, damit das Literal zuerst matcht.
+        Route::get('documents/{document}', [\App\Http\Controllers\DocumentController::class, 'show'])->name('documents.show');
         Route::get('documents/{document}/edit', [\App\Http\Controllers\DocumentController::class, 'edit'])->name('documents.edit');
         Route::put('documents/{document}', [\App\Http\Controllers\DocumentController::class, 'update'])->name('documents.update');
         Route::get('documents/{document}/versions', [\App\Http\Controllers\DocumentController::class, 'versions'])->name('documents.versions');
@@ -1226,6 +1394,7 @@ Route::middleware('auth')->group(function () {
         Route::get('ideas', [\App\Http\Controllers\IdeaMapController::class, 'index'])->name('ideas.index');
         Route::get('ideas/create', [\App\Http\Controllers\IdeaMapController::class, 'create'])->name('ideas.create');
         Route::post('ideas', [\App\Http\Controllers\IdeaMapController::class, 'store'])->name('ideas.store');
+        Route::post('ideas/import', [\App\Http\Controllers\IdeaMapController::class, 'import'])->name('ideas.import'); // MVP-138 FreeMind/OPML
         Route::get('ideas/{map}', [\App\Http\Controllers\IdeaMapController::class, 'show'])->name('ideas.show');
         Route::get('ideas/{map}/edit', [\App\Http\Controllers\IdeaMapController::class, 'edit'])->name('ideas.edit');
         Route::put('ideas/{map}', [\App\Http\Controllers\IdeaMapController::class, 'update'])->name('ideas.update');
@@ -1236,8 +1405,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('ideas/{map}/shares/{share}', [\App\Http\Controllers\IdeaMapController::class, 'destroyShare'])->name('ideas.shares.destroy');
         // Knotenbezogene Editor-API (MVP-106/108): kleine JSON-Operationen, nie „ganze Karte speichern".
         Route::get('ideas/{map}/tree', [\App\Http\Controllers\IdeaNodeController::class, 'tree'])->name('ideas.maps.tree');
+        Route::post('ideas/{map}/sync', [\App\Http\Controllers\IdeaNodeController::class, 'sync'])->name('ideas.maps.sync'); // MVP-136 Whole-Map-Sync (Canvas)
         Route::get('ideas/{map}/export.json', [\App\Http\Controllers\IdeaMapController::class, 'exportJson'])->name('ideas.export.json'); // MVP-110
         Route::get('ideas/{map}/export.pdf', [\App\Http\Controllers\IdeaMapController::class, 'exportPdf'])->name('ideas.export.pdf'); // MVP-110
+        Route::get('ideas/{map}/export.opml', [\App\Http\Controllers\IdeaMapController::class, 'exportOpml'])->name('ideas.export.opml'); // MVP-138
+        Route::get('ideas/{map}/export.md', [\App\Http\Controllers\IdeaMapController::class, 'exportMarkdown'])->name('ideas.export.md'); // MVP-138
         Route::post('ideas/{map}/presence', [\App\Http\Controllers\IdeaMapController::class, 'presence'])->name('ideas.maps.presence'); // MVP-108 Bearbeitungspräsenz
         Route::get('ideas/{map}/history', [\App\Http\Controllers\IdeaMapController::class, 'history'])->name('ideas.maps.history'); // MVP-108 Änderungsverlauf
         Route::post('ideas/{map}/nodes', [\App\Http\Controllers\IdeaNodeController::class, 'store'])->name('ideas.nodes.store');
@@ -1286,9 +1458,12 @@ Route::middleware('auth')->group(function () {
         Route::get('form-submissions', [\App\Http\Controllers\FormSubmissionController::class, 'index'])->name('form-submissions.index');
         Route::get('form-submissions/create', [\App\Http\Controllers\FormSubmissionController::class, 'create'])->name('form-submissions.create');
         Route::post('form-submissions', [\App\Http\Controllers\FormSubmissionController::class, 'store'])->name('form-submissions.store');
+        Route::get('form-submissions/{submission}/pdf', [\App\Http\Controllers\FormSubmissionController::class, 'pdf'])->name('form-submissions.pdf'); // Feature 032 Rang 31
         Route::get('form-submissions/{submission}', [\App\Http\Controllers\FormSubmissionController::class, 'show'])->name('form-submissions.show');
 
         // ── Protokolle (MVP-020) ───────────────────────────────────────────
+        // Detailseite (Rang 28): Trägerseite für Panels (externe Beteiligte, Wetter, Verlauf).
+        Route::get('protocols/{protocol}', [ProtocolController::class, 'show'])->name('protocols.show');
         Route::post('protocols', [ProtocolController::class, 'store'])->name('protocols.store');
         Route::put('protocols/{protocol}', [ProtocolController::class, 'update'])->name('protocols.update');
         Route::delete('protocols/{protocol}', [ProtocolController::class, 'destroy'])->name('protocols.destroy');
@@ -1302,6 +1477,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('protocol-item-photos/{photo}', [ProtocolController::class, 'destroyPhoto'])->name('protocols.items.photos.destroy');
         Route::post('protocols/{protocol}/signature-tokens', [ProtocolController::class, 'issueSignatureToken'])->name('protocols.signature-tokens.store');
         Route::get('protocols/{protocol}/pdf', [ProtocolController::class, 'pdf'])->name('protocols.pdf');
+        Route::post('protocols/{protocol}/weather', [ProtocolController::class, 'attachWeather'])->name('protocols.weather'); // Feature 062
 
         // ── Kunden-Rückfragen aus dem Portal (Feature 012) ─────────────────
         Route::get('customer-queries', [CustomerQueryController::class, 'index'])->name('customer-queries.index');
@@ -1399,6 +1575,31 @@ Route::middleware('auth')->group(function () {
         Route::post('service-tickets/{ticket}/transition', [ServiceTicketController::class, 'transition'])->name('service-tickets.transition');
         Route::post('service-tickets/{ticket}/assign', [ServiceTicketController::class, 'assign'])->name('service-tickets.assign');
         Route::delete('service-tickets/{ticket}', [ServiceTicketController::class, 'destroy'])->name('service-tickets.destroy');
+        // Konversation (Feature 065, MVP-152): Antwort vs. Notiz — getrennte
+        // Aktionen/Rechte (Typfrage, keine Flagfrage).
+        Route::post('service-tickets/{ticket}/reply', [\App\Http\Controllers\Helpdesk\TicketConversationController::class, 'reply'])->name('helpdesk.tickets.reply');
+        Route::post('service-tickets/{ticket}/note', [\App\Http\Controllers\Helpdesk\TicketConversationController::class, 'note'])->name('helpdesk.tickets.note');
+        // Queue-Verwaltung (Feature 065, MVP-150) — module.helpdesk.
+        Route::get('helpdesk/queues', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'index'])->name('helpdesk.queues.index');
+        Route::get('helpdesk/queues/create', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'create'])->name('helpdesk.queues.create');
+        Route::get('helpdesk/queues/{queue}/edit', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'edit'])->name('helpdesk.queues.edit');
+        Route::post('helpdesk/queues', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'store'])->name('helpdesk.queues.store');
+        Route::patch('helpdesk/queues/{queue}', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'update'])->name('helpdesk.queues.update');
+        Route::delete('helpdesk/queues/{queue}', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'destroy'])->name('helpdesk.queues.destroy');
+        // SLA-Verträge (read-only Detailseite, Feature 010): trägt Kontingente (44) + Pflichttermine (43).
+        Route::get('sla-contracts', [\App\Http\Controllers\SlaContractController::class, 'index'])->name('sla-contracts.index');
+        // SLA-CRUD (Feature 065, P3) — bestehendes Recht slaContract.manage.
+        Route::post('sla-contracts', [\App\Http\Controllers\SlaContractController::class, 'store'])->name('sla-contracts.store');
+        Route::patch('sla-contracts/{slaContract}', [\App\Http\Controllers\SlaContractController::class, 'update'])->name('sla-contracts.update');
+        // Helpdesk-Bericht (Feature 065, P9).
+        Route::get('helpdesk/berichte', [\App\Http\Controllers\Reporting\HelpdeskReportController::class, 'index'])->name('helpdesk.reports.index');
+        // Routing-Regeln (Feature 065, P3).
+        Route::get('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'index'])->name('helpdesk.routing.index');
+        Route::post('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'store'])->name('helpdesk.routing.store');
+        Route::patch('helpdesk/routing/{rule}', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'update'])->name('helpdesk.routing.update');
+        Route::delete('helpdesk/routing/{rule}', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'destroy'])->name('helpdesk.routing.destroy');
+        Route::post('helpdesk/routing/dry-run', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'dryRun'])->name('helpdesk.routing.dry-run');
+        Route::get('sla-contracts/{slaContract}', [\App\Http\Controllers\SlaContractController::class, 'show'])->name('sla-contracts.show');
 
         Route::get('key-handovers', [KeyHandoverController::class, 'index'])->name('key-handovers.index');
         Route::get('key-handovers/create', [KeyHandoverController::class, 'create'])->name('key-handovers.create');
@@ -1465,6 +1666,9 @@ Route::middleware('auth')->group(function () {
             ->name('admin.month-approval.reopen');
         Route::post('admin/month-approval/{monthClosure}/lock', [\App\Http\Controllers\Admin\MonthApprovalInboxController::class, 'lock'])
             ->name('admin.month-approval.lock');
+        // Prüfexport-Bundle für freigegebene/gesperrte Monate (Rang 40).
+        Route::post('admin/month-approval/{monthClosure}/bundle', [\App\Http\Controllers\Admin\MonthApprovalInboxController::class, 'bundle'])
+            ->name('admin.month-approval.bundle');
 
         // ── Zeit-Korrekturanträge (MVP-017) ─────────────────────────────────────
         Route::get('corrections', [\App\Http\Controllers\TimeCorrectionController::class, 'index'])
@@ -1522,10 +1726,18 @@ Route::middleware('auth')->group(function () {
             ->name('exports.deliver');
         Route::post('exports/{export}/reject', [\App\Http\Controllers\TimeExportController::class, 'reject'])
             ->name('exports.reject');
+        // Kostenstellen-Override je Zeile im Prüf-UI (Rang 35, nur Status ready).
+        Route::patch('exports/{export}/lines/{line}', [\App\Http\Controllers\TimeExportController::class, 'updateLine'])
+            ->name('exports.lines.update');
 
         // ── Plan/Ist-Report (MVP-018) ──────────────────────────────────────────
         Route::get('reports/plan-ist/presence', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'presence'])
             ->name('reports.plan-ist.presence');
+        // Team-/Org-Aggregation (Rang 38, report.presence.team/.organization).
+        Route::get('reports/plan-ist/team', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'team'])
+            ->name('reports.plan-ist.team');
+        Route::get('reports/plan-ist/organization', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'organization'])
+            ->name('reports.plan-ist.organization');
 
         // ── Auswertungen ────────────────────────────────────────────────────────
         Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
@@ -1546,7 +1758,12 @@ Route::middleware('auth')->group(function () {
             ->name('reports.assets.drilldown.open-issues');
         Route::get('reports/assets/drilldown/protocols', [\App\Http\Controllers\Reporting\AssetDrilldownReportController::class, 'protocols'])
             ->name('reports.assets.drilldown.protocols');
+        // Wiederholdefekt-Statistik (Feature 009 → Rang 47).
+        Route::get('reports/assets/drilldown/recurring-defects', [\App\Http\Controllers\Reporting\AssetDrilldownReportController::class, 'recurringDefects'])
+            ->name('reports.assets.drilldown.recurring-defects');
         Route::get('reports/customer-project', [CustomerProjectReportController::class, 'index'])->name('reports.customer-project');
+        // Datenqualitäts-Report: Aufträge mit fehlenden Pflichtklassifikationen (Feature 024 → Rang 57).
+        Route::get('reports/data-quality', [\App\Http\Controllers\Reporting\DataQualityReportController::class, 'index'])->name('reports.data-quality');
         Route::get('reports/week-by-user', [WeekByUserReportController::class, 'index'])->name('reports.week-by-user');
         Route::get('reports/month-by-user-team', [MonthByUserTeamReportController::class, 'index'])->name('reports.month-by-user-team');
         Route::get('reports/project-inactive', [ProjectInactiveReportController::class, 'index'])->name('reports.project-inactive');
@@ -1561,6 +1778,8 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/operations', [OperationsReportController::class, 'index'])->name('reports.operations');
         Route::get('reports/materials', [MaterialReportController::class, 'index'])->name('reports.materials');
         Route::get('reports/economics', [EconomicsReportController::class, 'index'])->name('reports.economics');
+        // Beleg-Drilldown je Report-Zelle (Rang 59c, signierte Links).
+        Route::get('reports/economics/drilldown', [EconomicsReportController::class, 'drilldown'])->name('reports.economics.drilldown');
         Route::get('reports/billing', [BillingReportController::class, 'index'])->name('reports.billing');
         Route::get('reports/expenses', [ExpenseReportController::class, 'index'])->name('reports.expenses');
         Route::get('reports/qualifications', [QualificationReportController::class, 'index'])->name('reports.qualifications');
@@ -1572,6 +1791,9 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/sla', [\App\Http\Controllers\Reporting\SlaReportController::class, 'index'])->name('reports.sla');
         Route::get('reports/safety', [\App\Http\Controllers\Reporting\SafetyReportController::class, 'index'])->name('reports.safety');
         // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).
+        // Compliance-Dashboard (Rang 39): org-weite Übersicht mit Drilldown in den Einzelreport.
+        Route::get('reports/compliance/dashboard', [\App\Http\Controllers\Reporting\ArbZgComplianceReportController::class, 'dashboard'])
+            ->name('reports.compliance.dashboard');
         Route::get('reports/arbzg-compliance', [\App\Http\Controllers\Reporting\ArbZgComplianceReportController::class, 'index'])
             ->name('reports.arbzg-compliance');
         Route::post('reports/sla/violations/{violation}/acknowledge', [\App\Http\Controllers\Reporting\SlaReportController::class, 'acknowledge'])
@@ -1671,6 +1893,8 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/imports/preflight', [ImportController::class, 'preflight'])->name('admin.imports.preflight');
         Route::get('admin/imports/{import}', [ImportController::class, 'show'])->name('admin.imports.show');
         Route::post('admin/imports/{import}/confirm', [ImportController::class, 'confirm'])->name('admin.imports.confirm');
+        // Wert-Mapping unbekannter Tags/Kategorien (Rang 58).
+        Route::post('admin/imports/{import}/mapping', [ImportController::class, 'mapping'])->name('admin.imports.mapping');
         Route::delete('admin/imports/{import}', [ImportController::class, 'destroy'])->name('admin.imports.destroy');
         Route::get('admin/imports/{import}/errors.csv', [ImportController::class, 'downloadErrors'])->name('admin.imports.errors');
 
@@ -1695,6 +1919,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('admin/branch-profiles', [BranchProfileController::class, 'index'])
             ->name('admin.branch-profiles.index');
+        Route::post('admin/branch-profiles-import', [BranchProfileController::class, 'import'])
+            ->name('admin.branch-profiles.import');
         Route::post('admin/branch-profiles/{profile}', [BranchProfileController::class, 'install'])
             ->name('admin.branch-profiles.install');
         Route::get('admin/classifications/import/form', [ClassificationController::class, 'importForm'])
@@ -1751,6 +1977,12 @@ Route::middleware('auth')->group(function () {
         Route::resource('admin/surcharge-rules', \App\Http\Controllers\Admin\SurchargeRuleController::class)
             ->names('admin.surcharge-rules')
             ->parameters(['surcharge-rules' => 'surchargeRule'])
+            ->except('show');
+
+        // Kostenstellen-Regeln für den Zeitexport (Rang 35): gleiche Mechanik.
+        Route::resource('admin/cost-center-rules', \App\Http\Controllers\Admin\CostCenterRuleController::class)
+            ->names('admin.cost-center-rules')
+            ->parameters(['cost-center-rules' => 'costCenterRule'])
             ->except('show');
 
         // Workflow-Automatisierungen (Wenn-Dann-Regeln pro Org).

@@ -25,6 +25,7 @@ return [
     'deferred_notice' => 'The automated deletion and retention runs are not part of this overview and follow in a later step (Feature 016, "Later").',
 
     'section' => [
+        'advisories' => 'Dependency security posture',
         'sessions' => 'Active sessions',
         'tokens' => 'API tokens',
         'integrations' => 'External integrations',
@@ -35,6 +36,13 @@ return [
     ],
 
     'field' => [
+        'severity' => 'Severity',
+        'package' => 'Package',
+        'advisory' => 'Advisory',
+        'fixed_in' => 'Fixed in',
+        'statement' => 'Assessment (VEX)',
+        'statement_placeholder' => 'e.g. not exploitable — feature not in use',
+        'last_pull' => 'Last pull',
         'user' => 'User',
         'guest' => 'Not signed in',
         'ip' => 'IP address',
@@ -81,6 +89,7 @@ return [
     ],
 
     'hint' => [
+        'advisories' => 'Source: OSV.dev for composer.lock/package-lock.json — pulled daily (security:advisories-pull); assessment (VEX) is manual.',
         'sessions_driver' => 'Session driver ":driver" — no database overview available. Only the "database" driver provides a session list.',
         'tokens_no_secret' => 'Only metadata is shown — never the token value or its hash.',
         'support_access' => 'Source: audit log, event prefix "support." (see support access principles).',
@@ -89,6 +98,7 @@ return [
     ],
 
     'empty' => [
+        'advisories' => 'No open security advisories.',
         'sessions' => 'No sessions found.',
         'tokens' => 'No active API tokens.',
         'integrations' => 'No active external integrations.',
@@ -97,4 +107,7 @@ return [
     ],
 
     'generated_at' => 'Generated: :at',
+    'action' => [
+        'pull_advisories' => 'Pull now',
+    ],
 ];

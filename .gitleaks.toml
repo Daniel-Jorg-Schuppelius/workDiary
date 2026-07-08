@@ -1,0 +1,24 @@
+# gitleaks-Konfiguration (Feature 051, MVP-098).
+#
+# Secret-/Credential-History-Scan als Teil des Security-Release-Gates
+# (scripts/security-gate.sh + CI). Nutzt die eingebauten gitleaks-Regeln und
+# ergänzt eine Allowlist für bewusste Nicht-Geheimnisse (Testumgebung,
+# Fixtures, Beispiel-Keys). Echte Zugangsdaten liegen ausschließlich
+# verschlüsselt at-rest bzw. in ENV und gehören nie in die Historie.
+
+title = "WorkDiary gitleaks"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Bewusste Nicht-Geheimnisse: Testumgebung, Fixtures, Beispiel-/Demokonfiguration"
+paths = [
+  '''\.env\.testing$''',
+  '''\.env\.example$''',
+  '''(^|/)tests/''',
+  '''(^|/)database/factories/''',
+  '''(^|/)database/seeders/''',
+  '''(^|/)lang/''',
+  '''\.gitleaks\.toml$''',
+]

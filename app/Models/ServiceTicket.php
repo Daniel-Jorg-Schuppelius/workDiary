@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $customer_id
  * @property int|null $asset_id
  * @property int|null $project_id
+ * @property int|null $diary_entry_id
  * @property int|null $sla_contract_id
  * @property string $title
  * @property string|null $description
@@ -59,10 +60,13 @@ class ServiceTicket extends Model {
 
     protected $fillable = [
         'organization_id',
+        'queue_id',
+        'kind',
         'ticket_no',
         'customer_id',
         'asset_id',
         'project_id',
+        'diary_entry_id',
         'sla_contract_id',
         'title',
         'description',
@@ -83,6 +87,23 @@ class ServiceTicket extends Model {
         'resolution_due_at',
         'reaction_breached',
         'resolution_breached',
+        'requester_type',
+        'requester_id',
+        'impact',
+        'urgency',
+        'wait_reason',
+        'wait_until',
+        'wait_owner_id',
+        'escalation_level',
+        'confidentiality',
+        'resolution_summary',
+        'close_code',
+        'sla_snapshot',
+        'is_major',
+        'incident_lead_id',
+        'stakeholders',
+        'comm_rhythm',
+        'workaround',
     ];
 
     protected $casts = [
@@ -100,11 +121,44 @@ class ServiceTicket extends Model {
         'resolution_due_at' => 'datetime',
         'reaction_breached' => 'bool',
         'resolution_breached' => 'bool',
+        'kind' => \App\Enums\ServiceTicket\ServiceTicketKind::class,
+        'impact' => \App\Enums\ServiceTicket\TicketSeverity::class,
+        'urgency' => \App\Enums\ServiceTicket\TicketSeverity::class,
+        'close_code' => \App\Enums\ServiceTicket\TicketCloseCode::class,
+        'wait_until' => 'datetime',
+        'sla_snapshot' => 'array',
+        'is_major' => 'boolean',
+        'stakeholders' => 'array',
     ];
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<ServiceQueue, $this> */
+    public function queue(): BelongsTo {
+        return $this->belongsTo(ServiceQueue::class, 'queue_id');
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
+    public function requester(): \Illuminate\Database\Eloquent\Relations\MorphTo {
+        return $this->morphTo('requester');
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\HasMany<ServiceTicketWatcher, $this> */
+    public function watchers(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(ServiceTicketWatcher::class, 'service_ticket_id');
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\HasMany<ServiceTicketLink, $this> */
+    public function links(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(ServiceTicketLink::class, 'service_ticket_id');
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\HasMany<SlaClockSegment, $this> */
+    public function slaClockSegments(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(SlaClockSegment::class, 'service_ticket_id');
     }
 
     /** @return BelongsTo<Asset, $this> */
@@ -115,6 +169,11 @@ class ServiceTicket extends Model {
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
+    }
+
+    /** @return BelongsTo<DiaryEntry, $this> */
+    public function diaryEntry(): BelongsTo {
+        return $this->belongsTo(DiaryEntry::class);
     }
 
     /** @return BelongsTo<SlaContract, $this> */

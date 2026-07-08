@@ -61,7 +61,7 @@
                     <td><pre class="text-[10px] overflow-x-auto max-w-md">{{ json_encode($run->log, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre></td>
                 </tr>
             @empty
-                <tr><td colspan="4" class="text-center text-base-content/60 py-4">{{ __('Noch keine Auswertungen.') }}</td></tr>
+                <x-table.empty :colspan="4" icon='<span class="material-symbols-outlined" aria-hidden="true">rule</span>' :title="__('Noch keine Auswertungen.')" compact />
             @endforelse
         </x-table>
     </section>

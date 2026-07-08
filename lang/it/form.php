@@ -55,6 +55,8 @@ return [
         'submit' => 'Invia',
         'show' => 'Visualizza',
         'print' => 'Stampa',
+        'download_pdf' => 'Scarica PDF',
+        'clear_signature' => 'Cancella firma',
         'back' => 'Indietro',
     ],
 
@@ -80,6 +82,19 @@ return [
     'value' => [
         'yes' => 'Sì',
         'no' => 'No',
+        'signed' => 'Firmato',
+    ],
+
+    'condition' => [
+        'legend' => 'Visibile se',
+        'always' => '— sempre visibile —',
+        'value_placeholder' => 'Valore di confronto',
+        'op' => [
+            'eq' => 'uguale a',
+            'ne' => 'diverso da',
+            'in' => 'uno di (virgola)',
+            'filled' => 'compilato',
+        ],
     ],
 
     'validation' => [
@@ -92,6 +107,8 @@ return [
         'fields_required' => 'Il modello necessita di almeno un campo.',
         'too_many_fields' => 'Al massimo :max campi per modello.',
         'template_not_active' => 'Questo modello non è attivo e non può essere compilato.',
+        'condition_unknown_field' => 'La condizione del campo «:label» fa riferimento a un campo sconosciuto «:field».',
+        'condition_cycle' => 'Le condizioni formano un ciclo (il campo «:field» dipende indirettamente da sé stesso).',
     ],
 
     'flash' => [

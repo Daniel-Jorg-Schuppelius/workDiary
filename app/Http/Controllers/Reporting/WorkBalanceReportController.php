@@ -93,7 +93,11 @@ class WorkBalanceReportController extends Controller {
             throw new AccessDeniedHttpException('Nur Admins dürfen die Arbeitsbilanz anderer Nutzer einsehen.');
         }
 
-        $target = User::query()->find($requestedId);
+        // Mandantengrenze: nur Nutzer der eigenen Organisation (User hat keinen
+        // globalen OrganizationScope, Whitebox-Befund 2026-07).
+        $target = User::query()
+            ->where('organization_id', $authUser->organization_id)
+            ->find($requestedId);
         if (! $target instanceof User) {
             throw new AccessDeniedHttpException('Nutzer nicht gefunden.');
         }
@@ -105,8 +109,14 @@ class WorkBalanceReportController extends Controller {
      * @return Collection<int, User>
      */
     private function loadSelectableUsers(): Collection {
+        $authUser = auth()->user();
+        $orgId = $authUser instanceof User ? $authUser->organization_id : null;
+
         /** @var Collection<int, User> $users */
-        $users = User::query()->orderBy('name')->get();
+        $users = User::query()
+            ->when($orgId !== null, fn ($q) => $q->where('organization_id', $orgId))
+            ->orderBy('name')
+            ->get();
 
         return $users;
     }

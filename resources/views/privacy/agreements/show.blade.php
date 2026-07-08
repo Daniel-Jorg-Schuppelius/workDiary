@@ -80,16 +80,27 @@
             <ul class="space-y-1 mt-2">
                 @forelse ($agreement->subprocessors as $sub)
                     <li class="flex items-center justify-between text-sm rounded-box border border-base-300 px-3 py-2">
-                        <span>{{ $sub->name }} @if ($sub->location)<span class="text-base-content/60">— {{ $sub->location }}</span>@endif {{ $sub->third_country ? '('.__('Drittland').')' : '' }}</span>
-                        @if ($sub->approved)
-                            <x-status-badge tone="success" size="sm">{{ __('freigegeben') }}</x-status-badge>
-                        @else
-                            @can('update', $agreement)
-                                <form method="post" action="{{ route('dataprotection.agreements.subprocessor.approve', [$agreement, $sub]) }}">@csrf <x-icon-btn icon="check" tone="ghost" size="sm" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn></form>
+                        <span>
+                            {{ $sub->name }} @if ($sub->location)<span class="text-base-content/60">— {{ $sub->location }}</span>@endif {{ $sub->third_country ? '('.__('Drittland').')' : '' }}
+                            @if ($sub->safeguards)<span class="block text-xs text-base-content/60">{{ __('Garantien') }}: {{ $sub->safeguards }}</span>@endif
+                        </span>
+                        <span class="inline-flex items-center gap-1">
+                            @if ($sub->approved)
+                                <x-status-badge tone="success" size="sm">{{ __('freigegeben') }}</x-status-badge>
                             @else
-                                <x-status-badge tone="warning" size="sm">{{ __('offen') }}</x-status-badge>
+                                @can('update', $agreement)
+                                    <form method="post" action="{{ route('dataprotection.agreements.subprocessor.approve', [$agreement, $sub]) }}">@csrf <x-icon-btn icon="check" tone="ghost" size="sm" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn></form>
+                                @else
+                                    <x-status-badge tone="warning" size="sm">{{ __('offen') }}</x-status-badge>
+                                @endcan
+                            @endif
+                            @can('update', $agreement)
+                                <form method="post" action="{{ route('dataprotection.agreements.subprocessor.destroy', [$agreement, $sub]) }}">
+                                    @csrf @method('DELETE')
+                                    <x-icon-btn icon="delete" tone="ghost" size="sm" type="submit" :label="__('Entfernen')" />
+                                </form>
                             @endcan
-                        @endif
+                        </span>
                     </li>
                 @empty
                     <li class="text-sm text-base-content/60">{{ __('Keine Unterauftragsverarbeiter.') }}</li>
@@ -106,7 +117,14 @@
                          :submit-label="__('Hinzufügen')">
                     <x-form-group :legend="__('Unterauftragsverarbeiter')" icon="account_tree" tone="primary" cols="2">
                         <x-input-field name="name" :label="__('Name')" required />
-                        <x-input-field name="location" :label="__('Ort')" />
+                        <x-input-field name="location" :label="__('Sitzland / Ort')" />
+                        <x-input-field name="purpose" :label="__('Zweck')" />
+                        <x-input-field name="safeguards" :label="__('Garantien (z. B. SCC, Angemessenheitsbeschluss)')" />
+                        <label class="label cursor-pointer justify-start gap-3 md:col-span-2">
+                            <input type="hidden" name="third_country" value="0">
+                            <input type="checkbox" name="third_country" value="1" class="toggle toggle-warning">
+                            <span class="label-text">{{ __('Sitz in einem Drittland') }}</span>
+                        </label>
                     </x-form-group>
                 </x-modal>
             @endcan

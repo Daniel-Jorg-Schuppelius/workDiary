@@ -137,6 +137,29 @@ class MonthApprovalInboxController extends Controller {
         );
     }
 
+    /**
+     * Prüfexport-Bundle (Rang 40): ZIP mit Zeiten, Anwesenheiten,
+     * Freigabe-Protokoll, Compliance-Befunden, Audit-Auszug und Manifest —
+     * abgelegt als Attachment am Monat und direkt heruntergeladen.
+     */
+    public function bundle(MonthClosure $monthClosure, \App\Services\TimeApproval\MonthClosureBundleService $bundler): \Symfony\Component\HttpFoundation\Response|RedirectResponse {
+        Gate::authorize('bundle', $monthClosure);
+
+        /** @var User $user */
+        $user = Auth::user();
+
+        try {
+            $result = $bundler->package($monthClosure, $user);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return response($result['content'], 200, [
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="' . $result['filename'] . '"',
+        ]);
+    }
+
     private function dispatch(\Closure $op, string $successMessage): RedirectResponse {
         try {
             $op();

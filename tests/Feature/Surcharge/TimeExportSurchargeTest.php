@@ -138,13 +138,13 @@ class TimeExportSurchargeTest extends TestCase {
         $content = (string) Storage::disk('local')->get((string) $export->file_path);
         $lines = array_values(array_filter(explode("\r\n", $content)));
 
-        $this->assertSame('Personalnummer;Datum;Lohnart;Stunden', $lines[0]);
+        $this->assertSame('Personalnummer;Datum;Lohnart;Stunden;Kostenstelle', $lines[0]);
 
         // work.normal (Monatszeile, Default-Lohnart 1000, Monatsletzter) +
         // 2 Zuschlagszeilen (Lohnart 2010, Tagesdatum).
-        $this->assertContains('P-4711;31.01.2026;1000;8,00', $lines);
-        $this->assertContains('P-4711;08.01.2026;2010;1,00', $lines);
-        $this->assertContains('P-4711;09.01.2026;2010;6,00', $lines);
+        $this->assertContains('P-4711;31.01.2026;1000;8,00;', $lines);
+        $this->assertContains('P-4711;08.01.2026;2010;1,00;', $lines);
+        $this->assertContains('P-4711;09.01.2026;2010;6,00;', $lines);
         $this->assertCount(4, $lines);
     }
 

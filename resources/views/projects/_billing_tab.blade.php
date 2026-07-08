@@ -89,7 +89,7 @@
         @endif
 
         @if ($rules->isEmpty())
-            <p class="italic opacity-60">{{ __('Noch keine Regeln definiert. Beim Rechnungs-Export wird der Default-Stundensatz genommen.') }}</p>
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :title="__('Noch keine Regeln definiert.')" :message="__('Beim Rechnungs-Export wird der Default-Stundensatz genommen.')" compact />
         @else
             <x-table table-sort="client">
                 <x-slot:head>

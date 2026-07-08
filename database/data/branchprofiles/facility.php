@@ -253,4 +253,14 @@ return [
             ],
         ],
     ],
+    // Datenschutz-Anforderungsvorlagen (Nachtrag 043c): wenig eigene
+    // Datenverarbeitung → GVV/DSFA standardmäßig aus (aktivierbar).
+    'dataprotection_requirements_seed' => [
+        ['key' => 'avv_required'],
+        ['key' => 'avv_current'],
+        ['key' => 'gvv_required', 'active' => false],
+        ['key' => 'dpia_required', 'active' => false],
+        ['key' => 'tom_assigned'],
+        ['key' => 'tom_proof_current'],
+    ],
 ];

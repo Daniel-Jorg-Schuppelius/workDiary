@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\{EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Http\Middleware\{AuthenticateScim, EnforceMaintenanceMode, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
 use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
@@ -32,6 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Oeffentliches Hinweisgeber-Meldeportal: eigener schlanker Stack
             // (kein Auth/Org-Context/Locale/2FA), siehe Middleware-Gruppe unten.
             Route::middleware('whistleblowing')->group(__DIR__ . '/../routes/whistleblowing.php');
+            // SCIM-2.0-Provisioning (Feature 057): sessionlos, Bearer-Token-Auth
+            // je Organisation über AuthenticateScim (kein web/api-Gruppen-Stack).
+            Route::middleware(AuthenticateScim::class)->prefix('scim/v2')->group(__DIR__ . '/../routes/scim.php');
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -59,6 +62,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // (Feature 021). Läuft nach der Org-Auflösung; Auth-/Lizenz-/Logout-
             // Routen bleiben erreichbar (Aufhebung der Sperre).
             EnforceTenantStatus::class,
+            // Wartungsmodus pro Mandant (Rang 65): Nicht-Admins → 503,
+            // Admins arbeiten weiter (Banner im Layout).
+            EnforceMaintenanceMode::class,
+            // Support-Impersonation (Rang 64): Sperrliste + Scope-Grenzen,
+            // Ablauf/Widerruf der Freigabe beendet die Sitzung sofort.
+            EnforceSupportImpersonation::class,
         ]);
 
         // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den
@@ -67,6 +76,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             SecurityHeaders::class,
             SetOrganizationContext::class,
+            // Wartungsmodus gilt auch für die Sanctum-API (JSON-503); die
+            // tokenbasierten Ingest-Routen (Terminal/CTI/Standort) laufen ohne
+            // Auth-User und bleiben hier unberührt — sie prüfen block_ingest
+            // selbst nach der Token-Auflösung.
+            EnforceMaintenanceMode::class,
         ]);
 
         // Schlanker Stack fuer das oeffentliche Hinweisgeber-Meldeportal:
@@ -98,6 +112,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'requires-feature' => RequiresFeature::class,
             // 2FA-Einrichtungspflicht (guard-parametrierbar, z. B. two-factor.setup:customer).
             'two-factor.setup' => RequireTwoFactorSetup::class,
+            // API-Token-Fähigkeiten (Feature 008 → Rang 60): Sanctum-Scopes je Route.
+            // `ability:` = mindestens EINE der Abilities; `abilities:` = ALLE.
+            'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
+            'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
         ]);
 
         // Token-Endpunkte ohne Session/CSRF: Backup-Heartbeat (MVP-046 §5).

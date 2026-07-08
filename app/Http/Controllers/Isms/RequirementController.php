@@ -231,6 +231,36 @@ class RequirementController extends Controller {
     }
 
     /**
+     * OSCAL-Katalog-Import (Nachtrag 044a): JSON-Upload (NIST/BSI-SdT) —
+     * Controls werden inkl. Volltext-Prose als Anforderungen materialisiert.
+     */
+    public function importOscal(Request $request): RedirectResponse {
+        Gate::authorize('import', IsmsRequirement::class);
+
+        $data = $request->validate([
+            'file' => ['required', 'file', 'max:20480', 'mimetypes:application/json,text/plain'],
+            'scope' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        $scope = $this->resolveScope($data['scope'] ?? null, null);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $result = $this->service->importOscalCatalog(
+            $actor,
+            (string) file_get_contents((string) $request->file('file')->getRealPath()),
+            $scope,
+        );
+
+        return redirect()
+            ->route('isms.requirements.index', array_filter(['scope' => $scope?->sqid]))
+            ->with('success', __('isms.flash.catalog_imported', [
+                'label' => $result['norm'] . ' ' . $result['edition'],
+                'count' => $result['created'],
+            ]));
+    }
+
+    /**
      * Fehlende SoA-Aussagen für einen Geltungsbereich anlegen (idempotent)
      * — optional begrenzt auf eine Norm (kombinierter Filterwert
      * "norm|edition" wie auf der Listenseite).

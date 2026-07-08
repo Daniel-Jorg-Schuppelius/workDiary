@@ -22,11 +22,20 @@ return [
     // Karenzzeit (Tage) nach Downgrade, bevor Modul-Daten entfernt werden duerfen.
     'grace_days' => 30,
 
+    // Modul-Abhängigkeiten: abhängiges Modul => Voraussetzung. Ist die
+    // Voraussetzung (per Tier/Override) inaktiv, wird das abhängige Modul
+    // im FeatureFlagResolver mit deaktiviert (Feature 065).
+    'requires' => [
+        'module.service_desk' => 'module.helpdesk',
+    ],
+
     // Plan → enthaltene Modul-Codes. Enterprise ist Superset von Pro.
     'tiers' => [
         'free' => [],
         'pro' => [
             'module.kanban',
+            'module.agile_projects',
+            'module.helpdesk',
             'module.planung',
             'module.spesen',
             'module.vertrieb',
@@ -44,6 +53,9 @@ return [
         ],
         'enterprise' => [
             'module.kanban',
+            'module.agile_projects',
+            'module.helpdesk',
+            'module.service_desk',
             'module.planung',
             'module.spesen',
             'module.vertrieb',
@@ -62,15 +74,20 @@ return [
             'module.finance',
             'module.lager',
             'module.bau',
+            'module.versand',
             'module.standorterfassung',
             'module.ideas',
             'protocols.signed',
+            'module.sso',
         ],
     ],
 
     // Menschlich lesbare Labels (Upsell-Seite, Tooltips).
     'labels' => [
         'module.kanban' => 'Kanban',
+        'module.agile_projects' => 'Agiles Projektmanagement',
+        'module.helpdesk' => 'Helpdesk',
+        'module.service_desk' => 'Service Desk (ITSM)',
         'module.planung' => 'Planung',
         'module.spesen' => 'Reisen & Spesen',
         'module.vertrieb' => 'Vertrieb & Abrechnung',
@@ -89,14 +106,19 @@ return [
         'module.finance' => 'Finanzschnittstelle',
         'module.lager' => 'Lager & Artikel',
         'module.bau' => 'Bau & GAEB',
+        'module.versand' => 'Versand & Logistik',
         'module.standorterfassung' => 'Standorterfassung',
         'module.ideas' => 'Ideenlandkarten',
+        'module.sso' => 'SSO & Verzeichnisdienste',
     ],
 
     // Kurze deutsche Beschreibung je Modul (MVP-052 Modulkonfiguration).
     // Nur Module mit Beschreibung gelten als konfigurierbarer Katalogeintrag.
     'descriptions' => [
         'module.kanban' => 'Aufgaben als Kanban-Board organisieren.',
+        'module.agile_projects' => 'Produkt-Backlog, Projektboards (Kanban/Scrum), Sprints und agile Berichte je Projekt.',
+        'module.helpdesk' => 'Tickets mit Queues, Konversation, SLA und Omnichannel-Eingang.',
+        'module.service_desk' => 'Servicekatalog, Requests mit Genehmigungen, Incident/Problem/Change (setzt Helpdesk voraus).',
         'module.planung' => 'Dienst-/Schichtplanung, Stundenzettel, Touren und Disposition.',
         'module.spesen' => 'Reisekosten, Spesen und Belegerfassung.',
         'module.vertrieb' => 'Kunden, Projekte, Rechnungen und Abrechnung.',
@@ -115,8 +137,10 @@ return [
         'module.finance' => 'Finanz-/DATEV-Schnittstelle.',
         'module.lager' => 'Lagerwirtschaft, Artikelstamm und Fertigung.',
         'module.bau' => 'Bau-/Ausbau: GAEB-Leistungsverzeichnisse, Ordnungszahlen, Aufmaß und Nachträge.',
+        'module.versand' => 'Versandlabels erzeugen und Sendungen verfolgen (DHL Paket u. a.).',
         'module.standorterfassung' => 'Standortbasierte Zeiterfassung über Geofences (OwnTracks/Traccar).',
         'module.ideas' => 'Private und gemeinsame Ideenlandkarten (Mindmaps) mit Überführung in Aufgaben, Projekte und Wissen.',
+        'module.sso' => 'Single-Sign-on und Verzeichnisdienste (SCIM-Provisionierung, OIDC).',
     ],
 
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
@@ -124,7 +148,14 @@ return [
     // Routen gelten als Core (immer erreichbar). Persoenliche Auswertungen
     // (reports.my-*, reports.work-balance, reports.attendance) bleiben Core.
     'routes' => [
+        'admin.sso.*' => 'module.sso', // Feature 057 SSO/SCIM-Admin (Token-Verwaltung)
         'kanban.*' => 'module.kanban',
+        'agile.*' => 'module.agile_projects', // Feature 064 — eigenes Präfix (projects.* ist auf module.vertrieb gemappt!)
+        // Feature 065: Tickets waren Core — module.helpdesk ist in pro UND
+        // enterprise enthalten, damit das Gating keine Bestandsdaten sperrt.
+        'service-tickets.*' => 'module.helpdesk',
+        'helpdesk.*' => 'module.helpdesk',
+        'servicedesk.*' => 'module.service_desk',
 
         'duty-plans.*' => 'module.planung',
         'schedule.*' => 'module.planung',
@@ -156,6 +187,8 @@ return [
 
         'bill-of-quantities.*' => 'module.bau', // Feature 049 GAEB-Leistungsverzeichnisse
         'gaeb.*' => 'module.bau',               // Feature 049 GAEB-Import/-Export
+
+        'admin.shipments.*' => 'module.versand', // Feature 059 Versand-/Logistik-Anbindung (DHL Paket)
 
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',
@@ -247,7 +280,11 @@ return [
         'module.compliance' => false,       // Hinweisgeber → HinSchG (3 J.)
         'module.isms' => false,             // Risikoregister/SoA → Compliance-Nachweise (Auditfähigkeit)
         'module.finance' => false,          // Übergabenachweise/Exportpakete → GoBD / §147 AO (10 J.)
+        'module.versand' => false,          // Versandbelege/Labels → Handelsbriefe (§147 AO), nie automatisch purgen
         'module.ideas' => false,            // Karten werden bei Downgrade NIE gelöscht, nur unzugänglich (DoD Feature 054)
+        'module.agile_projects' => false,   // Boards/Backlog bleiben bei Downgrade erhalten (Vorgabe 064)
+        'module.helpdesk' => false,         // Tickets sind aufbewahrungspflichtige Kundenhistorie (065)
+        'module.service_desk' => false,     // Problem/Change-Nachweise bleiben (065)
     ],
 
     // Modul → org-scoped Modelle, die `plans:purge` nach Ablauf der Karenz

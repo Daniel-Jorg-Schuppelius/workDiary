@@ -12,6 +12,7 @@ namespace App\Services\Classification;
 
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase};
 use App\Models\DiaryEntry;
+use Illuminate\Support\Str;
 
 /**
  * Leitet sichtbare Datenqualitäts-Hinweise (Feature 024) ohne neue
@@ -50,6 +51,77 @@ class DataQualityInspector {
         }
 
         return $gaps;
+    }
+
+    /**
+     * Datenqualitäts-Report (Feature 024 → Rang 57): sammelt für die übergebenen
+     * Aufträge die fehlenden Pflichtklassifikationen über ALLE Phasen und
+     * aggregiert sie nach Domäne, Phase und Schwere. Reines Lesen — es wird
+     * nichts erzwungen. Nur Aufträge MIT Lücke landen in `rows`.
+     *
+     * @param  iterable<DiaryEntry>  $entries
+     * @return array{
+     *   rows: list<array{id:int, sqid:string, title:string, date:string|null, gaps: list<array{domain:string, label:string, severity:string, blocking:bool, phase:string}>}>,
+     *   by_domain: array<string, array{label:string, count:int}>,
+     *   by_severity: array<string, int>,
+     *   by_phase: array<string, int>,
+     *   entries_with_gaps: int
+     * }
+     */
+    public function report(iterable $entries): array {
+        $rows = [];
+        /** @var array<string, array{label:string, count:int}> $byDomain */
+        $byDomain = [];
+        /** @var array<string, int> $bySeverity */
+        $bySeverity = [];
+        /** @var array<string, int> $byPhase */
+        $byPhase = [];
+
+        foreach ($entries as $entry) {
+            $entryGaps = [];
+            foreach (ClassificationRequirementPhase::cases() as $phase) {
+                foreach ($this->diaryEntryGaps($entry, $phase) as $gap) {
+                    $gap['phase'] = $phase->value;
+                    $entryGaps[] = $gap;
+
+                    $byDomain[$gap['domain']] ??= ['label' => $gap['label'], 'count' => 0];
+                    $byDomain[$gap['domain']]['count']++;
+                    $bySeverity[$gap['severity']] = ($bySeverity[$gap['severity']] ?? 0) + 1;
+                    $byPhase[$phase->value] = ($byPhase[$phase->value] ?? 0) + 1;
+                }
+            }
+
+            if ($entryGaps === []) {
+                continue;
+            }
+
+            $rows[] = [
+                'id' => (int) $entry->id,
+                'sqid' => (string) $entry->getRouteKey(),
+                'title' => $this->entryTitle($entry),
+                'date' => $entry->start_at?->toDateString(),
+                'gaps' => $entryGaps,
+            ];
+        }
+
+        uasort($byDomain, static fn (array $a, array $b): int => $b['count'] <=> $a['count']);
+
+        return [
+            'rows' => $rows,
+            'by_domain' => $byDomain,
+            'by_severity' => $bySeverity,
+            'by_phase' => $byPhase,
+            'entries_with_gaps' => count($rows),
+        ];
+    }
+
+    private function entryTitle(DiaryEntry $entry): string {
+        $title = is_string($entry->title) ? trim($entry->title) : '';
+        if ($title !== '') {
+            return $title;
+        }
+
+        return Str::limit((string) $entry->content, 60);
     }
 
     /**

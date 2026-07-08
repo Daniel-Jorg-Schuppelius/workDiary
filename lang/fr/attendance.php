@@ -13,6 +13,7 @@ return [
         'manual' => 'Manuel',
         'import' => 'Import',
         'auto_close' => 'Fermeture auto',
+        'terminal' => 'Terminal',
     ],
     'correction' => [
         'action' => [

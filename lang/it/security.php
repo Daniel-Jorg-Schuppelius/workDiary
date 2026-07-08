@@ -25,6 +25,7 @@ return [
     'deferred_notice' => 'Le esecuzioni automatiche di cancellazione e conservazione non fanno parte di questa panoramica e seguiranno in un passaggio successivo (Funzionalità 016, «Più tardi»).',
 
     'section' => [
+        'advisories' => 'Postura di sicurezza delle dipendenze',
         'sessions' => 'Sessioni attive',
         'tokens' => 'Token API',
         'integrations' => 'Integrazioni esterne',
@@ -35,6 +36,13 @@ return [
     ],
 
     'field' => [
+        'severity' => 'Gravità',
+        'package' => 'Pacchetto',
+        'advisory' => 'Avviso',
+        'fixed_in' => 'Risolto in',
+        'statement' => 'Valutazione (VEX)',
+        'statement_placeholder' => 'ad es. non sfruttabile — funzione non in uso',
+        'last_pull' => 'Ultimo recupero',
         'user' => 'Utente',
         'guest' => 'Non connesso',
         'ip' => 'Indirizzo IP',
@@ -81,6 +89,7 @@ return [
     ],
 
     'hint' => [
+        'advisories' => 'Fonte: OSV.dev per composer.lock/package-lock.json — recupero giornaliero (security:advisories-pull); valutazione (VEX) manuale.',
         'sessions_driver' => 'Driver di sessione «:driver» — nessuna panoramica del database disponibile. Solo il driver «database» fornisce un elenco di sessioni.',
         'tokens_no_secret' => 'Vengono mostrati solo i metadati — mai il valore del token né il suo hash.',
         'support_access' => "Origine: registro di audit, prefisso evento «support.» (vedi i principi di accesso del supporto).",
@@ -89,6 +98,7 @@ return [
     ],
 
     'empty' => [
+        'advisories' => 'Nessun avviso di sicurezza aperto.',
         'sessions' => 'Nessuna sessione trovata.',
         'tokens' => 'Nessun token API attivo.',
         'integrations' => 'Nessuna integrazione esterna attiva.',
@@ -97,4 +107,7 @@ return [
     ],
 
     'generated_at' => 'Generato: :at',
+    'action' => [
+        'pull_advisories' => 'Recupera ora',
+    ],
 ];

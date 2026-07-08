@@ -19,7 +19,7 @@
     size="md"
     :action="route('assets.defects.store', $asset)"
     method="POST"
-    :form-data="['data-entry-form' => '']"
+    :form-data="['data-entry-form' => '', 'enctype' => 'multipart/form-data']"
     :submit-label="__('Defekt melden')">
 
     <x-input-field name="title" :label="__('Titel')" required maxlength="180" :value="old('title')" />
@@ -41,4 +41,11 @@
     </div>
 
     <x-textarea-field name="description" :label="__('Beschreibung')" rows="3" :value="old('description')" />
+
+    <label class="form-control">
+        <span class="label-text">{{ __('Fotos (optional)') }}</span>
+        <input type="file" name="photos[]" accept="image/*" capture="environment" multiple
+               class="file-input file-input-bordered file-input-sm" />
+        <span class="label-text-alt text-base-content/50">{{ __('JPEG/PNG/WebP, bis 25 MB je Datei.') }}</span>
+    </label>
 </x-modal>

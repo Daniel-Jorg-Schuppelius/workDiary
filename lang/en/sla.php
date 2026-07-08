@@ -11,6 +11,7 @@
 return [
     'remaining' => ':min min left',
     'overdue_by' => ':min min overdue',
+    'diary_panel_heading' => 'Linked service tickets',
 
     'report' => [
         'title' => 'SLA report',
@@ -43,5 +44,9 @@ return [
         'metric' => 'Metric',
         'value' => 'Value',
         'overview' => 'Overview',
+        'quotas_heading' => 'Included-time quotas',
+        'no_quotas' => 'No quotas configured.',
+        'quota_usage' => ':consumed / :included h (:period)',
+        'quota_over' => ':min min over quota',
     ],
 ];

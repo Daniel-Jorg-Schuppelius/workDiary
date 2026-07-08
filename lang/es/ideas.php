@@ -60,6 +60,31 @@ return [
         'info' => 'Turquesa',
     ],
 
+    'node_status' => [
+        'open' => 'Abierta',
+        'in_review' => 'En revisión',
+        'decided' => 'Decidida',
+        'rejected' => 'Rechazada',
+        'done' => 'Realizada',
+    ],
+
+    'import' => [
+        'action' => 'Importar',
+        'title' => 'Importar mapa de ideas',
+        'submit' => 'Importar',
+        'file' => 'Archivo',
+        'hint' => 'FreeMind/Freeplane (.mm) u OPML. Crea un mapa nuevo y privado.',
+        'done' => 'Mapa importado.',
+        'default_title' => 'Mapa importado',
+        'error' => [
+            'invalid' => 'El archivo no es un XML válido.',
+            'unsupported' => 'Formato no compatible (solo FreeMind .mm y OPML).',
+            'empty' => 'El archivo no contiene nodos.',
+            'too_deep' => 'La estructura está anidada demasiado profundamente.',
+            'too_large' => 'El mapa tiene demasiados nodos.',
+        ],
+    ],
+
     'legend' => [
         'context' => 'Contexto (opcional)',
         'map' => 'Mapa',
@@ -144,12 +169,23 @@ return [
         'collapse' => 'Contraer rama',
         'zoom_in' => 'Ampliar',
         'zoom_out' => 'Reducir',
+        'zoom_reset' => 'Restablecer zoom al 100 %',
+        'fit' => 'Ajustar vista',
+        'arrange' => 'Reorganizar',
+        'arrange_hint' => 'Organizar automáticamente todos los nodos como árbol',
+        'canvas_large' => 'Área de trabajo grande',
+        'canvas_small' => 'Área de trabajo compacta',
+        'canvas_keys_hint' => 'Tab: subnodo · Intro: nodo hermano · doble clic en el lienzo: nueva idea · arrastrar sobre un nodo: reubicar',
+        'canvas_a11y_hint' => 'Edición accesible en la vista de esquema.',
+        'export_svg' => 'Exportar como imagen SVG',
+        'export_png' => 'Exportar como imagen PNG',
         'history' => 'Historial',
         'history_empty' => 'Aún no hay cambios.',
         'presence_suffix' => 'editando ahora',
         'note' => 'Nota',
         'color' => 'Color',
         'status' => 'Estado',
+        'status_none' => '— sin estado',
     ],
 
     'error' => [

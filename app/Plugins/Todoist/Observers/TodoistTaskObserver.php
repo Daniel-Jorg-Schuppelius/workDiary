@@ -39,6 +39,55 @@ class TodoistTaskObserver {
         }
     }
 
+    /**
+     * Neue, in ein exportierendes Todoist-Projekt fallende Aufgabe → als
+     * `task.create` enqueuen (MVP-114). Idempotenzschlüssel je Aufgabe schützt
+     * vor Doppelanlage; importierte Aufgaben sind über {@see suppressed()}
+     * ausgenommen (kein Echo-Create).
+     */
+    public function created(Task $task): void {
+        if (self::$suppressed) {
+            return;
+        }
+
+        $connection = TodoistConnection::query()->withoutGlobalScopes()
+            ->where('organization_id', $task->organization_id)
+            ->first();
+        if ($connection === null || ! $connection->isActive()) {
+            return;
+        }
+
+        $link = $this->exportingLink($task);
+        if ($link === null) {
+            return;
+        }
+
+        app(IntegrationOutboxService::class)->enqueue(
+            (int) $task->organization_id,
+            TodoistPlugin::ID,
+            TodoistOutboxDispatcher::OP_TASK_CREATE,
+            ['task_id' => $task->id],
+            'task-create:' . $task->id,
+            $task,
+        );
+    }
+
+    /** Aktiver, exportierender Projekt-/Kanban-Link der Aufgabe, sonst null. */
+    private function exportingLink(Task $task): ?TodoistProjectLink {
+        $link = TodoistProjectLink::query()->withoutGlobalScopes()
+            ->where('organization_id', $task->organization_id)
+            ->when($task->project_id !== null, fn ($q) => $q
+                ->where('target_kind', TodoistProjectLink::KIND_PROJECT)
+                ->where('project_id', $task->project_id))
+            ->when($task->project_id === null, fn ($q) => $q
+                ->where('target_kind', TodoistProjectLink::KIND_GLOBAL_KANBAN))
+            ->first();
+
+        return $link !== null && $link->exportsToTodoist() && $link->status === TodoistProjectLink::STATUS_ACTIVE
+            ? $link
+            : null;
+    }
+
     public function updated(Task $task): void {
         if (self::$suppressed) {
             return;

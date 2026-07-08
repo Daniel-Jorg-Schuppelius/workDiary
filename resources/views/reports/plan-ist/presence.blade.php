@@ -18,7 +18,17 @@
 
 @section('content')
     <x-index-page :subtitle="__('Soll-Arbeitszeit vs. tatsächlich gestempelte Anwesenheit.')">
+        {{-- Drilldown-Kontext (Rang 38): Team-/Org-Berechtigte sehen hier andere Mitarbeitende. --}}
+        @if (isset($reportUser) && (int) $reportUser->id !== (int) auth()->id())
+            <div class="alert alert-info alert-soft text-sm">
+                <x-icon name="person" />
+                <span>{{ __('Ansicht für :name', ['name' => $reportUser->name]) }}</span>
+            </div>
+        @endif
         <x-filter-bar :action="route('reports.plan-ist.presence')" :reset="route('reports.plan-ist.presence')">
+            @if (isset($reportUser) && (int) $reportUser->id !== (int) auth()->id())
+                <input type="hidden" name="user" value="{{ $reportUser->sqid }}">
+            @endif
             <label class="flex items-center gap-1 text-xs">
                 <span>{{ __('Von') }}</span>
                 <input type="date" name="from" value="{{ $from->format('Y-m-d') }}"

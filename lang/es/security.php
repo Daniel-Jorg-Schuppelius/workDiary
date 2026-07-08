@@ -25,6 +25,7 @@ return [
     'deferred_notice' => 'Las ejecuciones automáticas de eliminación y conservación no forman parte de este resumen y se realizarán en un paso posterior (Función 016, «Más adelante»).',
 
     'section' => [
+        'advisories' => 'Postura de seguridad de las dependencias',
         'sessions' => 'Sesiones activas',
         'tokens' => 'Tokens de API',
         'integrations' => 'Integraciones externas',
@@ -35,6 +36,13 @@ return [
     ],
 
     'field' => [
+        'severity' => 'Gravedad',
+        'package' => 'Paquete',
+        'advisory' => 'Aviso',
+        'fixed_in' => 'Corregido en',
+        'statement' => 'Evaluación (VEX)',
+        'statement_placeholder' => 'p. ej. no explotable — función no utilizada',
+        'last_pull' => 'Última recuperación',
         'user' => 'Usuario',
         'guest' => 'Sin iniciar sesión',
         'ip' => 'Dirección IP',
@@ -81,6 +89,7 @@ return [
     ],
 
     'hint' => [
+        'advisories' => 'Fuente: OSV.dev para composer.lock/package-lock.json — recuperación diaria (security:advisories-pull); evaluación (VEX) manual.',
         'sessions_driver' => 'Controlador de sesión «:driver» — no hay resumen de base de datos disponible. Solo el controlador «database» proporciona una lista de sesiones.',
         'tokens_no_secret' => 'Solo se muestran metadatos — nunca el valor del token ni su hash.',
         'support_access' => 'Origen: registro de auditoría, prefijo de evento «support.» (véase los principios de acceso de soporte).',
@@ -89,6 +98,7 @@ return [
     ],
 
     'empty' => [
+        'advisories' => 'No hay avisos de seguridad abiertos.',
         'sessions' => 'No se encontraron sesiones.',
         'tokens' => 'No hay tokens de API activos.',
         'integrations' => 'No hay integraciones externas activas.',
@@ -97,4 +107,7 @@ return [
     ],
 
     'generated_at' => 'Generado: :at',
+    'action' => [
+        'pull_advisories' => 'Recuperar ahora',
+    ],
 ];

@@ -60,6 +60,31 @@ return [
         'info' => 'Turchese',
     ],
 
+    'node_status' => [
+        'open' => 'Aperta',
+        'in_review' => 'In esame',
+        'decided' => 'Decisa',
+        'rejected' => 'Rifiutata',
+        'done' => 'Realizzata',
+    ],
+
+    'import' => [
+        'action' => 'Importa',
+        'title' => 'Importa mappa delle idee',
+        'submit' => 'Importa',
+        'file' => 'File',
+        'hint' => 'FreeMind/Freeplane (.mm) o OPML. Crea una nuova mappa privata.',
+        'done' => 'Mappa importata.',
+        'default_title' => 'Mappa importata',
+        'error' => [
+            'invalid' => 'Il file non è un XML valido.',
+            'unsupported' => 'Formato non supportato (solo FreeMind .mm e OPML).',
+            'empty' => 'Il file non contiene nodi.',
+            'too_deep' => 'La struttura è annidata troppo in profondità.',
+            'too_large' => 'La mappa ha troppi nodi.',
+        ],
+    ],
+
     'legend' => [
         'context' => 'Contesto (facoltativo)',
         'map' => 'Mappa',
@@ -144,12 +169,23 @@ return [
         'collapse' => 'Comprimi ramo',
         'zoom_in' => 'Ingrandisci',
         'zoom_out' => 'Riduci',
+        'zoom_reset' => 'Reimposta zoom al 100%',
+        'fit' => 'Adatta vista',
+        'arrange' => 'Riorganizza',
+        'arrange_hint' => 'Disponi automaticamente tutti i nodi ad albero',
+        'canvas_large' => 'Area di lavoro grande',
+        'canvas_small' => 'Area di lavoro compatta',
+        'canvas_keys_hint' => 'Tab: sottonodo · Invio: nodo fratello · doppio clic sull\'area: nuova idea · trascina su un nodo: riaggancia',
+        'canvas_a11y_hint' => 'Modifica accessibile nella vista struttura.',
+        'export_svg' => 'Esporta come immagine SVG',
+        'export_png' => 'Esporta come immagine PNG',
         'history' => 'Cronologia',
         'history_empty' => 'Ancora nessuna modifica.',
         'presence_suffix' => 'sta modificando',
         'note' => 'Nota',
         'color' => 'Colore',
         'status' => 'Stato',
+        'status_none' => '— nessuno stato',
     ],
 
     'error' => [

@@ -26,6 +26,9 @@ return [
     'norm' => 'ISO 37301',
     'edition' => '2021',
     'label' => 'ISO 37301:2021 — Compliance-Managementsystem',
+    // Profilrevision + Stichtag der Normfassung (Nachtrag 046a).
+    'version' => '1.0',
+    'as_of' => '2021-04-13',
     'requirements' => [
         ['ref_no' => '4', 'title' => 'Kontext der Organisation'],
         ['ref_no' => '4.1', 'title' => 'Organisation und ihr Kontext verstehen'],

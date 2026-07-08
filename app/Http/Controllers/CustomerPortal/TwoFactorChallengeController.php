@@ -127,7 +127,7 @@ class TwoFactorChallengeController extends Controller {
         $code = trim((string) $request->input('code', ''));
         $recovery = trim((string) $request->input('recovery_code', ''));
         $emailCode = trim((string) $request->input('email_code', ''));
-        $passed = ($code !== '' && filled($user->two_factor_secret) && $this->twoFactor->verify((string) $user->two_factor_secret, $code))
+        $passed = ($code !== '' && filled($user->two_factor_secret) && $this->twoFactor->verifyForUser($user, (string) $user->two_factor_secret, $code))
             || ($emailCode !== '' && $this->emailOtp->verify($user, $emailCode))
             || ($recovery !== '' && $this->twoFactor->consumeRecoveryCode($user, $recovery));
 

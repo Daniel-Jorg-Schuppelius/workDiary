@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\{Organization, PurchaseOrder};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Rendert eine Bestellung als menschenlesbares PDF (Feature 048, E4) — für
@@ -39,10 +41,8 @@ class PurchaseOrderPdfRenderer {
             'total' => $total,
         ])->render();
 
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadHTML($html)->setPaper('a4');
-
-        return (string) $pdf->output();
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.purchase-order).');
     }
 
     /** Dateiname-tauglicher Bezeichner aus der Bestellnummer. */

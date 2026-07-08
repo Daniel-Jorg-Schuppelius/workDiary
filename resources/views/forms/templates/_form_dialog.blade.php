@@ -13,7 +13,13 @@
 --}}
 @php
     $isEdit = $template !== null;
-    $fieldTemplate = ['label' => '', 'type' => \App\Enums\Form\FormFieldType::Text->value, 'required' => false, 'options' => '', 'help' => '', 'unit' => ''];
+    $conditionTemplate = ['field' => '', 'op' => 'eq', 'value' => ''];
+    $fieldTemplate = ['label' => '', 'type' => \App\Enums\Form\FormFieldType::Text->value, 'required' => false, 'options' => '', 'help' => '', 'unit' => '', 'visible_if' => $conditionTemplate];
+    // Bedingung wird intern über den Feld-Key gespeichert, im Editor aber über
+    // das Label referenziert → für die Vorbelegung Key→Label zurückübersetzen.
+    $keyToLabel = $isEdit
+        ? collect($template->fields ?? [])->mapWithKeys(fn($f) => [(string) ($f['key'] ?? '') => (string) ($f['label'] ?? '')])->all()
+        : [];
     $fieldItems = old('fields', $isEdit
         ? collect($template->fields ?? [])->map(fn($f) => [
             'label' => (string) ($f['label'] ?? ''),
@@ -22,6 +28,11 @@
             'options' => implode(', ', (array) ($f['options'] ?? [])),
             'help' => (string) ($f['help'] ?? ''),
             'unit' => (string) ($f['unit'] ?? ''),
+            'visible_if' => [
+                'field' => (string) ($keyToLabel[(string) ($f['visible_if']['field'] ?? '')] ?? ''),
+                'op' => (string) ($f['visible_if']['op'] ?? 'eq'),
+                'value' => (string) ($f['visible_if']['value'] ?? ''),
+            ],
         ])->values()->all()
         : [$fieldTemplate]);
 @endphp
@@ -98,6 +109,31 @@
                                    :name="fieldName(i, 'help')" x-model="it.help"
                                    class="input input-sm input-bordered w-full">
                         </div>
+                    </div>
+                    {{-- Bedingungslogik (Rang 33): Feld nur zeigen, wenn ein anderes
+                         Feld einen Wert/Zustand hat. Referenz über Label (Key entsteht
+                         serverseitig). --}}
+                    <div class="grid grid-cols-1 items-end gap-2 rounded-box bg-base-100/60 p-2 sm:grid-cols-[auto_1fr_auto_1fr]">
+                        <label class="fieldset-label text-xs">{{ __('form.condition.legend') }}</label>
+                        <select :name="fieldName(i, 'visible_if][field')" x-model="it.visible_if.field"
+                                class="select select-xs select-bordered">
+                            <option value="">{{ __('form.condition.always') }}</option>
+                            <template x-for="other in items.filter(o => o !== it && o.label)" :key="other.label">
+                                <option :value="other.label" x-text="other.label"></option>
+                            </template>
+                        </select>
+                        <select :name="fieldName(i, 'visible_if][op')" x-model="it.visible_if.op"
+                                x-show="it.visible_if.field" class="select select-xs select-bordered">
+                            <option value="eq">{{ __('form.condition.op.eq') }}</option>
+                            <option value="ne">{{ __('form.condition.op.ne') }}</option>
+                            <option value="in">{{ __('form.condition.op.in') }}</option>
+                            <option value="filled">{{ __('form.condition.op.filled') }}</option>
+                        </select>
+                        <input type="text" maxlength="500"
+                               :name="fieldName(i, 'visible_if][value')" x-model="it.visible_if.value"
+                               x-show="it.visible_if.field && it.visible_if.op !== 'filled'"
+                               :placeholder="'{{ __('form.condition.value_placeholder') }}'"
+                               class="input input-xs input-bordered w-full">
                     </div>
                 </div>
             </template>

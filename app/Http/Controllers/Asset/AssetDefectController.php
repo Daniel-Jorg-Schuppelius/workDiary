@@ -16,7 +16,9 @@ use App\Http\Controllers\Controller;
 use App\Models\{Asset, AssetDefect, User};
 use App\Services\Asset\AssetAssignmentService;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AssetDefectController extends Controller {
@@ -44,14 +46,19 @@ class AssetDefectController extends Controller {
             'title' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:5000'],
             'blocks_usage' => ['nullable', 'boolean'],
+            // Fotos direkt bei der Meldung (mobil per Kamera-Capture).
+            'photos' => ['nullable', 'array', 'max:8'],
+            'photos.*' => ['file', 'mimetypes:image/jpeg,image/png,image/webp,image/gif', 'max:25600'],
         ]);
 
-        $this->assignments->reportDefect($asset, $user, [
+        $defect = $this->assignments->reportDefect($asset, $user, [
             'severity' => $validated['severity'],
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'blocks_usage' => (bool) ($validated['blocks_usage'] ?? false),
         ]);
+
+        $this->attachPhotos($defect, $user, (array) $request->file('photos', []));
 
         return redirect()->route('assets.show', $asset)->with('success', __('Defekt gemeldet.'));
     }
@@ -105,6 +112,37 @@ class AssetDefectController extends Controller {
     private function ensureDefectBelongsToAsset(Asset $asset, AssetDefect $defect): void {
         if ($defect->asset_id !== $asset->id) {
             abort(404);
+        }
+    }
+
+    /**
+     * Legt die hochgeladenen Fotos als Anhänge am Defekt ab (Whitelist bereits
+     * validiert). Fehlerhafte Uploads werden übersprungen.
+     *
+     * @param  array<int, mixed>  $photos
+     */
+    private function attachPhotos(AssetDefect $defect, User $user, array $photos): void {
+        $folder = 'assets/defects/' . now()->format('Y/m');
+
+        foreach ($photos as $photo) {
+            if (! $photo instanceof UploadedFile) {
+                continue;
+            }
+            $ext = strtolower($photo->getClientOriginalExtension() ?: ($photo->extension() ?: 'jpg'));
+            $path = $photo->storeAs($folder, Str::uuid()->toString() . '.' . $ext, 'local');
+            if ($path === false) {
+                continue;
+            }
+
+            $defect->attachments()->create([
+                'user_id' => $user->id,
+                'disk' => 'local',
+                'path' => $path,
+                'original_name' => $photo->getClientOriginalName(),
+                'mime' => $photo->getMimeType() ?: 'application/octet-stream',
+                'size' => $photo->getSize(),
+                'meta_type' => AssetDefect::PHOTO_META,
+            ]);
         }
     }
 

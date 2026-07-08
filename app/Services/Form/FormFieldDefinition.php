@@ -26,6 +26,9 @@ use Illuminate\Validation\{Rule, ValidationException};
 final class FormFieldDefinition {
     public const MAX_FIELDS = 50;
 
+    /** Zulässige Operatoren der Sichtbarkeits-Bedingung (Rang 33). */
+    public const CONDITION_OPS = ['eq', 'ne', 'in', 'filled'];
+
     /**
      * Normalisiert rohe Feld-Zeilen (aus dem Dialog: label/type/required/
      * options als Komma-Liste — oder bereits strukturierte Arrays) in die
@@ -34,7 +37,7 @@ final class FormFieldDefinition {
      * Strukturfehlern.
      *
      * @param  array<int|string, mixed>  $rows
-     * @return list<array{key: string, label: string, type: string, required: bool, options: list<string>, help: string|null, unit: string|null}>
+     * @return list<array{key: string, label: string, type: string, required: bool, options: list<string>, help: string|null, unit: string|null, visible_if: array{field: string, op: string, value: string}|null}>
      *
      * @throws ValidationException
      */
@@ -88,6 +91,7 @@ final class FormFieldDefinition {
                 'options' => $options,
                 'help' => $help === '' ? null : Str::limit($help, 500, ''),
                 'unit' => ($type->supportsUnit() && $unit !== '') ? Str::limit($unit, 20, '') : null,
+                'visible_if' => self::normalizeVisibleIf($row['visible_if'] ?? null),
             ];
         }
 
@@ -97,6 +101,9 @@ final class FormFieldDefinition {
         if (count($fields) > self::MAX_FIELDS) {
             self::fail(__('form.validation.too_many_fields', ['max' => self::MAX_FIELDS]));
         }
+
+        $fields = self::resolveConditionReferences($fields);
+        self::assertConditionsResolvable($fields);
 
         return $fields;
     }
@@ -124,18 +131,67 @@ final class FormFieldDefinition {
                 continue;
             }
 
+            // Foto/Datei/Unterschrift (Rang 32) tragen keinen Skalar in `values`
+            // — ihr Inhalt kommt über den Datei-/Signatur-Kanal (Attachment);
+            // Pflicht wird separat in FormService::submit geprüft.
             $typeRules = match ($type) {
                 FormFieldType::Text => ['string', 'max:500'],
                 FormFieldType::Textarea => ['string', 'max:10000'],
                 FormFieldType::Number => ['numeric'],
                 FormFieldType::Date => ['date'],
                 FormFieldType::Select => ['string', Rule::in((array) ($field['options'] ?? []))],
+                FormFieldType::Photo, FormFieldType::File, FormFieldType::Signature => [],
             };
 
-            $rules['values.' . $field['key']] = [$required ? 'required' : 'nullable', ...$typeRules];
+            $rules['values.' . $field['key']] = [
+                ($required && ! $type->storesAttachment()) ? 'required' : 'nullable',
+                ...$typeRules,
+            ];
         }
 
         return $rules;
+    }
+
+    /**
+     * Filtert die aktuell sichtbaren Felder anhand ihrer `visible_if`-Bedingung
+     * (Rang 33) gegen die eingegebenen Werte. Felder ohne Bedingung sind immer
+     * sichtbar. Maßgeblich für die Pflichtprüfung (unsichtbare Pflichtfelder
+     * werden serverseitig übersprungen) und für die Anzeige in Show/PDF.
+     *
+     * @param  list<array<string, mixed>>  $fields
+     * @param  array<string, mixed>  $values
+     * @return list<array<string, mixed>>
+     */
+    public static function visibleFields(array $fields, array $values): array {
+        return array_values(array_filter(
+            $fields,
+            static fn(array $field): bool => self::isVisible($field, $values),
+        ));
+    }
+
+    /**
+     * Wertet die `visible_if`-Bedingung eines Feldes gegen die Werte aus.
+     * Ohne (gültige) Bedingung ist das Feld sichtbar.
+     *
+     * @param  array<string, mixed>  $field
+     * @param  array<string, mixed>  $values
+     */
+    public static function isVisible(array $field, array $values): bool {
+        $condition = $field['visible_if'] ?? null;
+        if (! is_array($condition) || ! is_string($condition['field'] ?? null) || $condition['field'] === '') {
+            return true;
+        }
+
+        $actual = self::scalarize($values[$condition['field']] ?? null);
+        $op = is_string($condition['op'] ?? null) ? $condition['op'] : 'eq';
+        $expected = (string) ($condition['value'] ?? '');
+
+        return match ($op) {
+            'filled' => $actual !== '' && $actual !== '0',
+            'ne' => $actual !== $expected,
+            'in' => in_array($actual, self::splitList($expected), true),
+            default => $actual === $expected, // eq
+        };
     }
 
     /**
@@ -204,6 +260,12 @@ final class FormFieldDefinition {
                 : (string) __('form.value.no');
         }
 
+        // Unterschrift: der Wert ist nur ein Marker; das Bild wird in Show/PDF
+        // über das Attachment (meta_type field:<key>) eingebettet.
+        if ($type === FormFieldType::Signature) {
+            return $value ? (string) __('form.value.signed') : '—';
+        }
+
         if ($value === null || $value === '') {
             return '—';
         }
@@ -229,6 +291,134 @@ final class FormFieldDefinition {
     /** @throws ValidationException */
     private static function fail(string $message): never {
         throw ValidationException::withMessages(['fields' => $message]);
+    }
+
+    /**
+     * Normalisiert eine rohe `visible_if`-Zeile in {field, op, value} oder null
+     * (keine Bedingung). Unbekannte Operatoren fallen auf `eq` zurück; ein
+     * leeres Bezugsfeld hebt die Bedingung auf.
+     *
+     * @return array{field: string, op: string, value: string}|null
+     */
+    private static function normalizeVisibleIf(mixed $raw): ?array {
+        if (! is_array($raw)) {
+            return null;
+        }
+
+        $field = trim((string) ($raw['field'] ?? ''));
+        if ($field === '') {
+            return null;
+        }
+
+        $op = (string) ($raw['op'] ?? 'eq');
+        if (! in_array($op, self::CONDITION_OPS, true)) {
+            $op = 'eq';
+        }
+
+        // `filled` ist wertlos (prüft nur Belegung) → Wert verwerfen.
+        $value = $op === 'filled' ? '' : Str::limit(trim((string) ($raw['value'] ?? '')), 500, '');
+
+        return ['field' => $field, 'op' => $op, 'value' => $value];
+    }
+
+    /**
+     * Löst Bedingungs-Referenzen zum kanonischen Feld-Key auf: Der Editor
+     * referenziert das Bezugsfeld über sein Label (Keys entstehen erst hier);
+     * bereits kanonische Keys (z. B. aus Snapshots/API) bleiben unverändert.
+     *
+     * @param  list<array{key: string, label: string, type: string, required: bool, options: list<string>, help: string|null, unit: string|null, visible_if: array{field: string, op: string, value: string}|null}>  $fields
+     * @return list<array{key: string, label: string, type: string, required: bool, options: list<string>, help: string|null, unit: string|null, visible_if: array{field: string, op: string, value: string}|null}>
+     */
+    private static function resolveConditionReferences(array $fields): array {
+        $keys = [];
+        $labelToKey = [];
+        foreach ($fields as $field) {
+            $keys[$field['key']] = true;
+            // Erste Verwendung eines Labels gewinnt (Keys sind ohnehin eindeutig).
+            $labelToKey[$field['label']] ??= $field['key'];
+        }
+
+        foreach ($fields as $i => $field) {
+            $ref = $field['visible_if']['field'] ?? null;
+            if ($ref === null || isset($keys[$ref])) {
+                continue;
+            }
+            if (isset($labelToKey[$ref])) {
+                $fields[$i]['visible_if']['field'] = $labelToKey[$ref];
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Stellt sicher, dass jede `visible_if`-Bedingung ein existierendes anderes
+     * Feld referenziert und der Bedingungsgraph zyklenfrei ist (sonst könnten
+     * sich Felder gegenseitig aus-/einblenden). Selbstbezug ist ein Zyklus.
+     *
+     * @param  list<array{key: string, visible_if: array{field: string, op: string, value: string}|null}>  $fields
+     *
+     * @throws ValidationException
+     */
+    private static function assertConditionsResolvable(array $fields): void {
+        $deps = [];
+        $keys = [];
+        foreach ($fields as $field) {
+            $keys[$field['key']] = true;
+        }
+        foreach ($fields as $field) {
+            $ref = $field['visible_if']['field'] ?? null;
+            if ($ref === null) {
+                continue;
+            }
+            if (! isset($keys[$ref])) {
+                self::fail(__('form.validation.condition_unknown_field', ['field' => $ref, 'label' => $field['key']]));
+            }
+            $deps[$field['key']] = $ref;
+        }
+
+        // Kantenverfolgung key → referenziertes Feld: taucht ein Key auf dem
+        // eigenen Pfad erneut auf, liegt ein Zyklus vor.
+        foreach (array_keys($deps) as $start) {
+            $seen = [];
+            $node = $start;
+            while (isset($deps[$node])) {
+                if (isset($seen[$node])) {
+                    self::fail(__('form.validation.condition_cycle', ['field' => $start]));
+                }
+                $seen[$node] = true;
+                $node = $deps[$node];
+            }
+        }
+    }
+
+    /** Bringt einen Feldwert für den Bedingungsvergleich in eine Zeichenkette. */
+    private static function scalarize(mixed $value): string {
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+        if ($value === null) {
+            return '';
+        }
+
+        return trim((string) $value);
+    }
+
+    /**
+     * Zerlegt eine Komma-Liste (Operator `in`) in getrimmte Einzelwerte.
+     *
+     * @return list<string>
+     */
+    private static function splitList(string $value): array {
+        $items = [];
+        foreach (explode(',', $value) as $item) {
+            $item = trim($item);
+            if ($item !== '') {
+                $items[] = $item;
+            }
+        }
+
+        return $items;
     }
 
     /**

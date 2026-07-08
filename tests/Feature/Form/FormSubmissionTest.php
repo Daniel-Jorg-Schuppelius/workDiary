@@ -13,6 +13,8 @@ namespace Tests\Feature\Form;
 use App\Models\{DiaryEntry, FormSubmission, FormTemplate, User};
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -342,6 +344,237 @@ class FormSubmissionTest extends TestCase {
                 'values' => ['bemerkung' => 'x', 'zustand' => 'gut'],
             ])
             ->assertNotFound();
+    }
+
+    /**
+     * @param  list<array{key: string, type: string, required?: bool}>  $extraFields
+     * @return array{0: FormTemplate, 1: DiaryEntry}
+     */
+    private function templateWithFields(User $user, array $extraFields): array {
+        $fields = [];
+        foreach ($extraFields as $f) {
+            $fields[] = [
+                'key' => $f['key'],
+                'label' => ucfirst($f['key']),
+                'type' => $f['type'],
+                'required' => $f['required'] ?? false,
+                'options' => [],
+                'help' => null,
+                'unit' => null,
+            ];
+        }
+        $template = $this->makeActiveTemplateFor($user, $fields);
+        $entry = $this->makeDiaryEntryFor($user, 'Anhang-Formular');
+
+        return [$template, $entry];
+    }
+
+    public function test_photo_and_file_fields_store_attachments(): void {
+        Storage::fake('local');
+        $user = User::factory()->user()->create();
+        [$template, $entry] = $this->templateWithFields($user, [
+            ['key' => 'foto', 'type' => 'photo'],
+            ['key' => 'anhang', 'type' => 'file'],
+        ]);
+
+        $this->actingAs($user)->post(route('form-submissions.store'), [
+            'form_template_id' => Sqid::encode(FormTemplate::class, $template->id),
+            'subject_kind' => 'diary',
+            'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
+            'files' => [
+                'foto' => UploadedFile::fake()->image('foto.jpg'),
+                'anhang' => UploadedFile::fake()->create('bericht.pdf', 20, 'application/pdf'),
+            ],
+        ])->assertRedirect();
+
+        app()->instance('currentOrganization', $user->organization);
+        $submission = FormSubmission::query()->firstOrFail();
+
+        $this->assertDatabaseHas('attachments', ['attachable_id' => $submission->id, 'meta_type' => 'field:foto']);
+        $this->assertDatabaseHas('attachments', ['attachable_id' => $submission->id, 'meta_type' => 'field:anhang']);
+        $this->assertSame('foto.jpg', $submission->values['foto']);
+        $this->assertSame('bericht.pdf', $submission->values['anhang']);
+    }
+
+    public function test_signature_field_stores_png_attachment(): void {
+        Storage::fake('local');
+        $user = User::factory()->user()->create();
+        [$template, $entry] = $this->templateWithFields($user, [
+            ['key' => 'unterschrift', 'type' => 'signature'],
+        ]);
+
+        $binary = "\x89PNG\r\n\x1a\n" . str_repeat("\x00", 64);
+        $base64 = 'data:image/png;base64,' . base64_encode($binary);
+
+        $this->actingAs($user)->post(route('form-submissions.store'), [
+            'form_template_id' => Sqid::encode(FormTemplate::class, $template->id),
+            'subject_kind' => 'diary',
+            'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
+            'signatures' => ['unterschrift' => $base64],
+        ])->assertRedirect();
+
+        app()->instance('currentOrganization', $user->organization);
+        $submission = FormSubmission::query()->firstOrFail();
+
+        $this->assertDatabaseHas('attachments', [
+            'attachable_id' => $submission->id,
+            'meta_type' => 'field:unterschrift',
+            'mime' => 'image/png',
+        ]);
+        $this->assertSame('signed', $submission->values['unterschrift']);
+    }
+
+    public function test_required_file_field_missing_returns_error(): void {
+        $user = User::factory()->user()->create();
+        [$template, $entry] = $this->templateWithFields($user, [
+            ['key' => 'pflichtdatei', 'type' => 'file', 'required' => true],
+        ]);
+
+        $this->actingAs($user)->post(route('form-submissions.store'), [
+            'form_template_id' => Sqid::encode(FormTemplate::class, $template->id),
+            'subject_kind' => 'diary',
+            'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
+        ])->assertSessionHasErrors('values.pflichtdatei');
+
+        $this->assertSame(0, FormSubmission::query()->count());
+    }
+
+    /**
+     * Vorlage mit einem Bedingungsfeld: `schadenbeschreibung` (Pflicht) ist nur
+     * sichtbar, wenn `schaden` = „ja". Basis für die Pflicht-je-Sichtbarkeit-Tests.
+     */
+    private function makeConditionalTemplateFor(User $user): FormTemplate {
+        return $this->makeActiveTemplateFor($user, fields: [
+            ['key' => 'schaden', 'label' => 'Schaden?', 'type' => 'select', 'required' => true, 'options' => ['ja', 'nein'], 'help' => null, 'unit' => null, 'visible_if' => null],
+            ['key' => 'schadenbeschreibung', 'label' => 'Schadensbeschreibung', 'type' => 'text', 'required' => true, 'options' => [], 'help' => null, 'unit' => null, 'visible_if' => ['field' => 'schaden', 'op' => 'eq', 'value' => 'ja']],
+        ]);
+    }
+
+    public function test_required_field_is_skipped_when_condition_hidden(): void {
+        $user = User::factory()->user()->create();
+        $template = $this->makeConditionalTemplateFor($user);
+
+        // schaden = „nein" → Beschreibungsfeld unsichtbar → Pflicht entfällt.
+        $this->actingAs($user)->post(route('form-submissions.store'), [
+            'form_template_id' => Sqid::encode(FormTemplate::class, $template->id),
+            'values' => ['schaden' => 'nein'],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        app()->instance('currentOrganization', $user->organization);
+        $submission = FormSubmission::query()->firstOrFail();
+
+        $this->assertSame('nein', $submission->values['schaden']);
+        // Unsichtbares Feld wird gar nicht gespeichert.
+        $this->assertArrayNotHasKey('schadenbeschreibung', $submission->values);
+    }
+
+    public function test_required_field_is_enforced_when_condition_visible(): void {
+        $user = User::factory()->user()->create();
+        $template = $this->makeConditionalTemplateFor($user);
+
+        // schaden = „ja" → Beschreibungsfeld sichtbar → Pflicht greift.
+        $this->actingAs($user)->postJson(route('form-submissions.store'), [
+            'form_template_id' => Sqid::encode(FormTemplate::class, $template->id),
+            'values' => ['schaden' => 'ja'],
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['values.schadenbeschreibung']);
+
+        $this->assertSame(0, FormSubmission::query()->count());
+    }
+
+    public function test_condition_cycle_is_rejected_on_template_save(): void {
+        $lead = User::factory()->teamleitung()->create();
+
+        // Feld A sichtbar-wenn B, Feld B sichtbar-wenn A (Referenz per Label) → Zyklus.
+        $this->actingAs($lead)->postJson(route('form-templates.store'), [
+            'name' => 'Zyklische Bedingungen',
+            'fields' => [
+                ['label' => 'Feld A', 'type' => 'text', 'visible_if' => ['field' => 'Feld B', 'op' => 'filled', 'value' => '']],
+                ['label' => 'Feld B', 'type' => 'text', 'visible_if' => ['field' => 'Feld A', 'op' => 'filled', 'value' => '']],
+            ],
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['fields']);
+
+        $this->assertSame(0, FormTemplate::query()->count());
+    }
+
+    public function test_condition_reference_by_label_is_resolved_and_frozen_in_snapshot(): void {
+        $lead = User::factory()->teamleitung()->create();
+        app()->instance('currentOrganization', $lead->organization);
+
+        // Editor referenziert das Bezugsfeld per Label „Schaden?" → Server löst
+        // zum Key „schaden" auf.
+        $this->actingAs($lead)->post(route('form-templates.store'), [
+            'name' => 'Bedingtes Protokoll',
+            'fields' => [
+                ['label' => 'Schaden?', 'type' => 'select', 'options' => 'ja, nein'],
+                ['label' => 'Schadensdetails', 'type' => 'text', 'visible_if' => ['field' => 'Schaden?', 'op' => 'eq', 'value' => 'ja']],
+            ],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $template = FormTemplate::query()->firstOrFail();
+        $fields = collect($template->fields)->keyBy('key');
+        $this->assertSame('schaden', $fields['schadensdetails']['visible_if']['field']);
+
+        $this->service()->activate($template, $lead);
+
+        // schaden = „nein" → Beschreibung unsichtbar; Snapshot behält die Bedingung.
+        $this->actingAs($lead)->post(route('form-submissions.store'), [
+            'form_template_id' => Sqid::encode(FormTemplate::class, $template->id),
+            'values' => ['schaden' => 'nein'],
+        ])->assertRedirect();
+
+        $submission = FormSubmission::query()->firstOrFail();
+        $snapshotDetails = collect($submission->fields_snapshot)->firstWhere('key', 'schadensdetails');
+        $this->assertSame('schaden', $snapshotDetails['visible_if']['field']);
+
+        // Read-Only-Seite blendet das unsichtbare Feld aus.
+        $this->actingAs($lead)
+            ->get(route('form-submissions.show', $submission))
+            ->assertOk()
+            ->assertSee('Schaden?')
+            ->assertDontSee('Schadensdetails');
+    }
+
+    private function service(): \App\Services\Form\FormService {
+        return app(\App\Services\Form\FormService::class);
+    }
+
+    private function submitFor(User $user): FormSubmission {
+        $template = $this->makeActiveTemplateFor($user);
+        $entry = $this->makeDiaryEntryFor($user, 'Wartung');
+
+        $this->actingAs($user)->post(route('form-submissions.store'), [
+            'form_template_id' => Sqid::encode(FormTemplate::class, $template->id),
+            'subject_kind' => 'diary',
+            'subject_id' => Sqid::encode(DiaryEntry::class, $entry->id),
+            'values' => ['bemerkung' => 'ok', 'messwert' => '10', 'datum' => '2026-06-01', 'zustand' => 'gut', 'geprueft' => '1'],
+        ])->assertRedirect();
+
+        app()->instance('currentOrganization', $user->organization);
+
+        return FormSubmission::query()->firstOrFail();
+    }
+
+    public function test_submission_pdf_downloads(): void {
+        $user = User::factory()->user()->create();
+        $submission = $this->submitFor($user);
+
+        $res = $this->actingAs($user)->get(route('form-submissions.pdf', $submission));
+
+        $res->assertOk();
+        $res->assertHeader('content-type', 'application/pdf');
+        $this->assertSame('%PDF', substr((string) $res->getContent(), 0, 4));
+    }
+
+    public function test_submission_pdf_is_org_scoped(): void {
+        $user = User::factory()->user()->create();
+        $submission = $this->submitFor($user);
+
+        $stranger = User::factory()->user()->create(); // andere Organisation
+        $this->actingAs($stranger)->get(route('form-submissions.pdf', $submission))->assertNotFound();
     }
 
     /**

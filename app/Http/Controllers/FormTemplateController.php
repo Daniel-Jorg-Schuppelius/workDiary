@@ -149,6 +149,12 @@ class FormTemplateController extends Controller {
             'fields.*.options' => ['nullable', 'string', 'max:2000'],
             'fields.*.help' => ['nullable', 'string', 'max:500'],
             'fields.*.unit' => ['nullable', 'string', 'max:20'],
+            // Bedingungslogik (Rang 33): {field, op, value}; Auflösung/Zyklen-
+            // prüfung übernimmt FormFieldDefinition::normalize.
+            'fields.*.visible_if' => ['nullable', 'array'],
+            'fields.*.visible_if.field' => ['nullable', 'string', 'max:160'],
+            'fields.*.visible_if.op' => ['nullable', 'string', 'max:16'],
+            'fields.*.visible_if.value' => ['nullable', 'string', 'max:500'],
         ]);
     }
 }

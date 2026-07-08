@@ -37,6 +37,10 @@ return [
         'payroll' => 'Payroll handover',
         'wage_type_code' => 'Wage type',
         'wage_type_code_help' => 'Wage type number for DATEV/Lexware (e.g. 2010). Empty = export without wage type.',
+        'tax_free_limit_pct' => 'Tax-free up to (%)',
+        'tax_free_limit_pct_help' => "Configurable § 3b EStG limits (e.g. night 25/40, Sunday 50, public holiday 125/150). Empty = no split. Anything above is exported as a taxable share with its own wage type.",
+        'taxable_wage_type_code' => 'Wage type for taxable share',
+        'taxable_wage_type_code_help' => "Required as soon as the tax-free limit is below the surcharge. The base-wage cap in € remains up to the external payroll.",
         'priority' => 'Priority',
         'priority_help' => 'Tie-breaker for equal percentages: higher priority wins.',
         'validity' => 'Validity',
@@ -62,5 +66,9 @@ return [
         'created' => 'Surcharge rule created.',
         'updated' => 'Surcharge rule updated.',
         'deleted' => 'Surcharge rule deleted.',
+    ],
+
+    'validation' => [
+        'taxable_wage_type_required' => "The taxable share requires its own wage type.",
     ],
 ];

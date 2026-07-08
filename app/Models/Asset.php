@@ -31,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $inventory_no
  * @property int|null $customer_id
  * @property int|null $foreign_customer_id
+ * @property int|null $sla_contract_id
  * @property bool $shared_remote
  * @property int|null $room_id
  * @property AssetOwnership $owned_by
@@ -63,6 +64,7 @@ class Asset extends Model {
         'inventory_no',
         'customer_id',
         'foreign_customer_id',
+        'sla_contract_id',
         'shared_remote',
         'room_id',
         'owned_by',
@@ -97,6 +99,26 @@ class Asset extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Direkt zugeordneter SLA-Vertrag (Override der Kunden-/Default-Auflösung,
+     * Feature 027 → Rang 48).
+     *
+     * @return BelongsTo<SlaContract, $this>
+     */
+    public function slaContract(): BelongsTo {
+        return $this->belongsTo(SlaContract::class);
+    }
+
+    /**
+     * Unveränderliche Eigentümerwechsel-Historie (Feature 027 → Rang 49),
+     * jüngste zuerst.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<AssetOwnershipChange, $this>
+     */
+    public function ownershipChanges(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(AssetOwnershipChange::class)->latest('changed_at');
     }
 
     /** @return BelongsTo<ForeignCustomer, $this> */

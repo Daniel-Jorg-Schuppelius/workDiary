@@ -32,6 +32,11 @@
 
 @php
     $icon = $icon ?? '<span class="material-symbols-outlined" aria-hidden="true">inbox</span>';
+    // Komfort: ein bloßer Name („receipt_long") wird als Material-Symbol
+    // interpretiert; volles Markup ('<span …>') wird unverändert gerendert.
+    if ($icon !== null && ! str_contains($icon, '<')) {
+        $icon = '<span class="material-symbols-outlined" aria-hidden="true">' . e($icon) . '</span>';
+    }
     $title = $title ?? __('Keine Einträge vorhanden');
     $message = $message ?? __('Für die aktuelle Auswahl wurden keine Daten gefunden.');
 

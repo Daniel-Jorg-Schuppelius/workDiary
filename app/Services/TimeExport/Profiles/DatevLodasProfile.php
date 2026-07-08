@@ -18,7 +18,7 @@ use App\Models\{TimeExport, TimeExportLine};
  * Format (dokumentiert, KEINE zertifizierte LODAS-Datei):
  *   - CSV ohne BOM, Trenner ;  EOL \r\n, keine Quotes (Felder sind numerisch
  *     bzw. enthalten keine Trennzeichen)
- *   - Header: Personalnummer;Datum;Lohnart;Stunden
+ *   - Header: Personalnummer;Datum;Lohnart;Stunden;Kostenstelle
  *   - Personalnummer: users.personnel_number, Fallback User-ID
  *   - Datum: TT.MM.JJJJ — bei tagesgenauen Zuschlagszeilen der Kalendertag,
  *     bei Monats-Summenzeilen (work.normal) der Monatsletzte (period_end)
@@ -26,6 +26,8 @@ use App\Models\{TimeExport, TimeExportLine};
  *     konfigurierbare Default-Lohnart für Normalstunden (Option
  *     `normal_wage_type_code`, Default "1000")
  *   - Stunden: Dezimal mit Komma, 2 Nachkommastellen (LODAS-üblich)
+ *   - Kostenstelle: TimeExportLine.cost_center (Rang 35 — Regeln je
+ *     Benutzer/Team bzw. Override im Prüf-UI), leer wenn keine
  *
  * Eine perfekte LODAS-Konformität (Mandanten-/Beraternummer-Kopfsatz,
  * Satzbeschreibungen) ist bewusst nicht Teil des MVP; die Struktur
@@ -56,7 +58,7 @@ class DatevLodasProfile implements ExportProfile {
     }
 
     public function render(TimeExport $export): string {
-        $rows = ['Personalnummer' . self::DELIMITER . 'Datum' . self::DELIMITER . 'Lohnart' . self::DELIMITER . 'Stunden'];
+        $rows = [implode(self::DELIMITER, ['Personalnummer', 'Datum', 'Lohnart', 'Stunden', 'Kostenstelle'])];
 
         $lines = $export->lines()
             ->with('user:id,personnel_number')
@@ -86,6 +88,7 @@ class DatevLodasProfile implements ExportProfile {
                 $date,
                 $wageTypeCode,
                 number_format((float) $line->quantity, 2, ',', ''),
+                (string) $line->cost_center,
             ]);
         }
 

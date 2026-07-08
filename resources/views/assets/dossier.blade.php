@@ -153,6 +153,66 @@
         </table>
     @endif
 
+    {{-- Verträge / SLA (Feature 027 → Rang 48): geltender Vertrag (Direktzuordnung
+         oder Kunden-/Default-Auflösung) + Fristen der offenen Asset-Tickets.
+         Anzeige nur mit Recht slaContract.view. --}}
+    @if ($canViewSla)
+        <h2>{{ __('Verträge & SLA') }}</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <th>{{ __('Geltender SLA-Vertrag') }}</th>
+                    <td>
+                        @if ($slaContract)
+                            <a href="{{ route('sla-contracts.show', $slaContract) }}">{{ $slaContract->code }} — {{ $slaContract->label }}</a>
+                            @if ($asset->sla_contract_id)
+                                <span class="badge">{{ __('Direktzuordnung') }}</span>
+                            @endif
+                        @else
+                            {{ __('Kein Vertrag zugeordnet.') }}
+                        @endif
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        @if ($slaTickets->isNotEmpty())
+            <table>
+                <thead><tr><th>{{ __('Ticket') }}</th><th>{{ __('timeline.case.title_col') }}</th><th>SLA</th><th>{{ __('Fällig') }}</th></tr></thead>
+                <tbody>
+                    @foreach ($slaTickets as $ticket)
+                        <tr>
+                            <td>{{ $ticket->ticket_no }}</td>
+                            <td>{{ $ticket->title }}</td>
+                            <td><span class="badge">{{ $ticket->slaStatus()->label() }}</span></td>
+                            <td>{{ $ticket->resolution_due_at?->fdatetime() ?? '—' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+    @endif
+
+    {{-- Eigentümerwechsel-Historie (Feature 027 → Rang 49): append-only Nachweis. --}}
+    @if ($ownershipChanges->isNotEmpty())
+        @php $ownershipLabels = ['org' => __('Organisation'), 'customer' => __('Kunde'), 'external' => __('Extern')]; @endphp
+        <h2>{{ __('Eigentümerwechsel-Historie') }}</h2>
+        <table>
+            <thead><tr><th>{{ __('Datum') }}</th><th>{{ __('Von') }}</th><th>{{ __('Nach') }}</th><th>{{ __('Kunde') }}</th><th>{{ __('Durch') }}</th><th>{{ __('Notizen') }}</th></tr></thead>
+            <tbody>
+                @foreach ($ownershipChanges as $change)
+                    <tr>
+                        <td>{{ $change->changed_at?->fdatetime() ?? '—' }}</td>
+                        <td>{{ $change->from_ownership ? ($ownershipLabels[$change->from_ownership->value] ?? $change->from_ownership->value) : '—' }}</td>
+                        <td>{{ $ownershipLabels[$change->to_ownership->value] ?? $change->to_ownership->value }}</td>
+                        <td>{{ $change->toCustomer?->name ?? '—' }}</td>
+                        <td>{{ $change->changedBy?->name ?? '—' }}</td>
+                        <td class="pre">{{ $change->note ?? '—' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
     {{-- Ausgaben / Rückgaben --}}
     @if ($assignments->isNotEmpty())
         <h2>{{ __('asset.dossier.assignments') }}</h2>
@@ -172,7 +232,12 @@
 
     {{-- Defekte / Sperren --}}
     @if ($defects->isNotEmpty())
-        <h2>{{ __('asset.dossier.defects') }}</h2>
+        <h2>{{ __('asset.dossier.defects') }}
+            @if ($recurringDefect ?? false)
+                {{-- Wiederholdefekt-Fall (Feature 009 → Rang 47): >= 3 Defekte in 12 Monaten. --}}
+                <span class="badge badge-warning badge-sm align-middle">{{ __('Wiederholdefekt') }}</span>
+            @endif
+        </h2>
         <table>
             <thead><tr><th>{{ __('timeline.case.date') }}</th><th>{{ __('timeline.case.title_col') }}</th><th>{{ __('timeline.case.severity') }}</th><th>{{ __('Status') }}</th><th>{{ __('asset.dossier.blocks') }}</th></tr></thead>
             <tbody>

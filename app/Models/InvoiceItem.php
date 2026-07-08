@@ -40,6 +40,7 @@ class InvoiceItem extends Model {
     use HasSqid;
 
     protected $fillable = [
+        'tax_rate',
         'organization_id',
         'invoice_id',
         'time_entry_id',

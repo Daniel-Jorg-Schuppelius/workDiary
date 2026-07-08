@@ -140,6 +140,10 @@ class DataTransferController extends Controller {
 
     public function download(Request $request, ExportRun $export): StreamedResponse {
         $this->ensureOwned($export);
+        // Access-Control: das entitätsbezogene Export-Recht gilt auch beim
+        // Herunterladen — nicht nur beim Erzeugen (sonst käme ein Nutzer mit
+        // nur einem Export-Recht an fremde Entitäts-Exporte inkl. PII).
+        $this->authorizeExport($export->entity);
         abort_unless($export->state === ExportRunState::Ready, 409);
 
         $disk = Storage::disk(ExportRunner::DISK);
@@ -158,6 +162,8 @@ class DataTransferController extends Controller {
 
     public function destroy(Request $request, ExportRun $export): RedirectResponse {
         $this->ensureOwned($export);
+        // Löschen erfordert dasselbe entitätsbezogene Recht wie das Erzeugen.
+        $this->authorizeExport($export->entity);
 
         $disk = Storage::disk(ExportRunner::DISK);
         if ($export->storage_path !== '' && $disk->exists($export->storage_path)) {

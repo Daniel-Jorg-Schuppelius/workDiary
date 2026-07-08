@@ -10,22 +10,31 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
-use Barryvdh\DomPDF\Facade\Pdf;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * Gemeinsames DomPDF-Boilerplate der Report-Controller: View rendern,
- * A4-Papier setzen, als Download ausliefern. View-Name, Datenaufbereitung
- * und Orientierung bleiben Sache des jeweiligen Controllers.
+ * Gemeinsames PDF-Boilerplate der Report-Controller (pdf-toolkit
+ * `PDFWriterRegistry`): View rendern, A4-Papier setzen, als Download
+ * ausliefern. View-Name, Datenaufbereitung und Orientierung bleiben Sache
+ * des jeweiligen Controllers.
  */
 trait RendersReportPdf {
     /**
      * @param  array<string, mixed>  $data
      */
     protected function pdfDownload(string $view, array $data, string $filename, string $orientation = 'portrait'): SymfonyResponse {
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView($view, $data)->setPaper('a4', $orientation);
+        $html = view($view, $data)->render();
+        $bytes = PDFWriterRegistry::getInstance()->createPdfString(
+            PDFContent::fromHtml($html),
+            ['orientation' => $orientation],
+        ) ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (' . $view . ').');
 
-        return $pdf->download($filename);
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

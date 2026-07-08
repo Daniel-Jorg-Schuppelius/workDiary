@@ -19,6 +19,16 @@
     <x-index-page :subtitle="__('isms.subtitle.advisories')">
         <x-slot:actions>
             @if ($canManage)
+                {{-- CSAF-Feed-Pull (Nachtrag 044b): Trusted Provider, Default BSI WID. --}}
+                <form method="POST" action="{{ route('isms.advisories.feed-pull') }}" class="flex items-center gap-2">
+                    @csrf
+                    <input type="url" name="provider_url" maxlength="255"
+                           class="input input-sm input-bordered max-w-80"
+                           placeholder="{{ \App\Services\Isms\CsafFeedService::DEFAULT_PROVIDER }}"
+                           aria-label="{{ __('CSAF provider-metadata.json') }}">
+                    <x-icon-btn icon="cloud_download" tone="outline" size="sm" type="submit"
+                                show-label>{{ __('Feed abrufen') }}</x-icon-btn>
+                </form>
                 <x-icon-btn icon="upload_file" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('isms.advisories.create')"

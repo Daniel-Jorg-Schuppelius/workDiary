@@ -36,6 +36,8 @@ return [
         'attachment_added' => 'Anhang hochgeladen',
         'material_added' => 'Material gebucht',
         'communication_added' => 'Kommunikationsnotiz erfasst',
+        'shipment' => 'Versand: :status',
+        'shipment_tracking' => 'Sendungsnummer :number',
         'document_linked' => 'Dokument verknüpft',
         'protocol' => [
             'created' => 'Protokoll angelegt',

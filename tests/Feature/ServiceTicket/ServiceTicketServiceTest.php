@@ -12,7 +12,7 @@ namespace Tests\Feature\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketStatus};
 use App\Exceptions\ServiceTicketException;
-use App\Models\{Organization, SlaContract, User};
+use App\Models\{Customer, DiaryEntry, Organization, Project, SlaContract, User};
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\ServiceTicket\{ServiceTicketService, SlaTimer, TicketStatusMachine};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -133,6 +133,65 @@ class ServiceTicketServiceTest extends TestCase {
         $this->assertNotNull($ticket->closed_at);
 
         Carbon::setTestNow();
+    }
+
+    public function test_create_links_diary_entry_and_inherits_customer_and_project(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $project = Project::factory()->create(['organization_id' => $this->org->id, 'customer_id' => $customer->id]);
+        $entry = DiaryEntry::factory()->create([
+            'organization_id' => $this->org->id,
+            'user_id' => $this->actor->id,
+            'customer_id' => $customer->id,
+            'project_id' => $project->id,
+        ]);
+
+        $ticket = $this->service->create($this->org, $this->actor, [
+            'title' => 'Aus Auftrag',
+            'priority' => ServiceTicketPriority::Normal->value,
+            'diary_entry_id' => $entry->id,
+        ]);
+
+        $this->assertSame($entry->id, $ticket->diary_entry_id);
+        $this->assertSame($customer->id, $ticket->customer_id); // aus dem Auftrag vorbefüllt
+        $this->assertSame($project->id, $ticket->project_id);   // aus dem Auftrag vorbefüllt
+        $this->assertTrue($entry->serviceTickets()->whereKey($ticket->id)->exists());
+    }
+
+    public function test_explicit_customer_wins_over_diary_entry_prefill(): void {
+        $entryCustomer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $entry = DiaryEntry::factory()->create([
+            'organization_id' => $this->org->id,
+            'user_id' => $this->actor->id,
+            'customer_id' => $entryCustomer->id,
+        ]);
+        $explicit = Customer::factory()->create(['organization_id' => $this->org->id]);
+
+        $ticket = $this->service->create($this->org, $this->actor, [
+            'title' => 'X',
+            'priority' => ServiceTicketPriority::Normal->value,
+            'diary_entry_id' => $entry->id,
+            'customer_id' => $explicit->id,
+        ]);
+
+        $this->assertSame($explicit->id, $ticket->customer_id); // explizite Angabe schlägt Vorbefüllung
+        $this->assertSame($entry->id, $ticket->diary_entry_id);
+    }
+
+    public function test_foreign_diary_entry_is_not_linked(): void {
+        $otherOrg = Organization::factory()->create();
+        $foreignUser = User::factory()->create(['organization_id' => $otherOrg->id]);
+        $foreignEntry = DiaryEntry::factory()->create([
+            'organization_id' => $otherOrg->id,
+            'user_id' => $foreignUser->id,
+        ]);
+
+        $ticket = $this->service->create($this->org, $this->actor, [
+            'title' => 'X',
+            'priority' => ServiceTicketPriority::Normal->value,
+            'diary_entry_id' => $foreignEntry->id,
+        ]);
+
+        $this->assertNull($ticket->diary_entry_id); // fremder Eintrag → keine Verknüpfung (Mandantengrenze)
     }
 
     public function test_ticket_no_increments_per_year_per_org(): void {

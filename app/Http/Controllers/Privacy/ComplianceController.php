@@ -34,10 +34,34 @@ class ComplianceController extends Controller {
             ->sortBy(fn (ComplianceFinding $f): string => sprintf('%d_%s', $priority[$f->status] ?? 9, $f->requirement_key))
             ->values();
 
+        // Konfigurierbarer Anforderungskatalog (Nachtrag 043c) — beim ersten
+        // Aufruf werden die config-Defaults materialisiert.
+        $org = request()->user()?->organization;
+        $requirements = $org !== null ? $this->service->catalog($org) : collect();
+
         return view('privacy.compliance.index', [
             'findings' => $findings,
             'counts' => $findings->groupBy('status')->map->count(),
+            'requirements' => $requirements,
         ]);
+    }
+
+    /** Katalogeintrag umbenennen bzw. (de)aktivieren (Nachtrag 043c). */
+    public function updateRequirement(Request $request, \App\Models\Privacy\PrivacyRequirement $requirement): RedirectResponse {
+        Gate::authorize('manage', ComplianceFinding::class);
+
+        $data = $request->validate([
+            'label' => ['required', 'string', 'max:255'],
+            'active' => ['nullable', 'in:0,1'],
+        ]);
+
+        $requirement->update([
+            'label' => $data['label'],
+            'active' => ($data['active'] ?? '0') === '1',
+            'source' => 'manual',
+        ]);
+
+        return back()->with('status', __('Anforderungskatalog aktualisiert.'));
     }
 
     public function run(Request $request): RedirectResponse {

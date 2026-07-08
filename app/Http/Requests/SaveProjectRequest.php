@@ -28,6 +28,16 @@ class SaveProjectRequest extends BaseFormRequest {
         'member_ids' => User::class,
     ];
 
+    /**
+     * Leerer Wetter-Override (Auswahl „Erben") → null, damit `nullable`/`in:0,1`
+     * greift und die Spalte auf null (= vererben) gesetzt wird.
+     */
+    protected function prepareForValidation(): void {
+        if ($this->input('weather_auto_fetch') === '') {
+            $this->merge(['weather_auto_fetch' => null]);
+        }
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array {
         /** @var Project|null $project */
@@ -53,6 +63,9 @@ class SaveProjectRequest extends BaseFormRequest {
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'is_default' => ['sometimes', 'boolean'],
+            // Wetter-Auto-Abruf-Override (Feature 062, Rang 12): Tri-State
+            // ''=erben (→ null in prepareForValidation), '1'=an, '0'=aus.
+            'weather_auto_fetch' => ['nullable', 'in:0,1'],
             'team_ids' => ['array'],
             'team_ids.*' => ['integer', Rule::exists('teams', 'id')],
             'member_ids' => ['array'],

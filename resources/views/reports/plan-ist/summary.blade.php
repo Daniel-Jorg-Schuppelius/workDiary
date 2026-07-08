@@ -1,0 +1,98 @@
+{{--
+  Created on   : Tue Jul 07 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : summary.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+
+  Plan/Ist-Anwesenheit Team-/Org-Sicht (MVP-018, Rang 38): Summen je
+  Mitarbeiter:in mit Drilldown auf die Personen-Sicht.
+--}}
+
+@extends('layouts.app')
+@section('title', $scope === 'team' ? __('Plan/Ist — Team') : __('Plan/Ist — Organisation'))
+@section('nav-title', $scope === 'team' ? __('Plan/Ist — Team') : __('Plan/Ist — Organisation'))
+
+@section('content')
+@php
+    $fmtH = fn (int $minutes): string => number_format($minutes / 60, 1, ',', '.') . ' h';
+@endphp
+<x-page-shell>
+    <x-page-toolbar>
+        <x-slot:title>{{ $scope === 'team' ? __('Plan/Ist — Team') : __('Plan/Ist — Organisation') }}</x-slot:title>
+        <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }}</x-slot:subtitle>
+    </x-page-toolbar>
+
+    <x-card>
+        <form method="GET" class="flex flex-wrap items-end gap-2">
+            @if ($scope === 'team' && $teams->count() > 1)
+                <label class="form-control">
+                    <span class="label-text text-xs">{{ __('Team') }}</span>
+                    <select name="team" class="select select-sm select-bordered">
+                        @foreach ($teams as $t)
+                            <option value="{{ $t->sqid }}" @selected($team !== null && (int) $t->id === (int) $team->id)>{{ $t->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            @endif
+            <label class="form-control">
+                <span class="label-text text-xs">{{ __('Von') }}</span>
+                <input type="date" name="from" value="{{ $from->toDateString() }}" class="input input-sm input-bordered">
+            </label>
+            <label class="form-control">
+                <span class="label-text text-xs">{{ __('Bis') }}</span>
+                <input type="date" name="to" value="{{ $to->toDateString() }}" class="input input-sm input-bordered">
+            </label>
+            <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Anwenden') }}</x-icon-btn>
+        </form>
+    </x-card>
+
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <x-kpi-tile :label="__('Plan')" :value="$fmtH($summary['totals']['plan_minutes'])" tone="info" />
+        <x-kpi-tile :label="__('Ist')" :value="$fmtH($summary['totals']['actual_minutes'])" tone="primary" />
+        <x-kpi-tile :label="__('Differenz')" :value="$fmtH($summary['totals']['delta_minutes'])" :tone="$summary['totals']['delta_minutes'] < 0 ? 'warning' : 'success'" />
+        <x-kpi-tile :label="__('Warnungen')" :value="$summary['totals']['warnings']" :tone="$summary['totals']['warnings'] > 0 ? 'error' : 'neutral'" format="int" />
+    </div>
+
+    <x-card :title="$scope === 'team' ? ($team?->name ?? '') : __('Alle Mitarbeitenden')" icon="groups">
+        @if ($summary['rows'] === [])
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' :title="__('Keine Mitarbeitenden im gewählten Bereich.')" />
+        @else
+            <x-table>
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="string" default="asc">{{ __('Mitarbeiter:in') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Plan (h)') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Ist (h)') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Differenz (h)') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Warnungen') }}</x-table.th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($summary['rows'] as $row)
+                    <tr>
+                        <td>{{ $row['user']->name }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $row['plan_minutes'] }}">{{ $fmtH($row['plan_minutes']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $row['actual_minutes'] }}">{{ $fmtH($row['actual_minutes']) }}</td>
+                        <td class="text-right tabular-nums {{ $row['delta_minutes'] < 0 ? 'text-warning' : '' }}" data-sort-value="{{ $row['delta_minutes'] }}">{{ $fmtH($row['delta_minutes']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ $row['warnings'] }}">
+                            @if ($row['warnings'] > 0)
+                                <x-status-badge size="xs" tone="error">{{ $row['warnings'] }}</x-status-badge>
+                            @else
+                                0
+                            @endif
+                        </td>
+                        <td class="text-right">
+                            {{-- Drilldown auf die Personen-Sicht (org-gescopt + rechte-geprüft im Controller). --}}
+                            <x-icon-btn icon="zoom_in" tone="ghost" size="xs"
+                                        :href="route('reports.plan-ist.presence', ['user' => $row['user']->sqid, 'from' => $from->toDateString(), 'to' => $to->toDateString()])"
+                                        :label="__('Details')" />
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+        @endif
+    </x-card>
+</x-page-shell>
+@endsection

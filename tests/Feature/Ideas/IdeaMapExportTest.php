@@ -73,5 +73,36 @@ final class IdeaMapExportTest extends TestCase {
 
         $this->actingAs($editor)->get(route('ideas.export.json', $this->map))->assertForbidden();
         $this->actingAs($editor)->get(route('ideas.export.pdf', $this->map))->assertForbidden();
+        $this->actingAs($editor)->get(route('ideas.export.opml', $this->map))->assertForbidden();
+        $this->actingAs($editor)->get(route('ideas.export.md', $this->map))->assertForbidden();
+    }
+
+    public function test_opml_export_is_valid_and_contains_tree(): void {
+        $response = $this->actingAs($this->owner)->get(route('ideas.export.opml', $this->map))->assertOk();
+        $response->assertHeader('Content-Type', 'text/x-opml; charset=UTF-8');
+
+        $body = (string) $response->getContent();
+        $this->assertStringContainsString('<opml version="2.0">', $body);
+        $this->assertStringContainsString('<title>Export-Karte</title>', $body);
+        $this->assertStringContainsString('text="Unterpunkt"', $body);
+
+        // Wohlgeformtes XML.
+        $this->assertInstanceOf(\SimpleXMLElement::class, simplexml_load_string($body));
+
+        $this->assertDatabaseHas('audit_logs', [
+            'auditable_type' => $this->map->getMorphClass(),
+            'auditable_id' => $this->map->id,
+            'event' => 'idea_map.exported',
+        ]);
+    }
+
+    public function test_markdown_export_is_indented_outline(): void {
+        $response = $this->actingAs($this->owner)->get(route('ideas.export.md', $this->map))->assertOk();
+        $response->assertHeader('Content-Type', 'text/markdown; charset=UTF-8');
+
+        $body = (string) $response->getContent();
+        $this->assertStringContainsString('# Export-Karte', $body);
+        // Unterpunkt ist ein Kind der Wurzel → um eine Ebene eingerückt.
+        $this->assertStringContainsString("  - Unterpunkt", $body);
     }
 }

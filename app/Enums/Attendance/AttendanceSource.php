@@ -20,6 +20,7 @@ enum AttendanceSource: string implements HasLabel {
     case Manual = 'manual';
     case Import = 'import';
     case AutoClose = 'auto_close';
+    case Terminal = 'terminal';
 
     public function label(): string {
         return (string) __('attendance.source.' . $this->value);

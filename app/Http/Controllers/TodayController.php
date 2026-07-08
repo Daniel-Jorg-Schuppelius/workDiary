@@ -10,10 +10,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Attendance, TimeEntry, User};
+use App\Enums\Project\ProjectStatus;
+use App\Models\{Attendance, Project, TimeEntry, User};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Flextime\FlexCalculator;
-use App\Services\TimeApproval\DayCloseService;
+use App\Services\TimeApproval\{DayCloseService, UntrackedBlockCalculator};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -78,9 +79,19 @@ class TodayController extends Controller {
 
         $current = $this->clock->current($user);
 
+        // Quick-Buchung (Rang 37): offene Zeitblöcke des Tages + Buchungsziele.
+        // Nur für vergangene/heutige eigene Tage sinnvoll.
+        $isFuture = $day->startOfDay()->greaterThan(CarbonImmutable::now()->endOfDay());
+        $openBlocks = $isFuture
+            ? []
+            : app(UntrackedBlockCalculator::class)->blocks($attendances, $entries, CarbonImmutable::now());
+        $quickBookProjects = $openBlocks === [] ? collect() : $this->quickBookProjects($user);
+
         return view('today.show', [
             'day' => $day,
             'current' => $current,
+            'openBlocks' => $openBlocks,
+            'quickBookProjects' => $quickBookProjects,
             'attendances' => $attendances,
             'entries' => $entries,
             'targetMinutes' => $targetMinutes,
@@ -100,8 +111,34 @@ class TodayController extends Controller {
             'aggregates' => $context['aggregates'],
             'validator' => $this->dayClose->makeValidator(),
             'isToday' => $day->isSameDay(CarbonImmutable::now()),
-            'isFuture' => $day->startOfDay()->greaterThan(CarbonImmutable::now()->endOfDay()),
+            'isFuture' => $isFuture,
             'correctionRequests' => $closure->exists ? $closure->correctionRequests()->with(['requestedBy', 'decidedBy'])->get() : collect(),
         ]);
+    }
+
+    /**
+     * Buchungsziele für die Quick-Buchung: zuletzt genutzte Projekte des
+     * Nutzers zuerst (relevante Drag-Ziele), danach die restlichen aktiven
+     * Projekte der Organisation (für die vollständige Auswahl im Fallback).
+     *
+     * @return \Illuminate\Support\Collection<int, Project>
+     */
+    private function quickBookProjects(User $user): \Illuminate\Support\Collection {
+        $recentIds = TimeEntry::query()
+            ->where('user_id', $user->id)
+            ->whereNotNull('project_id')
+            ->orderByDesc('date')
+            ->limit(60)
+            ->pluck('project_id')
+            ->unique()
+            ->take(8)
+            ->values();
+
+        return Project::query()
+            ->where('status', ProjectStatus::Active)
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->sortBy(fn(Project $p): int => $recentIds->search($p->id) === false ? PHP_INT_MAX : (int) $recentIds->search($p->id))
+            ->values();
     }
 }

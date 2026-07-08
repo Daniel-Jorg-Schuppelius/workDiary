@@ -37,6 +37,10 @@ return [
         'payroll' => 'Lohnübergabe',
         'wage_type_code' => 'Lohnart',
         'wage_type_code_help' => 'Lohnart-Nummer für DATEV/Lexware (z. B. 2010). Leer = ohne Lohnart exportieren.',
+        'tax_free_limit_pct' => 'Steuerfrei bis (%)',
+        'tax_free_limit_pct_help' => "§ 3b EStG als Konfiguration (z. B. Nacht 25/40, Sonntag 50, Feiertag 125/150). Leer = kein Split. Liegt der Zuschlag darüber, wird der Rest als steuerpflichtiger Anteil mit eigener Lohnart ausgewiesen.",
+        'taxable_wage_type_code' => 'Lohnart steuerpflichtiger Anteil',
+        'taxable_wage_type_code_help' => "Pflicht, sobald die steuerfreie Obergrenze unter dem Zuschlag liegt. Der €-Grundlohn-Deckel bleibt Sache der externen Lohnrechnung.",
         'priority' => 'Priorität',
         'priority_help' => 'Tie-Breaker bei gleichem Prozentsatz: höhere Priorität gewinnt.',
         'validity' => 'Gültigkeit',
@@ -62,5 +66,9 @@ return [
         'created' => 'Zuschlagsregel angelegt.',
         'updated' => 'Zuschlagsregel aktualisiert.',
         'deleted' => 'Zuschlagsregel gelöscht.',
+    ],
+
+    'validation' => [
+        'taxable_wage_type_required' => "Für den steuerpflichtigen Anteil wird eine eigene Lohnart benötigt.",
     ],
 ];

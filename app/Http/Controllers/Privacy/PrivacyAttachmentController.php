@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Privacy;
 
 use App\Http\Controllers\Controller;
-use App\Models\Privacy\{DataSubjectRequest, Incident, PrivacyAttachment};
+use App\Models\Privacy\{DataSubjectRequest, Incident, PrivacyAttachment, TechnicalMeasure};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
@@ -38,6 +38,22 @@ class PrivacyAttachmentController extends Controller {
         return back()->with('status', __('Anhang hinzugefügt.'));
     }
 
+    /**
+     * TOM-Nachweisanhang (Nachtrag 043b): Zertifikat/Auditbericht mit
+     * optionalem Gültig-bis — abgelaufene Nachweise meldet der
+     * Compliance-Check (tom_proof_current).
+     */
+    public function storeForMeasure(Request $request, TechnicalMeasure $measure): RedirectResponse {
+        Gate::authorize('update', $measure);
+        $data = $request->validate(['valid_until' => ['nullable', 'date']]);
+        $attachment = $this->upload($request, $measure);
+        if ($attachment !== null && ($data['valid_until'] ?? null) !== null) {
+            $attachment->forceFill(['valid_until' => $data['valid_until']])->save();
+        }
+
+        return back()->with('status', __('Nachweis hinzugefügt.'));
+    }
+
     public function download(PrivacyAttachment $attachment): BinaryFileResponse {
         $parent = $attachment->attachable;
         abort_unless($parent instanceof Model, 404);
@@ -58,15 +74,15 @@ class PrivacyAttachmentController extends Controller {
         return back()->with('status', __('Anhang entfernt.'));
     }
 
-    private function upload(Request $request, Model $attachable): void {
+    private function upload(Request $request, Model $attachable): ?PrivacyAttachment {
         $request->validate(['file' => ['required', 'file', 'max:20480', 'mimes:pdf,doc,docx,jpg,jpeg,png,txt']]);
         $file = $request->file('file');
         $stored = $file->store('privacy/attachments', 'local');
         if ($stored === false) {
-            return;
+            return null;
         }
 
-        PrivacyAttachment::create([
+        return PrivacyAttachment::create([
             'organization_id' => $attachable->getAttribute('organization_id'),
             'attachable_type' => $attachable->getMorphClass(),
             'attachable_id' => $attachable->getKey(),

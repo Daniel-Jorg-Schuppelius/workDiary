@@ -40,6 +40,11 @@ class IdeaNodeService {
                 'title' => $title,
                 'color' => IdeaNodeColor::Default->value,
                 'sort_order' => $sort + 1,
+                // Explizit setzen (statt auf den DB-Default zu vertrauen): sonst
+                // trägt die zurückgegebene In-Memory-Instanz lock_version = null,
+                // der Editor sendet 0, und die erste Mutation scheitert an
+                // `min:1` (HTTP 422). Muss dem Migrations-Default entsprechen.
+                'lock_version' => 1,
                 'created_by' => $actor?->id,
             ]);
         });

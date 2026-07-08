@@ -95,9 +95,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="5" class="text-center text-base-content/60 py-6">{{ __('Noch keine organisationsspezifischen Werte vorhanden.') }}</td>
-                            </tr>
+                            <x-table.empty :colspan="5" icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>' :title="__('Noch keine organisationsspezifischen Werte vorhanden.')" compact />
                         @endforelse
                     </x-table>
                     @if ($orgRows->isNotEmpty())
@@ -152,9 +150,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="4" class="text-center text-base-content/60 py-6">{{ __('Keine Plattform-Defaults vorhanden.') }}</td>
-                            </tr>
+                            <x-table.empty :colspan="4" icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>' :title="__('Keine Plattform-Defaults vorhanden.')" compact />
                         @endforelse
                     </x-table>
                 </section>

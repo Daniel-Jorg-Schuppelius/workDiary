@@ -76,7 +76,11 @@ class DutyController extends Controller {
                 ? Sqid::decodeOrNumeric(User::class, $request->query('user_id'))
                 : (int) $authUser->id;
             if ($statusUserId !== null) {
-                $sicknessStatusUser = User::find($statusUserId);
+                // Mandantengrenze: nur Nutzer der eigenen Organisation (kein
+                // globaler OrganizationScope auf User — Whitebox-Befund 2026-07).
+                $sicknessStatusUser = User::query()
+                    ->where('organization_id', $authUser->organization_id)
+                    ->find($statusUserId);
                 if ($sicknessStatusUser !== null) {
                     $sicknessStatus = $sicknessStatusUser->currentSicknessStatus();
                 }
@@ -84,7 +88,9 @@ class DutyController extends Controller {
         }
 
         $allTags = Tag::orderBy('name')->get(['id', 'name', 'color']);
-        $users = $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect();
+        $users = $isAdmin
+            ? User::query()->where('organization_id', $authUser->organization_id)->orderBy('name')->get(['id', 'name'])
+            : collect();
         $filters = $request->only('status', 'mine', 'q', 'tag', 'vtype', 'vstatus', 'user_id', 'entry_type', 'kkind', 'kstatus',
             'mode', 'location', 'archived', 'project', 'customer');
         if (! empty($filters['tag']) && is_numeric((string) $filters['tag'])) {

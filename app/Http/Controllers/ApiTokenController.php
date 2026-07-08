@@ -10,8 +10,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Api\ApiAbility;
 use App\Models\User;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ApiTokenController extends Controller {
@@ -24,6 +26,7 @@ class ApiTokenController extends Controller {
             'tokens' => $tokens,
             'newToken' => session('newToken'),
             'newTokenName' => session('newTokenName'),
+            'abilities' => ApiAbility::cases(),
         ]);
     }
 
@@ -32,8 +35,17 @@ class ApiTokenController extends Controller {
         $user = $request->user();
         $data = $request->validate([
             'name' => ['required', 'string', 'max:64'],
+            'abilities' => ['sometimes', 'array'],
+            'abilities.*' => ['string', Rule::in(ApiAbility::values())],
         ]);
-        $token = $user->createToken($data['name']);
+
+        // Ohne gewählte Ability: voller Zugriff (Sanctum-Default `*`) — so bleiben
+        // bestehende Integrationen und das reine Namensformular abwärtskompatibel.
+        $abilities = ! empty($data['abilities'])
+            ? array_values(array_unique($data['abilities']))
+            : ['*'];
+
+        $token = $user->createToken($data['name'], $abilities);
 
         return redirect()
             ->route('profile.api-tokens.index')

@@ -29,14 +29,14 @@ final class TodoistWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
-    private TodoistConnection $connection;
-
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
         config()->set('plugins.todoist.client_id', 'cid');
         config()->set('plugins.todoist.client_secret', 'sec');
-        $this->connection = TodoistConnection::query()->create([
+        // Aktive Verbindung mit bekanntem todoist_user_id — Grundlage der
+        // Org-Zuordnung nach der Signaturprüfung (in der DB, nicht als Property).
+        TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,
             'todoist_user_id' => 'u-1',
             'access_token' => 'secret-token',
@@ -108,6 +108,19 @@ final class TodoistWebhookTest extends TestCase {
         $this->assertSame(1, TodoistWebhookDelivery::query()->count(), 'Signierte Zustellung bleibt protokolliert');
         $this->assertNull(TodoistWebhookDelivery::query()->firstOrFail()->organization_id);
         Queue::assertNothingPushed();
+    }
+
+    public function test_webhook_endpoint_is_rate_limited(): void {
+        // Sessionloser Endpunkt: ungültige Signaturen zählen aufs Limit, damit
+        // ein Angreifer den Endpunkt nicht ungedeckelt fluten kann (429 statt
+        // endloser HMAC-Prüfungen). Polling heilt echte Verluste.
+        for ($i = 0; $i < 120; $i++) {
+            $this->postWebhook($this->eventPayload(), signature: base64_encode('falsch'), deliveryId: 'd-' . $i)
+                ->assertStatus(401);
+        }
+
+        $this->postWebhook($this->eventPayload(), signature: base64_encode('falsch'), deliveryId: 'd-over')
+            ->assertStatus(429);
     }
 
     public function test_webhook_impulse_triggers_targeted_sync(): void {

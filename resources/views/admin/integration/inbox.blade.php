@@ -211,7 +211,39 @@
 
                     @if ($item->isOpen())
                         <div class="flex flex-wrap items-center justify-end gap-2">
-                            @if ($item->case_type === IntegrationInboxItem::CASE_CONFLICT)
+                            @if ($item->plugin_id === \App\Services\Mail\MailIntakeService::PLUGIN_ID)
+                                {{-- E-Mail-Eingang (Feature 056): als Kommunikationsnotiz beim Kunden
+                                     buchen. Bewusst kein „Neu anlegen" — eine Mail erzeugt keinen Kunden.
+                                     Kunde leer = automatisch erkannter Absender-Kunde. --}}
+                                <form method="POST" action="{{ route('admin.mail.inbox.book') }}" class="join">
+                                    @csrf
+                                    <input type="hidden" name="item" value="{{ $item->sqid }}">
+                                    <select name="customer" class="join-item select select-sm select-bordered">
+                                        <option value="">{{ __('mail.inbox.book_customer_placeholder') }}</option>
+                                        @foreach (($assignTargets[\App\Models\Customer::class] ?? []) as $sqid => $label)
+                                            <option value="{{ $sqid }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="join-item btn btn-sm btn-primary">{{ __('mail.inbox.book_action') }}</button>
+                                </form>
+                            @elseif ($item->plugin_id === \App\Plugins\Webdav\Services\DocumentMirrorService::PLUGIN_ID && $item->case_type === IntegrationInboxItem::CASE_CONFLICT)
+                                {{-- WebDAV-Spiegelkonflikt (Feature 058, Rang 18): Datei-Divergenz, kein Feld-Diff. --}}
+                                <form method="POST" action="{{ route('admin.webdav.conflict.overwrite', $item) }}"
+                                      onsubmit="return confirm(@js(__('webdav.conflict.confirm.overwrite')));">
+                                    @csrf
+                                    <button class="btn btn-sm btn-primary">{{ __('webdav.conflict.action.overwrite') }}</button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.webdav.conflict.import', $item) }}"
+                                      onsubmit="return confirm(@js(__('webdav.conflict.confirm.import')));">
+                                    @csrf
+                                    <button class="btn btn-sm btn-outline">{{ __('webdav.conflict.action.import') }}</button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.webdav.conflict.detach', $item) }}"
+                                      onsubmit="return confirm(@js(__('webdav.conflict.confirm.detach')));">
+                                    @csrf
+                                    <button class="btn btn-sm btn-ghost">{{ __('webdav.conflict.action.detach') }}</button>
+                                </form>
+                            @elseif ($item->case_type === IntegrationInboxItem::CASE_CONFLICT)
                                 <form method="POST" action="{{ route('admin.integration.inbox.accept-remote', $item) }}">
                                     @csrf
                                     <button class="btn btn-sm btn-primary">{{ __('Remote übernehmen') }}</button>

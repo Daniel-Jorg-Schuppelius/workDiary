@@ -213,6 +213,11 @@ return [
     ],
     'notification' => [
         'event' => [
+            'ticket' => [
+                'assigned' => 'Ticket assigned',
+                'customerReplied' => 'Customer replied',
+                'waitingExpired' => 'Ticket follow-up due',
+            ],
             'openIssue' => [
                 'assigned' => 'Open issue assigned',
                 'dueSoon' => 'Open issue due soon',
@@ -244,6 +249,7 @@ return [
             'sla' => [
                 'atRisk' => 'SLA deadline at risk',
                 'breached' => 'SLA deadline breached',
+                'quotaWarning' => 'SLA quota nearly used up',
             ],
             'asset' => [
                 'returnOverdue' => 'Asset return overdue',
@@ -264,11 +270,23 @@ return [
             'ideaMap' => [
                 'shared' => 'Idea map shared with you',
             ],
+            'shipment' => [
+                'deliveryProblem' => 'Delivery problem with a shipment',
+            ],
+            'cti' => [
+                'incomingCall' => 'Incoming call',
+            ],
+            'maintenance' => [
+                'dueSoon' => 'Maintenance/inspection due soon',
+                'overdue' => 'Maintenance/inspection overdue',
+            ],
         ],
         'channel' => [
             'inApp' => 'In-app',
             'mail' => 'E-mail',
             'push' => 'Push',
+            'teams' => 'Microsoft Teams',
+            'mattermost' => 'Mattermost',
         ],
     ],
 
@@ -412,6 +430,9 @@ return [
             'date' => 'Date',
             'select' => 'Select',
             'checkbox' => 'Checkbox',
+            'photo' => 'Photo',
+            'file' => 'File',
+            'signature' => 'Signature',
         ],
     ],
     'document' => [
@@ -424,6 +445,7 @@ return [
             'manufacturerDoc' => 'Manufacturer document',
             'permit' => 'Permit',
             'insurance' => 'Insurance',
+            'invoice' => 'Invoice',
             'other' => 'Other',
         ],
         'status' => [
@@ -855,6 +877,14 @@ return [
             'passed' => 'Passed',
             'partial' => 'With conditions',
             'failed' => 'Failed',
+        ],
+    ],
+
+    // Maintenance plan due action (Feature 010 → Rank 43).
+    'maintenance' => [
+        'due_action' => [
+            'none' => 'Notice only (no record)',
+            'ticket' => 'Create a service ticket',
         ],
     ],
 ];

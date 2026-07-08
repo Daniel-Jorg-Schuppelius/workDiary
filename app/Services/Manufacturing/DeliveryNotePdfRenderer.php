@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\{Organization, StockDelivery};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Rendert eine Auslieferung als Lieferschein-PDF (Feature 047, MVP-074).
@@ -32,10 +34,8 @@ class DeliveryNotePdfRenderer {
             'number' => $this->number($delivery),
         ])->render();
 
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadHTML($html)->setPaper('a4');
-
-        return (string) $pdf->output();
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.delivery-note).');
     }
 
     /** Lieferschein-Nummer (stabil aus der Auslieferungs-ID abgeleitet). */

@@ -174,6 +174,13 @@ class ProjectController extends Controller {
             ->orderBy('name')
             ->get();
 
+        // Projekt-Timeline (Rang 56): Volumen über Offset-Pagination gekappt.
+        $timelineOffset = max(0, (int) request()->query('toffset', 0));
+        /** @var User $viewer */
+        $viewer = Auth::user();
+        $timeline = app(\App\Services\Timeline\ProjectTimelineService::class)
+            ->forProject($project, $viewer, 50, $timelineOffset);
+
         return view('projects.show', [
             'project' => $project,
             'entries' => $entries,
@@ -187,6 +194,9 @@ class ProjectController extends Controller {
             'nextMilestone' => $nextMilestone,
             'timesheets' => $project->timesheets()->with('user:id,name')->latest('work_date')->limit(50)->get(),
             'recurrenceRules' => $recurrenceRules,
+            'timeline' => $timeline['items'],
+            'timelineHasMore' => $timeline['hasMore'],
+            'timelineOffset' => $timelineOffset,
         ]);
     }
 

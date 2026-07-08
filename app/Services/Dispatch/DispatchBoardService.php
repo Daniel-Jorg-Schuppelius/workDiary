@@ -82,6 +82,50 @@ final class DispatchBoardService {
     }
 
     /**
+     * Kalender-Matrix (Rang 52): Zeilen = Mitarbeitende, Zellen = Tage mit den
+     * dort geplanten Aufträgen (Einträge ohne Startzeit bleiben dem Board
+     * vorbehalten). Ein Eintrag erscheint an jedem überlappten Tag des
+     * Fensters; Statuswechsel bleiben bewusst fachliche Aktionen (kein Drag).
+     *
+     * @param  list<array{entry: DiaryEntry, dispatch: \App\Enums\Diary\DispatchStatus, sla: \App\Enums\ServiceTicket\SlaStatus, hasHardConflict: bool}>  $items
+     * @return array{days: list<string>, rows: list<array{name: string, byDay: array<string, list<array{entry: DiaryEntry, dispatch: \App\Enums\Diary\DispatchStatus, sla: \App\Enums\ServiceTicket\SlaStatus, hasHardConflict: bool}>>}>}
+     */
+    public function calendar(array $items, CarbonImmutable $from, CarbonImmutable $to): array {
+        $days = [];
+        for ($cursor = $from->startOfDay(); $cursor->lessThanOrEqualTo($to); $cursor = $cursor->addDay()) {
+            $days[] = $cursor->toDateString();
+        }
+
+        /** @var array<int|string, array{name: string, byDay: array<string, list<mixed>>}> $rows */
+        $rows = [];
+        foreach ($items as $item) {
+            $entry = $item['entry'];
+            $startAt = $entry->start_at;
+            if ($startAt === null) {
+                continue;
+            }
+
+            $key = $entry->assigned_user_id ?? $entry->user_id ?? 0;
+            if (! isset($rows[$key])) {
+                $rows[$key] = [
+                    'name' => $entry->assignedUser->name ?? $entry->user->name ?? (string) __('Nicht zugewiesen'),
+                    'byDay' => array_fill_keys($days, []),
+                ];
+            }
+
+            $entryFrom = CarbonImmutable::parse((string) $startAt)->startOfDay();
+            $entryTo = $entry->end_at !== null ? CarbonImmutable::parse((string) $entry->end_at)->startOfDay() : $entryFrom;
+            for ($day = $entryFrom->greaterThan($from) ? $entryFrom : $from->startOfDay(); $day->lessThanOrEqualTo($entryTo) && $day->lessThanOrEqualTo($to); $day = $day->addDay()) {
+                $rows[$key]['byDay'][$day->toDateString()][] = $item;
+            }
+        }
+
+        uasort($rows, static fn (array $a, array $b): int => strnatcasecmp($a['name'], $b['name']));
+
+        return ['days' => $days, 'rows' => array_values($rows)];
+    }
+
+    /**
      * Baut die Board-Items: je Auftrag Dispositionsstatus, SLA-Risiko und ob
      * harte Konflikte vorliegen. Das SLA-Risiko wird vorab je Kunde/Asset
      * gesammelt (kein N+1 pro Auftrag).

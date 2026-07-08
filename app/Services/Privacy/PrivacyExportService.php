@@ -52,10 +52,33 @@ class PrivacyExportService {
             })
             ->all();
 
+        // Unterauftragsverarbeiter je AVV (Nachtrag 043d): Bestandteil der
+        // Auskunft, damit die Kette Verantwortlicher → AV → Sub-AV belegt ist.
+        $agreements = \App\Models\Privacy\ProcessingAgreement::query()
+            ->where('organization_id', $organization->id)
+            ->with(['processor', 'subprocessors'])
+            ->orderBy('title')
+            ->get()
+            ->map(fn(\App\Models\Privacy\ProcessingAgreement $agreement): array => [
+                'title' => $agreement->title,
+                'processor' => $agreement->processor?->name,
+                'valid_until' => $agreement->valid_until?->toDateString(),
+                'subprocessors' => $agreement->subprocessors->map(fn($sub): array => [
+                    'name' => $sub->name,
+                    'purpose' => $sub->purpose,
+                    'location' => $sub->location,
+                    'third_country' => (bool) $sub->third_country,
+                    'safeguards' => $sub->safeguards,
+                    'approved' => (bool) $sub->approved,
+                ])->all(),
+            ])
+            ->all();
+
         return [
             'organization' => $organization->name,
             'generated_at' => now()->toIso8601String(),
             'activities' => $activities,
+            'agreements' => $agreements,
         ];
     }
 

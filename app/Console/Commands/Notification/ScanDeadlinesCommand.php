@@ -15,11 +15,11 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\Shift\ShiftExchangeStatus;
-use App\Models\{AssetAssignment, CommunicationNote, Document, OpenIssue, ServiceTicket, ShiftExchange, User, UserQualification};
+use App\Models\{AssetAssignment, CommunicationNote, Document, MaintenancePlan, OpenIssue, ServiceTicket, ShiftExchange, SlaContract, SlaContractQuota, User, UserQualification};
 use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAssessment, IsmsSupplierAssessment, IsmsVulnerability};
 use App\Services\Isms\ConformityService;
 use App\Services\Notification\NotificationDispatcher;
-use App\Services\ServiceTicket\SlaTimer;
+use App\Services\ServiceTicket\{SlaQuotaService, SlaTimer};
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -57,7 +57,10 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanIsmsVulnerabilities($dispatcher);
         $sent += $this->scanIsmsSupplierReviews($dispatcher);
         $sent += $this->scanSlaTickets($dispatcher, app(SlaTimer::class));
+        $sent += $this->scanWaitingTickets($dispatcher);
+        $sent += $this->scanSlaQuotas($dispatcher, app(SlaQuotaService::class));
         $sent += $this->scanAssetReturns($dispatcher);
+        $sent += $this->scanMaintenance($dispatcher, $expiringDays);
         $sent += $this->scanQualificationExpiry($dispatcher, $expiringDays);
         $sent += $this->scanPendingShiftExchanges($dispatcher);
 
@@ -370,6 +373,45 @@ class ScanDeadlinesCommand extends Command {
      * (resolution_due_at). Dedup über das notification_dispatch_log pro Ticket;
      * verletzte Tickets eskalieren zusätzlich (supportsEscalation).
      */
+    /**
+     * Wiedervorlagen (Feature 065, P3): wartende Tickets mit überschrittener
+     * wait_until-Frist → Notification an den Wiedervorlage-Verantwortlichen
+     * (wait_owner, Fallback Bearbeiter). Dedup über das Dispatch-Log.
+     */
+    private function scanWaitingTickets(NotificationDispatcher $dispatcher): int {
+        $sent = 0;
+
+        ServiceTicket::query()
+            ->whereIn('status', [
+                \App\Enums\ServiceTicket\ServiceTicketStatus::WaitingCustomer->value,
+                \App\Enums\ServiceTicket\ServiceTicketStatus::WaitingExternal->value,
+                \App\Enums\ServiceTicket\ServiceTicketStatus::Paused->value,
+            ])
+            ->whereNotNull('wait_until')
+            ->where('wait_until', '<=', Carbon::now())
+            ->chunkById(200, function (Collection $tickets) use ($dispatcher, &$sent): void {
+                /** @var Collection<int, ServiceTicket> $tickets */
+                foreach ($tickets as $ticket) {
+                    $owner = $ticket->wait_owner_id !== null
+                        ? \App\Models\User::query()->find($ticket->wait_owner_id)
+                        : $ticket->assignedTo;
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::TicketWaitingExpired,
+                        $ticket,
+                        $owner,
+                        [
+                            'title' => (string) __('Wiedervorlage fällig: Ticket :no', ['no' => $ticket->ticket_no]),
+                            'body' => (string) ($ticket->wait_reason ?? $ticket->title),
+                            'url' => route('service-tickets.show', $ticket),
+                        ],
+                        dedup: true,
+                    );
+                }
+            });
+
+        return $sent;
+    }
+
     private function scanSlaTickets(NotificationDispatcher $dispatcher, SlaTimer $timer): int {
         $now = Carbon::now();
         $sent = 0;
@@ -607,6 +649,59 @@ class ScanDeadlinesCommand extends Command {
         ];
     }
 
+    /**
+     * Wartungs-/Prüfpläne (Feature 009): fällig innerhalb des Vorlaufs →
+     * dueSoon; überschrittene Fälligkeit → overdue + Eskalationsstufe an den
+     * Org-Admin. Betrifft keine Einzelperson (an die Teamleitung).
+     */
+    private function scanMaintenance(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $sent = 0;
+        $today = Carbon::now()->toDateString();
+        $soon = Carbon::now()->addDays($expiringDays)->toDateString();
+
+        MaintenancePlan::query()
+            ->where('is_active', true)
+            ->whereNotNull('next_due_on')
+            ->whereBetween('next_due_on', [$today, $soon])
+            ->chunkById(200, function (Collection $plans) use ($dispatcher, &$sent): void {
+                foreach ($plans as $plan) {
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::MaintenanceDueSoon,
+                        $plan,
+                        null,
+                        $this->maintenancePayload($plan, 'maintenance_due_soon'),
+                        dedup: true,
+                    );
+                }
+            });
+
+        MaintenancePlan::query()
+            ->where('is_active', true)
+            ->whereNotNull('next_due_on')
+            ->where('next_due_on', '<', $today)
+            ->chunkById(200, function (Collection $plans) use ($dispatcher, &$sent): void {
+                foreach ($plans as $plan) {
+                    $payload = $this->maintenancePayload($plan, 'maintenance_overdue');
+                    $sent += $dispatcher->notify(NotificationEvent::MaintenanceOverdue, $plan, null, $payload, dedup: true);
+                    $sent += $dispatcher->escalateIfDue(NotificationEvent::MaintenanceOverdue, $plan, $payload);
+                }
+            });
+
+        return $sent;
+    }
+
+    /** @return array{title: string, message: string, url: string|null} */
+    private function maintenancePayload(MaintenancePlan $plan, string $messageKey): array {
+        return [
+            'title' => (string) $plan->label,
+            'message' => (string) __('notification.message.' . $messageKey, [
+                'label' => (string) $plan->label,
+                'date' => $plan->next_due_on?->format('d.m.Y') ?? '–',
+            ]),
+            'url' => route('assets.index'),
+        ];
+    }
+
     /** @return array{title: string, message: string, url: string|null} */
     private function certificatePayload(IsmsCertificate $certificate): array {
         $normStatus = $certificate->normStatus()->withTrashed()->first();
@@ -657,6 +752,61 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $assessment->next_review_on?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('isms.suppliers.index'),
+        ];
+    }
+
+    /**
+     * SLA-Inklusivzeit-Kontingente (Feature 010 → Rang 44): erreicht der
+     * Verbrauch im aktuellen Zeitraum die Warnschwelle, geht einmal je Periode
+     * eine Benachrichtigung an die Teamleitung. Dedup pro Periode über
+     * `last_warned_period` am Kontingent (die Dispatcher-Dedup ist subjektbasiert
+     * und würde eine neue Periode sonst nicht erneut melden).
+     */
+    private function scanSlaQuotas(NotificationDispatcher $dispatcher, SlaQuotaService $quotas): int {
+        $now = Carbon::now();
+        $sent = 0;
+
+        SlaContractQuota::query()->withoutGlobalScopes()
+            ->chunkById(200, function (Collection $rows) use ($dispatcher, $quotas, $now, &$sent): void {
+                /** @var Collection<int, SlaContractQuota> $rows */
+                foreach ($rows as $quota) {
+                    $contract = SlaContract::query()->withoutGlobalScopes()->find($quota->sla_contract_id);
+                    if (! $contract instanceof SlaContract || ! $contract->is_active) {
+                        continue;
+                    }
+
+                    $usage = $quotas->usage($contract, $quota, $now);
+                    if (! $usage['threshold_reached'] || $quota->last_warned_period === $usage['period_key']) {
+                        continue; // Schwelle nicht erreicht oder in dieser Periode bereits gewarnt
+                    }
+
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::SlaQuotaWarning,
+                        $quota,
+                        null,
+                        $this->quotaPayload($contract, $usage),
+                    );
+                    $quota->forceFill(['last_warned_period' => $usage['period_key']])->save();
+                }
+            });
+
+        return $sent;
+    }
+
+    /**
+     * @param  array<string, mixed>  $usage
+     * @return array{title: string, message: string, url: null}
+     */
+    private function quotaPayload(SlaContract $contract, array $usage): array {
+        return [
+            'title' => trim($contract->code . ' — ' . $contract->label, ' —'),
+            'message' => (string) __('notification.message.sla_quota_warning', [
+                'percent' => (int) $usage['percentage'],
+                'consumed' => (int) $usage['consumed_minutes'],
+                'included' => (int) $usage['included_minutes'],
+                'period' => (string) $usage['period_key'],
+            ]),
+            'url' => null,
         ];
     }
 

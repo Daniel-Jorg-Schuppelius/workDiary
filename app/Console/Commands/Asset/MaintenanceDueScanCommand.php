@@ -11,6 +11,7 @@
 namespace App\Console\Commands\Asset;
 
 use App\Models\MaintenancePlan;
+use App\Services\Asset\MaintenanceDueService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
@@ -18,18 +19,19 @@ use Illuminate\Support\Carbon;
 class MaintenanceDueScanCommand extends Command {
     protected $signature = 'maintenance:scan-due {--lookahead=0 : Zusätzliche Tage Vorlauf, die ebenfalls als fällig markiert werden}';
 
-    protected $description = 'Scannt aktive Wartungspläne auf Fälligkeit und schreibt einen Audit-Trail.';
+    protected $description = 'Scannt aktive Wartungspläne auf Fälligkeit, erzeugt konfigurierte Vorgänge und schreibt einen Audit-Trail.';
 
-    public function handle(): int {
+    public function handle(MaintenanceDueService $dueService): int {
         $lookahead = max(0, (int) $this->option('lookahead'));
         $reference = Carbon::now()->addDays($lookahead);
 
         $due = 0;
+        $created = 0;
         MaintenancePlan::query()
             ->where('is_active', true)
             ->whereNotNull('next_due_on')
             ->where('next_due_on', '<=', $reference->toDateString())
-            ->chunkById(200, function (Collection $plans) use (&$due, $reference): void {
+            ->chunkById(200, function (Collection $plans) use (&$due, &$created, $reference, $dueService): void {
                 /** @var Collection<int, MaintenancePlan> $plans */
                 foreach ($plans as $plan) {
                     if (! $plan->isDue($reference)) {
@@ -40,10 +42,20 @@ class MaintenanceDueScanCommand extends Command {
                         'reference' => $reference->toDateString(),
                     ]);
                     $due++;
+
+                    // Konfigurierten Vorgang erzeugen (idempotent je Fälligkeit).
+                    if ($dueService->handleDue($plan) !== null) {
+                        $created++;
+                    }
                 }
             });
 
-        $this->info(sprintf('%d fällige Wartungsplan-Einträge erkannt (Referenz: %s).', $due, $reference->toDateString()));
+        $this->info(sprintf(
+            '%d fällige Wartungsplan-Einträge erkannt, %d Vorgänge erzeugt (Referenz: %s).',
+            $due,
+            $created,
+            $reference->toDateString(),
+        ));
 
         return self::SUCCESS;
     }

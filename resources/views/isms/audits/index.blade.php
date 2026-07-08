@@ -23,6 +23,9 @@
 @section('content')
     <x-index-page :subtitle="__('isms.subtitle.audits')">
         <x-slot:actions>
+            <x-icon-btn icon="event_repeat" tone="ghost" size="sm"
+                        :href="route('isms.audit-programs.index')"
+                        show-label>{{ __('Auditprogramme') }}</x-icon-btn>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger

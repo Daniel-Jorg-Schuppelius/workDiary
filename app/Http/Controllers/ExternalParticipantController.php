@@ -11,11 +11,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
-use App\Models\{DiaryEntry, Document, ExternalParticipant, Protocol, User};
+use App\Mail\ExternalParticipantInvitedMail;
+use App\Models\{DiaryEntry, Document, ExternalContact, ExternalParticipant, Protocol, User};
 use App\Services\ExternalParticipant\ExternalParticipantService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, Gate, Mail};
 use Illuminate\View\View;
 
 /**
@@ -47,6 +48,8 @@ class ExternalParticipantController extends Controller {
             'parties' => ExternalParty::selectable(),
             'abilities' => ExternalAbility::selectable(),
             'defaultTtl' => ExternalParticipantService::DEFAULT_TTL_DAYS,
+            // Wiederverwendbare Kontaktprofile (Rang 30) zur Vorauswahl.
+            'contacts' => ExternalContact::query()->orderBy('name')->limit(500)->get(),
         ]);
     }
 
@@ -55,29 +58,69 @@ class ExternalParticipantController extends Controller {
         Gate::authorize('manageForSubject', [ExternalParticipant::class, $subject]);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:160'],
+            // Kontaktfelder sind bei gewähltem Profil optional (werden daraus gefüllt).
+            'external_contact' => ['nullable', 'string'],
+            'name' => ['nullable', 'required_without:external_contact', 'string', 'min:2', 'max:160'],
             'email' => ['nullable', 'email', 'max:190'],
             'role' => ['nullable', 'string', 'max:120'],
-            'party' => ['required', 'string', 'in:' . implode(',', array_map(fn(ExternalParty $p) => $p->value, ExternalParty::cases()))],
+            'party' => ['nullable', 'required_without:external_contact', 'string', 'in:' . implode(',', array_map(fn(ExternalParty $p) => $p->value, ExternalParty::cases()))],
+            'save_contact' => ['nullable', 'boolean'],
             'abilities' => ['array'],
             'abilities.*' => ['string', 'in:' . implode(',', array_map(fn(ExternalAbility $a) => $a->value, ExternalAbility::selectable()))],
             'ttl_days' => ['required', 'integer', 'min:' . ExternalParticipantService::MIN_TTL_DAYS, 'max:' . ExternalParticipantService::MAX_TTL_DAYS],
         ]);
 
+        // Gewähltes Profil org-gescopt auflösen (HasSqid + BelongsToOrganization).
+        $contact = null;
+        if (($data['external_contact'] ?? '') !== '') {
+            $contact = (new ExternalContact)->resolveRouteBinding((string) $data['external_contact']);
+            abort_if(! $contact instanceof ExternalContact, 404);
+        }
+
+        // Effektive Werte: Profil füllt leere Felder, Ad-hoc-Eingabe gewinnt.
+        $name = $data['name'] ?? null ?: $contact?->name;
+        $email = ($data['email'] ?? null) ?: $contact?->email;
+        $role = ($data['role'] ?? null) ?: $contact?->role;
+        $party = $data['party'] ?? null ?: ($contact?->party->value ?? ExternalParty::Other->value);
+
+        // Ad-hoc-Kontakt auf Wunsch als wiederverwendbares Profil speichern.
+        if ($contact === null && $request->boolean('save_contact')) {
+            $contact = ExternalContact::query()->create([
+                'organization_id' => $subject->getAttribute('organization_id'),
+                'name' => (string) $name,
+                'email' => $email,
+                'role' => $role,
+                'party' => $party,
+            ]);
+        }
+
         /** @var User $actor */
         $actor = Auth::user();
         $issued = $this->service->invite($subject, $actor, [
-            'name' => $data['name'],
-            'email' => $data['email'] ?? null,
-            'role' => $data['role'] ?? null,
-            'party' => $data['party'],
+            'name' => (string) $name,
+            'email' => $email,
+            'role' => $role,
+            'party' => $party,
             'abilities' => $data['abilities'] ?? [],
             'ttl_days' => (int) $data['ttl_days'],
+            'external_contact_id' => $contact?->id,
         ]);
 
+        $participant = $issued['model'];
+        $accessUrl = route('external.show', ['token' => $issued['token']]);
+
+        // Einmal-Link zusätzlich per E-Mail zustellen, sofern eine Adresse
+        // hinterlegt wurde (Rang 29) — und als externen Nachweis protokollieren.
+        $emailed = false;
+        if ($participant->email !== null && $participant->email !== '') {
+            Mail::to($participant->email)->queue(new ExternalParticipantInvitedMail($participant, $accessUrl));
+            $this->service->log($participant, 'invite_emailed', ['email' => $participant->email]);
+            $emailed = true;
+        }
+
         return back()
-            ->with('success', __('external.flash.invited', ['name' => $issued['model']->name]))
-            ->with('external_participant_link', route('external.show', ['token' => $issued['token']]));
+            ->with('success', __($emailed ? 'external.flash.invited_emailed' : 'external.flash.invited', ['name' => $participant->name]))
+            ->with('external_participant_link', $accessUrl);
     }
 
     public function revoke(ExternalParticipant $participant): RedirectResponse {

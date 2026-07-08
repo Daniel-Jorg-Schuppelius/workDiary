@@ -51,4 +51,9 @@ class Dpia extends Model {
     public function activity(): BelongsTo {
         return $this->belongsTo(ProcessingActivity::class, 'activity_id');
     }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\HasMany<DpiaStep, $this> */
+    public function steps(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(DpiaStep::class, 'dpia_id')->orderBy('position');
+    }
 }

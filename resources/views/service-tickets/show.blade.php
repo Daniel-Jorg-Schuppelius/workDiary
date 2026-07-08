@@ -96,5 +96,53 @@
             </form>
         </x-card>
     @endif
+
+    {{-- Konversation (Feature 065, P2): Antwort vs. interne Notiz sind
+         getrennte Typen/Aktionen — Notizen sind nie kundensichtbar. --}}
+    <x-card :title="__('Konversation')">
+        @if ($messages->isEmpty())
+            <p class="text-sm text-base-content/50">{{ __('Noch keine Nachrichten.') }}</p>
+        @else
+            <ul class="space-y-2">
+                @foreach ($messages as $message)
+                    <li class="rounded border px-3 py-2 {{ $message->kind->value === 'internal_note' ? 'border-warning/60 bg-warning/5' : 'border-base-300' }}">
+                        <div class="mb-1 flex items-center gap-2 text-xs text-base-content/60">
+                            <x-status-badge :tone="match ($message->kind->value) {
+                                'internal_note' => 'warning',
+                                'system_event' => 'neutral',
+                                default => 'info',
+                            }" size="xs">{{ $message->kind->label() }}</x-status-badge>
+                            <span>{{ $message->created_at->isoFormat('L LT') }}</span>
+                            <span>{{ $message->channel }}</span>
+                            @if ($message->delivery_status)
+                                <span>· {{ $message->delivery_status }}</span>
+                            @endif
+                        </div>
+                        <p class="whitespace-pre-line text-sm">{{ $message->body }}</p>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
+
+        @if ($canUpdate)
+            <form method="POST" action="{{ route('helpdesk.tickets.reply', $ticket) }}" class="mt-3">
+                @csrf
+                <label class="fieldset-label" for="reply-body">{{ __('Antwort (kundensichtbar)') }}</label>
+                <textarea id="reply-body" name="body" rows="3" required minlength="2" class="textarea textarea-bordered w-full"></textarea>
+                <div class="mt-1 flex items-center gap-2">
+                    <input name="to[]" type="email" placeholder="{{ __('Empfänger (optional, versendet per Mail)') }}" class="input input-sm input-bordered flex-1">
+                    <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Antworten') }}</x-icon-btn>
+                </div>
+            </form>
+        @endif
+        @if ($canNote)
+            <form method="POST" action="{{ route('helpdesk.tickets.note', $ticket) }}" class="mt-3">
+                @csrf
+                <label class="fieldset-label" for="note-body">{{ __('Interne Notiz (nie kundensichtbar)') }}</label>
+                <textarea id="note-body" name="body" rows="2" required minlength="2" class="textarea textarea-bordered w-full"></textarea>
+                <x-icon-btn icon="sticky_note_2" tone="ghost" size="sm" type="submit" show-label class="mt-1">{{ __('Notiz speichern') }}</x-icon-btn>
+            </form>
+        @endif
+    </x-card>
 </x-page-shell>
 @endsection

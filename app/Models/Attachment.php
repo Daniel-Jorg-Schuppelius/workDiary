@@ -59,10 +59,17 @@ class Attachment extends Model {
         'mime',
         'size',
         'meta_type',
+        'customer_visible',
     ];
 
     /** @var array<string, string> */
+    /** @return \Illuminate\Database\Eloquent\Relations\HasMany<AttachmentConfirmation, $this> */
+    public function confirmations(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(AttachmentConfirmation::class);
+    }
+
     protected $casts = [
+        'customer_visible' => 'boolean',
         'size' => 'integer',
     ];
 

@@ -174,4 +174,14 @@ class Task extends Model {
     public function priorityColor(): string {
         return $this->priority->color();
     }
+
+    /**
+     * Agiles Arbeitselement (Feature 064) — Beistelltabelle 1:1; der Task
+     * bleibt das führende Aufgabenmodell.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Models\Agile\AgileWorkItem, $this>
+     */
+    public function agileWorkItem(): \Illuminate\Database\Eloquent\Relations\HasOne {
+        return $this->hasOne(\App\Models\Agile\AgileWorkItem::class, 'task_id');
+    }
 }

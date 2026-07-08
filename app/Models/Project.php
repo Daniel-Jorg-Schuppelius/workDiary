@@ -13,6 +13,7 @@ namespace App\Models;
 use App\Enums\Diary\{LocationMode, Status as DiaryStatus};
 use App\Enums\Project\ProjectStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Support\Setting;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -43,6 +44,7 @@ use Illuminate\Support\{Carbon, Collection, Str};
  * @property string|null $budget
  * @property string|null $budget_type
  * @property bool|null $billable
+ * @property bool|null $weather_auto_fetch
  * @property bool $global_activities
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -82,6 +84,7 @@ class Project extends Model {
         'billing_increment_minutes',
         'billing_grouping_gap_minutes',
         'billable',
+        'weather_auto_fetch',
         'global_activities',
     ];
 
@@ -97,6 +100,7 @@ class Project extends Model {
         'billing_increment_minutes' => 'integer',
         'billing_grouping_gap_minutes' => 'integer',
         'billable' => 'boolean',
+        'weather_auto_fetch' => 'boolean',
         'global_activities' => 'boolean',
         'is_default' => 'boolean',
         'is_maintenance' => 'boolean',
@@ -378,6 +382,22 @@ class Project extends Model {
         }
 
         return (bool) ($this->customer->billable ?? true);
+    }
+
+    /**
+     * Automatischer Wetter-Abruf mit Vererbung (Feature 062, Rang 12):
+     * eigener Wert > Parent (rekursiv) > Org-Setting `weather.auto_fetch` > false.
+     * null bedeutet „erben".
+     */
+    public function effectiveWeatherAutoFetch(): bool {
+        if ($this->weather_auto_fetch !== null) {
+            return (bool) $this->weather_auto_fetch;
+        }
+        if ($this->parent !== null) {
+            return $this->parent->effectiveWeatherAutoFetch();
+        }
+
+        return (bool) Setting::get('weather.auto_fetch', false);
     }
 
     /**

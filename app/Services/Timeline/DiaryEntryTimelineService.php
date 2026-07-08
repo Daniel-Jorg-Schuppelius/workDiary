@@ -12,7 +12,7 @@ namespace App\Services\Timeline;
 
 use App\Enums\Diary\Status;
 use App\Enums\Protocol\ProtocolEventType;
-use App\Models\{AuditLog, CommunicationNote, Customer, DiaryEntry, Document, MaterialUsage, OpenIssueEvent, ProtocolEvent, TimeEntry, User};
+use App\Models\{AuditLog, CommunicationNote, Customer, DiaryEntry, Document, MaterialUsage, OpenIssueEvent, ProtocolEvent, Shipment, TimeEntry, User};
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -165,6 +165,28 @@ class DiaryEntryTimelineService {
             foreach ($documents as $document) {
                 $items[] = $this->documentItem($document, route('customers.show', $customer) . '#documents');
             }
+        }
+
+        // Versandaufträge zu Auslieferungen an diesen Kunden (Feature 059, Rang 20).
+        $shipments = Shipment::query()
+            ->whereHas('delivery', fn ($q) => $q->where('customer_id', $customer->id))
+            ->latest('created_at')
+            ->limit($cap)
+            ->get();
+
+        foreach ($shipments as $shipment) {
+            $items[] = new TimelineItem(
+                id: 'shipment:' . $shipment->id,
+                type: 'shipment',
+                icon: 'local_shipping',
+                occurredAt: $shipment->created_at,
+                actor: strtoupper((string) $shipment->carrier),
+                title: (string) __('timeline.event.shipment', ['status' => $shipment->status->label()]),
+                summary: $shipment->tracking_number !== null && $shipment->tracking_number !== ''
+                    ? (string) __('timeline.event.shipment_tracking', ['number' => $shipment->tracking_number])
+                    : null,
+                visibility: TimelineItem::VISIBILITY_CUSTOMER,
+            );
         }
 
         return self::sortAndSlice($items, $limit, 0);

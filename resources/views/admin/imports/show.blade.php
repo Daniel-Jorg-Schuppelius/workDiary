@@ -83,6 +83,41 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="alert alert-error text-sm">{{ session('error') }}</div>
+    @endif
+
+    {{-- Wert-Mapping (Rang 58): unbekannte Tag-/Kategorie-Quellwerte zuordnen. --}}
+    @php($pendingValues = (array) (($run->unresolved_values ?? [])['tags'] ?? []))
+    @if ($pendingValues !== [])
+        <x-card :title="__('Unbekannte Tags/Kategorien zuordnen')" icon="sell" :count="count($pendingValues)">
+            <p class="mb-3 text-sm text-base-content/60">
+                {{ __('Diese Quellwerte sind weder gemappt noch als Tag bekannt. Entscheidungen werden je Organisation gemerkt — Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}
+            </p>
+            <form method="POST" action="{{ route('admin.imports.mapping', $run) }}" class="space-y-2">
+                @csrf
+                @foreach ($pendingValues as $i => $value)
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="hidden" name="mappings[{{ $i }}][value]" value="{{ $value }}">
+                        <span class="badge badge-ghost font-mono">{{ $value }}</span>
+                        <select name="mappings[{{ $i }}][action]" class="select select-sm select-bordered">
+                            <option value="new">{{ __('Als neues Tag anlegen') }}</option>
+                            <option value="tag">{{ __('Bestehendem Tag zuordnen') }}</option>
+                            <option value="ignore">{{ __('Ignorieren') }}</option>
+                        </select>
+                        <select name="mappings[{{ $i }}][tag_id]" class="select select-sm select-bordered">
+                            <option value="">{{ __('– Tag wählen –') }}</option>
+                            @foreach ($tagOptions as $tag)
+                                <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endforeach
+                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Zuordnung speichern') }}</x-button>
+            </form>
+        </x-card>
+    @endif
+
     {{-- Vorschau --}}
     @if (! empty($run->preview))
         <div class="card bg-base-100 shadow-sm">

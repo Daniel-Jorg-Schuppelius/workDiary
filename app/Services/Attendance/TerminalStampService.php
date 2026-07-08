@@ -1,0 +1,155 @@
+<?php
+/*
+ * Created on   : Mon Jul 06 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : TerminalStampService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+namespace App\Services\Attendance;
+
+use App\Enums\Attendance\AttendanceSource;
+use App\Models\{AttendanceTerminal, ExternalReference, User, UserBadge};
+use Illuminate\Support\Carbon;
+use Throwable;
+
+/**
+ * Verarbeitet ein Stempelereignis eines Hardware-Terminals (Feature 061,
+ * MVP-130). Badge-Kennung → Nutzer (gehasht), dann Anlegen eines
+ * Anwesenheitsstempels über den **bestehenden** {@see AttendanceClockService} —
+ * dadurch sind Terminal-Stempel identisch zu Browser-Stempeln und erscheinen
+ * automatisch in allen Auswertungen (Quelle `terminal`).
+ *
+ * - **Kommen/Gehen** über den bestehenden Toggle (`current()`); explizites
+ *   `in`/`out` wird respektiert. Doppel-Kommen / Gehen-ohne-Kommen fängt der
+ *   ClockService ab → als Status zurückgemeldet (Plausibilität).
+ * - **Offline-Nachlieferung** mit Originalzeit (`occurred_at`).
+ * - **Dedup** über die Ereignis-ID ({@see ExternalReference}, Plugin `terminal`,
+ *   Typ `stamp`) — ein erneut zugestelltes Ereignis erzeugt keinen zweiten Stempel.
+ */
+class TerminalStampService {
+    public const PLUGIN_ID = 'terminal';
+
+    public const EXTERNAL_TYPE = 'stamp';
+
+    public function __construct(private readonly AttendanceClockService $clock) {}
+
+    /**
+     * @param  string  $eventType  fachlicher Ereignistyp: `work` (Kommen/Gehen, Default)
+     *                             oder `break` (Pausen-Toggle) — orthogonal zu $event.
+     * @return 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'skipped'|'unknown_badge'|'noop'|'rejected'
+     */
+    public function stamp(AttendanceTerminal $terminal, string $badgeUid, string $event = 'toggle', ?string $occurredAt = null, ?string $eventId = null, string $eventType = 'work'): string {
+        // Gesundheitsstatus fortschreiben (auch bei abgewiesenen Ereignissen).
+        $terminal->forceFill(['last_seen_at' => Carbon::now()])->save();
+
+        if ($eventId !== null && $eventId !== '' && $this->alreadySeen($terminal, $eventId)) {
+            return 'skipped';
+        }
+
+        $user = $this->resolveUser((int) $terminal->organization_id, $badgeUid);
+        if (! $user instanceof User) {
+            return 'unknown_badge';
+        }
+
+        $isBreak = strtolower(trim($eventType)) === 'break';
+        $context = ['device' => $terminal->name, 'source' => AttendanceSource::Terminal->value];
+
+        try {
+            if ($isBreak) {
+                // Pausen-Toggle statt Kommen/Gehen; die Richtung ($event) ist hier
+                // bedeutungslos.
+                if ($occurredAt !== null && $occurredAt !== '') {
+                    $context['occurred_at'] = $occurredAt;
+                }
+                $attendance = $this->clock->toggleBreak($user, $context);
+                if ($attendance === null) {
+                    return 'noop'; // Pause ohne offenes Kommen
+                }
+                $status = $attendance->break_started_at !== null ? 'break_started' : 'break_ended';
+            } else {
+                $action = $this->resolveAction($user, $event);
+                if ($action === 'in') {
+                    if ($occurredAt !== null && $occurredAt !== '') {
+                        $context['started_at'] = $occurredAt;
+                    }
+                    $attendance = $this->clock->clockIn($user, $context);
+                    $status = 'clocked_in';
+                } else {
+                    if ($occurredAt !== null && $occurredAt !== '') {
+                        $context['ended_at'] = $occurredAt;
+                    }
+                    $attendance = $this->clock->clockOut($user, $context);
+                    if ($attendance === null) {
+                        return 'noop'; // Gehen ohne offenes Kommen
+                    }
+                    $status = 'clocked_out';
+                }
+            }
+        } catch (Throwable) {
+            return 'rejected'; // Doppel-Kommen, ungültige Zeit u. Ä.
+        }
+
+        if ($eventId !== null && $eventId !== '') {
+            ExternalReference::query()->withoutGlobalScopes()->create([
+                'organization_id' => $terminal->organization_id,
+                'plugin_id' => self::PLUGIN_ID,
+                'external_type' => self::EXTERNAL_TYPE,
+                'referenceable_type' => $attendance->getMorphClass(),
+                'referenceable_id' => $attendance->getKey(),
+                'external_id' => $eventId,
+                'payload' => ['event' => $event, 'event_type' => $isBreak ? 'break' : 'work', 'terminal_id' => $terminal->id],
+                'synced_at' => Carbon::now(),
+            ]);
+        }
+
+        return $status;
+    }
+
+    private function alreadySeen(AttendanceTerminal $terminal, string $eventId): bool {
+        return ExternalReference::query()->withoutGlobalScopes()
+            ->where('organization_id', $terminal->organization_id)
+            ->where('plugin_id', self::PLUGIN_ID)
+            ->where('external_type', self::EXTERNAL_TYPE)
+            ->where('external_id', $eventId)
+            ->exists();
+    }
+
+    /** @return 'in'|'out' */
+    private function resolveAction(User $user, string $event): string {
+        $normalized = strtolower(trim($event));
+        if (in_array($normalized, ['in', 'checkin', 'kommen'], true)) {
+            return 'in';
+        }
+        if (in_array($normalized, ['out', 'checkout', 'gehen'], true)) {
+            return 'out';
+        }
+
+        // Toggle: offener Stempel → gehen, sonst kommen.
+        return $this->clock->current($user) !== null ? 'out' : 'in';
+    }
+
+    private function resolveUser(int $organizationId, string $badgeUid): ?User {
+        if (trim($badgeUid) === '') {
+            return null;
+        }
+
+        $badge = UserBadge::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('badge_hash', UserBadge::hashBadge($badgeUid))
+            ->whereNull('revoked_at')
+            ->first();
+        if (! $badge instanceof UserBadge) {
+            return null;
+        }
+
+        return User::query()->withoutGlobalScopes()
+            ->whereKey($badge->user_id)
+            ->where('organization_id', $organizationId)
+            ->first();
+    }
+}

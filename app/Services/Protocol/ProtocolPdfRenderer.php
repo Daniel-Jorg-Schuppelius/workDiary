@@ -11,10 +11,12 @@
 namespace App\Services\Protocol;
 
 use App\Models\Protocol;
-use Barryvdh\DomPDF\Facade\Pdf;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Rendert ein signiertes Protokoll als PDF auf Storage und liefert den
@@ -40,14 +42,16 @@ class ProtocolPdfRenderer {
             return $relativePath;
         }
 
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadView('protocols.pdf', [
+        $html = view('protocols.pdf', [
             'protocol' => $protocol,
             'hash' => $hash,
             'generatedAt' => Carbon::now(),
-        ])->setPaper('A4');
+        ])->render();
 
-        $disk->put($relativePath, $pdf->output());
+        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (protocols.pdf).');
+
+        $disk->put($relativePath, $bytes);
 
         return $relativePath;
     }

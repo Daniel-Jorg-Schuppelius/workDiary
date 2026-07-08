@@ -211,18 +211,54 @@ class TimeExportServiceTest extends TestCase {
         $lines = array_values(array_filter(explode("\r\n", $content), static fn (string $l): bool => $l !== ''));
 
         // Kopfzeile exakt im LODAS-nahen Spaltenschema.
-        $this->assertSame('Personalnummer;Datum;Lohnart;Stunden', $lines[0]);
+        $this->assertSame('Personalnummer;Datum;Lohnart;Stunden;Kostenstelle', $lines[0]);
 
         // Genau eine Summenzeile (work.normal) für den einen User:
         //  - Personalnummer aus users.personnel_number
         //  - Datum = Monatsletzter (31.01.2024)
         //  - Default-Lohnart 1000 (keine eigene wage_type_code)
         //  - 15,00 Stunden mit Komma-Dezimaltrenner
-        $this->assertSame('4711;31.01.2024;1000;15,00', $lines[1]);
+        $this->assertSame('4711;31.01.2024;1000;15,00;', $lines[1]);
         $this->assertCount(2, $lines, 'Kopfzeile + eine Datenzeile.');
 
         // Hash bleibt reproduzierbar über den gerenderten Inhalt.
         $this->assertSame(hash('sha256', $content), $built->payload_hash);
+    }
+
+    public function test_lexware_profile_renders_year_month_personnel_wagetype_value(): void {
+        $admin = $this->makeAdmin();
+        $user = $this->makeUser();
+        $user->forceFill(['personnel_number' => '4711'])->save();
+
+        $this->seedAttendance($user, 8 * 60);    // 8 h Tag 15.
+        $this->seedAttendance($user, 7 * 60, 16); // 7 h Tag 16. => 15 h gesamt
+
+        $this->approvedClosureFor($user, $admin);
+
+        $this->actingAs($admin);
+        $export = $this->service->prepare(
+            $this->organization,
+            $this->year,
+            $this->month,
+            'lexware',
+            'organization',
+            actor: $admin,
+        );
+        $built = $this->service->build($export, $admin);
+
+        $this->assertSame(TimeExportStatus::Ready, $built->status);
+        $this->assertSame('csv', $built->file_format);
+
+        $content = (string) Storage::disk('local')->get((string) $built->file_path);
+        $lines = array_values(array_filter(explode("\r\n", $content), static fn (string $l): bool => $l !== ''));
+
+        // Kopfzeile im Lexware-Spaltenschema.
+        $this->assertSame('Jahr;Monat;Personalnummer;Lohnartnummer;Wert;Stundensatz', $lines[0]);
+
+        // Jahr/Monat aus dem Zeitraum, Personalnummer 4711, Default-Lohnart 1000,
+        // 15,00 Stunden mit Komma; Stundensatz leer (führt Lexware).
+        $this->assertSame('2024;01;4711;1000;15,00;', $lines[1]);
+        $this->assertCount(2, $lines, 'Kopfzeile + eine Datenzeile.');
     }
 
     public function test_datev_lodas_profile_falls_back_to_user_id_without_personnel_number(): void {

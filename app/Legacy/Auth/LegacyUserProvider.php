@@ -126,6 +126,11 @@ class LegacyUserProvider extends EloquentUserProvider {
         if (! $password) {
             return false;
         }
+        // Zentral deaktivierte Konten (Offboarding via Verzeichnisdienst,
+        // Feature 057) sind überall gesperrt — kein Login-Pfad akzeptiert sie.
+        if (! $user->canLogin()) {
+            return false;
+        }
         // Portal-Accounts duerfen den internen Guard nicht passieren.
         if ($user->customer_id !== null) {
             return false;

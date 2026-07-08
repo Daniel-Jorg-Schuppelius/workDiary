@@ -26,9 +26,13 @@ class AssetCheckoutController extends Controller {
     public function create(Asset $asset): View {
         Gate::authorize('checkout', $asset);
 
+        /** @var User $auth */
+        $auth = auth()->user();
+
         return view('assets._checkout_form_dialog', [
             'asset' => $asset,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            // Nur Nutzer der eigenen Organisation (Whitebox-Befund 2026-07).
+            'users' => User::query()->where('organization_id', $auth->organization_id)->orderBy('name')->get(['id', 'name']),
             'teams' => Team::query()->orderBy('name')->get(['id', 'name']),
             'diaryEntries' => $asset->diaryEntries()->limit(30)->get(['id', 'title', 'start_at']),
         ]);
@@ -106,8 +110,19 @@ class AssetCheckoutController extends Controller {
 
     private function resolveUser(?string $raw): ?User {
         $id = $this->decodeId(User::class, $raw);
+        if ($id === null) {
+            return null;
+        }
 
-        return $id !== null ? User::query()->find($id) : null;
+        // Mandantengrenze: ein Dienstmittel darf nur an einen Nutzer der eigenen
+        // Organisation ausgegeben werden — User hat keinen globalen
+        // OrganizationScope (Whitebox-Befund 2026-07).
+        $authUser = auth()->user();
+        $orgId = $authUser instanceof User ? $authUser->organization_id : null;
+
+        return User::query()
+            ->when($orgId !== null, fn ($q) => $q->where('organization_id', $orgId))
+            ->find($id);
     }
 
     private function resolveTeam(?string $raw): ?Team {

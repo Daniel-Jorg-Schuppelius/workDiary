@@ -57,7 +57,8 @@ class ExportAuditLog extends Command {
 
         $manifest = [
             'generated_at' => Carbon::now()->toIso8601String(),
-            'retention_years' => (int) config('audit.retention_years', 10),
+            // Frist je Rechtsraum (Restpunkt 67) — Fallback: config-Default.
+            'retention_years' => (int) (config('retention.areas.audit_logs.years.' . strtoupper((string) config('retention.default_region', 'DE'))) ?? config('audit.retention_years', 10)),
             'note' => 'Append-only Hash-Ketten (SHA-256). Integrität via "php artisan audit:verify" '
                 . 'bzw. anhand des head_hash je Kette prüfbar.',
             'chains' => [],

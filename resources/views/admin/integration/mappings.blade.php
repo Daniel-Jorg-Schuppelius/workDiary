@@ -24,7 +24,7 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if ($references->isEmpty())
-            <p class="p-6 text-center text-sm text-base-content/60">{{ __('Keine Zuordnungen im gewählten Filter.') }}</p>
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">link</span>' :title="__('Keine Zuordnungen im gewählten Filter.')" />
         @else
             <div class="overflow-x-auto">
                 <table class="table table-sm">

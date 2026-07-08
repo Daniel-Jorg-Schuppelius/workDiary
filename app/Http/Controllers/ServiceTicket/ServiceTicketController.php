@@ -80,9 +80,17 @@ class ServiceTicketController extends Controller {
     public function show(ServiceTicket $ticket): View {
         Gate::authorize('view', $ticket);
         $ticket->load(['customer:id,name', 'asset:id,name,asset_no', 'assignedTo:id,name', 'reportedBy:id,name', 'slaContract']);
+        // Konversation (Feature 065, P2): chronologisch, intern sichtbar.
+        $messages = \App\Models\ServiceTicketMessage::query()
+            ->where('service_ticket_id', $ticket->id)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
 
         return view('service-tickets.show', [
             'ticket' => $ticket,
+            'messages' => $messages,
+            'canNote' => \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::HelpdeskTicketInternalNote->value),
             'statusOptions' => $this->statusOptions(),
             'priorityOptions' => $this->priorityOptions(),
             'canUpdate' => Gate::allows('update', $ticket),

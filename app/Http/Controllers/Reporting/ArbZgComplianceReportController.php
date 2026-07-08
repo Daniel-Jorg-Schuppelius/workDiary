@@ -16,13 +16,13 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{Attendance, Organization, TimeCorrectionRequest, User};
+use App\Models\{Attendance, Organization, Team, TimeCorrectionRequest, User};
 use App\Services\Compliance\{AttendanceComplianceChecker, AttendanceComplianceFinding};
 use App\Support\{Sqid, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -91,6 +91,84 @@ class ArbZgComplianceReportController extends Controller {
             'kinds' => $this->kinds(),
             'kindFilter' => $kindFilter,
             'thresholds' => $this->thresholdLabels(),
+        ]);
+    }
+
+    /**
+     * Org-Dashboard (Rang 39): KPI-Kacheln, Verstoß-Zeitreihe je Regel und
+     * Team-Aggregation (bewusst teambezogen — kein Personen-Scoring in der
+     * Übersicht, Drilldown führt in den Einzelreport). „Offen" = Befund ohne
+     * genehmigte Zeitkorrektur am betroffenen Tag; Berechnung identisch zum
+     * Einzelreport (gleiches build()).
+     */
+    public function dashboard(): View {
+        Gate::authorize(Permission::ComplianceViewAny->value);
+
+        $range = $this->globalDateRange();
+        $from = $range['from'];
+        $to = $range['to'];
+
+        $rows = $this->build($from, $to)['rows'];
+        $summary = $this->summarize($rows);
+
+        // Zeitreihe: Befunde je Regel × Monat (aus den Befund-Daten, keine Doppellogik).
+        $months = [];
+        $cursor = $from->startOfMonth();
+        while ($cursor->lessThanOrEqualTo($to)) {
+            $months[$cursor->format('Y-m')] = array_fill_keys($this->kinds(), 0);
+            $cursor = $cursor->addMonth();
+        }
+        $openCount = 0;
+        $correctedCount = 0;
+        foreach ($rows as $row) {
+            foreach ($row['findings'] as $finding) {
+                $month = substr((string) $finding['date'], 0, 7);
+                if (isset($months[$month][$finding['kind']])) {
+                    $months[$month][$finding['kind']]++;
+                }
+                if (($finding['corrected'] ?? false) === true) {
+                    $correctedCount++;
+                } else {
+                    $openCount++;
+                }
+            }
+        }
+
+        // Team-Aggregation: Befunde je Team (User können mehreren Teams angehören).
+        $teamNames = Team::query()->whereNull('archived_at')->pluck('name', 'id');
+        $teamIdsByUser = DB::table('team_user')
+            ->whereIn('user_id', array_map(static fn (array $r): int => (int) $r['user']->id, $rows))
+            ->get(['user_id', 'team_id'])
+            ->groupBy('user_id');
+        $byTeam = [];
+        foreach ($rows as $row) {
+            $findingCount = count($row['findings']);
+            if ($findingCount === 0) {
+                continue;
+            }
+            $teams = $teamIdsByUser->get($row['user']->id, collect());
+            if ($teams->isEmpty()) {
+                $byTeam[__('Ohne Team')] = ($byTeam[__('Ohne Team')] ?? 0) + $findingCount;
+
+                continue;
+            }
+            foreach ($teams as $pivot) {
+                $name = (string) ($teamNames[(int) $pivot->team_id] ?? __('Ohne Team'));
+                $byTeam[$name] = ($byTeam[$name] ?? 0) + $findingCount;
+            }
+        }
+        arsort($byTeam);
+
+        return view('reports.compliance-dashboard', [
+            'summary' => $summary,
+            'months' => $months,
+            'byTeam' => $byTeam,
+            'openCount' => $openCount,
+            'correctedCount' => $correctedCount,
+            'kinds' => $this->kinds(),
+            'thresholds' => $this->thresholdLabels(),
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
         ]);
     }
 

@@ -19,6 +19,11 @@ enum ServiceTicketStatus: string {
     case Accepted = 'accepted';
     case Closed = 'closed';
     case Rejected = 'rejected';
+        // Wartezustände (Feature 065, additiv — 'done' bleibt der
+        // Speicherwert für „Gelöst", nur das Label ändert sich).
+    case WaitingCustomer = 'waiting_customer';
+    case WaitingExternal = 'waiting_external';
+    case Paused = 'paused';
 
     public function label(): string {
         return match ($this) {
@@ -26,10 +31,13 @@ enum ServiceTicketStatus: string {
             self::Triaged => __('Triagiert'),
             self::Scheduled => __('Eingeplant'),
             self::InProgress => __('In Arbeit'),
-            self::Done => __('Erledigt'),
+            self::Done => __('Gelöst'),
             self::Accepted => __('Abgenommen'),
             self::Closed => __('Geschlossen'),
             self::Rejected => __('Abgelehnt'),
+            self::WaitingCustomer => __('Wartet auf Kunde'),
+            self::WaitingExternal => __('Wartet auf Dritte'),
+            self::Paused => __('Pausiert'),
         };
     }
 
@@ -42,6 +50,10 @@ enum ServiceTicketStatus: string {
 
     public function isAcknowledged(): bool {
         return ! in_array($this, [self::Reported], true);
+    }
+
+    public function isWaiting(): bool {
+        return in_array($this, [self::WaitingCustomer, self::WaitingExternal, self::Paused], true);
     }
 
     public function isResolved(): bool {

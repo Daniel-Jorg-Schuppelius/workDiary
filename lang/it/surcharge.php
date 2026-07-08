@@ -37,6 +37,10 @@ return [
         'payroll' => 'Trasferimento paghe',
         'wage_type_code' => 'Voce retributiva',
         'wage_type_code_help' => 'Numero della voce per DATEV/Lexware (ad es. 2010). Vuoto = esportare senza voce.',
+        'tax_free_limit_pct' => 'Esente fino a (%)',
+        'tax_free_limit_pct_help' => "Limiti § 3b EStG configurabili (es. notte 25/40, domenica 50, festivo 125/150). Vuoto = nessuna divisione. Oltre il limite il resto viene esportato come quota imponibile con una propria voce salariale.",
+        'taxable_wage_type_code' => 'Voce salariale quota imponibile',
+        'taxable_wage_type_code_help' => "Obbligatoria quando il limite esente è inferiore alla maggiorazione. Il tetto in € del salario base resta alla paghe esterna.",
         'priority' => 'Priorità',
         'priority_help' => 'Spareggio a parità di percentuale: vince la priorità più alta.',
         'validity' => 'Validità',
@@ -62,5 +66,9 @@ return [
         'created' => 'Regola di maggiorazione creata.',
         'updated' => 'Regola di maggiorazione aggiornata.',
         'deleted' => 'Regola di maggiorazione eliminata.',
+    ],
+
+    'validation' => [
+        'taxable_wage_type_required' => "La quota imponibile richiede una propria voce salariale.",
     ],
 ];

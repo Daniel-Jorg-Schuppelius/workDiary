@@ -182,5 +182,9 @@
                 </div>
             </x-form-group>
         @endif
+
+        {{-- Wetter-Auto-Abruf-Override (Feature 062, Rang 12) — Partial,
+             s. Kommentar dort (Blade-Backtracking-Schwelle). --}}
+        @include('projects._weather_field', ['project' => $project])
     </div>
 </x-modal>

@@ -51,7 +51,7 @@ class ApiTenantTest extends TestCase {
             'name' => 'APICUSTBORG',
         ]));
 
-        Sanctum::actingAs($this->adminA);
+        Sanctum::actingAs($this->adminA, ['*']);
         $response = $this->getJson('/api/customers');
         $response->assertOk();
         $ids = collect((array) ($response->json('data') ?? $response->json()))->pluck('id')->all();
@@ -62,7 +62,7 @@ class ApiTenantTest extends TestCase {
     public function test_api_customer_show_cross_org_is_not_found(): void {
         $customerB = $this->withOrg($this->orgB, fn() => Customer::factory()->create());
 
-        Sanctum::actingAs($this->adminA);
+        Sanctum::actingAs($this->adminA, ['*']);
         $response = $this->getJson('/api/customers/' . $customerB->id);
         $this->assertContains($response->status(), [403, 404], 'Cross-Org-Show muss 403 oder 404 liefern, war: ' . $response->status());
     }
@@ -71,7 +71,7 @@ class ApiTenantTest extends TestCase {
         $customerB = $this->withOrg($this->orgB, fn() => Customer::factory()->create());
         $projectB = $this->withOrg($this->orgB, fn() => Project::factory()->for($customerB)->create(['name' => 'APIPROJBORG']));
 
-        Sanctum::actingAs($this->adminA);
+        Sanctum::actingAs($this->adminA, ['*']);
         $response = $this->getJson('/api/projects');
         $response->assertOk();
         $this->assertStringNotContainsString('APIPROJBORG', (string) $response->getContent());
@@ -85,7 +85,7 @@ class ApiTenantTest extends TestCase {
             'created_by' => $this->adminB->id,
         ]));
 
-        Sanctum::actingAs($this->adminA);
+        Sanctum::actingAs($this->adminA, ['*']);
         $response = $this->getJson('/api/tasks/' . $taskB->id);
         $this->assertContains($response->status(), [403, 404]);
     }
@@ -96,7 +96,7 @@ class ApiTenantTest extends TestCase {
             'content' => 'APIDIARYBORG',
         ]));
 
-        Sanctum::actingAs($this->adminA);
+        Sanctum::actingAs($this->adminA, ['*']);
         $response = $this->getJson('/api/diary');
         $response->assertOk();
         $this->assertStringNotContainsString('APIDIARYBORG', (string) $response->getContent());
@@ -107,7 +107,7 @@ class ApiTenantTest extends TestCase {
             'user_id' => $this->adminB->id,
         ]));
 
-        Sanctum::actingAs($this->adminA);
+        Sanctum::actingAs($this->adminA, ['*']);
         $response = $this->getJson('/api/diary/' . $diaryB->id);
         $this->assertContains($response->status(), [403, 404]);
     }
@@ -118,7 +118,7 @@ class ApiTenantTest extends TestCase {
             'content' => 'ORIGINAL-B',
         ]));
 
-        Sanctum::actingAs($this->adminA);
+        Sanctum::actingAs($this->adminA, ['*']);
         $response = $this->putJson('/api/diary/' . $diaryB->id, [
             'content' => 'HIJACKED-BY-A',
             'status' => 2,

@@ -11,6 +11,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource};
+use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveServiceTicketRequest extends BaseFormRequest {
@@ -25,6 +26,8 @@ class SaveServiceTicketRequest extends BaseFormRequest {
             'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
             'asset_id' => ['nullable', 'integer', 'exists:assets,id'],
             'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            // Auftragsbezug org-gescopt (nie cross-tenant, s. ExistsInCurrentOrganization).
+            'diary_entry_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('diary_entries')],
             'reported_at' => ['nullable', 'date'],
         ];
     }

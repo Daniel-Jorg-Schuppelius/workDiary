@@ -357,6 +357,10 @@ class AuditController extends Controller {
             'edition' => ['nullable', 'string', 'max:16'],
             'kind' => ['required', 'string', Rule::enum(AuditKind::class)],
             'planned_on' => ['nullable', 'date'],
+            'isms_audit_program_id' => [
+                'nullable', 'integer',
+                Rule::exists('isms_audit_programs', 'id')->where('organization_id', $actor->organization_id),
+            ],
             'performed_from' => ['nullable', 'date'],
             'performed_to' => ['nullable', 'date', 'after_or_equal:performed_from'],
             'lead_auditor_user_id' => [

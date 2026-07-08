@@ -94,8 +94,44 @@ class DiagnosticsServiceTest extends TestCase {
         $report = $service->collect();
 
         $codes = array_map(static fn($s) => $s->code, $report->sections);
-        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security'], $codes);
+        $this->assertSame(['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'storage', 'backup', 'security', 'terminals'], $codes);
         $this->assertSame(DiagnosticStatus::Critical, $report->overallStatus());
+    }
+
+    public function test_terminals_section_warns_on_stale_active_terminal(): void {
+        $org = \App\Models\Organization::factory()->create();
+        $this->app->instance('currentOrganization', $org);
+
+        // Aktives Terminal ohne Kontakt seit 3 Tagen → stale.
+        \App\Models\AttendanceTerminal::query()->create([
+            'organization_id' => $org->id,
+            'name' => 'Eingang',
+            'token_hash' => hash('sha256', 'stale'),
+            'active' => true,
+            'last_seen_at' => CarbonImmutable::now()->subDays(3),
+        ]);
+        // Aktives Terminal mit frischem Kontakt → ok.
+        \App\Models\AttendanceTerminal::query()->create([
+            'organization_id' => $org->id,
+            'name' => 'Werkstatt',
+            'token_hash' => hash('sha256', 'fresh'),
+            'active' => true,
+            'last_seen_at' => CarbonImmutable::now()->subMinutes(5),
+        ]);
+
+        $section = app(DiagnosticsService::class)->checkTerminals();
+
+        $this->assertSame('terminals', $section->code);
+        $this->assertSame(DiagnosticStatus::Warn, $section->status);
+        $this->assertSame(2, $section->metrics['total']);
+        $this->assertSame(1, $section->metrics['stale']);
+    }
+
+    public function test_terminals_section_is_informational_without_terminals(): void {
+        $section = app(DiagnosticsService::class)->checkTerminals();
+
+        $this->assertSame(DiagnosticStatus::Unknown, $section->status);
+        $this->assertSame(0, $section->metrics['total']);
     }
 
     public function test_security_section_flags_debug_and_reports_sbom_metrics(): void {

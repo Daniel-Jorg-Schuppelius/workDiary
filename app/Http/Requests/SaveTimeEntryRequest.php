@@ -38,11 +38,14 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             'task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
             'diary_entry_id' => ['nullable', 'integer', Rule::exists('diary_entries', 'id')],
             'description' => ['nullable', 'string', 'max:500'],
+            // Rang 59: Nacharbeit-/Kulanz-Kennzeichnung (Klassifikations-Domänen).
+            'rework_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where('domain', 'rework_reason')],
+            'goodwill_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where('domain', 'goodwill_reason')],
         ];
     }
 
     protected function prepareForValidation(): void {
-        foreach (['task_id', 'diary_entry_id', 'started_at', 'ended_at'] as $key) {
+        foreach (['task_id', 'diary_entry_id', 'started_at', 'ended_at', 'rework_reason_classification_id', 'goodwill_reason_classification_id'] as $key) {
             if ($this->input($key) === '' || $this->input($key) === '0') {
                 $this->merge([$key => null]);
             }

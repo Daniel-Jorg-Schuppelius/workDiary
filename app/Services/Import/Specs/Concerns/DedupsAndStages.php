@@ -38,6 +38,14 @@ trait DedupsAndStages {
     private const CSV_PLUGIN = IntegrationInboxItem::PLUGIN_CSV;
 
     /**
+     * Optionaler Hook (Rang 58): wird nach jedem persistierten Datensatz mit
+     * dem Modell aufgerufen — z. B. für die Tag-Anwendung des Wert-Mappings.
+     *
+     * @var (\Closure(Model): void)|null
+     */
+    protected ?\Closure $afterPersist = null;
+
+    /**
      * Orchestriert die Zeilen-Auflösung (gemeinsam für upsert/upsertOrStage).
      *
      * @param  array<string, mixed>  $payload  ins lokale Schema gemappter Zeilensatz
@@ -53,6 +61,7 @@ trait DedupsAndStages {
             $linked = $this->resolveByExternalId($organization, $externalId, $modelClass, $externalType);
             if ($linked instanceof Model) {
                 $this->applyMatch($linked, $payload, true);
+                ($this->afterPersist)?->__invoke($linked);
 
                 return [ImportOutcome::Updated, null];
             }
@@ -65,6 +74,7 @@ trait DedupsAndStages {
             if ($externalId !== null) {
                 $this->writeExternalRef($organization, $match, $externalId, $externalType);
             }
+            ($this->afterPersist)?->__invoke($match);
 
             return [ImportOutcome::Updated, null];
         }
@@ -81,6 +91,7 @@ trait DedupsAndStages {
         if ($externalId !== null) {
             $this->writeExternalRef($organization, $created, $externalId, $externalType);
         }
+        ($this->afterPersist)?->__invoke($created);
 
         return [ImportOutcome::Created, null];
     }

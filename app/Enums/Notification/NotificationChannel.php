@@ -14,8 +14,10 @@ use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
 
 /**
- * Zustellkanäle für Benachrichtigungen (MVP-018). Webhook/Kalender/SMS sind
- * bewusst out of scope; Push läuft über die bestehende WebPush-Infrastruktur.
+ * Zustellkanäle für Benachrichtigungen (MVP-018). InApp/Mail/Push sind
+ * empfängerbezogen; Teams/Mattermost (Feature 056, MVP-119) sind org-weite
+ * ausgehende Chat-Webhook-Kanäle (eine Kanal-URL je Organisation), die über
+ * dieselbe Ereignis→Kanal-Matrix ausgewählt werden.
  */
 enum NotificationChannel: string implements HasLabel {
     use HasOptions;
@@ -23,8 +25,15 @@ enum NotificationChannel: string implements HasLabel {
     case InApp = 'inApp';
     case Mail = 'mail';
     case Push = 'push';
+    case Teams = 'teams';
+    case Mattermost = 'mattermost';
 
     public function label(): string {
         return (string) __('enums.notification.channel.' . $this->value);
+    }
+
+    /** Org-weite ausgehende Chat-Webhook-Kanäle (nicht empfängerbezogen). */
+    public function isChatChannel(): bool {
+        return $this === self::Teams || $this === self::Mattermost;
     }
 }

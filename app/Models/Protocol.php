@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Protocol\{ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Support\Setting;
 use Database\Factories\ProtocolFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +66,7 @@ class Protocol extends Model {
         'supersedes_id',
         'visibility',
         'occurred_at',
+        'weather_snapshot_id',
         'created_by_user_id',
         'signed_at',
         'archived_at',
@@ -87,6 +89,38 @@ class Protocol extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /** @return BelongsTo<WeatherSnapshot, $this> Wetter-Messwert des Tages (Feature 062). */
+    public function weatherSnapshot(): BelongsTo {
+        return $this->belongsTo(WeatherSnapshot::class);
+    }
+
+    /**
+     * Ist der automatische Wetter-Abruf für dieses Protokoll aktiv (Rang 11/12)?
+     * Präzedenz: Projekt-Override (falls das Protokoll ein Projekt betrifft) >
+     * Org-Setting `weather.auto_fetch` > false.
+     */
+    public function weatherAutoFetchEnabled(): bool {
+        $project = $this->relatedProject();
+        if ($project instanceof Project) {
+            return $project->effectiveWeatherAutoFetch();
+        }
+
+        return (bool) Setting::get('weather.auto_fetch', false);
+    }
+
+    /** Das dem Protokoll zugeordnete Projekt (Subjekt selbst oder via Tagebucheintrag), sonst null. */
+    private function relatedProject(): ?Project {
+        $subject = $this->subject;
+        if ($subject instanceof Project) {
+            return $subject;
+        }
+        if ($subject instanceof DiaryEntry) {
+            return $subject->project;
+        }
+
+        return null;
     }
 
     /** @return BelongsTo<self, $this> */

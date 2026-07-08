@@ -188,6 +188,20 @@
         </div>
     </x-form-group>
 
+    {{-- CTI-Anrufer-Pop-up (MVP-118): eigene Durchwahl als Opt-in. --}}
+    <x-form-group :legend="__('cti.profile.heading')" icon="ring_volume" tone="info"
+                  :description="__('cti.profile.extension_help')">
+        <div class="fieldset">
+            <label class="fieldset-label">{{ __('cti.profile.extension_label') }}</label>
+            <input type="tel" name="cti_extension"
+                   value="{{ old('cti_extension', $user->cti_extension) }}"
+                   placeholder="{{ __('cti.profile.extension_placeholder') }}"
+                   autocomplete="off"
+                   class="input input-bordered w-full">
+            @error('cti_extension')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
+    </x-form-group>
+
     <x-slot:footerExtra>
         <x-icon-btn icon="lock" size="sm"
                     data-entry-modal-trigger

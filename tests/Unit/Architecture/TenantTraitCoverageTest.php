@@ -81,6 +81,12 @@ class TenantTraitCoverageTest extends TestCase {
         // System-weiter Backup-Heartbeat (MVP-046 §5): externer Backup-Job postet
         // ohne Tenant-Kontext, gehört bewusst nicht zur Mandantengrenze.
         BackupHeartbeat::class,
+        // Todoist-Webhook-Dedup (Feature 055, MVP-115): die Zeile entsteht VOR
+        // der Org-Zuordnung (Signaturprüfung → erst danach Mapping über
+        // todoist_user_id); nullable organization_id, ein Global-Scope würde
+        // signierte, aber unzuordenbare Zustellungen ausblenden. Siehe
+        // Allow-List im Audit-Doc.
+        \App\Models\TodoistWebhookDelivery::class,
         // Restore-Test-Register (Feature 017): plattformweites Protokoll der
         // Wiederherstellungs-Tests — analog BackupHeartbeat findet der
         // Restore-Vorgang ohne Tenant-Kontext statt. Siehe Allow-List im Audit-Doc.

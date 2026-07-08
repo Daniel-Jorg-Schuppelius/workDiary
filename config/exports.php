@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Services\TimeExport\Profiles\{DatevLodasProfile, GenericCsvProfile};
+use App\Services\TimeExport\Profiles\{DatevLodasProfile, GenericCsvProfile, LexwareProfile};
 
 /**
  * Konfiguration des ApprovedTimeExporters (MVP-019).
@@ -48,10 +48,13 @@ return [
             ],
         ],
         'lexware' => [
-            'driver' => null,
-            'label' => 'Lexware Lohn (vorbereitet)',
+            'driver' => LexwareProfile::class,
+            'label' => 'Lexware Lohn (CSV: Jahr;Monat;PersNr;Lohnart;Wert;Satz, ANSI)',
             'format' => 'csv',
-            'options' => [],
+            'options' => [
+                // Default-Lohnart für Normalstunden (Zeilen ohne eigene wage_type_code).
+                'normal_wage_type_code' => '1000',
+            ],
         ],
     ],
 

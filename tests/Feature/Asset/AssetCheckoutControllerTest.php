@@ -16,6 +16,8 @@ use App\Models\{Asset, AssetDefect, User};
 use App\Services\Asset\AssetAssignmentService;
 use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -92,6 +94,42 @@ class AssetCheckoutControllerTest extends TestCase {
             ->assertSessionHasErrors('assigned_to_user_id');
 
         $this->assertDatabaseMissing('asset_assignments', ['asset_id' => $asset->id, 'returned_at' => null]);
+    }
+
+    public function test_defect_report_stores_uploaded_photo(): void {
+        Storage::fake('local');
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($user)
+            ->post(route('assets.defects.store', $asset), [
+                'severity' => DefectSeverity::Medium->value,
+                'title' => 'Kratzer im Gehäuse',
+                'photos' => [UploadedFile::fake()->image('schaden.jpg', 320, 240)],
+            ])
+            ->assertRedirect(route('assets.show', $asset));
+
+        $defect = AssetDefect::query()->where('asset_id', $asset->id)->firstOrFail();
+        $attachment = $defect->attachmentByMeta(AssetDefect::PHOTO_META);
+        $this->assertNotNull($attachment);
+        $this->assertSame('schaden.jpg', $attachment->original_name);
+        $this->assertTrue(Storage::disk('local')->exists($attachment->path));
+    }
+
+    public function test_defect_report_rejects_non_image_upload(): void {
+        Storage::fake('local');
+        $user = $this->userWithRole(UserRole::Teamleitung->value);
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($user)
+            ->post(route('assets.defects.store', $asset), [
+                'severity' => DefectSeverity::Medium->value,
+                'title' => 'x',
+                'photos' => [UploadedFile::fake()->create('exploit.exe', 12, 'application/x-msdownload')],
+            ])
+            ->assertSessionHasErrors('photos.0');
+
+        $this->assertSame(0, AssetDefect::query()->count());
     }
 
     public function test_aussendienst_cannot_report_defect(): void {

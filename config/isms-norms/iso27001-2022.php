@@ -29,6 +29,9 @@ return [
     'norm' => 'ISO/IEC 27001',
     'edition' => '2022',
     'label' => 'ISO/IEC 27001:2022 — Informationssicherheit',
+    // Profilrevision + Stichtag der Normfassung (Nachtrag 046a).
+    'version' => '1.0',
+    'as_of' => '2022-10-25',
     'requirements' => [
         // ── Harmonized Structure (27) ────────────────────────────────────
         ['ref_no' => '4', 'title' => 'Kontext der Organisation'],

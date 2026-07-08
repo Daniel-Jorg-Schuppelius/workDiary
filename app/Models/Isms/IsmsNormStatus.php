@@ -50,11 +50,14 @@ class IsmsNormStatus extends Model {
         'norm',
         'edition',
         'status',
+        'profile_version',
+        'profile_as_of',
         'notes',
     ];
 
     protected $casts = [
         'status' => NormConformityStatus::class,
+        'profile_as_of' => 'date',
     ];
 
     /** Anzeige der Normreferenz, z. B. "ISO/IEC 27001:2022" oder "Eigene". */

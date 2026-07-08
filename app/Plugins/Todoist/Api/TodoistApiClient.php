@@ -132,6 +132,12 @@ class TodoistApiClient {
         $this->assertOk($response->status(), '/tasks/reopen');
     }
 
+    /** Verschiebt die Aufgabe in einen Abschnitt der Zielprojekt-Sektion. */
+    public function moveTask(string $taskId, string $sectionId): void {
+        $response = $this->api->postJson($this->base . '/tasks/' . $taskId . '/move', ['section_id' => $sectionId]);
+        $this->assertOk($response->status(), '/tasks/move');
+    }
+
     /**
      * GET mit Fehlerprüfung; liefert das dekodierte JSON-Objekt.
      *

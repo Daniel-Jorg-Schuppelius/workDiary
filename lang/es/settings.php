@@ -10,12 +10,20 @@ return [
         'ui' => 'Interfaz',
         'routing' => 'Enrutamiento y mapas',
         'region' => 'Región y festivos',
+        'weather' => 'Clima',
+        'maintenance' => 'Mantenimiento',
     ],
     'region' => [
         'heading' => 'Jurisdicción y festivos',
         'description' => 'Determina qué días festivos se aplican. Afecta a los recargos por festivos, al cumplimiento de los turnos y a la visualización de festivos.',
         'holiday_provider' => 'Región de festivos (país / estado)',
         'holiday_provider_hint' => 'Los festivos regionales como el Corpus Christi o el Día de la Reforma solo se aplican en determinados estados. Vacío = valor predeterminado del sistema.',
+    ],
+    'weather' => [
+        'heading' => 'Consulta automática del clima',
+        'description' => 'Al crear un protocolo, obtén automáticamente una instantánea del clima (Open-Meteo) para su ubicación y momento — como evidencia. Los proyectos pueden anularlo.',
+        'auto_fetch' => 'Consultar el clima automáticamente al crear un protocolo',
+        'auto_fetch_hint' => 'Solo si hay coordenadas de ubicación; de lo contrario no ocurre nada. Predeterminado: desactivado.',
     ],
     'hint' => 'Dejar vacío para usar el valor predeterminado del sistema.',
     'pagination' => [
@@ -131,5 +139,16 @@ return [
             'url' => 'Plantilla de URL de tesela',
             'max_zoom' => 'Zoom máximo',
         ],
+    ],
+    'maintenance' => [
+        'heading' => 'Modo de mantenimiento',
+        'description' => 'Bloquea la aplicación para todos los no administradores de este inquilino (página de mantenimiento 503). Los administradores siguen trabajando y ven un banner de aviso.',
+        'enabled' => 'Activar el modo de mantenimiento',
+        'message' => 'Mensaje mostrado en la página de mantenimiento',
+        'message_placeholder' => 'p. ej. Mantenimiento programado — volvemos en breve.',
+        'until' => 'Fin previsto',
+        'until_hint' => 'Opcional. Después de este momento el modo de mantenimiento termina automáticamente.',
+        'block_ingest' => 'Pausar también las entradas de terminal/webhook',
+        'block_ingest_hint' => 'Predeterminado: desactivado — los terminales de fichaje, la telefonía y la ubicación siguen funcionando durante el mantenimiento.',
     ],
 ];

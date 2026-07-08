@@ -75,13 +75,16 @@
         {{-- Zuordnung zu Verarbeitungstätigkeiten --}}
         <x-card class="space-y-2">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Zugeordnete Verarbeitungstätigkeiten') }}</h2>
-            <ul class="text-sm space-y-1">
-                @forelse ($measure->assignments->whereNotNull('activity_id') as $as)
-                    <li>• {{ $as->activity?->name ?? '—' }}</li>
-                @empty
-                    <li class="text-base-content/60">{{ __('Keine Zuordnung.') }}</li>
-                @endforelse
-            </ul>
+            @php $tomAssignments = $measure->assignments->whereNotNull('activity_id'); @endphp
+            @if ($tomAssignments->isEmpty())
+                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">link</span>' :title="__('Keine Zuordnung.')" compact />
+            @else
+                <ul class="text-sm space-y-1">
+                    @foreach ($tomAssignments as $as)
+                        <li>• {{ $as->activity?->name ?? '—' }}</li>
+                    @endforeach
+                </ul>
+            @endif
             @can('update', $measure)
                 <form method="post" action="{{ route('dataprotection.tom.assign', $measure) }}" class="flex gap-2 pt-2">
                     @csrf
@@ -96,17 +99,19 @@
         {{-- Wirksamkeitsprüfungen --}}
         <x-card class="space-y-2">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Wirksamkeitsprüfungen') }}</h2>
-            <ul class="text-sm space-y-1">
-                @forelse ($measure->reviews as $r)
-                    <li class="rounded-box border border-base-300 px-3 py-2">
-                        {{ $r->reviewed_at?->format('d.m.Y') }} — <span class="font-semibold">{{ $r->result->label() }}</span>
-                        @if ($r->deviation) · {{ $r->deviation }} @endif
-                        @if ($r->due_at) <span class="text-base-content/60">({{ __('Folgemaßnahme bis') }} {{ $r->due_at->format('d.m.Y') }})</span> @endif
-                    </li>
-                @empty
-                    <li class="text-base-content/60">{{ __('Noch keine Prüfung.') }}</li>
-                @endforelse
-            </ul>
+            @if ($measure->reviews->isEmpty())
+                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">fact_check</span>' :title="__('Noch keine Prüfung.')" compact />
+            @else
+                <ul class="text-sm space-y-1">
+                    @foreach ($measure->reviews as $r)
+                        <li class="rounded-box border border-base-300 px-3 py-2">
+                            {{ $r->reviewed_at?->format('d.m.Y') }} — <span class="font-semibold">{{ $r->result->label() }}</span>
+                            @if ($r->deviation) · {{ $r->deviation }} @endif
+                            @if ($r->due_at) <span class="text-base-content/60">({{ __('Folgemaßnahme bis') }} {{ $r->due_at->format('d.m.Y') }})</span> @endif
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
             @can('update', $measure)
                 <div class="pt-2">
                     <x-icon-btn icon="add" tone="primary" size="sm"
@@ -128,6 +133,48 @@
                         </x-input-field>
                     </x-form-group>
                 </x-modal>
+            @endcan
+        </x-card>
+
+        {{-- Nachweisanhänge (Nachtrag 043b): Zertifikate/Auditberichte mit Gültig-bis. --}}
+        <x-card>
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Nachweise') }}</h2>
+            @if ($measure->attachments->isEmpty())
+                <x-empty-state icon="verified" :title="__('Noch keine Nachweise hinterlegt.')" compact />
+            @else
+                <ul class="mt-2 space-y-1">
+                    @foreach ($measure->attachments as $attachment)
+                        <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 px-3 py-2 text-sm">
+                            <a class="link" href="{{ route('dataprotection.attachment.download', $attachment) }}">{{ $attachment->filename }}</a>
+                            <span class="inline-flex items-center gap-2">
+                                @if ($attachment->valid_until)
+                                    @if ($attachment->valid_until->isPast())
+                                        <x-status-badge tone="error" size="xs">{{ __('abgelaufen am :date', ['date' => $attachment->valid_until->format('d.m.Y')]) }}</x-status-badge>
+                                    @else
+                                        <x-status-badge tone="info" size="xs">{{ __('gültig bis :date', ['date' => $attachment->valid_until->format('d.m.Y')]) }}</x-status-badge>
+                                    @endif
+                                @endif
+                                @can('update', $measure)
+                                    <form method="post" action="{{ route('dataprotection.attachment.destroy', $attachment) }}">
+                                        @csrf @method('DELETE')
+                                        <x-icon-btn icon="delete" tone="ghost" size="xs" type="submit" :label="__('Entfernen')" />
+                                    </form>
+                                @endcan
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+            @can('update', $measure)
+                <form method="post" action="{{ route('dataprotection.tom.attachment.store', $measure) }}" enctype="multipart/form-data" class="mt-3 flex flex-wrap items-end gap-2">
+                    @csrf
+                    <input type="file" name="file" class="file-input file-input-bordered file-input-sm" required>
+                    <label class="fieldset">
+                        <span class="fieldset-label text-xs">{{ __('Gültig bis (optional)') }}</span>
+                        <input type="date" name="valid_until" class="input input-bordered input-sm">
+                    </label>
+                    <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Nachweis hochladen') }}</x-icon-btn>
+                </form>
             @endcan
         </x-card>
     </x-index-page>

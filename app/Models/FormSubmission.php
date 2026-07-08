@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Database\Factories\FormSubmissionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
@@ -38,8 +38,13 @@ class FormSubmission extends Model {
     use Auditable;
 
     use BelongsToOrganization;
+    // Foto-/Datei-/Unterschrift-Felder (Rang 32) legen ihren Inhalt als
+    // Attachment ab (meta_type `field:<key>`).
+    use HasAttachments;
+
     /** @use HasFactory<FormSubmissionFactory> */
     use HasFactory;
+
     use HasSqid;
 
     use SoftDeletes;

@@ -239,6 +239,26 @@
                                 @elseif ($delivery->facturation_status->value === 'handed_over' && $delivery->external_id)
                                     <span class="text-xs text-base-content/60">Lexoffice: {{ $delivery->external_id }}</span>
                                 @endif
+
+                                {{-- Versandauftrag (Feature 059, Rang 20) --}}
+                                @if ($delivery->shipment)
+                                    <span class="badge badge-sm">{{ __('shipping.label_short') }}: {{ $delivery->shipment->status->label() }}</span>
+                                    @if ($delivery->shipment->tracking_number)
+                                        <span class="text-xs text-base-content/60">{{ strtoupper($delivery->shipment->carrier) }}: {{ $delivery->shipment->tracking_number }}</span>
+                                    @endif
+                                @elseif ($canManage && $delivery->customer_id && $carriers->isNotEmpty())
+                                    <form method="POST" action="{{ route('manufacturing-orders.deliveries.shipment', [$order, $delivery]) }}" class="join">@csrf
+                                        <select name="carrier" required class="join-item select select-xs select-bordered">
+                                            @foreach ($carriers as $carrier)
+                                                <option value="{{ $carrier->carrier }}">{{ $carrier->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <input type="number" name="weight_grams" value="1000" min="1" step="1"
+                                               class="join-item input input-xs input-bordered w-20"
+                                               title="{{ __('shipping.field.weight_grams') }}" required>
+                                        <button type="submit" class="join-item btn btn-xs">{{ __('shipping.action.create') }}</button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>

@@ -55,7 +55,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="py-4 text-center text-sm text-base-content/50">{{ __('Noch keine Schichttypen angelegt.') }}</td></tr>
+                        <x-table.empty :colspan="7" icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :title="__('Noch keine Schichttypen angelegt.')" compact />
                     @endforelse
                 </tbody>
             </table>

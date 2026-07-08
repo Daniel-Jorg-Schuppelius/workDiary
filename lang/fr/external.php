@@ -74,6 +74,7 @@ return [
         'confirm' => 'Révoquer',
     ],
     'flash' => [
+        'invited_emailed' => "Participant externe « :name » invité — lien d'accès envoyé par e-mail.",
         'invited' => 'Participant externe « :name » invité.',
         'revoked' => 'Accès externe révoqué.',
     ],
@@ -96,5 +97,35 @@ return [
         'confirm_accept' => 'Je confirme l’exactitude des informations.',
         'confirm_submit' => 'Confirmer',
         'confirmed' => 'Confirmation enregistrée.',
+    ],
+
+    // Rang 28 / Feature 023: Kontaktprofile + Einladungs-Mail (Paritäts-Nachzug).
+    'mail' => [
+        'subject' => "Votre accès aux documents partagés",
+        'heading' => "Accès externe",
+        'intro' => "Bonjour :name, vous avez été invité à des documents partagés. Le lien ci-dessous vous donne accès sans connexion :",
+        'button' => "Ouvrir l'accès",
+        'expires' => "L'accès est valable jusqu'au :date.",
+        'note' => "Merci de ne pas partager ce lien — il est personnel et limité dans le temps.",
+    ],
+    'contact' => [
+        'title' => "Profils de contacts externes",
+        'intro' => "Participants externes récurrents (sous-traitants, contrôleurs …) comme données de base réutilisables.",
+        'new' => "Nouveau profil",
+        'edit' => "Modifier le profil",
+        'eyebrow' => "Profils de contacts externes",
+        'submit' => "Enregistrer",
+        'notes' => "Notes",
+        'delete' => "Supprimer",
+        'confirm_delete' => "Supprimer ce profil de contact ? Les invitations existantes sont conservées.",
+        'empty' => "Aucun profil de contact pour l'instant.",
+        'pick' => "Choisir un profil existant (facultatif)",
+        'pick_none' => "— Saisir un nouveau —",
+        'save_as' => "Enregistrer ces informations comme profil réutilisable",
+        'flash' => [
+            'created' => "Profil de contact créé.",
+            'updated' => "Profil de contact mis à jour.",
+            'deleted' => "Profil de contact supprimé.",
+        ],
     ],
 ];

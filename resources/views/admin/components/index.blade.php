@@ -189,6 +189,12 @@
                                     :href="route('admin.components.sbom.download')"
                                     show-label>{{ __('isms.components.action.download') }}</x-icon-btn>
                     @endif
+                    {{-- CSAF-VEX für dieses Release (Nachtrag 044c). --}}
+                    <form method="POST" action="{{ route('admin.components.vex') }}">
+                        @csrf
+                        <x-icon-btn icon="verified_user" tone="outline" size="sm" type="submit"
+                                    show-label>{{ __('VEX erzeugen (CSAF)') }}</x-icon-btn>
+                    </form>
                 </div>
             </div>
         </article>

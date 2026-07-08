@@ -61,7 +61,12 @@ final class IdeaNodeApiTest extends TestCase {
         $this->actingAs($this->owner)->postJson(route('ideas.nodes.store', $this->map), [
             'parent' => $this->root->sqid,
             'title' => 'Neue Idee',
-        ])->assertCreated()->assertJsonPath('node.title', 'Neue Idee');
+        ])->assertCreated()
+            ->assertJsonPath('node.title', 'Neue Idee')
+            // MVP-135/A1: Die Store-Response muss lock_version = 1 liefern (nicht
+            // 0/null aus der nicht-refreshten Instanz) — sonst scheitert die erste
+            // Folge-Mutation im Editor an der Validierung `min:1` (HTTP 422).
+            ->assertJsonPath('node.lock_version', 1);
 
         $this->assertSame(2, $this->map->nodes()->count());
     }

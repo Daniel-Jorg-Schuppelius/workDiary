@@ -37,6 +37,10 @@ return [
         'payroll' => 'Transfert de paie',
         'wage_type_code' => 'Rubrique de paie',
         'wage_type_code_help' => 'Numéro de rubrique pour DATEV/Lexware (p. ex. 2010). Vide = exporter sans rubrique.',
+        'tax_free_limit_pct' => "Exonéré jusqu'à (%)",
+        'tax_free_limit_pct_help' => "Limites § 3b EStG configurables (p. ex. nuit 25/40, dimanche 50, jour férié 125/150). Vide = pas de scission. Au-delà, le reste est exporté comme part imposable avec son propre type de salaire.",
+        'taxable_wage_type_code' => 'Type de salaire part imposable',
+        'taxable_wage_type_code_help' => "Obligatoire dès que la limite exonérée est inférieure à la majoration. Le plafond du salaire de base en € reste du ressort de la paie externe.",
         'priority' => 'Priorité',
         'priority_help' => 'Départage en cas de pourcentage identique : la priorité la plus élevée gagne.',
         'validity' => 'Validité',
@@ -62,5 +66,9 @@ return [
         'created' => 'Règle de majoration créée.',
         'updated' => 'Règle de majoration mise à jour.',
         'deleted' => 'Règle de majoration supprimée.',
+    ],
+
+    'validation' => [
+        'taxable_wage_type_required' => "La part imposable nécessite son propre type de salaire.",
     ],
 ];

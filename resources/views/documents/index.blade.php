@@ -110,7 +110,7 @@
                     <td>
                         <span class="flex items-center gap-2 font-medium">
                             <x-icon :name="$document->document_type->icon()" class="text-base-content/60" />
-                            {{ $document->title }}
+                            <a class="link link-hover" href="{{ route('documents.show', $document) }}">{{ $document->title }}</a>
                         </span>
                         @if ($document->description)
                             <span class="block max-w-md truncate text-xs text-base-content/60">{{ $document->description }}</span>

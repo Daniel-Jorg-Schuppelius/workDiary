@@ -26,6 +26,9 @@ return [
     'norm' => 'ISO/IEC 27701',
     'edition' => '2025',
     'label' => 'ISO/IEC 27701:2025 — Datenschutz-Informationsmanagement',
+    // Profilrevision + Stichtag der Normfassung (Nachtrag 046a).
+    'version' => '1.0',
+    'as_of' => '2025-02-01',
     'requirements' => [
         ['ref_no' => '4', 'title' => 'Kontext der Organisation'],
         ['ref_no' => '4.1', 'title' => 'Organisation und ihr Kontext verstehen'],

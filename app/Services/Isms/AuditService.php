@@ -62,6 +62,7 @@ class AuditService {
                 'kind' => $attributes['kind'],
                 'status' => AuditStatus::Planned->value,
                 'planned_on' => $attributes['planned_on'] ?? null,
+                'isms_audit_program_id' => $attributes['isms_audit_program_id'] ?? null,
                 'performed_from' => $attributes['performed_from'] ?? null,
                 'performed_to' => $attributes['performed_to'] ?? null,
                 'lead_auditor_user_id' => $this->resolveUserId($attributes['lead_auditor_user_id'] ?? null, (int) $creator->organization_id, 'lead_auditor_user_id'),

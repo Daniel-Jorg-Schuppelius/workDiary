@@ -175,6 +175,32 @@ class WebhookDeliveryTest extends TestCase {
         $this->assertFalse($fresh->isDeliverable());
     }
 
+    public function test_gone_410_auto_unsubscribes_without_retry(): void {
+        Http::fake(['*' => Http::response('gone', 410)]);
+
+        $endpoint = WebhookEndpoint::factory()
+            ->subscribedTo([WebhookEvent::OpenIssueAssigned])
+            ->create(['organization_id' => $this->organization->id, 'consecutive_failures' => 0]);
+
+        // 410 short-circuited VOR markFailure → publish() wirft nicht (kein Retry).
+        app(WebhookDispatchService::class)->publish(
+            WebhookEvent::OpenIssueAssigned,
+            (int) $this->organization->id,
+            ['title' => 'X'],
+        );
+
+        $delivery = WebhookDelivery::query()->withoutGlobalScopes()->firstOrFail();
+        $this->assertSame(WebhookDeliveryStatus::Failed, $delivery->status);
+        $this->assertSame(410, $delivery->http_status);
+
+        // Sofort abbestellt: Soft-Delete + deaktiviert; 410 zählt NICHT als Fehlversuch.
+        $fresh = WebhookEndpoint::query()->withoutGlobalScopes()->find($endpoint->id);
+        $this->assertNotNull($fresh->deleted_at);
+        $this->assertFalse((bool) $fresh->active);
+        $this->assertSame(0, (int) $fresh->consecutive_failures);
+        Http::assertSentCount(1);
+    }
+
     public function test_disabled_endpoint_does_not_receive_publish(): void {
         Queue::fake();
 

@@ -10,9 +10,10 @@
 
 namespace App\Services\Asset;
 
-use App\Enums\Asset\AssetStatus;
-use App\Models\Asset;
+use App\Enums\Asset\{AssetOwnership, AssetStatus};
+use App\Models\{Asset, AssetOwnershipChange, User};
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Leitet den Lebenszyklus-Status eines Assets für die Objektakte (Feature 027)
@@ -31,6 +32,61 @@ class AssetLifecycleService {
     public const PHASE_RETIRED = 'retired';
 
     public const PHASE_DECOMMISSIONED = 'decommissioned';
+
+    /**
+     * Verzeichnet einen Eigentümerwechsel append-only (Feature 027 → Rang 49)
+     * und aktualisiert das Asset (Eigentümerschaft + optional Kunde) atomar.
+     * Ohne echte Änderung passiert nichts (keine Leerzeilen in der Historie).
+     * Bei Nicht-Kunden-Eigentümerschaft wird die Kundenbindung entfernt.
+     */
+    public function changeOwnership(
+        Asset $asset,
+        User $actor,
+        AssetOwnership $toOwnership,
+        ?int $toCustomerId = null,
+        ?string $note = null,
+    ): ?AssetOwnershipChange {
+        $fromOwnership = $asset->owned_by;
+        $fromCustomerId = $asset->customer_id !== null ? (int) $asset->customer_id : null;
+
+        if ($toOwnership !== AssetOwnership::Customer) {
+            $toCustomerId = null;
+        }
+
+        if ($fromOwnership === $toOwnership && $fromCustomerId === $toCustomerId) {
+            return null;
+        }
+
+        return DB::transaction(function () use ($asset, $actor, $fromOwnership, $toOwnership, $fromCustomerId, $toCustomerId, $note): AssetOwnershipChange {
+            $change = AssetOwnershipChange::query()->create([
+                'organization_id' => $asset->organization_id,
+                'asset_id' => $asset->id,
+                'from_ownership' => $fromOwnership->value,
+                'to_ownership' => $toOwnership->value,
+                'from_customer_id' => $fromCustomerId,
+                'to_customer_id' => $toCustomerId,
+                'note' => $note !== null && trim($note) !== '' ? trim($note) : null,
+                'changed_by_user_id' => $actor->id,
+                'changed_at' => Carbon::now(),
+            ]);
+
+            $asset->forceFill([
+                'owned_by' => $toOwnership->value,
+                'customer_id' => $toCustomerId,
+            ])->save();
+
+            // Sichtbar in der Objektakte-Timeline (asset.audit); der generische
+            // `updated`-Eintrag des Speicherns wird dort ohnehin ausgeblendet.
+            $asset->audit('asset.ownership_changed', [
+                'from' => $fromOwnership->value,
+                'to' => $toOwnership->value,
+                'from_customer_id' => $fromCustomerId,
+                'to_customer_id' => $toCustomerId,
+            ]);
+
+            return $change;
+        });
+    }
 
     public function phase(Asset $asset): string {
         if ($asset->status === AssetStatus::Decommissioned

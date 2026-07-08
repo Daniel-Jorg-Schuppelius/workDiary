@@ -63,6 +63,13 @@ class InvoiceGenerator {
                 $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
             }
 
+            // Länderspezifische Steuerlogik (Restpunkt 68): Katalog + Org-
+            // Override, Reverse-Charge bei EU-B2B mit gültiger USt-IdNr.
+            $tax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer);
+            if ($tax['note'] !== null) {
+                $notes = trim(($notes !== null ? $notes . "\n" : '') . $tax['note']);
+            }
+
             $invoice = Invoice::create([
                 'organization_id' => $customer->organization_id,
                 'customer_id' => $customer->id,
@@ -71,8 +78,9 @@ class InvoiceGenerator {
                 'number' => $this->nextNumber($customer->organization_id),
                 'status' => Invoice::STATUS_DRAFT,
                 'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
-                'tax_rate' => (string) Setting::get('invoicing.default_tax_rate', '19.00'),
-                'notes' => $notes,
+                'tax_rate' => $tax['rate'],
+                'is_reverse_charge' => $tax['reverse_charge'],
+                'notes' => $notes !== '' ? $notes : null,
                 'created_by' => Auth::id(),
             ]);
 
@@ -172,8 +180,9 @@ class InvoiceGenerator {
                 'status' => Invoice::STATUS_DRAFT,
                 'category' => Invoice::CATEGORY_MATERIAL,
                 'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
-                'tax_rate' => (string) Setting::get('invoicing.default_tax_rate', '19.00'),
-                'notes' => $notes,
+                'tax_rate' => ($materialTax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer))['rate'],
+                'is_reverse_charge' => $materialTax['reverse_charge'],
+                'notes' => trim(($notes !== null ? $notes . "\n" : '') . ($materialTax['note'] ?? '')) ?: null,
                 'created_by' => Auth::id(),
             ]);
 
@@ -340,6 +349,63 @@ class InvoiceGenerator {
      * @throws \LogicException Wenn das Original nicht bezahlt ist oder bereits
      *                         eine Gutschrift existiert.
      */
+    /**
+     * Stornorechnung (Feature 066, MVP-162/172): eigener Beleg im
+     * Nummernkreis S mit vollständig negierten Positionen und dem
+     * Steuerkontext des Originals; das Original wird als storniert
+     * markiert. Nur für ausgestellte, unbezahlte Rechnungen.
+     */
+    public function cancellationFor(Invoice $original, ?string $reason = null, ?int $userId = null): Invoice {
+        if ($original->status !== Invoice::STATUS_ISSUED || $original->isCreditNote()) {
+            throw new \LogicException('Only issued invoices can be reversed (status: ' . $original->status . ')');
+        }
+
+        return DB::transaction(function () use ($original, $reason, $userId): Invoice {
+            $original->loadMissing('items');
+
+            $cancellation = Invoice::create([
+                'organization_id' => $original->organization_id,
+                'customer_id' => $original->customer_id,
+                'project_id' => $original->project_id,
+                'number' => $this->numberSequence->next((int) $original->organization_id, \App\Enums\Numbering\NumberScope::Cancellation, now()),
+                'status' => Invoice::STATUS_DRAFT,
+                'type' => Invoice::TYPE_CANCELLATION,
+                'category' => $original->category,
+                'parent_invoice_id' => $original->id,
+                'currency' => $original->currency,
+                'tax_rate' => (string) $original->tax_rate,
+                'is_reverse_charge' => (bool) $original->is_reverse_charge,
+                'notes' => __('Stornorechnung zu Rechnung :nr vom :date', [
+                    'nr' => $original->number,
+                    'date' => optional($original->issued_on ?? $original->created_at)->format('d.m.Y'),
+                ]),
+                'created_by' => $userId ?? Auth::id(),
+            ]);
+
+            $position = 0;
+            foreach ($original->items as $item) {
+                $cancellation->items()->create([
+                    'organization_id' => $original->organization_id,
+                    'service_date' => $item->service_date?->toDateString(),
+                    'description' => $item->description,
+                    'quantity' => (string) (-1 * (float) $item->quantity),
+                    'unit' => $item->unit,
+                    'unit_price' => (string) $item->unit_price,
+                    'tax_rate' => $item->tax_rate,
+                    'position' => ++$position,
+                ]);
+            }
+
+            $cancellation->load('items');
+            $cancellation->recalculate();
+            $cancellation->save();
+
+            $original->cancel($reason ?? (string) __('Storniert durch Stornorechnung :nr', ['nr' => $cancellation->number]), $userId ?? (int) Auth::id());
+
+            return $cancellation;
+        });
+    }
+
     public function creditNoteFor(Invoice $original, ?int $userId = null): Invoice {
         if (! $original->needsCreditNoteToCancel()) {
             throw new \LogicException('Original invoice is not eligible for credit note (status: ' . $original->status . ')');
@@ -359,6 +425,9 @@ class InvoiceGenerator {
                 'parent_invoice_id' => $original->id,
                 'currency' => $original->currency,
                 'tax_rate' => (string) $original->tax_rate,
+                // MVP-162/172: Steuerkontext des ORIGINALS übernehmen — sonst
+                // droht unrichtiger Steuerausweis in der Korrektur (§ 14c).
+                'is_reverse_charge' => (bool) $original->is_reverse_charge,
                 'notes' => __('Korrekturrechnung zu Rechnung :nr vom :date', [
                     'nr' => $original->number,
                     'date' => optional($original->issued_on ?? $original->created_at)->format('d.m.Y'),
@@ -375,6 +444,7 @@ class InvoiceGenerator {
                     'quantity' => (string) (-1 * (float) $item->quantity),
                     'unit' => $item->unit,
                     'unit_price' => (string) $item->unit_price,
+                    'tax_rate' => $item->tax_rate,
                     'position' => ++$position,
                     // bewusst KEINE time_entry_id / expense_id — Zeit/Spese bleibt am Original
                 ]);

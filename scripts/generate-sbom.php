@@ -11,7 +11,7 @@
 declare(strict_types=1);
 
 /*
- * Erzeugt eine kombinierte CycloneDX-1.5-SBOM (Software Bill of Materials) aus
+ * Erzeugt eine kombinierte CycloneDX-1.6-SBOM (Fallback, flacher Graph) (Software Bill of Materials) aus
  * composer.lock und package-lock.json — Feature 051, MVP-098.
  *
  * Bewusst selbsttragend (keine zusätzliche Abhängigkeit, kein Netzwerkzugriff)
@@ -105,7 +105,7 @@ if (is_file($composerJson)) {
 
 $bom = [
     'bomFormat' => 'CycloneDX',
-    'specVersion' => '1.5',
+    'specVersion' => '1.6',
     'version' => 1,
     'metadata' => [
         'component' => [

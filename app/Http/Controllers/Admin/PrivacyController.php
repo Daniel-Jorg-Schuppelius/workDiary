@@ -53,7 +53,7 @@ class PrivacyController extends Controller {
             'exports' => $data['exports'],
             'supportAccesses' => $data['support_accesses'],
             'auditActors' => $data['audit_actors'],
-            'categories' => (array) config('privacy.categories', []),
+            'categories' => $this->categoriesWithDynamicRetention(),
             'operatingMode' => (string) config('privacy.operating_mode', 'on_premise'),
             'dpaUrl' => config('privacy.dpa_document_url'),
             'canRevokeSessions' => $data['can']['sessions_revoke'],
@@ -212,5 +212,33 @@ class PrivacyController extends Controller {
         ]);
 
         return back()->with('success', __('API-Token widerrufen.'));
+    }
+
+    /**
+     * Kategorien mit dynamischer Aufbewahrungs-Angabe (Restpunkt 67):
+     * trägt eine Kategorie eine retention_area, wird Frist+Rechtsgrundlage
+     * je Rechtsraum der Organisation aufgelöst; sonst bleibt der statische
+     * config-Text.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function categoriesWithDynamicRetention(): array {
+        $registry = app(\App\Services\Privacy\Retention\RetentionRegistry::class);
+        $organization = \Illuminate\Support\Facades\Auth::user()?->organization;
+
+        $categories = (array) config('privacy.categories', []);
+        foreach ($categories as &$category) {
+            $area = $category['retention_area'] ?? null;
+            if ($area === null || $organization === null) {
+                continue;
+            }
+            $years = $registry->yearsFor($organization, (string) $area);
+            $basis = $registry->basisFor($organization, (string) $area);
+            if ($years !== null) {
+                $category['retention'] = trim($years . ' Jahre' . ($basis !== null ? ' (' . $basis . ')' : ''));
+            }
+        }
+
+        return $categories;
     }
 }

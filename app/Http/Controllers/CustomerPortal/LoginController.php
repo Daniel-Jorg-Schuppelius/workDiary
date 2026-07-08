@@ -50,6 +50,11 @@ class LoginController extends Controller {
             ]);
         }
 
+        // Fixation-Schutz: Session-ID unmittelbar nach erfolgreicher
+        // Anmeldung rotieren (symmetrisch zum web-Login), damit eine vorab
+        // fixierte ID weder den vollen Login noch den 2FA-Park-Marker trägt.
+        $request->session()->regenerate();
+
         // Zwei-Faktor aktiv: Identität parken, erst nach Code-Eingabe voll einloggen.
         if ($user->hasTwoFactorEnabled()) {
             $remember = $request->boolean('remember');
@@ -59,8 +64,6 @@ class LoginController extends Controller {
 
             return redirect()->route('customer.two-factor.login');
         }
-
-        $request->session()->regenerate();
 
         return redirect()->intended(route('customer.dashboard'));
     }

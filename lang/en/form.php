@@ -55,6 +55,8 @@ return [
         'submit' => 'Submit',
         'show' => 'View',
         'print' => 'Print',
+        'download_pdf' => 'Download PDF',
+        'clear_signature' => 'Clear signature',
         'back' => 'Back',
     ],
 
@@ -80,6 +82,19 @@ return [
     'value' => [
         'yes' => 'Yes',
         'no' => 'No',
+        'signed' => 'Signed',
+    ],
+
+    'condition' => [
+        'legend' => 'Visible when',
+        'always' => '— always visible —',
+        'value_placeholder' => 'Comparison value',
+        'op' => [
+            'eq' => 'equals',
+            'ne' => 'not equal',
+            'in' => 'one of (comma)',
+            'filled' => 'filled in',
+        ],
     ],
 
     'validation' => [
@@ -92,6 +107,8 @@ return [
         'fields_required' => 'The template needs at least one field.',
         'too_many_fields' => 'A maximum of :max fields per template.',
         'template_not_active' => 'This template is not active and cannot be filled out.',
+        'condition_unknown_field' => 'Condition of field “:label” references an unknown field “:field”.',
+        'condition_cycle' => 'Conditions form a cycle (field “:field” indirectly depends on itself).',
     ],
 
     'flash' => [

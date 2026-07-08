@@ -61,6 +61,10 @@
                     <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $entries->count() }}</x-status-badge>
                 @endif
             </button>
+            <button role="tab" @click="setTab('timeline')" :class="tabClass('timeline')" class="tab">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">timeline</span>
+                {{ __('Timeline') }}
+            </button>
             <button role="tab" @click="setTab('recurrence')" :class="tabClass('recurrence')" class="tab">
                 {{ __('Wiederkehr') }}
                 @if ($recurrenceRules->isNotEmpty())
@@ -88,6 +92,9 @@
         </div>
         <div x-show="isTab('diary')" x-cloak>
             @include('projects._diary_tab')
+        </div>
+        <div x-show="isTab('timeline')" x-cloak>
+            @include('projects._timeline_tab')
         </div>
         <div x-show="isTab('recurrence')" x-cloak>
             @include('projects._recurrence_tab')

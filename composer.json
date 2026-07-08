@@ -12,10 +12,10 @@
         "php": "^8.4",
         "azuyalabs/yasumi": "^2.11",
         "bacon/bacon-qr-code": "^3.1",
-        "barryvdh/laravel-dompdf": "^3.1",
         "daniel-jorg-schuppelius/datev-php-sdk": "^1.0",
         "daniel-jorg-schuppelius/lexoffice-php-sdk": "^1.0",
         "daniel-jorg-schuppelius/php-erechnung-toolkit": "^0.4",
+        "daniel-jorg-schuppelius/php-financial-formats": "^1.4",
         "daniel-jorg-schuppelius/php-pdf-toolkit": "^0.12.2",
         "darkaonline/l5-swagger": "^11.0",
         "dschuppelius/php-common-toolkit": "^1.7",
@@ -26,16 +26,20 @@
         "league/flysystem-ftp": "^3.31",
         "league/flysystem-sftp-v3": "^3.33",
         "minishlink/web-push": "^10.0",
+        "opis/json-schema": "^2.6",
         "phpoffice/phpspreadsheet": "^5.7",
         "pragmarx/google2fa-qrcode": "^4.0",
         "simshaun/recurr": "^6.0",
         "spatie/icalendar-generator": "^3.0",
         "spatie/laravel-permission": "^7.4",
         "sqids/sqids": "^0.5.0",
-        "web-auth/webauthn-lib": "^5.3"
+        "web-auth/webauthn-lib": "^5.3",
+        "webklex/php-imap": "^6.2",
+        "zammad/zammad-api-client-php": "^2.3"
     },
     "require-dev": {
         "brianium/paratest": "^7.20",
+        "cyclonedx/cyclonedx-php-composer": "^6.2",
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.9",
         "laravel/pail": "^1.2.5",
@@ -114,9 +118,7 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
     },
-    "suggest": {
-        "daniel-jorg-schuppelius/php-financial-formats": "Optional (privat): DATEV-/Banking-Formate (CAMT, MT940, Pain, Swift, DATEV-Buchungsstapel) im Namespace CommonToolkit\\FinancialFormats\\. Nicht ueber die committete composer.json/lock eingebunden; lokal via gitignored composer.local.json (composer-merge-plugin) installierbar. Code, der das Paket nutzt, muss per class_exists()/Interface-Guard optional bleiben."
-    },
+    "suggest": {},
     "extra": {
         "laravel": {
             "dont-discover": []
@@ -141,9 +143,17 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true,
-            "wikimedia/composer-merge-plugin": true
+            "wikimedia/composer-merge-plugin": true,
+            "cyclonedx/cyclonedx-php-composer": true
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:Daniel-Jorg-Schuppelius/php-financial-formats.git",
+            "canonical": false
+        }
+    ]
 }

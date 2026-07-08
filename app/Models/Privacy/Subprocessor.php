@@ -35,6 +35,7 @@ class Subprocessor extends Model {
         'purpose',
         'location',
         'third_country',
+        'safeguards',
         'approved',
         'added_at',
     ];

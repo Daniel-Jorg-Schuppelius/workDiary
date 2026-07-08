@@ -63,6 +63,8 @@ class SurchargeRule extends Model {
         'window_end',
         'percentage',
         'wage_type_code',
+        'tax_free_limit_pct',
+        'taxable_wage_type_code',
         'priority',
         'active',
         'valid_from',
@@ -73,6 +75,7 @@ class SurchargeRule extends Model {
     protected $casts = [
         'kind' => SurchargeKind::class,
         'percentage' => 'decimal:2',
+        'tax_free_limit_pct' => 'decimal:2',
         'priority' => 'integer',
         'active' => 'boolean',
         'valid_from' => 'date',
@@ -107,6 +110,31 @@ class SurchargeRule extends Model {
     }
 
     /** Lohnart-Schlüssel für TimeExportLine.wage_type (stabil, org-eindeutig). */
+    /**
+     * Steuerfrei/-pflichtig-Split (Rang 36, § 3b EStG als Konfiguration):
+     * liegt der Zuschlag über der steuerfreien Obergrenze, wird er in zwei
+     * Prozent-Anteile geteilt (wage-unabhängig — der €-Grundlohn-Deckel bleibt
+     * Sache der externen Lohnrechnung). null = kein Split nötig.
+     *
+     * @return array{free_pct: float, taxable_pct: float}|null
+     */
+    public function taxSplit(): ?array {
+        if ($this->tax_free_limit_pct === null) {
+            return null;
+        }
+
+        $limit = (float) $this->tax_free_limit_pct;
+        $pct = (float) $this->percentage;
+        if ($limit >= $pct) {
+            return null;
+        }
+
+        return [
+            'free_pct' => round($limit, 2),
+            'taxable_pct' => round($pct - $limit, 2),
+        ];
+    }
+
     public function wageType(): string {
         return 'surcharge.' . $this->code;
     }

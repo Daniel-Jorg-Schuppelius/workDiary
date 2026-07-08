@@ -197,17 +197,35 @@
                         <tr>
                             <x-table.th sort type="string" default="asc">{{ __('Mitarbeiter:in') }}</x-table.th>
                             <x-table.th sort type="string">{{ __('Lohnart') }}</x-table.th>
-                            <x-table.th sort type="string">{{ __('Kostenstelle') }}</x-table.th>
+                            <x-table.th sort type="string"><x-term glossary="kostenstelle">{{ __('Kostenstelle') }}</x-term></x-table.th>
                             <x-table.th sort type="number" align="right">{{ __('Menge') }}</x-table.th>
                             <x-table.th sort type="string">{{ __('Einheit') }}</x-table.th>
                             <x-table.th sort type="date">{{ __('Zeitraum') }}</x-table.th>
                         </tr>
                     </x-slot:head>
+                    @php
+                        $canEditLines = $export->status === \App\Enums\TimeExport\TimeExportStatus::Ready
+                            && \Illuminate\Support\Facades\Gate::allows('deliver', $export);
+                    @endphp
                     @foreach ($export->lines as $line)
                         <tr>
                             <td>{{ $line->user?->name }}</td>
                             <td>{{ $line->wage_type }}</td>
-                            <td>{{ $line->cost_center ?? '—' }}</td>
+                            <td>
+                                @if ($canEditLines)
+                                    {{-- Kostenstellen-Override (Rang 35): korrigiert die Zeile und rendert die Datei neu. --}}
+                                    <form method="POST" action="{{ route('exports.lines.update', [$export, $line]) }}" class="flex items-center gap-1">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="text" name="cost_center" value="{{ $line->cost_center }}" maxlength="32"
+                                               class="input input-bordered input-xs w-24 font-mono"
+                                               aria-label="{{ __('Kostenstelle') }}">
+                                        <x-icon-btn icon="save" tone="ghost" size="xs" type="submit" :label="__('Speichern')" />
+                                    </form>
+                                @else
+                                    {{ $line->cost_center ?? '—' }}
+                                @endif
+                            </td>
                             <td class="text-right tabular-nums" data-sort-value="{{ $line->quantity }}">{{ number_format((float) $line->quantity, 4, ',', '.') }}</td>
                             <td>{{ $line->unit }}</td>
                             <td class="text-xs tabular-nums" data-sort-value="{{ $line->period_start?->format('Y-m-d') ?? '' }}">

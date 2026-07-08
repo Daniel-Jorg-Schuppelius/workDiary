@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\{ManufacturingOrder, Organization, User};
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Rendert den Fertigungsnachweis eines Auftrags als PDF (Feature 047,
@@ -44,10 +46,8 @@ class ManufacturingRecordPdfRenderer {
             'generatedAt' => now(),
         ])->render();
 
-        /** @var \Barryvdh\DomPDF\PDF $pdf */
-        $pdf = Pdf::loadHTML($html)->setPaper('a4');
-
-        return (string) $pdf->output();
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.manufacturing-record).');
     }
 
     /** Nachweis-Nummer (stabil aus der Auftrags-ID abgeleitet). */

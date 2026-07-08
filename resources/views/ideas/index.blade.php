@@ -6,10 +6,22 @@
 <x-index-page :subtitle="__('ideas.subtitle')">
     <x-slot:actions>
         @can('create', \App\Models\IdeaMap::class)
+            <button type="button" class="btn btn-sm btn-ghost gap-1"
+                    onclick="document.getElementById('ideas-import-dialog').showModal()">
+                <span class="material-symbols-outlined text-base" aria-hidden="true">upload_file</span>
+                {{ __('ideas.import.action') }}
+            </button>
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                         :href="route('ideas.create')" show-label>{{ __('ideas.action.create') }}</x-icon-btn>
         @endcan
     </x-slot:actions>
+
+    @error('file')
+        <div class="alert alert-error mb-4" role="alert">
+            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <span>{{ $message }}</span>
+        </div>
+    @enderror
 
     <div class="flex flex-wrap items-center gap-2 mb-4">
         @foreach (['active', 'archived', 'trashed'] as $f)
@@ -87,4 +99,19 @@
         <x-pagination :paginator="$maps" standing />
     @endif
 </x-index-page>
+
+@can('create', \App\Models\IdeaMap::class)
+    {{-- Import FreeMind/OPML (MVP-138): eigener Upload-Dialog, XXE-gehärtet serverseitig --}}
+    <x-modal id="ideas-import-dialog" :embedded="false" icon="upload_file"
+             :eyebrow="__('ideas.title.index')" :title="__('ideas.import.title')"
+             :action="route('ideas.import')" method="POST" enctype="multipart/form-data"
+             :submit-label="__('ideas.import.submit')">
+        <p class="text-sm opacity-70">{{ __('ideas.import.hint') }}</p>
+        <label class="fieldset">
+            <span class="fieldset-label">{{ __('ideas.import.file') }}</span>
+            <input type="file" name="file" accept=".mm,.opml,.xml" required
+                   class="file-input file-input-sm file-input-bordered w-full">
+        </label>
+    </x-modal>
+@endcan
 @endsection

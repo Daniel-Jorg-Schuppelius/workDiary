@@ -18,6 +18,7 @@
                 @include('external-participants._panel', ['subject' => $diary, 'externalType' => 'diary'])
                 @includeWhen(isset($procedureRuns), 'diary._procedure_panel')
                 @include('diary._timeline_panel')
+                @include('diary._service_tickets_panel')
                 <div class="text-center">
                     <x-icon-btn icon="arrow_back" size="sm" :href="route('diary.index')" show-label>{{ __('Zurück zur Liste') }}</x-icon-btn>
                 </div>

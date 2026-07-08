@@ -74,6 +74,7 @@ return [
         'confirm' => 'Revoca',
     ],
     'flash' => [
+        'invited_emailed' => "Partecipante esterno «:name» invitato — link di accesso inviato via e-mail.",
         'invited' => 'Partecipante esterno «:name» invitato.',
         'revoked' => 'Accesso esterno revocato.',
     ],
@@ -96,5 +97,35 @@ return [
         'confirm_accept' => 'Confermo la correttezza dei dati.',
         'confirm_submit' => 'Conferma',
         'confirmed' => 'Conferma salvata.',
+    ],
+
+    // Rang 28 / Feature 023: Kontaktprofile + Einladungs-Mail (Paritäts-Nachzug).
+    'mail' => [
+        'subject' => "Il tuo accesso ai documenti condivisi",
+        'heading' => "Accesso esterno",
+        'intro' => "Ciao :name, sei stato invitato a documenti condivisi. Il link qui sotto ti dà accesso senza login:",
+        'button' => "Apri l'accesso",
+        'expires' => "L'accesso è valido fino al :date.",
+        'note' => "Non condividere questo link — è personale e a tempo limitato.",
+    ],
+    'contact' => [
+        'title' => "Profili di contatti esterni",
+        'intro' => "Partecipanti esterni ricorrenti (subappaltatori, ispettori …) come anagrafica riutilizzabile.",
+        'new' => "Nuovo profilo",
+        'edit' => "Modifica profilo",
+        'eyebrow' => "Profili di contatti esterni",
+        'submit' => "Salva",
+        'notes' => "Note",
+        'delete' => "Elimina",
+        'confirm_delete' => "Eliminare questo profilo di contatto? Gli inviti esistenti restano validi.",
+        'empty' => "Ancora nessun profilo di contatto.",
+        'pick' => "Scegli un profilo esistente (facoltativo)",
+        'pick_none' => "— Inserisci nuovo —",
+        'save_as' => "Salva questi dati come profilo riutilizzabile",
+        'flash' => [
+            'created' => "Profilo di contatto creato.",
+            'updated' => "Profilo di contatto aggiornato.",
+            'deleted' => "Profilo di contatto eliminato.",
+        ],
     ],
 ];

@@ -24,6 +24,8 @@ enum DocumentType: string implements HasLabel {
     case ManufacturerDoc = 'manufacturerDoc';
     case Permit = 'permit';
     case Insurance = 'insurance';
+    // Eingangs-E-Rechnung (Nachtrag 045b): XRechnung/ZUGFeRD-Original im DMS.
+    case Invoice = 'invoice';
     case Other = 'other';
 
     public function label(): string {
@@ -38,6 +40,7 @@ enum DocumentType: string implements HasLabel {
             self::Certificate => 'workspace_premium',
             self::Manual => 'menu_book',
             self::Datasheet => 'description',
+            self::Invoice => 'receipt_long',
             self::ManufacturerDoc => 'precision_manufacturing',
             self::Permit => 'approval',
             self::Insurance => 'shield',

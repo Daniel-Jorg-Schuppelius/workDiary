@@ -89,4 +89,11 @@ class MonthClosurePolicy {
             && $user->can(P::MonthLock->value)
             && $closure->status === MonthClosureStatus::Approved;
     }
+
+    /** Prüfpaket (Rang 40): nur freigegebene/gesperrte Monate, Sperr-Recht. */
+    public function bundle(User $user, MonthClosure $closure): bool {
+        return $user->organization_id === $closure->organization_id
+            && $user->can(P::MonthLock->value)
+            && in_array($closure->status, [MonthClosureStatus::Approved, MonthClosureStatus::Locked], true);
+    }
 }

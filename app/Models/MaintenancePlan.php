@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Enums\Asset\MaintenanceIntervalKind;
+use App\Enums\Asset\{MaintenanceDueAction, MaintenanceIntervalKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\MaintenancePlanFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,6 +34,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $next_due_on
  * @property bool $is_active
  * @property string|null $notes
+ * @property int|null $sla_contract_id
+ * @property bool $is_contractual
+ * @property MaintenanceDueAction $due_action
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -60,13 +63,18 @@ class MaintenancePlan extends Model {
         'next_due_on',
         'is_active',
         'notes',
+        'sla_contract_id',
+        'is_contractual',
+        'due_action',
     ];
 
     protected $casts = [
         'interval_kind' => MaintenanceIntervalKind::class,
+        'due_action' => MaintenanceDueAction::class,
         'last_run_at' => 'datetime',
         'next_due_on' => 'date',
         'is_active' => 'bool',
+        'is_contractual' => 'bool',
         'interval_value' => 'int',
         'tolerance_days' => 'int',
         'subject_id' => 'int',
@@ -80,6 +88,11 @@ class MaintenancePlan extends Model {
     /** @return BelongsTo<Asset, $this> */
     public function asset(): BelongsTo {
         return $this->belongsTo(Asset::class);
+    }
+
+    /** @return BelongsTo<SlaContract, $this> */
+    public function slaContract(): BelongsTo {
+        return $this->belongsTo(SlaContract::class);
     }
 
     public function subjectIsAsset(): bool {

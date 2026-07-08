@@ -7,6 +7,7 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@cyclonedx/cyclonedx-npm": "^6.0.0",
         "@tailwindcss/vite": "^4.3.0",
         "concurrently": "^10.0.3",
         "daisyui": "^5.5.23",
@@ -29,6 +30,7 @@
         "leaflet": "^1.9.4",
         "leaflet-defaulticon-compatibility": "^0.1.2",
         "material-symbols": "^0.45.1",
+        "mind-elixir": "^5.13.0",
         "pusher-js": "^8.5.0",
         "signature_pad": "^5.1.3"
     }

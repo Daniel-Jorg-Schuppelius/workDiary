@@ -33,6 +33,29 @@ class BranchProfileInstaller {
         /** @var array<string, mixed> $profile */
         $profile = require database_path("data/branchprofiles/{$profileCode}.php");
 
+        return $this->installProfile($organization, $profile, $actor, $force, $profileCode);
+    }
+
+    /**
+     * Installiert ein Profil-Array direkt (Restpunkt 042: Marketplace-Import
+     * hochgeladener JSON-Profile nutzt denselben Kern wie die mitgelieferten
+     * Dateien). Prüft min_app_version, bevor irgendetwas geschrieben wird.
+     *
+     * @param array<string, mixed> $profile
+     * @return array{profile_code: string, version: int, created: array<string, int>, updated: array<string, int>, skipped: array<string, int>}
+     */
+    public function installProfile(Organization $organization, array $profile, ?User $actor = null, bool $force = false, string $profileCode = ''): array {
+        // Versionsguard (Restpunkt 042): Profile können eine Mindest-App-
+        // Version verlangen (z. B. wenn sie neue Domänen/Felder nutzen).
+        $minAppVersion = trim((string) ($profile['min_app_version'] ?? ''));
+        if ($minAppVersion !== '' && version_compare((string) config('app.version', '0.0.0'), $minAppVersion, '<')) {
+            throw new \RuntimeException(sprintf(
+                'Profil benötigt WorkDiary >= %s (installiert: %s).',
+                $minAppVersion,
+                (string) config('app.version', '0.0.0'),
+            ));
+        }
+
         $counterTemplate = [
             'classifications' => 0,
             'classification_requirements' => 0,
@@ -43,6 +66,7 @@ class BranchProfileInstaller {
             'software' => 0,
             'procedure_templates' => 0,
             'room_requirement_templates' => 0,
+            'dataprotection_requirements' => 0,
         ];
         $created = $counterTemplate;
         $updated = $counterTemplate;
@@ -454,11 +478,62 @@ class BranchProfileInstaller {
             $created['room_requirement_templates']++;
         }
 
+        // Datenschutz-Anforderungsvorlagen (Nachtrag 043c): Branchenprofile
+        // liefern Katalog-Presets (aktiv/inaktiv, Label) für die
+        // Compliance-Lückenanalyse. Manuell angepasste Einträge (source=
+        // manual) werden nie überschrieben.
+        /** @var list<array<string, mixed>> $privacyRequirements */
+        $privacyRequirements = (array) Arr::get($profile, 'dataprotection_requirements_seed', []);
+        /** @var array<string, array{label?: string, category?: ?string}> $privacyDefaults */
+        $privacyDefaults = (array) config('dataprotection.compliance.requirements', []);
+        foreach ($privacyRequirements as $row) {
+            $key = (string) ($row['key'] ?? '');
+            if ($key === '') {
+                continue;
+            }
+            $default = $privacyDefaults[$key] ?? [];
+
+            $existing = \App\Models\Privacy\PrivacyRequirement::query()
+                ->where('organization_id', $organization->id)
+                ->where('requirement_key', $key)
+                ->first();
+
+            $payload = [
+                'label' => (string) ($row['label'] ?? $default['label'] ?? $key),
+                'category' => $row['category'] ?? $default['category'] ?? null,
+                'check_type' => (string) ($row['check_type'] ?? $key),
+                'active' => (bool) ($row['active'] ?? true),
+                'source' => 'profile',
+            ];
+
+            if ($existing instanceof \App\Models\Privacy\PrivacyRequirement) {
+                if ($existing->source !== 'manual' && ($force || $existing->source === 'default')) {
+                    $existing->update($payload);
+                    $updated['dataprotection_requirements']++;
+                } else {
+                    $skipped['dataprotection_requirements']++;
+                }
+
+                continue;
+            }
+
+            \App\Models\Privacy\PrivacyRequirement::query()->create(array_merge([
+                'organization_id' => $organization->id,
+                'requirement_key' => $key,
+            ], $payload));
+            $created['dataprotection_requirements']++;
+        }
+
         $installedProfileCode = (string) ($profile['code'] ?? $profileCode);
         $profileVersion = (int) ($profile['version'] ?? 1);
 
         $settings = is_array($organization->settings) ? $organization->settings : [];
         $settings['branch_profile_code'] = $installedProfileCode;
+        // Restpunkt 042: angewandte Profilversion je Code — Grundlage der
+        // Update-Erkennung auf der Katalogseite.
+        $versions = is_array($settings['branch_profile_versions'] ?? null) ? $settings['branch_profile_versions'] : [];
+        $versions[$installedProfileCode] = $profileVersion;
+        $settings['branch_profile_versions'] = $versions;
         $organization->forceFill(['settings' => $settings])->save();
 
         AuditLog::query()->create([

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\Auth\UserSessionInvalidator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Hash};
@@ -29,7 +30,7 @@ class AccountPasswordController extends Controller {
         return view('account.password', ['mustChange' => $mustChange]);
     }
 
-    public function update(Request $request): RedirectResponse {
+    public function update(Request $request, UserSessionInvalidator $sessions): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
         $mustChange = (bool) ($user->must_change_password ?? false);
@@ -53,6 +54,12 @@ class AccountPasswordController extends Controller {
             'is_new_system' => true,
             'must_change_password' => false,
         ])->save();
+
+        // Passwort-Wechsel entwertet Sitzungen anderer Geräte (das eigene
+        // bleibt aktiv); zusätzlich Session-ID rotieren (Fixation-Schutz am
+        // Credential-Wechsel, ASVS V3).
+        $sessions->invalidateOthers($user, $request->session()->getId());
+        $request->session()->regenerate();
 
         return redirect()->route('dashboard')->with('success', __('Passwort wurde aktualisiert.'));
     }

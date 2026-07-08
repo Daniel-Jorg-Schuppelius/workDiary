@@ -132,6 +132,7 @@ class ProcessingAgreementController extends Controller {
             'purpose' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'third_country' => ['nullable', 'boolean'],
+            'safeguards' => ['nullable', 'string', 'max:255'],
         ]);
 
         Subprocessor::create([
@@ -150,6 +151,14 @@ class ProcessingAgreementController extends Controller {
         $subprocessor->forceFill(['approved' => true])->save();
 
         return back()->with('status', __('Unterauftragsverarbeiter freigegeben.'));
+    }
+
+    public function destroySubprocessor(ProcessingAgreement $agreement, Subprocessor $subprocessor): RedirectResponse {
+        Gate::authorize('update', $agreement);
+        abort_unless((int) $subprocessor->agreement_id === (int) $agreement->id, 404);
+        $subprocessor->delete();
+
+        return back()->with('status', __('Unterauftragsverarbeiter entfernt.'));
     }
 
     public function assignMeasure(Request $request, ProcessingAgreement $agreement): RedirectResponse {

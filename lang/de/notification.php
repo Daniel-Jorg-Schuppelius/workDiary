@@ -93,9 +93,12 @@ return [
         'supplier_review_overdue' => 'Lieferanten-Review überfällig seit :date.',
         'sla_at_risk' => 'SLA-Lösungsfrist gefährdet — fällig am :date.',
         'sla_breached' => 'SLA-Lösungsfrist überschritten — fällig war :date.',
+        'sla_quota_warning' => 'SLA-Kontingent zu :percent % ausgeschöpft (:consumed von :included Min.) im Zeitraum :period.',
         'asset_return_overdue' => 'Asset-Rückgabe überfällig — erwartet war :date.',
         'incident_critical' => 'Neuer kritischer Sicherheitsvorfall gemeldet.',
         'safety_critical_event' => 'Kritisches Sicherheitsereignis (:severity) am Ort :location gemeldet.',
         'qualification_expiring' => 'Qualifikation/Unterweisung läuft am :date ab.',
+        'maintenance_due_soon' => 'Wartungsplan :label ist am :date fällig.',
+        'maintenance_overdue' => 'Wartungsplan :label ist seit :date überfällig.',
     ],
 ];

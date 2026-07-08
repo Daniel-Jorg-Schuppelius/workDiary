@@ -14,7 +14,7 @@ use App\Enums\Manufacturing\DeliveryFacturationStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
 
 /**
  * Auslieferung eines Fertigerzeugnisses (Feature 047, MVP-074). Lager- und
@@ -79,5 +79,10 @@ class StockDelivery extends Model {
     /** @return BelongsTo<ManufacturingOrder, $this> */
     public function order(): BelongsTo {
         return $this->belongsTo(ManufacturingOrder::class, 'manufacturing_order_id');
+    }
+
+    /** @return HasOne<Shipment, $this> Versandauftrag zu dieser Auslieferung (Feature 059, Rang 20). */
+    public function shipment(): HasOne {
+        return $this->hasOne(Shipment::class);
     }
 }

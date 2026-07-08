@@ -12,6 +12,7 @@ namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, SlaStatus};
 use App\Models\{ServiceTicket, SlaContract};
+use App\Services\HolidayService;
 use Illuminate\Support\Carbon;
 
 class SlaTimer {
@@ -22,6 +23,19 @@ class SlaTimer {
     public const AT_RISK_FRACTION = 0.20;
 
     /**
+     * HolidayService wird bewusst lazy aufgelöst: der SlaTimer wird an einigen
+     * Stellen per `new SlaTimer` erzeugt (Tests, ServiceTicketServiceTest), ein
+     * Pflicht-Konstruktorargument würde das brechen.
+     */
+    public function __construct(private ?HolidayService $holidays = null) {}
+
+    /**
+     * Berechnet Reaktions-/Lösungsfrist ab dem Meldezeitpunkt. Sind im Vertrag
+     * Geschäftszeiten (`business_hours`) hinterlegt, zählen die SLA-Minuten nur
+     * innerhalb dieser Fenster (Wochenenden/nicht belegte Tage und Feiertage der
+     * Dienstplanung werden übersprungen). Ohne Fenster gilt Kalenderzeit — so
+     * bleiben Alt-Verträge unverändert.
+     *
      * @return array{reaction_due_at: Carbon|null, resolution_due_at: Carbon|null}
      */
     public function computeDeadlines(SlaContract $contract, ServiceTicketPriority $priority, Carbon $reportedAt): array {
@@ -35,9 +49,11 @@ class SlaTimer {
         $reaction = isset($entry['reaction_minutes']) ? (int) $entry['reaction_minutes'] : null;
         $resolution = isset($entry['resolution_minutes']) ? (int) $entry['resolution_minutes'] : null;
 
+        $windows = $this->normalizeBusinessHours($contract->business_hours);
+
         return [
-            'reaction_due_at' => $reaction !== null ? $reportedAt->copy()->addMinutes($reaction) : null,
-            'resolution_due_at' => $resolution !== null ? $reportedAt->copy()->addMinutes($resolution) : null,
+            'reaction_due_at' => $reaction !== null ? $this->addDuration($reportedAt, $reaction, $windows) : null,
+            'resolution_due_at' => $resolution !== null ? $this->addDuration($reportedAt, $resolution, $windows) : null,
         ];
     }
 
@@ -135,5 +151,125 @@ class SlaTimer {
         }
 
         return SlaStatus::OnTrack;
+    }
+
+    /**
+     * Addiert eine Dauer entweder in Kalenderzeit (ohne Geschäftszeit-Fenster,
+     * Rückwärtskompatibilität) oder nur innerhalb der Geschäftszeiten.
+     *
+     * @param  array<int, list<array{from: int, to: int}>>  $windows
+     */
+    private function addDuration(Carbon $start, int $minutes, array $windows): Carbon {
+        if ($windows === []) {
+            return $start->copy()->addMinutes($minutes);
+        }
+
+        return $this->addBusinessMinutes($start, $minutes, $windows);
+    }
+
+    /**
+     * Legt $minutes ab $start nur innerhalb der Geschäftszeit-Fenster ab und
+     * überspringt nicht belegte Wochentage sowie Feiertage.
+     *
+     * @param  array<int, list<array{from: int, to: int}>>  $windows
+     */
+    private function addBusinessMinutes(Carbon $start, int $minutes, array $windows): Carbon {
+        $cursor = $start->copy();
+        $remaining = max(0, $minutes);
+        if ($remaining === 0) {
+            return $cursor;
+        }
+        $holidays = $this->holidays();
+
+        // Sicherheitsgrenze (max. ~10 Jahre Tage) gegen eine Endlosschleife,
+        // falls ein Fenster nie erreichbar ist.
+        for ($guardDays = 0; $guardDays <= 3660; $guardDays++) {
+            $dayWindows = $this->isBusinessDay($cursor, $windows, $holidays)
+                ? ($windows[$cursor->dayOfWeekIso] ?? [])
+                : [];
+
+            foreach ($dayWindows as $window) {
+                $winStart = $cursor->copy()->startOfDay()->addMinutes($window['from']);
+                $winEnd = $cursor->copy()->startOfDay()->addMinutes($window['to']);
+                if ($cursor->greaterThanOrEqualTo($winEnd)) {
+                    continue; // Fenster liegt bereits in der Vergangenheit
+                }
+
+                $segStart = $cursor->lessThan($winStart) ? $winStart->copy() : $cursor->copy();
+                $available = (int) $segStart->diffInMinutes($winEnd, false);
+                if ($remaining <= $available) {
+                    return $segStart->addMinutes($remaining);
+                }
+                $remaining -= $available;
+                $cursor = $winEnd->copy();
+            }
+
+            // Tag erschöpft → nächster Tagesbeginn.
+            $cursor = $cursor->copy()->addDay()->startOfDay();
+        }
+
+        return $cursor; // theoretisch unerreichbar
+    }
+
+    /**
+     * @param  array<int, list<array{from: int, to: int}>>  $windows
+     */
+    private function isBusinessDay(Carbon $date, array $windows, HolidayService $holidays): bool {
+        if (($windows[$date->dayOfWeekIso] ?? []) === []) {
+            return false;
+        }
+
+        return ! $holidays->isHoliday($date);
+    }
+
+    /**
+     * Normalisiert `business_hours` zu Wochentag(1–7 ISO) → sortierten
+     * Minuten-Fenstern. Unterstützt die Datenform `[{weekday,from,to}, …]` sowie
+     * die nach Wochentag indizierte Form; ungültige Einträge fallen still weg.
+     *
+     * @param  array<int|string, mixed>|null  $businessHours
+     * @return array<int, list<array{from: int, to: int}>>
+     */
+    private function normalizeBusinessHours(?array $businessHours): array {
+        if ($businessHours === null || $businessHours === []) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($businessHours as $key => $window) {
+            if (! is_array($window)) {
+                continue;
+            }
+            $weekday = isset($window['weekday']) ? (int) $window['weekday'] : (is_int($key) ? $key : null);
+            $from = $this->minuteOfDay($window['from'] ?? null);
+            $to = $this->minuteOfDay($window['to'] ?? null);
+            if ($weekday === null || $weekday < 1 || $weekday > 7 || $from === null || $to === null || $to <= $from) {
+                continue;
+            }
+            $map[$weekday][] = ['from' => $from, 'to' => $to];
+        }
+
+        foreach ($map as &$list) {
+            usort($list, static fn (array $a, array $b): int => $a['from'] <=> $b['from']);
+        }
+
+        return $map;
+    }
+
+    private function minuteOfDay(mixed $value): ?int {
+        if (! is_string($value) || preg_match('/^(\d{1,2}):(\d{2})$/', trim($value), $m) !== 1) {
+            return null;
+        }
+        $hour = (int) $m[1];
+        $minute = (int) $m[2];
+        if ($hour > 23 || $minute > 59) {
+            return null;
+        }
+
+        return $hour * 60 + $minute;
+    }
+
+    private function holidays(): HolidayService {
+        return $this->holidays ??= app(HolidayService::class);
     }
 }

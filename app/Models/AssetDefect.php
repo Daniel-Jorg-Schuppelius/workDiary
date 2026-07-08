@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Asset\{DefectSeverity, DefectStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Database\Factories\AssetDefectFactory;
 use Illuminate\Database\Eloquent\{Builder, Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,11 +44,15 @@ use Illuminate\Support\Carbon;
 class AssetDefect extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
+
     /** @use HasFactory<AssetDefectFactory> */
     use HasFactory;
-
     use HasSqid;
     use SoftDeletes;
+
+    /** meta_type der am Defekt hängenden Fotos/Belege. */
+    public const PHOTO_META = 'defect_photo';
 
     protected $fillable = [
         'organization_id',

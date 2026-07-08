@@ -16,7 +16,7 @@ use App\Automation\{ConditionEvaluator, RuleEngine};
 use App\Legacy\LegacyBridge;
 use App\Listeners\AuthEventSubscriber;
 use App\Models\{ActivityCategory, Asset, Attachment, Building, Classification, ClassificationRequirement, Comment, CommunicationNote, CoverageRequirement, Customer, DiaryEntry, DutyPlan, EmergencyAssignment, Event, EventCategory, Expense, ExpenseCategory, FlexEligibility, Floor, ForeignCustomer, KeyHandover, MaintenancePlan, Material, MaterialUsage, MeterReading, Milestone, MonthClosure, NumberFormat, OpenIssue, Organization, PerDiemRate, PerDiemTrip, ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate, Protocol, Qualification, Room, ScheduledShift, ServiceTicket, ShiftType, Site, Software, Supplier, Tag, Task, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, TravelLog, User, UserGroup, WorkSchedule};
-use App\Observers\{AttachmentObserver, CommentObserver, CustomerObserver, DiaryEntryObserver, EmergencyAssignmentObserver, ForeignCustomerObserver, MaterialUsageObserver, OrganizationObserver, SupplierObserver, TagObserver, TimeEntryObserver, TimesheetObserver, UserObserver};
+use App\Observers\{AttachmentObserver, CommentObserver, CustomerObserver, DiaryEntryObserver, EmergencyAssignmentObserver, ForeignCustomerObserver, MaterialUsageObserver, OrganizationObserver, ProtocolObserver, SupplierObserver, TagObserver, TimeEntryObserver, TimesheetObserver, UserObserver};
 use App\Policies\{ActivityCategoryPolicy, AssetPolicy, BuildingPolicy, ClassificationPolicy, ClassificationRequirementPolicy, CommunicationNotePolicy, CoverageRequirementPolicy, DutyPlanPolicy, EventCategoryPolicy, EventPolicy, ExpenseCategoryPolicy, ExpensePolicy, FlexEligibilityPolicy, FloorPolicy, KeyHandoverPolicy, MaintenancePlanPolicy, MaterialPolicy, MaterialUsagePolicy, MeterReadingPolicy, MilestonePolicy, MonthClosurePolicy, NumberFormatPolicy, OpenIssuePolicy, OrganizationPolicy, PerDiemRatePolicy, PerDiemTripPolicy, ProcedureBackupProofPolicy, ProcedureDeviationPolicy, ProcedureRunPolicy, ProcedureTemplatePolicy, ProtocolPolicy, QualificationPolicy, RoomPolicy, ScheduledShiftPolicy, ServiceTicketPolicy, ShiftTypePolicy, SitePolicy, SoftwarePolicy, TaskPolicy, TimeCorrectionRequestPolicy, TimeEntryPolicy, TimeExportPolicy, TimesheetPolicy, TravelLogPolicy, UserGroupPolicy, WorkSchedulePolicy};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\BrandingService;
@@ -40,6 +40,75 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
+        // Wetterprovider (Feature 062): Open-Meteo über Guzzle; Tests binden
+        // einen MockHandler-Client. Providerneutral über das Interface.
+        $this->app->bind(\App\Services\Weather\Contracts\WeatherProvider::class, static function (): \App\Services\Weather\Contracts\WeatherProvider {
+            return new \App\Services\Weather\OpenMeteoProvider(new \GuzzleHttp\Client);
+        });
+
+        // E-Mail-Eingang (Feature 056): IMAP-Transport über webklex/php-imap;
+        // Tests binden ein Fake-Gateway. Der Intake-Kern hängt nur am Interface.
+        $this->app->singleton(\App\Services\Mail\MailboxGateway::class, \App\Services\Mail\ImapMailboxGateway::class);
+
+        // Aufbewahrungs-Registry (Restpunkte 66+67): Fristen je Rechtsraum
+        // aus config/retention.php; die Policies liefern die überfälligen
+        // Datensätze für den Review-Scan (Vorschläge statt Direktlöschung).
+        $this->app->singleton(\App\Services\Privacy\Retention\RetentionRegistry::class, function (): \App\Services\Privacy\Retention\RetentionRegistry {
+            $registry = new \App\Services\Privacy\Retention\RetentionRegistry;
+
+            // Abgeschlossene Betroffenenanfragen nach Nachweisfrist.
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'privacy_requests',
+                modelClass: \App\Models\Privacy\DataSubjectRequest::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Privacy\DataSubjectRequest::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->whereNotNull('closed_at')
+                    ->where('closed_at', '<', $cutoff),
+                purge: function (\App\Models\Privacy\DataSubjectRequest $subject): void {
+                    foreach ($subject->attachments()->get() as $attachment) {
+                        \Illuminate\Support\Facades\Storage::disk('local')->delete((string) $attachment->path);
+                        $attachment->delete();
+                    }
+                    $subject->delete();
+                },
+            ));
+
+            // Lohn-/Zeitexporte inkl. abgelegter Dateien.
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'exports',
+                modelClass: \App\Models\TimeExport::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\TimeExport::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->where('created_at', '<', $cutoff),
+                purge: function ($subject): void {
+                    $path = (string) ($subject->getAttribute('file_path') ?? '');
+                    if ($path !== '') {
+                        \Illuminate\Support\Facades\Storage::disk('local')->delete($path);
+                    }
+                    $subject->delete();
+                },
+            ));
+
+            // Eingangsrechnungen im DMS — GoBD-Ausnahme: solange nicht
+            // archiviert, gilt das Dokument als in Verwendung (kein Vorschlag).
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'documents_invoice',
+                modelClass: \App\Models\Document::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Document::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->where('document_type', \App\Enums\Document\DocumentType::Invoice->value)
+                    ->where('created_at', '<', $cutoff),
+                exempt: fn($subject): ?string => $subject->getAttribute('status') !== \App\Enums\Document\DocumentStatus::Archived
+                    ? 'Noch nicht archiviert — Dokument gilt als in Verwendung (GoBD).'
+                    : null,
+            ));
+
+            return $registry;
+        });
+
         // Hinweisgeber-Anhang-Scanner: Treiber per Konfiguration (Default: kein
         // Scanner → fail-safe Quarantaene). Tests koennen einen Fake binden.
         $this->app->bind(\App\Services\Whistleblowing\Scanning\ScanDriver::class, function (): \App\Services\Whistleblowing\Scanning\ScanDriver {
@@ -114,6 +183,10 @@ class AppServiceProvider extends ServiceProvider {
         // Generische Integrations-Outbox (MVP-114): gleiche Registry-Mechanik.
         $this->app->singleton(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class);
 
+        // Versand-Provider (Feature 059, MVP-128): Carrier-Plugins registrieren
+        // ihren ShippingProvider beim Booten, der ShipmentService löst darüber auf.
+        $this->app->singleton(\App\Services\Shipping\ShippingProviderRegistry::class);
+
         // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
         $this->app->singleton(ConditionEvaluator::class);
         $this->app->singleton(RuleEngine::class, function ($app): RuleEngine {
@@ -144,6 +217,56 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Stichtags-Rekonstruktion (Nachtrag 046b): jede Bewertungsänderung
+        // (SoA-Aussage, Norm-Konformitätsstatus) erzeugt einen append-only
+        // Snapshot — Model-Events, damit auch Service-Updates erfasst werden.
+        \App\Models\Isms\IsmsApplicabilityStatement::saved(
+            fn($model) => app(\App\Services\Isms\AssessmentSnapshotService::class)->record($model),
+        );
+        \App\Models\Isms\IsmsNormStatus::saved(
+            fn($model) => app(\App\Services\Isms\AssessmentSnapshotService::class)->record($model),
+        );
+
+        // Task→Board-Sync (Feature 064, P3): Statuswechsel außerhalb des
+        // Boards (projects.tasks.complete, Importe) schiebt das Work-Item in
+        // die ERSTE Spalte der Zielkategorie — nur wenn ein Work-Item
+        // existiert; Herkunft im Event-Payload. Kein Task-Write hier →
+        // keine Endlos-Schleife mit AgileBoardService::move().
+        \App\Models\Task::saved(function (\App\Models\Task $task): void {
+            if (! $task->wasChanged('status')) {
+                return;
+            }
+            $item = \App\Models\Agile\AgileWorkItem::query()->where('task_id', $task->id)->first();
+            if ($item === null) {
+                return;
+            }
+            $rawStatus = $task->getAttribute('status');
+            $status = (string) ($rawStatus instanceof \BackedEnum ? $rawStatus->value : $rawStatus);
+            $currentCategory = $item->column?->category?->value;
+            if ($currentCategory === $status) {
+                return;
+            }
+            $target = \App\Models\Agile\AgileBoardColumn::query()
+                ->where('board_id', $item->board_id)
+                ->where('category', $status)
+                ->orderBy('position')
+                ->first();
+            if ($target === null || (int) $target->id === (int) $item->column_id) {
+                return;
+            }
+            $from = $item->column_id;
+            \App\Models\Agile\AgileWorkItem::query()->whereKey($item->id)
+                ->update(['column_id' => $target->id, 'lock_version' => \Illuminate\Support\Facades\DB::raw('lock_version + 1')]);
+            \App\Models\Agile\AgileEvent::record([
+                'organization_id' => $item->organization_id,
+                'board_id' => $item->board_id,
+                'work_item_id' => $item->id,
+                'event' => 'column.moved',
+                'payload' => ['from' => $from, 'to' => $target->id, 'origin' => 'task_sync'],
+                'created_at' => now(),
+            ]);
+        });
+
         // Carbon-Macro: wandelt einen (in UTC gespeicherten) Zeitpunkt in die
         // aktive Anzeige-Zeitzone um (User-Override → Organisation → Fallback).
         // Auf allen Carbon-Varianten registriert, da Eloquent-Casts
@@ -191,8 +314,14 @@ class AppServiceProvider extends ServiceProvider {
         Timesheet::observe(TimesheetObserver::class);
         MaterialUsage::observe(MaterialUsageObserver::class);
         Organization::observe(OrganizationObserver::class);
+        Protocol::observe(ProtocolObserver::class);
 
         Gate::policy(\App\Models\IdeaMap::class, \App\Policies\IdeaMapPolicy::class);
+        // Agiles Projektmanagement (Feature 064).
+        Gate::policy(\App\Models\Agile\AgileBoard::class, \App\Policies\Agile\AgileBoardPolicy::class);
+        Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);
+        Gate::policy(\App\Models\GobdExport::class, \App\Policies\GobdExportPolicy::class);
+        Gate::policy(\App\Models\ServiceQueue::class, \App\Policies\ServiceQueuePolicy::class);
         Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
         Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);
@@ -369,6 +498,12 @@ class AppServiceProvider extends ServiceProvider {
                 Limit::perHour(20)->by('pwd:' . $userId),
             ];
         });
+
+        // Sessionloser Todoist-Webhook (Feature 055, MVP-115): großzügig, weil
+        // Todoist bei vielen gleichzeitigen Änderungen bursten kann — aber
+        // gedeckelt gegen Flooding des unauthentifizierten Endpunkts. Verluste
+        // bei Überschreitung heilt der stündliche Polling-Abgleich (todoist:sync).
+        RateLimiter::for('todoist-webhook', fn(Request $request) => Limit::perMinute(120)->by('twh:' . $request->ip()));
 
         // @feature('code') Blade-Direktive (Folge zu MVP-047). Identisch
         // zu @if (app(FeatureFlagResolver::class)->isEnabled('code')), nur

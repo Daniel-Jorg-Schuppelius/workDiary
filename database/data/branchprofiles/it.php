@@ -221,4 +221,14 @@ return [
         ['name' => 'Veeam Backup & Replication', 'vendor' => 'Veeam', 'kind' => 'application', 'license_type' => 'subscription'],
         ['name' => 'Visual Studio Code', 'vendor' => 'Microsoft', 'kind' => 'application', 'license_type' => 'open_source'],
     ],
+    // Datenschutz-Anforderungsvorlagen (Nachtrag 043c): AV-lastiges Gewerk →
+    // Nachweispflege der TOM aktiv.
+    'dataprotection_requirements_seed' => [
+        ['key' => 'avv_required'],
+        ['key' => 'avv_current'],
+        ['key' => 'gvv_required'],
+        ['key' => 'dpia_required'],
+        ['key' => 'tom_assigned'],
+        ['key' => 'tom_proof_current'],
+    ],
 ];

@@ -37,6 +37,10 @@ return [
         'payroll' => 'Traspaso de nómina',
         'wage_type_code' => 'Concepto salarial',
         'wage_type_code_help' => 'Número de concepto para DATEV/Lexware (p. ej. 2010). Vacío = exportar sin concepto.',
+        'tax_free_limit_pct' => 'Exento hasta (%)',
+        'tax_free_limit_pct_help' => "Límites § 3b EStG configurables (p. ej. noche 25/40, domingo 50, festivo 125/150). Vacío = sin división. Por encima, el resto se exporta como parte imponible con su propio tipo de salario.",
+        'taxable_wage_type_code' => 'Tipo de salario parte imponible',
+        'taxable_wage_type_code_help' => "Obligatorio cuando el límite exento queda por debajo del recargo. El tope del salario base en € sigue siendo cosa de la nómina externa.",
         'priority' => 'Prioridad',
         'priority_help' => 'Desempate con porcentaje igual: gana la prioridad más alta.',
         'validity' => 'Validez',
@@ -62,5 +66,9 @@ return [
         'created' => 'Regla de recargo creada.',
         'updated' => 'Regla de recargo actualizada.',
         'deleted' => 'Regla de recargo eliminada.',
+    ],
+
+    'validation' => [
+        'taxable_wage_type_required' => "La parte imponible necesita su propio tipo de salario.",
     ],
 ];

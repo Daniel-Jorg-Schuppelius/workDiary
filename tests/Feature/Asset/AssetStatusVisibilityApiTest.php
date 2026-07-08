@@ -29,7 +29,7 @@ class AssetStatusVisibilityApiTest extends TestCase {
         $user = User::factory()->admin()->create([
             'organization_id' => $this->organization->id,
         ]);
-        Sanctum::actingAs($user);
+        Sanctum::actingAs($user, ['*']);
 
         $asset = Asset::factory()->create([
             'organization_id' => $this->organization->id,

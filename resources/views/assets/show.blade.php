@@ -433,6 +433,17 @@
                                         @if ($defect->description)
                                             <div class="text-xs text-base-content/60">{{ \Illuminate\Support\Str::limit($defect->description, 80) }}</div>
                                         @endif
+                                        @if ($defect->attachments->isNotEmpty())
+                                            <div class="mt-1 flex flex-wrap gap-1">
+                                                @foreach ($defect->attachments as $photo)
+                                                    <a href="{{ route('attachments.download', $photo) }}" target="_blank" rel="noopener"
+                                                       class="badge badge-ghost badge-sm gap-1" title="{{ $photo->original_name }}">
+                                                        <span class="material-symbols-outlined text-sm" aria-hidden="true">image</span>
+                                                        {{ \Illuminate\Support\Str::limit($photo->original_name, 16) }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        @endif
                                     </td>
                                     <td><x-status-badge :tone="$defect->severity->tone()" size="sm">{{ $defect->severity->label() }}</x-status-badge></td>
                                     <td><x-status-badge :tone="$defect->status->tone()" size="sm">{{ $defect->status->label() }}</x-status-badge></td>

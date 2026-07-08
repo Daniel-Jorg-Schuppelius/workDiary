@@ -73,6 +73,19 @@ enum Permission: string implements HasLabel {
     case PrivacySupportView = 'privacy.support.view';
     case PrivacyReportExport = 'privacy.report.export';
 
+    // Temporäre Supportfreigabe (Rang 64): Kundenadmin erteilt/widerruft
+    // zeitlich begrenzte Support-Zugriffe inkl. Impersonations-Erlaubnis.
+    case SupportGrantManage = 'support.grant.manage';
+
+    // ── Agiles Projektmanagement (Feature 064) ────────────────────────────
+    case AgileView = 'agile.view';
+    case AgileBoardManage = 'agile.board.manage';
+    case AgileBacklogPrioritize = 'agile.backlog.prioritize';
+    case AgileSprintManage = 'agile.sprint.manage';
+    case AgileWorkItemMove = 'agile.workitem.move';
+    case AgileWorkflowOverride = 'agile.workflow.override';
+    case AgileReportView = 'agile.report.view';
+
         // ── Mitglieder (User-Stamm der Org) ────────────────────────────────
     case UserViewAny = 'user.viewAny';
     case UserView = 'user.view';
@@ -200,6 +213,14 @@ enum Permission: string implements HasLabel {
     case SurchargeRuleViewAny = 'surchargeRule.viewAny';
     case SurchargeRuleManage = 'surchargeRule.manage';
 
+        // ── Kostenstellen-Regeln für den Zeitexport (Rang 35) ──────────────
+    case CostCenterRuleViewAny = 'costCenterRule.viewAny';
+    case CostCenterRuleManage = 'costCenterRule.manage';
+
+        // ── Plan/Ist-Anwesenheit Team-/Org-Sicht (MVP-018, Rang 38) ────────
+    case ReportPresenceTeam = 'report.presence.team';
+    case ReportPresenceOrganization = 'report.presence.organization';
+
         // ── Finanzschnittstelle (Feature 045) ──────────────────────────────
     case FinanceViewAny = 'finance.viewAny';
     case FinanceConfig = 'finance.config';
@@ -208,6 +229,7 @@ enum Permission: string implements HasLabel {
     case FinancePaymentImport = 'finance.payment.import';
     case FinancePaymentReconcile = 'finance.payment.reconcile';
     case FinanceBookingExport = 'finance.booking.export';
+    case FinanceGobdExport = 'finance.gobd.export';
 
         // ── Rechnungen ─────────────────────────────────────────────────────
     case InvoiceViewAny = 'invoice.viewAny';
@@ -443,6 +465,9 @@ enum Permission: string implements HasLabel {
     case ServiceTicketClose = 'serviceTicket.close';
     case SlaContractView = 'slaContract.view';
     case SlaContractManage = 'slaContract.manage';
+        // ── Helpdesk/Service Desk (Feature 065) ───────────────
+    case HelpdeskQueueManage = 'helpdesk.queue.manage';
+    case HelpdeskTicketInternalNote = 'helpdesk.ticket.internal_note';
         // ── SLA-Status/-Verletzungen & Report (Feature 010) ───
     case SlaViewAny = 'sla.viewAny';
     case SlaManage = 'sla.manage';
@@ -487,14 +512,14 @@ enum Permission: string implements HasLabel {
     public function group(): PermissionGroup {
         return match (true) {
             str_starts_with($this->value, 'access.'), str_starts_with($this->value, 'audit-log.') => PermissionGroup::Access,
-            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.') => PermissionGroup::Organization,
+            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.'), str_starts_with($this->value, 'support.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'team.') => PermissionGroup::Teams,
             str_starts_with($this->value, 'user.') => PermissionGroup::Members,
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'foreignCustomer.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'supplier.') => PermissionGroup::Customers,
             str_starts_with($this->value, 'permit.') => PermissionGroup::Customers,
-            str_starts_with($this->value, 'project.'), str_starts_with($this->value, 'task.'), str_starts_with($this->value, 'milestone.') => PermissionGroup::Projects,
+            str_starts_with($this->value, 'project.'), str_starts_with($this->value, 'task.'), str_starts_with($this->value, 'milestone.'), str_starts_with($this->value, 'agile.') => PermissionGroup::Projects,
             str_starts_with($this->value, 'timeEntry.') => PermissionGroup::TimeEntries,
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
@@ -522,11 +547,13 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'attendance.'),
             str_starts_with($this->value, 'work-schedule.'),
             str_starts_with($this->value, 'surchargeRule.'),
+            str_starts_with($this->value, 'costCenterRule.'),
             str_starts_with($this->value, 'compliance.'),
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
             str_starts_with($this->value, 'safety.') => PermissionGroup::Safety,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'serviceTicket.') => PermissionGroup::OpenIssues,
+            str_starts_with($this->value, 'helpdesk.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'notificationRule.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'webhook.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'communication.') => PermissionGroup::Communication,

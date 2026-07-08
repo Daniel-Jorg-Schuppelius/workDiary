@@ -25,6 +25,7 @@ return [
     'deferred_notice' => 'Die automatisierten Lösch- und Aufbewahrungsläufe sind nicht Teil dieser Übersicht und folgen in einem späteren Schritt (Feature 016, „Später").',
 
     'section' => [
+        'advisories' => 'Sicherheitslage der Abhängigkeiten',
         'sessions' => 'Aktive Sitzungen',
         'tokens' => 'API-Tokens',
         'integrations' => 'Externe Integrationen',
@@ -35,6 +36,13 @@ return [
     ],
 
     'field' => [
+        'severity' => 'Schweregrad',
+        'package' => 'Paket',
+        'advisory' => 'Advisory',
+        'fixed_in' => 'Behoben in',
+        'statement' => 'Bewertung (VEX)',
+        'statement_placeholder' => 'z. B. nicht ausnutzbar — Funktion nicht in Verwendung',
+        'last_pull' => 'Letzter Abruf',
         'user' => 'Benutzer',
         'guest' => 'Ohne Anmeldung',
         'ip' => 'IP-Adresse',
@@ -81,6 +89,7 @@ return [
     ],
 
     'hint' => [
+        'advisories' => 'Quelle: OSV.dev für composer.lock/package-lock.json — täglicher Abruf (security:advisories-pull); Bewertung (VEX) manuell.',
         'sessions_driver' => 'Sitzungstreiber „:driver" — keine Datenbank-Übersicht möglich. Nur der Treiber „database" liefert eine Sitzungsliste.',
         'tokens_no_secret' => 'Es werden nur Metadaten angezeigt — niemals der Token-Wert oder dessen Hash.',
         'support_access' => 'Quelle: Audit-Log, Ereignis-Präfix „support." (siehe Supportzugriff-Grundsätze).',
@@ -89,6 +98,7 @@ return [
     ],
 
     'empty' => [
+        'advisories' => 'Keine offenen Sicherheitshinweise.',
         'sessions' => 'Keine Sitzungen gefunden.',
         'tokens' => 'Keine aktiven API-Tokens.',
         'integrations' => 'Keine aktiven externen Integrationen.',
@@ -97,4 +107,7 @@ return [
     ],
 
     'generated_at' => 'Erzeugt: :at',
+    'action' => [
+        'pull_advisories' => 'Jetzt abrufen',
+    ],
 ];
