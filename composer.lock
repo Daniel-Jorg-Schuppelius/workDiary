@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fdb2ba16d8deafdb654e49609498fa69",
+    "content-hash": "ac5580730bfe1ebf4295952a728a71b2",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -562,11 +562,17 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",
-            "version": "dev-main",
+            "version": "v2.3.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit.git",
+                "reference": "237dd75da97c881e66b4e4089b5c9f37a231b82a"
+            },
             "dist": {
-                "type": "path",
-                "url": "../php-api-toolkit",
-                "reference": "0025e0adafca16808890df58c358d66da633a974"
+                "type": "zip",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/237dd75da97c881e66b4e4089b5c9f37a231b82a",
+                "reference": "237dd75da97c881e66b4e4089b5c9f37a231b82a",
+                "shasum": ""
             },
             "require": {
                 "dschuppelius/php-common-toolkit": "^1.0",
@@ -586,30 +592,7 @@
                     "APIToolkit\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "format": [
-                    "vendor/bin/pint --test"
-                ],
-                "format:fix": [
-                    "vendor/bin/pint"
-                ],
-                "lint": [
-                    "vendor/bin/phpstan analyse --memory-limit=1G"
-                ],
-                "qa": [
-                    "@format",
-                    "@lint",
-                    "@test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -620,10 +603,11 @@
                 }
             ],
             "description": "Reused codes for my api php sdks",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/issues",
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.3.2"
+            },
+            "time": "2026-07-03T11:32:16+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
@@ -14391,18 +14375,9 @@
             "time": "2023-04-15T19:07:00+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "daniel-jorg-schuppelius/php-api-toolkit",
-            "version": "dev-main",
-            "alias": "2.3.0",
-            "alias_normalized": "2.3.0.0"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "daniel-jorg-schuppelius/php-api-toolkit": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
