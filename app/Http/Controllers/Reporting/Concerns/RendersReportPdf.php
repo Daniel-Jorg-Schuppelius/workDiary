@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 trait RendersReportPdf {
     /**
+     * @param  view-string  $view
      * @param  array<string, mixed>  $data
      */
     protected function pdfDownload(string $view, array $data, string $filename, string $orientation = 'portrait'): SymfonyResponse {

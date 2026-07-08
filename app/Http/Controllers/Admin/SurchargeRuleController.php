@@ -125,9 +125,7 @@ class SurchargeRuleController extends Controller {
         // Steuer-Split (Rang 36): liegt die steuerfreie Obergrenze unter dem
         // Prozentsatz, entsteht ein steuerpflichtiger Anteil — der braucht
         // eine eigene Lohnart.
-        $limit = isset($data['tax_free_limit_pct']) && $data['tax_free_limit_pct'] !== null
-            ? (float) $data['tax_free_limit_pct']
-            : null;
+        $limit = isset($data['tax_free_limit_pct']) ? (float) $data['tax_free_limit_pct'] : null;
         if ($limit !== null && $limit < (float) $data['percentage']) {
             $request->validate([
                 'taxable_wage_type_code' => ['required', 'string', 'max:20'],

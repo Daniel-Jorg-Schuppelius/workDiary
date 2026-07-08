@@ -127,12 +127,15 @@ final class TodoistAdminUxTest extends TestCase {
         ExternalReference::query()->where('external_id', 't-1')->update(['external_id' => 't-1/../evil']);
         $this->assertNull(TodoistPlugin::taskUrl($task->fresh() ?? $task));
 
-        // Nicht verknüpfte Aufgabe → kein Link.
-        $plain = Task::query()->create([
-            'organization_id' => $this->organization->id,
-            'is_global' => true,
-            'title' => 'Ohne Referenz',
-        ]);
+        // Nicht verknüpfte Aufgabe → kein Link. Observer unterdrücken, sonst
+        // würde die Anlage sofort als task.create exportiert (MVP-114).
+        $plain = \App\Plugins\Todoist\Observers\TodoistTaskObserver::suppressed(
+            fn (): Task => Task::query()->create([
+                'organization_id' => $this->organization->id,
+                'is_global' => true,
+                'title' => 'Ohne Referenz',
+            ]),
+        );
         $this->assertNull(TodoistPlugin::taskUrl($plain));
     }
 }

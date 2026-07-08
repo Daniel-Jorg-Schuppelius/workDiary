@@ -55,6 +55,10 @@ final class ZammadTicketImporterTest extends TestCase {
             public function accountTime(int $ticketId, float $timeUnit): bool {
                 return true;
             }
+
+            public function addArticle(int $ticketId, string $body, bool $internal = true): bool {
+                return true;
+            }
         };
     }
 
