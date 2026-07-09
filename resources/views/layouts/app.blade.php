@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="geocode-url" content="{{ route('api.internal.geocode') }}">
 
@@ -420,6 +420,26 @@
                                     // Backup- & Restore-Status (Feature 017) — plattformweite Admin-Sicht.
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::BackupView->value)) {
                                         $adminNavItems[] = ['route' => 'admin.backup.status',            'label' => __('backup.title.status'), 'icon' => 'backup',        'modal' => false];
+                                    }
+                                    // Scheduler-Steuerung (Feature 067, MVP-176).
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::PlatformSchedulerManage->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.scheduler.index',          'label' => __('scheduler.title.index'), 'icon' => 'schedule',    'modal' => false];
+                                    }
+                                    // Einstellungs-Registry (Feature 067, MVP-174).
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::PlatformSettingsManage->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.settings.index',           'label' => __('settingsregistry.title.index'), 'icon' => 'tune',      'modal' => false];
+                                    }
+                                    // Wartungsfenster (Feature 022/041, MVP-055).
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::PlatformOperationsManage->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.maintenance-windows.index', 'label' => __('maintenance.window.title'), 'icon' => 'engineering', 'modal' => false];
+                                    }
+                                    // Admin-Aufgabencenter (Feature 041, MVP-058).
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::PlatformOperationsView->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.operations.index',        'label' => __('operations.title.index'), 'icon' => 'task_alt', 'modal' => false];
+                                    }
+                                    // Fehlermeldungs-Inbox (Feature 041, MVP-053).
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ProblemReportManage->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.problem-reports.index',    'label' => __('problemreport.title.inbox'), 'icon' => 'flag',    'modal' => false];
                                     }
                                     // Temporäre Supportfreigaben (Rang 64) — Kundenadmin-Sicht.
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SupportGrantManage->value)) {
@@ -1175,7 +1195,7 @@
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit']],
                                                 ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index']],
-                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status']],
+                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index']],
                                                 ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => ['admin.plugins.index', 'admin.plugin-errors.index']],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');
@@ -1966,6 +1986,7 @@
         @auth
             <x-demo-banner :organization="$_activeOrg" />
             <x-maintenance-banner :organization="$_activeOrg" />
+            <x-maintenance-window-banner />
             <x-support-banner />
         @endauth
         <div class="mx-auto @yield('wrapper-height-class', 'wd-page-fill') w-full {{ $_wrapperMaxW }} px-2 pt-(--sidebar-gap) pb-[calc(var(--app-footer-h)+var(--sidebar-gap))] md:pb-(--sidebar-gap) sm:px-4 xl:px-8 2xl:px-12 @auth with-help-pad @unless($isLegacyMode) with-sidebar-pad @endunless @endauth">
@@ -2074,7 +2095,9 @@
                 var header = document.getElementById('app-header');
                 var footer = document.getElementById('app-footer');
                 function sync() {
-                    if (header) root.style.setProperty('--app-header-h', header.offsetHeight + 'px');
+                    // MVP-182: Auto-Hide (wd-header-hidden auf <html>) meldet 0,
+                    // damit wd-page-fill die freie Höhe sofort nutzt.
+                    if (header) root.style.setProperty('--app-header-h', (root.classList.contains('wd-header-hidden') ? 0 : header.offsetHeight) + 'px');
                     if (footer) root.style.setProperty('--app-footer-h', footer.offsetHeight + 'px');
                 }
                 sync();

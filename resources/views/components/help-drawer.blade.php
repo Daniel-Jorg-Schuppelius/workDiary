@@ -56,6 +56,24 @@
                 <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Verwandte Themen') }}</p>
                 <ul class="mt-1 space-y-1 text-sm" data-help-related-list></ul>
             </div>
+            {{-- „Problem melden" (Feature 041, MVP-053): primärer Einstieg des
+                 Fehlermeldesystems — übernimmt Route/URL/Help-Topic der Seite. --}}
+            @auth
+                <div class="mt-3 border-t border-base-300 pt-3">
+                    <x-button tone="outline" size="sm" icon="flag" class="btn-warning w-full"
+                              data-entry-modal-trigger
+                              :href="route('problem-reports.create', array_filter([
+                                  'route' => \Illuminate\Support\Facades\Route::currentRouteName(),
+                                  'url' => url()->full(),
+                                  'topic' => app(\App\Services\Help\HelpContextResolver::class)->currentTopicFor(request()),
+                              ]))">
+                        {{ __('errors.report_problem') }}
+                    </x-button>
+                    <a href="{{ route('problem-reports.index') }}" class="mt-1 block text-center text-xs text-base-content/60 hover:text-base-content">
+                        {{ __('problemreport.title.index') }}
+                    </a>
+                </div>
+            @endauth
         </footer>
     </div>
 </div>

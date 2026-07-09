@@ -17,6 +17,7 @@ use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService};
 use App\Services\Release\{ReleaseManifestService, ReleaseVerifier};
+use App\Services\Updates\UpdateCheckService;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
@@ -70,6 +71,9 @@ class ComponentsController extends Controller {
         }
 
         return view('admin.components.index', [
+            'updates' => app(UpdateCheckService::class)->pending(),
+            'updatesMode' => app(UpdateCheckService::class)->mode(),
+            'updatesLastCheckedAt' => app(UpdateCheckService::class)->lastCheckedAt(),
             'appVersion' => (string) config('app.version', '0.1.0-dev'),
             'gitHash' => $generator->resolveGitHash(),
             'phpVersion' => PHP_VERSION,
@@ -273,5 +277,58 @@ class ComponentsController extends Controller {
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    /** Manueller Update-Check (MVP-054) — auch im manual-Modus erlaubt. */
+    public function checkUpdates(UpdateCheckService $updates): RedirectResponse {
+        Gate::authorize(Permission::MetricsView->value);
+
+        try {
+            $open = $updates->checkRemote();
+
+            return redirect()->route('admin.components.index')
+                ->with('status', __('updates.flash.checked', ['count' => $open]));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.components.index')
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /** Offline-Import des signierten Update-Dokuments (Air-Gap, MVP-054). */
+    public function importUpdates(\Illuminate\Http\Request $request, UpdateCheckService $updates): RedirectResponse {
+        Gate::authorize(Permission::MetricsView->value);
+        $request->validate(['feed' => ['required', 'file', 'max:1024']]);
+
+        try {
+            $open = $updates->importOffline((string) $request->file('feed')?->get());
+
+            return redirect()->route('admin.components.index')
+                ->with('status', __('updates.flash.imported', ['count' => $open]));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.components.index')
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /** Routinehinweis zurückstellen (auditiert via ComponentUpdate). */
+    public function snoozeUpdate(\Illuminate\Http\Request $request, \App\Models\ComponentUpdate $componentUpdate): RedirectResponse {
+        Gate::authorize(Permission::MetricsView->value);
+        $days = (int) \App\Support\Setting::get('operations.snooze_days', 7);
+        $componentUpdate->update(['snoozed_until' => now()->addDays(max(1, $days))]);
+
+        return redirect()->route('admin.components.index')
+            ->with('status', __('updates.flash.snoozed'));
+    }
+
+    /** Hinweis dauerhaft quittieren (Anzeige bleibt, Meldungen stumm). */
+    public function acknowledgeUpdate(\Illuminate\Http\Request $request, \App\Models\ComponentUpdate $componentUpdate): RedirectResponse {
+        Gate::authorize(Permission::MetricsView->value);
+        $componentUpdate->update([
+            'acknowledged_at' => now(),
+            'acknowledged_by' => $request->user()?->id,
+        ]);
+
+        return redirect()->route('admin.components.index')
+            ->with('status', __('updates.flash.acknowledged'));
     }
 }

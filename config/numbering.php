@@ -23,6 +23,15 @@ return [
      *  - starts_at         : initialer Counter (last_value), nächste Nummer = starts_at + 1
      */
     'defaults' => [
+        'problem_report' => [
+            'prefix' => 'PR',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
         'service_ticket' => [
             'prefix' => 'ST',
             'prefix_separator' => '-',

@@ -11,7 +11,22 @@
     </x-slot:actions>
 
     @if ($warehouses->isEmpty())
-        <x-empty-state framed :title="__('inventory.empty.warehouses')" />
+        {{-- Prerequisite-Audit (MVP-181): geführter Setup-Schritt statt
+             Hinweis ohne Ausweg — Zählung/Buchung braucht einen Lagerort. --}}
+        <x-empty-state framed :title="__('inventory.empty.warehouses')"
+                       :message="__('prerequisites.warehouses.missing')">
+            <x-slot:action>
+                @can('create', \App\Models\Warehouse::class)
+                    <x-button :href="route('warehouses.index')" tone="primary" size="sm" icon="arrow_forward">
+                        {{ __('prerequisites.warehouses.cta') }}
+                    </x-button>
+                @else
+                    <span class="text-sm text-base-content/70">
+                        {{ __('prerequisites.contact_role', ['role' => __('Administration')]) }}
+                    </span>
+                @endcan
+            </x-slot:action>
+        </x-empty-state>
     @else
         <div role="tablist" class="tabs tabs-box w-full">
             @foreach ($warehouses as $wh)

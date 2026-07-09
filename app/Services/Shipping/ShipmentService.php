@@ -48,7 +48,17 @@ class ShipmentService {
         $connection = $this->connectionFor($shipment);
         $provider = $this->providerFor($shipment);
 
-        $label = $provider->createShipment($connection, $request);
+        // Verbindungs-Gesundheit (MVP-178): Carrier-Fehler zählen (Aufgabe
+        // via ExpiryScanner), Erfolg setzt zurück; Fehler propagieren wie
+        // bisher an den Aufrufer.
+        try {
+            $label = $provider->createShipment($connection, $request);
+            $connection->recordConnectionSuccess();
+        } catch (\Throwable $e) {
+            $connection->recordConnectionFailure($e->getMessage());
+
+            throw $e;
+        }
 
         $this->storeLabel($shipment, $label->labelPdfBase64);
 

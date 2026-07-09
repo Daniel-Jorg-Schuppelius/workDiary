@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Middleware\{AuthenticateScim, EnforceMaintenanceMode, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
+use App\Http\Middleware\{AssignRequestId, AuthenticateScim, EnforceMaintenanceMode, EnforceSupportImpersonation, EnforceTenantStatus, EnsureNewSystemAccess, EnsureValidLicense, ForcePasswordChange, HandleDatabaseUnavailable, PrepareInstaller, RedirectIfNotInstalled, RequireTwoFactorSetup, RequiresFeature, SecurityHeaders, SetLocale, SetOrganizationContext};
 use App\Legacy\Http\Middleware\{EnsureLegacyAccess, EnsureLegacyCallcenterAuthenticated, EnsureLegacyWriteAllowed};
 use App\Support\DatabaseHealth;
 use Illuminate\Database\QueryException;
@@ -38,6 +38,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Correlation-ID für alle Requests (041-P0, MVP-053): vor allem
+        // anderen, damit auch Fehler in frühen Middlewares eine ID tragen.
+        $middleware->prepend(AssignRequestId::class);
+
         // Muss zuerst laufen, damit DB-Ausfälle in StartSession (SESSION_DRIVER=database)
         // und nachgelagerten Middlewares sauber als 503 zurückgegeben werden, ohne dass
         // beim Response-Unwind erneut DB-Schreibversuche stattfinden.

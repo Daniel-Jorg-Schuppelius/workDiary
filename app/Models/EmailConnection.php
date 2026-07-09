@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 
@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $last_polled_at
  */
 class EmailConnection extends Model {
+    use HasConnectionHealth;
+
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

@@ -268,11 +268,40 @@ class DiagnosticsService {
             );
         }
 
+        // Registry-Job-Zustand (Feature 067, MVP-177): pausierte,
+        // fehlschlagende und überfällige Jobs sichtbar machen.
+        $jobsTotal = count(app(\App\Scheduling\JobRegistry::class)->all());
+        $jobsPaused = count(array_filter(
+            \App\Models\ScheduledJobOverride::systemMap(),
+            static fn(array $override): bool => $override['enabled'] === false,
+        ));
+        $jobsFailing = 0;
+        $jobsOverdue = 0;
+        try {
+            $jobsFailing = \App\Models\ScheduledJobState::query()->where('consecutive_failures', '>', 0)->count();
+            $jobsOverdue = \App\Models\ScheduledJobState::query()->whereNotNull('overdue_notified_at')->count();
+        } catch (\Throwable) {
+            // Tabelle fehlt (vor Migration) — Zahlen bleiben 0.
+        }
+
+        if ($jobsFailing > 0) {
+            $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
+            $messages[] = sprintf('%d Job(s) mit Fehlern in Folge.', $jobsFailing);
+        }
+        if ($jobsOverdue > 0) {
+            $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
+            $messages[] = sprintf('%d überfällige(r) Job(s) — Details auf der Scheduler-Seite.', $jobsOverdue);
+        }
+
         return new DiagnosticSection(
             code: 'scheduler',
             status: $status,
             metrics: [
                 'last_run_at' => $heartbeatAt?->toIso8601String(),
+                'jobs_total' => $jobsTotal,
+                'jobs_paused' => $jobsPaused,
+                'jobs_failing' => $jobsFailing,
+                'jobs_overdue' => $jobsOverdue,
             ],
             messages: $messages,
             checkedAt: CarbonImmutable::now(),

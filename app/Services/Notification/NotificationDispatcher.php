@@ -415,6 +415,12 @@ class NotificationDispatcher {
     }
 
     private function organizationIdOf(Model $subject, ?User $affected): ?int {
+        // Betriebsereignisse (Feature 041) können die Organisation selbst
+        // als Subjekt tragen (Meldung ohne Aufgaben-Datensatz).
+        if ($subject instanceof \App\Models\Organization) {
+            return (int) $subject->getKey();
+        }
+
         $orgId = $subject->getAttribute('organization_id') ?: $affected?->organization_id;
 
         return $orgId !== null ? (int) $orgId : null;

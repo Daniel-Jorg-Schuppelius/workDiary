@@ -43,6 +43,14 @@ class PluginEventSubscriber {
             'plugin_id' => $e->pluginId,
             'organization_id' => $e->organizationId,
         ]);
+
+        // Betriebsaufgabe automatisch schließen (Feature 041, MVP-058).
+        try {
+            app(\App\Services\Operations\OperationsAlertService::class)
+                ->resolve('plugin_disabled:' . $e->pluginId . ':' . ($e->organizationId ?? 0));
+        } catch (\Throwable $t) {
+            Log::warning('operations.plugin_resolve_failed', ['message' => $t->getMessage()]);
+        }
     }
 
     public function handleAutoDisabled(PluginAutoDisabled $e): void {
@@ -52,6 +60,23 @@ class PluginEventSubscriber {
             'reason' => $e->reason,
             'failure_count' => $e->failureCount,
         ]);
+
+        // Admin-Aufgabe + Benachrichtigung (Feature 041, MVP-058) — die
+        // frühere Log-only-Reaktion war der dokumentierte Anknüpfpunkt.
+        try {
+            app(\App\Services\Operations\OperationsAlertService::class)
+                ->report(new \App\Services\Operations\OperationsSignal(
+                    type: \App\Enums\Operations\OperationsTaskType::PluginDisabled,
+                    dedupeKey: 'plugin_disabled:' . $e->pluginId . ':' . ($e->organizationId ?? 0),
+                    severity: \App\Enums\Operations\OperationsTaskSeverity::Critical,
+                    titleKey: 'operations.task.plugin_disabled',
+                    params: ['plugin' => $e->pluginId, 'failures' => $e->failureCount],
+                    organizationId: $e->organizationId,
+                    linkRoute: 'admin.plugins.index',
+                ));
+        } catch (\Throwable $t) {
+            Log::warning('operations.plugin_report_failed', ['message' => $t->getMessage()]);
+        }
     }
 
     /** @return array<class-string, string> */

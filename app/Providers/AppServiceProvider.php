@@ -50,6 +50,14 @@ class AppServiceProvider extends ServiceProvider {
         // Tests binden ein Fake-Gateway. Der Intake-Kern hängt nur am Interface.
         $this->app->singleton(\App\Services\Mail\MailboxGateway::class, \App\Services\Mail\ImapMailboxGateway::class);
 
+        // Settings-Registry (Feature 067, MVP-173): Definitionen werden je
+        // Prozess einmal aus config/settings-registry.php hydriert.
+        $this->app->singleton(\App\Settings\SettingsRegistry::class);
+
+        // Ablauf-Scanner (Feature 041, MVP-057): Singleton, damit
+        // Konnektor-Probes (extend()) den Scan-Lauf erreichen.
+        $this->app->singleton(\App\Services\Operations\Expiry\ExpiryScanner::class);
+
         // Aufbewahrungs-Registry (Restpunkte 66+67): Fristen je Rechtsraum
         // aus config/retention.php; die Policies liefern die überfälligen
         // Datensätze für den Review-Scan (Vorschläge statt Direktlöschung).
@@ -217,6 +225,41 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Queue-Worker-Heartbeat (Feature 067, MVP-177-Vorgriff): Die
+        // Diagnose-Seite liest diesen Cache-Key; geschrieben wird er hier
+        // beim Worker-Loop (gedrosselt, damit kein Cache-Spam entsteht).
+        \Illuminate\Support\Facades\Queue::looping(static function (): void {
+            static $lastWritten = null;
+            $now = \Carbon\CarbonImmutable::now();
+            if ($lastWritten !== null && $now->diffInSeconds($lastWritten, true) < 30) {
+                return;
+            }
+            $lastWritten = $now;
+            \Illuminate\Support\Facades\Cache::put(
+                \App\Services\Diagnostics\DiagnosticsService::QUEUE_WORKER_HEARTBEAT_KEY,
+                $now->toIso8601String(),
+            );
+        });
+
+        // Laufzeit-Nachweise der Registry-Jobs (Feature 067, MVP-177):
+        // Start/Erfolg/Fehler/Skip je Schedule-Event → runs/states.
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Console\Events\ScheduledTaskStarting::class,
+            [\App\Scheduling\ScheduleRunRecorder::class, 'handleStarting'],
+        );
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Console\Events\ScheduledTaskFinished::class,
+            [\App\Scheduling\ScheduleRunRecorder::class, 'handleFinished'],
+        );
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Console\Events\ScheduledTaskFailed::class,
+            [\App\Scheduling\ScheduleRunRecorder::class, 'handleFailed'],
+        );
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Console\Events\ScheduledTaskSkipped::class,
+            [\App\Scheduling\ScheduleRunRecorder::class, 'handleSkipped'],
+        );
+
         // Stichtags-Rekonstruktion (Nachtrag 046b): jede Bewertungsänderung
         // (SoA-Aussage, Norm-Konformitätsstatus) erzeugt einen append-only
         // Snapshot — Model-Events, damit auch Service-Updates erfasst werden.

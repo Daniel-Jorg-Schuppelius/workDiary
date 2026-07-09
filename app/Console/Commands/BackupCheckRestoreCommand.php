@@ -141,6 +141,28 @@ class BackupCheckRestoreCommand extends Command {
             $this->warn('Audit-Log konnte nicht geschrieben werden: ' . $e->getMessage());
         }
 
+        // Größen-/Integritätsbefund als Betriebsaufgabe (Feature 041,
+        // MVP-056): Alters-Überfälligkeit meldet operations:scan gestaffelt;
+        // hier zählt nur der Prüf-Befund (Größeneinbruch/Mindestgröße).
+        try {
+            $alerts = app(\App\Services\Operations\OperationsAlertService::class);
+            $sizeIssues = array_values(array_filter($messages, static fn(string $m): bool => str_contains($m, 'Größe')));
+            if ($sizeIssues !== []) {
+                $alerts->report(new \App\Services\Operations\OperationsSignal(
+                    type: \App\Enums\Operations\OperationsTaskType::BackupFailed,
+                    dedupeKey: 'backup_failed',
+                    severity: \App\Enums\Operations\OperationsTaskSeverity::Critical,
+                    titleKey: 'operations.task.backup_failed',
+                    params: ['reason' => implode(' ', $sizeIssues)],
+                    linkRoute: 'admin.backup.status',
+                ));
+            } else {
+                $alerts->resolve('backup_failed');
+            }
+        } catch (Throwable $e) {
+            $this->warn('Betriebsaufgabe konnte nicht aktualisiert werden: ' . $e->getMessage());
+        }
+
         if ((bool) $this->option('json')) {
             $this->line(JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
         } else {

@@ -10,7 +10,8 @@
 
 use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
-use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, SecurityController, SupportAccessAuditController, SupportAccessGrantController, SupportImpersonationController, SupportReportController};
+use App\Http\Controllers\ProblemReportController;
+use App\Http\Controllers\Admin\{AutomationRuleController, MaintenanceWindowController, OperationsTaskController, SettingsController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MetricsController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, ProblemReportInboxController, SchedulerController, SecurityController, SupportAccessAuditController, SupportAccessGrantController, SupportImpersonationController, SupportReportController};
 use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
 use App\Http\Controllers\Auth\{LoginController, PasswordResetController, TenantRegistrationController, TwoFactorChallengeController};
 use App\Http\Controllers\KeyHandover\KeyHandoverController;
@@ -565,6 +566,65 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/diagnostics/test-mail', [DiagnosticsController::class, 'testMail'])
             ->middleware('throttle:6,1')
             ->name('admin.diagnostics.test-mail');
+
+        // Einstellungs-Registry (Feature 067, MVP-174)
+        Route::get('admin/settings', [SettingsController::class, 'index'])->name('admin.settings.index');
+        Route::get('admin/settings/{key}/history', [SettingsController::class, 'history'])
+            ->where('key', '[A-Za-z0-9_.\-]+')
+            ->name('admin.settings.history');
+        Route::put('admin/settings/{key}', [SettingsController::class, 'update'])
+            ->where('key', '[A-Za-z0-9_.\-]+')
+            ->name('admin.settings.update');
+        Route::delete('admin/settings/{key}', [SettingsController::class, 'reset'])
+            ->where('key', '[A-Za-z0-9_.\-]+')
+            ->name('admin.settings.reset');
+
+        // Wartungsfenster (Feature 022/041, MVP-055)
+        Route::get('admin/maintenance-windows', [MaintenanceWindowController::class, 'index'])->name('admin.maintenance-windows.index');
+        Route::get('admin/maintenance-windows/create', [MaintenanceWindowController::class, 'create'])->name('admin.maintenance-windows.create');
+        Route::post('admin/maintenance-windows', [MaintenanceWindowController::class, 'store'])->name('admin.maintenance-windows.store');
+        Route::post('admin/maintenance-windows/{maintenanceWindow}/{action}', [MaintenanceWindowController::class, 'transition'])
+            ->whereIn('action', ['announce', 'start', 'complete', 'extend', 'rollback', 'cancel'])
+            ->name('admin.maintenance-windows.transition');
+
+        // Admin-Aufgabencenter (Feature 041, MVP-058)
+        Route::get('admin/operations', [OperationsTaskController::class, 'index'])->name('admin.operations.index');
+        Route::post('admin/operations/{operationsTask}/done', [OperationsTaskController::class, 'done'])->name('admin.operations.done');
+        Route::post('admin/operations/{operationsTask}/reopen', [OperationsTaskController::class, 'reopen'])->name('admin.operations.reopen');
+        Route::post('admin/operations/{operationsTask}/snooze', [OperationsTaskController::class, 'snooze'])->name('admin.operations.snooze');
+        Route::post('admin/operations/{operationsTask}/delegate', [OperationsTaskController::class, 'delegate'])->name('admin.operations.delegate');
+        Route::post('admin/operations/{operationsTask}/ignore', [OperationsTaskController::class, 'ignore'])->name('admin.operations.ignore');
+
+        // Fehlermeldesystem (Feature 041, MVP-053)
+        Route::get('problem-reports', [ProblemReportController::class, 'index'])->name('problem-reports.index');
+        Route::get('problem-reports/create', [ProblemReportController::class, 'create'])->name('problem-reports.create');
+        Route::post('problem-reports', [ProblemReportController::class, 'store'])
+            ->middleware('throttle:10,10')
+            ->name('problem-reports.store');
+        Route::get('admin/problem-reports', [ProblemReportInboxController::class, 'index'])->name('admin.problem-reports.index');
+        Route::get('admin/problem-reports/{problemReport}', [ProblemReportInboxController::class, 'show'])->name('admin.problem-reports.show');
+        Route::put('admin/problem-reports/{problemReport}/status', [ProblemReportInboxController::class, 'updateStatus'])->name('admin.problem-reports.status');
+        Route::post('admin/problem-reports/{problemReport}/convert', [ProblemReportInboxController::class, 'convertToTicket'])->name('admin.problem-reports.convert');
+        Route::get('admin/problem-reports/{problemReport}/download', [ProblemReportInboxController::class, 'download'])->name('admin.problem-reports.download');
+
+        // Update-Verfügbarkeit (Feature 022, MVP-054)
+        Route::post('admin/components/updates/check', [ComponentsController::class, 'checkUpdates'])
+            ->middleware('throttle:4,10')
+            ->name('admin.components.updates.check');
+        Route::post('admin/components/updates/import', [ComponentsController::class, 'importUpdates'])->name('admin.components.updates.import');
+        Route::post('admin/components/updates/{componentUpdate}/snooze', [ComponentsController::class, 'snoozeUpdate'])->name('admin.components.updates.snooze');
+        Route::post('admin/components/updates/{componentUpdate}/acknowledge', [ComponentsController::class, 'acknowledgeUpdate'])->name('admin.components.updates.acknowledge');
+
+        // Scheduler-Steuerung (Feature 067, MVP-176/177)
+        Route::get('admin/scheduler', [SchedulerController::class, 'index'])->name('admin.scheduler.index');
+        Route::get('admin/scheduler/{job}/edit', [SchedulerController::class, 'edit'])->name('admin.scheduler.edit');
+        Route::put('admin/scheduler/{job}', [SchedulerController::class, 'update'])->name('admin.scheduler.update');
+        Route::post('admin/scheduler/{job}/pause', [SchedulerController::class, 'pause'])->name('admin.scheduler.pause');
+        Route::post('admin/scheduler/{job}/resume', [SchedulerController::class, 'resume'])->name('admin.scheduler.resume');
+        Route::post('admin/scheduler/{job}/reset', [SchedulerController::class, 'reset'])->name('admin.scheduler.reset');
+        Route::post('admin/scheduler/{job}/test-run', [SchedulerController::class, 'testRun'])
+            ->middleware('throttle:6,1')
+            ->name('admin.scheduler.test-run');
 
         // Betriebsmetriken (Feature 036)
         Route::get('admin/metrics', [MetricsController::class, 'index'])->name('admin.metrics.index');

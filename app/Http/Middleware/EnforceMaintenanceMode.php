@@ -39,6 +39,23 @@ class EnforceMaintenanceMode {
 
     public function handle(Request $request, Closure $next): Response {
         $org = $this->currentOrganization();
+
+        // Geplante Wartungsfenster (MVP-055): system- oder org-weit,
+        // zeitbasiert wirksam, optional Nur-Lesen-Betrieb.
+        $window = \App\Models\MaintenanceWindow::effectiveFor($org?->id !== null ? (int) $org->id : null);
+        if ($window !== null) {
+            $user = $request->user();
+            $isBypassed = $user !== null && $user->isAdmin();
+            if ($user !== null && ! $this->isAllowedRoute($request) && ! $isBypassed) {
+                if (! $window->read_only) {
+                    return $this->denyWindow($request, $window);
+                }
+                if (! in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true)) {
+                    return $this->denyWindow($request, $window);
+                }
+            }
+        }
+
         if (! $org instanceof Organization || ! $org->inMaintenance()) {
             return $next($request);
         }
@@ -55,6 +72,27 @@ class EnforceMaintenanceMode {
         }
 
         return $this->deny($request, $org);
+    }
+
+    private function denyWindow(Request $request, \App\Models\MaintenanceWindow $window): Response {
+        $message = trim((string) $window->message);
+        if ($message === '') {
+            $message = $window->read_only
+                ? __('maintenance.window.read_only_message')
+                : __('Dieser Bereich wird gerade gewartet. Bitte versuchen Sie es später erneut.');
+        }
+        $retryAfter = max(60, (int) now()->diffInSeconds($window->ends_at, false));
+
+        if ($request->expectsJson()) {
+            return new JsonResponse([
+                'error' => 'maintenance',
+                'message' => $message,
+            ], Response::HTTP_SERVICE_UNAVAILABLE, ['Retry-After' => (string) $retryAfter]);
+        }
+
+        return response()
+            ->view('errors.maintenance', ['message' => $message, 'until' => $window->ends_at], Response::HTTP_SERVICE_UNAVAILABLE)
+            ->header('Retry-After', (string) $retryAfter);
     }
 
     private function currentOrganization(): ?Organization {

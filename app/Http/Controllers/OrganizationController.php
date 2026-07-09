@@ -114,85 +114,23 @@ class OrganizationController extends Controller {
             'compliance.rules.*' => ['boolean'],
             // Generic per-group overrides. Werte sind immer Strings (Form-Input);
             // leere Strings werden weiter unten verworfen → Fallback auf config().
+            // Die Einzelregeln kommen aus der Settings-Registry (067-P3b):
+            // jede org-scoped registrierte Einstellung ist hier setzbar.
             'settings' => ['sometimes', 'array'],
-            // Fakturierungsweg-Default (Feature 045): skalarer Top-Level-Key.
+            // Fakturierungsweg-Default (Feature 045): skalarer Top-Level-Key —
+            // bewusst nicht in der Registry (unterläuft deren group.rest-
+            // Mechanik) und im Schreibpfad separat Gate-gebunden.
             'settings.billing_mode' => ['nullable', 'in:' . implode(',', \App\Enums\Finance\BillingMode::values())],
-            'settings.personalization' => ['sometimes', 'array'],
-            'settings.personalization.date_format' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\Formats::dateOptions())],
-            'settings.personalization.time_format' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\Formats::timeOptions())],
-            'settings.pagination' => ['sometimes', 'array'],
+            // Wildcard-Netze für UNregistrierte Unterkeys dieser Gruppen
+            // (historisches Formularverhalten, z. B. settings.pagination.<neu>).
             'settings.pagination.*' => ['nullable', 'integer', 'min:1', 'max:1000'],
-            'settings.invoicing' => ['sometimes', 'array'],
-            'settings.invoicing.default_tax_rate' => ['nullable', 'string', 'max:8'],
-            'settings.invoicing.default_currency' => ['nullable', 'string', 'size:3'],
-            'settings.invoicing.time_unit' => ['nullable', 'string', 'max:8'],
-            // E-Rechnung (Feature 045, Abschnitt 8): Verkäuferstammdaten für XRechnung.
-            'settings.einvoice' => ['sometimes', 'array'],
-            'settings.einvoice.seller_name' => ['nullable', 'string', 'max:200'],
-            'settings.einvoice.street' => ['nullable', 'string', 'max:255'],
-            'settings.einvoice.zip' => ['nullable', 'string', 'max:32'],
-            'settings.einvoice.city' => ['nullable', 'string', 'max:128'],
-            'settings.einvoice.country' => ['nullable', 'string', 'size:2'],
-            'settings.einvoice.vat_id' => ['nullable', 'string', 'max:64'],
-            'settings.einvoice.tax_number' => ['nullable', 'string', 'max:64'],
-            'settings.einvoice.contact_name' => ['nullable', 'string', 'max:200'],
-            'settings.einvoice.contact_email' => ['nullable', 'string', 'email', 'max:255'],
-            'settings.einvoice.contact_phone' => ['nullable', 'string', 'max:64'],
-            'settings.einvoice.iban' => ['nullable', 'string', 'max:64'],
-            'settings.einvoice.bic' => ['nullable', 'string', 'max:32'],
-            'settings.einvoice.account_holder' => ['nullable', 'string', 'max:200'],
-            'settings.einvoice.payment_terms_days' => ['nullable', 'integer', 'min:0', 'max:365'],
-            'settings.einvoice.small_business' => ['nullable', 'in:0,1'],
-            'settings.uploads' => ['sometimes', 'array'],
             'settings.uploads.*' => ['nullable', 'integer', 'min:1', 'max:1048576'],
             'settings.validation' => ['sometimes', 'array'],
             'settings.validation.*' => ['sometimes', 'array'],
             'settings.validation.*.*' => ['nullable', 'integer', 'min:1', 'max:100000'],
-            'settings.notifications' => ['sometimes', 'array'],
-            'settings.notifications.push' => ['sometimes', 'array'],
-            'settings.notifications.push.body_truncate' => ['nullable', 'integer', 'min:20', 'max:500'],
-            'settings.ui' => ['sometimes', 'array'],
             'settings.ui.*' => ['sometimes', 'array'],
             'settings.ui.*.*' => ['nullable', 'integer', 'min:1', 'max:1000'],
-            'settings.routing' => ['sometimes', 'array'],
-            'settings.routing.nominatim' => ['sometimes', 'array'],
-            'settings.routing.nominatim.base_url' => ['nullable', 'string', 'url', 'max:255'],
-            'settings.routing.nominatim.email' => ['nullable', 'string', 'email', 'max:255'],
-            'settings.routing.nominatim.rate_limit_per_sec' => ['nullable', 'integer', 'min:1', 'max:50'],
-            'settings.routing.osrm' => ['sometimes', 'array'],
-            'settings.routing.osrm.base_url' => ['nullable', 'string', 'url', 'max:255'],
-            'settings.routing.osrm.profile' => ['nullable', 'string', 'max:32'],
-            'settings.routing.osrm.timeout' => ['nullable', 'integer', 'min:1', 'max:120'],
-            'settings.routing.tiles' => ['sometimes', 'array'],
-            'settings.routing.tiles.url' => ['nullable', 'string', 'max:255'],
-            'settings.routing.tiles.max_zoom' => ['nullable', 'integer', 'min:1', 'max:22'],
-            'settings.timesheet' => ['sometimes', 'array'],
-            'settings.timesheet.default_schedule_type' => ['nullable', 'in:' . implode(',', \App\Enums\WorkSchedule\ScheduleType::values())],
-            // Feiertags-Rechtsraum (Feature 034): Yasumi-Provider-Pfad. Leer →
-            // Fallback auf config('holidays.provider'). Speist Zuschläge + Compliance.
-            'settings.holidays' => ['sometimes', 'array'],
-            'settings.holidays.provider' => ['nullable', \Illuminate\Validation\Rule::in(\App\Support\HolidayRegions::providers())],
-            'settings.attendance' => ['sometimes', 'array'],
-            'settings.attendance.self_correction' => ['nullable', 'in:request,self'],
-            'settings.travel' => ['sometimes', 'array'],
-            'settings.travel.enabled' => ['nullable', 'in:0,1'],
-            'settings.travel.mode' => ['nullable', 'in:flat,km'],
-            'settings.travel.flat_amount' => ['nullable', 'numeric', 'min:0'],
-            'settings.travel.rate_per_km' => ['nullable', 'numeric', 'min:0'],
-            'settings.travel.km_source' => ['nullable', 'in:company,tour'],
-            'settings.travel.round_trip' => ['nullable', 'in:0,1'],
-            'settings.travel.origin_lat' => ['nullable', 'numeric', 'between:-90,90'],
-            'settings.travel.origin_lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'settings.travel.label' => ['nullable', 'string', 'max:50'],
-            // Wetter-Auto-Abruf (Feature 062, Rang 12): org-weiter Default-Schalter.
-            'settings.weather' => ['sometimes', 'array'],
-            'settings.weather.auto_fetch' => ['nullable', 'in:0,1'],
-            // Wartungsmodus pro Mandant (Rang 65).
-            'settings.maintenance' => ['sometimes', 'array'],
-            'settings.maintenance.enabled' => ['nullable', 'in:0,1'],
-            'settings.maintenance.message' => ['nullable', 'string', 'max:300'],
-            'settings.maintenance.until' => ['nullable', 'date'],
-            'settings.maintenance.block_ingest' => ['nullable', 'in:0,1'],
+            ...app(\App\Settings\SettingsRegistry::class)->formRulesForScope(\App\Settings\SettingScope::Organization),
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);

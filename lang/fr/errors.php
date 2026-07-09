@@ -14,4 +14,24 @@ return [
         'too_large' => 'Le fichier est trop volumineux (max. :max Ko).',
         'type_not_allowed' => 'Type de fichier non autorisé.',
     ],
+
+    // Pages d'erreur HTTP (041-P0, MVP-053)
+    'request_id' => 'ID de la requête',
+    'report_problem' => 'Signaler un problème',
+    '404' => [
+        'title' => 'Page introuvable',
+        'message' => "La page demandée n'existe pas ou a été déplacée.",
+    ],
+    '403' => [
+        'title' => 'Accès refusé',
+        'message' => "Vous n'avez pas l'autorisation pour cette action. Veuillez contacter votre administration.",
+    ],
+    '419' => [
+        'title' => 'Session expirée',
+        'message' => 'La page est restée ouverte trop longtemps. Veuillez la recharger et réessayer.',
+    ],
+    '500' => [
+        'title' => 'Erreur interne',
+        'message' => "Une erreur inattendue s'est produite. Veuillez réessayer plus tard ou signaler le problème avec l'ID de la requête.",
+    ],
 ];

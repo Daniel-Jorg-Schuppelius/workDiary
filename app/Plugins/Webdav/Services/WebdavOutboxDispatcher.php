@@ -40,12 +40,26 @@ class WebdavOutboxDispatcher implements IntegrationOutboxDispatcher {
     }
 
     public function dispatch(IntegrationOutboxEntry $entry): bool {
-        return match ($entry->operation) {
-            self::OP_MIRROR => $this->mirrorDocument($entry),
-            self::OP_MIRROR_INVOICE => $this->mirrorInvoice($entry),
-            self::OP_MIRROR_PROTOCOL => $this->mirrorProtocol($entry),
-            default => true, // fremde Operation → nichts zu tun
-        };
+        // Verbindungs-Gesundheit (MVP-178): Fehler zählen (Aufgabe via
+        // ExpiryScanner), Erfolg setzt zurück — die Outbox-Retry-/
+        // Kompensations-Semantik bleibt durch das Rethrow unangetastet.
+        $connection = $this->activeConnection($entry->organization_id);
+
+        try {
+            $result = match ($entry->operation) {
+                self::OP_MIRROR => $this->mirrorDocument($entry),
+                self::OP_MIRROR_INVOICE => $this->mirrorInvoice($entry),
+                self::OP_MIRROR_PROTOCOL => $this->mirrorProtocol($entry),
+                default => true, // fremde Operation → nichts zu tun
+            };
+            $connection?->recordConnectionSuccess();
+
+            return $result;
+        } catch (\Throwable $e) {
+            $connection?->recordConnectionFailure($e->getMessage());
+
+            throw $e;
+        }
     }
 
     private function mirrorDocument(IntegrationOutboxEntry $entry): bool {

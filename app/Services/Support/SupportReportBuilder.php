@@ -82,6 +82,9 @@ class SupportReportBuilder {
             'failed_jobs' => $this->failedJobs($failedJobsLimit),
             'log_tail' => $this->logTail($logTail),
             'audit_event_counts' => $this->auditEventCounts(),
+            'configuration' => $this->configurationSnapshot(),
+            'scheduler' => $this->schedulerSnapshot(),
+            'updates' => $this->updatesSnapshot(),
             'options' => [
                 'include_samples' => (bool) ($options['include_samples'] ?? false),
                 'include_schema' => (bool) ($options['include_schema'] ?? false),
@@ -452,6 +455,94 @@ class SupportReportBuilder {
             return ToolkitFile::hash($path);
         } catch (Throwable) {
             return null;
+        }
+    }
+
+    /**
+     * Redaktierter Konfigurationsstand aus der Settings-Registry
+     * (Feature 067, MVP-179): je Key Wert + Herkunft; sensitive Werte
+     * erscheinen ausschließlich als <redacted>.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function configurationSnapshot(): array {
+        try {
+            $registry = app(\App\Settings\SettingsRegistry::class);
+            $snapshot = [];
+            foreach (array_keys($registry->all()) as $key) {
+                $effective = $registry->effective($key);
+                $snapshot[] = [
+                    'key' => $key,
+                    'source' => $effective->source->value,
+                    'value' => $effective->exportValue(),
+                ];
+            }
+
+            return $snapshot;
+        } catch (Throwable $e) {
+            return [['key' => '_error', 'source' => 'error', 'value' => $e->getMessage()]];
+        }
+    }
+
+    /**
+     * Scheduler-Zustand (Feature 067, MVP-179): effektiver Plan +
+     * Herkunft, Pausen und Laufzeit-Aggregat je Registry-Job — ohne
+     * Secrets oder fachliche Daten.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function schedulerSnapshot(): array {
+        try {
+            $registry = app(\App\Scheduling\JobRegistry::class);
+            $registrar = app(\App\Scheduling\SchedulerRegistrar::class);
+            $overrides = \App\Models\ScheduledJobOverride::systemMap();
+            $states = \App\Models\ScheduledJobState::query()->get()->keyBy('job_key');
+
+            $snapshot = [];
+            foreach ($registry->all() as $key => $definition) {
+                $override = $overrides[$key] ?? null;
+                $state = $states->get($key);
+                $snapshot[] = [
+                    'job' => $key,
+                    'cron' => $registrar->resolvedCadence($definition)->cronExpression(),
+                    'source' => ($override['cadence'] ?? null) !== null ? 'override' : ($definition->cadenceSettingKey !== null ? 'setting' : 'default'),
+                    'enabled' => $override['enabled'] ?? true,
+                    'last_status' => $state?->last_status,
+                    'last_success_at' => $state?->last_success_at?->toIso8601String(),
+                    'consecutive_failures' => $state !== null ? (int) $state->consecutive_failures : 0,
+                ];
+            }
+
+            return $snapshot;
+        } catch (Throwable $e) {
+            return [['job' => '_error', 'cron' => '', 'source' => 'error', 'enabled' => false, 'last_status' => $e->getMessage(), 'last_success_at' => null, 'consecutive_failures' => 0]];
+        }
+    }
+
+    /**
+     * Update-Status (MVP-054/179): Modus, letzte Prüfung, offene Updates
+     * inkl. Stummschaltungen — Transparenz-DoD Feature 022/041.
+     *
+     * @return array<string, mixed>
+     */
+    private function updatesSnapshot(): array {
+        try {
+            $updates = app(\App\Services\Updates\UpdateCheckService::class);
+            $pending = \App\Models\ComponentUpdate::query()->get();
+
+            return [
+                'mode' => $updates->mode(),
+                'last_checked_at' => $updates->lastCheckedAt()?->toIso8601String(),
+                'pending' => $pending->map(fn(\App\Models\ComponentUpdate $u): array => [
+                    'component' => $u->component_type . ':' . $u->component_key,
+                    'installed' => $u->installed_version,
+                    'available' => $u->available_version,
+                    'classification' => $u->classification,
+                    'muted' => $u->isMuted(),
+                ])->values()->all(),
+            ];
+        } catch (Throwable $e) {
+            return ['mode' => 'error', 'last_checked_at' => null, 'pending' => [], 'error' => $e->getMessage()];
         }
     }
 }

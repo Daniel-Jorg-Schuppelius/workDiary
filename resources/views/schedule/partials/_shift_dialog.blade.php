@@ -39,12 +39,21 @@
         <x-form-group :legend="__('Schicht')" icon="schedule" tone="info">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Schichttyp') }}</label>
-                <select id="shift-dialog-type" name="shift_type_id" class="select select-bordered w-full">
-                    <option value="">— {{ __('kein Typ') }} —</option>
-                    @foreach ($shiftTypes as $t)
-                        <option value="{{ $t->sqid }}" style="color:{{ $t->color }}">{{ $t->name }} ({{ $t->abbreviation }})</option>
-                    @endforeach
-                </select>
+                @if ($shiftTypes->isEmpty())
+                    {{-- MVP-181: kein leeres Select — erklärender Setup-Hinweis. --}}
+                    <div role="alert" class="alert alert-warning alert-soft text-sm" data-prerequisite="shift-types-dialog">
+                        <x-icon name="settings_alert" />
+                        <span>{{ __('prerequisites.shift_types.dialog_hint') }}</span>
+                    </div>
+                    <input type="hidden" name="shift_type_id" value="">
+                @else
+                    <select id="shift-dialog-type" name="shift_type_id" class="select select-bordered w-full">
+                        <option value="">— {{ __('kein Typ') }} —</option>
+                        @foreach ($shiftTypes as $t)
+                            <option value="{{ $t->sqid }}" style="color:{{ $t->color }}">{{ $t->name }} ({{ $t->abbreviation }})</option>
+                        @endforeach
+                    </select>
+                @endif
             </div>
 
             <x-date-range

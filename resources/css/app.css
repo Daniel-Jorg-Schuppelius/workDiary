@@ -199,7 +199,10 @@
 /* kollabieren → sie MÜSSEN ihre feste Höhe behalten. Erkennung via :has.  */
 /* Tablet/iPad (>= 768 px) behalten generell das App-Shell-Layout.         */
 /* ------------------------------------------------------------------ */
-@media (max-width: 767px) {
+/* MVP-182: Der Escape gilt zusätzlich für niedrige Landscape-Viewports
+   (Smartphone quer, z. B. 844×390): dort ist die Breite > 767px, aber die
+   feste App-Shell-Höhe unbrauchbar — die Seite scrollt stattdessen natürlich. */
+@media (max-width: 767px), (orientation: landscape) and (max-height: 480px) {
     /* Auf Handys schmaler Außenabstand des Contents für maximale nutzbare
        Breite (Wrapper px-2 + dieses Padding ≈ 0.75rem Rand pro Seite). */
     .wd-page-fill > main {
@@ -339,6 +342,7 @@
         /* Dialoge: zentrale Max-Höhe – luftiger als 100vh,
            siehe /memories/repo/workdiary-dialog-rules.md */
         --wd-dialog-max-h: 68vh;
+        --wd-dialog-max-h: 68dvh; /* MVP-182: dynamische Browser-Leisten einrechnen */
         /* Dialog-Breiten erweitert: vorher 36/48/64rem; Formulare wirkten
            zu eng (zwei-spaltige Layouts und lange Listen brachen früh um). */
         --wd-dialog-w-compact: 44rem; /* ~704px */
@@ -1707,4 +1711,28 @@
     color: #38bdf8; /* sky-400 */
     opacity: 1;
     font-weight: 600;
+}
+
+/* ------------------------------------------------------------------ */
+/* MVP-182: Smartphone-Querformat (niedriger Viewport)                 */
+/*   – Dialoge dürfen fast die volle Höhe nutzen (68dvh wären ~265px)  */
+/*   – Header blendet beim Runterscrollen aus (JS setzt                */
+/*     .wd-header-hidden auf <html>), beim Hochscrollen wieder ein.    */
+/* ------------------------------------------------------------------ */
+@media (orientation: landscape) and (max-height: 480px) {
+    html {
+        --wd-dialog-max-h: 92dvh;
+    }
+}
+
+#app-header {
+    transition: transform 0.25s ease;
+}
+.wd-header-hidden #app-header {
+    transform: translateY(-100%);
+}
+@media (prefers-reduced-motion: reduce) {
+    #app-header {
+        transition: none;
+    }
 }

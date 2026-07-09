@@ -44,6 +44,15 @@ enum Permission: string implements HasLabel {
         // ── Plattform-Diagnose (MVP-044) ────────────────────────────
     case PlatformDiagnosticsView = 'platform.diagnostics.view';
     case PlatformDiagnosticsRunCheck = 'platform.diagnostics.runCheck';
+        // ── Scheduler-Steuerung (Feature 067, MVP-176) ──────────────
+    case PlatformSchedulerManage = 'platform.scheduler.manage';
+        // ── Einstellungs-Registry (Feature 067, MVP-174) ────────────
+    case PlatformSettingsManage = 'platform.settings.manage';
+        // ── Admin-Aufgabencenter (Feature 041, MVP-058) ─────────────
+    case PlatformOperationsView = 'platform.operations.view';
+    case PlatformOperationsManage = 'platform.operations.manage';
+        // ── Fehlermeldesystem (Feature 041, MVP-053) ────────────────
+    case ProblemReportManage = 'platform.problemReports.manage';
         // ── Betriebsmetriken (Feature 036) ──────────────────────────
     case MetricsView = 'metrics.view';
         // ── Admin-Sicherheitsübersicht (Feature 016) ────────────────

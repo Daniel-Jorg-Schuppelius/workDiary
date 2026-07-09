@@ -22,6 +22,10 @@
 return [
 
     'routes' => [
+        // Fehlermeldesystem (Feature 041, MVP-053)
+        'problem-reports.*' => 'support.report-problem',
+        'admin.problem-reports.*' => 'support.report-problem',
+
         // Tagesübersicht, Kanban und interne Kommunikation
         'today.show' => 'work.overview',
         'kanban.*' => 'work.overview',

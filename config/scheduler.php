@@ -1,0 +1,257 @@
+<?php
+/*
+ * Created on   : Wed Jul 08 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : scheduler.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * Scheduler-Job-Registry (Feature 067, MVP-175/180): Allowlist aller
+ * planbaren Artisan-Kommandos mit Default-Plan (1:1 aus der früheren
+ * routes/console.php migriert — Verhalten von Standardinstallationen
+ * ändert sich NICHT), erlaubten Umplanungs-Kadenzen und Einstufung.
+ *
+ * Die UI (MVP-176) kann Jobs nur innerhalb von `allowed` umplanen oder
+ * pausieren; freie Cron-Ausdrücke bleiben Betreiber-Funktion. Neue
+ * wiederkehrende Jobs werden HIER registriert, nicht in
+ * routes/console.php hartcodiert.
+ *
+ * Reine Arrays, keine Closures (config-cachebar).
+ */
+
+return [
+
+    // Aufbewahrung der Laufnachweise (scheduled_job_runs) in Tagen;
+    // via Settings-Registry (scheduler.retention_days) übersteuerbar.
+    'retention_days' => (int) env('SCHEDULER_RUNS_RETENTION_DAYS', 30),
+
+    'jobs' => [
+        // --- Betriebsaufgaben-Sync (Feature 041, MVP-058) ---
+        'operations.scan' => [
+            'command' => 'operations:scan',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 3,
+        ],
+
+        // --- Update-Verfügbarkeitsprüfung (Feature 022, MVP-054) ---
+        'updates.check' => [
+            'command' => 'updates:check',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:30'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+
+        // --- Scheduler-Selbstüberwachung (MVP-177) ---
+        'scheduler.watchdog' => [
+            'command' => 'scheduler:watchdog',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+        // --- Kern/Housekeeping (täglich) ---
+        'archive.run' => [
+            'command' => 'archive:run',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:00'],
+            // Uhrzeit weiterhin über Setting archive.schedule_at steuerbar
+            // (env ARCHIVE_SCHEDULE_AT bzw. system_settings-Override).
+            'cadence_setting_key' => 'archive.schedule_at',
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 30,
+        ],
+        'plans.purge' => [
+            'command' => 'plans:purge',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:30'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+        ],
+        'privacy.deadlines' => [
+            'command' => 'privacy:deadlines',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:00'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+        ],
+        'location.purge_points' => [
+            'command' => 'location:purge-points',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:45'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+        ],
+        'integration.purge_inbox' => [
+            'command' => 'integration:purge-inbox',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:00'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+        ],
+        'recurrence.generate' => [
+            'command' => 'recurrence:generate',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:30'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+        ],
+        'backup.check_restore' => [
+            'command' => 'workdiary:backup:check-restore',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:00'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+        ],
+        'maintenance.scan_due' => [
+            'command' => 'maintenance:scan-due',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:30'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'core',
+        ],
+        'security.advisories_pull' => [
+            'command' => 'security:advisories-pull',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:30'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'core',
+        ],
+        'privacy.retention_scan' => [
+            'command' => 'privacy:retention-scan',
+            'cadence' => ['type' => 'weeklyOn', 'time' => '04:30', 'day' => 1],
+            'allowed' => ['weeklyOn', 'dailyAt', 'monthlyOn'],
+            'criticality' => 'core',
+        ],
+        'events.check_certificates' => [
+            'command' => 'events:check-certificates',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:00'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+        ],
+        'events.materialize_recurrences' => [
+            'command' => 'events:materialize-recurrences',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:00'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+        ],
+
+        // --- Kern (minütlich/viertelstündlich) ---
+        'chat.send_reminders' => [
+            'command' => 'chat:send-reminders',
+            'cadence' => ['type' => 'everyMinute'],
+            'allowed' => ['everyMinute', 'everyFiveMinutes'],
+            'criticality' => 'core',
+            'on_one_server' => false, // Bestandsverhalten (kein onOneServer)
+            'expected_runtime_minutes' => 1,
+        ],
+        'chat.send_scheduled' => [
+            'command' => 'chat:send-scheduled',
+            'cadence' => ['type' => 'everyMinute'],
+            'allowed' => ['everyMinute', 'everyFiveMinutes'],
+            'criticality' => 'core',
+            'on_one_server' => false, // Bestandsverhalten (kein onOneServer)
+            'expected_runtime_minutes' => 1,
+        ],
+        'attendance.close_open' => [
+            'command' => 'attendance:close-open',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+        'events.dispatch_reminders' => [
+            'command' => 'events:dispatch-reminders',
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+        'tickets.scan_sla_breaches' => [
+            'command' => 'tickets:scan-sla-breaches',
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+        'notifications.scan_deadlines' => [
+            'command' => 'notifications:scan-deadlines',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'core',
+        ],
+        'catalog.fetch_due' => [
+            'command' => 'catalog:fetch-due',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 10,
+        ],
+
+        // --- Integrationen (Plugins, stündlich) ---
+        'plugin.healthcheck' => [
+            'command' => 'plugin:healthcheck --no-fail',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+        ],
+        'remote.sync_sessions' => [
+            'command' => 'remote:sync-sessions',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+        ],
+        'toggl.import' => [
+            'command' => 'toggl:import',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'openproject.import' => [
+            'command' => 'openproject:import',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'todoist.sync' => [
+            'command' => 'todoist:sync',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'openproject.push' => [
+            'command' => 'openproject:push',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'lexoffice.sync_contacts' => [
+            'command' => 'lexoffice:sync-contacts',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'lexoffice.sync_articles' => [
+            'command' => 'lexoffice:sync-articles',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'lexoffice.sync_vouchers' => [
+            'command' => 'lexoffice:sync-vouchers',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+
+        // --- Sonderpläne ---
+        'payroll.import_minimum_wages' => [
+            'command' => 'payroll:import-minimum-wages',
+            'cadence' => ['type' => 'cron', 'expression' => '0 4 15 1,7 *'],
+            'allowed' => ['cron', 'monthlyOn'],
+            'criticality' => 'core',
+        ],
+    ],
+];

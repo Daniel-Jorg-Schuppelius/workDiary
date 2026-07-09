@@ -12,6 +12,7 @@ namespace App\Enums\Numbering;
 
 enum NumberScope: string {
     case ServiceTicket = 'service_ticket';
+    case ProblemReport = 'problem_report';
     case Asset = 'asset';
     case Article = 'article';
     case ManufacturingOrder = 'manufacturing_order';
@@ -28,6 +29,7 @@ enum NumberScope: string {
     public function label(): string {
         return match ($this) {
             self::ServiceTicket => __('Service-Ticket'),
+            self::ProblemReport => __('Fehlermeldung'),
             self::Asset => __('Asset'),
             self::Article => __('Artikel'),
             self::ManufacturingOrder => __('Fertigungsauftrag'),
@@ -51,7 +53,7 @@ enum NumberScope: string {
         return match ($this) {
             self::Customer, self::Supplier, self::Invoice, self::CreditNote, self::Cancellation => true,
             self::Quote, self::Proforma => false, // keine steuerliche Belegwirkung
-            self::ServiceTicket, self::Asset, self::Article, self::ManufacturingOrder, self::Serial, self::PurchaseOrder => false,
+            self::ServiceTicket, self::Asset, self::Article, self::ManufacturingOrder, self::Serial, self::PurchaseOrder, self::ProblemReport => false,
         };
     }
 }

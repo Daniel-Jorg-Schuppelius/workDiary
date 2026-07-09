@@ -1,0 +1,81 @@
+{{-- Gemeinsames Gerüst der Fehlerseiten (041-P0, MVP-053): standalone
+     ohne App-Layout (funktioniert auch bei kaputter Session/DB), zeigt
+     Request-ID für Support-Zuordnung und bietet — sobald das
+     Fehlermeldesystem aktiv ist — den „Problem melden"-Einstieg an. --}}
+@php
+    $requestId = app()->bound(\App\Http\Middleware\AssignRequestId::CONTAINER_KEY)
+        ? app(\App\Http\Middleware\AssignRequestId::CONTAINER_KEY)
+        : null;
+@endphp
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script @cspNonce>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem('workDiaryTheme');
+                var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+                var theme = savedTheme || (prefersLight ? 'corporate' : 'dim');
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'corporate');
+            }
+        })();
+    </script>
+    <title>{{ $title }} – {{ config('app.name', 'WorkDiary') }}</title>
+    <style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css'])
+    @endif
+</head>
+<body class="min-h-screen bg-gradient-to-b from-base-200 to-base-300 text-base-content"
+      style="font-family: 'IBM Plex Sans', system-ui, sans-serif;">
+    <div class="flex min-h-screen items-center justify-center px-4">
+        <div class="w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg">
+            <img src="{{ asset('img/logo/workdiary-logo-512.png') }}" alt="WorkDiary"
+                 class="mx-auto mb-6 h-12 w-auto object-contain">
+            <div class="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-{{ $tone ?? 'primary' }}/15 text-{{ $tone ?? 'primary' }}">
+                <span class="material-symbols-outlined" style="font-size: 2rem; font-variation-settings: 'FILL' 1, 'wght' 500;">{{ $icon }}</span>
+            </div>
+            <h1 class="mb-2 text-2xl font-semibold" style="font-family: 'Space Grotesk', sans-serif;">
+                {{ $title }}
+            </h1>
+            <p class="text-sm leading-relaxed text-base-content/75">
+                {{ $message }}
+            </p>
+            @if ($requestId !== null)
+                <p class="mt-3 text-xs text-base-content/50">
+                    {{ __('errors.request_id') }}: <span class="font-mono select-all">{{ $requestId }}</span>
+                </p>
+            @endif
+            <x-button-group center class="mt-6">
+                <x-button href="{{ url()->previous() }}" tone="ghost" size="sm" class="gap-1" icon="arrow_back">{{ __('Zurück') }}</x-button>
+                <x-button href="{{ url('/') }}" tone="primary" size="sm" class="gap-1" icon="home">{{ __('Zur Startseite') }}</x-button>
+                @if (auth()->check() && \Illuminate\Support\Facades\Route::has('problem-reports.create'))
+                    <x-button href="{{ route('problem-reports.create', ['context' => 'error', 'code' => $code ?? null]) }}" tone="warning" size="sm" class="gap-1" icon="flag">{{ __('errors.report_problem') }}</x-button>
+                @endif
+            </x-button-group>
+        </div>
+    </div>
+</body>
+</html>

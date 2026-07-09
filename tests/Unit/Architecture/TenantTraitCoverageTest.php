@@ -246,6 +246,26 @@ class TenantTraitCoverageTest extends TestCase {
         // transitiv über boq_items.organization_id; wird nur beim
         // Import/Reimport über das Item geschrieben.
         \App\Models\BoqItemPriceSnapshot::class,
+        // Installationsweite Betriebs-/Systemdaten (Feature 067 + 041,
+        // MVP-053–058/173–181): KEIN Mandantenbezug — Settings-Registry-
+        // Overrides, Scheduler-Registry (Overrides/Läufe/Zustand),
+        // Update-Erkennung und OSV-Sicherheitshinweise gelten je
+        // Installation; Zugriff nur über Betreiber-Permissions
+        // (platform.*), nie über fachliche Mandanten-Views.
+        \App\Models\SystemSetting::class,
+        \App\Models\ScheduledJobOverride::class,
+        \App\Models\ScheduledJobRun::class,
+        \App\Models\ScheduledJobState::class,
+        \App\Models\ComponentUpdate::class,
+        \App\Models\SecurityAdvisory::class,
+        // Betriebsaufgaben + Wartungsfenster (MVP-055/058): haben
+        // organization_id (installationsweite Zeilen hängen an der
+        // Betreiber-Org, is_system-Flag), aber BEWUSST ohne Global-Scope —
+        // Scanner/Watchdog laufen ohne Tenant-Kontext und die Controller
+        // filtern explizit auf die aktuelle Organisation (Cross-Org → 404,
+        // getestet in OperationsTaskCenterTest/MaintenanceWindowTest).
+        \App\Models\OperationsTask::class,
+        \App\Models\MaintenanceWindow::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

@@ -262,5 +262,98 @@
             </div>
         </article>
     </div>
+
+    {{-- Update-Verfügbarkeit (Feature 022, MVP-054): erkennen + erklären,
+         KEIN Self-Update. Security-/Critical-Einstufungen sind hier immer
+         sichtbar, auch wenn Routine-Meldungen stummgeschaltet sind. --}}
+    <article class="mt-4 rounded-2xl border border-base-300 bg-base-100 p-4">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div>
+                <h2 class="font-semibold">{{ __('updates.title.section') }}</h2>
+                <p class="text-xs text-base-content/60">
+                    {{ __('updates.field.mode') }}: <span class="font-mono">{{ $updatesMode }}</span>
+                    @if ($updatesLastCheckedAt)
+                        · {{ __('updates.field.last_checked') }}: {{ $updatesLastCheckedAt->format('d.m.Y H:i') }}
+                    @endif
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                @if ($updatesMode !== 'disabled')
+                    <form method="POST" action="{{ route('admin.components.updates.check') }}">
+                        @csrf
+                        <x-icon-btn icon="sync" tone="primary" size="sm" type="submit" show-label>{{ __('updates.action.check_now') }}</x-icon-btn>
+                    </form>
+                @endif
+                <form method="POST" action="{{ route('admin.components.updates.import') }}" enctype="multipart/form-data" class="flex items-center gap-1">
+                    @csrf
+                    <input type="file" name="feed" accept=".json" required class="file-input file-input-bordered file-input-sm">
+                    <x-icon-btn icon="upload_file" tone="outline" size="sm" type="submit" show-label>{{ __('updates.action.import') }}</x-icon-btn>
+                </form>
+            </div>
+        </div>
+
+        @if (count($updates) === 0)
+            <p class="text-sm text-base-content/60">{{ __('updates.empty') }}</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>{{ __('updates.field.component') }}</th>
+                            <th>{{ __('updates.field.versions') }}</th>
+                            <th>{{ __('updates.field.classification') }}</th>
+                            <th>{{ __('updates.field.requirements') }}</th>
+                            <th class="text-right"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($updates as $update)
+                            <tr @class(['opacity-50' => $update->isMuted() && ! $update->isSecurityRelevant()])>
+                                <td>
+                                    <span class="font-medium">{{ $update->component_key }}</span>
+                                    <span class="text-xs text-base-content/50">({{ $update->component_type }}, {{ $update->channel }})</span>
+                                </td>
+                                <td class="font-mono text-sm">{{ $update->installed_version }} → {{ $update->available_version }}</td>
+                                <td>
+                                    <x-status-badge size="xs" :tone="match($update->classification) { 'critical' => 'error', 'security' => 'error', 'recommended' => 'warning', default => 'info' }">
+                                        {{ __('updates.classification.' . $update->classification) }}
+                                    </x-status-badge>
+                                    @unless ($update->compatible)
+                                        <x-status-badge size="xs" tone="error">{{ __('updates.field.incompatible') }}</x-status-badge>
+                                    @endunless
+                                </td>
+                                <td class="text-xs">
+                                    @php $requires = (array) ($update->requires ?? []); @endphp
+                                    <div class="flex flex-wrap gap-1">
+                                        @if (($requires['backup'] ?? false))<x-status-badge size="xs" tone="warning">{{ __('updates.requires.backup') }}</x-status-badge>@endif
+                                        @if (($requires['maintenance_window'] ?? false))<x-status-badge size="xs" tone="warning">{{ __('updates.requires.maintenance_window') }}</x-status-badge>@endif
+                                        @if (($requires['migrations'] ?? false))<x-status-badge size="xs" tone="ghost">{{ __('updates.requires.migrations') }}</x-status-badge>@endif
+                                        @if (is_string($requires['manual_steps'] ?? null))<span class="text-base-content/60">{{ $requires['manual_steps'] }}</span>@endif
+                                        @if ($update->changelog_url)
+                                            <a href="{{ $update->changelog_url }}" target="_blank" rel="noopener noreferrer" class="link link-hover">{{ __('updates.field.changelog') }}</a>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="text-right">
+                                    @unless ($update->isSecurityRelevant())
+                                        <div class="inline-flex items-center gap-1">
+                                            <form method="POST" action="{{ route('admin.components.updates.snooze', $update) }}">
+                                                @csrf
+                                                <x-icon-btn icon="snooze" type="submit" :label="__('updates.action.snooze')" />
+                                            </form>
+                                            <form method="POST" action="{{ route('admin.components.updates.acknowledge', $update) }}">
+                                                @csrf
+                                                <x-icon-btn icon="notifications_off" type="submit" :label="__('updates.action.acknowledge')" />
+                                            </form>
+                                        </div>
+                                    @endunless
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </article>
 </x-index-page>
 @endsection

@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth, HasSqid};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -32,6 +32,8 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon|null $last_event_at
  */
 class CtiConnection extends Model {
+    use HasConnectionHealth;
+
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

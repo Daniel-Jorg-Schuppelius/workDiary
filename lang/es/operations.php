@@ -1,0 +1,106 @@
+<?php
+/*
+ * Created on   : Wed Jul 08 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : operations.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+return [
+    'title' => [
+        'index' => 'Tareas operativas',
+        'subtitle' => 'Actualizaciones, copias de seguridad, caducidades y averías — priorizadas y trazables.',
+        'widget' => 'Tareas operativas abiertas',
+    ],
+    'type' => [
+        'backup_overdue' => 'Copia de seguridad atrasada',
+        'backup_failed' => 'Copia de seguridad fallida',
+        'restore_test_overdue' => 'Prueba de restauración atrasada',
+        'update_available' => 'Actualización disponible',
+        'update_security' => 'Actualización de seguridad',
+        'license_expiring' => 'Caducidad de licencia',
+        'credential_expiring' => 'Caducidad de credencial/token',
+        'connection_failing' => 'Fallo de conexión',
+        'component_eol' => 'Componente sin soporte',
+        'plugin_disabled' => 'Plugin desactivado',
+        'scheduler_overdue' => 'Tarea programada atrasada',
+        'maintenance_scheduled' => 'Ventana de mantenimiento',
+        'config_missing' => 'Configuración faltante',
+        'support_grant_open' => 'Autorización de soporte abierta',
+        'problem_report_open' => 'Informe de problema abierto',
+    ],
+    'severity' => [
+        'info' => 'Aviso',
+        'warning' => 'Advertencia',
+        'critical' => 'Crítico',
+    ],
+    'status' => [
+        'open' => 'Abierta',
+        'snoozed' => 'Pospuesta',
+        'delegated' => 'Delegada',
+        'ignored' => 'Ignorada',
+        'done' => 'Completada',
+        'resolved' => 'Resuelta por sí sola',
+    ],
+    'field' => [
+        'task' => 'Tarea',
+        'severity' => 'Gravedad',
+        'status' => 'Estado',
+        'first_seen' => 'Detectada el',
+        'last_seen' => 'Confirmada el',
+        'assignee' => 'Responsable',
+        'actions' => 'Acciones',
+        'note' => 'Justificación',
+        'snooze_until' => 'Posponer hasta',
+        'system_wide' => 'A nivel de instalación',
+    ],
+    'action' => [
+        'done' => 'Completar',
+        'snooze' => 'Posponer',
+        'delegate' => 'Delegar',
+        'ignore' => 'Ignorar',
+        'reopen' => 'Reabrir',
+        'open_link' => 'Ir a la causa',
+    ],
+    'task' => [
+        'backup_overdue' => 'La última copia de seguridad tiene :hours horas (umbral :threshold h).',
+        'backup_failed' => 'Falló la comprobación de la copia de seguridad: :reason',
+        'restore_test_overdue' => 'La última prueba de restauración fue hace :days días (umbral :threshold días).',
+        'restore_test_missing' => 'Nunca se ha registrado una prueba de restauración.',
+        'update_available' => 'Actualización disponible para :component: :installed → :available.',
+        'update_security' => 'Actualización de seguridad para :component: :installed → :available (:classification).',
+        'license_expiring' => 'La licencia caduca el :date (:days días restantes).',
+        'credential_expiring' => ':kind «:name» caduca el :date.',
+        'connection_failing' => 'Conexión «:name» (:kind) con fallos: :error',
+        'component_eol' => ':component :version no tiene soporte desde el :date.',
+        'plugin_disabled' => 'El plugin «:plugin» se desactivó automáticamente tras :failures fallos.',
+        'scheduler_overdue' => 'La tarea programada «:job» está atrasada (vencimiento :due).',
+        'maintenance_scheduled' => 'Ventana de mantenimiento :from – :to::scope',
+        'support_grant_open' => 'Autorización de soporte para :grantee activa hasta :until.',
+        'problem_report_open' => 'El informe :reference de :name espera su tramitación.',
+        'problem_report_summary' => ':count informe(s) de problemas abiertos esperan tramitación.',
+        'support_grant_summary' => ':count autorización(es) de soporte activa(s): revisar y revocar si es necesario.',
+    ],
+    'filter' => [
+        'active' => 'Tareas activas',
+        'all_severities' => 'Todas las gravedades',
+        'all_types' => 'Todos los tipos',
+    ],
+    'empty' => [
+        'title' => 'Sin tareas operativas',
+        'message' => 'Nada que hacer ahora mismo: todas las tareas operativas están completadas o resueltas por sí solas.',
+    ],
+    'hint' => [
+        'auto_disabled_after' => 'Desactivado automáticamente tras :failures intentos fallidos.',
+        'no_contact_since' => 'Sin contacto desde el :date.',
+    ],
+    'flash' => [
+        'done' => 'Tarea marcada como completada.',
+        'snoozed' => 'Tarea pospuesta hasta :date.',
+        'delegated' => 'Tarea delegada.',
+        'ignored' => 'Tarea ignorada.',
+        'reopened' => 'Tarea reabierta.',
+    ],
+];

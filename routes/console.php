@@ -8,154 +8,20 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+use App\Scheduling\SchedulerRegistrar;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\{Artisan, Schedule};
+use Illuminate\Support\Facades\Artisan;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('archive:run')
-    ->dailyAt((string) config('archive.schedule_at', '03:00'))
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('plans:purge')
-    ->dailyAt('03:30')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('privacy:deadlines')
-    ->dailyAt('06:00')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('location:purge-points')
-    ->dailyAt('03:45')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('integration:purge-inbox')
-    ->dailyAt('04:00')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('chat:send-reminders')
-    ->everyMinute()
-    ->withoutOverlapping();
-
-Schedule::command('chat:send-scheduled')
-    ->everyMinute()
-    ->withoutOverlapping();
-
-Schedule::command('attendance:close-open')
-    ->everyFifteenMinutes()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('recurrence:generate')
-    ->dailyAt('04:30')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('events:dispatch-reminders')
-    ->everyFiveMinutes()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('events:check-certificates')
-    ->dailyAt('06:00')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('events:materialize-recurrences')
-    ->dailyAt('02:00')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('plugin:healthcheck --no-fail')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('remote:sync-sessions')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('toggl:import')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('openproject:import')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('todoist:sync')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('openproject:push')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('workdiary:backup:check-restore')
-    ->dailyAt('05:00')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('maintenance:scan-due')
-    ->dailyAt('05:30')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('notifications:scan-deadlines')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('tickets:scan-sla-breaches')
-    ->everyFiveMinutes()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('lexoffice:sync-contacts')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('lexoffice:sync-articles')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('lexoffice:sync-vouchers')
-    ->hourly()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('payroll:import-minimum-wages')
-    ->cron('0 4 15 1,7 *')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-Schedule::command('catalog:fetch-due')
-    ->everyFifteenMinutes()
-    ->withoutOverlapping()
-    ->onOneServer();
-
-// Sicherheitshinweise (OSV) für installierte Abhängigkeiten (Rang 70).
-Schedule::command('security:advisories-pull')
-    ->dailyAt('05:30')
-    ->withoutOverlapping()
-    ->onOneServer();
-
-// Aufbewahrungs-Review (Restpunkt 66): wöchentlicher Vorschlags-Scan.
-Schedule::command('privacy:retention-scan')
-    ->weeklyOn(1, '04:30')
-    ->withoutOverlapping()
-    ->onOneServer();
+/*
+ * Feature 067 (MVP-175/180): Alle wiederkehrenden Jobs kommen aus der
+ * Scheduler-Job-Registry (config/scheduler.php) — hier werden KEINE
+ * Schedule::command()-Einträge mehr hartcodiert. Neue Jobs in der
+ * Registry deklarieren; Umplanung/Pausen laufen über die Adminseite
+ * (MVP-176) bzw. scheduled_job_overrides.
+ */
+app(SchedulerRegistrar::class)->register(app(Schedule::class));

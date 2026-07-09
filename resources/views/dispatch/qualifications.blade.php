@@ -29,7 +29,13 @@
 
     @if ($required->isEmpty())
         <x-card>
+            {{-- Prerequisite-Audit (MVP-181): Hinweis mit direktem CTA. --}}
             <p class="text-sm text-base-content/60">{{ __('Für diesen Auftrag sind keine Qualifikationen gefordert — Anforderungen lassen sich im Dispositions-Panel des Auftrags pflegen.') }}</p>
+            <div class="mt-3">
+                <x-button :href="route('diary.show', $diary)" tone="primary" size="sm" icon="arrow_forward">
+                    {{ __('prerequisites.dispatch.cta') }}
+                </x-button>
+            </div>
         </x-card>
     @else
         <x-card>

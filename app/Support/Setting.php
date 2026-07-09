@@ -12,17 +12,22 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use App\Models\Organization;
+use App\Models\{Organization, SystemSetting};
+use App\Settings\{SettingScope, SettingsRegistry};
 
 /**
  * Mandantenbewusster Konfigurationszugriff.
  *
- * Auflösungsreihenfolge:
+ * Auflösungsreihenfolge (Feature 067, MVP-173):
  *   1. Organization::settings[<group>][<rest>], sofern eine aktive Organisation gebunden ist
- *   2. config('<group>.<rest>') (dateibasierter Default, env-überschreibbar)
- *   3. $default (harter Fallback)
+ *   2. system_settings (systemweiter Betreiber-Override, UI-schreibbar)
+ *   3. config('<group>.<rest>') (dateibasierter Default, env-überschreibbar)
+ *   4. $default (harter Fallback)
  *
  * Beispiel:  Setting::get('pagination.customers', 25)
+ *
+ * Schreiben ausschließlich über Setting::set()/reset() (validiert gegen
+ * die Settings-Registry) — nie direkt in die Ablagen.
  */
 final class Setting {
     public static function get(string $key, mixed $default = null): mixed {
@@ -45,6 +50,24 @@ final class Setting {
             }
         }
 
+        $systemValues = SystemSetting::valueMap();
+        if (array_key_exists($key, $systemValues)) {
+            return $systemValues[$key];
+        }
+
         return config($key, $default);
+    }
+
+    /**
+     * Validierter Schreibweg über die Settings-Registry (nur registrierte
+     * Keys; System- oder Organisations-Scope).
+     */
+    public static function set(string $key, mixed $value, SettingScope $scope, ?Organization $organization = null, ?int $userId = null): void {
+        app(SettingsRegistry::class)->set($key, $value, $scope, $organization, $userId);
+    }
+
+    /** Entfernt den Override der Ebene (Rollback auf Default). */
+    public static function reset(string $key, SettingScope $scope, ?Organization $organization = null): void {
+        app(SettingsRegistry::class)->reset($key, $scope, $organization);
     }
 }

@@ -17,6 +17,7 @@ import { __ } from "./i18n.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
 import "./global-search.js";
+import "./header-autohide.js";
 import "./help-drawer.js";
 import "./quick-book.js";
 import "./layout.js";

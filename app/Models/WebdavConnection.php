@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -36,6 +36,8 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon|null $last_mirrored_at
  */
 class WebdavConnection extends Model {
+    use HasConnectionHealth;
+
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

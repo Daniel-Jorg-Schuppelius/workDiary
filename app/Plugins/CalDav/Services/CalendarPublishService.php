@@ -94,6 +94,17 @@ class CalendarPublishService {
 
         $connection->forceFill(['last_published_at' => Carbon::now()])->save();
 
+        // Verbindungs-Gesundheit (MVP-178): fehlgeschlagene PUT/DELETE
+        // zählen als Störung (Aufgabe via ExpiryScanner), ein fehlerfreier
+        // Lauf setzt den Zähler zurück.
+        if ($counters['failed'] > 0) {
+            $connection->recordConnectionFailure(
+                sprintf('%d Kalenderobjekt(e) konnten nicht publiziert/entfernt werden.', $counters['failed']),
+            );
+        } else {
+            $connection->recordConnectionSuccess();
+        }
+
         return $counters;
     }
 }

@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $last_published_at
  */
 class CalDavConnection extends Model {
+    use HasConnectionHealth;
+
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */

@@ -56,8 +56,14 @@ class MailPollCommand extends Command {
                         $gateway->markProcessed($connection, $message);
                     }
                     $connection->forceFill(['last_polled_at' => Carbon::now()])->save();
+                    // Verbindungs-Gesundheit (MVP-178): Erholung setzt den
+                    // Fehlerzähler zurück und löst die Betriebsaufgabe auf.
+                    $connection->recordConnectionSuccess();
                     $this->info(sprintf('Organisation #%d / %s: %d neue Mails eingereiht.', $org->id, $connection->name, $created));
                 } catch (Throwable $e) {
+                    // Verbindungs-Gesundheit (MVP-178): Fehlversuch zählen —
+                    // der ExpiryScanner meldet gestörte Postfächer als Aufgabe.
+                    $connection->recordConnectionFailure($e->getMessage());
                     $this->error(sprintf('Organisation #%d / %s: Abbruch — %s', $org->id, $connection->name, class_basename($e)));
                 }
             }

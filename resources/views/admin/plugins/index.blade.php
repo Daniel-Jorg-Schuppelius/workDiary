@@ -64,7 +64,13 @@
         <x-empty-state framed
             icon='<span class="material-symbols-outlined" aria-hidden="true">extension</span>'
             :title="__('Keine Plugins gefunden')"
-            :message="__('Plugin-Klassen werden in config/plugins.php deklariert.')" />
+            :message="__('Plugin-Klassen werden in config/plugins.php deklariert.')">
+            {{-- Prerequisite-Audit (MVP-181): Dateikonfiguration = Betreiber-
+                 Aufgabe; die Hilfe erklärt den Einrichtungsweg. --}}
+            <x-slot:action>
+                <x-help-button topic="admin.plugins" />
+            </x-slot:action>
+        </x-empty-state>
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="client">
             <x-slot:head>

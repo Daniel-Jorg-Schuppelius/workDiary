@@ -24,7 +24,17 @@
 
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
         @if ($references->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">link</span>' :title="__('Keine Zuordnungen im gewählten Filter.')" />
+            {{-- Prerequisite-Audit (MVP-181): erklären, WIE Zuordnungen
+                 entstehen, statt nur den leeren Zustand zu zeigen. --}}
+            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">link</span>'
+                           :title="__('Keine Zuordnungen im gewählten Filter.')"
+                           :message="__('prerequisites.mappings.hint')">
+                <x-slot:action>
+                    <x-button :href="route('admin.integration.inbox')" tone="primary" size="sm" icon="arrow_forward">
+                        {{ __('prerequisites.mappings.cta') }}
+                    </x-button>
+                </x-slot:action>
+            </x-empty-state>
         @else
             <div class="overflow-x-auto">
                 <table class="table table-sm">

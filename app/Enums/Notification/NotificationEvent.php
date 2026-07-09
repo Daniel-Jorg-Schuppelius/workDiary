@@ -92,6 +92,24 @@ enum NotificationEvent: string implements HasLabel {
     case TicketCustomerReplied = 'ticket.customerReplied';
     case TicketWaitingExpired = 'ticket.waitingExpired';
 
+        // Betriebsereignisse (Feature 041, MVP-053–058): Quellen melden über
+        // den OperationsAlertService — Empfänger sind Adminrollen, nie die
+        // „betroffene Person". Routine (updateAvailable) ist drosselbar,
+        // Security-Hinweise bleiben in Diagnose/Komponenten immer sichtbar.
+    case OperationsBackupOverdue = 'operations.backupOverdue';
+    case OperationsBackupFailed = 'operations.backupFailed';
+    case OperationsRestoreTestOverdue = 'operations.restoreTestOverdue';
+    case OperationsUpdateAvailable = 'operations.updateAvailable';
+    case OperationsUpdateSecurity = 'operations.updateSecurity';
+    case OperationsLicenseExpiring = 'operations.licenseExpiring';
+    case OperationsCredentialExpiring = 'operations.credentialExpiring';
+    case OperationsConnectionFailing = 'operations.connectionFailing';
+    case OperationsComponentEol = 'operations.componentEol';
+    case OperationsPluginDisabled = 'operations.pluginDisabled';
+    case OperationsSchedulerOverdue = 'operations.schedulerOverdue';
+    case OperationsMaintenanceScheduled = 'operations.maintenanceScheduled';
+    case OperationsProblemReportReceived = 'operations.problemReportReceived';
+
     public function label(): string {
         return (string) __('enums.notification.event.' . $this->value);
     }
@@ -111,6 +129,11 @@ enum NotificationEvent: string implements HasLabel {
      * der Antragsteller selbst — Empfänger sind hier die Entscheider (Rolle).
      */
     public function defaultNotifyAffected(): bool {
+        // Betriebsereignisse haben keine „betroffene Person" — nur Rollen.
+        if (str_starts_with($this->value, 'operations.')) {
+            return false;
+        }
+
         return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::MaintenanceDueSoon, self::MaintenanceOverdue, self::SlaQuotaWarning], true);
     }
 
@@ -120,6 +143,13 @@ enum NotificationEvent: string implements HasLabel {
      * @return list<string>
      */
     public function defaultRecipientRoles(): array {
+        // Betriebsereignisse gehen per Default an die Admin-Rolle der Org
+        // (bei Selbst-Hosting zugleich Betreiber); MVP-058 führt sie
+        // zusätzlich als Aufgabe im Admin-Aufgabencenter.
+        if (str_starts_with($this->value, 'operations.')) {
+            return [UserRole::Admin->value];
+        }
+
         return match ($this) {
             self::TimeCorrectionRequested,
             self::MonthClosureSubmitted => [UserRole::Teamleitung->value],
@@ -214,6 +244,19 @@ enum NotificationEvent: string implements HasLabel {
             self::TicketAssigned => 'confirmation_number',
             self::TicketCustomerReplied => 'mark_email_unread',
             self::TicketWaitingExpired => 'alarm',
+            self::OperationsBackupOverdue,
+            self::OperationsBackupFailed => 'backup',
+            self::OperationsRestoreTestOverdue => 'settings_backup_restore',
+            self::OperationsUpdateAvailable => 'system_update_alt',
+            self::OperationsUpdateSecurity => 'security_update_warning',
+            self::OperationsLicenseExpiring => 'key',
+            self::OperationsCredentialExpiring => 'password',
+            self::OperationsConnectionFailing => 'link_off',
+            self::OperationsComponentEol => 'inventory_2',
+            self::OperationsPluginDisabled => 'extension_off',
+            self::OperationsSchedulerOverdue => 'schedule',
+            self::OperationsMaintenanceScheduled => 'engineering',
+            self::OperationsProblemReportReceived => 'flag',
         };
     }
 
@@ -232,6 +275,8 @@ enum NotificationEvent: string implements HasLabel {
             self::SlaBreached,
             self::AssetReturnOverdue,
             self::MaintenanceOverdue,
+            // Backup-Alarm eskaliert 26 h→72 h (Feature 017, MVP-056).
+            self::OperationsBackupOverdue,
         ], true);
     }
 }

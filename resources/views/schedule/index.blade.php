@@ -48,6 +48,24 @@
         @endif
     </x-filter-bar>
 
+    {{-- Prerequisite-Referenzfall (Feature 067, MVP-181): ohne angelegte
+         Schichttypen bleibt der Tagesklick nicht mehr stumm — geführter
+         Setup-Hinweis; Admins öffnen den Typ-Manager direkt. --}}
+    @if ($shiftTypes->isEmpty())
+        <div role="alert" class="alert alert-warning alert-soft mt-2 text-sm" data-prerequisite="shift-types">
+            <x-icon name="settings_alert" />
+            <span>{{ __('prerequisites.shift_types.missing') }}</span>
+            @if ($isAdmin)
+                <x-button type="button" size="sm" tone="warning" id="btn-open-type-manager-hint"
+                          onclick="document.getElementById('btn-open-type-manager')?.click()">
+                    {{ __('prerequisites.shift_types.cta') }}
+                </x-button>
+            @else
+                <span class="text-xs text-base-content/70">{{ __('prerequisites.contact_role', ['role' => __('Administration')]) }}</span>
+            @endif
+        </div>
+    @endif
+
     {{-- ── Flash messages ──────────────────────────────────────────────── --}}
     @if (session('import_errors'))
         <div class="alert alert-warning alert-sm my-2 py-2">
