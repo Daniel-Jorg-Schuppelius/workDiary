@@ -11,7 +11,6 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\{Attachment, DiaryEntry, Organization, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -39,7 +38,6 @@ class AttachmentTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'att-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'att-b']);

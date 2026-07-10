@@ -14,7 +14,6 @@ use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, Op
 use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, PerDiemTrip, User, Vacation};
 use App\Models\OpenIssue;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,7 +22,6 @@ class DashboardTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_dashboard_requires_auth(): void {

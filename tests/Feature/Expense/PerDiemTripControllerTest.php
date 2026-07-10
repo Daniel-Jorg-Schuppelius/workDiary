@@ -12,7 +12,7 @@ namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Models\{ExpenseCategory, PerDiemTrip, User};
-use Database\Seeders\{PerDiemRateSeeder, PermissionsSeeder};
+use Database\Seeders\{PerDiemRateSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;
@@ -26,7 +26,6 @@ class PerDiemTripControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->seed(PerDiemRateSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);

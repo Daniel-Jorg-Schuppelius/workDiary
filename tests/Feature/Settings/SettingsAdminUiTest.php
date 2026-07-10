@@ -11,9 +11,8 @@
 namespace Tests\Feature\Settings;
 
 use App\Models\User;
-use App\Settings\{SettingsRegistry};
+use App\Settings\SettingsRegistry;
 use App\Support\Setting;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,7 +23,6 @@ class SettingsAdminUiTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->admin = User::factory()->admin()->create();
     }
 

@@ -12,7 +12,6 @@ namespace Tests\Feature\Help;
 
 use App\Models\{HelpTopic, User};
 use App\Services\Help\HelpContextResolver;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route;
 use Tests\TestCase;
@@ -30,7 +29,6 @@ class HelpContextTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     private function namedRoute(string $name): Route {

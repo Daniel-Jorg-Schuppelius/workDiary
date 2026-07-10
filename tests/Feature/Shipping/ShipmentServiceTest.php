@@ -15,7 +15,6 @@ use App\Enums\Shipping\ShipmentStatus;
 use App\Models\{CarrierConnection, ExternalReference, Shipment, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Shipping\{ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService, ShippingProviderRegistry, TrackingEvent, TrackingResult};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Notification, Storage};
@@ -31,7 +30,6 @@ class ShipmentServiceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         Storage::fake('local');
 

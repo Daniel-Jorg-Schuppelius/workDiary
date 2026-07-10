@@ -15,7 +15,6 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Task, TodoistConnection, TodoistProjectLink, User};
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistOutboxDispatcher};
 use App\Plugins\Todoist\TodoistPlugin;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Spatie\Permission\PermissionRegistrar;
@@ -41,7 +40,6 @@ final class TodoistOutboxTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,

@@ -11,7 +11,6 @@
 namespace Tests\Feature\Demo;
 
 use App\Models\{Customer, DiaryEntry, Organization, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +19,6 @@ class DemoCommandTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_demo_seed_command_creates_end_to_end_demo_org(): void {

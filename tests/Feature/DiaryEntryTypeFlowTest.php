@@ -11,7 +11,6 @@
 namespace Tests\Feature;
 
 use App\Models\{Customer, EntryType, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -28,7 +27,6 @@ class DiaryEntryTypeFlowTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->admin = User::factory()->admin()->create();
     }
 

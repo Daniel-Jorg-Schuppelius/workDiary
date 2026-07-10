@@ -12,7 +12,6 @@ namespace Tests\Feature\Procurement;
 
 use App\Models\{Article, ArticleSupply, Supplier, User};
 use App\Services\Procurement\SupplySourceComparator;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -31,7 +30,6 @@ final class CatalogSupplyComparisonTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->article = Article::factory()->create(['organization_id' => $this->organization->id, 'purchasable' => true]);
     }

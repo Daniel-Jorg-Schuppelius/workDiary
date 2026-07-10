@@ -11,7 +11,6 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Models\{Customer, DiaryEntry, Invoice, OpenIssue, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Auth, Hash};
 use Spatie\Permission\PermissionRegistrar;
@@ -29,7 +28,6 @@ class CustomerPortalAccessTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->customer = Customer::factory()->create([

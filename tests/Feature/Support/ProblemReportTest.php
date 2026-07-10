@@ -13,7 +13,6 @@ namespace Tests\Feature\Support;
 use App\Enums\Support\{ProblemReportDeliveryTarget, ProblemReportStatus};
 use App\Mail\ProblemReportForwardMail;
 use App\Models\{ProblemReport, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Mail, Storage};
@@ -24,7 +23,6 @@ class ProblemReportTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     /**

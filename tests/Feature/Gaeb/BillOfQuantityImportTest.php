@@ -13,7 +13,6 @@ namespace Tests\Feature\Gaeb;
 use App\Enums\Gaeb\{BoqItemStatus, GaebImportStatus};
 use App\Models\{BillOfQuantity, BoqItem, User};
 use App\Services\Gaeb\{BoqImportConflictException, GaebImportService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Spatie\Permission\PermissionRegistrar;
@@ -100,7 +99,6 @@ final class BillOfQuantityImportTest extends TestCase {
     }
 
     public function test_http_import_requires_permission_and_redirects(): void {
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $stranger = User::factory()->user()->create(['organization_id' => $this->organization->id]);

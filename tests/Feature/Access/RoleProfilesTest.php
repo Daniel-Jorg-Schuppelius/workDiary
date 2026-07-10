@@ -37,7 +37,6 @@ class RoleProfilesTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         // Org-Kontext im Permission-Registrar aktivieren, damit
         // `hasPermissionTo()` die team-spezifischen Rollen findet.
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
@@ -163,8 +162,6 @@ class RoleProfilesTest extends TestCase {
 
         // Zweiter und dritter Durchlauf dürfen weder Roles noch
         // Permissions noch Zuordnungen vervielfachen.
-        $this->seed(PermissionsSeeder::class);
-        $this->seed(PermissionsSeeder::class);
 
         $this->assertSame($rolesBefore, Role::query()->count(), 'Roles werden dupliziert.');
         $this->assertSame($permsBefore, Permission::query()->count(), 'Permissions werden dupliziert.');

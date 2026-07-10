@@ -14,7 +14,6 @@ use App\Enums\Ideas\IdeaShareRole;
 use App\Models\{IdeaMap, Team, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Ideas\IdeaMapService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\PermissionRegistrar;
@@ -37,7 +36,6 @@ final class IdeaMapShareTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->maps = app(IdeaMapService::class);
         $this->owner = User::factory()->user()->create(['organization_id' => $this->organization->id]);

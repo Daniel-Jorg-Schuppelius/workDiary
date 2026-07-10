@@ -13,7 +13,6 @@ namespace Tests\Feature\Events;
 use App\Enums\Event\{ParticipantRole, ParticipantStatus};
 use App\Models\{Event, EventCategory, User};
 use App\Services\Event\CertificateService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -28,7 +27,6 @@ class CertificateIssueTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->svc = app(CertificateService::class);

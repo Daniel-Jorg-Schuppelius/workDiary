@@ -13,7 +13,6 @@ namespace Tests\Feature\Demo;
 use App\Enums\Demo\DemoIndustry;
 use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, Material, OpenIssue, Organization, Project, Protocol, TimeEntry, User};
 use App\Services\Demo\DemoSeederService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -24,7 +23,6 @@ class DemoSeederServiceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

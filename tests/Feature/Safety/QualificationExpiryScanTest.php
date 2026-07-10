@@ -13,7 +13,6 @@ namespace Tests\Feature\Safety;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\{Qualification, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -26,7 +25,6 @@ class QualificationExpiryScanTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->employee = User::factory()->user()->create(['organization_id' => $this->organization->id]);

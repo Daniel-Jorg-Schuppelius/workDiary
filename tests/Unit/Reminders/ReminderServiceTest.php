@@ -14,7 +14,6 @@ use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Models\{Expense, ExpenseCategory, PerDiemTrip, User};
 use App\Services\Reminders\ReminderService;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -33,7 +32,6 @@ class ReminderServiceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

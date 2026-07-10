@@ -12,7 +12,6 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\{TodoistConnection, User};
 use App\Plugins\Todoist\Api\TodoistOAuth;
-use Database\Seeders\PermissionsSeeder;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
@@ -37,7 +36,6 @@ final class TodoistConnectionTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

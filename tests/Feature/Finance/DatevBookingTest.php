@@ -16,7 +16,6 @@ use App\Models\{Customer, Invoice, User};
 use App\Models\Finance\DatevBookingBatch;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
 use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
-use Database\Seeders\PermissionsSeeder;
 use DateTimeImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Gate, Storage};
@@ -41,7 +40,6 @@ class DatevBookingTest extends TestCase {
         $this->setUpOrganization([
             'settings' => ['datev' => ['advisor_number' => 12345, 'client_number' => 1, 'skr' => 'skr03', 'debtor_base' => 10000]],
         ]);
-        $this->seed(PermissionsSeeder::class);
 
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Acme GmbH']);

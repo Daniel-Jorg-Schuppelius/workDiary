@@ -11,7 +11,6 @@
 namespace Tests\Feature\Support;
 
 use App\Models\{Customer, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;
@@ -23,7 +22,6 @@ class SupportReportCommandTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

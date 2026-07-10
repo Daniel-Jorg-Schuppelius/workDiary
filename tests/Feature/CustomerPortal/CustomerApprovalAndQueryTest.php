@@ -17,7 +17,6 @@ use App\Enums\User\UserRole;
 use App\Models\{Customer, CustomerQuery, DiaryEntry, OpenIssue, Protocol, ProtocolSignatureToken, User};
 use App\Services\Customer\CustomerQueryService;
 use App\Services\Protocol\{ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
@@ -31,7 +30,6 @@ class CustomerApprovalAndQueryTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         Storage::fake(ProtocolPdfRenderer::DISK);
     }

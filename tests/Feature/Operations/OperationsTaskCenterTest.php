@@ -13,7 +13,6 @@ namespace Tests\Feature\Operations;
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
 use App\Models\{OperationsTask, ProblemReport, SupportAccessGrant, User};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -25,7 +24,6 @@ class OperationsTaskCenterTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->admin = User::factory()->admin()->create();
     }
 

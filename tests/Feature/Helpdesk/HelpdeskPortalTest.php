@@ -13,7 +13,6 @@ namespace Tests\Feature\Helpdesk;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\{Customer, ServiceQueue, ServiceTicket, ServiceTicketMessage, User};
 use App\Services\ServiceTicket\TicketConversationService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
@@ -39,7 +38,6 @@ final class HelpdeskPortalTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);

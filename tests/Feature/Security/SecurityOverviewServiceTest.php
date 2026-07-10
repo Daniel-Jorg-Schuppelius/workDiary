@@ -12,7 +12,6 @@ namespace Tests\Feature\Security;
 
 use App\Models\{AuditLog, Organization, User};
 use App\Services\Security\SecurityOverviewService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class SecurityOverviewServiceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     private function bindOrganization(Organization $organization): void {

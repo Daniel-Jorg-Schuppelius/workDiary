@@ -11,7 +11,6 @@
 namespace Tests\Feature\Support;
 
 use App\Models\User;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +19,6 @@ class SupportReportControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_index_requires_authentication(): void {

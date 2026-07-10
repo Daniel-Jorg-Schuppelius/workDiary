@@ -13,7 +13,6 @@ namespace Tests\Feature\Automation;
 use App\Enums\Expense\ExpenseStatus;
 use App\Models\{AutomationRule, AutomationRuleRun, Expense, ExpenseCategory, User};
 use App\Services\Expense\ExpenseService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\Concerns\WithOrganization;
@@ -31,7 +30,6 @@ class AutoApproveExpenseTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

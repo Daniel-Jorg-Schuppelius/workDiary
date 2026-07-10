@@ -13,7 +13,6 @@ namespace Tests\Feature\Software;
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
 use App\Enums\User\UserRole;
 use App\Models\{Asset, Software, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -28,7 +27,6 @@ class SoftwareControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

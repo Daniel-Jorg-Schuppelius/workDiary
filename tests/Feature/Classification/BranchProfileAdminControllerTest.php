@@ -12,7 +12,6 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\User\UserRole;
 use App\Models\{AuditLog, Classification, ClassificationRequirement, Organization, Tag, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -27,7 +26,6 @@ class BranchProfileAdminControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

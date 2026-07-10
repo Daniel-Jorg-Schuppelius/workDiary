@@ -12,7 +12,6 @@ namespace Tests\Feature\Access;
 
 use App\Models\{AuditLog, User};
 use App\Services\Whistleblowing\WhistleblowingPermissions;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -34,7 +33,6 @@ class RoleControllerAuditTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 

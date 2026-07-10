@@ -14,7 +14,6 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\{Customer, DiaryEntry, Project, SlaContract, SlaContractQuota, TimeEntry, User};
 use App\Models\Notification\NotificationRule;
 use App\Services\ServiceTicket\SlaQuotaService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -39,7 +38,6 @@ final class SlaQuotaTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->worker = User::factory()->user()->create(['organization_id' => $this->organization->id]);

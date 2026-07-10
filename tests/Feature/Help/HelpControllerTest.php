@@ -11,7 +11,6 @@
 namespace Tests\Feature\Help;
 
 use App\Models\{HelpTopic, HelpView, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +19,6 @@ class HelpControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_show_returns_topic_payload_and_logs_anonymous_view(): void {

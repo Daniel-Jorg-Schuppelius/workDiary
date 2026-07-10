@@ -13,7 +13,6 @@ namespace Tests\Feature\Support;
 use App\Models\{AuditLog, Customer, User};
 use App\Services\Support\SupportReportBuilder;
 use CommonToolkit\Helper\Data\JsonHelper;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -24,7 +23,6 @@ class SupportReportBuilderTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

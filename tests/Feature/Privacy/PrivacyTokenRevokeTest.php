@@ -12,7 +12,6 @@ namespace Tests\Feature\Privacy;
 
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -23,7 +22,6 @@ class PrivacyTokenRevokeTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_revoke_token_requires_permission(): void {

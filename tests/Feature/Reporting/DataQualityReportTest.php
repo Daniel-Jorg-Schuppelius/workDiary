@@ -12,7 +12,6 @@ namespace Tests\Feature\Reporting;
 
 use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Models\{ClassificationRequirement, DiaryEntry, EntryType, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
@@ -32,7 +31,6 @@ class DataQualityReportTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

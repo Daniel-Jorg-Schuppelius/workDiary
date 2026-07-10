@@ -11,7 +11,6 @@
 namespace Tests\Feature\Security;
 
 use App\Models\{AuditLog, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,7 +24,6 @@ class SecurityOverviewPageTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_index_requires_authentication(): void {

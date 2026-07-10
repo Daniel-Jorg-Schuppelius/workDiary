@@ -13,7 +13,6 @@ namespace Tests\Feature\Procurement;
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\{Article, ManufacturingOrder, ManufacturingOrderMaterial, PricingChangeAlert, PricingMarginRule, Supplier, SupplierCatalogItem, SupplierCatalogSource, User, Warehouse};
 use App\Services\Procurement\{CatalogCsvImportService, PurchaseOrderService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -36,7 +35,6 @@ final class CatalogPriceAlertTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);

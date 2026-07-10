@@ -13,7 +13,6 @@ namespace Tests\Feature\Inventory;
 use App\Enums\Inventory\{StockCountStatus, StockState};
 use App\Models\{Article, ArticleVariant, User, Warehouse};
 use App\Services\Inventory\InventoryLedger;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -35,7 +34,6 @@ final class StocktakeUiTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->teamlead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);

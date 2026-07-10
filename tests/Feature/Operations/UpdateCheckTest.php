@@ -14,7 +14,6 @@ use App\Models\{ComponentUpdate, User};
 use App\Services\Updates\UpdateCheckService;
 use App\Settings\SettingScope;
 use App\Support\Setting;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, Http};
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class UpdateCheckTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         User::factory()->admin()->create();
 
         $pair = sodium_crypto_sign_keypair();

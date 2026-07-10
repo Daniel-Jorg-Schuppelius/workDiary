@@ -11,7 +11,6 @@
 namespace Tests\Feature\Ideas;
 
 use App\Models\{IdeaMap, IdeaNode, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Spatie\Permission\PermissionRegistrar;
@@ -32,7 +31,6 @@ final class IdeaMapImportTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }

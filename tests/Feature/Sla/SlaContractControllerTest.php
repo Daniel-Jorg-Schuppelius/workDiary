@@ -12,7 +12,6 @@ namespace Tests\Feature\Sla;
 
 use App\Enums\User\Permission;
 use App\Models\{Asset, MaintenancePlan, Organization, SlaContract, SlaContractQuota, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -33,7 +32,6 @@ class SlaContractControllerTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->viewer = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->viewer->givePermissionTo(Permission::SlaContractView->value);

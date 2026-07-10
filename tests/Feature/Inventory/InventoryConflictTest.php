@@ -13,7 +13,6 @@ namespace Tests\Feature\Inventory;
 use App\Enums\Inventory\StockState;
 use App\Models\{Article, ArticleVariant, PendingExternalConflict, StockMovement, User, Warehouse};
 use App\Services\Inventory\{InventoryConflictResolver, InventoryLedger};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
@@ -35,7 +34,6 @@ final class InventoryConflictTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->ledger = app(InventoryLedger::class);
         $this->warehouse = Warehouse::factory()->create(['organization_id' => $this->organization->id]);

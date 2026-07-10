@@ -16,7 +16,6 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, Organization, Project, TimeEntry, User};
 use App\Models\Finance\BillingTransfer;
 use App\Services\Finance\BillingTransferService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -39,7 +38,6 @@ class FinanceTransferUiTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
 
         $this->accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
 

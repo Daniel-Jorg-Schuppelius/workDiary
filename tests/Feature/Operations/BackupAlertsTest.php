@@ -12,7 +12,6 @@ namespace Tests\Feature\Operations;
 
 use App\Models\{BackupHeartbeat, OperationsTask, RestoreTest, User};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
@@ -22,7 +21,6 @@ class BackupAlertsTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         User::factory()->admin()->create(); // Empfänger + Betreiber-Org
     }
 

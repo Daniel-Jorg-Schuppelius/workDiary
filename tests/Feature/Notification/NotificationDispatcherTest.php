@@ -15,7 +15,6 @@ use App\Models\Notification\NotificationRule;
 use App\Models\{OpenIssue, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Notification\NotificationDispatcher;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
@@ -30,7 +29,6 @@ class NotificationDispatcherTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->affected = User::factory()->user()->create(['organization_id' => $this->organization->id]);

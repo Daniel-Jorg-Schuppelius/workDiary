@@ -13,7 +13,6 @@ namespace Tests\Feature\Integration;
 use App\Enums\Integration\WebhookEvent;
 use App\Models\Integration\WebhookEndpoint;
 use App\Models\User;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;
@@ -25,7 +24,6 @@ class WebhookEndpointAdminTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

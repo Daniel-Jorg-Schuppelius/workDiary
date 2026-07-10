@@ -13,7 +13,6 @@ namespace Tests\Feature\Ideas;
 use App\Enums\Ideas\IdeaShareRole;
 use App\Models\{IdeaMap, IdeaNode, User};
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -38,7 +37,6 @@ final class IdeaNodeApiTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->maps = app(IdeaMapService::class);
         $this->nodes = app(IdeaNodeService::class);

@@ -12,7 +12,6 @@ namespace Tests\Feature\Facility;
 
 use App\Enums\User\UserRole;
 use App\Models\{Building, Customer, Floor, Site, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -29,7 +28,6 @@ class RoomCreatePrefillTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->user->assignRole(UserRole::TrainingManager->value);

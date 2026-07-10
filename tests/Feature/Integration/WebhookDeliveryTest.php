@@ -16,7 +16,6 @@ use App\Jobs\Integration\WebhookDeliveryJob;
 use App\Models\Integration\{WebhookDelivery, WebhookEndpoint};
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\Notification\NotificationDispatcher;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Http, Queue};
 use Tests\Concerns\WithOrganization;
@@ -28,7 +27,6 @@ class WebhookDeliveryTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

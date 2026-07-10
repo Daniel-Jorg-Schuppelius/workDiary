@@ -12,7 +12,6 @@ namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Article\ArticleType;
 use App\Models\{Article, ArticleVariant, ProcedureMaterialRequirement, ProcedureTemplateVersion, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -33,7 +32,6 @@ final class ManufacturingPlanningControllerTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

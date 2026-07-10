@@ -13,7 +13,6 @@ namespace Tests\Feature\Asset;
 use App\Enums\Asset\MaintenanceIntervalKind;
 use App\Enums\User\UserRole;
 use App\Models\{Asset, MaintenancePlan, Organization, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -33,7 +32,6 @@ class MaintenancePlanControllerTest extends TestCase {
 
         $this->org = Organization::factory()->create();
         app()->instance('currentOrganization', $this->org);
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->org->id);
 
         $this->actor = User::factory()->create(['organization_id' => $this->org->id]);

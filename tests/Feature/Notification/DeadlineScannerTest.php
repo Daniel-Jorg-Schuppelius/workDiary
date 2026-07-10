@@ -14,7 +14,6 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Models\{Document, MaintenancePlan, OpenIssue, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class DeadlineScannerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->assignee = User::factory()->user()->create(['organization_id' => $this->organization->id]);

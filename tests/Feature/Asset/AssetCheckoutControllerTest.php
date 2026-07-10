@@ -14,7 +14,6 @@ use App\Enums\Asset\{AssetStatus, DefectSeverity};
 use App\Enums\User\UserRole;
 use App\Models\{Asset, AssetDefect, User};
 use App\Services\Asset\AssetAssignmentService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +30,6 @@ class AssetCheckoutControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

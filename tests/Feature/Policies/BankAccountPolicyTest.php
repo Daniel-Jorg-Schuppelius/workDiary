@@ -14,7 +14,6 @@ use App\Enums\User\Permission as P;
 use App\Models\Finance\BankAccount;
 use App\Models\User;
 use App\Policies\Finance\BankAccountPolicy;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -35,7 +34,6 @@ final class BankAccountPolicyTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->policy = new BankAccountPolicy;
     }

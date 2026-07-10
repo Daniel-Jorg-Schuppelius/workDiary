@@ -13,7 +13,6 @@ namespace Tests\Feature\Operations;
 use App\Models\{MaintenanceWindow, User};
 use App\Services\Operations\MaintenanceWindowService;
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use InvalidArgumentException;
@@ -26,7 +25,6 @@ class MaintenanceWindowTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->admin = User::factory()->admin()->create();
     }
 

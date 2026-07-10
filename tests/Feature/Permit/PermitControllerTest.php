@@ -13,7 +13,6 @@ namespace Tests\Feature\Permit;
 use App\Enums\Permit\PermitStatus;
 use App\Enums\User\UserRole;
 use App\Models\{Event, Permit, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -30,7 +29,6 @@ class PermitControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

@@ -18,7 +18,6 @@ use App\Models\Finance\BillingTransfer;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Finance\BillingTransferService;
 use App\Services\Finance\Targets\{FileTarget, LexofficeTarget};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Psr\Http\Message\RequestInterface;
@@ -46,7 +45,6 @@ class FinanceTransferExecuteTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
 
         $this->accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($this->accountant);

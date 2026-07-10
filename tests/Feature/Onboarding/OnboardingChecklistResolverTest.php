@@ -14,7 +14,6 @@ use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\UserRole;
 use App\Models\{AuditLog, Classification, Customer, DiaryEntry, OnboardingProgress, Organization, Project, Protocol, TimeEntry, User, UserGroup};
 use App\Services\Onboarding\OnboardingChecklistResolver;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -27,7 +26,6 @@ class OnboardingChecklistResolverTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

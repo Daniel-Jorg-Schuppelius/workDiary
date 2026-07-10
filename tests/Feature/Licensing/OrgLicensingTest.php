@@ -13,7 +13,6 @@ namespace Tests\Feature\Licensing;
 use App\Models\{Organization, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -110,7 +109,6 @@ class OrgLicensingTest extends TestCase {
     }
 
     public function test_admin_ui_installs_and_removes_org_license(): void {
-        $this->seed(PermissionsSeeder::class);
         $admin = User::factory()->admin()->create();
         $org = $admin->organization;
         $org->update(['plan' => 'free']);
@@ -149,7 +147,6 @@ class OrgLicensingTest extends TestCase {
 
     public function test_admin_ui_issues_license(): void {
         config()->set('license.private_key', base64_encode($this->secretKey));
-        $this->seed(PermissionsSeeder::class);
         $admin = User::factory()->admin()->create();
         $org = $admin->organization;
         $org->update(['plan' => 'free']);
@@ -182,7 +179,6 @@ class OrgLicensingTest extends TestCase {
 
     public function test_issuer_console_route_flashes_key(): void {
         config()->set('license.private_key', base64_encode($this->secretKey));
-        $this->seed(PermissionsSeeder::class);
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)

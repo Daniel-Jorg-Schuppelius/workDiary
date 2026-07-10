@@ -11,7 +11,6 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\{CommunicationNote, Document, Event, FeatureUsageCounter, FormSubmission, FormTemplate, KnowledgeArticle, Milestone, Organization, PerDiemTrip, Project, Task, TimeEntry, Timesheet, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -35,7 +34,6 @@ class TenantBoundaryTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'boundary-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'boundary-b']);

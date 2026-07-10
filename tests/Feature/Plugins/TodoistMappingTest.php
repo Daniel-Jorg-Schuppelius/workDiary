@@ -13,7 +13,6 @@ namespace Tests\Feature\Plugins;
 use App\Models\{ExternalReference, Project, TodoistConnection, TodoistProjectLink, User};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\TodoistPlugin;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -35,7 +34,6 @@ final class TodoistMappingTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->connection = TodoistConnection::query()->create([

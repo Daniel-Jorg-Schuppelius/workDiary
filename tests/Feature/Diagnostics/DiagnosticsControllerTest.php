@@ -11,7 +11,6 @@
 namespace Tests\Feature\Diagnostics;
 
 use App\Models\User;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -21,7 +20,6 @@ class DiagnosticsControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_index_requires_authentication(): void {

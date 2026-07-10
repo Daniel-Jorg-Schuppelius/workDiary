@@ -12,7 +12,6 @@ namespace Tests\Feature\Surcharge;
 
 use App\Models\{Organization, User};
 use App\Models\Surcharge\SurchargeRule;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -26,7 +25,6 @@ class SurchargeRuleAdminTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

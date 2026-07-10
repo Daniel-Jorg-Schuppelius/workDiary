@@ -13,7 +13,6 @@ namespace Tests\Feature\Licensing;
 use App\Models\User;
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +25,6 @@ class UserLimitEnforcementTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     /** Bindet eine Lizenz mit gegebenem max_users an den Container. */

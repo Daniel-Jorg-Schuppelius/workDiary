@@ -11,7 +11,6 @@
 namespace Tests\Feature;
 
 use App\Models\{Attachment, Comment, Customer, DiaryEntry, Event, EventReminder, FlexBalance, Organization, Project, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -42,7 +41,6 @@ class OrganizationIsolationTest extends TestCase {
         // Reihenfolge wichtig: erst Permissions/Rollen anlegen, dann Orgs.
         // Andernfalls läuft der OrganizationObserver in PermissionDoesNotExist,
         // weil er beim ersten Org-Create bereits Default-Rollen verteilen will.
-        $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'iso-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'iso-b']);

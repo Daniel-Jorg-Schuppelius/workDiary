@@ -12,7 +12,6 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\{Customer, ExternalReference, Supplier, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -32,7 +31,6 @@ final class LexofficeVoucherSyncButtonTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         config()->set('plugins.lexoffice.api_key', 'test-key');

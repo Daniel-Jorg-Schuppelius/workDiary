@@ -14,7 +14,6 @@ use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, Operatio
 use App\Models\{OperationsTask, User};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,7 +26,6 @@ class OperationsAlertServiceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         // Admin in der (ersten) Organisation = Empfänger der Betriebs-Events.
         $this->admin = User::factory()->admin()->create();
         $this->service = app(OperationsAlertService::class);

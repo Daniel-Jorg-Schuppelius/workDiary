@@ -11,7 +11,6 @@
 namespace Tests\Feature\Privacy;
 
 use App\Models\{AuditLog, Organization, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +19,6 @@ class PrivacyExportsAndSupportSectionTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_exports_section_shows_recent_tenant_exports(): void {

@@ -11,7 +11,6 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\{AuditLog, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +19,6 @@ class SupportAccessAuditControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_requires_authentication(): void {

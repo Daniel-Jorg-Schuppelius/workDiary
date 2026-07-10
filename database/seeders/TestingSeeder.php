@@ -25,14 +25,30 @@ use Spatie\Permission\PermissionRegistrar;
  */
 class TestingSeeder extends Seeder {
     public function run(): void {
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
+        /** @var PermissionRegistrar $registrar */
+        $registrar = app(PermissionRegistrar::class);
+        $registrar->forgetCachedPermissions();
 
         foreach (PermissionEnum::cases() as $permission) {
             Permission::findOrCreate($permission->value, 'web');
         }
 
+        $registrar->setPermissionsTeamId(null);
         foreach (UserRole::values() as $role) {
             Role::findOrCreate($role, 'web');
         }
+
+        // Global-Admin (team_id NULL) bekommt wie im PermissionsSeeder alle
+        // Enum-Permissions zugeordnet — einmal pro Prozess statt (wie früher
+        // über seed(PermissionsSeeder) in setUp()) je Testmethode. Die
+        // org-spezifischen Rollen-Matrizen entstehen über den
+        // OrganizationObserver bei jeder Org-Anlage automatisch.
+        /** @var Role $globalAdmin */
+        $globalAdmin = Role::findOrCreate(UserRole::Admin->value, 'web');
+        $enumNames = array_map(static fn(PermissionEnum $p): string => $p->value, PermissionEnum::cases());
+        $globalAdmin->syncPermissions(
+            Permission::query()->where('guard_name', 'web')->whereIn('name', $enumNames)->get(),
+        );
+        $registrar->forgetCachedPermissions();
     }
 }

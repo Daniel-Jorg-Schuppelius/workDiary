@@ -13,7 +13,6 @@ namespace Tests\Feature\Ideas;
 use App\Enums\Ideas\IdeaShareRole;
 use App\Models\{IdeaMap, User};
 use App\Services\Ideas\{IdeaMapExportService, IdeaMapService, IdeaNodeService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -35,7 +34,6 @@ final class IdeaMapExportTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->maps = app(IdeaMapService::class);
         $this->owner = User::factory()->user()->create(['organization_id' => $this->organization->id]);

@@ -14,7 +14,6 @@ use App\Enums\Finance\TransferChannel;
 use App\Enums\User\Permission;
 use App\Models\{Customer, Organization, User};
 use App\Models\Finance\BillingTransfer;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\Concerns\WithOrganization;
@@ -33,7 +32,6 @@ class BillingTransferPermissionTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
     }
 
     private function makeTransfer(TransferChannel $channel = TransferChannel::Time): BillingTransfer {

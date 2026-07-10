@@ -15,7 +15,6 @@ use App\Enums\Facility\RoomRequirementKind;
 use App\Enums\Protocol\ProtocolType;
 use App\Enums\User\UserRole;
 use App\Models\{Asset, AssetAssignment, AssetDefect, MaintenancePlan, Organization, Protocol, Room, RoomRequirement, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -30,7 +29,6 @@ class AssetDossierControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

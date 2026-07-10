@@ -13,7 +13,6 @@ namespace Tests\Feature\Plugins;
 use App\Models\{PluginSetting, PluginState, User};
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth, PluginManager};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -43,7 +42,6 @@ class PluginCompatibilityEnforcementTest extends TestCase {
     }
 
     public function test_admin_cannot_activate_incompatible_plugin(): void {
-        $this->seed(PermissionsSeeder::class);
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)

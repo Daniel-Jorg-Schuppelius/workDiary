@@ -13,7 +13,6 @@ namespace Tests\Feature\Admin;
 use App\Models\{AuditLog, LicenseFlagOverride, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class LicenseFlagOverrideTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
 
         $payload = new LicensePayload(
             licensee: 'ACME Co',

@@ -15,7 +15,6 @@ use App\Models\{Customer, Invoice, Organization, User};
 use App\Models\Expense;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
 use App\Services\Finance\{BankImportException, BankImportService, MatchingService, ReconciliationService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +36,6 @@ class PaymentReconciliationTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($this->admin);
         $this->customer = Customer::create([

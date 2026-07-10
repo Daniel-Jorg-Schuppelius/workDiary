@@ -13,7 +13,6 @@ namespace Tests\Feature\Asset;
 use App\Enums\Asset\{AssetClass, AssetStatus};
 use App\Enums\User\UserRole;
 use App\Models\{Asset, Customer, Room, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -28,7 +27,6 @@ class AssetUpdateControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

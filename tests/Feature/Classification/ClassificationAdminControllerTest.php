@@ -14,7 +14,7 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
 use App\Models\{Classification, User};
 use App\Services\Classification\ClassificationManager;
-use Database\Seeders\{ClassificationSeeder, PermissionsSeeder};
+use Database\Seeders\{ClassificationSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Schema};
@@ -31,7 +31,6 @@ class ClassificationAdminControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         $this->seed(ClassificationSeeder::class);
 
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);

@@ -12,7 +12,6 @@ namespace Tests\Feature\Tenant;
 
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Models\{Organization, Timesheet, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -41,7 +40,6 @@ class PublicRouteTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'pub-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'pub-b']);

@@ -14,7 +14,6 @@ use App\Exceptions\LimitExceededException;
 use App\Models\{Attachment, DiaryEntry, Organization, User};
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus, LimitGuard};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -25,7 +24,6 @@ class LimitGuardTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

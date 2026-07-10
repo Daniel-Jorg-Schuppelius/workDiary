@@ -11,7 +11,6 @@
 namespace Tests\Feature\Organization;
 
 use App\Models\{Organization, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -32,7 +31,6 @@ class OrganizationSettingsFormRulesTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->admin = User::factory()->admin()->create();
         $this->organization = Organization::query()->findOrFail($this->admin->organization_id);
     }

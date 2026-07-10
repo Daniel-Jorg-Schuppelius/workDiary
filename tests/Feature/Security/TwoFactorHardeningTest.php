@@ -13,7 +13,6 @@ namespace Tests\Feature\Security;
 use App\Mail\TwoFactorCodeMail;
 use App\Models\{Customer, User};
 use App\Services\Auth\EmailOtpService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\{Auth, Hash, Mail};
@@ -36,7 +35,6 @@ class TwoFactorHardeningTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);

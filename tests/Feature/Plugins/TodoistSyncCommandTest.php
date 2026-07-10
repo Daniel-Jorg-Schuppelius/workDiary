@@ -12,7 +12,6 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\Task\TaskStatus;
 use App\Models\{ExternalReference, IntegrationInboxItem, Task, TodoistConnection, TodoistProjectLink};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Spatie\Permission\PermissionRegistrar;
@@ -36,7 +35,6 @@ final class TodoistSyncCommandTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         config()->set('plugins.todoist.client_id', 'cid');
         config()->set('plugins.todoist.client_secret', 'sec');

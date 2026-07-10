@@ -14,7 +14,6 @@ use App\Enums\Asset\AssetOwnership;
 use App\Enums\User\Permission;
 use App\Models\{Asset, AssetOwnershipChange, Customer, User};
 use App\Services\Asset\AssetLifecycleService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\PermissionRegistrar;
@@ -36,7 +35,6 @@ class AssetOwnershipHistoryTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->actor = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }

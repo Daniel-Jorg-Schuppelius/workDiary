@@ -11,7 +11,6 @@
 namespace Tests\Feature\Facility;
 
 use App\Models\{Customer, Room};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Concerns\WithOrganization;
@@ -27,7 +26,6 @@ class LegacyRoomFacilityMigrationTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

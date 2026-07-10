@@ -14,7 +14,6 @@ use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry,
 use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
 use App\Services\Integration\InboxActionService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Spatie\Permission\PermissionRegistrar;
@@ -39,7 +38,6 @@ final class TodoistAdminUxTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         config()->set('plugins.todoist.client_id', 'cid');

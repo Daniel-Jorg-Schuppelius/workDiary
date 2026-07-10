@@ -11,7 +11,6 @@
 namespace Tests\Feature\Procurement;
 
 use App\Models\{Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Http};
 use Spatie\Permission\PermissionRegistrar;
@@ -32,7 +31,6 @@ final class CatalogRemoteFetchTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);

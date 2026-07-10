@@ -12,7 +12,6 @@ namespace Tests\Feature\Admin;
 
 use App\Models\User;
 use App\Services\Isms\SbomGenerator;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class ComponentsPageTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_admin_sees_versions_and_sbom_hint_without_sbom(): void {

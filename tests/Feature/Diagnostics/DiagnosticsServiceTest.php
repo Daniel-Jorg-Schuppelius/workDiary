@@ -13,7 +13,6 @@ namespace Tests\Feature\Diagnostics;
 use App\Models\{AuditLog, BackupHeartbeat};
 use App\Services\Diagnostics\{DiagnosticStatus, DiagnosticsService};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\Concerns\WithOrganization;
@@ -25,7 +24,6 @@ class DiagnosticsServiceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

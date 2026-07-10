@@ -11,7 +11,6 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\{CommunicationNote, Customer, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,7 +35,6 @@ class SearchTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'search-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'search-b']);

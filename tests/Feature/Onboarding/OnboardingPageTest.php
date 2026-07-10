@@ -11,7 +11,6 @@
 namespace Tests\Feature\Onboarding;
 
 use App\Models\{OnboardingProgress, Organization, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,7 +19,6 @@ class OnboardingPageTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_page_requires_authentication(): void {

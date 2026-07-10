@@ -13,7 +13,6 @@ namespace Tests\Feature\Notification;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Notification\NotificationRule;
 use App\Models\User;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -24,7 +23,6 @@ class NotificationRuleAdminTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

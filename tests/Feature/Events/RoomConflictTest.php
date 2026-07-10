@@ -12,7 +12,6 @@ namespace Tests\Feature\Events;
 
 use App\Models\{Event, Room, User};
 use App\Services\Event\RoomBookingService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
@@ -30,7 +29,6 @@ class RoomConflictTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->room = Room::factory()->create(['organization_id' => $this->organization->id]);

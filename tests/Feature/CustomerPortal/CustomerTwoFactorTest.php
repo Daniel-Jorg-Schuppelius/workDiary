@@ -12,7 +12,6 @@ namespace Tests\Feature\CustomerPortal;
 
 use App\Mail\TwoFactorCodeMail;
 use App\Models\{Customer, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Hash, Mail};
 use PragmaRX\Google2FAQRCode\Google2FA;
@@ -29,7 +28,6 @@ class CustomerTwoFactorTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);

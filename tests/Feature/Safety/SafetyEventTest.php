@@ -15,7 +15,6 @@ use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\{OpenIssue, SafetyEvent, User};
 use App\Services\Safety\SafetyEventService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\WithOrganization;
@@ -27,7 +26,6 @@ class SafetyEventTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
     }
 

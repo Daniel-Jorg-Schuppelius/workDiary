@@ -11,7 +11,6 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\{Customer, DiaryEntry, Expense, Organization, TravelLog, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -37,7 +36,6 @@ class ExportTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'exp-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'exp-b']);

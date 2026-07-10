@@ -16,7 +16,6 @@ use App\Models\{Asset, Customer, Protocol, User, WeatherSnapshot};
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Services\Weather\WeatherService;
 use Carbon\CarbonInterface;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -36,7 +35,6 @@ final class ProtocolWeatherTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->editor = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->editor->givePermissionTo(Permission::ProtocolEditDraft->value);

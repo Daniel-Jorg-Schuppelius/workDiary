@@ -16,7 +16,6 @@ use App\Models\Isms\{IsmsRisk, IsmsRiskAssessment};
 use App\Models\Notification\NotificationRule;
 use App\Models\{Organization, User};
 use App\Services\Isms\RiskService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -226,7 +225,6 @@ class IsmsRiskAssessmentTest extends TestCase {
 
     public function test_scanner_fires_risk_review_due_exactly_once(): void {
         $admin = User::factory()->admin()->create();
-        $this->seed(PermissionsSeeder::class);
         app()->instance('currentOrganization', $admin->organization);
 
         $owner = User::factory()->user()->create(['organization_id' => $admin->organization_id]);

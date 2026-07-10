@@ -13,7 +13,6 @@ namespace Tests\Feature\Backup;
 use App\Enums\Backup\RestoreTestResult;
 use App\Models\{BackupHeartbeat, RestoreTest, User};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class BackupStatusPageTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         config()->set('backup.heartbeat_freshness_hours', 26);
         config()->set('backup.restore_test_overdue_days', 180);
     }

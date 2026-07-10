@@ -14,7 +14,6 @@ use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Models\{ServiceTicket, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -28,7 +27,6 @@ class SlaEscalationScanTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->assignee = User::factory()->user()->create(['organization_id' => $this->organization->id]);

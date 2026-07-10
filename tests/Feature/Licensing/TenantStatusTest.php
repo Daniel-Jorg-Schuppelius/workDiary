@@ -13,7 +13,6 @@ namespace Tests\Feature\Licensing;
 use App\Enums\Organization\TenantStatus;
 use App\Models\{Organization, User};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +25,6 @@ class TenantStatusTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_derives_active_for_plain_org(): void {

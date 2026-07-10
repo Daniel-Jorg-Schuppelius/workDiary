@@ -14,7 +14,6 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
 use App\Models\{Classification, User};
 use App\Policies\ClassificationPolicy;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -31,7 +30,6 @@ class ClassificationPolicyTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->policy = new ClassificationPolicy;

@@ -11,7 +11,6 @@
 namespace Tests\Feature\Policies;
 
 use App\Models\{AuditLog, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\PermissionRegistrar;
@@ -31,7 +30,6 @@ final class AuditLogPolicyTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

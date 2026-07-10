@@ -11,7 +11,6 @@
 namespace Tests\Feature\Scheduling;
 
 use App\Models\{ShiftType, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -25,7 +24,6 @@ class ShiftTypePrerequisiteTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_schedule_without_shift_types_shows_setup_hint_with_admin_cta(): void {

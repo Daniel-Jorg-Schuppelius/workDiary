@@ -14,7 +14,6 @@ use App\Models\User;
 use App\Services\Support\SupportReportBuilder;
 use App\Settings\{SettingScope, SettingsRegistry};
 use App\Support\Setting;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -23,7 +22,6 @@ class SupportReportConfigurationTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         User::factory()->admin()->create();
     }
 

@@ -12,7 +12,6 @@ namespace Tests\Feature\Licensing;
 
 use App\Models\{LicenseFlagOverride, Organization, User};
 use App\Services\Licensing\FeatureFlagResolver;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -26,7 +25,6 @@ class ModuleConfigurationTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     private function admin(): User {

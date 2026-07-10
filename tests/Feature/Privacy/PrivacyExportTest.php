@@ -13,7 +13,6 @@ namespace Tests\Feature\Privacy;
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
 use CommonToolkit\Helper\Data\JsonHelper;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class PrivacyExportTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_export_requires_authentication(): void {

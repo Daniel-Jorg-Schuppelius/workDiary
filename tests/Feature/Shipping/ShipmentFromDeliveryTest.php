@@ -15,7 +15,6 @@ use App\Enums\Shipping\ShipmentStatus;
 use App\Models\{ArticleVariant, CarrierConnection, Customer, ManufacturingOrder, Shipment, StockDelivery, User, Warehouse};
 use App\Services\Shipping\ShippingProviderRegistry;
 use App\Services\Timeline\{DiaryEntryTimelineService, TimelineItem};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
@@ -37,7 +36,6 @@ final class ShipmentFromDeliveryTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         Storage::fake('local');
 

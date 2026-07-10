@@ -16,7 +16,6 @@ use App\Models\{Document, Organization, User};
 use App\Models\Isms\{IsmsCertificate, IsmsNormStatus, IsmsRequirement, IsmsScope};
 use App\Models\Notification\NotificationRule;
 use App\Services\Isms\ConformityService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -298,7 +297,6 @@ class IsmsConformityTest extends TestCase {
 
     public function test_scanner_fires_certificate_expiring_exactly_once_and_expires_overdue(): void {
         $admin = User::factory()->admin()->create();
-        $this->seed(PermissionsSeeder::class);
         app()->instance('currentOrganization', $admin->organization);
 
         $teamlead = User::factory()->teamleitung()->create(['organization_id' => $admin->organization_id]);

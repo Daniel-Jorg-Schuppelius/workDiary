@@ -13,7 +13,6 @@ namespace Tests\Feature\Procurement;
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\{Article, PricingMarginRule, Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
 use App\Services\Procurement\{CatalogLinkService, PriceSuggestionService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
@@ -36,7 +35,6 @@ final class CatalogPricingTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->pricing = app(PriceSuggestionService::class);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

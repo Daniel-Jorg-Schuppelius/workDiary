@@ -12,7 +12,6 @@ namespace Tests\Feature\Onboarding;
 
 use App\Models\{Organization, User};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ class OnboardingDashboardWidgetTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_widget_is_visible_on_dashboard_for_org_admin(): void {

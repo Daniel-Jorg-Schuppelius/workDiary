@@ -13,7 +13,6 @@ namespace Tests\Feature\Backup;
 use App\Enums\Backup\RestoreTestResult;
 use App\Models\{RestoreTest, User};
 use Carbon\CarbonImmutable;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class RestoreTestRegisterTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_create_modal_forbidden_for_regular_user(): void {

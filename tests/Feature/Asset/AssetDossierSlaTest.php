@@ -12,7 +12,6 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\User\Permission;
 use App\Models\{Asset, Customer, SlaContract, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -34,7 +33,6 @@ class AssetDossierSlaTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->viewer = User::factory()->user()->create(['organization_id' => $this->organization->id]);

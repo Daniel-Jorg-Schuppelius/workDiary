@@ -13,7 +13,6 @@ namespace Tests\Feature\Finance;
 use App\Enums\User\Permission;
 use App\Models\{Customer, GobdExport, Invoice, InvoiceItem, Organization, Project, TimeEntry, User};
 use App\Services\Finance\GdpduExportService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\PermissionRegistrar;
@@ -35,7 +34,6 @@ final class GdpduExportTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->service = app(GdpduExportService::class);
         $this->accountant = User::factory()->user()->create(['organization_id' => $this->organization->id]);

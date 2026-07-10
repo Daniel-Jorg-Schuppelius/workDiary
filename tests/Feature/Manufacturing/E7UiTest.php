@@ -13,7 +13,6 @@ namespace Tests\Feature\Manufacturing;
 use App\Enums\Manufacturing\ProcurementMode;
 use App\Models\{Article, ManufacturingOrder, Supplier, User, Warehouse, WorkCenter};
 use App\Services\Manufacturing\ManufacturingOrderService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -34,7 +33,6 @@ final class E7UiTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->warehouse = Warehouse::factory()->create(['organization_id' => $this->organization->id]);

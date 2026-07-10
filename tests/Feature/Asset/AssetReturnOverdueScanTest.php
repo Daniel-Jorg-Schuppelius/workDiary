@@ -13,7 +13,6 @@ namespace Tests\Feature\Asset;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\{Asset, AssetAssignment, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -26,7 +25,6 @@ class AssetReturnOverdueScanTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->borrower = User::factory()->user()->create(['organization_id' => $this->organization->id]);

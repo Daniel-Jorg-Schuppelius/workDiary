@@ -12,7 +12,6 @@ namespace Tests\Feature\Help;
 
 use App\Models\{HelpTopic, User};
 use App\Services\Help\HelpTopicResolver;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -21,7 +20,6 @@ class HelpTopicResolverTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_resolver_falls_back_from_en_to_de_when_topic_missing(): void {

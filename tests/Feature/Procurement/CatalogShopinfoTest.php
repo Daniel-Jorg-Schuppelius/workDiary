@@ -12,7 +12,6 @@ namespace Tests\Feature\Procurement;
 
 use App\Models\{Supplier, SupplierCatalogSource, User};
 use App\Services\Procurement\ShopinfoParser;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use RuntimeException;
@@ -68,7 +67,6 @@ XML;
 
     public function test_discover_route_updates_source_and_prefills_mapping(): void {
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);

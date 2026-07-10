@@ -11,7 +11,6 @@
 namespace Tests\Feature\Tenant;
 
 use App\Models\{Customer, DiaryEntry, Organization, Project, Task, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -37,7 +36,6 @@ class ApiTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
 
         $this->orgA = Organization::factory()->create(['slug' => 'api-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'api-b']);

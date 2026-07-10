@@ -16,7 +16,6 @@ use App\Enums\Protocol\ProtocolType;
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
 use App\Models\{Asset, Attachment, DiaryEntry, MaterialUsage, OpenIssue, Project, Protocol, Timesheet, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -31,7 +30,6 @@ class AssetShowControllerTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
     }
 

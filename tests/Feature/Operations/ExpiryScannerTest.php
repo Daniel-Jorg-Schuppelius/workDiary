@@ -13,7 +13,6 @@ namespace Tests\Feature\Operations;
 use App\Models\{AttendanceTerminal, ChatWebhook, OperationsTask, TodoistConnection, User};
 use App\Services\Operations\Expiry\ExpiryScanner;
 use App\Services\Operations\OperationsAlertService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -25,7 +24,6 @@ class ExpiryScannerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->admin = User::factory()->admin()->create();
     }
 

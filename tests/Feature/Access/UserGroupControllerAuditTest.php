@@ -11,7 +11,6 @@
 namespace Tests\Feature\Access;
 
 use App\Models\{AuditLog, User, UserGroup};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -27,7 +26,6 @@ class UserGroupControllerAuditTest extends TestCase {
         parent::setUp();
 
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->admin = User::factory()

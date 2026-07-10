@@ -13,7 +13,6 @@ namespace Tests\Feature\Procurement;
 use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, User, Warehouse};
 use App\Services\Procurement\{PurchaseOrderService, UglInvoiceReconciler};
 use CommonToolkit\Enums\CurrencyCode;
-use Database\Seeders\PermissionsSeeder;
 use DateTimeImmutable;
 use ERechnungToolkit\Entities\{OrderLine, UglInvoice};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +36,6 @@ final class PurchaseOrderReconcileTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

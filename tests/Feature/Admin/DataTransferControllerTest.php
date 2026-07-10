@@ -6,7 +6,6 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\Export\ExportRunState;
 use App\Models\{Customer, ExportRun, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\PermissionRegistrar;
@@ -90,7 +89,6 @@ class DataTransferControllerTest extends TestCase {
     }
 
     public function test_download_and_destroy_require_the_entitys_export_permission(): void {
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         // Fremd-Entitäts-Export (Materials) in derselben Organisation.

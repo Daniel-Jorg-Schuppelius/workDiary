@@ -14,7 +14,6 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\{ExternalReference, IntegrationInboxItem, Task, TodoistConnection, TodoistProjectLink, User};
 use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -38,7 +37,6 @@ final class TodoistImportTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,

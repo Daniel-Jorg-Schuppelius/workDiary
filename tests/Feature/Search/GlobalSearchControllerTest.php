@@ -11,7 +11,6 @@
 namespace Tests\Feature\Search;
 
 use App\Models\{CommunicationNote, Customer, DiaryEntry, Document, FormSubmission, FormTemplate, KnowledgeArticle, Organization, Project, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -24,7 +23,6 @@ class GlobalSearchControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }

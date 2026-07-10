@@ -12,7 +12,6 @@ namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Protocol\ProtocolVisibility;
 use App\Models\{Asset, Attachment, AttachmentConfirmation, Customer, CustomerQuery, DiaryEntry, Protocol, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -34,7 +33,6 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id]);

@@ -12,7 +12,6 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\{LexofficeVoucher, User};
 use App\Plugins\Lexoffice\{LexofficeDunningService, LexofficePlugin};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use RuntimeException;
@@ -34,7 +33,6 @@ final class LexofficeDunningTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         config()->set('plugins.lexoffice.api_key', 'test-key');

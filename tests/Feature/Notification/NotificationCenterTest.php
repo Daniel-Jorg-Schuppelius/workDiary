@@ -13,7 +13,6 @@ namespace Tests\Feature\Notification;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\{OpenIssue, User};
 use App\Notifications\GenericEventNotification;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -26,7 +25,6 @@ class NotificationCenterTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
 
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);

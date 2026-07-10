@@ -79,7 +79,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test --parallel --recreate-databases"
+            "XDEBUG_MODE=off php artisan test --parallel --recreate-databases"
         ],
         "lint": "phpstan analyse --memory-limit=1G",
         "format": "pint --test",

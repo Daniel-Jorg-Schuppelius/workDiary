@@ -11,7 +11,6 @@
 namespace Tests\Feature\Scheduling;
 
 use App\Models\{ScheduledJobOverride, User};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -21,7 +20,6 @@ class SchedulerAdminControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
     }
 
     public function test_index_requires_permission(): void {

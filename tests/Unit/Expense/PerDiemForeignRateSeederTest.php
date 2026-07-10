@@ -13,7 +13,7 @@ namespace Tests\Unit\Expense;
 use App\Models\PerDiemRate;
 use App\Services\Expense\PerDiemRateLookup;
 use Carbon\CarbonImmutable;
-use Database\Seeders\{PerDiemForeignRateSeeder, PerDiemRateSeeder, PermissionsSeeder};
+use Database\Seeders\{PerDiemForeignRateSeeder, PerDiemRateSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -26,7 +26,6 @@ class PerDiemForeignRateSeederTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->seed(PerDiemRateSeeder::class);
         $this->seed(PerDiemForeignRateSeeder::class);

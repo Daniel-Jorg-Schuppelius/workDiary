@@ -12,7 +12,6 @@ namespace Tests\Feature\Events;
 
 use App\Models\{Event, User};
 use App\Services\Event\RecurrenceService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class RecurrenceMaterializationTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->seed(PermissionsSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->svc = app(RecurrenceService::class);

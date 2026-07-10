@@ -13,7 +13,6 @@ namespace Tests\Feature\Procurement;
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\{Article, Supplier, SupplierCatalogItem, SupplierCatalogSource, User};
 use App\Services\Procurement\CatalogLinkService;
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -35,7 +34,6 @@ final class CatalogLinkTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->links = app(CatalogLinkService::class);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

@@ -13,7 +13,7 @@ namespace Tests\Feature\Gaeb;
 use App\Enums\Gaeb\{BoqItemStatus, BoqProgressSource, GaebPhase};
 use App\Models\{BillOfQuantity, BoqItem, User};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebDaXmlParser, GaebImportService};
-use Database\Seeders\{GaebDemoSeeder, PermissionsSeeder};
+use Database\Seeders\{GaebDemoSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -129,7 +129,6 @@ final class BoqLifecycleTest extends TestCase {
     }
 
     public function test_http_export_and_progress_for_manager(): void {
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

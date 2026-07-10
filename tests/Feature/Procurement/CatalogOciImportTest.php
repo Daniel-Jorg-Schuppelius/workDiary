@@ -11,7 +11,6 @@
 namespace Tests\Feature\Procurement;
 
 use App\Models\{Article, ArticleSupply, PurchaseOrder, PurchaseOrderLine, Supplier, User, Warehouse};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -33,7 +32,6 @@ final class CatalogOciImportTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);

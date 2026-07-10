@@ -13,7 +13,6 @@ namespace Tests\Feature\Procurement;
 use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\{Article, ArticleVariant, PurchaseOrder, Supplier, User, Warehouse};
 use App\Services\Procurement\{GoodsReceiptService, PurchaseOrderService};
-use Database\Seeders\PermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -35,7 +34,6 @@ final class PurchaseOrderControllerTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->seed(PermissionsSeeder::class);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
