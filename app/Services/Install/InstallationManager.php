@@ -406,8 +406,10 @@ class InstallationManager {
      * statt dupliziert wird.
      *
      * @param  array{org_name: string, name: string, email: string, password: string}  $data
+     * @param  bool  $platformAdmin  Erst-Betreiber (darf Org-Kontext wechseln).
+     *         Installer setzen true; app:admin nur mit --platform.
      */
-    public function createOrganizationAndAdmin(array $data): User {
+    public function createOrganizationAndAdmin(array $data, bool $platformAdmin = true): User {
         // Dieser Schritt läuft in einem eigenen HTTP-Request, in dem die
         // (ggf. gecachte) Config noch auf die alte Verbindung zeigen kann.
         // Daher die in der .env hinterlegte DB-Verbindung erneut aktivieren,
@@ -422,7 +424,7 @@ class InstallationManager {
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        return DB::transaction(function () use ($data): User {
+        return DB::transaction(function () use ($data, $platformAdmin): User {
             $org = Organization::firstOrCreate(
                 ['slug' => Str::slug($data['org_name']) ?: 'default'],
                 [
@@ -442,6 +444,13 @@ class InstallationManager {
                 'password' => Hash::make($data['password']),
                 'is_new_system' => true,
             ]);
+
+            // Der über den Installer angelegte Erst-Admin ist der
+            // Plattform-Betreiber (darf den Org-Kontext wechseln). Bewusst
+            // separat gesetzt — is_platform_admin ist nicht massenzuweisbar.
+            if ($platformAdmin) {
+                $user->forceFill(['is_platform_admin' => true])->save();
+            }
 
             if ($org->owner_id === null) {
                 $org->update(['owner_id' => $user->id]);

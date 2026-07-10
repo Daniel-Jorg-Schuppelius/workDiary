@@ -2129,6 +2129,7 @@ CREATE TABLE IF NOT EXISTS "users"(
   "flat_interval" varchar,
   "compensation_rate" numeric,
   "deactivated_at" datetime,
+  "is_platform_admin" tinyint(1) not null default '0',
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("customer_id") references "customers"("id") on delete set null
 );
@@ -10402,3 +10403,4 @@ INSERT INTO migrations VALUES(479,'2026_10_01_110300_create_problem_reports_tabl
 INSERT INTO migrations VALUES(480,'2026_10_01_110400_create_component_updates_table',1);
 INSERT INTO migrations VALUES(481,'2026_10_01_110500_create_maintenance_windows_table',1);
 INSERT INTO migrations VALUES(482,'2026_10_01_110600_add_connection_health_columns',1);
+INSERT INTO migrations VALUES(483,'2026_10_02_120000_add_is_platform_admin_to_users',2);

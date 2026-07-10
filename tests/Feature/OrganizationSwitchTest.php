@@ -22,16 +22,39 @@ class OrganizationSwitchTest extends TestCase {
         parent::setUp();
     }
 
-    public function test_admin_can_switch_active_organization(): void {
+    public function test_platform_admin_can_switch_active_organization(): void {
         $orgA = Organization::factory()->create(['name' => 'Org A']);
         $orgB = Organization::factory()->create(['name' => 'Org B']);
-        $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
+        $admin = User::factory()->platformAdmin()->create(['organization_id' => $orgA->id]);
 
         $this->actingAs($admin)
             ->post(route('admin.organizations.switch'), ['organization_id' => $orgB->id])
             ->assertRedirect();
 
         $this->assertSame($orgB->id, session(OrganizationSwitchController::SESSION_KEY));
+    }
+
+    public function test_org_local_admin_cannot_switch_into_foreign_org(): void {
+        // Regression Cross-Tenant-Eskalation: ein org-lokaler Admin (admin-Rolle
+        // team_id = eigene Org, KEIN Plattform-Betreiber) darf NICHT wechseln.
+        $orgA = Organization::factory()->create();
+        $orgB = Organization::factory()->create(['name' => 'Fremd AG']);
+        $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.organizations.switch'), ['organization_id' => $orgB->id])
+            ->assertForbidden();
+
+        $this->assertNull(session(OrganizationSwitchController::SESSION_KEY));
+
+        // Selbst ein untergeschobener Session-Override greift nicht mehr:
+        // SetOrganizationContext akzeptiert ihn nur für Plattform-Betreiber.
+        $this->actingAs($admin)
+            ->withSession([OrganizationSwitchController::SESSION_KEY => $orgB->id])
+            ->get(route('dashboard'));
+
+        $this->assertTrue(app()->bound('currentOrganization'));
+        $this->assertSame($orgA->id, app('currentOrganization')->id, 'Org-lokaler Admin bleibt auf eigener Org.');
     }
 
     public function test_non_admin_cannot_switch_organization(): void {
@@ -46,10 +69,10 @@ class OrganizationSwitchTest extends TestCase {
         $this->assertNull(session(OrganizationSwitchController::SESSION_KEY));
     }
 
-    public function test_session_override_is_applied_for_admin(): void {
+    public function test_session_override_is_applied_for_platform_admin(): void {
         $orgA = Organization::factory()->create();
         $orgB = Organization::factory()->create();
-        $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
+        $admin = User::factory()->platformAdmin()->create(['organization_id' => $orgA->id]);
 
         $this->actingAs($admin)
             ->post(route('admin.organizations.switch'), ['organization_id' => $orgB->id])
@@ -66,7 +89,7 @@ class OrganizationSwitchTest extends TestCase {
 
     public function test_invalid_session_override_falls_back_to_user_org(): void {
         $orgA = Organization::factory()->create();
-        $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
+        $admin = User::factory()->platformAdmin()->create(['organization_id' => $orgA->id]);
 
         $this->actingAs($admin)
             ->withSession([OrganizationSwitchController::SESSION_KEY => 9999999])
@@ -79,7 +102,7 @@ class OrganizationSwitchTest extends TestCase {
     public function test_clear_override_removes_session_value(): void {
         $orgA = Organization::factory()->create();
         $orgB = Organization::factory()->create();
-        $admin = User::factory()->admin()->create(['organization_id' => $orgA->id]);
+        $admin = User::factory()->platformAdmin()->create(['organization_id' => $orgA->id]);
 
         $this->actingAs($admin)
             ->withSession([OrganizationSwitchController::SESSION_KEY => $orgB->id])

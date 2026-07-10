@@ -76,6 +76,16 @@ class VacationController extends Controller {
         Gate::authorize('update', $vacation);
 
         $data = $this->validateVacation($request);
+
+        // Owner-Manipulation verhindern (analog SickLeaveController): nur ein
+        // Admin darf user_id ändern; ein leerer Wert würde den Antrag sonst
+        // verwaisen lassen. Reguläre Nutzer können den Eigentümer nicht umschreiben.
+        /** @var User $auth */
+        $auth = Auth::user();
+        if (! $auth->isAdmin() || empty($data['user_id'])) {
+            unset($data['user_id']);
+        }
+
         $vacation->update($data);
 
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag aktualisiert.'));

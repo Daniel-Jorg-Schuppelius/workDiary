@@ -30,6 +30,7 @@ class AdminCommand extends Command {
         {--name= : Anzeigename (nur beim Anlegen)}
         {--org= : Name der Organisation (nur beim Anlegen)}
         {--password= : Passwort (sonst interaktive Abfrage)}
+        {--platform : Als globalen Plattform-Betreiber anlegen (darf Org-Kontext wechseln)}
         {--reset : Vorhandenen Benutzer aktualisieren statt neu anzulegen}';
 
     protected $description = 'Legt einen Administrator an oder setzt dessen Passwort zurück.';
@@ -59,13 +60,15 @@ class AdminCommand extends Command {
             $name = (string) ($this->option('name') ?: text('Name des Administrators', required: true));
             $pwd = $this->resolvePassword();
 
+            $platform = (bool) $this->option('platform');
             $user = $installer->createOrganizationAndAdmin([
                 'org_name' => $org,
                 'name' => $name,
                 'email' => $email,
                 'password' => $pwd,
-            ]);
-            $this->info('✓ Administrator angelegt: ' . $user->email);
+            ], $platform);
+            $this->info('✓ Administrator angelegt: ' . $user->email
+                . ($platform ? ' (Plattform-Betreiber)' : ''));
 
             return self::SUCCESS;
         } catch (Throwable $e) {

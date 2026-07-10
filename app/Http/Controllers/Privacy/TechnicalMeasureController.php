@@ -46,7 +46,7 @@ class TechnicalMeasureController extends Controller {
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string'],
+            'category' => ['required', \Illuminate\Validation\Rule::enum(MeasureCategory::class)],
             'description' => ['nullable', 'string', 'max:10000'],
             'addressed_risks' => ['nullable', 'string', 'max:10000'],
             'evidence' => ['nullable', 'string', 'max:10000'],

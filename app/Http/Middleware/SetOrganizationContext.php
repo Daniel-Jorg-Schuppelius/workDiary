@@ -65,8 +65,10 @@ class SetOrganizationContext {
     }
 
     private function resolveOrganization(Request $request, User $user): ?Organization {
-        // 1) Session-Override (nur für Admins) — nur AKTIVE Org akzeptieren.
-        if ($user->isAdmin() && $request->hasSession()) {
+        // 1) Session-Override (nur globale Plattform-Betreiber) — nur AKTIVE
+        //    Org akzeptieren. isAdmin() reichte nicht: ein org-lokaler Admin
+        //    könnte sonst in jede fremde Org springen (Cross-Tenant).
+        if ($user->isGlobalAdmin() && $request->hasSession()) {
             $overrideId = $request->session()->get(OrganizationSwitchController::SESSION_KEY);
             if (is_int($overrideId) || (is_string($overrideId) && ctype_digit($overrideId))) {
                 $override = Organization::query()->find((int) $overrideId);

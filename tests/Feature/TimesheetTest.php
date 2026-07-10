@@ -65,6 +65,38 @@ class TimesheetTest extends TestCase {
         ]);
     }
 
+    public function test_owner_cannot_self_lock_or_sign_via_mass_assignment(): void {
+        // Regression Mass-Assignment: status ist kein Formularfeld mehr —
+        // ein Owner darf sich nicht per PUT status=locked/signed selbst
+        // sperren/signieren (umgeht Admin-Lock + SignatureService).
+        $ts = $this->makeTimesheet();
+
+        $this->actingAs($this->user)
+            ->put(route('projects.timesheets.update', [$this->project, $ts]), [
+                'work_date' => '2030-02-15',
+                'status' => TimesheetStatus::Locked->value,
+            ])
+            ->assertRedirect();
+
+        $this->assertSame(TimesheetStatus::Draft, $ts->fresh()->status);
+    }
+
+    public function test_create_ignores_injected_status(): void {
+        // Auch beim Anlegen darf ein mitgeschicktes status nichts überschreiben.
+        $this->actingAs($this->user)
+            ->post(route('projects.timesheets.store', $this->project), [
+                'work_date' => '2030-03-01',
+                'status' => TimesheetStatus::Signed->value,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('timesheets', [
+            'work_date' => '2030-03-01 00:00:00',
+            'user_id' => $this->user->id,
+            'status' => TimesheetStatus::Draft->value,
+        ]);
+    }
+
     public function test_entry_recalculates_totals(): void {
         $ts = $this->makeTimesheet();
         $ts->entries()->create([

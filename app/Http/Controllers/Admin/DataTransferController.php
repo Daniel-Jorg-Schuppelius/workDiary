@@ -85,8 +85,8 @@ class DataTransferController extends Controller {
     public function export(Request $request): RedirectResponse {
         $organization = $this->currentOrganization();
         $data = $request->validate([
-            'entity' => ['required', 'string'],
-            'format' => ['required', 'string'],
+            'entity' => ['required', \Illuminate\Validation\Rule::enum(ExportEntity::class)],
+            'format' => ['required', \Illuminate\Validation\Rule::enum(ExportFormat::class)],
             'status' => ['nullable', 'string', 'max:32'],
             'q' => ['nullable', 'string', 'max:255'],
             'from' => ['nullable', 'date'],

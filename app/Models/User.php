@@ -61,6 +61,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $remember_token
  * @property int|null $legacy_user_id
  * @property bool $is_new_system
+ * @property bool $is_platform_admin
  * @property bool $must_change_password
  * @property string|null $hourly_rate
  * @property string|null $internal_rate
@@ -79,11 +80,28 @@ class User extends Authenticatable {
     use Auditable, HasApiTokens, HasAttachments, HasFactory, HasRoles, HasSqid, Notifiable;
 
     public function isAdmin(): bool {
+        // Plattform-Betreiber ist in jedem Org-Kontext Admin (behält seinen
+        // Policy-Bypass auch in einer per Switch aktivierten Fremd-Org).
+        if ($this->isGlobalAdmin()) {
+            return true;
+        }
+
         if ($this->hasRole(UserRole::Admin->value)) {
             return true;
         }
 
         return LegacyBridge::isLegacyAdmin($this);
+    }
+
+    /**
+     * Globaler Plattform-Betreiber (Cross-Tenant). NUR diese Kennung darf den
+     * Organisations-Kontext wechseln — ein org-lokaler Admin (admin-Rolle mit
+     * team_id = eigene Org) bleibt auf seine Organisation beschränkt. Das Flag
+     * ist bewusst NICHT in $fillable und wird ausschließlich über Installer,
+     * app:admin --platform oder Seeder gesetzt.
+     */
+    public function isGlobalAdmin(): bool {
+        return (bool) $this->is_platform_admin;
     }
 
     /** @return HasMany<\App\Models\Auth\TwoFactorCredential, $this> */
@@ -303,6 +321,7 @@ class User extends Authenticatable {
         'social_security_number' => 'encrypted',
         'must_change_password' => 'boolean',
         'is_new_system' => 'boolean',
+        'is_platform_admin' => 'boolean',
         'deactivated_at' => 'datetime',
         'payroll_hourly_wage' => 'decimal:2',
         'date_of_birth' => 'date',

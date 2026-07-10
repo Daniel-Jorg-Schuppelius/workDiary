@@ -198,7 +198,10 @@ class TourController extends Controller {
     public function update(SaveTourRequest $request, Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
 
-        $data = $request->validated();
+        // status NICHT per Massenzuweisung: Übergänge laufen über start()/
+        // complete() (TourService mit Transition-Guards). Direktes Setzen
+        // würde diese Guards und Seiteneffekte umgehen.
+        $data = collect($request->validated())->except('status')->all();
         $tour->fill($data)->save();
 
         $orderIds = $request->input('order_ids', []);

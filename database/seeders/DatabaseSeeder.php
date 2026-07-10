@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder {
     private function seedDemoUsers(): void {
         $org = Organization::where('slug', 'default')->first();
 
-        User::factory()->admin()->create([
+        User::factory()->platformAdmin()->create([
             'name' => 'Administrator',
             'email' => 'admin@workdiary.local',
             'password' => Hash::make('admin'),

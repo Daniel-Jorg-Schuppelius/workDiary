@@ -87,7 +87,7 @@ class ImportController extends Controller {
     public function preflight(Request $request): RedirectResponse {
         $organization = $this->currentOrganization();
         $data = $request->validate([
-            'entity' => ['required', 'string'],
+            'entity' => ['required', \Illuminate\Validation\Rule::enum(ImportEntity::class)],
             'file' => ['required', 'file', 'mimes:csv,txt', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
             'match_policy' => ['nullable', 'in:auto_create,inbox_first'],
         ]);

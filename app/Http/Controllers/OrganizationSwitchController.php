@@ -28,7 +28,10 @@ class OrganizationSwitchController extends Controller {
         /** @var User|null $user */
         $user = Auth::user();
 
-        abort_unless($user instanceof User && $user->isAdmin(), 403);
+        // NUR globale Plattform-Betreiber dürfen den Org-Kontext wechseln.
+        // Ein org-lokaler Admin (isAdmin() im eigenen Team-Kontext) käme sonst
+        // in jede fremde Organisation (Cross-Tenant-Eskalation).
+        abort_unless($user instanceof User && $user->isGlobalAdmin(), 403);
 
         $data = $request->validate([
             'organization_id' => ['nullable', 'integer', 'exists:organizations,id'],

@@ -56,7 +56,7 @@ class IncidentController extends Controller {
         abort_unless($org !== null, 403);
 
         $data = $request->validate([
-            'type' => ['required', 'string'],
+            'type' => ['required', Rule::enum(IncidentType::class)],
             'summary' => ['required', 'string', 'max:20000'],
             'affected' => ['nullable', 'string', 'max:20000'],
             'occurred_at' => ['nullable', 'date'],

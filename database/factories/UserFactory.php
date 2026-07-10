@@ -71,6 +71,16 @@ class UserFactory extends Factory {
         });
     }
 
+    /**
+     * Globaler Plattform-Betreiber: org-lokale Admin-Rolle PLUS
+     * is_platform_admin (darf den Org-Kontext wechseln).
+     */
+    public function platformAdmin(): static {
+        return $this->admin()->state(fn(array $attributes): array => [
+            'is_platform_admin' => true,
+        ]);
+    }
+
     public function user(): static {
         return $this->state(fn(array $attributes): array => [
             'name' => 'TestUser ' . Str::random(8),

@@ -157,7 +157,7 @@ class ProcessingActivityController extends Controller {
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'purpose' => ['nullable', 'string', 'max:5000'],
-            'controller_role' => ['required', 'string'],
+            'controller_role' => ['required', \Illuminate\Validation\Rule::enum(ControllerRole::class)],
             'area' => ['nullable', 'string', 'max:255'],
             'data_categories' => ['nullable', 'string', 'max:5000'],
             'legal_basis' => ['nullable', 'string', 'max:5000'],

@@ -224,15 +224,20 @@
             // (via SetOrganizationContext-Middleware bereits aufgelösten)
             // Container-Binding currentOrganization.
             $_isGlobalAdmin = $_authUser instanceof \App\Models\User && $_authUser->isAdmin();
+            // Echter Plattform-Betreiber (darf Org-Kontext wechseln + Mandanten
+            // verwalten). NUR diese Kennung schaltet Cross-Tenant-Oberflächen
+            // frei; ein org-lokaler Admin ($_isGlobalAdmin, Fehlname) bleibt
+            // auf seine Organisation beschränkt.
+            $_isPlatformAdmin = $_authUser instanceof \App\Models\User && $_authUser->isGlobalAdmin();
             // Nur AKTIVE Organisationen im Header-Switcher anbieten; deaktivierte
             // dürfen nicht als Kontext gewählt werden, bis sie über die Verwaltung
             // wieder aktiviert wurden.
-            $_orgList = $_isGlobalAdmin
+            $_orgList = $_isPlatformAdmin
                 ? \App\Models\Organization::query()->where('is_active', true)->orderBy('name')->get(['id', 'name'])
                 : collect();
             $_activeOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
             $_activeOrgId = $_activeOrg ? (int) $_activeOrg->id : null;
-            $showOrgSwitch = $_isGlobalAdmin && $_orgList->count() > 1;
+            $showOrgSwitch = $_isPlatformAdmin && $_orgList->count() > 1;
         @endphp
 
         <header id="app-header" class="sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs">
@@ -329,7 +334,13 @@
                                     $manageNavItems[] = ['route' => 'shift-types.index',             'label' => __('Schichttypen'),     'icon' => 'work_history',     'modal' => false];
                                     $manageNavItems[] = ['route' => 'materials.index',               'label' => __('Materialien'),      'icon' => 'inventory',        'modal' => false];
                                     $manageNavItems[] = ['route' => 'tags.index',                    'label' => __('Tags'),             'icon' => 'label',            'modal' => false];
-                                    $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
+                                    if ($_isPlatformAdmin) {
+                                        // Mandantenliste (Cross-Tenant) nur für Plattform-Betreiber.
+                                        $adminNavItems[]  = ['route' => 'admin.organizations.index',     'label' => __('Organisationen'),   'icon' => 'corporate_fare',   'modal' => false];
+                                    } elseif ($_authUser?->organization_id !== null) {
+                                        // Org-lokaler Admin: direkter Einstieg in die EIGENE Org.
+                                        $adminNavItems[]  = ['route' => 'admin.organizations.edit', 'route_params' => [$_authUser->organization_id], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
+                                    }
                                     $adminNavItems[]  = ['route' => 'admin.branding.edit',           'label' => __('Branding'),         'icon' => 'palette',          'modal' => false];
                                     // Theme-Editor nur bei aktivem module.theming (Pro+) einblenden.
                                     if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.theming')) {
@@ -484,10 +495,10 @@
                                 // Admin (volle Verwaltung) ODER Personalverwaltung/Geschäftsführung
                                 // (Personal-/Lohndaten + Arbeitszeit-Modell) erreichen den Bereich.
                                 $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
-                            } elseif (! $isLegacyMode && $_authUser instanceof \App\Models\User && $_authUser->isAdmin()) {
-                                // Globaler Admin ohne Org-Kontext: Eintrag verlinkt auf die
-                                // Organisations-Verwaltung, damit der Admin sich (oder eine
-                                // Organisation) zuordnen kann, bevor Mitglieder gepflegt werden.
+                            } elseif (! $isLegacyMode && $_isPlatformAdmin) {
+                                // Plattform-Betreiber ohne Org-Kontext: Eintrag verlinkt auf die
+                                // Mandanten-Verwaltung, damit er sich (oder eine Organisation)
+                                // zuordnen kann, bevor Mitglieder gepflegt werden.
                                 $manageNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
                             }
                             if (! $isLegacyMode && $_authUser?->can(\App\Enums\User\Permission::TeamViewAny->value)) {
@@ -1191,7 +1202,7 @@
                                         @php
                                             // Gruppierung der System-Einträge in aufklappbare Ordner.
                                             $adminGroups = [
-                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.branding.edit', 'admin.access.index']],
+                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index']],
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit']],
                                                 ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index']],

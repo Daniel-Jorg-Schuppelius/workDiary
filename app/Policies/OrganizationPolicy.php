@@ -11,37 +11,42 @@
 namespace App\Policies;
 
 use App\Models\{Organization, User};
-use App\Policies\Concerns\HasAdminBypass;
 
 class OrganizationPolicy {
-    use HasAdminBypass;
-
     /**
-     * manage-members darf den Admin-Bypass nicht auslösen:
-     * Ein Admin ohne Organisation-Kontext soll keinen Zugriff haben.
+     * NUR der globale Plattform-Betreiber erhält den Voll-Bypass über ALLE
+     * Organisationen. `Organization` trägt KEINEN OrganizationScope, das
+     * Route-Binding {organization} löst also jeden Mandanten global auf —
+     * ein org-lokaler Admin (isAdmin() im eigenen Team-Kontext) dürfte sonst
+     * fremde Mandanten auflisten, exportieren, deaktivieren und löschen
+     * (Cross-Tenant). Org-lokale Admins müssen daher die self-org-Abilities
+     * (view/update) einzeln durchlaufen. `manage-members` bleibt ausgenommen:
+     * ein globaler Admin ohne Org-Kontext soll keinen Mitgliederzugriff haben.
      */
     public function before(User $user, string $ability): ?bool {
         if ($ability === 'manage-members') {
             return null;
         }
 
-        return $user->isAdmin() ? true : null;
+        return $user->isGlobalAdmin() ? true : null;
     }
 
     public function viewAny(User $user): bool {
-        return false; // admin-only via before-hook in HasAdminBypass
+        return false; // Mandantenliste: nur Plattform-Betreiber (before-Hook)
     }
 
+    /** Eigene Organisation ansehen (org-lokaler Admin) bzw. jede (Plattform). */
     public function view(User $user, Organization $organization): bool {
-        return false;
+        return $user->isAdmin() && $user->organization_id === $organization->id;
     }
 
     public function create(User $user): bool {
-        return false;
+        return false; // Mandanten anlegen: nur Plattform-Betreiber
     }
 
+    /** Eigene Organisation bearbeiten (Einstellungen, Branding-nahe Felder). */
     public function update(User $user, Organization $organization): bool {
-        return false;
+        return $user->isAdmin() && $user->organization_id === $organization->id;
     }
 
     public function delete(User $user, Organization $organization): bool {

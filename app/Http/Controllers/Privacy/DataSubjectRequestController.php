@@ -54,7 +54,7 @@ class DataSubjectRequestController extends Controller {
         abort_unless($org !== null, 403);
 
         $data = $request->validate([
-            'type' => ['required', 'string'],
+            'type' => ['required', \Illuminate\Validation\Rule::enum(DataSubjectRequestType::class)],
             'subject' => ['required', 'string', 'max:2000'],
             'content' => ['required', 'string', 'max:20000'],
             'channel' => ['nullable', 'string', 'max:32'],
