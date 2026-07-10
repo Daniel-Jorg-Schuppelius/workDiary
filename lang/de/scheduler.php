@@ -63,6 +63,52 @@ return [
         'integration' => 'Integration',
         'housekeeping' => 'Aufräumen',
     ],
+    // Lesbare Job-Namen (Registry-Keys, geschachtelt wegen Punkt-Notation);
+    // neue Registry-Jobs hier in allen Locales ergänzen — sonst Fallback = Key.
+    'job' => [
+        'archive' => ['run' => 'Archivierungslauf'],
+        'attendance' => ['close_open' => 'Offene Stempelungen schließen'],
+        'backup' => ['check_restore' => 'Backup-Prüfung'],
+        'catalog' => ['fetch_due' => 'Katalogquellen abrufen'],
+        'chat' => [
+            'send_reminders' => 'Chat-Erinnerungen versenden',
+            'send_scheduled' => 'Geplante Chat-Nachrichten senden',
+        ],
+        'events' => [
+            'check_certificates' => 'Zertifikatsablauf prüfen',
+            'dispatch_reminders' => 'Event-Erinnerungen versenden',
+            'materialize_recurrences' => 'Wiederkehrende Events anlegen',
+        ],
+        'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
+        'lexoffice' => [
+            'sync_articles' => 'Lexoffice-Artikel synchronisieren',
+            'sync_contacts' => 'Lexoffice-Kontakte synchronisieren',
+            'sync_vouchers' => 'Lexoffice-Belege synchronisieren',
+        ],
+        'location' => ['purge_points' => 'Standort-Rohpunkte bereinigen'],
+        'maintenance' => ['scan_due' => 'Wartungspläne auf Fälligkeit prüfen'],
+        'notifications' => ['scan_deadlines' => 'Fristen prüfen und erinnern'],
+        'openproject' => [
+            'import' => 'OpenProject-Import',
+            'push' => 'Zeiten nach OpenProject übertragen',
+        ],
+        'operations' => ['scan' => 'Betriebsaufgaben abgleichen'],
+        'payroll' => ['import_minimum_wages' => 'EU-Mindestlöhne importieren'],
+        'plans' => ['purge' => 'Downgrade-Daten bereinigen'],
+        'plugin' => ['healthcheck' => 'Plugin-Healthcheck'],
+        'privacy' => [
+            'deadlines' => 'Betroffenenanfragen-Fristen prüfen',
+            'retention_scan' => 'Löschfristen-Scan',
+        ],
+        'recurrence' => ['generate' => 'Wiederkehrende Aufträge erzeugen'],
+        'remote' => ['sync_sessions' => 'Fernwartungs-Sitzungen importieren'],
+        'scheduler' => ['watchdog' => 'Scheduler-Überwachung'],
+        'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen'],
+        'tickets' => ['scan_sla_breaches' => 'SLA-Verletzungen prüfen'],
+        'todoist' => ['sync' => 'Todoist-Abgleich'],
+        'toggl' => ['import' => 'Toggl-Import'],
+        'updates' => ['check' => 'Update-Prüfung'],
+    ],
     'hint' => [
         'time' => 'Nur für tägliche/wöchentliche/monatliche Pläne.',
         'day' => 'Wochentag 0–6 (0 = Sonntag) bzw. Monatstag 1–31.',

@@ -6,7 +6,7 @@
 @endphp
 <x-modal
     :title="__('scheduler.title.reschedule')"
-    :eyebrow="$definition->key"
+    :eyebrow="$definition->label()"
     icon="schedule"
     tone="primary"
     :action="route('admin.scheduler.update', ['job' => $definition->key])"

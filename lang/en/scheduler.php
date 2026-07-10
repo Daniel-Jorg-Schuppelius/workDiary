@@ -63,6 +63,52 @@ return [
         'integration' => 'Integration',
         'housekeeping' => 'Housekeeping',
     ],
+    // Readable job names (registry keys, nested because of dot notation);
+    // add new registry jobs here in all locales — otherwise fallback = key.
+    'job' => [
+        'archive' => ['run' => 'Archiving run'],
+        'attendance' => ['close_open' => 'Close forgotten clock-ins'],
+        'backup' => ['check_restore' => 'Backup check'],
+        'catalog' => ['fetch_due' => 'Fetch catalog sources'],
+        'chat' => [
+            'send_reminders' => 'Send chat reminders',
+            'send_scheduled' => 'Send scheduled chat messages',
+        ],
+        'events' => [
+            'check_certificates' => 'Check certificate expiry',
+            'dispatch_reminders' => 'Send event reminders',
+            'materialize_recurrences' => 'Materialize recurring events',
+        ],
+        'integration' => ['purge_inbox' => 'Purge integration inbox'],
+        'lexoffice' => [
+            'sync_articles' => 'Sync Lexoffice articles',
+            'sync_contacts' => 'Sync Lexoffice contacts',
+            'sync_vouchers' => 'Sync Lexoffice vouchers',
+        ],
+        'location' => ['purge_points' => 'Purge raw location points'],
+        'maintenance' => ['scan_due' => 'Check maintenance plans for due work'],
+        'notifications' => ['scan_deadlines' => 'Scan deadlines and notify'],
+        'openproject' => [
+            'import' => 'OpenProject import',
+            'push' => 'Push times to OpenProject',
+        ],
+        'operations' => ['scan' => 'Sync operations tasks'],
+        'payroll' => ['import_minimum_wages' => 'Import EU minimum wages'],
+        'plans' => ['purge' => 'Purge downgraded module data'],
+        'plugin' => ['healthcheck' => 'Plugin health check'],
+        'privacy' => [
+            'deadlines' => 'Check data subject request deadlines',
+            'retention_scan' => 'Retention scan',
+        ],
+        'recurrence' => ['generate' => 'Generate recurring orders'],
+        'remote' => ['sync_sessions' => 'Import remote support sessions'],
+        'scheduler' => ['watchdog' => 'Scheduler watchdog'],
+        'security' => ['advisories_pull' => 'Pull security advisories'],
+        'tickets' => ['scan_sla_breaches' => 'Scan SLA breaches'],
+        'todoist' => ['sync' => 'Todoist sync'],
+        'toggl' => ['import' => 'Toggl import'],
+        'updates' => ['check' => 'Update check'],
+    ],
     'hint' => [
         'time' => 'Only for daily/weekly/monthly plans.',
         'day' => 'Weekday 0–6 (0 = Sunday) or day of month 1–31.',

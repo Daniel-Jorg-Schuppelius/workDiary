@@ -112,33 +112,34 @@ class SchedulerController extends Controller {
         ), $request->user()?->id);
 
         return redirect()->route('admin.scheduler.index')
-            ->with('status', __('scheduler.flash.rescheduled', ['job' => $definition->key]));
+            ->with('status', __('scheduler.flash.rescheduled', ['job' => $definition->label()]));
     }
 
     public function pause(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $this->registry->definition($job);
+        $definition = $this->registry->definition($job);
         $this->overrides->pause($job, $request->user()?->id);
 
         return redirect()->route('admin.scheduler.index')
-            ->with('status', __('scheduler.flash.paused', ['job' => $job]));
+            ->with('status', __('scheduler.flash.paused', ['job' => $definition->label()]));
     }
 
     public function resume(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
-        $this->registry->definition($job);
+        $definition = $this->registry->definition($job);
         $this->overrides->resume($job, $request->user()?->id);
 
         return redirect()->route('admin.scheduler.index')
-            ->with('status', __('scheduler.flash.resumed', ['job' => $job]));
+            ->with('status', __('scheduler.flash.resumed', ['job' => $definition->label()]));
     }
 
     public function reset(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $definition = $this->registry->definition($job);
         $this->overrides->reset($job);
 
         return redirect()->route('admin.scheduler.index')
-            ->with('status', __('scheduler.flash.reset', ['job' => $job]));
+            ->with('status', __('scheduler.flash.reset', ['job' => $definition->label()]));
     }
 
     public function testRun(Request $request, string $job): RedirectResponse {
@@ -158,7 +159,7 @@ class SchedulerController extends Controller {
         $this->writeTestRunAudit($request->user(), $definition->key);
 
         return redirect()->route('admin.scheduler.index')
-            ->with('status', __('scheduler.flash.test_run_queued', ['job' => $definition->key]));
+            ->with('status', __('scheduler.flash.test_run_queued', ['job' => $definition->label()]));
     }
 
     /**

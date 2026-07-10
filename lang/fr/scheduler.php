@@ -63,6 +63,52 @@ return [
         'integration' => 'Intégration',
         'housekeeping' => 'Nettoyage',
     ],
+    // Noms lisibles des tâches (clés registry, imbriquées à cause de la notation à points) ;
+    // ajouter les nouvelles tâches ici dans toutes les langues — sinon repli = clé.
+    'job' => [
+        'archive' => ['run' => 'Exécution de l\'archivage'],
+        'attendance' => ['close_open' => 'Clôturer les pointages oubliés'],
+        'backup' => ['check_restore' => 'Vérification des sauvegardes'],
+        'catalog' => ['fetch_due' => 'Récupérer les sources de catalogue'],
+        'chat' => [
+            'send_reminders' => 'Envoyer les rappels de chat',
+            'send_scheduled' => 'Envoyer les messages de chat planifiés',
+        ],
+        'events' => [
+            'check_certificates' => 'Vérifier l\'expiration des certificats',
+            'dispatch_reminders' => 'Envoyer les rappels d\'événements',
+            'materialize_recurrences' => 'Matérialiser les événements récurrents',
+        ],
+        'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
+        'lexoffice' => [
+            'sync_articles' => 'Synchroniser les articles Lexoffice',
+            'sync_contacts' => 'Synchroniser les contacts Lexoffice',
+            'sync_vouchers' => 'Synchroniser les pièces Lexoffice',
+        ],
+        'location' => ['purge_points' => 'Purger les points de localisation bruts'],
+        'maintenance' => ['scan_due' => 'Vérifier les plans de maintenance échus'],
+        'notifications' => ['scan_deadlines' => 'Contrôler les échéances et notifier'],
+        'openproject' => [
+            'import' => 'Import OpenProject',
+            'push' => 'Transférer les temps vers OpenProject',
+        ],
+        'operations' => ['scan' => 'Synchroniser les tâches d\'exploitation'],
+        'payroll' => ['import_minimum_wages' => 'Importer les salaires minimums UE'],
+        'plans' => ['purge' => 'Purger les données de modules rétrogradés'],
+        'plugin' => ['healthcheck' => 'Contrôle de santé des plugins'],
+        'privacy' => [
+            'deadlines' => 'Contrôler les délais des demandes des personnes concernées',
+            'retention_scan' => 'Analyse des délais de conservation',
+        ],
+        'recurrence' => ['generate' => 'Générer les commandes récurrentes'],
+        'remote' => ['sync_sessions' => 'Importer les sessions de téléassistance'],
+        'scheduler' => ['watchdog' => 'Surveillance du planificateur'],
+        'security' => ['advisories_pull' => 'Récupérer les avis de sécurité'],
+        'tickets' => ['scan_sla_breaches' => 'Détecter les violations de SLA'],
+        'todoist' => ['sync' => 'Synchronisation Todoist'],
+        'toggl' => ['import' => 'Import Toggl'],
+        'updates' => ['check' => 'Vérification des mises à jour'],
+    ],
     'hint' => [
         'time' => 'Uniquement pour les plans quotidiens/hebdomadaires/mensuels.',
         'day' => 'Jour de semaine 0–6 (0 = dimanche) ou jour du mois 1–31.',

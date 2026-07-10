@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Scheduling;
 
+use App\Support\Trans;
 use InvalidArgumentException;
 
 /**
@@ -69,5 +70,10 @@ final readonly class JobDefinition {
 
     public function allowsCadence(CadenceType $type): bool {
         return in_array($type, $this->allowedCadences, true);
+    }
+
+    /** Lesbarer Job-Name (scheduler.job.<key>), Fallback = Registry-Key. */
+    public function label(): string {
+        return Trans::or('scheduler.job.' . $this->key, $this->key);
     }
 }

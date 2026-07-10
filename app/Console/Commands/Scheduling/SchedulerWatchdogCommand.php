@@ -94,7 +94,7 @@ class SchedulerWatchdogCommand extends Command {
                         ? \App\Enums\Operations\OperationsTaskSeverity::Critical
                         : \App\Enums\Operations\OperationsTaskSeverity::Warning,
                     titleKey: 'operations.task.scheduler_overdue',
-                    params: ['job' => $key, 'due' => $due->format('d.m.Y H:i')],
+                    params: ['job' => $definition->label(), 'due' => $due->format('d.m.Y H:i')],
                     linkRoute: 'admin.scheduler.index',
                 ));
         }

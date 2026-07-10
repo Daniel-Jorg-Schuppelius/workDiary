@@ -63,6 +63,52 @@ return [
         'integration' => 'Integración',
         'housekeeping' => 'Limpieza',
     ],
+    // Nombres legibles de los trabajos (claves del registro, anidadas por la notación de puntos);
+    // añadir los nuevos trabajos aquí en todos los idiomas — si no, respaldo = clave.
+    'job' => [
+        'archive' => ['run' => 'Ejecución de archivado'],
+        'attendance' => ['close_open' => 'Cerrar fichajes olvidados'],
+        'backup' => ['check_restore' => 'Comprobación de copias de seguridad'],
+        'catalog' => ['fetch_due' => 'Obtener fuentes de catálogo'],
+        'chat' => [
+            'send_reminders' => 'Enviar recordatorios de chat',
+            'send_scheduled' => 'Enviar mensajes de chat programados',
+        ],
+        'events' => [
+            'check_certificates' => 'Comprobar la caducidad de certificados',
+            'dispatch_reminders' => 'Enviar recordatorios de eventos',
+            'materialize_recurrences' => 'Materializar eventos recurrentes',
+        ],
+        'integration' => ['purge_inbox' => 'Depurar la bandeja de integraciones'],
+        'lexoffice' => [
+            'sync_articles' => 'Sincronizar artículos de Lexoffice',
+            'sync_contacts' => 'Sincronizar contactos de Lexoffice',
+            'sync_vouchers' => 'Sincronizar comprobantes de Lexoffice',
+        ],
+        'location' => ['purge_points' => 'Depurar puntos de ubicación sin procesar'],
+        'maintenance' => ['scan_due' => 'Comprobar planes de mantenimiento vencidos'],
+        'notifications' => ['scan_deadlines' => 'Comprobar plazos y notificar'],
+        'openproject' => [
+            'import' => 'Importación de OpenProject',
+            'push' => 'Transferir tiempos a OpenProject',
+        ],
+        'operations' => ['scan' => 'Sincronizar tareas operativas'],
+        'payroll' => ['import_minimum_wages' => 'Importar salarios mínimos de la UE'],
+        'plans' => ['purge' => 'Depurar datos de módulos degradados'],
+        'plugin' => ['healthcheck' => 'Comprobación de estado de plugins'],
+        'privacy' => [
+            'deadlines' => 'Comprobar plazos de solicitudes de interesados',
+            'retention_scan' => 'Análisis de plazos de conservación',
+        ],
+        'recurrence' => ['generate' => 'Generar pedidos recurrentes'],
+        'remote' => ['sync_sessions' => 'Importar sesiones de asistencia remota'],
+        'scheduler' => ['watchdog' => 'Supervisión del planificador'],
+        'security' => ['advisories_pull' => 'Obtener avisos de seguridad'],
+        'tickets' => ['scan_sla_breaches' => 'Detectar incumplimientos de SLA'],
+        'todoist' => ['sync' => 'Sincronización de Todoist'],
+        'toggl' => ['import' => 'Importación de Toggl'],
+        'updates' => ['check' => 'Comprobación de actualizaciones'],
+    ],
     'hint' => [
         'time' => 'Solo para planes diarios/semanales/mensuales.',
         'day' => 'Día de la semana 0–6 (0 = domingo) o día del mes 1–31.',

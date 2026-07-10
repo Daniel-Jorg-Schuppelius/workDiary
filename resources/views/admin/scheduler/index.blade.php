@@ -35,8 +35,8 @@
             @endphp
             <tr @class(['opacity-60' => ! $job['enabled']])>
                 <td>
-                    <div class="font-medium">{{ $definition->key }}</div>
-                    <div class="text-xs font-mono text-base-content/50">{{ $definition->command }}</div>
+                    <div class="font-medium">{{ $definition->label() }}</div>
+                    <div class="text-xs font-mono text-base-content/50">{{ $definition->key }} · {{ $definition->command }}</div>
                     <div class="mt-1 flex flex-wrap gap-1">
                         <x-status-badge size="xs" :tone="$definition->criticality->tone()">{{ $definition->criticality->label() }}</x-status-badge>
                         @unless ($job['enabled'])
