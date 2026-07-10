@@ -31,7 +31,7 @@ class CustomerApiTest extends TestCase {
     }
 
     public function test_full_crud_as_admin(): void {
-        Sanctum::actingAs($this->admin);
+        Sanctum::actingAs($this->admin, ['*']);
 
         $this->postJson(route('api.customers.store'), [
             'name' => 'ACME GmbH',
@@ -54,7 +54,7 @@ class CustomerApiTest extends TestCase {
     }
 
     public function test_validation_errors_on_store(): void {
-        Sanctum::actingAs($this->admin);
+        Sanctum::actingAs($this->admin, ['*']);
 
         // `currency` wird in prepareForValidation auf 'EUR' defaulted und schlägt nicht fehl.
         $this->postJson(route('api.customers.store'), [])
@@ -70,7 +70,7 @@ class CustomerApiTest extends TestCase {
             'created_by' => $this->admin->id,
         ]);
 
-        Sanctum::actingAs($this->regular);
+        Sanctum::actingAs($this->regular, ['*']);
 
         $this->deleteJson(route('api.customers.destroy', $customer))->assertForbidden();
         $this->assertDatabaseHas('customers', ['id' => $customer->id]);
@@ -86,7 +86,7 @@ class CustomerApiTest extends TestCase {
             ]);
         }
 
-        Sanctum::actingAs($this->admin);
+        Sanctum::actingAs($this->admin, ['*']);
 
         $this->getJson(route('api.customers.index', ['per_page' => 3]))
             ->assertOk()
@@ -99,7 +99,7 @@ class CustomerApiTest extends TestCase {
         Customer::create(['organization_id' => $this->organization->id, 'name' => 'Alpha', 'currency' => 'EUR', 'created_by' => $this->admin->id]);
         Customer::create(['organization_id' => $this->organization->id, 'name' => 'Beta', 'currency' => 'EUR', 'created_by' => $this->admin->id]);
 
-        Sanctum::actingAs($this->admin);
+        Sanctum::actingAs($this->admin, ['*']);
 
         $this->getJson(route('api.customers.index', ['search' => 'Alp']))
             ->assertOk()

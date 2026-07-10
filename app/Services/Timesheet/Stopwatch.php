@@ -14,6 +14,7 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{TimeEntry, Timesheet, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class Stopwatch {
@@ -30,29 +31,36 @@ class Stopwatch {
     }
 
     public function start(User $user, Timesheet $timesheet, ?int $taskId = null, ?string $description = null): TimeEntry {
-        if ($this->current($user)) {
-            throw new RuntimeException('A running entry already exists.');
-        }
-        if ($timesheet->isSigned()) {
-            throw new RuntimeException('Timesheet is signed.');
-        }
+        return DB::transaction(function () use ($user, $timesheet, $taskId, $description): TimeEntry {
+            // Per-User serialisieren, sonst legen zwei parallele Start-Requests
+            // (Doppelklick) beide an current() vorbei zwei laufende Einträge an;
+            // stop() beendet dann nur einen.
+            User::query()->whereKey($user->id)->lockForUpdate()->first();
 
-        $now = CarbonImmutable::now();
+            if ($this->current($user)) {
+                throw new RuntimeException('A running entry already exists.');
+            }
+            if ($timesheet->isSigned()) {
+                throw new RuntimeException('Timesheet is signed.');
+            }
 
-        return TimeEntry::create([
-            'organization_id' => $timesheet->organization_id,
-            'project_id' => $timesheet->project_id,
-            'timesheet_id' => $timesheet->id,
-            'task_id' => $taskId,
-            'user_id' => $user->id,
-            'date' => $now->toDateString(),
-            'started_at' => $now,
-            'ended_at' => null,
-            'break_minutes' => 0,
-            'kind' => TimeEntryKind::Work->value,
-            'minutes' => 0,
-            'description' => $description,
-        ]);
+            $now = CarbonImmutable::now();
+
+            return TimeEntry::create([
+                'organization_id' => $timesheet->organization_id,
+                'project_id' => $timesheet->project_id,
+                'timesheet_id' => $timesheet->id,
+                'task_id' => $taskId,
+                'user_id' => $user->id,
+                'date' => $now->toDateString(),
+                'started_at' => $now,
+                'ended_at' => null,
+                'break_minutes' => 0,
+                'kind' => TimeEntryKind::Work->value,
+                'minutes' => 0,
+                'description' => $description,
+            ]);
+        });
     }
 
     public function stop(User $user): ?TimeEntry {

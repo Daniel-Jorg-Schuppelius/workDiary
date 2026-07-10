@@ -15,9 +15,19 @@ class SaveUserBookmarkRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'label' => ['required', 'string', 'max:120'],
-            'url' => ['required', 'string', 'max:2048'],
+            // Nur http(s) oder site-relative Pfade — blockt javascript:/data:-
+            // Schemata (die im href als stored XSS ausgeführt würden). Das Feld
+            // wird ungeprüft in <a href> gerendert (Sidebar auf jeder Seite).
+            'url' => ['required', 'string', 'max:2048', 'regex:#^(https?://|/)#i'],
             'icon' => ['nullable', 'string', 'max:32'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:9999'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array {
+        return [
+            'url.regex' => __('Die URL muss mit http://, https:// oder / beginnen.'),
         ];
     }
 }

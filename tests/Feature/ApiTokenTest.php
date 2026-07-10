@@ -122,4 +122,28 @@ class ApiTokenTest extends TestCase {
         $this->getJson(route('api.diary.index'))->assertOk();
         $this->assertNotSame(403, $this->postJson(route('api.diary.store'), [])->status());
     }
+
+    public function test_narrow_token_is_confined_across_all_write_families(): void {
+        // Kern des Sweep-Funds 2026-07-10: ein 'diary:read'-Token darf NICHT
+        // mehr in fremde (früher ungescopte) Familien schreiben/lesen.
+        $user = $this->apiUser();
+        Sanctum::actingAs($user, ['diary:read']);
+
+        $this->getJson(route('api.timesheets.index'))->assertForbidden();
+        $this->getJson(route('api.customers.index'))->assertForbidden();
+        $this->getJson(route('api.projects.index'))->assertForbidden();
+        $this->getJson(route('api.materials.index'))->assertForbidden();
+        $this->getJson(route('api.dashboard'))->assertForbidden();
+        $this->postJson(route('api.stopwatch.start'), [])->assertForbidden();
+        $this->postJson(route('api.location.stamp'), [])->assertForbidden();
+    }
+
+    public function test_family_scope_allows_its_own_family(): void {
+        $user = $this->apiUser();
+        Sanctum::actingAs($user, ['customers:read']);
+
+        // Eigene Familie erlaubt (Middleware lässt durch), fremde nicht.
+        $this->assertNotSame(403, $this->getJson(route('api.customers.index'))->status());
+        $this->getJson(route('api.projects.index'))->assertForbidden();
+    }
 }

@@ -50,6 +50,12 @@ class AttendanceClockService {
      */
     public function clockIn(User $user, array $context = []): Attendance {
         return DB::transaction(function () use ($user, $context) {
+            // Per-User serialisieren: MySQL (prod) kennt keinen partiellen
+            // Unique-Index auf `ended_at IS NULL` (nur SQLite/PG), sonst laufen
+            // zwei parallele Kommen-Requests/Terminal-Retries beide an current()
+            // vorbei und legen ZWEI offene Stempel an (doppelte Arbeitszeit).
+            User::query()->whereKey($user->id)->lockForUpdate()->first();
+
             if ($this->current($user)) {
                 throw new RuntimeException('User already has an open attendance.');
             }

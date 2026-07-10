@@ -32,7 +32,7 @@ class ProjectApiTest extends TestCase {
     }
 
     public function test_create_and_show(): void {
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
 
         $response = $this->postJson(route('api.projects.store'), [
             'name' => 'Webshop',
@@ -48,7 +48,7 @@ class ProjectApiTest extends TestCase {
     }
 
     public function test_validation_errors_on_store(): void {
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
 
         $this->postJson(route('api.projects.store'), [])
             ->assertUnprocessable()
@@ -63,13 +63,13 @@ class ProjectApiTest extends TestCase {
             'created_by' => $this->owner->id,
         ]);
 
-        Sanctum::actingAs($this->other);
+        Sanctum::actingAs($this->other, ['*']);
         $this->putJson(route('api.projects.update', $project), [
             'name' => 'Hijacked',
             'status' => ProjectStatus::Active->value,
         ])->assertForbidden();
 
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
         $this->putJson(route('api.projects.update', $project), [
             'name' => 'Renamed',
             'status' => ProjectStatus::Active->value,
@@ -84,7 +84,7 @@ class ProjectApiTest extends TestCase {
             'created_by' => $this->owner->id,
         ]);
 
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
         $this->deleteJson(route('api.projects.destroy', $project))->assertForbidden();
         $this->assertDatabaseHas('projects', ['id' => $project->id]);
     }
@@ -99,7 +99,7 @@ class ProjectApiTest extends TestCase {
             ]);
         }
 
-        Sanctum::actingAs($this->owner);
+        Sanctum::actingAs($this->owner, ['*']);
 
         $this->getJson(route('api.projects.index', ['per_page' => 2]))
             ->assertOk()

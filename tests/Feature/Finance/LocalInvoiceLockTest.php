@@ -125,4 +125,20 @@ class LocalInvoiceLockTest extends TestCase {
         $this->expectException(BillingModeLockedException::class);
         app(InvoiceGenerator::class)->fromMaterialUsages($this->customer->fresh(), null);
     }
+
+    public function test_material_invoice_aborts_without_billable_positions(): void {
+        // Kein Material/keine Anfahrt im Zeitraum → keine leere Rechnung + keine
+        // verbrauchte Nummer (Sweep 2026-07-10). Verhindert zusammen mit der
+        // Kunden-Sperre die Doppelabrechnung bei parallelen Läufen.
+        $this->customer->update(['billing_mode' => 'workdiary']);
+
+        try {
+            app(InvoiceGenerator::class)->fromMaterialUsages($this->customer->fresh(), $this->project->fresh());
+            $this->fail('Erwartete ValidationException wegen fehlender Positionen.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('customer_id', $e->errors());
+        }
+
+        $this->assertSame(0, Invoice::query()->count());
+    }
 }

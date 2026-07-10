@@ -60,6 +60,31 @@ class UserBookmarkTest extends TestCase {
         ]);
     }
 
+    public function test_store_rejects_javascript_and_data_uri_schemes(): void {
+        $this->setUpOrganization();
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        foreach (['javascript:alert(1)', 'data:text/html,<script>alert(1)</script>', ' javascript:alert(1)', 'vbscript:msgbox(1)'] as $payload) {
+            $this->actingAs($user)
+                ->from(route('bookmarks.index'))
+                ->post(route('bookmarks.store'), ['label' => 'X', 'url' => $payload])
+                ->assertSessionHasErrors('url');
+        }
+
+        $this->assertDatabaseCount('user_bookmarks', 0);
+    }
+
+    public function test_store_accepts_http_and_relative_urls(): void {
+        $this->setUpOrganization();
+        $user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        foreach (['https://example.test/x', 'http://example.test', '/intern/pfad'] as $ok) {
+            $this->actingAs($user)
+                ->post(route('bookmarks.store'), ['label' => 'OK', 'url' => $ok])
+                ->assertSessionHasNoErrors();
+        }
+    }
+
     public function test_update_changes_own_bookmark(): void {
         $this->setUpOrganization();
         $org = $this->organization;

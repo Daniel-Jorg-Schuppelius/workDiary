@@ -321,7 +321,7 @@
 
     {{-- ANFAHRT / TRAVEL --}}
     <div x-show="isTab('travel')" x-cloak
-         x-data="travelSettings({{ (string) old('settings.travel.enabled', data_get($stored, 'travel.enabled', '0')) === '1' ? 'true' : 'false' }}, '{{ old('settings.travel.mode', data_get($stored, 'travel.mode', 'flat')) }}', '{{ old('settings.travel.km_source', data_get($stored, 'travel.km_source', 'company')) }}', {{ (string) old('settings.travel.round_trip', data_get($stored, 'travel.round_trip', '1')) !== '0' ? 'true' : 'false' }})">
+         x-data="travelSettings({{ (string) old('settings.travel.enabled', data_get($stored, 'travel.enabled', '0')) === '1' ? 'true' : 'false' }}, @js(old('settings.travel.mode', data_get($stored, 'travel.mode', 'flat'))), @js(old('settings.travel.km_source', data_get($stored, 'travel.km_source', 'company'))), {{ (string) old('settings.travel.round_trip', data_get($stored, 'travel.round_trip', '1')) !== '0' ? 'true' : 'false' }})">
         <x-form-group :legend="__('Anfahrt-Abrechnung')" icon="local_shipping" tone="success" cols="2" compact
                       :description="__('Bei einer Tour zum Kunden an einem Tag wird bei Projekt- oder Materialabrechnung automatisch eine Anfahrt berechnet.')">
             <div class="fieldset md:col-span-2">

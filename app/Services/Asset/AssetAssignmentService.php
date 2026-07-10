@@ -57,19 +57,23 @@ class AssetAssignmentService {
             throw AssetValidationException::assignmentTargetRequired();
         }
 
-        if ($this->isBlocked($asset)) {
-            throw AssetValidationException::blockedByDefect();
-        }
-
-        if (! $this->isStatusAvailable($asset)) {
-            throw AssetValidationException::notAvailableForCheckout();
-        }
-
-        if ($this->openAssignment($asset) !== null) {
-            throw AssetValidationException::alreadyCheckedOut();
-        }
-
         return DB::transaction(function () use ($asset, $actor, $targetUser, $targetTeam, $expectedReturnAt, $diaryEntry, $conditionOut, $note): AssetAssignment {
+            // Asset-Zeile sperren und Verfügbarkeit/offene Zuweisung INNERHALB
+            // der Transaktion prüfen. Vorher lagen die Guards außerhalb → zwei
+            // parallele Checkouts gaben dasselbe Asset doppelt aus (kein
+            // partieller Unique-Index gegen zwei offene Zuweisungen).
+            $asset = Asset::query()->whereKey($asset->id)->lockForUpdate()->firstOrFail();
+
+            if ($this->isBlocked($asset)) {
+                throw AssetValidationException::blockedByDefect();
+            }
+            if (! $this->isStatusAvailable($asset)) {
+                throw AssetValidationException::notAvailableForCheckout();
+            }
+            if ($this->openAssignment($asset) !== null) {
+                throw AssetValidationException::alreadyCheckedOut();
+            }
+
             /** @var AssetAssignment $assignment */
             $assignment = $asset->assignments()->create([
                 'organization_id' => (int) $asset->organization_id,

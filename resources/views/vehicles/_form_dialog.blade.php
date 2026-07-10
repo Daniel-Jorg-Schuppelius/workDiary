@@ -15,7 +15,7 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$vehicle ? __('Speichern') : __('Anlegen')">
 
-    <div x-data="reveal('{{ old('ownership', $vehicle?->ownership?->value ?? 'owned') }}')" class="space-y-4">
+    <div x-data="reveal(@js(old('ownership', $vehicle?->ownership?->value ?? 'owned')))" class="space-y-4">
         @include('vehicles._form_body', ['vehicle' => $vehicle ?? null])
     </div>
 

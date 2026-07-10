@@ -216,13 +216,14 @@ class InvoiceTest extends TestCase {
         // Material ist als abgerechnet markiert ⇒ keine Doppelberechnung.
         $this->assertTrue(\App\Models\MaterialUsage::firstOrFail()->billed);
 
-        // Zweiter Lauf liefert eine leere Materialrechnung (nichts Offenes mehr).
+        // Zweiter Lauf bricht ab (nichts Offenes mehr): keine leere Rechnung,
+        // keine verbrauchte Nummer — Fehler auf customer_id (Sweep 2026-07-10).
         $this->postAsAdmin('invoices.store', [
             'customer_id' => $this->customer->id,
             'project_id' => $this->project->id,
             'content' => 'material',
-        ])->assertRedirect();
-        $this->assertSame(0, Invoice::query()->latest('id')->first()?->items()->count());
+        ])->assertSessionHasErrors('customer_id');
+        $this->assertSame(1, Invoice::query()->count());
     }
 
     public function test_travel_charge_added_to_service_invoice_and_not_doubled(): void {

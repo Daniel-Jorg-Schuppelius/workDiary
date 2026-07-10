@@ -15,7 +15,7 @@ use App\Models\{Project, Timesheet};
 use App\Services\Timesheet\Stopwatch;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
 class StopwatchController extends Controller {
@@ -41,14 +41,21 @@ class StopwatchController extends Controller {
         $today = CarbonImmutable::today();
         $timesheet = isset($data['timesheet_id'])
             ? Timesheet::findOrFail((int) $data['timesheet_id'])
-            : Timesheet::firstOrCreate([
-                'project_id' => $project->id,
-                'user_id' => Auth::id(),
-                'work_date' => $today,
-            ], [
-                'organization_id' => $project->organization_id,
-                'status' => TimesheetStatus::Draft->value,
-            ]);
+            : DB::transaction(function () use ($project, $today) {
+                // Per-User serialisieren: firstOrCreate hat keinen Unique-Index
+                // auf (project,user,work_date) als Backstop; zwei parallele
+                // Starts würden sonst zwei Stundenzettel für denselben Tag anlegen.
+                \App\Models\User::query()->whereKey(Auth::id())->lockForUpdate()->first();
+
+                return Timesheet::firstOrCreate([
+                    'project_id' => $project->id,
+                    'user_id' => Auth::id(),
+                    'work_date' => $today,
+                ], [
+                    'organization_id' => $project->organization_id,
+                    'status' => TimesheetStatus::Draft->value,
+                ]);
+            });
 
         Gate::authorize('update', $timesheet);
 

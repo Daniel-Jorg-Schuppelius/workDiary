@@ -36,7 +36,7 @@ class LocationImportStampTest extends TestCase {
 
     public function test_browser_stamp_stores_point(): void {
         $this->user->setPreference(LocationController::OPT_IN_PREFERENCE, true);
-        Sanctum::actingAs($this->user);
+        Sanctum::actingAs($this->user, ['*']);
 
         $this->postJson('/api/location/stamp', ['lat' => 52.52, 'lng' => 13.405, 'accuracy_m' => 8])
             ->assertOk()
@@ -47,7 +47,7 @@ class LocationImportStampTest extends TestCase {
 
     public function test_browser_stamp_requires_opt_in(): void {
         $this->user->setPreference(LocationController::OPT_IN_PREFERENCE, false);
-        Sanctum::actingAs($this->user);
+        Sanctum::actingAs($this->user, ['*']);
 
         $this->postJson('/api/location/stamp', ['lat' => 52.52, 'lng' => 13.405])
             ->assertStatus(403);

@@ -39,7 +39,7 @@ class TimesheetApiTest extends TestCase {
     }
 
     public function test_create_and_list_timesheet_via_api(): void {
-        Sanctum::actingAs($this->user);
+        Sanctum::actingAs($this->user, ['*']);
 
         $this->postJson(route('api.timesheets.store', $this->project), [
             'work_date' => '2030-04-01',

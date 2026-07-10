@@ -106,6 +106,7 @@ class MonthClosureService {
         $actorId = $this->resolveActorId($actor);
 
         $closure = DB::transaction(function () use ($closure, $snapshot, $counts, $actorId): MonthClosure {
+            $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Draft, MonthClosureStatus::Reopened, MonthClosureStatus::Rejected]);
             $closure->fill([
                 'status' => MonthClosureStatus::Submitted,
                 'submitted_at' => CarbonImmutable::now(),
@@ -159,6 +160,7 @@ class MonthClosureService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($closure, $snapshot, $actorId, $note): MonthClosure {
+            $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Submitted]);
             $closure->fill([
                 'status' => MonthClosureStatus::Approved,
                 'decided_at' => CarbonImmutable::now(),
@@ -183,6 +185,7 @@ class MonthClosureService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($closure, $reason, $actorId): MonthClosure {
+            $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Submitted]);
             $closure->fill([
                 'status' => MonthClosureStatus::Rejected,
                 'decided_at' => CarbonImmutable::now(),
@@ -228,6 +231,7 @@ class MonthClosureService {
         $this->assertReason($reason ?? '');
 
         return DB::transaction(function () use ($closure, $reason, $actorId): MonthClosure {
+            $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Approved, MonthClosureStatus::Locked, MonthClosureStatus::Rejected]);
             $wasLocked = $closure->status === MonthClosureStatus::Locked;
 
             $closure->fill([
@@ -258,6 +262,7 @@ class MonthClosureService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($closure, $actorId): MonthClosure {
+            $closure = $this->lockAndAssert($closure, [MonthClosureStatus::Approved]);
             $closure->fill([
                 'status' => MonthClosureStatus::Locked,
                 'locked_at' => CarbonImmutable::now(),
@@ -298,6 +303,23 @@ class MonthClosureService {
                 ['from' => $closure->status->value, 'allowed' => array_map(fn(MonthClosureStatus $s) => $s->value, $allowed)],
             );
         }
+    }
+
+    /**
+     * Sperrt die Closure-Zeile in der laufenden Transaktion und prüft den
+     * Status ERNEUT gegen den frischen Wert. Die assertStatus()-Vorprüfung läuft
+     * auf dem (evtl. veralteten) übergebenen Modell — ohne dieses Re-Lock würden
+     * zwei parallele submit()/approve() beide durchlaufen und doppelte
+     * Audit-Events + Benachrichtigungen erzeugen.
+     *
+     * @param  list<MonthClosureStatus>  $allowed
+     */
+    private function lockAndAssert(MonthClosure $closure, array $allowed): MonthClosure {
+        /** @var MonthClosure $fresh */
+        $fresh = MonthClosure::query()->whereKey($closure->getKey())->lockForUpdate()->firstOrFail();
+        $this->assertStatus($fresh, $allowed);
+
+        return $fresh;
     }
 
     private function assertReason(string $reason): void {

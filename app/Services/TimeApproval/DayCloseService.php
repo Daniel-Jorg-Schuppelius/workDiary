@@ -193,6 +193,7 @@ class DayCloseService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($closure, $actorId): DayClosure {
+            $closure = $this->lockAndAssert($closure, [DayClosureStatus::Open]);
             $closure->fill([
                 'status' => DayClosureStatus::Closed,
                 'closed_at' => CarbonImmutable::now(),
@@ -328,6 +329,7 @@ class DayCloseService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($closure, $reason, $actorId): DayClosure {
+            $closure = $this->lockAndAssert($closure, [DayClosureStatus::Closed]);
             $closure->fill([
                 'status' => DayClosureStatus::Open,
                 'closed_at' => null,
@@ -446,6 +448,21 @@ class DayCloseService {
                 ['from' => $closure->status->value, 'allowed' => array_map(static fn(DayClosureStatus $s) => $s->value, $allowed)],
             );
         }
+    }
+
+    /**
+     * Sperrt die Tagesabschluss-Zeile in der Transaktion und prüft den Status
+     * erneut gegen den frischen Wert (verhindert doppelte Übergänge/Events bei
+     * parallelen close()/reopen()-Aufrufen).
+     *
+     * @param  list<DayClosureStatus>  $allowed
+     */
+    private function lockAndAssert(DayClosure $closure, array $allowed): DayClosure {
+        /** @var DayClosure $fresh */
+        $fresh = DayClosure::query()->whereKey($closure->getKey())->lockForUpdate()->firstOrFail();
+        $this->assertStatus($fresh, $allowed);
+
+        return $fresh;
     }
 
     private function assertRequestPending(DayCorrectionRequest $request): void {

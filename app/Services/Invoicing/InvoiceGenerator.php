@@ -58,6 +58,11 @@ class InvoiceGenerator {
         $this->assertLocalBillingAllowed($customer);
 
         return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
+            // Per-Kunde serialisieren: verhindert, dass zwei parallele
+            // Rechnungsläufe dieselben exported=false-Zeiten / travel_billed=false-
+            // Touren doppelt abrechnen (Doppelklick).
+            Customer::query()->whereKey($customer->id)->lockForUpdate()->first();
+
             $notes = null;
             if ($foreignCustomer !== null) {
                 $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
@@ -143,7 +148,9 @@ class InvoiceGenerator {
             }
 
             // Anfahrt der Touren dieses Zeitraums (Leistungstage bevorzugt).
-            $this->appendTravelCharges($invoice, $customer, $project, $range, $foreignCustomer, pureMaterialOnly: false, position: $position);
+            $charges = app(\App\Services\Travel\TravelChargeService::class)
+                ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
+            $this->appendTravelCharges($invoice, $charges, $foreignCustomer, $position);
 
             $invoice->load('items');
             $invoice->recalculate();
@@ -166,26 +173,12 @@ class InvoiceGenerator {
         $this->assertLocalBillingAllowed($customer);
 
         return DB::transaction(function () use ($customer, $project, $range, $foreignCustomer): Invoice {
-            $notes = null;
-            if ($foreignCustomer !== null) {
-                $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
-            }
+            // Per-Kunde serialisieren (Doppelklick-Schutz gegen Doppelabrechnung).
+            Customer::query()->whereKey($customer->id)->lockForUpdate()->first();
 
-            $invoice = Invoice::create([
-                'organization_id' => $customer->organization_id,
-                'customer_id' => $customer->id,
-                'project_id' => $project?->id,
-                'foreign_customer_id' => $foreignCustomer?->id,
-                'number' => $this->nextNumber($customer->organization_id),
-                'status' => Invoice::STATUS_DRAFT,
-                'category' => Invoice::CATEGORY_MATERIAL,
-                'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
-                'tax_rate' => ($materialTax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer))['rate'],
-                'is_reverse_charge' => $materialTax['reverse_charge'],
-                'notes' => trim(($notes !== null ? $notes . "\n" : '') . ($materialTax['note'] ?? '')) ?: null,
-                'created_by' => Auth::id(),
-            ]);
-
+            // Quellposten UNTER Sperre und VOR Nummernvergabe laden: sonst
+            // erzeugt ein zweiter Lauf eine leere Rechnung samt verbrauchter
+            // Nummer bzw. würde dieselben Posten doppelt abrechnen.
             $usages = MaterialUsage::query()
                 ->where('billed', false)
                 ->whereHas('timesheet', function ($q) use ($customer, $project, $foreignCustomer, $range): void {
@@ -208,7 +201,37 @@ class InvoiceGenerator {
                     'timesheet.project:id,name,foreign_customer_id',
                     'timesheet.project.foreignCustomer:id,name,company',
                 ])
+                ->lockForUpdate()
                 ->get();
+
+            $charges = app(\App\Services\Travel\TravelChargeService::class)
+                ->chargesForRange($customer, $project, $range, $foreignCustomer, true);
+
+            if ($usages->isEmpty() && count($charges) === 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'customer_id' => (string) __('Für den gewählten Zeitraum gibt es keine abrechenbaren Material- oder Anfahrtsposten.'),
+                ]);
+            }
+
+            $notes = null;
+            if ($foreignCustomer !== null) {
+                $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
+            }
+
+            $invoice = Invoice::create([
+                'organization_id' => $customer->organization_id,
+                'customer_id' => $customer->id,
+                'project_id' => $project?->id,
+                'foreign_customer_id' => $foreignCustomer?->id,
+                'number' => $this->nextNumber($customer->organization_id),
+                'status' => Invoice::STATUS_DRAFT,
+                'category' => Invoice::CATEGORY_MATERIAL,
+                'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
+                'tax_rate' => ($materialTax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer))['rate'],
+                'is_reverse_charge' => $materialTax['reverse_charge'],
+                'notes' => trim(($notes !== null ? $notes . "\n" : '') . ($materialTax['note'] ?? '')) ?: null,
+                'created_by' => Auth::id(),
+            ]);
 
             $position = 0;
             foreach ($usages as $usage) {
@@ -233,8 +256,8 @@ class InvoiceGenerator {
             }
 
             // Anfahrt nur für reine Materialtage (Leistungstage bleiben der
-            // Leistungsrechnung vorbehalten).
-            $this->appendTravelCharges($invoice, $customer, $project, $range, $foreignCustomer, pureMaterialOnly: true, position: $position);
+            // Leistungsrechnung vorbehalten). Charges wurden oben unter Sperre geladen.
+            $this->appendTravelCharges($invoice, $charges, $foreignCustomer, $position);
 
             $invoice->load('items');
             $invoice->recalculate();
@@ -250,18 +273,13 @@ class InvoiceGenerator {
      *
      * @param  array{from?: string|CarbonInterface|null, to?: string|CarbonInterface|null}  $range
      */
+    /** @param iterable<int, \App\Services\Travel\TravelCharge> $charges vorab (unter Sperre) geladen */
     private function appendTravelCharges(
         Invoice $invoice,
-        Customer $customer,
-        ?Project $project,
-        array $range,
+        iterable $charges,
         ?ForeignCustomer $foreignCustomer,
-        bool $pureMaterialOnly,
         int &$position,
     ): void {
-        $charges = app(\App\Services\Travel\TravelChargeService::class)
-            ->chargesForRange($customer, $project, $range, $foreignCustomer, $pureMaterialOnly);
-
         foreach ($charges as $charge) {
             $invoice->items()->create([
                 'tour_id' => $charge->tour->id,

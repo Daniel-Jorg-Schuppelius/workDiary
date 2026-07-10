@@ -32,6 +32,28 @@ enum ApiAbility: string {
     case AssetsRead = 'assets:read';
     case HooksManage = 'hooks:manage';
     case TicketsWrite = 'tickets:write';
+    // Sweep 2026-07-10: bisher ungescopte Familien nachgezogen, damit ein
+    // eingeschränkter Token wirklich eingeschränkt ist (nicht nur die 9 oben).
+    case CommentsWrite = 'comments:write';
+    case AttachmentsRead = 'attachments:read';
+    case AttachmentsWrite = 'attachments:write';
+    case TagsRead = 'tags:read';
+    case TagsWrite = 'tags:write';
+    case ShiftsRead = 'shifts:read';
+    case AssignmentsRead = 'assignments:read';
+    case DashboardRead = 'dashboard:read';
+    case PushWrite = 'push:write';
+    case TimesheetsRead = 'timesheets:read';
+    case TimesheetsWrite = 'timesheets:write';
+    case MaterialsRead = 'materials:read';
+    case StopwatchRead = 'stopwatch:read';
+    case StopwatchWrite = 'stopwatch:write';
+    case FlexRead = 'flex:read';
+    case LocationWrite = 'location:write';
+    case CustomersRead = 'customers:read';
+    case CustomersWrite = 'customers:write';
+    case ProjectsRead = 'projects:read';
+    case ProjectsWrite = 'projects:write';
 
     public function label(): string {
         return match ($this) {
@@ -44,6 +66,26 @@ enum ApiAbility: string {
             self::AssetsRead => (string) __('Assets lesen'),
             self::HooksManage => (string) __('Automatisierungs-Hooks verwalten'),
             self::TicketsWrite => (string) __('Tickets anlegen'),
+            self::CommentsWrite => (string) __('Kommentare schreiben'),
+            self::AttachmentsRead => (string) __('Anhänge herunterladen'),
+            self::AttachmentsWrite => (string) __('Anhänge hochladen/löschen'),
+            self::TagsRead => (string) __('Tags lesen'),
+            self::TagsWrite => (string) __('Tags anlegen/ändern'),
+            self::ShiftsRead => (string) __('Bereitschaften lesen'),
+            self::AssignmentsRead => (string) __('Einsätze lesen'),
+            self::DashboardRead => (string) __('Dashboard lesen'),
+            self::PushWrite => (string) __('Push-Abo verwalten'),
+            self::TimesheetsRead => (string) __('Stundenzettel lesen'),
+            self::TimesheetsWrite => (string) __('Stundenzettel anlegen/ändern'),
+            self::MaterialsRead => (string) __('Materialien lesen'),
+            self::StopwatchRead => (string) __('Stoppuhr lesen'),
+            self::StopwatchWrite => (string) __('Stoppuhr steuern'),
+            self::FlexRead => (string) __('Arbeitszeitkonto lesen'),
+            self::LocationWrite => (string) __('Standort stempeln'),
+            self::CustomersRead => (string) __('Kunden lesen'),
+            self::CustomersWrite => (string) __('Kunden anlegen/ändern'),
+            self::ProjectsRead => (string) __('Projekte lesen'),
+            self::ProjectsWrite => (string) __('Projekte anlegen/ändern'),
         };
     }
 
