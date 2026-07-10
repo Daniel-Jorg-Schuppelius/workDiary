@@ -28,8 +28,8 @@ class SavePurchaseOrderRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'supplier' => ['required', 'integer', 'exists:suppliers,id'],
-            'warehouse' => ['required', 'integer', 'exists:warehouses,id'],
+            'supplier' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('suppliers')],
+            'warehouse' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('warehouses')],
             'expected_at' => ['nullable', 'date'],
             'note' => ['nullable', 'string', 'max:2000'],
         ];

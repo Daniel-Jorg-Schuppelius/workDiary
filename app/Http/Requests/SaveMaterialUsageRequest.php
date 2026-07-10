@@ -11,7 +11,6 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use Illuminate\Validation\Rule;
 
 class SaveMaterialUsageRequest extends BaseFormRequest {
     use DecodesSqidInputs;
@@ -24,7 +23,7 @@ class SaveMaterialUsageRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'material_id' => ['nullable', 'integer', Rule::exists('materials', 'id')],
+            'material_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('materials')],
             'description' => ['required', 'string', 'max:255'],
             'quantity' => ['required', 'numeric', 'min:0.001', 'max:99999.999'],
             'unit' => ['required', 'string', 'max:20'],

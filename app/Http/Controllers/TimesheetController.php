@@ -127,8 +127,8 @@ class TimesheetController extends Controller {
         ]);
 
         $data = $request->validate([
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
             'work_date' => ['nullable', 'date'],
         ]);
 

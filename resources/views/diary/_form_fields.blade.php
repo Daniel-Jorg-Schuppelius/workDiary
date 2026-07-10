@@ -197,26 +197,27 @@
     </div>
 </x-form-group>
 
-{{-- Kunde / zugewiesener Benutzer (typabhängig) --}}
-<template x-if="requiresCustomer">
-    <x-form-group :legend="__('Kunde & Zuweisung')" icon="badge" tone="secondary" cols="2">
-        <x-select-field name="customer_id" :label="__('Kunde')">
-            <option value="">—</option>
-            @foreach ($customerOptions as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $entry?->customer_id)) === $c->sqid)>
-                    {{ $c->name }}@if ($c->company) — {{ $c->company }}@endif
-                </option>
-            @endforeach
-        </x-select-field>
+{{-- Kunde / zugewiesener Benutzer: immer verfügbar (Server erlaubt Kunde
+     auch ohne fordernden Typ); Pflicht-Markierung nur typabhängig. Früher
+     stand der Block hinter x-if="requiresCustomer" — damit war ein Kunde
+     bei nicht-fordernden Typen nie zuweisbar und Bestandswerte unsichtbar. --}}
+<x-form-group :legend="__('Kunde & Zuweisung')" icon="badge" tone="secondary" cols="2">
+    <x-select-field name="customer_id" :label="__('Kunde')" x-bind:required="requiresCustomer">
+        <option value="">—</option>
+        @foreach ($customerOptions as $c)
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $entry?->customer_id)) === $c->sqid)>
+                {{ $c->name }}@if ($c->company) — {{ $c->company }}@endif
+            </option>
+        @endforeach
+    </x-select-field>
 
-        <x-select-field name="assigned_user_id" :label="__('Zuständig')">
-            <option value="">—</option>
-            @foreach ($assignableUsers as $u)
-                <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
-            @endforeach
-        </x-select-field>
-    </x-form-group>
-</template>
+    <x-select-field name="assigned_user_id" :label="__('Zuständig')">
+        <option value="">—</option>
+        @foreach ($assignableUsers as $u)
+            <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $entry?->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
+        @endforeach
+    </x-select-field>
+</x-form-group>
 
 {{-- Termin / Zeitfenster / Servicedauer --}}
 <template x-if="requiresSchedule">

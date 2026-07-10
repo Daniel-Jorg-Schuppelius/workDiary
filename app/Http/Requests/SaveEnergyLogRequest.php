@@ -29,7 +29,7 @@ class SaveEnergyLogRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'vehicle_id' => ['required', 'integer', Rule::exists('vehicles', 'id')],
+            'vehicle_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('vehicles')],
             'energy_type' => ['required', 'string', Rule::in(EnergyLog::TYPES)],
             'fuel_kind' => ['nullable', 'string', Rule::in(EnergyLog::FUEL_KINDS)],
             'quantity' => ['required', 'numeric', 'min:0', 'max:9999'],

@@ -108,7 +108,7 @@ class EmergencyAssignmentController extends Controller {
 
         return $request->validate([
             'user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'on_call_shift_id' => ['nullable', 'integer', 'exists:on_call_shifts,id'],
+            'on_call_shift_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('on_call_shifts')],
             'start_at' => ['required', 'date'],
             'end_at' => ['required', 'date', 'after:start_at'],
             'reason' => ['nullable', 'string', 'max:1000'],

@@ -63,7 +63,11 @@ class ClassificationController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', Classification::class);
 
-        $sourceClassification = $this->resolveSourceClassification($request->integer('source'));
+        // "Override anlegen" sendet source als Sqid; integer() ergäbe 0 und
+        // das Vorlagen-Prefill ginge still verloren.
+        $sourceClassification = $this->resolveSourceClassification(
+            (int) \App\Support\Sqid::decodeOrNumeric(Classification::class, $request->string('source')->toString(), 0),
+        );
         $domain = $sourceClassification instanceof Classification
             ? $sourceClassification->domain
             : $this->resolveDomain($request->string('domain')->toString());
@@ -90,7 +94,8 @@ class ClassificationController extends Controller {
         Gate::authorize('create', Classification::class);
 
         $validated = $request->validate([
-            'source_classification_id' => ['nullable', 'integer', 'exists:classifications,id'],
+            // Vorlage darf Plattform-Default (org NULL) oder eigene Org sein.
+            'source_classification_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('classifications', includeGlobal: true)],
             'domain' => ['required_without:source_classification_id', 'string', Rule::in(array_map(static fn(ClassificationDomain $domain): string => $domain->value, ClassificationDomain::cases()))],
             'code' => ['required_without:source_classification_id', 'string', 'max:60'],
             'label' => ['required', 'string', 'max:180'],

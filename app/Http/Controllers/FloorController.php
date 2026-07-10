@@ -137,7 +137,7 @@ class FloorController extends Controller {
         }
 
         return $request->validate([
-            'building_id' => ['required', 'integer', 'exists:buildings,id'],
+            'building_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('buildings')],
             'level' => ['required', 'integer', 'min:-10', 'max:200', $uniqueLevel],
             'label' => ['required', 'string', 'max:80'],
             'gross_area_m2' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],

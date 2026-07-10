@@ -55,7 +55,7 @@ trait PartyFormFields {
             'contact_persons.*.phone' => ['nullable', 'string', 'max:64'],
             'contact_persons.*.primary' => ['nullable', 'boolean'],
             'tag_ids' => ['nullable', 'array'],
-            'tag_ids.*' => ['integer', 'exists:tags,id'],
+            'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
             'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }

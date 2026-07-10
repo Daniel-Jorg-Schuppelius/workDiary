@@ -42,7 +42,7 @@ class SaveVehicleRequest extends BaseFormRequest {
             'rental_cost_per_day' => ['nullable', 'numeric', 'min:0', 'max:99999'],
             'rental_included_km' => ['nullable', 'integer', 'min:0'],
             'rental_extra_cost_per_km' => ['nullable', 'numeric', 'min:0', 'max:99'],
-            'default_user_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
+            'default_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'default_rate_per_km' => ['nullable', 'numeric', 'min:0', 'max:10'],
             'tank_capacity_liters' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'battery_capacity_kwh' => ['nullable', 'numeric', 'min:0', 'max:9999'],

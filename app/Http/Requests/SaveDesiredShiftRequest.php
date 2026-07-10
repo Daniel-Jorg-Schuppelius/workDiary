@@ -40,7 +40,7 @@ class SaveDesiredShiftRequest extends FormRequest {
     public function rules(): array {
         return [
             'date' => ['required', 'date'],
-            'shift_type_id' => ['nullable', 'integer', 'exists:shift_types,id'],
+            'shift_type_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('shift_types')],
             'preference' => ['required', Rule::enum(ShiftPreference::class)],
             'note' => ['nullable', 'string', 'max:255'],
         ];

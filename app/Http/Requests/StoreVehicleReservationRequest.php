@@ -12,7 +12,6 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\{DiaryEntry, Vehicle};
-use Illuminate\Validation\Rule;
 
 class StoreVehicleReservationRequest extends BaseFormRequest {
     use DecodesSqidInputs;
@@ -26,8 +25,8 @@ class StoreVehicleReservationRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'vehicle_id' => ['required', 'integer', Rule::exists('vehicles', 'id')],
-            'diary_entry_id' => ['nullable', 'integer', Rule::exists('diary_entries', 'id')],
+            'vehicle_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('vehicles')],
+            'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
             'reserved_from' => ['required', 'date'],
             'reserved_to' => ['required', 'date', 'after:reserved_from'],
             'note' => ['nullable', 'string', 'max:255'],

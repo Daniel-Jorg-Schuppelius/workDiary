@@ -81,9 +81,9 @@ class InvoiceController extends Controller {
         ]);
 
         $data = $request->validate([
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
-            'foreign_customer_id' => ['nullable', 'integer', 'exists:foreign_customers,id'],
+            'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
+            'foreign_customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('foreign_customers')],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
             'content' => ['nullable', 'in:service,material'],
@@ -414,7 +414,7 @@ class InvoiceController extends Controller {
 
         $data = $request->validate([
             'expense_ids' => ['required', 'array', 'min:1'],
-            'expense_ids.*' => ['integer', 'exists:expenses,id'],
+            'expense_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('expenses')],
         ]);
 
         /** @var \Illuminate\Database\Eloquent\Collection<int, Expense> $expenses */
@@ -491,7 +491,7 @@ class InvoiceController extends Controller {
         Gate::authorize('send', $invoice);
 
         $data = $request->validate([
-            'template_id' => ['required', 'integer', 'exists:invoice_mail_templates,id'],
+            'template_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('invoice_mail_templates')],
             'to' => ['required', 'array', 'min:1', 'max:20'],
             'to.*' => ['required', 'email:rfc'],
             'cc' => ['nullable', 'array', 'max:20'],

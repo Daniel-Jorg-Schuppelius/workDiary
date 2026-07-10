@@ -29,8 +29,8 @@ class SaveTourRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'user_id' => ['required', 'integer', Rule::exists('users', 'id')],
-            'vehicle_id' => ['nullable', 'integer', Rule::exists('vehicles', 'id')],
+            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
+            'vehicle_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('vehicles')],
             'tour_date' => ['required', 'date'],
             'name' => ['nullable', 'string', 'max:200'],
             'start_address' => ['nullable', 'string', 'max:255'],
@@ -45,9 +45,13 @@ class SaveTourRequest extends BaseFormRequest {
     }
 
     public function withValidator(Validator $validator): void {
-        $validator->after(function (Validator $v): void {
-            $vehicleId = $this->input('vehicle_id');
-            $date = $this->input('tour_date');
+        $validator->after(function (\Illuminate\Validation\Validator $v): void {
+            // getData() statt input(): der Validator arbeitet auf den in
+            // validationData() Sqid-DEKODIERTEN Werten — input() enthielte
+            // noch den Roh-Sqid und der Check liefe still ins Leere.
+            $data = $v->getData();
+            $vehicleId = $data['vehicle_id'] ?? null;
+            $date = $data['tour_date'] ?? null;
             if (! $vehicleId || ! $date) {
                 return;
             }

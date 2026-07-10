@@ -52,8 +52,8 @@ class StoreScheduledShiftRequest extends FormRequest {
 
         return [
             'user_id' => [...$req, 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'shift_type_id' => [...$opt, 'integer', 'exists:shift_types,id'],
-            'duty_plan_id' => [...$opt, 'integer', 'exists:duty_plans,id'],
+            'shift_type_id' => [...$opt, 'integer', new \App\Rules\ExistsInCurrentOrganization('shift_types')],
+            'duty_plan_id' => [...$opt, 'integer', new \App\Rules\ExistsInCurrentOrganization('duty_plans')],
             'date' => [...$req, 'date'],
             'start_time' => [...$opt, 'date_format:H:i'],
             'end_time' => [...$opt, 'date_format:H:i'],

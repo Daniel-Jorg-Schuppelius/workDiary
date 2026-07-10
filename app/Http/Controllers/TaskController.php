@@ -25,7 +25,9 @@ class TaskController extends Controller {
         $parentTasks = $project->tasks()->whereNull('parent_task_id')->orderBy('position')->get(['id', 'title']);
         $users = $this->assignableUsers($project);
 
-        $preselectedParentId = $request->integer('parent_id') ?: null;
+        // "Unteraufgabe anlegen" sendet parent_id als Sqid; integer() ergäbe 0
+        // und die Vorauswahl ginge still verloren.
+        $preselectedParentId = \App\Support\Sqid::decodeOrNumeric(Task::class, $request->string('parent_id')->toString());
 
         return view('projects._task_dialog', [
             'project' => $project,

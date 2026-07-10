@@ -246,7 +246,7 @@ class DiaryController extends Controller {
             'recentTagIds' => $this->recentTagIds((int) $auth->id),
             'canCreateForOthers' => $canCreateForOthers,
             'assignableUsers' => $canCreateForOthers ? LookupCache::userDropdown() : collect(),
-        ] + $this->entryTypeFormData());
+        ] + $this->entryTypeFormData($diary));
     }
 
     public function update(SaveDiaryEntryRequest $request, DiaryEntry $diary): RedirectResponse {
@@ -354,9 +354,22 @@ class DiaryController extends Controller {
      *
      * @return array{entryTypes: Collection<int, EntryType>, entryTypeFlags: array<string, array<string, mixed>>, customerOptions: Collection<int, Customer>, tourOptions: Collection<int, Tour>}
      */
-    private function entryTypeFormData(): array {
+    private function entryTypeFormData(?DiaryEntry $entry = null): array {
         /** @var Collection<int, EntryType> $types */
         $types = EntryType::query()->active()->ordered()->get();
+
+        // Edit-Fall: Der Ist-Typ des Eintrags bleibt wählbar, auch wenn er
+        // inzwischen deaktiviert wurde. Sonst fiele das Select still auf
+        // „ohne Typ" zurück (Typverlust beim Speichern) bzw. der Server
+        // erzwänge Pflichtfelder, die das Formular gar nicht anzeigt.
+        if ($entry?->entry_type_id !== null && ! $types->contains('id', $entry->entry_type_id)) {
+            $current = EntryType::query()->find($entry->entry_type_id);
+            if ($current instanceof EntryType) {
+                $current->label .= ' (' . __('inaktiv') . ')';
+                $types->push($current);
+            }
+        }
+
         $flagsMap = $types->mapWithKeys(fn(EntryType $t) => [$t->sqid => $t->flagsArray()])->all();
 
         /** @var Collection<int, Customer> $customers */

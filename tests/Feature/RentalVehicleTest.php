@@ -95,6 +95,49 @@ class RentalVehicleTest extends TestCase {
             ->assertSessionHasErrors(['vehicle_id']);
     }
 
+    public function test_tour_save_rejects_rental_outside_period_with_sqid_input(): void {
+        // Reales Formularverhalten: vehicle_id kommt als Sqid — der
+        // Verfügbarkeits-Check muss auch dann greifen (Regression: der
+        // after-Hook las früher den Roh-Sqid und lief still ins Leere).
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $vehicle = Vehicle::factory()->rental()->create([
+            'organization_id' => $this->organization->id,
+            'rental_start' => '2026-04-01',
+            'rental_end' => '2026-04-30',
+        ]);
+
+        $this->actingAs($admin)
+            ->from(route('tours.create'))
+            ->post(route('tours.store'), [
+                'user_id' => \App\Support\Sqid::encode(User::class, $driver->id),
+                'vehicle_id' => $vehicle->sqid,
+                'tour_date' => '2026-05-15',
+                'name' => 'Außerhalb (Sqid)',
+            ])
+            ->assertRedirect(route('tours.create'))
+            ->assertSessionHasErrors(['vehicle_id']);
+    }
+
+    public function test_tour_save_rejects_foreign_org_vehicle(): void {
+        // Cross-Tenant-Gate (ExistsInCurrentOrganization): Fahrzeuge fremder
+        // Organisationen sind nicht referenzierbar.
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $foreignOrg = \App\Models\Organization::factory()->create();
+        $foreignVehicle = Vehicle::factory()->create(['organization_id' => $foreignOrg->id]);
+
+        $this->actingAs($admin)
+            ->from(route('tours.create'))
+            ->post(route('tours.store'), [
+                'user_id' => \App\Support\Sqid::encode(User::class, $driver->id),
+                'vehicle_id' => $foreignVehicle->sqid,
+                'tour_date' => '2026-05-15',
+                'name' => 'Fremdes Fahrzeug',
+            ])
+            ->assertSessionHasErrors(['vehicle_id']);
+    }
+
     public function test_tour_save_accepts_rental_within_period(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $driver = User::factory()->user()->create(['organization_id' => $this->organization->id]);

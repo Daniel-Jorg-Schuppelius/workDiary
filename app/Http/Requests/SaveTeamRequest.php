@@ -12,7 +12,6 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\User;
-use Illuminate\Validation\Rule;
 
 class SaveTeamRequest extends BaseFormRequest {
     use DecodesSqidInputs;
@@ -29,9 +28,9 @@ class SaveTeamRequest extends BaseFormRequest {
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:500'],
             'color' => ['nullable', 'string', 'max:16'],
-            'lead_user_id' => ['nullable', 'integer', Rule::exists('users', 'id')],
+            'lead_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'member_ids' => ['array'],
-            'member_ids.*' => ['integer', Rule::exists('users', 'id')],
+            'member_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization()],
         ];
     }
 }

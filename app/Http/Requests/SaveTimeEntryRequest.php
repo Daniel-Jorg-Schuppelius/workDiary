@@ -35,13 +35,29 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             'started_at' => ['nullable', 'date'],
             'ended_at' => ['nullable', 'date', 'after:started_at'],
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:600'],
-            'task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
-            'diary_entry_id' => ['nullable', 'integer', Rule::exists('diary_entries', 'id')],
+            'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
+            'diary_entry_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('diary_entries')],
             'description' => ['nullable', 'string', 'max:500'],
             // Rang 59: Nacharbeit-/Kulanz-Kennzeichnung (Klassifikations-Domänen).
-            'rework_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where('domain', 'rework_reason')],
-            'goodwill_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where('domain', 'goodwill_reason')],
+            // Org-Constraint: eigene Org ODER Plattform-Default (organization_id NULL).
+            'rework_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where(fn($q) => $this->scopeClassification($q, 'rework_reason'))],
+            'goodwill_reason_classification_id' => ['nullable', 'integer', Rule::exists('classifications', 'id')->where(fn($q) => $this->scopeClassification($q, 'goodwill_reason'))],
         ];
+    }
+
+    /**
+     * Domänen- + Org-Filter für Klassifikations-Referenzen: eigene Org
+     * oder Plattform-Default (organization_id NULL); ohne Org-Bindung
+     * (CLI) nur Domänen-Filter.
+     *
+     * @param \Illuminate\Database\Query\Builder $q
+     */
+    private function scopeClassification($q, string $domain): void {
+        $q->where('domain', $domain);
+        $orgId = app()->bound('currentOrganization') ? (app('currentOrganization')->id ?? null) : null;
+        if ($orgId !== null) {
+            $q->where(fn($qq) => $qq->where('organization_id', $orgId)->orWhereNull('organization_id'));
+        }
     }
 
     protected function prepareForValidation(): void {

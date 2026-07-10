@@ -67,14 +67,14 @@ class SaveProjectRequest extends BaseFormRequest {
             // ''=erben (→ null in prepareForValidation), '1'=an, '0'=aus.
             'weather_auto_fetch' => ['nullable', 'in:0,1'],
             'team_ids' => ['array'],
-            'team_ids.*' => ['integer', Rule::exists('teams', 'id')],
+            'team_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('teams')],
             'member_ids' => ['array'],
-            'member_ids.*' => ['integer', Rule::exists('users', 'id')],
-            'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')],
+            'member_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization()],
+            'customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'foreign_customer_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('foreign_customers', 'id'),
+                new \App\Rules\ExistsInCurrentOrganization('foreign_customers'),
                 function (string $attribute, mixed $value, Closure $fail) use ($customerId): void {
                     if ($value === null || $value === '') {
                         return;
@@ -96,7 +96,7 @@ class SaveProjectRequest extends BaseFormRequest {
             'parent_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('projects', 'id'),
+                new \App\Rules\ExistsInCurrentOrganization('projects'),
                 function (string $attribute, mixed $value, Closure $fail) use ($project): void {
                     if ($value === null || $value === '') {
                         return;

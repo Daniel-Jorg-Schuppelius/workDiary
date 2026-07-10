@@ -30,11 +30,11 @@ class SaveExpenseRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'date' => ['required', 'date'],
-            'expense_category_id' => ['nullable', 'integer', Rule::exists('expense_categories', 'id')],
-            'project_id' => ['nullable', 'integer', Rule::exists('projects', 'id')],
-            'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')],
-            'task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
-            'attendance_id' => ['nullable', 'integer', Rule::exists('attendances', 'id')],
+            'expense_category_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('expense_categories')],
+            'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
+            'customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
+            'attendance_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('attendances')],
             'vendor' => ['nullable', 'string', 'max:160'],
             'description' => ['required', 'string', 'max:500'],
             'payment_method' => ['required', Rule::enum(PaymentMethod::class)],

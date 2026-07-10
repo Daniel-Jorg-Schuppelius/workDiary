@@ -30,10 +30,10 @@ class SaveManufacturingOrderRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'article' => ['required', 'integer', 'exists:articles,id'],
-            'variant' => ['nullable', 'integer', 'exists:article_variants,id'],
-            'warehouse' => ['nullable', 'integer', 'exists:warehouses,id'],
-            'customer' => ['nullable', 'integer', 'exists:customers,id'],
+            'article' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('articles')],
+            'variant' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('article_variants')],
+            'warehouse' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('warehouses')],
+            'customer' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'target_qty' => ['required', 'numeric', 'gt:0'],
             'unit' => ['required', 'string', 'max:20'],
             'priority' => ['nullable', 'integer', 'min:1'],

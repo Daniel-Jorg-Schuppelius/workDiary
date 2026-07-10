@@ -92,7 +92,7 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
             'minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:480'],
             'kind' => ['nullable', Rule::enum(TimeEntryKind::class)],
-            'task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
+            'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'description' => ['nullable', 'string', 'max:500'],
         ];
     }

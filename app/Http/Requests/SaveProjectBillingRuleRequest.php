@@ -27,10 +27,12 @@ class SaveProjectBillingRuleRequest extends FormRequest {
         return [
             'plugin_id' => ['nullable', 'string', 'max:50'],
             'applies_to_kind' => ['nullable', 'string', Rule::in($kinds)],
+            // Match über external_id: ohne Org-Constraint wäre ein fremder
+            // Org-Datensatz mit gleicher external_id referenzierbar.
             'lexoffice_article_id' => [
                 'nullable',
                 'string',
-                Rule::exists((new LexofficeArticle)->getTable(), 'external_id'),
+                new \App\Rules\ExistsInCurrentOrganization((new LexofficeArticle)->getTable(), 'external_id'),
             ],
             'item_type' => ['nullable', 'string', Rule::in(['service', 'material', 'custom'])],
             'unit_name' => ['nullable', 'string', 'max:50'],

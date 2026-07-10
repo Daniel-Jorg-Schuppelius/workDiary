@@ -101,9 +101,9 @@ class GeofenceController extends Controller {
         ]);
 
         $data = $request->validate([
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'site_id' => ['nullable', 'integer', 'exists:sites,id'],
-            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'site_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('sites')],
+            'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
             'label' => ['required', 'string', 'max:160'],
             'center_lat' => ['required', 'numeric', 'between:-90,90'],
             'center_lng' => ['required', 'numeric', 'between:-180,180'],

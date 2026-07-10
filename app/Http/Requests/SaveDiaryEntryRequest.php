@@ -95,13 +95,13 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'window_end_date' => [$windowRequired ? 'required' : 'nullable', 'date', 'after_or_equal:window_start_date'],
             'location_mode' => ['required', Rule::enum(LocationMode::class)],
             'user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
 
             // Phase 6: typgesteuerte Felder
-            'entry_type_id' => ['nullable', 'integer', 'exists:entry_types,id'],
+            'entry_type_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('entry_types')],
             'title' => ['nullable', 'string', 'max:200'],
             'priority' => ['nullable', Rule::enum(Priority::class)],
-            'customer_id' => [$requiresCustomer ? 'required' : 'nullable', 'integer', 'exists:customers,id'],
+            'customer_id' => [$requiresCustomer ? 'required' : 'nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'assigned_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
 
             'scheduled_for' => [$requiresSchedule ? 'required' : 'nullable', 'date'],
@@ -116,18 +116,26 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
 
-            'tour_id' => [$requiresTour ? 'required' : 'nullable', 'integer', 'exists:tours,id'],
+            'tour_id' => [$requiresTour ? 'required' : 'nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tours')],
             'tour_position' => ['nullable', 'integer', 'min:0'],
             'notes' => ['nullable', 'string', 'max:65535'],
         ];
     }
 
     private function resolveEntryType(): ?EntryType {
-        $id = $this->input('entry_type_id');
-        if (! $id) {
+        $raw = $this->input('entry_type_id');
+        if (! $raw) {
             return null;
         }
 
-        return EntryType::query()->find((int) $id);
+        // rules() läuft VOR der Sqid-Dekodierung in validationData():
+        // Formulare senden Sqids, nur Altbestand/interne Aufrufe numerische
+        // IDs. Ohne Dekodierung wäre der Typ hier nie auffindbar und die
+        // requires_*-Pflichten liefen ins Leere.
+        $id = is_string($raw) && ! ctype_digit($raw)
+            ? app(\App\Services\SqidEncoder::class)->decode(EntryType::class, $raw)
+            : (int) $raw;
+
+        return $id ? EntryType::query()->find($id) : null;
     }
 }

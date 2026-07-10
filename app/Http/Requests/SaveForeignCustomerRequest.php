@@ -28,7 +28,7 @@ class SaveForeignCustomerRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'name' => ['required', 'string', 'max:200'],
             'company' => ['nullable', 'string', 'max:200'],
             'contact_name' => ['nullable', 'string', 'max:200'],

@@ -23,9 +23,9 @@ class SaveServiceTicketRequest extends BaseFormRequest {
             'priority' => ['required', new Enum(ServiceTicketPriority::class)],
             'source' => ['nullable', new Enum(ServiceTicketSource::class)],
             'source_reference' => ['nullable', 'string', 'max:120'],
-            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
-            'asset_id' => ['nullable', 'integer', 'exists:assets,id'],
-            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
+            'customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'asset_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
+            'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
             // Auftragsbezug org-gescopt (nie cross-tenant, s. ExistsInCurrentOrganization).
             'diary_entry_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('diary_entries')],
             'reported_at' => ['nullable', 'date'],

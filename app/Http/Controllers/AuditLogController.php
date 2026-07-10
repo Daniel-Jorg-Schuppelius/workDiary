@@ -53,7 +53,9 @@ class AuditLogController extends Controller {
             $query->where('event', $event);
         }
 
-        if ($userId = $request->integer('user_id')) {
+        // Das Filter-Select sendet Sqids; integer() ergäbe 0 und der
+        // Benutzer-Filter griffe still nie.
+        if ($userId = \App\Support\Sqid::decodeOrNumeric(\App\Models\User::class, $request->string('user_id')->toString())) {
             $query->where('user_id', $userId);
         }
 

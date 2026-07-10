@@ -22,7 +22,7 @@ class SaveMeterReadingRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'asset_id' => ['required', 'integer', 'exists:assets,id'],
+            'asset_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
             'read_at' => ['nullable', 'date'],
             'value' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'string', 'max:16'],

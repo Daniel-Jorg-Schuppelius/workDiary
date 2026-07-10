@@ -130,7 +130,7 @@ class BuildingController extends Controller {
         ]);
 
         return $request->validate([
-            'site_id' => ['required', 'integer', 'exists:sites,id'],
+            'site_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('sites')],
             'name' => ['required', 'string', 'max:160'],
             'code' => ['nullable', 'string', 'max:32'],
             'gross_area_m2' => ['nullable', 'numeric', 'min:0', 'max:9999999.99'],

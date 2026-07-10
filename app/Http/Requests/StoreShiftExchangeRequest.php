@@ -32,9 +32,9 @@ class StoreShiftExchangeRequest extends FormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'scheduled_shift_id' => ['required', 'integer', 'exists:scheduled_shifts,id'],
+            'scheduled_shift_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('scheduled_shifts')],
             'target_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'offered_shift_id' => ['nullable', 'integer', 'exists:scheduled_shifts,id'],
+            'offered_shift_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('scheduled_shifts')],
             'reason' => ['nullable', 'string', 'max:500'],
         ];
     }

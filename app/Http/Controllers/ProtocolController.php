@@ -187,7 +187,18 @@ class ProtocolController extends Controller {
             'description' => ['nullable', 'string', 'max:5000'],
             'required' => ['nullable', 'boolean'],
             'item_type' => ['nullable', 'string', 'max:40', Rule::in(array_map(static fn($c) => $c->value, ProtocolItemType::cases()))],
-            'parent_item_id' => ['nullable', 'integer', 'exists:protocol_items,id'],
+            // Org-Bindung läuft über das Eltern-Protokoll (Items tragen
+            // keine eigene organization_id).
+            'parent_item_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('protocol_items', 'id')->where(function ($q): void {
+                    $orgId = app()->bound('currentOrganization') ? (app('currentOrganization')->id ?? null) : null;
+                    if ($orgId !== null) {
+                        $q->whereIn('protocol_id', \Illuminate\Support\Facades\DB::table('protocols')->where('organization_id', $orgId)->select('id'));
+                    }
+                }),
+            ],
         ]);
 
         /** @var User $actor */

@@ -119,7 +119,7 @@ class FinanceTransferController extends Controller {
         $request->merge(['customer_id' => $customerId]);
 
         $data = $request->validate([
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'channel' => ['required', 'string', Rule::enum(TransferChannel::class)],
             'target' => ['required', 'string', Rule::enum(TransferTarget::class)],
             'from' => ['nullable', 'date'],

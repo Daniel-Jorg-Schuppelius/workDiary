@@ -24,11 +24,11 @@ class SaveKeyHandoverRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'asset_id' => ['required', 'integer', 'exists:assets,id'],
+            'asset_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
             'direction' => ['required', new Enum(KeyHandoverDirection::class)],
             'person_name' => ['required', 'string', 'max:180'],
             'person_reference' => ['nullable', 'string', 'max:120'],
-            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
+            'customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'occurred_at' => ['nullable', 'date'],
             'expected_return_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string', 'max:5000'],

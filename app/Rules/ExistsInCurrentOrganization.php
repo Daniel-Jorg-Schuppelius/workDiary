@@ -27,10 +27,15 @@ use Illuminate\Support\Facades\DB;
  * Prüfung auf reines Existieren zurück und ändert das bisherige Verhalten nicht.
  */
 final readonly class ExistsInCurrentOrganization implements ValidationRule {
+    /**
+     * @param bool $includeGlobal auch Datensätze mit organization_id=NULL
+     *        zulassen (Plattform-Defaults, z. B. classifications)
+     */
     public function __construct(
         private string $table = 'users',
         private string $column = 'id',
         private string $organizationColumn = 'organization_id',
+        private bool $includeGlobal = false,
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void {
@@ -42,7 +47,11 @@ final readonly class ExistsInCurrentOrganization implements ValidationRule {
 
         $orgId = app()->bound('currentOrganization') ? (app('currentOrganization')->id ?? null) : null;
         if ($orgId !== null) {
-            $query->where($this->organizationColumn, $orgId);
+            if ($this->includeGlobal) {
+                $query->where(fn($q) => $q->where($this->organizationColumn, $orgId)->orWhereNull($this->organizationColumn));
+            } else {
+                $query->where($this->organizationColumn, $orgId);
+            }
         }
 
         if (! $query->exists()) {

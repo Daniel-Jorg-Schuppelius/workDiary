@@ -102,8 +102,10 @@ class DiaryExportController extends Controller {
         if (! $request->boolean('archived')) {
             $query->where('is_archived', false);
         }
-        $tagId = $request->integer('tag');
-        if ($tagId > 0) {
+        // Die Export-Links reichen die Index-Filter weiter — tag ist dort ein
+        // Sqid; integer() ergäbe 0 und der Export ignorierte den Filter still.
+        $tagId = \App\Support\Sqid::decodeOrNumeric(\App\Models\Tag::class, $request->string('tag')->toString());
+        if ($tagId !== null && $tagId > 0) {
             $query->whereHas('tags', fn($q) => $q->where('tags.id', $tagId));
         }
         $q = trim((string) $request->query('q', ''));

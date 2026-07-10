@@ -67,7 +67,18 @@ class SaveArticleRequest extends BaseFormRequest {
             'default_purchase_price' => ['nullable', 'numeric', 'min:0'],
             'default_sale_price' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
-            'default_procedure_template_version_id' => ['nullable', 'integer', 'exists:procedure_template_versions,id'],
+            // Org-Bindung läuft über die Eltern-Vorlage (Versions-Tabelle
+            // selbst trägt keine organization_id).
+            'default_procedure_template_version_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('procedure_template_versions', 'id')->where(function ($q): void {
+                    $orgId = app()->bound('currentOrganization') ? (app('currentOrganization')->id ?? null) : null;
+                    if ($orgId !== null) {
+                        $q->whereIn('procedure_template_id', \Illuminate\Support\Facades\DB::table('procedure_templates')->where('organization_id', $orgId)->select('id'));
+                    }
+                }),
+            ],
             ...array_fill_keys(self::FLAGS, ['boolean']),
         ];
     }

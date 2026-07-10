@@ -137,7 +137,7 @@ class SiteController extends Controller {
         ]);
 
         $data = $request->validate([
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
             'name' => ['required', 'string', 'max:160'],
             'code' => ['nullable', 'string', 'max:32'],
             'address_street' => ['nullable', 'string', 'max:160'],

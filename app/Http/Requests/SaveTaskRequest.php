@@ -40,12 +40,12 @@ class SaveTaskRequest extends BaseFormRequest {
             'description' => ['nullable', 'string'],
             'status' => ['required', Rule::enum(TaskStatus::class)],
             'priority' => ['required', Rule::enum(TaskPriority::class)],
-            'milestone_id' => ['nullable', 'integer', Rule::exists('milestones', 'id')],
-            'parent_task_id' => ['nullable', 'integer', Rule::exists('tasks', 'id')],
+            'milestone_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('milestones')],
+            'parent_task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'assignee_ids' => ['array'],
             'assignee_ids.*' => [
                 'integer',
-                Rule::exists('users', 'id'),
+                new \App\Rules\ExistsInCurrentOrganization(),
                 // Bearbeiter müssen dem Auftrag zugeordnet sein (Team-Mitglied oder
                 // Einzelmitglied), sofern das Projekt überhaupt Zuordnungen hat.
                 function (string $attribute, mixed $value, Closure $fail): void {

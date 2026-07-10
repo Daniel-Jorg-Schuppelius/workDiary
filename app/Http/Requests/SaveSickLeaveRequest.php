@@ -44,7 +44,7 @@ class SaveSickLeaveRequest extends BaseFormRequest {
             'follow_up_for_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('sick_leaves', 'id'),
+                new \App\Rules\ExistsInCurrentOrganization('sick_leaves'),
                 Rule::requiredIf(fn() => $this->input('kind') === SickLeaveKind::FollowUp->value),
             ],
             'au_number' => ['nullable', 'string', 'max:100'],

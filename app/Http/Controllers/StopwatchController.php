@@ -29,10 +29,10 @@ class StopwatchController extends Controller {
 
     public function start(Request $request): RedirectResponse {
         $data = $request->validate([
-            'project_id' => ['required', 'integer', 'exists:projects,id'],
-            'task_id' => ['nullable', 'integer', 'exists:tasks,id'],
+            'project_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
+            'task_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('tasks')],
             'description' => ['nullable', 'string', 'max:500'],
-            'timesheet_id' => ['nullable', 'integer', 'exists:timesheets,id'],
+            'timesheet_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('timesheets')],
         ]);
 
         $project = Project::findOrFail((int) $data['project_id']);

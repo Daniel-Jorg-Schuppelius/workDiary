@@ -47,10 +47,30 @@ class SaveRecurrenceRuleRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
+        // Typ-Pflichten spiegeln (analog SaveDiaryEntryRequest): Serien-
+        // Einträge entstehen ohne Formular-Validierung, deshalb muss die
+        // Regel selbst den Typ-Vertrag erfüllen. Adresse/Tour kann eine
+        // Regel strukturell nicht liefern → solche Typen sind für
+        // Serienaufträge nicht wählbar.
+        $type = $this->resolveEntryType();
+        $requiresCustomer = (bool) ($type?->requires_customer);
+
         return [
             'name' => ['required', 'string', 'max:160'],
-            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
-            'entry_type_id' => ['nullable', 'integer', 'exists:entry_types,id'],
+            'customer_id' => [$requiresCustomer ? 'required' : 'nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
+            'entry_type_id' => [
+                'nullable',
+                'integer',
+                new \App\Rules\ExistsInCurrentOrganization('entry_types'),
+                function (string $attribute, mixed $value, \Closure $fail) use ($type): void {
+                    if ($type === null) {
+                        return;
+                    }
+                    if ($type->requires_address || $type->requires_tour) {
+                        $fail(__('Dieser Eintragstyp erfordert Einsatzadresse bzw. Tour und eignet sich nicht für Serienaufträge.'));
+                    }
+                },
+            ],
             'assigned_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
 
             'title_template' => ['nullable', 'string', 'max:200'],
@@ -69,5 +89,20 @@ class SaveRecurrenceRuleRequest extends BaseFormRequest {
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
             'is_active' => ['nullable', 'boolean'],
         ];
+    }
+
+    private function resolveEntryType(): ?\App\Models\EntryType {
+        $raw = $this->input('entry_type_id');
+        if (! $raw) {
+            return null;
+        }
+
+        // rules() läuft VOR der Sqid-Dekodierung in validationData() —
+        // Formulare senden Sqids (s. Memory/SaveDiaryEntryRequest).
+        $id = is_string($raw) && ! ctype_digit($raw)
+            ? app(\App\Services\SqidEncoder::class)->decode(\App\Models\EntryType::class, $raw)
+            : (int) $raw;
+
+        return $id ? \App\Models\EntryType::query()->find($id) : null;
     }
 }
