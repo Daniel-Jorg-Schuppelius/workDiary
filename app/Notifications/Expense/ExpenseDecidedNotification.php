@@ -45,10 +45,10 @@ class ExpenseDecidedNotification extends Notification {
             ->subject(__('Spese :status: :amount', ['status' => $status, 'amount' => $amount]))
             ->greeting(__('Hallo :name,', ['name' => $notifiable->name ?? '']))
             ->line(__('Deine Spese wurde :status.', ['status' => $status]))
-            ->line($this->expense->description);
+            ->line(\App\Support\MailText::plain($this->expense->description));
 
         if ($this->expense->status === ExpenseStatus::Rejected && $this->expense->reject_reason) {
-            $mail->line(__('Begründung: :reason', ['reason' => $this->expense->reject_reason]));
+            $mail->line(__('Begründung: :reason', ['reason' => \App\Support\MailText::plain($this->expense->reject_reason)]));
         }
 
         return $mail->action(__('Spese öffnen'), route('expenses.index'));

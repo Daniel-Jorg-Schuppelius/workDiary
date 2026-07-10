@@ -161,6 +161,31 @@ class PaymentReconciliationTest extends TestCase {
         $this->assertNull($invoice->paid_on);
     }
 
+    /**
+     * Whitebox 2026-07-10 (G12): Wird die (einzige) Teilzahlungs-Zuordnung
+     * zurückgenommen, darf die Rechnung nicht auf `partially_paid` hängen
+     * bleiben (Mahnwesen-relevant) — zurück auf `issued`.
+     */
+    public function test_unmatch_reverts_partially_paid_to_issued(): void {
+        $invoice = $this->makeInvoice(total: '500.00');
+        $statements = $this->importService()->import($this->camtFile(), $this->organization->id);
+        $tx = $statements[0]->transactions()->first();
+
+        app(ReconciliationService::class)->confirm($tx, [[
+            'type' => Invoice::class,
+            'id' => $invoice->id,
+            'amount' => 119.00,
+            'kind' => AllocationKind::Partial,
+        ]]);
+        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $invoice->refresh()->status);
+
+        $allocation = PaymentAllocation::query()->where('bank_transaction_id', $tx->id)->firstOrFail();
+        app(ReconciliationService::class)->unmatch($allocation);
+
+        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertNull($invoice->paid_on);
+    }
+
     public function test_unmatch_reverts_invoice_paid_reversibly(): void {
         $invoice = $this->makeInvoice();
         $statements = $this->importService()->import($this->camtFile(), $this->organization->id);

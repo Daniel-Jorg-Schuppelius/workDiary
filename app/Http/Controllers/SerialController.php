@@ -40,7 +40,7 @@ class SerialController extends Controller {
         $serials = StockSerial::query()
             ->with(['article', 'variant', 'customer'])
             ->when($status !== 'all', fn ($q) => $q->where('status', $status))
-            ->when($search !== '', fn ($q) => $q->where('serial_no', 'like', '%' . $search . '%'))
+            ->when($search !== '', fn ($q) => $q->whereLikeEscaped('serial_no', $search))
             ->whereBetween('created_at', [$range['from']->startOfDay(), $range['to']->endOfDay()])
             ->latest()
             ->paginate(30)

@@ -32,8 +32,8 @@ class ProjectController extends Controller {
         }
         if ($search !== '') {
             $query->where(function ($q) use ($search): void {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhereHas('customer', fn($c) => $c->where('name', 'like', "%{$search}%"));
+                $q->whereLikeEscaped('name', $search)
+                    ->orWhereHas('customer', fn($c) => $c->whereLikeEscaped('name', $search));
             });
         }
 

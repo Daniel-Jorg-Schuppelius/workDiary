@@ -19,7 +19,7 @@ use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate, Mail};
+use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InvoiceController extends Controller {
@@ -132,7 +132,9 @@ class InvoiceController extends Controller {
 
     public function destroy(Invoice $invoice): RedirectResponse {
         Gate::authorize('delete', $invoice);
-        $invoice->delete();
+        // Transaktion: Positions-Löschung + Quellposten-Freigabe (Hooks in
+        // Invoice/InvoiceItem) sollen atomar mit dem Rechnungs-Delete laufen.
+        DB::transaction(fn() => $invoice->delete());
 
         return redirect()->route('invoices.index')->with('status', __('Rechnung gelöscht.'));
     }

@@ -60,8 +60,8 @@ class ProjectExportSpec extends AbstractExportSpec {
             ->when($status === 'archived', fn($q) => $q->whereNotNull('archived_at'))
             ->when($search !== '', function ($q) use ($search): void {
                 $q->where(function ($inner) use ($search): void {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('number', 'like', "%{$search}%");
+                    $inner->whereLikeEscaped('name', $search)
+                        ->orWhereLikeEscaped('number', $search);
                 });
             })
             ->orderBy('name')

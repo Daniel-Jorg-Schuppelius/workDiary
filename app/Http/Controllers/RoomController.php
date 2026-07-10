@@ -37,10 +37,10 @@ class RoomController extends Controller {
         $rooms = Room::query()
             ->with(['requirements' => fn($q) => $q->where('is_active', true)])
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('building', 'like', "%{$search}%")
-                    ->orWhere('floor', 'like', "%{$search}%");
+                $w->whereLikeEscaped('name', $search)
+                    ->orWhereLikeEscaped('code', $search)
+                    ->orWhereLikeEscaped('building', $search)
+                    ->orWhereLikeEscaped('floor', $search);
             }))
             ->orderBy($sort, $dir)
             ->paginate(50)

@@ -264,7 +264,7 @@ class MessageController extends Controller {
 
         $messages = Message::query()
             ->whereIn('channel_id', fn ($sub) => $sub->select('channel_id')->from('chat_channel_user')->where('user_id', $user->id))
-            ->where('body', 'like', '%' . $q . '%')
+            ->whereLikeEscaped('body', $q)
             ->with(['channel:id,name,type', 'user:id,name'])
             ->orderByDesc('id')
             ->limit(30)

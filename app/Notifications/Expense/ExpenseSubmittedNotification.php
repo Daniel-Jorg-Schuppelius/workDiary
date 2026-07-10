@@ -38,8 +38,8 @@ class ExpenseSubmittedNotification extends Notification {
         return (new MailMessage)
             ->subject(__('Neue Spese zur Genehmigung: :amount', ['amount' => $amount]))
             ->greeting(__('Hallo :name,', ['name' => $notifiable->name ?? '']))
-            ->line(__(':owner hat eine neue Spese eingereicht.', ['owner' => $owner]))
-            ->line($this->expense->description)
+            ->line(__(':owner hat eine neue Spese eingereicht.', ['owner' => \App\Support\MailText::plain($owner)]))
+            ->line(\App\Support\MailText::plain($this->expense->description))
             ->line(__('Betrag: :amount', ['amount' => $amount]))
             ->action(__('Spese prüfen'), route('expense-approvals.inbox'));
     }

@@ -46,7 +46,11 @@ class IntegrationOutboxService {
         );
 
         if ($entry->wasRecentlyCreated) {
-            IntegrationOutboxDeliveryJob::dispatch($entry->id);
+            // afterCommit: enqueue() wird aus Observern in Business-
+            // Transaktionen aufgerufen — der Job darf erst nach dem Commit
+            // laufen, sonst sieht er den Outbox-Eintrag (Nicht-DB-Driver)
+            // noch nicht.
+            IntegrationOutboxDeliveryJob::dispatch($entry->id)->afterCommit();
         }
 
         return $entry;

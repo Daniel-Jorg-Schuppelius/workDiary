@@ -27,8 +27,8 @@ class ShiftTypeController extends Controller {
         $types = ShiftType::query()
             ->withCount('scheduledShifts')
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('abbreviation', 'like', "%{$search}%");
+                $w->whereLikeEscaped('name', $search)
+                    ->orWhereLikeEscaped('abbreviation', $search);
             }))
             ->orderBy('name')
             ->get();

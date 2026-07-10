@@ -52,7 +52,10 @@ class TicketConversationService {
             $ticket->audit('service_ticket.replied', ['message_id' => $message->id]);
 
             if ($to !== []) {
-                ServiceTicketReplyMailJob::dispatch($message->id);
+                // afterCommit: der Dispatch läuft in einer Transaktion — bei
+                // Nicht-DB-Queue-Drivern (Redis/SQS) fände der Job die
+                // Nachricht sonst vor dem Commit nicht und returnte still.
+                ServiceTicketReplyMailJob::dispatch($message->id)->afterCommit();
             }
 
             return $message;

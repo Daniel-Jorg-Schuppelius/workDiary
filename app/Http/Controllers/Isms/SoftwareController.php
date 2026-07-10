@@ -55,8 +55,8 @@ class SoftwareController extends Controller {
         }
         if ($filters['q'] !== '') {
             $query->where(function ($q) use ($filters): void {
-                $q->where('name', 'like', '%' . $filters['q'] . '%')
-                    ->orWhere('vendor', 'like', '%' . $filters['q'] . '%');
+                $q->whereLikeEscaped('name', $filters['q'])
+                    ->orWhereLikeEscaped('vendor', $filters['q']);
             });
         }
 

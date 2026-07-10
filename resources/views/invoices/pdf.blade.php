@@ -92,16 +92,30 @@
             <td>{{ $item->position }}</td>
             <td>{{ $item->description }}</td>
             @if ($showServiceDates)<td>{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
-            <td class="num">{{ number_format((float) $item->quantity, 2, ',', '.') }} {{ $item->unit }}</td>
-            <td class="num">{{ number_format((float) $item->unit_price, 2, ',', '.') }} {{ $invoice->currency }}</td>
+            {{-- 3./4. NK nur zeigen, wenn signifikant: die Rechnung muss aus Menge × Preis nachrechenbar sein --}}
+            <td class="num">{{ number_format((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, ',', '.') }} {{ $item->unit }}</td>
+            <td class="num">{{ number_format((float) $item->unit_price, ((int) round((float) $item->unit_price * 10000)) % 100 !== 0 ? 4 : 2, ',', '.') }} {{ $invoice->currency }}</td>
             <td class="num">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>
         </tr>
     @endforeach
     </tbody>
-    @php $footColspan = $showServiceDates ? 5 : 4; @endphp
+    @php
+        $footColspan = $showServiceDates ? 5 : 4;
+        // Steueraufriss je Satz (§ 14 Abs. 4 UStG): bei gemischten
+        // Positions-Steuersätzen MUSS jeder Satz einzeln ausgewiesen werden —
+        // ein einzelner Kopfsatz wäre ein falscher Steuerausweis.
+        $taxRows = collect($invoice->tax_breakdown ?? []);
+        $fmtRate = fn($rate) => rtrim(rtrim(number_format((float) $rate, 2, '.', ''), '0'), '.');
+    @endphp
     <tfoot>
         <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
-        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="num">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+        @if ($taxRows->count() > 1)
+            @foreach ($taxRows as $row)
+                <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ number_format((float) $row['net'], 2, ',', '.') }} {{ $invoice->currency }})</td><td class="num">{{ number_format((float) $row['tax'], 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+            @endforeach
+        @else
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($invoice->tax_rate) }}%</td><td class="num">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+        @endif
         @if ($invoice->is_reverse_charge)
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
         @endif

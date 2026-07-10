@@ -79,6 +79,7 @@ class Quote extends Model {
     public function recalculate(): void {
         $sub = 0.0;
         $tax = 0.0;
+        $fallbackRate = null;
         foreach ($this->items as $item) {
             // Vor der Entscheidung (accepted=null) zählen Pflichtpositionen,
             // Optionen nicht; nach der Entscheidung zählt NUR Angenommenes.
@@ -88,10 +89,27 @@ class Quote extends Model {
             }
             $net = round((float) $item->quantity * (float) $item->unit_price, 2);
             $sub += $net;
-            $tax += round($net * ((float) ($item->tax_rate ?? 19)) / 100, 2);
+            // Positionen ohne eigenen Satz: Satz aus dem TaxResolver
+            // (§ 19 UStG → 0, Org-Override, Länderkatalog) statt hart 19 % —
+            // sonst zeigt eine Kleinunternehmer-Org falsche Bruttopreise.
+            $rate = $item->tax_rate !== null
+                ? (float) $item->tax_rate
+                : ($fallbackRate ??= $this->defaultTaxRate());
+            $tax += round($net * $rate / 100, 2);
         }
         $this->subtotal = round($sub, 2);
         $this->tax_amount = round($tax, 2);
         $this->total = round($sub + $tax, 2);
+    }
+
+    /** Steuersatz-Fallback für Positionen ohne eigenen Satz (s. recalculate). */
+    private function defaultTaxRate(): float {
+        $organization = $this->organization()->first();
+        $customer = $this->customer()->first();
+        if ($organization === null || $customer === null) {
+            return 19.0; // defensiv: Alt-Verhalten ohne aufgelösten Kontext
+        }
+
+        return (float) app(\App\Services\Invoicing\TaxResolver::class)->resolve($organization, $customer)['rate'];
     }
 }

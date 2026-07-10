@@ -163,8 +163,8 @@
                 <td>{{ $item->position }}</td>
                 <td>{{ $item->description }}</td>
                 @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
-                <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ number_format((float) $item->quantity, 2, ',', '.') }} {{ $item->unit }}</td>
-                <td class="text-right" data-sort-value="{{ (float) $item->unit_price }}">{{ number_format((float) $item->unit_price, 2, ',', '.') }} {{ $invoice->currency }}</td>
+                <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ number_format((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, ',', '.') }} {{ $item->unit }}</td>
+                <td class="text-right" data-sort-value="{{ (float) $item->unit_price }}">{{ number_format((float) $item->unit_price, ((int) round((float) $item->unit_price * 10000)) % 100 !== 0 ? 4 : 2, ',', '.') }} {{ $invoice->currency }}</td>
                 <td class="text-right" data-sort-value="{{ (float) $item->amount }}">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>
                 @can('update', $invoice)
                     @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)

@@ -31,10 +31,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $created_by
  */
 class CarrierConnection extends Model {
-    use HasConnectionHealth;
-
     use Auditable;
+
     use BelongsToOrganization;
+    use HasConnectionHealth;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 

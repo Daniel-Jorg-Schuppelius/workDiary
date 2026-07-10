@@ -186,7 +186,10 @@ class ReconciliationService {
     }
 
     private function revertInvoice(Invoice $invoice): void {
-        if ($invoice->status !== Invoice::STATUS_PAID) {
+        // Auch Teilzahlungen zurückdrehen: werden alle Zuordnungen entfernt,
+        // darf die Rechnung nicht als „teilbezahlt" hängen bleiben
+        // (Mahnwesen-relevant).
+        if (! in_array($invoice->status, [Invoice::STATUS_PAID, Invoice::STATUS_PARTIALLY_PAID], true)) {
             return;
         }
         // Nur zurücknehmen, wenn nach Wegfall dieser Zuordnung die Deckung fehlt.
@@ -194,11 +197,13 @@ class ReconciliationService {
         $allocated = $this->allocatedSum($invoice); // Allocation ist bereits soft-deleted.
         $minWithSkonto = $total * (1 - MatchingService::SKONTO_PERCENT / 100);
 
-        if ($allocated + MatchingService::CENT_TOLERANCE < $minWithSkonto) {
-            $invoice->status = Invoice::STATUS_ISSUED;
-            $invoice->paid_on = null;
-            $invoice->saveQuietly();
+        if ($allocated + MatchingService::CENT_TOLERANCE >= $minWithSkonto) {
+            return; // weiterhin gedeckt — Status bleibt bestehen.
         }
+
+        $invoice->status = $allocated > 0 ? Invoice::STATUS_PARTIALLY_PAID : Invoice::STATUS_ISSUED;
+        $invoice->paid_on = null;
+        $invoice->saveQuietly();
     }
 
     private function revertExpense(Expense $expense, PaymentAllocation $allocation): void {

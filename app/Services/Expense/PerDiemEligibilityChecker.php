@@ -53,14 +53,18 @@ class PerDiemEligibilityChecker {
         foreach ($trips as $prev) {
             $start = CarbonImmutable::parse($prev->started_at)->startOfDay();
             $end = CarbonImmutable::parse($prev->ended_at)->startOfDay();
-            if ($lastEnd !== null && $start->diffInDays($lastEnd) >= 28) {
+            // Carbon 3: diffInDays ist signiert — Basis muss der FRÜHERE
+            // Zeitpunkt sein, sonst ist die Differenz negativ und der
+            // 4-Wochen-Reset feuert nie.
+            if ($lastEnd !== null && $lastEnd->diffInDays($start) >= 28) {
                 $usedDays = 0;
             }
             $usedDays += (int) $prev->days->count();
             $lastEnd = $end;
         }
 
-        if ($lastEnd !== null && $tripStart->diffInDays($lastEnd) >= 28) {
+        // s. o.: signierte Carbon-3-Differenz — vom früheren zum späteren Datum.
+        if ($lastEnd !== null && $lastEnd->diffInDays($tripStart) >= 28) {
             $usedDays = 0;
         }
 

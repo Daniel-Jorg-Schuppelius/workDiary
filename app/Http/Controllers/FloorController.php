@@ -35,9 +35,9 @@ class FloorController extends Controller {
             ->with('building.site')
             ->withCount('rooms')
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('label', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%")
-                    ->orWhereHas('building', fn($b) => $b->where('name', 'like', "%{$search}%"));
+                $w->whereLikeEscaped('label', $search)
+                    ->orWhereLikeEscaped('notes', $search)
+                    ->orWhereHas('building', fn($b) => $b->whereLikeEscaped('name', $search));
             }))
             ->orderBy($sort, $dir);
         if ($buildingId !== null) {

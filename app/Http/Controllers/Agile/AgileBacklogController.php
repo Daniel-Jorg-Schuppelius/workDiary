@@ -52,7 +52,7 @@ class AgileBacklogController extends Controller {
         }
         $search = trim((string) $request->query('q', ''));
         if ($search !== '') {
-            $query->whereHas('task', fn($q) => $q->where('title', 'like', '%' . $search . '%'));
+            $query->whereHas('task', fn($q) => $q->whereLikeEscaped('title', $search));
         }
 
         return view('agile.backlog', [

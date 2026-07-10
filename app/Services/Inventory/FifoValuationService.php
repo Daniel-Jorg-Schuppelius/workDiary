@@ -105,8 +105,22 @@ class FifoValuationService implements InventoryValuationStrategy {
             }
 
             // Restmenge ohne deckende Schicht (Negativbestand) zum zuletzt
-            // bekannten Einzelpreis bewerten.
+            // bekannten Einzelpreis bewerten. Wurde in DIESEM Lauf keine
+            // Schicht durchlaufen (leeres/erschöpftes Konto), den Preis der
+            // jüngsten historischen Schicht heranziehen — sonst würde der
+            // Abgang mit 0 bewertet und die Bestandsbewertung verzerrt.
             if (bccomp($remaining, '0', self::SCALE) > 0) {
+                if (bccomp($lastCost, '0', self::SCALE) === 0) {
+                    $historic = StockValuationLayer::query()
+                        ->where('article_variant_id', $variant->id)
+                        ->where('warehouse_id', $warehouse->id)
+                        ->orderByDesc('acquired_at')
+                        ->orderByDesc('id')
+                        ->first();
+                    if ($historic instanceof StockValuationLayer) {
+                        $lastCost = $historic->unit_cost;
+                    }
+                }
                 $costTotal = bcadd($costTotal, bcmul($remaining, $lastCost, self::SCALE), self::SCALE);
             }
 

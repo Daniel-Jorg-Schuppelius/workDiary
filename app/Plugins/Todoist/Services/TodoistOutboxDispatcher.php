@@ -84,7 +84,13 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             throw new RuntimeException('Todoist-Verbindung inaktiv.'); // Queue wiederholt
         }
 
-        $created = (new TodoistApiClient($connection))->createTask($this->buildCreatePayload($task, $link));
+        // Idempotenz gegen Queue-Retry nach Teil-Erfolg (createTask ok,
+        // Crash vor ExternalReference::create): stabiler X-Request-Id je
+        // Outbox-Eintrag — Todoist dedupliziert den zweiten Create.
+        $created = (new TodoistApiClient($connection))->createTask(
+            $this->buildCreatePayload($task, $link),
+            substr(hash('sha256', 'todoist-task-create-' . $entry->id), 0, 36),
+        );
         $externalId = isset($created['id']) && is_scalar($created['id']) ? (string) $created['id'] : '';
         if ($externalId === '') {
             throw new RuntimeException('Todoist createTask lieferte keine id.');

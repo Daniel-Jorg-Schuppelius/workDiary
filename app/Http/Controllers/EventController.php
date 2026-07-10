@@ -61,8 +61,8 @@ class EventController extends Controller {
         $query = Event::query()
             ->with(['category', 'responsibleUser', 'customer', 'rooms'])
             ->when($filters['q'] !== '', fn($q) => $q->where(function ($w) use ($filters): void {
-                $w->where('title', 'like', '%' . $filters['q'] . '%')
-                    ->orWhere('topic', 'like', '%' . $filters['q'] . '%');
+                $w->whereLikeEscaped('title', $filters['q'])
+                    ->orWhereLikeEscaped('topic', $filters['q']);
             }))
             ->when($filters['event_type'], fn($q) => $q->where('event_type', $filters['event_type']))
             ->when($filters['status'], fn($q) => $q->where('status', $filters['status']))
@@ -77,7 +77,11 @@ class EventController extends Controller {
 
         $counts = [
             'upcoming' => Event::query()->where('started_at', '>=', now())->whereNull('cancelled_at')->count(),
-            'today' => Event::query()->whereDate('started_at', today())->count(),
+            // Lokaler Kalendertag als UTC-Bereich (started_at ist UTC).
+            'today' => Event::query()->whereBetween('started_at', [
+                \App\Support\Tz::now()->startOfDay()->setTimezone('UTC'),
+                \App\Support\Tz::now()->endOfDay()->setTimezone('UTC'),
+            ])->count(),
             'mandatory' => Event::query()->where('is_mandatory', true)->where('started_at', '>=', now())->count(),
             'total' => Event::query()->count(),
         ];

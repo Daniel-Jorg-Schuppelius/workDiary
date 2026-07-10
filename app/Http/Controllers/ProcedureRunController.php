@@ -400,7 +400,7 @@ class ProcedureRunController extends Controller {
             'user_id' => $actor->id,
             'disk' => 'local',
             'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
+            'original_name' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
             'mime' => $file->getMimeType() ?? 'application/octet-stream',
             'size' => (int) $file->getSize(),
             'meta_type' => 'procedure_proof',

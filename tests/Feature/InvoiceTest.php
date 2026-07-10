@@ -120,8 +120,8 @@ class InvoiceTest extends TestCase {
 
         /** @var \App\Models\InvoiceItem $item */
         $item = $invoice->items()->first();
-        $this->assertSame('1.00', $item->quantity);
-        $this->assertSame('90.00', $item->unit_price);
+        $this->assertSame('1.000', $item->quantity);
+        $this->assertSame('90.0000', $item->unit_price);
         $this->assertSame('90.00', $item->amount);
         $this->assertSame(2, $item->timeEntries()->count());
         $this->assertSame('90.00', $invoice->subtotal);
@@ -256,14 +256,14 @@ class InvoiceTest extends TestCase {
         $this->assertStringContainsString('Anfahrt', $travel->description);
         $this->assertTrue(\App\Models\Tour::firstOrFail()->travel_billed);
 
-        // Zweite Generierung berechnet die Anfahrt nicht erneut.
+        // Zweite Generierung: nichts Offenes mehr (Zeit exportiert, Anfahrt
+        // abgerechnet) → Abbruch statt leerer Rechnung (Whitebox 2026-07-10).
         $this->postAsAdmin('invoices.store', [
             'customer_id' => $this->customer->id,
             'project_id' => $this->project->id,
             'content' => 'service',
-        ])->assertRedirect();
-        $second = Invoice::query()->latest('id')->first()?->load('items');
-        $this->assertNull($second?->items->firstWhere('tour_id', '!=', null));
+        ])->assertSessionHasErrors('customer_id');
+        $this->assertSame(1, Invoice::query()->count());
     }
 
     public function test_pure_material_day_puts_travel_on_material_invoice(): void {
@@ -640,7 +640,7 @@ class InvoiceTest extends TestCase {
         $this->assertSame(1, $credit->items()->count());
         /** @var \App\Models\InvoiceItem $item */
         $item = $credit->items()->first();
-        $this->assertSame('-2.00', $item->quantity);
+        $this->assertSame('-2.000', $item->quantity);
         $this->assertSame('-180.00', $credit->subtotal);
         $this->assertSame('-214.20', $credit->total);
     }

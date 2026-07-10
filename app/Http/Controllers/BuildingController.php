@@ -34,10 +34,10 @@ class BuildingController extends Controller {
             ->with('site.customer')
             ->withCount('floors')
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('code', 'like', "%{$search}%")
-                    ->orWhere('notes', 'like', "%{$search}%")
-                    ->orWhereHas('site', fn($s) => $s->where('name', 'like', "%{$search}%"));
+                $w->whereLikeEscaped('name', $search)
+                    ->orWhereLikeEscaped('code', $search)
+                    ->orWhereLikeEscaped('notes', $search)
+                    ->orWhereHas('site', fn($s) => $s->whereLikeEscaped('name', $search));
             }))
             ->orderBy($sort, $dir);
         if ($siteId !== null) {

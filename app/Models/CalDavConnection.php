@@ -33,10 +33,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $last_published_at
  */
 class CalDavConnection extends Model {
-    use HasConnectionHealth;
-
     use Auditable;
+
     use BelongsToOrganization;
+    use HasConnectionHealth;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 

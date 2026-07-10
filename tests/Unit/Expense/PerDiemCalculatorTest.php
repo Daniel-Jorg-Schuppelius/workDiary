@@ -72,6 +72,29 @@ class PerDiemCalculatorTest extends TestCase {
         $this->assertEqualsWithDelta(14.0, (float) $days[0]->amount, 0.001);
     }
 
+    public function test_day_boundaries_use_local_timezone_not_utc(): void {
+        // Lokal (Europe/Berlin, CET = UTC+1): 11.03. 00:30–09:30 = EIN Tag mit
+        // 9 h > 8 h → genau 1 Teiltagessatz. In UTC gespeichert liegt der
+        // Start am 10.03. 23:30 — eine UTC-Tagesgrenzen-Rechnung machte
+        // daraus fälschlich eine Zweitagesreise (2 × 14 €).
+        $trip = PerDiemTrip::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'country' => 'DE',
+            'purpose' => 'Frühschicht',
+            'location' => 'Kassel',
+            'started_at' => '2025-03-10 23:30:00',
+            'ended_at' => '2025-03-11 08:30:00',
+        ]);
+
+        $days = $this->calculator->buildDays($trip);
+
+        $this->assertCount(1, $days);
+        $this->assertSame(PerDiemDayKind::SingleDay, $days[0]->kind);
+        $this->assertSame('2025-03-11', $days[0]->date instanceof \Carbon\CarbonInterface ? $days[0]->date->toDateString() : (string) $days[0]->date);
+        $this->assertEqualsWithDelta(14.0, (float) $days[0]->amount, 0.001);
+    }
+
     public function test_short_single_day_yields_no_days(): void {
         $trip = PerDiemTrip::create([
             'organization_id' => $this->organization->id,

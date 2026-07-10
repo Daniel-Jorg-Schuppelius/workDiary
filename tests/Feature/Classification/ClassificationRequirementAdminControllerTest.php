@@ -13,7 +13,7 @@ namespace Tests\Feature\Classification;
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Enums\User\UserRole;
 use App\Models\{Classification, ClassificationRequirement, User};
-use Database\Seeders\{ClassificationSeeder};
+use Database\Seeders\ClassificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

@@ -170,7 +170,9 @@ class DayCloseService {
         $this->assertStatus($closure, [DayClosureStatus::Open]);
 
         $day = CarbonImmutable::instance($closure->day);
-        if ($day->startOfDay()->greaterThan(CarbonImmutable::now()->endOfDay())) {
+        // "Zukunftstag" gegen den LOKALEN Kalendertag prüfen: um 00:30 lokal
+        // (= 22:30 UTC des Vortags) ist der begonnene Tag kein Zukunftstag.
+        if ($day->toDateString() > \App\Support\Tz::now()->toDateString()) {
             throw new DayCloseWorkflowException(
                 'futureDay',
                 __('day-close.errors.future_day'),

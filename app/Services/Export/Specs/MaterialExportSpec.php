@@ -42,8 +42,8 @@ class MaterialExportSpec extends AbstractExportSpec {
             ->when($status === 'inactive', fn($q) => $q->where('is_active', false))
             ->when($search !== '', function ($q) use ($search): void {
                 $q->where(function ($inner) use ($search): void {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('sku', 'like', "%{$search}%");
+                    $inner->whereLikeEscaped('name', $search)
+                        ->orWhereLikeEscaped('sku', $search);
                 });
             })
             ->orderBy('name')

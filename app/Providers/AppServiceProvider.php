@@ -225,6 +225,48 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // LIKE-Suche mit escapten Wildcards: `%`/`_` in Nutzereingaben wirken
+        // sonst als Wildcards (Suche nach "%" matcht alles). Explizites
+        // ESCAPE-Zeichen '!' statt Backslash, weil Backslash in MySQL- und
+        // SQLite-String-Literalen unterschiedlich behandelt wird (die frühere
+        // str_replace-Variante war auf SQLite wirkungslos).
+        \Illuminate\Database\Query\Builder::macro('whereLikeEscaped', function (string $column, string $term, string $side = 'both', string $boolean = 'and') {
+            /** @var \Illuminate\Database\Query\Builder $this */
+            $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
+            $pattern = match ($side) {
+                'prefix' => $escaped . '%',
+                'suffix' => '%' . $escaped,
+                default => '%' . $escaped . '%',
+            };
+
+            // $column wird über die Grammar gequotet (injection-sicher), der
+            // Suchbegriff läuft als Bindung. PHPStan kann die literal-string-
+            // Eigenschaft nach dem Laufzeit-Quoting nicht beweisen (gleiches
+            // Muster wie Integration/Match/ExactField).
+            // @phpstan-ignore argument.type
+            return $this->whereRaw($this->grammar->wrap($column) . " like ? escape '!'", [$pattern], $boolean);
+        });
+        \Illuminate\Database\Query\Builder::macro('orWhereLikeEscaped', function (string $column, string $term, string $side = 'both') {
+            /** @var \Illuminate\Database\Query\Builder $this */
+            return $this->whereLikeEscaped($column, $term, $side, 'or');
+        });
+
+        // Mandanten-Hygiene im langlebigen Queue-Worker (Whitebox 2026-07-10,
+        // J1/J2): Jobs wie FetchProtocolWeather/ProcessLocationBatch binden
+        // 'currentOrganization' und würden es sonst in den NÄCHSTEN Job
+        // desselben Workers verschleppen — org-gescopte Nachlade-Queries
+        // filtern dann still auf die falsche Org (Import hängt, Sync
+        // übersprungen, Setting::get liest fremde Settings). Jeder Job
+        // startet deshalb mit sauberem Container. Der sync-Driver läuft
+        // INNERHALB eines Requests — dort darf der Request-Kontext nicht
+        // weggeworfen werden.
+        \Illuminate\Support\Facades\Queue::before(static function (\Illuminate\Queue\Events\JobProcessing $event): void {
+            if ($event->connectionName === 'sync') {
+                return;
+            }
+            app()->forgetInstance('currentOrganization');
+        });
+
         // Queue-Worker-Heartbeat (Feature 067, MVP-177-Vorgriff): Die
         // Diagnose-Seite liest diesen Cache-Key; geschrieben wird er hier
         // beim Worker-Loop (gedrosselt, damit kein Cache-Spam entsteht).

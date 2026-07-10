@@ -246,6 +246,14 @@ class Invoice extends Model {
                 );
             }
         });
+
+        // Positionen per Eloquent löschen statt sie der DB-Cascade zu
+        // überlassen: nur so feuern die InvoiceItem-Hooks, die die Quellposten
+        // (Zeiten/Material/Touren/Spesen) wieder freigeben — sonst blieben sie
+        // nach dem Löschen eines Entwurfs dauerhaft "abgerechnet" (G2).
+        static::deleting(function (self $invoice): void {
+            $invoice->items()->get()->each->delete();
+        });
     }
 
     /**

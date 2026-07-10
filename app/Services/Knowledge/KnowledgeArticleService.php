@@ -239,8 +239,7 @@ class KnowledgeArticleService {
             })
             ->where(function (Builder $q) use ($words, $tagIds): void {
                 foreach ($words as $word) {
-                    $like = '%' . str_replace(['%', '_'], ['\%', '\_'], $word) . '%';
-                    $q->orWhere('title', 'like', $like)->orWhere('problem', 'like', $like);
+                    $q->orWhereLikeEscaped('title', $word)->orWhereLikeEscaped('problem', $word);
                 }
                 if ($tagIds !== []) {
                     $q->orWhereHas('tags', function (Builder $tq) use ($tagIds): void {

@@ -62,8 +62,9 @@ class SurchargeTaxSplitTest extends TestCase {
 
         $admin = $this->makeAdmin();
         $user = $this->makeUser();
-        // 23:00–01:00 → 60 Nacht-Minuten am 08.01. + 60 am 09.01.
-        $this->seedAttendance($user, 8, 23, 0, 120);
+        // Lokal (Europe/Berlin, CET = UTC+1) 23:00–01:00 → 60 Nacht-Minuten
+        // am 08.01. + 60 am 09.01.; in UTC gespeichert als 22:00–00:00.
+        $this->seedAttendance($user, 8, 22, 0, 120);
         $this->approvedClosureFor($user, $admin);
 
         $this->actingAs($admin);
@@ -118,7 +119,8 @@ class SurchargeTaxSplitTest extends TestCase {
 
         $admin = $this->makeAdmin();
         $user = $this->makeUser(['personnel_number' => 'P-1']);
-        $this->seedAttendance($user, 8, 23, 0, 60);
+        // Lokal 08.01. 23:00–24:00 (UTC: 22:00–23:00).
+        $this->seedAttendance($user, 8, 22, 0, 60);
         $this->approvedClosureFor($user, $admin);
 
         $this->actingAs($admin);

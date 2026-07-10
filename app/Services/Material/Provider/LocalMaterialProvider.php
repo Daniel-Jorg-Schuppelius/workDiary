@@ -29,8 +29,8 @@ class LocalMaterialProvider implements MaterialProviderInterface {
             ->where('is_active', true)
             ->when($q !== '', function ($builder) use ($q): void {
                 $builder->where(function ($w) use ($q): void {
-                    $w->where('name', 'like', '%' . $q . '%')
-                        ->orWhere('sku', 'like', '%' . $q . '%');
+                    $w->whereLikeEscaped('name', $q)
+                        ->orWhereLikeEscaped('sku', $q);
                 });
             })
             ->orderBy('name')

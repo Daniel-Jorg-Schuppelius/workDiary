@@ -50,10 +50,10 @@ class ClassificationRequirementController extends Controller {
         if ($query !== '') {
             $requirementsQuery->where(function ($builder) use ($query): void {
                 $builder
-                    ->where('entry_type_code', 'like', "%{$query}%")
-                    ->orWhere('required_domain', 'like', "%{$query}%")
-                    ->orWhere('note', 'like', "%{$query}%")
-                    ->orWhere('only_if_json', 'like', "%{$query}%");
+                    ->whereLikeEscaped('entry_type_code', $query)
+                    ->orWhereLikeEscaped('required_domain', $query)
+                    ->orWhereLikeEscaped('note', $query)
+                    ->orWhereLikeEscaped('only_if_json', $query);
             });
         }
 

@@ -35,7 +35,12 @@ class BrandingService {
 
         $user = Auth::user();
         if ($user === null) {
-            return $this->cached = null;
+            // Ohne Auth (Queue-Worker/Artisan): auf den gebundenen
+            // Mandantenkontext zurückfallen, damit z. B. gequeute Mails
+            // nicht stillschweigend die config-Defaults rendern.
+            $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+            return $this->cached = ($bound instanceof Organization ? $bound : null);
         }
 
         $orgId = $user->organization_id ?? null;
@@ -44,6 +49,24 @@ class BrandingService {
         }
 
         return $this->cached = Organization::query()->find($orgId);
+    }
+
+    /**
+     * Rechtsangaben für eine EXPLIZITE Organisation — für Render-Pfade ohne
+     * Auth-Kontext (gequeute Rechnungs-Mail, WebDAV-Spiegelung): die Org kommt
+     * dort aus dem Beleg selbst, nie aus dem Ambient-Kontext.
+     *
+     * @return array<string, ?string>
+     */
+    public function legalFor(?Organization $organization): array {
+        if ($organization === null) {
+            return $this->legal();
+        }
+
+        /** @var array<string, ?string> $legal */
+        $legal = (array) ($organization->brandingSettings()['legal'] ?? []);
+
+        return $legal;
     }
 
     /**

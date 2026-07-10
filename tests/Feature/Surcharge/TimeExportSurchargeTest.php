@@ -96,6 +96,39 @@ class TimeExportSurchargeTest extends TestCase {
         $this->assertEqualsWithDelta(7.0, (float) $totals['surcharge.night']['quantity'], 0.001);
     }
 
+    /**
+     * Whitebox 2026-07-10 (Z3): Wochentags-Zuschläge gelten für den LOKALEN
+     * Kalendertag. Sa 10.01.2026 00:30–05:30 Europe/Berlin ist in UTC noch
+     * Freitag (09.01. 23:30) — eine UTC-Rechnung verlöre den kompletten
+     * Samstagszuschlag.
+     */
+    public function test_saturday_surcharge_uses_local_calendar_day(): void {
+        SurchargeRule::factory()->saturday()->create([
+            'organization_id' => $this->organization->id,
+            'code' => 'saturday',
+        ]);
+
+        $admin = $this->makeAdmin();
+        $user = $this->makeUser();
+
+        // UTC: Fr 09.01. 23:30 + 300 min = Sa 10.01. 04:30 UTC
+        // Lokal: Sa 10.01. 00:30–05:30 → 300 Zuschlagsminuten am Samstag.
+        $this->seedAttendance($user, 9, 23, 30, 300);
+
+        $this->approvedClosureFor($user, $admin);
+
+        $this->actingAs($admin);
+        $export = $this->service->build(
+            $this->service->prepare($this->organization, $this->year, $this->month, 'generic', 'organization', actor: $admin),
+            $admin,
+        );
+
+        $lines = $export->lines()->where('wage_type', 'surcharge.saturday')->get();
+        $this->assertCount(1, $lines, 'Der Samstagszuschlag darf in UTC nicht verloren gehen.');
+        $this->assertSame('2026-01-10', $lines[0]->period_start->toDateString());
+        $this->assertSame(5.0, (float) $lines[0]->quantity); // 300 min
+    }
+
     public function test_inactive_rule_produces_no_surcharge_lines(): void {
         SurchargeRule::factory()->night()->inactive()->create([
             'organization_id' => $this->organization->id,

@@ -41,9 +41,9 @@ class UserGroupController extends Controller {
         $groups = UserGroup::query()
             ->withCount('members')
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('slug', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $w->whereLikeEscaped('name', $search)
+                    ->orWhereLikeEscaped('slug', $search)
+                    ->orWhereLikeEscaped('description', $search);
             }))
             ->orderBy($sort, $dir)
             ->paginate(25)

@@ -66,7 +66,7 @@ class JointControllerAgreementController extends Controller {
             $stored = $file->store('privacy/gvv', 'local');
             if ($stored !== false) {
                 $gvv->setAttribute('document_path', $stored);
-                $gvv->setAttribute('document_name', $file->getClientOriginalName());
+                $gvv->setAttribute('document_name', \App\Support\Filename::sanitize($file->getClientOriginalName()));
             }
         }
         $gvv->save();

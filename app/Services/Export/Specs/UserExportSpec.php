@@ -41,9 +41,9 @@ class UserExportSpec extends AbstractExportSpec {
             ->where('organization_id', $organization->id)
             ->when($search !== '', function ($q) use ($search): void {
                 $q->where(function ($inner) use ($search): void {
-                    $inner->where('name', 'like', "%{$search}%")
-                        ->orWhere('personnel_number', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
+                    $inner->whereLikeEscaped('name', $search)
+                        ->orWhereLikeEscaped('personnel_number', $search)
+                        ->orWhereLikeEscaped('email', $search);
                 });
             })
             ->orderBy('name')

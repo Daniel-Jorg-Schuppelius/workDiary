@@ -39,13 +39,11 @@ trait Searchable {
             return $query;
         }
 
-        $like = '%' . $term . '%';
-
-        return $query->where(function (Builder $q) use ($like): void {
+        return $query->where(function (Builder $q) use ($term): void {
             foreach ($this->searchableColumns() as $i => $column) {
                 $i === 0
-                    ? $q->where($column, 'like', $like)
-                    : $q->orWhere($column, 'like', $like);
+                    ? $q->whereLikeEscaped($column, $term)
+                    : $q->orWhereLikeEscaped($column, $term);
             }
         });
     }

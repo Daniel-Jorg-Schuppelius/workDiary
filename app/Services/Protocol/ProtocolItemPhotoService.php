@@ -75,7 +75,7 @@ class ProtocolItemPhotoService {
             'user_id' => $actor->id,
             'disk' => $disk,
             'path' => $path,
-            'original_name' => $file->getClientOriginalName(),
+            'original_name' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
             'mime' => $mime,
             'size' => (int) $file->getSize(),
         ]);

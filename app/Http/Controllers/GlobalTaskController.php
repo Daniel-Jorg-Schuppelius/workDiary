@@ -35,8 +35,8 @@ class GlobalTaskController extends Controller {
             ->where('is_global', true)
             ->when($user?->organization_id, fn($q, $orgId) => $q->where('organization_id', $orgId))
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $w->whereLikeEscaped('title', $search)
+                    ->orWhereLikeEscaped('description', $search);
             }))
             ->orderBy($sort, $dir)
             ->paginate(50)

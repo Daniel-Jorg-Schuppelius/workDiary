@@ -52,7 +52,8 @@ class Stopwatch {
                 'timesheet_id' => $timesheet->id,
                 'task_id' => $taskId,
                 'user_id' => $user->id,
-                'date' => $now->toDateString(),
+                // Kalendertag lokal (Anzeige-Zeitzone), Zeitstempel bleiben UTC.
+                'date' => $now->setTimezone(\App\Support\Tz::current())->toDateString(),
                 'started_at' => $now,
                 'ended_at' => null,
                 'break_minutes' => 0,

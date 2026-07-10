@@ -40,7 +40,7 @@ class EventReminderNotification extends Notification {
             ->subject(__('Erinnerung: :title', ['title' => $this->event->title]))
             ->greeting(__('Hallo :name,', ['name' => $notifiable->name ?? '']))
             ->line(__('Folgende Veranstaltung steht an:'))
-            ->line($this->event->title)
+            ->line(\App\Support\MailText::plain($this->event->title))
             ->line(__('Beginn: :when', ['when' => $when]))
             ->action(__('Veranstaltung öffnen'), route('events.show', $this->event));
     }

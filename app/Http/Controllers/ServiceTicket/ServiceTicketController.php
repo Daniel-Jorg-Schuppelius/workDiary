@@ -43,8 +43,8 @@ class ServiceTicketController extends Controller {
 
         if ($q !== '') {
             $query->where(function ($builder) use ($q): void {
-                $builder->where('ticket_no', 'like', "%{$q}%")
-                    ->orWhere('title', 'like', "%{$q}%");
+                $builder->whereLikeEscaped('ticket_no', $q)
+                    ->orWhereLikeEscaped('title', $q);
             });
         }
         if ($statusFilter !== '' && ServiceTicketStatus::tryFrom($statusFilter) !== null) {

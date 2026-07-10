@@ -90,9 +90,8 @@ trait FiltersDiaryEntries {
 
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
-            $query->where(function ($w) use ($like): void {
-                $w->where('content', 'like', $like)->orWhere('response', 'like', $like);
+            $query->where(function ($w) use ($q): void {
+                $w->whereLikeEscaped('content', $q)->orWhereLikeEscaped('response', $q);
             });
         }
 

@@ -107,12 +107,12 @@ class KnowledgeArticle extends Model {
      * @return Builder<self>
      */
     public function scopeSearch(Builder $query, string $term): Builder {
-        $like = '%' . str_replace(['%', '_'], ['\%', '\_'], trim($term)) . '%';
+        $term = trim($term);
 
-        return $query->where(function (Builder $q) use ($like): void {
-            $q->where('title', 'like', $like)
-                ->orWhere('problem', 'like', $like)
-                ->orWhere('solution', 'like', $like);
+        return $query->where(function (Builder $q) use ($term): void {
+            $q->whereLikeEscaped('title', $term)
+                ->orWhereLikeEscaped('problem', $term)
+                ->orWhereLikeEscaped('solution', $term);
         });
     }
 

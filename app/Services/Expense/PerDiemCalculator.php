@@ -37,8 +37,13 @@ class PerDiemCalculator {
      * @return list<PerDiemDay>
      */
     public function buildDays(PerDiemTrip $trip): array {
-        $start = CarbonImmutable::parse($trip->started_at);
-        $end = CarbonImmutable::parse($trip->ended_at);
+        // Reisetage sind LOKALE Kalendertage: die UTC-gespeicherten Zeitpunkte
+        // erst in die Anzeige-Zeitzone umrechnen, sonst wird eine Eintagesreise
+        // 00:30–09:30 lokal (UTC: über Mitternacht) zur Mehrtagesreise mit
+        // zwei Teiltagessätzen — steuerlich überhöht (Whitebox 2026-07-10, Z2).
+        $tz = \App\Support\Tz::current();
+        $start = CarbonImmutable::parse($trip->started_at)->setTimezone($tz);
+        $end = CarbonImmutable::parse($trip->ended_at)->setTimezone($tz);
 
         if ($end->lessThan($start)) {
             throw new RuntimeException('Ende der Reise liegt vor dem Beginn.');

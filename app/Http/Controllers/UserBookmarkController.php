@@ -22,8 +22,8 @@ class UserBookmarkController extends Controller {
         $search = $request->string('q')->toString();
         $bookmarks = Auth::user()?->bookmarks()
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('label', 'like', "%{$search}%")
-                    ->orWhere('url', 'like', "%{$search}%");
+                $w->whereLikeEscaped('label', $search)
+                    ->orWhereLikeEscaped('url', $search);
             }))
             ->get() ?? collect();
 

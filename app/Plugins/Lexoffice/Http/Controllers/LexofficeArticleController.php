@@ -48,9 +48,9 @@ class LexofficeArticleController extends Controller {
 
         if ($search !== '') {
             $query->where(function (Builder $q) use ($search): void {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('article_number', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $q->whereLikeEscaped('name', $search)
+                    ->orWhereLikeEscaped('article_number', $search)
+                    ->orWhereLikeEscaped('description', $search);
             });
         }
 

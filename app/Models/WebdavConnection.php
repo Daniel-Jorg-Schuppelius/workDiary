@@ -36,10 +36,10 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon|null $last_mirrored_at
  */
 class WebdavConnection extends Model {
-    use HasConnectionHealth;
-
     use Auditable;
+
     use BelongsToOrganization;
+    use HasConnectionHealth;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 

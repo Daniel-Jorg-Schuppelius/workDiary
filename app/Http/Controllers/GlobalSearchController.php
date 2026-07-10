@@ -40,7 +40,6 @@ class GlobalSearchController extends Controller {
         /** @var User $user */
         $user = Auth::user();
         $orgId = $user->organization_id;
-        $like = '%' . $term . '%';
 
         $groups = [];
 
@@ -50,9 +49,9 @@ class GlobalSearchController extends Controller {
             'badge',
             Customer::query()
                 ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
-                ->where(fn($q) => $q->where('name', 'like', $like)
-                    ->orWhere('number', 'like', $like)
-                    ->orWhere('email', 'like', $like))
+                ->where(fn($q) => $q->whereLikeEscaped('name', $term)
+                    ->orWhereLikeEscaped('number', $term)
+                    ->orWhereLikeEscaped('email', $term))
                 ->orderBy('name')
                 ->limit(self::PER_TYPE_LIMIT)
                 ->get()
@@ -71,7 +70,7 @@ class GlobalSearchController extends Controller {
             'folder_special',
             Project::query()
                 ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
-                ->where(fn($q) => $q->where('name', 'like', $like))
+                ->where(fn($q) => $q->whereLikeEscaped('name', $term))
                 ->with('customer:id,name')
                 ->orderBy('name')
                 ->limit(self::PER_TYPE_LIMIT)
@@ -91,9 +90,9 @@ class GlobalSearchController extends Controller {
         // zugewiesene Aufträge. Mandantengrenze über den Organization-Scope.
         $diaryQuery = DiaryEntry::query()
             ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
-            ->where(fn($q) => $q->where('title', 'like', $like)
-                ->orWhere('content', 'like', $like)
-                ->orWhere('response', 'like', $like));
+            ->where(fn($q) => $q->whereLikeEscaped('title', $term)
+                ->orWhereLikeEscaped('content', $term)
+                ->orWhereLikeEscaped('response', $term));
         if (! ($user->isAdmin() || $user->can(Permission::DiaryViewAny->value))) {
             $diaryQuery->where(fn($q) => $q->where('user_id', $user->id)
                 ->orWhere('assigned_user_id', $user->id));
@@ -119,9 +118,9 @@ class GlobalSearchController extends Controller {
 
         $expenseQuery = Expense::query()
             ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
-            ->where(fn($q) => $q->where('vendor', 'like', $like)
-                ->orWhere('description', 'like', $like)
-                ->orWhere('reimbursement_reference', 'like', $like));
+            ->where(fn($q) => $q->whereLikeEscaped('vendor', $term)
+                ->orWhereLikeEscaped('description', $term)
+                ->orWhereLikeEscaped('reimbursement_reference', $term));
         if (! Gate::allows('viewAny', Expense::class)) {
             $expenseQuery->where('user_id', $user->id);
         }
@@ -144,9 +143,9 @@ class GlobalSearchController extends Controller {
 
         $tripQuery = PerDiemTrip::query()
             ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
-            ->where(fn($q) => $q->where('location', 'like', $like)
-                ->orWhere('purpose', 'like', $like)
-                ->orWhere('country', 'like', $like));
+            ->where(fn($q) => $q->whereLikeEscaped('location', $term)
+                ->orWhereLikeEscaped('purpose', $term)
+                ->orWhereLikeEscaped('country', $term));
         if (! Gate::allows('viewAny', PerDiemTrip::class)) {
             $tripQuery->where('user_id', $user->id);
         }
@@ -175,7 +174,7 @@ class GlobalSearchController extends Controller {
                 'group',
                 User::query()
                     ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
-                    ->where(fn($q) => $q->where('name', 'like', $like)->orWhere('email', 'like', $like))
+                    ->where(fn($q) => $q->whereLikeEscaped('name', $term)->orWhereLikeEscaped('email', $term))
                     ->orderBy('name')
                     ->limit(self::PER_TYPE_LIMIT)
                     ->get()
@@ -196,7 +195,7 @@ class GlobalSearchController extends Controller {
         if (Gate::allows('viewAny', CommunicationNote::class)) {
             $notes = CommunicationNote::query()
                 ->visibleTo($user)
-                ->where('subject', 'like', $like)
+                ->whereLikeEscaped('subject', $term)
                 ->with('notable')
                 ->orderByDesc('occurred_at')
                 ->limit(self::PER_TYPE_LIMIT)
@@ -234,7 +233,7 @@ class GlobalSearchController extends Controller {
                 __('document.title.index'),
                 'folder_open',
                 Document::query()
-                    ->where('title', 'like', $like)
+                    ->whereLikeEscaped('title', $term)
                     ->latest('updated_at')
                     ->limit(self::PER_TYPE_LIMIT)
                     ->get()
@@ -253,8 +252,8 @@ class GlobalSearchController extends Controller {
         // anderen Veröffentlichtes plus EIGENE Artikel.
         if ($featureFlags->isEnabled('module.knowledge') && Gate::allows('viewAny', KnowledgeArticle::class)) {
             $knowledgeQuery = KnowledgeArticle::query()
-                ->where(fn($q) => $q->where('title', 'like', $like)
-                    ->orWhere('problem', 'like', $like));
+                ->where(fn($q) => $q->whereLikeEscaped('title', $term)
+                    ->orWhereLikeEscaped('problem', $term));
             if (! ($user->isAdmin() || $user->can(Permission::KnowledgePublish->value))) {
                 $knowledgeQuery->where(fn($q) => $q->where('status', ArticleStatus::Published->value)
                     ->orWhere('created_by_user_id', $user->id));
@@ -282,7 +281,7 @@ class GlobalSearchController extends Controller {
         if ($featureFlags->isEnabled('module.forms') && Gate::allows('viewAny', FormSubmission::class)) {
             $submissionQuery = FormSubmission::query()
                 ->with(['template', 'submitter'])
-                ->whereHas('template', fn($q) => $q->where('name', 'like', $like));
+                ->whereHas('template', fn($q) => $q->whereLikeEscaped('name', $term));
             if (! ($user->isAdmin() || $user->can(Permission::FormTemplateViewAny->value))) {
                 $submissionQuery->where('submitted_by_user_id', $user->id);
             }

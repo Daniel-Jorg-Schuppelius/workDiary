@@ -59,8 +59,10 @@ class InvoiceItem extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'service_date' => 'date',
-        'quantity' => 'decimal:2',
-        'unit_price' => 'decimal:2',
+        // Mengen-/Preispräzision der Quellposten erhalten (Material 3 NK,
+        // km-Satz 4 NK); der Zeilenbetrag bleibt kaufmännisch 2 NK.
+        'quantity' => 'decimal:3',
+        'unit_price' => 'decimal:4',
         'amount' => 'decimal:2',
     ];
 
@@ -69,17 +71,32 @@ class InvoiceItem extends Model {
             $i->amount = (string) round(((float) $i->quantity) * ((float) $i->unit_price), 2);
         });
 
-        // Wird eine InvoiceItem mit verknuepfter Expense geloescht, geben wir die
-        // Spese wieder frei (Status zurueck auf Approved), damit sie erneut
-        // einer anderen Rechnung zugeordnet werden kann.
-        static::deleted(function (InvoiceItem $i): void {
-            if ($i->expense_id === null) {
-                return;
+        // Beim Löschen einer Position werden ALLE Quellposten wieder freigegeben
+        // (Spese → Approved, Zeiten → exported=false, Material → billed=false,
+        // Tour → travel_billed=false), damit sie erneut abrechenbar sind.
+        // Muss im deleting-Hook passieren: nach dem DB-Delete hätte die Cascade
+        // die Pivot-Zuordnung (invoice_item_time_entries) bereits entfernt.
+        static::deleting(function (InvoiceItem $i): void {
+            if ($i->expense_id !== null) {
+                $expense = Expense::query()->find($i->expense_id);
+                if ($expense !== null && $expense->status === \App\Enums\Expense\ExpenseStatus::Invoiced) {
+                    $expense->status = \App\Enums\Expense\ExpenseStatus::Approved;
+                    $expense->saveQuietly();
+                }
             }
-            $expense = Expense::query()->find($i->expense_id);
-            if ($expense !== null && $expense->status === \App\Enums\Expense\ExpenseStatus::Invoiced) {
-                $expense->status = \App\Enums\Expense\ExpenseStatus::Approved;
-                $expense->saveQuietly();
+
+            $entryIds = $i->timeEntries()->pluck('time_entries.id')->all();
+            if ($i->time_entry_id !== null) {
+                $entryIds[] = $i->time_entry_id;
+            }
+            if ($entryIds !== []) {
+                TimeEntry::query()->whereKey(array_unique($entryIds))->update(['exported' => false]);
+            }
+            if ($i->material_usage_id !== null) {
+                MaterialUsage::query()->whereKey($i->material_usage_id)->update(['billed' => false]);
+            }
+            if ($i->tour_id !== null) {
+                Tour::query()->whereKey($i->tour_id)->update(['travel_billed' => false]);
             }
         });
     }

@@ -50,9 +50,9 @@ class PermitController extends Controller {
         if ($query !== '') {
             $permitsQuery->where(function ($builder) use ($query): void {
                 $builder
-                    ->where('title', 'like', "%{$query}%")
-                    ->orWhere('authority', 'like', "%{$query}%")
-                    ->orWhere('reference_no', 'like', "%{$query}%");
+                    ->whereLikeEscaped('title', $query)
+                    ->orWhereLikeEscaped('authority', $query)
+                    ->orWhereLikeEscaped('reference_no', $query);
             });
         }
 

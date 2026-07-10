@@ -103,7 +103,7 @@ class ProblemReportService {
                 'user_id' => $reporter->id,
                 'disk' => 'local',
                 'path' => $path,
-                'original_name' => $file->getClientOriginalName(),
+                'original_name' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
                 'mime' => $file->getMimeType(),
                 'size' => $file->getSize(),
             ]);

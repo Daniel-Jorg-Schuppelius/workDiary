@@ -45,8 +45,9 @@ class GenericEventNotification extends Notification {
     }
 
     public function toMail(object $notifiable): MailMessage {
-        $title = $this->payload['title'];
-        $message = (string) ($this->payload['message'] ?? '');
+        // Nutzertext gegen Markdown-Link-Injection entschärfen (s. MailText).
+        $title = \App\Support\MailText::plain((string) $this->payload['title']);
+        $message = \App\Support\MailText::plain((string) ($this->payload['message'] ?? ''));
         $url = $this->payload['url'] ?? null;
 
         $subjectKey = $this->stage === 'escalation' ? 'notification.mail.subject_escalation' : 'notification.mail.subject';

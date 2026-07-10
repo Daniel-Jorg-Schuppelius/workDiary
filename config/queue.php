@@ -48,7 +48,9 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+            // MUSS größer sein als der größte Job-$timeout (ProcessCsvImportJob:
+            // 600 s), sonst stellt der Driver laufende Jobs parallel erneut zu.
+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 630),
             'after_commit' => false,
         ],
 

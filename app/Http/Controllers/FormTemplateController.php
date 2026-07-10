@@ -39,7 +39,7 @@ class FormTemplateController extends Controller {
         $query = FormTemplate::query()->with('creator')->withCount('submissions');
 
         if ($filters['q'] !== '') {
-            $query->where('name', 'like', '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['q']) . '%');
+            $query->whereLikeEscaped('name', $filters['q']);
         }
         if (FormTemplateStatus::tryFrom($filters['status']) !== null) {
             $query->where('status', $filters['status']);

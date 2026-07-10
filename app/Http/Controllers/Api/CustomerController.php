@@ -39,7 +39,7 @@ class CustomerController extends Controller {
             $query->whereNull('archived_at');
         }
         if ($search = $request->string('search')->toString()) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $query->whereLikeEscaped('name', $search);
         }
 
         return CustomerResource::collection($query->orderBy('name')->paginate((int) $request->input('per_page', 25)));

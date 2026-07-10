@@ -162,7 +162,11 @@ class TimeEntry extends Model {
                 $diff = max(0, $diff - (int) ($entry->break_minutes ?? 0));
                 $entry->minutes = $diff;
                 if (! $entry->date) {
-                    $entry->date = $entry->started_at->copy()->startOfDay();
+                    // Kalendertag in der Anzeige-Zeitzone, nicht in UTC —
+                    // gleiches Muster wie Attendance: sonst zählt ein Eintrag
+                    // um 00:30 (lokal) zum Vortag (Gleitzeit/Tagesabschluss/
+                    // Monatsrechnung). started_at bleibt UTC.
+                    $entry->date = $entry->started_at->copy()->setTimezone(\App\Support\Tz::current())->startOfDay();
                 }
             }
 

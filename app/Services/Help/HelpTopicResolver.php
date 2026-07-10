@@ -54,10 +54,9 @@ class HelpTopicResolver {
         $rows = HelpTopic::query()
             ->where('locale', $locale)
             ->where(function ($q) use ($query): void {
-                $like = '%' . $query . '%';
-                $q->where('title', 'like', $like)
-                    ->orWhere('body_md', 'like', $like)
-                    ->orWhere('topic', 'like', $like);
+                $q->whereLikeEscaped('title', $query)
+                    ->orWhereLikeEscaped('body_md', $query)
+                    ->orWhereLikeEscaped('topic', $query);
             })
             ->limit($limit * 3)
             ->get();

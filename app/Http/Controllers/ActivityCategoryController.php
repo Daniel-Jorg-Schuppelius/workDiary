@@ -31,9 +31,9 @@ class ActivityCategoryController extends Controller {
 
         $categories = ActivityCategory::query()
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('key', 'like', "%{$search}%")
-                    ->orWhere('label', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $w->whereLikeEscaped('key', $search)
+                    ->orWhereLikeEscaped('label', $search)
+                    ->orWhereLikeEscaped('description', $search);
             }))
             ->orderBy($sort, $dir)
             ->paginate((int) Setting::get('pagination.activity_categories', 50))

@@ -45,8 +45,7 @@ class ProcedureTemplateController extends Controller {
         $query = ProcedureTemplate::query()->with('versions');
 
         if ($filters['q'] !== '') {
-            $needle = '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['q']) . '%';
-            $query->where(fn($q) => $q->where('name', 'like', $needle)->orWhere('code', 'like', $needle));
+            $query->where(fn($q) => $q->whereLikeEscaped('name', $filters['q'])->orWhereLikeEscaped('code', $filters['q']));
         }
         if ($filters['status'] === 'active') {
             $query->where('active', true);

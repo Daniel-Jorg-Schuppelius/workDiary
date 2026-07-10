@@ -111,6 +111,64 @@ class XRechnungGeneratorTest extends TestCase {
         return $invoice->fresh(['items', 'customer']);
     }
 
+    /**
+     * Whitebox 2026-07-10 (G6): gemischte Positions-Steuersätze (MVP-162)
+     * dürfen den Preflight nicht mit totals_mismatch blockieren und müssen
+     * im XML als getrennte TaxSubtotals je Satz landen.
+     */
+    public function test_mixed_item_tax_rates_pass_preflight_and_emit_subtotals_per_rate(): void {
+        $invoice = Invoice::create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $this->customer->id,
+            'number' => 'R2026-0099',
+            'status' => Invoice::STATUS_ISSUED,
+            'issued_on' => '2026-06-01',
+            'due_on' => '2026-07-01',
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'created_by' => $this->admin->id,
+        ]);
+        $invoice->items()->create([
+            'organization_id' => $this->organization->id,
+            'description' => 'Beratung',
+            'quantity' => '1.000',
+            'unit' => 'Std.',
+            'unit_price' => '100.0000',
+            'tax_rate' => '19.00',
+            'position' => 1,
+        ]);
+        $invoice->items()->create([
+            'organization_id' => $this->organization->id,
+            'description' => 'Fachbuch',
+            'quantity' => '1.000',
+            'unit' => 'Stk',
+            'unit_price' => '100.0000',
+            'tax_rate' => '7.00',
+            'position' => 2,
+        ]);
+        $invoice->load('items');
+        $invoice->recalculate();
+        $invoice->save();
+        $invoice = $invoice->fresh(['items', 'customer']);
+
+        $this->assertSame('26.00', $invoice->tax_amount);
+
+        $result = app(XRechnungGenerator::class)->preflight($invoice);
+        $this->assertSame([], $result['errors'], 'Mischsatz-Rechnung darf nicht an totals_mismatch scheitern.');
+
+        $xml = app(XRechnungGenerator::class)->generate($invoice);
+        $xp = $this->xpath($xml);
+
+        $subtotals = $xp->query('//cac:TaxTotal/cac:TaxSubtotal');
+        $this->assertSame(2, $subtotals->length, 'Je Steuersatz ein TaxSubtotal.');
+        $percents = [];
+        foreach ($xp->query('//cac:TaxTotal/cac:TaxSubtotal/cac:TaxCategory/cbc:Percent') as $node) {
+            $percents[] = (float) $node->textContent;
+        }
+        sort($percents);
+        $this->assertSame([7.0, 19.0], $percents);
+    }
+
     private function xpath(string $xml): \DOMXPath {
         $doc = new \DOMDocument();
         $this->assertTrue($doc->loadXML($xml), 'XML muss wohlgeformt sein');

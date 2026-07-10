@@ -23,7 +23,7 @@ class MaterialController extends Controller {
         $q = $request->string('q')->toString();
 
         $materials = Material::query()
-            ->when($q !== '', fn($builder) => $builder->where('name', 'like', '%' . $q . '%'));
+            ->when($q !== '', fn($builder) => $builder->whereLikeEscaped('name', $q));
 
         [$sort, $dir] = SortableQuery::apply($materials, $request, [
             'sku' => 'sku',

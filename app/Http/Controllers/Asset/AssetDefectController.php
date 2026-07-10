@@ -138,7 +138,7 @@ class AssetDefectController extends Controller {
                 'user_id' => $user->id,
                 'disk' => 'local',
                 'path' => $path,
-                'original_name' => $photo->getClientOriginalName(),
+                'original_name' => \App\Support\Filename::sanitize($photo->getClientOriginalName()),
                 'mime' => $photo->getMimeType() ?: 'application/octet-stream',
                 'size' => $photo->getSize(),
                 'meta_type' => AssetDefect::PHOTO_META,

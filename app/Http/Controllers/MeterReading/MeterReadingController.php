@@ -40,9 +40,9 @@ class MeterReadingController extends Controller {
         $query = MeterReading::query()
             ->with(['asset:id,name,asset_no', 'readBy:id,name'])
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('unit', 'like', "%{$search}%")
-                    ->orWhereHas('asset', fn($a) => $a->where('name', 'like', "%{$search}%")->orWhere('asset_no', 'like', "%{$search}%"))
-                    ->orWhereHas('readBy', fn($u) => $u->where('name', 'like', "%{$search}%"));
+                $w->whereLikeEscaped('unit', $search)
+                    ->orWhereHas('asset', fn($a) => $a->whereLikeEscaped('name', $search)->orWhereLikeEscaped('asset_no', $search))
+                    ->orWhereHas('readBy', fn($u) => $u->whereLikeEscaped('name', $search));
             }))
             ->orderBy($sort, $dir);
 

@@ -12,8 +12,7 @@ namespace Tests\Support;
 
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Closure;
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\HandlerStack;
+use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Promise\{Create, PromiseInterface};
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Support\Str;

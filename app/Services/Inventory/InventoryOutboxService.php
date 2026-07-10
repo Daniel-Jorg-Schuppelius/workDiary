@@ -44,7 +44,9 @@ class InventoryOutboxService {
         );
 
         if ($entry->wasRecentlyCreated) {
-            InventoryOutboxDeliveryJob::dispatch($entry->id);
+            // afterCommit: s. IntegrationOutboxService — Enqueue passiert in
+            // Business-Transaktionen, der Job erst nach dem Commit.
+            InventoryOutboxDeliveryJob::dispatch($entry->id)->afterCommit();
         }
 
         return $entry;

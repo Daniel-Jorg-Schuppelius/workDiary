@@ -169,7 +169,25 @@ class XRechnungGenerator {
             $subtotal = round((float) $invoice->subtotal, 2);
             $total = round((float) $invoice->total, 2);
             $taxAmount = round((float) $invoice->tax_amount, 2);
-            $builderTax = round($subtotal * ((float) $invoice->tax_rate) / 100, 2);
+            // Steuer wie Toolkit/Invoice::recalculate: je Satz gruppiert und
+            // PRO SATZ gerundet — Positionssätze (MVP-162) zählen, nicht nur
+            // der Kopfsatz; sonst blockiert jede Mischsatz-Rechnung mit
+            // einem irreführenden totals_mismatch.
+            $builderTax = $invoice->is_reverse_charge ? 0.0 : round(
+                $invoice->items
+                    ->groupBy(fn(InvoiceItem $i): string => number_format(
+                        $i->tax_rate !== null ? (float) $i->tax_rate : (float) $invoice->tax_rate,
+                        2,
+                        '.',
+                        '',
+                    ))
+                    ->map(fn($group, string $rate): float => round(
+                        $group->sum(fn(InvoiceItem $i): float => (float) $i->amount) * ((float) $rate) / 100,
+                        2,
+                    ))
+                    ->sum(),
+                2,
+            );
             if (
                 abs($lineSum - $subtotal) > 0.005
                 || abs($builderSum - $subtotal) > 0.005
@@ -346,7 +364,9 @@ class XRechnungGenerator {
                 $name,
                 (float) $item->quantity,
                 (float) $item->unit_price,
-                $taxRate,
+                // Positionssatz (MVP-162) vor Kopfsatz — das Toolkit gruppiert
+                // die TaxSubtotals selbst je Satz.
+                $item->tax_rate !== null ? (float) $item->tax_rate : $taxRate,
                 $this->unitCode((string) $item->unit),
                 $category,
                 mb_strlen($description) > 100 ? $description : null,

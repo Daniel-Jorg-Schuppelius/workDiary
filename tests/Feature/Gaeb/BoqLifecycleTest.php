@@ -13,7 +13,7 @@ namespace Tests\Feature\Gaeb;
 use App\Enums\Gaeb\{BoqItemStatus, BoqProgressSource, GaebPhase};
 use App\Models\{BillOfQuantity, BoqItem, User};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebDaXmlParser, GaebImportService};
-use Database\Seeders\{GaebDemoSeeder};
+use Database\Seeders\GaebDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;

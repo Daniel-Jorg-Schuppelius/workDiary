@@ -87,6 +87,39 @@ final class QuoteProformaTest extends TestCase {
         $this->assertSame(1000.0, (float) $quote->fresh()->decision_snapshot['items'][0]['unit_price']);
     }
 
+    /**
+     * Whitebox 2026-07-10 (G3/G4): Kleinunternehmer-Org (§ 19 UStG) —
+     * das Angebot fällt ohne Positionssatz NICHT auf 19 % zurück, und die
+     * Überführung nutzt den TaxResolver statt hartkodierter 19 % (sonst
+     * unrichtiger Steuerausweis nach § 14c UStG).
+     */
+    public function test_small_business_quote_and_conversion_show_no_tax(): void {
+        $this->org->update(['settings' => ['einvoice' => ['small_business' => '1']]]);
+        $service = app(QuoteService::class);
+
+        $quote = $service->create([
+            'customer_id' => $this->customer->id,
+            'valid_until' => now()->addWeeks(2)->toDateString(),
+        ], [
+            ['description' => 'Grundpaket', 'quantity' => 1, 'unit_price' => 1000], // bewusst OHNE tax_rate
+        ], $this->user);
+
+        $this->assertSame(1000.0, (float) $quote->subtotal);
+        $this->assertSame(0.0, (float) $quote->tax_amount, 'Kein 19-%-Fallback für die §-19-Org.');
+        $this->assertSame(1000.0, (float) $quote->total);
+
+        $quote = $service->approve($quote, $this->user);
+        ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
+        $quote = $service->accept($quote, null, $token);
+
+        $invoice = $service->convertToInvoice($quote, $this->user);
+
+        $this->assertSame('0.00', (string) $invoice->tax_rate);
+        $this->assertSame(0.0, (float) $invoice->tax_amount);
+        $this->assertSame(1000.0, (float) $invoice->total);
+        $this->assertStringContainsString('§ 19', (string) $invoice->notes);
+    }
+
     public function test_sent_quotes_are_versioned_not_edited(): void {
         $service = app(QuoteService::class);
         $quote = $service->approve($this->quote(), $this->user);

@@ -47,6 +47,33 @@ class ProcessCsvImportJob implements ShouldQueue {
 
     public function __construct(public readonly int $importRunId) {}
 
+    /**
+     * Sicherheitsnetz: Stirbt der Worker mitten im Lauf (Timeout, Deploy,
+     * OOM), bliebe der Run sonst für immer in `Running` — der Idempotenz-
+     * Guard in handle() blockiert jede Wiederaufnahme. Die Re-Zustellung
+     * nach `retry_after` endet bei tries=1 hier und schließt den Lauf
+     * sichtbar als `failed` ab.
+     */
+    public function failed(?Throwable $exception): void {
+        $run = ImportRun::query()->withoutGlobalScopes()->find($this->importRunId);
+        if ($run === null || ! in_array($run->state, [ImportRunState::Running, ImportRunState::AwaitingApproval], true)) {
+            return;
+        }
+
+        ImportRunError::create([
+            'import_run_id' => $run->id,
+            'row_number' => 0,
+            'field' => null,
+            'code' => ImportErrorCode::Persist,
+            'message' => $exception?->getMessage() ?: 'Import-Job abgebrochen (Worker-Ausfall/Timeout).',
+            'row_data' => null,
+        ]);
+
+        $run->state = ImportRunState::Failed;
+        $run->finished_at = CarbonImmutable::now();
+        $run->save();
+    }
+
     public function handle(EntitySpecRegistry $registry): void {
         $run = ImportRun::query()->find($this->importRunId);
         if ($run === null) {

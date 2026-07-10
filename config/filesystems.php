@@ -41,7 +41,11 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Kein Framework-Serving (GET/PUT /storage/{path}): die Routen
+            // wären nur signatur-, nicht policy-geschützt — alle Downloads
+            // laufen ausschließlich über autorisierte Controller (wie bei
+            // der whistleblowing-Disk).
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

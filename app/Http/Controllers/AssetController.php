@@ -72,10 +72,10 @@ class AssetController extends Controller {
         if ($query !== '') {
             $assetsQuery->where(function ($builder) use ($query): void {
                 $builder
-                    ->where('asset_no', 'like', "%{$query}%")
-                    ->orWhere('name', 'like', "%{$query}%")
-                    ->orWhere('serial_no', 'like', "%{$query}%")
-                    ->orWhere('location_text', 'like', "%{$query}%");
+                    ->whereLikeEscaped('asset_no', $query)
+                    ->orWhereLikeEscaped('name', $query)
+                    ->orWhereLikeEscaped('serial_no', $query)
+                    ->orWhereLikeEscaped('location_text', $query);
             });
         }
 

@@ -31,7 +31,25 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
     use Queueable;
     use SerializesModels;
 
+    /** SMTP-Aussetzer überbrücken statt beim ersten Fehler aufzugeben. */
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [60, 300];
+
     public function __construct(public readonly int $messageId) {}
+
+    /**
+     * Nach dem LETZTEN fehlgeschlagenen Versuch den Status sichtbar machen —
+     * sonst zeigt das Ticket dauerhaft „queued" und niemand merkt, dass die
+     * Kundenantwort nie rausging.
+     */
+    public function failed(?\Throwable $exception): void {
+        ServiceTicketMessage::query()->withoutGlobalScopes()
+            ->whereKey($this->messageId)
+            ->where('delivery_status', 'queued')
+            ->update(['delivery_status' => 'failed']);
+    }
 
     public function handle(): void {
         $message = ServiceTicketMessage::query()->withoutGlobalScopes()->find($this->messageId);

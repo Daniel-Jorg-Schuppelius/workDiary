@@ -61,19 +61,18 @@ class LexofficeVoucherController extends Controller {
             ->orderByDesc('id');
 
         if ($search !== '') {
-            $like = "%{$search}%";
             // Deutsche Betragseingabe (1.167,08) → 1167.08 für den Spaltenvergleich.
             $amount = str_replace(',', '.', str_replace(['.', ' '], '', $search));
             $datePatterns = $this->dateLikePatterns($search);
 
-            $query->where(function (Builder $q) use ($like, $amount, $datePatterns): void {
-                $q->where('voucher_number', 'like', $like)
-                    ->orWhere('voucher_type', 'like', $like)
-                    ->orWhereHas('customer', fn($c) => $c->where('name', 'like', $like))
-                    ->orWhereHas('supplier', fn($s) => $s->where('name', 'like', $like));
+            $query->where(function (Builder $q) use ($search, $amount, $datePatterns): void {
+                $q->whereLikeEscaped('voucher_number', $search)
+                    ->orWhereLikeEscaped('voucher_type', $search)
+                    ->orWhereHas('customer', fn($c) => $c->whereLikeEscaped('name', $search))
+                    ->orWhereHas('supplier', fn($s) => $s->whereLikeEscaped('name', $search));
 
                 if (is_numeric($amount)) {
-                    $q->orWhere('total_amount', 'like', "%{$amount}%");
+                    $q->orWhereLikeEscaped('total_amount', $amount);
                 }
 
                 foreach ($datePatterns as $pattern) {

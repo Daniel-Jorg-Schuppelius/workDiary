@@ -37,8 +37,8 @@ class SoftwareController extends Controller {
         if ($query !== '') {
             $softwareQuery->where(function ($builder) use ($query): void {
                 $builder
-                    ->where('name', 'like', "%{$query}%")
-                    ->orWhere('vendor', 'like', "%{$query}%");
+                    ->whereLikeEscaped('name', $query)
+                    ->orWhereLikeEscaped('vendor', $query);
             });
         }
 

@@ -50,7 +50,10 @@ class InvoicePdfRenderer {
         return [
             'invoice' => $invoice,
             'template' => $template,
-            'orgLegal' => app(BrandingService::class)->legal(),
+            // Rechtsangaben aus der Org DER RECHNUNG statt aus dem Ambient-
+            // Kontext: im Queue-Worker (Mail-Anhang) gibt es keinen Auth-User —
+            // sonst fehlten die §14-UStG-Pflichtangaben im PDF-Footer.
+            'orgLegal' => app(BrandingService::class)->legalFor($invoice->organization),
         ];
     }
 }

@@ -65,7 +65,7 @@ class ProcessingAgreementController extends Controller {
             $stored = $file->store('privacy/agreements', 'local');
             if ($stored !== false) {
                 $agreement->setAttribute('document_path', $stored);
-                $agreement->setAttribute('document_name', $file->getClientOriginalName());
+                $agreement->setAttribute('document_name', \App\Support\Filename::sanitize($file->getClientOriginalName()));
             }
         }
         $agreement->save();

@@ -63,6 +63,41 @@ class InvoiceGenerator {
             // Touren doppelt abrechnen (Doppelklick).
             Customer::query()->whereKey($customer->id)->lockForUpdate()->first();
 
+            // Quellposten UNTER Sperre und VOR Nummernvergabe laden (wie im
+            // Materialpfad): sonst erzeugt ein Lauf ohne offene Posten eine
+            // leere Rechnung samt verbrauchter Nummer.
+            $query = TimeEntry::query()
+                ->where('billable', true)
+                ->where('exported', false)
+                ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id)
+                    ->when($foreignCustomer !== null, fn($q) => $q->where('foreign_customer_id', $foreignCustomer?->id)));
+
+            if ($project !== null) {
+                $query->where('project_id', $project->id);
+            }
+            if (! empty($range['from'])) {
+                $query->where('date', '>=', Carbon::parse($range['from'])->toDateString());
+            }
+            if (! empty($range['to'])) {
+                $query->where('date', '<=', Carbon::parse($range['to'])->toDateString());
+            }
+
+            $entries = $query
+                ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
+                ->orderBy('date')
+                ->lockForUpdate()
+                ->get();
+
+            // Anfahrt der Touren dieses Zeitraums (Leistungstage bevorzugt).
+            $charges = app(\App\Services\Travel\TravelChargeService::class)
+                ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
+
+            if ($entries->isEmpty() && count($charges) === 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'customer_id' => (string) __('Für den gewählten Zeitraum gibt es keine abrechenbaren Zeiten oder Anfahrten.'),
+                ]);
+            }
+
             $notes = null;
             if ($foreignCustomer !== null) {
                 $notes = (string) __('Endkunde: :name', ['name' => $foreignCustomer->company ?: $foreignCustomer->name]);
@@ -89,31 +124,11 @@ class InvoiceGenerator {
                 'created_by' => Auth::id(),
             ]);
 
-            $query = TimeEntry::query()
-                ->where('billable', true)
-                ->where('exported', false)
-                ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id)
-                    ->when($foreignCustomer !== null, fn($q) => $q->where('foreign_customer_id', $foreignCustomer?->id)));
-
-            if ($project !== null) {
-                $query->where('project_id', $project->id);
-            }
-            if (! empty($range['from'])) {
-                $query->where('date', '>=', Carbon::parse($range['from'])->toDateString());
-            }
-            if (! empty($range['to'])) {
-                $query->where('date', '<=', Carbon::parse($range['to'])->toDateString());
-            }
-
-            $entries = $query
-                ->with(['project.parent', 'project.customer', 'project.foreignCustomer'])
-                ->orderBy('date')
-                ->get();
-
             $blocks = app(BillableTimeAggregator::class)->aggregate($entries);
             $entriesById = $entries->keyBy('id');
 
             $position = 0;
+            $billedEntryIds = [];
             foreach ($blocks as $block) {
                 $hours = $block->billedHours();
                 if ($hours <= 0) {
@@ -145,11 +160,18 @@ class InvoiceGenerator {
                 ]);
 
                 $item->timeEntries()->sync($block->entryIds);
+                $billedEntryIds = array_merge($billedEntryIds, $block->entryIds);
             }
 
-            // Anfahrt der Touren dieses Zeitraums (Leistungstage bevorzugt).
-            $charges = app(\App\Services\Travel\TravelChargeService::class)
-                ->chargesForRange($customer, $project, $range, $foreignCustomer, false);
+            // Abgerechnete Zeiten markieren — symmetrisch zu Material
+            // (billed=true) und Touren (travel_billed=true). Ohne die
+            // Markierung fakturiert ein überlappender Folgelauf dieselben
+            // Zeiten erneut (Whitebox 2026-07-10, G1).
+            if ($billedEntryIds !== []) {
+                TimeEntry::query()->whereKey(array_unique($billedEntryIds))->update(['exported' => true]);
+            }
+
+            // Anfahrten wurden oben unter Sperre geladen.
             $this->appendTravelCharges($invoice, $charges, $foreignCustomer, $position);
 
             $invoice->load('items');

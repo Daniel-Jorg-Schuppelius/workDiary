@@ -86,7 +86,7 @@ class PrivacyAttachmentController extends Controller {
             'organization_id' => $attachable->getAttribute('organization_id'),
             'attachable_type' => $attachable->getMorphClass(),
             'attachable_id' => $attachable->getKey(),
-            'filename' => $file->getClientOriginalName(),
+            'filename' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
             'path' => $stored,
             'size' => $file->getSize(),
             'mime' => $file->getMimeType(),

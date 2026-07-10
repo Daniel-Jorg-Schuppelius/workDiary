@@ -74,7 +74,7 @@ class DocumentController extends Controller {
             ->latest('updated_at');
 
         if ($filters['q'] !== '') {
-            $query->where('title', 'like', '%' . str_replace(['%', '_'], ['\%', '\_'], $filters['q']) . '%');
+            $query->whereLikeEscaped('title', $filters['q']);
         }
         if (DocumentType::tryFrom($filters['type']) !== null) {
             $query->where('document_type', $filters['type']);

@@ -32,10 +32,10 @@ use Illuminate\Support\Str;
  * @property \Illuminate\Support\Carbon|null $last_event_at
  */
 class CtiConnection extends Model {
-    use HasConnectionHealth;
-
     use Auditable;
+
     use BelongsToOrganization;
+    use HasConnectionHealth;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 

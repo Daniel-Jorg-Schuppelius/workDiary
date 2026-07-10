@@ -12,7 +12,7 @@ namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Models\{ExpenseCategory, PerDiemTrip, User};
-use Database\Seeders\{PerDiemRateSeeder};
+use Database\Seeders\PerDiemRateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\WithOrganization;

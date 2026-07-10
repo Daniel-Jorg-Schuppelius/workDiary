@@ -235,7 +235,14 @@ class SurchargeCalculator {
     }
 
     private function minutesSinceMidnight(CarbonImmutable $dayStart, CarbonImmutable $moment): int {
-        return (int) $dayStart->diffInMinutes($moment);
+        // Wanduhr-Minuten statt Echtzeit-Differenz: an DST-Tagen (23/25 h)
+        // müssen die Fenstergrenzen (timeToMinutes, '23:00' → 1380) weiterhin
+        // die lokale Uhrzeit treffen, nicht die verstrichenen Minuten.
+        if ($moment->greaterThan($dayStart) && $moment->toDateString() !== $dayStart->toDateString()) {
+            return 1440; // Scheibenende = Mitternacht des Folgetags
+        }
+
+        return $moment->hour * 60 + $moment->minute;
     }
 
     /** 'H:i' / 'H:i:s' → Minuten seit Mitternacht (null bei fehlendem Wert). */

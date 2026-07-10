@@ -43,8 +43,8 @@ class KeyHandoverController extends Controller {
 
         if ($q !== '') {
             $query->where(function ($builder) use ($q): void {
-                $builder->where('person_name', 'like', "%{$q}%")
-                    ->orWhere('person_reference', 'like', "%{$q}%");
+                $builder->whereLikeEscaped('person_name', $q)
+                    ->orWhereLikeEscaped('person_reference', $q);
             });
         }
         if ($assetFilter > 0) {

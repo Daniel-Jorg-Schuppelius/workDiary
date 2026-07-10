@@ -428,9 +428,15 @@ class TimeExportService {
         /** @var array<string, array{rule: SurchargeRule, date: string, minutes: int, sources: list<int>}> $acc */
         $acc = [];
         foreach ($attendances as $attendance) {
+            // In die Anzeige-Zeitzone umrechnen, BEVOR der Calculator an
+            // Mitternachtsgrenzen splittet: Zuschlagsfenster (23:00–06:00)
+            // und Wochentage (Sa/So/Feiertag) sind lokale Begriffe — auf
+            // UTC-Instants verlöre Samstagsarbeit ab 00:30 lokal ihren
+            // Zuschlag (§ 3b EStG, DATEV-Lohnexport).
+            $tz = \App\Support\Tz::current();
             $shares = $this->surchargeCalculator->calculate(
-                CarbonImmutable::parse((string) $attendance->started_at),
-                CarbonImmutable::parse((string) $attendance->ended_at),
+                CarbonImmutable::parse((string) $attendance->started_at)->setTimezone($tz),
+                CarbonImmutable::parse((string) $attendance->ended_at)->setTimezone($tz),
                 $rules,
             );
 

@@ -187,6 +187,19 @@ class QuoteService {
         }
 
         return DB::transaction(function () use ($quote, $actor): Invoice {
+            // Steuerkontext wie im InvoiceGenerator über den TaxResolver
+            // (Kleinunternehmer § 19, Reverse Charge, Drittland) statt
+            // hartkodierter 19 % — sonst droht unrichtiger Steuerausweis
+            // nach § 14c UStG (Whitebox 2026-07-10, G3).
+            $tax = app(TaxResolver::class)->resolve($quote->organization()->firstOrFail(), $quote->customer()->firstOrFail());
+            $notes = (string) __('Gemäß Angebot :number (Version :version)', ['number' => $quote->number, 'version' => $quote->version]);
+            if ($tax['note'] !== null) {
+                $notes .= "\n" . $tax['note'];
+            }
+            // Bei 0-%-Kontext (§ 19/RC/Drittland) gelten keine Positionssätze
+            // aus dem Angebot — der Kopfsatz 0,00 bestimmt alle Positionen.
+            $suppressItemRates = $tax['reverse_charge'] || (float) $tax['rate'] === 0.0;
+
             $invoice = Invoice::query()->create([
                 'organization_id' => $quote->organization_id,
                 'customer_id' => $quote->customer_id,
@@ -195,8 +208,9 @@ class QuoteService {
                 'number' => $this->numbers->next((int) $quote->organization_id, NumberScope::Invoice, now()),
                 'status' => Invoice::STATUS_DRAFT,
                 'type' => Invoice::TYPE_INVOICE,
-                'tax_rate' => '19.00',
-                'notes' => (string) __('Gemäß Angebot :number (Version :version)', ['number' => $quote->number, 'version' => $quote->version]),
+                'tax_rate' => $tax['rate'],
+                'is_reverse_charge' => $tax['reverse_charge'],
+                'notes' => $notes,
                 'created_by' => $actor->id,
             ]);
 
@@ -210,7 +224,7 @@ class QuoteService {
                     'description' => (string) $item['description'],
                     'quantity' => (string) $item['quantity'],
                     'unit_price' => (string) $item['unit_price'],
-                    'tax_rate' => $item['tax_rate'],
+                    'tax_rate' => $suppressItemRates ? null : $item['tax_rate'],
                     'position' => ++$position,
                 ]);
             }

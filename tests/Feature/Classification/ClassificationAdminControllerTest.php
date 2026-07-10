@@ -14,7 +14,7 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\UserRole;
 use App\Models\{Classification, User};
 use App\Services\Classification\ClassificationManager;
-use Database\Seeders\{ClassificationSeeder};
+use Database\Seeders\ClassificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Schema};

@@ -74,10 +74,18 @@ class TodoistApiClient {
 
     /**
      * @param  array<string, mixed>  $payload
+     * @param  string|null  $requestId  Stabiler Idempotenzschlüssel (Todoist
+     *                                  `X-Request-Id`): verhindert eine
+     *                                  Duplikat-Aufgabe, wenn der Queue-Retry
+     *                                  nach Teil-Erfolg denselben Create
+     *                                  erneut sendet.
      * @return array<string, mixed>
      */
-    public function createTask(array $payload): array {
-        $response = $this->api->postJson($this->base . '/tasks', $payload);
+    public function createTask(array $payload, ?string $requestId = null): array {
+        $options = $requestId !== null && $requestId !== ''
+            ? ['headers' => ['X-Request-Id' => $requestId]]
+            : [];
+        $response = $this->api->postJson($this->base . '/tasks', $payload, $options);
         $this->assertOk($response->status(), '/tasks');
 
         /** @var array<string, mixed> */

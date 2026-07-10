@@ -22,8 +22,8 @@ class InvoiceMailTemplateController extends Controller {
         $search = $request->string('q')->toString();
         $templates = InvoiceMailTemplate::query()
             ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->where('name', 'like', "%{$search}%")
-                    ->orWhere('subject', 'like', "%{$search}%");
+                $w->whereLikeEscaped('name', $search)
+                    ->orWhereLikeEscaped('subject', $search);
             }))
             ->orderByDesc('is_default')
             ->orderBy('name')
