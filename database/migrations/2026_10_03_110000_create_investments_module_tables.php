@@ -125,16 +125,16 @@ return new class extends Migration {
 
         Schema::create('investment_deviations', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('organization_id')->constrained('organizations', indexName: 'invd_org_fk')->cascadeOnDelete();
-            $table->foreignId('investment_case_id')->constrained('investment_cases', indexName: 'invd_case_fk')->cascadeOnDelete();
+            $table->foreignId('organization_id')->constrained('organizations', indexName: 'invdev_org_fk')->cascadeOnDelete();
+            $table->foreignId('investment_case_id')->constrained('investment_cases', indexName: 'invdev_case_fk')->cascadeOnDelete();
             $table->string('kind', 15)->default('budget'); // budget|schedule|scope|cancellation
             $table->string('description', 1000);
             $table->decimal('amount_delta', 14, 2)->nullable();
             $table->string('status', 10)->default('open'); // open|approved|rejected
-            $table->foreignId('decided_by')->nullable()->constrained('users', indexName: 'invd_decided_fk')->nullOnDelete();
+            $table->foreignId('decided_by')->nullable()->constrained('users', indexName: 'invdev_decided_fk')->nullOnDelete();
             $table->timestamp('decided_at')->nullable();
             $table->string('decision_note', 1000)->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users', indexName: 'invd_created_by_fk')->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users', indexName: 'invdev_created_by_fk')->nullOnDelete();
             $table->timestamps();
         });
 
