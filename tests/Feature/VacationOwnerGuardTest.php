@@ -62,4 +62,25 @@ class VacationOwnerGuardTest extends TestCase {
         $this->assertSame($owner->id, $vacation->user_id);
         $this->assertSame('2030-06-06', $vacation->end_date->format('Y-m-d'));
     }
+
+    // Regression: status ist als Enum gecastet — der Vergleich gegen ->value
+    // in duties/_tab_urlaub blendete die Genehmigen-/Ablehnen-Aktionen aus.
+    public function test_admin_sees_decide_actions_for_pending_vacation_on_duties_tab(): void {
+        $owner = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $vacation = Vacation::create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $owner->id,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->toDateString(),
+            'type' => VacationType::Vacation->value,
+            'status' => VacationStatus::Pending->value,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('duties.index', ['tab' => 'urlaub']))
+            ->assertOk()
+            ->assertSee(route('vacations.approve', $vacation))
+            ->assertDontSee('use App\Enums');
+    }
 }

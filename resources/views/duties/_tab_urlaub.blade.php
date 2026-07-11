@@ -1,6 +1,9 @@
 {{-- Urlaub: Tabelle --}}
-<?php $p = array_merge($filters ?? [], ['tab' => 'urlaub']); ?>
-use App\Enums\Vacation\VacationStatus;
+@php
+    use App\Enums\Vacation\VacationStatus;
+
+    $p = array_merge($filters ?? [], ['tab' => 'urlaub']);
+@endphp
 <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm"
          table-sort="server"
          :route="route('duties.index')"

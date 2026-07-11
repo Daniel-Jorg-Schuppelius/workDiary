@@ -10,7 +10,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
+use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User, Vacation};
 use App\Services\Archive\ArchiveService;
 use App\Services\UI\DateRangeContext;
 use Carbon\CarbonImmutable;
@@ -158,5 +159,26 @@ class ArchiveTest extends TestCase {
     public function test_archive_run_command_executes(): void {
         $this->artisan('archive:run', ['--days' => 30])
             ->assertSuccessful();
+    }
+
+    // Regression: der Urlaub-Tab referenzierte die Enums unter App\Models
+    // (Class not found bei der ersten Zeile) und leakte use-Anweisungen ins HTML.
+    public function test_urlaub_tab_renders_vacation_rows(): void {
+        $user = User::factory()->user()->create();
+        Vacation::create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->toDateString(),
+            'type' => VacationType::Vacation->value,
+            'status' => VacationStatus::Rejected->value,
+            'note' => 'Archiv-Render-Check',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('archive.index', ['tab' => 'urlaub']))
+            ->assertOk()
+            ->assertSeeText('Archiv-Render-Check')
+            ->assertDontSee('use App\Enums');
     }
 }
