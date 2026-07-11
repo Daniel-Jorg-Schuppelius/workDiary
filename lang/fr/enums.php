@@ -213,6 +213,21 @@ return [
     ],
     'notification' => [
         'event' => [
+            'crisis' => [
+                'alert' => 'Alerte de crise',
+            ],
+            'claim' => [
+                'escalation' => 'Réclamation en retard',
+            ],
+            'rental' => [
+                'returnOverdue' => 'Retour de location en retard',
+            ],
+            'assetFinance' => [
+                'deadline' => 'Échéance de leasing',
+            ],
+            'assetCompliance' => [
+                'inspectionDue' => 'Contrôle à échéance/en retard',
+            ],
             'ticket' => [
                 'assigned' => 'Ticket attribué',
                 'customerReplied' => 'Le client a répondu',
@@ -814,6 +829,7 @@ return [
             'workdiary' => 'WorkDiary (local)',
             'lexoffice' => 'Lexoffice pilote',
             'datev' => 'DATEV pilote',
+            'orgamax' => 'orgaMAX pilote',
         ],
         'transfer-channel' => [
             'time' => 'Prestations/temps',
@@ -822,6 +838,7 @@ return [
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',
             'datev' => 'DATEV',
+            'orgamax' => 'orgaMAX (commande)',
             'file' => 'Export de fichier',
         ],
         'transfer-status' => [

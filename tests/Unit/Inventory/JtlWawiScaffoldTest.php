@@ -1,6 +1,6 @@
 <?php
 /*
- * Created on   : Tue Jun 16 2026
+ * Created on   : Sat Jul 11 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
  * Filename     : JtlWawiScaffoldTest.php
@@ -10,42 +10,69 @@
 
 namespace Tests\Unit\Inventory;
 
-use App\Enums\Inventory\ProviderCapability;
-use App\Models\{ArticleVariant, InventoryOutboxEntry, Warehouse};
-use App\Services\Inventory\External\{JtlWawiDispatcher, JtlWawiInventoryProvider};
-use App\Services\Inventory\ExternalInventoryDispatcherResolver;
+use App\Enums\Inventory\{ProviderCapability, StockMovementType, StockState};
+use App\Models\{ArticleVariant, Organization, Warehouse};
+use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
+use App\Plugins\JtlWawi\Services\{JtlMappingResolver, JtlStockReader, JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
+use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryLedger, ReadOnlyInventoryProvider, StockPosting};
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 /**
- * JTL-Wawi-Scaffold (MVP-073): deklarierte Vertragsfläche und sicheres
- * Pilot-Verhalten (klare Ausnahme statt erfundener Werte/stillem Verlust).
+ * Vertragsfläche des JTL-Wawi-Plugins (Feature 078, MVP-319/321) — löst den
+ * MVP-073-Scaffold-Test ab: deklarierte Capabilities, Dispatcher-
+ * Registrierung unter der Plugin-ID und der Read-only-Decorator.
  */
 final class JtlWawiScaffoldTest extends TestCase {
     public function test_provider_declares_capabilities(): void {
-        $provider = new JtlWawiInventoryProvider();
+        $provider = $this->makeProvider();
 
         $this->assertTrue($provider->supports(ProviderCapability::ReadStock));
+        $this->assertTrue($provider->supports(ProviderCapability::CheckAvailability));
         $this->assertTrue($provider->supports(ProviderCapability::PostReceipt));
+        $this->assertTrue($provider->supports(ProviderCapability::PostCorrection));
         $this->assertContains(ProviderCapability::ReceiveFinishedGood, $provider->capabilities());
+        // Reservierungen verwaltet die führende Wawi selbst.
+        $this->assertFalse($provider->supports(ProviderCapability::Reserve));
+        $this->assertFalse($provider->supports(ProviderCapability::ReleaseReservation));
     }
 
-    public function test_provider_data_methods_signal_pilot_pending(): void {
-        $provider = new JtlWawiInventoryProvider();
-
-        $this->expectException(RuntimeException::class);
-        $provider->available(new ArticleVariant(), new Warehouse());
-    }
-
-    public function test_dispatcher_registers_under_plugin_id_and_signals_pilot(): void {
-        $resolver = new ExternalInventoryDispatcherResolver();
-        $dispatcher = new JtlWawiDispatcher();
-        $resolver->register($dispatcher);
+    public function test_dispatcher_registers_under_plugin_id(): void {
+        $dispatcher = new JtlWawiOutboxDispatcher(
+            $this->createMock(JtlGatewayFactory::class),
+            $this->createMock(JtlMappingResolver::class),
+        );
 
         $this->assertSame('jtl_wawi', $dispatcher->pluginId());
+
+        $resolver = new ExternalInventoryDispatcherResolver();
+        $resolver->register($dispatcher);
         $this->assertSame($dispatcher, $resolver->for('jtl_wawi'));
+    }
+
+    public function test_read_only_decorator_hides_writes_and_blocks_post(): void {
+        $readOnly = new ReadOnlyInventoryProvider($this->makeProvider());
+
+        $this->assertTrue($readOnly->supports(ProviderCapability::ReadStock));
+        $this->assertTrue($readOnly->supports(ProviderCapability::CheckAvailability));
+        $this->assertFalse($readOnly->supports(ProviderCapability::PostReceipt));
+        $this->assertFalse($readOnly->supports(ProviderCapability::PostConsumption));
 
         $this->expectException(RuntimeException::class);
-        $dispatcher->dispatch(new InventoryOutboxEntry());
+        $readOnly->post(new StockPosting(
+            new ArticleVariant(),
+            new Warehouse(),
+            StockState::Physical,
+            '1.0000',
+            StockMovementType::Receipt,
+        ));
+    }
+
+    private function makeProvider(): JtlWawiInventoryProvider {
+        return new JtlWawiInventoryProvider(
+            new Organization(),
+            $this->createMock(JtlStockReader::class),
+            $this->createMock(InventoryLedger::class),
+        );
     }
 }

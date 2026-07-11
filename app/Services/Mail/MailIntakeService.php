@@ -42,9 +42,20 @@ class MailIntakeService {
     ) {}
 
     /**
-     * @return 'created'|'skipped'|'ticket_message'
+     * @return 'created'|'skipped'|'ticket_message'|'einvoice'
      */
     public function intake(Organization $organization, EmailConnection $connection, ParsedMessage $message): string {
+        // E-Rechnungs-Postfach (Feature 066, MVP-165): Anhänge eines dedizierten
+        // Rechnungs-Postfachs laufen durch DIESELBE Eingangsverarbeitung wie der
+        // Upload (Hash-Dedup, Parse, Validierung, Prüfbereich). Nicht lesbare
+        // Nachrichten fallen in die normale Inbox durch — nichts geht verloren.
+        if ($connection->einvoice_intake && $message->attachments !== []) {
+            $result = $this->intakeEInvoices($organization, $connection, $message);
+            if ($result !== null) {
+                return $result;
+            }
+        }
+
         // Ticket-Pipeline (Feature 065, P2): Ist das Postfach einer Queue
         // zugeordnet, greift zuerst das Mail-Threading — eine Antwort auf
         // eine bekannte Ticket-Nachricht (In-Reply-To/References) oder eine
@@ -132,6 +143,61 @@ class MailIntakeService {
         ])->save();
 
         return 'created';
+    }
+
+    /**
+     * E-Rechnungs-Anhänge übernehmen (MVP-165, Mail-Kanal): jede XML-/PDF-
+     * Anlage wird als E-Rechnung versucht; Dubletten (SHA-256) werden
+     * übersprungen. `null` = kein verwertbarer Anhang → normaler Inbox-Weg.
+     *
+     * @return 'einvoice'|'skipped'|null
+     */
+    private function intakeEInvoices(Organization $organization, EmailConnection $connection, ParsedMessage $message): ?string {
+        $actor = \App\Models\User::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $connection->organization_id)
+            ->where('id', (int) $connection->created_by)
+            ->first();
+        if ($actor === null) {
+            return null; // ohne zuordenbaren Bearbeiter kein automatischer DMS-Eintrag
+        }
+
+        $service = app(\App\Services\Invoicing\EInvoice\IncomingEInvoiceService::class);
+        $created = 0;
+        $duplicates = 0;
+        foreach ($message->attachments as $attachment) {
+            $isCandidate = str_contains($attachment->mime, 'xml')
+                || str_contains($attachment->mime, 'pdf')
+                || str_ends_with(strtolower($attachment->filename), '.xml')
+                || str_ends_with(strtolower($attachment->filename), '.pdf');
+            if (! $isCandidate) {
+                continue;
+            }
+
+            $result = $service->storeIncoming(
+                $actor,
+                $attachment->content,
+                $attachment->mime,
+                null,
+                'mail',
+                null,
+                $attachment->filename,
+            );
+            if ($result['status'] === 'created') {
+                $created++;
+            } elseif ($result['status'] === 'duplicate') {
+                $duplicates++;
+            }
+        }
+
+        if ($created > 0) {
+            return 'einvoice';
+        }
+        if ($duplicates > 0) {
+            return 'skipped'; // bereits erfasst — kein zweites Document, kein Inbox-Item
+        }
+
+        return null;
     }
 
     /**

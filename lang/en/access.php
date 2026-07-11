@@ -160,6 +160,13 @@ return [
         'procedures' => 'Procedures',
         'customer-portal' => 'Customer Portal',
         'platform' => 'Platform / Operations',
+        'applications' => 'Applications & tenders',
+        'crisis' => 'Crisis management',
+        'sustainability' => 'Sustainability & ESG',
+        'claims' => 'Claims & warranty',
+        'rental' => 'Equipment rental',
+        'asset-finance' => 'Leasing & asset contracts',
+        'asset-compliance' => 'Test equipment & calibration',
     ],
 
     'permission' => [
@@ -172,6 +179,12 @@ return [
         'organization.update' => 'Edit organization',
         'organization.billing' => 'Manage organization billing',
         'branding.update' => 'Edit branding',
+        'documentDesign.manage' => 'Manage document design',
+        'documentDesign.assign' => 'Assign document design & preview',
+        'finance.orgamax.convert' => 'orgaMAX: convert order to invoice',
+        'finance.orgamax.lock' => 'orgaMAX: finalise/lock invoice',
+        'finance.orgamax.send' => 'orgaMAX: send invoice',
+        'finance.orgamax.payment' => 'orgaMAX: record payment',
         'org.onboarding.view' => 'View onboarding checklist',
         'org.onboarding.skipStep' => 'Skip onboarding step',
         'org.onboarding.dismissWidget' => 'Dismiss onboarding widget',
@@ -525,5 +538,65 @@ return [
         'customerPortal.timeEntry.view' => 'View time entries in customer portal',
         'customerPortal.invoice.view' => 'View invoices in customer portal',
         'customerPortal.openIssue.view' => 'View open issues in customer portal',
+
+        // Bewerbungen & Ausschreibungen (Feature 068)
+        'tender.viewAny' => 'List tenders',
+        'tender.view' => 'View tender case file',
+        'tender.manage' => 'Manage tender case files',
+        'tender.decide' => 'Decide tenders (go/no-go, award)',
+        'recruiting.viewAny' => 'List job applications',
+        'recruiting.view' => 'View application case file',
+        'recruiting.manage' => 'Manage application case files',
+        'recruiting.decide' => 'Decide applications (offer/acceptance/rejection)',
+        'recruiting.privacy' => 'Manage applicant privacy (deletion/disclosure/talent pool)',
+
+        // Investitionsplanung (Feature 069)
+        'investment.viewAny' => 'List investments',
+        'investment.view' => 'View investment case',
+        'investment.manage' => 'Manage investment cases',
+        'investment.approve' => 'Approve investment budgets',
+
+        // Krisenmanagement (Feature 070)
+        'crisis.viewAny' => 'List crisis cases',
+        'crisis.view' => 'View crisis case',
+        'crisis.manage' => 'Manage crisis cases (team/actions/situation)',
+        'crisis.approve' => 'Approve crisis communication / activate crisis',
+
+        // Nachhaltigkeit (Feature 071)
+        'sustainability.viewAny' => 'List sustainability data',
+        'sustainability.view' => 'View sustainability data',
+        'sustainability.manage' => 'Manage sustainability (assessments/factors/measures/targets)',
+        'claim.viewAny' => 'List claims',
+        'claim.view' => 'View claim case',
+        'claim.manage' => 'Accept and manage claims',
+        'claim.decide' => 'Assess and decide claims',
+        'claim.finance' => 'Approve financial claim outcomes',
+        'claim.warehouse' => 'Inspect and restock returns',
+        'claim.recourse' => 'Handle supplier recourse',
+
+        // Shared asset blocking model (D12, phases 25-27)
+        'asset.block.manage' => 'Block assets and lift blocks',
+        'asset.block.override' => 'Grant temporary exception releases for blocked assets',
+
+        // Equipment rental (feature 073)
+        'rental.viewAny' => 'List rental cases',
+        'rental.view' => 'View rental case',
+        'rental.manage' => 'Create and manage rental cases',
+        'rental.handover' => 'Record handovers and returns',
+        'rental.finance' => 'Release and invoice rental charges and deposits',
+        'rental.rates' => 'Maintain rental rate cards',
+
+        // Leasing / asset finance (feature 074)
+        'assetFinance.viewAny' => 'List leasing files',
+        'assetFinance.view' => 'View leasing file (without terms)',
+        'assetFinance.manage' => 'Create and manage leasing files',
+        'assetFinance.finance' => 'View and maintain confidential terms',
+
+        // Test equipment / calibration (feature 075)
+        'assetCompliance.viewAny' => 'List inspection duties and test equipment',
+        'assetCompliance.view' => 'View inspection file',
+        'assetCompliance.manage' => 'Maintain inspection profiles and duties',
+        'assetCompliance.inspect' => 'Perform inspections and record evidence',
+        'assetCompliance.release' => 'Grant exception releases for inspection blocks',
     ],
 ];

@@ -139,6 +139,13 @@ return [
         'procedures' => 'Procédures',
         'customer-portal' => 'Portail client',
         'platform' => 'Plateforme / Opérations',
+        'applications' => 'Candidatures et appels d’offres',
+        'crisis' => 'Gestion de crise',
+        'sustainability' => 'Durabilité et ESG',
+        'claims' => 'Réclamations et garantie',
+        'rental' => 'Location de matériel',
+        'asset-finance' => 'Leasing et contrats d\'actifs',
+        'asset-compliance' => 'Moyens de contrôle et étalonnage',
     ],
     'permission' => [
         'access.manage' => 'Ouvrir la gestion des accès',
@@ -149,6 +156,12 @@ return [
         'organization.update' => 'Modifier l\'organisation',
         'organization.billing' => 'Gérer la facturation de l\'organisation',
         'branding.update' => 'Modifier l\'image de marque',
+        'documentDesign.manage' => 'Gérer le design des documents',
+        'documentDesign.assign' => 'Attribuer le design des documents et aperçu',
+        'finance.orgamax.convert' => 'orgaMAX : convertir la commande en facture',
+        'finance.orgamax.lock' => 'orgaMAX : finaliser/verrouiller la facture',
+        'finance.orgamax.send' => 'orgaMAX : envoyer la facture',
+        'finance.orgamax.payment' => 'orgaMAX : enregistrer un paiement',
         'org.onboarding.view' => 'Voir la liste de contrôle d\'onboarding',
         'org.onboarding.skipStep' => 'Ignorer une étape d\'onboarding',
         'org.onboarding.dismissWidget' => 'Masquer le widget d\'onboarding',
@@ -482,5 +495,65 @@ return [
         'customerPortal.timeEntry.view' => 'Voir les saisies de temps dans le portail client',
         'customerPortal.invoice.view' => 'Voir les factures dans le portail client',
         'customerPortal.openIssue.view' => 'Voir les points ouverts dans le portail client',
+
+        // Bewerbungen & Ausschreibungen (Feature 068)
+        'tender.viewAny' => 'Lister les appels d’offres',
+        'tender.view' => 'Consulter le dossier d’appel d’offres',
+        'tender.manage' => 'Gérer les dossiers d’appel d’offres',
+        'tender.decide' => 'Décider des appels d’offres (go/no-go, attribution)',
+        'recruiting.viewAny' => 'Lister les candidatures',
+        'recruiting.view' => 'Consulter le dossier de candidature',
+        'recruiting.manage' => 'Gérer les dossiers de candidature',
+        'recruiting.decide' => 'Décider des candidatures (offre/acceptation/refus)',
+        'recruiting.privacy' => 'Gérer la protection des données des candidats (suppression/accès/vivier)',
+
+        // Investitionsplanung (Feature 069)
+        'investment.viewAny' => 'Lister les investissements',
+        'investment.view' => 'Consulter le dossier d’investissement',
+        'investment.manage' => 'Gérer les dossiers d’investissement',
+        'investment.approve' => 'Approuver les budgets d’investissement',
+
+        // Krisenmanagement (Feature 070)
+        'crisis.viewAny' => 'Lister les crises',
+        'crisis.view' => 'Consulter le dossier de crise',
+        'crisis.manage' => 'Gérer les dossiers de crise',
+        'crisis.approve' => 'Approuver la communication de crise / activer la crise',
+
+        // Nachhaltigkeit (Feature 071)
+        'sustainability.viewAny' => 'Lister les données de durabilité',
+        'sustainability.view' => 'Consulter les données de durabilité',
+        'sustainability.manage' => 'Gérer la durabilité (évaluations/facteurs/mesures/objectifs)',
+        'claim.viewAny' => 'Lister les réclamations',
+        'claim.view' => 'Consulter le dossier de réclamation',
+        'claim.manage' => 'Accepter et gérer les réclamations',
+        'claim.decide' => 'Évaluer et décider des réclamations',
+        'claim.finance' => 'Approuver les suites commerciales des réclamations',
+        'claim.warehouse' => 'Contrôler et stocker les retours',
+        'claim.recourse' => 'Gérer le recours fournisseur',
+
+        // Modèle de blocage commun (D12, phases 25-27)
+        'asset.block.manage' => 'Bloquer des actifs et lever les blocages',
+        'asset.block.override' => 'Accorder des dérogations temporaires pour actifs bloqués',
+
+        // Location de matériel (fonctionnalité 073)
+        'rental.viewAny' => 'Lister les dossiers de location',
+        'rental.view' => 'Consulter un dossier de location',
+        'rental.manage' => 'Créer et gérer les dossiers de location',
+        'rental.handover' => 'Consigner remises et retours',
+        'rental.finance' => 'Valider et facturer loyers et cautions',
+        'rental.rates' => 'Gérer les grilles tarifaires de location',
+
+        // Leasing / financement (fonctionnalité 074)
+        'assetFinance.viewAny' => 'Lister les dossiers de leasing',
+        'assetFinance.view' => 'Consulter un dossier de leasing (sans conditions)',
+        'assetFinance.manage' => 'Créer et gérer les dossiers de leasing',
+        'assetFinance.finance' => 'Consulter et gérer les conditions confidentielles',
+
+        // Moyens de contrôle / étalonnage (fonctionnalité 075)
+        'assetCompliance.viewAny' => 'Lister les obligations de contrôle et moyens de contrôle',
+        'assetCompliance.view' => 'Consulter un dossier de contrôle',
+        'assetCompliance.manage' => 'Gérer les profils et obligations de contrôle',
+        'assetCompliance.inspect' => 'Réaliser les contrôles et consigner les preuves',
+        'assetCompliance.release' => 'Accorder des dérogations aux blocages de contrôle',
     ],
 ];

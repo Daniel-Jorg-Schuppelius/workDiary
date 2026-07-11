@@ -56,7 +56,7 @@
                                 @endif
                             </td>
                             <td class="text-right whitespace-nowrap">
-                                {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency }}
+                                {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency->value }}
                             </td>
                         </tr>
                     @endforeach

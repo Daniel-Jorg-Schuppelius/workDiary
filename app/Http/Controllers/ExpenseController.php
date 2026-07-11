@@ -236,7 +236,7 @@ class ExpenseController extends Controller {
                     number_format((float) $expense->amount_net, 2, ',', ''),
                     number_format((float) $expense->tax_amount, 2, ',', ''),
                     number_format((float) $expense->tax_rate, 2, ',', ''),
-                    (string) $expense->currency,
+                    $expense->currency->value,
                     $expense->payment_method->label(),
                     $expense->status->label(),
                     $expense->billable ? 'ja' : 'nein',

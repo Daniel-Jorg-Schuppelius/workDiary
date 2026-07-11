@@ -27,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property string $type
  * @property ?string $unit_name
  * @property ?string $net_unit_price
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property ?string $vat_rate
  * @property ?Carbon $synced_at
  * @property bool $is_dirty
@@ -61,6 +61,7 @@ class LexofficeArticle extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'external_version' => 'integer',
         'net_unit_price' => 'decimal:4',
         'gross_unit_price' => 'decimal:4',

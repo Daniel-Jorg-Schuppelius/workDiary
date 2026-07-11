@@ -32,6 +32,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit MVP-177 (kein Alt-Eintrag): Selbstüberwachung.
         'scheduler:watchdog' => ['0 * * * *', true, true],
         // Neu mit MVP-058 (kein Alt-Eintrag): Betriebsaufgaben-Sync.
+        // Neu mit Feature 072 (MVP-255): Reklamations-Fristeneskalation.
+        'claims:escalate' => ['15 7 * * *', true, true],
         'operations:scan' => ['0 * * * *', true, true],
         // Neu mit MVP-054 (kein Alt-Eintrag): Update-Check (Opt-in-Gate im Command).
         'updates:check' => ['30 6 * * *', true, true],
@@ -60,6 +62,10 @@ class SchedulerRegistrationTest extends TestCase {
         'lexoffice:sync-contacts' => ['0 * * * *', true, true],
         'lexoffice:sync-articles' => ['0 * * * *', true, true],
         'lexoffice:sync-vouchers' => ['0 * * * *', true, true],
+        // Neu mit Feature 078 (MVP-322): JTL-Wawi-Projektions-Sync.
+        'jtl:sync' => ['0 * * * *', true, true],
+        // Neu mit Feature 077 (MVP-313): orgaMAX-Projektions-Sync.
+        'orgamax:sync' => ['0 * * * *', true, true],
         'payroll:import-minimum-wages' => ['0 4 15 1,7 *', true, true],
         'catalog:fetch-due' => ['*/15 * * * *', true, true],
         'security:advisories-pull' => ['30 5 * * *', true, true],

@@ -43,7 +43,7 @@ class PerDiemForeignRateSeederTest extends TestCase {
         $this->assertSame('50.00', $fr->full_day_amount);
         $this->assertSame('33.00', $fr->partial_day_amount);
         $this->assertSame('123.00', $fr->overnight_amount);
-        $this->assertSame('EUR', $fr->currency);
+        $this->assertSame('EUR', $fr->currency->value);
     }
 
     public function test_seeder_creates_region_specific_rates(): void {

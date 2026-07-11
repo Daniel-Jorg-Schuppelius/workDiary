@@ -24,16 +24,65 @@ return [
     'groups_hint' => 'Gruppi provisionati dal provider di identità. Associare un gruppo a un team rispecchia i suoi membri in WorkDiary (team_user); i ruoli non vengono mai assegnati.',
     'no_groups' => 'Nessun gruppo SCIM ancora provisionato.',
 
+    'oidc_heading' => 'Single sign-on OIDC',
+    'oidc_hint' => 'Accesso tramite OpenID Connect (Entra ID, Keycloak, Google …). Il collegamento dell’account usa solo issuer + subject; l’SSO non crea mai account e non assegna mai ruoli. Dopo l’accesso IdP, la verifica a più fattori è responsabilità del provider di identità.',
+    'saml_heading' => 'SAML 2.0',
+    'saml_hint' => 'Accesso avviato dall’SP tramite SAML 2.0. Le assertion devono essere firmate; le risposte avviate dall’IdP (non richieste) vengono rifiutate. Per la rotazione dei certificati è possibile memorizzare un secondo certificato in parallelo.',
+
+    'break_glass_heading' => 'Account break-glass',
+    'break_glass_hint' => 'Account di emergenza non federati che possono continuare ad accedere con password nonostante l’SSO obbligatorio. Ogni utilizzo viene registrato nell’audit. Mantenere almeno un account, altrimenti un guasto dell’IdP blocca l’organizzazione.',
+    'no_break_glass' => 'Nessun account break-glass definito.',
+
+    'discover' => [
+        'hint' => 'Inserisci l’identificativo della tua organizzazione per avviare l’accesso tramite il tuo provider di identità.',
+        'org_label' => 'Identificativo organizzazione',
+        'org_placeholder' => 'ad es. acme-srl',
+        'submit' => 'Continua verso il provider di identità',
+        'back_to_login' => 'Torna all’accesso',
+    ],
+
+    'protocol' => [
+        'oidc' => 'OIDC',
+        'saml' => 'SAML 2.0',
+    ],
+
     'field' => [
         'label' => 'Etichetta',
         'label_placeholder' => 'ad es. Entra ID produzione',
         'team_none' => '— nessun team —',
+        'start_url' => 'URL di avvio SSO',
+        'callback_url' => 'URL di redirect/callback (da registrare presso l’IdP)',
+        'acs_url' => 'URL ACS (da registrare presso l’IdP)',
+        'metadata_url' => 'URL metadata SP',
+        'issuer' => 'Issuer',
+        'client_id' => 'Client ID',
+        'client_secret' => 'Client secret',
+        'secret_keep' => 'lasciare vuoto = invariato',
+        'scopes' => 'Scope',
+        'idp_entity_id' => 'Entity ID dell’IdP',
+        'idp_sso_url' => 'URL SSO dell’IdP',
+        'idp_certificate' => 'Certificato di firma dell’IdP (PEM)',
+        'idp_certificate_next' => 'Certificato successore (rotazione, opzionale)',
+        'idp_certificate_next_hint' => 'Durante la rotazione dei certificati vengono accettati entrambi.',
+        'active' => 'Attivo',
+        'enforced' => 'SSO obbligatorio',
+        'enforced_hint' => 'Blocca l’accesso con password per tutti gli account di questa organizzazione (tranne break-glass).',
+        'email_link' => 'Collegamento iniziale via e-mail',
+        'email_link_hint' => 'Al primo accesso SSO, collega un account esistente tramite e-mail (solo con esattamente una corrispondenza). In seguito contano solo issuer + subject.',
+        'private_network' => 'Consenti IdP su rete privata',
+        'private_network_hint' => 'Eccezione alla protezione SSRF per IdP on-premise (ad es. Keycloak interno).',
+        'break_glass_user' => 'Account',
     ],
 
     'action' => [
         'issue' => 'Emetti',
         'revoke' => 'Revoca',
         'save_mapping' => 'Salva',
+        'save_connection' => 'Salva connessione',
+        'test_connection' => 'Testa connessione',
+        'remove_connection' => 'Rimuovi connessione',
+        'break_glass_add' => 'Imposta come account break-glass',
+        'break_glass_remove' => 'Rimuovi',
     ],
 
     'col' => [
@@ -46,12 +95,38 @@ return [
 
     'status' => [
         'active' => 'Attivo',
+        'inactive' => 'Inattivo',
         'revoked' => 'Revocato',
+        'enforced' => 'SSO obbligatorio',
     ],
 
     'flash' => [
         'token_issued' => 'Token SCIM emesso.',
         'token_revoked' => 'Token SCIM revocato.',
         'group_mapped' => 'Associazione team salvata.',
+        'connection_saved' => 'Connessione :protocol salvata.',
+        'connection_ok' => 'Connessione :protocol verificata con successo.',
+        'connection_removed' => 'Connessione rimossa.',
+        'break_glass_added' => 'Account break-glass impostato.',
+        'break_glass_removed' => 'Stato break-glass rimosso.',
+    ],
+
+    'error' => [
+        'discovery_failed' => 'La discovery OIDC del provider di identità non è raggiungibile o è incompleta.',
+        'issuer_mismatch' => 'L’issuer della risposta di discovery non corrisponde alla configurazione.',
+        'token_exchange_failed' => 'Lo scambio del codice con il provider di identità è fallito.',
+        'token_invalid' => 'Il token di accesso del provider di identità non è valido.',
+        'token_expired' => 'Il token di accesso del provider di identità è scaduto.',
+        'jwks_failed' => 'Impossibile caricare le chiavi di firma del provider di identità.',
+        'no_account' => 'Nessun account WorkDiary è collegato a questa identità. Contattare l’amministrazione.',
+        'org_without_sso' => 'Per questo identificativo non è configurato alcun single sign-on.',
+        'flow_expired' => 'L’accesso SSO è scaduto. Riprovare.',
+        'module_disabled' => 'Il single sign-on non è disponibile per questa organizzazione.',
+        'url_not_public' => 'L’URL non è raggiungibile pubblicamente. Per provider interni attivare «Consenti IdP su rete privata».',
+        'saml_invalid' => 'La risposta SAML non è valida.',
+        'saml_unsolicited' => 'Le risposte SAML non richieste (avviate dall’IdP) vengono rifiutate. Avviare l’accesso da WorkDiary.',
+        'saml_no_nameid' => 'La risposta SAML non contiene una NameID. Configurare una regola claim NameID presso l’IdP (ad es. ADFS).',
+        'saml_settings_invalid' => 'La configurazione SAML è incompleta o non valida.',
+        'saml_certificate_invalid' => 'Impossibile leggere il certificato dell’IdP (atteso PEM).',
     ],
 ];

@@ -32,7 +32,7 @@ class ExpenseSubmittedNotification extends Notification {
     }
 
     public function toMail(object $notifiable): MailMessage {
-        $amount = number_format((float) $this->expense->amount_gross, 2, ',', '.') . ' ' . $this->expense->currency;
+        $amount = number_format((float) $this->expense->amount_gross, 2, ',', '.') . ' ' . $this->expense->currency->value;
         $owner = $this->expense->user !== null ? $this->expense->user->name : '';
 
         return (new MailMessage)
@@ -50,7 +50,7 @@ class ExpenseSubmittedNotification extends Notification {
             'expense_id' => $this->expense->getKey(),
             'owner' => $this->expense->user?->name,
             'amount_gross' => $this->expense->amount_gross,
-            'currency' => $this->expense->currency,
+            'currency' => $this->expense->currency->value,
             'description' => $this->expense->description,
             'url' => route('expense-approvals.inbox'),
             'icon' => 'receipt_long',

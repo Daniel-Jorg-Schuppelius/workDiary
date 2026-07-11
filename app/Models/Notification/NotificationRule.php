@@ -58,11 +58,13 @@ class NotificationRule extends Model {
         'escalation_enabled',
         'escalate_after_hours',
         'escalation_role',
+        'override_quiet_hours',
     ];
 
     protected $casts = [
         'event' => NotificationEvent::class,
         'enabled' => 'boolean',
+        'override_quiet_hours' => 'boolean',
         'channels' => 'array',
         'notify_affected' => 'boolean',
         'recipient_roles' => 'array',

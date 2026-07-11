@@ -128,6 +128,7 @@ class DeliveryService {
         return match ($mode) {
             BillingMode::Lexoffice => 'lexoffice',
             BillingMode::Datev => 'datev',
+            BillingMode::OrgaMax => 'orgamax',
             BillingMode::Workdiary => 'workdiary',
         };
     }

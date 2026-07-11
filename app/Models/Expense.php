@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $vendor
  * @property string $description
  * @property PaymentMethod $payment_method
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string $amount_net
  * @property string $tax_rate
  * @property string $tax_amount
@@ -87,6 +87,7 @@ class Expense extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'date' => 'date',
         'amount_net' => 'decimal:2',
         'tax_rate' => 'decimal:2',

@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $unit
  * @property string|null $unit_price
  * @property string|null $total_price
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $is_addendum
  * @property string|null $external_id
  * @property int $position
@@ -68,6 +68,7 @@ class BoqItem extends Model {
     ];
 
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'type' => BoqItemType::class,
         'status' => BoqItemStatus::class,
         'quantity' => 'decimal:4',

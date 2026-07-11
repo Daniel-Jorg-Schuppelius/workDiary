@@ -160,6 +160,13 @@ return [
         'procedures' => 'Prozeduren',
         'customer-portal' => 'Kundenportal',
         'platform' => 'Plattform / Betrieb',
+        'applications' => 'Bewerbungen & Ausschreibungen',
+        'crisis' => 'Krisenmanagement',
+        'sustainability' => 'Nachhaltigkeit & ESG',
+        'claims' => 'Reklamation & Gewährleistung',
+        'rental' => 'Geräteverleih',
+        'asset-finance' => 'Leasing & Asset-Verträge',
+        'asset-compliance' => 'Prüfmittel & Kalibrierung',
     ],
 
     'permission' => [
@@ -172,6 +179,12 @@ return [
         'organization.update' => 'Organisation bearbeiten',
         'organization.billing' => 'Abrechnung der Organisation',
         'branding.update' => 'Branding bearbeiten',
+        'documentDesign.manage' => 'Dokumentdesign verwalten',
+        'documentDesign.assign' => 'Dokumentdesign zuweisen & Vorschau',
+        'finance.orgamax.convert' => 'orgaMAX: Auftrag in Rechnung umwandeln',
+        'finance.orgamax.lock' => 'orgaMAX: Rechnung finalisieren/sperren',
+        'finance.orgamax.send' => 'orgaMAX: Rechnung versenden',
+        'finance.orgamax.payment' => 'orgaMAX: Zahlung melden',
         'org.onboarding.view' => 'Onboarding-Checkliste einsehen',
         'org.onboarding.skipStep' => 'Onboarding-Schritt überspringen',
         'org.onboarding.dismissWidget' => 'Onboarding-Widget ausblenden',
@@ -525,5 +538,65 @@ return [
         'customerPortal.timeEntry.view' => 'Zeiteinträge im Kundenportal einsehen',
         'customerPortal.invoice.view' => 'Rechnungen im Kundenportal einsehen',
         'customerPortal.openIssue.view' => 'Offene Punkte im Kundenportal einsehen',
+
+        // Bewerbungen & Ausschreibungen (Feature 068)
+        'tender.viewAny' => 'Ausschreibungen auflisten',
+        'tender.view' => 'Ausschreibungsakte einsehen',
+        'tender.manage' => 'Ausschreibungsakten führen',
+        'tender.decide' => 'Ausschreibungen entscheiden (Go/No-go, Zuschlag)',
+        'recruiting.viewAny' => 'Bewerbungen auflisten',
+        'recruiting.view' => 'Bewerbungsakte einsehen',
+        'recruiting.manage' => 'Bewerbungsakten führen',
+        'recruiting.decide' => 'Bewerbungen entscheiden (Angebot/Zusage/Absage)',
+        'recruiting.privacy' => 'Bewerberdatenschutz verwalten (Löschung/Auskunft/Talentpool)',
+
+        // Investitionsplanung (Feature 069)
+        'investment.viewAny' => 'Investitionen auflisten',
+        'investment.view' => 'Investitionsakte einsehen',
+        'investment.manage' => 'Investitionsakten führen',
+        'investment.approve' => 'Investitionsbudgets freigeben',
+
+        // Krisenmanagement (Feature 070)
+        'crisis.viewAny' => 'Krisenakten auflisten',
+        'crisis.view' => 'Krisenakte einsehen',
+        'crisis.manage' => 'Krisenakten führen (Stab/Maßnahmen/Lagebild)',
+        'crisis.approve' => 'Krisenkommunikation freigeben / Krise aktivieren',
+
+        // Nachhaltigkeit (Feature 071)
+        'sustainability.viewAny' => 'Nachhaltigkeitsdaten auflisten',
+        'sustainability.view' => 'Nachhaltigkeitsdaten einsehen',
+        'sustainability.manage' => 'Nachhaltigkeit pflegen (Bewertungen/Faktoren/Maßnahmen/Ziele)',
+        'claim.viewAny' => 'Reklamationen auflisten',
+        'claim.view' => 'Reklamationsakte einsehen',
+        'claim.manage' => 'Reklamationen annehmen und führen',
+        'claim.decide' => 'Reklamationen bewerten und entscheiden',
+        'claim.finance' => 'Kaufmännische Reklamationsfolgen freigeben',
+        'claim.warehouse' => 'Rückläufer prüfen und einlagern',
+        'claim.recourse' => 'Lieferantenregress führen',
+
+        // Gemeinsames Asset-Sperrmodell (D12, Phasen 25–27)
+        'asset.block.manage' => 'Assets sperren und Sperren aufheben',
+        'asset.block.override' => 'Befristete Ausnahmefreigaben für gesperrte Assets erteilen',
+
+        // Geräte-/Maschinenverleih (Feature 073)
+        'rental.viewAny' => 'Verleihakten auflisten',
+        'rental.view' => 'Verleihakte einsehen',
+        'rental.manage' => 'Verleihakten anlegen und führen',
+        'rental.handover' => 'Übergaben und Rücknahmen protokollieren',
+        'rental.finance' => 'Mietpositionen und Kautionen freigeben und abrechnen',
+        'rental.rates' => 'Verleih-Preislisten pflegen',
+
+        // Leasing/Finanzierung (Feature 074)
+        'assetFinance.viewAny' => 'Leasingakten auflisten',
+        'assetFinance.view' => 'Leasingakte einsehen (ohne Konditionen)',
+        'assetFinance.manage' => 'Leasingakten anlegen und führen',
+        'assetFinance.finance' => 'Vertrauliche Konditionen einsehen und pflegen',
+
+        // Prüfmittel/Eichung/Kalibrierung (Feature 075)
+        'assetCompliance.viewAny' => 'Prüfpflichten und Prüfmittel auflisten',
+        'assetCompliance.view' => 'Prüfakte einsehen',
+        'assetCompliance.manage' => 'Prüfprofile und Prüfpflichten pflegen',
+        'assetCompliance.inspect' => 'Prüfungen durchführen und Nachweise erfassen',
+        'assetCompliance.release' => 'Ausnahmefreigaben für Prüfsperren erteilen',
     ],
 ];

@@ -265,7 +265,8 @@ class NotificationDispatcher {
      */
     private function deliverTo(User $user, NotificationRule $rule, NotificationEvent $event, array $payload, string $stage): bool {
         $prefs = (array) $user->getPreference('notifications', []);
-        $quiet = $this->isQuietNow($user, $prefs);
+        // Krisen-/Notfallregeln dürfen Ruhezeiten überstimmen (Feature 070, D7).
+        $quiet = $this->isQuietNow($user, $prefs) && ! $rule->override_quiet_hours;
 
         $channels = [];
         if ($rule->usesChannel(NotificationChannel::InApp)) {

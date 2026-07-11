@@ -18,7 +18,7 @@
             <div class="font-semibold">{{ $expense->user?->name }}</div>
             <div class="text-base-content/70">
                 {{ $expense->date->fdate() }} ·
-                {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency }}
+                {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency->value }}
             </div>
             @if ($expense->description)
                 <div class="mt-1">{{ $expense->description }}</div>

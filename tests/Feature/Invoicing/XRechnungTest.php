@@ -149,7 +149,7 @@ class XRechnungTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('invoices.show', $invoice))
             ->assertOk()
-            ->assertSee(route('invoices.einvoice', $invoice), false);
+            ->assertSee(route('invoices.einvoice', $invoice) . '"', false);
     }
 
     public function test_button_hidden_for_draft_invoice(): void {
@@ -158,7 +158,7 @@ class XRechnungTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('invoices.show', $invoice))
             ->assertOk()
-            ->assertDontSee(route('invoices.einvoice', $invoice), false);
+            ->assertDontSee(route('invoices.einvoice', $invoice) . '"', false);
     }
 
     public function test_button_hidden_for_externally_billed_customer(): void {
@@ -168,7 +168,7 @@ class XRechnungTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('invoices.show', $invoice))
             ->assertOk()
-            ->assertDontSee(route('invoices.einvoice', $invoice), false);
+            ->assertDontSee(route('invoices.einvoice', $invoice) . '"', false);
     }
 
     public function test_non_billing_user_is_forbidden(): void {

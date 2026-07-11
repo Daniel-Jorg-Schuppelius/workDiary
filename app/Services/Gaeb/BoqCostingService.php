@@ -47,7 +47,7 @@ class BoqCostingService {
             'executed' => round($executed, 2),
             'remaining' => round(max(0.0, $planned - $executed), 2),
             'progress' => $progress,
-            'currency' => $boq->currency,
+            'currency' => $boq->currency->value,
         ];
     }
 

@@ -132,6 +132,10 @@ return Application::configure(basePath: dirname(__DIR__))
             // Aktiver Punchout-Rücksprung (MVP-096): sessionloser Cross-Site-POST,
             // Autorisierung über die signierte HOOK_URL ('signed'-Middleware).
             'oci-carts/return',
+            // SAML-ACS (Feature 057, MVP-121): der IdP POSTet die Response
+            // cross-site ohne CSRF-Token. Schutz kommt aus der SAML-Signatur,
+            // dem InResponseTo-Abgleich (Session) und dem Replay-Cache.
+            'sso/*/saml/acs',
         ]);
 
         // Pro-Guard-Redirect fuer nicht authentifizierte Anfragen. Ohne

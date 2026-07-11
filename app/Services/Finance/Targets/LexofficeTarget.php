@@ -58,7 +58,7 @@ class LexofficeTarget implements FacturationTarget {
         $transfer->loadMissing(['items', 'customer']);
         $customer = $transfer->customer;
         $defaults = (array) $config['defaults'];
-        $currency = $customer->currency ?: (string) ($defaults['default_currency'] ?? 'EUR');
+        $currency = $customer->currency->value;
 
         $lineItems = $transfer->channel === TransferChannel::Time
             ? $this->timeLineItems($transfer, $currency, $defaults)

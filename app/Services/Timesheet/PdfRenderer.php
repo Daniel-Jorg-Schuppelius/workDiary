@@ -35,6 +35,13 @@ class PdfRenderer {
             'signaturePng' => $signaturePng,
         ])->render();
 
+        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
+        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->composeFor(
+            \App\Models\Organization::query()->withoutGlobalScopes()->find($timesheet->organization_id),
+            \App\Enums\DocumentDesign\RenderDocumentKind::Timesheet,
+            $html,
+        );
+
         return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
             ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.timesheet).');
     }

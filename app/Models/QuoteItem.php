@@ -31,7 +31,7 @@ class QuoteItem extends Model {
 
     protected $fillable = [
         'organization_id', 'quote_id', 'position', 'description',
-        'quantity', 'unit', 'unit_price', 'tax_rate', 'optional', 'accepted',
+        'quantity', 'unit', 'unit_price', 'tax_rate', 'tax_category', 'optional', 'accepted',
     ];
 
     /** @var array<string, string> */

@@ -36,7 +36,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $valuta_date
  * @property string $amount
  * @property TransactionDirection $direction
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $end_to_end_id
  * @property string|null $mandate_ref
  * @property string|null $counterparty_name
@@ -82,6 +82,7 @@ class BankTransaction extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'line_index' => 'integer',
         'booking_date' => 'date',
         'valuta_date' => 'date',

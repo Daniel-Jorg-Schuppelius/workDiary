@@ -79,7 +79,7 @@ class MatchingService {
             ->get();
 
         foreach ($invoices as $invoice) {
-            $foreignCurrency = strtoupper((string) $invoice->currency) !== strtoupper($transaction->currency);
+            $foreignCurrency = $invoice->currency !== $transaction->currency;
             $score = 0;
             $reasons = [];
 
@@ -144,7 +144,7 @@ class MatchingService {
             ->get();
 
         foreach ($expenses as $expense) {
-            $foreignCurrency = strtoupper((string) $expense->currency) !== strtoupper($transaction->currency);
+            $foreignCurrency = $expense->currency !== $transaction->currency;
             $score = 0;
             $reasons = [];
 

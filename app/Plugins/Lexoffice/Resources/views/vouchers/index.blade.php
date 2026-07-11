@@ -128,7 +128,7 @@
                     </x-status-badge>
                 </td>
                 <td class="text-right tabular-nums">
-                    {{ number_format((float) $voucher->total_amount, 2, ',', '.') }} {{ $voucher->currency }}
+                    {{ number_format((float) $voucher->total_amount, 2, ',', '.') }} {{ $voucher->currency->value }}
                 </td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">

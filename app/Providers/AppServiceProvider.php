@@ -82,6 +82,53 @@ class AppServiceProvider extends ServiceProvider {
                 },
             ));
 
+            // Bewerbungen (Feature 068, MVP-192): Löschvormerkung steht am
+            // Datensatz (retention_until); der Scan schlägt Anonymisierung
+            // vor — purge anonymisiert (Kennzahlen bleiben, PII verschwindet).
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'applications',
+                modelClass: \App\Models\Applications\JobApplication::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Applications\JobApplication::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->whereNull('anonymized_at')
+                    ->whereNotNull('retention_until')
+                    ->where('retention_until', '<=', now()->toDateString()),
+                purge: function (\App\Models\Applications\JobApplication $subject): void {
+                    $subject->interviews()->update(['notes' => null]);
+                    $subject->reviews()->update(['comment' => null]);
+                    $subject->forceFill([
+                        'candidate_name' => null,
+                        'email' => null,
+                        'phone' => null,
+                        'email_hash' => null,
+                        'notes' => null,
+                        'status' => 'deleted',
+                        'anonymized_at' => now(),
+                    ])->save();
+                },
+            ));
+
+            // Reklamationsakten (Feature 072, MVP-256): abgeschlossene Fälle
+            // nach Ablauf anonymisieren (Melder-PII), Kennzahlen bleiben.
+            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
+                area: 'claims',
+                modelClass: \App\Models\Claims\ClaimCase::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Claims\ClaimCase::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->whereNull('anonymized_at')
+                    ->whereNotNull('closed_at')
+                    ->where('closed_at', '<', $cutoff),
+                purge: function (\App\Models\Claims\ClaimCase $subject): void {
+                    $subject->forceFill([
+                        'reporter_name' => null,
+                        'reporter_email' => null,
+                        'anonymized_at' => now(),
+                    ])->save();
+                },
+            ));
+
             // Lohn-/Zeitexporte inkl. abgelegter Dateien.
             $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
                 area: 'exports',
@@ -188,6 +235,10 @@ class AppServiceProvider extends ServiceProvider {
         // damit Plugins beim Booten registrieren und der Outbox-Job auflösen kann.
         $this->app->singleton(\App\Services\Inventory\ExternalInventoryDispatcherResolver::class);
 
+        // Externe Bestandsprovider (Feature 078, MVP-319): gleiche Registry-Mechanik —
+        // Plugins registrieren ihre Provider-Factory beim Booten.
+        $this->app->singleton(\App\Services\Inventory\InventoryProviderResolver::class);
+
         // Generische Integrations-Outbox (MVP-114): gleiche Registry-Mechanik.
         $this->app->singleton(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class);
 
@@ -209,6 +260,10 @@ class AppServiceProvider extends ServiceProvider {
         // Normprofil-Registry (Feature 046): Profile aus config/isms-norms/
         // einmal pro Prozess laden + Schema validieren.
         $this->app->singleton(\App\Services\Isms\NormProfileRegistry::class);
+
+        // Crosswalk-Registry (Nachtrag NIST): Norm-Zuordnungen aus
+        // config/isms-crosswalks/ einmal pro Prozess laden + validieren.
+        $this->app->singleton(\App\Services\Isms\CrosswalkRegistry::class);
 
         // In-App-Hilfe (MVP-051): Loader liest aus resources/help/.
         $this->app->singleton(\App\Services\Help\HelpTopicLoader::class, function (): \App\Services\Help\HelpTopicLoader {
@@ -363,18 +418,18 @@ class AppServiceProvider extends ServiceProvider {
         //   ->fdate()     : reines Datum im konfigurierten Format (ohne TZ-Umrechnung)
         //   ->fdatetime() : Datum+Uhrzeit in Anzeige-Zeitzone + Format
         //   ->ftime()     : nur Uhrzeit in Anzeige-Zeitzone + Format
-        CarbonMutable::macro('orgTz', fn () => CarbonFmt::orgTz($this));
-        CarbonImmutable::macro('orgTz', fn () => CarbonFmt::orgTz($this));
-        \Illuminate\Support\Carbon::macro('orgTz', fn () => CarbonFmt::orgTz($this));
-        CarbonMutable::macro('fdate', fn () => CarbonFmt::fdate($this));
-        CarbonImmutable::macro('fdate', fn () => CarbonFmt::fdate($this));
-        \Illuminate\Support\Carbon::macro('fdate', fn () => CarbonFmt::fdate($this));
-        CarbonMutable::macro('fdatetime', fn () => CarbonFmt::fdatetime($this));
-        CarbonImmutable::macro('fdatetime', fn () => CarbonFmt::fdatetime($this));
-        \Illuminate\Support\Carbon::macro('fdatetime', fn () => CarbonFmt::fdatetime($this));
-        CarbonMutable::macro('ftime', fn () => CarbonFmt::ftime($this));
-        CarbonImmutable::macro('ftime', fn () => CarbonFmt::ftime($this));
-        \Illuminate\Support\Carbon::macro('ftime', fn () => CarbonFmt::ftime($this));
+        CarbonMutable::macro('orgTz', fn() => CarbonFmt::orgTz($this));
+        CarbonImmutable::macro('orgTz', fn() => CarbonFmt::orgTz($this));
+        \Illuminate\Support\Carbon::macro('orgTz', fn() => CarbonFmt::orgTz($this));
+        CarbonMutable::macro('fdate', fn() => CarbonFmt::fdate($this));
+        CarbonImmutable::macro('fdate', fn() => CarbonFmt::fdate($this));
+        \Illuminate\Support\Carbon::macro('fdate', fn() => CarbonFmt::fdate($this));
+        CarbonMutable::macro('fdatetime', fn() => CarbonFmt::fdatetime($this));
+        CarbonImmutable::macro('fdatetime', fn() => CarbonFmt::fdatetime($this));
+        \Illuminate\Support\Carbon::macro('fdatetime', fn() => CarbonFmt::fdatetime($this));
+        CarbonMutable::macro('ftime', fn() => CarbonFmt::ftime($this));
+        CarbonImmutable::macro('ftime', fn() => CarbonFmt::ftime($this));
+        \Illuminate\Support\Carbon::macro('ftime', fn() => CarbonFmt::ftime($this));
 
         Auth::provider('legacy', function ($app) {
             return LegacyBridge::makeAuthProvider($app['hash']);
@@ -406,6 +461,29 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Agile\AgileBoard::class, \App\Policies\Agile\AgileBoardPolicy::class);
         Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);
         Gate::policy(\App\Models\GobdExport::class, \App\Policies\GobdExportPolicy::class);
+        // Feature 068: Bewerbungs-/Ausschreibungsmodul (getrennte Rechtebereiche).
+        Gate::policy(\App\Models\Applications\ApplicationOpportunity::class, \App\Policies\Applications\ApplicationOpportunityPolicy::class);
+        Gate::policy(\App\Models\Applications\JobRequisition::class, \App\Policies\Applications\JobRequisitionPolicy::class);
+        Gate::policy(\App\Models\Applications\JobApplication::class, \App\Policies\Applications\JobApplicationPolicy::class);
+        Gate::policy(\App\Models\Applications\ApplicationContractNegotiation::class, \App\Policies\Applications\ApplicationContractNegotiationPolicy::class);
+        Gate::policy(\App\Models\Applications\EmployeeDraft::class, \App\Policies\Applications\EmployeeDraftPolicy::class);
+        // Feature 069: Investitionsplanung (eigene Finanz-Rechte).
+        Gate::policy(\App\Models\Investments\InvestmentCase::class, \App\Policies\Investments\InvestmentCasePolicy::class);
+        // Feature 070: Krisenmanagement (eigene Rechte + Stab-Notfallzugriff).
+        Gate::policy(\App\Models\Crisis\CrisisCase::class, \App\Policies\Crisis\CrisisCasePolicy::class);
+        // Feature 071: Nachhaltigkeit/ESG.
+        Gate::policy(\App\Models\Sustainability\SustainabilityAssessment::class, \App\Policies\Sustainability\SustainabilityAssessmentPolicy::class);
+        // Feature 072: Reklamation/Gewährleistung (getrennte Rollen-Rechte).
+        Gate::policy(\App\Models\Claims\ClaimCase::class, \App\Policies\Claims\ClaimCasePolicy::class);
+        // Feature 073: Geräte-/Maschinenverleih (Akte + versionierte Preislisten).
+        Gate::policy(\App\Models\Rental\RentalCase::class, \App\Policies\Rental\RentalCasePolicy::class);
+        Gate::policy(\App\Models\Rental\RentalRateCard::class, \App\Policies\Rental\RentalRateCardPolicy::class);
+        // Feature 074: Leasing/Finanzierung (vertrauliche Konditionen).
+        Gate::policy(\App\Models\AssetFinance\AssetFinanceContract::class, \App\Policies\AssetFinance\AssetFinanceContractPolicy::class);
+        // Feature 075: Prüfmittel/Eichung/Kalibrierung.
+        Gate::policy(\App\Models\AssetCompliance\AssetComplianceProfile::class, \App\Policies\AssetCompliance\AssetComplianceProfilePolicy::class);
+        // Prüftermine: update-Ability für die Einladung externer Prüfer (MVP-290).
+        Gate::policy(\App\Models\AssetCompliance\AssetInspectionSchedule::class, \App\Policies\AssetCompliance\AssetInspectionSchedulePolicy::class);
         Gate::policy(\App\Models\ServiceQueue::class, \App\Policies\ServiceQueuePolicy::class);
         Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);

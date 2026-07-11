@@ -81,12 +81,13 @@ class TimeCorrectionController extends Controller {
         $canCreateForOthers = $user->can(Permission::CorrectionCreateForOthers->value);
         $members = $canCreateForOthers
             ? User::query()
-                ->where('organization_id', $user->organization_id)
-                ->orderBy('name')
-                ->get(['id', 'name'])
+            ->where('organization_id', $user->organization_id)
+            ->orderBy('name')
+            ->get(['id', 'name'])
             : collect();
 
-        return view('time-approval.correction.create', [
+        return view('time-approval.correction._form_dialog', [
+            'isDialog' => true,
             'scopeDate' => $scopeDate,
             'canCreateForOthers' => $canCreateForOthers,
             'members' => $members,

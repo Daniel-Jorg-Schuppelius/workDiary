@@ -122,5 +122,45 @@
             </x-table>
         @endif
     </x-card>
+
+    {{-- Eingangs-/Validierungs-/Übergabe-Berichte (Feature 066, MVP-169) --}}
+    <div class="grid gap-4 lg:grid-cols-2">
+        <x-card>
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Eingangs-E-Rechnungen (im Zeitraum)') }}</h3>
+            @if (empty($einvoicing['incoming']))
+                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">move_to_inbox</span>' :title="__('Keine Eingänge im Zeitraum.')" />
+            @else
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Status') }}</th>
+                            <th class="text-right">{{ __('Anzahl') }}</th>
+                            <th class="text-right">{{ __('Brutto') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($einvoicing['incoming'] as $st => $row)
+                        <tr>
+                            <td>{{ __("values.$st") }}</td>
+                            <td class="text-right tabular-nums">{{ $row['count'] }}</td>
+                            <td class="text-right tabular-nums">{{ $eur($row['gross']) }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
+                <p class="mt-2 text-sm text-base-content/70">{{ __('An Buchhaltung übergeben: :count', ['count' => $einvoicing['incoming_transferred']]) }}</p>
+            @endif
+        </x-card>
+
+        <x-card>
+            <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Eingangs-Validierung & Mahnstufen') }}</h3>
+            <x-detail-grid>
+                <x-detail-grid.row :label="__('Validierung geprüft')">{{ $einvoicing['validation']['checked'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Validierung bestanden')">{{ $einvoicing['validation']['passed'] }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Validierung fehlgeschlagen')">{{ $einvoicing['validation']['failed'] }}</x-detail-grid.row>
+                @foreach ($einvoicing['dunning'] as $level => $count)
+                    <x-detail-grid.row :label="__('Offene Rechnungen in Mahnstufe :level', ['level' => $level])">{{ $count }}</x-detail-grid.row>
+                @endforeach
+            </x-detail-grid>
+        </x-card>
+    </div>
 </x-page-shell>
 @endsection

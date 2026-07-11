@@ -302,7 +302,7 @@ class CustomerController extends Controller {
                         $c->address_zip,
                         $c->address_city,
                         $c->country,
-                        $c->currency,
+                        $c->currency->value,
                         $c->hourly_rate,
                         $c->billable ? 'ja' : 'nein',
                         $c->archived_at?->format('Y-m-d') ?? '',

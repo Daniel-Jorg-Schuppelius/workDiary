@@ -271,7 +271,7 @@ class GdpduExportService {
                 $this->date($inv->paid_on),
                 $this->str($inv->customer->number),
                 $this->str($inv->customer->name),
-                $this->str($inv->currency),
+                $this->str($inv->currency->value),
                 $this->num($inv->subtotal, 2),
                 $this->num($inv->tax_rate, 2),
                 $this->num($inv->tax_amount, 2),

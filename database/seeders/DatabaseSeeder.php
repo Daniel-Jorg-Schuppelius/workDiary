@@ -32,6 +32,10 @@ class DatabaseSeeder extends Seeder {
         $this->call(PerDiemRateSeeder::class);
         $this->call(PerDiemForeignRateSeeder::class);
         $this->call(InvoiceMailTemplateSeeder::class);
+        $this->call(CrisisDeadlineTemplatesSeeder::class); // Feature 070 (D9): globale Meldefristen-Defaults
+        $this->call(SustainabilityDefaultsSeeder::class); // Feature 071 (D8): Faktoren-Set + VSME-1.0-Matrix
+        $this->call(TaxRulesSeeder::class); // Phase 23 (MVP-238): versionierter Steuerkatalog (DE voll, AT/CH)
+        $this->call(AssetComplianceCatalogSeeder::class); // Feature 075 (P1): Prüfprofil-Vorlagen + Normen-Referenzmatrix
 
         // Demo-/Test-Benutzer werden ausschließlich in lokalen bzw. Test-Umgebungen
         // angelegt. In Produktion würde dies sonst Faker (Dev-Dependency) benötigen

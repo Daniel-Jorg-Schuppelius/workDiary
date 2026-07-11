@@ -88,7 +88,7 @@
                         <td class="text-base-content/70">{{ $article->unit_name }}</td>
                         <td class="text-right tabular-nums">
                             @if ($article->net_unit_price !== null)
-                                {{ number_format((float) $article->net_unit_price, 2, ',', '.') }} {{ $article->currency }}
+                                {{ number_format((float) $article->net_unit_price, 2, ',', '.') }} {{ $article->currency->value }}
                             @else
                                 <span class="text-base-content/40">—</span>
                             @endif

@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $supplier_catalog_item_id
  * @property numeric-string $min_qty
  * @property numeric-string $unit_price
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  */
 class SupplierCatalogItemPriceTier extends Model {
     /** @use HasFactory<Factory<static>> */
@@ -36,6 +36,7 @@ class SupplierCatalogItemPriceTier extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'min_qty' => 'decimal:4',
         'unit_price' => 'decimal:4',
     ];

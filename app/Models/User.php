@@ -323,6 +323,8 @@ class User extends Authenticatable {
         'is_new_system' => 'boolean',
         'is_platform_admin' => 'boolean',
         'deactivated_at' => 'datetime',
+        // Break-Glass (Feature 057): bewusst NICHT fillable — nur Admin-Aktion.
+        'sso_exempt' => 'boolean',
         'payroll_hourly_wage' => 'decimal:2',
         'date_of_birth' => 'date',
         'child_allowances' => 'decimal:2',
@@ -352,6 +354,16 @@ class User extends Authenticatable {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * SSO-Kontoverknüpfungen (Feature 057, OIDC/SAML) — Identität je
+     * Verbindung ist (iss, sub) bzw. (IdP, NameID), nie die E-Mail.
+     *
+     * @return HasMany<SsoIdentity, $this>
+     */
+    public function ssoIdentities(): HasMany {
+        return $this->hasMany(SsoIdentity::class);
     }
 
     /**

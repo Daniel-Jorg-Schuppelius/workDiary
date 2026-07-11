@@ -213,6 +213,21 @@ return [
     ],
     'notification' => [
         'event' => [
+            'crisis' => [
+                'alert' => 'Crisis alert',
+            ],
+            'claim' => [
+                'escalation' => 'Claim overdue',
+            ],
+            'rental' => [
+                'returnOverdue' => 'Rental return overdue',
+            ],
+            'assetFinance' => [
+                'deadline' => 'Leasing deadline due',
+            ],
+            'assetCompliance' => [
+                'inspectionDue' => 'Inspection due/overdue',
+            ],
             'ticket' => [
                 'assigned' => 'Ticket assigned',
                 'customerReplied' => 'Customer replied',
@@ -814,6 +829,7 @@ return [
             'workdiary' => 'WorkDiary (local)',
             'lexoffice' => 'Lexoffice leads',
             'datev' => 'DATEV leads',
+            'orgamax' => 'orgaMAX leads',
         ],
         'transfer-channel' => [
             'time' => 'Services/time',
@@ -822,6 +838,7 @@ return [
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',
             'datev' => 'DATEV',
+            'orgamax' => 'orgaMAX (order)',
             'file' => 'File export',
         ],
         'transfer-status' => [

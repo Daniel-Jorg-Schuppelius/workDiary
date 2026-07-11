@@ -46,7 +46,9 @@
         </x-form-group>
 
         <x-form-group :legend="__('Darstellung')" icon="palette" tone="warning" cols="2">
-            <x-input-field name="currency" :label="__('Währung')" required maxlength="3" class="uppercase" :value="old('currency', $supplier?->currency ?? 'EUR')" />
+            <x-select-field name="currency" :label="__('Währung')" required>
+                <x-currency-options :selected="old('currency', $supplier?->currency?->value ?? 'EUR')" />
+            </x-select-field>
             <x-input-field name="timezone" :label="__('Zeitzone')" maxlength="64" placeholder="Europe/Berlin" :value="old('timezone', $supplier?->timezone)" />
             <x-input-field name="color" :label="__('Farbe')" maxlength="16" placeholder="#3b82f6" :value="old('color', $supplier?->color)" />
         </x-form-group>

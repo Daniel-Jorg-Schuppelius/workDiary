@@ -36,6 +36,9 @@ class SaveArticleRequest extends BaseFormRequest {
     ];
 
     protected function prepareForValidation(): void {
+        if ($this->filled('currency')) {
+            $this->merge(['currency' => $this->string('currency')->upper()->value()]);
+        }
         $merge = [];
         foreach (self::FLAGS as $flag) {
             $merge[$flag] = $this->boolean($flag);
@@ -66,7 +69,7 @@ class SaveArticleRequest extends BaseFormRequest {
             'status' => ['required', Rule::enum(ArticleStatus::class)],
             'default_purchase_price' => ['nullable', 'numeric', 'min:0'],
             'default_sale_price' => ['nullable', 'numeric', 'min:0'],
-            'currency' => ['nullable', 'string', 'size:3'],
+            'currency' => ['nullable', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             // Org-Bindung läuft über die Eltern-Vorlage (Versions-Tabelle
             // selbst trägt keine organization_id).
             'default_procedure_template_version_id' => [

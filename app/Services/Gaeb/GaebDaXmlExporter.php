@@ -47,12 +47,12 @@ class GaebDaXmlExporter {
 
         $prj = $dom->createElement('PrjInfo');
         $prj->appendChild($this->textElement($dom, 'NamePrj', $boq->name));
-        $prj->appendChild($dom->createElement('Cur', $boq->currency));
+        $prj->appendChild($dom->createElement('Cur', $boq->currency->value));
         $root->appendChild($prj);
 
         $award = $dom->createElement('Award');
         $award->appendChild($dom->createElement('DP', $phase->value));
-        $award->appendChild($dom->createElement('Cur', $boq->currency));
+        $award->appendChild($dom->createElement('Cur', $boq->currency->value));
 
         $boqEl = $dom->createElement('BoQ');
         if ($boq->external_id !== null) {

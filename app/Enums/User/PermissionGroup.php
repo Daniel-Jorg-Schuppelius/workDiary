@@ -48,6 +48,13 @@ enum PermissionGroup: string implements HasLabel {
     case Procedures = 'procedures';
     case Safety = 'safety';
     case CustomerPortal = 'customer-portal';
+    case Applications = 'applications';
+    case Crisis = 'crisis';
+    case Sustainability = 'sustainability';
+    case Claims = 'claims';
+    case Rental = 'rental';
+    case AssetFinance = 'asset-finance';
+    case AssetCompliance = 'asset-compliance';
     case Platform = 'platform';
 
     public function label(): string {
@@ -84,6 +91,13 @@ enum PermissionGroup: string implements HasLabel {
             self::Procedures => 'rule',
             self::Safety => 'health_and_safety',
             self::CustomerPortal => 'support_agent',
+            self::Applications => 'work_history',
+            self::Crisis => 'emergency_home',
+            self::Sustainability => 'eco',
+            self::Claims => 'assignment_return',
+            self::Rental => 'forklift',
+            self::AssetFinance => 'request_quote',
+            self::AssetCompliance => 'rule_settings',
             self::Platform => 'memory',
         };
     }

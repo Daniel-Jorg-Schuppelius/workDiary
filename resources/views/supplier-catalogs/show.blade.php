@@ -177,7 +177,7 @@
                             @endif
                         </td>
                         <td class="text-right tabular-nums">
-                            {{ $item->purchase_price !== null ? number_format((float) $item->purchase_price, 2, ',', '.') . ' ' . $item->currency : '—' }}
+                            {{ $item->purchase_price !== null ? number_format((float) $item->purchase_price, 2, ',', '.') . ' ' . $item->currency->value : '—' }}
                             @if (($item->price_tiers_count ?? 0) > 0)
                                 <div class="text-xs opacity-50">+{{ $item->price_tiers_count }} {{ __('procurement.catalog.tiers') }}</div>
                             @endif

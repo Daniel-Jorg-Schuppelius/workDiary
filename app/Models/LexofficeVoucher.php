@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $due_date
  * @property ?string $total_amount
  * @property ?string $open_amount
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $archived
  * @property ?array<string, mixed> $payload
  * @property ?Carbon $synced_at
@@ -61,6 +61,7 @@ class LexofficeVoucher extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'customer_id' => 'integer',
         'supplier_id' => 'integer',
         'voucher_date' => 'date',

@@ -48,6 +48,13 @@ class ProtocolPdfRenderer {
             'generatedAt' => Carbon::now(),
         ])->render();
 
+        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
+        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->composeFor(
+            \App\Models\Organization::query()->withoutGlobalScopes()->find($protocol->organization_id),
+            \App\Enums\DocumentDesign\RenderDocumentKind::Protocol,
+            $html,
+        );
+
         $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
             ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (protocols.pdf).');
 

@@ -80,7 +80,7 @@
                         <td>{{ $expense->vendor ?: '—' }}</td>
                         <td class="max-w-xs truncate">{{ $expense->description }}</td>
                         <td class="text-right whitespace-nowrap">
-                            {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency }}
+                            {{ number_format((float) $expense->amount_gross, 2, ',', '.') }} {{ $expense->currency->value }}
                             @if ($expense->billable)
                                 <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('weiterberechnet') }}</x-status-badge>
                             @endif

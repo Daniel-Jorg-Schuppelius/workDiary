@@ -63,6 +63,9 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanMaintenance($dispatcher, $expiringDays);
         $sent += $this->scanQualificationExpiry($dispatcher, $expiringDays);
         $sent += $this->scanPendingShiftExchanges($dispatcher);
+        $sent += $this->scanRentalReturns();
+        $sent += $this->scanAssetFinanceDeadlines();
+        $sent += $this->scanAssetInspections();
 
         $this->info(sprintf('%d Benachrichtigung(en) versendet.', $sent));
 
@@ -482,6 +485,83 @@ class ScanDeadlinesCommand extends Command {
                     $sent += $dispatcher->escalateIfDue(NotificationEvent::AssetReturnOverdue, $assignment, $payload);
                 }
             });
+
+        return $sent;
+    }
+
+    /**
+     * Überfällige Verleih-Rückgaben (Feature 073, MVP-264): Statuswechsel
+     * auf overdue + idempotente Benachrichtigung/Eskalation laufen im
+     * RentalCaseService je Organisation (Nummernkreis-/Audit-Kontext).
+     */
+    private function scanRentalReturns(): int {
+        $service = app(\App\Services\Rental\RentalCaseService::class);
+        $sent = 0;
+
+        $organizationIds = \App\Models\Rental\RentalCase::query()
+            ->withoutGlobalScopes()
+            ->whereIn('status', [
+                \App\Enums\Rental\RentalCaseStatus::HandedOver->value,
+                \App\Enums\Rental\RentalCaseStatus::Overdue->value,
+            ])
+            ->distinct()
+            ->pluck('organization_id');
+
+        foreach ($organizationIds as $organizationId) {
+            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
+            if ($organization !== null) {
+                $sent += $service->escalateOverdue($organization);
+            }
+        }
+
+        return $sent;
+    }
+
+    /**
+     * Leasing-/Vertragsfristen (Feature 074, MVP-273/278): Warnung ab
+     * Vorwarnzeit + Eskalation; Logik im AssetFinanceService je Organisation.
+     */
+    private function scanAssetFinanceDeadlines(): int {
+        $service = app(\App\Services\AssetFinance\AssetFinanceService::class);
+        $sent = 0;
+
+        $organizationIds = \App\Models\AssetFinance\AssetFinanceDeadline::query()
+            ->withoutGlobalScopes()
+            ->where('status', 'open')
+            ->distinct()
+            ->pluck('organization_id');
+
+        foreach ($organizationIds as $organizationId) {
+            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
+            if ($organization !== null) {
+                $sent += $service->scanDeadlines($organization);
+            }
+        }
+
+        return $sent;
+    }
+
+    /**
+     * Prüfpflichten (Feature 075, MVP-285/288): Warnung ab Vorwarnzeit,
+     * Einsatzsperren gemäß blocking_mode über das gemeinsame Modell (D12);
+     * Logik im AssetComplianceService je Organisation.
+     */
+    private function scanAssetInspections(): int {
+        $service = app(\App\Services\AssetCompliance\AssetComplianceService::class);
+        $sent = 0;
+
+        $organizationIds = \App\Models\AssetCompliance\AssetComplianceAssignment::query()
+            ->withoutGlobalScopes()
+            ->where('is_active', true)
+            ->distinct()
+            ->pluck('organization_id');
+
+        foreach ($organizationIds as $organizationId) {
+            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
+            if ($organization !== null) {
+                $sent += $service->scanAssignments($organization);
+            }
+        }
 
         return $sent;
     }

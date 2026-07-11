@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $external_id
  * @property string|null $gaeb_version
  * @property GaebPhase|null $phase
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property BoqItemStatus $status
  */
 class BillOfQuantity extends Model {
@@ -52,6 +52,7 @@ class BillOfQuantity extends Model {
     ];
 
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'phase' => GaebPhase::class,
         'status' => BoqItemStatus::class,
     ];

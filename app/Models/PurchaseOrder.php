@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $supplier_id
  * @property int $warehouse_id
  * @property PurchaseOrderStatus $status
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  */
 class PurchaseOrder extends Model {
     use Auditable;
@@ -49,6 +49,7 @@ class PurchaseOrder extends Model {
     ];
 
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'status' => PurchaseOrderStatus::class,
         'freight_cost' => 'decimal:4',
         'ordered_at' => 'datetime',

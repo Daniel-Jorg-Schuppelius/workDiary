@@ -94,6 +94,6 @@ final class TaxResolverTest extends TestCase {
         $this->assertFalse($tax['reverse_charge']);
         $this->assertNotNull($tax['note']);
         // Belegwährung bleibt Kundenwährung (keine Kursumrechnung).
-        $this->assertSame('CHF', $customer->currency);
+        $this->assertSame('CHF', $customer->currency->value);
     }
 }

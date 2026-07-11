@@ -52,8 +52,17 @@
     </div>
 @endif
 
+@php
+    /** @var \App\Services\DocumentDesign\DesignContext $design Feature 076: Blockzustände + Fensterpositionen. */
+    $design ??= new \App\Services\DocumentDesign\DesignContext(null);
+    $addressStyle = $design->addressWindowStyle();
+    $senderStyle = $design->senderLineStyle();
+@endphp
+@if ($design->show(\App\Enums\DocumentDesign\InformationBlock::SenderLine) && $senderStyle !== null && $invoice->organization !== null)
+    <div style="{{ $senderStyle }}">{{ ($orgLegal['account_holder'] ?? null) ?: $invoice->organization->name }}</div>
+@endif
 <div class="header">
-    <div class="left">
+    <div class="left"@if ($addressStyle !== null) style="{{ $addressStyle }}"@endif>
         <strong>{{ $invoice->customer->name }}</strong><br>
         @if ($invoice->customer->company){{ $invoice->customer->company }}<br>@endif
         {{ $invoice->customer->address_street }}<br>
@@ -72,6 +81,13 @@
         @endif
     </div>
 </div>
+
+@if ($invoice->isProforma())
+    {{-- Unübersehbare Kennzeichnung (MVP-171): kein gesonderter Steuerausweis-Anschein --}}
+    <p style="margin: 12px 0; padding: 6px 8px; border: 1px solid #b45309; color: #92400e; font-weight: bold;">
+        {{ __('Pro-forma-Rechnung — keine Rechnung im umsatzsteuerlichen Sinn. Kein Vorsteuerabzug möglich.') }}
+    </p>
+@endif
 
 @php $showServiceDates = $invoice->hasServicePeriod(); @endphp
 
@@ -94,8 +110,8 @@
             @if ($showServiceDates)<td>{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
             {{-- 3./4. NK nur zeigen, wenn signifikant: die Rechnung muss aus Menge × Preis nachrechenbar sein --}}
             <td class="num">{{ number_format((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, ',', '.') }} {{ $item->unit }}</td>
-            <td class="num">{{ number_format((float) $item->unit_price, ((int) round((float) $item->unit_price * 10000)) % 100 !== 0 ? 4 : 2, ',', '.') }} {{ $invoice->currency }}</td>
-            <td class="num">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>
+            <td class="num">{{ number_format((float) $item->unit_price, ((int) round((float) $item->unit_price * 10000)) % 100 !== 0 ? 4 : 2, ',', '.') }} {{ $invoice->currency->value }}</td>
+            <td class="num">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency->value }}</td>
         </tr>
     @endforeach
     </tbody>
@@ -108,18 +124,30 @@
         $fmtRate = fn($rate) => rtrim(rtrim(number_format((float) $rate, 2, '.', ''), '0'), '.');
     @endphp
     <tfoot>
-        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
         @if ($taxRows->count() > 1)
             @foreach ($taxRows as $row)
-                <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ number_format((float) $row['net'], 2, ',', '.') }} {{ $invoice->currency }})</td><td class="num">{{ number_format((float) $row['tax'], 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+                <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ number_format((float) $row['net'], 2, ',', '.') }} {{ $invoice->currency->value }})</td><td class="num">{{ number_format((float) $row['tax'], 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
             @endforeach
         @else
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($invoice->tax_rate) }}%</td><td class="num">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($invoice->tax_rate) }}%</td><td class="num">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
         @endif
         @if ($invoice->is_reverse_charge)
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
         @endif
-        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+        @php
+            // § 19 UStG (MVP-163, Restpaket): Fußtext auf dem PDF, wenn die
+            // Kleinunternehmer-Regelung greift (0 %, kein RC) — auch bei
+            // manuell angelegten Belegen ohne TaxResolver-Notiz.
+            $smallBusiness = (string) data_get((array) ($invoice->organization?->settings ?? []), 'einvoice.small_business', '0') === '1'
+                && ! $invoice->is_reverse_charge
+                && (float) $invoice->tax_rate === 0.0
+                && ! str_contains((string) $invoice->notes, '§ 19');
+        @endphp
+        @if ($smallBusiness)
+            <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).') }}</td></tr>
+        @endif
+        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
     </tfoot>
 </table>
 
@@ -131,7 +159,8 @@
     $legal = $orgLegal ?? [];
     $hasOrgBank = ! empty($legal['iban']) || ! empty($legal['bic']) || ! empty($legal['bank_name']);
 @endphp
-@if ($hasOrgBank && ! $invoice->isCreditNote())
+{{-- Feature 076: Bankblock nur, wenn nicht nachweislich auf dem Firmenbogen (MVP-298). --}}
+@if ($hasOrgBank && ! $invoice->isCreditNote() && $design->show(\App\Enums\DocumentDesign\InformationBlock::BankDetails))
     <div class="bank-block">
         <strong>{{ __('Zahlbar per Überweisung auf folgendes Konto') }}:</strong>
         <table>

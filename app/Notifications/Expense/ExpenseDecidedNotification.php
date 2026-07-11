@@ -38,7 +38,7 @@ class ExpenseDecidedNotification extends Notification {
     }
 
     public function toMail(object $notifiable): MailMessage {
-        $amount = number_format((float) $this->expense->amount_gross, 2, ',', '.') . ' ' . $this->expense->currency;
+        $amount = number_format((float) $this->expense->amount_gross, 2, ',', '.') . ' ' . $this->expense->currency->value;
         $status = $this->expense->status->label();
 
         $mail = (new MailMessage)
@@ -60,7 +60,7 @@ class ExpenseDecidedNotification extends Notification {
             'expense_id' => $this->expense->getKey(),
             'status' => $this->expense->status->value,
             'amount_gross' => $this->expense->amount_gross,
-            'currency' => $this->expense->currency,
+            'currency' => $this->expense->currency->value,
             'description' => $this->expense->description,
             'reject_reason' => $this->expense->reject_reason,
             'url' => route('expenses.index'),

@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\{SsoConnection, User};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, RateLimiter};
 use Illuminate\View\View;
@@ -42,9 +42,18 @@ class LoginController extends Controller {
             ])->onlyInput('username');
         }
 
+        // SSO-Pflicht (Feature 057): statt eines nichtssagenden Fehlschlags
+        // direkt zum SSO-Start der Organisation umleiten. Die harte Sperre
+        // sitzt zusätzlich serverseitig im LegacyUserProvider.
+        $ssoRedirect = $this->ssoEnforcedRedirect($credentials['username']);
+        if ($ssoRedirect !== null) {
+            return $ssoRedirect;
+        }
+
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->boolean('remember'))) {
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
+            $this->auditBreakGlassIfApplicable();
 
             $this->syncLegacyUserIdIfMissing((string) $credentials['username']);
 
@@ -81,11 +90,73 @@ class LoginController extends Controller {
     }
 
     public function logout(Request $request): RedirectResponse {
+        // OIDC-RP-initiated Logout (Feature 057): end_session-Daten VOR dem
+        // Invalidieren der Session sichern.
+        /** @var array{end_session_endpoint?: string, id_token?: string} $ssoLogout */
+        $ssoLogout = (array) $request->session()->get('sso.logout', []);
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        $endSession = (string) ($ssoLogout['end_session_endpoint'] ?? '');
+        if ($endSession !== '') {
+            $params = array_filter([
+                'id_token_hint' => (string) ($ssoLogout['id_token'] ?? ''),
+                'post_logout_redirect_uri' => route('home'),
+            ]);
+
+            return redirect()->away($endSession . (str_contains($endSession, '?') ? '&' : '?') . http_build_query($params));
+        }
+
         return redirect()->route('home');
+    }
+
+    /**
+     * Erzwingt eine Organisation SSO und ist das Konto kein Break-Glass-Konto,
+     * wird der Passwort-Login gar nicht erst versucht, sondern zum SSO-Start
+     * umgeleitet. Lookup wie im Provider: Legacy-Name ODER E-Mail.
+     */
+    private function ssoEnforcedRedirect(string $username): ?RedirectResponse {
+        $user = User::query()
+            ->withoutGlobalScopes()
+            ->whereNull('customer_id')
+            ->where(fn ($query) => $query->where('name', $username)->orWhere('email', $username))
+            ->first();
+
+        if (
+            ! $user instanceof User
+            || $user->sso_exempt
+            || ! SsoConnection::enforcementActiveFor($user->organization_id)
+        ) {
+            return null;
+        }
+
+        $slug = $user->organization()->withoutGlobalScopes()->value('slug');
+
+        return is_string($slug) && $slug !== ''
+            ? redirect()->route('sso.start', ['slug' => $slug])
+            : null;
+    }
+
+    /**
+     * Break-Glass-Nachweis: erfolgreicher Passwort-Login eines sso_exempt-
+     * Kontos bei aktiver SSO-Pflicht wird auditiert (DoD MVP-120).
+     */
+    private function auditBreakGlassIfApplicable(): void {
+        $user = Auth::user();
+        if (! $user instanceof User || ! $user->sso_exempt) {
+            return;
+        }
+
+        $connection = SsoConnection::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $user->organization_id)
+            ->where('active', true)
+            ->where('enforced', true)
+            ->first();
+
+        $connection?->audit('sso.break_glass_used', ['user_id' => $user->id]);
     }
 
     private function syncLegacyUserIdIfMissing(string $submittedUsername): void {

@@ -48,8 +48,15 @@ return [
             'module.knowledge',
             'module.forms',
             'module.theming',
+            'module.dokumentdesign',
             'module.standorterfassung',
             'module.ideas',
+            'module.applications',
+            'module.investments',
+            'module.sustainability',
+            'module.claims',
+            'module.rental',
+            'module.asset_compliance',
         ],
         'enterprise' => [
             'module.kanban',
@@ -68,6 +75,7 @@ return [
             'module.knowledge',
             'module.forms',
             'module.theming',
+            'module.dokumentdesign',
             'module.lohn',
             'module.compliance',
             'module.isms',
@@ -77,6 +85,14 @@ return [
             'module.versand',
             'module.standorterfassung',
             'module.ideas',
+            'module.applications',
+            'module.investments',
+            'module.crisis_management',
+            'module.sustainability',
+            'module.claims',
+            'module.rental',
+            'module.asset_finance',
+            'module.asset_compliance',
             'protocols.signed',
             'module.sso',
         ],
@@ -85,6 +101,15 @@ return [
     // Menschlich lesbare Labels (Upsell-Seite, Tooltips).
     'labels' => [
         'module.kanban' => 'Kanban',
+        'module.dokumentdesign' => 'PDF-Dokumentdesign & Firmenbogen',
+        'module.applications' => 'Bewerbungen & Ausschreibungen',
+        'module.investments' => 'Investitionsplanung',
+        'module.crisis_management' => 'Notfall- & Krisenmanagement',
+        'module.sustainability' => 'Nachhaltigkeit & ESG',
+        'module.claims' => 'Reklamation & Gewährleistung',
+        'module.rental' => 'Geräte- & Maschinenverleih',
+        'module.asset_finance' => 'Leasing & Asset-Verträge',
+        'module.asset_compliance' => 'Prüfmittel & Kalibrierung',
         'module.agile_projects' => 'Agiles Projektmanagement',
         'module.helpdesk' => 'Helpdesk',
         'module.service_desk' => 'Service Desk (ITSM)',
@@ -116,6 +141,14 @@ return [
     // Nur Module mit Beschreibung gelten als konfigurierbarer Katalogeintrag.
     'descriptions' => [
         'module.kanban' => 'Aufgaben als Kanban-Board organisieren.',
+        'module.applications' => 'Auftragsbewerbungen/Ausschreibungsakten und Personalbewerbungen mit Vertragsverhandlung.',
+        'module.investments' => 'Investitionsakten mit Varianten, Budgetantrag, Freigabekette und Soll-Ist-Verfolgung.',
+        'module.crisis_management' => 'Krisenakten mit Lagebild, Krisenstab, Alarmierung, Maßnahmen, Kommunikation und Übungen.',
+        'module.sustainability' => 'ESG-Bewertungen, Aktivitätsdaten mit CO₂e-Faktoren, Maßnahmen, Ziele und VSME-Berichtsvorbereitung.',
+        'module.claims' => 'Reklamationsakten mit Bewertung, Entscheidung, RMA-Rückläufern, Maßnahmen, kaufmännischen Folgen und Lieferantenregress.',
+        'module.rental' => 'Verleihakten mit Verfügbarkeitskalender, Reservierung, Übergabe-/Rücknahmeprotokollen, Kaution und Faktura-Übergabe.',
+        'module.asset_finance' => 'Leasing- und Finanzierungsakten mit Konditionen-Snapshot, Fristenkalender, Nutzungslimits und Soll-Ist-Sicht.',
+        'module.asset_compliance' => 'Prüfprofile, Prüfpflichten, Prüfprotokolle, Kalibrierzertifikate und Einsatzsperren für prüfpflichtige Assets.',
         'module.agile_projects' => 'Produkt-Backlog, Projektboards (Kanban/Scrum), Sprints und agile Berichte je Projekt.',
         'module.helpdesk' => 'Tickets mit Queues, Konversation, SLA und Omnichannel-Eingang.',
         'module.service_desk' => 'Servicekatalog, Requests mit Genehmigungen, Incident/Problem/Change (setzt Helpdesk voraus).',
@@ -131,6 +164,7 @@ return [
         'module.knowledge' => 'Wissensbasis und Problemhistorie.',
         'module.forms' => 'Formular- und Vorlagensystem.',
         'module.theming' => 'Eigene Themes und Branding gestalten.',
+        'module.dokumentdesign' => 'Firmenbogen, Druckbereiche, Informationsblöcke und Tabellenstil-Presets für erzeugte PDF-Dokumente.',
         'module.lohn' => 'Lohnzuschläge und Lohnexport.',
         'module.compliance' => 'Hinweisgebersystem (HinSchG).',
         'module.isms' => 'Informationssicherheits-Managementsystem (ISO 27001).',
@@ -140,7 +174,7 @@ return [
         'module.versand' => 'Versandlabels erzeugen und Sendungen verfolgen (DHL Paket u. a.).',
         'module.standorterfassung' => 'Standortbasierte Zeiterfassung über Geofences (OwnTracks/Traccar).',
         'module.ideas' => 'Private und gemeinsame Ideenlandkarten (Mindmaps) mit Überführung in Aufgaben, Projekte und Wissen.',
-        'module.sso' => 'Single-Sign-on und Verzeichnisdienste (SCIM-Provisionierung, OIDC).',
+        'module.sso' => 'Single-Sign-on und Verzeichnisdienste (SCIM-Provisionierung, OIDC-SSO, SAML 2.0).',
     ],
 
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
@@ -149,6 +183,8 @@ return [
     // (reports.my-*, reports.work-balance, reports.attendance) bleiben Core.
     'routes' => [
         'admin.sso.*' => 'module.sso', // Feature 057 SSO/SCIM-Admin (Token-Verwaltung)
+        'admin.document-design.*' => 'module.dokumentdesign', // Feature 076 PDF-Dokumentdesign/Firmenbogen
+        'admin.orgamax.*' => 'module.finance', // Feature 077 orgaMAX-Buchhaltung-Plugin
         'kanban.*' => 'module.kanban',
         'agile.*' => 'module.agile_projects', // Feature 064 — eigenes Präfix (projects.* ist auf module.vertrieb gemappt!)
         // Feature 065: Tickets waren Core — module.helpdesk ist in pro UND
@@ -184,16 +220,28 @@ return [
         'supplier-catalogs.*' => 'module.lager', // Feature 050 Lieferantenkataloge
         'pricing-margin-rules.*' => 'module.lager', // Feature 050 Margenregeln
         'oci-carts.*' => 'module.lager', // Feature 050 OCI-Warenkorb
+        'admin.jtl.*' => 'module.lager', // Feature 078 JTL-Wawi-Plugin (externe Bestandsführung)
 
         'bill-of-quantities.*' => 'module.bau', // Feature 049 GAEB-Leistungsverzeichnisse
         'gaeb.*' => 'module.bau',               // Feature 049 GAEB-Import/-Export
 
         'admin.shipments.*' => 'module.versand', // Feature 059 Versand-/Logistik-Anbindung (DHL Paket)
 
+        'tenders.*' => 'module.applications', // Feature 068 Auftragsbewerbungen
+        'recruiting.*' => 'module.applications', // Feature 068 Personalbewerbungen
+        'applications.*' => 'module.applications', // Feature 068 Vertragsverhandlungen/Berichte
+        'investments.*' => 'module.investments', // Feature 069 Investitionsplanung
+        'crisis.*' => 'module.crisis_management', // Feature 070 Notfall-/Krisenmanagement
+        'sustainability.*' => 'module.sustainability', // Feature 071 Nachhaltigkeit/ESG
+        'claims.*' => 'module.claims', // Feature 072 Reklamation/Gewährleistung/Rückläufer
+        'rental.*' => 'module.rental', // Feature 073 Geräte-/Maschinenverleih
+        'asset-finance.*' => 'module.asset_finance', // Feature 074 Leasing/Finanzierung/Asset-Verträge
+        'asset-compliance.*' => 'module.asset_compliance', // Feature 075 Prüfmittel/Eichung/Kalibrierung
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',
         'projects.*' => 'module.vertrieb',
         'invoices.*' => 'module.vertrieb',
+        'quotes.*' => 'module.vertrieb', // Angebote (Feature 066, MVP-170) — Portal-Annahme läuft token-basiert außerhalb
         'lexoffice.*' => 'module.vertrieb',
         'events.*' => 'module.vertrieb',
         'event-categories.*' => 'module.vertrieb',
@@ -266,7 +314,15 @@ return [
         'module.kanban' => true,
         'module.planung' => false,          // Stundenzettel/Arbeitszeit → ArbZG
         'module.spesen' => false,           // Belege → GoBD
-        'module.vertrieb' => false,         // Rechnungen → GoBD / §147 AO (10 J.)
+        'module.vertrieb' => false,
+        'module.applications' => false,     // Bewerber-/Vergabedaten → AGG-/Nachweisfristen, nie auto-löschen
+        'module.investments' => false,      // Freigabe-/Budget-Nachweise → Aufbewahrung
+        'module.crisis_management' => false, // Krisen-/Meldenachweise → Aufbewahrung
+        'module.sustainability' => false,   // Bewertungs-/Berichtsnachweise → Aufbewahrung         // Rechnungen → GoBD / §147 AO (10 J.)
+        'module.claims' => false,           // Reklamations-/Gewährleistungsnachweise → Aufbewahrung
+        'module.rental' => false,           // Übergabe-/Rücknahme-/Abrechnungsnachweise → Aufbewahrung
+        'module.asset_finance' => false,    // Vertrags-/Fristen-/Kostennachweise → Aufbewahrung
+        'module.asset_compliance' => false, // Prüfprotokolle/Zertifikate → unveränderbare Nachweise
         'module.fuhrpark' => true,
         'module.liegenschaften' => true,
         'module.auswertungen_team' => true, // nur Auswertungen, keine Primaerdaten

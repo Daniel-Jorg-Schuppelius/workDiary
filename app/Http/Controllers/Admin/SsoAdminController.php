@@ -10,25 +10,35 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Auth\SsoProtocol;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, ScimGroup, ScimToken, Team, User};
+use App\Models\{Organization, ScimGroup, ScimToken, SsoConnection, Team, User};
+use App\Services\Auth\Sso\{OidcClient, SamlClient, SsoLoginException};
 use App\Services\Scim\ScimGroupService;
 use App\Services\SqidEncoder;
+use App\Support\UrlSafety;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * Admin-Verwaltung der SSO-/Verzeichnisdienst-Anbindung (Feature 057, MVP-121):
- * SCIM-Bearer-Token je Organisation ausstellen und widerrufen. Der Klartext wird
- * genau einmal nach der Ausstellung angezeigt (danach nur noch der Hash). Der
- * Endpunkt-Zugang ist Enterprise-gegatet (config/plans.php: `module.sso`).
+ * Admin-Verwaltung der SSO-/Verzeichnisdienst-Anbindung (Feature 057):
+ * SCIM-Bearer-Token je Organisation (MVP-121), OIDC-/SAML-Verbindungen
+ * (MVP-120/121) und Break-Glass-Konten. Secrets werden encrypted at-rest
+ * gespeichert und nie wieder angezeigt. Der Endpunkt-Zugang ist
+ * Enterprise-gegatet (config/plans.php: `module.sso`).
  */
 class SsoAdminController extends Controller {
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
+
+        $connections = SsoConnection::query()
+            ->where('organization_id', $organization->id)
+            ->get()
+            ->keyBy(fn (SsoConnection $connection) => $connection->protocol->value);
 
         return view('admin.sso.index', [
             'tokens' => ScimToken::query()
@@ -45,7 +55,211 @@ class SsoAdminController extends Controller {
                 ->get(),
             'scimBaseUrl' => url('/scim/v2'),
             'issuedToken' => session('scim_issued_token'),
+            'oidcConnection' => $connections->get(SsoProtocol::Oidc->value),
+            'samlConnection' => $connections->get(SsoProtocol::Saml->value),
+            'ssoStartUrl' => route('sso.start', ['slug' => $organization->slug]),
+            'oidcCallbackUrl' => route('sso.oidc.callback'),
+            'samlAcsUrl' => route('sso.saml.acs', ['slug' => $organization->slug]),
+            'samlMetadataUrl' => route('sso.saml.metadata', ['slug' => $organization->slug]),
+            'breakGlassUsers' => User::query()
+                ->where('organization_id', $organization->id)
+                ->whereNull('customer_id')
+                ->where('sso_exempt', true)
+                ->orderBy('name')
+                ->get(),
+            'eligibleUsers' => User::query()
+                ->where('organization_id', $organization->id)
+                ->whereNull('customer_id')
+                ->whereNull('deactivated_at')
+                ->orderBy('name')
+                ->get(),
         ]);
+    }
+
+    /**
+     * Legt die OIDC- bzw. SAML-Verbindung der Organisation an oder
+     * aktualisiert sie (eine je Protokoll). Ein leeres Secret-Feld behält das
+     * gespeicherte Secret; gespeichert wird nie ein Leerstring (encrypted).
+     */
+    public function saveConnection(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'protocol' => ['required', Rule::in([SsoProtocol::Oidc->value, SsoProtocol::Saml->value])],
+            'label' => ['required', 'string', 'max:120'],
+            'active' => ['sometimes', 'boolean'],
+            'enforced' => ['sometimes', 'boolean'],
+            'allow_email_link' => ['sometimes', 'boolean'],
+            'allow_private_network' => ['sometimes', 'boolean'],
+            'issuer' => ['nullable', 'string', 'max:500', 'url'],
+            'client_id' => ['nullable', 'string', 'max:255'],
+            'client_secret' => ['nullable', 'string', 'max:2000'],
+            'scopes' => ['nullable', 'string', 'max:255'],
+            'idp_entity_id' => ['nullable', 'string', 'max:500'],
+            'idp_sso_url' => ['nullable', 'string', 'max:500', 'url'],
+            'idp_certificate' => ['nullable', 'string', 'max:10000'],
+            'idp_certificate_next' => ['nullable', 'string', 'max:10000'],
+        ]);
+
+        $protocol = SsoProtocol::from((string) $data['protocol']);
+        $allowPrivate = $request->boolean('allow_private_network');
+
+        $errors = $this->validateProtocolFields($protocol, $data, $allowPrivate);
+        if ($errors !== []) {
+            return back()->withErrors($errors)->withInput();
+        }
+
+        $connection = SsoConnection::query()
+            ->where('organization_id', $organization->id)
+            ->where('protocol', $protocol->value)
+            ->first();
+
+        $attributes = [
+            'label' => (string) $data['label'],
+            'active' => $request->boolean('active'),
+            'enforced' => $request->boolean('enforced'),
+            'allow_email_link' => $request->boolean('allow_email_link'),
+            'allow_private_network' => $allowPrivate,
+            'issuer' => $protocol === SsoProtocol::Oidc ? (($data['issuer'] ?? null) ?: null) : null,
+            'client_id' => $protocol === SsoProtocol::Oidc ? (($data['client_id'] ?? null) ?: null) : null,
+            'scopes' => $protocol === SsoProtocol::Oidc ? (($data['scopes'] ?? null) ?: null) : null,
+            'idp_entity_id' => $protocol === SsoProtocol::Saml ? (($data['idp_entity_id'] ?? null) ?: null) : null,
+            'idp_sso_url' => $protocol === SsoProtocol::Saml ? (($data['idp_sso_url'] ?? null) ?: null) : null,
+            'idp_certificate' => $protocol === SsoProtocol::Saml ? (($data['idp_certificate'] ?? null) ?: null) : null,
+            'idp_certificate_next' => $protocol === SsoProtocol::Saml ? (($data['idp_certificate_next'] ?? null) ?: null) : null,
+        ];
+
+        // Leeres Secret-Feld = gespeichertes Secret unangetastet lassen;
+        // nie '' persistieren (encrypted-Cast, „payload invalid"-Falle).
+        $secret = trim((string) ($data['client_secret'] ?? ''));
+        if ($protocol === SsoProtocol::Oidc && $secret !== '') {
+            $attributes['client_secret'] = $secret;
+        }
+        if ($protocol === SsoProtocol::Saml) {
+            $attributes['client_secret'] = null;
+        }
+
+        if ($connection instanceof SsoConnection) {
+            $connection->fill($attributes)->save();
+        } else {
+            $connection = SsoConnection::query()->create($attributes + [
+                'organization_id' => $organization->id,
+                'protocol' => $protocol->value,
+                'created_by' => $admin->id,
+            ]);
+        }
+
+        return back()->with('success', __('sso.flash.connection_saved', ['protocol' => $connection->protocol->label()]));
+    }
+
+    /** Konfigurationstest: OIDC-Discovery abrufen bzw. SAML-Settings/Zertifikat prüfen. */
+    public function testConnection(string $connection): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+        $model = $this->connectionOf($organization, $connection);
+
+        try {
+            if ($model->isOidc()) {
+                app(OidcClient::class)->discovery($model);
+            } else {
+                app(SamlClient::class)->assertConfigured($model);
+            }
+        } catch (SsoLoginException $e) {
+            return back()->withErrors(['connection_test' => $e->getMessage()]);
+        }
+
+        $model->audit('sso.connection_tested', ['by_user_id' => (int) $admin->id]);
+
+        return back()->with('success', __('sso.flash.connection_ok', ['protocol' => $model->protocol->label()]));
+    }
+
+    /** Entfernt eine Verbindung samt Kontoverknüpfungen (Cascade, auditiert). */
+    public function destroyConnection(string $connection): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+        $model = $this->connectionOf($organization, $connection);
+
+        $model->audit('sso.connection_removed', ['by_user_id' => (int) $admin->id, 'label' => $model->label]);
+        $model->delete();
+
+        return back()->with('success', __('sso.flash.connection_removed'));
+    }
+
+    /**
+     * Break-Glass-Konto setzen/entziehen: darf sich trotz SSO-Pflicht weiter
+     * lokal anmelden (nicht föderiertes Notfallkonto, DoD MVP-120). Bewusst
+     * nicht fillable — nur über diese auditierte Admin-Aktion.
+     */
+    public function toggleBreakGlass(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $decoded = app(SqidEncoder::class)->decode(User::class, (string) $request->input('user', ''));
+        $user = $decoded !== null
+            ? User::query()
+                ->whereKey($decoded)
+                ->where('organization_id', $organization->id)
+                ->whereNull('customer_id')
+                ->first()
+            : null;
+        abort_unless($user instanceof User, 404);
+
+        $user->forceFill(['sso_exempt' => ! $user->sso_exempt])->save();
+        $user->audit('sso.break_glass_changed', [
+            'by_user_id' => (int) $admin->id,
+            'sso_exempt' => $user->sso_exempt,
+        ]);
+
+        return back()->with('success', __($user->sso_exempt ? 'sso.flash.break_glass_added' : 'sso.flash.break_glass_removed'));
+    }
+
+    /**
+     * Protokollspezifische Pflichtfelder + SSRF-Leitplanke: ohne
+     * `allow_private_network` müssen IdP-URLs öffentlich routbar sein
+     * (UrlSafety, Muster JTL-Plugin).
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, string>
+     */
+    private function validateProtocolFields(SsoProtocol $protocol, array $data, bool $allowPrivate): array {
+        $errors = [];
+
+        if ($protocol === SsoProtocol::Oidc) {
+            foreach (['issuer', 'client_id'] as $field) {
+                if (! filled($data[$field] ?? null)) {
+                    $errors[$field] = __('validation.required', ['attribute' => $field]);
+                }
+            }
+            $issuer = (string) ($data['issuer'] ?? '');
+            // Konfigurationszeit-Prüfung ohne DNS (nicht blockierend); die
+            // DNS-Rebinding-sichere Laufzeitprüfung sitzt im OidcClient.
+            if ($issuer !== '' && ! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($issuer)) {
+                $errors['issuer'] = __('sso.error.url_not_public');
+            }
+        } else {
+            foreach (['idp_entity_id', 'idp_sso_url', 'idp_certificate'] as $field) {
+                if (! filled($data[$field] ?? null)) {
+                    $errors[$field] = __('validation.required', ['attribute' => $field]);
+                }
+            }
+            $ssoUrl = (string) ($data['idp_sso_url'] ?? '');
+            if ($ssoUrl !== '' && ! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($ssoUrl)) {
+                $errors['idp_sso_url'] = __('sso.error.url_not_public');
+            }
+        }
+
+        return $errors;
+    }
+
+    private function connectionOf(Organization $organization, string $sqid): SsoConnection {
+        $decoded = app(SqidEncoder::class)->decode(SsoConnection::class, $sqid);
+        $model = $decoded !== null
+            ? SsoConnection::query()->whereKey($decoded)->where('organization_id', $organization->id)->first()
+            : null;
+        abort_unless($model instanceof SsoConnection, 404);
+
+        return $model;
     }
 
     /** Stellt ein neues SCIM-Token aus; der Klartext wird einmalig geflasht. */

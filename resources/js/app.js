@@ -7,6 +7,7 @@ import Alpine from "alpinejs";
 import { registerAlpineComponents } from "./alpine/components.js";
 import { registerIdeaEditor } from "./idea-editor.js";
 import { registerIdeaCanvas } from "./idea-canvas.js";
+import { registerDesignEditor } from "./design-editor.js";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { German } from "flatpickr/dist/l10n/de.js";
@@ -36,6 +37,7 @@ window.Alpine = Alpine;
 registerAlpineComponents(Alpine);
 registerIdeaEditor(Alpine);
 registerIdeaCanvas(Alpine);
+registerDesignEditor(Alpine);
 Alpine.start();
 
 const htmlLang = (document.documentElement.lang || "de").toLowerCase();

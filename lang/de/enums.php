@@ -213,6 +213,21 @@ return [
     ],
     'notification' => [
         'event' => [
+            'crisis' => [
+                'alert' => 'Krisenalarm',
+            ],
+            'claim' => [
+                'escalation' => 'Reklamation überfällig',
+            ],
+            'rental' => [
+                'returnOverdue' => 'Verleih-Rückgabe überfällig',
+            ],
+            'assetFinance' => [
+                'deadline' => 'Leasingfrist fällig',
+            ],
+            'assetCompliance' => [
+                'inspectionDue' => 'Prüfung fällig/überfällig',
+            ],
             'ticket' => [
                 'assigned' => 'Ticket zugewiesen',
                 'customerReplied' => 'Kunde hat geantwortet',
@@ -814,6 +829,7 @@ return [
             'workdiary' => 'WorkDiary (lokal)',
             'lexoffice' => 'Lexoffice führt',
             'datev' => 'DATEV führt',
+            'orgamax' => 'orgaMAX führt',
         ],
         'transfer-channel' => [
             'time' => 'Leistungen/Zeit',
@@ -822,6 +838,7 @@ return [
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',
             'datev' => 'DATEV',
+            'orgamax' => 'orgaMAX (Auftrag)',
             'file' => 'Datei-Export',
         ],
         'transfer-status' => [

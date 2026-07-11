@@ -42,7 +42,9 @@
     <x-input-field name="amount_gross" type="number" :label="__('Brutto')" required step="0.01" min="0" data-expense-gross :value="old('amount_gross', $expense?->amount_gross)" />
     <x-input-field name="tax_rate" type="number" :label="__('Steuersatz (%)')" step="0.01" min="0" max="100" data-expense-tax-rate placeholder="{{ __('Aus Kategorie') }}" :value="old('tax_rate', $expense?->tax_rate)" />
     <x-input-field name="amount_net" type="number" :label="__('Netto (optional)')" step="0.01" min="0" placeholder="{{ __('Wird ausgerechnet') }}" :value="old('amount_net', $expense?->amount_net)" />
-    <x-input-field name="currency" :label="__('Währung')" maxlength="3" minlength="3" class="input-sm w-24 uppercase" :value="old('currency', $expense?->currency ?? 'EUR')" />
+    <x-select-field name="currency" :label="__('Währung')">
+        <x-currency-options :selected="old('currency', $expense?->currency?->value ?? 'EUR')" />
+    </x-select-field>
     <div class="fieldset md:col-span-2">
         <label class="label cursor-pointer justify-start gap-3">
             <input type="hidden" name="billable" value="0">

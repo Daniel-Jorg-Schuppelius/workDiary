@@ -5,6 +5,7 @@ return [
     'service_on' => 'Servicio el :date',
     'hourly_rate' => 'Tarifa horaria',
     'unit_hour' => 'h',
+    'unit_flat' => 'global',
     'unit_piece' => 'ud',
     'tax_rate' => 'Tipo impositivo',
     'currency' => 'Moneda',

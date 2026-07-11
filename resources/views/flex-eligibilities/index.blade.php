@@ -30,7 +30,7 @@
                     </x-status-badge>
                 @else
                     <x-status-badge tone="ghost" size="md" class="gap-2">
-                        <x-icon name="schedule_off" />
+                        <x-icon name="history_toggle_off" />
                         {{ __('flex.eligibility.current.inactive') }}
                     </x-status-badge>
                 @endif

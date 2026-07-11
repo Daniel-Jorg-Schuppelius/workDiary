@@ -44,9 +44,10 @@ class BillingReportController extends Controller {
         $aging = $this->aggregateAging($today);
         $perCustomer = $this->aggregatePerCustomer($from, $to);
         $unbilled = $this->aggregateUnbilled($from, $to);
+        $einvoicing = $this->aggregateEInvoicing($from, $to);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $from, $to);
+            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $from, $to);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($status, $aging, $perCustomer, $unbilled, $from, $to);
@@ -59,7 +60,67 @@ class BillingReportController extends Controller {
             'aging' => $aging,
             'perCustomer' => $perCustomer,
             'unbilled' => $unbilled,
+            'einvoicing' => $einvoicing,
         ]);
+    }
+
+    /**
+     * Eingangs-/Validierungs-/Übergabe-Kennzahlen (Feature 066, MVP-169):
+     * Prüfbereich nach Status, Validierungsquote beim Empfang, Übergaben an
+     * die Buchhaltung und Mahnstufen der offenen Ausgangsrechnungen.
+     *
+     * @return array{
+     *   incoming: array<string, array{count:int, gross:float}>,
+     *   incoming_transferred: int,
+     *   validation: array{checked:int, passed:int, failed:int},
+     *   dunning: array<int, int>
+     * }
+     */
+    private function aggregateEInvoicing(string $from, string $to): array {
+        $incoming = [];
+        $validation = ['checked' => 0, 'passed' => 0, 'failed' => 0];
+        $transferred = 0;
+
+        /** @var Collection<int, \App\Models\IncomingEInvoice> $records */
+        $records = \App\Models\IncomingEInvoice::query()
+            ->whereBetween('received_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
+            ->get(['status', 'summary', 'transferred_at']);
+
+        foreach ($records as $record) {
+            $st = (string) $record->status;
+            $incoming[$st] ??= ['count' => 0, 'gross' => 0.0];
+            $incoming[$st]['count']++;
+            $incoming[$st]['gross'] += (float) data_get($record->summary, 'gross', 0);
+            if ($record->transferred_at !== null) {
+                $transferred++;
+            }
+
+            $result = data_get($record->summary, 'validation');
+            if (is_array($result)) {
+                $validation['checked']++;
+                $failed = ($result['schema_errors'] ?? []) !== []
+                    || ($result['kosit_valid'] ?? null) === false;
+                $failed ? $validation['failed']++ : $validation['passed']++;
+            }
+        }
+
+        $dunning = [1 => 0, 2 => 0, 3 => 0];
+        /** @var Collection<int, Invoice> $dunned */
+        $dunned = Invoice::query()
+            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->where('dunning_level', '>', 0)
+            ->get(['dunning_level']);
+        foreach ($dunned as $inv) {
+            $level = min(3, max(1, (int) $inv->dunning_level));
+            $dunning[$level]++;
+        }
+
+        return [
+            'incoming' => $incoming,
+            'incoming_transferred' => $transferred,
+            'validation' => $validation,
+            'dunning' => $dunning,
+        ];
     }
 
     /**
@@ -231,8 +292,9 @@ class BillingReportController extends Controller {
      * @param  array{buckets: array<string, array{count:int, total:float}>, open_total: float}  $aging
      * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
+     * @param  array{incoming: array<string, array{count:int, gross:float}>, incoming_transferred: int, validation: array{checked:int, passed:int, failed:int}, dunning: array<int, int>}  $einvoicing
      */
-    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): Response {
+    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, string $from, string $to): Response {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl', 'Wert €'];
@@ -249,6 +311,16 @@ class BillingReportController extends Controller {
         $rows[] = ['Unbillte Zeit', 'Einträge', $unbilled['count'], ''];
         $rows[] = ['Unbillte Zeit', 'Minuten', $unbilled['minutes'], ''];
         $rows[] = ['Unbillte Zeit', 'Projiziert', '', number_format($unbilled['projected_revenue'], 2, '.', '')];
+        foreach ($einvoicing['incoming'] as $st => $s) {
+            $rows[] = ['Eingang', $st, $s['count'], number_format($s['gross'], 2, '.', '')];
+        }
+        $rows[] = ['Eingang', 'UEBERGEBEN', $einvoicing['incoming_transferred'], ''];
+        $rows[] = ['Eingangs-Validierung', 'geprüft', $einvoicing['validation']['checked'], ''];
+        $rows[] = ['Eingangs-Validierung', 'bestanden', $einvoicing['validation']['passed'], ''];
+        $rows[] = ['Eingangs-Validierung', 'fehlgeschlagen', $einvoicing['validation']['failed'], ''];
+        foreach ($einvoicing['dunning'] as $level => $count) {
+            $rows[] = ['Mahnstufe', (string) $level, $count, ''];
+        }
 
         return $this->csvWithMetadata($rows, $filename, 'billing', ['from' => $from, 'to' => $to]);
     }

@@ -60,6 +60,7 @@ class MailAdminController extends Controller {
             'folder' => ['required', 'string', 'max:190'],
             'processed_folder' => ['nullable', 'string', 'max:190'],
             'active' => ['nullable', 'boolean'],
+            'einvoice_intake' => ['nullable', 'boolean'],
         ]);
 
         $connection = $this->resolveConnectionForEdit($organization, $data['connection'] ?? null);
@@ -74,6 +75,7 @@ class MailAdminController extends Controller {
             'folder' => trim((string) $data['folder']) ?: 'INBOX',
             'processed_folder' => filled($data['processed_folder'] ?? null) ? trim((string) $data['processed_folder']) : null,
             'active' => (bool) ($data['active'] ?? false),
+            'einvoice_intake' => (bool) ($data['einvoice_intake'] ?? false),
             'created_by' => $connection->exists ? $connection->created_by : $admin->id,
         ];
 

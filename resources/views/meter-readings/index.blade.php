@@ -19,6 +19,7 @@
     <x-slot:actions>
         @if ($canCreate)
             <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('meter-readings.create')"
                         show-label>{{ __('Stand erfassen') }}</x-icon-btn>
         @endif

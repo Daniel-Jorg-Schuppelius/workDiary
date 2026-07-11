@@ -18,6 +18,7 @@
     <x-index-page overflow="clip" :subtitle="__('Korrekturen an Zeitbuchungen / Anwesenheiten beantragen und verfolgen.')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('corrections.create')"
                         show-label>{{ __('Antrag stellen') }}</x-icon-btn>
         </x-slot:actions>

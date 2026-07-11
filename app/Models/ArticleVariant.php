@@ -53,6 +53,7 @@ class ArticleVariant extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'status' => ArticleStatus::class,
         'is_default' => 'boolean',
         'purchase_price' => 'decimal:4',

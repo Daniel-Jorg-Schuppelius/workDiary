@@ -32,6 +32,13 @@ class FormSubmissionPdfRenderer {
             'subjectLabel' => $subjectLabel,
         ])->render();
 
+        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
+        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->composeFor(
+            \App\Models\Organization::query()->withoutGlobalScopes()->find($submission->organization_id),
+            \App\Enums\DocumentDesign\RenderDocumentKind::Form,
+            $html,
+        );
+
         return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
             ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (forms.submissions.pdf).');
     }

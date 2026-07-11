@@ -91,7 +91,7 @@ class CustomerExportSpec extends AbstractExportSpec {
             'address_zip' => $this->str($model->address_zip),
             'address_city' => $this->str($model->address_city),
             'country' => $this->str($model->country),
-            'currency' => $this->str($model->currency),
+            'currency' => $this->str($model->currency->value),
             'hourly_rate' => $this->decimalCell($model->hourly_rate),
             'internal_rate' => $this->decimalCell($model->internal_rate),
             'comment' => $this->str($model->comment),

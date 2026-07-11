@@ -14,7 +14,6 @@ use App\Enums\Numbering\NumberScope;
 use App\Models\{Customer, ForeignCustomer, Invoice, MaterialUsage, Project, TimeEntry};
 use App\Services\Finance\{BillingModeLockedException, BillingModeResolver};
 use App\Services\Numbering\NumberSequenceService;
-use App\Support\Setting;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, DB};
@@ -117,7 +116,7 @@ class InvoiceGenerator {
                 'foreign_customer_id' => $foreignCustomer?->id,
                 'number' => $this->nextNumber($customer->organization_id),
                 'status' => Invoice::STATUS_DRAFT,
-                'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
+                'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],
                 'is_reverse_charge' => $tax['reverse_charge'],
                 'notes' => $notes !== '' ? $notes : null,
@@ -179,6 +178,38 @@ class InvoiceGenerator {
             $invoice->save();
 
             return $invoice;
+        });
+    }
+
+    /**
+     * Leere Pro-forma (Feature 066, MVP-171): eigener Nummernkreis (PF, ohne
+     * steuerliche Belegwirkung), Positionen kommen manuell über den
+     * Positions-Dialog. KEINE Quellposten — eine Pro-forma verbraucht nie
+     * abrechenbare Zeiten/Material.
+     */
+    public function emptyProforma(Customer $customer, ?Project $project = null): Invoice {
+        $this->assertLocalBillingAllowed($customer);
+
+        return DB::transaction(function () use ($customer, $project): Invoice {
+            $tax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer);
+            $notes = (string) __('Pro-forma-Rechnung — keine Rechnung im umsatzsteuerlichen Sinn.');
+            if ($tax['note'] !== null) {
+                $notes .= "\n" . $tax['note'];
+            }
+
+            return Invoice::create([
+                'organization_id' => $customer->organization_id,
+                'customer_id' => $customer->id,
+                'project_id' => $project?->id,
+                'number' => $this->numberSequence->next((int) $customer->organization_id, NumberScope::Proforma, now()),
+                'status' => Invoice::STATUS_DRAFT,
+                'type' => Invoice::TYPE_PROFORMA,
+                'currency' => $customer->currency,
+                'tax_rate' => $tax['rate'],
+                'is_reverse_charge' => $tax['reverse_charge'],
+                'notes' => $notes,
+                'created_by' => Auth::id(),
+            ]);
         });
     }
 
@@ -248,7 +279,7 @@ class InvoiceGenerator {
                 'number' => $this->nextNumber($customer->organization_id),
                 'status' => Invoice::STATUS_DRAFT,
                 'category' => Invoice::CATEGORY_MATERIAL,
-                'currency' => $customer->currency ?: (string) Setting::get('invoicing.default_currency', 'EUR'),
+                'currency' => $customer->currency,
                 'tax_rate' => ($materialTax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer))['rate'],
                 'is_reverse_charge' => $materialTax['reverse_charge'],
                 'notes' => trim(($notes !== null ? $notes . "\n" : '') . ($materialTax['note'] ?? '')) ?: null,
@@ -443,6 +474,179 @@ class InvoiceGenerator {
             $original->cancel($reason ?? (string) __('Storniert durch Stornorechnung :nr', ['nr' => $cancellation->number]), $userId ?? (int) Auth::id());
 
             return $cancellation;
+        });
+    }
+
+    /**
+     * Abschlags-/Anzahlungsrechnung (Feature 066, Belegkette): Rechnung über
+     * ein vor der Leistung vereinnahmtes Teilentgelt (§ 14 Abs. 5 UStG).
+     * Normale Rechnungsnummer (Scope R), eine manuelle Pauschalposition;
+     * die Anrechnung erfolgt später über {@see finalFromDraft()}.
+     */
+    public function downPaymentFor(
+        Customer $customer,
+        ?Project $project,
+        string $description,
+        string $netAmount,
+        ?CarbonInterface $serviceDate = null,
+    ): Invoice {
+        $this->assertLocalBillingAllowed($customer);
+
+        return DB::transaction(function () use ($customer, $project, $description, $netAmount, $serviceDate): Invoice {
+            $tax = app(TaxResolver::class)->resolve(
+                $customer->organization()->firstOrFail(),
+                $customer,
+                $serviceDate,
+            );
+
+            $notes = (string) __('Abschlags-/Anzahlungsrechnung über ein vor der Leistung vereinnahmtes Teilentgelt (§ 14 Abs. 5 UStG); die Anrechnung erfolgt in der Schlussrechnung.');
+            if ($tax['note'] !== null) {
+                $notes .= "\n" . $tax['note'];
+            }
+
+            $invoice = Invoice::create([
+                'organization_id' => $customer->organization_id,
+                'customer_id' => $customer->id,
+                'project_id' => $project?->id,
+                'number' => $this->nextNumber($customer->organization_id),
+                'status' => Invoice::STATUS_DRAFT,
+                'type' => Invoice::TYPE_DOWN_PAYMENT,
+                'currency' => $customer->currency,
+                'tax_rate' => $tax['rate'],
+                'is_reverse_charge' => $tax['reverse_charge'],
+                'notes' => $notes,
+                'created_by' => Auth::id(),
+            ]);
+
+            $invoice->items()->create([
+                'organization_id' => $customer->organization_id,
+                'service_date' => $serviceDate?->toDateString(),
+                'description' => $description,
+                'quantity' => '1',
+                'unit' => (string) __('invoicing.unit_flat'),
+                'unit_price' => $netAmount,
+                'tax_category' => $tax['category'],
+                'position' => 1,
+            ]);
+
+            $invoice->load('items');
+            $invoice->recalculate();
+            $invoice->save();
+
+            return $invoice;
+        });
+    }
+
+    /**
+     * Offene (noch in keiner nicht stornierten Schlussrechnung angerechnete)
+     * Abschlagsrechnungen des Kunden. Projekt- und Währungskontext müssen
+     * exakt passen, damit keine fremden Teilentgelte abgesetzt werden.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Invoice>
+     */
+    public function openDownPaymentsFor(Customer $customer, ?int $projectId, ?string $currency = null): \Illuminate\Database\Eloquent\Collection {
+        return Invoice::query()
+            ->where('organization_id', $customer->organization_id)
+            ->where('customer_id', $customer->id)
+            ->where('type', Invoice::TYPE_DOWN_PAYMENT)
+            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
+            ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId), fn($q) => $q->whereNull('project_id'))
+            ->when($currency !== null, fn($q) => $q->where('currency', $currency))
+            ->whereDoesntHave('settlementItems', fn($q) => $q->whereHas(
+                'invoice',
+                fn($iq) => $iq->where('status', '!=', Invoice::STATUS_CANCELLED),
+            ))
+            ->orderBy('issued_on')
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * Macht einen Standard-Rechnungsentwurf zur Schlussrechnung: alle offenen
+     * Abschlagsrechnungen desselben Kunden-/Projekt-/Währungskontexts werden
+     * als negative Absetzungspositionen je Steuersatz angerechnet
+     * (§ 14 Abs. 5 S. 2 UStG — sonst droht doppelter Steuerausweis).
+     *
+     * Die Abschlagsrechnungen bleiben unverändert (Unveränderlichkeits-Guard);
+     * die Verknüpfung lebt auf den Absetzungspositionen. Ein Storno der
+     * Schlussrechnung öffnet die Abschläge dadurch automatisch wieder.
+     */
+    public function finalFromDraft(Invoice $draft): Invoice {
+        if ($draft->status !== Invoice::STATUS_DRAFT || $draft->type !== Invoice::TYPE_INVOICE) {
+            throw new \LogicException('Only draft standard invoices can become a final invoice (type: ' . $draft->type . ', status: ' . $draft->status . ')');
+        }
+
+        return DB::transaction(function () use ($draft): Invoice {
+            // Per-Kunde serialisieren: zwei parallele Schlussrechnungen dürfen
+            // dieselben Abschläge nicht doppelt absetzen.
+            Customer::query()->whereKey($draft->customer_id)->lockForUpdate()->first();
+
+            $downPayments = $this->openDownPaymentsFor(
+                $draft->customer()->firstOrFail(),
+                $draft->project_id,
+                $draft->currency->value,
+            );
+
+            if ($downPayments->isEmpty()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'invoice' => (string) __('Es gibt keine offenen Abschlagsrechnungen dieses Kunden-/Projektkontexts zur Anrechnung.'),
+                ]);
+            }
+
+            $draft->loadMissing('items');
+            $position = (int) $draft->items->max('position');
+
+            foreach ($downPayments as $dp) {
+                // Absetzung je Steuersatz aus dem beim Ausstellen des
+                // Abschlags eingefrorenen Aufriss — so bleibt die Steuer der
+                // Schlussrechnung auch bei Satzwechseln centgenau konsistent.
+                $rows = collect(is_array($dp->tax_breakdown) ? $dp->tax_breakdown : [])
+                    ->filter(fn(array $row): bool => abs((float) ($row['net'] ?? 0)) > 0.0)
+                    ->values();
+                if ($rows->isEmpty()) {
+                    $rows = collect([['rate' => (float) $dp->tax_rate, 'net' => (float) $dp->subtotal]]);
+                }
+
+                foreach ($rows as $row) {
+                    $description = (string) __('abzüglich Abschlagsrechnung :nr vom :date', [
+                        'nr' => $dp->number,
+                        'date' => optional($dp->issued_on)->format('d.m.Y'),
+                    ]);
+                    if ($rows->count() > 1) {
+                        $description .= sprintf(' (%s %%)', number_format((float) $row['rate'], 2, ',', '.'));
+                    }
+
+                    $draft->items()->create([
+                        'organization_id' => $draft->organization_id,
+                        'settled_invoice_id' => $dp->id,
+                        'description' => $description,
+                        'quantity' => '-1',
+                        'unit' => (string) __('invoicing.unit_flat'),
+                        'unit_price' => (string) $row['net'],
+                        'tax_rate' => number_format((float) $row['rate'], 2, '.', ''),
+                        'tax_category' => data_get($dp->tax_context, 'category'),
+                        'position' => ++$position,
+                    ]);
+                }
+            }
+
+            $draft->load('items');
+            $draft->recalculate();
+
+            if ((float) $draft->total < 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'invoice' => (string) __('Die Anrechnung der Abschläge übersteigt den Rechnungsbetrag — die Schlussrechnung wäre negativ.'),
+                ]);
+            }
+
+            $draft->type = Invoice::TYPE_FINAL;
+            $existing = trim((string) $draft->notes);
+            $draft->notes = trim(($existing !== '' ? $existing . "\n" : '') . (string) __('Schlussrechnung — angerechnete Abschlagsrechnungen: :list (§ 14 Abs. 5 UStG).', [
+                'list' => $downPayments->pluck('number')->implode(', '),
+            ]));
+            $draft->save();
+
+            return $draft;
         });
     }
 

@@ -1,5 +1,7 @@
 {{-- Shared form fields for Invoice create --}}
 
+<div x-data="{ content: '{{ old('content', 'service') }}' }"
+     x-on:change="if ($event.target.name === 'content') content = $event.target.value">
 <x-form-group :legend="__('Filter')" icon="receipt_long" tone="primary" cols="2">
     <x-select-field name="customer_id" :label="__('Kunde')" required span="2">
         <option value="">{{ __('-- bitte wählen --') }}</option>
@@ -22,10 +24,32 @@
     <x-select-field name="content" :label="__('Inhalt')" span="2" :hint="__('Material wird getrennt als eigene Rechnung mit Lieferdatum/-zeitraum erstellt.')">
         <option value="service" @selected(old('content', 'service') === 'service')>{{ __('Leistung (Zeit) — Leistungsdatum') }}</option>
         <option value="material" @selected(old('content') === 'material')>{{ __('Material — Lieferdatum') }}</option>
+        <option value="proforma" @selected(old('content') === 'proforma')>{{ __('Pro-forma — keine steuerliche Rechnung (eigener PF-Nummernkreis)') }}</option>
+        <option value="down_payment" @selected(old('content') === 'down_payment')>{{ __('Abschlag — Teilentgelt vor Leistung (Anrechnung in der Schlussrechnung)') }}</option>
     </x-select-field>
-    <x-input-field name="from" type="date" :label="__('Von')" :value="old('from', $defaultFrom ?? '')" />
-    <x-input-field name="to" type="date" :label="__('Bis')" :value="old('to', $defaultTo ?? '')" />
+    <div x-show="content !== 'down_payment'" class="contents">
+        <x-input-field name="from" type="date" :label="__('Von')" :value="old('from', $defaultFrom ?? '')" />
+        <x-input-field name="to" type="date" :label="__('Bis')" :value="old('to', $defaultTo ?? '')" />
+    </div>
+    <div x-show="content === 'down_payment'" x-cloak class="contents">
+        <x-input-field name="dp_description" span="2"
+                       :label="__('Leistungsbeschreibung (Abschlag)')" :value="old('dp_description', '')"
+                       :hint="__('Erscheint als Pauschalposition auf der Abschlagsrechnung (§ 14 Abs. 5 UStG).')" />
+        <x-input-field name="dp_amount" type="number" step="0.01" min="0.01"
+                       :label="__('Abschlagsbetrag (netto)')" :value="old('dp_amount', '')" />
+        <x-input-field name="dp_service_date" type="date"
+                       :label="__('Voraussichtliches Leistungsdatum (optional)')" :value="old('dp_service_date', '')" />
+    </div>
+    <div x-show="content === 'service' || content === 'material'" class="contents">
+        <x-checkbox-field name="mark_partial" span="2"
+                          :label="__('Als Teilrechnung kennzeichnen')" :checked="(bool) old('mark_partial')"
+                          :hint="__('Abrechnung eines fachlich abgrenzbaren Leistungsteils; Folge: weitere Teil- oder Schlussrechnung.')" />
+    </div>
+    <x-input-field name="payment_terms_days" type="number" min="0" max="365" span="2"
+                   :label="__('Zahlungsziel (Tage)')" :value="old('payment_terms_days', 14)"
+                   :hint="__('Steuert die Fälligkeit bei der Ausstellung (Standard: 14 Tage).')" />
 </x-form-group>
+</div>
 
 @if ($errors->any())
     <div class="alert alert-error text-sm">

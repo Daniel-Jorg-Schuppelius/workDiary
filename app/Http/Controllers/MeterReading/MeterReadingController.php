@@ -70,7 +70,8 @@ class MeterReadingController extends Controller {
         $rawAsset = (string) $request->query('asset', '');
         $assetId = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
 
-        return view('meter-readings.create', [
+        return view('meter-readings._form_dialog', [
+            'isDialog' => true,
             'presetAssetId' => $assetId > 0 ? $assetId : null,
         ]);
     }

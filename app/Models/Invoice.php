@@ -28,6 +28,7 @@ use Illuminate\Support\Carbon;
  * @property string $category
  * @property int|null $parent_invoice_id
  * @property Carbon|null $issued_on
+ * @property string|null $reason_kind
  * @property Carbon|null $due_on
  * @property Carbon|null $paid_on
  * @property Carbon|null $cancelled_at
@@ -35,7 +36,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $cancel_reason
  * @property Carbon|null $sent_at
  * @property int $sent_count
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string $subtotal
  * @property string $tax_rate
  * @property string $tax_amount
@@ -120,6 +121,7 @@ class Invoice extends Model {
         'category',
         'parent_invoice_id',
         'issued_on',
+        'reason_kind',
         'due_on',
         'paid_on',
         'cancelled_at',
@@ -133,6 +135,7 @@ class Invoice extends Model {
         'is_reverse_charge',
         'tax_amount',
         'total',
+        'tax_context',
         'notes',
         'created_by',
         'party_snapshot',
@@ -149,6 +152,7 @@ class Invoice extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'is_reverse_charge' => 'boolean',
         'party_snapshot' => 'array',
         'tax_breakdown' => 'array',
@@ -165,6 +169,7 @@ class Invoice extends Model {
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total' => 'decimal:2',
+        'tax_context' => 'array',
     ];
 
     /** @return BelongsTo<Customer, $this> */
@@ -196,6 +201,11 @@ class Invoice extends Model {
     public function creditNotes(): HasMany {
         return $this->hasMany(Invoice::class, 'parent_invoice_id')
             ->where('type', self::TYPE_CREDIT_NOTE);
+    }
+
+    /** @return HasMany<InvoiceDispatch, $this> */
+    public function dispatches(): HasMany {
+        return $this->hasMany(InvoiceDispatch::class)->orderByDesc('created_at');
     }
 
     /**
@@ -265,6 +275,17 @@ class Invoice extends Model {
             return; // bereits eingefroren
         }
         $this->party_snapshot = app(\App\Services\Invoicing\InvoicePartySnapshot::class)->capture($this);
+
+        // Feature 076 (MVP-300): mit der Partei auch den Layoutstand
+        // einfrieren — finalisierte Belege rendern über den Snapshot, spätere
+        // Profiländerungen verändern alte Dokumente nicht.
+        if ($this->exists && $this->organization !== null) {
+            app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
+                $this,
+                \App\Enums\DocumentDesign\RenderDocumentKind::Invoice,
+                $this->organization,
+            );
+        }
     }
 
     /** Überfällig = ausgestellt/teilbezahlt und Fälligkeit überschritten. */
@@ -342,7 +363,9 @@ class Invoice extends Model {
     public function markSent(): void {
         $this->sent_at = now();
         $this->sent_count = ((int) $this->sent_count) + 1;
-        if ($this->status === self::STATUS_DRAFT && ! $this->isCreditNote()) {
+        // Pro-forma ist KEINE steuerliche Rechnung (MVP-171): der Versand
+        // stellt sie nie — kein issued-Status, kein Fälligkeits-/Snapshot-Weg.
+        if ($this->status === self::STATUS_DRAFT && ! $this->isCreditNote() && ! $this->isProforma()) {
             $this->status = self::STATUS_ISSUED;
             $this->issued_on ??= now();
             $this->due_on ??= now()->addDays($this->payment_terms_days ?? 14);
@@ -351,9 +374,53 @@ class Invoice extends Model {
         $this->save();
     }
 
+    public function isProforma(): bool {
+        return $this->type === self::TYPE_PROFORMA;
+    }
+
     /** Display-Label für PDF/Show (deutsch). */
     public function documentLabel(): string {
-        return $this->isCreditNote() ? __('Gutschrift') : __('Rechnung');
+        return match (true) {
+            $this->isCreditNote() => (string) __('Gutschrift'),
+            $this->type === self::TYPE_CANCELLATION => (string) __('Stornorechnung'),
+            $this->isProforma() => (string) __('Pro-forma-Rechnung'),
+            $this->isDownPayment() => (string) __('Abschlagsrechnung'),
+            $this->type === self::TYPE_PARTIAL => (string) __('Teilrechnung'),
+            $this->type === self::TYPE_FINAL => (string) __('Schlussrechnung'),
+            default => (string) __('Rechnung'),
+        };
+    }
+
+    public function isDownPayment(): bool {
+        return $this->type === self::TYPE_DOWN_PAYMENT;
+    }
+
+    public function isFinal(): bool {
+        return $this->type === self::TYPE_FINAL;
+    }
+
+    /**
+     * Absetzungspositionen ANDERER Belege, die diese Abschlagsrechnung
+     * anrechnen (§ 14 Abs. 5 UStG). Eine Abschlagsrechnung gilt als
+     * angerechnet, sobald eine nicht stornierte Schlussrechnung eine solche
+     * Position trägt — die Abschlagsrechnung selbst wird nie mutiert.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<InvoiceItem, $this>
+     */
+    public function settlementItems(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(InvoiceItem::class, 'settled_invoice_id');
+    }
+
+    /** Nicht stornierte Schlussrechnung, die diesen Abschlag anrechnet. */
+    public function settledByInvoice(): ?Invoice {
+        if (! $this->isDownPayment()) {
+            return null;
+        }
+
+        return self::query()
+            ->where('status', '!=', self::STATUS_CANCELLED)
+            ->whereHas('items', fn($q) => $q->where('settled_invoice_id', $this->id))
+            ->first();
     }
 
     /**

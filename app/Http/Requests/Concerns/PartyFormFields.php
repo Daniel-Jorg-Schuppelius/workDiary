@@ -41,7 +41,7 @@ trait PartyFormFields {
             'address_zip' => ['nullable', 'string', 'max:32'],
             'address_city' => ['nullable', 'string', 'max:128'],
             'country' => ['nullable', 'string', 'size:2'],
-            'currency' => ['required', 'string', 'size:3'],
+            'currency' => ['required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'timezone' => ['nullable', 'string', 'max:64', 'timezone'],
             'color' => ['nullable', 'string', 'max:16'],
             'comment' => ['nullable', 'string', 'max:5000'],

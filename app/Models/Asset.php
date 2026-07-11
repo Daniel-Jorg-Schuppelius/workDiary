@@ -80,6 +80,9 @@ class Asset extends Model {
         'next_inspection_on',
         'notes',
         'custom',
+        'acquisition_cost',
+        'acquired_on',
+        'acquired_from_supplier_id',
     ];
 
     protected $casts = [
@@ -94,6 +97,7 @@ class Asset extends Model {
         'next_maintenance_on' => 'date',
         'next_inspection_on' => 'date',
         'custom' => 'array',
+        'acquired_on' => 'date',
     ];
 
     /** @return BelongsTo<Customer, $this> */
@@ -175,6 +179,26 @@ class Asset extends Model {
     /** @return HasMany<AssetDefect, $this> */
     public function defects(): HasMany {
         return $this->hasMany(AssetDefect::class)->latest('reported_at')->latest('id');
+    }
+
+    /** @return HasOne<\App\Models\Rental\RentalProfile, $this> */
+    public function rentalProfile(): HasOne {
+        return $this->hasOne(\App\Models\Rental\RentalProfile::class);
+    }
+
+    /** @return HasMany<AssetBlock, $this> */
+    public function blocks(): HasMany {
+        return $this->hasMany(AssetBlock::class)->latest('blocked_from');
+    }
+
+    /** @return HasMany<AssetBlock, $this> */
+    public function activeBlocks(): HasMany {
+        return $this->hasMany(AssetBlock::class)->active();
+    }
+
+    /** @return HasMany<\App\Models\AssetCompliance\AssetComplianceAssignment, $this> */
+    public function complianceAssignments(): HasMany {
+        return $this->hasMany(\App\Models\AssetCompliance\AssetComplianceAssignment::class);
     }
 
     /** @return HasMany<SoftwareInstallation, $this> */

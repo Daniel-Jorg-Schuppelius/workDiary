@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $warehouse_id
  * @property numeric-string $qty_remaining
  * @property numeric-string $unit_cost
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property int|null $source_movement_id
  */
 class StockValuationLayer extends Model {
@@ -46,6 +46,7 @@ class StockValuationLayer extends Model {
     ];
 
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'qty_remaining' => 'decimal:4',
         'unit_cost' => 'decimal:4',
         'acquired_at' => 'datetime',

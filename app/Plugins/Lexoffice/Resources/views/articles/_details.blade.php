@@ -50,7 +50,7 @@
                 <dt class="text-xs text-base-content/60">{{ __('Netto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->net_unit_price !== null)
-                        {{ number_format((float) $article->net_unit_price, 2, ',', '.') }} {{ $article->currency }}
+                        {{ number_format((float) $article->net_unit_price, 2, ',', '.') }} {{ $article->currency->value }}
                     @else
                         —
                     @endif
@@ -60,7 +60,7 @@
                 <dt class="text-xs text-base-content/60">{{ __('Brutto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->gross_unit_price !== null)
-                        {{ number_format((float) $article->gross_unit_price, 2, ',', '.') }} {{ $article->currency }}
+                        {{ number_format((float) $article->gross_unit_price, 2, ',', '.') }} {{ $article->currency->value }}
                     @else
                         —
                     @endif

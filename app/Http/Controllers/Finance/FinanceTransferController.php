@@ -288,12 +288,17 @@ class FinanceTransferController extends Controller {
     public static function allowedTargetsFor(BillingMode $mode): array {
         return match ($mode) {
             BillingMode::Lexoffice => [TransferTarget::Lexoffice, TransferTarget::File],
+            BillingMode::OrgaMax => [TransferTarget::OrgaMax, TransferTarget::File],
             BillingMode::Datev, BillingMode::Workdiary => [TransferTarget::File],
         };
     }
 
     public static function defaultTargetFor(BillingMode $mode): TransferTarget {
-        return $mode === BillingMode::Lexoffice ? TransferTarget::Lexoffice : TransferTarget::File;
+        return match ($mode) {
+            BillingMode::Lexoffice => TransferTarget::Lexoffice,
+            BillingMode::OrgaMax => TransferTarget::OrgaMax,
+            default => TransferTarget::File,
+        };
     }
 
     /**

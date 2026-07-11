@@ -15,7 +15,6 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\{Document, User};
-use App\Services\Document\DocumentService;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -30,7 +29,6 @@ use Illuminate\View\View;
 class IncomingInvoiceController extends Controller {
     public function __construct(
         private readonly IncomingEInvoiceService $eInvoices,
-        private readonly DocumentService $documents,
     ) {}
 
     public function index(): View {
@@ -56,65 +54,91 @@ class IncomingInvoiceController extends Controller {
         $file = $request->file('file');
         $contents = (string) file_get_contents((string) $file->getRealPath());
 
-        // Inhaltsbasierter Hash + Dedup (MVP-165): identische Datei wird
-        // je Organisation genau EINMAL angenommen.
-        $sha256 = hash('sha256', $contents);
-        $duplicate = \App\Models\IncomingEInvoice::query()->where('sha256', $sha256)->first();
-        if ($duplicate !== null) {
-            return redirect()->route('finance.incoming-invoices.show', $duplicate->document_id)
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        // Zentrale Eingangsverarbeitung (MVP-165/167): Hash-Dedup, Parse,
+        // Validierung, Vorschläge/Abweichungen, DMS-Ablage — kanalneutral.
+        $result = $this->eInvoices->storeIncoming(
+            $actor,
+            $contents,
+            $file->getMimeType(),
+            $file->getRealPath(),
+            'upload',
+            $file,
+        );
+
+        $incoming = $result['incoming'];
+        if ($result['status'] === 'duplicate' && $incoming !== null) {
+            return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
                 ->with('error', __('Diese E-Rechnung wurde bereits am :date erfasst (Dublette).', [
-                    'date' => $duplicate->received_at->isoFormat('L LT'),
+                    'date' => $incoming->received_at->isoFormat('L LT'),
                 ]));
         }
-
-        $parsed = $this->eInvoices->parse($contents, $file->getMimeType(), $file->getRealPath());
-        if ($parsed === null) {
+        if ($result['status'] !== 'created' || $incoming === null || $result['document'] === null) {
             return back()->with('error', __('Die Datei ist keine lesbare E-Rechnung (XRechnung/ZUGFeRD).'));
         }
 
-        $summary = $this->eInvoices->summary($parsed);
+        return redirect()->route('finance.incoming-invoices.show', $result['document'])
+            ->with('success', __('E-Rechnung :number erfasst und im DMS abgelegt.', [
+                'number' => (string) data_get($incoming->summary, 'number'),
+            ]));
+    }
 
-        // Eingangs-Validierung (MVP-166): getrennt vom Original abgelegt.
-        $extractedXml = $this->eInvoices->extractXml($contents, $file->getMimeType(), $file->getRealPath());
-        $summary['validation'] = $extractedXml !== null
-            ? $this->eInvoices->validateXml($extractedXml)
-            : null;
+    /**
+     * Download der extrahierten Rechnungs-XML (MVP-166, Restpaket):
+     * deterministisch aus dem unveränderten Original extrahiert; der
+     * Abruf wird als Übergabenachweis auditiert (MVP-168).
+     */
+    public function xml(Document $document): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('view', $document);
+        abort_unless($document->document_type === DocumentType::Invoice, 404);
 
-        /** @var User $actor */
-        $actor = Auth::user();
-        $document = $this->documents->create(null, $actor, [
-            'title' => __('E-Rechnung :number — :seller', [
-                'number' => $summary['number'],
-                'seller' => $summary['seller'] ?? '—',
-            ]),
-            'document_type' => DocumentType::Invoice->value,
-            'description' => __(':profile · :gross :currency, fällig :due', [
-                'profile' => $summary['profile'],
-                'gross' => number_format((float) ($summary['gross'] ?? 0), 2, ',', '.'),
-                'currency' => $summary['currency'],
-                'due' => $summary['due_date'] ?? '—',
-            ]),
-        ], $file);
+        $version = $document->currentVersion;
+        abort_if($version === null || ! Storage::disk('local')->exists((string) $version->path), 404);
 
-        // Prüfbereich-Datensatz (MVP-165/167): Hash, Herkunft, Empfangszeit.
-        \App\Models\IncomingEInvoice::query()->create([
-            'organization_id' => (int) $actor->organization_id,
-            'document_id' => $document->id,
-            'sha256' => $sha256,
-            'source' => 'upload',
-            'received_at' => now(),
-            'summary' => $summary,
+        $contents = (string) Storage::disk('local')->get((string) $version->path);
+        $xml = $this->eInvoices->extractXml($contents, (string) $version->mime, Storage::disk('local')->path((string) $version->path));
+        if ($xml === null) {
+            return back()->with('error', __('Aus diesem Beleg lässt sich kein Rechnungs-XML extrahieren.'));
+        }
+
+        $filename = 'e-rechnung-' . $document->getKey() . '.xml';
+        $document->audit('document.einvoice_xml_exported', [
+            'filename' => $filename,
+            'sha256' => hash('sha256', $xml),
         ]);
 
-        $document->audit('document.einvoice_received', [
-            'number' => $summary['number'],
-            'seller' => $summary['seller'],
-            'gross' => $summary['gross'],
-            'sha256' => $sha256,
+        return response($xml, 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
 
-        return redirect()->route('finance.incoming-invoices.show', $document)
-            ->with('success', __('E-Rechnung :number erfasst und im DMS abgelegt.', ['number' => $summary['number']]));
+    /**
+     * Idempotente Übergabe an die führende Buchhaltung (MVP-168): nur nach
+     * fachlicher Freigabe; ein zweiter Aufruf ändert nichts (kein doppelter
+     * Nachweis). Keine automatische Stammdaten- oder Belegänderung.
+     */
+    public function transfer(\App\Models\IncomingEInvoice $incoming): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+
+        if (! in_array($incoming->status, [\App\Models\IncomingEInvoice::STATUS_APPROVED, \App\Models\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true)) {
+            return back()->with('error', __('Nur fachlich freigegebene Eingänge werden an die Buchhaltung übergeben.'));
+        }
+
+        if ($incoming->transferred_at !== null) {
+            return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
+                ->with('success', __('Bereits am :date übergeben — kein erneuter Übergabevorgang.', [
+                    'date' => $incoming->transferred_at->isoFormat('L LT'),
+                ]));
+        }
+
+        $incoming->update(['transferred_at' => now(), 'transferred_by' => (int) Auth::id()]);
+        $incoming->audit('incoming_einvoice.transferred', ['sha256' => $incoming->sha256]);
+
+        return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
+            ->with('success', __('Eingang an die führende Buchhaltung übergeben.'));
     }
 
     /**

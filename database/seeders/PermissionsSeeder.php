@@ -205,6 +205,28 @@ class PermissionsSeeder extends Seeder {
                     // Rang 38: Plan/Ist-Anwesenheit org-weit — die .view-
                     // Heuristik trifft `report.presence.organization` nicht.
                     PermissionEnum::ReportPresenceOrganization->value,
+                    // Feature 068: Go-/No-go- und Gewinn-/Zusage-Entscheidungen
+                    // sind GF-Sache; die .view-Heuristik trifft *.decide nicht.
+                    PermissionEnum::TenderDecide->value,
+                    PermissionEnum::RecruitingDecide->value,
+                    // Feature 069: Investitionsfreigaben (Schwellenwerte) sind GF-Sache.
+                    PermissionEnum::InvestmentApprove->value,
+                    PermissionEnum::InvestmentManage->value,
+                    // Feature 070: Krisenstab führt die Geschäftsleitung.
+                    PermissionEnum::CrisisManage->value,
+                    PermissionEnum::CrisisApprove->value,
+                    // Feature 071: Nachhaltigkeitssteuerung ist Leitungsaufgabe.
+                    PermissionEnum::SustainabilityManage->value,
+                    // Feature 072: Anspruchs-/Kulanzentscheidung ist GF-Sache;
+                    // die .view-Heuristik trifft claim.decide nicht.
+                    PermissionEnum::ClaimDecide->value,
+                    // Feature 074: vertrauliche Leasingkonditionen (Raten/
+                    // Restwerte/Optionen) sind Leitungssache.
+                    PermissionEnum::AssetFinanceFinance->value,
+                    // Feature 075/D12: befristete Ausnahmefreigaben für
+                    // gesperrte Assets entscheidet die Leitung.
+                    PermissionEnum::AssetComplianceRelease->value,
+                    PermissionEnum::AssetBlockOverride->value,
                 ], true);
             }
         ));
@@ -213,6 +235,50 @@ class PermissionsSeeder extends Seeder {
         $teamleitung = [
             PermissionEnum::OrganizationView,
             PermissionEnum::NumberFormatManage,
+            // Feature 068: Ausschreibungsakten operativ führen (Unterlagen,
+            // Fristen, Einreichung) — Go-/No-go und Zuschlag bleiben GF/Admin.
+            PermissionEnum::TenderViewAny,
+            PermissionEnum::TenderView,
+            PermissionEnum::TenderManage,
+            // Feature 069: Fachverantwortliche pflegen Akten/Varianten —
+            // Budgetfreigabe bleibt GF/Buchhaltung/Admin.
+            PermissionEnum::InvestmentViewAny,
+            PermissionEnum::InvestmentView,
+            PermissionEnum::InvestmentManage,
+            // Feature 070: Teamleitung sieht Krisenlagen (Lagebild), führt
+            // aber nicht den Stab (manage/approve bleibt GF/Admin).
+            PermissionEnum::CrisisViewAny,
+            PermissionEnum::CrisisView,
+            // Feature 071: Fachleitungen bewerten Geräte/Prozesse und pflegen
+            // Aktivitätsdaten + Maßnahmen.
+            PermissionEnum::SustainabilityViewAny,
+            PermissionEnum::SustainabilityView,
+            PermissionEnum::SustainabilityManage,
+            // Feature 072: Reklamationsakten operativ führen inkl. Rückläufer
+            // und Lieferantenregress — Entscheidung (decide) bleibt GF/Admin,
+            // kaufmännische Freigabe (finance) bei der Buchhaltung.
+            PermissionEnum::ClaimViewAny,
+            PermissionEnum::ClaimView,
+            PermissionEnum::ClaimManage,
+            PermissionEnum::ClaimWarehouse,
+            PermissionEnum::ClaimRecourse,
+            // Feature 073: Verleih operativ führen (Akten, Reservierung,
+            // Übergabe/Rücknahme, Preislisten) — kaufmännische Freigabe
+            // (finance) bleibt bei der Buchhaltung.
+            PermissionEnum::RentalViewAny,
+            PermissionEnum::RentalView,
+            PermissionEnum::RentalManage,
+            PermissionEnum::RentalHandover,
+            PermissionEnum::RentalRates,
+            // D12: Sperren setzen/aufheben ist Leitungsaufgabe — die
+            // Ausnahmefreigabe (override) bleibt GF/Admin.
+            PermissionEnum::AssetBlockManage,
+            // Feature 075: Prüfprofile/-pflichten pflegen und Prüfungen
+            // erfassen — Ausnahmefreigaben (release) bleiben GF/Admin.
+            PermissionEnum::AssetComplianceViewAny,
+            PermissionEnum::AssetComplianceView,
+            PermissionEnum::AssetComplianceManage,
+            PermissionEnum::AssetComplianceInspect,
             // Genehmigungs-Register (Veranstalter): operative Pflege.
             PermissionEnum::PermitViewAny,
             PermissionEnum::PermitView,
@@ -454,10 +520,40 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::SickLeaveManage,
             PermissionEnum::ReportView,
             PermissionEnum::ClassificationList,
+            // Feature 068: Personalbewerbungen sind HR-Hoheit — inkl.
+            // Datenschutz-Aktionen (Aufbewahrung/Löschung/Auskunft/Talentpool).
+            PermissionEnum::RecruitingViewAny,
+            PermissionEnum::RecruitingView,
+            PermissionEnum::RecruitingManage,
+            PermissionEnum::RecruitingDecide,
+            PermissionEnum::RecruitingPrivacy,
         ];
 
         $buchhaltung = [
             PermissionEnum::OrganizationView,
+            // Feature 072: kaufmännische Reklamationsfolgen (Gutschrift/
+            // Minderung/Storno) freigeben und übergeben.
+            PermissionEnum::ClaimViewAny,
+            PermissionEnum::ClaimView,
+            PermissionEnum::ClaimFinance,
+            // Feature 073: Mietpositionen/Kautionen freigeben und abrechnen.
+            PermissionEnum::RentalViewAny,
+            PermissionEnum::RentalView,
+            PermissionEnum::RentalFinance,
+            // Feature 074: Leasingakten führen inkl. vertraulicher
+            // Konditionen (Raten/Restwerte) und Fristen (Controlling).
+            PermissionEnum::AssetFinanceViewAny,
+            PermissionEnum::AssetFinanceView,
+            PermissionEnum::AssetFinanceManage,
+            PermissionEnum::AssetFinanceFinance,
+            // Feature 068: Wertpotenzial/Angebotsstände lesend (Forecast).
+            PermissionEnum::TenderViewAny,
+            PermissionEnum::TenderView,
+            // Feature 069: Investitionsakten führen + freigeben (Controlling).
+            PermissionEnum::InvestmentViewAny,
+            PermissionEnum::InvestmentView,
+            PermissionEnum::InvestmentManage,
+            PermissionEnum::InvestmentApprove,
             PermissionEnum::DiaryViewAny,
             PermissionEnum::CommunicationViewAny,
             PermissionEnum::CommunicationView,
@@ -759,6 +855,10 @@ class PermissionsSeeder extends Seeder {
         // plus Auditzugriff. KEINE Create/Update/Delete-Permissions.
         $support = [
             PermissionEnum::OrganizationView,
+            // Feature 072: Reklamationsannahme aus Helpdesk/Telefon.
+            PermissionEnum::ClaimViewAny,
+            PermissionEnum::ClaimView,
+            PermissionEnum::ClaimManage,
             PermissionEnum::UserViewAny,
             PermissionEnum::UserView,
             PermissionEnum::CustomerViewAny,

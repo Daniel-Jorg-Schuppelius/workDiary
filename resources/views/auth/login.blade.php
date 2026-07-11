@@ -133,6 +133,11 @@
                         ⇢ {{ __('Anmelden') }}
                     </x-button>
                 </form>
+
+                {{-- Single-Sign-on (Feature 057): Einstieg über die Organisations-Kennung. --}}
+                <p class="mt-4 text-center text-sm text-base-content/70">
+                    <a href="{{ route('sso.discover') }}" class="text-primary transition hover:opacity-80">{{ __('Mit Single-Sign-on anmelden') }}</a>
+                </p>
             </div>
 
             <p class="mt-6 text-center text-sm text-base-content/70">

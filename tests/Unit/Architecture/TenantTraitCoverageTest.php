@@ -43,6 +43,23 @@ class TenantTraitCoverageTest extends TestCase {
         UserGroup::class,
         OrganizationAuditLog::class,
         PerDiemRate::class,
+        // Feature 070 (D9): globale Fristen-Defaults (org NULL) + Org-Overrides,
+        // Auflösung filtert explizit (analog PerDiemRate).
+        \App\Models\Crisis\CrisisDeadlineTemplate::class,
+        // Feature 071 (D8/P3): globale Faktor-Sets/Matrix (org NULL) + Overrides,
+        // Auflösung filtert explizit; Faktoren hängen am Set.
+        \App\Models\Sustainability\SustainabilityFactorSet::class,
+        \App\Models\Sustainability\SustainabilityEmissionFactor::class,
+        \App\Models\Sustainability\SustainabilityFrameMapping::class,
+        // Phase 23 (P1): globaler Steuerkatalog (org NULL) + Org-Overrides.
+        \App\Models\TaxRule::class,
+        // Feature 075 (P1): Prüfprofil-Katalog (org NULL = globale Vorlage,
+        // Org-Zeilen überschreiben per Code) + Normen-Referenzmatrix —
+        // Auflösung filtert explizit (scopeForOrganization/effectiveProfiles);
+        // Anforderungen hängen als Katalog-Kind transitiv am Profil.
+        \App\Models\AssetCompliance\AssetComplianceProfile::class,
+        \App\Models\AssetCompliance\AssetComplianceRequirement::class,
+        \App\Models\AssetCompliance\AssetComplianceNormReference::class,
         GeocodeCache::class,
         OpenIssueEvent::class,
         ProtocolItem::class,
@@ -64,6 +81,11 @@ class TenantTraitCoverageTest extends TestCase {
         TimeCorrectionItem::class,
         MonthClosureEvent::class,
         ImportRunError::class,
+        // SSO-Kontoverknüpfung (Feature 057, MVP-120/121): Kind der mandanten-
+        // gebundenen SsoConnection — Mandantengrenze transitiv über
+        // sso_connection_id (alle Zugriffe filtern darüber); zusätzlich prüft
+        // SsoLoginService die Org des Users gegen die Org der Verbindung.
+        \App\Models\SsoIdentity::class,
         // Globale Hilfe-Inhalte (HelpTopic) und anonyme Hilfe-Telemetrie (HelpView,
         // nullable organization_id) gehören bewusst nicht zur Mandantengrenze.
         HelpTopic::class,

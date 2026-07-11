@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property GaebPhase|null $phase
  * @property string|null $unit_price
  * @property string|null $total_price
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property \Illuminate\Support\Carbon $captured_at
  */
 class BoqItemPriceSnapshot extends Model {
@@ -44,6 +44,7 @@ class BoqItemPriceSnapshot extends Model {
     ];
 
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'phase' => GaebPhase::class,
         'unit_price' => 'decimal:4',
         'total_price' => 'decimal:4',

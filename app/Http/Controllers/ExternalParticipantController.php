@@ -33,6 +33,9 @@ class ExternalParticipantController extends Controller {
         'diary' => DiaryEntry::class,
         'protocol' => Protocol::class,
         'document' => Document::class,
+        // Feature 075 (MVP-290): externe Prüfer/Prüfstellen liefern
+        // Nachweise zu einem Prüftermin über den begrenzten Zugang.
+        'inspection' => \App\Models\AssetCompliance\AssetInspectionSchedule::class,
     ];
 
     public function __construct(private readonly ExternalParticipantService $service) {}

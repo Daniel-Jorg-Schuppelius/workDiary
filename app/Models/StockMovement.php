@@ -62,6 +62,7 @@ class StockMovement extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'stock_state' => StockState::class,
         'ownership_type' => OwnershipType::class,
         'movement_type' => StockMovementType::class,

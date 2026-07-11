@@ -178,7 +178,7 @@
                     {{ __('Land :country: :amount :currency / Monat (Stand :date).', [
                         'country' => $reference->country,
                         'amount' => number_format((float) $reference->monthly_amount, 2, ',', '.'),
-                        'currency' => $reference->currency,
+                        'currency' => $reference->currency->value,
                         'date' => $reference->valid_from->fdate(),
                     ]) }}
                 </p>

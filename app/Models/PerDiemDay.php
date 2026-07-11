@@ -35,7 +35,7 @@ use Illuminate\Support\Carbon;
  * @property bool $meal_breakfast
  * @property bool $meal_lunch
  * @property bool $meal_dinner
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $notes
  */
 class PerDiemDay extends Model {
@@ -66,6 +66,7 @@ class PerDiemDay extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'date' => 'date',
         'kind' => PerDiemDayKind::class,
         'base_amount' => 'decimal:2',

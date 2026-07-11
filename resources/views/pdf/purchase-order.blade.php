@@ -56,7 +56,7 @@
         <tr>
             <td style="text-align: right;"><strong>{{ __('procurement.pdf.total') }}</strong></td>
             <td style="text-align: right; width: 25%;">
-                <strong>{{ number_format((float) $total, 2, ',', '.') }} {{ $order->currency }}</strong>
+                <strong>{{ number_format((float) $total, 2, ',', '.') }} {{ $order->currency->value }}</strong>
             </td>
         </tr>
     </table>

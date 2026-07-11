@@ -133,12 +133,49 @@ class DatevBookingService {
         $rows = [];
 
         foreach ($sources as $source) {
-            $rows[] = $source instanceof Invoice
-                ? $this->invoiceRow($source, $config)
-                : $this->expenseRow($source, $config);
+            if ($source instanceof Invoice) {
+                // Phase 23 (MVP-243): Mischsatz-Belege werden nach dem
+                // eingefrorenen tax_breakdown gesplittet — je Satz eine
+                // Buchungszeile (statt nur Kopfsatz, Folge-Lücke 2).
+                foreach ($this->invoiceRows($source, $config) as $row) {
+                    $rows[] = $row;
+                }
+
+                continue;
+            }
+            $rows[] = $this->expenseRow($source, $config);
         }
 
         return $rows;
+    }
+
+    /**
+     * @return list<array{source_type: class-string, source_id: int, debtor_account: string, revenue_account: string, soll_haben: string, amount: float, tax_rate: float, tax_key: ?string, document_ref: string, text: string, date: string, is_credit_note: bool}>
+     */
+    private function invoiceRows(Invoice $invoice, DatevBookingConfig $config): array {
+        $breakdown = (array) ($invoice->tax_breakdown ?? []);
+        if (count($breakdown) <= 1) {
+            return [$this->invoiceRow($invoice, $config)];
+        }
+
+        $base = $this->invoiceRow($invoice, $config);
+        $rows = [];
+        foreach ($breakdown as $slice) {
+            $rate = (float) ($slice['rate'] ?? 0);
+            $gross = round((float) ($slice['net'] ?? 0) + (float) ($slice['tax'] ?? 0), 2);
+            if ($gross === 0.0) {
+                continue;
+            }
+            $rows[] = [
+                ...$base,
+                'revenue_account' => $config->revenueAccountFor($rate),
+                'amount' => round(abs($gross), 2),
+                'tax_rate' => $rate,
+                'tax_key' => $config->taxKeyFor($rate),
+            ];
+        }
+
+        return $rows !== [] ? $rows : [$base];
     }
 
     /**

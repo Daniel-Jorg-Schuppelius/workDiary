@@ -41,6 +41,10 @@ class PurchaseOrderPdfRenderer {
             'total' => $total,
         ])->render();
 
+        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
+        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)
+            ->composeFor($organization, \App\Enums\DocumentDesign\RenderDocumentKind::PurchaseOrder, $html);
+
         return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
             ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.purchase-order).');
     }

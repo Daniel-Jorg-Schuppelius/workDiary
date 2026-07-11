@@ -25,6 +25,7 @@ enum BillingMode: string implements HasLabel {
     case Workdiary = 'workdiary';
     case Lexoffice = 'lexoffice';
     case Datev = 'datev';
+    case OrgaMax = 'orgamax';
 
     public function label(): string {
         return (string) __('enums.finance.billing-mode.' . $this->value);
@@ -36,6 +37,7 @@ enum BillingMode: string implements HasLabel {
             self::Workdiary => 'ghost',
             self::Lexoffice => 'info',
             self::Datev => 'warning',
+            self::OrgaMax => 'success',
         };
     }
 

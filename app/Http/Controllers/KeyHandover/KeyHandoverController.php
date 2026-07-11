@@ -76,7 +76,8 @@ class KeyHandoverController extends Controller {
         $rawAsset = (string) $request->query('asset', '');
         $assetId = Sqid::decodeOrNumeric(Asset::class, $rawAsset, 0);
 
-        return view('key-handovers.create', [
+        return view('key-handovers._form_dialog', [
+            'isDialog' => true,
             'directionOptions' => $this->directionOptions(),
             'presetAssetId' => $assetId > 0 ? $assetId : null,
         ]);

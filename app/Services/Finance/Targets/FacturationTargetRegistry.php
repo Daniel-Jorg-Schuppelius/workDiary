@@ -23,8 +23,8 @@ class FacturationTargetRegistry {
     /** @var list<FacturationTarget> */
     private readonly array $targets;
 
-    public function __construct(LexofficeTarget $lexoffice, FileTarget $file) {
-        $this->targets = [$lexoffice, $file];
+    public function __construct(LexofficeTarget $lexoffice, OrgaMaxTarget $orgamax, FileTarget $file) {
+        $this->targets = [$lexoffice, $orgamax, $file];
     }
 
     public function for(TransferTarget $target): FacturationTarget {

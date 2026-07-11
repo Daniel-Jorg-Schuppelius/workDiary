@@ -96,6 +96,21 @@ enum NotificationEvent: string implements HasLabel {
         // den OperationsAlertService — Empfänger sind Adminrollen, nie die
         // „betroffene Person". Routine (updateAvailable) ist drosselbar,
         // Security-Hinweise bleiben in Diagnose/Komponenten immer sichtbar.
+    // Feature 070: Krisenalarm an den Krisenstab (überstimmt Ruhezeiten, D7).
+    case CrisisAlert = 'crisis.alert';
+
+    // Feature 072: Fristeneskalation überfälliger Reklamationen (MVP-255).
+    case ClaimEscalation = 'claim.escalation';
+
+    // Feature 073: überfällige Verleih-Rückgabe (MVP-264).
+    case RentalReturnOverdue = 'rental.returnOverdue';
+
+    // Feature 074: Leasing-/Vertragsfrist wird fällig (MVP-273/278).
+    case AssetFinanceDeadline = 'assetFinance.deadline';
+
+    // Feature 075: Prüfung fällig/überfällig (MVP-285/288).
+    case AssetInspectionDue = 'assetCompliance.inspectionDue';
+
     case OperationsBackupOverdue = 'operations.backupOverdue';
     case OperationsBackupFailed = 'operations.backupFailed';
     case OperationsRestoreTestOverdue = 'operations.restoreTestOverdue';
@@ -202,6 +217,15 @@ enum NotificationEvent: string implements HasLabel {
             // Zustellproblem (Feature 059): betrifft keine Einzelperson —
             // Default an die Leitung, die die Sendung/Auslieferung verantwortet.
             self::ShipmentDeliveryProblem => [UserRole::Teamleitung->value],
+            // Überfällige Verleih-Rückgabe (Feature 073): an die Leitung —
+            // der Akten-Verantwortliche wird im Service separat adressiert.
+            self::RentalReturnOverdue => [UserRole::Teamleitung->value],
+            // Leasingfristen (Feature 074): Vertrags-/Fristensteuerung ist
+            // Leitungsaufgabe; der Verantwortliche der Akte via Service.
+            self::AssetFinanceDeadline => [UserRole::Teamleitung->value],
+            // Prüffälligkeit (Feature 075): betrifft keine Einzelperson —
+            // an die Teamleitung (Prüfmittelverantwortung).
+            self::AssetInspectionDue => [UserRole::Teamleitung->value],
             default => [],
         };
     }
@@ -232,6 +256,11 @@ enum NotificationEvent: string implements HasLabel {
             self::MaintenanceDueSoon,
             self::MaintenanceOverdue => 'handyman',
             self::SafetyCriticalEvent => 'e911_emergency',
+            self::CrisisAlert => 'emergency_home',
+            self::ClaimEscalation => 'assignment_late',
+            self::RentalReturnOverdue => 'forklift',
+            self::AssetFinanceDeadline => 'request_quote',
+            self::AssetInspectionDue => 'rule_settings',
             self::QualificationExpiring => 'workspace_premium',
             self::ShiftExchangeRequested,
             self::ShiftExchangeDecided => 'swap_horiz',
@@ -275,6 +304,9 @@ enum NotificationEvent: string implements HasLabel {
             self::SlaBreached,
             self::AssetReturnOverdue,
             self::MaintenanceOverdue,
+            self::RentalReturnOverdue,
+            self::AssetFinanceDeadline,
+            self::AssetInspectionDue,
             // Backup-Alarm eskaliert 26 h→72 h (Feature 017, MVP-056).
             self::OperationsBackupOverdue,
         ], true);

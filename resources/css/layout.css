@@ -116,6 +116,14 @@
             }
             .header-dropdown-panel {
                 scroll-padding-block: .5rem;
+                /* Menü höher als der Viewport → scrollbar machen, damit die
+                   unteren Punkte erreichbar bleiben (Desktop/Maus). Auf Touch
+                   überschreibt die Media-Query unten mit einem Vollhöhen-Sheet. */
+                max-height: calc(100vh - var(--app-header-h) - var(--app-footer-h) - 1rem);
+                max-height: calc(100dvh - var(--app-header-h) - var(--app-footer-h) - 1rem);
+                overflow-y: auto;
+                overflow-x: hidden;
+                overscroll-behavior: contain;
             }
             .header-menu-list.menu {
                 gap: .35rem;

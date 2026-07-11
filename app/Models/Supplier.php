@@ -45,7 +45,7 @@ use Illuminate\Support\{Carbon, Str};
  * @property string|null $address_zip
  * @property string|null $address_city
  * @property string|null $country
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $timezone
  * @property string|null $color
  * @property string|null $comment
@@ -109,6 +109,7 @@ class Supplier extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'active' => 'boolean',
         'archived_at' => 'datetime',
         'address_lat' => 'decimal:7',

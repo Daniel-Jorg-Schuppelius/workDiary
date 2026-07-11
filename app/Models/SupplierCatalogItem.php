@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $datasheet_url
  * @property string $name
  * @property numeric-string|null $purchase_price
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property CatalogItemStatus $status
  * @property string $raw_hash
  * @property int|null $article_id
@@ -78,6 +78,7 @@ class SupplierCatalogItem extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'status' => CatalogItemStatus::class,
         'purchase_price' => 'decimal:4',
         'pack_size' => 'decimal:4',

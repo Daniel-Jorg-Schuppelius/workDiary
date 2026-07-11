@@ -21,12 +21,42 @@
         </div>
     @endif
 
+    @if ($invoice->isProforma())
+        <div class="alert alert-warning">
+            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+            <div>
+                <div class="font-bold">{{ __('Pro-forma-Rechnung — keine Rechnung im umsatzsteuerlichen Sinn.') }}</div>
+                <div class="text-sm">{{ __('Kein Umsatz, keine Forderung, keine E-Rechnung. Für die Abrechnung in eine echte Rechnung umwandeln.') }}</div>
+            </div>
+        </div>
+    @endif
+
+    @if ((int) $invoice->dunning_level > 0)
+        <div class="alert alert-warning text-sm">
+            <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
+            {{ __('Mahnstufe :level — zuletzt gemahnt am :date.', [
+                'level' => (int) $invoice->dunning_level,
+                'date' => optional($invoice->dunned_at)->fdatetime() ?? '—',
+            ]) }}
+        </div>
+    @endif
+
     @if ($invoice->isCreditNote() && $invoice->parent)
         <div class="alert alert-info">
             <span class="material-symbols-outlined" aria-hidden="true">undo</span>
             <div>
                 {{ __('Korrekturrechnung (Gutschrift) zu') }}
                 <a class="link" href="{{ route('invoices.show', $invoice->parent) }}">{{ $invoice->parent->number }}</a>
+            </div>
+        </div>
+    @endif
+
+    @if ($invoice->isDownPayment() && ($settledByInvoice ?? null) !== null)
+        <div class="alert alert-info">
+            <span class="material-symbols-outlined" aria-hidden="true">functions</span>
+            <div>
+                {{ __('Angerechnet in Schlussrechnung') }}
+                <a class="link" href="{{ route('invoices.show', $settledByInvoice) }}">{{ $settledByInvoice->number }}</a>
             </div>
         </div>
     @endif
@@ -91,13 +121,42 @@
                                 show-label>{{ __('Spesen hinzufügen') }}</x-icon-btn>
                 @endif
             @endcan
+            @if (! $invoice->isProforma() && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
+                <x-icon-btn icon="rule" size="sm" :href="route('invoices.einvoice-validation', $invoice)" show-label
+                            :title="__('Preflight, XSD und KoSIT vor der Ausstellung prüfen')">{{ __('E-Rechnungs-Prüfung') }}</x-icon-btn>
+            @endif
             @can('issue', $invoice)
-                <x-action-form :action="route('invoices.issue', $invoice)">
-                    <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
-                </x-action-form>
+                @if (! $invoice->isProforma())
+                    @if ($invoice->approved_at === null)
+                        <x-action-form :action="route('invoices.approve', $invoice)">
+                            <x-icon-btn icon="verified" tone="info" size="sm" type="submit" show-label
+                                        :title="__('Fachliche Freigabe vor der Ausstellung (Vier-Augen-Option)')">{{ __('Freigeben') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                    <x-action-form :action="route('invoices.issue', $invoice)">
+                        <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Stellen') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
                 {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
                 {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
             @endcan
+            @if ($invoice->isProforma())
+                @can('create', \App\Models\Invoice::class)
+                    <x-action-form :action="route('invoices.proforma-convert', $invoice)"
+                          :confirm="__('Pro-forma :nr in eine echte Rechnung mit neuer Rechnungsnummer umwandeln?', ['nr' => $invoice->number])"
+                          confirm-icon="swap_horiz"
+                          confirm-tone="primary"
+                          :confirm-label="__('Umwandeln')">
+                        <x-icon-btn icon="swap_horiz" tone="primary" size="sm" type="submit" show-label>{{ __('In Rechnung umwandeln') }}</x-icon-btn>
+                    </x-action-form>
+                @endcan
+            @endif
+            @if ($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && (auth()->user()?->canManageBilling() ?? false))
+                <x-icon-btn icon="notification_important" tone="warning" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('invoices.dun.form', $invoice)"
+                            show-label>{{ __('Mahnen') }}</x-icon-btn>
+            @endif
             @can('pay', $invoice)
                 <x-action-form :action="route('invoices.pay', $invoice)">
                     <x-icon-btn icon="check_circle" tone="success" size="sm" type="submit" show-label>{{ __('Bezahlt markieren') }}</x-icon-btn>
@@ -120,6 +179,17 @@
                       :confirm-label="__('Korrekturrechnung erstellen')">
                     <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Korrekturrechnung') }}</x-icon-btn>
                 </x-action-form>
+            @endcan
+            @can('update', $invoice)
+                @if (($openDownPaymentCount ?? 0) > 0 && $invoice->type === \App\Models\Invoice::TYPE_INVOICE)
+                    <x-action-form :action="route('invoices.final', $invoice)"
+                          :confirm="__('Offene Abschlagsrechnungen (:n) anrechnen und Entwurf :nr zur Schlussrechnung machen?', ['n' => $openDownPaymentCount, 'nr' => $invoice->number])"
+                          confirm-icon="functions"
+                          confirm-tone="primary"
+                          :confirm-label="__('Schlussrechnung erstellen')">
+                        <x-icon-btn icon="functions" tone="primary" size="sm" type="submit" show-label>{{ __('Zur Schlussrechnung (:n Abschläge)', ['n' => $openDownPaymentCount]) }}</x-icon-btn>
+                    </x-action-form>
+                @endif
             @endcan
             @can('delete', $invoice)
                 <x-action-form :action="route('invoices.destroy', $invoice)" method="DELETE"
@@ -151,12 +221,12 @@
             </tr>
         </x-slot:head>
         <x-slot:foot>
-            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
-            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="text-right">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="text-right">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
             @if ($invoice->is_reverse_charge)
                 <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-base-content/60">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
             @endif
-            <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
         </x-slot:foot>
         @forelse ($invoice->items as $item)
             <tr>
@@ -164,8 +234,8 @@
                 <td>{{ $item->description }}</td>
                 @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
                 <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ number_format((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, ',', '.') }} {{ $item->unit }}</td>
-                <td class="text-right" data-sort-value="{{ (float) $item->unit_price }}">{{ number_format((float) $item->unit_price, ((int) round((float) $item->unit_price * 10000)) % 100 !== 0 ? 4 : 2, ',', '.') }} {{ $invoice->currency }}</td>
-                <td class="text-right" data-sort-value="{{ (float) $item->amount }}">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency }}</td>
+                <td class="text-right" data-sort-value="{{ (float) $item->unit_price }}">{{ number_format((float) $item->unit_price, ((int) round((float) $item->unit_price * 10000)) % 100 !== 0 ? 4 : 2, ',', '.') }} {{ $invoice->currency->value }}</td>
+                <td class="text-right" data-sort-value="{{ (float) $item->amount }}">{{ number_format((float) $item->amount, 2, ',', '.') }} {{ $invoice->currency->value }}</td>
                 @can('update', $invoice)
                     @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
                         <td class="text-right whitespace-nowrap">
@@ -188,5 +258,46 @@
             <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="5" :title="__('Keine Positionen.')" compact />
         @endforelse
     </x-table>
+
+    <div class="grid gap-2 text-sm text-base-content/70 sm:grid-cols-3">
+        <div>{{ __('Zahlungsziel: :days Tage', ['days' => (int) ($invoice->payment_terms_days ?? 14) ]) }}@if ($invoice->due_on) · {{ __('fällig am :date', ['date' => $invoice->due_on->fdate()]) }}@endif</div>
+        @if ($invoice->approved_at)
+            <div>{{ __('Freigegeben am :date', ['date' => $invoice->approved_at->fdatetime()]) }}</div>
+        @endif
+    </div>
+
+    {{-- Zustellnachweis (MVP-168): jeder Versand/Download ist ein eigener Versuch --}}
+    @php $dispatches = $invoice->dispatches()->with([])->limit(50)->get(); @endphp
+    @if ($dispatches->isNotEmpty())
+        <details class="collapse collapse-arrow border border-base-300 bg-base-100">
+            <summary class="collapse-title text-sm font-medium">{{ __('Zustellversuche (:count)', ['count' => $dispatches->count()]) }}</summary>
+            <div class="collapse-content overflow-x-auto">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>{{ __('Zeitpunkt') }}</th>
+                            <th>{{ __('Kanal') }}</th>
+                            <th>{{ __('Format') }}</th>
+                            <th>{{ __('Empfänger') }}</th>
+                            <th>{{ __('Status') }}</th>
+                            <th>{{ __('SHA-256') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($dispatches as $dispatch)
+                            <tr>
+                                <td>{{ $dispatch->created_at->fdatetime() }}</td>
+                                <td>{{ __($dispatch->channel) }}</td>
+                                <td>{{ $dispatch->format ?? '—' }}</td>
+                                <td class="max-w-xs truncate">{{ $dispatch->recipient ?? '—' }}</td>
+                                <td>{{ __($dispatch->status) }}</td>
+                                <td class="font-mono text-xs">{{ $dispatch->sha256 !== null ? substr($dispatch->sha256, 0, 16) . '…' : '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    @endif
 </x-page-shell>
 @endsection

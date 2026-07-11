@@ -45,5 +45,10 @@ class NotificationDispatchLog extends Model {
         'subject_id',
         'stage',
         'recipient_count',
+        'acknowledged_at',
+        'acknowledged_by',
     ];
+
+    /** @var array<string, string> */
+    protected $casts = ['acknowledged_at' => 'datetime'];
 }

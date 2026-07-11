@@ -11,6 +11,12 @@
 namespace App\Http\Requests;
 
 class SavePerDiemRateRequest extends BaseFormRequest {
+    protected function prepareForValidation(): void {
+        if ($this->filled('currency')) {
+            $this->merge(['currency' => $this->string('currency')->upper()->value()]);
+        }
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -23,7 +29,7 @@ class SavePerDiemRateRequest extends BaseFormRequest {
             'full_day_amount' => ['required', 'numeric', 'min:0'],
             'partial_day_amount' => ['required', 'numeric', 'min:0'],
             'overnight_amount' => ['nullable', 'numeric', 'min:0'],
-            'currency' => ['required', 'string', 'size:3'],
+            'currency' => ['required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'source' => ['nullable', 'string', 'max:255'],
         ];
     }

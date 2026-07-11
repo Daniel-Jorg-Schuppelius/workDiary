@@ -52,6 +52,7 @@ class PurchaseOrderLine extends Model {
     ];
 
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'ordered_qty' => 'decimal:4',
         'received_qty' => 'decimal:4',
         'unit_price' => 'decimal:4',

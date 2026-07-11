@@ -86,7 +86,12 @@ class InvoiceController extends Controller {
             'foreign_customer_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('foreign_customers')],
             'from' => ['nullable', 'date'],
             'to' => ['nullable', 'date', 'after_or_equal:from'],
-            'content' => ['nullable', 'in:service,material'],
+            'content' => ['nullable', 'in:service,material,proforma,down_payment'],
+            'mark_partial' => ['nullable', 'boolean'],
+            'dp_description' => ['required_if:content,down_payment', 'nullable', 'string', 'max:500'],
+            'dp_amount' => ['required_if:content,down_payment', 'nullable', 'numeric', 'min:0.01', 'max:99999999.99'],
+            'dp_service_date' => ['nullable', 'date'],
+            'payment_terms_days' => ['nullable', 'integer', 'min:0', 'max:365'],
         ]);
 
         /** @var Customer $customer */
@@ -111,23 +116,83 @@ class InvoiceController extends Controller {
             'to' => $data['to'] ?? null,
         ];
 
-        // Material wird getrennt abgerechnet (eigene Rechnung mit Lieferdatum).
-        if (($data['content'] ?? 'service') === 'material') {
+        // Pro-forma (MVP-171): eigener Nummernkreis, keine Quellposten —
+        // Positionen kommen manuell über den Positions-Dialog.
+        if (($data['content'] ?? 'service') === 'proforma') {
+            $invoice = $gen->emptyProforma($customer, $project);
+        } elseif (($data['content'] ?? 'service') === 'down_payment') {
+            // Abschlags-/Anzahlungsrechnung (Belegkette 066): Teilentgelt vor
+            // Leistung, keine Quellposten — Anrechnung in der Schlussrechnung.
+            $invoice = $gen->downPaymentFor(
+                $customer,
+                $project,
+                (string) $data['dp_description'],
+                (string) $data['dp_amount'],
+                isset($data['dp_service_date']) ? \Illuminate\Support\Carbon::parse($data['dp_service_date']) : null,
+            );
+        } elseif (($data['content'] ?? 'service') === 'material') {
+            // Material wird getrennt abgerechnet (eigene Rechnung mit Lieferdatum).
             $invoice = $gen->fromMaterialUsages($customer, $project, $range, $foreignCustomer);
-
-            return redirect()->route('invoices.show', $invoice)->with('status', __('Materialrechnungs-Entwurf erstellt.'));
+        } else {
+            $invoice = $gen->fromTimeEntries($customer, $project, $range, $foreignCustomer);
         }
 
-        $invoice = $gen->fromTimeEntries($customer, $project, $range, $foreignCustomer);
+        // Teilrechnung (Belegkette 066): fachlich abgrenzbarer Leistungsteil —
+        // reine Kennzeichnung des Entwurfs, keine Anrechnungslogik.
+        if (! empty($data['mark_partial']) && $invoice->type === Invoice::TYPE_INVOICE) {
+            $invoice->update(['type' => Invoice::TYPE_PARTIAL]);
+        }
 
-        return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnungsentwurf erstellt.'));
+        // Zahlungsziel je Rechnung (MVP-163): steuert due_on bei issue()/markSent().
+        if (isset($data['payment_terms_days'])) {
+            $invoice->update(['payment_terms_days' => (int) $data['payment_terms_days']]);
+        }
+
+        return redirect()->route('invoices.show', $invoice)->with('status', match ($data['content'] ?? 'service') {
+            'proforma' => __('Pro-forma-Entwurf erstellt.'),
+            'down_payment' => __('Abschlagsrechnungs-Entwurf erstellt.'),
+            'material' => __('Materialrechnungs-Entwurf erstellt.'),
+            default => __('Rechnungsentwurf erstellt.'),
+        });
     }
 
     public function show(Invoice $invoice): View {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer', 'project']);
 
-        return view('invoices.show', compact('invoice'));
+        // Belegkette 066: anrechenbare offene Abschläge für den
+        // Schlussrechnungs-CTA bzw. Rückverweis der Abschlagsrechnung.
+        $openDownPaymentCount = 0;
+        if ($invoice->status === Invoice::STATUS_DRAFT && $invoice->type === Invoice::TYPE_INVOICE) {
+            $openDownPaymentCount = app(InvoiceGenerator::class)
+                ->openDownPaymentsFor($invoice->customer, $invoice->project_id, $invoice->currency->value)
+                ->count();
+        }
+        $settledByInvoice = $invoice->settledByInvoice();
+
+        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice'));
+    }
+
+    /**
+     * Belegkette 066: Entwurf zur Schlussrechnung machen — rechnet alle
+     * offenen Abschlagsrechnungen desselben Kontexts als Absetzungspositionen
+     * an (§ 14 Abs. 5 UStG).
+     */
+    public function makeFinal(Invoice $invoice, InvoiceGenerator $gen): RedirectResponse {
+        Gate::authorize('update', $invoice);
+
+        if ($invoice->type !== Invoice::TYPE_INVOICE) {
+            return back()->with('error', __('Nur ein Standard-Rechnungsentwurf kann zur Schlussrechnung werden.'));
+        }
+
+        try {
+            $gen->finalFromDraft($invoice);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->with('error', collect($e->errors())->flatten()->first());
+        }
+
+        return redirect()->route('invoices.show', $invoice)
+            ->with('status', __('Entwurf in Schlussrechnung umgewandelt — offene Abschlagsrechnungen wurden angerechnet.'));
     }
 
     public function destroy(Invoice $invoice): RedirectResponse {
@@ -160,11 +225,24 @@ class InvoiceController extends Controller {
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung freigegeben.'));
     }
 
+    /** Mahn-Dialog (MVP-163, UI-Nacharbeit): Stufe + optionaler Mailversand. */
+    public function dunForm(Invoice $invoice): View {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+        abort_unless($invoice->isOverdue() && (int) $invoice->dunning_level < 3, 422);
+        $invoice->load('customer');
+
+        return view('invoices._dun_dialog', [
+            'invoice' => $invoice,
+            'nextLevel' => (int) $invoice->dunning_level + 1,
+            'defaultTo' => $invoice->customer->primaryContact()['email'] ?? $invoice->customer->email ?? '',
+        ]);
+    }
+
     /** Mahnstufe erhöhen (MVP-163): nur für überfällige Rechnungen, max. 3. */
-    public function dun(Invoice $invoice): RedirectResponse {
+    public function dun(Request $request, Invoice $invoice): RedirectResponse {
         // Mahnen betrifft AUSGESTELLTE Rechnungen — die issue-Policy (nur
         // draft) passt nicht; Maßstab ist das Abrechnungsrecht.
-        abort_unless(\Illuminate\Support\Facades\Auth::user()?->canManageBilling() ?? false, 403);
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
         if (! $invoice->isOverdue()) {
             return back()->with('error', __('Nur überfällige Rechnungen können gemahnt werden.'));
         }
@@ -172,15 +250,60 @@ class InvoiceController extends Controller {
             return back()->with('error', __('Höchste Mahnstufe bereits erreicht.'));
         }
 
+        $data = $request->validate([
+            'send_mail' => ['nullable', 'boolean'],
+            'email' => ['nullable', 'required_if_accepted:send_mail', 'email:rfc'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
         $newLevel = (int) $invoice->dunning_level + 1;
         $invoice->update(['dunning_level' => $newLevel, 'dunned_at' => now()]);
-        $invoice->audit('invoice.dunned', ['level' => $newLevel]);
+        $invoice->audit('invoice.dunned', ['level' => $newLevel, 'mailed' => ! empty($data['send_mail'])]);
+
+        // Mahn-Mailversand (MVP-163, Restpaket): eigener Zustellversuch —
+        // die Rechnung selbst bleibt unverändert (kein neuer Beleg).
+        if (! empty($data['send_mail'])) {
+            $mail = new \App\Mail\DunningMail($invoice, $newLevel, $data['note'] ?? null);
+            Mail::to((string) $data['email'])->queue($mail);
+            $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', (string) $data['email'], null, [
+                'kind' => 'dunning',
+                'level' => $newLevel,
+            ]);
+
+            return redirect()->route('invoices.show', $invoice)
+                ->with('status', __('Mahnstufe :level vermerkt und Mahnung an :email versendet.', ['level' => $newLevel, 'email' => $data['email']]));
+        }
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Mahnstufe :level vermerkt.', ['level' => $newLevel]));
     }
 
+    /**
+     * Zustellversuch protokollieren (MVP-168): Kanal/Format/Empfänger/Hash.
+     *
+     * @param  array<string, mixed>  $meta
+     */
+    private function recordDispatch(Invoice $invoice, string $channel, ?string $format, ?string $recipient, ?string $sha256, array $meta = []): void {
+        \App\Models\InvoiceDispatch::query()->create([
+            'organization_id' => $invoice->organization_id,
+            'invoice_id' => $invoice->id,
+            'channel' => $channel,
+            'format' => $format,
+            'status' => $channel === \App\Models\InvoiceDispatch::CHANNEL_EMAIL ? 'queued' : 'sent',
+            'recipient' => $recipient,
+            'sha256' => $sha256,
+            'meta' => $meta !== [] ? $meta : null,
+            'created_by' => Auth::id(),
+        ]);
+    }
+
     public function issue(Invoice $invoice): RedirectResponse {
         Gate::authorize('issue', $invoice);
+
+        // Pro-forma ist keine steuerliche Rechnung (MVP-171): kein
+        // Rechnungsstatus — Umwandlung läuft über proformaConvert().
+        if ($invoice->isProforma()) {
+            return back()->with('error', __('Eine Pro-forma-Rechnung wird nicht gestellt — wandeln Sie sie in eine echte Rechnung um.'));
+        }
 
         // MVP-163 (Opt-in): Prüfung/Freigabe vor Ausstellung erzwingen.
         $invoicingSettings = (array) data_get($invoice->organization?->settings, 'invoicing', []);
@@ -202,11 +325,27 @@ class InvoiceController extends Controller {
 
         // MVP-162: Zahlungsziel je Rechnung + Partei-Snapshot einfrieren —
         // ab jetzt ist der Beleg fachlich unveränderlich (Model-Guard).
+        // Phase 23 (MVP-243): der tatsächlich verwendete Steuerkontext
+        // (Regelquelle, Stichtag, Kategorie, Aufriss) friert MIT ein.
+        $invoice->loadMissing(['items', 'customer', 'organization']);
+        $organization = $invoice->organization;
+        $taxResolution = $organization !== null
+            ? app(\App\Services\Invoicing\TaxResolver::class)->resolve($organization, $invoice->customer, $invoice->serviceDateTo() ?? now())
+            : null;
         $invoice->freezeParties();
         $invoice->update([
             'status' => Invoice::STATUS_ISSUED,
             'issued_on' => now(),
             'due_on' => now()->addDays($invoice->payment_terms_days ?? 14),
+            'tax_context' => [
+                'resolved_on' => ($invoice->serviceDateTo() ?? now())->toDateString(),
+                'rate' => (string) $invoice->tax_rate,
+                'is_reverse_charge' => (bool) $invoice->is_reverse_charge,
+                'breakdown' => $invoice->tax_breakdown,
+                'category' => $taxResolution['category'] ?? null,
+                'rule' => $taxResolution['rule'] ?? null,
+                'item_categories' => $invoice->items->pluck('tax_category', 'id')->all(),
+            ],
         ]);
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung gestellt.'));
@@ -251,18 +390,6 @@ class InvoiceController extends Controller {
     }
 
     /**
-     * View-Daten der Rechnungs-Druckansicht (`invoices.pdf`) — geteilt vom
-     * dompdf-Download und der visuellen Darstellung im ZUGFeRD-PDF.
-     *
-     * @return array{invoice: Invoice, template: \App\Models\InvoiceTemplate|null, orgLegal: mixed}
-     */
-    private function pdfViewData(Invoice $invoice): array {
-        // Geteilt mit der WebDAV-Spiegelung (Rang 19), damit Download und
-        // gespiegeltes PDF identisch sind.
-        return app(\App\Services\Invoicing\InvoicePdfRenderer::class)->viewData($invoice);
-    }
-
-    /**
      * E-Rechnung (Feature 045, Abschnitt 8): XRechnung-XML (UBL 2.1) zur
      * lokalen Ausgangsrechnung. Nur im Pfad „WorkDiary führt" — bei externer
      * Fakturierungshoheit (Lexoffice/DATEV) liegt die E-Rechnungs-Pflicht
@@ -272,6 +399,9 @@ class InvoiceController extends Controller {
     public function einvoiceDownload(Invoice $invoice, \App\Services\Invoicing\EInvoice\XRechnungGenerator $generator): SymfonyResponse {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer']);
+
+        // Pro-forma ist keine steuerliche Rechnung — nie als XRechnung (MVP-171).
+        abort_if($invoice->isProforma(), 404);
 
         $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
         abort_if($billingMode->isExternal(), 404);
@@ -291,6 +421,7 @@ class InvoiceController extends Controller {
             'filename' => $filename,
             'sha256' => hash('sha256', $xml),
         ]);
+        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'xrechnung_ubl', null, hash('sha256', $xml), ['filename' => $filename]);
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
@@ -310,6 +441,9 @@ class InvoiceController extends Controller {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer', 'project']);
 
+        // Pro-forma ist keine steuerliche Rechnung — nie als ZUGFeRD (MVP-171).
+        abort_if($invoice->isProforma(), 404);
+
         $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer);
         abort_if($billingMode->isExternal(), 404);
 
@@ -321,7 +455,9 @@ class InvoiceController extends Controller {
                 ->with('error', __('invoicing.einvoice.zugferd.error_intro') . ' ' . implode(' ', $result['errors']));
         }
 
-        $visualHtml = view('invoices.pdf', $this->pdfViewData($invoice))->render();
+        // Feature 076: dieselbe komponierte Darstellung (Firmenbogen/Design)
+        // wie der direkte PDF-Download — vor der XML-Einbettung (MVP-301).
+        $visualHtml = app(\App\Services\Invoicing\InvoicePdfRenderer::class)->composedHtml($invoice);
         $pdf = $generator->generateZugferdPdf($invoice, $visualHtml);
 
         if ($pdf === null) {
@@ -330,6 +466,14 @@ class InvoiceController extends Controller {
         }
 
         $filename = 'ZUGFeRD_' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number) . '.pdf';
+
+        // Übergabenachweis (MVP-168, Restpaket): analog zum XRechnung-Pfad.
+        $invoice->audit('invoice.einvoice_exported', [
+            'format' => 'zugferd_pdf',
+            'filename' => $filename,
+            'sha256' => hash('sha256', $pdf),
+        ]);
+        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'zugferd_pdf', null, hash('sha256', $pdf), ['filename' => $filename]);
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
@@ -358,6 +502,8 @@ class InvoiceController extends Controller {
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? (string) __('invoicing.unit_hour'),
             'unit_price' => (string) $data['unit_price'],
+            'tax_rate' => $data['tax_rate'] ?? null,
+            'tax_category' => $data['tax_category'] ?? null,
             'position' => $data['position'] ?? ((int) $invoice->items()->max('position') + 1),
         ]);
 
@@ -377,6 +523,8 @@ class InvoiceController extends Controller {
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? $item->unit,
             'unit_price' => (string) $data['unit_price'],
+            'tax_rate' => array_key_exists('tax_rate', $data) ? $data['tax_rate'] : $item->tax_rate,
+            'tax_category' => array_key_exists('tax_category', $data) ? $data['tax_category'] : $item->tax_category,
             'position' => $data['position'] ?? $item->position,
         ]);
 
@@ -533,9 +681,32 @@ class InvoiceController extends Controller {
 
         $invoice->markSent();
 
+        // Zustellnachweis (MVP-168): jeder Versand ist ein eigener Versuch.
+        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', implode(', ', $data['to']), null, [
+            'cc' => $data['cc'] ?? [],
+            'template_id' => $template->id,
+        ]);
+
         return redirect()->route('invoices.show', $invoice)
             ->with('status', __('Rechnung an :count Empfänger versendet.', [
                 'count' => count($data['to']),
             ]));
+    }
+
+    /**
+     * Pro-forma → echte Rechnung (MVP-171): neue Nummer aus dem
+     * Rechnungskreis, voller Ausstellungs-Weg danach; die Pro-forma
+     * bleibt unverändert verknüpft.
+     */
+    public function proformaConvert(Invoice $invoice, \App\Services\Invoicing\QuoteService $quotes): RedirectResponse {
+        Gate::authorize('create', Invoice::class);
+        abort_unless($invoice->isProforma(), 404);
+
+        /** @var \App\Models\User $actor */
+        $actor = Auth::user();
+        $real = $quotes->proformaToInvoice($invoice, $actor);
+
+        return redirect()->route('invoices.show', $real)
+            ->with('status', __('Rechnung :nr aus Pro-forma :proforma erstellt.', ['nr' => $real->number, 'proforma' => $invoice->number]));
     }
 }

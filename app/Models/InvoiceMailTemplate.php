@@ -125,7 +125,7 @@ class InvoiceMailTemplate extends Model {
             'invoice_date' => optional($invoice->issued_on ?? $invoice->created_at)->format('d.m.Y') ?? '',
             'due_date' => optional($invoice->due_on)->format('d.m.Y') ?? '',
             'total' => number_format((float) $invoice->total, 2, ',', '.'),
-            'currency' => (string) $invoice->currency,
+            'currency' => $invoice->currency->value,
             'company_name' => $companyName,
             'document_label' => $invoice->documentLabel(),
             'custom_text' => (string) ($customText ?? ''),

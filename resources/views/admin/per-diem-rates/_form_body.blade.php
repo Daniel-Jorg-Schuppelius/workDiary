@@ -4,9 +4,9 @@
     <x-input-field name="country" :label="__('Land (ISO-2)')" required maxlength="2" minlength="2"
                    :value="old('country', $rate->country ?? 'DE')"
                    class="uppercase" />
-    <x-input-field name="currency" :label="__('Währung')" required maxlength="3" minlength="3"
-                   :value="old('currency', $rate->currency ?? 'EUR')"
-                   class="uppercase" />
+    <x-select-field name="currency" :label="__('Währung')" required>
+        <x-currency-options :selected="old('currency', $rate->currency?->value ?? 'EUR')" />
+    </x-select-field>
     <div class="fieldset md:col-span-2">
         <label class="fieldset-label">{{ __('Region / Stadt') }}</label>
         <input type="text" name="region_label" maxlength="100"

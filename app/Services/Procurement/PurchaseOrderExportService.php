@@ -116,7 +116,7 @@ class PurchaseOrderExportService {
         }
 
         $buyer = $this->buyerData($order);
-        $currency = CurrencyCode::tryFrom(strtoupper((string) ($order->currency ?: 'EUR'))) ?? CurrencyCode::Euro;
+        $currency = $order->currency ?? CurrencyCode::Euro;
         $issueDate = ($order->ordered_at ?? $order->created_at ?? now())->toDateString();
 
         $builder = OrderBuilder::create((string) $order->number)

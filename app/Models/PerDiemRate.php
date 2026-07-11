@@ -25,7 +25,7 @@ use Illuminate\Support\{Carbon, Str};
  * @property string $full_day_amount
  * @property string $partial_day_amount
  * @property string|null $overnight_amount
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $source
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -48,6 +48,7 @@ class PerDiemRate extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'valid_from' => 'date',
         'valid_to' => 'date',
         'full_day_amount' => 'decimal:2',
@@ -58,7 +59,12 @@ class PerDiemRate extends Model {
     protected static function booted(): void {
         static::saving(function (PerDiemRate $rate): void {
             $rate->country = Str::upper($rate->country);
-            $rate->currency = Str::upper($rate->currency);
+            // currency ist enum-gecastet (CurrencyCode) — Kleinschreibung im
+            // Roh-Attribut normalisieren, bevor der Cast ValueError wirft.
+            $raw = $rate->getAttributes()['currency'] ?? null;
+            if (is_string($raw)) {
+                $rate->setRawAttributes(array_merge($rate->getAttributes(), ['currency' => Str::upper($raw)]));
+            }
         });
     }
 

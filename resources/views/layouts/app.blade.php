@@ -692,6 +692,19 @@
                                                 ['route' => 'suppliers.index', 'label' => __('Lieferanten'),     'icon' => 'local_shipping', 'modal' => false, 'matches' => ['suppliers.*']],
                                                 ['route' => 'projects.index',  'label' => __('Projekte'),        'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
                                                 ['route' => 'events.index',    'label' => __('Veranstaltungen'), 'icon' => 'event',          'modal' => false, 'matches' => ['events.*']],
+                                                // Feature 068: Auftragsbewerbungen — Recht via NavGate (tender.viewAny),
+                                                // Modul-Gating via $moduleByItemRoute (module.applications).
+                                                ['route' => 'tenders.index',   'label' => __('Ausschreibungen'), 'icon' => 'gavel',          'modal' => false, 'matches' => ['tenders.*']],
+                                            ],
+                                        ],
+                                        [
+                                            'key'   => 'sales-recruiting',
+                                            'label' => __('Personalgewinnung'),
+                                            'icon'  => 'person_search',
+                                            'items' => [
+                                                // Feature 068: Bewerberdaten — eigener Rechtebereich (recruiting.*).
+                                                ['route' => 'recruiting.requisitions.index', 'label' => __('Stellen'), 'icon' => 'work', 'modal' => false, 'matches' => ['recruiting.requisitions.*']],
+                                                ['route' => 'recruiting.applications.index', 'label' => __('Bewerbungen'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['recruiting.applications.*']],
                                             ],
                                         ],
                                         [
@@ -731,6 +744,9 @@
                                                 // Modul-Gating via $moduleByItemRoute (module.finance).
                                                 ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
                                                 ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
+                                                // Feature 069: Investitionsplanung — Recht via NavGate (investment.viewAny),
+                                                // Modul-Gating via $moduleByItemRoute (module.investments).
+                                                ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
                                             ],
                                         ],
                                     ],
@@ -745,6 +761,89 @@
                                         'collapsible' => true,
                                         'items'       => [
                                             ['route' => 'whistleblowing.internal.index', 'label' => __('Meldestelle'), 'icon' => 'report', 'modal' => false, 'matches' => ['whistleblowing.internal.*']],
+                                        ],
+                                    ];
+                                }
+                                // Feature 071: Nachhaltigkeit/ESG — eigene Rechte (sustainability.viewAny),
+                                // Modul-Gating via $moduleByItemRoute (module.sustainability).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Sustainability\SustainabilityAssessment::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'sustainability',
+                                        'label'       => __('Nachhaltigkeit'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'sustainability.index', 'label' => __('Nachhaltigkeit & ESG'), 'icon' => 'eco', 'modal' => false, 'matches' => ['sustainability.*']],
+                                        ],
+                                    ];
+                                }
+                                // Feature 072: Reklamation/Gewährleistung — eigene Rechte
+                                // (claim.viewAny), Modul-Gating via $moduleByItemRoute (module.claims).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Claims\ClaimCase::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'claims',
+                                        'label'       => __('Reklamationen'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'claims.index', 'label' => __('Reklamationsakten'), 'icon' => 'assignment_return', 'modal' => false, 'matches' => ['claims.index', 'claims.show']],
+                                            ['route' => 'claims.reports.index', 'label' => __('Qualitätsbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['claims.reports.*']],
+                                        ],
+                                    ];
+                                }
+                                // Feature 073: Geräte-/Maschinenverleih — eigene Rechte
+                                // (rental.viewAny), Modul-Gating via $moduleByItemRoute (module.rental).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Rental\RentalCase::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'rental',
+                                        'label'       => __('Verleih'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'rental.index', 'label' => __('Verleihakten'), 'icon' => 'forklift', 'modal' => false, 'matches' => ['rental.index', 'rental.show']],
+                                            ['route' => 'rental.calendar', 'label' => __('Verfügbarkeitskalender'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['rental.calendar']],
+                                            ['route' => 'rental.profiles.index', 'label' => __('Gerätepool'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['rental.profiles.*']],
+                                            ['route' => 'rental.rates.index', 'label' => __('Preislisten'), 'icon' => 'price_change', 'modal' => false, 'matches' => ['rental.rates.*']],
+                                            ['route' => 'rental.reports.index', 'label' => __('Verleihbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['rental.reports.*']],
+                                        ],
+                                    ];
+                                }
+                                // Feature 074: Leasing/Finanzierung — eigene Rechte
+                                // (assetFinance.viewAny), Modul-Gating via $moduleByItemRoute (module.asset_finance).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\AssetFinance\AssetFinanceContract::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'asset-finance',
+                                        'label'       => __('Leasing & Verträge'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'asset-finance.index', 'label' => __('Leasingakten'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['asset-finance.index', 'asset-finance.show']],
+                                            ['route' => 'asset-finance.deadlines.index', 'label' => __('Fristenkalender'), 'icon' => 'event_upcoming', 'modal' => false, 'matches' => ['asset-finance.deadlines.*']],
+                                            ['route' => 'asset-finance.reports.index', 'label' => __('Leasingbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['asset-finance.reports.*']],
+                                        ],
+                                    ];
+                                }
+                                // Feature 075: Prüfmittel/Eichung/Kalibrierung — eigene Rechte
+                                // (assetCompliance.viewAny), Modul-Gating via $moduleByItemRoute (module.asset_compliance).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\AssetCompliance\AssetComplianceProfile::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'asset-compliance',
+                                        'label'       => __('Prüfmittel'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'asset-compliance.index', 'label' => __('Prüf-Dashboard'), 'icon' => 'rule_settings', 'modal' => false, 'matches' => ['asset-compliance.index']],
+                                            ['route' => 'asset-compliance.profiles.index', 'label' => __('Prüfprofile'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['asset-compliance.profiles.*']],
+                                            ['route' => 'asset-compliance.schedules.index', 'label' => __('Prüfkalender'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['asset-compliance.schedules.*']],
+                                            ['route' => 'asset-compliance.reports.index', 'label' => __('Auditbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['asset-compliance.reports.*']],
+                                        ],
+                                    ];
+                                }
+                                // Feature 070: Krisenmanagement — eigene Rechte (crisis.viewAny),
+                                // Modul-Gating via $moduleByItemRoute (module.crisis_management).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Crisis\CrisisCase::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'crisis',
+                                        'label'       => __('Krisenmanagement'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'crisis.index', 'label' => __('Krisenakten'), 'icon' => 'emergency_home', 'modal' => false, 'matches' => ['crisis.index', 'crisis.show']],
+                                            ['route' => 'crisis.exercises.index', 'label' => __('Übungen'), 'icon' => 'model_training', 'modal' => false, 'matches' => ['crisis.exercises.*']],
                                         ],
                                     ];
                                 }
@@ -801,6 +900,7 @@
                                                     // Reifegrad-/Readiness-Assessment (Feature 044, MVP 3): begruendete Selbsteinschaetzung.
                                                     ['route' => 'isms.readiness', 'label' => __('isms.title.readiness'), 'icon' => 'speed', 'modal' => false, 'matches' => ['isms.readiness']],
                                                     ['route' => 'isms.requirements.index', 'label' => __('isms.title.requirements'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['isms.requirements.*', 'isms.statements.*']],
+                                                    ['route' => 'isms.csf', 'label' => __('isms.title.csf'), 'icon' => 'radar', 'modal' => false, 'matches' => ['isms.csf', 'isms.csf.*']],
                                                     ['route' => 'isms.controls.index', 'label' => __('isms.title.controls'), 'icon' => 'verified_user', 'modal' => false, 'matches' => ['isms.controls.*']],
                                                     ['route' => 'isms.risks.index', 'label' => __('isms.title.risks'), 'icon' => 'warning_amber', 'modal' => false, 'matches' => ['isms.risks.*']],
                                                 ],
@@ -965,6 +1065,27 @@
                             // (viewAny der zugehoerigen Policy via NavGate).
                             $moduleByItemRoute = [
                                 'kanban.index' => 'module.kanban',
+                                'tenders.index' => 'module.applications',
+                                'investments.index' => 'module.investments',
+                                'crisis.index' => 'module.crisis_management',
+                                'sustainability.index' => 'module.sustainability',
+                                'claims.index' => 'module.claims',
+                                'claims.reports.index' => 'module.claims',
+                                'rental.index' => 'module.rental',
+                                'rental.calendar' => 'module.rental',
+                                'rental.profiles.index' => 'module.rental',
+                                'rental.rates.index' => 'module.rental',
+                                'rental.reports.index' => 'module.rental',
+                                'asset-finance.index' => 'module.asset_finance',
+                                'asset-finance.deadlines.index' => 'module.asset_finance',
+                                'asset-finance.reports.index' => 'module.asset_finance',
+                                'asset-compliance.index' => 'module.asset_compliance',
+                                'asset-compliance.profiles.index' => 'module.asset_compliance',
+                                'asset-compliance.schedules.index' => 'module.asset_compliance',
+                                'asset-compliance.reports.index' => 'module.asset_compliance',
+                                'crisis.exercises.index' => 'module.crisis_management',
+                                'recruiting.requisitions.index' => 'module.applications',
+                                'recruiting.applications.index' => 'module.applications',
                                 'documents.index' => 'module.documents',
                                 'knowledge.index' => 'module.knowledge',
                                 'ideas.index' => 'module.ideas',

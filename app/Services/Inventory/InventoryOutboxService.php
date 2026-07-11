@@ -67,6 +67,9 @@ class InventoryOutboxService {
                 'movement_type' => $movement->movement_type->value,
                 'qty_base' => $movement->qty_base,
                 'occurred_at' => $movement->occurred_at->toIso8601String(),
+                // Feature 078 (MVP-321): Serial/Referenz für externe Zustellung.
+                'stock_movement_id' => $movement->id,
+                'stock_serial_id' => $movement->stock_serial_id,
             ],
             $key,
             $movement->id,

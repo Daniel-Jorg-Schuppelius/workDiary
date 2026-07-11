@@ -287,7 +287,7 @@ class XRechnungGenerator {
     private function buildDocument(Invoice $invoice, ERechnungProfile $profile): Document {
         $seller = $this->sellerData($invoice);
         $customer = $invoice->customer;
-        $currency = CurrencyCode::tryFrom(strtoupper((string) $invoice->currency ?: 'EUR')) ?? CurrencyCode::Euro;
+        $currency = $invoice->currency ?? CurrencyCode::Euro;
         $category = $this->taxCategory($invoice, $seller);
         $taxRate = (float) $invoice->tax_rate;
 
@@ -368,7 +368,7 @@ class XRechnungGenerator {
                 // die TaxSubtotals selbst je Satz.
                 $item->tax_rate !== null ? (float) $item->tax_rate : $taxRate,
                 $this->unitCode((string) $item->unit),
-                $category,
+                $this->itemTaxCategory($item, $category),
                 mb_strlen($description) > 100 ? $description : null,
             );
         }
@@ -446,8 +446,25 @@ class XRechnungGenerator {
         if (($seller['small_business'] ?? false) === true) {
             return TaxCategory::EXEMPT;
         }
+        // Phase 23 (MVP-243, Folge-Lücke 1): Reverse-Charge-Belege sind
+        // Kategorie AE — NICHT Z (Zero-rated); eingefrorener Kontext gewinnt.
+        if ((bool) $invoice->is_reverse_charge) {
+            return TaxCategory::REVERSE_CHARGE;
+        }
+        $frozen = (string) data_get($invoice->tax_context, 'category', '');
+        $fromContext = $frozen !== '' ? TaxCategory::tryFrom($frozen) : null;
+        if ($fromContext !== null) {
+            return $fromContext;
+        }
 
         return (float) $invoice->tax_rate > 0 ? TaxCategory::STANDARD : TaxCategory::ZERO_RATED;
+    }
+
+    /** Positions-Kategorie (D6): expliziter Positions-Code vor Kopf-Kategorie. */
+    private function itemTaxCategory(\App\Models\InvoiceItem $item, TaxCategory $fallback): TaxCategory {
+        $code = trim((string) ($item->tax_category ?? ''));
+
+        return $code !== '' ? (TaxCategory::tryFrom($code) ?? $fallback) : $fallback;
     }
 
     private function unitCode(string $unit): UnitCode {

@@ -19,6 +19,7 @@
     <x-slot:actions>
         @if ($canCreate)
             <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
                         :href="route('service-tickets.create')"
                         show-label>{{ __('Ticket anlegen') }}</x-icon-btn>
         @endif

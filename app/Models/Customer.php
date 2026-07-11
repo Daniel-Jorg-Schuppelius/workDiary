@@ -42,7 +42,7 @@ use Illuminate\Support\{Carbon, Str};
  * @property string|null $address_zip
  * @property string|null $address_city
  * @property string|null $country
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $timezone
  * @property string|null $color
  * @property string|null $hourly_rate
@@ -122,6 +122,7 @@ class Customer extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'billable' => 'boolean',
         'billing_mode' => \App\Enums\Finance\BillingMode::class,
         'archived_at' => 'datetime',

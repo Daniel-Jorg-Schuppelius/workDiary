@@ -37,6 +37,14 @@ enum Permission: string implements HasLabel {
     case OrganizationUpdate = 'organization.update';
     case OrganizationBilling = 'organization.billing';
     case BrandingUpdate = 'branding.update';
+        // ── PDF-Dokumentdesign / Firmenbogen (Feature 076) ──────────
+    case DocumentDesignManage = 'documentDesign.manage';
+    case DocumentDesignAssign = 'documentDesign.assign';
+        // ── orgaMAX-Faktura-Aktionen (Feature 077, MVP-310) ─────────
+    case OrgamaxInvoiceConvert = 'finance.orgamax.convert';
+    case OrgamaxInvoiceLock = 'finance.orgamax.lock';
+    case OrgamaxInvoiceSend = 'finance.orgamax.send';
+    case OrgamaxPaymentRecord = 'finance.orgamax.payment';
     case OrgOnboardingView = 'org.onboarding.view';
     case OrgOnboardingSkipStep = 'org.onboarding.skipStep';
     case OrgOnboardingDismissWidget = 'org.onboarding.dismissWidget';
@@ -508,6 +516,83 @@ enum Permission: string implements HasLabel {
     case InventoryPost = 'inventory.post';
     case InventoryConfigure = 'inventory.configure';
 
+        // ── Bewerbungen & Ausschreibungen (Feature 068, MVP-183) ──────────
+        // Zwei GETRENNTE Rechtebereiche: Auftragsbewerbungen (tender.*) und
+        // Personalbewerbungen (recruiting.*) — Bewerberdaten sieht keine
+        // normale Projekt-/Auftragsrolle automatisch.
+    case TenderViewAny = 'tender.viewAny';
+    case TenderView = 'tender.view';
+    case TenderManage = 'tender.manage';
+    case TenderDecide = 'tender.decide';
+    case RecruitingViewAny = 'recruiting.viewAny';
+    case RecruitingView = 'recruiting.view';
+    case RecruitingManage = 'recruiting.manage';
+    case RecruitingDecide = 'recruiting.decide';
+    case RecruitingPrivacy = 'recruiting.privacy';
+
+        // ── Investitionsplanung (Feature 069, MVP-199) ──────────
+    case InvestmentViewAny = 'investment.viewAny';
+    case InvestmentView = 'investment.view';
+    case InvestmentManage = 'investment.manage';
+    case InvestmentApprove = 'investment.approve';
+
+        // ── Notfall-/Krisenmanagement (Feature 070, MVP-211) ──────────
+    case CrisisViewAny = 'crisis.viewAny';
+    case CrisisView = 'crisis.view';
+    case CrisisManage = 'crisis.manage';
+    case CrisisApprove = 'crisis.approve';
+
+        // ── Nachhaltigkeit/ESG (Feature 071, MVP-223) ──────────
+    case SustainabilityViewAny = 'sustainability.viewAny';
+    case SustainabilityView = 'sustainability.view';
+    case SustainabilityManage = 'sustainability.manage';
+
+        // ── Reklamation/Gewährleistung (Feature 072, MVP-246) ──────────
+        // Rollen trennen Annahme (manage), Bewertung/Entscheidung (decide),
+        // kaufmännische Freigabe (finance), Lagerprüfung (warehouse) und
+        // Lieferantenregress (recourse).
+    case ClaimViewAny = 'claim.viewAny';
+    case ClaimView = 'claim.view';
+    case ClaimManage = 'claim.manage';
+    case ClaimDecide = 'claim.decide';
+    case ClaimFinance = 'claim.finance';
+    case ClaimWarehouse = 'claim.warehouse';
+    case ClaimRecourse = 'claim.recourse';
+
+        // ── Gemeinsames Asset-Sperrmodell (D12, Phasen 25–27) ──────────
+        // Ausnahmefreigaben (blockOverride) sind befristet, begründet und
+        // auditiert — bewusst getrennt von block/unblock.
+    case AssetBlockManage = 'asset.block.manage';
+    case AssetBlockOverride = 'asset.block.override';
+
+        // ── Geräte-/Maschinenverleih (Feature 073, MVP-258) ────────────
+        // handover deckt Übergabe UND Rücknahme (operative Ausgabe),
+        // finance die kaufmännische Folge inkl. Kaution, rates die
+        // versionierten Preislisten (D10).
+    case RentalViewAny = 'rental.viewAny';
+    case RentalView = 'rental.view';
+    case RentalManage = 'rental.manage';
+    case RentalHandover = 'rental.handover';
+    case RentalFinance = 'rental.finance';
+    case RentalRates = 'rental.rates';
+
+        // ── Leasing/Finanzierung/Asset-Verträge (Feature 074, MVP-270) ─
+        // finance schützt vertrauliche Konditionen (Raten, Restwerte,
+        // Optionen); view sieht die Akte ohne Beträge.
+    case AssetFinanceViewAny = 'assetFinance.viewAny';
+    case AssetFinanceView = 'assetFinance.view';
+    case AssetFinanceManage = 'assetFinance.manage';
+    case AssetFinanceFinance = 'assetFinance.finance';
+
+        // ── Prüfmittel/Eichung/Kalibrierung (Feature 075, MVP-282) ─────
+        // inspect erfasst Prüfprotokolle/Zertifikate, release vergibt
+        // befristete Ausnahmefreigaben (nutzt das D12-Sperrmodell).
+    case AssetComplianceViewAny = 'assetCompliance.viewAny';
+    case AssetComplianceView = 'assetCompliance.view';
+    case AssetComplianceManage = 'assetCompliance.manage';
+    case AssetComplianceInspect = 'assetCompliance.inspect';
+    case AssetComplianceRelease = 'assetCompliance.release';
+
     public function label(): string {
         // Permission-Slugs enthalten Punkte (z. B. "project.view") — Laravels
         // __() / trans() würde die als verschachtelten Pfad interpretieren und
@@ -521,7 +606,7 @@ enum Permission: string implements HasLabel {
     public function group(): PermissionGroup {
         return match (true) {
             str_starts_with($this->value, 'access.'), str_starts_with($this->value, 'audit-log.') => PermissionGroup::Access,
-            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.'), str_starts_with($this->value, 'support.') => PermissionGroup::Organization,
+            str_starts_with($this->value, 'organization.'), str_starts_with($this->value, 'branding.'), str_starts_with($this->value, 'documentDesign.'), str_starts_with($this->value, 'org.onboarding.'), str_starts_with($this->value, 'privacy.'), str_starts_with($this->value, 'support.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'team.') => PermissionGroup::Teams,
             str_starts_with($this->value, 'user.') => PermissionGroup::Members,
             str_starts_with($this->value, 'customer.') => PermissionGroup::Customers,
@@ -533,6 +618,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'finance.') => PermissionGroup::Finance,
+            str_starts_with($this->value, 'investment.') => PermissionGroup::Finance,
             str_starts_with($this->value, 'article.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'inventory.') => PermissionGroup::MasterData,
             str_starts_with($this->value, 'voucher.') => PermissionGroup::Invoicing,
@@ -579,6 +665,13 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'externalParticipant.') => PermissionGroup::Protocols,
             str_starts_with($this->value, 'procedure.') => PermissionGroup::Procedures,
             str_starts_with($this->value, 'customerPortal.') => PermissionGroup::CustomerPortal,
+            str_starts_with($this->value, 'tender.'), str_starts_with($this->value, 'recruiting.') => PermissionGroup::Applications,
+            str_starts_with($this->value, 'crisis.') => PermissionGroup::Crisis,
+            str_starts_with($this->value, 'sustainability.') => PermissionGroup::Sustainability,
+            str_starts_with($this->value, 'claim.') => PermissionGroup::Claims,
+            str_starts_with($this->value, 'rental.') => PermissionGroup::Rental,
+            str_starts_with($this->value, 'assetFinance.') => PermissionGroup::AssetFinance,
+            str_starts_with($this->value, 'assetCompliance.') => PermissionGroup::AssetCompliance,
             str_starts_with($this->value, 'platform.'), str_starts_with($this->value, 'metrics.'), str_starts_with($this->value, 'backup.'), str_starts_with($this->value, 'security.') => PermissionGroup::Platform,
             default => PermissionGroup::MasterData,
         };

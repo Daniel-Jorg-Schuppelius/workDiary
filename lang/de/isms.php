@@ -27,6 +27,8 @@ return [
         'advisories' => 'Advisories',
         'suppliers' => 'Lieferanten',
         'readiness' => 'Reifegrad & Readiness',
+        'csf' => 'NIST CSF 2.0',
+        'csf_crosswalk' => 'CSF → ISO-Crosswalk',
     ],
 
     'subtitle' => [
@@ -48,6 +50,37 @@ return [
         'advisories' => 'Maschinenlesbare Advisories (CSAF/VEX) importieren und gegen Inventar und Release-SBOM abgleichen.',
         'suppliers' => 'Lieferanten nach Kritikalität und Risiko bewerten, Sicherheitsanforderungen und Vertragsmerkmale dokumentieren und wiederkehrend prüfen.',
         'readiness' => 'Begründete Selbsteinschätzung der Auditbereitschaft je Geltungsbereich — Reifegrad je Domäne und Gesamtempfehlung.',
+        'csf' => 'Abdeckung der sechs NIST-CSF-2.0-Funktionen — direkt aus der NIST-SoA oder abgeleitet aus der ISO/IEC-27001-SoA.',
+        'csf_scope' => 'Abdeckung der NIST-CSF-2.0-Funktionen für den Geltungsbereich „:scope".',
+        'csf_crosswalk' => 'Zuordnung der NIST-CSF-2.0-Kategorien zu ISO/IEC 27001:2022 mit Abdeckung aus der ISO-SoA.',
+        'csf_crosswalk_scope' => 'CSF-→-ISO-Zuordnung mit Abdeckung für den Geltungsbereich „:scope".',
+    ],
+
+    // NIST-CSF-2.0-Sichten (Nachtrag NIST): Funktionsabdeckung + Crosswalk.
+    'csf' => [
+        'action_crosswalk' => 'CSF → ISO-Crosswalk',
+        'action_dashboard' => 'CSF-Funktionen',
+        'disclaimer' => 'Diese Auswertung ist eine fachliche Selbsteinschätzung und KEINE amtliche Konformitätszusage.',
+        'no_nist_notice' => 'Der NIST-CSF-Katalog ist in diesem Geltungsbereich nicht importiert — die Abdeckung wird aus der ISO/IEC-27001-SoA über den Crosswalk abgeleitet. Für eine direkte Bewertung den Katalog „:label" unter „Anforderungen & SoA" laden.',
+        'no_crosswalk_notice' => 'Für diese Kombination ist kein Crosswalk hinterlegt.',
+        'overall' => 'Gesamtabdeckung der CSF-Funktionen',
+        'overall_hint' => 'Anteil abgedeckter anwendbarer Anforderungen (umgesetzt oder teilweise).',
+        'section_functions' => 'Abdeckung je CSF-Funktion',
+        'col_function' => 'Funktion',
+        'col_source' => 'Quelle',
+        'col_coverage' => 'Abdeckung',
+        'source_direct' => 'NIST-SoA',
+        'source_mapped' => 'aus ISO (Crosswalk)',
+        'source_none' => 'keine Daten',
+        'source_direct_hint' => 'Direkt aus SoA-Aussagen zum importierten NIST-CSF-Katalog.',
+        'source_mapped_hint' => 'Abgeleitet aus der ISO/IEC-27001-SoA über den Crosswalk.',
+        'crosswalk_intro' => 'Jede CSF-Kategorie ist auf die inhaltlich entsprechenden ISO/IEC-27001:2022-Referenzen abgebildet; die Abdeckung stammt aus der ISO-SoA des Geltungsbereichs.',
+        'crosswalk_version' => 'Crosswalk-Version :version (Stand :as_of).',
+        'crosswalk_version_no_date' => 'Crosswalk-Version :version.',
+        'crosswalk_source' => 'CSF-Kategorie',
+        'crosswalk_targets' => 'ISO/IEC 27001:2022',
+        'crosswalk_coverage' => 'Abdeckung (ISO-SoA)',
+        'crosswalk_empty' => 'Für diese Norm-Kombination sind keine Zuordnungen hinterlegt.',
     ],
 
     'field' => [

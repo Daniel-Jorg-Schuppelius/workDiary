@@ -46,7 +46,7 @@ class InventoryLedger {
             }
 
             try {
-                return StockMovement::query()->create([
+                $movement = StockMovement::query()->create([
                     'organization_id' => $orgId,
                     'article_variant_id' => $posting->variant->id,
                     'warehouse_id' => $posting->warehouse->id,
@@ -68,6 +68,16 @@ class InventoryLedger {
                     'cost_total' => $posting->costTotal,
                     'currency' => $posting->currency,
                 ]);
+
+                // Zentraler Spiegel (Feature 078, MVP-321): bei externer
+                // Bestandsführung wandert jedes physische Delta in die Outbox —
+                // unabhängig vom Buchungspfad (Stock-UI, Wareneingang, Inventur,
+                // Scan, Fertigung, …). Lazy aufgelöst, da der Mirror über den
+                // Provider-Resolver indirekt auf diese Engine zeigt (Zyklus).
+                // Idempotent-Replays (return oben/catch unten) spiegeln nicht erneut.
+                app(ExternalStockMirror::class)->mirrorMovement($movement);
+
+                return $movement;
             } catch (QueryException $e) {
                 // Verlor das Rennen um den Unique-Index: bestehende Buchung
                 // idempotent zurückgeben statt mit 500 durchzuschlagen.

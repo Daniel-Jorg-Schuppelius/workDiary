@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
  * @property string $country
  * @property Carbon $valid_from
  * @property string $monthly_amount
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string $source
  */
 class MinimumWageReference extends Model {
@@ -35,6 +35,7 @@ class MinimumWageReference extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'valid_from' => 'date',
         'monthly_amount' => 'decimal:2',
     ];

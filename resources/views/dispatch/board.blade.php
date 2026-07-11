@@ -8,6 +8,7 @@
 @section('content')
     <x-index-page :subtitle="__('Offene und geplante Aufträge des Zeitraums kompakt nach Disposition.')">
         <x-slot:actions>
+        <x-icon-btn icon="auto_fix_high" size="sm" :href="route('dispatch.suggestions')" show-label>{{ __('Leerzeit-Vorschläge') }}</x-icon-btn>
             <x-icon-btn icon="map" tone="ghost" size="sm"
                         :href="route('dispatch.map', request()->only(['from', 'to', 'user']))"
                         show-label>{{ __('Karte') }}</x-icon-btn>

@@ -139,6 +139,13 @@ return [
         'procedures' => 'Procedimientos',
         'customer-portal' => 'Portal del cliente',
         'platform' => 'Plataforma / Operaciones',
+        'applications' => 'Candidaturas y licitaciones',
+        'crisis' => 'Gestión de crisis',
+        'sustainability' => 'Sostenibilidad y ESG',
+        'claims' => 'Reclamaciones y garantía',
+        'rental' => 'Alquiler de equipos',
+        'asset-finance' => 'Leasing y contratos de activos',
+        'asset-compliance' => 'Equipos de medición y calibración',
     ],
     'permission' => [
         'access.manage' => 'Abrir la gestión de accesos',
@@ -149,6 +156,12 @@ return [
         'organization.update' => 'Editar la organización',
         'organization.billing' => 'Gestionar la facturación de la organización',
         'branding.update' => 'Editar la marca',
+        'documentDesign.manage' => 'Gestionar el diseño de documentos',
+        'documentDesign.assign' => 'Asignar el diseño de documentos y vista previa',
+        'finance.orgamax.convert' => 'orgaMAX: convertir el pedido en factura',
+        'finance.orgamax.lock' => 'orgaMAX: finalizar/bloquear la factura',
+        'finance.orgamax.send' => 'orgaMAX: enviar la factura',
+        'finance.orgamax.payment' => 'orgaMAX: registrar un pago',
         'org.onboarding.view' => 'Ver la lista de comprobación de onboarding',
         'org.onboarding.skipStep' => 'Omitir un paso de onboarding',
         'org.onboarding.dismissWidget' => 'Descartar el widget de onboarding',
@@ -482,5 +495,65 @@ return [
         'customerPortal.timeEntry.view' => 'Ver los registros de tiempo en el portal del cliente',
         'customerPortal.invoice.view' => 'Ver las facturas en el portal del cliente',
         'customerPortal.openIssue.view' => 'Ver los puntos abiertos en el portal del cliente',
+
+        // Bewerbungen & Ausschreibungen (Feature 068)
+        'tender.viewAny' => 'Listar licitaciones',
+        'tender.view' => 'Ver expediente de licitación',
+        'tender.manage' => 'Gestionar expedientes de licitación',
+        'tender.decide' => 'Decidir licitaciones (go/no-go, adjudicación)',
+        'recruiting.viewAny' => 'Listar candidaturas',
+        'recruiting.view' => 'Ver expediente de candidatura',
+        'recruiting.manage' => 'Gestionar expedientes de candidatura',
+        'recruiting.decide' => 'Decidir candidaturas (oferta/aceptación/rechazo)',
+        'recruiting.privacy' => 'Gestionar protección de datos de candidatos (borrado/acceso/talent pool)',
+
+        // Investitionsplanung (Feature 069)
+        'investment.viewAny' => 'Listar inversiones',
+        'investment.view' => 'Ver expediente de inversión',
+        'investment.manage' => 'Gestionar expedientes de inversión',
+        'investment.approve' => 'Aprobar presupuestos de inversión',
+
+        // Krisenmanagement (Feature 070)
+        'crisis.viewAny' => 'Listar crisis',
+        'crisis.view' => 'Ver expediente de crisis',
+        'crisis.manage' => 'Gestionar expedientes de crisis',
+        'crisis.approve' => 'Aprobar comunicación de crisis / activar crisis',
+
+        // Nachhaltigkeit (Feature 071)
+        'sustainability.viewAny' => 'Listar datos de sostenibilidad',
+        'sustainability.view' => 'Ver datos de sostenibilidad',
+        'sustainability.manage' => 'Gestionar sostenibilidad (evaluaciones/factores/medidas/objetivos)',
+        'claim.viewAny' => 'Listar reclamaciones',
+        'claim.view' => 'Ver expediente de reclamación',
+        'claim.manage' => 'Aceptar y gestionar reclamaciones',
+        'claim.decide' => 'Evaluar y decidir reclamaciones',
+        'claim.finance' => 'Aprobar consecuencias comerciales de reclamaciones',
+        'claim.warehouse' => 'Inspeccionar y almacenar devoluciones',
+        'claim.recourse' => 'Gestionar el recurso a proveedores',
+
+        // Modelo de bloqueo compartido (D12, fases 25-27)
+        'asset.block.manage' => 'Bloquear activos y levantar bloqueos',
+        'asset.block.override' => 'Conceder excepciones temporales para activos bloqueados',
+
+        // Alquiler de equipos (funcionalidad 073)
+        'rental.viewAny' => 'Listar expedientes de alquiler',
+        'rental.view' => 'Consultar expediente de alquiler',
+        'rental.manage' => 'Crear y gestionar expedientes de alquiler',
+        'rental.handover' => 'Registrar entregas y devoluciones',
+        'rental.finance' => 'Aprobar y facturar cargos y fianzas',
+        'rental.rates' => 'Gestionar tarifas de alquiler',
+
+        // Leasing / financiación (funcionalidad 074)
+        'assetFinance.viewAny' => 'Listar expedientes de leasing',
+        'assetFinance.view' => 'Consultar expediente de leasing (sin condiciones)',
+        'assetFinance.manage' => 'Crear y gestionar expedientes de leasing',
+        'assetFinance.finance' => 'Consultar y gestionar condiciones confidenciales',
+
+        // Equipos de medición / calibración (funcionalidad 075)
+        'assetCompliance.viewAny' => 'Listar obligaciones de inspección y equipos de medición',
+        'assetCompliance.view' => 'Consultar expediente de inspección',
+        'assetCompliance.manage' => 'Gestionar perfiles y obligaciones de inspección',
+        'assetCompliance.inspect' => 'Realizar inspecciones y registrar evidencias',
+        'assetCompliance.release' => 'Conceder excepciones a bloqueos de inspección',
     ],
 ];

@@ -58,7 +58,7 @@
                             <div class="font-medium">
                                 {{ $transaction->booking_date->format('d.m.Y') }} ·
                                 <span class="{{ $transaction->isCredit() ? 'text-success' : 'text-base-content' }}">
-                                    {{ $transaction->isCredit() ? '+' : '−' }}{{ number_format((float) $transaction->amount, 2, ',', '.') }} {{ $transaction->currency }}
+                                    {{ $transaction->isCredit() ? '+' : '−' }}{{ number_format((float) $transaction->amount, 2, ',', '.') }} {{ $transaction->currency->value }}
                                 </span>
                             </div>
                             <div class="text-sm text-base-content/70">

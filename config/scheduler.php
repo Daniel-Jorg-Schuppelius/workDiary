@@ -27,6 +27,15 @@ return [
     'retention_days' => (int) env('SCHEDULER_RUNS_RETENTION_DAYS', 30),
 
     'jobs' => [
+        // --- Reklamations-Fristeneskalation (Feature 072, MVP-255) ---
+        'claims.escalate' => [
+            'command' => 'claims:escalate',
+            'cadence' => ['type' => 'dailyAt', 'time' => '07:15'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+
         // --- Betriebsaufgaben-Sync (Feature 041, MVP-058) ---
         'operations.scan' => [
             'command' => 'operations:scan',
@@ -240,6 +249,20 @@ return [
         ],
         'lexoffice.sync_vouchers' => [
             'command' => 'lexoffice:sync-vouchers',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'jtl.sync' => [
+            'command' => 'jtl:sync',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
+        ],
+        'orgamax.sync' => [
+            'command' => 'orgamax:sync',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',

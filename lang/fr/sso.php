@@ -24,16 +24,65 @@ return [
     'groups_hint' => 'Groupes provisionnés par le fournisseur d’identité. Associer un groupe à une équipe reflète ses membres dans WorkDiary (team_user) ; aucun rôle n’est jamais attribué.',
     'no_groups' => 'Aucun groupe SCIM provisionné pour le moment.',
 
+    'oidc_heading' => 'Authentification unique OIDC',
+    'oidc_hint' => 'Connexion via OpenID Connect (Entra ID, Keycloak, Google …). La liaison de compte utilise uniquement issuer + subject ; le SSO ne crée jamais de comptes et n’attribue jamais de rôles. Après une connexion IdP, la vérification multifacteur relève du fournisseur d’identité.',
+    'saml_heading' => 'SAML 2.0',
+    'saml_hint' => 'Connexion initiée par le SP via SAML 2.0. Les assertions doivent être signées ; les réponses initiées par l’IdP (non sollicitées) sont rejetées. Un second certificat peut être enregistré en parallèle pour la rotation.',
+
+    'break_glass_heading' => 'Comptes de secours (break-glass)',
+    'break_glass_hint' => 'Comptes d’urgence non fédérés qui peuvent continuer à se connecter par mot de passe malgré le SSO obligatoire. Chaque utilisation est auditée. Conservez au moins un compte, sinon une panne de l’IdP bloque l’organisation.',
+    'no_break_glass' => 'Aucun compte de secours défini.',
+
+    'discover' => [
+        'hint' => 'Saisissez l’identifiant de votre organisation pour démarrer la connexion via votre fournisseur d’identité.',
+        'org_label' => 'Identifiant de l’organisation',
+        'org_placeholder' => 'p. ex. acme-sarl',
+        'submit' => 'Continuer vers le fournisseur d’identité',
+        'back_to_login' => 'Retour à la connexion',
+    ],
+
+    'protocol' => [
+        'oidc' => 'OIDC',
+        'saml' => 'SAML 2.0',
+    ],
+
     'field' => [
         'label' => 'Libellé',
         'label_placeholder' => 'p. ex. Entra ID production',
         'team_none' => '— aucune équipe —',
+        'start_url' => 'URL de démarrage SSO',
+        'callback_url' => 'URL de redirection/callback (à enregistrer chez l’IdP)',
+        'acs_url' => 'URL ACS (à enregistrer chez l’IdP)',
+        'metadata_url' => 'URL des métadonnées SP',
+        'issuer' => 'Issuer',
+        'client_id' => 'ID client',
+        'client_secret' => 'Secret client',
+        'secret_keep' => 'laisser vide = inchangé',
+        'scopes' => 'Scopes',
+        'idp_entity_id' => 'Entity ID de l’IdP',
+        'idp_sso_url' => 'URL SSO de l’IdP',
+        'idp_certificate' => 'Certificat de signature de l’IdP (PEM)',
+        'idp_certificate_next' => 'Certificat successeur (rotation, optionnel)',
+        'idp_certificate_next_hint' => 'Pendant la rotation, les deux certificats sont acceptés.',
+        'active' => 'Actif',
+        'enforced' => 'SSO obligatoire',
+        'enforced_hint' => 'Bloque la connexion par mot de passe pour tous les comptes de cette organisation (sauf break-glass).',
+        'email_link' => 'Liaison initiale par e-mail',
+        'email_link_hint' => 'À la première connexion SSO, lier un compte existant via l’e-mail (uniquement en cas de correspondance unique). Ensuite, seuls issuer + subject comptent.',
+        'private_network' => 'Autoriser un IdP sur réseau privé',
+        'private_network_hint' => 'Exception à la protection SSRF pour les IdP on-premise (p. ex. Keycloak interne).',
+        'break_glass_user' => 'Compte',
     ],
 
     'action' => [
         'issue' => 'Émettre',
         'revoke' => 'Révoquer',
         'save_mapping' => 'Enregistrer',
+        'save_connection' => 'Enregistrer la connexion',
+        'test_connection' => 'Tester la connexion',
+        'remove_connection' => 'Supprimer la connexion',
+        'break_glass_add' => 'Définir comme compte de secours',
+        'break_glass_remove' => 'Retirer',
     ],
 
     'col' => [
@@ -46,12 +95,38 @@ return [
 
     'status' => [
         'active' => 'Actif',
+        'inactive' => 'Inactif',
         'revoked' => 'Révoqué',
+        'enforced' => 'SSO obligatoire',
     ],
 
     'flash' => [
         'token_issued' => 'Jeton SCIM émis.',
         'token_revoked' => 'Jeton SCIM révoqué.',
         'group_mapped' => 'Association d’équipe enregistrée.',
+        'connection_saved' => 'Connexion :protocol enregistrée.',
+        'connection_ok' => 'Connexion :protocol vérifiée avec succès.',
+        'connection_removed' => 'Connexion supprimée.',
+        'break_glass_added' => 'Compte de secours défini.',
+        'break_glass_removed' => 'Statut de secours retiré.',
+    ],
+
+    'error' => [
+        'discovery_failed' => 'La découverte OIDC du fournisseur d’identité est injoignable ou incomplète.',
+        'issuer_mismatch' => 'L’issuer de la réponse de découverte ne correspond pas à la configuration.',
+        'token_exchange_failed' => 'L’échange de code avec le fournisseur d’identité a échoué.',
+        'token_invalid' => 'Le jeton de connexion du fournisseur d’identité est invalide.',
+        'token_expired' => 'Le jeton de connexion du fournisseur d’identité a expiré.',
+        'jwks_failed' => 'Les clés de signature du fournisseur d’identité n’ont pas pu être chargées.',
+        'no_account' => 'Aucun compte WorkDiary n’est lié à cette identité. Veuillez contacter votre administration.',
+        'org_without_sso' => 'Aucune authentification unique n’est configurée pour cet identifiant.',
+        'flow_expired' => 'La connexion SSO a expiré. Veuillez réessayer.',
+        'module_disabled' => 'L’authentification unique n’est pas disponible pour cette organisation.',
+        'url_not_public' => 'L’URL n’est pas accessible publiquement. Pour les fournisseurs internes, activez « Autoriser un IdP sur réseau privé ».',
+        'saml_invalid' => 'La réponse SAML est invalide.',
+        'saml_unsolicited' => 'Les réponses SAML non sollicitées (initiées par l’IdP) sont rejetées. Veuillez démarrer la connexion depuis WorkDiary.',
+        'saml_no_nameid' => 'La réponse SAML ne contient pas de NameID. Configurez une règle de claim NameID chez l’IdP (p. ex. ADFS).',
+        'saml_settings_invalid' => 'La configuration SAML est incomplète ou invalide.',
+        'saml_certificate_invalid' => 'Le certificat de l’IdP n’a pas pu être lu (PEM attendu).',
     ],
 ];

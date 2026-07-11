@@ -66,6 +66,7 @@ class Article extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'type' => ArticleType::class,
         'status' => ArticleStatus::class,
         'stockable' => 'boolean',

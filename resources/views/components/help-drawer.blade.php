@@ -37,43 +37,57 @@
             <p class="text-base-content/60">{{ __('Wird geladen…') }}</p>
         </div>
 
-        <footer class="shrink-0 border-t border-base-300 px-4 py-3" data-help-footer>
-            <p class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('War das hilfreich?') }}</p>
-            {{-- Outline + Akzentfarbe (grün/rot): nacktes btn-outline ist auf
-                 dem dunklen wd-badge-Grund kaum sichtbar – die leuchtenden
-                 success/error-Farben heben sich klar ab (wie der Schließen-
-                 Button oben). --}}
-            <div class="flex flex-wrap items-center gap-2">
-                <x-button type="button" tone="outline" size="sm" icon="thumb_up" class="btn-success" data-help-feedback="1">
-                    {{ __('Ja') }}
-                </x-button>
-                <x-button type="button" tone="outline" size="sm" icon="thumb_down" class="btn-error" data-help-feedback="0">
-                    {{ __('Nein') }}
-                </x-button>
-                <span class="ml-2 text-xs text-base-content/60 hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
-            </div>
-            <div class="mt-3 hidden" data-help-related>
-                <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Verwandte Themen') }}</p>
-                <ul class="mt-1 space-y-1 text-sm" data-help-related-list></ul>
-            </div>
-            {{-- „Problem melden" (Feature 041, MVP-053): primärer Einstieg des
-                 Fehlermeldesystems — übernimmt Route/URL/Help-Topic der Seite. --}}
-            @auth
-                <div class="mt-3 border-t border-base-300 pt-3">
-                    <x-button tone="outline" size="sm" icon="flag" class="btn-warning w-full"
-                              data-entry-modal-trigger
-                              :href="route('problem-reports.create', array_filter([
-                                  'route' => \Illuminate\Support\Facades\Route::currentRouteName(),
-                                  'url' => url()->full(),
-                                  'topic' => app(\App\Services\Help\HelpContextResolver::class)->currentTopicFor(request()),
-                              ]))">
-                        {{ __('errors.report_problem') }}
+        {{-- Footer mit Feedback/Aktionen. Auf niedrigen Bildschirmen frisst er
+             den Platz für den Hilfetext — daher ist der Inhalt einklappbar
+             (Toggle-Leiste). Der Zustand wird gemerkt; bei geringer Viewport-
+             Höhe klappt er standardmäßig ein (JS in help-drawer.js). --}}
+        <footer class="shrink-0 border-t border-base-300" data-help-footer>
+            <button type="button"
+                    class="flex w-full items-center justify-between gap-2 px-4 py-2 text-xs uppercase tracking-wider text-base-content/60 transition-colors hover:text-base-content"
+                    data-help-footer-toggle
+                    aria-expanded="true"
+                    aria-controls="help-footer-content">
+                <span>{{ __('Feedback & Aktionen') }}</span>
+                <x-icon name="expand_more" class="shrink-0 transition-transform" data-help-footer-chevron />
+            </button>
+            <div id="help-footer-content" class="px-4 pb-3" data-help-footer-content>
+                <p class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('War das hilfreich?') }}</p>
+                {{-- Outline + Akzentfarbe (grün/rot): nacktes btn-outline ist auf
+                     dem dunklen wd-badge-Grund kaum sichtbar – die leuchtenden
+                     success/error-Farben heben sich klar ab (wie der Schließen-
+                     Button oben). --}}
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-button type="button" tone="outline" size="sm" icon="thumb_up" class="btn-success" data-help-feedback="1">
+                        {{ __('Ja') }}
                     </x-button>
-                    <a href="{{ route('problem-reports.index') }}" class="mt-1 block text-center text-xs text-base-content/60 hover:text-base-content">
-                        {{ __('problemreport.title.index') }}
-                    </a>
+                    <x-button type="button" tone="outline" size="sm" icon="thumb_down" class="btn-error" data-help-feedback="0">
+                        {{ __('Nein') }}
+                    </x-button>
+                    <span class="ml-2 text-xs text-base-content/60 hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
                 </div>
-            @endauth
+                <div class="mt-3 hidden" data-help-related>
+                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Verwandte Themen') }}</p>
+                    <ul class="mt-1 space-y-1 text-sm" data-help-related-list></ul>
+                </div>
+                {{-- „Problem melden" (Feature 041, MVP-053): primärer Einstieg des
+                     Fehlermeldesystems — übernimmt Route/URL/Help-Topic der Seite. --}}
+                @auth
+                    <div class="mt-3 border-t border-base-300 pt-3">
+                        <x-button tone="outline" size="sm" icon="flag" class="btn-warning w-full"
+                                  data-entry-modal-trigger
+                                  :href="route('problem-reports.create', array_filter([
+                                      'route' => \Illuminate\Support\Facades\Route::currentRouteName(),
+                                      'url' => url()->full(),
+                                      'topic' => app(\App\Services\Help\HelpContextResolver::class)->currentTopicFor(request()),
+                                  ]))">
+                            {{ __('errors.report_problem') }}
+                        </x-button>
+                        <a href="{{ route('problem-reports.index') }}" class="mt-1 block text-center text-xs text-base-content/60 hover:text-base-content">
+                            {{ __('problemreport.title.index') }}
+                        </a>
+                    </div>
+                @endauth
+            </div>
         </footer>
     </div>
 </div>

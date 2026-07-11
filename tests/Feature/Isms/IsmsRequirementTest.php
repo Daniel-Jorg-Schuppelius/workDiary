@@ -101,6 +101,7 @@ class IsmsRequirementTest extends TestCase {
             'iso45001-2018' => 27,
             'iso37301-2021' => 27,
             'iso42001-2023' => 27,
+            'nist-csf-2-0' => 28,
         ];
 
         $total = 0;
@@ -115,6 +116,7 @@ class IsmsRequirementTest extends TestCase {
         $this->assertSame($total, IsmsApplicabilityStatement::query()->count());
         $this->assertDatabaseHas('isms_requirements', ['norm' => 'ISO 9001', 'edition' => '2015', 'ref_no' => '10.2']);
         $this->assertDatabaseHas('isms_requirements', ['norm' => 'ISO/IEC 42001', 'edition' => '2023', 'ref_no' => '4.3']);
+        $this->assertDatabaseHas('isms_requirements', ['norm' => 'NIST CSF', 'edition' => '2.0', 'ref_no' => 'GV.SC']);
     }
 
     public function test_import_into_second_scope_creates_only_statements_no_duplicate_requirements(): void {

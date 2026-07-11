@@ -102,7 +102,9 @@ class ServiceTicketController extends Controller {
     public function create(): View {
         Gate::authorize('create', ServiceTicket::class);
 
-        return view('service-tickets.create', [
+        return view('service-tickets._form_dialog', [
+            'ticket' => null,
+            'isDialog' => true,
             'priorityOptions' => $this->priorityOptions(),
         ]);
     }

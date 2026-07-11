@@ -56,10 +56,9 @@
             </div>
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.default_currency') }}</label>
-                <input type="text" maxlength="3" name="settings[invoicing][default_currency]"
-                       value="{{ old('settings.invoicing.default_currency', data_get($stored, 'invoicing.default_currency', '')) }}"
-                       placeholder="{{ __('settings.placeholder_default', ['value' => (string) config('invoicing.default_currency')]) }}"
-                       class="input input-bordered w-full uppercase">
+                <select name="settings[invoicing][default_currency]" class="select select-bordered w-full">
+                    <x-currency-options :selected="old('settings.invoicing.default_currency', data_get($stored, 'invoicing.default_currency', ''))" nullable :null-label="__('settings.placeholder_default', ['value' => (string) config('invoicing.default_currency')])" />
+                </select>
             </div>
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('settings.invoicing.time_unit') }}</label>

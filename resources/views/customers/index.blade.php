@@ -108,7 +108,7 @@
                         </td>
                         <td class="text-right tabular-nums">
                             @if ($customer->hourly_rate !== null)
-                                {{ number_format((float) $customer->hourly_rate, 2, ',', '.') }} {{ $customer->currency }}
+                                {{ number_format((float) $customer->hourly_rate, 2, ',', '.') }} {{ $customer->currency->value }}
                             @else
                                 <span class="text-base-content/40">—</span>
                             @endif

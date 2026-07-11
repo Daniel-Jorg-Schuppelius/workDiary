@@ -46,6 +46,25 @@ return [
             'basis' => ['DE' => 'GoBD / AO §147', 'AT' => 'BAO §132', 'CH' => 'OR Art. 958f'],
         ],
 
+        // Abgelehnte/zurückgezogene Bewerbungen: AGG-/Klagefrist —
+        // die konkrete Vormerkung steht am Datensatz (retention_until),
+        // dieser Katalogeintrag dokumentiert Bereich + Rechtsgrundlage.
+        // Reklamationsakten (Feature 072): Korrespondenz ist Handels-/
+        // Geschäftsbrief (6 J., § 257 HGB); folgt eine Gutschrift, gilt für
+        // den BELEG die Belegfrist im Rechnungsbereich (8 J., BEG IV) —
+        // zwei Fristklassen, der Beleg lebt im Faktura-Modul.
+        'claims' => [
+            'label' => 'Reklamationen (abgeschlossen)',
+            'years' => ['DE' => 6, 'AT' => 7, 'CH' => 10],
+            'basis' => ['DE' => '§ 257 HGB (Geschäftsbriefe, 6 J.)', 'AT' => '§ 212 UGB (7 J.)', 'CH' => 'OR 958f (10 J.)'],
+        ],
+
+        'applications' => [
+            'label' => 'Bewerbungen (abgelehnt/zurückgezogen)',
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'AGG §15 Abs. 4 / ArbGG §61b (Praxis 4–6 Monate)', 'AT' => 'GlBG §15 (Praxis 7 Monate)', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
         // Abgeschlossene Betroffenenanfragen: Nachweis der Erfüllung.
         'privacy_requests' => [
             'label' => 'Betroffenenanfragen (abgeschlossen)',

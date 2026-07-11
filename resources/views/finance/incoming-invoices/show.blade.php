@@ -25,6 +25,10 @@
             <x-icon-btn icon="download" tone="outline" size="sm"
                         :href="route('documents.download', $document)"
                         show-label>{{ __('Original (XML/PDF)') }}</x-icon-btn>
+            <x-icon-btn icon="code" tone="outline" size="sm"
+                        :href="route('finance.incoming-invoices.xml', $document)"
+                        :title="__('Extrahierte Rechnungs-XML (bei ZUGFeRD aus dem PDF)')"
+                        show-label>{{ __('Rechnungs-XML') }}</x-icon-btn>
         </x-slot:actions>
     </x-page-toolbar>
 
@@ -113,28 +117,79 @@
         </x-card>
     @endif
 
+    {{-- Zuordnungs-Vorschläge + Abweichungen (MVP-167): nur Hinweise — keine Auto-Übernahme. --}}
+    @if ($incoming !== null && (($incoming->summary['deviations'] ?? []) !== [] || array_filter((array) ($incoming->summary['suggestions'] ?? [])) !== []))
+        <x-card :title="__('Zuordnung und Abweichungen (beim Empfang)')">
+            @foreach ((array) ($incoming->summary['deviations'] ?? []) as $deviation)
+                <div class="alert alert-warning text-sm">
+                    <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                    {{ $deviation }}
+                </div>
+            @endforeach
+            @php($suggestions = (array) ($incoming->summary['suggestions'] ?? []))
+            <x-detail-grid>
+                @if (($suggestions['suppliers'] ?? []) !== [])
+                    <x-detail-grid.row :label="__('Lieferanten-Vorschlag')">
+                        @foreach ($suggestions['suppliers'] as $candidate)
+                            <div>{{ $candidate['label'] }} <span class="text-xs text-base-content/60">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                        @endforeach
+                    </x-detail-grid.row>
+                @endif
+                @if (($suggestions['purchase_orders'] ?? []) !== [])
+                    <x-detail-grid.row :label="__('Bestell-Vorschlag')">
+                        @foreach ($suggestions['purchase_orders'] as $candidate)
+                            <div>{{ $candidate['label'] }} <span class="text-xs text-base-content/60">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                        @endforeach
+                    </x-detail-grid.row>
+                @endif
+                @if (($suggestions['projects'] ?? []) !== [])
+                    <x-detail-grid.row :label="__('Projekt-Vorschlag')">
+                        @foreach ($suggestions['projects'] as $candidate)
+                            <div>{{ $candidate['label'] }} <span class="text-xs text-base-content/60">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                        @endforeach
+                    </x-detail-grid.row>
+                @endif
+            </x-detail-grid>
+            <p class="mt-2 text-xs text-base-content/60">{{ __('Vorschläge sind unverbindlich — es werden nie automatisch Stammdaten angelegt oder geändert.') }}</p>
+        </x-card>
+    @endif
+
     {{-- Prüfbereich (MVP-165/167): Hash-Nachweis + Freigabe-Workflow. --}}
     @if ($incoming !== null)
         <x-card :title="__('Prüfung und Freigabe')">
             <x-detail-grid>
-                <x-detail-grid.row :label="__('Status')">{{ $incoming->status }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Status')">{{ $incoming->statusLabel() }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Empfangen')">{{ $incoming->received_at->isoFormat('L LT') }} · {{ $incoming->source }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('SHA-256')"><span class="font-mono text-xs">{{ $incoming->sha256 }}</span></x-detail-grid.row>
                 @if ($incoming->decision_note)
                     <x-detail-grid.row :label="__('Anmerkung')">{{ $incoming->decision_note }}</x-detail-grid.row>
                 @endif
+                @if ($incoming->transferred_at)
+                    <x-detail-grid.row :label="__('Buchhaltungs-Übergabe')">{{ $incoming->transferred_at->isoFormat('L LT') }}</x-detail-grid.row>
+                @endif
             </x-detail-grid>
             <form method="POST" action="{{ route('finance.incoming-invoices.decide', $incoming) }}" class="mt-2 flex flex-wrap items-end gap-2">
                 @csrf
-                <select name="decision" class="select select-sm select-bordered">
+                <select name="decision" class="select select-sm select-bordered" aria-label="{{ __('Entscheidung') }}">
                     <option value="approved">{{ __('Fachlich freigeben') }}</option>
                     <option value="question">{{ __('Rückfrage') }}</option>
                     <option value="rejected">{{ __('Ablehnen') }}</option>
                     <option value="payment_released">{{ __('Zahlung freigeben') }}</option>
                 </select>
-                <input name="note" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
+                <input name="note" maxlength="500" class="input input-sm input-bordered flex-1"
+                       aria-label="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}"
+                       placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
                 <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
             </form>
+            @if ($incoming->transferred_at === null && in_array($incoming->status, [\App\Models\IncomingEInvoice::STATUS_APPROVED, \App\Models\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true))
+                <x-action-form :action="route('finance.incoming-invoices.transfer', $incoming)" class="mt-2"
+                      :confirm="__('Eingang an die führende Buchhaltung übergeben? Die Übergabe wird als Nachweis vermerkt.')"
+                      confirm-icon="outbox"
+                      confirm-tone="primary"
+                      :confirm-label="__('Übergeben')">
+                    <x-icon-btn icon="outbox" tone="primary" size="sm" type="submit" show-label>{{ __('An Buchhaltung übergeben') }}</x-icon-btn>
+                </x-action-form>
+            @endif
         </x-card>
     @endif
 </x-page-shell>

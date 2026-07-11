@@ -5,6 +5,7 @@ return [
     'service_on' => 'Service on :date',
     'hourly_rate' => 'Hourly rate',
     'unit_hour' => 'h',
+    'unit_flat' => 'flat',
     'unit_piece' => 'pc',
     'tax_rate' => 'Tax rate',
     'currency' => 'Currency',

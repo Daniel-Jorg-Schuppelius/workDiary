@@ -201,7 +201,7 @@ class LexofficeMapper {
     ): array {
         $taxType = $defaults['default_tax_type'] ?? 'net';
         $vatRate = (float) ($defaults['default_vat_rate'] ?? 19.0);
-        $currency = $customer->currency ?: ($defaults['default_currency'] ?? 'EUR');
+        $currency = $customer->currency->value;
 
         // Taktung & Zusammenfassung anwenden: liefert Blöcke je (Projekt, kind).
         if ($entries instanceof \Illuminate\Database\Eloquent\Collection) {

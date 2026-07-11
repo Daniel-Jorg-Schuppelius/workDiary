@@ -33,6 +33,16 @@ class NavGate {
      * @var array<string, class-string>
      */
     private const MODELS = [
+        'sustainability.*' => \App\Models\Sustainability\SustainabilityAssessment::class,
+        'crisis.*' => \App\Models\Crisis\CrisisCase::class,
+        'claims.*' => \App\Models\Claims\ClaimCase::class,
+        'rental.*' => \App\Models\Rental\RentalCase::class,
+        'asset-finance.*' => \App\Models\AssetFinance\AssetFinanceContract::class,
+        'asset-compliance.*' => \App\Models\AssetCompliance\AssetComplianceProfile::class,
+        'investments.*' => \App\Models\Investments\InvestmentCase::class,
+        'tenders.*' => \App\Models\Applications\ApplicationOpportunity::class,
+        'recruiting.requisitions.*' => \App\Models\Applications\JobRequisition::class,
+        'recruiting.applications.*' => \App\Models\Applications\JobApplication::class,
         'customers.*' => \App\Models\Customer::class,
         'customer-queries.*' => \App\Models\CustomerQuery::class,
         'suppliers.*' => \App\Models\Supplier::class,
@@ -70,6 +80,8 @@ class NavGate {
         'procedure-runs.*' => \App\Models\ProcedureRun::class,
         'isms.dashboard' => \App\Models\Isms\IsmsRisk::class,
         'isms.readiness' => \App\Models\Isms\IsmsRisk::class,
+        'isms.csf' => \App\Models\Isms\IsmsRequirement::class,
+        'isms.csf.*' => \App\Models\Isms\IsmsRequirement::class,
         'isms.suppliers.*' => \App\Models\Isms\IsmsSupplierAssessment::class,
         'isms.risks.*' => \App\Models\Isms\IsmsRisk::class,
         'isms.incidents.*' => \App\Models\Isms\IsmsSecurityIncident::class,

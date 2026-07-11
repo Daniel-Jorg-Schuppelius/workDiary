@@ -79,5 +79,29 @@
             </ul>
         @endif
     </x-card>
+
+    <x-card :title="__('4. Betragsabgleich XML/PDF (XRechnung vs. ZUGFeRD)')">
+        @if (! $report['xml_generated'])
+            <p class="text-sm text-base-content/60">{{ __('Übersprungen — der Preflight hat Fehler, es wurde kein XML erzeugt.') }}</p>
+        @else
+            @if ($report['consistency']['errors'] === [])
+                <p class="text-sm text-success">
+                    {{ __('Beleg, XRechnung-XML und visuelle Darstellung stimmen centgenau überein.') }}
+                    @if ($report['consistency']['zugferd_checked'])
+                        {{ __('Das im ZUGFeRD-PDF eingebettete CII wurde ebenfalls geprüft.') }}
+                    @endif
+                </p>
+            @else
+                <ul class="space-y-1 text-sm">
+                    @foreach ($report['consistency']['errors'] as $error)
+                        <li class="text-error">✖ {{ $error }}</li>
+                    @endforeach
+                </ul>
+            @endif
+            @unless ($report['consistency']['zugferd_checked'])
+                <p class="mt-2 text-sm text-base-content/60">{{ __('ZUGFeRD-Abgleich nicht durchgeführt (PDF-Toolkit/ZUGFeRD nicht verfügbar).') }}</p>
+            @endunless
+        @endif
+    </x-card>
 </x-page-shell>
 @endsection

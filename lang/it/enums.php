@@ -213,6 +213,21 @@ return [
     ],
     'notification' => [
         'event' => [
+            'crisis' => [
+                'alert' => 'Allarme di crisi',
+            ],
+            'claim' => [
+                'escalation' => 'Reclamo in ritardo',
+            ],
+            'rental' => [
+                'returnOverdue' => 'Restituzione noleggio in ritardo',
+            ],
+            'assetFinance' => [
+                'deadline' => 'Scadenza leasing',
+            ],
+            'assetCompliance' => [
+                'inspectionDue' => 'Verifica in scadenza/scaduta',
+            ],
             'ticket' => [
                 'assigned' => 'Ticket assegnato',
                 'customerReplied' => 'Il cliente ha risposto',
@@ -814,6 +829,7 @@ return [
             'workdiary' => 'WorkDiary (locale)',
             'lexoffice' => 'Lexoffice guida',
             'datev' => 'DATEV guida',
+            'orgamax' => 'orgaMAX guida',
         ],
         'transfer-channel' => [
             'time' => 'Prestazioni/tempo',
@@ -822,6 +838,7 @@ return [
         'transfer-target' => [
             'lexoffice' => 'Lexoffice',
             'datev' => 'DATEV',
+            'orgamax' => 'orgaMAX (ordine)',
             'file' => 'Esportazione file',
         ],
         'transfer-status' => [

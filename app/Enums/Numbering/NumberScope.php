@@ -25,6 +25,10 @@ enum NumberScope: string {
     case Cancellation = 'cancellation';
     case Quote = 'quote';
     case Proforma = 'proforma';
+    case Claim = 'claim';
+    case Rma = 'rma';
+    case Rental = 'rental';
+    case AssetFinance = 'asset_finance';
 
     public function label(): string {
         return match ($this) {
@@ -42,6 +46,10 @@ enum NumberScope: string {
             self::Cancellation => __('Stornorechnung'),
             self::Quote => __('Angebot'),
             self::Proforma => __('Pro-forma-Rechnung'),
+            self::Claim => __('Reklamation'),
+            self::Rma => __('Rücksendung (RMA)'),
+            self::Rental => __('Verleihakte'),
+            self::AssetFinance => __('Leasingakte'),
         };
     }
 
@@ -54,6 +62,8 @@ enum NumberScope: string {
             self::Customer, self::Supplier, self::Invoice, self::CreditNote, self::Cancellation => true,
             self::Quote, self::Proforma => false, // keine steuerliche Belegwirkung
             self::ServiceTicket, self::Asset, self::Article, self::ManufacturingOrder, self::Serial, self::PurchaseOrder, self::ProblemReport => false,
+            self::Claim, self::Rma => false, // Fallakten/Logistik, keine Belegwirkung
+            self::Rental, self::AssetFinance => false, // Fallakten, keine Belegwirkung
         };
     }
 }

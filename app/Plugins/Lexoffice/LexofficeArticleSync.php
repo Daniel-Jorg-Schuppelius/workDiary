@@ -11,8 +11,9 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\{LexofficeArticle, Organization, PendingExternalConflict};
+use App\Models\{ArticleVariant, ExternalArticleMapping, IntegrationInboxItem, LexofficeArticle, Organization, PendingExternalConflict};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Services\Inventory\VariantMatcher;
 use RuntimeException;
 
 /**
@@ -21,6 +22,14 @@ use RuntimeException;
  *  - sync(): Pull mit optionaler {@see LexofficeMatchPolicy} für Konflikte
  *  - push(): einzelnen lokalen Artikel (POST/PUT) zu Lexoffice senden
  *  - pushAllDirty(): alle als is_dirty markierten Artikel pushen
+ *
+ * Zusätzlich verknüpft sync() jeden Lexoffice-Artikel über den
+ * {@see VariantMatcher} (SKU/Artikelnummer primär, eindeutige GTIN als
+ * systemübergreifende Brücke — Feature 048/078) mit dem lokalen
+ * Artikelstamm ({@see ExternalArticleMapping}, plugin_id `lexoffice`).
+ * Mehrdeutige GTIN-Treffer landen in der Integrations-Inbox; Artikel ohne
+ * lokalen Stammsatz bleiben bewusst reine Projektion (z. B.
+ * Dienstleistungen) — anders als bei JTL blockiert hier nichts.
  *
  * Verwendet den HTTP-Client direkt, da das verwendete SDK keinen
  * Articles-Endpunkt anbietet.
@@ -54,7 +63,7 @@ class LexofficeArticleSync {
     }
 
     /**
-     * @return array{created: int, updated: int, archived: int, conflicts: int}
+     * @return array{created: int, updated: int, archived: int, conflicts: int, linked: int, ambiguous: int}
      */
     public function sync(Organization $organization): array {
         if ($this->apiKey === null || $this->apiKey === '') {
@@ -65,6 +74,8 @@ class LexofficeArticleSync {
         $created = 0;
         $updated = 0;
         $conflicts = 0;
+        $linked = 0;
+        $ambiguous = 0;
         $page = 0;
         $pageSize = 100;
 
@@ -91,6 +102,15 @@ class LexofficeArticleSync {
                 $seen[] = $external;
 
                 $attrs = $this->itemToAttrs($item);
+
+                // Stammdaten-Brücke (GTIN/SKU) — unabhängig von der
+                // Inhalts-Konfliktpolitik der Projektion.
+                $outcome = $this->linkToLocalVariant($organization, $external, $attrs);
+                if ($outcome === 'linked') {
+                    $linked++;
+                } elseif ($outcome === 'ambiguous') {
+                    $ambiguous++;
+                }
 
                 $existing = LexofficeArticle::query()
                     ->where('organization_id', $organization->id)
@@ -147,7 +167,86 @@ class LexofficeArticleSync {
             'updated' => $updated,
             'archived' => (int) $archived,
             'conflicts' => $conflicts,
+            'linked' => $linked,
+            'ambiguous' => $ambiguous,
         ];
+    }
+
+    /**
+     * Verknüpft einen Lexoffice-Artikel über SKU/GTIN mit dem lokalen
+     * Artikelstamm. Kein Treffer ⇒ bewusst kein Inbox-Fall (reine
+     * Projektion bleibt zulässig); mehrdeutige GTIN ⇒ Inbox.
+     *
+     * @param  array<string, mixed>  $attrs
+     * @return 'linked'|'ambiguous'|null
+     */
+    private function linkToLocalVariant(Organization $organization, string $external, array $attrs): ?string {
+        $sku = trim((string) ($attrs['article_number'] ?? ''));
+        $gtin = trim((string) ($attrs['gtin'] ?? ''));
+        if ($sku === '' && $gtin === '') {
+            return null;
+        }
+
+        $match = app(VariantMatcher::class)->match((int) $organization->id, $sku, $gtin);
+
+        if ($match['ambiguous']) {
+            IntegrationInboxItem::query()->firstOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'dedupe_key' => LexofficePlugin::ID . ':article:' . $external,
+                ],
+                [
+                    'plugin_id' => LexofficePlugin::ID,
+                    'source' => LexofficePlugin::ID,
+                    'target_type' => 'article_variant',
+                    'external_type' => 'article',
+                    'external_id' => $external,
+                    'case_type' => IntegrationInboxItem::CASE_AMBIGUOUS,
+                    'status' => IntegrationInboxItem::STATUS_OPEN,
+                    'display_title' => trim((string) ($attrs['name'] ?? '')) !== '' ? (string) $attrs['name'] : $external,
+                    'display_subtitle' => trim('SKU ' . ($sku !== '' ? $sku : '-') . ' · GTIN ' . ($gtin !== '' ? $gtin : '-')),
+                    'remote_snapshot' => [
+                        'id' => $external,
+                        'articleNumber' => $sku,
+                        'gtin' => $gtin,
+                        'name' => (string) ($attrs['name'] ?? ''),
+                    ],
+                    'occurred_at' => now(),
+                ],
+            );
+
+            return 'ambiguous';
+        }
+
+        $variant = $match['variant'];
+        if (! $variant instanceof ArticleVariant) {
+            return null;
+        }
+
+        ExternalArticleMapping::query()->updateOrCreate(
+            [
+                'organization_id' => $organization->id,
+                'plugin_id' => LexofficePlugin::ID,
+                'external_id' => $external,
+            ],
+            [
+                'article_id' => $variant->article_id,
+                'article_variant_id' => $variant->id,
+                'external_parent_id' => null,
+                'external_number' => $sku !== '' ? mb_substr($sku, 0, 64) : null,
+                'sync_status' => 'linked',
+                'last_synced_at' => now(),
+            ],
+        );
+
+        // Offene Inbox-Fälle zu diesem Artikel sind damit erledigt.
+        IntegrationInboxItem::query()
+            ->where('organization_id', $organization->id)
+            ->where('dedupe_key', LexofficePlugin::ID . ':article:' . $external)
+            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->update(['status' => IntegrationInboxItem::STATUS_RESOLVED_LINKED, 'resolved_at' => now()]);
+
+        return 'linked';
     }
 
     /**
@@ -253,7 +352,7 @@ class LexofficeArticleSync {
             'price' => array_filter([
                 'netPrice' => $article->net_unit_price !== null ? (float) $article->net_unit_price : null,
                 'grossPrice' => $article->gross_unit_price !== null ? (float) $article->gross_unit_price : null,
-                'currency' => $article->currency ?: 'EUR',
+                'currency' => $article->currency->value,
                 'taxRate' => $article->vat_rate !== null ? (float) $article->vat_rate : null,
                 'leadingPrice' => $article->leading_price ?: 'NET',
             ], static fn($v) => $v !== null),
@@ -268,7 +367,11 @@ class LexofficeArticleSync {
         $fields = ['name', 'article_number', 'gtin', 'description', 'note', 'type', 'unit_name', 'net_unit_price', 'gross_unit_price', 'currency', 'vat_rate', 'leading_price'];
         $diff = [];
         foreach ($fields as $f) {
-            $a = (string) ($local->{$f} ?? '');
+            $localValue = $local->{$f};
+            if ($localValue instanceof \BackedEnum) {
+                $localValue = $localValue->value;
+            }
+            $a = (string) ($localValue ?? '');
             $b = (string) ($remote[$f] ?? '');
             if ($a !== $b) {
                 $diff[] = $f;

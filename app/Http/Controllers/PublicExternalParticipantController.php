@@ -150,6 +150,13 @@ class PublicExternalParticipantController extends Controller {
                 'meta' => $subject->created_at !== null ? CarbonFmt::fdatetime($subject->created_at) : '',
                 'summary' => null,
             ],
+            // Feature 075 (MVP-290): Prüftermin für externe Prüfstellen —
+            // nur Asset/Prüfart/Fälligkeit, keine internen Daten.
+            $subject instanceof \App\Models\AssetCompliance\AssetInspectionSchedule => [
+                'title' => __('Prüftermin: :asset', ['asset' => $subject->asset()->withoutGlobalScopes()->first()->name ?? '—']),
+                'meta' => CarbonFmt::fdate($subject->due_on),
+                'summary' => $subject->assignment()->withoutGlobalScopes()->first()?->profile()->first()?->name,
+            ],
             default => ['title' => __('external.subject.generic'), 'meta' => '', 'summary' => null],
         };
     }

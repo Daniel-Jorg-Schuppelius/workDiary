@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string $pack_size
  * @property int $lead_time_days
  * @property numeric-string|null $purchase_price
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $is_preferred
  */
 class ArticleSupply extends Model {
@@ -49,6 +49,7 @@ class ArticleSupply extends Model {
     ];
 
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'moq' => 'decimal:4',
         'pack_size' => 'decimal:4',
         'lead_time_days' => 'integer',

@@ -10,6 +10,8 @@
 
 namespace App\Support;
 
+use CommonToolkit\Helper\Data\ColorHelper;
+
 /**
  * Sanitisiertes Value-Object für ein org-eigenes Custom-Theme.
  *
@@ -18,13 +20,13 @@ namespace App\Support;
  * lässt ausschließlich bekannte Properties + valide Werte durch (Allowlist —
  * niemals Blocklist) und rendert daraus garantiert injection-freies CSS:
  *
- *   - Farben nur über Color::normalizeHex() (`#` + 6 Hex-Zeichen).
+ *   - Farben nur über ColorHelper::normalizeHex() (`#` + 6 Hex-Zeichen).
  *   - scheme ∈ {light, dark}.
  *   - Geometrie nur als `<zahl>rem|px` (oder `0`).
  *   - key nur `[a-z0-9-]{1,32}` (geht in Selektor + localStorage).
  *
  * Fehlende `*-content`-Farben werden per Kontrast aus der Hintergrundfarbe
- * abgeleitet (Color::contrastContent), sodass der Admin nur die 7 Pflichtfarben
+ * abgeleitet (ColorHelper::readableForeground), sodass der Admin nur die 7 Pflichtfarben
  * + scheme angeben muss.
  */
 final class ThemeDefinition {
@@ -83,7 +85,7 @@ final class ThemeDefinition {
         $colors = [];
 
         foreach (self::REQUIRED_COLORS as $name) {
-            $hex = Color::normalizeHex(is_string($inColors[$name] ?? null) ? $inColors[$name] : null);
+            $hex = ColorHelper::normalizeHex(is_string($inColors[$name] ?? null) ? $inColors[$name] : null);
             if ($hex === null) {
                 return null; // Pflichtfarbe fehlt/ungültig → Theme ungültig
             }
@@ -91,19 +93,19 @@ final class ThemeDefinition {
         }
 
         foreach (self::STATUS_DEFAULTS as $name => $default) {
-            $hex = Color::normalizeHex(is_string($inColors[$name] ?? null) ? $inColors[$name] : null);
+            $hex = ColorHelper::normalizeHex(is_string($inColors[$name] ?? null) ? $inColors[$name] : null);
             $colors[$name] = $hex ?? $default;
         }
 
         // base-content: explizit oder aus base-100 abgeleitet.
-        $baseContent = Color::normalizeHex(is_string($inColors['base-content'] ?? null) ? $inColors['base-content'] : null);
-        $colors['base-content'] = $baseContent ?? Color::contrastContent($colors['base-100']);
+        $baseContent = ColorHelper::normalizeHex(is_string($inColors['base-content'] ?? null) ? $inColors['base-content'] : null);
+        $colors['base-content'] = $baseContent ?? ColorHelper::readableForeground($colors['base-100']);
 
         // <farbe>-content: explizit oder aus der jeweiligen Farbe abgeleitet.
         foreach (self::CONTENT_BASES as $name) {
             $contentKey = $name . '-content';
-            $hex = Color::normalizeHex(is_string($inColors[$contentKey] ?? null) ? $inColors[$contentKey] : null);
-            $colors[$contentKey] = $hex ?? Color::contrastContent($colors[$name]);
+            $hex = ColorHelper::normalizeHex(is_string($inColors[$contentKey] ?? null) ? $inColors[$contentKey] : null);
+            $colors[$contentKey] = $hex ?? ColorHelper::readableForeground($colors[$name]);
         }
 
         $geometry = self::sanitizeGeometry(is_array($raw['geometry'] ?? null) ? $raw['geometry'] : []);
@@ -122,7 +124,7 @@ final class ThemeDefinition {
      * diesem Verhältnis werden Hover/Border dort unlesbar.
      */
     public function neutralContrast(): float {
-        return Color::contrastRatio($this->colors['neutral'], $this->colors['neutral-content']);
+        return ColorHelper::contrastRatio($this->colors['neutral'], $this->colors['neutral-content']);
     }
 
     /**

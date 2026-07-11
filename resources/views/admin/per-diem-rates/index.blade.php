@@ -57,7 +57,7 @@
                 <td class="text-right tabular-nums">{{ number_format((float) $rate->full_day_amount, 2, ',', '.') }}</td>
                 <td class="text-right tabular-nums">{{ number_format((float) $rate->partial_day_amount, 2, ',', '.') }}</td>
                 <td class="text-right tabular-nums">{{ $rate->overnight_amount !== null ? number_format((float) $rate->overnight_amount, 2, ',', '.') : '—' }}</td>
-                <td>{{ $rate->currency }}</td>
+                <td>{{ $rate->currency->value }}</td>
                 <td class="text-base-content/60 text-sm">{{ $rate->source ?? '—' }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">

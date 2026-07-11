@@ -40,6 +40,7 @@ class StockValuation extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'avg_cost' => 'decimal:4',
         'qty_on_hand' => 'decimal:4',
     ];

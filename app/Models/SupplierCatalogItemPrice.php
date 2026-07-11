@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $supplier_catalog_item_id
  * @property numeric-string $purchase_price
- * @property string $currency
+ * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property \Illuminate\Support\Carbon $captured_at
  */
 class SupplierCatalogItemPrice extends Model {
@@ -39,6 +39,7 @@ class SupplierCatalogItemPrice extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'purchase_price' => 'decimal:4',
         'captured_at' => 'datetime',
     ];

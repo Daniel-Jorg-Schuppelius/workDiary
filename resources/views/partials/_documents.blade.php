@@ -52,7 +52,7 @@
             'date' => $invoice->issued_on,
             'status' => $invoice->status,
             'amount' => (float) $invoice->total,
-            'currency' => $invoice->currency,
+            'currency' => $invoice->currency->value,
             'model' => $invoice,
         ]);
     }
@@ -65,7 +65,7 @@
             'date' => $voucher->voucher_date,
             'status' => $voucher->voucher_status,
             'amount' => (float) $voucher->total_amount,
-            'currency' => $voucher->currency,
+            'currency' => $voucher->currency->value,
             'model' => $voucher,
         ]);
     }

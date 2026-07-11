@@ -191,7 +191,7 @@
                     <tr @class(['bg-success/10' => $supply->id === $recommendedSupplyId])>
                         <td>{{ $supply->supplier?->name }}</td>
                         <td class="font-mono text-xs">{{ $supply->supplier_sku }}</td>
-                        <td class="text-right tabular-nums">{{ $supply->purchase_price !== null ? number_format((float) $supply->purchase_price, 2, ',', '.') . ' ' . $supply->currency : '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $supply->purchase_price !== null ? number_format((float) $supply->purchase_price, 2, ',', '.') . ' ' . $supply->currency->value : '—' }}</td>
                         <td class="text-right tabular-nums">{{ $supply->lead_time_days }} {{ __('article.supplies.days') }}</td>
                         <td class="text-right tabular-nums">{{ rtrim(rtrim((string) $supply->moq, '0'), '.') }}</td>
                         <td class="space-x-1">

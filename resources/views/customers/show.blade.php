@@ -32,7 +32,7 @@
         <x-slot:meta>
             @if ($customer->company){{ $customer->company }} · @endif
             @if ($customer->number){{ __('Nr.') }} {{ $customer->number }} · @endif
-            {{ $customer->currency }}
+            {{ $customer->currency->value }}
         </x-slot:meta>
         @if ($tags->isNotEmpty())
             <x-slot:tags>
@@ -48,7 +48,7 @@
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
         <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeFormatted" tone="neutral" />
-        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="number_format($totalRate, 2, ',', '.') . ' ' . $customer->currency" tone="neutral" />
+        <x-kpi-tile :label="__('Umsatz (kalk.)')" :value="number_format($totalRate, 2, ',', '.') . ' ' . $customer->currency->value" tone="neutral" />
     </div>
 
     {{-- Stammdaten --}}
@@ -76,13 +76,13 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Abrechenbar')" :value="$customer->billable ? __('Ja') : __('Nein')" />
                 <x-detail-grid.row :label="__('USt-IdNr.')" :value="$customer->vat_id" />
-                <x-detail-grid.row :label="__('Währung')" :value="$customer->currency" />
+                <x-detail-grid.row :label="__('Währung')" :value="$customer->currency->value" />
                 <x-detail-grid.row :label="__('Zeitzone')" :value="$customer->timezone" />
                 @if ($customer->hourly_rate !== null)
-                    <x-detail-grid.row :label="__('Stundensatz')" :value="number_format((float) $customer->hourly_rate, 2, ',', '.').' '.$customer->currency" />
+                    <x-detail-grid.row :label="__('Stundensatz')" :value="number_format((float) $customer->hourly_rate, 2, ',', '.').' '.$customer->currency->value" />
                 @endif
                 @if ($customer->internal_rate !== null)
-                    <x-detail-grid.row :label="__('Interner Satz')" :value="number_format((float) $customer->internal_rate, 2, ',', '.').' '.$customer->currency" />
+                    <x-detail-grid.row :label="__('Interner Satz')" :value="number_format((float) $customer->internal_rate, 2, ',', '.').' '.$customer->currency->value" />
                 @endif
             </x-detail-grid>
             @if ($customer->invoice_text)

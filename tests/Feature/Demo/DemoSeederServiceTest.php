@@ -42,6 +42,8 @@ class DemoSeederServiceTest extends TestCase {
         $this->assertSame(3, $counts['time_entries']);
         $this->assertSame(1, $counts['open_issues']);
         $this->assertSame(25, $counts['background_diary_entries']);
+        // §-19-Fakturakette (Feature 066): Angebot → Annahme → Rechnung (0 %).
+        $this->assertSame(1, $counts['invoices']);
 
         // Erweitertes End-to-End-Szenario (Feature 040).
         $this->assertSame(3, $counts['materials']);

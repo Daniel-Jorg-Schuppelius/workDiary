@@ -53,6 +53,16 @@ Route::post('/two-factor-challenge/email', [TwoFactorChallengeController::class,
 Route::post('/two-factor-challenge/webauthn/options', [TwoFactorChallengeController::class, 'webauthnOptions'])->name('two-factor.login.webauthn.options');
 Route::post('/two-factor-challenge/webauthn', [TwoFactorChallengeController::class, 'webauthnVerify'])->middleware('throttle:login')->name('two-factor.login.webauthn');
 
+// ── Single-Sign-on (Feature 057, MVP-120/121) ───────────────────────────────
+// SP-initiierter Start je Organisation (Slug), OIDC-Callback (global, an der
+// IdP-App registriert), SAML-ACS (POST vom IdP, CSRF-Ausnahme in
+// bootstrap/app.php) und SP-Metadata. Modul-Gating im Controller.
+Route::get('/sso', [\App\Http\Controllers\Auth\SsoController::class, 'discover'])->name('sso.discover')->middleware('guest');
+Route::get('/sso/oidc/callback', [\App\Http\Controllers\Auth\SsoController::class, 'oidcCallback'])->name('sso.oidc.callback')->middleware('guest');
+Route::get('/sso/{slug}/start', [\App\Http\Controllers\Auth\SsoController::class, 'start'])->name('sso.start')->middleware('guest')->where('slug', '[a-z0-9-]+');
+Route::post('/sso/{slug}/saml/acs', [\App\Http\Controllers\Auth\SsoController::class, 'samlAcs'])->name('sso.saml.acs')->middleware('guest')->where('slug', '[a-z0-9-]+');
+Route::get('/sso/{slug}/saml/metadata', [\App\Http\Controllers\Auth\SsoController::class, 'metadata'])->name('sso.saml.metadata')->where('slug', '[a-z0-9-]+');
+
 Route::get('/register', [TenantRegistrationController::class, 'showForm'])->name('register')->middleware('guest');
 Route::post('/register', [TenantRegistrationController::class, 'register'])->middleware(['guest', 'throttle:register']);
 
@@ -140,6 +150,16 @@ Route::post('extern/{token}/bestaetigen', [PublicExternalParticipantController::
     ->middleware('throttle:12,1')
     ->name('external.confirm');
 
+// Kundenportal-Annahme eines Angebots (Feature 066, MVP-170): token-basiert
+// ohne Login (nur der SHA-256-Hash ist gespeichert); ungültig/fehlend ⇒ 404.
+// Bewusst außerhalb von auth/EnforcePlanModules; Throttle gegen Brute-Force.
+Route::get('angebote/{quote}/annahme', [\App\Http\Controllers\QuoteController::class, 'portalShow'])
+    ->middleware('throttle:30,1')
+    ->name('quotes.portal.show');
+Route::post('angebote/{quote}/annahme', [\App\Http\Controllers\QuoteController::class, 'portalDecide'])
+    ->middleware('throttle:12,1')
+    ->name('quotes.portal.decide');
+
 // Backup-Heartbeat (MVP-046 §5): externer Endpoint mit Bearer-Token,
 // daher außerhalb von Auth-Gruppen, mit CSRF-Ausnahme (siehe bootstrap/app.php).
 Route::post('admin/backup/heartbeat', [BackupHeartbeatController::class, 'store'])
@@ -221,20 +241,20 @@ Route::middleware('auth')->group(function () {
             ->name('whistleblowing.internal.')
             ->middleware(\App\Http\Middleware\Whistleblowing\RequireMeldestelleTwoFactor::class)
             ->group(function (): void {
-            Route::get('/', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'index'])->name('index');
-            Route::get('{case}', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'show'])->name('show');
-            Route::post('{case}/eingang', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'acknowledge'])->name('acknowledge');
-            Route::post('{case}/status', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'status'])->name('status');
-            Route::post('{case}/zuweisungen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'assign'])->name('assign');
-            Route::post('{case}/notizen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'note'])->name('note');
-            Route::post('{case}/nachrichten', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'message'])->name('message');
-            Route::post('{case}/konflikt', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'conflict'])->name('conflict');
-            Route::post('{case}/notfallzugriff', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'emergency'])->name('emergency');
-            Route::post('{case}/betroffene', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'subject'])->name('subject');
-            Route::get('{case}/anhaenge/{attachment}', [\App\Http\Controllers\Whistleblowing\InternalAttachmentController::class, 'download'])->name('attachment');
-            Route::post('{case}/export', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'export'])->name('export');
-            Route::post('{case}/loeschen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'destroy'])->name('destroy');
-        });
+                Route::get('/', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'index'])->name('index');
+                Route::get('{case}', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'show'])->name('show');
+                Route::post('{case}/eingang', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'acknowledge'])->name('acknowledge');
+                Route::post('{case}/status', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'status'])->name('status');
+                Route::post('{case}/zuweisungen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'assign'])->name('assign');
+                Route::post('{case}/notizen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'note'])->name('note');
+                Route::post('{case}/nachrichten', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'message'])->name('message');
+                Route::post('{case}/konflikt', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'conflict'])->name('conflict');
+                Route::post('{case}/notfallzugriff', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'emergency'])->name('emergency');
+                Route::post('{case}/betroffene', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'subject'])->name('subject');
+                Route::get('{case}/anhaenge/{attachment}', [\App\Http\Controllers\Whistleblowing\InternalAttachmentController::class, 'download'])->name('attachment');
+                Route::post('{case}/export', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'export'])->name('export');
+                Route::post('{case}/loeschen', [\App\Http\Controllers\Whistleblowing\InternalCaseController::class, 'destroy'])->name('destroy');
+            });
 
         // ── Hinweisgeber: Portal-Verwaltung (Permission settings.manage) ─────
         Route::prefix('compliance/portal')
@@ -362,6 +382,13 @@ Route::middleware('auth')->group(function () {
             // Auditbereitschafts-Dashboard (Feature 044, MVP 1): KPI-Kacheln
             // + Drill-down je Geltungsbereich (ReadinessService, Lesesicht).
             Route::get('auditbereitschaft', [\App\Http\Controllers\Isms\DashboardController::class, 'index'])->name('dashboard');
+
+            // NIST-CSF-2.0-Sichten (Nachtrag NIST): Funktionsabdeckung je
+            // Geltungsbereich (direkt aus NIST-SoA oder abgeleitet aus der
+            // ISO-SoA via Crosswalk) + CSF→ISO/IEC-27001-Zuordnung. Lesesicht
+            // (CsfReadinessService), Autorisierung wie übriger ISMS-Lesezugriff.
+            Route::get('nist-csf', [\App\Http\Controllers\Isms\CsfController::class, 'dashboard'])->name('csf');
+            Route::get('nist-csf/crosswalk', [\App\Http\Controllers\Isms\CsfController::class, 'crosswalk'])->name('csf.crosswalk');
 
             // Risikoregister (Export: Direkt-Export JSON/CSV, ?format=...)
             Route::get('risiken', [\App\Http\Controllers\Isms\RiskController::class, 'index'])->name('risks.index');
@@ -751,6 +778,10 @@ Route::middleware('auth')->group(function () {
 
         // Leitstelle (Feature 029): Dispatch-Board + Karten-Sicht (SLA-Risiko).
         // Route-Namen dispatch.* → Plan-Gating module.planung (config/plans.php).
+        // Leerzeit-/Lückenfüller-Vorschläge (Epic 14.2, MVP-245).
+        Route::get('dispatch-board/vorschlaege', [\App\Http\Controllers\DispatchSuggestionController::class, 'index'])->name('dispatch.suggestions');
+        Route::post('dispatch-board/vorschlaege/{entry}/uebernehmen', [\App\Http\Controllers\DispatchSuggestionController::class, 'apply'])->name('dispatch.suggestions.apply');
+        Route::post('dispatch-board/vorschlaege/{entry}/ablehnen', [\App\Http\Controllers\DispatchSuggestionController::class, 'dismiss'])->name('dispatch.suggestions.dismiss');
         Route::get('dispatch-board', [DispatchBoardController::class, 'board'])->name('dispatch.board');
         Route::get('dispatch-board/map', [DispatchBoardController::class, 'map'])->name('dispatch.map');
         // Kalender-/Tagesansicht (Rang 52) + Auftrags-Qualifikationsmatrix (Rang 53).
@@ -1132,6 +1163,27 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/sso/tokens/{token}/revoke', [\App\Http\Controllers\Admin\SsoAdminController::class, 'revokeToken'])->name('admin.sso.tokens.revoke');
         // SCIM-Gruppe → Team (bewusster Admin-Schritt; SCIM selbst vergibt kein Team/Rollen).
         Route::post('admin/sso/groups/{group}/team', [\App\Http\Controllers\Admin\SsoAdminController::class, 'mapGroupTeam'])->name('admin.sso.groups.map');
+        // OIDC-/SAML-Verbindungen (MVP-120/121) + Break-Glass-Konten.
+        Route::post('admin/sso/connections', [\App\Http\Controllers\Admin\SsoAdminController::class, 'saveConnection'])->name('admin.sso.connections.save');
+        Route::post('admin/sso/connections/{connection}/test', [\App\Http\Controllers\Admin\SsoAdminController::class, 'testConnection'])->name('admin.sso.connections.test');
+        Route::delete('admin/sso/connections/{connection}', [\App\Http\Controllers\Admin\SsoAdminController::class, 'destroyConnection'])->name('admin.sso.connections.destroy');
+        Route::post('admin/sso/break-glass', [\App\Http\Controllers\Admin\SsoAdminController::class, 'toggleBreakGlass'])->name('admin.sso.break-glass.toggle');
+
+        // ── PDF-Dokumentdesign / Firmenbogen (Admin, Feature 076, module.dokumentdesign) ──
+        Route::get('admin/document-design', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'index'])->name('admin.document-design.index');
+        Route::get('admin/document-design/assets/create', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'createAsset'])->name('admin.document-design.assets.create');
+        Route::post('admin/document-design/assets', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'storeAsset'])->name('admin.document-design.assets.store');
+        Route::get('admin/document-design/assets/{asset}/preview', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'assetPreview'])->name('admin.document-design.assets.preview');
+        Route::post('admin/document-design/assets/{asset}/archive', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'archiveAsset'])->name('admin.document-design.assets.archive');
+        Route::get('admin/document-design/profiles/create', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'createProfile'])->name('admin.document-design.profiles.create');
+        Route::post('admin/document-design/profiles', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'storeProfile'])->name('admin.document-design.profiles.store');
+        Route::get('admin/document-design/{profile}/editor', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'editor'])->name('admin.document-design.editor');
+        Route::put('admin/document-design/{profile}/draft', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'updateDraft'])->name('admin.document-design.draft.update');
+        Route::post('admin/document-design/{profile}/draft', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'newDraft'])->name('admin.document-design.draft.new');
+        Route::post('admin/document-design/{profile}/activate', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'activate'])->name('admin.document-design.activate');
+        Route::post('admin/document-design/{profile}/assign', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'assign'])->name('admin.document-design.assign');
+        Route::post('admin/document-design/{profile}/archive', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'archiveProfile'])->name('admin.document-design.archive');
+        Route::get('admin/document-design/{profile}/test-pdf', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'testPdf'])->name('admin.document-design.test-pdf');
 
         // ── E-Mail-Eingang (Admin, Feature 056) ─────────────────────────────────
         Route::get('admin/mail', [\App\Http\Controllers\Admin\MailAdminController::class, 'index'])->name('admin.mail.index');
@@ -1204,7 +1256,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('invoices/{invoice}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
         Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
         Route::post('invoices/{invoice}/approve', [InvoiceController::class, 'approve'])->name('invoices.approve');
+        Route::get('invoices/{invoice}/dun', [InvoiceController::class, 'dunForm'])->name('invoices.dun.form');
         Route::post('invoices/{invoice}/dun', [InvoiceController::class, 'dun'])->name('invoices.dun');
+        Route::post('invoices/{invoice}/proforma-umwandeln', [InvoiceController::class, 'proformaConvert'])->name('invoices.proforma-convert');
+        Route::post('invoices/{invoice}/final', [InvoiceController::class, 'makeFinal'])->name('invoices.final');
         Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
         Route::post('invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
         Route::post('invoices/{invoice}/credit-note', [InvoiceController::class, 'creditNote'])->name('invoices.credit-note');
@@ -1224,6 +1279,265 @@ Route::middleware('auth')->group(function () {
         Route::resource('invoice-templates', \App\Http\Controllers\InvoiceTemplateController::class)
             ->except(['show'])
             ->parameters(['invoice-templates' => 'template']);
+
+        // ── Bewerbungen & Ausschreibungen (Feature 068, module.applications) ──
+        Route::prefix('ausschreibungen')->name('tenders.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Applications\TenderController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Applications\TenderController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Applications\TenderController::class, 'store'])->name('store');
+            Route::get('{opportunity}', [\App\Http\Controllers\Applications\TenderController::class, 'show'])->name('show');
+            Route::get('{opportunity}/bearbeiten', [\App\Http\Controllers\Applications\TenderController::class, 'edit'])->name('edit');
+            Route::put('{opportunity}', [\App\Http\Controllers\Applications\TenderController::class, 'update'])->name('update');
+            Route::delete('{opportunity}', [\App\Http\Controllers\Applications\TenderController::class, 'destroy'])->name('destroy');
+            Route::post('{opportunity}/status', [\App\Http\Controllers\Applications\TenderController::class, 'updateStatus'])->name('status');
+            Route::post('{opportunity}/go', [\App\Http\Controllers\Applications\TenderController::class, 'decideGo'])->name('go');
+            Route::post('{opportunity}/einreichen', [\App\Http\Controllers\Applications\TenderController::class, 'submit'])->name('submit');
+            Route::post('{opportunity}/entscheiden', [\App\Http\Controllers\Applications\TenderController::class, 'decide'])->name('decide');
+            Route::post('{opportunity}/ueberfuehren', [\App\Http\Controllers\Applications\TenderController::class, 'transfer'])->name('transfer');
+            Route::post('{opportunity}/anforderungen', [\App\Http\Controllers\Applications\TenderController::class, 'addRequirement'])->name('requirements.store');
+            Route::put('{opportunity}/anforderungen/{requirement}', [\App\Http\Controllers\Applications\TenderController::class, 'updateRequirement'])->name('requirements.update');
+            Route::delete('{opportunity}/anforderungen/{requirement}', [\App\Http\Controllers\Applications\TenderController::class, 'removeRequirement'])->name('requirements.destroy');
+            Route::post('{opportunity}/vertrag', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'storeForTender'])->name('negotiations.store');
+        });
+        Route::prefix('personal/stellen')->name('recruiting.requisitions.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'store'])->name('store');
+            Route::get('{requisition}', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'show'])->name('show');
+            Route::get('{requisition}/bearbeiten', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'edit'])->name('edit');
+            Route::put('{requisition}', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'update'])->name('update');
+            Route::post('{requisition}/status', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'updateStatus'])->name('status');
+            Route::post('{requisition}/veroeffentlichungen', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'addPosting'])->name('postings.store');
+            Route::post('{requisition}/veroeffentlichungen/{posting}/schliessen', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'closePosting'])->name('postings.close');
+        });
+        Route::prefix('personal/bewerbungen')->name('recruiting.applications.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Applications\JobApplicationController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Applications\JobApplicationController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Applications\JobApplicationController::class, 'store'])->name('store');
+            Route::get('{application}', [\App\Http\Controllers\Applications\JobApplicationController::class, 'show'])->name('show');
+            Route::post('{application}/status', [\App\Http\Controllers\Applications\JobApplicationController::class, 'updateStatus'])->name('status');
+            Route::post('{application}/gespraeche', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addInterview'])->name('interviews.store');
+            Route::post('{application}/gespraeche/{interview}/abschliessen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'completeInterview'])->name('interviews.complete');
+            Route::post('{application}/bewertungen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addReview'])->name('reviews.store');
+            Route::post('{application}/unterlagen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addDocument'])->name('documents.store');
+            Route::post('{application}/entscheiden', [\App\Http\Controllers\Applications\JobApplicationController::class, 'decide'])->name('decide');
+            Route::get('{application}/auskunft', [\App\Http\Controllers\Applications\JobApplicationController::class, 'export'])->name('export');
+            Route::post('{application}/anonymisieren', [\App\Http\Controllers\Applications\JobApplicationController::class, 'anonymize'])->name('anonymize');
+            Route::post('{application}/onboarding', [\App\Http\Controllers\Applications\JobApplicationController::class, 'createDraft'])->name('draft.store');
+            Route::post('{application}/onboarding/{draft}/einladen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'inviteDraft'])->name('draft.invite');
+            Route::post('{application}/vertrag', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'storeForApplication'])->name('negotiations.store');
+        });
+        Route::prefix('vertragsverhandlungen')->name('applications.negotiations.')->group(function (): void {
+            Route::post('{negotiation}/versionen', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'addVersion'])->name('versions.store');
+            Route::post('{negotiation}/review-punkte', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'addReviewItem'])->name('reviews.store');
+            Route::post('{negotiation}/review-punkte/{item}/entscheiden', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'resolveReviewItem'])->name('reviews.resolve');
+            Route::post('{negotiation}/freigeben', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'approve'])->name('approve');
+            Route::post('{negotiation}/abschliessen', [\App\Http\Controllers\Applications\ContractNegotiationController::class, 'conclude'])->name('conclude');
+        });
+        Route::get('berichte/bewerbungen', [\App\Http\Controllers\Reporting\ApplicationsReportController::class, 'index'])->name('applications.report');
+
+        // ── Reklamation/Gewährleistung/Rückläufer (Feature 072, module.claims) ──
+        Route::prefix('reklamationen')->name('claims.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'store'])->name('store');
+            Route::get('bericht', [\App\Http\Controllers\Reporting\ClaimsReportController::class, 'index'])->name('reports.index');
+            Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\ClaimsReportController::class, 'snapshot'])->name('reports.snapshot');
+            Route::get('{claim}', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'show'])->name('show');
+            Route::put('{claim}', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'update'])->name('update');
+            Route::post('{claim}/bewerten', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'assess'])->name('assess');
+            Route::post('{claim}/entscheiden', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'decide'])->name('decide');
+            Route::post('{claim}/status', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'transition'])->name('transition');
+            Route::post('{claim}/nachweise', [\App\Http\Controllers\Claims\ClaimCaseController::class, 'storeEvidence'])->name('evidence.store');
+            Route::post('{claim}/ruecksendungen', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'store'])->name('rma.store');
+            Route::post('ruecksendungen/{rma}/wareneingang', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'receive'])->name('rma.receive');
+            Route::post('ruecksendungen/{rma}/pruefen', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'inspect'])->name('rma.inspect');
+            Route::post('ruecksendungen/{rma}/verwendung', [\App\Http\Controllers\Claims\ClaimRmaController::class, 'disposition'])->name('rma.disposition');
+            Route::post('{claim}/massnahmen', [\App\Http\Controllers\Claims\ClaimActionController::class, 'store'])->name('actions.store');
+            Route::put('massnahmen/{action}', [\App\Http\Controllers\Claims\ClaimActionController::class, 'update'])->name('actions.update');
+            Route::post('{claim}/folgen', [\App\Http\Controllers\Claims\ClaimFinancialController::class, 'store'])->name('financial.store');
+            Route::post('folgen/{outcome}/freigeben', [\App\Http\Controllers\Claims\ClaimFinancialController::class, 'approve'])->name('financial.approve');
+            Route::post('folgen/{outcome}/ausfuehren', [\App\Http\Controllers\Claims\ClaimFinancialController::class, 'execute'])->name('financial.execute');
+            Route::post('folgen/{outcome}/belegnummer', [\App\Http\Controllers\Claims\ClaimFinancialController::class, 'reference'])->name('financial.reference');
+            Route::post('{claim}/regress', [\App\Http\Controllers\Claims\ClaimRecourseController::class, 'store'])->name('recourses.store');
+            Route::put('regress/{recourse}', [\App\Http\Controllers\Claims\ClaimRecourseController::class, 'update'])->name('recourses.update');
+        });
+
+        // ── Geräte-/Maschinenverleih (Feature 073, module.rental) ───────
+        Route::prefix('verleih')->name('rental.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Rental\RentalCaseController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Rental\RentalCaseController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Rental\RentalCaseController::class, 'store'])->name('store');
+            Route::get('kalender', [\App\Http\Controllers\Rental\RentalCalendarController::class, 'index'])->name('calendar');
+            Route::post('kalender/fenster', [\App\Http\Controllers\Rental\RentalCalendarController::class, 'store'])->name('reservations.store');
+            Route::post('kalender/fenster/{reservation}/stornieren', [\App\Http\Controllers\Rental\RentalCalendarController::class, 'cancel'])->name('reservations.cancel');
+            Route::get('geraetepool', [\App\Http\Controllers\Rental\RentalProfileController::class, 'index'])->name('profiles.index');
+            Route::post('geraetepool', [\App\Http\Controllers\Rental\RentalProfileController::class, 'store'])->name('profiles.store');
+            Route::put('geraetepool/{profile}', [\App\Http\Controllers\Rental\RentalProfileController::class, 'update'])->name('profiles.update');
+            Route::get('preislisten', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'index'])->name('rates.index');
+            Route::post('preislisten', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'store'])->name('rates.store');
+            Route::post('preislisten/{rateCard}/aktivieren', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'activate'])->name('rates.activate');
+            Route::post('preislisten/{rateCard}/konditionen', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'storeItem'])->name('rates.items.store');
+            Route::delete('preislisten/{rateCard}/konditionen/{item}', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'destroyItem'])->name('rates.items.destroy');
+            Route::get('bericht', [\App\Http\Controllers\Reporting\RentalReportController::class, 'index'])->name('reports.index');
+            Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\RentalReportController::class, 'snapshot'])->name('reports.snapshot');
+            Route::get('{rental}', [\App\Http\Controllers\Rental\RentalCaseController::class, 'show'])->name('show');
+            Route::put('{rental}', [\App\Http\Controllers\Rental\RentalCaseController::class, 'update'])->name('update');
+            Route::post('{rental}/reservieren', [\App\Http\Controllers\Rental\RentalCaseController::class, 'reserve'])->name('reserve');
+            Route::post('{rental}/verlaengern', [\App\Http\Controllers\Rental\RentalCaseController::class, 'extend'])->name('extend');
+            Route::post('{rental}/tausch', [\App\Http\Controllers\Rental\RentalCaseController::class, 'swap'])->name('swap');
+            Route::post('{rental}/stornieren', [\App\Http\Controllers\Rental\RentalCaseController::class, 'cancel'])->name('cancel');
+            Route::post('{rental}/abschliessen', [\App\Http\Controllers\Rental\RentalCaseController::class, 'close'])->name('close');
+            Route::post('{rental}/uebergabe', [\App\Http\Controllers\Rental\RentalHandoverController::class, 'handover'])->name('handover');
+            Route::post('{rental}/ruecknahme', [\App\Http\Controllers\Rental\RentalHandoverController::class, 'return'])->name('return');
+            Route::post('{rental}/positionen', [\App\Http\Controllers\Rental\RentalBillingController::class, 'storeCharge'])->name('charges.store');
+            Route::post('{rental}/positionen/vorschlaege', [\App\Http\Controllers\Rental\RentalBillingController::class, 'applySuggestions'])->name('charges.suggest');
+            Route::post('positionen/{charge}/freigeben', [\App\Http\Controllers\Rental\RentalBillingController::class, 'releaseCharge'])->name('charges.release');
+            Route::post('positionen/{charge}/stornieren', [\App\Http\Controllers\Rental\RentalBillingController::class, 'cancelCharge'])->name('charges.cancel');
+            Route::post('positionen/{charge}/belegnummer', [\App\Http\Controllers\Rental\RentalBillingController::class, 'externalReference'])->name('charges.reference');
+            Route::post('{rental}/abrechnen', [\App\Http\Controllers\Rental\RentalBillingController::class, 'invoice'])->name('invoice');
+            Route::post('{rental}/kaution', [\App\Http\Controllers\Rental\RentalBillingController::class, 'requestDeposit'])->name('deposits.store');
+            Route::post('kaution/{deposit}/erhalten', [\App\Http\Controllers\Rental\RentalBillingController::class, 'receiveDeposit'])->name('deposits.receive');
+            Route::post('kaution/{deposit}/abrechnen', [\App\Http\Controllers\Rental\RentalBillingController::class, 'settleDeposit'])->name('deposits.settle');
+        });
+
+        // ── Leasing/Finanzierung/Asset-Verträge (Feature 074, module.asset_finance) ──
+        Route::prefix('leasing')->name('asset-finance.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'store'])->name('store');
+            Route::get('fristen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'deadlines'])->name('deadlines.index');
+            Route::get('bericht', [\App\Http\Controllers\Reporting\AssetFinanceReportController::class, 'index'])->name('reports.index');
+            Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\AssetFinanceReportController::class, 'snapshot'])->name('reports.snapshot');
+            Route::get('{contract}', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'show'])->name('show');
+            Route::put('{contract}', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'update'])->name('update');
+            Route::post('{contract}/aktivieren', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'activate'])->name('activate');
+            Route::post('{contract}/kuendigen', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'terminate'])->name('terminate');
+            Route::post('{contract}/abschliessen', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'close'])->name('close');
+            Route::post('{contract}/konditionen', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'storeTerm'])->name('terms.store');
+            Route::post('{contract}/fristen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeDeadline'])->name('deadlines.store');
+            Route::post('fristen/{deadline}/erledigen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'completeDeadline'])->name('deadlines.complete');
+            Route::post('raten/{schedule}/referenz', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'linkSchedule'])->name('schedules.link');
+            Route::post('{contract}/limits', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeUsageLimit'])->name('limits.store');
+            Route::post('limits/{limit}/istwert', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'recordUsage'])->name('limits.record');
+            Route::post('{contract}/optionen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeOption'])->name('options.store');
+            Route::post('optionen/{option}/ausueben', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'exerciseOption'])->name('options.exercise');
+            Route::post('{contract}/ende', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeEndProcess'])->name('ends.store');
+            Route::post('ende/{endProcess}/abschliessen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'completeEndProcess'])->name('ends.complete');
+            Route::post('{contract}/kosten-snapshot', [\App\Http\Controllers\Reporting\AssetFinanceReportController::class, 'costSnapshot'])->name('costs.snapshot');
+        });
+
+        // ── Prüfmittel/Eichung/Kalibrierung (Feature 075, module.asset_compliance) ──
+        Route::prefix('pruefmittel')->name('asset-compliance.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\AssetCompliance\AssetComplianceDashboardController::class, 'index'])->name('index');
+            Route::post('sperren', [\App\Http\Controllers\AssetCompliance\AssetComplianceDashboardController::class, 'block'])->name('blocks.store');
+            Route::post('sperren/{block}/aufheben', [\App\Http\Controllers\AssetCompliance\AssetComplianceDashboardController::class, 'release'])->name('blocks.release');
+            Route::post('sperren/{block}/ausnahme', [\App\Http\Controllers\AssetCompliance\AssetComplianceDashboardController::class, 'grantException'])->name('blocks.exception');
+            Route::post('ausnahmen/{exception}/widerrufen', [\App\Http\Controllers\AssetCompliance\AssetComplianceDashboardController::class, 'revokeException'])->name('blocks.exception.revoke');
+            Route::get('profile', [\App\Http\Controllers\AssetCompliance\AssetComplianceProfileController::class, 'index'])->name('profiles.index');
+            Route::post('profile', [\App\Http\Controllers\AssetCompliance\AssetComplianceProfileController::class, 'store'])->name('profiles.store');
+            Route::post('profile/{profile}/anforderungen', [\App\Http\Controllers\AssetCompliance\AssetComplianceProfileController::class, 'storeRequirement'])->name('profiles.requirements.store');
+            Route::post('profile/{profile}/zuweisen', [\App\Http\Controllers\AssetCompliance\AssetComplianceProfileController::class, 'assign'])->name('profiles.assign');
+            Route::get('kalender', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'index'])->name('schedules.index');
+            Route::post('kalender', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'storeSchedule'])->name('schedules.store');
+            Route::post('pflichten/{assignment}/pruefen', [\App\Http\Controllers\AssetCompliance\AssetInspectionController::class, 'record'])->name('inspections.record');
+            Route::get('bericht', [\App\Http\Controllers\Reporting\AssetComplianceReportController::class, 'index'])->name('reports.index');
+            Route::post('bericht/snapshot', [\App\Http\Controllers\Reporting\AssetComplianceReportController::class, 'snapshot'])->name('reports.snapshot');
+        });
+
+        // ── Nachhaltigkeit/ESG (Feature 071, module.sustainability) ─────
+        Route::prefix('nachhaltigkeit')->name('sustainability.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'index'])->name('index');
+            Route::post('kriterien', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeCriterion'])->name('criteria.store');
+            Route::post('aktivitaeten', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeActivity'])->name('activities.store');
+            Route::post('faktoren', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeFactor'])->name('factors.store');
+            Route::post('bewertungen', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeAssessment'])->name('assessments.store');
+            Route::get('bewertungen/{assessment}', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'showAssessment'])->name('assessments.show');
+            Route::put('bewertungen/{assessment}/kriterium/{item}', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'scoreItem'])->name('assessments.items.update');
+            Route::post('bewertungen/{assessment}/finalisieren', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'finalizeAssessment'])->name('assessments.finalize');
+            Route::post('bewertungen/{assessment}/neue-version', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'newAssessmentVersion'])->name('assessments.new-version');
+            Route::post('massnahmen', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeMeasure'])->name('measures.store');
+            Route::put('massnahmen/{measure}', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'updateMeasure'])->name('measures.update');
+            Route::post('ziele', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeTarget'])->name('targets.store');
+            Route::post('bericht/snapshot', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeSnapshot'])->name('snapshot.store');
+        });
+
+        // ── Notfall-/Krisenmanagement (Feature 070, module.crisis_management) ──
+        Route::prefix('krisen')->name('crisis.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'store'])->name('store');
+            Route::post('stabsrollen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeRole'])->name('roles.store');
+            Route::get('uebungen', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'index'])->name('exercises.index');
+            Route::post('uebungen', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'store'])->name('exercises.store');
+            Route::post('uebungen/{exercise}/dokumentieren', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'document'])->name('exercises.document');
+            Route::get('{case}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'show'])->name('show');
+            Route::post('{case}/status', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'updateStatus'])->name('status');
+            Route::post('{case}/aktivieren', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'activate'])->name('activate');
+            Route::post('{case}/entwarnen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'allClear'])->name('all-clear');
+            Route::post('{case}/schliessen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'close'])->name('close');
+            Route::post('{case}/stab', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'assignTeam'])->name('team.store');
+            Route::delete('{case}/stab/{assignment}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'removeTeam'])->name('team.destroy');
+            Route::post('{case}/alarm', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'alert'])->name('alert');
+            Route::post('{case}/alarm/eskalieren', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'escalateAlert'])->name('alert.escalate');
+            Route::post('{case}/stab/{assignment}/quittieren', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'acknowledge'])->name('team.acknowledge');
+            Route::post('{case}/lagebericht', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeSituationReport'])->name('sitrep.store');
+            Route::post('{case}/entscheidungen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeDecision'])->name('decisions.store');
+            Route::post('{case}/massnahmen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeAction'])->name('actions.store');
+            Route::put('{case}/massnahmen/{action}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'updateAction'])->name('actions.update');
+            Route::post('{case}/kommunikation', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeCommunication'])->name('communications.store');
+            Route::post('{case}/kommunikation/{communication}/freigeben', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'approveCommunication'])->name('communications.approve');
+            Route::post('{case}/kommunikation/{communication}/gesendet', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'markCommunicationSent'])->name('communications.sent');
+            Route::post('{case}/bcm', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeContinuityImpact'])->name('bcm.store');
+            Route::put('{case}/bcm/{impact}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'updateContinuityImpact'])->name('bcm.update');
+            Route::post('{case}/verknuepfungen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'addLink'])->name('links.store');
+            Route::post('{case}/nachbereitung', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeReview'])->name('review.store');
+        });
+
+        // ── Investitionsplanung (Feature 069, module.investments) ─────
+        Route::prefix('investitionen')->name('investments.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Investments\InvestmentController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Investments\InvestmentController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Investments\InvestmentController::class, 'store'])->name('store');
+            Route::post('kostenstellen', [\App\Http\Controllers\Investments\InvestmentController::class, 'storeCostCenter'])->name('cost-centers.store');
+            Route::get('bericht', [\App\Http\Controllers\Reporting\InvestmentsReportController::class, 'index'])->name('report');
+            Route::get('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'show'])->name('show');
+            Route::get('{case}/bearbeiten', [\App\Http\Controllers\Investments\InvestmentController::class, 'edit'])->name('edit');
+            Route::put('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'update'])->name('update');
+            Route::delete('{case}', [\App\Http\Controllers\Investments\InvestmentController::class, 'destroy'])->name('destroy');
+            Route::post('{case}/status', [\App\Http\Controllers\Investments\InvestmentController::class, 'updateStatus'])->name('status');
+            Route::post('{case}/varianten', [\App\Http\Controllers\Investments\InvestmentController::class, 'addOption'])->name('options.store');
+            Route::post('{case}/varianten/{option}/empfehlen', [\App\Http\Controllers\Investments\InvestmentController::class, 'recommendOption'])->name('options.recommend');
+            Route::delete('{case}/varianten/{option}', [\App\Http\Controllers\Investments\InvestmentController::class, 'removeOption'])->name('options.destroy');
+            Route::post('{case}/budget', [\App\Http\Controllers\Investments\InvestmentController::class, 'submitBudget'])->name('budget.submit');
+            Route::post('{case}/budget/{budgetRequest}/freigeben', [\App\Http\Controllers\Investments\InvestmentController::class, 'approveBudget'])->name('budget.approve');
+            Route::post('{case}/budget/{budgetRequest}/ablehnen', [\App\Http\Controllers\Investments\InvestmentController::class, 'rejectBudget'])->name('budget.reject');
+            Route::post('{case}/verknuepfungen', [\App\Http\Controllers\Investments\InvestmentController::class, 'addLink'])->name('links.store');
+            Route::post('{case}/ist-werte', [\App\Http\Controllers\Investments\InvestmentController::class, 'addActual'])->name('actuals.store');
+            Route::post('{case}/abweichungen', [\App\Http\Controllers\Investments\InvestmentController::class, 'addDeviation'])->name('deviations.store');
+            Route::post('{case}/abweichungen/{deviation}/entscheiden', [\App\Http\Controllers\Investments\InvestmentController::class, 'decideDeviation'])->name('deviations.decide');
+            Route::post('{case}/abweichungen/{deviation}/nachtrag', [\App\Http\Controllers\Investments\InvestmentController::class, 'supplementBudget'])->name('budget.supplement');
+            Route::post('{case}/nachbewertung', [\App\Http\Controllers\Investments\InvestmentController::class, 'storeReview'])->name('review.store');
+        });
+
+        // ── Angebote (Feature 066, MVP-170) ───────────────────────────
+        Route::prefix('angebote')->name('quotes.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\QuoteController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\QuoteController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\QuoteController::class, 'store'])->name('store');
+            Route::get('{quote}', [\App\Http\Controllers\QuoteController::class, 'show'])->name('show');
+            Route::delete('{quote}', [\App\Http\Controllers\QuoteController::class, 'destroy'])->name('destroy');
+            Route::post('{quote}/freigeben', [\App\Http\Controllers\QuoteController::class, 'approve'])->name('approve');
+            Route::post('{quote}/versenden', [\App\Http\Controllers\QuoteController::class, 'send'])->name('send');
+            Route::post('{quote}/entscheiden', [\App\Http\Controllers\QuoteController::class, 'decide'])->name('decide');
+            Route::post('{quote}/neue-version', [\App\Http\Controllers\QuoteController::class, 'newVersion'])->name('new-version');
+            Route::post('{quote}/ueberfuehren', [\App\Http\Controllers\QuoteController::class, 'convert'])->name('convert');
+            Route::get('{quote}/positionen/neu', [\App\Http\Controllers\QuoteController::class, 'itemForm'])->name('items.create');
+            Route::post('{quote}/positionen', [\App\Http\Controllers\QuoteController::class, 'addItem'])->name('items.store');
+            Route::get('{quote}/positionen/{item}/bearbeiten', [\App\Http\Controllers\QuoteController::class, 'itemForm'])->name('items.edit');
+            Route::put('{quote}/positionen/{item}', [\App\Http\Controllers\QuoteController::class, 'updateItem'])->name('items.update');
+            Route::delete('{quote}/positionen/{item}', [\App\Http\Controllers\QuoteController::class, 'removeItem'])->name('items.destroy');
+        });
 
         // ── Faktura-Übergabe (Feature 045, Teil B) ──────────────────────────────
         // Routen MÜSSEN finance.* heißen (Plan-Gating 'finance.*' → module.finance
@@ -1288,7 +1602,17 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'index'])->name('index');
             Route::post('/', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'store'])->name('store');
             Route::post('{incoming}/entscheiden', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'decide'])->name('decide');
+            Route::post('{incoming}/uebergeben', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'transfer'])->name('transfer');
+            Route::get('{document}/xml', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'xml'])->name('xml');
             Route::get('{document}', [\App\Http\Controllers\Finance\IncomingInvoiceController::class, 'show'])->name('show');
+        });
+        // Steuerregelmatrix (Phase 23, MVP-242) — module.finance über finance.*;
+        // Recht finance.config wird im Controller geprüft.
+        Route::prefix('finanzen/steuerregeln')->name('finance.tax-rules.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\TaxRuleController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Finance\TaxRuleController::class, 'store'])->name('store');
+            Route::post('{rule}/stilllegen', [\App\Http\Controllers\Finance\TaxRuleController::class, 'retire'])->name('retire');
+            Route::post('import', [\App\Http\Controllers\Finance\TaxRuleController::class, 'import'])->name('import');
         });
         // GoBD-Z3-Datenträgerüberlassung (Feature 063, MVP-132) — module.finance über finance.*
         Route::prefix('finanzen/gobd')->name('finance.gobd.')->group(function (): void {

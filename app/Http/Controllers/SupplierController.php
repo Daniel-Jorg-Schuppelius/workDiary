@@ -228,7 +228,7 @@ class SupplierController extends Controller {
                         $s->address_zip,
                         $s->address_city,
                         $s->country,
-                        $s->currency,
+                        $s->currency->value,
                         $s->active ? 'ja' : 'nein',
                         $s->archived_at?->format('Y-m-d') ?? '',
                         $s->created_at?->format('Y-m-d') ?? '',

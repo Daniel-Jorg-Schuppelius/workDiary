@@ -5,6 +5,7 @@ return [
     'service_on' => 'Prestazione del :date',
     'hourly_rate' => 'Tariffa oraria',
     'unit_hour' => 'h',
+    'unit_flat' => 'forf.',
     'unit_piece' => 'pz',
     'tax_rate' => 'Aliquota fiscale',
     'currency' => 'Valuta',

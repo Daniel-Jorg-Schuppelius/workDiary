@@ -12,6 +12,7 @@ namespace App\Services;
 
 use App\Http\Controllers\AttachmentController;
 use App\Models\{Attachment, Organization};
+use CommonToolkit\Helper\Data\ColorHelper;
 use Illuminate\Support\Facades\{Auth, Storage};
 
 /**
@@ -207,17 +208,13 @@ class BrandingService {
     public function primaryColor(): ?string {
         $val = data_get($this->settings(), 'colors.primary');
 
-        return $this->normalizeHex(is_string($val) ? $val : null);
+        return ColorHelper::normalizeHex(is_string($val) ? $val : null);
     }
 
     public function accentColor(): ?string {
         $val = data_get($this->settings(), 'colors.accent');
 
-        return $this->normalizeHex(is_string($val) ? $val : null);
-    }
-
-    private function normalizeHex(?string $value): ?string {
-        return \App\Support\Color::normalizeHex($value);
+        return ColorHelper::normalizeHex(is_string($val) ? $val : null);
     }
 
     /**

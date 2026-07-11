@@ -51,6 +51,14 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::post('/tickets/{ticket}/accept', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'accept'])->name('tickets.accept');
         Route::post('/tickets/{ticket}/reopen', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reopen'])->name('tickets.reopen');
         Route::post('/tickets/{ticket}/rate', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'rate'])->name('tickets.rate');
+        // Reklamationsstatus + Nachreichungen (Feature 072, MVP-256).
+        Route::get('/claims', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'index'])->name('claims.index');
+        Route::get('/claims/{claim}', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'show'])->name('claims.show');
+        Route::post('/claims/{claim}/nachreichung', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'addNote'])->name('claims.note');
+        // Verleihvorgänge + Übergabebestätigung (Feature 073, MVP-263/269).
+        Route::get('/rentals', [\App\Http\Controllers\CustomerPortal\RentalPortalController::class, 'index'])->name('rentals.index');
+        Route::get('/rentals/{rental}', [\App\Http\Controllers\CustomerPortal\RentalPortalController::class, 'show'])->name('rentals.show');
+        Route::post('/rentals/{rental}/uebergabe/{report}/bestaetigen', [\App\Http\Controllers\CustomerPortal\RentalPortalController::class, 'confirm'])->name('rentals.confirm');
         // Objektakte read-only (Rang 50): eigene Objekte des Kunden.
         Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
         Route::get('/assets/{asset}', [AssetController::class, 'show'])->name('assets.show');

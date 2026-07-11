@@ -20,6 +20,9 @@ class SaveInvoiceItemRequest extends BaseFormRequest {
             'unit' => ['nullable', 'string', 'max:32'],
             'unit_price' => ['required', 'numeric', 'min:0'],
             'position' => ['nullable', 'integer', 'min:0'],
+            // Phase 23 (MVP-240): Positions-Steuersatz + EN-16931-Kategorie.
+            'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
+            'tax_category' => ['nullable', 'in:S,AE,Z,E,G,K,O'],
         ];
     }
 }

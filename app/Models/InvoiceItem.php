@@ -41,12 +41,15 @@ class InvoiceItem extends Model {
 
     protected $fillable = [
         'tax_rate',
+        'tax_category',
         'organization_id',
         'invoice_id',
         'time_entry_id',
         'expense_id',
         'material_usage_id',
         'tour_id',
+        'rental_charge_id',
+        'settled_invoice_id',
         'service_date',
         'description',
         'quantity',
@@ -98,6 +101,16 @@ class InvoiceItem extends Model {
             if ($i->tour_id !== null) {
                 Tour::query()->whereKey($i->tour_id)->update(['travel_billed' => false]);
             }
+            if ($i->rental_charge_id !== null) {
+                $charge = \App\Models\Rental\RentalCharge::query()->find($i->rental_charge_id);
+                if ($charge !== null && $charge->status === \App\Enums\Rental\RentalChargeStatus::Invoiced) {
+                    $charge->forceFill([
+                        'status' => \App\Enums\Rental\RentalChargeStatus::Released->value,
+                        'invoice_id' => null,
+                        'invoiced_at' => null,
+                    ])->saveQuietly();
+                }
+            }
         });
     }
 
@@ -136,5 +149,16 @@ class InvoiceItem extends Model {
     /** @return BelongsTo<Tour, $this> */
     public function tour(): BelongsTo {
         return $this->belongsTo(Tour::class);
+    }
+
+    /**
+     * Angerechnete Abschlagsrechnung (§ 14 Abs. 5 UStG): gesetzt auf der
+     * Absetzungsposition einer Schlussrechnung, verweist auf die
+     * Abschlags-/Anzahlungsrechnung, deren Teilentgelt hier abgesetzt wird.
+     *
+     * @return BelongsTo<Invoice, $this>
+     */
+    public function settledInvoice(): BelongsTo {
+        return $this->belongsTo(Invoice::class, 'settled_invoice_id');
     }
 }

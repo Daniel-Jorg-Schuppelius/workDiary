@@ -61,7 +61,7 @@ class GoodsReceiptService {
             $line = PurchaseOrderLine::query()->lockForUpdate()->find($line->id) ?? $line;
 
             $movement = $organization instanceof Organization
-                ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $qty, (string) $cost, (string) $line->currency, $actorUserId, $line)
+                ? $this->valuation->forVariant($variant, $organization)->receipt($variant, $warehouse, $qty, (string) $cost, $line->currency->value, $actorUserId, $line)
                 : $this->ledger->finishedGoodReceipt($variant, $warehouse, $qty);
 
             $line->forceFill(['received_qty' => bcadd($line->received_qty, $qty, self::SCALE)])->save();

@@ -20,7 +20,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType, ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, Attachment, CommunicationNote, Customer, DiaryEntry, Material, MaterialUsage, OpenIssue, Organization, ProcedureRun, ProcedureTemplate, Project, Protocol, ProtocolItem, TimeEntry, Timesheet, User};
+use App\Models\{Asset, Attachment, CommunicationNote, Customer, DiaryEntry, Invoice, Material, MaterialUsage, OpenIssue, Organization, ProcedureRun, ProcedureTemplate, Project, Protocol, ProtocolItem, TimeEntry, Timesheet, User};
 use App\Services\Classification\BranchProfileInstaller;
 use App\Services\Procedure\{BackupProofService, ProcedureExecutionService, ProcedureTemplateService, SecondPersonGate};
 use Carbon\CarbonImmutable;
@@ -176,9 +176,509 @@ class DemoSeederService {
             // IT-Demoszenario Helpdesk (Feature 065, P10):
             // Anfrage → Incident → Problem → Change durchgängig.
             $counts['helpdesk_tickets'] = $this->seedHelpdesk($organization, $mainCustomer, $users);
+
+            // Kleinunternehmer-Faktura §19 (Feature 066, MVP-169): Angebot →
+            // Annahme → Rechnung (0 % USt., §-19-Hinweis) → Ausstellung.
+            $counts['invoices'] = $this->seedSmallBusinessInvoicing($organization, $mainCustomer, $users->first());
+
+            // Bewerbungs-/Ausschreibungs-Demo (Feature 068, MVP-194/198):
+            // gewonnene Ausschreibung + Bewerbung bis zum Mitarbeiter-Entwurf.
+            $counts['applications'] = $this->seedApplications($organization, $mainCustomer, $users->first());
+
+            // Investitions-Demo (Feature 069, MVP-209): Akte mit Varianten
+            // und offenem Budgetantrag (zeigt die Freigabekette).
+            $counts['investments'] = $this->seedInvestments($organization, $users->first());
+
+            // Krisen-Demo (Feature 070, MVP-222): geplante Übung — bewusst
+            // KEINE echte Krisenakte im Demo-Datenbestand.
+            $counts['crisis_exercises'] = $this->seedCrisisExercise($organization, $users->first());
+
+            // Nachhaltigkeits-Demo (Feature 071, MVP-235): Kriterien +
+            // Aktivitätsdaten + finalisierte Gerätebewertung.
+            $counts['sustainability'] = $this->seedSustainability($organization, $users->first());
+
+            // Reklamations-Demo (Feature 072, MVP-256): Fall mit Bewertung
+            // und Entscheidung — zeigt den geführten Ablauf.
+            $counts['claims'] = $this->seedClaims($organization, $users->first());
+
+            // Verleih-Demo (Feature 073, MVP-269): leihfähiges Gerät mit
+            // Preisliste, reservierter Akte und Konditionen-Snapshot.
+            $counts['rental'] = $this->seedRental($organization, $users->first());
+
+            // Leasing-Demo (Feature 074, MVP-280): aktivierter Vertrag mit
+            // eingefrorenen Konditionen, Ratenplan und Kündigungsfrist.
+            $counts['asset_finance'] = $this->seedAssetFinance($organization, $users->first());
+
+            // Prüfmittel-Demo (Feature 075, MVP-292): Prüfpflicht aus dem
+            // globalen Katalog mit dokumentierter Prüfung inkl. Zertifikat.
+            $counts['asset_compliance'] = $this->seedAssetCompliance($organization, $users->first());
         });
 
         return $counts;
+    }
+
+    /**
+     * §-19-Demo-Ablauf (Feature 066): dokumentiert die Belegkette einer
+     * Kleinunternehmer-Org — Angebot mit Annahme, Überführung in eine
+     * Entwurfsrechnung (TaxResolver → 0 %, §-19-Hinweistext) und
+     * Ausstellung. Bewusst OHNE die Org global auf §19 zu stellen: der
+     * Steuerkontext wird am Demo-Kunden über den Org-Setting-Schalter nur
+     * für die Belegerzeugung aktiviert und danach zurückgesetzt.
+     */
+    private function seedSmallBusinessInvoicing(Organization $organization, Customer $customer, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        // §-19-Kontext temporär aktivieren (data_get-Konvention, s. TaxResolver).
+        $settings = (array) ($organization->settings ?? []);
+        $before = $settings['einvoice']['small_business'] ?? null;
+        $settings['einvoice']['small_business'] = '1';
+        $organization->settings = $settings;
+        $organization->save();
+
+        try {
+            $quotes = app(\App\Services\Invoicing\QuoteService::class);
+            $quote = $quotes->create([
+                'customer_id' => $customer->id,
+                'valid_until' => \Carbon\Carbon::now()->addDays(30)->toDateString(),
+                'terms' => (string) __('Demo-Angebot: Wartung inkl. Anfahrt, Abrechnung nach Aufwand.'),
+            ], [
+                ['description' => (string) __('Wartungspauschale (Demo)'), 'quantity' => '1', 'unit' => 'Pauschale', 'unit_price' => '480.00'],
+                ['description' => (string) __('Erweiterte Dokumentation (Option)'), 'quantity' => '1', 'unit' => 'Pauschale', 'unit_price' => '120.00', 'optional' => true],
+            ], $actor);
+            $quote = $quotes->approve($quote, $actor);
+            ['quote' => $quote] = $quotes->send($quote, $actor);
+            $quote = $quotes->accept($quote); // Vollannahme (Optionen bleiben draußen)
+            $invoice = $quotes->convertToInvoice($quote, $actor);
+
+            // Ausstellen: friert Parteien ein; §-19-Hinweis steht in den Notes.
+            $invoice->freezeParties();
+            $invoice->update([
+                'status' => Invoice::STATUS_ISSUED,
+                'issued_on' => \Carbon\Carbon::now(),
+                'due_on' => \Carbon\Carbon::now()->addDays((int) ($invoice->payment_terms_days ?? 14)),
+            ]);
+
+            return 1;
+        } catch (\Throwable $e) {
+            // Demo-Seeder bleibt robust: fehlende Vertriebs-Voraussetzungen
+            // (z. B. deaktiviertes Modul) brechen den Gesamt-Seed nicht ab.
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: §19-Fakturakette übersprungen: ' . $e->getMessage());
+
+            return 0;
+        } finally {
+            $settings = (array) ($organization->settings ?? []);
+            if ($before === null) {
+                unset($settings['einvoice']['small_business']);
+            } else {
+                $settings['einvoice']['small_business'] = $before;
+            }
+            $organization->settings = $settings;
+            $organization->save();
+        }
+    }
+
+    /**
+     * Demo Feature 068: Ausschreibung (Go → Anforderung erledigt →
+     * Einreichung → gewonnen) + Personalbewerbung (Gespräch → Bewertung →
+     * Zusage → Mitarbeiter-Entwurf). Robust: Fehler brechen den Seed nicht.
+     */
+    private function seedApplications(Organization $organization, Customer $customer, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $tenders = app(\App\Services\Applications\TenderService::class);
+            $opportunity = \App\Models\Applications\ApplicationOpportunity::query()->create([
+                'organization_id' => $organization->id,
+                'title' => (string) __('Rahmenvertrag Wartung Bürokomplex (Demo)'),
+                'kind' => 'framework',
+                'source' => 'Vergabeportal (Demo)',
+                'customer_id' => $customer->id,
+                'status' => 'in_progress',
+                'submission_deadline' => \Carbon\Carbon::now()->addDays(14)->toDateString(),
+                'estimated_value' => '48000.00',
+                'probability' => 60,
+                'responsible_user_id' => $actor->id,
+                'created_by' => $actor->id,
+            ]);
+            $opportunity->requirements()->create([
+                'organization_id' => $organization->id,
+                'label' => (string) __('Referenzliste vergleichbarer Objekte'),
+                'kind' => 'proof',
+                'required' => true,
+                'status' => 'done',
+                'position' => 1,
+            ]);
+            $tenders->decideGo($opportunity, 'go', (string) __('Passt zur Auslastung im Winterhalbjahr.'), $actor);
+            $tenders->submit($opportunity->refresh(), 'portal', null, $actor);
+            $tenders->decide($opportunity->refresh(), 'won', null, $actor);
+
+            $recruiting = app(\App\Services\Applications\RecruitingService::class);
+            $requisition = \App\Models\Applications\JobRequisition::query()->create([
+                'organization_id' => $organization->id,
+                'title' => (string) __('Servicetechniker:in (Demo)'),
+                'employment_type' => 'full_time',
+                'status' => 'open',
+                'responsible_user_id' => $actor->id,
+                'created_by' => $actor->id,
+            ]);
+            ['application' => $application] = $recruiting->intake([
+                'job_requisition_id' => $requisition->id,
+                'candidate_name' => 'Kim Beispiel',
+                'email' => 'kim.beispiel@example.test',
+                'source' => 'website',
+            ], $actor);
+            $application->interviews()->create([
+                'organization_id' => $organization->id,
+                'scheduled_at' => \Carbon\Carbon::now()->subDays(3),
+                'mode' => 'onsite',
+                'interviewer_id' => $actor->id,
+                'status' => 'done',
+                'rating' => 5,
+            ]);
+            $recruiting->decide($application->refresh(), 'accepted', null, $actor);
+            $recruiting->createEmployeeDraft($application->refresh(), $actor, [(string) __('Elektrofachkraft')]);
+
+            return 2; // 1 Ausschreibung + 1 Bewerbungskette
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Bewerbungs-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
+    /**
+     * Demo Feature 069: Investitionsakte mit Variantenvergleich und
+     * eingereichtem Budgetantrag (Freigabe bewusst offen — Vorführung
+     * der Kette). Robust: Fehler brechen den Seed nicht.
+     */
+    private function seedInvestments(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $case = \App\Models\Investments\InvestmentCase::query()->create([
+                'organization_id' => $organization->id,
+                'title' => (string) __('Ersatz Servicefahrzeug (Demo)'),
+                'category' => 'machine',
+                'reason' => (string) __('Bestandsfahrzeug hat 280.000 km und steigende Reparaturkosten.'),
+                'objective' => (string) __('Ausfallsicherheit im Außendienst, geringere Werkstattkosten.'),
+                'urgency' => 'high',
+                'status' => 'comparison',
+                'responsible_user_id' => $actor->id,
+                'created_by' => $actor->id,
+            ]);
+            $case->options()->create([
+                'organization_id' => $organization->id,
+                'title' => (string) __('Neufahrzeug Kauf (Demo)'),
+                'one_time_cost' => '42000.00',
+                'recurring_cost_yearly' => '1800.00',
+                'delivery_weeks' => 16,
+                'quality_score' => 5,
+                'recommended' => true,
+            ]);
+            $case->options()->create([
+                'organization_id' => $organization->id,
+                'title' => (string) __('Jahreswagen (Demo)'),
+                'one_time_cost' => '31000.00',
+                'recurring_cost_yearly' => '2400.00',
+                'delivery_weeks' => 3,
+                'quality_score' => 4,
+            ]);
+            app(\App\Services\Investments\InvestmentService::class)->submitBudget($case->refresh(), [
+                'amount' => '42000.00',
+                'cost_kind' => 'purchase',
+                'financing' => 'loan',
+            ], $actor);
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Investitions-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
+    /** Demo Feature 070: geplante Krisenübung (Playbook-Verbesserung). */
+    private function seedCrisisExercise(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            \App\Models\Crisis\CrisisExercise::query()->create([
+                'organization_id' => $organization->id,
+                'title' => (string) __('Stabsübung IT-Ausfall (Demo)'),
+                'scenario' => (string) __('Zentraler Server fällt aus; Wiederanlauf nach Playbook, Kommunikation an Kunden binnen 4 Stunden.'),
+                'next_due_on' => \Carbon\Carbon::now()->addDays(21)->toDateString(),
+                'created_by' => $actor->id,
+            ]);
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Krisenübung übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
+    /** Demo Feature 071: E/S/G-Kriterien, Stromverbrauch + Gerätebewertung. */
+    /**
+     * Reklamations-Demo (Feature 072, MVP-256): ein bewerteter und
+     * entschiedener Fall inkl. Nachweis — ohne Lager-/Faktura-Folgen,
+     * damit der Demo-Bestand konsistent bleibt.
+     */
+    private function seedClaims(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $customer = \App\Models\Customer::query()
+                ->where('organization_id', $organization->id)
+                ->orderBy('id')
+                ->first();
+            if ($customer === null) {
+                return 0;
+            }
+
+            $service = app(\App\Services\Claims\ClaimCaseService::class);
+            $case = $service->open($organization, $actor, [
+                'title' => (string) __('Thermostatventil tropft nach Wartung (Demo)'),
+                'source' => 'phone',
+                'priority' => 'high',
+                'severity' => 'minor',
+                'customer_id' => $customer->id,
+                'description' => (string) __('Kunde meldet Tropfbildung am neu eingebauten Ventil im Bad.'),
+                'responsible_user_id' => $actor->id,
+            ]);
+            $case->evidence()->create([
+                'organization_id' => $organization->id,
+                'kind' => 'photo',
+                'title' => (string) __('Foto der Tropfstelle (Demo)'),
+                'recorded_by' => $actor->id,
+                'recorded_at' => now(),
+            ]);
+            $service->assess($case, $actor, \App\Enums\Claims\ClaimKind::WarrantyLegal, \App\Enums\Claims\ClaimVerdict::Justified, (string) __('Einbau vor 3 Monaten — gesetzliche Gewährleistung greift, Nacherfüllung angeboten.'));
+            $service->decide($case->refresh(), $actor, 'accepted', (string) __('Nacherfüllung durch erneuten Serviceeinsatz (§ 439 BGB).'));
+            $case->refresh()->actions()->create([
+                'organization_id' => $organization->id,
+                'kind' => 'service_visit',
+                'status' => 'planned',
+                'title' => (string) __('Nachbesserung vor Ort einplanen (Demo)'),
+                'assigned_user_id' => $actor->id,
+                'created_by' => $actor->id,
+            ]);
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Reklamations-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
+    private function seedRental(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $customer = \App\Models\Customer::query()
+                ->where('organization_id', $organization->id)
+                ->orderBy('id')
+                ->first();
+            $asset = \App\Models\Asset::query()
+                ->where('organization_id', $organization->id)
+                ->orderBy('id')
+                ->first();
+            if ($customer === null || $asset === null) {
+                return 0;
+            }
+
+            // Versionierte Preisliste (D10) mit Tagessatz + Reinigung.
+            $card = \App\Models\Rental\RentalRateCard::query()->create([
+                'organization_id' => $organization->id,
+                'name' => (string) __('Standard-Verleih (Demo)'),
+                'version' => 1,
+                'status' => \App\Enums\Rental\RentalRateCardStatus::Active->value,
+                'valid_from' => now()->toDateString(),
+                'created_by' => $actor->id,
+            ]);
+            $card->items()->createMany([
+                ['organization_id' => $organization->id, 'kind' => 'daily_rate', 'label' => (string) __('Tagessatz (Demo)'), 'amount' => '45.00', 'unit' => 'day'],
+                ['organization_id' => $organization->id, 'kind' => 'cleaning', 'label' => (string) __('Endreinigung (Demo)'), 'amount' => '25.00', 'unit' => 'flat'],
+            ]);
+
+            \App\Models\Rental\RentalProfile::query()->create([
+                'organization_id' => $organization->id,
+                'asset_id' => $asset->id,
+                'is_rentable' => true,
+                'group_code' => 'demo',
+                'buffer_after_hours' => 2,
+                'default_rate_card_id' => $card->id,
+            ]);
+
+            $service = app(\App\Services\Rental\RentalCaseService::class);
+            $case = $service->open($organization, $actor, [
+                'customer_id' => $customer->id,
+                'starts_at' => now()->addDay()->setTime(8, 0),
+                'ends_at' => now()->addDays(3)->setTime(17, 0),
+                'responsible_user_id' => $actor->id,
+                'rental_rate_card_id' => $card->id,
+                'deposit_amount' => '150.00',
+                'notes' => (string) __('Demo-Verleihvorgang mit Konditionen-Snapshot.'),
+            ], [$asset->id]);
+            $service->reserve($case, $actor);
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Verleih-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
+    private function seedAssetFinance(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $asset = \App\Models\Asset::query()
+                ->where('organization_id', $organization->id)
+                ->orderBy('id')
+                ->first();
+            if ($asset === null) {
+                return 0;
+            }
+
+            $service = app(\App\Services\AssetFinance\AssetFinanceService::class);
+            $contract = $service->create($organization, $actor, [
+                'kind' => \App\Enums\AssetFinance\AssetFinanceKind::OperatingLease->value,
+                'partner_name' => (string) __('Muster-Leasing GmbH (Demo)'),
+                'contract_no' => 'ML-2026-0042',
+                'starts_on' => now()->startOfMonth()->toDateString(),
+                'ends_on' => now()->startOfMonth()->addMonths(11)->toDateString(),
+                'payment_rhythm' => 'monthly',
+                'rate_amount' => '390.00',
+                'residual_value' => '4500.00',
+                'responsible_user_id' => $actor->id,
+                'notes' => (string) __('Demo-Leasingakte mit Ratenplan und Kündigungsfrist.'),
+            ], [$asset->id]);
+            $service->activate($contract, $actor);
+
+            $contract->deadlines()->create([
+                'organization_id' => $organization->id,
+                'kind' => \App\Enums\AssetFinance\AssetFinanceDeadlineKind::Termination->value,
+                'due_on' => now()->addMonths(8)->toDateString(),
+                'warn_days_before' => 60,
+                'responsible_user_id' => $actor->id,
+                'note' => (string) __('Kündigung spätestens 3 Monate vor Vertragsende (Demo).'),
+            ]);
+            $contract->usageLimits()->create([
+                'organization_id' => $organization->id,
+                'kind' => \App\Enums\AssetFinance\AssetFinanceUsageLimitKind::OperatingHours->value,
+                'limit_value' => '1200.00',
+                'period' => 'yearly',
+                'overrun_fee_per_unit' => '2.5000',
+            ]);
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Leasing-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
+    private function seedAssetCompliance(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $asset = \App\Models\Asset::query()
+                ->where('organization_id', $organization->id)
+                ->orderBy('id')
+                ->first();
+            $profile = \App\Models\AssetCompliance\AssetComplianceProfile::query()
+                ->whereNull('organization_id')
+                ->where('code', 'dguv_v3_portable')
+                ->first();
+            if ($asset === null || $profile === null) {
+                return 0;
+            }
+
+            $service = app(\App\Services\AssetCompliance\AssetComplianceService::class);
+            $assignment = $service->assign($profile, $asset, $actor, [
+                'last_done_on' => now()->subMonths(11)->toDateString(),
+                'responsible_user_id' => $actor->id,
+            ]);
+
+            $service->recordInspection($assignment, $actor, [
+                'result' => 'passed',
+                'note' => (string) __('Demo-Prüfung ohne Befund.'),
+                'signature_name' => $actor->name,
+                'certificate' => [
+                    'certificate_no' => 'KAL-2026-0001',
+                    'issuer' => (string) __('Demo-Prüfstelle GmbH'),
+                    'issued_on' => now()->toDateString(),
+                    'valid_until' => now()->addYear()->toDateString(),
+                ],
+            ]);
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Prüfmittel-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
+    }
+
+    private function seedSustainability(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            foreach ([['environment', 'Energieeffizienz', 3], ['environment', 'Reparierbarkeit', 2], ['social', 'Arbeitsschutz beim Einsatz', 2], ['governance', 'Lieferantennachweise', 1]] as [$dimension, $label, $weight]) {
+                \App\Models\Sustainability\SustainabilityCriterion::query()->firstOrCreate([
+                    'organization_id' => $organization->id,
+                    'dimension' => $dimension,
+                    'label' => $label,
+                ], ['weight' => $weight, 'active' => true]);
+            }
+
+            \App\Models\Sustainability\SustainabilityActivityRecord::query()->create([
+                'organization_id' => $organization->id,
+                'activity_code' => 'electricity_kwh',
+                'amount' => '1250.000',
+                'unit' => 'kWh',
+                'period_start' => \Carbon\Carbon::now()->startOfQuarter()->toDateString(),
+                'period_end' => \Carbon\Carbon::now()->toDateString(),
+                'data_quality' => 'measured',
+                'source_note' => (string) __('Zählerstand Hauptgebäude (Demo)'),
+                'created_by' => $actor->id,
+            ]);
+
+            $assessments = app(\App\Services\Sustainability\SustainabilityAssessmentService::class);
+            $assessment = $assessments->createDraft($organization->id, null, null, (string) __('Akkuschrauber-Flotte (Demo)'), $actor);
+            foreach ($assessment->items as $index => $item) {
+                $item->update(['score' => [4, 3, 5, 2][$index % 4], 'data_quality' => 'calculated', 'source_note' => (string) __('Herstellerangaben + Wartungshistorie (Demo)')]);
+            }
+            $assessments->finalize($assessment->refresh(), $actor);
+
+            return 1;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::info('Demo-Seeder: Nachhaltigkeits-Demo übersprungen: ' . $e->getMessage());
+
+            return 0;
+        }
     }
 
     /**

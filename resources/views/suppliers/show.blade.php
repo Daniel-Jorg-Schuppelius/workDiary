@@ -32,7 +32,7 @@
         <x-slot:meta>
             @if ($supplier->company){{ $supplier->company }} · @endif
             @if ($supplier->number){{ __('Nr.') }} {{ $supplier->number }} · @endif
-            {{ $supplier->currency }}
+            {{ $supplier->currency->value }}
         </x-slot:meta>
         @if ($tags->isNotEmpty())
             <x-slot:tags>
@@ -69,7 +69,7 @@
                 <x-detail-grid.row :label="__('Aktiv')" :value="$supplier->active ? __('Ja') : __('Nein')" />
                 <x-detail-grid.row :label="__('USt-IdNr.')" :value="$supplier->vat_id" />
                 <x-detail-grid.row :label="__('Lieferantennr. (Lexoffice)')" :value="$supplier->vendor_number" />
-                <x-detail-grid.row :label="__('Währung')" :value="$supplier->currency" />
+                <x-detail-grid.row :label="__('Währung')" :value="$supplier->currency->value" />
                 <x-detail-grid.row :label="__('Zeitzone')" :value="$supplier->timezone" />
             </x-detail-grid>
             @php $bank = $supplier->bankDetails(); @endphp

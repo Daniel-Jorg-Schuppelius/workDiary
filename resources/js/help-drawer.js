@@ -15,7 +15,12 @@ const DRAWER_SELECTOR = "[data-help-drawer]";
 const BACKDROP_SELECTOR = "[data-help-backdrop]";
 const FALLBACK_TEMPLATE_SELECTOR = "template[data-help-fallback]";
 const OPEN_STORAGE_KEY = "help.open";
+const FOOTER_COLLAPSED_STORAGE_KEY = "help.footer.collapsed";
 const DESKTOP_QUERY = "(min-width: 1024px)";
+// Unterhalb dieser Viewport-Höhe klappt der Footer (Feedback/Aktionen) ohne
+// gespeicherte Präferenz standardmäßig ein — sonst bleibt für den Hilfetext
+// auf niedrigen Bildschirmen kaum Platz.
+const SHORT_VIEWPORT_HEIGHT = 760;
 
 let currentTopic = null;
 let currentLocale = null;
@@ -57,6 +62,55 @@ function wasOpen() {
     }
 }
 
+// Footer (Feedback/Aktionen) einklappen, um auf niedrigen Bildschirmen mehr
+// Platz für den Hilfetext zu schaffen. Zustand wird gemerkt — nur "collapsed",
+// keine fachlichen Daten (Datenschutz, analog zum Offen/Zu-Zustand).
+function rememberFooterCollapsed(collapsed) {
+    try {
+        if (collapsed) {
+            window.localStorage.setItem(FOOTER_COLLAPSED_STORAGE_KEY, "1");
+        } else {
+            window.localStorage.setItem(FOOTER_COLLAPSED_STORAGE_KEY, "0");
+        }
+    } catch (error) {
+        // localStorage kann fehlen (Private Mode) — Toggle funktioniert trotzdem.
+    }
+}
+
+// Gespeicherte Präferenz oder — ohne Präferenz — Auto-Einklappen bei niedriger
+// Viewport-Höhe.
+function footerShouldStartCollapsed() {
+    try {
+        const stored = window.localStorage.getItem(
+            FOOTER_COLLAPSED_STORAGE_KEY,
+        );
+        if (stored === "1") return true;
+        if (stored === "0") return false;
+    } catch (error) {
+        // Kein localStorage → auf Höhen-Heuristik zurückfallen.
+    }
+    return window.innerHeight < SHORT_VIEWPORT_HEIGHT;
+}
+
+function applyFooterCollapsed(collapsed) {
+    const content = document.querySelector("[data-help-footer-content]");
+    const toggle = document.querySelector("[data-help-footer-toggle]");
+    const chevron = document.querySelector("[data-help-footer-chevron]");
+    if (content) content.classList.toggle("hidden", collapsed);
+    if (toggle)
+        toggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    // Chevron: eingeklappt zeigt nach unten (aufklappbar), aufgeklappt nach oben.
+    if (chevron) chevron.classList.toggle("rotate-180", !collapsed);
+}
+
+function toggleFooter() {
+    const content = document.querySelector("[data-help-footer-content]");
+    if (!content) return;
+    const collapsed = !content.classList.contains("hidden");
+    applyFooterCollapsed(collapsed);
+    rememberFooterCollapsed(collapsed);
+}
+
 function setHidden(el, hidden) {
     if (!el) return;
     el.classList.toggle("hidden", hidden);
@@ -96,8 +150,7 @@ function closeDrawer(options = {}) {
     const { restoreFocus = true } = options;
     const drawer = document.querySelector(DRAWER_SELECTOR);
     const backdrop = document.querySelector(BACKDROP_SELECTOR);
-    const hadFocusInside =
-        !!drawer && drawer.contains(document.activeElement);
+    const hadFocusInside = !!drawer && drawer.contains(document.activeElement);
 
     setHidden(drawer, true);
     setHidden(backdrop, true);
@@ -234,7 +287,10 @@ function renderTopic(payload) {
                 // Server liefert {topic, title}; ältere Antworten waren rohe
                 // Slugs — beide Formen abdecken, angezeigt wird immer der Titel.
                 const slug = typeof entry === "string" ? entry : entry.topic;
-                const label = typeof entry === "string" ? entry : (entry.title || entry.topic);
+                const label =
+                    typeof entry === "string"
+                        ? entry
+                        : entry.title || entry.topic;
                 if (!slug) return;
                 const li = document.createElement("li");
                 const link = document.createElement("button");
@@ -371,6 +427,14 @@ function bindHelpDrawer() {
         if (feedbackBtn) {
             const value = feedbackBtn.getAttribute("data-help-feedback");
             submitFeedback(value === "1");
+            return;
+        }
+        // Footer (Feedback/Aktionen) ein-/ausklappen — schafft auf niedrigen
+        // Bildschirmen Platz für den Hilfetext.
+        const footerToggle = event.target.closest("[data-help-footer-toggle]");
+        if (footerToggle) {
+            event.preventDefault();
+            toggleFooter();
         }
     });
 
@@ -423,6 +487,12 @@ function bindHelpDrawer() {
                 );
             }
         });
+    }
+
+    // Initialzustand des Footers: gespeicherte Präferenz oder Auto-Einklappen
+    // bei niedriger Viewport-Höhe.
+    if (document.querySelector("[data-help-footer-content]")) {
+        applyFooterCollapsed(footerShouldStartCollapsed());
     }
 
     // War die Sidebar beim letzten Seitenaufruf offen, öffnet sie nach dem

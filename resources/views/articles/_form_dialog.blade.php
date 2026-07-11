@@ -58,8 +58,9 @@
         <x-input-field name="default_sale_price" type="number" step="0.0001" min="0"
                        :label="__('article.field.default_sale_price')"
                        :value="old('default_sale_price', $article?->default_sale_price)" />
-        <x-input-field name="currency" :label="__('article.field.currency')" maxlength="3"
-                       :value="old('currency', $article?->currency ?? 'EUR')" />
+        <x-select-field name="currency" :label="__('article.field.currency')">
+            <x-currency-options :selected="old('currency', $article?->currency?->value ?? 'EUR')" />
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('article.group.flags')" icon="tune" tone="primary" cols="2">

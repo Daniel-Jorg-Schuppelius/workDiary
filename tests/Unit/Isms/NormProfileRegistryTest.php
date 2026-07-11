@@ -22,7 +22,7 @@ use Tests\TestCase;
  * Schema-Verstöße werfen.
  */
 class NormProfileRegistryTest extends TestCase {
-    /** Erwartete Profile + Anzahl Referenzen (27 HLS; 27001 zusätzlich 93 Annex A). */
+    /** Erwartete Profile + Anzahl Referenzen (27 HLS; 27001 zusätzlich 93 Annex A; NIST CSF 6 Funktionen + 22 Kategorien). */
     private const EXPECTED_PROFILES = [
         'iso27001-2022' => 120,
         'iso27701-2025' => 27,
@@ -31,6 +31,7 @@ class NormProfileRegistryTest extends TestCase {
         'iso45001-2018' => 27,
         'iso37301-2021' => 27,
         'iso42001-2023' => 27,
+        'nist-csf-2-0' => 28,
     ];
 
     private string $fixtureDir;
@@ -55,7 +56,7 @@ class NormProfileRegistryTest extends TestCase {
         $registry = new NormProfileRegistry;
         $all = $registry->all();
 
-        $this->assertCount(7, $all);
+        $this->assertCount(8, $all);
         foreach (self::EXPECTED_PROFILES as $key => $expectedCount) {
             $this->assertArrayHasKey($key, $all, "Profil {$key} fehlt");
             $this->assertSame($expectedCount, $all[$key]['requirements_count'], "Profil {$key}: falsche Anzahl Referenzen");
@@ -76,9 +77,12 @@ class NormProfileRegistryTest extends TestCase {
             $refs = array_column($requirements, 'ref_no');
             $this->assertSame(count($refs), count(array_unique($refs)), "Profil {$key}: doppelte ref_no");
 
-            // HLS-Hauptkapitel in jedem Profil enthalten.
-            foreach (['4.1', '5.3', '6.2', '7.5', '8.1', '9.3', '10.2'] as $hlsRef) {
-                $this->assertContains($hlsRef, $refs, "Profil {$key}: HLS-Referenz {$hlsRef} fehlt");
+            // HLS-Hauptkapitel: nur ISO-Managementsystemnormen folgen der
+            // Harmonized Structure; NIST CSF hat eine eigene Struktur.
+            if (str_starts_with($key, 'iso')) {
+                foreach (['4.1', '5.3', '6.2', '7.5', '8.1', '9.3', '10.2'] as $hlsRef) {
+                    $this->assertContains($hlsRef, $refs, "Profil {$key}: HLS-Referenz {$hlsRef} fehlt");
+                }
             }
         }
 
@@ -86,6 +90,14 @@ class NormProfileRegistryTest extends TestCase {
         $refs27001 = array_column($registry->requirements('iso27001-2022'), 'ref_no');
         $this->assertContains('A.5.1', $refs27001);
         $this->assertContains('A.8.34', $refs27001);
+
+        // NIST CSF 2.0: die sechs Funktionen + Kategorien-Beispiele.
+        $refsCsf = array_column($registry->requirements('nist-csf-2-0'), 'ref_no');
+        foreach (['GV', 'ID', 'PR', 'DE', 'RS', 'RC'] as $function) {
+            $this->assertContains($function, $refsCsf, "NIST CSF: Funktion {$function} fehlt");
+        }
+        $this->assertContains('GV.SC', $refsCsf);
+        $this->assertContains('RC.CO', $refsCsf);
     }
 
     public function test_unknown_profile_key_throws(): void {

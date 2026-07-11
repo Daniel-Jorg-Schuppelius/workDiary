@@ -55,6 +55,7 @@ class StockDelivery extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'quantity' => 'decimal:4',
         'unit_price_snapshot' => 'decimal:4',
         'facturation_status' => DeliveryFacturationStatus::class,

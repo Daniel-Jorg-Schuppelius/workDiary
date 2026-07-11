@@ -23,6 +23,42 @@ return [
      *  - starts_at         : initialer Counter (last_value), nächste Nummer = starts_at + 1
      */
     'defaults' => [
+        'claim' => [
+            'prefix' => 'REK',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
+        'rma' => [
+            'prefix' => 'RMA',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
+        'rental' => [
+            'prefix' => 'VER',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
+        'asset_finance' => [
+            'prefix' => 'LEA',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
         'problem_report' => [
             'prefix' => 'PR',
             'prefix_separator' => '-',

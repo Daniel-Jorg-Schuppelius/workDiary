@@ -28,6 +28,16 @@ trait RendersReportPdf {
      */
     protected function pdfDownload(string $view, array $data, string $filename, string $orientation = 'portrait'): SymfonyResponse {
         $html = view($view, $data)->render();
+        // Feature 076: Dokumentdesign nur im Hochformat anwenden — die
+        // Druckbereiche des A4-Hochformat-Profils passen nicht auf Querformat.
+        if ($orientation === 'portrait') {
+            $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+            $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->composeFor(
+                $org instanceof \App\Models\Organization ? $org : null,
+                \App\Enums\DocumentDesign\RenderDocumentKind::Report,
+                $html,
+            );
+        }
         $bytes = PDFWriterRegistry::getInstance()->createPdfString(
             PDFContent::fromHtml($html),
             ['orientation' => $orientation],

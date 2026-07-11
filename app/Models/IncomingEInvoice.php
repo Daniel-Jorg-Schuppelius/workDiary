@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $decided_at
  * @property string|null $decision_note
  * @property array<string, mixed>|null $summary
+ * @property \Illuminate\Support\Carbon|null $transferred_at
+ * @property int|null $transferred_by
  */
 class IncomingEInvoice extends Model {
     use Auditable;
@@ -54,6 +56,7 @@ class IncomingEInvoice extends Model {
     protected $fillable = [
         'organization_id', 'document_id', 'sha256', 'source', 'received_at',
         'status', 'decided_by', 'decided_at', 'decision_note', 'summary',
+        'transferred_at', 'transferred_by',
     ];
 
     /** @var array<string, string> */
@@ -61,10 +64,23 @@ class IncomingEInvoice extends Model {
         'received_at' => 'datetime',
         'decided_at' => 'datetime',
         'summary' => 'array',
+        'transferred_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Document, $this> */
     public function document(): BelongsTo {
         return $this->belongsTo(Document::class);
+    }
+
+    /** Display-Label statt rohem Statuscode (Konvention: Codes nie roh in Views). */
+    public function statusLabel(): string {
+        return match ($this->status) {
+            self::STATUS_RECEIVED => (string) __('Empfangen'),
+            self::STATUS_APPROVED => (string) __('Fachlich freigegeben'),
+            self::STATUS_REJECTED => (string) __('Abgelehnt'),
+            self::STATUS_QUESTION => (string) __('Rückfrage'),
+            self::STATUS_PAYMENT_RELEASED => (string) __('Zahlung freigegeben'),
+            default => (string) $this->status,
+        };
     }
 }

@@ -27,6 +27,8 @@ return [
         'advisories' => 'Advisory',
         'suppliers' => 'Fornitori',
         'readiness' => 'Maturità e prontezza',
+        'csf' => 'NIST CSF 2.0',
+        'csf_crosswalk' => 'Corrispondenza CSF → ISO',
     ],
 
     'subtitle' => [
@@ -48,6 +50,37 @@ return [
         'advisories' => 'Importare advisory leggibili dalla macchina (CSAF/VEX) e confrontarli con l\'inventario e la SBOM di release.',
         'suppliers' => 'Valutare i fornitori per criticità e rischio, documentare i requisiti di sicurezza e le clausole contrattuali e riesaminarli periodicamente.',
         'readiness' => 'Autovalutazione motivata della prontezza all’audit per ambito — maturità per dominio e raccomandazione complessiva.',
+        'csf' => 'Copertura delle sei funzioni del NIST CSF 2.0 — direttamente dalla SoA NIST o derivata dalla SoA ISO/IEC 27001.',
+        'csf_scope' => 'Copertura delle funzioni del NIST CSF 2.0 per l’ambito «:scope».',
+        'csf_crosswalk' => 'Corrispondenza delle categorie del NIST CSF 2.0 con ISO/IEC 27001:2022 con copertura dalla SoA ISO.',
+        'csf_crosswalk_scope' => 'Corrispondenza CSF→ISO con copertura per l’ambito «:scope».',
+    ],
+
+    // Viste NIST CSF 2.0 (integrazione NIST): copertura delle funzioni + corrispondenza.
+    'csf' => [
+        'action_crosswalk' => 'Corrispondenza CSF → ISO',
+        'action_dashboard' => 'Funzioni CSF',
+        'disclaimer' => 'Questa valutazione è un’autovalutazione professionale e NON una dichiarazione ufficiale di conformità.',
+        'no_nist_notice' => 'Il catalogo NIST CSF non è importato in questo ambito — la copertura è derivata dalla SoA ISO/IEC 27001 tramite la corrispondenza. Per una valutazione diretta, caricare il catalogo «:label» in «Requisiti e SoA».',
+        'no_crosswalk_notice' => 'Nessuna corrispondenza disponibile per questa combinazione.',
+        'overall' => 'Copertura complessiva delle funzioni CSF',
+        'overall_hint' => 'Quota di requisiti applicabili coperti (attuati o parziali).',
+        'section_functions' => 'Copertura per funzione CSF',
+        'col_function' => 'Funzione',
+        'col_source' => 'Fonte',
+        'col_coverage' => 'Copertura',
+        'source_direct' => 'SoA NIST',
+        'source_mapped' => 'da ISO (corrispondenza)',
+        'source_none' => 'nessun dato',
+        'source_direct_hint' => 'Direttamente dalle dichiarazioni di applicabilità del catalogo NIST CSF importato.',
+        'source_mapped_hint' => 'Derivata dalla SoA ISO/IEC 27001 tramite la corrispondenza.',
+        'crosswalk_intro' => 'Ogni categoria CSF è mappata alle pertinenti referenze ISO/IEC 27001:2022; la copertura proviene dalla SoA ISO dell’ambito.',
+        'crosswalk_version' => 'Versione della corrispondenza :version (al :as_of).',
+        'crosswalk_version_no_date' => 'Versione della corrispondenza :version.',
+        'crosswalk_source' => 'Categoria CSF',
+        'crosswalk_targets' => 'ISO/IEC 27001:2022',
+        'crosswalk_coverage' => 'Copertura (SoA ISO)',
+        'crosswalk_empty' => 'Nessuna corrispondenza disponibile per questa combinazione di norme.',
     ],
 
     'field' => [

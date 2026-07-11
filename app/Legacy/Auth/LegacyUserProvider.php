@@ -131,6 +131,12 @@ class LegacyUserProvider extends EloquentUserProvider {
         if (! $user->canLogin()) {
             return false;
         }
+        // SSO-Pflicht (Feature 057, MVP-120): erzwingt eine Organisation SSO,
+        // ist der Passwort-Login serverseitig gesperrt — Ausnahme ist nur das
+        // Break-Glass-Konto (users.sso_exempt). Gilt für neu UND legacy.
+        if (! $user->sso_exempt && \App\Models\SsoConnection::enforcementActiveFor($user->organization_id)) {
+            return false;
+        }
         // Portal-Accounts duerfen den internen Guard nicht passieren.
         if ($user->customer_id !== null) {
             return false;

@@ -21,7 +21,101 @@
 
 return [
 
+    // Bewusste Ausnahmen der Abdeckungsprüfung (composer help:coverage):
+    // öffentliche Seiten ohne App-Layout + die Hilfeseite selbst.
+    'coverage_exceptions' => [
+        'help.topics.show',
+        'external.show',
+        'quotes.portal.show',
+    ],
+
     'routes' => [
+        // PDF-Dokumentdesign / Firmenbogen (Feature 076, Phase 28)
+        'admin.document-design.*' => 'admin.document-design',
+        // orgaMAX-Buchhaltung-Plugin (Feature 077, Phase 29)
+        'admin.orgamax.*' => 'admin.orgamax',
+        // ── Nachträge 2026-07-10: Phasen 19–24 + Lücken-Sweep ──────────
+        // Bewerbungen/Ausschreibungen (Feature 068)
+        'tenders.*' => 'applications.overview',
+        'recruiting.*' => 'applications.overview',
+        'applications.report' => 'applications.overview',
+        // Reklamation/Gewährleistung (Feature 072)
+        'claims.*' => 'claims.overview',
+        // Geräte-/Maschinenverleih (Feature 073)
+        'rental.*' => 'rental.overview',
+        // Leasing/Finanzierung/Asset-Verträge (Feature 074)
+        'asset-finance.*' => 'asset-finance.overview',
+        // Prüfmittel/Eichung/Kalibrierung (Feature 075)
+        'asset-compliance.*' => 'asset-compliance.overview',
+        // Krisenmanagement (Feature 070)
+        'crisis.*' => 'crisis.overview',
+        // Investitionsplanung (Feature 069)
+        'investments.*' => 'investments.overview',
+        // Nachhaltigkeit/ESG (Feature 071)
+        'sustainability.*' => 'sustainability.overview',
+        // Angebote (Feature 066)
+        'quotes.index' => 'quotes.overview',
+        'quotes.show' => 'quotes.overview',
+        // Steuerregelmatrix (Phase 23) + E-Rechnungs-Eingang + GoBD
+        'finance.tax-rules.*' => 'finance.tax-rules',
+        'finance.incoming-invoices.*' => 'finance.incoming-invoices',
+        'finance.gobd.*' => 'finance.gobd',
+        // Agiles PM (Feature 064)
+        'agile.*' => 'agile.overview',
+        // GAEB-Leistungsverzeichnisse (Feature 049)
+        'bill-of-quantities.*' => 'boq.overview',
+        // Lieferantenkataloge (Feature 050) + Preis-/Margenregeln
+        'supplier-catalogs.*' => 'supplier-catalogs.overview',
+        'pricing-margin-rules.*' => 'pricing.margin-rules',
+        // Ideenlandkarten (Feature 054)
+        'ideas.*' => 'ideas.overview',
+        // Genehmigungs-Register
+        'permits.*' => 'permits.overview',
+        // Standortbasierte Zeiterfassung (Geofences/Geräte/Review)
+        'geofences.*' => 'location.overview',
+        'location.*' => 'location.overview',
+        // Helpdesk-Verwaltung (Feature 065): Queues/Routing/Berichte
+        'helpdesk.queues.*' => 'helpdesk.overview',
+        'helpdesk.routing.*' => 'helpdesk.overview',
+        'helpdesk.reports.*' => 'helpdesk.overview',
+        // Externe Bestands-Outbox (E1): Konfliktliste
+        'inventory.conflicts.*' => 'inventory.conflicts',
+        // Externe Kontakte = externe Protokoll-Teilnehmer
+        'external-contacts.*' => 'external.participants',
+        // SLA-Verträge
+        'sla-contracts.*' => 'sla.overview',
+        // Verfahrenslauf-Detail (Designer/Läufe sind bereits gemappt)
+        'procedure-runs.show' => 'procedures.run',
+        // ISMS-Auditprogramme → bestehendes Audit-Topic
+        'isms.audit-programs.*' => 'isms.audits',
+        // Startseite → Dashboard-Hilfe
+        'home' => 'dashboard.overview',
+        // Admin: Integrations-Verwaltung (ein gemeinsames Topic)
+        'admin.caldav.*' => 'admin.integrations',
+        'admin.clockify.*' => 'admin.integrations',
+        'admin.cti.*' => 'admin.integrations',
+        'admin.jtl.*' => 'admin.jtl-wawi',
+        'admin.kimai.*' => 'admin.integrations',
+        'admin.mail.*' => 'admin.integrations',
+        'admin.todoist.*' => 'admin.integrations',
+        'admin.webdav.*' => 'admin.integrations',
+        'admin.zammad.*' => 'admin.integrations',
+        'admin.chat.*' => 'admin.integrations',
+        'admin.terminals.*' => 'admin.integrations',
+        'admin.shipments.*' => 'admin.integrations',
+        'admin.sso.*' => 'admin.sso',
+        'admin.integration.mappings.*' => 'admin.integrations',
+        // Admin: Betrieb (Betriebsaufgaben, Scheduler, Wartungsfenster)
+        'admin.operations.*' => 'admin.operations',
+        'admin.scheduler.*' => 'admin.scheduler',
+        'admin.maintenance-windows.*' => 'admin.operations',
+        // Admin: Systemeinstellungen, Datenhoheit, Kostenstellenregeln
+        'admin.settings.*' => 'admin.settings',
+        'admin.data-ownership.*' => 'admin.data-ownership',
+        'admin.cost-center-rules.*' => 'admin.cost-center-rules',
+        // Fernwartungszugriffe → bestehendes Remote-Support-Topic
+        'admin.support.grants.*' => 'admin.remote-support',
+
         // Fehlermeldesystem (Feature 041, MVP-053)
         'problem-reports.*' => 'support.report-problem',
         'admin.problem-reports.*' => 'support.report-problem',

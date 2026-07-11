@@ -139,6 +139,13 @@ return [
         'procedures' => 'Procedure',
         'customer-portal' => 'Portale clienti',
         'platform' => 'Piattaforma / Operazioni',
+        'applications' => 'Candidature e gare',
+        'crisis' => 'Gestione delle crisi',
+        'sustainability' => 'Sostenibilità ed ESG',
+        'claims' => 'Reclami e garanzia',
+        'rental' => 'Noleggio attrezzature',
+        'asset-finance' => 'Leasing e contratti asset',
+        'asset-compliance' => 'Strumenti di misura e taratura',
     ],
     'permission' => [
         'access.manage' => 'Apri la gestione accessi',
@@ -149,6 +156,12 @@ return [
         'organization.update' => 'Modifica l\'organizzazione',
         'organization.billing' => 'Gestisci la fatturazione dell\'organizzazione',
         'branding.update' => 'Modifica il branding',
+        'documentDesign.manage' => 'Gestire il design dei documenti',
+        'documentDesign.assign' => 'Assegnare il design dei documenti e anteprima',
+        'finance.orgamax.convert' => 'orgaMAX: convertire l\'ordine in fattura',
+        'finance.orgamax.lock' => 'orgaMAX: finalizzare/bloccare la fattura',
+        'finance.orgamax.send' => 'orgaMAX: inviare la fattura',
+        'finance.orgamax.payment' => 'orgaMAX: registrare un pagamento',
         'org.onboarding.view' => 'Visualizza la lista di controllo onboarding',
         'org.onboarding.skipStep' => 'Salta un passaggio di onboarding',
         'org.onboarding.dismissWidget' => 'Nascondi il widget di onboarding',
@@ -482,5 +495,65 @@ return [
         'customerPortal.timeEntry.view' => 'Visualizza le registrazioni di tempo nel portale clienti',
         'customerPortal.invoice.view' => 'Visualizza le fatture nel portale clienti',
         'customerPortal.openIssue.view' => 'Visualizza i punti aperti nel portale clienti',
+
+        // Bewerbungen & Ausschreibungen (Feature 068)
+        'tender.viewAny' => 'Elencare le gare',
+        'tender.view' => 'Consultare il fascicolo di gara',
+        'tender.manage' => 'Gestire i fascicoli di gara',
+        'tender.decide' => 'Decidere le gare (go/no-go, aggiudicazione)',
+        'recruiting.viewAny' => 'Elencare le candidature',
+        'recruiting.view' => 'Consultare il fascicolo di candidatura',
+        'recruiting.manage' => 'Gestire i fascicoli di candidatura',
+        'recruiting.decide' => 'Decidere le candidature (offerta/assunzione/rifiuto)',
+        'recruiting.privacy' => 'Gestire la privacy dei candidati (cancellazione/accesso/talent pool)',
+
+        // Investitionsplanung (Feature 069)
+        'investment.viewAny' => 'Elencare gli investimenti',
+        'investment.view' => 'Consultare il fascicolo di investimento',
+        'investment.manage' => 'Gestire i fascicoli di investimento',
+        'investment.approve' => 'Approvare i budget di investimento',
+
+        // Krisenmanagement (Feature 070)
+        'crisis.viewAny' => 'Elencare le crisi',
+        'crisis.view' => 'Consultare il fascicolo di crisi',
+        'crisis.manage' => 'Gestire i fascicoli di crisi',
+        'crisis.approve' => 'Approvare la comunicazione di crisi / attivare la crisi',
+
+        // Nachhaltigkeit (Feature 071)
+        'sustainability.viewAny' => 'Elencare i dati di sostenibilità',
+        'sustainability.view' => 'Consultare i dati di sostenibilità',
+        'sustainability.manage' => 'Gestire la sostenibilità (valutazioni/fattori/misure/obiettivi)',
+        'claim.viewAny' => 'Elencare i reclami',
+        'claim.view' => 'Consultare il fascicolo del reclamo',
+        'claim.manage' => 'Accettare e gestire i reclami',
+        'claim.decide' => 'Valutare e decidere i reclami',
+        'claim.finance' => 'Approvare gli esiti commerciali dei reclami',
+        'claim.warehouse' => 'Controllare e stoccare i resi',
+        'claim.recourse' => 'Gestire la rivalsa sul fornitore',
+
+        // Modello di blocco condiviso (D12, fasi 25-27)
+        'asset.block.manage' => 'Bloccare asset e rimuovere i blocchi',
+        'asset.block.override' => 'Concedere deroghe temporanee per asset bloccati',
+
+        // Noleggio attrezzature (funzionalità 073)
+        'rental.viewAny' => 'Elencare le pratiche di noleggio',
+        'rental.view' => 'Consultare la pratica di noleggio',
+        'rental.manage' => 'Creare e gestire le pratiche di noleggio',
+        'rental.handover' => 'Registrare consegne e restituzioni',
+        'rental.finance' => 'Approvare e fatturare canoni e cauzioni',
+        'rental.rates' => 'Gestire i listini di noleggio',
+
+        // Leasing / finanziamento (funzionalità 074)
+        'assetFinance.viewAny' => 'Elencare le pratiche di leasing',
+        'assetFinance.view' => 'Consultare la pratica di leasing (senza condizioni)',
+        'assetFinance.manage' => 'Creare e gestire le pratiche di leasing',
+        'assetFinance.finance' => 'Consultare e gestire le condizioni riservate',
+
+        // Strumenti di misura / taratura (funzionalità 075)
+        'assetCompliance.viewAny' => 'Elencare obblighi di verifica e strumenti di misura',
+        'assetCompliance.view' => 'Consultare il fascicolo di verifica',
+        'assetCompliance.manage' => 'Gestire profili e obblighi di verifica',
+        'assetCompliance.inspect' => 'Eseguire verifiche e registrare le evidenze',
+        'assetCompliance.release' => 'Concedere deroghe ai blocchi di verifica',
     ],
 ];

@@ -63,6 +63,7 @@ class EmailConnection extends Model {
         'folder',
         'processed_folder',
         'active',
+        'einvoice_intake',
         'last_polled_at',
         'created_by',
     ];
@@ -72,6 +73,7 @@ class EmailConnection extends Model {
         'password' => 'encrypted',
         'port' => 'integer',
         'active' => 'boolean',
+        'einvoice_intake' => 'boolean',
         'last_polled_at' => 'datetime',
     ];
 

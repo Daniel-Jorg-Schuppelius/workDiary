@@ -27,9 +27,11 @@
         "league/flysystem-ftp": "^3.31",
         "league/flysystem-sftp-v3": "^3.33",
         "minishlink/web-push": "^10.0",
+        "onelogin/php-saml": "^4.3.2",
         "opis/json-schema": "^2.6",
         "phpoffice/phpspreadsheet": "^5.7",
         "pragmarx/google2fa-qrcode": "^4.0",
+        "robrichards/xmlseclibs": "^3.1.5",
         "simshaun/recurr": "^6.0",
         "spatie/icalendar-generator": "^3.0",
         "spatie/laravel-permission": "^7.4",
@@ -90,6 +92,7 @@
         "i18n:check": "@php scripts/find-untranslated.php",
         "lang:check": "@php scripts/translations-diff.php",
         "lang:coverage": "@php scripts/translations-coverage.php",
+        "help:coverage": "@php artisan help:coverage",
         "lang:sync-core": "@php scripts/sync-laravel-core-lang.php",
         "lang:sync-core:write": "@php scripts/sync-laravel-core-lang.php --write",
         "lang:sync-core:replace": "@php scripts/sync-laravel-core-lang.php --replace --write",
@@ -98,7 +101,8 @@
             "@lint",
             "@test",
             "@lang:check",
-            "@lang:coverage"
+            "@lang:coverage",
+            "@help:coverage"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

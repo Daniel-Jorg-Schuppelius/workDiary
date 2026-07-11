@@ -27,7 +27,7 @@ class LexofficeInvoiceMapper {
         $invoice->loadMissing(['items', 'customer']);
 
         $taxType = (string) ($defaults['default_tax_type'] ?? 'net');
-        $currency = $invoice->currency ?: ((string) ($defaults['default_currency'] ?? 'EUR'));
+        $currency = $invoice->currency->value;
         $issuedOn = $invoice->issued_on ?? $invoice->created_at ?? now();
         $dueOn = $invoice->due_on ?? $issuedOn->copy()->addDays(14);
 
