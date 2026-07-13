@@ -41,7 +41,7 @@
              Karte breiter als die Inhaltskarten (sichtbar, weil das Main-Panel
              mobil transparent ist → zwei verschiedene Kartenränder). Ab md ist
              das Main wieder ein Panel → kein Extra-Padding nötig. --}}
-        <div class="shrink-0 mb-[var(--sidebar-gap)] max-md:px-1">
+        <div class="shrink-0 mb-(--sidebar-gap) max-md:px-1">
             {{ $toolbar }}
         </div>
     @endpush

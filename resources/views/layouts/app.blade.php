@@ -209,7 +209,7 @@
              das <main id="main-content"> — Tastaturnutzer überspringen so die
              Kopf-/Navigationsleiste. MUSS das erste fokussierbare Element sein. --}}
         <a href="#main-content"
-           class="wd-skip-link sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-box focus:bg-primary focus:px-4 focus:py-2 focus:font-semibold focus:text-primary-content focus:shadow-lg focus:ring-2 focus:ring-primary/60">
+           class="wd-skip-link sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-100 focus:rounded-box focus:bg-primary focus:px-4 focus:py-2 focus:font-semibold focus:text-primary-content focus:shadow-lg focus:ring-2 focus:ring-primary/60">
             {{ __('Zum Inhalt springen') }}
         </a>
         @php

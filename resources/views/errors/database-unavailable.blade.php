@@ -46,7 +46,7 @@
         @vite(['resources/css/app.css'])
     @endif
 </head>
-<body class="min-h-screen bg-gradient-to-b from-base-200 to-base-300 text-base-content"
+<body class="min-h-screen bg-linear-to-b from-base-200 to-base-300 text-base-content"
       style="font-family: 'IBM Plex Sans', system-ui, sans-serif;">
     <div class="flex min-h-screen items-center justify-center px-4">
         <div class="w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg">

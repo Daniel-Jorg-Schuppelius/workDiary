@@ -43,8 +43,10 @@ step "SBOM erzeugen (CycloneDX 1.6: Composer + npm + hierarchischer Merge)"
 # Feature 044e (AR §23): echte Dependency-Graphen über die offiziellen
 # CycloneDX-Tools; merge-sbom.php ersetzt `cyclonedx-cli merge --hierarchical`
 # (kein .NET nötig). Fallback: selbsttragender Eigenbau (composer sbom).
+# @cyclonedx/cyclonedx-npm ist bewusst KEINE devDependency (würde bei jedem
+# npm ci mitinstalliert, auch beim Server-Deploy) — npx lädt es on-demand.
 if composer CycloneDX:make-sbom --spec-version=1.6 --output-format=JSON --omit=dev --omit=plugin --output-file=storage/app/sbom-composer.cdx.json \
-   && npx @cyclonedx/cyclonedx-npm --omit dev --spec-version 1.6 --output-format JSON --output-file storage/app/sbom-npm.cdx.json; then
+   && npx --yes @cyclonedx/cyclonedx-npm@6 --omit dev --spec-version 1.6 --output-format JSON --output-file storage/app/sbom-npm.cdx.json; then
   php scripts/merge-sbom.php storage/app/sbom-composer.cdx.json storage/app/sbom-npm.cdx.json storage/app/sbom.cdx.json "${APP_VERSION:-dev}"
 else
   printf '\033[1;33m⚠ CycloneDX-Tools nicht verfügbar — Fallback auf Eigenbau (flacher Graph).\033[0m\n'

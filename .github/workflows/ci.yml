@@ -278,6 +278,13 @@ jobs:
             sleep 1
           done
 
+      # pa11y-ci ist bewusst KEINE devDependency: es zieht Puppeteer samt
+      # Chromium-Download in jeden npm ci — auch beim Server-Deploy über
+      # deploy.sh. Nur hier on-demand installieren; --no-save lässt
+      # package.json/package-lock.json unangetastet.
+      - name: Install pa11y-ci (on-demand)
+        run: npm install --no-save "pa11y-ci@^4.1.1"
+
       - name: Run pa11y accessibility checks
         run: npm run a11y
 
