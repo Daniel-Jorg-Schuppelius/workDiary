@@ -700,6 +700,11 @@ export function registerAlpineComponents(Alpine) {
         get hasForeignCustomers() {
             return this.filteredForeignCustomers.length > 0;
         },
+        // Anzeigename eines Geschosses — als Methode statt Template-Literal in
+        // der Direktive (der @alpinejs/csp-Parser kennt keine Backticks).
+        floorLabel(f) {
+            return `${f.label} (${f.level})`;
+        },
         syncFromCurrent() {
             if (this.room_id != null) {
                 const room = this.data.rooms.find((r) => r.id === this.room_id);
@@ -1044,17 +1049,24 @@ export function registerAlpineComponents(Alpine) {
         fieldName(i, field) {
             return this.prefix + "[" + i + "][" + field + "]";
         },
+        // Andere benannte Zeilen (für "sichtbar wenn"-Referenzen) — als Methode
+        // statt Arrow-Filter in der Direktive (CSP-Build-Parser kennt keine =>).
+        otherLabeledItems(it) {
+            return this.items.filter((o) => o !== it && o.label);
+        },
     }));
 
     // Bedingungslogik Formular-Ausfüllen (Feature 032, Rang 33): spiegelt
-    // FormFieldDefinition::isVisible clientseitig. conditions: {key: {field,op,value}},
-    // initial: {key: string}. Der Wrapper trackt Quelle-Werte generisch über name.
-    Alpine.data("formFill", (conditions, initial) => ({
+    // FormFieldDefinition::isVisible clientseitig. Config via data-Attribute
+    // (JSON): data-conditions {key: {field,op,value}}, data-initial {key: string}
+    // — Objekt-Argumente via @js() wären im CSP-Build nicht auswertbar
+    // (JSON.parse-Wrapper). Der Wrapper trackt Quelle-Werte generisch über name.
+    Alpine.data("formFill", () => ({
         vals: {},
         conditions: {},
         init() {
-            this.conditions = conditions || {};
-            this.vals = Object.assign({}, initial || {});
+            this.conditions = JSON.parse(this.$el.dataset.conditions || "{}");
+            this.vals = Object.assign({}, JSON.parse(this.$el.dataset.initial || "{}"));
         },
         track(e) {
             const t = e.target;
@@ -1133,6 +1145,103 @@ export function registerAlpineComponents(Alpine) {
                 .finally(() => {
                     this.testing = false;
                 });
+        },
+    }));
+
+    // Theme-Editor: Live-Vorschau mit abgeleiteten Kontrastfarben
+    // (ehemals Inline-x-data in admin/themes/_form_dialog — Objekte mit
+    // Methoden kann der @alpinejs/csp-Parser nicht auswerten).
+    // Config via data-config (JSON): { scheme, colors }.
+    Alpine.data("themePreview", () => ({
+        scheme: "light",
+        colors: {},
+        init() {
+            const cfg = JSON.parse(this.$el.dataset.config || "{}");
+            this.scheme = cfg.scheme ?? "light";
+            this.colors = cfg.colors ?? {};
+        },
+        // Kontrastfarbe (dunkel/hell) zur übergebenen Hintergrundfarbe.
+        content(hex) {
+            try {
+                const h = (hex || "").replace("#", "");
+                if (h.length !== 6) return "#1f2937";
+                const r = parseInt(h.substr(0, 2), 16);
+                const g = parseInt(h.substr(2, 2), 16);
+                const b = parseInt(h.substr(4, 2), 16);
+                const l = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+                return l > 0.55 ? "#1f2937" : "#ffffff";
+            } catch (e) {
+                return "#1f2937";
+            }
+        },
+        previewStyle() {
+            let s = "color-scheme:" + this.scheme + ";";
+            for (const k in this.colors) {
+                s += "--color-" + k + ":" + this.colors[k] + ";";
+            }
+            s += "--color-base-content:" + this.content(this.colors["base-100"]) + ";";
+            ["primary", "secondary", "accent", "neutral", "info", "success", "warning", "error"].forEach(
+                (k) => {
+                    s += "--color-" + k + "-content:" + this.content(this.colors[k]) + ";";
+                },
+            );
+            return s;
+        },
+    }));
+
+    // Unterschriften-Feld in ausfüllbaren Formularen (forms/submissions):
+    // SignaturePad-Anbindung, Base64-PNG ins Hidden-Feld (ehemals Inline-x-data).
+    Alpine.data("signatureCapture", () => ({
+        pad: null,
+        init() {
+            this.pad = new window.SignaturePad(this.$refs.canvas);
+            this.pad.addEventListener("endStroke", () => {
+                this.$refs.sig.value = this.pad.toDataURL("image/png");
+            });
+        },
+        clear() {
+            if (this.pad) this.pad.clear();
+            this.$refs.sig.value = "";
+        },
+    }));
+
+    // Rechnungs-Assistent: blendet Feldgruppen nach gewähltem Inhaltstyp um
+    // (ehemals Inline-x-data + if-Statement in x-on:change — der CSP-Parser
+    // kennt nur Ausdrücke, keine Statements). Initialwert via data-content.
+    Alpine.data("invoiceContentSwitch", () => ({
+        content: "service",
+        init() {
+            this.content = this.$el.dataset.content || "service";
+        },
+        // Delegierter change-Handler des Wrappers: reagiert nur auf das
+        // "content"-Select im Formular.
+        onFormChange(event) {
+            if (event.target && event.target.name === "content") {
+                this.content = event.target.value;
+            }
+        },
+    }));
+
+    // Manuelles Projekt-Zusammenführen (projects/duplicates): Kunde wählen →
+    // Ziel/Quelle aus dessen Projekten (ehemals Inline-x-data mit Getter).
+    // Config via data-config (JSON): { customers, projects }.
+    Alpine.data("projectManualMerge", () => ({
+        customerKey: "",
+        target: "",
+        source: "",
+        customers: [],
+        projects: [],
+        init() {
+            const cfg = JSON.parse(this.$el.dataset.config || "{}");
+            this.customers = cfg.customers ?? [];
+            this.projects = cfg.projects ?? [];
+        },
+        get filtered() {
+            return this.projects.filter((p) => p.ck === this.customerKey);
+        },
+        resetProjects() {
+            this.target = "";
+            this.source = "";
         },
     }));
 }

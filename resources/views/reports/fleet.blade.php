@@ -26,7 +26,7 @@
     @if ($isAdmin)
         <x-filter-bar :action="route('reports.fleet')" :reset="route('reports.fleet')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
-                <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine Fahrten') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamter Fuhrpark') }}</option>
                 </select>

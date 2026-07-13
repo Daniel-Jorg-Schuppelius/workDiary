@@ -156,7 +156,7 @@
                     class="select select-bordered w-full @error($floorName) select-error @enderror">
                 <option :value="null">{{ __('— bitte wählen —') }}</option>
                 <template x-for="f in filteredFloors" :key="f.id">
-                    <option :value="f.id" x-text="`${f.label} (${f.level})`"></option>
+                    <option :value="f.id" x-text="floorLabel(f)"></option>
                 </template>
             </select>
             @error($floorName)<p class="text-error text-sm">{{ $message }}</p>@enderror

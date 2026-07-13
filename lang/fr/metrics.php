@@ -25,6 +25,7 @@ return [
         'active_users' => 'Utilisateurs actifs (30 jours)',
         'module_counts' => 'Enregistrements par module principal',
         'feature_usage' => 'Utilisation des fonctionnalités (30 jours)',
+        'transparency' => 'Transparence des métriques',
     ],
 
     'field' => [
@@ -36,6 +37,34 @@ return [
         'feature' => 'Fonctionnalité',
         'usage_total' => 'Nombre',
         'last_used_on' => 'Dernière utilisation',
+        'counter_description' => 'Ce qui est compté',
+    ],
+
+    'transparency' => [
+        'status_enabled' => 'Compteurs d\'utilisation actifs',
+        'status_disabled' => 'Compteurs d\'utilisation désactivés',
+        'settings_link' => 'Interrupteur « telemetry.enabled » dans les paramètres',
+        'intro' => 'Cette installation ne collecte que les compteurs d\'utilisation suivants — agrégés par organisation et par jour, sans référence personnelle et sans contenu métier. Aucune autre télémétrie n\'existe.',
+        'storage' => 'Lieu de stockage : base de données locale de cette installation (table feature_usage_counters). Aucun envoi vers des systèmes externes n\'a lieu.',
+        'retention' => 'Conservation : les agrégats journaliers restent en local ; l\'analyse ci-dessus couvre les 30 derniers jours. Interrupteur désactivé, rien n\'est compté — les agrégats existants sont conservés.',
+    ],
+
+    'counter' => [
+        'communications' => [
+            'created' => 'Notes de communication créées (nombre uniquement)',
+        ],
+        'documents' => [
+            'created' => 'Documents créés (nombre uniquement)',
+        ],
+        'forms' => [
+            'submitted' => 'Formulaires remplis (nombre uniquement)',
+        ],
+        'knowledge' => [
+            'created' => 'Articles de connaissance créés (nombre uniquement)',
+        ],
+        'timeExports' => [
+            'built' => 'Exports de temps/paie générés (nombre uniquement)',
+        ],
     ],
 
     'module' => [

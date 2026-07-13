@@ -32,9 +32,13 @@ return [
     ],
     'weather' => [
         'heading' => 'Wetter-Auto-Abruf',
-        'description' => 'Bei Anlage eines Protokolls automatisch einen Wetter-Snapshot (Open-Meteo) für Standort und Zeitpunkt ziehen — als Beweiswert. Projekte können das überschreiben.',
+        'description' => 'Bei Anlage eines Protokolls automatisch einen Wetter-Snapshot für Standort und Zeitpunkt ziehen — als Beweiswert. Projekte können das überschreiben.',
         'auto_fetch' => 'Wetter bei Protokoll-Anlage automatisch abrufen',
         'auto_fetch_hint' => 'Nur wenn Standort-Koordinaten vorliegen; sonst passiert nichts. Standard: aus.',
+        'provider' => 'Wetterdienst',
+        'provider_hint' => 'Open-Meteo: weltweit, ohne Anmeldung. DWD Open Data: amtliche deutsche Stationsdaten (CC BY 4.0, Quellenvermerk „Deutscher Wetterdienst“), nur für Standorte in Deutschland mit Station in Reichweite.',
+        'dwd_max_station_km' => 'DWD: maximale Stationsentfernung (km)',
+        'dwd_max_station_km_hint' => 'Liegt keine aktive DWD-Station innerhalb dieser Entfernung, entsteht kein Snapshot — lieber kein Wert als ein falscher. Standard: 30 km.',
     ],
     'hint' => 'Leer lassen, um den systemweiten Standardwert zu nutzen.',
     'pagination' => [

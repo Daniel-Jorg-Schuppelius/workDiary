@@ -27,6 +27,12 @@
                     <x-icon-btn icon="contacts" tone="outline" size="sm" type="submit"
                                 show-label>{{ __('Debitoren-Stammdaten (EXTF)') }}</x-icon-btn>
                 </form>
+                {{-- EXTF-Sachkonten-Beistellung Kategorie 20 (MVP-334). --}}
+                <form method="POST" action="{{ route('finance.datev.gl-accounts.export') }}">
+                    @csrf
+                    <x-icon-btn icon="account_tree" tone="outline" size="sm" type="submit"
+                                show-label>{{ __('Sachkonten (EXTF)') }}</x-icon-btn>
+                </form>
             @endif
             @if ($canCreate)
                 @if ($importAvailable)

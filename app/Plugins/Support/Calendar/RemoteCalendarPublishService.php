@@ -1,0 +1,121 @@
+<?php
+/*
+ * Created on   : Sun Jul 12 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : RemoteCalendarPublishService.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+namespace App\Plugins\Support\Calendar;
+
+use App\Models\ExternalReference;
+use Illuminate\Support\Carbon;
+
+/**
+ * Idempotenter Abgleich der Kalenderelemente gegen einen REST-Kalender-
+ * Provider (MVP-328, Bauturbo A8) — dasselbe Muster wie das CalDAV-Publish
+ * ({@see \App\Plugins\CalDav\Services\CalendarPublishService}), nur mit
+ * Remote-IDs statt client-seitiger Objektnamen. Der Publish-Zustand liegt in
+ * {@see ExternalReference} (Plugin-ID des Providers, Typ `calendar_event`,
+ * `external_id` = Remote-Event-ID, Payload = Fingerprint + stabile UID):
+ *
+ * - neu → create (Remote-ID merken), geändert (Hash abweichend) → update;
+ * - unverändert (Hash gleich) → übersprungen (kein Request);
+ * - abgesagt (`cancelled`) → delete, Referenz entfernt;
+ * - Gateway-Fehler → `failed`, Referenz **unverändert** (Wiederanlauf im nächsten Lauf).
+ *
+ * WorkDiary bleibt führend; es werden nie externe Termine gelesen oder
+ * überschrieben. Fehlgeschlagene Läufe zählen über
+ * {@see RemoteCalendarConnection::recordConnectionFailure()} auf die
+ * einheitliche Auto-Disable-Schwelle (MVP-178) ein.
+ */
+class RemoteCalendarPublishService {
+    public const EXTERNAL_TYPE = 'calendar_event';
+
+    /**
+     * @param  list<RemoteCalendarEvent>  $items
+     * @return array{published: int, deleted: int, unchanged: int, failed: int}
+     */
+    public function publish(string $pluginId, RemoteCalendarConnection $connection, RemoteCalendarGateway $gateway, array $items): array {
+        $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
+
+        foreach ($items as $item) {
+            $ref = ExternalReference::query()
+                ->where('organization_id', $connection->organizationId())
+                ->where('plugin_id', $pluginId)
+                ->where('external_type', self::EXTERNAL_TYPE)
+                ->where('referenceable_type', $item->referenceableType)
+                ->where('referenceable_id', $item->referenceableId)
+                ->first();
+
+            if ($item->cancelled) {
+                if (! $ref instanceof ExternalReference) {
+                    continue; // nie publiziert → nichts zu entfernen
+                }
+                if ($gateway->deleteEvent((string) $ref->external_id)) {
+                    $ref->delete();
+                    $counters['deleted']++;
+                } else {
+                    $counters['failed']++;
+                }
+                continue;
+            }
+
+            $hash = $item->fingerprint();
+            if ($ref instanceof ExternalReference && ($ref->payload['hash'] ?? null) === $hash) {
+                $counters['unchanged']++;
+                continue;
+            }
+
+            if ($ref instanceof ExternalReference) {
+                if (! $gateway->updateEvent((string) $ref->external_id, $item)) {
+                    $counters['failed']++;
+                    continue;
+                }
+                $ref->forceFill([
+                    'payload' => ['hash' => $hash, 'uid' => $item->uid],
+                    'synced_at' => Carbon::now(),
+                ])->save();
+                $counters['published']++;
+                continue;
+            }
+
+            $remoteId = $gateway->createEvent($item);
+            if ($remoteId === null) {
+                $counters['failed']++;
+                continue;
+            }
+
+            ExternalReference::query()->create([
+                'organization_id' => $connection->organizationId(),
+                'plugin_id' => $pluginId,
+                'external_type' => self::EXTERNAL_TYPE,
+                'referenceable_type' => $item->referenceableType,
+                'referenceable_id' => $item->referenceableId,
+                'external_id' => $remoteId,
+                'payload' => ['hash' => $hash, 'uid' => $item->uid],
+                'synced_at' => Carbon::now(),
+            ]);
+            $counters['published']++;
+        }
+
+        $connection->markPublished();
+
+        // Verbindungs-Gesundheit (MVP-178): fehlgeschlagene Requests zählen
+        // als Störung (Auto-Disable-Schwelle), ein fehlerfreier Lauf setzt
+        // den Zähler zurück.
+        if ($counters['failed'] > 0) {
+            $connection->recordConnectionFailure(
+                sprintf('%d Kalender-Event(s) konnten nicht publiziert/entfernt werden.', $counters['failed']),
+            );
+        } else {
+            $connection->recordConnectionSuccess();
+        }
+
+        return $counters;
+    }
+}

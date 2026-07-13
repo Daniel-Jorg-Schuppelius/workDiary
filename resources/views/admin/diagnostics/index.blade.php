@@ -54,8 +54,7 @@
     <x-slot:actions>
         <x-button :href="route('admin.diagnostics.json')" tone="ghost" size="sm">{{ __('JSON') }}</x-button>
         @can(\App\Enums\User\Permission::PlatformDiagnosticsRunCheck->value)
-            <form method="POST" action="{{ route('admin.diagnostics.test-mail') }}"
-                  onsubmit="event.preventDefault(); fetch(this.action, {method:'POST', headers:{'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept':'application/json'}, credentials:'same-origin'}).then(r=>r.json()).then(p=>window.notifyAction(p.ok ? {tone:'success', title:'{{ __('Diagnose') }}', message:'{{ __('Mail abgesetzt.') }}'} : {tone:'error', title:'{{ __('Diagnose') }}', message:'{{ __('Fehler:') }} ' + (p.error || '?')})).catch(()=>window.notifyAction({tone:'error', title:'{{ __('Diagnose') }}', message:'{{ __('Fehler beim Senden.') }}'}));">
+            <form method="POST" action="{{ route('admin.diagnostics.test-mail') }}" data-diagnostics-test-mail>
                 @csrf
                 <x-button type="submit" tone="outline" size="sm">{{ __('Test-Mail senden') }}</x-button>
             </form>
@@ -121,4 +120,28 @@
         @endforeach
     </div>
 </x-index-page>
+
+{{-- Test-Mail per fetch abschicken (früher Inline-onsubmit; unter Nonce-CSP
+     sind Inline-Event-Attribute blockiert). --}}
+<script @cspNonce>
+    document.addEventListener('submit', function (event) {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || !form.hasAttribute('data-diagnostics-test-mail')) return;
+        event.preventDefault();
+        const title = @js(__('Diagnose'));
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+        })
+            .then((r) => r.json())
+            .then((p) => window.notifyAction(p.ok
+                ? { tone: 'success', title: title, message: @js(__('Mail abgesetzt.')) }
+                : { tone: 'error', title: title, message: @js(__('Fehler:')) + ' ' + (p.error || '?') }))
+            .catch(() => window.notifyAction({ tone: 'error', title: title, message: @js(__('Fehler beim Senden.')) }));
+    });
+</script>
 @endsection

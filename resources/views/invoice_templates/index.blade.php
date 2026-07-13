@@ -17,6 +17,7 @@
 <x-index-page overflow="clip" :subtitle="__('PDF-Layouts pro Mandant verwalten.')">
     <x-slot:actions>
         <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
                     :href="route('invoice-templates.create')"
                     show-label>{{ __('Neue Vorlage') }}</x-icon-btn>
     </x-slot:actions>
@@ -60,13 +61,12 @@
                         @endif
                     </td>
                     <td class="text-right">
-                        <a href="{{ route('invoice-templates.edit', $template) }}" class="btn btn-sm btn-secondary">
-                            <x-icon name="edit" />
-                        </a>
+                        <x-icon-btn icon="edit"
+                                    data-entry-modal-trigger
+                                    :href="route('invoice-templates.edit', $template)"
+                                    :label="__('Bearbeiten')" />
                         <x-action-form :action="route('invoice-templates.destroy', $template)" method="DELETE" :confirm="__('Vorlage wirklich löschen?')">
-                            <button type="submit" class="btn btn-sm btn-danger">
-                                <x-icon name="delete" />
-                            </button>
+                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                         </x-action-form>
                     </td>
                 </tr>

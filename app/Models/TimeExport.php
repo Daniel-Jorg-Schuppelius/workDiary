@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $delivered_at
  * @property int|null $delivered_by_user_id
  * @property string|null $delivery_note
+ * @property array<string, array<string, mixed>>|null $auto_delivery
  * @property int|null $superseded_by_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -67,6 +68,7 @@ class TimeExport extends Model {
         'delivered_at',
         'delivered_by_user_id',
         'delivery_note',
+        'auto_delivery',
         'superseded_by_id',
     ];
 
@@ -78,6 +80,7 @@ class TimeExport extends Model {
         'rows_count' => 'integer',
         'totals' => 'array',
         'delivered_at' => 'datetime',
+        'auto_delivery' => 'array',
     ];
 
     public function periodLabel(): string {

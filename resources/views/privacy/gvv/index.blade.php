@@ -18,7 +18,7 @@
                         show-label>{{ __('Dienstleister') }}</x-icon-btn>
             @can('create', \App\Models\Privacy\JointControllerAgreement::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
-                            onclick="document.getElementById('dlg-gvv').showModal()"
+                            data-open-dialog="dlg-gvv"
                             show-label>{{ __('Neue GVV anlegen') }}</x-icon-btn>
             @endcan
         </x-slot:actions>

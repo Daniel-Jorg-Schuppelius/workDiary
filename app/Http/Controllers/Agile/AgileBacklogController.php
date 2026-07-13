@@ -94,6 +94,7 @@ class AgileBacklogController extends Controller {
         $board = $this->boardFor($project);
         Gate::authorize('manage', $board);
 
+        $request->merge(['task_id' => \App\Support\Sqid::decodeOrNumeric(Task::class, $request->input('task_id'))]);
         $request->validate(['task_id' => ['required', 'integer']]);
         $task = Task::query()
             ->where('project_id', $project->id)

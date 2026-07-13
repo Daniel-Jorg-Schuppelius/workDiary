@@ -1,13 +1,17 @@
-{{-- Dialog: Benachrichtigungsregel pro Ereignistyp bearbeiten (MVP-018) --}}
+{{-- Dialog: Benachrichtigungsregel pro Ereignistyp bearbeiten (MVP-018; Eskalationsleiter + Kalender-Kanal MVP-331) --}}
 @php
     /** @var \App\Models\Notification\NotificationRule $rule */
     /** @var \App\Enums\Notification\NotificationEvent $event */
     $channels = (array) old('channels', $rule->channels ?? []);
     $selectedRoles = (array) old('recipient_roles', $rule->recipient_roles ?? []);
-    $selectedUserSqids = collect((array) ($rule->recipient_user_ids ?? []))
+    $encodeUserSqids = fn(array $ids) => collect($ids)
         ->map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, (int) $id))
         ->all();
-    $selectedUserSqids = (array) old('recipient_users', $selectedUserSqids);
+    $selectedUserSqids = (array) old('recipient_users', $encodeUserSqids((array) ($rule->recipient_user_ids ?? [])));
+    $selectedLevel2Roles = (array) old('escalation2_roles', $rule->escalation2_roles ?? []);
+    $selectedLevel2UserSqids = (array) old('escalation2_users', $encodeUserSqids((array) ($rule->escalation2_user_ids ?? [])));
+    $selectedLevel3Roles = (array) old('escalation3_roles', $rule->escalation3_roles ?? []);
+    $selectedLevel3UserSqids = (array) old('escalation3_users', $encodeUserSqids((array) ($rule->escalation3_user_ids ?? [])));
 @endphp
 <x-modal
     :title="__('notification.title.edit_rule')"
@@ -91,6 +95,53 @@
             <option value="">–</option>
             @foreach ($roleOptions as $value => $label)
                 <option value="{{ $value }}" @selected(old('escalation_role', $rule->escalation_role) === $value)>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
+    </x-form-group>
+
+    {{-- Eskalationsleiter Stufe 2/3 (MVP-331): je eigene Frist (nach der vorherigen Stufe) + Empfängergruppe. --}}
+    <x-form-group :legend="__('notification.field.escalation_level2')" icon="priority_high" tone="warning" cols="2"
+                  :description="$event->supportsEscalation() ? __('notification.field.escalation_ladder_help') : __('notification.field.escalation_unsupported')">
+        <x-input-field type="number" name="escalation2_after_hours" :label="__('notification.field.escalation_level_after_hours')" min="1" max="720"
+                       :value="old('escalation2_after_hours', $rule->escalation2_after_hours)"
+                       :disabled="! $event->supportsEscalation()" />
+
+        <div class="fieldset"></div>
+
+        <x-select-field name="escalation2_roles[]" :label="__('notification.field.escalation_level_roles')" multiple size="4" class="h-auto" error="escalation2_roles.*"
+                        :disabled="! $event->supportsEscalation()">
+            @foreach ($roleOptions as $value => $label)
+                <option value="{{ $value }}" @selected(in_array($value, $selectedLevel2Roles, true))>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
+
+        <x-select-field name="escalation2_users[]" :label="__('notification.field.escalation_level_users')" multiple size="4" class="h-auto" error="escalation2_users.*"
+                        :disabled="! $event->supportsEscalation()">
+            @foreach ($userOptions as $sqid => $name)
+                <option value="{{ $sqid }}" @selected(in_array($sqid, $selectedLevel2UserSqids, true))>{{ $name }}</option>
+            @endforeach
+        </x-select-field>
+    </x-form-group>
+
+    <x-form-group :legend="__('notification.field.escalation_level3')" icon="priority_high" tone="warning" cols="2"
+                  :description="$event->supportsEscalation() ? __('notification.field.escalation_ladder_help') : __('notification.field.escalation_unsupported')">
+        <x-input-field type="number" name="escalation3_after_hours" :label="__('notification.field.escalation_level_after_hours')" min="1" max="720"
+                       :value="old('escalation3_after_hours', $rule->escalation3_after_hours)"
+                       :disabled="! $event->supportsEscalation()" />
+
+        <div class="fieldset"></div>
+
+        <x-select-field name="escalation3_roles[]" :label="__('notification.field.escalation_level_roles')" multiple size="4" class="h-auto" error="escalation3_roles.*"
+                        :disabled="! $event->supportsEscalation()">
+            @foreach ($roleOptions as $value => $label)
+                <option value="{{ $value }}" @selected(in_array($value, $selectedLevel3Roles, true))>{{ $label }}</option>
+            @endforeach
+        </x-select-field>
+
+        <x-select-field name="escalation3_users[]" :label="__('notification.field.escalation_level_users')" multiple size="4" class="h-auto" error="escalation3_users.*"
+                        :disabled="! $event->supportsEscalation()">
+            @foreach ($userOptions as $sqid => $name)
+                <option value="{{ $sqid }}" @selected(in_array($sqid, $selectedLevel3UserSqids, true))>{{ $name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

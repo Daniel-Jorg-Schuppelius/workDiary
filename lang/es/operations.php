@@ -103,4 +103,9 @@ return [
         'ignored' => 'Tarea ignorada.',
         'reopened' => 'Tarea reabierta.',
     ],
+    'widget' => [
+        'open' => 'Tareas abiertas',
+        'empty' => 'No hay tareas operativas abiertas.',
+        'all' => 'Mostrar todas las tareas operativas',
+    ],
 ];

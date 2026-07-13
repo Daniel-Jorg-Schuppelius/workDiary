@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.12">
+  <CstmrCdtTrfInitn>
+    <GrpHdr>
+      <MsgId>MSG-WD-001</MsgId>
+      <CreDtTm>2026-05-01T12:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>250.00</CtrlSum>
+      <InitgPty>
+        <Nm>WorkDiary GmbH</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PMT-WD-001</PmtInfId>
+      <PmtMtd>TRF</PmtMtd>
+      <ReqdExctnDt>
+        <Dt>2026-05-18</Dt>
+      </ReqdExctnDt>
+      <Dbtr>
+        <Nm>WorkDiary GmbH</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>DE89370400440532013000</IBAN>
+        </Id>
+      </DbtrAcct>
+      <DbtrAgt>
+        <FinInstnId>
+          <BICFI>COBADEFFXXX</BICFI>
+        </FinInstnId>
+      </DbtrAgt>
+      <ChrgBr>SLEV</ChrgBr>
+      <CdtTrfTxInf>
+        <PmtId>
+          <EndToEndId>ER-2026-0042</EndToEndId>
+        </PmtId>
+        <Amt>
+          <InstdAmt Ccy="EUR">250.00</InstdAmt>
+        </Amt>
+        <Cdtr>
+          <Nm>Lieferant AG</Nm>
+        </Cdtr>
+        <CdtrAcct>
+          <Id>
+            <IBAN>DE02120300000000202051</IBAN>
+          </Id>
+        </CdtrAcct>
+        <RmtInf>
+          <Ustrd>Eingangsrechnung ER-2026-0042</Ustrd>
+        </RmtInf>
+      </CdtTrfTxInf>
+    </PmtInf>
+  </CstmrCdtTrfInitn>
+</Document>

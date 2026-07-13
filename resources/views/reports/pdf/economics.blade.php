@@ -74,4 +74,60 @@
             @endforelse
         </tbody>
     </table>
+
+    {{-- MVP-332: LV-Dimension (nur mit Projektfilter und vorhandenem LV). --}}
+    @if(($byBoq ?? null) !== null && $byBoq['hasBoq'])
+        <h2 style="font-size:13px;margin:12px 0 4px;">{{ __('Nachkalkulation je LV-Position') }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>{{ __('Ordnungszahl') }}</th>
+                    <th>{{ __('Position') }}</th>
+                    <th>{{ __('Nachtrag') }}</th>
+                    <th class="num">{{ __('Aufmaß (Menge)') }}</th>
+                    <th>{{ __('Einheit') }}</th>
+                    <th class="num">{{ __('Erlös (Aufmaß × EP)') }}</th>
+                    <th class="num">{{ __('Zeit (Min.)') }}</th>
+                    <th class="num">{{ __('Kosten Zeit') }}</th>
+                    <th class="num">{{ __('Kosten Material') }}</th>
+                    <th class="num">{{ __('Kosten') }}</th>
+                    <th class="num">{{ __('Deckungsbeitrag') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($byBoq['positions'] as $p)
+                    <tr>
+                        <td>{{ $p['referenceNo'] }}</td>
+                        <td>{{ $p['shortText'] ?? '—' }}</td>
+                        <td>{{ $p['isAddendum'] ? __('Ja') : __('Nein') }}</td>
+                        <td class="num">{{ number_format($p['measuredQuantity'], 3, ',', '.') }}</td>
+                        <td>{{ $p['unit'] ?? '—' }}</td>
+                        <td class="num">{{ $eur($p['revenue']) }}</td>
+                        <td class="num">{{ $p['timeMinutes'] }}</td>
+                        <td class="num">{{ $eur($p['costTime']) }}</td>
+                        <td class="num">{{ $eur($p['costMaterial']) }}</td>
+                        <td class="num">{{ $eur($p['cost']) }}</td>
+                        <td class="num">{{ $eur($p['contribution']) }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="11">{{ __('Keine Daten') }}</td></tr>
+                @endforelse
+                @if($byBoq['unassigned']['cost'] > 0 || $byBoq['unassigned']['timeMinutes'] > 0)
+                    <tr>
+                        <td>{{ __('Ohne LV-Zuordnung') }}</td>
+                        <td>{{ __('Quellposten ohne Positions-Verknüpfung (inkl. aller Spesen)') }}</td>
+                        <td>—</td>
+                        <td class="num">—</td>
+                        <td>—</td>
+                        <td class="num">—</td>
+                        <td class="num">{{ $byBoq['unassigned']['timeMinutes'] }}</td>
+                        <td class="num">{{ $eur($byBoq['unassigned']['costTime']) }}</td>
+                        <td class="num">{{ $eur($byBoq['unassigned']['costMaterial']) }}</td>
+                        <td class="num">{{ $eur($byBoq['unassigned']['cost']) }}</td>
+                        <td class="num">—</td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
+    @endif
 @endsection

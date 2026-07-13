@@ -12,9 +12,11 @@ namespace App\Plugins\CalDav;
 
 use App\Models\{CalDavConnection, Organization, PluginSetting};
 use App\Plugins\CalDav\Contracts\{CalDavGatewayFactory, CalendarSource};
-use App\Plugins\CalDav\Services\{CalendarPublishService, EventCalendarSource, ScheduleCalendarSource};
+use App\Plugins\CalDav\Services\{CalendarPublishItem, CalendarPublishService, EventCalendarSource, ScheduleCalendarSource};
 use App\Plugins\Contracts\{CalendarPublisher, Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\Calendar\RemoteCalendarEvent;
+use Spatie\IcalendarGenerator\Components\{Calendar as IcsCalendar, Event as IcsEvent};
 use Throwable;
 
 /**
@@ -120,6 +122,77 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
         }
 
         return $counters;
+    }
+
+    /**
+     * Einzelnes terminartiges Element (MVP-331, Bauturbo A11 — Kalender-Kanal
+     * der Benachrichtigungen): idempotent über die stabile UID in alle aktiven
+     * Termin-Anbindungen (Scope `events`) der Organisation publiziert —
+     * derselbe {@see CalendarPublishService}-Weg wie die Org-Termine.
+     */
+    public function publishCalendarItem(Organization $organization, RemoteCalendarEvent $item): array {
+        $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
+
+        $factory = app(CalDavGatewayFactory::class);
+        $publisher = app(CalendarPublishService::class);
+        $publishItem = $this->toPublishItem($item);
+
+        $connections = CalDavConnection::query()
+            ->where('organization_id', $organization->id)
+            ->get();
+
+        foreach ($connections as $connection) {
+            if (! $connection->isActive() || ! $connection->publishesScope('events')) {
+                continue;
+            }
+            try {
+                $result = $publisher->publish($connection, $factory->for($connection), [$publishItem]);
+                foreach ($counters as $key => $value) {
+                    $counters[$key] = $value + $result[$key];
+                }
+            } catch (Throwable) {
+                $counters['failed']++;
+            }
+        }
+
+        return $counters;
+    }
+
+    /**
+     * Bildet das providerneutrale Element auf ein CalDAV-Publish-Item ab:
+     * Einzel-ICS (ein VEVENT, lokale Zeiten wie die übrigen Publishes) mit
+     * der stabilen UID; der Objektname ist deterministisch aus der UID
+     * abgeleitet (erneutes Feuern → selbes Objekt, Update statt Duplikat).
+     */
+    private function toPublishItem(RemoteCalendarEvent $item): CalendarPublishItem {
+        $ics = '';
+        if (! $item->cancelled) {
+            $vevent = IcsEvent::create($item->title)
+                ->uniqueIdentifier($item->uid)
+                ->startsAt($item->start)
+                ->endsAt($item->end)
+                ->withoutTimezone();
+            if ($item->description !== null && $item->description !== '') {
+                $vevent->description($item->description);
+            }
+            if ($item->location !== '') {
+                $vevent->address($item->location);
+            }
+
+            $ics = IcsCalendar::create($item->title)
+                ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Events//DE'))
+                ->event($vevent)
+                ->get();
+        }
+
+        return new CalendarPublishItem(
+            uid: $item->uid,
+            objectName: 'notify-' . sha1($item->uid) . '.ics',
+            ics: $ics,
+            referenceableType: $item->referenceableType,
+            referenceableId: $item->referenceableId,
+            cancelled: $item->cancelled,
+        );
     }
 
     public function adminPanel(): ?array {

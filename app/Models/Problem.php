@@ -60,4 +60,14 @@ class Problem extends Model {
     public function tickets(): BelongsToMany {
         return $this->belongsToMany(ServiceTicket::class, 'problem_ticket')->withTimestamps();
     }
+
+    /**
+     * Changes, die dieses Problem beheben sollen (MVP-157);
+     * Gegenstück zu {@see Change::problem()}.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Change, $this>
+     */
+    public function changes(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(Change::class, 'problem_id');
+    }
 }

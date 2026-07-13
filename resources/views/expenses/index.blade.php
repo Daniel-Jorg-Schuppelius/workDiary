@@ -20,7 +20,7 @@
         <x-filter-bar :action="route('expenses.index')" :reset="route('expenses.index')">
             <x-filter-field :label="__('Status')" for="exp-status">
                 <select id="exp-status" name="status" class="select select-sm select-bordered shrink-0"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     <option value="">{{ __('Alle Status') }}</option>
                     @foreach ($statusOptions as $opt)
                         <option value="{{ $opt->value }}" @selected($statusFilter === $opt->value)>{{ $opt->label() }}</option>

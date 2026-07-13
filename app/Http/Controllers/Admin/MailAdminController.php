@@ -139,6 +139,68 @@ class MailAdminController extends Controller {
         return back()->with('success', __('mail.flash.booked'));
     }
 
+    /**
+     * „Als Service-Ticket buchen" (MVP-343): erzeugt aus einem zugeordneten
+     * Mail-Inbox-Eintrag ein Ticket (Feature 065, Source E-Mail) und schließt
+     * den Fall. Kunde optional — leer nutzt den erkannten Absender-Kandidaten.
+     */
+    public function bookTicket(Request $request, MailInboxResolutionService $resolver): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'item' => ['required', 'string'],
+            'customer' => ['nullable', 'string'],
+        ]);
+
+        $item = $this->resolveInboxItem($organization, (string) $data['item']);
+
+        // Idempotenz: ein bereits aufgelöster Fall erzeugt kein zweites Ticket.
+        if (! $item->isOpen()) {
+            return back()->with('error', __('mail.flash.already_resolved'));
+        }
+
+        $customer = $this->resolveCustomer($organization, $data['customer'] ?? null, $item);
+
+        try {
+            $resolver->bookAsServiceTicket($item, $customer, $admin);
+        } catch (Throwable) {
+            return back()->with('error', __('mail.flash.ticket_failed'));
+        }
+
+        return back()->with('success', __('mail.flash.ticket_booked'));
+    }
+
+    /**
+     * „Anhänge ins DMS übernehmen" (MVP-343): übernimmt die beim Intake
+     * persistierten Anhänge als Dokumente (idempotent je Message-ID+Index),
+     * verortet am erkannten bzw. gewählten Kunden.
+     */
+    public function importDms(Request $request, MailInboxResolutionService $resolver): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'item' => ['required', 'string'],
+            'customer' => ['nullable', 'string'],
+        ]);
+
+        $item = $this->resolveInboxItem($organization, (string) $data['item']);
+        $customer = $this->resolveCustomer($organization, $data['customer'] ?? null, $item);
+
+        try {
+            $documents = $resolver->importAttachmentsToDms($item, $admin, $customer);
+        } catch (Throwable) {
+            return back()->with('error', __('mail.flash.dms_failed'));
+        }
+
+        if ($documents === []) {
+            return back()->with('error', __('mail.dms.none'));
+        }
+
+        return back()->with('success', __('mail.dms.imported', ['count' => count($documents)]));
+    }
+
     // --- intern -----------------------------------------------------------
 
     private function resolveConnectionForEdit(Organization $organization, ?string $sqid): EmailConnection {

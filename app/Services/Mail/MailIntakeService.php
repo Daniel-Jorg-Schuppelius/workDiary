@@ -77,7 +77,8 @@ class MailIntakeService {
                 if ($seen) {
                     return 'skipped';
                 }
-                app(\App\Services\ServiceTicket\TicketConversationService::class)->inbound(
+                $conversation = app(\App\Services\ServiceTicket\TicketConversationService::class);
+                $ticketMessage = $conversation->inbound(
                     $ticket,
                     $message->body,
                     'mail',
@@ -85,6 +86,14 @@ class MailIntakeService {
                     $message->inReplyTo,
                     $message->subject,
                 );
+
+                // Anhänge der Kundenmail (MVP-152): dieselbe Whitelist-/Größen-
+                // Policy wie beim Inbox-Intake, dann idempotent an die neue
+                // Nachricht kopieren (Dedupe zusätzlich über die Message-ID oben).
+                if ($message->attachments !== []) {
+                    $stored = $this->attachments->persistFromMessage($organization, $message);
+                    $conversation->attachStoredMailAttachments($ticketMessage, $stored);
+                }
 
                 return 'ticket_message';
             }

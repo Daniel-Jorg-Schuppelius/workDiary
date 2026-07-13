@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{PluginSetting, PluginState, User};
+use App\Models\{AuditLog, PluginSetting, PluginState, User};
 use App\Plugins\{PluginCompatibility, PluginErrorRecorder, PluginManager};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\View\View;
@@ -177,6 +177,9 @@ class PluginController extends Controller {
         } elseif (! $row->enabled && $wasEnabled) {
             $instance->onDeactivate($orgId);
         }
+        if ((bool) $row->enabled !== $wasEnabled) {
+            $this->auditIntegrationChanged($admin, $row, $wasEnabled);
+        }
 
         return redirect()->route('admin.plugins.index')
             ->with('success', __('Plugin-Einstellungen gespeichert.'));
@@ -220,16 +223,39 @@ class PluginController extends Controller {
             }
         }
 
+        $wasEnabled = (bool) $row->enabled;
         $row->enabled = $willEnable;
         $row->save();
 
         // Lifecycle-Hook für (De-)Aktivierung in dieser Organisation.
         $orgId = (int) $admin->organization_id;
         $row->enabled ? $instance->onActivate($orgId) : $instance->onDeactivate($orgId);
+        $this->auditIntegrationChanged($admin, $row, $wasEnabled);
 
         return back()->with('success', $row->enabled
             ? __('Plugin aktiviert.')
             : __('Plugin deaktiviert.'));
+    }
+
+    /**
+     * Audit-Event `integration.changed` (Datenschutzseite-Konzept §4, MVP-327):
+     * eine externe Integration wurde in dieser Organisation aktiviert oder
+     * deaktiviert. Schreibt über den Eloquent-Schreibweg der Hash-Kette
+     * ({@see AuditLog}), nie roh.
+     */
+    private function auditIntegrationChanged(User $admin, PluginSetting $row, bool $wasEnabled): void {
+        AuditLog::query()->create([
+            'organization_id' => (int) $admin->organization_id,
+            'user_id' => $admin->id,
+            'event' => 'integration.changed',
+            'auditable_type' => PluginSetting::class,
+            'auditable_id' => (int) $row->id,
+            'changes' => [
+                'integration' => (string) $row->plugin_id,
+                'from' => $wasEnabled ? 'enabled' : 'disabled',
+                'to' => $row->enabled ? 'enabled' : 'disabled',
+            ],
+        ]);
     }
 
     /**

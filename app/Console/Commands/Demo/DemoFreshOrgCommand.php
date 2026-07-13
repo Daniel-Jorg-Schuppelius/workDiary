@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Console\Commands\Demo;
 
 use App\Enums\Demo\DemoIndustry;
-use App\Models\{AuditLog, Organization};
 use App\Services\Demo\DemoSeederService;
 use Illuminate\Console\Command;
 
@@ -21,46 +20,23 @@ use Illuminate\Console\Command;
  * Erzeugt einen frischen, isolierten Demo-Mandanten (Feature 040 Nachtrag):
  * neue Organisation (nie eine bestehende), Branchenprofil + vollständige
  * Beispieldaten inkl. Anhängen und durchgespieltem Prozedurlauf. Der Mandant
- * ist über `is_demo` markiert und damit reset-/purge-fähig.
+ * ist über `is_demo` markiert und damit reset-/purge-fähig. Kern liegt in
+ * {@see DemoSeederService::freshOrg()} (gemeinsam mit der Plattform-Admin-UI,
+ * MVP-349) inkl. `demo.orgCreated`-/`demo.seeded`-Audit.
  */
 class DemoFreshOrgCommand extends Command {
-    protected $signature = 'demo:fresh-org {--branche= : Musterbranche (it-service|elektro|facility)}';
+    protected $signature = 'demo:fresh-org {--branche= : Musterbranche (it-service|elektro|facility|wartung-service)}';
 
     protected $description = 'Legt einen neuen, isolierten Demo-Mandanten mit Beispieldaten an (Feature 040).';
 
     public function handle(DemoSeederService $seeder): int {
         $industry = DemoIndustry::fromKey($this->option('branche') !== null ? (string) $this->option('branche') : null);
 
-        // Eindeutiger Name — nie Kollision mit bestehenden (echten) Orgs.
-        $base = 'Demo ' . $industry->label();
-        $name = $base;
-        $suffix = 2;
-        while (Organization::query()->where('name', $name)->orWhere('name', $name . ' (Demo)')->exists()) {
-            $name = $base . ' #' . $suffix++;
-        }
-
-        $organization = Organization::query()->create([
-            'name' => $name,
-            'plan' => 'enterprise',
-            'locale' => 'de',
-            'timezone' => config('app.timezone', 'Europe/Berlin'),
-            'is_active' => true,
-        ]);
-
-        $counts = $seeder->seed($organization, null, $industry);
-
-        AuditLog::query()->create([
-            'organization_id' => $organization->id,
-            'user_id' => null,
-            'event' => 'demo.seeded',
-            'auditable_type' => Organization::class,
-            'auditable_id' => $organization->id,
-            'changes' => $counts,
-        ]);
+        ['organization' => $organization, 'counts' => $counts] = $seeder->freshOrg($industry);
 
         $this->info(sprintf(
             'Demo-Mandant „%s" (ID %d, Branche %s) angelegt: %d Nutzer, %d Kunden, %d Projekte, %d Anhänge, %d Prozedurlauf/-läufe.',
-            $organization->refresh()->name,
+            $organization->name,
             $organization->id,
             $industry->label(),
             (int) $counts['users'],

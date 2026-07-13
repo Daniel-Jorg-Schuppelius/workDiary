@@ -103,4 +103,9 @@ return [
         'ignored' => 'Attività ignorata.',
         'reopened' => 'Attività riaperta.',
     ],
+    'widget' => [
+        'open' => 'Attività aperte',
+        'empty' => 'Nessuna attività operativa aperta.',
+        'all' => 'Mostra tutte le attività operative',
+    ],
 ];

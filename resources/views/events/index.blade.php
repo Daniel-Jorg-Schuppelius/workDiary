@@ -43,7 +43,7 @@
             </x-filter-field>
             <x-filter-field :label="__('Typ')" for="ev-event-type" class="min-w-40">
                 <select id="ev-event-type" name="event_type" class="select select-sm select-bordered w-full"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     <option value="">{{ __('Alle') }}</option>
                     @foreach (EventType::options() as $value => $label)
                         <option value="{{ $value }}" @selected(request('event_type') === (string) $value)>{{ $label }}</option>
@@ -52,7 +52,7 @@
             </x-filter-field>
             <x-filter-field :label="__('Status')" for="ev-status" class="min-w-40">
                 <select id="ev-status" name="status" class="select select-sm select-bordered w-full"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     <option value="">{{ __('Alle') }}</option>
                     @foreach (EventStatus::options() as $value => $label)
                         <option value="{{ $value }}" @selected(request('status') === (string) $value)>{{ $label }}</option>
@@ -61,7 +61,7 @@
             </x-filter-field>
             <x-filter-field :label="__('Sichtbarkeit')" for="ev-visibility" class="min-w-40">
                 <select id="ev-visibility" name="visibility" class="select select-sm select-bordered w-full"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     <option value="">{{ __('Alle') }}</option>
                     @foreach (EventVisibility::options() as $value => $label)
                         <option value="{{ $value }}" @selected(request('visibility') === (string) $value)>{{ $label }}</option>
@@ -70,7 +70,7 @@
             </x-filter-field>
             <x-filter-field :label="__('Kategorie')" for="ev-category" class="min-w-44">
                 <select id="ev-category" name="category_id" class="select select-sm select-bordered w-full"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     <option value="">{{ __('Alle') }}</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->sqid }}" @selected(request('category_id') === $category->sqid)>{{ $category->name }}</option>
@@ -82,7 +82,7 @@
                 <input type="checkbox" id="ev-only-mandatory" name="only_mandatory" value="1"
                        @checked(request('only_mandatory'))
                        class="toggle toggle-primary toggle-sm"
-                       onchange="this.form.submit()">
+                       data-autosubmit>
                 <span class="text-sm text-base-content/75">{{ __('Nur Pflicht') }}</span>
             </label>
         </x-filter-bar>

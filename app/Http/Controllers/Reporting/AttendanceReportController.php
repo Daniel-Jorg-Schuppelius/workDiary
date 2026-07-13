@@ -76,7 +76,12 @@ class AttendanceReportController extends Controller {
      * }>
      */
     private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
-        $usersQuery = User::query()->orderBy('name');
+        // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne
+        // expliziten Org-Filter erschienen im Team-Scope User ALLER
+        // Organisationen als Report-Zeilen (Tenant-Leak, Bauturbo A17).
+        $usersQuery = User::query()
+            ->where('organization_id', Auth::user()?->organization_id)
+            ->orderBy('name');
         if ($scope === 'mine') {
             $usersQuery->where('id', $userId);
         }

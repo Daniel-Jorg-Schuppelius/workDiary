@@ -118,7 +118,7 @@
                         <select :name="fieldName(i, 'visible_if][field')" x-model="it.visible_if.field"
                                 class="select select-xs select-bordered">
                             <option value="">{{ __('form.condition.always') }}</option>
-                            <template x-for="other in items.filter(o => o !== it && o.label)" :key="other.label">
+                            <template x-for="other in otherLabeledItems(it)" :key="other.label">
                                 <option :value="other.label" x-text="other.label"></option>
                             </template>
                         </select>

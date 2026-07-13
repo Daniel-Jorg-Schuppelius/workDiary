@@ -10,7 +10,8 @@
 
 namespace App\Services\Metrics;
 
-use App\Models\{Attachment, AuditLog, BackupHeartbeat, CommunicationNote, DiaryEntry, Document, DocumentVersion, FeatureUsageCounter, FormSubmission, KnowledgeArticle, Organization, PluginError, Protocol, User};
+use App\Models\{Attachment, AuditLog, BackupHeartbeat, CommunicationNote, DiaryEntry, Document, DocumentVersion, FeatureUsageCounter, FormSubmission, KnowledgeArticle, Organization, PluginError, Protocol, SystemSetting, User};
+use App\Settings\SettingsRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\{Auth, DB};
@@ -35,7 +36,9 @@ use Throwable;
  * automatisch org-bezogen, beim globalen Admin ohne Org org-übergreifend.
  *
  * Datenschutz: keine Inhalte, keine Einzel-User-Auswertung, kein externes
- * Senden — alles bleibt in der lokalen Datenbank.
+ * Senden — alles bleibt in der lokalen Datenbank. Die Nutzungszähler sind
+ * zusätzlich über `telemetry.enabled` abschaltbar (Opt-out je Org oder
+ * systemweit, MVP-337) — {@see increment()} zählt dann nicht.
  */
 class OperationsMetricsService {
     /** Zeitraum (Tage) für die aggregierte Feature-Nutzung. */
@@ -43,6 +46,21 @@ class OperationsMetricsService {
 
     /** Zeitraum (Tage) für die Plugin-Fehler-Auswertung. */
     public const PLUGIN_ERROR_WINDOW_DAYS = 7;
+
+    /**
+     * Katalog aller Feature-Nutzungszähler (Metrik-Transparenz, MVP-337):
+     * jeder increment()-Aufruf im Code führt genau einen dieser Keys.
+     * Die Transparenz-Sektion der Metrikseite listet den Katalog mit
+     * Beschreibung (lang: metrics.counter.<key>) — neue Zähler hier UND
+     * in allen fünf metrics.php-Sprachdateien nachziehen.
+     */
+    public const FEATURE_COUNTERS = [
+        'communications.created',
+        'documents.created',
+        'forms.submitted',
+        'knowledge.created',
+        'timeExports.built',
+    ];
 
     /**
      * Sammelt alle Kennzahlen. Jede Sektion ist gegen Fehler isoliert —
@@ -60,6 +78,12 @@ class OperationsMetricsService {
             'active_users' => $this->safe(fn(): ?int => $this->activeUserCount(), null),
             'module_counts' => $this->safe(fn(): array => $this->moduleCounts(), []),
             'feature_usage' => $this->safe(fn(): array => $this->featureUsage(), []),
+            // Metrik-Transparenz (MVP-337): Schalter-Status im aktuellen
+            // Mandantenkontext + Katalog der erhobenen Zähler.
+            'telemetry' => [
+                'enabled' => $this->safe(fn(): bool => $this->telemetryEnabled(), true),
+                'counters' => self::FEATURE_COUNTERS,
+            ],
             'generated_at' => CarbonImmutable::now(),
         ];
     }
@@ -73,6 +97,12 @@ class OperationsMetricsService {
         try {
             $organizationId ??= $this->resolveOrganizationId();
             if ($organizationId === null || $feature === '') {
+                return;
+            }
+
+            // Telemetrie-Gate (MVP-337): Opt-out je Org oder Installation —
+            // deaktiviert wird gar nicht erst gezählt (früher Return).
+            if (! $this->telemetryEnabled($organizationId)) {
                 return;
             }
 
@@ -270,6 +300,39 @@ class OperationsMetricsService {
                 'last_used_on' => $row->getAttribute('last_used_on') !== null ? (string) $row->getAttribute('last_used_on') : null,
             ])
             ->all());
+    }
+
+    /**
+     * Effektiver Telemetrie-Schalter (MVP-337): Org-Override →
+     * System-Override → config('telemetry.enabled') — Default AN, weil die
+     * Zähler rein lokal bleiben (kein externer Versand, s. Klassen-Doc).
+     *
+     * Performance: im Normalfall (gebundene Org = Ziel-Org bzw. reine
+     * Status-Anzeige) kommen alle Ebenen aus bereits geladenen/gecachten
+     * Quellen — kein Query je Increment. Nur wenn der Zähler einer NICHT
+     * gebundenen Org gilt (z. B. Queue-Kontext nach der Org-Hygiene aus
+     * AppServiceProvider), wird die Ziel-Org einmal per PK nachgeladen,
+     * damit deren Opt-out auf jedem Pfad greift.
+     */
+    public function telemetryEnabled(?int $organizationId = null): bool {
+        $org = $this->currentOrganization();
+        if ($organizationId !== null && ($org === null || (int) $org->id !== $organizationId)) {
+            $org = Organization::query()->find($organizationId);
+        }
+
+        if ($org !== null) {
+            $override = SettingsRegistry::organizationValue($org, 'telemetry.enabled');
+            if ($override !== \INF) {
+                return (bool) $override;
+            }
+        }
+
+        $system = SystemSetting::valueMap();
+        if (array_key_exists('telemetry.enabled', $system)) {
+            return (bool) $system['telemetry.enabled'];
+        }
+
+        return (bool) config('telemetry.enabled', true);
     }
 
     private function resolveOrganizationId(): ?int {

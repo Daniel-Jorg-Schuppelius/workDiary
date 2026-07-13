@@ -69,6 +69,9 @@
         @endif
     </x-card>
 
+    {{-- SLA-Uhr (MVP-160): Fristen + Snapshot + Wartefelder + offene Pausen. --}}
+    @include('service-tickets._sla_clock')
+
     @if ($canUpdate)
         <x-card>
             <h3 class="font-semibold mb-3">{{ __('Status ändern') }}</h3>
@@ -90,57 +93,54 @@
             <h3 class="font-semibold mb-3">{{ __('Zuweisen') }}</h3>
             <form method="POST" action="{{ route('service-tickets.assign', $ticket) }}" class="flex flex-wrap items-end gap-2">
                 @csrf
-                <input type="number" min="1" name="assignee_user_id" value="{{ $ticket->assigned_to_user_id }}"
-                       class="input input-sm input-bordered w-40" placeholder="{{ __('User-ID') }}">
+                <div class="w-64">
+                    <x-user-select name="assignee_user_id" :users="$orgUsers" value-key="sqid"
+                                   :selected="$ticket->assignedTo?->sqid" class="select-sm"
+                                   :placeholder="__('Unzugewiesen')" />
+                </div>
                 <button class="btn btn-sm" type="submit">{{ __('Speichern') }}</button>
             </form>
         </x-card>
     @endif
 
-    {{-- Konversation (Feature 065, P2): Antwort vs. interne Notiz sind
-         getrennte Typen/Aktionen — Notizen sind nie kundensichtbar. --}}
-    <x-card :title="__('Konversation')">
-        @if ($messages->isEmpty())
-            <p class="text-sm text-base-content/50">{{ __('Noch keine Nachrichten.') }}</p>
-        @else
-            <ul class="space-y-2">
-                @foreach ($messages as $message)
-                    <li class="rounded border px-3 py-2 {{ $message->kind->value === 'internal_note' ? 'border-warning/60 bg-warning/5' : 'border-base-300' }}">
-                        <div class="mb-1 flex items-center gap-2 text-xs text-base-content/60">
-                            <x-status-badge :tone="match ($message->kind->value) {
-                                'internal_note' => 'warning',
-                                'system_event' => 'neutral',
-                                default => 'info',
-                            }" size="xs">{{ $message->kind->label() }}</x-status-badge>
-                            <span>{{ $message->created_at->isoFormat('L LT') }}</span>
-                            <span>{{ $message->channel }}</span>
-                            @if ($message->delivery_status)
-                                <span>· {{ $message->delivery_status }}</span>
-                            @endif
-                        </div>
-                        <p class="whitespace-pre-line text-sm">{{ $message->body }}</p>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
+    {{-- Ticket-Detail-Widgets (MVP-160): Beobachter, Verknüpfungen, Major Incident. --}}
+    <div class="grid gap-4 lg:grid-cols-2">
+        @include('service-tickets._watchers')
+        @include('service-tickets._links')
+    </div>
+    @include('service-tickets._major_incident')
+
+    {{-- Timeline (MVP-152): Konversation + Status-Audits + SLA + Anhänge
+         gemischt; Antwort vs. interne Notiz bleiben getrennte Typen/Aktionen —
+         Notizen sind nie kundensichtbar. --}}
+    <x-card :title="__('Verlauf')" icon="history">
+        @include('service-tickets._timeline')
 
         @if ($canUpdate)
-            <form method="POST" action="{{ route('helpdesk.tickets.reply', $ticket) }}" class="mt-3">
+            <form method="POST" action="{{ route('helpdesk.tickets.reply', $ticket) }}" enctype="multipart/form-data" class="mt-3">
                 @csrf
                 <label class="fieldset-label" for="reply-body">{{ __('Antwort (kundensichtbar)') }}</label>
                 <textarea id="reply-body" name="body" rows="3" required minlength="2" class="textarea textarea-bordered w-full"></textarea>
-                <div class="mt-1 flex items-center gap-2">
+                <div class="mt-1 flex flex-wrap items-center gap-2">
                     <input name="to[]" type="email" placeholder="{{ __('Empfänger (optional, versendet per Mail)') }}" class="input input-sm input-bordered flex-1">
+                    <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
+                           aria-label="{{ __('Anhänge (optional)') }}">
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Antworten') }}</x-icon-btn>
                 </div>
+                @error('files')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+                @error('files.*')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
             </form>
         @endif
         @if ($canNote)
-            <form method="POST" action="{{ route('helpdesk.tickets.note', $ticket) }}" class="mt-3">
+            <form method="POST" action="{{ route('helpdesk.tickets.note', $ticket) }}" enctype="multipart/form-data" class="mt-3">
                 @csrf
                 <label class="fieldset-label" for="note-body">{{ __('Interne Notiz (nie kundensichtbar)') }}</label>
                 <textarea id="note-body" name="body" rows="2" required minlength="2" class="textarea textarea-bordered w-full"></textarea>
-                <x-icon-btn icon="sticky_note_2" tone="ghost" size="sm" type="submit" show-label class="mt-1">{{ __('Notiz speichern') }}</x-icon-btn>
+                <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
+                           aria-label="{{ __('Anhänge (optional)') }}">
+                    <x-icon-btn icon="sticky_note_2" tone="ghost" size="sm" type="submit" show-label>{{ __('Notiz speichern') }}</x-icon-btn>
+                </div>
             </form>
         @endif
     </x-card>

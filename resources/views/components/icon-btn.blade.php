@@ -46,12 +46,19 @@
     $btnClasses = collect(['btn', $sizeClass, $toneClass, $showText ? 'gap-1' : null])
         ->filter()
         ->implode(' ');
+
+    // Barrierefreiheit: Ein reiner Icon-Button (kein sichtbarer Text) MUSS einen
+    // zugänglichen Namen tragen. Bevorzugt `label`; fehlt er im Icon-only-Fall,
+    // fällt der Name auf den Icon-Namen zurück, damit nie ein komplett
+    // unbeschrifteter Button entsteht. Zeigt der Button sichtbaren Text, ist
+    // dieser bereits der Name → kein zusätzliches aria-label nötig.
+    $a11yLabel = $label ?: (! $showText ? $icon : null);
 @endphp
 
 @if ($href)
     <a href="{{ $href }}"
        {{ $attributes->class([$btnClasses]) }}
-       @if ($label) title="{{ $label }}" aria-label="{{ $label }}" @endif>
+       @if ($a11yLabel) title="{{ $a11yLabel }}" aria-label="{{ $a11yLabel }}" @endif>
         @if ($icon)
             <x-icon :name="$icon" :filled="$iconFilled" />
         @endif
@@ -62,7 +69,7 @@
 @else
     <button type="{{ $type }}"
             {{ $attributes->class([$btnClasses]) }}
-            @if ($label) title="{{ $label }}" aria-label="{{ $label }}" @endif>
+            @if ($a11yLabel) title="{{ $a11yLabel }}" aria-label="{{ $a11yLabel }}" @endif>
         @if ($icon)
             <x-icon :name="$icon" :filled="$iconFilled" />
         @endif

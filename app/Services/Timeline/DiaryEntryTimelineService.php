@@ -11,8 +11,9 @@
 namespace App\Services\Timeline;
 
 use App\Enums\Diary\Status;
+use App\Enums\Procedure\ProcedureRunStatus;
 use App\Enums\Protocol\ProtocolEventType;
-use App\Models\{AuditLog, CommunicationNote, Customer, DiaryEntry, Document, MaterialUsage, OpenIssueEvent, ProtocolEvent, Shipment, TimeEntry, User};
+use App\Models\{AuditLog, CommunicationNote, Customer, DiaryEntry, Document, Invoice, MaterialUsage, OpenIssueEvent, ProcedureRun, ProtocolEvent, Quote, Shipment, TimeEntry, User};
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -39,6 +40,22 @@ class DiaryEntryTimelineService {
         'openIssue',
         'communication',
         'document',
+        'procedure',
+    ];
+
+    /**
+     * Kanonische Filtergruppen der vollwertigen Kunden-Timeline (MVP-340):
+     * alle kundenbezogenen Quellen über die Aufträge des Kunden hinweg plus
+     * kundendirekte Objekte (Rechnungen, Angebote, Versand).
+     */
+    public const CUSTOMER_TYPES = [
+        'order',
+        'protocol',
+        'communication',
+        'document',
+        'invoice',
+        'quote',
+        'shipment',
     ];
 
     /**
@@ -78,6 +95,7 @@ class DiaryEntryTimelineService {
             'openIssue' => fn(): array => $this->openIssueItems($entry, $cap),
             'communication' => fn(): array => $this->communicationItems($entry, $viewer, $cap),
             'document' => fn(): array => $this->documentItems($entry, $viewer, $cap),
+            'procedure' => fn(): array => $this->procedureItems($entry, $cap),
         ];
 
         foreach ($sources as $type => $loader) {
@@ -90,22 +108,48 @@ class DiaryEntryTimelineService {
     }
 
     /**
-     * Kunden-Timeline light (Verlaufs-Karte auf der Kunden-Detailseite):
-     * Aufträge angelegt/abgeschlossen, Kommunikationsnotizen und Dokumente
-     * über die Aufträge des Kunden hinweg.
+     * Vollwertige Kunden-Timeline (MVP-340): aggregiert alle kundenbezogenen
+     * Quellen nach dem TYPES-/Loader-Muster der Auftrags-Timeline — Aufträge
+     * (angelegt/abgeschlossen), Protokoll-Lebenszyklen über die Aufträge des
+     * Kunden, Kommunikationsnotizen (visibleTo), Dokumente, Rechnungen und
+     * Angebote (je viewAny-Gate) sowie Versandaufträge.
      *
+     * @param  list<string>|null  $types  Filtergruppen aus {@see self::CUSTOMER_TYPES} (null/leer = alle)
      * @return array{items: list<TimelineItem>, hasMore: bool}
      */
-    public function forCustomer(Customer $customer, User $viewer, int $limit = 15): array {
-        $cap = $limit + 1;
-        $entryIds = DiaryEntry::query()->where('customer_id', $customer->id)->select('id');
+    public function forCustomer(Customer $customer, User $viewer, ?array $types = null, int $limit = 50, int $offset = 0): array {
+        $types = array_values(array_intersect($types ?? [], self::CUSTOMER_TYPES)) ?: self::CUSTOMER_TYPES;
+        $limit = max(1, min(500, $limit));
+        $cap = $offset + $limit + 1;
 
+        $items = [];
+        $sources = [
+            'order' => fn(): array => $this->customerOrderItems($customer, $cap),
+            'protocol' => fn(): array => $this->customerProtocolItems($customer, $cap),
+            'communication' => fn(): array => $this->customerCommunicationItems($customer, $viewer, $cap),
+            'document' => fn(): array => $this->customerDocumentItems($customer, $viewer, $cap),
+            'invoice' => fn(): array => $this->customerInvoiceItems($customer, $viewer, $cap),
+            'quote' => fn(): array => $this->customerQuoteItems($customer, $viewer, $cap),
+            'shipment' => fn(): array => $this->customerShipmentItems($customer, $cap),
+        ];
+
+        foreach ($sources as $type => $loader) {
+            if (in_array($type, $types, true)) {
+                $items = array_merge($items, $loader());
+            }
+        }
+
+        return self::sortAndSlice($items, $limit, $offset);
+    }
+
+    /** @return list<TimelineItem> */
+    private function customerOrderItems(Customer $customer, int $cap): array {
         $items = [];
 
         foreach (DiaryEntry::query()->where('customer_id', $customer->id)->with('user:id,name')->latest('created_at')->limit($cap)->get() as $entry) {
             $items[] = new TimelineItem(
                 id: 'order:' . $entry->id,
-                type: 'status',
+                type: 'order',
                 icon: 'add_circle',
                 occurredAt: $entry->created_at,
                 actor: $entry->user?->name,
@@ -123,7 +167,7 @@ class DiaryEntryTimelineService {
         ])->with('user:id,name')->latest('updated_at')->limit($cap)->get() as $entry) {
             $items[] = new TimelineItem(
                 id: 'order-done:' . $entry->id,
-                type: 'status',
+                type: 'order',
                 icon: 'task_alt',
                 occurredAt: $entry->end_at ?? $entry->updated_at,
                 actor: $entry->user?->name,
@@ -134,40 +178,166 @@ class DiaryEntryTimelineService {
             );
         }
 
-        if (Gate::forUser($viewer)->allows('viewAny', CommunicationNote::class)) {
-            $notes = CommunicationNote::query()
-                ->where(function ($q) use ($customer, $entryIds): void {
-                    $q->where(fn($sub) => $sub->where('notable_type', Customer::class)->where('notable_id', $customer->id))
-                        ->orWhere(fn($sub) => $sub->where('notable_type', DiaryEntry::class)->whereIn('notable_id', $entryIds));
-                })
-                ->visibleTo($viewer)
-                ->with('creator:id,name')
-                ->latest('occurred_at')
-                ->limit($cap)
-                ->get();
+        return $items;
+    }
 
-            foreach ($notes as $note) {
-                $items[] = $this->communicationItem($note, route('customers.show', $customer) . '#communication-notes');
-            }
+    /** @return list<TimelineItem> */
+    private function customerProtocolItems(Customer $customer, int $cap): array {
+        $entryIds = DiaryEntry::query()->where('customer_id', $customer->id)->select('id');
+
+        $items = [];
+        $events = ProtocolEvent::query()
+            ->whereHas('protocol', function ($q) use ($entryIds): void {
+                $q->where('subject_type', (new DiaryEntry())->getMorphClass())->whereIn('subject_id', $entryIds);
+            })
+            ->whereIn('event', self::PROTOCOL_EVENTS)
+            ->with(['actor:id,name', 'protocol:id,title,visibility'])
+            ->latest('created_at')
+            ->latest('id')
+            ->limit($cap)
+            ->get();
+
+        foreach ($events as $event) {
+            $items[] = new TimelineItem(
+                id: 'protocol-event:' . $event->id,
+                type: 'protocol',
+                icon: match ($event->event) {
+                    ProtocolEventType::Signed => 'verified',
+                    ProtocolEventType::Archived, ProtocolEventType::SupersededBy => 'inventory_2',
+                    default => 'description',
+                },
+                occurredAt: $event->created_at,
+                actor: $event->actor?->name,
+                title: $this->eventLabel($event->event),
+                summary: $event->protocol?->title,
+                visibility: $event->protocol?->visibility->value ?? TimelineItem::VISIBILITY_INTERNAL,
+            );
         }
 
-        if ($this->canSeeDocuments($viewer)) {
-            $documents = Document::query()
-                ->where(function ($q) use ($customer, $entryIds): void {
-                    $q->where(fn($sub) => $sub->where('documentable_type', Customer::class)->where('documentable_id', $customer->id))
-                        ->orWhere(fn($sub) => $sub->where('documentable_type', DiaryEntry::class)->whereIn('documentable_id', $entryIds));
-                })
-                ->with('creator:id,name')
-                ->latest('created_at')
-                ->limit($cap)
-                ->get();
+        return $items;
+    }
 
-            foreach ($documents as $document) {
-                $items[] = $this->documentItem($document, route('customers.show', $customer) . '#documents');
-            }
+    /** @return list<TimelineItem> */
+    private function customerCommunicationItems(Customer $customer, User $viewer, int $cap): array {
+        if (! Gate::forUser($viewer)->allows('viewAny', CommunicationNote::class)) {
+            return [];
         }
 
+        $entryIds = DiaryEntry::query()->where('customer_id', $customer->id)->select('id');
+        $items = [];
+        $notes = CommunicationNote::query()
+            ->where(function ($q) use ($customer, $entryIds): void {
+                $q->where(fn($sub) => $sub->where('notable_type', Customer::class)->where('notable_id', $customer->id))
+                    ->orWhere(fn($sub) => $sub->where('notable_type', DiaryEntry::class)->whereIn('notable_id', $entryIds));
+            })
+            ->visibleTo($viewer)
+            ->with('creator:id,name')
+            ->latest('occurred_at')
+            ->limit($cap)
+            ->get();
+
+        foreach ($notes as $note) {
+            $items[] = $this->communicationItem($note, route('customers.show', $customer) . '#communication-notes');
+        }
+
+        return $items;
+    }
+
+    /** @return list<TimelineItem> */
+    private function customerDocumentItems(Customer $customer, User $viewer, int $cap): array {
+        if (! $this->canSeeDocuments($viewer)) {
+            return [];
+        }
+
+        $entryIds = DiaryEntry::query()->where('customer_id', $customer->id)->select('id');
+        $items = [];
+        $documents = Document::query()
+            ->where(function ($q) use ($customer, $entryIds): void {
+                $q->where(fn($sub) => $sub->where('documentable_type', Customer::class)->where('documentable_id', $customer->id))
+                    ->orWhere(fn($sub) => $sub->where('documentable_type', DiaryEntry::class)->whereIn('documentable_id', $entryIds));
+            })
+            ->with('creator:id,name')
+            ->latest('created_at')
+            ->limit($cap)
+            ->get();
+
+        foreach ($documents as $document) {
+            $items[] = $this->documentItem($document, route('customers.show', $customer) . '#documents');
+        }
+
+        return $items;
+    }
+
+    /**
+     * Rechnungsereignisse des Kunden (lokale {@see Invoice}; externe Faktura
+     * bleibt beim führenden Programm — Rechnungshoheit).
+     *
+     * @return list<TimelineItem>
+     */
+    private function customerInvoiceItems(Customer $customer, User $viewer, int $cap): array {
+        if (! Gate::forUser($viewer)->allows('viewAny', Invoice::class)) {
+            return [];
+        }
+
+        $items = [];
+        $invoices = Invoice::query()
+            ->where('customer_id', $customer->id)
+            ->latest('created_at')
+            ->latest('id')
+            ->limit($cap)
+            ->get();
+
+        foreach ($invoices as $invoice) {
+            $issued = $invoice->status !== Invoice::STATUS_DRAFT;
+            $items[] = new TimelineItem(
+                id: 'invoice:' . $invoice->id,
+                type: 'invoice',
+                icon: 'receipt_long',
+                occurredAt: $invoice->issued_on ?? $invoice->created_at,
+                actor: null,
+                title: (string) __($issued ? 'timeline.event.invoice_issued' : 'timeline.event.invoice_draft'),
+                summary: (string) $invoice->number,
+                url: route('invoices.show', $invoice),
+            );
+        }
+
+        return $items;
+    }
+
+    /** @return list<TimelineItem> */
+    private function customerQuoteItems(Customer $customer, User $viewer, int $cap): array {
+        if (! Gate::forUser($viewer)->allows('viewAny', Quote::class)) {
+            return [];
+        }
+
+        $items = [];
+        $quotes = Quote::query()
+            ->where('customer_id', $customer->id)
+            ->latest('created_at')
+            ->latest('id')
+            ->limit($cap)
+            ->get();
+
+        foreach ($quotes as $quote) {
+            $items[] = new TimelineItem(
+                id: 'quote:' . $quote->id,
+                type: 'quote',
+                icon: 'request_quote',
+                occurredAt: $quote->created_at,
+                actor: null,
+                title: (string) __('timeline.event.quote_created'),
+                summary: (string) $quote->number,
+                url: route('quotes.show', $quote),
+            );
+        }
+
+        return $items;
+    }
+
+    /** @return list<TimelineItem> */
+    private function customerShipmentItems(Customer $customer, int $cap): array {
         // Versandaufträge zu Auslieferungen an diesen Kunden (Feature 059, Rang 20).
+        $items = [];
         $shipments = Shipment::query()
             ->whereHas('delivery', fn ($q) => $q->where('customer_id', $customer->id))
             ->latest('created_at')
@@ -189,7 +359,7 @@ class DiaryEntryTimelineService {
             );
         }
 
-        return self::sortAndSlice($items, $limit, 0);
+        return $items;
     }
 
     /**
@@ -529,6 +699,53 @@ class DiaryEntryTimelineService {
             summary: $document->title . ' (' . $document->document_type->label() . ')',
             url: $url,
         );
+    }
+
+    /**
+     * Prozedurläufe am Auftrag (MVP-340): ein Item je Lauf mit dem jeweils
+     * jüngsten Lebenszyklus-Zeitpunkt (abgeschlossen/abgebrochen/gestartet).
+     *
+     * @return list<TimelineItem>
+     */
+    private function procedureItems(DiaryEntry $entry, int $cap): array {
+        $items = [];
+        $runs = ProcedureRun::query()
+            ->where('subject_type', $entry->getMorphClass())
+            ->where('subject_id', $entry->getKey())
+            ->with(['templateVersion.template:id,name', 'assignee:id,name'])
+            ->latest('created_at')
+            ->latest('id')
+            ->limit($cap)
+            ->get();
+
+        foreach ($runs as $run) {
+            $titleKey = match ($run->status) {
+                ProcedureRunStatus::Completed => 'timeline.event.procedure_run_completed',
+                ProcedureRunStatus::Aborted => 'timeline.event.procedure_run_aborted',
+                default => 'timeline.event.procedure_run_started',
+            };
+
+            $templateName = (string) ($run->templateVersion?->template->name ?? '');
+
+            $items[] = new TimelineItem(
+                id: 'procedure-run:' . $run->id,
+                type: 'procedure',
+                icon: match ($run->status) {
+                    ProcedureRunStatus::Completed => 'verified',
+                    ProcedureRunStatus::Aborted => 'cancel',
+                    default => 'play_circle',
+                },
+                occurredAt: $run->completed_at ?? $run->aborted_at ?? $run->started_at ?? $run->created_at,
+                actor: $run->assignee?->name,
+                title: (string) __($titleKey),
+                summary: $templateName !== ''
+                    ? $templateName . ' — ' . $run->status->label()
+                    : $run->status->label(),
+                url: route('procedure-runs.show', $run),
+            );
+        }
+
+        return $items;
     }
 
     private function canSeeDocuments(User $viewer): bool {

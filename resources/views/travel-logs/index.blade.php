@@ -20,7 +20,7 @@
         <x-filter-bar :action="route('travel-logs.index')" :reset="route('travel-logs.index')">
             <x-filter-field :label="__('Fahrzeug')" for="tl-vehicle">
                 <select id="tl-vehicle" name="vehicle" class="select select-sm select-bordered shrink-0"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     <option value="">{{ __('alle') }}</option>
                     @foreach ($vehicles as $v)
                         <option value="{{ $v->value }}" @selected($selectedVehicle === $v->value)>{{ $v->label() }}</option>

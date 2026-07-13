@@ -236,7 +236,7 @@
                 step="5"
                 id="service_minutes"
                 name="service_minutes"
-                :placeholder="flags.default_service_minutes ?? ''"
+                :placeholder="flags.default_service_minutes || ''"
                 value="{{ old('service_minutes', $entry?->service_minutes) }}"
                 class="input input-bordered w-full @error('service_minutes') input-error @enderror"
             >

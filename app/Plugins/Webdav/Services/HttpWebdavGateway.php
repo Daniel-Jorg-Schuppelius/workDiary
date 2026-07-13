@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Webdav\Services;
 
 use App\Models\WebdavConnection;
-use App\Plugins\Webdav\Contracts\WebdavGateway;
+use App\Plugins\Support\Mirror\RemoteFileGateway;
 use App\Support\UrlSafety;
 use GuzzleHttp\ClientInterface;
 use RuntimeException;
@@ -26,7 +26,7 @@ use Throwable;
  * testbar (MockHandler). Rückgaben sind bewusst schlicht (bool / ?string); die
  * Fehlerbehandlung (Retry/Konflikt) liegt im Spiegel-Service bzw. der Outbox.
  */
-class HttpWebdavGateway implements WebdavGateway {
+class HttpWebdavGateway implements RemoteFileGateway {
     public function __construct(
         private readonly ClientInterface $http,
         private readonly WebdavConnection $connection,

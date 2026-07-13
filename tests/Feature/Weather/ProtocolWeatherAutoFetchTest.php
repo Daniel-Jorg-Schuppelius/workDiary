@@ -14,7 +14,6 @@ use App\Enums\Protocol\ProtocolStatus;
 use App\Jobs\FetchProtocolWeatherJob;
 use App\Models\{Customer, Project, Protocol, WeatherSnapshot};
 use App\Services\Weather\Contracts\WeatherProvider;
-use App\Services\Weather\WeatherService;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
@@ -119,7 +118,7 @@ final class ProtocolWeatherAutoFetchTest extends TestCase {
         Bus::fake(); // Auto-Dispatch abfangen, Job kontrolliert selbst ausführen.
         $protocol = $this->protocolFor(Customer::class, $customer->id);
 
-        (new FetchProtocolWeatherJob($protocol->id))->handle(app(WeatherService::class));
+        (new FetchProtocolWeatherJob($protocol->id))->handle();
 
         $this->assertNotNull($protocol->fresh()->weather_snapshot_id);
         $this->assertSame(1, WeatherSnapshot::query()->count());
@@ -132,7 +131,7 @@ final class ProtocolWeatherAutoFetchTest extends TestCase {
         Bus::fake();
         $protocol = $this->protocolFor(Customer::class, $customer->id);
 
-        (new FetchProtocolWeatherJob($protocol->id))->handle(app(WeatherService::class));
+        (new FetchProtocolWeatherJob($protocol->id))->handle();
 
         $this->assertNull($protocol->fresh()->weather_snapshot_id);
         $this->assertSame(0, WeatherSnapshot::query()->count());

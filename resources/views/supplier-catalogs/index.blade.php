@@ -42,7 +42,7 @@
                                                 :title="$source->active ? __('procurement.catalog.action.deactivate') : __('procurement.catalog.action.activate')" />
                                 </form>
                                 <form method="POST" action="{{ route('supplier-catalogs.destroy', $source) }}"
-                                      onsubmit="return confirm('{{ __('procurement.catalog.confirm_delete') }}')">
+                                      data-confirm-dialog data-confirm-message="{{ __('procurement.catalog.confirm_delete') }}">
                                     @csrf @method('DELETE')
                                     <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Löschen')" />
                                 </form>

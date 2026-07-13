@@ -51,6 +51,14 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::post('/tickets/{ticket}/accept', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'accept'])->name('tickets.accept');
         Route::post('/tickets/{ticket}/reopen', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'reopen'])->name('tickets.reopen');
         Route::post('/tickets/{ticket}/rate', [\App\Http\Controllers\CustomerPortal\TicketController::class, 'rate'])->name('tickets.rate');
+        // Portal-Bestellstrecke Servicekatalog (Feature 065, MVP-154): nur
+        // portal-sichtbare Einträge, Bestellung friert Snapshots ein.
+        Route::get('/catalog', [\App\Http\Controllers\CustomerPortal\CatalogController::class, 'index'])->name('catalog.index');
+        Route::get('/catalog/{item}', [\App\Http\Controllers\CustomerPortal\CatalogController::class, 'show'])->name('catalog.show');
+        Route::post('/catalog/{item}/order', [\App\Http\Controllers\CustomerPortal\CatalogController::class, 'order'])->name('catalog.order');
+        // Bekannte Fehler (Feature 065, MVP-156): read-only Known Errors
+        // (status=known_error + visibility=customer, org-gescopt).
+        Route::get('/known-errors', [\App\Http\Controllers\CustomerPortal\KnownErrorController::class, 'index'])->name('known-errors.index');
         // Reklamationsstatus + Nachreichungen (Feature 072, MVP-256).
         Route::get('/claims', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'index'])->name('claims.index');
         Route::get('/claims/{claim}', [\App\Http\Controllers\CustomerPortal\ClaimPortalController::class, 'show'])->name('claims.show');

@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\CustomerPortal;
 
-use App\Enums\ServiceTicket\{ServiceTicketSource, ServiceTicketStatus, TicketMessageKind};
-use App\Http\Controllers\Controller;
-use App\Models\{ServiceQueue, ServiceTicket, ServiceTicketMessage, User};
+use App\Enums\ServiceTicket\{ServiceTicketSource, ServiceTicketStatus};
+use App\Http\Controllers\{AttachmentController, Controller};
+use App\Models\{ServiceQueue, ServiceTicket, TicketSatisfaction, User};
 use App\Services\ServiceTicket\{ServiceTicketService, TicketConversationService};
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB};
+use App\Services\Timeline\ServiceTicketTimelineService;
+use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -25,6 +27,8 @@ use Illuminate\View\View;
  * nur PUBLIC-Inhalte (kind=public_reply/system_event — interne Notizen
  * erreichen das Portal strukturell nie); Anlage in Portal-Queues, Antwort,
  * Lösung bestätigen/wiedereröffnen, Zufriedenheits-Kurzbewertung.
+ * Datei-Uploads (MVP-152) folgen der Policy des {@see AttachmentController}
+ * und sind als Kunden-Uploads immer `customer_visible`.
  */
 class TicketController extends Controller {
     public function index(): View {
@@ -38,29 +42,27 @@ class TicketController extends Controller {
         ]);
     }
 
-    public function show(ServiceTicket $ticket): View {
+    public function show(ServiceTicket $ticket, ServiceTicketTimelineService $timeline): View {
         $user = $this->portalUser();
         abort_unless((int) $ticket->customer_id === (int) $user->customer_id, 404);
 
         return view('customer.tickets.show', [
             'ticket' => $ticket,
-            // Nur kundensichtbare Inhalte — Typfrage, keine Filter-Flags.
-            'messages' => ServiceTicketMessage::query()
-                ->where('service_ticket_id', $ticket->id)
-                ->whereIn('kind', [TicketMessageKind::PublicReply->value, TicketMessageKind::SystemEvent->value])
-                ->orderBy('created_at')
-                ->get(),
-            'rated' => DB::table('ticket_satisfaction')->where('service_ticket_id', $ticket->id)->exists(),
+            // Nur kundensichtbare Inhalte — Typfrage, keine Filter-Flags
+            // (Leak-Schutz strukturell im Timeline-Service, MVP-152).
+            'timeline' => $timeline->forCustomer($ticket),
+            'rated' => TicketSatisfaction::query()->where('service_ticket_id', $ticket->id)->exists(),
         ]);
     }
 
-    public function store(Request $request, ServiceTicketService $tickets): RedirectResponse {
+    public function store(Request $request, ServiceTicketService $tickets, TicketConversationService $conversation): RedirectResponse {
         $user = $this->portalUser();
 
         $data = $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:10000'],
         ]);
+        $files = $this->validatedUploads($request);
 
         $queueId = ServiceQueue::query()
             ->where('organization_id', $user->organization_id)
@@ -75,6 +77,9 @@ class TicketController extends Controller {
         ]);
         $ticket->forceFill(['requester_type' => $user->getMorphClass(), 'requester_id' => $user->id])->save();
 
+        // Kunden-Uploads bei der Anlage hängen am Ticket — immer kundensichtbar.
+        $conversation->attachUploadedFiles($ticket, $files, $user, customerVisible: true);
+
         return redirect()->route('customer.tickets.show', $ticket)
             ->with('success', __('Ticket angelegt.'));
     }
@@ -84,11 +89,37 @@ class TicketController extends Controller {
         abort_unless((int) $ticket->customer_id === (int) $user->customer_id, 404);
 
         $data = $request->validate(['body' => ['required', 'string', 'min:2', 'max:10000']]);
+        $files = $this->validatedUploads($request);
 
-        $conversation->inbound($ticket, $data['body'], 'portal', author: $user);
+        $conversation->inbound($ticket, $data['body'], 'portal', author: $user, files: $files);
 
         return redirect()->route('customer.tickets.show', $ticket)
             ->with('success', __('Antwort gesendet.'));
+    }
+
+    /**
+     * Datei-Uploads nach der zentralen Policy des {@see AttachmentController}
+     * prüfen (Extension-Whitelist + Server-MIME via Fileinfo + Größenlimit).
+     *
+     * @return list<UploadedFile>
+     */
+    private function validatedUploads(Request $request): array {
+        $request->validate([
+            'files' => ['nullable', 'array', 'max:5'],
+            'files.*' => ['file', 'max:' . (AttachmentController::MAX_BYTES / 1024)],
+        ]);
+
+        $files = array_values(array_filter((array) $request->file('files', []), fn($f) => $f instanceof UploadedFile));
+        foreach ($files as $file) {
+            $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
+            $serverMime = $file->getMimeType() ?? '';
+            if (! in_array($ext, AttachmentController::ALLOWED_EXTENSIONS, true)
+                || ! in_array($serverMime, AttachmentController::ALLOWED_MIMES, true)) {
+                throw ValidationException::withMessages(['files' => (string) __('Dateityp nicht erlaubt.')]);
+            }
+        }
+
+        return $files;
     }
 
     /** Lösung bestätigen: done → accepted. */
@@ -132,17 +163,17 @@ class TicketController extends Controller {
             'comment' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $exists = DB::table('ticket_satisfaction')->where('service_ticket_id', $ticket->id)->exists();
+        // MVP-159: aufs Model umgestellt — Verhalten identisch (eine Antwort
+        // je Ticket, still idempotent; das DB-Unique bleibt letzte Instanz).
+        $exists = TicketSatisfaction::query()->where('service_ticket_id', $ticket->id)->exists();
         if (! $exists) {
-            DB::table('ticket_satisfaction')->insert([
+            TicketSatisfaction::query()->create([
                 'organization_id' => $ticket->organization_id,
                 'service_ticket_id' => $ticket->id,
                 'portal_user_id' => $user->id,
                 'score' => (int) $data['score'],
                 'comment' => $data['comment'] ?? null,
                 'answered_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
 

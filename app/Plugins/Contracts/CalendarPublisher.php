@@ -11,6 +11,7 @@
 namespace App\Plugins\Contracts;
 
 use App\Models\Organization;
+use App\Plugins\Support\Calendar\RemoteCalendarEvent;
 
 /**
  * Providerneutraler Kalender-Publish-Vertrag (Feature 058, MVP-126): ein Plugin
@@ -28,4 +29,14 @@ interface CalendarPublisher {
      * @return array{published: int, deleted: int, unchanged: int, failed: int}
      */
     public function publishCalendar(Organization $organization): array;
+
+    /**
+     * Publiziert EIN einzelnes terminartiges Element (MVP-331, Bauturbo A11 —
+     * Kalender-Kanal der Benachrichtigungen) idempotent über dessen stabile
+     * UID in die verbundenen Kalender der Organisation. Ohne aktive
+     * Verbindung: stiller No-Op (alle Zähler 0, kein Fehler).
+     *
+     * @return array{published: int, deleted: int, unchanged: int, failed: int}
+     */
+    public function publishCalendarItem(Organization $organization, RemoteCalendarEvent $item): array;
 }

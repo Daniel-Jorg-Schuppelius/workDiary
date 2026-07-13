@@ -30,4 +30,7 @@ return [
     'story_points' => "Misura relativa dell'impegno di un elemento di lavoro — confrontabile nel team, mai convertita in ore o denaro.",
     'wip' => "Work in progress: limite di elementi contemporanei per colonna; il superamento richiede una motivazione.",
     'velocity' => "Story point completati per sprint concluso (mediana + intervallo) — grandezza di pianificazione, non di rendimento.",
+    'abnahme' => "Collaudo: conferma formale del cliente che la prestazione è stata eseguita come da contratto — documentata con protocollo firmato; avvia garanzia e fatturazione.",
+    'prozedur' => "Procedura: istruzione di lavoro guidata passo dopo passo da un modello versionato; ogni esecuzione viene registrata in modo tracciabile.",
+    'zeitkonto' => "Conto ore di lavoro: registra ore in più o in meno rispetto all'orario contrattuale — base per recupero o pagamento.",
 ];

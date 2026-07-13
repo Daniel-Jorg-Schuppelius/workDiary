@@ -12,17 +12,55 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{Change, Problem, ServiceRequest, ServiceTicket, SlaClockSegment};
+use App\Enums\ServiceTicket\ServiceTicketStatus;
+use App\Models\{AuditLog, Change, KnowledgeArticle, KnowledgeArticleLink, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Helpdesk-/Service-Desk-Kennzahlen (Feature 065, MVP-159) — Muster 064:
  * versionierte Definitionen (METRIC_VERSION), Berechnung aus Zeitstempeln
  * + sla_clock_segments (Pausen abgezogen). KEINE Agenten-Ranglisten —
  * Queue-Ebene ist die kleinste Aggregation (Vorgabe 065).
+ *
+ * v2 (MVP-159): agingHistogram (Altersbänder offener Tickets je Queue),
+ * fcrAndReopens (FCR = gelöst OHNE reopened-/requeued-Audit; Wiederöffnungs-
+ * und Weiterleitungsquote getrennt) und satisfaction (Ø, Verteilung 1–5,
+ * Rücklaufquote = Antworten ÷ gelöste Tickets im Zeitraum).
+ *
+ * v3 (MVP-338, Bauturbo A20): recurringDespiteArticle — „Probleme trotz
+ * Wissensartikel" (Feature 011): neue Incidents nach Artikel-Publikation.
  */
 class HelpdeskMetricsService {
-    public const METRIC_VERSION = 1;
+    public const METRIC_VERSION = 3;
+
+    /**
+     * Altersbänder in Tagen: Label → [einschließende Untergrenze,
+     * ausschließende Obergrenze|null]. Einzige Wahrheit für Histogramm UND
+     * Drilldown (identische Bandzuordnung, MVP-159).
+     *
+     * @var array<string, array{0: int, 1: int|null}>
+     */
+    public const AGING_BANDS = [
+        '0-1' => [0, 1],
+        '1-3' => [1, 3],
+        '3-7' => [3, 7],
+        '7-30' => [7, 30],
+        '>30' => [30, null],
+    ];
+
+    /**
+     * Offene Ticket-Status (alles außer isResolved) — geteilt mit den
+     * Drilldowns, damit Histogramm und Trefferliste dieselbe Menge sehen.
+     *
+     * @return list<string>
+     */
+    public static function openStatuses(): array {
+        return array_values(array_map(
+            static fn(ServiceTicketStatus $status): string => $status->value,
+            array_filter(ServiceTicketStatus::cases(), static fn(ServiceTicketStatus $status): bool => ! $status->isResolved()),
+        ));
+    }
 
     /**
      * Ticketvolumen je ISO-Woche und Queue (Zeitreihe).
@@ -154,6 +192,122 @@ class HelpdeskMetricsService {
     }
 
     /**
+     * „Probleme trotz Artikel" (Feature 011, MVP-338/Bauturbo A20): je
+     * VERÖFFENTLICHTEM Wissensartikel mit Problem-Verknüpfung (Known
+     * Error, {@see \App\Services\ServiceTicket\ProblemService::publishKnownError})
+     * die neuen Incidents im Zeitraum, die NACH der Artikel-Publikation
+     * gemeldet wurden (reported_at) — absteigend nach Vorkommen: die
+     * Handlungsliste „Artikel unwirksam oder unauffindbar?". Trend =
+     * zweite Zeitraum-Hälfte vs. erste (rising/falling/steady). Artikel
+     * ohne neue Incidents erscheinen bewusst NICHT (kein Handlungsbedarf);
+     * Tickets ohne reported_at fallen heraus (kein belastbares Auftreten,
+     * analog agingHistogram). Einzige Datenquelle ist die Kette
+     * Artikel↔Problem↔Incident-Pivot — direkte Ticket→Artikel-Verweise
+     * existieren im Datenmodell nicht (LINKABLE_MAP ohne Ticket).
+     *
+     * @return list<array{article: KnowledgeArticle, problems: list<string>, count: int, first_half: int, second_half: int, trend: string, last_at: Carbon|null}>
+     */
+    public function recurringDespiteArticle(Carbon $from, Carbon $to): array {
+        $problemMorph = (new Problem())->getMorphClass();
+
+        // Problem-Verknüpfungen veröffentlichter Artikel — Mandantengrenze
+        // transitiv über den org-gescopten Artikel (Allow-List Tenant-Audit).
+        $links = KnowledgeArticleLink::query()
+            ->where('linkable_type', $problemMorph)
+            ->whereIn('knowledge_article_id', KnowledgeArticle::query()
+                ->published()
+                ->whereNotNull('published_at')
+                ->select('id'))
+            ->get(['knowledge_article_id', 'linkable_id']);
+        if ($links->isEmpty()) {
+            return [];
+        }
+
+        $articles = KnowledgeArticle::query()
+            ->whereIn('id', $links->pluck('knowledge_article_id')->unique())
+            ->get()
+            ->keyBy('id');
+        $problems = Problem::query()
+            ->whereIn('id', $links->pluck('linkable_id')->unique())
+            ->get(['id', 'title'])
+            ->keyBy('id');
+
+        // Incidents je Problem im Zeitraum; der Publikationsfilter ist je
+        // Artikel verschieden und läuft im PHP-Nachgang (Report-Volumen).
+        $pivot = DB::table('problem_ticket')
+            ->whereIn('problem_id', $problems->keys()->all())
+            ->get(['problem_id', 'service_ticket_id']);
+        $tickets = ServiceTicket::query()
+            ->whereIn('id', $pivot->pluck('service_ticket_id')->unique()->all())
+            ->whereBetween('reported_at', [$from, $to])
+            ->get(['id', 'reported_at'])
+            ->keyBy('id');
+
+        // diffInSeconds liefert float (Carbon 3) — für addSeconds runden.
+        $mid = $from->copy()->addSeconds((int) ($from->diffInSeconds($to) / 2));
+
+        $rows = [];
+        foreach ($links->groupBy('knowledge_article_id') as $articleId => $group) {
+            /** @var KnowledgeArticle|null $article */
+            $article = $articles->get($articleId);
+            if ($article === null || $article->published_at === null) {
+                continue;
+            }
+
+            $problemIds = $group->pluck('linkable_id')->map(fn($id): int => (int) $id)->all();
+            $ticketIds = $pivot
+                ->whereIn('problem_id', $problemIds)
+                ->pluck('service_ticket_id')
+                ->unique();
+
+            $count = 0;
+            $firstHalf = 0;
+            $lastAt = null;
+            foreach ($ticketIds as $ticketId) {
+                /** @var ServiceTicket|null $ticket */
+                $ticket = $tickets->get((int) $ticketId);
+                if ($ticket?->reported_at === null || ! $ticket->reported_at->isAfter($article->published_at)) {
+                    continue;
+                }
+                $count++;
+                if ($ticket->reported_at->isBefore($mid)) {
+                    $firstHalf++;
+                }
+                if ($lastAt === null || $ticket->reported_at->isAfter($lastAt)) {
+                    $lastAt = $ticket->reported_at;
+                }
+            }
+            if ($count === 0) {
+                continue;
+            }
+
+            $secondHalf = $count - $firstHalf;
+            $rows[] = [
+                'article' => $article,
+                'problems' => array_values($problems->only($problemIds)->pluck('title')
+                    ->map(fn(mixed $title): string => (string) $title)
+                    ->sort()->all()),
+                'count' => $count,
+                'first_half' => $firstHalf,
+                'second_half' => $secondHalf,
+                'trend' => $secondHalf <=> $firstHalf,
+                'last_at' => $lastAt,
+            ];
+        }
+
+        usort($rows, static fn(array $a, array $b): int => [$b['count'], $b['last_at']] <=> [$a['count'], $a['last_at']]);
+
+        return array_map(static fn(array $row): array => [
+            ...$row,
+            'trend' => match ($row['trend']) {
+                1 => 'rising',
+                -1 => 'falling',
+                default => 'steady',
+            },
+        ], $rows);
+    }
+
+    /**
      * Katalog-Nachfrage: Requests je Katalogeintrag mit Median-Dauern
      * (Genehmigung = erste Entscheidung, Erfüllung = done) in Stunden.
      *
@@ -186,6 +340,169 @@ class HelpdeskMetricsService {
             'approval_median_hours' => $this->median($row['approval_hours']),
             'fulfillment_median_hours' => $this->median($row['fulfillment_hours']),
         ])->values()->all();
+    }
+
+    /**
+     * Aging-Histogramm: OFFENE Tickets (Status nicht isResolved) in
+     * Altersbändern 0–1/1–3/3–7/7–30/>30 Tage je Queue — Alter ab
+     * reported_at (Tickets ohne reported_at fallen bewusst heraus,
+     * sie haben kein belastbares Alter). Alle Bänder sind immer
+     * vorhanden (stabile Reihenfolge fürs Diagramm).
+     *
+     * @return array<string, array{total: int, queues: array<string, int>}>
+     */
+    public function agingHistogram(?Carbon $now = null): array {
+        $now ??= now();
+
+        $bands = [];
+        foreach (array_keys(self::AGING_BANDS) as $band) {
+            $bands[$band] = ['total' => 0, 'queues' => []];
+        }
+
+        $tickets = ServiceTicket::query()
+            ->whereIn('status', self::openStatuses())
+            ->whereNotNull('reported_at')
+            ->with('queue:id,name')
+            ->get(['id', 'queue_id', 'status', 'reported_at']);
+
+        foreach ($tickets as $ticket) {
+            if ($ticket->reported_at === null) {
+                continue;
+            }
+            $band = $this->agingBand($ticket->reported_at, $now);
+            $queue = $ticket->queue->name ?? '—';
+            $bands[$band]['total']++;
+            $bands[$band]['queues'][$queue] = ($bands[$band]['queues'][$queue] ?? 0) + 1;
+        }
+
+        foreach ($bands as &$row) {
+            ksort($row['queues']);
+        }
+        unset($row);
+
+        return $bands;
+    }
+
+    /** Bandzuordnung eines Meldezeitpunkts (geteilt mit dem Drilldown). */
+    public function agingBand(Carbon $reportedAt, Carbon $now): string {
+        $ageDays = $reportedAt->diffInMinutes($now) / 1440;
+        foreach (self::AGING_BANDS as $band => [, $max]) {
+            if ($max === null || $ageDays < $max) {
+                return $band;
+            }
+        }
+
+        return array_key_last(self::AGING_BANDS);
+    }
+
+    /**
+     * First Contact Resolution + Wiederöffnungs-/Weiterleitungsquote:
+     * Basis sind Tickets mit resolved_at im Zeitraum. FCR = gelöst OHNE
+     * `service_ticket.reopened`- UND OHNE `service_ticket.requeued`-Audit;
+     * beide Quoten werden getrennt ausgewiesen. Kleinste Aggregation ist
+     * die Queue — bewusst KEINE Agenten-Dimension (Vorgabe 065). Die
+     * Audit-Zählung läuft gechunkt über whereIn(auditable_id).
+     *
+     * @return array{total: int, fcr: int, fcr_rate: float, reopened: int, reopened_rate: float, requeued: int, requeued_rate: float, queues: array<string, array{total: int, fcr: int, reopened: int, requeued: int, fcr_rate: float}>}
+     */
+    public function fcrAndReopens(Carbon $from, Carbon $to): array {
+        $tickets = ServiceTicket::query()
+            ->whereBetween('resolved_at', [$from, $to])
+            ->with('queue:id,name')
+            ->get(['id', 'queue_id', 'resolved_at']);
+
+        $reopenedIds = [];
+        $requeuedIds = [];
+        foreach ($tickets->pluck('id')->chunk(500) as $ids) {
+            $logs = AuditLog::query()
+                ->where('auditable_type', ServiceTicket::class)
+                ->whereIn('auditable_id', $ids->all())
+                ->whereIn('event', ['service_ticket.reopened', 'service_ticket.requeued'])
+                ->get(['auditable_id', 'event']);
+            foreach ($logs as $log) {
+                if ((string) $log->getAttribute('event') === 'service_ticket.reopened') {
+                    $reopenedIds[(int) $log->getAttribute('auditable_id')] = true;
+                } else {
+                    $requeuedIds[(int) $log->getAttribute('auditable_id')] = true;
+                }
+            }
+        }
+
+        $queues = [];
+        $fcr = 0;
+        $reopened = 0;
+        $requeued = 0;
+        foreach ($tickets as $ticket) {
+            $queue = $ticket->queue->name ?? '—';
+            $queues[$queue] ??= ['total' => 0, 'fcr' => 0, 'reopened' => 0, 'requeued' => 0];
+            $queues[$queue]['total']++;
+            $wasReopened = isset($reopenedIds[(int) $ticket->id]);
+            $wasRequeued = isset($requeuedIds[(int) $ticket->id]);
+            if ($wasReopened) {
+                $reopened++;
+                $queues[$queue]['reopened']++;
+            }
+            if ($wasRequeued) {
+                $requeued++;
+                $queues[$queue]['requeued']++;
+            }
+            if (! $wasReopened && ! $wasRequeued) {
+                $fcr++;
+                $queues[$queue]['fcr']++;
+            }
+        }
+        ksort($queues);
+
+        $rate = static fn(int $part, int $total): float => $total > 0 ? round($part / $total * 100, 1) : 0.0;
+        $queues = array_map(
+            static fn(array $row): array => [...$row, 'fcr_rate' => $rate($row['fcr'], $row['total'])],
+            $queues,
+        );
+
+        $total = $tickets->count();
+
+        return [
+            'total' => $total,
+            'fcr' => $fcr,
+            'fcr_rate' => $rate($fcr, $total),
+            'reopened' => $reopened,
+            'reopened_rate' => $rate($reopened, $total),
+            'requeued' => $requeued,
+            'requeued_rate' => $rate($requeued, $total),
+            'queues' => $queues,
+        ];
+    }
+
+    /**
+     * Zufriedenheit: Ø-Score, Verteilung 1–5 (immer alle Stufen) und
+     * Rücklaufquote = Antworten (answered_at im Zeitraum) ÷ gelöste
+     * Tickets (resolved_at im Zeitraum).
+     *
+     * @return array{average: float, distribution: array<int, int>, responses: int, closed_total: int, response_rate: float}
+     */
+    public function satisfaction(Carbon $from, Carbon $to): array {
+        $scores = TicketSatisfaction::query()
+            ->whereBetween('answered_at', [$from, $to])
+            ->pluck('score');
+
+        $distribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+        foreach ($scores as $score) {
+            $key = (int) $score;
+            if (isset($distribution[$key])) {
+                $distribution[$key]++;
+            }
+        }
+
+        $responses = $scores->count();
+        $closedTotal = ServiceTicket::query()->whereBetween('resolved_at', [$from, $to])->count();
+
+        return [
+            'average' => $responses > 0 ? round((float) $scores->sum() / $responses, 2) : 0.0,
+            'distribution' => $distribution,
+            'responses' => $responses,
+            'closed_total' => $closedTotal,
+            'response_rate' => $closedTotal > 0 ? round($responses / $closedTotal * 100, 1) : 0.0,
+        ];
     }
 
     /**

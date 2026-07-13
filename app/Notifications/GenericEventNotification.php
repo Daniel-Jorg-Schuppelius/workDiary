@@ -24,7 +24,7 @@ class GenericEventNotification extends Notification {
     use Queueable;
 
     /**
-     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null}  $payload
+     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
      * @param  list<string>  $channels  Laravel-Kanäle, z. B. ['database', 'mail']
      */
     public function __construct(
@@ -50,7 +50,9 @@ class GenericEventNotification extends Notification {
         $message = \App\Support\MailText::plain((string) ($this->payload['message'] ?? ''));
         $url = $this->payload['url'] ?? null;
 
-        $subjectKey = $this->stage === 'escalation' ? 'notification.mail.subject_escalation' : 'notification.mail.subject';
+        // Alle Eskalationsstufen (escalation/escalation2/escalation3, MVP-331)
+        // tragen den Eskalations-Betreff.
+        $subjectKey = str_starts_with($this->stage, 'escalation') ? 'notification.mail.subject_escalation' : 'notification.mail.subject';
         $mail = (new MailMessage)
             ->subject(__($subjectKey, ['event' => $this->event->label(), 'title' => $title]))
             ->greeting(__('notification.mail.greeting', ['name' => $notifiable->name ?? '']))

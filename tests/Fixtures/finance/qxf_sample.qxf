@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QXF version="1.0">
+    <ACCOUNTS>
+        <ACCOUNT>
+            <NAME>Geschaeftskonto</NAME>
+            <TYPE>Bank</TYPE>
+            <TRANSACTIONS>
+                <TRANSACTION>
+                    <DATE>2026-05-15</DATE>
+                    <AMOUNT>119.00</AMOUNT>
+                    <TYPE>Deposit</TYPE>
+                    <PAYEE>Muster GmbH</PAYEE>
+                    <MEMO>Zahlung Rechnung RE-2026-0007 Danke</MEMO>
+                    <FITID>QXF-TXN-001</FITID>
+                </TRANSACTION>
+                <TRANSACTION>
+                    <DATE>2026-05-20</DATE>
+                    <AMOUNT>-50.00</AMOUNT>
+                    <TYPE>Payment</TYPE>
+                    <PAYEE>Buerobedarf AG</PAYEE>
+                    <MEMO>Bestellung B-1001</MEMO>
+                    <FITID>QXF-TXN-002</FITID>
+                </TRANSACTION>
+            </TRANSACTIONS>
+        </ACCOUNT>
+    </ACCOUNTS>
+</QXF>

@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, KnowledgeArticle, OnCallShift, Organization, Supplier, Task, User};
+use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, KnowledgeArticle, OnCallShift, Organization, ServiceTicket, Supplier, Task, User};
 use App\Services\Attachments\ImageMetaUploader;
 use App\Support\Filename;
 use Illuminate\Database\Eloquent\Model;
@@ -23,12 +23,14 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class AttachmentController extends Controller {
     public function __construct(private readonly ImageMetaUploader $imageUploader) {}
 
-    private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
+    // Öffentlich: die Datei-Policy gilt auch für Uploads über eigene
+    // Controller (z. B. Portal-Tickets, MVP-152) — EINE Wahrheit statt Kopien.
+    public const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
-    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
+    public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
 
     /** Serverseitig akzeptierte MIME-Typen, geprüft über PHP Fileinfo (nicht Client-Header) */
-    private const ALLOWED_MIMES = [
+    public const ALLOWED_MIMES = [
         'image/jpeg',
         'image/png',
         'image/gif',
@@ -54,6 +56,7 @@ class AttachmentController extends Controller {
         'user' => User::class,
         'asset' => Asset::class,
         'knowledge' => KnowledgeArticle::class,
+        'service-ticket' => ServiceTicket::class,
     ];
 
     /**

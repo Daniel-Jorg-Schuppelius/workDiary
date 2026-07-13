@@ -15,6 +15,13 @@
                 document.documentElement.setAttribute('data-theme', 'corporate');
             }
         })();
+        // Kein app.js auf dieser Seite: [data-reload]-Button per Delegation binden
+        // (Inline-onclick wäre unter CSP Stufe 1 blockiert).
+        document.addEventListener('click', function (event) {
+            if (event.target instanceof Element && event.target.closest('[data-reload]')) {
+                window.location.reload();
+            }
+        });
     </script>
     <title>{{ __('Datenbank nicht erreichbar') }} – {{ config('app.name', 'WorkDiary') }}</title>
     <style>
@@ -55,7 +62,7 @@
                 {{ __('Wir können die Datenbank gerade nicht erreichen. Bitte versuche es in wenigen Augenblicken erneut. Falls das Problem bestehen bleibt, wende dich an deine Administration.') }}
             </p>
             <div class="mt-6 flex justify-center gap-2">
-                <x-button type="button" onclick="window.location.reload()" tone="primary" size="sm" class="gap-1" icon="refresh">{{ __('Erneut versuchen') }}</x-button>
+                <x-button type="button" data-reload tone="primary" size="sm" class="gap-1" icon="refresh">{{ __('Erneut versuchen') }}</x-button>
             </div>
             @if (config('app.debug') && ! empty($exceptionMessage))
                 <details class="mt-6 text-left text-xs">

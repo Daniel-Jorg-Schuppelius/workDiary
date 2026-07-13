@@ -67,6 +67,7 @@ return [
         'target_by_mode' => 'The target is preset from the customer\'s billing channel.',
         'period_sources' => 'Only billable sources that have not yet been invoiced/handed over within the period are collected.',
         'lexoffice_draft_created' => 'Invoice draft created in Lexoffice:',
+        'sevdesk_draft_created' => 'Invoice draft created in sevDesk:',
     ],
 
     'confirm_execute' => 'Transfer to the target now? On success the sources will be marked as handed over.',
@@ -98,6 +99,11 @@ return [
         'total' => 'Total',
     ],
 
+    'sevdesk' => [
+        'introduction' => 'Handover from WorkDiary — :channel, period :from – :to.',
+        'tax_text' => 'VAT :rate%',
+    ],
+
     'lexoffice' => [
         'introduction' => 'Handover from WorkDiary — :channel, period :from – :to.',
         'delivery_title' => 'Delivery note',
@@ -119,6 +125,8 @@ return [
         'entry_already_transferred' => 'The time entry has already been handed over to invoicing and can no longer be corrected.',
         'target_not_allowed' => 'This target is not allowed for the billing channel ":mode".',
         'lexoffice_not_configured' => 'Lexoffice is not configured for this organisation (API key missing).',
+        'sevdesk_not_configured' => 'sevDesk is not configured for this organisation (API token missing).',
+        'sevdesk_outcome_unclear' => 'Outcome of the sevDesk handover unclear (timeout after sending) — do not retry blindly; the next run reconciles via the source marker.',
         'lexoffice_contact_missing' => 'No Lexoffice contact for the customer — please sync the contact first.',
         'lexoffice_delivery_no_customer' => 'A delivery without a customer cannot be handed over as a delivery note.',
         'lexoffice_delivery_not_linked' => 'No Lexoffice delivery note is linked to this delivery.',
@@ -152,6 +160,9 @@ return [
             'amount' => 'Amount (gross)',
             'lock_flag' => 'Lock',
             'include_expenses' => 'Include approved expenses',
+            'include_reversals' => 'Submit cancelled documents (general reversal)',
+            'reversal' => 'GU',
+            'reversal_badge' => 'General reversal',
             'debtor_no' => 'Debtor number (DATEV)',
             'debtor_no_hint' => 'Leave empty to derive the number automatically from the configured number range.',
         ],
@@ -159,12 +170,19 @@ return [
             'on' => 'locked',
             'off' => 'not locked',
         ],
+
+        'selection' => [
+            'manual' => 'Partial selection',
+        ],
         'action' => [
             'create' => 'Create batch',
             'finalize' => 'Finalize',
             'download' => 'Download CSV',
             'configure' => 'Configuration',
             'save_config' => 'Save configuration',
+            'discard' => 'Discard draft',
+            'remove_selected' => 'Remove selection',
+            'select_source' => 'Select booking item',
         ],
         'dialog' => [
             'create_title' => 'Create DATEV booking batch',
@@ -173,11 +191,14 @@ return [
         'hint' => [
             'period_sources' => 'Issued/paid invoices with a document date within the period that are not yet part of a finalized batch are taken into account.',
             'include_expenses' => 'Optional: additionally include approved expenses as an expense booking (MVP — simplified accounts).',
+            'include_reversals' => 'Optional: re-submit cancelled, already transferred documents as general-reversal bookings.',
         ],
         'flash' => [
             'created' => 'Booking batch created as a draft.',
             'finalized' => 'Booking batch finalized — CSV generated and sources marked as handed over.',
             'config_saved' => 'Accounting configuration saved.',
+            'sources_removed' => 'Selected booking items removed — they are available for the next batch again.',
+            'discarded' => 'Draft batch discarded — its sources are available again.',
         ],
         'error' => [
             'no_sources' => 'No documents ready for booking were found in the selected period.',
@@ -187,6 +208,9 @@ return [
             'preflight_failed' => 'The batch cannot be finalized due to preflight errors.',
             'no_organization' => 'No organisation could be resolved.',
             'roundtrip_failed' => 'The generated DATEV file failed the re-import check: :errors',
+            'no_selection' => 'No booking items selected.',
+            'selection_empty_batch' => 'At least one booking item must remain in the batch.',
+            'source_already_exported' => 'Document :ref is already part of another exported batch.',
         ],
         'preflight' => [
             'no_sources' => 'The batch contains no booking records.',
@@ -237,6 +261,11 @@ return [
             'finalize_hint' => 'Marks the bookings as locked on export.',
             'encoding' => 'Character set',
             'encoding_hint' => 'ISO-8859-1 is customary for DATEV; UTF-8 only if explicitly desired.',
+            'expense_group' => 'Expense/input tax accounts per expense category',
+            'expense_group_hint' => 'Leave empty to use the simplified mapping (revenue account slot + tax-rate BU key). Input tax BU e.g. 9 = 19 %, 8 = 7 %.',
+            'expense_category' => 'Expense category',
+            'expense_account' => 'Expense account',
+            'expense_tax_key' => 'Input tax BU key',
         ],
     ],
 ];

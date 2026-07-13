@@ -38,7 +38,7 @@ class InvoiceTemplateController extends Controller {
     public function create(): View {
         Gate::authorize('create', InvoiceTemplate::class);
 
-        return view('invoice_templates.form', [
+        return view('invoice_templates._form_dialog', [
             'template' => new InvoiceTemplate(),
         ]);
     }
@@ -68,7 +68,7 @@ class InvoiceTemplateController extends Controller {
     public function edit(InvoiceTemplate $template): View {
         Gate::authorize('update', $template);
 
-        return view('invoice_templates.form', ['template' => $template]);
+        return view('invoice_templates._form_dialog', ['template' => $template]);
     }
 
     public function update(SaveInvoiceTemplateRequest $request, InvoiceTemplate $template): RedirectResponse {

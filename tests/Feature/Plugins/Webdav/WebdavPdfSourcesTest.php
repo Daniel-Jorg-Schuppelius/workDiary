@@ -12,8 +12,9 @@ namespace Tests\Feature\Plugins\Webdav;
 
 use App\Enums\Protocol\ProtocolStatus;
 use App\Models\{Customer, IntegrationOutboxEntry, Invoice, Protocol, User, WebdavConnection};
-use App\Plugins\Webdav\Contracts\{WebdavGateway, WebdavGatewayFactory};
-use App\Plugins\Webdav\Services\WebdavOutboxDispatcher;
+use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, RemoteFileGateway};
+use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
+use App\Plugins\Webdav\WebdavMirrorTarget;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Services\Protocol\ProtocolPdfRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,9 +65,9 @@ final class WebdavPdfSourcesTest extends TestCase {
     private function bindGateway(): RecordingWebdavGateway {
         $gateway = new RecordingWebdavGateway();
         $this->app->instance(WebdavGatewayFactory::class, new class($gateway) implements WebdavGatewayFactory {
-            public function __construct(private WebdavGateway $gateway) {}
+            public function __construct(private RemoteFileGateway $gateway) {}
 
-            public function for(WebdavConnection $connection): WebdavGateway {
+            public function for(WebdavConnection $connection): RemoteFileGateway {
                 return $this->gateway;
             }
         });
@@ -124,10 +125,10 @@ final class WebdavPdfSourcesTest extends TestCase {
         $this->fakeInvoiceRenderer('INVOICE-PDF-BYTES');
         $invoice = $this->issuedInvoice();
 
-        $entry = IntegrationOutboxEntry::query()->where('operation', WebdavOutboxDispatcher::OP_MIRROR_INVOICE)->firstOrFail();
+        $entry = IntegrationOutboxEntry::query()->where('operation', MirrorOutboxDispatcher::OP_MIRROR_INVOICE)->firstOrFail();
         $this->assertSame('mirror:invoice-' . $invoice->id . ':issued', $entry->idempotency_key);
 
-        (new WebdavOutboxDispatcher())->dispatch($entry);
+        (new MirrorOutboxDispatcher(new WebdavMirrorTarget()))->dispatch($entry);
 
         $this->assertContains('invoices/2026/R2026-0042.pdf', $gateway->puts);
         $this->assertDatabaseHas('external_references', [
@@ -143,8 +144,8 @@ final class WebdavPdfSourcesTest extends TestCase {
         $this->fakeProtocolRenderer('PROTOCOL-PDF-BYTES');
         $protocol = $this->signedProtocol();
 
-        $entry = IntegrationOutboxEntry::query()->where('operation', WebdavOutboxDispatcher::OP_MIRROR_PROTOCOL)->firstOrFail();
-        (new WebdavOutboxDispatcher())->dispatch($entry);
+        $entry = IntegrationOutboxEntry::query()->where('operation', MirrorOutboxDispatcher::OP_MIRROR_PROTOCOL)->firstOrFail();
+        (new MirrorOutboxDispatcher(new WebdavMirrorTarget()))->dispatch($entry);
 
         $this->assertContains('protocols/2026/protocol-' . $protocol->id . '.pdf', $gateway->puts);
         $this->assertDatabaseHas('external_references', [
@@ -159,7 +160,7 @@ final class WebdavPdfSourcesTest extends TestCase {
         $this->issuedInvoice();
 
         $this->assertSame(0, IntegrationOutboxEntry::query()
-            ->where('operation', WebdavOutboxDispatcher::OP_MIRROR_INVOICE)->count());
+            ->where('operation', MirrorOutboxDispatcher::OP_MIRROR_INVOICE)->count());
     }
 
     public function test_draft_invoice_not_enqueued(): void {
@@ -175,7 +176,7 @@ final class WebdavPdfSourcesTest extends TestCase {
         ]);
 
         $this->assertSame(0, IntegrationOutboxEntry::query()
-            ->where('operation', WebdavOutboxDispatcher::OP_MIRROR_INVOICE)->count());
+            ->where('operation', MirrorOutboxDispatcher::OP_MIRROR_INVOICE)->count());
     }
 
     public function test_invoice_mirror_is_idempotent(): void {
@@ -184,9 +185,9 @@ final class WebdavPdfSourcesTest extends TestCase {
         $this->fakeInvoiceRenderer('INVOICE-PDF-BYTES');
         $this->issuedInvoice();
 
-        $entry = IntegrationOutboxEntry::query()->where('operation', WebdavOutboxDispatcher::OP_MIRROR_INVOICE)->firstOrFail();
-        (new WebdavOutboxDispatcher())->dispatch($entry);
-        (new WebdavOutboxDispatcher())->dispatch($entry); // Replay ohne Änderung
+        $entry = IntegrationOutboxEntry::query()->where('operation', MirrorOutboxDispatcher::OP_MIRROR_INVOICE)->firstOrFail();
+        (new MirrorOutboxDispatcher(new WebdavMirrorTarget()))->dispatch($entry);
+        (new MirrorOutboxDispatcher(new WebdavMirrorTarget()))->dispatch($entry); // Replay ohne Änderung
 
         $this->assertCount(1, $gateway->puts); // nur ein Upload
     }

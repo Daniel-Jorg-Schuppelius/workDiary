@@ -426,6 +426,26 @@
                 </label>
                 <p class="fieldset-label text-base-content/60">{{ __('settings.weather.auto_fetch_hint') }}</p>
             </div>
+            {{-- Provider-Auswahl (Bauturbo A7/MVP-131): Open-Meteo (Default) oder amtliche DWD-Open-Data. --}}
+            <div class="fieldset">
+                <label class="label" for="settings_weather_provider">{{ __('settings.weather.provider') }}</label>
+                <select id="settings_weather_provider" name="settings[weather][provider]" class="select select-bordered w-full">
+                    <option value="">{{ __('settings.placeholder_default', ['value' => __('weather.providers.open-meteo')]) }}</option>
+                    @foreach (['open-meteo', 'dwd'] as $weatherProvider)
+                        <option value="{{ $weatherProvider }}"
+                            @selected((string) old('settings.weather.provider', data_get($stored, 'weather.provider', '')) === $weatherProvider)>{{ __('weather.providers.' . $weatherProvider) }}</option>
+                    @endforeach
+                </select>
+                <p class="fieldset-label text-base-content/60">{{ __('settings.weather.provider_hint') }}</p>
+            </div>
+            <div class="fieldset">
+                <label class="label" for="settings_weather_dwd_max_station_km">{{ __('settings.weather.dwd_max_station_km') }}</label>
+                <input type="number" min="1" max="200" id="settings_weather_dwd_max_station_km"
+                       name="settings[weather][dwd_max_station_km]" class="input input-bordered w-full"
+                       placeholder="{{ \App\Services\Weather\DwdProvider::DEFAULT_MAX_STATION_KM }}"
+                       value="{{ old('settings.weather.dwd_max_station_km', data_get($stored, 'weather.dwd_max_station_km', '')) }}">
+                <p class="fieldset-label text-base-content/60">{{ __('settings.weather.dwd_max_station_km_hint') }}</p>
+            </div>
         </x-form-group>
     </div>
 

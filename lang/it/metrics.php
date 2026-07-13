@@ -25,6 +25,7 @@ return [
         'active_users' => 'Utenti attivi (30 giorni)',
         'module_counts' => 'Record per modulo principale',
         'feature_usage' => 'Utilizzo delle funzionalità (30 giorni)',
+        'transparency' => 'Trasparenza delle metriche',
     ],
 
     'field' => [
@@ -36,6 +37,34 @@ return [
         'feature' => 'Funzionalità',
         'usage_total' => 'Numero',
         'last_used_on' => 'Ultimo utilizzo',
+        'counter_description' => 'Cosa viene conteggiato',
+    ],
+
+    'transparency' => [
+        'status_enabled' => 'Contatori di utilizzo attivi',
+        'status_disabled' => 'Contatori di utilizzo disattivati',
+        'settings_link' => 'Interruttore «telemetry.enabled» nelle impostazioni',
+        'intro' => 'Questa installazione raccoglie esclusivamente i seguenti contatori di utilizzo — aggregati per organizzazione e giorno, senza riferimenti personali e senza contenuti aziendali. Non esiste altra telemetria.',
+        'storage' => 'Luogo di archiviazione: database locale di questa installazione (tabella feature_usage_counters). Non avviene alcun invio a sistemi esterni.',
+        'retention' => 'Conservazione: gli aggregati giornalieri restano in locale; l\'analisi sopra copre gli ultimi 30 giorni. Con l\'interruttore disattivato non viene conteggiato nulla — gli aggregati esistenti vengono mantenuti.',
+    ],
+
+    'counter' => [
+        'communications' => [
+            'created' => 'Note di comunicazione create (solo numero)',
+        ],
+        'documents' => [
+            'created' => 'Documenti creati (solo numero)',
+        ],
+        'forms' => [
+            'submitted' => 'Moduli compilati (solo numero)',
+        ],
+        'knowledge' => [
+            'created' => 'Articoli di conoscenza creati (solo numero)',
+        ],
+        'timeExports' => [
+            'built' => 'Esportazioni tempi/paghe generate (solo numero)',
+        ],
     ],
 
     'module' => [

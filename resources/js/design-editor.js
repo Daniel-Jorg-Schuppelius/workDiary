@@ -15,12 +15,16 @@ function round1(v) {
 }
 
 export function registerDesignEditor(Alpine) {
-    Alpine.data("designEditor", ({ saveUrl, layout, blocks, tableStyle, preflight, editable }) => ({
-        layout,
-        blocks,
-        tableStyle,
-        preflight,
-        editable,
+    // Config via data-config (JSON): { saveUrl, layout, blocks, tableStyle,
+    // preflight, editable } — ein Inline-Objekt-Argument in x-data wäre im
+    // @alpinejs/csp-Build nicht zuverlässig auswertbar (Stufe 2, MVP-346).
+    Alpine.data("designEditor", () => ({
+        saveUrl: null,
+        layout: {},
+        blocks: [],
+        tableStyle: {},
+        preflight: { errors: [], warnings: [] },
+        editable: false,
         page: "first",
         selected: null,
         dirty: false,
@@ -29,6 +33,13 @@ export function registerDesignEditor(Alpine) {
         drag: null,
 
         init() {
+            const cfg = JSON.parse(this.$el.dataset.config || "{}");
+            this.saveUrl = cfg.saveUrl ?? null;
+            this.layout = cfg.layout ?? {};
+            this.blocks = cfg.blocks ?? [];
+            this.tableStyle = cfg.tableStyle ?? {};
+            this.preflight = cfg.preflight ?? { errors: [], warnings: [] };
+            this.editable = !!cfg.editable;
             this.layout.blocked_areas = this.layout.blocked_areas || [];
         },
 
@@ -168,7 +179,7 @@ export function registerDesignEditor(Alpine) {
             this.saving = true;
             this.message = null;
             try {
-                const response = await fetch(saveUrl, {
+                const response = await fetch(this.saveUrl, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",

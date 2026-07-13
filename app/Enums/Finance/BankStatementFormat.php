@@ -15,13 +15,21 @@ use App\Enums\Contracts\HasLabel;
 
 /**
  * Importformat eines Bankauszugs (Feature 045, „Priorität 3: Bankimport"):
- * CAMT.053 ist das bevorzugte Format, MT940 dient als Fallback.
+ * CAMT.053 ist das bevorzugte Format, MT940 dient als Fallback. MVP-334
+ * (Bauturbo A15) ergänzt den allgemeinen Finanzformat-Import: OFX (1.x SGML/
+ * 2.x XML), QIF, QXF sowie PAIN.001 (Überweisungs-) und PAIN.008
+ * (Lastschrift-Aufträge als angekündigte Zahlungen).
  */
 enum BankStatementFormat: string implements HasLabel {
     use HasOptions;
 
     case Camt053 = 'camt053';
     case Mt940 = 'mt940';
+    case Ofx = 'ofx';
+    case Qif = 'qif';
+    case Qxf = 'qxf';
+    case Pain001 = 'pain001';
+    case Pain008 = 'pain008';
 
     public function label(): string {
         return (string) __('enums.finance.bank-statement-format.' . $this->value);
@@ -32,6 +40,8 @@ enum BankStatementFormat: string implements HasLabel {
         return match ($this) {
             self::Camt053 => 'info',
             self::Mt940 => 'neutral',
+            self::Ofx, self::Qif, self::Qxf => 'accent',
+            self::Pain001, self::Pain008 => 'warning',
         };
     }
 }

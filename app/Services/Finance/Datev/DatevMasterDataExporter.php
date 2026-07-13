@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Datev;
 
-use App\Models\{Customer, Organization};
+use App\Models\{Customer, ExpenseCategory, Organization};
 use App\Services\Finance\FinancialFormatsSupport;
 use CommonToolkit\Entities\CSV\DataLine;
-use CommonToolkit\FinancialFormats\Builders\DATEV\V700\DebitorsCreditorsDocumentBuilder;
+use CommonToolkit\FinancialFormats\Builders\DATEV\V700\{DebitorsCreditorsDocumentBuilder, GLAccountDescriptionDocumentBuilder};
 use CommonToolkit\FinancialFormats\Entities\DATEV\Header\DebitorsCreditorsHeaderLine;
 use CommonToolkit\FinancialFormats\Enums\DATEV\HeaderFields\V700\{DebitorsCreditorsHeaderField as Field, MetaHeaderField as MetaField};
 use CommonToolkit\FinancialFormats\Generators\DATEV\DatevDocumentGenerator;
@@ -28,6 +28,11 @@ use CommonToolkit\FinancialFormats\Generators\DATEV\DatevDocumentGenerator;
  * Das Debitorenkonto folgt der bestehenden Buchungsstapel-Logik
  * ({@see DatevBookingConfig::debtorAccountFor()} — explizite debtor_no vor
  * Nummernkreis-Basis + Kunden-ID).
+ *
+ * MVP-334 (Bauturbo A15) ergänzt die Sachkonten-Beistellung: Kategorie 20
+ * (Kontenbeschriftungen, Formatversion 3) über den GLAccountDescription-
+ * Builder — beigestellt werden alle im Buchungsstapel verwendeten Sachkonten
+ * (Erlöskonten + Aufwandskonten je Spesenkategorie) mit Beschriftung.
  */
 final class DatevMasterDataExporter {
     /**
@@ -71,6 +76,68 @@ final class DatevMasterDataExporter {
         $csv = (new DatevDocumentGenerator)->generate($document, ';', '"', null, $config->encoding);
 
         return ['csv' => $csv, 'count' => $customers->count()];
+    }
+
+    /**
+     * Sachkonten-Beistellung (MVP-334): alle im Export verwendeten Sachkonten
+     * (Erlöskonto Standard/steuerfrei + Aufwandskonten des Spesenkategorie-
+     * Mappings) als EXTF Kategorie 20 „Kontenbeschriftungen" (Formatversion 3).
+     * Dublettenfrei je Kontonummer; die Beschriftung stammt aus der Rolle bzw.
+     * dem Kategorienamen.
+     *
+     * @return array{csv: string, count: int}
+     */
+    public function generateGlAccounts(Organization $organization, DatevBookingConfig $config): array {
+        FinancialFormatsSupport::ensureAvailable();
+
+        $accounts = [];
+        $add = static function (string $account, string $label) use (&$accounts): void {
+            $account = trim($account);
+            if ($account !== '' && ! isset($accounts[$account])) {
+                // DATEV-Kontenbeschriftung: max. 40 Zeichen.
+                $accounts[$account] = mb_substr(trim($label), 0, 40);
+            }
+        };
+
+        $add($config->revenueAccount, 'Erlöse');
+        $add($config->taxFreeRevenueAccount, 'Erlöse steuerfrei');
+
+        if ($config->expenseAccounts !== []) {
+            $categories = ExpenseCategory::query()
+                ->whereIn('id', array_keys($config->expenseAccounts))
+                ->get()
+                ->keyBy('id');
+
+            foreach ($config->expenseAccounts as $categoryId => $mapping) {
+                $label = (string) ($categories[$categoryId]->label ?? ('Aufwand Kategorie ' . $categoryId));
+                $add($mapping['account'], $label);
+            }
+        }
+
+        $builder = new GLAccountDescriptionDocumentBuilder;
+        // Builder-Default-MetaHeader trägt Buchungsstapel-Werte (Kategorie 21)
+        // — für Sachkonten explizit Kategorie 20, Formatname
+        // "Kontenbeschriftungen", Formatversion 3 setzen (Muster Kategorie 16).
+        $metaHeader = new \CommonToolkit\FinancialFormats\Entities\DATEV\MetaHeaderLine(
+            new \CommonToolkit\FinancialFormats\Entities\DATEV\Header\V700\MetaHeaderDefinition,
+        );
+        $metaHeader->set(MetaField::Formatkategorie, 20);
+        $metaHeader->set(MetaField::Formatname, 'Kontenbeschriftungen');
+        $metaHeader->set(MetaField::Formatversion, 3);
+        $metaHeader->set(MetaField::ErzeugtAm, now()->format('YmdHis') . '000');
+        $builder->setMetaHeader($metaHeader);
+        $builder->setFieldHeader();
+        $builder->setClient($config->advisorNumber, $config->clientNumber);
+        $builder->setDescription('Sachkontenbeschriftungen');
+
+        foreach ($accounts as $account => $label) {
+            $builder->addGLAccount((string) $account, $label);
+        }
+
+        $document = $builder->build();
+        $csv = (new DatevDocumentGenerator)->generate($document, ';', '"', null, $config->encoding);
+
+        return ['csv' => $csv, 'count' => count($accounts)];
     }
 
     private function debtorLine(DebitorsCreditorsHeaderLine $fieldHeader, int $fieldCount, DatevBookingConfig $config, Customer $customer): DataLine {

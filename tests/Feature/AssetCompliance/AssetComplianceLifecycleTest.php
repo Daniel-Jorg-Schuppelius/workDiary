@@ -170,6 +170,42 @@ final class AssetComplianceLifecycleTest extends TestCase {
         $this->assertSame('0.0500', (string) $line->limit_max);
     }
 
+    /** B1/MVP-007: das Prüfformular sendet Requirement-Sqids (Konvention: Sqid in Formularen). */
+    public function test_record_endpoint_accepts_requirement_sqids(): void {
+        $service = app(AssetComplianceService::class);
+
+        $profile = AssetComplianceProfile::query()->create([
+            'organization_id' => $this->organization->id,
+            'code' => 'gauge_check_http',
+            'name' => 'Lehrenprüfung (HTTP)',
+            'inspection_kind' => 'calibration',
+            'interval_months' => 12,
+            'blocking_mode' => AssetComplianceBlockMode::Warn->value,
+            'is_active' => true,
+        ]);
+        $requirement = $profile->requirements()->create([
+            'organization_id' => $this->organization->id,
+            'label' => 'Abweichung',
+            'unit' => 'mm',
+            'limit_min' => '-0.0500',
+            'limit_max' => '0.0500',
+        ]);
+        $assignment = $service->assign($profile, $this->asset, $this->admin, []);
+
+        $this->actingAs($this->admin)
+            ->post(route('asset-compliance.inspections.record', $assignment), [
+                'result' => 'passed',
+                'results' => [
+                    ['requirement_id' => $requirement->sqid, 'value' => 0.01],
+                ],
+            ])->assertRedirect();
+
+        $line = $assignment->fresh()->events()->latest('id')->firstOrFail()
+            ->results()->firstOrFail();
+        $this->assertSame($requirement->id, (int) $line->asset_compliance_requirement_id);
+        $this->assertTrue((bool) $line->passed);
+    }
+
     public function test_failed_inspection_blocks_asset_across_modules(): void {
         $service = app(AssetComplianceService::class);
         $profile = $this->globalProfile('uvv_general');

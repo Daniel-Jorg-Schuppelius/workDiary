@@ -14,11 +14,16 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
+use App\Support\Sqid;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
 use Illuminate\Support\Facades\{DB, Gate};
 use Illuminate\View\View;
+use Laravel\Sanctum\PersonalAccessToken;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\{Response, StreamedResponse};
 
 /**
@@ -27,8 +32,10 @@ use Symfony\Component\HttpFoundation\{Response, StreamedResponse};
  * Supportzugriffe auf einer Seite und bietet Widerruf-Aktionen mit
  * Audit-Spur.
  *
- * Bewusst out-of-scope dieser Iteration: PDF-Bericht (separate Route
- * vorbereitet, aber Renderer folgt) und Integrationen-Detailansicht.
+ * MVP-327 ergänzt §3.5 (externe Integrationen/Datenflüsse: Config-Dienste
+ * plus je Org aktivierte Plugins) und §3.9 (stichtagsbezogener
+ * Datenschutzbericht als PDF übers pdf-toolkit, Audit-Event
+ * `privacy.report.exported`).
  */
 class PrivacyController extends Controller {
     public function __construct(private readonly PrivacyOverviewService $overview) {}
@@ -52,15 +59,63 @@ class PrivacyController extends Controller {
             'tokenUsers' => $data['token_users'],
             'exports' => $data['exports'],
             'supportAccesses' => $data['support_accesses'],
+            'integrations' => $data['integrations'],
             'auditActors' => $data['audit_actors'],
             'categories' => $this->categoriesWithDynamicRetention(),
             'operatingMode' => (string) config('privacy.operating_mode', 'on_premise'),
             'dpaUrl' => config('privacy.dpa_document_url'),
             'canRevokeSessions' => $data['can']['sessions_revoke'],
             'canRevokeTokens' => $data['can']['tokens_revoke'],
+            'canViewIntegrations' => $data['can']['integrations_view'],
             'canViewExports' => $data['can']['exports_view'],
             'canViewSupport' => $data['can']['support_view'],
             'canExportReport' => $data['can']['report_export'],
+        ]);
+    }
+
+    /**
+     * §3.9 — Stichtagsbezogener Datenschutzbericht als PDF (MVP-327).
+     * Enthält ausschließlich aggregierte Zählungen, Konfigurations- und
+     * Audit-Statistiken (Konzept §3.9/§5 — keine personenbezogenen
+     * Detaildaten). Rendering übers pdf-toolkit ({@see PDFWriterRegistry},
+     * Muster {@see \App\Http\Controllers\Privacy\DpiaController::report()}),
+     * Audit-Event `privacy.report.exported` über den Eloquent-Schreibweg
+     * der Hash-Kette.
+     */
+    public function report(Request $request): HttpResponse {
+        Gate::authorize(Permission::PrivacyReportExport->value);
+
+        /** @var User $user */
+        $user = $request->user();
+        $organization = $user->organization;
+        abort_if($organization === null, Response::HTTP_NOT_FOUND);
+
+        $payload = $this->overview->reportPayload($organization);
+        $payload['categories'] = $this->categoriesWithDynamicRetention();
+        $payload['dpaUrl'] = config('privacy.dpa_document_url');
+
+        $html = view('admin.privacy.report-pdf', $payload)->render();
+        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (Datenschutzbericht).');
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $user->id,
+            'event' => 'privacy.report.exported',
+            'auditable_type' => User::class,
+            'auditable_id' => $user->id,
+            'changes' => [
+                'filter' => 'privacy_report',
+                'generated_at' => $payload['generated_at']->toIso8601String(),
+                'row_count' => count($payload['integrations']) + count($payload['categories']),
+            ],
+        ]);
+
+        $filename = sprintf('datenschutzbericht-%d-%s.pdf', $organization->id, now()->format('Y-m-d'));
+
+        return new HttpResponse($bytes, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
         ]);
     }
 
@@ -173,7 +228,7 @@ class PrivacyController extends Controller {
         return back()->with('success', __('Session widerrufen.'));
     }
 
-    public function destroyToken(Request $request, int $id): RedirectResponse {
+    public function destroyToken(Request $request, string $id): RedirectResponse {
         Gate::authorize(Permission::PrivacyTokensRevoke->value);
 
         /** @var User $actor */
@@ -181,8 +236,12 @@ class PrivacyController extends Controller {
         $organization = $actor->organization;
         abort_if($organization === null, Response::HTTP_NOT_FOUND);
 
+        // Sqid statt roher Token-ID (Enumeration-Schutz); Org-Zugehörigkeit
+        // wird weiterhin unten hart geprüft.
+        $tokenId = Sqid::decodeOrAbort(PersonalAccessToken::class, $id);
+
         $row = DB::table('personal_access_tokens')
-            ->where('id', $id)
+            ->where('id', $tokenId)
             ->where('tokenable_type', User::class)
             ->first(['id', 'tokenable_id', 'name']);
         if ($row === null) {
@@ -195,7 +254,7 @@ class PrivacyController extends Controller {
             ->exists();
         abort_unless($belongsToOrg, Response::HTTP_NOT_FOUND);
 
-        DB::table('personal_access_tokens')->where('id', $id)->delete();
+        DB::table('personal_access_tokens')->where('id', $tokenId)->delete();
 
         AuditLog::query()->create([
             'organization_id' => $organization->id,

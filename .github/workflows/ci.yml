@@ -168,6 +168,19 @@ jobs:
       - name: Run tests
         run: composer test
 
+      # Bauturbo A17 (MVP-335): GoBD-Integritätsnachweis (gobd-gap-analyse.md,
+      # "audit:verify in CI/Cron einhängen"). Die Parallel-Testsuite lässt die
+      # Haupt-DB leer, daher läuft die Prüfung auf einer frisch migrierten und
+      # demo-geseedeten Datenbank — demo:seed schreibt echte, hash-verkettete
+      # audit_logs, sodass die Ketten-Nachrechnung nicht trivial leer ist.
+      - name: Verify audit hash chains (audit:verify)
+        run: |
+          rm -f /dev/shm/workdiary-testing.sqlite
+          touch /dev/shm/workdiary-testing.sqlite
+          php artisan migrate --force --seed --no-interaction
+          php artisan demo:seed --no-interaction
+          php artisan audit:verify
+
   frontend:
     name: Frontend build
     runs-on: ubuntu-latest
@@ -190,3 +203,84 @@ jobs:
 
       - name: Build frontend assets
         run: npm run build
+
+  accessibility:
+    name: Accessibility (pa11y)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Feature 038 / B2 (MVP-008): automatisierte WCAG-2.1-AA-Prüfung (pa11y-ci)
+    # auf repräsentativen, ohne Anmeldung erreichbaren Routen (Login-Formular,
+    # öffentliche Impressum-/Datenschutzseite). Diese Seiten rendern die
+    # geteilten Formular-/Button-Bausteine, das <html lang>-Attribut und die
+    # Kopfstruktur — Regressionen (fehlende Labels, Kontrast, Überschriften)
+    # fallen hier auf.
+    #
+    # NICHT-BLOCKIEREND (continue-on-error): pa11y-ci bringt Puppeteer/Chromium
+    # mit; je nach Runner-Umgebung fehlen Sandbox-/Systembibliotheken für den
+    # headless-Browser. Der Job darf den Gesamt-CI deshalb NICHT hart brechen —
+    # Ziel ist die etablierte a11y-Infrastruktur, kein erzwungen grüner Lauf.
+    # Die verbindlichen Struktur-/Komponenten-Invarianten (Skip-Link, <main>-
+    # Landmark, scope="col", Modal-Rollen, Feld-ARIA) sichert zusätzlich das
+    # PHP-Gate tests/Feature/UI/AccessibilityComponentTest.php.
+    #
+    # Angemeldete App-Shell-Seiten (Dashboard, Listen, Modale) erfordern eine
+    # geseedete Sitzung; sie werden über das PHP-Gate (gerendertes app-Layout)
+    # sowie manuell per axe DevTools / Screenreader geprüft (accessibility-
+    # checkliste.md).
+    continue-on-error: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Prepare application environment
+        run: |
+          cp .env.testing .env
+          mkdir -p /dev/shm
+          touch /dev/shm/workdiary-testing.sqlite
+          php artisan migrate --force --no-interaction
+
+      - name: Start application server
+        run: |
+          php artisan serve --host=127.0.0.1 --port=8000 &
+          echo "SERVER_PID=$!" >> "$GITHUB_ENV"
+          # Auf Erreichbarkeit warten (max. ~30 s), damit pa11y nicht gegen einen
+          # noch nicht gebooteten Server läuft.
+          for i in $(seq 1 30); do
+            if curl -sSf -o /dev/null "http://127.0.0.1:8000/login"; then
+              echo "Server ist erreichbar."; break
+            fi
+            sleep 1
+          done
+
+      - name: Run pa11y accessibility checks
+        run: npm run a11y
+
+      - name: Stop application server
+        if: always()
+        run: kill "${SERVER_PID}" 2>/dev/null || true

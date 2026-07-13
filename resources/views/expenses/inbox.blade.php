@@ -11,7 +11,7 @@
         <x-filter-bar :action="route('expense-approvals.inbox')" :reset="route('expense-approvals.inbox')">
             <x-filter-field :label="__('Status')" for="inbox-status">
                 <select id="inbox-status" name="status" class="select select-sm select-bordered shrink-0"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     @foreach ($statusOptions as $opt)
                         <option value="{{ $opt->value }}" @selected($statusEnum === $opt)>{{ $opt->label() }}</option>
                     @endforeach

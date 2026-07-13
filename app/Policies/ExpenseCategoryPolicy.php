@@ -34,7 +34,13 @@ class ExpenseCategoryPolicy {
         return false;
     }
 
+    /**
+     * Löschen ebenfalls nur durch Admin (before-Hook) — vorher erlaubte die
+     * Policy JEDEM eingeloggten Nutzer das Löschen unbenutzter Kategorien
+     * (Sicherheitsbefund B7/MVP-348). Der Nutzungs-Guard (keine Löschung
+     * verwendeter Kategorien) bleibt im Controller-destroy() erhalten.
+     */
     public function delete(User $user, ExpenseCategory $category): bool {
-        return $category->expenses()->doesntExist();
+        return false;
     }
 }

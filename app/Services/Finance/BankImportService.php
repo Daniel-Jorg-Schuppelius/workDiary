@@ -175,6 +175,7 @@ class BankImportService {
             'purpose' => $tx->purpose,
             'extracted_refs' => $tx->extractedRefs,
             'is_reversal' => $tx->isReversal,
+            'return_reason' => $tx->returnReason,
             'fingerprint' => $fingerprint,
             'match_status' => MatchStatus::Unmatched,
         ]);

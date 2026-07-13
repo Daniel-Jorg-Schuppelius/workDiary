@@ -38,7 +38,7 @@
     <tr><th>{{ __('protocol.field.createdBy') }}</th><td>{{ $protocol->creator?->name }}</td></tr>
     @if ($protocol->weatherSnapshot)
         @php($w = $protocol->weatherSnapshot)
-        <tr><th>{{ __('weather.block.title') }}</th><td>{{ $w->temp_min }}–{{ $w->temp_max }} °C · {{ __('weather.precipitation') }} {{ $w->precipitation_mm }} mm · {{ __('weather.wind') }} {{ $w->wind_gust_kmh }} km/h <span style="color:#666">({{ __('weather.source') }}: {{ $w->provider }}, {{ $w->fetched_at?->format('d.m.Y H:i') }})</span></td></tr>
+        <tr><th>{{ __('weather.block.title') }}</th><td>{{ $w->temp_min }}–{{ $w->temp_max }} °C · {{ __('weather.precipitation') }} {{ $w->precipitation_mm }} mm · {{ __('weather.wind') }} {{ $w->wind_gust_kmh }} km/h <span style="color:#666">({{ __('weather.source') }}: {{ \App\Support\Trans::or('weather.providers.' . $w->provider, $w->provider) }}, {{ $w->fetched_at?->format('d.m.Y H:i') }})</span></td></tr>
     @endif
 </table>
 

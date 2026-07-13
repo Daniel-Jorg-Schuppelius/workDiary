@@ -29,7 +29,7 @@
     @if ($isAdmin)
         <x-filter-bar :action="route('reports.on-call')" :reset="route('reports.on-call')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
-                <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur meine Bereitschaft') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>

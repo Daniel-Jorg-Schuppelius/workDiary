@@ -12,6 +12,11 @@ return [
     'source' => 'Fonte',
     'fetched' => 'Recuperato',
     'none' => 'Nessun dato meteo.',
+    'providers' => [
+        // Weather service display names (proper nouns; DWD requires CC-BY attribution).
+        'open-meteo' => 'Open-Meteo',
+        'dwd' => 'Deutscher Wetterdienst (DWD)',
+    ],
     'attach' => [
         'button' => 'Recupera meteo',
         'success' => 'Meteo del giorno allegato.',

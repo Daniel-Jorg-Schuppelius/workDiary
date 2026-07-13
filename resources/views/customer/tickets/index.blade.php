@@ -9,11 +9,17 @@
 
     <details class="mb-4 rounded-box border border-base-300 bg-base-100 p-3">
         <summary class="cursor-pointer text-sm font-semibold">{{ __('Neues Ticket melden') }}</summary>
-        <form method="POST" action="{{ route('customer.tickets.store') }}" class="mt-2 space-y-2">
+        <form method="POST" action="{{ route('customer.tickets.store') }}" enctype="multipart/form-data" class="mt-2 space-y-2">
             @csrf
             <input name="title" required minlength="3" maxlength="255" class="input input-bordered w-full" placeholder="{{ __('Kurzbeschreibung') }}">
             <textarea name="description" rows="3" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Was ist passiert?') }}"></textarea>
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Ticket anlegen') }}</button>
+            <div class="flex flex-wrap items-center gap-2">
+                <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
+                       aria-label="{{ __('Anhänge (optional)') }}">
+                <button type="submit" class="btn btn-primary btn-sm">{{ __('Ticket anlegen') }}</button>
+            </div>
+            @error('files')<p class="text-error text-xs">{{ $message }}</p>@enderror
+            @error('files.*')<p class="text-error text-xs">{{ $message }}</p>@enderror
         </form>
     </details>
 

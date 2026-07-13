@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -37,6 +37,7 @@ class Article extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;
+    use HasTags;
 
     protected $fillable = [
         'organization_id',

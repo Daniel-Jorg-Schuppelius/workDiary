@@ -52,9 +52,7 @@
          data-schedule-cell
          data-date="{{ $dateKey }}"
          data-user-id="{{ auth()->user()?->sqid }}"
-         onclick='scheduleCellClick(event, @js($dateKey), @js(auth()->user()?->sqid))'
-         ondragover="event.preventDefault()"
-         ondrop="scheduleDropCell(event, '{{ $dateKey }}', null)"
+         data-schedule-drop
      @endif>
 
     {{-- Header-Zeile — identisch zur Default-Cell (Tagesnummer + Feiertag links, Count-Badge rechts) --}}
@@ -103,8 +101,9 @@
              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
              @if ($isAdmin ?? false)
                  draggable="true"
-                 ondragstart='scheduleDragStart(event, @js($shift->sqid))'
-                 onclick='event.stopPropagation(); scheduleOpenEditDialog(@js($shift->sqid), @js($shiftPayload))'
+                 data-shift-drag="{{ $shift->sqid }}"
+                 data-shift-edit="{{ $shift->sqid }}"
+                 data-shift-payload="{{ json_encode($shiftPayload) }}"
              @endif
              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}">
             {{ $shift->shiftType?->abbreviation ?? '?' }}
@@ -133,7 +132,9 @@
             <div class="flex w-full items-stretch gap-0.5">
                 <button type="button"
                         @if ($cellClickable)
-                            onclick="event.stopPropagation(); scheduleOpenSlotDialog('{{ $dateKey }}', {{ $slot['shift_type_id'] }})"
+                            data-slot-open
+                            data-date="{{ $dateKey }}"
+                            data-slot-type="{{ $slot['shift_type_id'] }}"
                         @else
                             disabled
                         @endif
@@ -145,7 +146,10 @@
                 </button>
                 @if ($canSuggest)
                     <button type="button"
-                            onclick="event.stopPropagation(); scheduleSuggestStaffing('{{ $dateKey }}', '{{ $slotTypeSqid }}', @js($slot['name']))"
+                            data-slot-suggest
+                            data-date="{{ $dateKey }}"
+                            data-slot-type-sqid="{{ $slotTypeSqid }}"
+                            data-slot-name="{{ $slot['name'] }}"
                             class="schedule-staffing-suggest flex items-center justify-center rounded border border-base-300 px-1 text-[0.6rem] hover:bg-base-200"
                             title="{{ __('schedule.suggest.button') }}"
                             aria-label="{{ __('schedule.suggest.button') }}">

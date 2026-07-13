@@ -21,7 +21,8 @@ use Illuminate\View\View;
 /**
  * Admin-Verwaltung der Carrier-Anbindungen (Feature 059, MVP-128): je Carrier
  * eine Anbindung pro Organisation (unique(org, carrier)). Zugangsdaten
- * (GK-Benutzer/Passwort, dhl-api-key) sind at-rest verschlüsselt und werden nie
+ * (DHL: GK-Benutzer/Passwort + dhl-api-key; UPS/FedEx: OAuth2-Client-ID/-Secret
+ * in den Feldern Benutzer/Passwort) sind at-rest verschlüsselt und werden nie
  * ausgegeben; leere Felder beim Bearbeiten lassen die gespeicherten Werte
  * unverändert. Nur registrierte Carrier (aus der {@see ShippingProviderRegistry})
  * sind wählbar.
@@ -29,6 +30,17 @@ use Illuminate\View\View;
 class ShipmentAdminController extends Controller {
     /** Zugangsdaten-Schlüssel im verschlüsselten credentials-Array. */
     private const CREDENTIAL_KEYS = ['username', 'password', 'api_key'];
+
+    /**
+     * Pflicht-Zugangsdaten je Carrier bei Neuanlage: DHL braucht zusätzlich
+     * den Gateway-`dhl-api-key`; die OAuth2-Carrier (UPS/FedEx) nur
+     * Client-ID/-Secret (Felder Benutzer/Passwort).
+     */
+    private const REQUIRED_CREDENTIALS = [
+        'dhl' => ['username', 'password', 'api_key'],
+    ];
+
+    private const REQUIRED_CREDENTIALS_DEFAULT = ['username', 'password'];
 
     public function index(ShippingProviderRegistry $registry): View {
         $admin = $this->admin();
@@ -76,7 +88,8 @@ class ShipmentAdminController extends Controller {
         }
 
         if (! $connection->exists) {
-            foreach (self::CREDENTIAL_KEYS as $key) {
+            $required = self::REQUIRED_CREDENTIALS[(string) $data['carrier']] ?? self::REQUIRED_CREDENTIALS_DEFAULT;
+            foreach ($required as $key) {
                 if (empty($credentials[$key])) {
                     return back()->with('error', __('shipping.flash.credentials_required'))->withInput();
                 }

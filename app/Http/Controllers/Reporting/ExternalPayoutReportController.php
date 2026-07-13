@@ -43,8 +43,12 @@ class ExternalPayoutReportController extends Controller {
         $to = CarbonImmutable::instance($range['to'])->endOfDay();
         $monthCount = max(1, count($this->buildMonthsInRange($from, $to)));
 
+        // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne
+        // expliziten Org-Filter erschienen externe Mitarbeiter (inkl.
+        // Vergütungsdaten!) ALLER Organisationen (Tenant-Leak, Bauturbo A17).
         /** @var \Illuminate\Support\Collection<int, User> $externals */
         $externals = User::query()
+            ->where('organization_id', $auth->organization_id)
             ->whereIn('compensation_model', [
                 CompensationModel::Pauschal->value,
                 CompensationModel::NachZeitaufwand->value,

@@ -44,7 +44,7 @@
 <x-index-page :subtitle="__('Doppelte Projekte (z. B. mehrfach „Wartung“ nach dem Toggl-Import) werden hier je Kunde gegenübergestellt. Pro Paar entscheidest du, welches Projekt bestehen bleibt — alle Zeiten, Aufträge, Rechnungen und Import-Referenzen werden auf es umgehängt, das andere wird gelöscht. Künftige Importe ordnen sich dann automatisch dem Ziel zu.')">
     <x-slot:actions>
         <form method="GET" action="{{ route('projects.duplicates.index') }}" class="flex items-center gap-2">
-            <select name="confidence" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="confidence" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($confidence === 'all')>{{ __('Alle Stufen') }}</option>
                 <option value="{{ ProjectDuplicateFinder::CONF_EXACT }}"  @selected($confidence === ProjectDuplicateFinder::CONF_EXACT)>{{ $confidenceLabels[ProjectDuplicateFinder::CONF_EXACT] }}</option>
                 <option value="{{ ProjectDuplicateFinder::CONF_LIKELY }}" @selected($confidence === ProjectDuplicateFinder::CONF_LIKELY)>{{ $confidenceLabels[ProjectDuplicateFinder::CONF_LIKELY] }}</option>
@@ -64,15 +64,9 @@
                 <span class="ml-1 text-base-content/50">{{ __('— zwei Projekte desselben Kunden frei wählen') }}</span>
             </summary>
             <form method="GET" action="{{ route('projects.duplicates.compare') }}"
-                  x-data="{
-                      customerKey: '',
-                      target: '',
-                      source: '',
-                      customers: @js($manualCustomers),
-                      projects: @js($manualProjects),
-                      get filtered() { return this.projects.filter(p => p.ck === this.customerKey); },
-                      resetProjects() { this.target = ''; this.source = ''; },
-                  }"
+                  {{-- Logik in Alpine.data("projectManualMerge") (components.js) — CSP-Build-konform. --}}
+                  x-data="projectManualMerge"
+                  data-config="{{ json_encode(['customers' => $manualCustomers, 'projects' => $manualProjects]) }}"
                   class="mt-3 space-y-3">
                 <div class="fieldset">
                     <label class="fieldset-label" for="manual-customer">{{ __('Kunde') }}</label>

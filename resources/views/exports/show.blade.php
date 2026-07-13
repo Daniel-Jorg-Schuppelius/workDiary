@@ -65,7 +65,27 @@
                     <x-detail-grid.row :label="__('Datei')" :value="$export->file_path ?? '—'" class="font-mono text-xs break-all" />
                     <x-detail-grid.row :label="__('Erstellt')">{{ $export->created_at?->fdatetime() }} · {{ $export->creator?->name }}</x-detail-grid.row>
                     @if ($export->delivered_at)
-                        <x-detail-grid.row :label="__('Übermittelt')">{{ $export->delivered_at->fdatetime() }} · {{ $export->deliveredBy?->name }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Übermittelt')">{{ $export->delivered_at->fdatetime() }} · {{ $export->deliveredBy?->name ?? __('System') }}</x-detail-grid.row>
+                    @endif
+                    {{-- Liefernachweis der automatischen Lieferung (A21): wann/wohin je Kanal. --}}
+                    @php $autoDelivery = $export->auto_delivery ?? []; @endphp
+                    @if (! empty($autoDelivery))
+                        <x-detail-grid.row :label="__('wage_types.delivery.title_evidence')">
+                            <ul class="space-y-1 text-sm">
+                                @if (isset($autoDelivery['mail']))
+                                    <li>
+                                        {{ __('wage_types.delivery.evidence_mail', ['to' => implode(', ', (array) ($autoDelivery['mail']['to'] ?? []))]) }}
+                                        <span class="text-xs text-base-content/60 tabular-nums">· {{ \Carbon\CarbonImmutable::parse((string) $autoDelivery['mail']['at'])->fdatetime() }}</span>
+                                    </li>
+                                @endif
+                                @if (isset($autoDelivery['sftp']))
+                                    <li>
+                                        {{ __('wage_types.delivery.evidence_sftp', ['target' => (string) ($autoDelivery['sftp']['target'] ?? '')]) }}
+                                        <span class="text-xs text-base-content/60 tabular-nums">· {{ \Carbon\CarbonImmutable::parse((string) $autoDelivery['sftp']['at'])->fdatetime() }}</span>
+                                    </li>
+                                @endif
+                            </ul>
+                        </x-detail-grid.row>
                     @endif
                     @if ($export->supersededBy)
                         <x-detail-grid.row :label="__('Ersetzt durch')"><a class="link link-primary" href="{{ route('exports.show', $export->supersededBy) }}">#{{ $export->supersededBy->id }}</a></x-detail-grid.row>

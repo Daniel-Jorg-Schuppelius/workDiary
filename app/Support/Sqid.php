@@ -102,4 +102,24 @@ final class Sqid {
 
         return $id;
     }
+
+    /**
+     * Dekodiert eine Sqid strikt und bricht bei leerer/ungültiger/roh-numerischer
+     * Eingabe mit HTTP-Status `$status` (Standard 404) ab.
+     *
+     * Kapselt das häufige Muster `$id = Sqid::decode(...); abort_if($id === null, 404);`.
+     * Anders als {@see decodeOrNumeric()} gibt es hier bewusst KEINEN numerischen
+     * Fallback: an harten Aktions-/Routen-Grenzen bleibt die ID so nicht
+     * enumerierbar (rohe fortlaufende IDs führen zu 404 statt eines Treffers).
+     *
+     * @param  class-string  $modelClass
+     */
+    public static function decodeOrAbort(string $modelClass, int|string|null $value, int $status = 404): int {
+        $id = self::decode($modelClass, $value);
+        if ($id === null) {
+            abort($status);
+        }
+
+        return $id;
+    }
 }

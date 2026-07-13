@@ -39,6 +39,14 @@ class DatevBookingBatchPolicy {
         return $user->can(P::FinanceBookingExport->value) && ! $batch->isFinal();
     }
 
+    /**
+     * Zuschnitt eines DRAFT-Stapels ändern (Teilauswahl, MVP-334) bzw. den
+     * Draft verwerfen — exportierte Stapel sind unveränderlich.
+     */
+    public function reshape(User $user, DatevBookingBatch $batch): bool {
+        return $user->can(P::FinanceBookingExport->value) && ! $batch->isFinal();
+    }
+
     /** Erzeugte CSV herunterladen (pfadsicher zusätzlich im Controller geprüft). */
     public function download(User $user, DatevBookingBatch $batch): bool {
         return $user->can(P::FinanceBookingExport->value);

@@ -25,6 +25,7 @@ return [
         'active_users' => 'Usuarios activos (30 días)',
         'module_counts' => 'Registros por módulo principal',
         'feature_usage' => 'Uso de funciones (30 días)',
+        'transparency' => 'Transparencia de métricas',
     ],
 
     'field' => [
@@ -36,6 +37,34 @@ return [
         'feature' => 'Función',
         'usage_total' => 'Cantidad',
         'last_used_on' => 'Último uso',
+        'counter_description' => 'Qué se cuenta',
+    ],
+
+    'transparency' => [
+        'status_enabled' => 'Contadores de uso activos',
+        'status_disabled' => 'Contadores de uso desactivados',
+        'settings_link' => 'Interruptor «telemetry.enabled» en la configuración',
+        'intro' => 'Esta instalación recopila exclusivamente los siguientes contadores de uso — agregados por organización y día, sin referencia personal y sin contenido de negocio. No existe otra telemetría.',
+        'storage' => 'Ubicación de almacenamiento: base de datos local de esta instalación (tabla feature_usage_counters). No se envía nada a sistemas externos.',
+        'retention' => 'Conservación: los agregados diarios permanecen en local; el análisis anterior cubre los últimos 30 días. Con el interruptor desactivado no se cuenta nada — los agregados existentes se conservan.',
+    ],
+
+    'counter' => [
+        'communications' => [
+            'created' => 'Notas de comunicación creadas (solo cantidad)',
+        ],
+        'documents' => [
+            'created' => 'Documentos creados (solo cantidad)',
+        ],
+        'forms' => [
+            'submitted' => 'Formularios cumplimentados (solo cantidad)',
+        ],
+        'knowledge' => [
+            'created' => 'Artículos de conocimiento creados (solo cantidad)',
+        ],
+        'timeExports' => [
+            'built' => 'Exportaciones de tiempos/nómina generadas (solo cantidad)',
+        ],
     ],
 
     'module' => [

@@ -18,6 +18,8 @@
 
 @section('content')
     <x-index-page :subtitle="__('Soll-Arbeitszeit vs. tatsächlich gestempelte Anwesenheit.')">
+        {{-- Dimension-Umschalter (A14 · MVP-333): Anwesenheit | Schicht | Projekt | Standort. --}}
+        @include('reports.plan-ist._dimensions')
         {{-- Drilldown-Kontext (Rang 38): Team-/Org-Berechtigte sehen hier andere Mitarbeitende. --}}
         @if (isset($reportUser) && (int) $reportUser->id !== (int) auth()->id())
             <div class="alert alert-info alert-soft text-sm">

@@ -35,5 +35,7 @@ final class NormalizedTransaction {
         public readonly ?string $purpose,
         public readonly array $extractedRefs,
         public readonly bool $isReversal,
+        /** ISO-20022-Rückgabegrund (RtrInf/Rsn/Cd, z. B. AC04) — MVP-334. */
+        public readonly ?string $returnReason = null,
     ) {}
 }

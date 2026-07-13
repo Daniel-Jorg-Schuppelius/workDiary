@@ -12,8 +12,9 @@ namespace Tests\Feature\Plugins\Webdav;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{AuditLog, Document, DocumentVersion, ExternalReference, IntegrationInboxItem, User, WebdavConnection};
-use App\Plugins\Webdav\Contracts\{WebdavGateway, WebdavGatewayFactory};
-use App\Plugins\Webdav\Services\DocumentMirrorService;
+use App\Plugins\Support\Mirror\{DocumentMirrorService, RemoteFileGateway};
+use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
+use App\Plugins\Webdav\{WebdavMirrorTarget, WebdavPlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Queue, Storage};
 use Tests\Concerns\WithOrganization;
@@ -75,13 +76,13 @@ final class WebdavConflictResolutionTest extends TestCase {
         ]);
 
         $service = new DocumentMirrorService();
-        $service->mirror($document, $connection, new RecordingWebdavGateway(signature: 'etag-1'));
+        $service->mirror(new WebdavMirrorTarget(), $document, $connection, new RecordingWebdavGateway(signature: 'etag-1'));
         Storage::disk('local')->put($path, 'V2-LOCAL'); // lokal geändert
         // Remote fremdverändert (abweichende Signatur) → Konflikt statt Überschreiben.
-        $service->mirror($document->refresh(), $connection, new RecordingWebdavGateway(signature: 'etag-EXTERN'));
+        $service->mirror(new WebdavMirrorTarget(), $document->refresh(), $connection, new RecordingWebdavGateway(signature: 'etag-EXTERN'));
 
         $item = IntegrationInboxItem::query()
-            ->where('plugin_id', DocumentMirrorService::PLUGIN_ID)
+            ->where('plugin_id', WebdavPlugin::ID)
             ->where('case_type', IntegrationInboxItem::CASE_CONFLICT)
             ->firstOrFail();
 
@@ -92,9 +93,9 @@ final class WebdavConflictResolutionTest extends TestCase {
         $gateway = new RecordingWebdavGateway(signature: $signature, downloadBody: $downloadBody);
 
         $this->app->instance(WebdavGatewayFactory::class, new class($gateway) implements WebdavGatewayFactory {
-            public function __construct(private WebdavGateway $gateway) {}
+            public function __construct(private RemoteFileGateway $gateway) {}
 
-            public function for(WebdavConnection $connection): WebdavGateway {
+            public function for(WebdavConnection $connection): RemoteFileGateway {
                 return $this->gateway;
             }
         });
@@ -120,7 +121,7 @@ final class WebdavConflictResolutionTest extends TestCase {
         $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LOCAL, $item->fresh()->status);
         $this->assertTrue($this->auditExists($item, 'webdav.conflict.overwritten'));
         // Referenz auf die aktuelle Remote-Signatur nachgezogen.
-        $ref = ExternalReference::query()->where('plugin_id', DocumentMirrorService::PLUGIN_ID)->firstOrFail();
+        $ref = ExternalReference::query()->where('plugin_id', WebdavPlugin::ID)->firstOrFail();
         $this->assertSame('etag-EXTERN', $ref->payload['remote_sig']);
     }
 
@@ -141,7 +142,7 @@ final class WebdavConflictResolutionTest extends TestCase {
         $this->assertTrue($this->auditExists($item, 'webdav.conflict.imported'));
 
         // Referenz spiegelt den importierten Stand → kein sofortiger Neu-Konflikt.
-        $ref = ExternalReference::query()->where('plugin_id', DocumentMirrorService::PLUGIN_ID)->firstOrFail();
+        $ref = ExternalReference::query()->where('plugin_id', WebdavPlugin::ID)->firstOrFail();
         $this->assertSame(hash('sha256', 'REMOTE-V2'), $ref->payload['sha256']);
     }
 
@@ -153,13 +154,13 @@ final class WebdavConflictResolutionTest extends TestCase {
             ->post(route('admin.webdav.conflict.detach', $item))
             ->assertRedirect();
 
-        $this->assertSame(0, ExternalReference::query()->where('plugin_id', DocumentMirrorService::PLUGIN_ID)->count());
+        $this->assertSame(0, ExternalReference::query()->where('plugin_id', WebdavPlugin::ID)->count());
         $this->assertTrue($document->fresh()->webdav_mirror_detached);
         $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, $item->fresh()->status);
         $this->assertTrue($this->auditExists($item, 'webdav.mirror.detached'));
 
         // Nach dem Trennen spiegelt der Service nichts mehr (auch nicht per Command).
-        $result = (new DocumentMirrorService())->mirror($document->fresh(), $connection, new RecordingWebdavGateway());
+        $result = (new DocumentMirrorService())->mirror(new WebdavMirrorTarget(), $document->fresh(), $connection, new RecordingWebdavGateway());
         $this->assertSame(DocumentMirrorService::RESULT_SKIPPED, $result);
     }
 

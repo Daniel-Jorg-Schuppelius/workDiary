@@ -11,7 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\TransferTarget;
-use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget, LexofficeTarget};
+use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget, LexofficeTarget, SevDeskTarget};
 use Tests\TestCase;
 
 /**
@@ -34,6 +34,13 @@ final class FacturationTargetRegistryTest extends TestCase {
         );
     }
 
+    public function test_resolves_sevdesk_target(): void {
+        $this->assertInstanceOf(
+            SevDeskTarget::class,
+            $this->registry->for(TransferTarget::SevDesk),
+        );
+    }
+
     public function test_datev_and_file_resolve_to_file_target(): void {
         // `datev` läuft bis zum Desktop-Adapter bewusst über den FileTarget.
         $this->assertInstanceOf(FileTarget::class, $this->registry->for(TransferTarget::Datev));
@@ -42,14 +49,20 @@ final class FacturationTargetRegistryTest extends TestCase {
 
     public function test_each_target_supports_only_its_own_channels(): void {
         $lexoffice = app(LexofficeTarget::class);
+        $sevdesk = app(SevDeskTarget::class);
         $file = app(FileTarget::class);
 
         $this->assertTrue($lexoffice->supports(TransferTarget::Lexoffice));
         $this->assertFalse($lexoffice->supports(TransferTarget::Datev));
         $this->assertFalse($lexoffice->supports(TransferTarget::File));
 
+        $this->assertTrue($sevdesk->supports(TransferTarget::SevDesk));
+        $this->assertFalse($sevdesk->supports(TransferTarget::Lexoffice));
+        $this->assertFalse($sevdesk->supports(TransferTarget::File));
+
         $this->assertTrue($file->supports(TransferTarget::Datev));
         $this->assertTrue($file->supports(TransferTarget::File));
         $this->assertFalse($file->supports(TransferTarget::Lexoffice));
+        $this->assertFalse($file->supports(TransferTarget::SevDesk));
     }
 }

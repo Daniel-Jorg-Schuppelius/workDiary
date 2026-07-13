@@ -73,4 +73,13 @@
             </label>
         @endforeach
     </x-form-group>
+
+    @php
+        $allTags = $allTags ?? collect();
+        $selectedTagIds = old('tag_ids', $article?->tags?->map(fn ($t) => $t->sqid)->all() ?? []);
+    @endphp
+    <div>
+        <label class="label"><span class="label-text">{{ __('Tags') }}</span></label>
+        <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" />
+    </div>
 </x-modal>

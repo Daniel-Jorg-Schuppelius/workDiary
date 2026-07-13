@@ -13,7 +13,7 @@ namespace App\Services\ServiceTicket;
 use App\Enums\Numbering\NumberScope;
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus};
 use App\Exceptions\ServiceTicketException;
-use App\Models\{DiaryEntry, Organization, ServiceTicket, SlaClockSegment, SlaContract, User};
+use App\Models\{DiaryEntry, Organization, ServiceQueue, ServiceTicket, SlaClockSegment, SlaContract, User};
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -188,6 +188,37 @@ class ServiceTicketService {
                 );
             }
         }
+
+        return $ticket->refresh();
+    }
+
+    /**
+     * Queue-Wechsel (Feature 065, MVP-160): harte Tenant-Grenze, idempotent
+     * (kein Audit-Rauschen bei unveränderter Queue). Das Audit-Event
+     * `service_ticket.requeued` ist Datenbasis für die Weiterleitungs-
+     * Kennzahlen in MVP-159 — Event-Name nicht ändern.
+     */
+    public function moveToQueue(ServiceTicket $ticket, User $actor, ServiceQueue $queue): ServiceTicket {
+        if ((int) $queue->organization_id !== (int) $ticket->organization_id) {
+            throw new \RuntimeException((string) __('Queue-Wechsel über Organisationsgrenzen ist nicht zulässig.'));
+        }
+
+        $previous = $ticket->queue_id !== null ? (int) $ticket->queue_id : null;
+        if ($previous === (int) $queue->id) {
+            return $ticket;
+        }
+
+        $ticket->queue()->associate($queue);
+
+        DB::transaction(function () use ($ticket): void {
+            $ticket->save();
+        });
+
+        $ticket->audit('service_ticket.requeued', [
+            'from' => $previous,
+            'to' => (int) $queue->id,
+            'actor' => $actor->id,
+        ]);
 
         return $ticket->refresh();
     }

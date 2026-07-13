@@ -63,7 +63,7 @@
                     @csrf
                     <select name="task_id" class="select select-sm select-bordered flex-1">
                         @foreach ($adoptableTasks as $task)
-                            <option value="{{ $task->id }}">{{ $task->title }}</option>
+                            <option value="{{ $task->sqid }}">{{ $task->title }}</option>
                         @endforeach
                     </select>
                     <x-icon-btn icon="move_to_inbox" tone="outline" size="sm" type="submit" show-label>{{ __('Aufgabe übernehmen') }}</x-icon-btn>

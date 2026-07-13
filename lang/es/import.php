@@ -46,6 +46,8 @@ return [
             'currency' => 'El código de moneda debe tener 3 letras mayúsculas (ISO 4217).',
             'enum' => 'El valor no es un estado válido.',
             'parse' => 'No se pudo analizar el archivo: :reason',
+            'xlsxUnreadable' => 'El archivo de Excel está dañado o no es un formato XLSX válido.',
+            'xlsxEmpty' => 'La primera hoja de cálculo del archivo de Excel no contiene filas.',
             'date' => 'Fecha no válida (se esperaba p. ej. «28.05.2026, 09:42:09»).',
             'time' => 'Hora no válida (se esperaba HH:MM).',
             'status' => 'El valor no es un estado válido.',

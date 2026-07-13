@@ -28,7 +28,7 @@
     @if ($isAdmin)
         <x-filter-bar :action="route('reports.absences')" :reset="route('reports.absences')">
             <x-filter-field :label="__('Bereich')" for="rep-scope">
-                <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur eigene') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamtes Team') }}</option>
                 </select>

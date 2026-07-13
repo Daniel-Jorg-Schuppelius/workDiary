@@ -16,7 +16,7 @@
         <div class="mb-3 flex items-center justify-between">
             <h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
                 <x-icon name="rule" class="text-base-content/50" />
-                {{ __('procedure.title.panel') }}
+                <x-term glossary="prozedur">{{ __('procedure.title.panel') }}</x-term>
             </h2>
             <x-help-button topic="procedures.run" :label="__('Hilfe zu Prozedur')" />
         </div>

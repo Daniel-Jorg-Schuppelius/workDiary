@@ -122,7 +122,7 @@
             @can('update', $incident)
                 <div class="pt-2">
                     <x-icon-btn icon="add" tone="primary" size="sm"
-                                onclick="document.getElementById('dlg-incident-measure').showModal()" show-label>{{ __('Hinzufügen') }}</x-icon-btn>
+                                data-open-dialog="dlg-incident-measure" show-label>{{ __('Hinzufügen') }}</x-icon-btn>
                 </div>
                 <x-modal :embedded="false" id="dlg-incident-measure" :title="__('Maßnahme hinzufügen')"
                          icon="add_task" tone="primary"

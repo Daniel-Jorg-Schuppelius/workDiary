@@ -28,7 +28,7 @@
                 @foreach (request()->except(['user', 'export']) as $k => $v)
                     <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                 @endforeach
-                <select name="user" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Nutzer') }}" onchange="this.form.submit()">
+                <select name="user" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Nutzer') }}" data-autosubmit>
                     @foreach ($selectableUsers as $u)
                         <option value="{{ $u->sqid }}" @selected($u->sqid === $user->sqid)>{{ $u->name }}</option>
                     @endforeach

@@ -20,6 +20,7 @@ return [
     'inbox' => [
         'no_subject' => '(ohne Betreff)',
         'book_action' => 'Als Kommunikationsnotiz buchen',
+        'book_ticket_action' => 'Als Service-Ticket buchen',
         'book_customer_placeholder' => '… Kunde (leer = erkannter Absender)',
     ],
 
@@ -70,6 +71,10 @@ return [
         'polled' => 'Abruf gestartet.',
         'booked' => 'Mail als Kommunikationseintrag übernommen.',
         'book_failed' => 'Übernahme fehlgeschlagen.',
+        'ticket_booked' => 'Mail als Service-Ticket übernommen.',
+        'ticket_failed' => 'Ticket-Übernahme fehlgeschlagen.',
+        'dms_failed' => 'DMS-Übernahme fehlgeschlagen.',
+        'already_resolved' => 'Der Eintrag ist bereits aufgelöst.',
         'password_required' => 'Für ein neues Postfach ist ein Passwort erforderlich.',
         'customer_required' => 'Kein Kunde zugeordnet.',
     ],

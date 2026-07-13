@@ -2,7 +2,10 @@
  * schedule.js — Shift schedule interactivity (vanilla JS, no Alpine)
  *
  * Reads window.__scheduleConfig set by the Blade index view.
- * Functions exposed globally so inline handlers in Blade can call them.
+ * Alle Interaktionen laufen über data-Attribute + Event-Delegation
+ * (data-schedule-cell/-drop, data-shift-drag/-edit, data-slot-open/-suggest,
+ * data-type-edit/-delete) — Inline-Event-Attribute sind unter der Nonce-CSP
+ * (CSP_SCRIPT_NONCE) blockiert und werden hier nicht mehr verwendet.
  */
 
 import { __ } from "./i18n.js";
@@ -56,6 +59,123 @@ document.addEventListener("DOMContentLoaded", function () {
     document
         .getElementById("shift-dialog-type")
         ?.addEventListener("change", applyShiftTypeDefaults);
+
+    // Shift-type form: reset to "create" state
+    document
+        .getElementById("shift-type-reset")
+        ?.addEventListener("click", shiftTypeResetForm);
+});
+
+/* ───────────── Delegierte Klick-/Drag-Handler (statt Inline) ───────────── */
+
+document.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+
+    // Besetzungsvorschlag anfordern (Button neben offenem Slot)
+    const suggest = target.closest("[data-slot-suggest]");
+    if (suggest) {
+        event.stopPropagation();
+        scheduleSuggestStaffing(
+            suggest.dataset.date,
+            suggest.dataset.slotTypeSqid,
+            suggest.dataset.slotName ?? "",
+        );
+        return;
+    }
+
+    // Vorschlag übernehmen (Button im Vorschlags-Dialog)
+    const assign = target.closest("[data-assign-suggest]");
+    if (assign) {
+        scheduleAssignSuggested(
+            assign.dataset.date,
+            assign.dataset.slotTypeSqid,
+            assign.dataset.userSqid,
+        );
+        return;
+    }
+
+    // Offenen Slot besetzen → Dialog mit Datum + Typ vorbelegt
+    const slot = target.closest("[data-slot-open]");
+    if (slot) {
+        event.stopPropagation();
+        openShiftDialog({
+            date: slot.dataset.date,
+            shiftTypeId: slot.dataset.slotType,
+        });
+        return;
+    }
+
+    // Bestehende Schicht bearbeiten (Badge)
+    const badge = target.closest("[data-shift-edit]");
+    if (badge) {
+        event.stopPropagation();
+        let payload = null;
+        try {
+            payload = JSON.parse(badge.dataset.shiftPayload || "null");
+        } catch (_e) {
+            payload = null;
+        }
+        openShiftDialog({ shiftId: badge.dataset.shiftEdit, shift: payload });
+        return;
+    }
+
+    // Schichttyp bearbeiten / löschen (Zeilen im Typ-Manager)
+    const typeEdit = target.closest("[data-type-edit]");
+    if (typeEdit) {
+        let payload = null;
+        try {
+            payload = JSON.parse(typeEdit.dataset.typePayload || "null");
+        } catch (_e) {
+            payload = null;
+        }
+        if (payload) shiftTypeOpenEdit(typeEdit.dataset.typeEdit, payload);
+        return;
+    }
+    const typeDelete = target.closest("[data-type-delete]");
+    if (typeDelete) {
+        shiftTypeDelete(typeDelete.dataset.typeDelete);
+        return;
+    }
+
+    // Leere Zelle → neue Schicht (Badges/Slots sind oben bereits abgefangen)
+    const cell = target.closest("[data-schedule-cell]");
+    if (cell) {
+        if (target.closest(".schedule-shift-badge")) return;
+        openShiftDialog({
+            date: cell.dataset.date,
+            userId: cell.dataset.userId || null,
+        });
+    }
+});
+
+document.addEventListener("dragstart", (event) => {
+    const badge =
+        event.target instanceof Element
+            ? event.target.closest("[data-shift-drag]")
+            : null;
+    if (!badge) return;
+    _dragShiftId = badge.dataset.shiftDrag;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", String(_dragShiftId));
+});
+
+document.addEventListener("dragover", (event) => {
+    if (
+        event.target instanceof Element &&
+        event.target.closest("[data-schedule-drop]")
+    ) {
+        event.preventDefault();
+    }
+});
+
+document.addEventListener("drop", (event) => {
+    const cell =
+        event.target instanceof Element
+            ? event.target.closest("[data-schedule-drop]")
+            : null;
+    if (!cell) return;
+    scheduleDropCell(event, cell.dataset.date, cell.dataset.dropUser || null);
 });
 
 /**
@@ -77,26 +197,9 @@ function applyShiftTypeDefaults(event) {
     if (endEl && de) endEl.value = de;
 }
 
-/* ──────────────────────── Cell click ─────────────────────────── */
-
-/**
- * Called by data-schedule-cell onclick in _week_matrix / _month_matrix.
- * Opens dialog for a NEW shift on that date/user.
- */
-window.scheduleCellClick = function (event, date, userId) {
-    if (event.target.closest(".schedule-shift-badge")) return; // badge handles its own click
-    openShiftDialog({ date, userId });
-};
-
 /* ────────────────────── Drag & Drop ──────────────────────────── */
 
-window.scheduleDragStart = function (event, shiftId) {
-    _dragShiftId = shiftId;
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", String(shiftId));
-};
-
-window.scheduleDropCell = function (event, date, userId) {
+function scheduleDropCell(event, date, userId) {
     event.preventDefault();
     if (!_dragShiftId) return;
 
@@ -111,32 +214,16 @@ window.scheduleDropCell = function (event, date, userId) {
         .catch((err) =>
             notifyError(err.message ?? __("js.schedule.move_failed")),
         );
-};
+}
 
 /* ─────────────────────── Shift dialog ────────────────────────── */
-
-/**
- * Open dialog to EDIT an existing shift.
- * Called by shift badge onclick in the Blade partials.
- */
-window.scheduleOpenEditDialog = function (shiftId, shift) {
-    openShiftDialog({ shiftId, shift });
-};
-
-/**
- * Open dialog to CREATE a shift for an open slot (date + shift type prefilled).
- * Called by open-slot placeholder buttons in the matrix.
- */
-window.scheduleOpenSlotDialog = function (date, shiftTypeId) {
-    openShiftDialog({ date, shiftTypeId });
-};
 
 /**
  * Feature 007: fetch ranked staffing suggestions for an open slot and let the
  * planner pick a candidate. The pick prefills the shift dialog (the regular
  * store() path then re-checks compliance before the assignment is saved).
  */
-window.scheduleSuggestStaffing = async function (date, shiftTypeSqid, typeName) {
+async function scheduleSuggestStaffing(date, shiftTypeSqid, typeName) {
     const base = _cfg?.routes?.staffingSuggest;
     if (!base) return;
     const url = `${base}?date=${encodeURIComponent(date)}&shift_type_id=${encodeURIComponent(shiftTypeSqid)}`;
@@ -149,7 +236,7 @@ window.scheduleSuggestStaffing = async function (date, shiftTypeSqid, typeName) 
     }
     const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : [];
     renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions);
-};
+}
 
 function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
     let dlg = document.getElementById("staffing-suggest-dialog");
@@ -172,7 +259,10 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
                     <td class="text-[0.7rem] opacity-80">${reasons}${warnings}</td>
                     <td class="text-right">
                       <button type="button" class="btn btn-primary btn-xs"
-                        onclick="scheduleAssignSuggested('${escAttr(date)}','${escAttr(shiftTypeSqid)}','${escAttr(s.user_sqid)}')">
+                        data-assign-suggest
+                        data-date="${escAttr(date)}"
+                        data-slot-type-sqid="${escAttr(shiftTypeSqid)}"
+                        data-user-sqid="${escAttr(s.user_sqid)}">
                         Zuweisen
                       </button>
                     </td>
@@ -197,11 +287,11 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
     dlg.showModal();
 }
 
-window.scheduleAssignSuggested = function (date, shiftTypeSqid, userSqid) {
+function scheduleAssignSuggested(date, shiftTypeSqid, userSqid) {
     const dlg = document.getElementById("staffing-suggest-dialog");
     if (dlg) dlg.close();
     openShiftDialog({ date, shiftTypeId: shiftTypeSqid, userId: userSqid });
-};
+}
 
 function openShiftDialog({
     date = null,
@@ -408,7 +498,7 @@ async function onShiftDialogConfirm() {
 
 /* ─────────────────── Shift-type manager ──────────────────────── */
 
-window.shiftTypeOpenEdit = function (typeId, type) {
+function shiftTypeOpenEdit(typeId, type) {
     document.getElementById("shift-type-form")?.reset();
     document.getElementById("shift-type-id").value = typeId;
     document.getElementById("shift-type-name").value = type.name ?? "";
@@ -427,9 +517,9 @@ window.shiftTypeOpenEdit = function (typeId, type) {
         "Schichttyp bearbeiten",
     );
     document.getElementById("shift-type-error")?.classList.add("hidden");
-};
+}
 
-window.shiftTypeResetForm = function () {
+function shiftTypeResetForm() {
     document.getElementById("shift-type-form")?.reset();
     document.getElementById("shift-type-id").value = "";
     document.getElementById("shift-type-form-title").textContent = _t(
@@ -438,7 +528,7 @@ window.shiftTypeResetForm = function () {
     document.getElementById("shift-type-color").value = "#3b82f6";
     document.getElementById("shift-type-active").checked = true;
     document.getElementById("shift-type-error")?.classList.add("hidden");
-};
+}
 
 async function onShiftTypeSave(event) {
     event.preventDefault();
@@ -487,7 +577,7 @@ async function onShiftTypeSave(event) {
     }
 }
 
-window.shiftTypeDelete = async function (typeId) {
+async function shiftTypeDelete(typeId) {
     const ok = await (window.confirmAction
         ? window.confirmAction({
               message: _t("Schichttyp wirklich löschen?"),
@@ -502,7 +592,7 @@ window.shiftTypeDelete = async function (typeId) {
     } catch (err) {
         notifyError(err.message ?? _t("Fehler beim Löschen."));
     }
-};
+}
 
 function addTypeOption(type) {
     const sel = document.getElementById("shift-dialog-type");
@@ -573,8 +663,8 @@ function addTypeRow(type) {
         <td id="type-end-${type.id}">${escHtml(type.default_end_time ?? "–")}</td>
         <td><span class="badge badge-sm ${type.is_active ? "badge-success" : "badge-ghost"}">${type.is_active ? "ja" : "nein"}</span></td>
         <td class="text-right">
-            <button type="button" onclick="shiftTypeOpenEdit(${type.id}, ${escAttr(JSON.stringify(type))})" class="btn btn-sm btn-ghost">Bearbeiten</button>
-            <button type="button" onclick="shiftTypeDelete(${type.id})" class="btn btn-sm btn-ghost text-error">Löschen</button>
+            <button type="button" data-type-edit="${escAttr(type.id)}" data-type-payload="${escAttr(JSON.stringify(type))}" class="btn btn-sm btn-ghost">Bearbeiten</button>
+            <button type="button" data-type-delete="${escAttr(type.id)}" class="btn btn-sm btn-ghost text-error">Löschen</button>
         </td>`;
     tbody.appendChild(tr);
 }

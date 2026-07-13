@@ -20,6 +20,9 @@ use App\Enums\Contracts\HasLabel;
  *   partial       = Teilzahlung (Rechnung bleibt offen)
  *   overpayment   = Überzahlung (mehr als der offene Betrag)
  *   reimbursement = Erstattung einer freigegebenen Spese (direction=debit)
+ *   chargeback    = Rückläufer-Kompensation (MVP-334): NEGATIVER Betrag auf dem
+ *                   Rückläufer-Umsatz, der die ursprüngliche Zuordnung GoBD-
+ *                   konform kompensiert (Original bleibt als Historie aktiv).
  */
 enum AllocationKind: string implements HasLabel {
     use HasOptions;
@@ -28,6 +31,7 @@ enum AllocationKind: string implements HasLabel {
     case Partial = 'partial';
     case Overpayment = 'overpayment';
     case Reimbursement = 'reimbursement';
+    case Chargeback = 'chargeback';
 
     public function label(): string {
         return (string) __('enums.finance.allocation-kind.' . $this->value);
@@ -40,6 +44,7 @@ enum AllocationKind: string implements HasLabel {
             self::Partial => 'warning',
             self::Overpayment => 'info',
             self::Reimbursement => 'accent',
+            self::Chargeback => 'error',
         };
     }
 }

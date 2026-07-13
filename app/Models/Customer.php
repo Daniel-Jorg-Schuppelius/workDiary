@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasAttachments, HasContactAndBankDetails, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasAttachments, HasClassifications, HasContactAndBankDetails, HasSqid, HasTags, Searchable};
 use App\Services\Numbering\NumberAuthority;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -64,6 +64,7 @@ class Customer extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
+    use HasClassifications;
 
     use HasContactAndBankDetails;
 

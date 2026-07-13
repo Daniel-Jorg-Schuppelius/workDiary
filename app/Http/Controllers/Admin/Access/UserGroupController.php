@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{AuditsAccessChanges, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{User, UserGroup};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -25,6 +25,7 @@ use Spatie\Permission\Models\{Permission, Role};
  * bündelt Mitglieder und vererbt diesen Rollen sowie direkte Permissions.
  */
 class UserGroupController extends Controller {
+    use AuditsAccessChanges;
     use ResolvesCurrentOrganization;
 
     private const ALLOWED_SORTS = ['name', 'slug', 'members_count', 'description'];
@@ -289,13 +290,17 @@ class UserGroupController extends Controller {
             }
         }
 
-        $group->syncRoles($validRoles);
+        // Bauturbo A17 (MVP-335): Rollen der Gruppe wirken auf alle Mitglieder —
+        // Vergabe/Entzug als user.role.assigned/.revoked-Diff auditieren
+        // (supportzugriff-grundsaetze.md §4.1); No-Op-Sync erzeugt keine Events.
+        $this->syncRolesAudited($group, $validRoles);
 
         $validPermissions = Permission::query()
             ->whereIn('name', array_intersect($permissionNames, PermissionEnum::values()))
             ->where('guard_name', 'web')
             ->get();
 
-        $group->syncPermissions($validPermissions);
+        // Direkt-Permissions (Ausnahmefall) analog als granted/revoked-Diff.
+        $this->syncPermissionsAudited($group, $validPermissions);
     }
 }

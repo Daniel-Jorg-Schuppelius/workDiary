@@ -233,6 +233,9 @@ return [
                 'customerReplied' => 'El cliente respondió',
                 'waitingExpired' => 'Seguimiento de ticket vencido',
             ],
+            'problem' => [
+                'effectivenessDue' => 'Comprobación de eficacia de un problema pendiente',
+            ],
             'openIssue' => [
                 'assigned' => 'Punto abierto asignado',
                 'dueSoon' => 'Punto abierto vence pronto',
@@ -317,6 +320,7 @@ return [
             'push' => 'Push',
             'teams' => 'Microsoft Teams',
             'mattermost' => 'Mattermost',
+            'calendar' => 'Calendario',
         ],
     ],
 
@@ -830,6 +834,7 @@ return [
             'lexoffice' => 'Lexoffice dirige',
             'datev' => 'DATEV dirige',
             'orgamax' => 'orgaMAX lidera',
+            'sevdesk' => 'sevDesk lidera',
         ],
         'transfer-channel' => [
             'time' => 'Servicios/tiempo',
@@ -839,6 +844,7 @@ return [
             'lexoffice' => 'Lexoffice',
             'datev' => 'DATEV',
             'orgamax' => 'orgaMAX (pedido)',
+            'sevdesk' => 'sevDesk (borrador de factura)',
             'file' => 'Exportación de archivo',
         ],
         'transfer-status' => [
@@ -860,6 +866,11 @@ return [
         'bank-statement-format' => [
             'camt053' => 'CAMT.053',
             'mt940' => 'MT940',
+            'ofx' => 'OFX',
+            'qif' => 'QIF',
+            'qxf' => 'QXF',
+            'pain001' => 'PAIN.001',
+            'pain008' => 'PAIN.008',
         ],
         'transaction-direction' => [
             'credit' => 'Entrada',
@@ -883,6 +894,7 @@ return [
             'partial' => 'Pago parcial',
             'overpayment' => 'Sobrepago',
             'reimbursement' => 'Reembolso',
+            'chargeback' => 'Devolución de adeudo',
         ],
     ],
 

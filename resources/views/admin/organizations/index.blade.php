@@ -13,6 +13,11 @@
 @endphp
 <x-index-page overflow="clip" :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
     <x-slot:actions>
+        {{-- freshDemoOrg (MVP-349): neue Demo-Org aus Musterbranche (Plattform-Admin). --}}
+        <x-icon-btn icon="science" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.demo.fresh-org.create')"
+                    show-label>{{ __('Demo-Organisation anlegen') }}</x-icon-btn>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     data-entry-modal-trigger
                     :href="route('admin.organizations.create')"
@@ -96,7 +101,7 @@
                                             class="btn btn-sm btn-ghost text-error"
                                             title="{{ __('Endgültig löschen') }}"
                                             aria-label="{{ __('Endgültig löschen') }}"
-                                            onclick="document.getElementById('purge-modal-{{ $org->id }}').showModal()">
+                                            data-open-dialog="purge-modal-{{ $org->id }}">
                                         <x-icon name="delete_forever" />
                                     </button>
 
@@ -127,7 +132,7 @@
                                                        placeholder="{{ $org->slug }}">
                                                 <div class="modal-action">
                                                     <x-button type="button" tone="ghost" size="md"
-                                                            onclick="document.getElementById('purge-modal-{{ $org->id }}').close()">
+                                                            data-entry-modal-close>
                                                         {{ __('Abbrechen') }}
                                                     </x-button>
                                                     <x-button type="submit" tone="error" size="md" icon="delete_forever">{{ __('Endgültig löschen') }}</x-button>

@@ -6,7 +6,7 @@
 
 <form method="GET" action="{{ route('install.index') }}" class="mb-4 flex items-center gap-2">
     <label class="text-sm" for="driver">{{ __('Datenbank-Treiber') }}</label>
-    <select name="driver" id="driver" class="select select-sm select-bordered w-40" onchange="this.form.submit()">
+    <select name="driver" id="driver" class="select select-sm select-bordered w-40" data-autosubmit>
         @foreach (['sqlite', 'mysql', 'pgsql'] as $d)
             <option value="{{ $d }}" @selected($driver === $d)>{{ $d }}</option>
         @endforeach

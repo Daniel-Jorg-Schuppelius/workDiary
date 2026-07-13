@@ -27,7 +27,7 @@
                 <textarea id="issued-key" rows="4" readonly class="textarea textarea-bordered w-full font-mono text-xs select-all">{{ $issuedKey }}</textarea>
                 <div class="flex flex-wrap gap-2">
                     <x-button type="button" tone="primary" size="sm"
-                        onclick="navigator.clipboard.writeText(document.getElementById('issued-key').value); this.textContent='{{ __('Kopiert ✓') }}';">
+                        data-copy-target="issued-key" data-copy-feedback="{{ __('Kopiert ✓') }}">
                         {{ __('In Zwischenablage kopieren') }}
                     </x-button>
                     <x-button tone="ghost" size="sm" download="license.key"

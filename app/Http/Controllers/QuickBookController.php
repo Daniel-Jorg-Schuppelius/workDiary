@@ -89,8 +89,7 @@ class QuickBookController extends Controller {
 
     /** Projekt über Sqid auflösen, strikt organisationsgescopet (404 bei fremd). */
     private function resolveProject(string $rawId, User $user): Project {
-        $id = Sqid::decode(Project::class, $rawId);
-        abort_if($id === null, 404);
+        $id = Sqid::decodeOrAbort(Project::class, $rawId);
 
         /** @var Project|null $project */
         $project = Project::query()
@@ -107,8 +106,7 @@ class QuickBookController extends Controller {
             return null;
         }
 
-        $id = Sqid::decode(Task::class, $rawId);
-        abort_if($id === null, 404);
+        $id = Sqid::decodeOrAbort(Task::class, $rawId);
         abort_unless(
             Task::query()->where('project_id', $project->id)->whereKey($id)->exists(),
             404,

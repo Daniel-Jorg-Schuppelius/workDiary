@@ -159,7 +159,7 @@
                             @if ($req->note)<span class="text-base-content/60">— {{ $req->note }}</span>@endif
                             <x-button tone="ghost" size="xs" class="ml-auto text-error"
                                href="#"
-                               onclick="event.preventDefault(); document.getElementById('req-del-{{ $req->id }}').submit();">{{ __('Entfernen') }}</x-button>
+                               data-submit-form="req-del-{{ $req->id }}">{{ __('Entfernen') }}</x-button>
                         </li>
                     @endforeach
                 </ul>

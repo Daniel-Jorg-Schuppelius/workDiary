@@ -137,6 +137,24 @@ final class HelpdeskFoundationTest extends TestCase {
             ->assertForbidden();
     }
 
+    /** B1/MVP-007: das Queue-Formular sendet Sqids (Konvention: Sqid in Formularen). */
+    public function test_queue_store_accepts_sqid_references(): void {
+        $team = \App\Models\Team::query()->create([
+            'organization_id' => $this->org->id,
+            'name' => 'Support',
+        ]);
+
+        $this->actingAs($this->lead)
+            ->post(route('helpdesk.queues.store'), [
+                'name' => 'Mit Team',
+                'visibility' => 'internal',
+                'team_id' => $team->sqid,
+            ])->assertRedirect(route('helpdesk.queues.index'));
+
+        $queue = ServiceQueue::query()->where('name', 'Mit Team')->firstOrFail();
+        $this->assertSame($team->id, (int) $queue->team_id);
+    }
+
     public function test_queue_is_org_scoped(): void {
         $otherOrg = Organization::factory()->create();
         $foreign = ServiceQueue::query()->create([

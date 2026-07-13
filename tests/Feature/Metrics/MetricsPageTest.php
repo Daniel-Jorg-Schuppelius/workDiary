@@ -11,6 +11,9 @@
 namespace Tests\Feature\Metrics;
 
 use App\Models\User;
+use App\Services\Metrics\OperationsMetricsService;
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -43,5 +46,38 @@ class MetricsPageTest extends TestCase {
             ->assertSee('<span class="material-symbols-outlined" aria-hidden="true">monitoring</span>', false)
             // Versions-Anzeige (Feature 022) auf der Metrik-Seite.
             ->assertSee((string) config('app.version'));
+    }
+
+    public function test_transparency_section_lists_counter_catalogue_with_descriptions(): void {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.metrics.index'))
+            ->assertOk()
+            ->assertSee(__('metrics.section.transparency'))
+            // Default: Zähler aktiv (lokal, Opt-out — MVP-337).
+            ->assertSee(__('metrics.transparency.status_enabled'))
+            ->assertSee(__('metrics.transparency.storage'))
+            ->assertSee(__('metrics.transparency.retention'));
+
+        foreach (OperationsMetricsService::FEATURE_COUNTERS as $key) {
+            $description = __('metrics.counter.' . $key);
+            // Jeder Katalog-Key braucht eine echte Beschreibung — sonst
+            // stünde der rohe Übersetzungsschlüssel auf der Seite.
+            $this->assertNotSame('metrics.counter.' . $key, $description);
+            $response->assertSee($key)->assertSee($description);
+        }
+    }
+
+    public function test_transparency_section_shows_disabled_state_and_settings_link(): void {
+        $admin = User::factory()->admin()->create();
+        Setting::set('telemetry.enabled', false, SettingScope::System);
+
+        $this->actingAs($admin)
+            ->get(route('admin.metrics.index'))
+            ->assertOk()
+            ->assertSee(__('metrics.transparency.status_disabled'))
+            // Admin darf Einstellungen verwalten → Link zur Schalterstelle.
+            ->assertSee(route('admin.settings.index', ['q' => 'telemetry.enabled']), false);
     }
 }

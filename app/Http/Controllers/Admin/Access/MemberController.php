@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\UserRole;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{AuditsAccessChanges, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{User, UserGroup};
 use App\Support\SortableQuery;
@@ -30,6 +30,7 @@ use Spatie\Permission\Models\Role;
  * verantwortlich für das Anlegen und Löschen von Mitgliedern selbst.
  */
 class MemberController extends Controller {
+    use AuditsAccessChanges;
     use ResolvesCurrentOrganization;
 
     public function index(Request $request): View {
@@ -118,7 +119,9 @@ class MemberController extends Controller {
             }
         }
 
-        $member->syncRoles($validRoles);
+        // Bauturbo A17 (MVP-335): Rollen-Vergabe/-Entzug als Diff auditieren
+        // (supportzugriff-grundsaetze.md §4.1); No-Op-Sync erzeugt keine Events.
+        $this->syncRolesAudited($member, $validRoles);
 
         $validGroupIds = UserGroup::query()
             ->whereIn('id', $data['groups'] ?? [])
@@ -126,7 +129,20 @@ class MemberController extends Controller {
             ->pluck('id')
             ->all();
 
+        // Bauturbo A17 (MVP-335): Gruppen-Mitgliedschaften vererben Rollen/
+        // Permissions — Änderungen daher wie in UserGroupController::attach-/
+        // detachMember mit den etablierten user_group.member_*-Events auditieren.
+        $beforeGroupIds = $member->userGroups()->pluck('user_groups.id')->map(fn ($id): int => (int) $id)->all();
         $member->userGroups()->sync($validGroupIds);
+
+        $addedGroups = UserGroup::query()->whereIn('id', array_diff($validGroupIds, $beforeGroupIds))->get();
+        $removedGroups = UserGroup::query()->whereIn('id', array_diff($beforeGroupIds, $validGroupIds))->get();
+        foreach ($addedGroups as $group) {
+            $group->audit('user_group.member_added', ['member_id' => $member->id, 'member_name' => $member->name]);
+        }
+        foreach ($removedGroups as $group) {
+            $group->audit('user_group.member_removed', ['member_id' => $member->id, 'member_name' => $member->name]);
+        }
 
         return redirect()->route('admin.access.members.index')
             ->with('success', __('access.flash.member_updated'));

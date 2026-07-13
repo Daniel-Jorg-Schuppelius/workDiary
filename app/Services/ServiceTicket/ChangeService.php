@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{Approval, Change, ChangeTemplate, User};
+use App\Models\{Approval, Asset, Change, ChangeTemplate, User};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -74,12 +74,12 @@ class ChangeService {
         });
     }
 
-    public function decide(Approval $approval, User $actor, string $decision, ?string $reason = null): Change {
+    public function decide(Approval $approval, User $actor, string $decision, ?string $reason = null, ?int $delegateUserId = null): Change {
         /** @var Change $change */
         $change = $approval->approvable()->firstOrFail();
 
-        return DB::transaction(function () use ($approval, $actor, $decision, $reason, $change): Change {
-            $outcome = app(ApprovalService::class)->decide($approval, $actor, $decision, $reason, (int) $change->created_by);
+        return DB::transaction(function () use ($approval, $actor, $decision, $reason, $delegateUserId, $change): Change {
+            $outcome = app(ApprovalService::class)->decide($approval, $actor, $decision, $reason, (int) $change->created_by, $delegateUserId);
 
             if ($outcome === 'rejected') {
                 $change->update(['status' => 'cancelled', 'outcome' => 'cancelled']);
@@ -138,5 +138,33 @@ class ChangeService {
         $change->audit('change.completed', ['outcome' => $outcome, 'actor' => $actor->id]);
 
         return $change->refresh();
+    }
+
+    /**
+     * Asset/CI an den Change hängen — harte Tenant-Grenze (Muster
+     * {@see TicketIncidentService::link()}), idempotent über den
+     * Unique-Index (syncWithoutDetaching), auditiert nur echte Anlagen.
+     */
+    public function attachAsset(Change $change, Asset $asset, User $actor): void {
+        if ((int) $asset->organization_id !== (int) $change->organization_id) {
+            throw new \RuntimeException((string) __('Verknüpfung über Organisationsgrenzen ist nicht zulässig.'));
+        }
+
+        $result = $change->assets()->syncWithoutDetaching([$asset->id]);
+
+        if ($result['attached'] !== []) {
+            $change->audit('change.asset_attached', ['asset' => $asset->id, 'actor' => $actor->id]);
+        }
+    }
+
+    /** Asset-Verknüpfung lösen — gleiche Tenant-Grenze, auditiert nur echte Trennungen. */
+    public function detachAsset(Change $change, Asset $asset, User $actor): void {
+        if ((int) $asset->organization_id !== (int) $change->organization_id) {
+            throw new \RuntimeException((string) __('Verknüpfung über Organisationsgrenzen ist nicht zulässig.'));
+        }
+
+        if ($change->assets()->detach($asset->id) > 0) {
+            $change->audit('change.asset_detached', ['asset' => $asset->id, 'actor' => $actor->id]);
+        }
     }
 }

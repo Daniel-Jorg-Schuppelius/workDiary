@@ -11,6 +11,7 @@
 namespace App\Services\TimeExport\Profiles;
 
 use App\Models\{TimeExport, TimeExportLine};
+use App\Services\TimeExport\WageTypeResolver;
 
 /**
  * Lexware-Lohn-naher CSV-Export (Feature 005). Analog zu {@see DatevLodasProfile},
@@ -19,7 +20,8 @@ use App\Models\{TimeExport, TimeExportLine};
  *   - Header: `Jahr;Monat;Personalnummer;Lohnartnummer;Wert;Stundensatz`
  *   - Jahr/Monat aus dem Zeilen-Zeitraum (`period_end`)
  *   - Personalnummer: `users.personnel_number`, Fallback User-ID
- *   - Lohnartnummer: `TimeExportLine.wage_type_code`, sonst die konfigurierbare
+ *   - Lohnartnummer: Org-Mapping ({@see WageTypeResolver}, A21) vor
+ *     `TimeExportLine.wage_type_code`, sonst die konfigurierbare
  *     Default-Lohnart (`normal_wage_type_code`) für Normalstunden
  *   - Wert: Stunden als Dezimalzahl mit Komma, 2 Nachkommastellen
  *   - Stundensatz: bewusst leer — den Satz führt Lexware aus dem Lohnart-Stamm
@@ -54,6 +56,7 @@ class LexwareProfile implements ExportProfile {
     public function render(TimeExport $export): string {
         $rows = [implode(self::DELIMITER, ['Jahr', 'Monat', 'Personalnummer', 'Lohnartnummer', 'Wert', 'Stundensatz'])];
 
+        $resolver = new WageTypeResolver((int) $export->organization_id, $this->key());
         $lines = $export->lines()
             ->with('user:id,personnel_number')
             ->orderBy('user_id')
@@ -68,10 +71,8 @@ class LexwareProfile implements ExportProfile {
                 $personnelNo = (string) $line->user_id;
             }
 
-            $wageTypeCode = $line->wage_type_code;
-            if ($wageTypeCode === null || $wageTypeCode === '') {
-                $wageTypeCode = $this->normalWageTypeCode;
-            }
+            // Org-Mapping vor Regel-Code vor Default (A21, Rückwärtskompatibilität).
+            $wageTypeCode = $resolver->resolveCode($line) ?? $this->normalWageTypeCode;
 
             $rows[] = implode(self::DELIMITER, [
                 $line->period_end->format('Y'),

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Marker „WebDAV-Spiegelung für dieses Dokument getrennt" (Feature 058, MVP-127,
  * Rang 18). Wird bei der Konfliktauflösung „Spiegelung trennen" gesetzt, damit
- * der {@see \App\Plugins\Webdav\Observers\DocumentMirrorObserver} das Dokument
+ * der {@see \App\Plugins\Support\Mirror\Observers\MirrorDocumentObserver} das Dokument
  * nicht erneut in die Outbox einreiht (sonst wäre der Detach wirkungslos). Nur
  * dieses eine Dokument ist betroffen — die Anbindung bleibt aktiv.
  */

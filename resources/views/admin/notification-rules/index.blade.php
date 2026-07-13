@@ -70,12 +70,25 @@
                 </td>
                 <td class="text-sm">
                     @if ($rule->escalation_enabled && $rule->escalation_role)
-                        <x-status-badge size="xs" tone="warning">
-                            {{ __('notification.field.escalation_summary', [
-                                'hours' => (int) $rule->escalate_after_hours,
-                                'role' => \App\Enums\User\UserRole::tryFrom((string) $rule->escalation_role)?->label() ?? $rule->escalation_role,
-                            ]) }}
-                        </x-status-badge>
+                        <div class="flex flex-wrap gap-1">
+                            <x-status-badge size="xs" tone="warning">
+                                {{ __('notification.field.escalation_summary', [
+                                    'hours' => (int) $rule->escalate_after_hours,
+                                    'role' => \App\Enums\User\UserRole::tryFrom((string) $rule->escalation_role)?->label() ?? $rule->escalation_role,
+                                ]) }}
+                            </x-status-badge>
+                            {{-- Eskalationsleiter (MVP-331): konfigurierte Stufen 2/3 kompakt anzeigen. --}}
+                            @foreach ([2, 3] as $level)
+                                @if ($rule->escalationLevelConfigured($level))
+                                    <x-status-badge size="xs" tone="warning">
+                                        {{ __('notification.field.escalation_level_summary', [
+                                            'level' => $level,
+                                            'hours' => (int) $rule->escalationAfterHoursFor($level),
+                                        ]) }}
+                                    </x-status-badge>
+                                @endif
+                            @endforeach
+                        </div>
                     @else
                         <span class="opacity-50">–</span>
                     @endif

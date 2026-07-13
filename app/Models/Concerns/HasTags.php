@@ -14,11 +14,8 @@ use App\Models\Tag;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * @method \Illuminate\Database\Eloquent\Relations\MorphToMany<\App\Models\Tag, static> morphToMany(string $related, string $name, ?string $table = null, ?string $foreignPivotKey = null, ?string $relatedPivotKey = null, ?string $parentKey = null, ?string $relatedKey = null, $relation = null, bool $inverse = false)
- */
 trait HasTags {
-    /** @return MorphToMany<Tag, static> */
+    /** @return MorphToMany<Tag, $this> */
     public function tags(): MorphToMany {
         return $this->morphToMany(Tag::class, 'taggable');
     }

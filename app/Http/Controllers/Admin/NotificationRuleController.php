@@ -69,14 +69,26 @@ class NotificationRuleController extends Controller {
             'escalation_enabled' => ['required', 'boolean'],
             'escalate_after_hours' => ['nullable', 'integer', 'min:1', 'max:720'],
             'escalation_role' => ['nullable', Rule::in(UserRole::values())],
+            // Eskalationsleiter Stufe 2/3 (MVP-331): je eigene Frist + Empfängergruppe.
+            'escalation2_after_hours' => ['nullable', 'integer', 'min:1', 'max:720'],
+            'escalation2_roles' => ['array'],
+            'escalation2_roles.*' => [Rule::in(UserRole::values())],
+            'escalation2_users' => ['array'],
+            'escalation2_users.*' => ['string'],
+            'escalation3_after_hours' => ['nullable', 'integer', 'min:1', 'max:720'],
+            'escalation3_roles' => ['array'],
+            'escalation3_roles.*' => [Rule::in(UserRole::values())],
+            'escalation3_users' => ['array'],
+            'escalation3_users.*' => ['string'],
         ]);
 
-        // Feste Zusatz-Empfänger kommen als Sqids (nie rohe IDs im Formular).
-        $userIds = collect((array) ($data['recipient_users'] ?? []))
+        // Feste (Zusatz-)Empfänger kommen als Sqids (nie rohe IDs im Formular).
+        $decodeUsers = static fn(array $sqids): array => collect($sqids)
             ->map(fn(string $sqid): ?int => Sqid::decode(User::class, $sqid))
             ->filter()
             ->values()
             ->all();
+        $userIds = $decodeUsers((array) ($data['recipient_users'] ?? []));
 
         $rule = NotificationRule::query()
             ->withoutGlobalScopes()
@@ -94,6 +106,12 @@ class NotificationRuleController extends Controller {
             'escalation_enabled' => (bool) $data['escalation_enabled'],
             'escalate_after_hours' => $data['escalate_after_hours'] ?? null,
             'escalation_role' => $data['escalation_role'] ?? null,
+            'escalation2_after_hours' => $data['escalation2_after_hours'] ?? null,
+            'escalation2_roles' => array_values((array) ($data['escalation2_roles'] ?? [])),
+            'escalation2_user_ids' => $decodeUsers((array) ($data['escalation2_users'] ?? [])),
+            'escalation3_after_hours' => $data['escalation3_after_hours'] ?? null,
+            'escalation3_roles' => array_values((array) ($data['escalation3_roles'] ?? [])),
+            'escalation3_user_ids' => $decodeUsers((array) ($data['escalation3_users'] ?? [])),
         ]);
         $rule->organization_id = $organizationId;
         $rule->save();

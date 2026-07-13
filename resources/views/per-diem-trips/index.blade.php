@@ -17,7 +17,7 @@
         <x-filter-bar :action="route('per-diem-trips.index')" :reset="route('per-diem-trips.index')">
             <x-filter-field :label="__('Status')" for="pd-status">
                 <select id="pd-status" name="status" class="select select-sm select-bordered shrink-0"
-                        onchange="this.form.submit()">
+                        data-autosubmit>
                     <option value="">{{ __('Alle Status') }}</option>
                     @foreach ($statusOptions as $opt)
                         <option value="{{ $opt->value }}" @selected($statusFilter === $opt->value)>{{ $opt->label() }}</option>

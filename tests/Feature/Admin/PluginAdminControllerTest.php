@@ -58,6 +58,32 @@ class PluginAdminControllerTest extends TestCase {
         $this->assertFalse((bool) $row->enabled);
     }
 
+    /**
+     * MVP-327 (Datenschutzseite-Konzept §4): Aktivieren/Deaktivieren einer
+     * Integration schreibt das Audit-Event `integration.changed` mit
+     * `{ integration, from, to }` über den Hash-Ketten-Schreibweg.
+     */
+    public function test_toggle_writes_integration_changed_audit_event(): void {
+        $this->actingAs($this->admin)
+            ->post(route('admin.plugins.toggle', 'admintest'))
+            ->assertRedirect();
+
+        /** @var \App\Models\AuditLog|null $log */
+        $log = \App\Models\AuditLog::query()
+            ->withoutGlobalScopes()
+            ->where('event', 'integration.changed')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame((int) $this->organization->id, (int) $log->organization_id);
+        $this->assertSame((int) $this->admin->id, (int) $log->user_id);
+
+        $changes = (array) $log->getAttribute('changes');
+        $this->assertSame('admintest', $changes['integration'] ?? null);
+        $this->assertSame('disabled', $changes['from'] ?? null);
+        $this->assertSame('enabled', $changes['to'] ?? null);
+    }
+
     public function test_health_check_endpoint_returns_status_and_persists(): void {
         $this->actingAs($this->admin)
             ->post(route('admin.plugins.health-check', 'admintest'))

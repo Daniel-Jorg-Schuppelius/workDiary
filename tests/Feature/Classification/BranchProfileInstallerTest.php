@@ -512,6 +512,104 @@ class BranchProfileInstallerTest extends TestCase {
         );
     }
 
+    /**
+     * Struktur-Gate (MVP-342): JEDES Profil unter database/data/branchprofiles
+     * lädt fehlerfrei und liefert die Pflichtstruktur (code/label/version,
+     * mindestens Eintragstypen) — neue Profile werden per glob automatisch
+     * mitgeprüft, der Wizard listet sie ohne Code-Änderung.
+     */
+    public function test_every_branch_profile_file_is_loadable_and_well_formed(): void {
+        $files = glob(database_path('data/branchprofiles/*.php')) ?: [];
+        $this->assertNotEmpty($files);
+
+        foreach ($files as $file) {
+            $profile = require $file;
+
+            $this->assertIsArray($profile, "$file liefert kein Array.");
+            $this->assertNotSame('', (string) ($profile['code'] ?? ''), "$file ohne code.");
+            $this->assertSame(pathinfo($file, PATHINFO_FILENAME), (string) $profile['code'], "$file: code ≠ Dateiname.");
+            $this->assertNotSame('', (string) ($profile['label'] ?? ''), "$file ohne label.");
+            $this->assertGreaterThanOrEqual(1, (int) ($profile['version'] ?? 0), "$file ohne version.");
+            $this->assertNotEmpty((array) (($profile['classifications'] ?? [])['entry_type'] ?? []), "$file ohne entry_type-Klassifikationen.");
+        }
+    }
+
+    public function test_install_anlagenwartung_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'anlagenwartung', $this->actor);
+
+        $this->assertSame('anlagenwartung', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+        $this->assertGreaterThan(0, $result['created']['procedure_templates']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'kalibrierung',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'stoerung',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+
+        $this->assertDatabaseHas('procedure_templates', [
+            'organization_id' => $this->org->id,
+            'code' => 'AW_WARTUNG',
+        ]);
+    }
+
+    public function test_install_kfz_fuhrparkservice_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'kfz-fuhrparkservice', $this->actor);
+
+        $this->assertSame('kfz-fuhrparkservice', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'reifenwechsel',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'schaden',
+            'required_domain' => 'defect_type',
+            'enforce_phase' => 'onCreate',
+        ]);
+
+        $this->assertDatabaseHas('procedure_templates', [
+            'organization_id' => $this->org->id,
+            'code' => 'KFZ_UEBERGABE',
+        ]);
+    }
+
+    public function test_install_sicherheitsdienst_profile_creates_expected_entries(): void {
+        $result = $this->installer->install($this->org, 'sicherheitsdienst', $this->actor);
+
+        $this->assertSame('sicherheitsdienst', $result['profile_code']);
+        $this->assertGreaterThan(0, $result['created']['classifications']);
+
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->org->id,
+            'domain' => 'entry_type',
+            'code' => 'revierfahrt',
+        ]);
+
+        $this->assertDatabaseHas('classification_requirements', [
+            'organization_id' => $this->org->id,
+            'entry_type_code' => 'alarm',
+            'required_domain' => 'priority',
+            'enforce_phase' => 'onCreate',
+        ]);
+
+        $this->assertDatabaseHas('procedure_templates', [
+            'organization_id' => $this->org->id,
+            'code' => 'SD_ALARMVERFOLGUNG',
+        ]);
+    }
+
     public function test_force_install_does_not_overwrite_customised_room_requirement_template(): void {
         $this->installer->install($this->org, 'gebaeudereinigung', $this->actor);
 

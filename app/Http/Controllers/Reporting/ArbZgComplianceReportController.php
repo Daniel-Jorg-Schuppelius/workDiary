@@ -182,8 +182,14 @@ class ArbZgComplianceReportController extends Controller {
             : null;
         $checker = AttendanceComplianceChecker::forOrganization($org);
 
+        // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne
+        // expliziten Org-Filter erschienen User ALLER Organisationen als
+        // Report-Zeilen (Tenant-Leak, Bauturbo A17).
         /** @var Collection<int, User> $users */
-        $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $users = User::query()
+            ->where('organization_id', $org?->getKey())
+            ->orderBy('name')
+            ->get(['id', 'name']);
         if ($users->isEmpty() || ! $checker->enabled()) {
             return ['rows' => []];
         }

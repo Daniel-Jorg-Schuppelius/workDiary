@@ -33,6 +33,20 @@ class TicketStatusMachine {
         'rejected' => ['reported'],
     ];
 
+    /**
+     * Anzeige-Reihenfolge der Status (Feature 065, MVP-160): die
+     * Schlüsselreihenfolge der Zustandsmaschine ist die einzige Wahrheit —
+     * das Queue-Board leitet seine Spalten daraus ab.
+     *
+     * @return list<ServiceTicketStatus>
+     */
+    public function statusOrder(): array {
+        return array_map(
+            static fn (string $value): ServiceTicketStatus => ServiceTicketStatus::from($value),
+            array_keys(self::TRANSITIONS),
+        );
+    }
+
     public function canTransition(ServiceTicketStatus $from, ServiceTicketStatus $to): bool {
         if ($from === $to) {
             return true;

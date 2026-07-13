@@ -26,7 +26,7 @@
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
     <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
         {{-- User filter --}}
-        <select name="user" class="select select-bordered select-sm w-full sm:w-auto sm:min-w-48" onchange="this.form.submit()">
+        <select name="user" class="select select-bordered select-sm w-full sm:w-auto sm:min-w-48" data-autosubmit>
             <option value="">{{ __('Alle Mitarbeiter') }}</option>
             @foreach ($users as $u)
                 <option value="{{ $u->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\User::class, $userFilter) === $u->sqid)>{{ $u->name }}</option>
@@ -57,7 +57,7 @@
             <span>{{ __('prerequisites.shift_types.missing') }}</span>
             @if ($isAdmin)
                 <x-button type="button" size="sm" tone="warning" id="btn-open-type-manager-hint"
-                          onclick="document.getElementById('btn-open-type-manager')?.click()">
+                          data-open-dialog="shift-type-manager">
                     {{ __('prerequisites.shift_types.cta') }}
                 </x-button>
             @else

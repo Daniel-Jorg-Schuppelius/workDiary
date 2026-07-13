@@ -282,6 +282,23 @@ final class ClaimsLifecycleTest extends TestCase {
         $this->actingAs($support)->post(route('claims.rma.store', $case), [])->assertForbidden();
     }
 
+    /** B1/MVP-007: Ursachencode-Selects der Fallakte senden Sqids (Konvention: Sqid in Formularen). */
+    public function test_show_renders_classification_options_as_sqids(): void {
+        $classification = \App\Models\Classification::query()->create([
+            'organization_id' => $this->organization->id,
+            'domain' => \App\Enums\Classification\ClassificationDomain::DefectType->value,
+            'code' => 'leak',
+            'label' => 'Undichtigkeit',
+            'active' => true,
+        ]);
+        $case = $this->openCase();
+
+        $this->actingAs($this->admin)
+            ->get(route('claims.show', $case))
+            ->assertOk()
+            ->assertSee('value="' . $classification->sqid . '"', false);
+    }
+
     public function test_portal_shows_only_own_claims(): void {
         $case = $this->openCase();
         $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);

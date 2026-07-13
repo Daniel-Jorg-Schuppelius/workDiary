@@ -30,4 +30,7 @@ return [
     'story_points' => "Relative effort measure of a work item — comparable within the team, never converted to hours or money.",
     'wip' => "Work in progress: upper limit of concurrent items per column; exceeding it requires a justified override.",
     'velocity' => "Completed story points per finished sprint (median + range) — a planning figure, not a performance measure.",
+    'abnahme' => "Acceptance: the customer's formal confirmation that the work was delivered as agreed — documented via a signed protocol; starts warranty and billing.",
+    'prozedur' => "Procedure: guided step-by-step work instruction from a versioned template; every run is logged traceably.",
+    'zeitkonto' => "Working-time account: records overtime and undertime against the contractual target — basis for time off in lieu or payout.",
 ];

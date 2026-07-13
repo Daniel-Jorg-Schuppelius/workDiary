@@ -26,6 +26,7 @@ enum DemoIndustry: string {
     case ItService = 'it-service';
     case Elektro = 'elektro';
     case Facility = 'facility';
+    case WartungService = 'wartung-service';
 
     /** Branchenprofil-Code für den BranchProfileInstaller (database/data/branchprofiles/*.php). */
     public function branchProfileCode(): string {
@@ -33,6 +34,7 @@ enum DemoIndustry: string {
             self::ItService => 'it',
             self::Elektro => 'elektro',
             self::Facility => 'facility',
+            self::WartungService => 'anlagenwartung',
         };
     }
 
@@ -42,6 +44,7 @@ enum DemoIndustry: string {
             self::ItService => 'IT-Service',
             self::Elektro => 'Elektro',
             self::Facility => 'Facility Management',
+            self::WartungService => 'Wartung & Service',
         };
     }
 
@@ -51,6 +54,7 @@ enum DemoIndustry: string {
             self::ItService => 'Muster IT-Service GmbH',
             self::Elektro => 'Elektro Muster GmbH',
             self::Facility => 'Muster Facility Service GmbH',
+            self::WartungService => 'Muster Wartung & Service GmbH',
         };
     }
 

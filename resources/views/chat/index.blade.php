@@ -26,9 +26,9 @@
         <x-page-toolbar :subtitle="__('Kanäle, Direktnachrichten, Threads, Reaktionen und Umfragen.')">
             <x-slot:actions>
                 <x-icon-btn icon="add" tone="primary" size="sm" show-label
-                            onclick="document.getElementById('chat-new-channel').showModal()">{{ __('Neuer Kanal') }}</x-icon-btn>
+                            data-open-dialog="chat-new-channel">{{ __('Neuer Kanal') }}</x-icon-btn>
                 <x-icon-btn icon="person_add" tone="outline" size="sm" show-label
-                            onclick="document.getElementById('chat-new-dm').showModal()">{{ __('Direktnachricht') }}</x-icon-btn>
+                            data-open-dialog="chat-new-dm">{{ __('Direktnachricht') }}</x-icon-btn>
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -87,7 +87,7 @@
                     </span>
                     <span class="text-xs text-base-content/50">{{ trans_choice(':count Mitglied|:count Mitglieder', $activeChannel->members->count(), ['count' => $activeChannel->members->count()]) }}</span>
                     @can('manageMembers', $activeChannel)
-                        <button class="btn btn-xs btn-ghost btn-square" title="{{ __('Mitglieder einladen') }}" aria-label="{{ __('Mitglieder einladen') }}" onclick="document.getElementById('chat-invite').showModal()"><x-icon name="person_add" size="1.1rem" /></button>
+                        <button class="btn btn-xs btn-ghost btn-square" title="{{ __('Mitglieder einladen') }}" aria-label="{{ __('Mitglieder einladen') }}" data-open-dialog="chat-invite"><x-icon name="person_add" size="1.1rem" /></button>
                     @endcan
                     @if (! $activeChannel->isDirect())
                         <x-action-form :action="route('chat.channels.leave', $activeChannel)"
@@ -140,19 +140,19 @@
                         </div>
                     </div>
                     <button type="button" class="btn btn-ghost btn-xs btn-square ml-auto" title="{{ __('Formatierungshilfe') }}"
-                            onclick="document.getElementById('chat-format-help').showModal()"><x-icon name="help" size="1.15rem" /></button>
+                            data-open-dialog="chat-format-help"><x-icon name="help" size="1.15rem" /></button>
                 </div>
                 {{-- Anhang-Vorschau (Einfügen/Drag&Drop) --}}
                 <div id="chat-file-preview" class="mb-1 hidden flex-wrap gap-2"></div>
                 <div class="flex items-end gap-2">
                     <textarea name="body" rows="1" class="textarea textarea-bordered max-h-32 min-h-10 flex-1"
                               placeholder="{{ __('Nachricht schreiben …') }}"
-                              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit();}"></textarea>
+                              data-submit-on-enter></textarea>
                     <label class="btn btn-ghost btn-square" title="{{ __('Datei anhängen') }}">
                         <x-icon name="attach_file" />
                         <input id="chat-file-input" type="file" name="files[]" multiple class="hidden">
                     </label>
-                    <button type="button" class="btn btn-ghost btn-square" title="{{ __('Umfrage') }}" onclick="document.getElementById('chat-new-poll').showModal()"><x-icon name="bar_chart" /></button>
+                    <button type="button" class="btn btn-ghost btn-square" title="{{ __('Umfrage') }}" data-open-dialog="chat-new-poll"><x-icon name="bar_chart" /></button>
                     <button type="submit" class="btn btn-primary btn-square" title="{{ __('Senden') }}"><x-icon name="send" /></button>
                 </div>
             </form>

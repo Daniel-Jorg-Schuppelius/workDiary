@@ -12,7 +12,7 @@
 
     <x-filter-bar :action="route('purchase-orders.suggestions')">
         <x-filter-field :label="__('procurement.ui.select_warehouse')" for="sug-wh">
-            <select id="sug-wh" name="warehouse" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="sug-wh" name="warehouse" class="select select-sm select-bordered" data-autosubmit>
                 @foreach ($warehouses as $wh)
                     <option value="{{ $wh->sqid }}" @selected($warehouse && $warehouse->id === $wh->id)>{{ $wh->name }}</option>
                 @endforeach

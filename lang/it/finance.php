@@ -67,6 +67,7 @@ return [
         'target_by_mode' => 'La destinazione è preimpostata in base al canale di fatturazione del cliente.',
         'period_sources' => 'Vengono raccolte solo fonti fatturabili, non ancora fatturate/consegnate nel periodo.',
         'lexoffice_draft_created' => 'Bozza di fattura creata in Lexoffice:',
+        'sevdesk_draft_created' => 'Bozza di fattura creata in sevDesk:',
     ],
 
     'confirm_execute' => 'Trasferire ora alla destinazione? In caso di successo le fonti verranno contrassegnate come consegnate.',
@@ -98,6 +99,11 @@ return [
         'total' => 'Totale',
     ],
 
+    'sevdesk' => [
+        'introduction' => 'Consegna da WorkDiary — :channel, periodo :from – :to.',
+        'tax_text' => 'IVA :rate%',
+    ],
+
     'lexoffice' => [
         'introduction' => 'Consegna da WorkDiary — :channel, periodo :from – :to.',
         'delivery_title' => 'Documento di trasporto',
@@ -119,6 +125,8 @@ return [
         'entry_already_transferred' => 'La registrazione oraria è già stata consegnata alla fatturazione e non può più essere corretta.',
         'target_not_allowed' => 'Questa destinazione non è consentita per il canale di fatturazione «:mode».',
         'lexoffice_not_configured' => 'Lexoffice non è configurato per questa organizzazione (chiave API mancante).',
+        'sevdesk_not_configured' => 'sevDesk non è configurato per questa organizzazione (token API mancante).',
+        'sevdesk_outcome_unclear' => 'Esito della consegna a sevDesk incerto (timeout dopo l\'invio) — non ripetere alla cieca; la prossima esecuzione riconcilia tramite il marcatore di origine.',
         'lexoffice_contact_missing' => 'Nessun contatto Lexoffice per il cliente — sincronizzare prima il contatto.',
         'lexoffice_delivery_no_customer' => 'Una consegna senza cliente non può essere trasmessa come documento di trasporto.',
         'lexoffice_delivery_not_linked' => 'Nessun documento di trasporto Lexoffice è collegato a questa consegna.',
@@ -152,6 +160,9 @@ return [
             'amount' => 'Importo (lordo)',
             'lock_flag' => 'Registrazione definitiva',
             'include_expenses' => 'Includi le spese approvate',
+            'include_reversals' => 'Trasmetti i documenti stornati (storno generale)',
+            'reversal' => 'GU',
+            'reversal_badge' => 'Storno generale',
             'debtor_no' => 'Numero cliente (DATEV)',
             'debtor_no_hint' => 'Lasciare vuoto per derivare automaticamente il numero dall\'intervallo numerico configurato.',
         ],
@@ -159,12 +170,19 @@ return [
             'on' => 'registrato definitivamente',
             'off' => 'non registrato definitivamente',
         ],
+
+        'selection' => [
+            'manual' => 'Selezione parziale',
+        ],
         'action' => [
             'create' => 'Crea lotto',
             'finalize' => 'Finalizza',
             'download' => 'Scarica CSV',
             'configure' => 'Configurazione',
             'save_config' => 'Salva configurazione',
+            'discard' => 'Scarta bozza',
+            'remove_selected' => 'Rimuovi selezione',
+            'select_source' => 'Seleziona registrazione',
         ],
         'dialog' => [
             'create_title' => 'Crea lotto di registrazioni DATEV',
@@ -173,11 +191,14 @@ return [
         'hint' => [
             'period_sources' => 'Vengono considerate le fatture emesse/pagate con data documento nel periodo che non sono ancora incluse in alcun lotto finalizzato.',
             'include_expenses' => 'Opzionale: includi inoltre le spese approvate come registrazione di costo (MVP — conti semplificati).',
+            'include_reversals' => 'Opzionale: trasmetti i documenti stornati e già trasferiti come registrazioni di storno generale.',
         ],
         'flash' => [
             'created' => 'Lotto di registrazioni creato come bozza.',
             'finalized' => 'Lotto di registrazioni finalizzato — CSV generato e fonti contrassegnate come consegnate.',
             'config_saved' => 'Configurazione contabile salvata.',
+            'sources_removed' => 'Registrazioni selezionate rimosse — sono di nuovo disponibili per il prossimo lotto.',
+            'discarded' => 'Bozza del lotto scartata — le fonti sono di nuovo disponibili.',
         ],
         'error' => [
             'no_sources' => 'Nessun documento pronto per la registrazione trovato nel periodo selezionato.',
@@ -187,6 +208,9 @@ return [
             'preflight_failed' => 'Il lotto non può essere finalizzato a causa di errori di verifica preliminare.',
             'no_organization' => 'Non è stato possibile risolvere alcuna organizzazione.',
             'roundtrip_failed' => 'Il file DATEV generato non ha superato il controllo di rilettura: :errors',
+            'no_selection' => 'Nessuna registrazione selezionata.',
+            'selection_empty_batch' => 'Nel lotto deve rimanere almeno una registrazione.',
+            'source_already_exported' => 'Il documento :ref fa già parte di un altro lotto esportato.',
         ],
         'preflight' => [
             'no_sources' => 'Il lotto non contiene alcuna registrazione contabile.',
@@ -237,6 +261,11 @@ return [
             'finalize_hint' => 'Contrassegna le registrazioni come definitive durante l\'esportazione.',
             'encoding' => 'Set di caratteri',
             'encoding_hint' => 'Lo standard DATEV è ISO-8859-1; UTF-8 solo se espressamente desiderato.',
+            'expense_group' => 'Conti di costo/IVA a credito per categoria di spesa',
+            'expense_group_hint' => 'Lasciare vuoto per usare la mappatura semplificata (slot del conto ricavi + chiave BU per aliquota). BU IVA a credito ad es. 9 = 19 %, 8 = 7 %.',
+            'expense_category' => 'Categoria di spesa',
+            'expense_account' => 'Conto di costo',
+            'expense_tax_key' => 'Chiave BU IVA a credito',
         ],
     ],
 ];

@@ -137,6 +137,11 @@ class ManufacturingOrderController extends Controller {
         $data = $request->validate([
             'carrier' => ['required', 'string', 'max:24'],
             'weight_grams' => ['required', 'integer', 'min:1', 'max:1000000'],
+            // Optionale Packstück-Maße (cm) — UPS/FedEx übernehmen sie in den
+            // Dimensions-Block; nur wirksam, wenn alle drei angegeben sind.
+            'length_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
+            'width_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
+            'height_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
         ]);
 
         // Aktive Anbindung für den gewählten Carrier muss existieren.
@@ -169,7 +174,12 @@ class ManufacturingOrderController extends Controller {
 
         $shipmentRequest = new ShipmentRequest(
             $recipient,
-            [new ShipmentPackage((int) $data['weight_grams'])],
+            [new ShipmentPackage(
+                (int) $data['weight_grams'],
+                isset($data['length_cm']) ? (int) $data['length_cm'] : null,
+                isset($data['width_cm']) ? (int) $data['width_cm'] : null,
+                isset($data['height_cm']) ? (int) $data['height_cm'] : null,
+            )],
             'MO-' . $order->id . '/D-' . $delivery->id,
         );
 

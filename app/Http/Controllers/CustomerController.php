@@ -127,8 +127,25 @@ class CustomerController extends Controller {
             ->get()
             : collect();
 
+        // Vollwertige Kunden-Timeline (MVP-340): serverseitiger Typ-Filter +
+        // Nachlade-Fenster — Muster der Auftrags-Detailseite (DiaryController).
+        /** @var User $viewer */
+        $viewer = Auth::user();
+        $timelineType = (string) request()->query('timeline_type', '');
+        $timelineLimit = max(1, min(500, (int) request()->query('timeline_limit', 15)));
+        $timeline = app(\App\Services\Timeline\DiaryEntryTimelineService::class)->forCustomer(
+            $customer,
+            $viewer,
+            $timelineType !== '' ? [$timelineType] : null,
+            $timelineLimit,
+        );
+
         return view('customers.show', [
             'customer' => $customer,
+            'timelineItems' => $timeline['items'],
+            'timelineHasMore' => $timeline['hasMore'],
+            'timelineType' => $timelineType,
+            'timelineLimit' => $timelineLimit,
             'projects' => $projects,
             'defaultProject' => $defaultProject,
             'statsTotal' => $stats->forCustomer($customer),

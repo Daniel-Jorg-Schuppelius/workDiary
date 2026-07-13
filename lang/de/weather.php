@@ -12,6 +12,11 @@ return [
     'source' => 'Quelle',
     'fetched' => 'Abgerufen',
     'none' => 'Keine Wetterdaten hinterlegt.',
+    'providers' => [
+        // Anzeigename der Wetterdienste (Eigennamen, CC-BY-Attribution beim DWD).
+        'open-meteo' => 'Open-Meteo',
+        'dwd' => 'Deutscher Wetterdienst (DWD)',
+    ],
     'attach' => [
         'button' => 'Wetter abrufen',
         'success' => 'Wetterdaten des Tages angehängt.',

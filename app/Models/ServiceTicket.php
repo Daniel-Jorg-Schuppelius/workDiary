@@ -156,9 +156,40 @@ class ServiceTicket extends Model {
         return $this->hasMany(ServiceTicketLink::class, 'service_ticket_id');
     }
 
+    /**
+     * Probleme, hinter denen dieses Ticket als Incident hängt (MVP-156);
+     * Gegenstück zu {@see Problem::tickets()}. Incidents schließen Probleme
+     * NIE automatisch — die Relation ist rein informativ.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Problem, $this>
+     */
+    public function problems(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
+        return $this->belongsToMany(Problem::class, 'problem_ticket')->withTimestamps();
+    }
+
+    /**
+     * Changes, an denen dieses Ticket hängt (MVP-157);
+     * Gegenstück zu {@see Change::tickets()} — rein informativ.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<Change, $this>
+     */
+    public function changes(): \Illuminate\Database\Eloquent\Relations\BelongsToMany {
+        return $this->belongsToMany(Change::class, 'change_ticket')->withTimestamps();
+    }
+
     /** @return \Illuminate\Database\Eloquent\Relations\HasMany<SlaClockSegment, $this> */
     public function slaClockSegments(): \Illuminate\Database\Eloquent\Relations\HasMany {
         return $this->hasMany(SlaClockSegment::class, 'service_ticket_id');
+    }
+
+    /**
+     * Ticket-Anhänge (MVP-152, z. B. Portal-Uploads bei Ticketanlage);
+     * Nachrichten-Anhänge hängen an der jeweiligen {@see ServiceTicketMessage}.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<Attachment, $this>
+     */
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\MorphMany {
+        return $this->morphMany(Attachment::class, 'attachable')->latest();
     }
 
     /** @return BelongsTo<Asset, $this> */
@@ -189,6 +220,24 @@ class ServiceTicket extends Model {
     /** @return BelongsTo<User, $this> */
     public function assignedTo(): BelongsTo {
         return $this->belongsTo(User::class, 'assigned_to_user_id');
+    }
+
+    /**
+     * Verantwortlich für die Wiedervorlage im Wartezustand (MVP-151).
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function waitOwner(): BelongsTo {
+        return $this->belongsTo(User::class, 'wait_owner_id');
+    }
+
+    /**
+     * Major-Incident-Leitung (MVP-155).
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function incidentLead(): BelongsTo {
+        return $this->belongsTo(User::class, 'incident_lead_id');
     }
 
     /**

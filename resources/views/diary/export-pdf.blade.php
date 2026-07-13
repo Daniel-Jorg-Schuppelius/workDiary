@@ -25,7 +25,7 @@
 </head>
 <body>
     <div class="actions no-print">
-        <button class="btn" onclick="window.print()">{{ __('Drucken / Als PDF speichern') }}</button>
+        <button class="btn" data-print>{{ __('Drucken / Als PDF speichern') }}</button>
     </div>
 
     <h1>{{ __('Auftragsbuch-Export') }}</h1>
@@ -65,5 +65,6 @@
             @endforeach
         </tbody>
     </table>
+@include('partials.print-script')
 </body>
 </html>

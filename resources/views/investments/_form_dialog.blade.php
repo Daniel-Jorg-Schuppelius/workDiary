@@ -35,8 +35,11 @@
             @endforeach
         </x-select-field>
         <x-input-field name="cost_center_label" :label="__('Kostenstelle (Freitext-Fallback)')" maxlength="200" :value="old('cost_center_label', $case->cost_center_label ?? '')" />
-        <x-input-field name="starts_on" type="date" :label="__('Zeitraum von')" :value="old('starts_on', optional($case->starts_on)->toDateString())" />
-        <x-input-field name="ends_on" type="date" :label="__('Zeitraum bis')" :value="old('ends_on', optional($case->ends_on)->toDateString())" />
+        <x-date-range class="md:col-span-2" layout="split" form-control
+                      from-name="starts_on" to-name="ends_on" type="date"
+                      :from-label="__('Zeitraum von')" :to-label="__('Zeitraum bis')"
+                      :from="old('starts_on', optional($case->starts_on)->toDateString())"
+                      :to="old('ends_on', optional($case->ends_on)->toDateString())" />
         <x-textarea-field name="reason" :label="__('Anlass')" rows="2" span="2">{{ old('reason', $case->reason ?? '') }}</x-textarea-field>
         <x-textarea-field name="objective" :label="__('Ziel / erwarteter Nutzen')" rows="2" span="2">{{ old('objective', $case->objective ?? '') }}</x-textarea-field>
         <x-textarea-field name="risk_note" :label="__('Risiko')" rows="2" span="2">{{ old('risk_note', $case->risk_note ?? '') }}</x-textarea-field>

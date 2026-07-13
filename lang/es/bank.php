@@ -68,6 +68,7 @@ return [
         'show' => 'Mostrar',
         'download' => 'Descargar archivo original',
         'confirm' => 'Confirmar',
+        'confirm_selected' => 'Confirmar selección',
         'ignore' => 'Apartar',
         'unassignable' => 'No asignable',
         'unmatch' => 'Deshacer asignación',
@@ -80,6 +81,7 @@ return [
     'import' => [
         'dialog_title' => 'Importar archivo bancario',
         'dialog_hint' => 'CAMT.053 (XML) o MT940. La importación solo crea los movimientos en el área de revisión y no cambia ningún estado de factura o gasto.',
+        'format_hint' => 'Formatos admitidos: CAMT.053, MT940, OFX, QIF, QXF y PAIN.001/008 (órdenes de pago como movimientos anunciados). La detección se basa en el contenido, no en la extensión del archivo.',
         'file' => 'Archivo',
         'account_optional' => 'Cuenta bancaria (opcional, de lo contrario asignación automática por IBAN)',
         'flash' => [
@@ -102,6 +104,27 @@ return [
         'error' => [
             'no_allocations' => 'No se indicó ninguna asignación.',
             'target_not_found' => 'No se encontró el destino de la asignación.',
+        ],
+    ],
+    // Lastschrift-Rückläufer-Workflow (MVP-334).
+    'return' => [
+        'badge' => 'Devolución',
+        'title' => 'Procesar devolución de adeudo',
+        'action' => 'Compensar',
+        'reason_placeholder' => 'Motivo (p. ej. AC04)',
+        'flash' => [
+            'processed' => 'Devolución procesada — asignación original compensada, partida reabierta.',
+        ],
+        'error' => [
+            'same_transaction' => 'La asignación pertenece al propio movimiento de devolución.',
+            'not_compensatable' => 'Esta asignación no puede compensarse.',
+            'already_compensated' => 'Esta asignación ya fue compensada.',
+        ],
+        'reason' => [
+            'amount' => 'Importe coincide',
+            'reference' => 'Referencia coincidente',
+            'mandate' => 'Referencia de mandato',
+            'date' => 'Proximidad de fecha',
         ],
     ],
     'account' => [

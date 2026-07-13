@@ -91,9 +91,8 @@
                          data-schedule-cell
                          data-date="{{ $day['date'] }}"
                          data-user-id="{{ $rowUser->sqid }}"
-                         onclick='scheduleCellClick(event, @js($day['date']), @js($rowUser->sqid))'
-                         ondragover="event.preventDefault()"
-                         ondrop='scheduleDropCell(event, @js($day['date']), @js($rowUser->sqid))'
+                         data-schedule-drop
+                         data-drop-user="{{ $rowUser->sqid }}"
                      @endif>
 
                     {{-- Shift badges --}}
@@ -119,8 +118,9 @@
                              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
                              @if ($isAdmin)
                                  draggable="true"
-                                 ondragstart='scheduleDragStart(event, @js($shift->sqid))'
-                                 onclick='event.stopPropagation(); scheduleOpenEditDialog(@js($shift->sqid), @js($shiftPayload))'
+                                 data-shift-drag="{{ $shift->sqid }}"
+                                 data-shift-edit="{{ $shift->sqid }}"
+                                 data-shift-payload="{{ json_encode($shiftPayload) }}"
                              @endif
                              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->resolvedEndTime() ? '–'.$shift->resolvedEndTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}">
                             <span>{{ $shift->shiftType?->abbreviation ?? '?' }}</span>
@@ -165,7 +165,9 @@
                         @for ($i = 0; $i < $slot['missing']; $i++)
                             <button type="button"
                                     @if ($isAdmin)
-                                        onclick="scheduleOpenSlotDialog('{{ $day['date'] }}', {{ $slot['shift_type_id'] }})"
+                                        data-slot-open
+                                        data-date="{{ $day['date'] }}"
+                                        data-slot-type="{{ $slot['shift_type_id'] }}"
                                     @else
                                         disabled
                                     @endif

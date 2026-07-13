@@ -22,7 +22,7 @@
                 <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('recruiting.requisitions.edit', $requisition)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
                 <form method="POST" action="{{ route('recruiting.requisitions.status', $requisition) }}" class="flex items-center gap-1">
                     @csrf
-                    <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()" aria-label="{{ __('Status') }}">
+                    <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
                         @foreach (\App\Models\Applications\JobRequisition::STATUSES as $status)
                             <option value="{{ $status }}" @selected($requisition->status === $status)>{{ __("values.$status") }}</option>
                         @endforeach

@@ -15,7 +15,7 @@ namespace App\Models;
 use App\Enums\ServiceTicket\TicketMessageKind;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany, MorphTo};
 
 /**
  * Ticket-Nachricht (Feature 065, MVP-152). Sichtbarkeit leitet sich aus
@@ -71,5 +71,15 @@ class ServiceTicketMessage extends Model {
     /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
     public function author(): MorphTo {
         return $this->morphTo('author');
+    }
+
+    /**
+     * Anhänge der Nachricht (MVP-152): Kundensichtbarkeit regelt das
+     * `customer_visible`-Flag je Anhang — Portal-Uploads setzen es hart.
+     *
+     * @return MorphMany<Attachment, $this>
+     */
+    public function attachments(): MorphMany {
+        return $this->morphMany(Attachment::class, 'attachable')->latest();
     }
 }

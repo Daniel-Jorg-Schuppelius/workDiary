@@ -77,25 +77,42 @@ class ServiceTicketController extends Controller {
         ]);
     }
 
-    public function show(ServiceTicket $ticket): View {
+    public function show(Request $request, ServiceTicket $ticket): View {
         Gate::authorize('view', $ticket);
-        $ticket->load(['customer:id,name', 'asset:id,name,asset_no', 'assignedTo:id,name', 'reportedBy:id,name', 'slaContract']);
-        // Konversation (Feature 065, P2): chronologisch, intern sichtbar.
-        $messages = \App\Models\ServiceTicketMessage::query()
-            ->where('service_ticket_id', $ticket->id)
-            ->orderBy('created_at')
-            ->orderBy('id')
-            ->get();
+        $ticket->load([
+            'customer:id,name', 'asset:id,name,asset_no', 'assignedTo:id,name', 'reportedBy:id,name', 'slaContract',
+            // Detail-Widgets (MVP-160): SLA-Uhr, Beobachter, Verknüpfungen, Major Incident.
+            'slaClockSegments', 'watchers.user:id,name', 'links.linked', 'waitOwner:id,name', 'incidentLead:id,name',
+            // Zugeordnete Probleme (MVP-156) + Changes (MVP-157) im Verknüpfungs-Widget.
+            'problems', 'changes',
+        ]);
+
+        // Timeline (MVP-152): Konversation + Status-Audits + SLA + Anhänge
+        // gemischt; Typ-Filter-Chips + „mehr laden" über GET-Parameter.
+        $timelineType = (string) $request->query('timeline_type', '');
+        $timelineLimit = max(1, min(500, (int) $request->query('timeline_limit', 50)));
+        $timeline = app(\App\Services\Timeline\ServiceTicketTimelineService::class)->forTicket(
+            $ticket,
+            $timelineType !== '' ? [$timelineType] : null,
+            $timelineLimit,
+        );
 
         return view('service-tickets.show', [
             'ticket' => $ticket,
-            'messages' => $messages,
+            'timelineItems' => $timeline['items'],
+            'timelineHasMore' => $timeline['hasMore'],
+            'timelineType' => $timelineType,
+            'timelineLimit' => $timelineLimit,
             'canNote' => \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::HelpdeskTicketInternalNote->value),
             'statusOptions' => $this->statusOptions(),
             'priorityOptions' => $this->priorityOptions(),
             'canUpdate' => Gate::allows('update', $ticket),
             'canAssign' => Gate::allows('assign', $ticket),
             'canClose' => Gate::allows('close', $ticket),
+            'orgUsers' => User::query()
+                ->where('organization_id', $ticket->organization_id)
+                ->orderBy('name')
+                ->get(['id', 'name']),
         ]);
     }
 
@@ -156,7 +173,7 @@ class ServiceTicketController extends Controller {
         Gate::authorize('assign', $ticket);
 
         $data = $request->validate([
-            'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
+            'assignee_user_id' => ['nullable', 'string'],
         ]);
 
         $user = $request->user();
@@ -164,7 +181,22 @@ class ServiceTicketController extends Controller {
             abort(403);
         }
 
-        $this->tickets->assign($ticket, $user, $data['assignee_user_id'] ?? null);
+        // MVP-160: das Formular sendet eine User-Sqid — strikt mit der
+        // Zielklasse dekodieren und org-gescopt auflösen (nie Cross-Tenant).
+        $assigneeId = null;
+        $raw = (string) ($data['assignee_user_id'] ?? '');
+        if ($raw !== '') {
+            $assigneeId = \App\Support\Sqid::decode(User::class, $raw);
+            $exists = $assigneeId !== null && User::query()
+                ->whereKey($assigneeId)
+                ->where('organization_id', $ticket->organization_id)
+                ->exists();
+            if (! $exists) {
+                return back()->withErrors(['assignee_user_id' => __('Bearbeiter nicht gefunden.')]);
+            }
+        }
+
+        $this->tickets->assign($ticket, $user, $assigneeId);
 
         return redirect()
             ->route('service-tickets.show', $ticket)

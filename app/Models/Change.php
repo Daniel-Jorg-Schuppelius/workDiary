@@ -68,6 +68,22 @@ class Change extends Model {
         return $this->belongsToMany(ServiceTicket::class, 'change_ticket')->withTimestamps();
     }
 
+    /**
+     * Betroffene Assets/CIs (MVP-157); Pflege ausschließlich über
+     * {@see \App\Services\ServiceTicket\ChangeService::attachAsset()} —
+     * dort liegen Tenant-Grenze und Audit.
+     *
+     * @return BelongsToMany<Asset, $this>
+     */
+    public function assets(): BelongsToMany {
+        return $this->belongsToMany(Asset::class, 'change_asset')->withTimestamps();
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function creator(): BelongsTo {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     /** @return BelongsTo<Problem, $this> */
     public function problem(): BelongsTo {
         return $this->belongsTo(Problem::class, 'problem_id');

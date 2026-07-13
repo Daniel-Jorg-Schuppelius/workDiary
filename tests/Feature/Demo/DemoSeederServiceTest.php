@@ -152,6 +152,42 @@ class DemoSeederServiceTest extends TestCase {
             ->count());
     }
 
+    public function test_wartung_service_industry_seeds_consistently(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $counts = app(DemoSeederService::class)->seed($this->organization->fresh(), $admin, DemoIndustry::WartungService);
+
+        $this->assertSame('wartung-service', $counts['industry']);
+        $this->assertSame('anlagenwartung', $counts['branch_profile']);
+        $this->assertSame(3, $counts['customers']);
+        $this->assertSame(5, $counts['projects']);
+        $this->assertSame(1, $counts['main_diary_entries']);
+        $this->assertSame(3, $counts['materials']);
+        $this->assertSame(1, $counts['assets']);
+        $this->assertSame(1, $counts['protocols']);
+        $this->assertSame(25, $counts['background_diary_entries']);
+
+        // Branchen-Inhalte: Wartungsvertrag/Prüfintervall-Szenario ist erkennbar.
+        $title = DiaryEntry::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization->id)
+            ->where('title', 'like', '%Beispielauftrag%')->value('title');
+        $this->assertStringContainsString('Jahreswartung', (string) $title);
+
+        $this->assertTrue(Customer::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization->id)
+            ->where('name', 'Maschinenbau Muster AG')->exists());
+        $this->assertTrue(Asset::query()->withoutGlobalScopes()
+            ->where('organization_id', $this->organization->id)
+            ->where('name', 'Kompressor KAE-200')->exists());
+
+        // Branchenprofil Anlagenwartung wurde installiert (Klassifikation „wartung").
+        $this->assertDatabaseHas('classifications', [
+            'organization_id' => $this->organization->id,
+            'domain' => 'entry_type',
+            'code' => 'wartung',
+        ]);
+    }
+
     public function test_seed_is_deterministic_in_record_counts_across_runs(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

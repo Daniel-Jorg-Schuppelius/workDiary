@@ -32,7 +32,7 @@
             {{-- Freigaben-Verwaltung als Dialog (nur Eigentümer); spart vertikalen Platz fürs Canvas --}}
             @if ($canShare)
                 <button type="button" class="btn btn-sm btn-ghost gap-1 ml-auto"
-                        onclick="document.getElementById('ideas-shares-dialog').showModal()">
+                        data-open-dialog="ideas-shares-dialog">
                     <span class="material-symbols-outlined text-base" aria-hidden="true">group</span>
                     {{ __('ideas.share.title') }}
                     @if ($shares->isNotEmpty())
@@ -246,28 +246,28 @@
                             x-on:click.stop="toggleCollapse(sqid)">
                         <span class="material-symbols-outlined text-base" aria-hidden="true" x-text="collapsed[sqid] ? 'chevron_right' : 'expand_more'"></span>
                     </button>
-                    <span class="w-2 h-2 rounded-full shrink-0" :data-node-color="node(sqid)?.color" aria-hidden="true"
+                    <span class="w-2 h-2 rounded-full shrink-0" :data-node-color="nodeColor(sqid)" aria-hidden="true"
                           :class="{
-                              'bg-base-300': node(sqid)?.color === 'default',
-                              'bg-primary': node(sqid)?.color === 'primary',
-                              'bg-success': node(sqid)?.color === 'success',
-                              'bg-warning': node(sqid)?.color === 'warning',
-                              'bg-error': node(sqid)?.color === 'error',
-                              'bg-info': node(sqid)?.color === 'info',
+                              'bg-base-300': nodeColor(sqid) === 'default',
+                              'bg-primary': nodeColor(sqid) === 'primary',
+                              'bg-success': nodeColor(sqid) === 'success',
+                              'bg-warning': nodeColor(sqid) === 'warning',
+                              'bg-error': nodeColor(sqid) === 'error',
+                              'bg-info': nodeColor(sqid) === 'info',
                           }"></span>
                     <template x-if="editingTitle === sqid">
                         <input type="text" class="input input-xs input-bordered grow"
                                :data-title-input="sqid"
-                               :value="node(sqid)?.title"
+                               :value="nodeTitle(sqid)"
                                x-on:keydown.enter.stop.prevent="saveTitle(sqid, $event.target.value)"
                                x-on:keydown.escape.stop="editingTitle = null"
                                x-on:blur="saveTitle(sqid, $event.target.value)">
                     </template>
                     <template x-if="editingTitle !== sqid">
-                        <span class="text-sm grow cursor-text" x-text="node(sqid)?.title"
+                        <span class="text-sm grow cursor-text" x-text="nodeTitle(sqid)"
                               x-on:dblclick="startRename(sqid)"></span>
                     </template>
-                    <span class="badge badge-xs" x-show="node(sqid)?.node_status" x-text="node(sqid)?.node_status"></span>
+                    <span class="badge badge-xs" x-show="nodeStatus(sqid)" x-text="nodeStatus(sqid)"></span>
                     <template x-if="cfg.can_update">
                         <div class="flex items-center gap-0.5 opacity-0 hover:opacity-100 focus-within:opacity-100"
                              :class="selected === sqid ? 'opacity-100' : ''">
@@ -279,11 +279,11 @@
                                     aria-label="{{ __('ideas.editor.rename') }}" title="{{ __('ideas.editor.rename') }}">
                                 <span class="material-symbols-outlined text-base" aria-hidden="true">edit</span>
                             </button>
-                            <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="selected = sqid; detailOpen = true"
+                            <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="openDetails(sqid)"
                                     aria-label="{{ __('ideas.editor.details') }}" title="{{ __('ideas.editor.details') }}">
                                 <span class="material-symbols-outlined text-base" aria-hidden="true">tune</span>
                             </button>
-                            <template x-if="!node(sqid)?.is_root">
+                            <template x-if="!isRoot(sqid)">
                                 <span class="flex items-center gap-0.5">
                                     <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="moveUp(sqid)"
                                             aria-label="{{ __('ideas.editor.move_up') }}" title="{{ __('ideas.editor.move_up') }}">
@@ -358,17 +358,17 @@
         <template x-if="detailOpen && node(selected)">
             <div class="mt-4 border-t border-base-200 pt-3" role="group" aria-label="{{ __('ideas.editor.details') }}">
                 <div class="flex items-center justify-between mb-2">
-                    <h3 class="font-medium text-sm" x-text="node(selected)?.title"></h3>
+                    <h3 class="font-medium text-sm" x-text="nodeTitle(selected)"></h3>
                     <div class="flex items-center gap-1">
                         <template x-if="cfg.can_update">
                             <button type="button" class="btn btn-primary btn-xs gap-1"
-                                    x-on:click="saveDetails($refs.detailNote?.value, $refs.detailStatus?.value)">
+                                    x-on:click="saveDetailsFromRefs()">
                                 <span class="material-symbols-outlined text-base" aria-hidden="true">save</span>
                                 {{ __('Speichern') }}
                             </button>
                         </template>
                         <button type="button" class="btn btn-ghost btn-xs"
-                                x-on:click="closeDetails($refs.detailNote?.value, $refs.detailStatus?.value)" aria-label="{{ __('Schließen') }}">
+                                x-on:click="closeDetailsFromRefs()" aria-label="{{ __('Schließen') }}">
                             <span class="material-symbols-outlined text-base" aria-hidden="true">close</span>
                         </button>
                     </div>
@@ -379,15 +379,15 @@
                         <textarea class="textarea textarea-bordered textarea-sm w-full" rows="3"
                                   x-ref="detailNote"
                                   :disabled="!cfg.can_update"
-                                  :value="node(selected)?.note"></textarea>
+                                  :value="selectedNote()"></textarea>
                     </label>
                     <div class="fieldset" role="radiogroup" aria-label="{{ __('ideas.editor.color') }}">
                         <span class="fieldset-label">{{ __('ideas.editor.color') }}</span>
                         <div class="flex items-center gap-1.5 pt-1.5">
                             <template x-for="c in cfg.colors" :key="c.value">
                                 <button type="button" class="w-6 h-6 rounded-full border border-base-300"
-                                        :class="swatchClass(c.value) + (node(selected)?.color === c.value ? ' ring-2 ring-primary ring-offset-1' : '')"
-                                        role="radio" :aria-checked="node(selected)?.color === c.value ? 'true' : 'false'"
+                                        :class="swatchClass(c.value) + (selectedColor() === c.value ? ' ring-2 ring-primary ring-offset-1' : '')"
+                                        role="radio" :aria-checked="selectedColor() === c.value ? 'true' : 'false'"
                                         :aria-label="c.label" :title="c.label"
                                         :disabled="!cfg.can_update"
                                         x-on:click="patchNode(selected, { color: c.value })"></button>
@@ -400,7 +400,7 @@
                                 :disabled="!cfg.can_update">
                             <option value="">{{ __('ideas.editor.status_none') }}</option>
                             <template x-for="s in cfg.statuses" :key="s.value">
-                                <option :value="s.value" :selected="node(selected)?.node_status === s.value" x-text="s.label"></option>
+                                <option :value="s.value" :selected="selectedStatus() === s.value" x-text="s.label"></option>
                             </template>
                         </select>
                     </label>
@@ -408,13 +408,13 @@
 
                 {{-- Überführung + Rückreferenzen (MVP-109) --}}
                 <div class="mt-3 flex flex-wrap items-center gap-2">
-                    <template x-for="ref in (node(selected)?.references || [])" :key="ref.label + ref.kind">
+                    <template x-for="ref in selectedReferences()" :key="ref.label + ref.kind">
                         <a class="badge badge-outline badge-sm gap-1" :href="ref.url" target="_blank">
                             <span class="material-symbols-outlined text-xs" aria-hidden="true" x-text="ref.kind === 'converted' ? 'east' : 'link'"></span>
                             <span x-text="ref.type + ': ' + ref.label"></span>
                         </a>
                     </template>
-                    <template x-if="cfg.can_update && !node(selected)?.is_root">
+                    <template x-if="cfg.can_update && !isRoot(selected)">
                         <span class="flex flex-wrap gap-1 ml-auto">
                             <template x-for="target in cfg.convert_targets" :key="target">
                                 <button type="button" class="btn btn-xs btn-outline" x-on:click="convertNode(target)"

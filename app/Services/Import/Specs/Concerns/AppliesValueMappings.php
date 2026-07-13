@@ -12,16 +12,22 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
-use App\Models\{ImportValueMapping, Organization, Tag};
+use App\Models\{Classification, ImportValueMapping, Organization, Tag};
+use App\Services\Classification\ClassificationManager;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Tag-Anwendung beim CSV-Import (Rang 58): löst Quellwerte über das
- * persistente Mapping bzw. den case-insensitiven Namens-Treffer auf und
- * hängt die Tags ans Modell. Unbekannte Werte werden NIE blind angelegt —
- * sie bleiben liegen (Preflight sammelt sie fürs Mapping-Formular).
+ * Tag-/Klassifikations-Anwendung beim Import (Rang 58, A13): löst Quellwerte
+ * über das persistente Mapping, den case-insensitiven Tag-Namens-Treffer oder
+ * — für Entitäten mit Klassifikations-Trägerschaft — den eindeutigen
+ * Klassifikations-Code (CODE_REGEX) auf und hängt die Ziele ans Modell.
+ * Unbekannte Werte werden NIE blind angelegt — sie bleiben liegen
+ * (Preflight sammelt sie fürs Mapping-Formular).
  */
 trait AppliesValueMappings {
+    /** Entität der nutzenden Spec ({@see \App\Services\Import\EntitySpec::entity()}). */
+    abstract public function entity(): \App\Enums\Import\ImportEntity;
+
     /** @return list<string> */
     public function splitMappableValues(?string $raw): array {
         if ($raw === null || trim($raw) === '') {
@@ -34,28 +40,35 @@ trait AppliesValueMappings {
     }
 
     /**
-     * Wendet die Tag-Werte auf das persistierte Modell an (syncWithoutDetaching
-     * — Wiederholimporte bleiben idempotent).
+     * Wendet die Quellwerte auf das persistierte Modell an
+     * (syncWithoutDetaching — Wiederholimporte bleiben idempotent):
+     * Mapping (Tag/Klassifikation/Ignorieren) → Tag-Namens-Treffer →
+     * eindeutiger Klassifikations-Code.
      */
-    protected function applyMappedTags(Model $model, Organization $organization, ?string $raw, string $entity): void {
-        if (! method_exists($model, 'tags')) {
-            return;
-        }
-
+    protected function applyMappedValues(Model $model, Organization $organization, ?string $raw, string $entity): void {
         $tagIds = [];
+        $classificationIds = [];
+
         foreach ($this->splitMappableValues($raw) as $value) {
-            $resolved = ImportValueMapping::resolveValue((int) $organization->id, $entity, $value);
-            if ($resolved === ImportValueMapping::KIND_IGNORE) {
-                continue;
-            }
-            if (is_int($resolved)) {
-                $tagIds[] = $resolved;
+            $mapping = ImportValueMapping::findFor((int) $organization->id, $entity, $value);
+            if ($mapping !== null) {
+                if ($mapping->target_kind === ImportValueMapping::KIND_TAG && $mapping->tag_id !== null) {
+                    $tagIds[] = (int) $mapping->tag_id;
+                } elseif ($mapping->target_kind === ImportValueMapping::KIND_CLASSIFICATION) {
+                    // Org-Guard: die Klassifikation muss weiterhin für die Org
+                    // sichtbar und aktiv sein (sonst still überspringen).
+                    $classification = $this->visibleClassification($organization, (int) $mapping->classification_id);
+                    if ($classification !== null) {
+                        $classificationIds[] = (int) $classification->id;
+                    }
+                }
 
-                continue;
+                continue; // KIND_IGNORE bzw. aufgelöst
             }
 
-            // Kein Mapping: deterministischer Namens-Treffer zählt, unbekannte
-            // Werte bleiben unangewendet (kein Blind-Neuanlegen).
+            // Kein Mapping: deterministischer Tag-Namens-Treffer zählt, danach
+            // der eindeutige Klassifikations-Code; unbekannte Werte bleiben
+            // unangewendet (kein Blind-Neuanlegen).
             $existing = Tag::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
@@ -63,24 +76,35 @@ trait AppliesValueMappings {
                 ->first();
             if ($existing !== null) {
                 $tagIds[] = (int) $existing->id;
+
+                continue;
+            }
+
+            $byCode = $this->matchClassificationByCode($organization, $value);
+            if ($byCode !== null) {
+                $classificationIds[] = (int) $byCode->id;
             }
         }
 
-        if ($tagIds !== []) {
+        if ($tagIds !== [] && method_exists($model, 'tags')) {
             $model->tags()->syncWithoutDetaching(array_unique($tagIds));
+        }
+        if ($classificationIds !== [] && method_exists($model, 'classifications')) {
+            $model->classifications()->syncWithoutDetaching(array_unique($classificationIds));
         }
     }
 
     /**
-     * Unbekannte Werte einer Zeile (weder Mapping noch Namens-Treffer) —
-     * Datengrundlage des Mapping-Formulars in der Preflight.
+     * Unbekannte Werte einer Zeile (weder Mapping noch Tag-Namens- oder
+     * Klassifikations-Code-Treffer) — Datengrundlage des Mapping-Formulars
+     * in der Preflight.
      *
      * @return list<string>
      */
-    protected function unresolvedMappableValues(Organization $organization, ?string $raw, string $entity): array {
+    public function unresolvedMappableValues(Organization $organization, ?string $raw, string $entity): array {
         $unresolved = [];
         foreach ($this->splitMappableValues($raw) as $value) {
-            if (ImportValueMapping::resolveValue((int) $organization->id, $entity, $value) !== null) {
+            if (ImportValueMapping::findFor((int) $organization->id, $entity, $value) !== null) {
                 continue;
             }
             $exists = Tag::query()
@@ -88,11 +112,61 @@ trait AppliesValueMappings {
                 ->where('organization_id', $organization->id)
                 ->whereRaw('LOWER(name) = ?', [ImportValueMapping::normalize($value)])
                 ->exists();
-            if (! $exists) {
-                $unresolved[] = $value;
+            if ($exists) {
+                continue;
             }
+            if ($this->matchClassificationByCode($organization, $value) !== null) {
+                continue;
+            }
+            $unresolved[] = $value;
         }
 
         return $unresolved;
+    }
+
+    /**
+     * CODE_REGEX-Mechanik (A13): ein Quellwert, der normalisiert ein gültiger
+     * Klassifikations-Code ist und org-sichtbar auf GENAU EINE effektive
+     * Klassifikation zeigt, wird deterministisch aufgelöst. Org-Overrides
+     * verdrängen den Plattform-Default gleicher Domäne; Codes in mehreren
+     * Domänen sind mehrdeutig und bleiben unaufgelöst (Mapping-Formular).
+     */
+    protected function matchClassificationByCode(Organization $organization, string $value): ?Classification {
+        if (! $this->entity()->supportsClassifications()) {
+            return null;
+        }
+
+        $normalized = ImportValueMapping::normalize($value);
+        if (preg_match(ClassificationManager::CODE_REGEX, $normalized) !== 1) {
+            return null;
+        }
+
+        $candidates = Classification::query()
+            ->where('code', $normalized)
+            ->where('active', true)
+            ->where(fn ($q) => $q->whereNull('organization_id')->orWhere('organization_id', $organization->id))
+            ->get();
+
+        /** @var array<string, Classification> $byDomain */
+        $byDomain = [];
+        foreach ($candidates as $candidate) {
+            $key = $candidate->domain->value;
+            if (! isset($byDomain[$key]) || $candidate->organization_id !== null) {
+                $byDomain[$key] = $candidate;
+            }
+        }
+
+        return count($byDomain) === 1 ? array_values($byDomain)[0] : null;
+    }
+
+    /**
+     * Org-sichtbare, aktive Klassifikation (Plattform-Default oder eigene).
+     */
+    private function visibleClassification(Organization $organization, int $classificationId): ?Classification {
+        return Classification::query()
+            ->whereKey($classificationId)
+            ->where('active', true)
+            ->where(fn ($q) => $q->whereNull('organization_id')->orWhere('organization_id', $organization->id))
+            ->first();
     }
 }

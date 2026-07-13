@@ -43,7 +43,7 @@
 <body>
     <div class="toolbar">
         <a href="{{ route('isms.requirements.index') }}">← {{ __('isms.action.back') }}</a>
-        <button type="button" class="primary" onclick="window.print()">{{ __('isms.action.print') }}</button>
+        <button type="button" class="primary" data-print>{{ __('isms.action.print') }}</button>
     </div>
 
     <h1>{{ __('isms.soa.heading') }}</h1>
@@ -102,5 +102,6 @@
     </table>
 
     <p class="meta">{{ __('isms.soa.disclaimer') }}</p>
+@include('partials.print-script')
 </body>
 </html>

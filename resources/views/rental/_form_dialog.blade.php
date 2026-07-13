@@ -17,8 +17,10 @@
             @endforeach
         </x-select-field>
         <x-input-field name="contact_name" :label="__('Ansprechpartner (optional)')" :value="old('contact_name')" />
-        <x-input-field name="starts_at" type="datetime-local" :label="__('Beginn')" :value="old('starts_at')" required />
-        <x-input-field name="ends_at" type="datetime-local" :label="__('Ende')" :value="old('ends_at')" required />
+        <x-date-range class="md:col-span-2" layout="split" form-control required
+                      from-name="starts_at" to-name="ends_at" type="datetime-local"
+                      :from-label="__('Beginn')" :to-label="__('Ende')"
+                      :from="old('starts_at')" :to="old('ends_at')" />
         <x-select-field name="project_id" :label="__('Projekt (optional)')">
             <option value="">{{ __('ohne Projektbezug') }}</option>
             @foreach ($projects as $p)

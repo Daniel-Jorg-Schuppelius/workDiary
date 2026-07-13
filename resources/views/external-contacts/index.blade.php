@@ -43,7 +43,7 @@
                             <x-icon-btn icon="edit" size="xs" tone="ghost" data-entry-modal-trigger
                                         :href="route('external-contacts.edit', $contact)" />
                             <form method="POST" action="{{ route('external-contacts.destroy', $contact) }}"
-                                  onsubmit="return confirm(@js(__('external.contact.confirm_delete')));">
+                                  data-confirm-dialog data-confirm-message="{{ __('external.contact.confirm_delete') }}">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('external.contact.delete') }}</button>
                             </form>

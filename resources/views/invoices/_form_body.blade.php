@@ -1,7 +1,10 @@
 {{-- Shared form fields for Invoice create --}}
 
-<div x-data="{ content: '{{ old('content', 'service') }}' }"
-     x-on:change="if ($event.target.name === 'content') content = $event.target.value">
+{{-- Logik in Alpine.data("invoiceContentSwitch") (components.js) — der
+     CSP-Build-Parser kennt keine if-Statements in Direktiven. --}}
+<div x-data="invoiceContentSwitch"
+     data-content="{{ old('content', 'service') }}"
+     x-on:change="onFormChange($event)">
 <x-form-group :legend="__('Filter')" icon="receipt_long" tone="primary" cols="2">
     <x-select-field name="customer_id" :label="__('Kunde')" required span="2">
         <option value="">{{ __('-- bitte wählen --') }}</option>

@@ -48,7 +48,7 @@
                     <input type="text" readonly
                            class="input input-sm input-bordered w-full font-mono text-xs"
                            value="{{ session('external_participant_link') }}"
-                           onclick="this.select()">
+                           data-select-on-click>
                 </div>
             </div>
         @endif

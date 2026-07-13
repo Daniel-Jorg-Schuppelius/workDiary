@@ -21,9 +21,13 @@ return [
     ],
     'weather' => [
         'heading' => 'Recupero meteo automatico',
-        'description' => 'Alla creazione di un verbale, recupera automaticamente uno snapshot meteo (Open-Meteo) per luogo e orario — come prova. I progetti possono sovrascriverlo.',
+        'description' => 'Alla creazione di un verbale, recupera automaticamente uno snapshot meteo per luogo e orario — come prova. I progetti possono sovrascriverlo.',
         'auto_fetch' => 'Recupera il meteo automaticamente alla creazione di un verbale',
         'auto_fetch_hint' => 'Solo se sono disponibili le coordinate del luogo; altrimenti non succede nulla. Predefinito: disattivato.',
+        'provider' => 'Servizio meteo',
+        'provider_hint' => 'Open-Meteo: mondiale, senza registrazione. DWD Open Data: dati ufficiali delle stazioni tedesche (CC BY 4.0, attribuzione «Deutscher Wetterdienst»), solo per luoghi in Germania con una stazione a portata.',
+        'dwd_max_station_km' => 'DWD: distanza massima dalla stazione (km)',
+        'dwd_max_station_km_hint' => 'Se nessuna stazione DWD attiva si trova entro questa distanza, non viene creato alcuno snapshot — meglio nessun valore che uno errato. Predefinito: 30 km.',
     ],
     'hint' => 'Lascia vuoto per usare il valore predefinito del sistema.',
     'pagination' => [

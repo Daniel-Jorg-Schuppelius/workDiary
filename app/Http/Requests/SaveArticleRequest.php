@@ -27,6 +27,7 @@ class SaveArticleRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'default_procedure_template_version_id' => \App\Models\ProcedureTemplateVersion::class,
+        'tag_ids' => \App\Models\Tag::class,
     ];
 
     /** @var list<string> */
@@ -83,6 +84,10 @@ class SaveArticleRequest extends BaseFormRequest {
                 }),
             ],
             ...array_fill_keys(self::FLAGS, ['boolean']),
+            // Artikel-Tagging (MVP-339): analog PartyFormFields.
+            'tag_ids' => ['nullable', 'array'],
+            'tag_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization('tags')],
+            'new_tags' => ['nullable', 'string', 'max:500'],
         ];
     }
 

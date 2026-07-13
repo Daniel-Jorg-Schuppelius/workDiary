@@ -42,7 +42,7 @@
 </head>
 <body>
     <div class="actions no-print">
-        <button class="btn" onclick="window.print()">{{ __('form.action.print') }}</button>
+        <button class="btn" data-print>{{ __('form.action.print') }}</button>
         <a class="btn" href="{{ route('form-submissions.pdf', $submission) }}">{{ __('form.action.download_pdf') }}</a>
         <a class="btn" href="{{ route('form-submissions.index') }}">{{ __('form.action.back') }}</a>
     </div>
@@ -80,5 +80,6 @@
             </tr>
         @endforeach
     </table>
+@include('partials.print-script')
 </body>
 </html>

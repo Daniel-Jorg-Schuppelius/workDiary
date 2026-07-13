@@ -47,7 +47,7 @@
             </div>
             {{-- Milestone-Filter --}}
             @if ($milestones->isNotEmpty())
-                <select onchange="window.location.href=this.value" class="select select-xs select-bordered">
+                <select data-navigate-select class="select select-xs select-bordered">
                     <option value="{{ $baseQuery(['milestone' => null, 'status' => $statusFilter ?: null]) }}"
                             {{ $milestoneFilter === '' ? 'selected' : '' }}>{{ __('Alle Milestones') }}</option>
                     <option value="{{ $baseQuery(['milestone' => 'none', 'status' => $statusFilter ?: null]) }}"

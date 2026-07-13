@@ -63,7 +63,7 @@
             <label for="flex-user-select" class="text-sm font-medium text-base-content/70">{{ __('Mitarbeiter') }}</label>
             <select id="flex-user-select"
                     class="select select-sm select-bordered w-full sm:max-w-xs"
-                    onchange="if (this.value) window.location.href = this.value;">
+                    data-navigate-select>
                 @foreach ($users as $u)
                     @php
                         $isSelf = (int) $u->id === $selfId;
@@ -141,7 +141,7 @@
                     @endif
                     <x-table.th sort type="duration" align="right">{{ __('Ist') }}</x-table.th>
                     @if ($tracksTarget)
-                        <x-table.th sort type="duration" align="right">{{ __('Saldo') }}</x-table.th>
+                        <x-table.th sort type="duration" align="right"><x-term glossary="zeitkonto">{{ __('Saldo') }}</x-term></x-table.th>
                     @endif
                 </tr>
             </x-slot:head>

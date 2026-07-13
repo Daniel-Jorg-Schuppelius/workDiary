@@ -256,6 +256,16 @@
                                         <input type="number" name="weight_grams" value="1000" min="1" step="1"
                                                class="join-item input input-xs input-bordered w-20"
                                                title="{{ __('shipping.field.weight_grams') }}" required>
+                                        {{-- Optionale Packstück-Maße (cm) — für UPS/FedEx-Dimensions --}}
+                                        <input type="number" name="length_cm" min="1" max="400" step="1" placeholder="L"
+                                               class="join-item input input-xs input-bordered w-12"
+                                               title="{{ __('shipping.field.length_cm') }}">
+                                        <input type="number" name="width_cm" min="1" max="400" step="1" placeholder="B"
+                                               class="join-item input input-xs input-bordered w-12"
+                                               title="{{ __('shipping.field.width_cm') }}">
+                                        <input type="number" name="height_cm" min="1" max="400" step="1" placeholder="H"
+                                               class="join-item input input-xs input-bordered w-12"
+                                               title="{{ __('shipping.field.height_cm') }}">
                                         <button type="submit" class="join-item btn btn-xs">{{ __('shipping.action.create') }}</button>
                                     </form>
                                 @endif

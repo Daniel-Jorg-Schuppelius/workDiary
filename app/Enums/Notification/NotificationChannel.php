@@ -17,7 +17,10 @@ use App\Enums\Contracts\HasLabel;
  * Zustellkanäle für Benachrichtigungen (MVP-018). InApp/Mail/Push sind
  * empfängerbezogen; Teams/Mattermost (Feature 056, MVP-119) sind org-weite
  * ausgehende Chat-Webhook-Kanäle (eine Kanal-URL je Organisation), die über
- * dieselbe Ereignis→Kanal-Matrix ausgewählt werden.
+ * dieselbe Ereignis→Kanal-Matrix ausgewählt werden. Calendar (MVP-331,
+ * Bauturbo A11) publiziert terminartige Ereignisse (Payload mit `due_at`)
+ * idempotent als Kalendereintrag in die verbundenen Kalender der Organisation
+ * (CalDAV/Microsoft 365/Google — A8-Publish-Infrastruktur).
  */
 enum NotificationChannel: string implements HasLabel {
     use HasOptions;
@@ -27,6 +30,7 @@ enum NotificationChannel: string implements HasLabel {
     case Push = 'push';
     case Teams = 'teams';
     case Mattermost = 'mattermost';
+    case Calendar = 'calendar';
 
     public function label(): string {
         return (string) __('enums.notification.channel.' . $this->value);

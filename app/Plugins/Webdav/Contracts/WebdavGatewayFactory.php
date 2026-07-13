@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\Webdav\Contracts;
 
 use App\Models\WebdavConnection;
+use App\Plugins\Support\Mirror\RemoteFileGateway;
 
 /**
- * Erzeugt je Anbindung ein {@see WebdavGateway} (Feature 058). Über den Container
- * gebunden — Tests ersetzen die Factory durch eine Variante mit gemocktem Gateway
- * (kein HTTP-Verkehr).
+ * Erzeugt je Anbindung ein {@see RemoteFileGateway} über WebDAV (Feature 058;
+ * Interface seit A10/MVP-330 im gemeinsamen Spiegel-Kern). Über den Container
+ * gebunden — Tests ersetzen die Factory durch eine Variante mit gemocktem
+ * Gateway (kein HTTP-Verkehr).
  */
 interface WebdavGatewayFactory {
-    public function for(WebdavConnection $connection): WebdavGateway;
+    public function for(WebdavConnection $connection): RemoteFileGateway;
 }

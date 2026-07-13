@@ -11,6 +11,7 @@
     $storage = $metrics['storage'] ?? [];
     $moduleCounts = $metrics['module_counts'] ?? [];
     $featureUsage = $metrics['feature_usage'] ?? [];
+    $telemetry = $metrics['telemetry'] ?? ['enabled' => true, 'counters' => []];
     $fmtBytes = static fn (int $bytes): string => \Illuminate\Support\Number::fileSize($bytes, precision: 1);
 @endphp
 
@@ -186,6 +187,42 @@
                 :title="__('metrics.empty.feature_usage')" />
         @endif
         <p class="mt-2 text-xs text-base-content/50">{{ __('metrics.hint.feature_usage_window') }}</p>
+    </x-card>
+
+    {{-- Metrik-Transparenz (MVP-337): welche Zähler erhoben werden, wo sie
+         liegen und wo der Telemetrie-Schalter sitzt. --}}
+    <x-card :title="__('metrics.section.transparency')">
+        <div class="flex flex-wrap items-center gap-3">
+            <x-status-badge :tone="($telemetry['enabled'] ?? true) ? 'success' : 'warning'">
+                {{ ($telemetry['enabled'] ?? true) ? __('metrics.transparency.status_enabled') : __('metrics.transparency.status_disabled') }}
+            </x-status-badge>
+            @can(\App\Enums\User\Permission::PlatformSettingsManage->value)
+                <a class="link link-primary text-sm" href="{{ route('admin.settings.index', ['q' => 'telemetry.enabled']) }}">
+                    {{ __('metrics.transparency.settings_link') }}
+                </a>
+            @endcan
+        </div>
+        <p class="mt-2 text-sm text-base-content/70">{{ __('metrics.transparency.intro') }}</p>
+        <div class="mt-3 overflow-x-auto">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>{{ __('metrics.field.feature') }}</th>
+                        <th>{{ __('metrics.field.counter_description') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (($telemetry['counters'] ?? []) as $counterKey)
+                        <tr>
+                            <td class="font-mono text-xs">{{ $counterKey }}</td>
+                            <td class="text-sm">{{ __('metrics.counter.' . $counterKey) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <p class="mt-2 text-xs text-base-content/50">{{ __('metrics.transparency.storage') }}</p>
+        <p class="text-xs text-base-content/50">{{ __('metrics.transparency.retention') }}</p>
     </x-card>
 
     <p class="text-xs text-base-content/40">

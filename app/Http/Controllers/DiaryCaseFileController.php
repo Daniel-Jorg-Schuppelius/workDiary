@@ -15,18 +15,57 @@ use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Fallakte (MVP-013, ../WorkDiary-Architecture/fallakte.md): zusammenhängende Read-Only-Gesamtsicht
  * eines Auftrags inkl. vollständiger Timeline — druckbar über Print-CSS
- * (Muster: diary/export-pdf). Zugriff wie die Auftragsdetailseite
- * (auth + Organisations-Scope, Cross-Org → 404 via HasSqid/Tenant-Scope).
+ * (Muster: diary/export-pdf) und als serverseitiges PDF (MVP-349, analog
+ * Kundenportal-Fallakte, jedoch mit vollem INTERNEN Datenumfang). Zugriff wie
+ * die Auftragsdetailseite (auth + Organisations-Scope, Cross-Org → 404 via
+ * HasSqid/Tenant-Scope) — HTML und PDF teilen dieselbe Datenquelle und
+ * dasselbe Recht (kein neues Recht).
  */
 class DiaryCaseFileController extends Controller {
     public function __invoke(DiaryEntry $diary, DiaryEntryTimelineService $timeline, FeatureFlagResolver $featureFlags): View {
         /** @var User $viewer */
         $viewer = Auth::user();
 
+        return view('diary.case-file', $this->caseFileData($diary, $viewer, $timeline, $featureFlags));
+    }
+
+    /**
+     * Interne Fallakte als serverseitiges PDF (fallakte.md §11 Folge-MVP):
+     * identischer Datenschnitt wie die HTML-Fallakte — inkl. interner Einträge
+     * (Kommentare, interne Anhänge, Kommunikation) im Unterschied zum strikt
+     * kundensichtbaren Portal-PDF.
+     */
+    public function pdf(DiaryEntry $diary, DiaryEntryTimelineService $timeline, FeatureFlagResolver $featureFlags): \Symfony\Component\HttpFoundation\Response {
+        /** @var User $viewer */
+        $viewer = Auth::user();
+
+        $html = view('diary.case-file-pdf', $this->caseFileData($diary, $viewer, $timeline, $featureFlags))->render();
+
+        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (diary.case-file-pdf).');
+
+        $filename = sprintf('fallakte-%s-%s.pdf', $diary->getRouteKey(), now()->format('Y-m-d'));
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Gemeinsame Datenquelle für HTML- UND PDF-Fallakte (identischer
+     * Sichtbarkeitsschnitt — Muster: CustomerPortal\DiaryDetailController).
+     *
+     * @return array<string, mixed>
+     */
+    private function caseFileData(DiaryEntry $diary, User $viewer, DiaryEntryTimelineService $timeline, FeatureFlagResolver $featureFlags): array {
         $diary->load([
             'user:id,name',
             'assignedUser:id,name',
@@ -80,7 +119,7 @@ class DiaryCaseFileController extends Controller {
 
         $fullTimeline = $timeline->forDiaryEntry($diary, $viewer, null, 500);
 
-        return view('diary.case-file', [
+        return [
             'diary' => $diary,
             'timeEntries' => $timeEntries,
             'totalMinutes' => (int) $timeEntries->sum('minutes'),
@@ -92,6 +131,6 @@ class DiaryCaseFileController extends Controller {
             'documents' => $documents,
             'timelineItems' => $fullTimeline['items'],
             'generatedAt' => now(),
-        ]);
+        ];
     }
 }

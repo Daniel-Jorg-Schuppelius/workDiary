@@ -26,14 +26,14 @@
         <x-select-field name="team_id" :label="__('Team')">
             <option value="">{{ __('— Kein Team —') }}</option>
             @foreach ($teams as $team)
-                <option value="{{ $team->id }}" @selected((int) old('team_id', $queue->team_id) === (int) $team->id)>{{ $team->name }}</option>
+                <option value="{{ $team->sqid }}" @selected((string) old('team_id', \App\Support\Sqid::encode(\App\Models\Team::class, $queue->team_id)) === $team->sqid)>{{ $team->name }}</option>
             @endforeach
         </x-select-field>
 
         <x-select-field name="default_sla_contract_id" :label="__('Standard-SLA')">
             <option value="">{{ __('— Kein SLA —') }}</option>
             @foreach ($slaContracts as $contract)
-                <option value="{{ $contract->id }}" @selected((int) old('default_sla_contract_id', $queue->default_sla_contract_id) === (int) $contract->id)>{{ $contract->label }}</option>
+                <option value="{{ $contract->sqid }}" @selected((string) old('default_sla_contract_id', \App\Support\Sqid::encode(\App\Models\SlaContract::class, $queue->default_sla_contract_id)) === $contract->sqid)>{{ $contract->label }}</option>
             @endforeach
         </x-select-field>
 

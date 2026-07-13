@@ -144,7 +144,7 @@ final readonly class SettingDefinition {
             SettingType::Decimal => 'numeric',
             SettingType::Time => 'date_format:H:i',
             SettingType::Json => 'array',
-            SettingType::String_, SettingType::Enum_ => 'string',
+            SettingType::String_, SettingType::Text, SettingType::Enum_ => 'string',
         };
 
         // 'nullable' aus den Wert-Regeln nicht doppeln.

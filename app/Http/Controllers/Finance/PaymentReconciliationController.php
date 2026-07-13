@@ -111,17 +111,53 @@ class PaymentReconciliationController extends Controller {
         $statement->load(['bankAccount', 'transactions.allocations']);
 
         $suggestions = [];
+        $returnOrigins = [];
         foreach ($statement->transactions as $transaction) {
-            if ($transaction->match_status->isOpen()) {
-                $suggestions[$transaction->id] = $this->matchingService->suggestFor($transaction);
+            if (! $transaction->match_status->isOpen()) {
+                continue;
+            }
+            $suggestions[$transaction->id] = $this->matchingService->suggestFor($transaction);
+            // Rückläufer-Workflow (MVP-334): Kandidaten der ursprünglichen
+            // Zuordnung für Storno-/Return-Umsätze vorschlagen.
+            if ($transaction->isReturnCandidate()) {
+                $returnOrigins[$transaction->id] = $this->matchingService->suggestReturnOrigins($transaction);
             }
         }
 
         return view('finance.reconciliation.show', [
             'statement' => $statement,
             'suggestions' => $suggestions,
+            'returnOrigins' => $returnOrigins,
             'kinds' => AllocationKind::cases(),
         ]);
+    }
+
+    /**
+     * Lastschrift-Rückläufer verarbeiten (MVP-334): kompensiert die gewählte
+     * Original-Zuordnung GoBD-konform (negative Chargeback-Zuordnung, Original
+     * bleibt Historie) und öffnet den Posten wieder.
+     */
+    public function processReturn(Request $request, BankTransaction $transaction): RedirectResponse {
+        Gate::authorize('reconcile', $transaction);
+
+        $validated = $request->validate([
+            'allocation' => ['required', 'string'],
+            'reason' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $allocationId = Sqid::decode(PaymentAllocation::class, (string) $validated['allocation']);
+        $original = $allocationId !== null ? PaymentAllocation::query()->find($allocationId) : null;
+        if ($original === null) {
+            return back()->with('error', __('bank.reconcile.error.target_not_found'));
+        }
+
+        try {
+            $this->reconciliationService->processReturn($transaction, $original, $validated['reason'] ?? null);
+        } catch (BankImportException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('success', __('bank.return.flash.processed'));
     }
 
     public function confirm(Request $request, BankTransaction $transaction): RedirectResponse {

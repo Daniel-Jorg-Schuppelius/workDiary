@@ -36,6 +36,11 @@ class NotificationDispatchLog extends Model {
 
     public const STAGE_ESCALATION = 'escalation';
 
+    /** Eskalationsleiter Stufe 2/3 (MVP-331): eigene Dedup-Stufen je Regel. */
+    public const STAGE_ESCALATION2 = 'escalation2';
+
+    public const STAGE_ESCALATION3 = 'escalation3';
+
     protected $table = 'notification_dispatch_log';
 
     protected $fillable = [

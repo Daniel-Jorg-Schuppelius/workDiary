@@ -32,7 +32,7 @@
 
     @if ($sprints->isNotEmpty())
         <form method="GET" action="{{ route('agile.reports.sprint', $project) }}" class="flex items-center gap-2">
-            <select name="sprint" class="select select-sm select-bordered" aria-label="{{ __('Sprint wählen') }}" onchange="this.form.submit()">
+            <select name="sprint" class="select select-sm select-bordered" aria-label="{{ __('Sprint wählen') }}" data-autosubmit>
                 @foreach ($sprints as $candidate)
                     <option value="{{ $candidate->sqid }}" @selected($sprint?->id === $candidate->id)>{{ $candidate->name }}</option>
                 @endforeach

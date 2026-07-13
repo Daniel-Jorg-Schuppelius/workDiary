@@ -9,7 +9,7 @@
     <x-slot:actions>
         @can('create', \App\Models\Timesheet::class)
             <x-icon-btn icon="add" tone="primary" size="sm" type="button"
-                        onclick="document.getElementById('quick-timesheet-dialog').showModal()"
+                        data-open-dialog="quick-timesheet-dialog"
                         show-label>{{ __('Stundenzettel anlegen') }}</x-icon-btn>
         @endcan
     </x-slot:actions>
@@ -18,14 +18,14 @@
     <x-filter-bar :action="route('timesheets.index')" :reset="route('timesheets.index')">
         @if($isAdmin)
             <x-filter-field :label="__('Bereich')" for="ts-scope">
-                <select id="ts-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="ts-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope==='mine')>{{ __('Eigene') }}</option>
                     <option value="team" @selected($scope==='team')>{{ __('Team') }}</option>
                 </select>
             </x-filter-field>
         @endif
         <x-filter-field :label="__('Status')" for="ts-status">
-            <select id="ts-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="ts-status" name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach(\App\Enums\Timesheet\TimesheetStatus::cases() as $s)
                     <option value="{{ $s->value }}" @selected(request('status')===$s->value)>{{ $s->label() }}</option>

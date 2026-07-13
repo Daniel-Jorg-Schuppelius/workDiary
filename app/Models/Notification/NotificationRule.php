@@ -35,6 +35,12 @@ use Illuminate\Database\Eloquent\{Model, SoftDeletes};
  * @property bool $escalation_enabled
  * @property int|null $escalate_after_hours
  * @property string|null $escalation_role
+ * @property int|null $escalation2_after_hours
+ * @property list<string>|null $escalation2_roles
+ * @property list<int>|null $escalation2_user_ids
+ * @property int|null $escalation3_after_hours
+ * @property list<string>|null $escalation3_roles
+ * @property list<int>|null $escalation3_user_ids
  */
 class NotificationRule extends Model {
     use Auditable;
@@ -58,6 +64,12 @@ class NotificationRule extends Model {
         'escalation_enabled',
         'escalate_after_hours',
         'escalation_role',
+        'escalation2_after_hours',
+        'escalation2_roles',
+        'escalation2_user_ids',
+        'escalation3_after_hours',
+        'escalation3_roles',
+        'escalation3_user_ids',
         'override_quiet_hours',
     ];
 
@@ -71,6 +83,12 @@ class NotificationRule extends Model {
         'recipient_user_ids' => 'array',
         'escalation_enabled' => 'boolean',
         'escalate_after_hours' => 'integer',
+        'escalation2_after_hours' => 'integer',
+        'escalation2_roles' => 'array',
+        'escalation2_user_ids' => 'array',
+        'escalation3_after_hours' => 'integer',
+        'escalation3_roles' => 'array',
+        'escalation3_user_ids' => 'array',
     ];
 
     protected static function newFactory(): NotificationRuleFactory {
@@ -104,6 +122,12 @@ class NotificationRule extends Model {
             'escalation_enabled' => false,
             'escalate_after_hours' => null,
             'escalation_role' => null,
+            'escalation2_after_hours' => null,
+            'escalation2_roles' => [],
+            'escalation2_user_ids' => [],
+            'escalation3_after_hours' => null,
+            'escalation3_roles' => [],
+            'escalation3_user_ids' => [],
         ]);
         $rule->organization_id = $organizationId;
 
@@ -112,5 +136,48 @@ class NotificationRule extends Model {
 
     public function usesChannel(NotificationChannel $channel): bool {
         return in_array($channel->value, (array) $this->channels, true);
+    }
+
+    /**
+     * Ist die Eskalationsstufe 2 bzw. 3 konfiguriert (Frist gesetzt UND
+     * mindestens ein Empfänger — Rolle oder fester User)? Stufen ohne
+     * Konfiguration verhalten sich exakt wie vor MVP-331 (Bestand einstufig).
+     */
+    public function escalationLevelConfigured(int $level): bool {
+        return $this->escalationAfterHoursFor($level) !== null
+            && ($this->escalationRolesFor($level) !== [] || $this->escalationUserIdsFor($level) !== []);
+    }
+
+    /** Frist der Stufe in Stunden (nach dem Versand der vorherigen Stufe). */
+    public function escalationAfterHoursFor(int $level): ?int {
+        $hours = match ($level) {
+            2 => $this->escalation2_after_hours,
+            3 => $this->escalation3_after_hours,
+            default => null,
+        };
+
+        return $hours !== null ? (int) $hours : null;
+    }
+
+    /** @return list<string> */
+    public function escalationRolesFor(int $level): array {
+        $roles = match ($level) {
+            2 => $this->escalation2_roles,
+            3 => $this->escalation3_roles,
+            default => [],
+        };
+
+        return array_values(array_filter(array_map('strval', (array) $roles)));
+    }
+
+    /** @return list<int> */
+    public function escalationUserIdsFor(int $level): array {
+        $ids = match ($level) {
+            2 => $this->escalation2_user_ids,
+            3 => $this->escalation3_user_ids,
+            default => [],
+        };
+
+        return array_values(array_filter(array_map('intval', (array) $ids)));
     }
 }

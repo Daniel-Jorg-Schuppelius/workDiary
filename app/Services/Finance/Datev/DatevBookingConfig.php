@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Datev;
 
 use App\Enums\Finance\ChartOfAccounts;
-use App\Models\{Customer, Organization};
+use App\Models\{Customer, Expense, Organization};
 
 /**
  * Buchhaltungskonfiguration je Organisation (Feature 045, „Priorität 2": die
@@ -28,6 +28,7 @@ use App\Models\{Customer, Organization};
 final class DatevBookingConfig {
     /**
      * @param array<string, string> $taxKeyMap  Steuersatz (als 2-NK-String) ⇒ DATEV-BU-Schlüssel
+     * @param array<int, array{account: string, tax_key: string}> $expenseAccounts  Spesenkategorie-ID ⇒ Aufwandskonto + Vorsteuer-BU (MVP-334)
      */
     private function __construct(
         public readonly int $advisorNumber,
@@ -40,6 +41,7 @@ final class DatevBookingConfig {
         public readonly array $taxKeyMap,
         public readonly bool $finalize,
         public readonly string $encoding,
+        public readonly array $expenseAccounts,
     ) {}
 
     public static function forOrganization(?Organization $organization): self {
@@ -74,6 +76,7 @@ final class DatevBookingConfig {
             taxKeyMap: self::resolveTaxKeyMap($datev['tax_keys'] ?? null),
             finalize: self::boolish($datev['finalize'] ?? null, true),
             encoding: $encoding,
+            expenseAccounts: self::resolveExpenseAccounts($datev['expense_accounts'] ?? null),
         );
     }
 
@@ -118,6 +121,30 @@ final class DatevBookingConfig {
     }
 
     /**
+     * Aufwandskonto einer Spese (MVP-334, „differenzierte Aufwands-/
+     * Vorsteuerkonten je Spesenkategorie"): explizites Mapping je Kategorie
+     * hat Vorrang; ohne Mapping greift die bisherige MVP-Vereinfachung
+     * (Erlöskonto-Slot als Aufwandskonto).
+     */
+    public function expenseAccountFor(Expense $expense): string {
+        $mapping = $this->expenseAccounts[(int) ($expense->expense_category_id ?? 0)] ?? null;
+        $account = trim((string) ($mapping['account'] ?? ''));
+
+        return $account !== '' ? $account : $this->revenueAccountFor((float) $expense->tax_rate);
+    }
+
+    /**
+     * Vorsteuer-BU-Schlüssel einer Spese: Kategorie-Mapping (z. B. 9 = 19 %
+     * Vorsteuer, 8 = 7 % Vorsteuer) vor dem allgemeinen Steuersatz-Mapping.
+     */
+    public function expenseTaxKeyFor(Expense $expense): ?string {
+        $mapping = $this->expenseAccounts[(int) ($expense->expense_category_id ?? 0)] ?? null;
+        $taxKey = trim((string) ($mapping['tax_key'] ?? ''));
+
+        return $taxKey !== '' ? $taxKey : $this->taxKeyFor((float) $expense->tax_rate);
+    }
+
+    /**
      * Sind die Pflicht-Stammdaten gepflegt (Berater-/Mandantennummer)?
      */
     public function hasClientNumbers(): bool {
@@ -142,6 +169,32 @@ final class DatevBookingConfig {
 
         foreach ($raw as $rate => $key) {
             $map[self::rateKey((string) $rate)] = (string) $key;
+        }
+
+        return $map;
+    }
+
+    /**
+     * Robustes Einlesen des Spesenkategorie-Mappings aus den Org-Settings.
+     *
+     * @return array<int, array{account: string, tax_key: string}>
+     */
+    private static function resolveExpenseAccounts(mixed $raw): array {
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $map = [];
+        foreach ($raw as $categoryId => $entry) {
+            if (! is_numeric($categoryId) || ! is_array($entry)) {
+                continue;
+            }
+            $account = trim((string) ($entry['account'] ?? ''));
+            $taxKey = trim((string) ($entry['tax_key'] ?? ''));
+            if ($account === '' && $taxKey === '') {
+                continue;
+            }
+            $map[(int) $categoryId] = ['account' => $account, 'tax_key' => $taxKey];
         }
 
         return $map;

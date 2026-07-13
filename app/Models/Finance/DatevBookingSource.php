@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property string $amount
  * @property string|null $tax_key
  * @property string|null $document_ref
+ * @property bool $is_reversal Generalumkehr-Satz (Storno-Übergabe, MVP-334)
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -51,11 +52,13 @@ class DatevBookingSource extends Model {
         'amount',
         'tax_key',
         'document_ref',
+        'is_reversal',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'amount' => 'decimal:2',
+        'is_reversal' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -7,19 +7,19 @@
 <x-index-page :subtitle="__('operations.title.subtitle')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.operations.index') }}" class="flex flex-wrap items-center gap-2">
-            <select name="status" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <select name="status" class="select select-bordered select-sm" data-autosubmit>
                 <option value="">{{ __('operations.filter.active') }}</option>
                 @foreach (\App\Enums\Operations\OperationsTaskStatus::cases() as $status)
                     <option value="{{ $status->value }}" @selected($statusFilter === $status)>{{ $status->label() }}</option>
                 @endforeach
             </select>
-            <select name="severity" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <select name="severity" class="select select-bordered select-sm" data-autosubmit>
                 <option value="">{{ __('operations.filter.all_severities') }}</option>
                 @foreach (\App\Enums\Operations\OperationsTaskSeverity::cases() as $severity)
                     <option value="{{ $severity->value }}" @selected($severityFilter === $severity)>{{ $severity->label() }}</option>
                 @endforeach
             </select>
-            <select name="type" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <select name="type" class="select select-bordered select-sm" data-autosubmit>
                 <option value="">{{ __('operations.filter.all_types') }}</option>
                 @foreach (\App\Enums\Operations\OperationsTaskType::cases() as $type)
                     <option value="{{ $type->value }}" @selected($typeFilter === $type)>{{ $type->label() }}</option>

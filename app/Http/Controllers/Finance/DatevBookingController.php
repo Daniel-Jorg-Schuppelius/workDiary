@@ -12,10 +12,11 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\ChartOfAccounts;
 use App\Http\Controllers\Controller;
+use App\Models\{ExpenseCategory, Organization, User};
 use App\Models\Finance\DatevBookingBatch;
-use App\Models\{Organization, User};
 use App\Services\Finance\Datev\DatevBookingConfig;
 use App\Services\Finance\{DatevBookingException, DatevBookingService, FinancialFormatsSupport};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -76,6 +77,7 @@ class DatevBookingController extends Controller {
             'from' => ['required', 'date'],
             'to' => ['required', 'date', 'after_or_equal:from'],
             'include_expenses' => ['nullable', 'boolean'],
+            'include_reversals' => ['nullable', 'boolean'],
         ]);
 
         $org = $this->organization();
@@ -85,7 +87,12 @@ class DatevBookingController extends Controller {
 
         $config = DatevBookingConfig::forOrganization($org);
         $period = ['from' => $data['from'], 'to' => $data['to']];
-        $sources = $this->service->collectBookingReady($org, $period, $request->boolean('include_expenses'));
+        $sources = $this->service->collectBookingReady(
+            $org,
+            $period,
+            $request->boolean('include_expenses'),
+            $request->boolean('include_reversals'),
+        );
 
         try {
             $batch = $this->service->createDraft($org, $period, $sources, $config, $this->actor());
@@ -115,7 +122,46 @@ class DatevBookingController extends Controller {
             'preflight' => $preflight,
             'importAvailable' => FinancialFormatsSupport::isAvailable(),
             'canFinalize' => Gate::allows('finalize', $batch),
+            'canReshape' => Gate::allows('reshape', $batch),
         ]);
+    }
+
+    /**
+     * Teilauswahl (MVP-334): entfernt markierte Quellsätze aus einem DRAFT-
+     * Stapel — der Zuschnitt wird am Exportnachweis persistiert
+     * (selection_mode = manual + Hash-Ketten-Event), entfernte Quellen sind
+     * sofort wieder buchungsreif.
+     */
+    public function removeSources(Request $request, DatevBookingBatch $batch): RedirectResponse {
+        Gate::authorize('reshape', $batch);
+
+        $data = $request->validate([
+            'sources' => ['required', 'array', 'min:1'],
+            'sources.*' => ['required', 'integer'],
+        ]);
+
+        try {
+            $this->service->removeSources($batch, array_values(array_map(intval(...), $data['sources'])), $this->actor());
+        } catch (DatevBookingException $e) {
+            return back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        return back()->with('success', __('finance.datev.flash.sources_removed'));
+    }
+
+    /** Draft verwerfen (SoftDelete) — gibt die Quellen wieder frei (MVP-334). */
+    public function destroy(DatevBookingBatch $batch): RedirectResponse {
+        Gate::authorize('reshape', $batch);
+
+        try {
+            $this->service->discardDraft($batch, $this->actor());
+        } catch (DatevBookingException $e) {
+            return back()->withErrors(['status' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('finance.datev.index')
+            ->with('success', __('finance.datev.flash.discarded'));
     }
 
     /** draft → exported: CSV erzeugen, Hash, Datei, Quellen als übergeben markieren. */
@@ -173,6 +219,9 @@ class DatevBookingController extends Controller {
             'config' => DatevBookingConfig::forOrganization($org),
             'stored' => $stored,
             'chartOptions' => ChartOfAccounts::cases(),
+            // MVP-334: Aufwands-/Vorsteuerkonto je Spesenkategorie (org-scoped
+            // über das BelongsToOrganization-Scope der Kategorie).
+            'expenseCategories' => ExpenseCategory::query()->active()->ordered()->get(),
         ]);
     }
 
@@ -192,11 +241,32 @@ class DatevBookingController extends Controller {
             'datev.tax_keys.*' => ['nullable', 'string', 'max:4'],
             'datev.finalize' => ['nullable', 'in:0,1'],
             'datev.encoding' => ['nullable', 'string', 'in:UTF-8,ISO-8859-1'],
+            // MVP-334: Spesenkategorie-Mapping — Schlüssel sind Kategorie-Sqids.
+            'datev.expense_accounts' => ['nullable', 'array'],
+            'datev.expense_accounts.*.account' => ['nullable', 'string', 'max:12'],
+            'datev.expense_accounts.*.tax_key' => ['nullable', 'string', 'max:4'],
         ]);
 
         $org = $this->organization();
         if ($org === null) {
             return back()->withErrors(['datev' => __('finance.datev.error.no_organization')]);
+        }
+
+        // Sqid-Schlüssel → Kategorie-IDs auflösen; nur org-sichtbare Kategorien
+        // (BelongsToOrganization-Scope) werden übernommen.
+        if (isset($data['datev']['expense_accounts']) && is_array($data['datev']['expense_accounts'])) {
+            $mapped = [];
+            foreach ($data['datev']['expense_accounts'] as $sqid => $entry) {
+                $categoryId = Sqid::decode(ExpenseCategory::class, (string) $sqid);
+                if ($categoryId === null || ExpenseCategory::query()->whereKey($categoryId)->doesntExist()) {
+                    continue;
+                }
+                $mapped[(string) $categoryId] = [
+                    'account' => trim((string) ($entry['account'] ?? '')),
+                    'tax_key' => trim((string) ($entry['tax_key'] ?? '')),
+                ];
+            }
+            $data['datev']['expense_accounts'] = $mapped;
         }
 
         $settings = is_array($org->settings) ? $org->settings : [];
@@ -205,6 +275,16 @@ class DatevBookingController extends Controller {
         $clean = $this->stripEmpty($data['datev']);
         $next = array_replace_recursive($existing, $clean);
         $next = $this->stripEmpty($next);
+        // Gelöschte Mapping-Einträge nicht aus dem Bestand „wiederbeleben":
+        // das Mapping wird als Ganzes ersetzt statt rekursiv gemerged.
+        if (array_key_exists('expense_accounts', $data['datev'])) {
+            $cleanMapping = $this->stripEmpty(is_array($data['datev']['expense_accounts']) ? $data['datev']['expense_accounts'] : []);
+            if ($cleanMapping === []) {
+                unset($next['expense_accounts']);
+            } else {
+                $next['expense_accounts'] = $cleanMapping;
+            }
+        }
 
         if ($next === []) {
             unset($settings['datev']);
@@ -338,6 +418,35 @@ class DatevBookingController extends Controller {
         $org->audit('finance.datev.debtors_exported', ['count' => $result['count']]);
 
         $name = 'EXTF_Debitoren_' . now()->format('Ymd_His') . '.csv';
+
+        return response($result['csv'], 200, [
+            'Content-Type' => 'text/csv; charset=windows-1252',
+            'Content-Disposition' => 'attachment; filename="' . $name . '"',
+        ]);
+    }
+
+    /**
+     * EXTF-Sachkonten-Beistellung Kategorie 20 (MVP-334): alle im
+     * Buchungsstapel verwendeten Sachkonten (Erlöskonten + Aufwandskonten je
+     * Spesenkategorie) als Kontenbeschriftungs-CSV.
+     */
+    public function exportGlAccounts(): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('create', DatevBookingBatch::class);
+
+        $org = $this->organization();
+        abort_unless($org !== null, 404);
+
+        $config = DatevBookingConfig::forOrganization($org);
+        if (! $config->hasClientNumbers()) {
+            return redirect()->route('finance.datev.config')
+                ->with('error', __('finance.datev.preflight.missing_client_numbers'));
+        }
+
+        $result = app(\App\Services\Finance\Datev\DatevMasterDataExporter::class)->generateGlAccounts($org, $config);
+
+        $org->audit('finance.datev.gl_accounts_exported', ['count' => $result['count']]);
+
+        $name = 'EXTF_Sachkonten_' . now()->format('Ymd_His') . '.csv';
 
         return response($result['csv'], 200, [
             'Content-Type' => 'text/csv; charset=windows-1252',

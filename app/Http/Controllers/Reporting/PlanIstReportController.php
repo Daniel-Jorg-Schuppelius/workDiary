@@ -15,8 +15,10 @@ use App\Http\Controllers\Controller;
 use App\Models\{Team, User};
 use App\Services\Reporting\PlanIstReportBuilder;
 use App\Services\SqidEncoder;
+use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
@@ -24,6 +26,10 @@ use Illuminate\View\View;
  * Plan/Ist-Anwesenheits-Report (MVP-018): persönliche Sicht plus Team-/
  * Org-Aggregation (Rang 38, Permissions `report.presence.team`/
  * `.organization`) mit Drilldown auf die Personen-Sicht.
+ *
+ * A14 · MVP-333 (Feature 007): erweiterte Dimensionen Schicht (§2.3),
+ * Projekt (§2.2) und Standort — org-weite Personaldaten, daher wie die
+ * Org-Sicht über `report.presence.organization` (bzw. Admin) geschützt.
  */
 class PlanIstReportController extends Controller {
     public function __construct(private readonly PlanIstReportBuilder $builder) {}
@@ -37,8 +43,14 @@ class PlanIstReportController extends Controller {
         $user = $viewer;
         if ($request->filled('user')) {
             $targetId = app(SqidEncoder::class)->decode(User::class, (string) $request->query('user'));
+            // Mandantengrenze: User-by-id IMMER org-scopen (User hat keinen
+            // globalen OrganizationScope) — sonst wäre die Personen-Sicht
+            // fremder Organisationen adressierbar (Tenant-Leak, Bauturbo A17).
             $target = $targetId !== null
-                ? User::query()->whereKey($targetId)->first()
+                ? User::query()
+                    ->where('organization_id', $viewer->organization_id)
+                    ->whereKey($targetId)
+                    ->first()
                 : null;
 
             if ($target !== null && (int) $target->id !== (int) $viewer->id) {
@@ -109,7 +121,13 @@ class PlanIstReportController extends Controller {
 
         [$from, $to] = $this->range($request);
 
-        $users = User::query()->orderBy('name')->get();
+        // Mandantengrenze: "Org-Sicht" heißt EIGENE Organisation — ohne
+        // expliziten Org-Filter erschienen User ALLER Organisationen
+        // (Tenant-Leak, Bauturbo A17).
+        $users = User::query()
+            ->where('organization_id', $viewer->organization_id)
+            ->orderBy('name')
+            ->get();
         $summary = $this->builder->presenceSummaryFor($users, $from, $to);
 
         return view('reports.plan-ist.summary', [
@@ -120,6 +138,88 @@ class PlanIstReportController extends Controller {
             'from' => $from,
             'to' => $to,
         ]);
+    }
+
+    /**
+     * Schicht-Dimension (§2.3, MVP-333): Soll/Ist je Schichttyp mit Tages-/
+     * Wochen-Buckets für den Verlauf.
+     */
+    public function shifts(Request $request): View {
+        $this->authorizeExtendedDimensions();
+
+        [$from, $to] = $this->range($request);
+        $group = (string) $request->query('group', 'day');
+        if (! in_array($group, ['day', 'week'], true)) {
+            $group = 'day';
+        }
+
+        $report = $this->builder->shiftFor($from, $to, $group);
+
+        return view('reports.plan-ist.shifts', [
+            'report' => $report,
+            'group' => $group,
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
+
+    /** Projekt-Dimension (§2.2, MVP-333): Soll aus geplanten Auftragsminuten, Ist aus Zeitbuchungen. */
+    public function projects(Request $request): View {
+        $this->authorizeExtendedDimensions();
+
+        [$from, $to] = $this->range($request);
+        $report = $this->builder->projectTimeFor($from, $to);
+
+        return view('reports.plan-ist.projects', [
+            'rows' => $this->paginateRows($request, $report['rows']),
+            'allRows' => $report['rows'],
+            'totals' => $report['totals'],
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
+
+    /** Standort-Dimension (MVP-333): Ist-Verteilung ortsbasiert erfasster Zeiten (bewusst ohne Solldaten). */
+    public function sites(Request $request): View {
+        $this->authorizeExtendedDimensions();
+
+        [$from, $to] = $this->range($request);
+        $report = $this->builder->siteFor($from, $to);
+
+        return view('reports.plan-ist.sites', [
+            'rows' => $this->paginateRows($request, $report['rows']),
+            'totals' => $report['totals'],
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
+
+    /**
+     * Schicht-/Projekt-/Standort-Sicht zeigen org-weite Personal- bzw.
+     * Projektdaten → Bestandsrecht der Org-Sicht (`report.presence.organization`).
+     */
+    private function authorizeExtendedDimensions(): void {
+        /** @var User $viewer */
+        $viewer = Auth::user();
+        abort_unless($viewer->isAdmin() || $viewer->can(Permission::ReportPresenceOrganization->value), 403);
+    }
+
+    /**
+     * Aggregat-Zeilen (Arrays) seitenweise ausliefern — Muster x-pagination standing.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return LengthAwarePaginator<int, array<string, mixed>>
+     */
+    private function paginateRows(Request $request, array $rows, int $perPage = 50): LengthAwarePaginator {
+        $page = max(1, (int) $request->query('page', '1'));
+
+        return new LengthAwarePaginator(
+            array_slice($rows, ($page - 1) * $perPage, $perPage),
+            count($rows),
+            $perPage,
+            $page,
+            ['path' => Paginator::resolveCurrentPath(), 'query' => $request->query()],
+        );
     }
 
     /** Drilldown-Berechtigung: Team-Recht deckt Mitglieder eigener Teams, Org-Recht alle. */
@@ -139,7 +239,9 @@ class PlanIstReportController extends Controller {
 
     /** @return array{0: CarbonImmutable, 1: CarbonImmutable} */
     private function range(Request $request): array {
-        $now = CarbonImmutable::now();
+        // Whitebox-Konvention: "heute" lokal über Tz::current bestimmen, nicht
+        // in Server-/UTC-Zeit (Monatsgrenzen kippen sonst je nach Zeitzone).
+        $now = CarbonImmutable::now(Tz::current());
         $from = $request->filled('from')
             ? CarbonImmutable::parse((string) $request->input('from'))
             : $now->startOfMonth();

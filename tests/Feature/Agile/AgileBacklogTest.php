@@ -52,6 +52,21 @@ final class AgileBacklogTest extends TestCase {
         $this->assertSame(1, AgileEvent::query()->where('event', 'backlog.added')->count());
     }
 
+    /** B1/MVP-007: das Übernehmen-Formular sendet die Task-Sqid (Konvention: Sqid in Formularen). */
+    public function test_adopt_endpoint_accepts_task_sqid(): void {
+        $task = Task::factory()->create([
+            'organization_id' => $this->board->organization_id,
+            'project_id' => $this->board->project_id,
+        ]);
+
+        $this->actingAs($this->lead)
+            ->post(route('agile.items.adopt', $this->board->project), [
+                'task_id' => $task->sqid,
+            ])->assertRedirect(route('agile.backlog', $this->board->project));
+
+        $this->assertSame(1, AgileWorkItem::query()->where('task_id', $task->id)->count());
+    }
+
     public function test_create_makes_task_and_item_in_one_transaction(): void {
         $item = app(AgileWorkItemService::class)->create($this->board, [
             'title' => 'Als Nutzer möchte ich …',

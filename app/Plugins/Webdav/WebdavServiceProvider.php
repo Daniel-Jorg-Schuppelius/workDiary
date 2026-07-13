@@ -10,24 +10,28 @@
 
 namespace App\Plugins\Webdav;
 
-use App\Models\{Document, Invoice, Protocol};
+use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
-use App\Plugins\Webdav\Observers\{DocumentMirrorObserver, InvoiceMirrorObserver, ProtocolMirrorObserver};
-use App\Plugins\Webdav\Services\{GuzzleWebdavGatewayFactory, WebdavOutboxDispatcher};
+use App\Plugins\Webdav\Services\GuzzleWebdavGatewayFactory;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 use Illuminate\Support\ServiceProvider;
 
 /**
  * Plugin-eigener ServiceProvider (Feature 058, MVP-127). Bindet die
  * Gateway-Factory (Tests ersetzen sie durch eine Fake-Variante ohne HTTP),
- * registriert Config/Routen/Views/Command, hängt den Document-Observer ein
- * (Freigabe → Outbox) und meldet den Outbox-Dispatcher an der Registry an.
+ * registriert Config/Routen/Views/Command und meldet das WebDAV-Ziel am
+ * gemeinsamen Spiegel-Kern an (MVP-330, Bauturbo A10): die Registry hängt
+ * die Freigabe-Observer an, der generische Outbox-Dispatcher übernimmt die
+ * Zustellung.
  */
 class WebdavServiceProvider extends ServiceProvider {
     public function register(): void {
         $this->mergeConfigFrom(__DIR__ . '/config.php', 'plugins.' . WebdavPlugin::ID);
 
         $this->app->singleton(WebdavGatewayFactory::class, GuzzleWebdavGatewayFactory::class);
+        // Geteilte Ziel-Registry des Spiegel-Kerns (A10): ein Singleton für
+        // alle Mirror-Plugins — Observer/Dispatcher sehen dieselben Targets.
+        $this->app->singletonIf(MirrorTargetRegistry::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -40,9 +44,8 @@ class WebdavServiceProvider extends ServiceProvider {
         $this->loadRoutesFrom(__DIR__ . '/routes.php');
         $this->loadViewsFrom(__DIR__ . '/Resources/views', 'webdav');
 
-        Document::observe(DocumentMirrorObserver::class);
-        Invoice::observe(InvoiceMirrorObserver::class);       // Rang 19: finalisierte Rechnungen
-        Protocol::observe(ProtocolMirrorObserver::class);     // Rang 19: signierte Protokolle
-        $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new WebdavOutboxDispatcher());
+        $target = new WebdavMirrorTarget();
+        $this->app->make(MirrorTargetRegistry::class)->register($target);
+        $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MirrorOutboxDispatcher($target));
     }
 }

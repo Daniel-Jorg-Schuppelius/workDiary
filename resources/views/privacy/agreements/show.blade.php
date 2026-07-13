@@ -109,7 +109,7 @@
             @can('update', $agreement)
                 <div class="pt-2">
                     <x-icon-btn icon="add" tone="primary" size="sm"
-                                onclick="document.getElementById('dlg-subprocessor').showModal()" show-label>{{ __('Subprozessor hinzufügen') }}</x-icon-btn>
+                                data-open-dialog="dlg-subprocessor" show-label>{{ __('Subprozessor hinzufügen') }}</x-icon-btn>
                 </div>
                 <x-modal :embedded="false" id="dlg-subprocessor" :title="__('Subprozessor hinzufügen')"
                          icon="account_tree" tone="primary"

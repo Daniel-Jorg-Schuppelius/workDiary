@@ -55,6 +55,17 @@ return [
         'member_added'              => 'Benutzergruppe: Mitglied hinzugefügt',
         'member_removed'            => 'Benutzergruppe: Mitglied entfernt',
     ],
+    // Rollen-/Permission-Vergabe an User/Gruppen (Bauturbo A17, MVP-335)
+    'user' => [
+        'role' => [
+            'assigned'              => 'Rolle zugewiesen',
+            'revoked'               => 'Rolle entzogen',
+        ],
+        'permission' => [
+            'granted'               => 'Permission vergeben',
+            'revoked'               => 'Permission entzogen',
+        ],
+    ],
 
     // Support / Reports
     'support' => [
@@ -91,6 +102,17 @@ return [
     ],
     'token' => [
         'revoked'                   => 'Token widerrufen',
+    ],
+
+    // Datenschutzseite (MVP-005/MVP-327)
+    'privacy' => [
+        'overviewExported'          => 'Datenschutz-Übersicht exportiert',
+        'report' => [
+            'exported'              => 'Datenschutzbericht exportiert',
+        ],
+    ],
+    'integration' => [
+        'changed'                   => 'Integration aktiviert/deaktiviert',
     ],
 
     // Mandant / Export

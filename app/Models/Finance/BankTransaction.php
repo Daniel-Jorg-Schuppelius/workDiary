@@ -45,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $purpose
  * @property array<int, string>|null $extracted_refs
  * @property bool $is_reversal
+ * @property string|null $return_reason
  * @property string $fingerprint
  * @property MatchStatus $match_status
  * @property Carbon|null $created_at
@@ -76,6 +77,7 @@ class BankTransaction extends Model {
         'purpose',
         'extracted_refs',
         'is_reversal',
+        'return_reason',
         'fingerprint',
         'match_status',
     ];
@@ -108,6 +110,14 @@ class BankTransaction extends Model {
 
     public function isCredit(): bool {
         return $this->direction === TransactionDirection::Credit;
+    }
+
+    /**
+     * Lastschrift-Rückläufer-Kandidat (MVP-334): Storno-/Return-Kennzeichen
+     * der Bank ODER expliziter ISO-Rückgabegrund (RtrInf).
+     */
+    public function isReturnCandidate(): bool {
+        return $this->is_reversal || ($this->return_reason !== null && $this->return_reason !== '');
     }
 
     /** Signierter Betrag aus Kontosicht (Haben +, Soll −). */

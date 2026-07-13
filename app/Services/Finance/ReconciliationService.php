@@ -119,6 +119,113 @@ class ReconciliationService {
         });
     }
 
+    /**
+     * Lastschrift-Rückläufer-Workflow (MVP-334, GoBD-konform): kompensiert die
+     * ursprüngliche Zuordnung, statt sie zu löschen.
+     *
+     *  - Die ORIGINAL-Zuordnung bleibt unverändert aktiv (Historie: die
+     *    Zahlung ist tatsächlich geflossen).
+     *  - Auf dem Rückläufer-Umsatz entsteht eine Chargeback-Zuordnung mit
+     *    NEGATIVEM Betrag auf dasselbe Ziel — die Deckungssumme sinkt, der
+     *    offene Posten öffnet sich wieder (Invoice zurück auf issued/
+     *    partially_paid, Expense-Erstattung zurückgenommen).
+     *  - Der Grund (z. B. ISO-Rückgabecode AC04) wird an der Kompensation und
+     *    im Hash-Ketten-Event dokumentiert.
+     *
+     * @throws BankImportException
+     */
+    public function processReturn(
+        BankTransaction $returnTransaction,
+        PaymentAllocation $original,
+        ?string $reason = null,
+        ?User $actor = null,
+    ): BankTransaction {
+        // Org-Isolation hart erzwingen (Whitebox-Konvention: nie über die
+        // Mandantengrenze kompensieren).
+        if ((int) $original->organization_id !== (int) $returnTransaction->organization_id) {
+            throw new BankImportException('targetNotFound', (string) __('bank.reconcile.error.target_not_found'), [
+                'allocation_id' => $original->id,
+            ]);
+        }
+
+        if ((int) $original->bank_transaction_id === (int) $returnTransaction->id) {
+            throw new BankImportException('invalidReturn', (string) __('bank.return.error.same_transaction'), [
+                'allocation_id' => $original->id,
+            ]);
+        }
+
+        if ($original->trashed() || $original->kind === AllocationKind::Chargeback) {
+            throw new BankImportException('invalidReturn', (string) __('bank.return.error.not_compensatable'), [
+                'allocation_id' => $original->id,
+            ]);
+        }
+
+        // Idempotenz: dieselbe Original-Zuordnung darf nur einmal kompensiert
+        // werden (Marker exakt bzw. mit Leerzeichen-Grenze — kein Präfix-Treffer
+        // von RET#1 auf RET#10).
+        $marker = 'RET#' . $original->id;
+        $alreadyCompensated = PaymentAllocation::query()
+            ->where('organization_id', $returnTransaction->organization_id)
+            ->where('kind', AllocationKind::Chargeback)
+            ->where('allocatable_type', $original->allocatable_type)
+            ->where('allocatable_id', $original->allocatable_id)
+            ->where(fn($q) => $q->where('note', $marker)->orWhere('note', 'like', $marker . ' %'))
+            ->exists();
+        if ($alreadyCompensated) {
+            throw new BankImportException('invalidReturn', (string) __('bank.return.error.already_compensated'), [
+                'allocation_id' => $original->id,
+            ]);
+        }
+
+        $actorId = $this->resolveActorId($actor);
+        $reason = trim((string) ($reason ?? '')) !== '' ? trim((string) $reason) : $returnTransaction->return_reason;
+
+        return DB::transaction(function () use ($returnTransaction, $original, $reason, $actorId): BankTransaction {
+            $target = $original->allocatable;
+            if (! $target instanceof Invoice && ! $target instanceof Expense) {
+                throw new BankImportException('targetNotFound', (string) __('bank.reconcile.error.target_not_found'), [
+                    'allocation_id' => $original->id,
+                ]);
+            }
+
+            /** @var PaymentAllocation $compensation */
+            $compensation = PaymentAllocation::query()->create([
+                'organization_id' => $returnTransaction->organization_id,
+                'bank_transaction_id' => $returnTransaction->id,
+                'allocatable_type' => $original->allocatable_type,
+                'allocatable_id' => $original->allocatable_id,
+                'amount' => (string) round(-abs((float) $original->amount), 2),
+                'kind' => AllocationKind::Chargeback,
+                // Maschinenlesbarer Bezug auf die kompensierte Zuordnung +
+                // dokumentierter Grund (GoBD-Nachvollziehbarkeit).
+                'note' => trim('RET#' . $original->id . ' ' . (string) $reason),
+                'confirmed_by_user_id' => $actorId,
+                'confirmed_at' => now(),
+            ]);
+
+            if ($target instanceof Invoice) {
+                $this->revertInvoice($target);
+            } else {
+                $this->revertExpense($target, $original);
+            }
+
+            $returnTransaction->match_status = MatchStatus::Matched;
+            $returnTransaction->save();
+
+            $this->recordEvent($returnTransaction, 'return_processed', $actorId, [
+                'compensation_allocation_id' => $compensation->id,
+                'original_allocation_id' => $original->id,
+                'original_transaction_id' => $original->bank_transaction_id,
+                'target_type' => $original->allocatable_type,
+                'target_id' => $original->allocatable_id,
+                'amount' => (string) round(-abs((float) $original->amount), 2),
+                'reason' => $reason,
+            ]);
+
+            return $returnTransaction->refresh();
+        });
+    }
+
     /** Markiert einen Umsatz geprüft als nicht zuordenbar. */
     public function markUnassignable(BankTransaction $transaction, ?User $actor = null): BankTransaction {
         return $this->setStatus($transaction, MatchStatus::Unassignable, 'unassignable', $actor);

@@ -21,9 +21,13 @@ return [
     ],
     'weather' => [
         'heading' => 'Récupération météo automatique',
-        'description' => 'À la création d’un compte rendu, récupère automatiquement un instantané météo (Open-Meteo) pour son lieu et son horaire — comme preuve. Les projets peuvent le remplacer.',
+        'description' => 'À la création d’un compte rendu, récupère automatiquement un instantané météo pour son lieu et son horaire — comme preuve. Les projets peuvent le remplacer.',
         'auto_fetch' => 'Récupérer la météo automatiquement à la création d’un compte rendu',
         'auto_fetch_hint' => 'Uniquement si des coordonnées de lieu sont disponibles ; sinon rien ne se passe. Par défaut : désactivé.',
+        'provider' => 'Service météo',
+        'provider_hint' => 'Open-Meteo : mondial, sans inscription. DWD Open Data : données officielles des stations allemandes (CC BY 4.0, mention « Deutscher Wetterdienst »), uniquement pour des lieux en Allemagne avec une station à portée.',
+        'dwd_max_station_km' => 'DWD : distance maximale de la station (km)',
+        'dwd_max_station_km_hint' => 'Si aucune station DWD active ne se trouve dans cette distance, aucun instantané n’est créé — mieux vaut aucune valeur qu’une valeur fausse. Par défaut : 30 km.',
     ],
     'hint' => 'Laisser vide pour utiliser la valeur par défaut du système.',
     'pagination' => [

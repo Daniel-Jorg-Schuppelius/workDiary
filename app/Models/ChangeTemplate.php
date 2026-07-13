@@ -40,4 +40,14 @@ class ChangeTemplate extends Model {
 
     /** @var array<string, mixed> */
     protected $attributes = ['version' => 1, 'approved' => false];
+
+    /**
+     * Changes, die aus dieser Vorlage entstanden sind (MVP-157) — der
+     * jeweilige Vorlagenstand liegt eingefroren im template_snapshot.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Change, $this>
+     */
+    public function changes(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(Change::class, 'change_template_id');
+    }
 }

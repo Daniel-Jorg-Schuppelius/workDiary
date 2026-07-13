@@ -67,6 +67,7 @@ return [
         'target_by_mode' => 'Das Ziel wird aus dem Fakturierungsweg des Kunden vorbelegt.',
         'period_sources' => 'Gesammelt werden nur abrechenbare, noch nicht fakturierte/übergebene Quellen im Zeitraum.',
         'lexoffice_draft_created' => 'Rechnungsentwurf in Lexoffice angelegt:',
+        'sevdesk_draft_created' => 'Rechnungsentwurf in sevDesk angelegt:',
     ],
 
     'confirm_execute' => 'Übergabe jetzt an das Ziel übertragen? Bei Erfolg werden die Quellen als übergeben markiert.',
@@ -98,6 +99,11 @@ return [
         'total' => 'Summe',
     ],
 
+    'sevdesk' => [
+        'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
+        'tax_text' => 'Umsatzsteuer :rate%',
+    ],
+
     'lexoffice' => [
         'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
         'delivery_title' => 'Lieferschein',
@@ -119,6 +125,8 @@ return [
         'entry_already_transferred' => 'Der Zeiteintrag wurde bereits an die Fakturierung übergeben und kann nicht mehr korrigiert werden.',
         'target_not_allowed' => 'Dieses Ziel ist für den Fakturierungsweg „:mode" nicht zulässig.',
         'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
+        'sevdesk_not_configured' => 'sevDesk ist für diese Organisation nicht konfiguriert (API-Token fehlt).',
+        'sevdesk_outcome_unclear' => 'Ausgang der sevDesk-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',
         'lexoffice_contact_missing' => 'Kein Lexoffice-Kontakt für den Kunden — bitte zuerst den Kontakt synchronisieren.',
         'lexoffice_delivery_no_customer' => 'Auslieferung ohne Kunde kann nicht als Lieferschein übergeben werden.',
         'lexoffice_delivery_not_linked' => 'Mit dieser Auslieferung ist kein Lexoffice-Lieferschein verknüpft.',
@@ -154,6 +162,9 @@ return [
             'amount' => 'Betrag (brutto)',
             'lock_flag' => 'Festschreibung',
             'include_expenses' => 'Freigegebene Spesen einbeziehen',
+            'include_reversals' => 'Stornierte Belege nachreichen (Generalumkehr)',
+            'reversal' => 'GU',
+            'reversal_badge' => 'Generalumkehr',
             'debtor_no' => 'Debitorennummer (DATEV)',
             'debtor_no_hint' => 'Leer lassen, um die Nummer automatisch aus dem konfigurierten Nummernkreis abzuleiten.',
         ],
@@ -163,12 +174,19 @@ return [
             'off' => 'nicht festgeschrieben',
         ],
 
+        'selection' => [
+            'manual' => 'Teilauswahl',
+        ],
+
         'action' => [
             'create' => 'Stapel anlegen',
             'finalize' => 'Finalisieren',
             'download' => 'CSV herunterladen',
             'configure' => 'Konfiguration',
             'save_config' => 'Konfiguration speichern',
+            'discard' => 'Entwurf verwerfen',
+            'remove_selected' => 'Auswahl entfernen',
+            'select_source' => 'Buchungssatz auswählen',
         ],
 
         'dialog' => [
@@ -179,12 +197,15 @@ return [
         'hint' => [
             'period_sources' => 'Es werden gestellte/bezahlte Rechnungen mit Belegdatum im Zeitraum berücksichtigt, die noch in keinem finalisierten Stapel hängen.',
             'include_expenses' => 'Optional: zusätzlich freigegebene Spesen als Aufwandsbuchung übernehmen (MVP — vereinfachte Konten).',
+            'include_reversals' => 'Optional: stornierte, bereits übergebene Belege als Generalumkehr-Buchung nachreichen.',
         ],
 
         'flash' => [
             'created' => 'Buchungsstapel als Entwurf angelegt.',
             'finalized' => 'Buchungsstapel finalisiert — CSV erzeugt und Quellen als übergeben markiert.',
             'config_saved' => 'Buchhaltungs-Konfiguration gespeichert.',
+            'sources_removed' => 'Ausgewählte Buchungssätze entfernt — sie stehen für den nächsten Stapel wieder bereit.',
+            'discarded' => 'Entwurfs-Stapel verworfen — die Quellen sind wieder verfügbar.',
         ],
 
         'error' => [
@@ -195,6 +216,9 @@ return [
             'preflight_failed' => 'Der Stapel kann wegen Preflight-Fehlern nicht finalisiert werden.',
             'no_organization' => 'Es konnte keine Organisation aufgelöst werden.',
             'roundtrip_failed' => 'Die erzeugte DATEV-Datei hat die Wiedereinlese-Prüfung nicht bestanden: :errors',
+            'no_selection' => 'Keine Buchungssätze ausgewählt.',
+            'selection_empty_batch' => 'Mindestens ein Buchungssatz muss im Stapel verbleiben.',
+            'source_already_exported' => 'Beleg :ref hängt bereits in einem anderen exportierten Stapel.',
         ],
 
         'preflight' => [
@@ -253,6 +277,11 @@ return [
             'finalize_hint' => 'Markiert die Buchungen beim Export als festgeschrieben.',
             'encoding' => 'Zeichensatz',
             'encoding_hint' => 'DATEV-üblich ist ISO-8859-1; UTF-8 nur, wenn ausdrücklich gewünscht.',
+            'expense_group' => 'Aufwands-/Vorsteuerkonten je Spesenkategorie',
+            'expense_group_hint' => 'Leer lassen, um die vereinfachte Abbildung (Erlöskonto-Slot + Steuersatz-BU) zu nutzen. Vorsteuer-BU z. B. 9 = 19 %, 8 = 7 %.',
+            'expense_category' => 'Spesenkategorie',
+            'expense_account' => 'Aufwandskonto',
+            'expense_tax_key' => 'Vorsteuer-BU-Schlüssel',
         ],
     ],
 ];

@@ -147,7 +147,7 @@
 
             {{-- Tabelle mit Bulk-Aktionen --}}
             <div class="min-h-0 flex-1 overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
-                <form method="POST" action="{{ route('legacy.diary.bulk') }}" id="bulk-form" class="flex h-full flex-col" onsubmit="return bulkConfirm(event);">
+                <form method="POST" action="{{ route('legacy.diary.bulk') }}" id="bulk-form" class="flex h-full flex-col">
                     @csrf
                     <div class="flex-none flex flex-wrap items-center gap-2 border-b border-base-300 bg-base-200/60 px-3 py-2">
                         <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Bulk-Aktionen') }}</span>
@@ -258,6 +258,9 @@
                     }
                     return true;
                 }
+                // Früher Inline-onsubmit am #bulk-form; unter Nonce-CSP sind
+                // Inline-Event-Attribute blockiert → Listener-Bindung hier.
+                document.getElementById('bulk-form')?.addEventListener('submit', bulkConfirm);
             </script>
             <x-pagination :paginator="$entries" standing />
 

@@ -4,7 +4,7 @@
 @section('nav-title', __('Import starten'))
 
 @section('content')
-<x-index-page :subtitle="__('CSV-Datei für :org hochladen — Header werden geprüft und Daten als Vorschau angezeigt.', ['org' => $organization->name])">
+<x-index-page :subtitle="__('CSV- oder Excel-Datei für :org hochladen — Header werden geprüft und Daten als Vorschau angezeigt.', ['org' => $organization->name])">
     <x-slot:actions>
         <x-icon-btn icon="arrow_back" size="sm" :href="route('admin.imports.index')" show-label>
             {{ __('Zurück') }}
@@ -33,8 +33,8 @@
             </fieldset>
 
             <label class="form-control">
-                <span class="label-text">{{ __('CSV-Datei (max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => number_format(50000, 0, ',', '.')]) }}</span>
-                <input type="file" name="file" required accept=".csv,.txt"
+                <span class="label-text">{{ __('CSV- oder Excel-Datei (.xlsx, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => number_format(50000, 0, ',', '.')]) }}</span>
+                <input type="file" name="file" required accept=".csv,.txt,.xlsx"
                        class="file-input file-input-sm file-input-bordered w-full max-w-md" />
             </label>
 
@@ -43,6 +43,7 @@
 
             <div class="text-sm text-base-content/70">
                 {{ __('Trennzeichen wird automatisch erkannt (Semikolon, Komma, Tab). Spaltenüberschriften können deutsch oder englisch sein.') }}
+                {{ __('Bei Excel-Dateien wird das erste Tabellenblatt importiert; Datums- und Zahlenzellen werden automatisch umgewandelt.') }}
             </div>
 
             <div class="card-actions justify-end">

@@ -38,6 +38,17 @@
         <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.hint.include_expenses') }}</p>
     </div>
 
+    {{-- Storno-Übergabe (MVP-334): Generalumkehr für bereits übergebene, stornierte Belege. --}}
+    <div class="fieldset">
+        <label class="label cursor-pointer justify-start gap-3">
+            <input type="hidden" name="include_reversals" value="0">
+            <input type="checkbox" name="include_reversals" value="1"
+                   @checked(old('include_reversals')) class="checkbox checkbox-sm">
+            <span class="label-text">{{ __('finance.datev.field.include_reversals') }}</span>
+        </label>
+        <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.hint.include_reversals') }}</p>
+    </div>
+
     @if ($errors->any())
         <div class="alert alert-error text-sm">
             <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>

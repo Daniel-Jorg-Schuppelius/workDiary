@@ -23,7 +23,7 @@
         <a href="{{ route('admin.document-design.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurück zur Übersicht') }}</a>
     </x-slot:actions>
 
-    <div class="space-y-4" x-data="designEditor({{ \Illuminate\Support\Js::encode($editorConfig) }})"
+    <div class="space-y-4" x-data="designEditor" data-config="{{ json_encode($editorConfig) }}"
          @pointermove.window="onPointerMove($event)" @pointerup.window="endDrag()" @keydown.window="nudge($event)">
 
         @if (session('success'))
@@ -70,10 +70,10 @@
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs" x-show="preflight.errors.length || preflight.warnings.length" x-cloak>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.preflight') }}</h2>
             <ul class="space-y-1 text-sm">
-                <template x-for="issue in preflight.errors" :key="issue.code + (issue.block ?? '') + (issue.page ?? '')">
+                <template x-for="issue in preflight.errors" :key="issue.code + (issue.block || '') + (issue.page || '')">
                     <li class="flex items-start gap-2"><span class="badge badge-error badge-xs mt-1"></span><span x-text="issue.message"></span></li>
                 </template>
-                <template x-for="issue in preflight.warnings" :key="'w' + issue.code + (issue.block ?? '') + (issue.page ?? '')">
+                <template x-for="issue in preflight.warnings" :key="'w' + issue.code + (issue.block || '') + (issue.page || '')">
                     <li class="flex items-start gap-2"><span class="badge badge-warning badge-xs mt-1"></span><span x-text="issue.message"></span></li>
                 </template>
             </ul>

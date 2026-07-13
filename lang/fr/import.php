@@ -46,6 +46,8 @@ return [
             'currency' => 'Le code devise doit comporter 3 lettres majuscules (ISO 4217).',
             'enum' => 'La valeur n\'est pas un statut valide.',
             'parse' => 'Le fichier n\'a pas pu être analysé : :reason',
+            'xlsxUnreadable' => 'Le fichier Excel est endommagé ou n\'est pas un format XLSX valide.',
+            'xlsxEmpty' => 'La première feuille du fichier Excel ne contient aucune ligne.',
             'date' => 'Date invalide (attendu p. ex. « 28.05.2026, 09:42:09 »).',
             'time' => 'Heure invalide (attendu HH:MM).',
             'status' => 'La valeur n\'est pas un statut valide.',

@@ -169,10 +169,10 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
      */
     private function run(array $row, Organization $organization, bool $inboxFirst): array {
         try {
-            // Tag-Anwendung nach dem Persistieren (Rang 58): Mapping bzw.
-            // Namens-Treffer; unbekannte Werte werden nie blind angelegt.
+            // Tag-/Klassifikations-Anwendung nach dem Persistieren (Rang 58, A13):
+            // Mapping bzw. Namens-/Code-Treffer; unbekannte Werte werden nie blind angelegt.
             $tagsRaw = isset($row['tags']) ? (string) $row['tags'] : null;
-            $this->afterPersist = fn (\Illuminate\Database\Eloquent\Model $model) => $this->applyMappedTags($model, $organization, $tagsRaw, $this->entity()->value);
+            $this->afterPersist = fn (\Illuminate\Database\Eloquent\Model $model) => $this->applyMappedValues($model, $organization, $tagsRaw, $this->entity()->value);
 
             return $this->resolveImport(
                 $organization,

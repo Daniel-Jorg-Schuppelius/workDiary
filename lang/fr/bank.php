@@ -68,6 +68,7 @@ return [
         'show' => 'Afficher',
         'download' => 'Télécharger le fichier original',
         'confirm' => 'Confirmer',
+        'confirm_selected' => 'Confirmer la sélection',
         'ignore' => 'Mettre de côté',
         'unassignable' => 'Non affectable',
         'unmatch' => 'Annuler l’affectation',
@@ -80,6 +81,7 @@ return [
     'import' => [
         'dialog_title' => 'Importer un fichier bancaire',
         'dialog_hint' => 'CAMT.053 (XML) ou MT940. L’import crée uniquement les opérations dans la zone de contrôle et ne modifie aucun statut de facture ou de frais.',
+        'format_hint' => 'Formats pris en charge : CAMT.053, MT940, OFX, QIF, QXF ainsi que PAIN.001/008 (ordres de paiement en tant qu’opérations annoncées). La détection se fait selon le contenu, pas selon l’extension du fichier.',
         'file' => 'Fichier',
         'account_optional' => 'Compte bancaire (facultatif, sinon rapprochement automatique via IBAN)',
         'flash' => [
@@ -102,6 +104,27 @@ return [
         'error' => [
             'no_allocations' => 'Aucune affectation n’a été indiquée.',
             'target_not_found' => 'La cible d’affectation est introuvable.',
+        ],
+    ],
+    // Lastschrift-Rückläufer-Workflow (MVP-334).
+    'return' => [
+        'badge' => 'Rejet',
+        'title' => 'Traiter le rejet de prélèvement',
+        'action' => 'Compenser',
+        'reason_placeholder' => 'Motif (p. ex. AC04)',
+        'flash' => [
+            'processed' => 'Rejet traité — affectation d’origine compensée, poste rouvert.',
+        ],
+        'error' => [
+            'same_transaction' => 'L’affectation appartient à l’opération de rejet elle-même.',
+            'not_compensatable' => 'Cette affectation ne peut pas être compensée.',
+            'already_compensated' => 'Cette affectation a déjà été compensée.',
+        ],
+        'reason' => [
+            'amount' => 'Montant correspondant',
+            'reference' => 'Référence correspondante',
+            'mandate' => 'Référence de mandat',
+            'date' => 'Proximité de date',
         ],
     ],
     'account' => [

@@ -1,0 +1,6 @@
+Stations_id von_datum bis_datum Stationshoehe geoBreite geoLaenge Stationsname Bundesland Abgabe
+----------- --------- --------- ------------- --------- --------- ----------------------------------------- ---------- ------
+00403 19500101 20261231             51     52.4537   13.3017 Berlin-Dahlem (FU)                        Berlin  Frei
+00399 18760101 19700101             36     52.5211   13.4106 Berlin-Alexanderplatz                     Berlin  Frei
+05100 19470101 20261231            273     47.8060    7.6414 Müllheim                                  Baden-Württemberg  Frei
+01262 19920517 20261231            446     48.3477   11.8134 München-Flughafen                         Bayern  Frei

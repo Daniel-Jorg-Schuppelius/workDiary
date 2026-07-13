@@ -22,7 +22,7 @@
                     <tr>
                         <th>
                             <input type="checkbox" class="checkbox checkbox-sm"
-                                   onclick="this.closest('table').querySelectorAll('input[name=&quot;expense_ids[]&quot;]').forEach(cb => cb.checked = this.checked)">
+                                   data-check-all='input[name="expense_ids[]"]'>
                         </th>
                         <th>{{ __('Datum') }}</th>
                         <th>{{ __('Mitarbeiter') }}</th>

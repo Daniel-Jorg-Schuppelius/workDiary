@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property int $booking_count
  * @property string $total_amount
  * @property bool $finalized_locked
+ * @property string $selection_mode all|manual — Zuschnitt des Export-Laufs (MVP-334)
  * @property int|null $created_by_user_id
  * @property Carbon|null $finalized_at
  * @property Carbon|null $created_at
@@ -75,6 +76,7 @@ class DatevBookingBatch extends Model {
         'booking_count',
         'total_amount',
         'finalized_locked',
+        'selection_mode',
         'created_by_user_id',
         'finalized_at',
     ];

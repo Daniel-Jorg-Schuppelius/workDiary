@@ -68,6 +68,7 @@ return [
         'show' => 'Mostra',
         'download' => 'Scarica file originale',
         'confirm' => 'Conferma',
+        'confirm_selected' => 'Conferma selezione',
         'ignore' => 'Accantona',
         'unassignable' => 'Non assegnabile',
         'unmatch' => 'Annulla assegnazione',
@@ -80,6 +81,7 @@ return [
     'import' => [
         'dialog_title' => 'Importa file bancario',
         'dialog_hint' => 'CAMT.053 (XML) o MT940. L’importazione crea i movimenti solo nell’area di verifica e non modifica alcuno stato di fattura o spesa.',
+        'format_hint' => 'Formati supportati: CAMT.053, MT940, OFX, QIF, QXF e PAIN.001/008 (ordini di pagamento come movimenti annunciati). Il riconoscimento avviene in base al contenuto, non all’estensione del file.',
         'file' => 'File',
         'account_optional' => 'Conto bancario (facoltativo, altrimenti assegnazione automatica tramite IBAN)',
         'flash' => [
@@ -102,6 +104,27 @@ return [
         'error' => [
             'no_allocations' => 'Nessuna assegnazione indicata.',
             'target_not_found' => 'Destinazione dell’assegnazione non trovata.',
+        ],
+    ],
+    // Lastschrift-Rückläufer-Workflow (MVP-334).
+    'return' => [
+        'badge' => 'Storno',
+        'title' => 'Elabora storno di addebito',
+        'action' => 'Compensa',
+        'reason_placeholder' => 'Motivo (es. AC04)',
+        'flash' => [
+            'processed' => 'Storno elaborato — assegnazione originale compensata, posta riaperta.',
+        ],
+        'error' => [
+            'same_transaction' => 'L’assegnazione appartiene allo stesso movimento di storno.',
+            'not_compensatable' => 'Questa assegnazione non può essere compensata.',
+            'already_compensated' => 'Questa assegnazione è già stata compensata.',
+        ],
+        'reason' => [
+            'amount' => 'Importo corrispondente',
+            'reference' => 'Riferimento corrispondente',
+            'mandate' => 'Riferimento del mandato',
+            'date' => 'Prossimità di data',
         ],
     ],
     'account' => [

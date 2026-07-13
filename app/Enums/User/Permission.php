@@ -234,6 +234,10 @@ enum Permission: string implements HasLabel {
     case CostCenterRuleViewAny = 'costCenterRule.viewAny';
     case CostCenterRuleManage = 'costCenterRule.manage';
 
+        // ── Lohnarten-Mapping + Export-Lieferung Zeitexport (A21 · MVP-019) ─
+    case WageTypeMappingViewAny = 'wageTypeMapping.viewAny';
+    case WageTypeMappingManage = 'wageTypeMapping.manage';
+
         // ── Plan/Ist-Anwesenheit Team-/Org-Sicht (MVP-018, Rang 38) ────────
     case ReportPresenceTeam = 'report.presence.team';
     case ReportPresenceOrganization = 'report.presence.organization';
@@ -485,6 +489,15 @@ enum Permission: string implements HasLabel {
         // ── Helpdesk/Service Desk (Feature 065) ───────────────
     case HelpdeskQueueManage = 'helpdesk.queue.manage';
     case HelpdeskTicketInternalNote = 'helpdesk.ticket.internal_note';
+        // ── Servicekatalog & Request-Genehmigungen (Feature 065, MVP-154) ──
+    case ServiceCatalogManage = 'service_catalog.manage';
+    case ServiceRequestApprove = 'service_request.approve';
+        // ── Problem-Management (Feature 065, MVP-156) ─────────
+    case ServiceDeskProblemManage = 'service_desk.problem.manage';
+        // ── Change-/CAB-Management (Feature 065, MVP-157) ─────
+        // Freigaben laufen über die gemeinsame Inbox mit
+        // service_request.approve — bewusst KEIN eigenes approve-Recht.
+    case ServiceDeskChangeManage = 'service_desk.change.manage';
         // ── SLA-Status/-Verletzungen & Report (Feature 010) ───
     case SlaViewAny = 'sla.viewAny';
     case SlaManage = 'sla.manage';
@@ -643,12 +656,18 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'work-schedule.'),
             str_starts_with($this->value, 'surchargeRule.'),
             str_starts_with($this->value, 'costCenterRule.'),
+            str_starts_with($this->value, 'wageTypeMapping.'),
             str_starts_with($this->value, 'compliance.'),
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
             str_starts_with($this->value, 'safety.') => PermissionGroup::Safety,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'serviceTicket.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'helpdesk.') => PermissionGroup::OpenIssues,
+            // Service Desk (Feature 065, MVP-154+): ohne dieses Mapping fielen
+            // die Präfixe in den default => MasterData (Stolperfalle A3-Plan).
+            str_starts_with($this->value, 'service_catalog.'),
+            str_starts_with($this->value, 'service_request.'),
+            str_starts_with($this->value, 'service_desk.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'notificationRule.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'webhook.') => PermissionGroup::Organization,
             str_starts_with($this->value, 'communication.') => PermissionGroup::Communication,

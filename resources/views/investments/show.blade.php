@@ -60,7 +60,7 @@
                 @if (in_array($case->status, \App\Models\Investments\InvestmentCase::PLANNING_STATUSES, true))
                     <form method="POST" action="{{ route('investments.status', $case) }}" class="mt-2 flex items-center gap-1">
                         @csrf
-                        <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()" aria-label="{{ __('Status') }}">
+                        <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
                             @foreach (\App\Models\Investments\InvestmentCase::PLANNING_STATUSES as $status)
                                 <option value="{{ $status }}" @selected($case->status === $status)>{{ __("values.$status") }}</option>
                             @endforeach
@@ -243,7 +243,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($case->links as $link)
                         <li>
-                            <span class="badge badge-outline badge-xs">{{ \App\Support\Trans::or(class_basename($link->linkable_type), class_basename($link->linkable_type)) }}</span>
+                            <span class="badge badge-outline badge-xs">{{ \App\Support\EntityType::label($link->linkable_type) }}</span>
                             {{ $link->linkable?->getAttribute('title') ?? $link->linkable?->getAttribute('name') ?? $link->linkable?->getAttribute('number') ?? ('#' . $link->linkable_id) }}
                             @if ($link->note)<span class="text-base-content/60">— {{ $link->note }}</span>@endif
                         </li>

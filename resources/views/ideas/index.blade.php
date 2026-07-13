@@ -7,7 +7,7 @@
     <x-slot:actions>
         @can('create', \App\Models\IdeaMap::class)
             <button type="button" class="btn btn-sm btn-ghost gap-1"
-                    onclick="document.getElementById('ideas-import-dialog').showModal()">
+                    data-open-dialog="ideas-import-dialog">
                 <span class="material-symbols-outlined text-base" aria-hidden="true">upload_file</span>
                 {{ __('ideas.import.action') }}
             </button>
@@ -84,7 +84,7 @@
                                             <x-icon-btn icon="archive" size="xs" type="submit" :title="__('ideas.action.archive')" />
                                         </form>
                                         <form method="POST" action="{{ route('ideas.destroy', $map) }}"
-                                              onsubmit="return confirm('{{ __('ideas.confirm_delete') }}')">
+                                              data-confirm-dialog data-confirm-message="{{ __('ideas.confirm_delete') }}">
                                             @csrf @method('DELETE')
                                             <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Löschen')" />
                                         </form>

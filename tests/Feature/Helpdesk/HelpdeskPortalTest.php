@@ -153,4 +153,48 @@ final class HelpdeskPortalTest extends TestCase {
         $this->get(route('customer.tickets.show', $foreign))->assertNotFound();
         $this->post(route('customer.tickets.reply', $foreign), ['body' => 'Hack'])->assertNotFound();
     }
+
+    /**
+     * Known-Error-Leak-Test (MVP-156): das Portal zeigt AUSSCHLIESSLICH
+     * Probleme mit status=known_error UND visibility=customer der eigenen
+     * Organisation — interne, offene und fremde Probleme erscheinen NIE.
+     */
+    public function test_known_error_portal_shows_only_customer_visible_known_errors(): void {
+        \App\Models\Problem::query()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Sichtbarer Known Error',
+            'workaround' => 'Portal-Workaround: Cache leeren.',
+            'status' => 'known_error',
+            'visibility' => 'customer',
+        ]);
+        \App\Models\Problem::query()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'INTERNER Known Error',
+            'status' => 'known_error',
+            'visibility' => 'internal',
+        ]);
+        \App\Models\Problem::query()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Offenes Kundenproblem',
+            'status' => 'open',
+            'visibility' => 'customer',
+        ]);
+        \App\Models\Problem::query()->create([
+            'organization_id' => \App\Models\Organization::factory()->create()->id,
+            'title' => 'FREMDER Known Error',
+            'status' => 'known_error',
+            'visibility' => 'customer',
+        ]);
+
+        $this->actingAs($this->portalUser, 'customer');
+        $this->withoutMiddleware(\App\Http\Middleware\EnforceTwoFactorSetup::class);
+
+        $this->get(route('customer.known-errors.index'))
+            ->assertOk()
+            ->assertSee('Sichtbarer Known Error')
+            ->assertSee('Portal-Workaround: Cache leeren.')
+            ->assertDontSee('INTERNER Known Error')
+            ->assertDontSee('Offenes Kundenproblem')
+            ->assertDontSee('FREMDER Known Error');
+    }
 }

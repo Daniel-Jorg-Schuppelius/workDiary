@@ -19,7 +19,7 @@
 
     @foreach ($assignment->profile?->requirements ?? [] as $i => $requirement)
         <div class="grid grid-cols-2 items-end gap-2">
-            <input type="hidden" name="results[{{ $i }}][requirement_id]" value="{{ $requirement->id }}">
+            <input type="hidden" name="results[{{ $i }}][requirement_id]" value="{{ $requirement->sqid }}">
             <x-input-field name="results[{{ $i }}][value]" type="number" step="0.0001"
                 :label="$requirement->label . ($requirement->unit !== null ? ' (' . $requirement->unit . ')' : '')" />
             <span class="text-xs text-base-content/60">

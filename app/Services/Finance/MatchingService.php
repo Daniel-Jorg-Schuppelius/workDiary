@@ -14,7 +14,7 @@ namespace App\Services\Finance;
 
 use App\Enums\Finance\AllocationKind;
 use App\Models\{Expense, Invoice};
-use App\Models\Finance\BankTransaction;
+use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Services\Finance\Banking\ReferenceExtractor;
 use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -179,6 +179,72 @@ class MatchingService {
         }
 
         return $results;
+    }
+
+    /**
+     * Kandidaten für die Rückläufer-Kompensation (MVP-334): aktive, noch nicht
+     * kompensierte Zuordnungen derselben Organisation, deren Betrag zum
+     * Rückläufer passt; End-to-End-Referenz bzw. Mandatsreferenz des
+     * ursprünglichen Umsatzes erhöhen den Score. Nur unverschlüsselte
+     * Ableitungen (amount, end_to_end_id, mandate_ref) werden verglichen.
+     *
+     * @return list<array{allocation: PaymentAllocation, score: int, reasons: list<string>}>
+     */
+    public function suggestReturnOrigins(BankTransaction $returnTransaction, int $limit = 5): array {
+        $amount = abs((float) $returnTransaction->amount);
+        $results = [];
+
+        /** @var \Illuminate\Database\Eloquent\Collection<int, PaymentAllocation> $allocations */
+        $allocations = PaymentAllocation::query()
+            ->where('organization_id', $returnTransaction->organization_id)
+            ->where('kind', '!=', AllocationKind::Chargeback->value)
+            ->where('bank_transaction_id', '!=', $returnTransaction->id)
+            ->with('transaction')
+            ->get();
+
+        foreach ($allocations as $allocation) {
+            $score = 0;
+            $reasons = [];
+
+            if (abs(abs((float) $allocation->amount) - $amount) <= self::CENT_TOLERANCE) {
+                $score += self::SCORE_AMOUNT_EXACT;
+                $reasons[] = 'amount';
+            }
+
+            $originalTx = $allocation->transaction;
+            if ($originalTx !== null) {
+                if ($returnTransaction->end_to_end_id !== null
+                    && $originalTx->end_to_end_id === $returnTransaction->end_to_end_id
+                ) {
+                    $score += self::SCORE_REFERENCE;
+                    $reasons[] = 'reference';
+                }
+                if ($returnTransaction->mandate_ref !== null
+                    && $originalTx->mandate_ref === $returnTransaction->mandate_ref
+                ) {
+                    $score += self::SCORE_IBAN;
+                    $reasons[] = 'mandate';
+                }
+                if ($this->dateNear($originalTx->booking_date->toDateString(), $returnTransaction->booking_date->toDateString())) {
+                    $score += self::SCORE_DATE_NEAR;
+                    $reasons[] = 'date';
+                }
+            }
+
+            if ($score <= 0) {
+                continue;
+            }
+
+            $results[] = [
+                'allocation' => $allocation,
+                'score' => $score,
+                'reasons' => array_values(array_unique($reasons)),
+            ];
+        }
+
+        usort($results, static fn(array $a, array $b): int => $b['score'] <=> $a['score']);
+
+        return array_slice($results, 0, $limit);
     }
 
     /**

@@ -108,6 +108,16 @@
     if ($hasForm) {
         $formId = $formId ?: 'wd-modal-form-' . bin2hex(random_bytes(4));
     }
+
+    // Barrierefreiheit: Der Dialog braucht role="dialog"/aria-modal und einen
+    // zugänglichen Namen. Existiert ein Titel und hat der Aufrufer keine titleId
+    // gesetzt, wird eine eindeutige ID erzeugt, die der Titel-<h2> trägt und auf
+    // die der .wd-dialog-Container per aria-labelledby zeigt. Die Fokus-Falle,
+    // Esc-Behandlung und Fokus-Rückgabe liefert das native <dialog>-Element
+    // (showModal), in das dieser Block eingebettet wird — kein JS-Umbau nötig.
+    if ($title && ! $titleId) {
+        $titleId = 'wd-modal-title-' . bin2hex(random_bytes(4));
+    }
 @endphp
 
 @if (! $embedded)
@@ -115,7 +125,9 @@
     <div class="modal-box wd-modal-box {{ $sizeClass }} p-0">
 @endif
 
-<div {{ $attributes->merge(['class' => 'wd-dialog']) }}>
+<div {{ $attributes->merge(['class' => 'wd-dialog']) }}
+     role="dialog" aria-modal="true"
+     @if ($titleId) aria-labelledby="{{ $titleId }}" @endif>
     @if ($hasForm)
         <form
             id="{{ $formId }}"

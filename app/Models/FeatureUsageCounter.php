@@ -18,6 +18,9 @@ use Illuminate\Database\Eloquent\Model;
  *
  * Ein Datensatz pro Organisation + Feature + Tag; `count` wird per Upsert
  * hochgezählt (siehe {@see \App\Services\Metrics\OperationsMetricsService::increment()}).
+ * Der Schreibpfad ist über das Setting `telemetry.enabled` abschaltbar
+ * (Opt-out je Org/Installation, MVP-337) — Daten verlassen die
+ * Installation nie.
  *
  * Bewusste Abweichungen von der Model-Blaupause:
  * - KEIN Auditable: Zähler-Inkremente sind technische Telemetrie; jedes

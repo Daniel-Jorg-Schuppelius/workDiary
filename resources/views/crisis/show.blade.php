@@ -49,7 +49,7 @@
                 @if ($case->isActive())
                     <form method="POST" action="{{ route('crisis.status', $case) }}" class="flex items-center gap-1">
                         @csrf
-                        <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()" aria-label="{{ __('Status') }}">
+                        <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
                             @foreach (['assessed', 'in_progress', 'stabilized', 'recovery'] as $status)
                                 <option value="{{ $status }}" @selected($case->status === $status)>{{ __("values.$status") }}</option>
                             @endforeach
@@ -236,7 +236,7 @@
                             @if ($canManage && ! in_array($action->status, ['done', 'cancelled'], true))
                                 <form method="POST" action="{{ route('crisis.actions.update', [$case, $action]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
-                                    <select name="status" class="select select-xs select-bordered" onchange="this.form.submit()">
+                                    <select name="status" class="select select-xs select-bordered" data-autosubmit>
                                         @foreach (\App\Models\Crisis\CrisisAction::STATUSES as $status)
                                             <option value="{{ $status }}" @selected($action->status === $status)>{{ __("values.$status") }}</option>
                                         @endforeach
@@ -325,7 +325,7 @@
                             @if ($canManage)
                                 <form method="POST" action="{{ route('crisis.bcm.update', [$case, $impact]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
-                                    <select name="status" class="select select-xs select-bordered" onchange="this.form.submit()">
+                                    <select name="status" class="select select-xs select-bordered" data-autosubmit>
                                         @foreach (\App\Models\Crisis\CrisisContinuityImpact::STATUSES as $status)
                                             <option value="{{ $status }}" @selected($impact->status === $status)>{{ __("values.$status") }}</option>
                                         @endforeach
@@ -361,7 +361,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($case->links as $link)
                         <li>
-                            <span class="badge badge-outline badge-xs">{{ \App\Support\Trans::or(class_basename($link->linkable_type), class_basename($link->linkable_type)) }}</span>
+                            <span class="badge badge-outline badge-xs">{{ \App\Support\EntityType::label($link->linkable_type) }}</span>
                             {{ $link->linkable?->getAttribute('title') ?? $link->linkable?->getAttribute('subject') ?? $link->linkable?->getAttribute('ticket_no') ?? ('#' . $link->linkable_id) }}
                         </li>
                     @endforeach

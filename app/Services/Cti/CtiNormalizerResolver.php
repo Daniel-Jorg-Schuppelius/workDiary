@@ -14,13 +14,16 @@ namespace App\Services\Cti;
 
 /**
  * Wählt den passenden {@see CtiEventNormalizer} je Provider (Feature 056,
- * MVP-118). sipgate ist Referenz; unbekannte Provider laufen über das neutrale
+ * MVP-118). sipgate ist Referenz; Placetel und STARFACE haben eigene
+ * Adapter (MVP-343); unbekannte Provider laufen über das neutrale
  * WorkDiary-Format ({@see GenericNormalizer}).
  */
 class CtiNormalizerResolver {
     public function for(string $provider): CtiEventNormalizer {
         return match ($provider) {
             'sipgate' => new SipgateNormalizer(),
+            'placetel' => new PlacetelNormalizer(),
+            'starface' => new StarfaceNormalizer(),
             default => new GenericNormalizer(),
         };
     }

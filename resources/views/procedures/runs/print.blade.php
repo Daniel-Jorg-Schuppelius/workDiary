@@ -49,7 +49,7 @@
 </head>
 <body>
     <div class="actions no-print">
-        <button class="btn" onclick="window.print()">{{ __('procedure.action.print') }}</button>
+        <button class="btn" data-print>{{ __('procedure.action.print') }}</button>
         @if ($backUrl)
             <a class="btn" href="{{ $backUrl }}">{{ __('procedure.action.back') }}</a>
         @endif
@@ -206,5 +206,6 @@
             </tbody>
         </table>
     @endif
+@include('partials.print-script')
 </body>
 </html>

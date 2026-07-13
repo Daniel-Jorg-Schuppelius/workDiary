@@ -43,28 +43,10 @@
 
     <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
 
-    <div x-data="{
-            scheme: @js($scheme),
-            colors: @js($colorValues),
-            content(hex) {
-                try {
-                    let h = (hex || '').replace('#', '');
-                    if (h.length !== 6) return '#1f2937';
-                    let r = parseInt(h.substr(0,2),16), g = parseInt(h.substr(2,2),16), b = parseInt(h.substr(4,2),16);
-                    let l = (0.2126*r + 0.7152*g + 0.0722*b) / 255;
-                    return l > 0.55 ? '#1f2937' : '#ffffff';
-                } catch (e) { return '#1f2937'; }
-            },
-            previewStyle() {
-                let s = 'color-scheme:' + this.scheme + ';';
-                for (const k in this.colors) { s += '--color-' + k + ':' + this.colors[k] + ';'; }
-                s += '--color-base-content:' + this.content(this.colors['base-100']) + ';';
-                ['primary','secondary','accent','neutral','info','success','warning','error'].forEach(k => {
-                    s += '--color-' + k + '-content:' + this.content(this.colors[k]) + ';';
-                });
-                return s;
-            }
-         }"
+    {{-- Logik in Alpine.data("themePreview") (components.js) — Inline-Objekte
+         mit Methoden kann der @alpinejs/csp-Parser nicht auswerten (Stufe 2). --}}
+    <div x-data="themePreview"
+         data-config="{{ json_encode(['scheme' => $scheme, 'colors' => $colorValues]) }}"
          class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
         {{-- ── Eingaben ─────────────────────────────────────────────── --}}

@@ -106,6 +106,37 @@ export function registerIdeaEditor(Alpine) {
         node(sqid) {
             return this.nodes[sqid] || null;
         },
+        // Null-sichere Feld-Helfer für Direktiven: der @alpinejs/csp-Parser
+        // kennt kein Optional Chaining (node(sqid)?.title) und keine
+        // Mehrfach-Statements — die Logik lebt deshalb hier.
+        nodeTitle(sqid) {
+            return this.node(sqid)?.title ?? "";
+        },
+        nodeColor(sqid) {
+            return this.node(sqid)?.color ?? "";
+        },
+        nodeStatus(sqid) {
+            return this.node(sqid)?.node_status ?? "";
+        },
+        isRoot(sqid) {
+            return !!this.node(sqid)?.is_root;
+        },
+        selectedNote() {
+            return this.node(this.selected)?.note ?? "";
+        },
+        selectedColor() {
+            return this.node(this.selected)?.color ?? "";
+        },
+        selectedStatus() {
+            return this.node(this.selected)?.node_status ?? "";
+        },
+        selectedReferences() {
+            return this.node(this.selected)?.references || [];
+        },
+        openDetails(sqid) {
+            this.selected = sqid;
+            this.detailOpen = true;
+        },
         childrenOf(sqid) {
             return Object.values(this.nodes)
                 .filter((n) => n.parent === sqid)
@@ -245,6 +276,14 @@ export function registerIdeaEditor(Alpine) {
         async closeDetails(note, status) {
             await this.saveDetails(note, status);
             this.detailOpen = false;
+        },
+        // Varianten für Direktiven: lesen Notiz/Status selbst aus $refs —
+        // `$refs.detailNote?.value` wäre im CSP-Build nicht auswertbar.
+        saveDetailsFromRefs() {
+            return this.saveDetails(this.$refs.detailNote?.value, this.$refs.detailStatus?.value);
+        },
+        closeDetailsFromRefs() {
+            return this.closeDetails(this.$refs.detailNote?.value, this.$refs.detailStatus?.value);
         },
 
         // Farb-Swatches der Detail-Ansicht (MVP-135): Farbwert → DaisyUI-bg-Klasse.

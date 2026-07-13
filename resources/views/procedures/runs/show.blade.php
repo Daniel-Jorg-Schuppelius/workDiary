@@ -31,7 +31,7 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
                 <x-icon name="rule" class="text-base-content/50" />
-                <h1 class="text-lg font-semibold">{{ $tpl?->name ?? '—' }}</h1>
+                <h1 class="text-lg font-semibold"><x-term glossary="prozedur">{{ $tpl?->name ?? '—' }}</x-term></h1>
                 <span class="text-xs text-base-content/50">v{{ $version?->version }}</span>
                 <x-status-badge :tone="$statusTone">{{ $run->status->label() }}</x-status-badge>
             </div>

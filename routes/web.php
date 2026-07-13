@@ -40,6 +40,11 @@ Route::post('/license', [LicenseController::class, 'store'])->middleware('thrott
 // Startseite (öffentlich)
 Route::get('/', HomeController::class)->name('home');
 
+// Rechtstexte (öffentlich, MVP-326): Inhalte pflegt der Betreiber über
+// die Settings-Registry (legal.imprint / legal.privacy).
+Route::get('/impressum', [\App\Http\Controllers\LegalPageController::class, 'imprint'])->name('legal.imprint');
+Route::get('/datenschutz', [\App\Http\Controllers\LegalPageController::class, 'privacy'])->name('legal.privacy');
+
 // Auth
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->middleware(['guest', 'throttle:login']);
@@ -748,15 +753,25 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/demo/reset', [DemoTenantController::class, 'reset'])
             ->middleware('throttle:3,1')
             ->name('admin.demo.reset');
+        // freshDemoOrg (MVP-349): neue, isolierte Demo-Org aus Musterbranche —
+        // NUR Plattform-Admin (OrganizationPolicy::create im Controller).
+        Route::get('admin/demo/fresh-org', [DemoTenantController::class, 'createFreshOrg'])
+            ->name('admin.demo.fresh-org.create');
+        Route::post('admin/demo/fresh-org', [DemoTenantController::class, 'storeFreshOrg'])
+            ->middleware('throttle:3,1')
+            ->name('admin.demo.fresh-org.store');
 
-        // Datenschutzseite (MVP-005)
+        // Datenschutzseite (MVP-005; §3.5/§3.9 via MVP-327)
         Route::get('admin/privacy', [PrivacyController::class, 'index'])->name('admin.privacy.index');
         Route::get('admin/privacy/export', [PrivacyController::class, 'export'])->name('admin.privacy.export');
+        // §3.9: Datenschutzbericht als PDF (Name/Pfad gemäß Konzept §2.1,
+        // Permission privacy.report.export wird im Controller geprüft).
+        Route::get('admin/privacy/report.pdf', [PrivacyController::class, 'report'])->name('admin.privacy.report');
         Route::delete('admin/privacy/sessions/{id}', [PrivacyController::class, 'destroySession'])
             ->where('id', '[A-Za-z0-9\-_]+')
             ->name('admin.privacy.sessions.destroy');
         Route::delete('admin/privacy/tokens/{id}', [PrivacyController::class, 'destroyToken'])
-            ->where('id', '\d+')
+            ->where('id', '[A-Za-z0-9]+')
             ->name('admin.privacy.tokens.destroy');
 
         Route::get('diary/export.csv', [DiaryExportController::class, 'csv'])->name('diary.export.csv');
@@ -771,6 +786,10 @@ Route::middleware('auth')->group(function () {
             ->whereIn('action', ['accept', 'start', 'pause', 'resume', 'complete', 'handover', 'markInvoiced', 'cancel'])
             ->name('diary.lifecycle');
         Route::get('diary/{diary}/case-file', DiaryCaseFileController::class)->name('diary.case-file');
+        // Interne Fallakte als serverseitiges PDF (MVP-349): gleicher Daten-
+        // umfang und gleiches Recht wie die HTML-Fallakte (inkl. interner
+        // Einträge — Unterschied zum kundensichtbaren Portal-PDF).
+        Route::get('diary/{diary}/case-file.pdf', [DiaryCaseFileController::class, 'pdf'])->name('diary.case-file.pdf');
 
         // Disposition / Einsatzplanung (Feature 028): Konfliktvorschau + Status.
         Route::get('dispatch/{diary}/conflicts', [DispatchController::class, 'conflicts'])->name('dispatch.conflicts');
@@ -1191,6 +1210,8 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/mail/disconnect', [\App\Http\Controllers\Admin\MailAdminController::class, 'disconnect'])->name('admin.mail.disconnect');
         Route::post('admin/mail/poll', [\App\Http\Controllers\Admin\MailAdminController::class, 'poll'])->name('admin.mail.poll');
         Route::post('admin/mail/inbox/book', [\App\Http\Controllers\Admin\MailAdminController::class, 'book'])->name('admin.mail.inbox.book');
+        Route::post('admin/mail/inbox/book-ticket', [\App\Http\Controllers\Admin\MailAdminController::class, 'bookTicket'])->name('admin.mail.inbox.book-ticket');
+        Route::post('admin/mail/inbox/import-dms', [\App\Http\Controllers\Admin\MailAdminController::class, 'importDms'])->name('admin.mail.inbox.import-dms');
 
         // ── Telefonie / CTI (Admin, Feature 056) ────────────────────────────────
         Route::get('admin/cti', [\App\Http\Controllers\Admin\CtiAdminController::class, 'index'])->name('admin.cti.index');
@@ -1565,6 +1586,8 @@ Route::middleware('auth')->group(function () {
             Route::post('umsatz/{transaction}/bestaetigen', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'confirm'])->name('confirm');
             Route::post('umsatz/{transaction}/ignorieren', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'ignore'])->name('ignore');
             Route::post('umsatz/{transaction}/nicht-zuordenbar', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'unassignable'])->name('unassignable');
+            // Lastschrift-Rückläufer (MVP-334): Original-Zuordnung GoBD-konform kompensieren.
+            Route::post('umsatz/{transaction}/ruecklaeufer', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'processReturn'])->name('return');
             Route::delete('zuordnung/{allocation}', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'unmatch'])->name('unmatch');
         });
 
@@ -1588,13 +1611,20 @@ Route::middleware('auth')->group(function () {
             Route::put('konfiguration', [\App\Http\Controllers\Finance\DatevBookingController::class, 'updateConfig'])->name('config.update');
             Route::get('neu', [\App\Http\Controllers\Finance\DatevBookingController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Finance\DatevBookingController::class, 'store'])->name('store');
-            Route::get('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'show'])->name('show');
-            Route::post('{batch}/finalisieren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'finalize'])->name('finalize');
-            Route::get('{batch}/download', [\App\Http\Controllers\Finance\DatevBookingController::class, 'download'])->name('download');
             // EXTF-Stammdatenexport Kategorie 16 (Nachtrag 045a): Debitoren aus dem Kundenstamm.
             Route::post('stammdaten/debitoren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'exportDebtors'])
                 ->middleware('throttle:6,1')
                 ->name('debtors.export');
+            // EXTF-Sachkonten-Beistellung Kategorie 20 (MVP-334): verwendete Sachkonten mit Beschriftung.
+            Route::post('stammdaten/sachkonten', [\App\Http\Controllers\Finance\DatevBookingController::class, 'exportGlAccounts'])
+                ->middleware('throttle:6,1')
+                ->name('gl-accounts.export');
+            Route::get('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'show'])->name('show');
+            Route::post('{batch}/finalisieren', [\App\Http\Controllers\Finance\DatevBookingController::class, 'finalize'])->name('finalize');
+            Route::get('{batch}/download', [\App\Http\Controllers\Finance\DatevBookingController::class, 'download'])->name('download');
+            // Teilauswahl/mehrere Stapel (MVP-334): Zuschnitt am Draft ändern bzw. Draft verwerfen.
+            Route::post('{batch}/quellen-entfernen', [\App\Http\Controllers\Finance\DatevBookingController::class, 'removeSources'])->name('sources.remove');
+            Route::delete('{batch}', [\App\Http\Controllers\Finance\DatevBookingController::class, 'destroy'])->name('destroy');
         });
         // Eingangs-E-Rechnung (Nachtrag 045b): XRechnung/ZUGFeRD empfangen,
         // visualisieren und als Document ablegen — keine lokale Invoice.
@@ -1962,6 +1992,18 @@ Route::middleware('auth')->group(function () {
         // Aktionen/Rechte (Typfrage, keine Flagfrage).
         Route::post('service-tickets/{ticket}/reply', [\App\Http\Controllers\Helpdesk\TicketConversationController::class, 'reply'])->name('helpdesk.tickets.reply');
         Route::post('service-tickets/{ticket}/note', [\App\Http\Controllers\Helpdesk\TicketConversationController::class, 'note'])->name('helpdesk.tickets.note');
+        // Ticket-Detail-Widgets (Feature 065, MVP-160): Beobachter,
+        // Verknüpfungen, Major Incident — module.helpdesk.
+        Route::post('service-tickets/{ticket}/watchers', [\App\Http\Controllers\Helpdesk\TicketWatcherController::class, 'store'])->name('helpdesk.tickets.watchers.store');
+        Route::delete('service-tickets/{ticket}/watchers/{user}', [\App\Http\Controllers\Helpdesk\TicketWatcherController::class, 'destroy'])->name('helpdesk.tickets.watchers.destroy');
+        Route::get('service-tickets/{ticket}/links/create', [\App\Http\Controllers\Helpdesk\TicketLinkController::class, 'create'])->name('helpdesk.tickets.links.create');
+        Route::post('service-tickets/{ticket}/links', [\App\Http\Controllers\Helpdesk\TicketLinkController::class, 'store'])->name('helpdesk.tickets.links.store');
+        Route::post('service-tickets/{ticket}/major', [\App\Http\Controllers\Helpdesk\TicketMajorIncidentController::class, 'store'])->name('helpdesk.tickets.major.store');
+        Route::delete('service-tickets/{ticket}/major', [\App\Http\Controllers\Helpdesk\TicketMajorIncidentController::class, 'destroy'])->name('helpdesk.tickets.major.destroy');
+        // Queue-Board (Feature 065, MVP-160) — module.helpdesk.
+        Route::get('helpdesk/board', [\App\Http\Controllers\Helpdesk\QueueBoardController::class, 'index'])->name('helpdesk.board.index');
+        Route::post('helpdesk/board/bulk-assign', [\App\Http\Controllers\Helpdesk\QueueBoardController::class, 'bulkAssign'])->name('helpdesk.board.bulk-assign');
+        Route::post('helpdesk/board/bulk-queue', [\App\Http\Controllers\Helpdesk\QueueBoardController::class, 'bulkMove'])->name('helpdesk.board.bulk-queue');
         // Queue-Verwaltung (Feature 065, MVP-150) — module.helpdesk.
         Route::get('helpdesk/queues', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'index'])->name('helpdesk.queues.index');
         Route::get('helpdesk/queues/create', [\App\Http\Controllers\Helpdesk\ServiceQueueController::class, 'create'])->name('helpdesk.queues.create');
@@ -1976,12 +2018,66 @@ Route::middleware('auth')->group(function () {
         Route::patch('sla-contracts/{slaContract}', [\App\Http\Controllers\SlaContractController::class, 'update'])->name('sla-contracts.update');
         // Helpdesk-Bericht (Feature 065, P9).
         Route::get('helpdesk/berichte', [\App\Http\Controllers\Reporting\HelpdeskReportController::class, 'index'])->name('helpdesk.reports.index');
+        // Drilldown/Exporte (Feature 065, MVP-159) — Drilldown nur signiert.
+        Route::get('helpdesk/berichte/drilldown', [\App\Http\Controllers\Reporting\HelpdeskReportExportController::class, 'drilldown'])->name('helpdesk.reports.drilldown');
+        Route::get('helpdesk/berichte/export/{metric}.csv', [\App\Http\Controllers\Reporting\HelpdeskReportExportController::class, 'csv'])->name('helpdesk.reports.csv');
+        Route::get('helpdesk/berichte/export/bericht.pdf', [\App\Http\Controllers\Reporting\HelpdeskReportExportController::class, 'pdf'])->name('helpdesk.reports.pdf');
         // Routing-Regeln (Feature 065, P3).
         Route::get('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'index'])->name('helpdesk.routing.index');
         Route::post('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'store'])->name('helpdesk.routing.store');
         Route::patch('helpdesk/routing/{rule}', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'update'])->name('helpdesk.routing.update');
         Route::delete('helpdesk/routing/{rule}', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'destroy'])->name('helpdesk.routing.destroy');
         Route::post('helpdesk/routing/dry-run', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'dryRun'])->name('helpdesk.routing.dry-run');
+        // Servicekatalog-Pflege (Feature 065, MVP-154) — servicedesk.* → module.service_desk!
+        Route::get('servicedesk/catalog', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'index'])->name('servicedesk.catalog.index');
+        Route::get('servicedesk/catalog/services/create', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'createService'])->name('servicedesk.catalog.services.create');
+        Route::post('servicedesk/catalog/services', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'storeService'])->name('servicedesk.catalog.services.store');
+        Route::get('servicedesk/catalog/services/{service}/edit', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'editService'])->name('servicedesk.catalog.services.edit');
+        Route::patch('servicedesk/catalog/services/{service}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'updateService'])->name('servicedesk.catalog.services.update');
+        Route::delete('servicedesk/catalog/services/{service}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'destroyService'])->name('servicedesk.catalog.services.destroy');
+        Route::get('servicedesk/catalog/offerings/create', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'createOffering'])->name('servicedesk.catalog.offerings.create');
+        Route::post('servicedesk/catalog/offerings', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'storeOffering'])->name('servicedesk.catalog.offerings.store');
+        Route::get('servicedesk/catalog/offerings/{offering}/edit', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'editOffering'])->name('servicedesk.catalog.offerings.edit');
+        Route::patch('servicedesk/catalog/offerings/{offering}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'updateOffering'])->name('servicedesk.catalog.offerings.update');
+        Route::delete('servicedesk/catalog/offerings/{offering}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'destroyOffering'])->name('servicedesk.catalog.offerings.destroy');
+        Route::get('servicedesk/catalog/items/create', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'createItem'])->name('servicedesk.catalog.items.create');
+        Route::post('servicedesk/catalog/items', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'storeItem'])->name('servicedesk.catalog.items.store');
+        Route::get('servicedesk/catalog/items/{item}/edit', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'editItem'])->name('servicedesk.catalog.items.edit');
+        Route::patch('servicedesk/catalog/items/{item}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'updateItem'])->name('servicedesk.catalog.items.update');
+        Route::delete('servicedesk/catalog/items/{item}', [\App\Http\Controllers\Helpdesk\ServiceCatalogController::class, 'destroyItem'])->name('servicedesk.catalog.items.destroy');
+        // Genehmigungs-Inbox (Feature 065, MVP-154; MVP-157 nutzt sie für Changes mit).
+        Route::get('servicedesk/approvals', [\App\Http\Controllers\Helpdesk\ApprovalInboxController::class, 'index'])->name('servicedesk.approvals.index');
+        Route::get('servicedesk/approvals/{approval}/decide', [\App\Http\Controllers\Helpdesk\ApprovalInboxController::class, 'decideForm'])->name('servicedesk.approvals.decide-form');
+        Route::post('servicedesk/approvals/{approval}/decide', [\App\Http\Controllers\Helpdesk\ApprovalInboxController::class, 'decide'])->name('servicedesk.approvals.decide');
+        // Problem-Management (Feature 065, MVP-156) — servicedesk.* → module.service_desk!
+        Route::get('servicedesk/problems', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'index'])->name('servicedesk.problems.index');
+        Route::get('servicedesk/problems/create', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'create'])->name('servicedesk.problems.create');
+        Route::post('servicedesk/problems', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'store'])->name('servicedesk.problems.store');
+        Route::get('servicedesk/problems/{problem}', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'show'])->name('servicedesk.problems.show');
+        Route::get('servicedesk/problems/{problem}/edit', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'edit'])->name('servicedesk.problems.edit');
+        Route::patch('servicedesk/problems/{problem}', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'update'])->name('servicedesk.problems.update');
+        Route::post('servicedesk/problems/{problem}/transition', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'transition'])->name('servicedesk.problems.transition');
+        Route::post('servicedesk/problems/{problem}/effectiveness', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'effectiveness'])->name('servicedesk.problems.effectiveness');
+        Route::post('servicedesk/problems/{problem}/publish', [\App\Http\Controllers\Helpdesk\ProblemController::class, 'publish'])->name('servicedesk.problems.publish');
+        // Change-/CAB-Management (Feature 065, MVP-157) — servicedesk.* → module.service_desk!
+        // Freigaben laufen über die GEMEINSAME Genehmigungs-Inbox (servicedesk.approvals.*).
+        Route::get('servicedesk/changes', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'index'])->name('servicedesk.changes.index');
+        Route::get('servicedesk/changes/create', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'create'])->name('servicedesk.changes.create');
+        Route::post('servicedesk/changes', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'store'])->name('servicedesk.changes.store');
+        Route::get('servicedesk/changes/{change}', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'show'])->name('servicedesk.changes.show');
+        Route::post('servicedesk/changes/{change}/implement', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'implement'])->name('servicedesk.changes.implement');
+        Route::get('servicedesk/changes/{change}/complete', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'completeForm'])->name('servicedesk.changes.complete-form');
+        Route::post('servicedesk/changes/{change}/complete', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'complete'])->name('servicedesk.changes.complete');
+        Route::post('servicedesk/changes/{change}/assets', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'storeAsset'])->name('servicedesk.changes.assets.store');
+        Route::delete('servicedesk/changes/{change}/assets/{asset}', [\App\Http\Controllers\Helpdesk\ChangeController::class, 'destroyAsset'])->name('servicedesk.changes.assets.destroy');
+        // Standard-Change-Vorlagen (MVP-157): Modal-CRUD + Freigabe.
+        Route::get('servicedesk/change-templates', [\App\Http\Controllers\Helpdesk\ChangeTemplateController::class, 'index'])->name('servicedesk.change-templates.index');
+        Route::get('servicedesk/change-templates/create', [\App\Http\Controllers\Helpdesk\ChangeTemplateController::class, 'create'])->name('servicedesk.change-templates.create');
+        Route::post('servicedesk/change-templates', [\App\Http\Controllers\Helpdesk\ChangeTemplateController::class, 'store'])->name('servicedesk.change-templates.store');
+        Route::get('servicedesk/change-templates/{template}/edit', [\App\Http\Controllers\Helpdesk\ChangeTemplateController::class, 'edit'])->name('servicedesk.change-templates.edit');
+        Route::patch('servicedesk/change-templates/{template}', [\App\Http\Controllers\Helpdesk\ChangeTemplateController::class, 'update'])->name('servicedesk.change-templates.update');
+        Route::post('servicedesk/change-templates/{template}/approve', [\App\Http\Controllers\Helpdesk\ChangeTemplateController::class, 'approve'])->name('servicedesk.change-templates.approve');
+        Route::delete('servicedesk/change-templates/{template}', [\App\Http\Controllers\Helpdesk\ChangeTemplateController::class, 'destroy'])->name('servicedesk.change-templates.destroy');
         Route::get('sla-contracts/{slaContract}', [\App\Http\Controllers\SlaContractController::class, 'show'])->name('sla-contracts.show');
 
         Route::get('key-handovers', [KeyHandoverController::class, 'index'])->name('key-handovers.index');
@@ -2121,6 +2217,14 @@ Route::middleware('auth')->group(function () {
             ->name('reports.plan-ist.team');
         Route::get('reports/plan-ist/organization', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'organization'])
             ->name('reports.plan-ist.organization');
+        // Erweiterte Dimensionen (A14 · MVP-333): Schicht/Projekt/Standort,
+        // org-weit → report.presence.organization (im Controller geprüft).
+        Route::get('reports/plan-ist/shifts', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'shifts'])
+            ->name('reports.plan-ist.shifts');
+        Route::get('reports/plan-ist/projects', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'projects'])
+            ->name('reports.plan-ist.projects');
+        Route::get('reports/plan-ist/sites', [\App\Http\Controllers\Reporting\PlanIstReportController::class, 'sites'])
+            ->name('reports.plan-ist.sites');
 
         // ── Auswertungen ────────────────────────────────────────────────────────
         Route::get('reports/my-year', [MyYearReportController::class, 'index'])->name('reports.my-year');
@@ -2368,6 +2472,19 @@ Route::middleware('auth')->group(function () {
             ->parameters(['cost-center-rules' => 'costCenterRule'])
             ->except('show');
 
+        // Lohnarten-Mapping + automatische Export-Lieferung (A21 · MVP-019):
+        // gleiche Mechanik; Lieferkonfiguration je Profil als eigener Dialog.
+        Route::get('admin/wage-type-mappings/delivery/{profile}/edit', [\App\Http\Controllers\Admin\WageTypeMappingController::class, 'editDelivery'])
+            ->where('profile', '[a-z0-9_-]+')
+            ->name('admin.wage-type-mappings.delivery.edit');
+        Route::put('admin/wage-type-mappings/delivery/{profile}', [\App\Http\Controllers\Admin\WageTypeMappingController::class, 'updateDelivery'])
+            ->where('profile', '[a-z0-9_-]+')
+            ->name('admin.wage-type-mappings.delivery.update');
+        Route::resource('admin/wage-type-mappings', \App\Http\Controllers\Admin\WageTypeMappingController::class)
+            ->names('admin.wage-type-mappings')
+            ->parameters(['wage-type-mappings' => 'wageTypeMapping'])
+            ->except('show');
+
         // Workflow-Automatisierungen (Wenn-Dann-Regeln pro Org).
         Route::get('admin/automations', [AutomationRuleController::class, 'index'])
             ->name('admin.automations.index');
@@ -2529,7 +2646,7 @@ Route::middleware('auth')->group(function () {
         Route::get('profile/api-tokens', [ApiTokenController::class, 'index'])->name('profile.api-tokens.index');
         Route::post('profile/api-tokens', [ApiTokenController::class, 'store'])->name('profile.api-tokens.store');
         Route::delete('profile/api-tokens/{id}', [ApiTokenController::class, 'destroy'])
-            ->whereNumber('id')
+            ->where('id', '[A-Za-z0-9]+')
             ->name('profile.api-tokens.destroy');
     });
 });

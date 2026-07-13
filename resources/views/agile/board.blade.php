@@ -30,7 +30,7 @@
     @if ($board !== null && $sprints->isNotEmpty())
         {{-- Sprint-Kontext: Board zeigt dann nur die Items des Sprints. --}}
         <form method="GET" action="{{ route('agile.board', $project) }}" class="flex items-center gap-2">
-            <select name="sprint" class="select select-sm select-bordered" aria-label="{{ __('Sprint-Kontext') }}" onchange="this.form.submit()">
+            <select name="sprint" class="select select-sm select-bordered" aria-label="{{ __('Sprint-Kontext') }}" data-autosubmit>
                 <option value="">{{ __('Alle Elemente') }}</option>
                 @foreach ($sprints as $candidate)
                     <option value="{{ $candidate->sqid }}" @selected($sprint?->id === $candidate->id)>{{ $candidate->name }}</option>
@@ -195,7 +195,7 @@
                                 <x-icon-btn icon="check" tone="ghost" size="sm" type="submit" :label="__('Spalte speichern')" />
                             </form>
                             <form method="POST" action="{{ route('agile.columns.destroy', [$project, $column]) }}"
-                                  onsubmit="return confirm('{{ __('Spalte wirklich löschen?') }}');">
+                                  data-confirm-dialog data-confirm-message="{{ __('Spalte wirklich löschen?') }}">
                                 @csrf @method('DELETE')
                                 <x-icon-btn icon="delete" tone="ghost" size="sm" type="submit" :label="__('Spalte löschen')"
                                             :disabled="$column->workItems->isNotEmpty()" />

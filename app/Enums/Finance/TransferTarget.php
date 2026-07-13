@@ -23,6 +23,7 @@ enum TransferTarget: string implements HasLabel {
     case Lexoffice = 'lexoffice';
     case Datev = 'datev';
     case OrgaMax = 'orgamax';
+    case SevDesk = 'sevdesk';
     case File = 'file';
 
     public function label(): string {
@@ -35,6 +36,7 @@ enum TransferTarget: string implements HasLabel {
             self::Lexoffice => 'info',
             self::Datev => 'warning',
             self::OrgaMax => 'success',
+            self::SevDesk => 'secondary',
             self::File => 'ghost',
         };
     }

@@ -20,6 +20,7 @@ return [
     'inbox' => [
         'no_subject' => '(no subject)',
         'book_action' => 'Book as communication note',
+        'book_ticket_action' => 'Book as service ticket',
         'book_customer_placeholder' => '… customer (blank = detected sender)',
     ],
 
@@ -70,6 +71,10 @@ return [
         'polled' => 'Poll started.',
         'booked' => 'Mail recorded as a communication entry.',
         'book_failed' => 'Recording failed.',
+        'ticket_booked' => 'Mail booked as a service ticket.',
+        'ticket_failed' => 'Ticket booking failed.',
+        'dms_failed' => 'DMS import failed.',
+        'already_resolved' => 'This entry has already been resolved.',
         'password_required' => 'A new mailbox requires a password.',
         'customer_required' => 'No customer assigned.',
     ],

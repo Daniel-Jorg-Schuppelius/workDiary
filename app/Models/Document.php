@@ -60,6 +60,7 @@ class Document extends Model {
         'created_by_user_id',
         'current_version_id',
         'webdav_mirror_detached',
+        'sharepoint_mirror_detached',
     ];
 
     protected $casts = [
@@ -68,6 +69,7 @@ class Document extends Model {
         'valid_from' => 'date',
         'valid_until' => 'date',
         'webdav_mirror_detached' => 'boolean',
+        'sharepoint_mirror_detached' => 'boolean',
     ];
 
     /** @return MorphTo<Model, $this> */

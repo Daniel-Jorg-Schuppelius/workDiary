@@ -137,9 +137,10 @@
         @isset($backUrl)
             <a href="{{ $backUrl }}">← {{ __('Zurück') }}</a>
         @endisset
-        <button type="button" class="primary" onclick="window.print()">{{ __('Drucken / PDF speichern') }}</button>
+        <button type="button" class="primary" data-print>{{ __('Drucken / PDF speichern') }}</button>
     </div>
 
     @yield('content')
+@include('partials.print-script')
 </body>
 </html>

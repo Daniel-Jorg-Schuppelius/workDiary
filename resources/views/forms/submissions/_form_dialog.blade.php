@@ -53,7 +53,9 @@
     @endphp
     <x-form-group :legend="$template->name" icon="edit_note" tone="primary" cols="2">
         <div class="contents"
-             x-data="formFill(@js($conditions), @js($initialVals))"
+             x-data="formFill"
+             data-conditions="{{ json_encode($conditions) }}"
+             data-initial="{{ json_encode($initialVals) }}"
              @input.capture="track($event)" @change.capture="track($event)">
         @foreach ($template->fields ?? [] as $field)
             @php
@@ -124,8 +126,8 @@
                 @case(\App\Enums\Form\FormFieldType::Signature->value)
                     {{-- Unterschrift (Rang 32): Signatur-Pad → Base64-PNG in signatures[<key>]. --}}
                     @once @push('scripts') @vite('resources/js/signature.js') @endpush @endonce
-                    <div class="form-control sm:col-span-2"
-                         x-data="{ pad: null, init() { this.pad = new window.SignaturePad(this.$refs.canvas); this.pad.addEventListener('endStroke', () => { this.$refs.sig.value = this.pad.toDataURL('image/png'); }); }, clear() { this.pad && this.pad.clear(); this.$refs.sig.value = ''; } }">
+                    {{-- Logik in Alpine.data("signatureCapture") (components.js) — CSP-Build-konform. --}}
+                    <div class="form-control sm:col-span-2" x-data="signatureCapture">
                         <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
                         <div class="rounded-box border border-base-300 bg-white p-2">
                             <canvas x-ref="canvas" class="block h-32 w-full touch-none"></canvas>

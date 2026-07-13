@@ -33,7 +33,7 @@
         @can('create', \App\Models\Privacy\ProcessingAgreement::class)
             <div>
                 <x-icon-btn icon="add" tone="primary" size="sm"
-                            onclick="document.getElementById('dlg-agreement').showModal()" show-label>{{ __('Neuen AVV anlegen') }}</x-icon-btn>
+                            data-open-dialog="dlg-agreement" show-label>{{ __('Neuen AVV anlegen') }}</x-icon-btn>
             </div>
             <x-modal :embedded="false" id="dlg-agreement" :title="__('Neuen AVV anlegen')"
                      icon="handshake" tone="primary"

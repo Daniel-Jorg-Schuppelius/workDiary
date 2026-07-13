@@ -12,7 +12,8 @@ namespace App\Services\TimeExport;
 
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\TimeExport\TimeExportStatus;
-use App\Models\{Attendance, MonthClosure, Organization, TimeExport, TimeExportEvent, TimeExportLine, User};
+use App\Jobs\DeliverTimeExportJob;
+use App\Models\{Attendance, MonthClosure, Organization, TimeExport, TimeExportDeliveryConfig, TimeExportEvent, TimeExportLine, User};
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Surcharge\SurchargeRule;
 use App\Services\Surcharge\SurchargeCalculator;
@@ -150,6 +151,11 @@ class TimeExportService {
             $userIds = $closures->pluck('user_id')->unique()->values()->all();
             $rowCount = $this->aggregateLines($export, $userIds);
 
+            // Preflight (A21): fehlende Pflicht-Lohnarten brechen hier mit
+            // verständlicher Meldung ab, BEVOR eine fehlerhafte Datei entsteht
+            // (Rollback: Export bleibt preparing, keine Datei, kein Lock).
+            $this->assertWageTypeCodesResolvable($export);
+
             $rendered = $this->renderToStorage($export);
 
             // Frühere Ready/Delivered-Exporte für gleichen Scope/Period: superseded.
@@ -185,7 +191,56 @@ class TimeExportService {
         // Telemetry-Light (Feature 036): aggregierter Org-Tageszähler, fire-and-forget.
         app(\App\Services\Metrics\OperationsMetricsService::class)->increment('timeExports.built', (int) $export->organization_id);
 
+        // Automatische Lieferung (A21): nur anstoßen, wenn für Org × Profil
+        // ein aktiver Lieferkanal konfiguriert ist. Die Transaktion oben ist
+        // bereits committet; der Job selbst ist idempotent je Export/Kanal.
+        if (TimeExportDeliveryConfig::activeFor((int) $export->organization_id, $export->profile) !== null) {
+            DeliverTimeExportJob::dispatch((int) $export->id);
+        }
+
         return $export;
+    }
+
+    /**
+     * Preflight des Lohnarten-Mappings (A21): Profile mit
+     * `requires_wage_type_codes` (DATEV/Lexware) brauchen für jede Zeile
+     * außer work.normal eine auflösbare externe Lohnart — Org-Mapping oder
+     * wage_type_code der Zuschlagsregel. work.normal behält seinen
+     * `normal_wage_type_code`-Default (Rückwärtskompatibilität); alle
+     * anderen Zeilen würden mit dem Normalstunden-Default eine inhaltlich
+     * falsche Datei erzeugen und brechen deshalb ab.
+     */
+    private function assertWageTypeCodesResolvable(TimeExport $export): void {
+        /** @var array<string, array<string,mixed>> $profiles */
+        $profiles = (array) config('exports.profiles', []);
+        $cfg = $profiles[$export->profile] ?? [];
+        if (! (bool) ($cfg['requires_wage_type_codes'] ?? false)) {
+            return;
+        }
+
+        $resolver = new WageTypeResolver((int) $export->organization_id, $export->profile);
+
+        $missing = [];
+        foreach ($export->lines()->get() as $line) {
+            /** @var TimeExportLine $line */
+            if ($line->wage_type === 'work.normal') {
+                continue;
+            }
+            if ($resolver->resolveCode($line) === null) {
+                $missing[(string) $line->wage_type] = true;
+            }
+        }
+
+        if ($missing !== []) {
+            $types = array_keys($missing);
+            sort($types);
+
+            throw new TimeExportException(
+                'missingWageTypeMappings',
+                __('wage_types.error.missing_mappings', ['types' => implode(', ', $types)]),
+                ['wage_types' => $types, 'profile' => $export->profile],
+            );
+        }
     }
 
     /**
@@ -275,6 +330,35 @@ class TimeExportService {
             ])->save();
 
             $this->logEvent($export, 'export.delivered', $actorId, $note);
+
+            return $export->refresh();
+        });
+    }
+
+    /**
+     * Statuswechsel auf `delivered` durch die automatische Lieferung
+     * (A21, {@see \App\Jobs\DeliverTimeExportJob}): Akteur ist das System —
+     * bewusst OHNE Auth-Fallback, damit der Nachweis nicht fälschlich einen
+     * eingeloggten Benutzer als Übermittler führt.
+     */
+    public function markDeliveredBySystem(TimeExport $export, ?string $note = null): TimeExport {
+        if ($export->status !== TimeExportStatus::Ready) {
+            throw new TimeExportException(
+                'wrongState',
+                __('Nur Exporte im Status ready können als übermittelt markiert werden.'),
+                ['status' => $export->status->value],
+            );
+        }
+
+        return DB::transaction(function () use ($export, $note): TimeExport {
+            $export->fill([
+                'status' => TimeExportStatus::Delivered,
+                'delivered_at' => CarbonImmutable::now(),
+                'delivered_by_user_id' => null,
+                'delivery_note' => $note,
+            ])->save();
+
+            $this->logEvent($export, 'export.delivered', null, $note);
 
             return $export->refresh();
         });

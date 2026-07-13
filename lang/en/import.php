@@ -51,6 +51,8 @@ return [
             'currency' => 'Currency code must be 3 uppercase letters (ISO 4217).',
             'enum' => 'Value is not a valid status.',
             'parse' => 'File could not be parsed: :reason',
+            'xlsxUnreadable' => 'The Excel file is corrupted or not a valid XLSX format.',
+            'xlsxEmpty' => 'The first worksheet of the Excel file contains no rows.',
             'date' => 'Not a valid date (expected e.g. "28.05.2026, 09:42:09").',
             'time' => 'Not a valid time (expected HH:MM).',
             'status' => 'Value is not a valid status.',

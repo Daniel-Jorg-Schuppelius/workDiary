@@ -12,9 +12,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\Api\ApiAbility;
 use App\Models\User;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class ApiTokenController extends Controller {
     public function index(Request $request): View {
@@ -53,10 +55,13 @@ class ApiTokenController extends Controller {
             ->with('newTokenName', $data['name']);
     }
 
-    public function destroy(Request $request, int $id): RedirectResponse {
+    public function destroy(Request $request, string $id): RedirectResponse {
         /** @var User $user */
         $user = $request->user();
-        $user->tokens()->where('id', $id)->delete();
+        // Sqid statt roher Token-ID (Enumeration-Schutz); Löschung bleibt auf
+        // die eigenen Tokens des angemeldeten Nutzers gescopt.
+        $tokenId = Sqid::decodeOrAbort(PersonalAccessToken::class, $id);
+        $user->tokens()->where('id', $tokenId)->delete();
 
         return redirect()->route('profile.api-tokens.index')
             ->with('success', __('Token widerrufen.'));

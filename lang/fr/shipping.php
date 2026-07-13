@@ -10,7 +10,7 @@
 
 return [
     'title' => 'Expédition & logistique',
-    'intro' => 'Connexions transporteur pour les étiquettes d\'expédition et le suivi des colis (DHL Paket et autres). Une connexion par transporteur et organisation ; les identifiants sont stockés chiffrés.',
+    'intro' => 'Connexions transporteur pour les étiquettes d\'expédition et le suivi des colis (DHL Paket, UPS, FedEx). Une connexion par transporteur et organisation ; les identifiants sont stockés chiffrés.',
 
     'form_heading' => 'Ajouter / modifier une connexion',
     'form_hint' => 'Choisissez le transporteur et saisissez ses identifiants. Enregistrer à nouveau avec le même transporteur met à jour la connexion existante.',
@@ -21,13 +21,16 @@ return [
     'field' => [
         'carrier' => 'Transporteur',
         'name' => 'Désignation',
-        'username' => 'Utilisateur (compte professionnel)',
-        'password' => 'Mot de passe',
-        'api_key' => 'Clé API (dhl-api-key)',
-        'billing_number' => 'Numéro de facturation',
+        'username' => 'Utilisateur / ID client',
+        'password' => 'Mot de passe / secret client',
+        'api_key' => 'Clé API (DHL uniquement : dhl-api-key)',
+        'billing_number' => 'Numéro de facturation / de compte',
         'sandbox' => 'Sandbox / environnement de test',
         'active' => 'Actif',
         'weight_grams' => 'Poids (g)',
+        'length_cm' => 'Longueur (cm)',
+        'width_cm' => 'Largeur (cm)',
+        'height_cm' => 'Hauteur (cm)',
     ],
 
     'label_short' => 'Expédition',
@@ -56,7 +59,7 @@ return [
     'flash' => [
         'saved' => 'Connexion transporteur enregistrée.',
         'disconnected' => 'Connexion transporteur désactivée.',
-        'credentials_required' => 'L\'utilisateur, le mot de passe et la clé API sont requis pour une nouvelle connexion.',
+        'credentials_required' => 'Une nouvelle connexion requiert l\'utilisateur/ID client et le mot de passe/secret client (DHL en plus : clé API).',
         'no_recipient' => 'La livraison n\'a pas de client comme destinataire.',
         'already_created' => 'Une expédition existe déjà pour cette livraison.',
         'no_connection' => 'Aucune connexion active n\'est configurée pour le transporteur sélectionné.',

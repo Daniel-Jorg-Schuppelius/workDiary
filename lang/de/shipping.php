@@ -10,7 +10,7 @@
 
 return [
     'title' => 'Versand & Logistik',
-    'intro' => 'Carrier-Anbindungen für Versandlabels und Sendungsverfolgung (DHL Paket u. a.). Je Carrier eine Anbindung pro Organisation; Zugangsdaten werden verschlüsselt gespeichert.',
+    'intro' => 'Carrier-Anbindungen für Versandlabels und Sendungsverfolgung (DHL Paket, UPS, FedEx). Je Carrier eine Anbindung pro Organisation; Zugangsdaten werden verschlüsselt gespeichert.',
 
     'form_heading' => 'Anbindung anlegen / bearbeiten',
     'form_hint' => 'Wähle den Carrier und hinterlege die Zugangsdaten. Eine erneute Speicherung mit demselben Carrier aktualisiert die bestehende Anbindung.',
@@ -21,13 +21,16 @@ return [
     'field' => [
         'carrier' => 'Carrier',
         'name' => 'Bezeichnung',
-        'username' => 'Benutzer (GK-Zugang)',
-        'password' => 'Passwort',
-        'api_key' => 'API-Schlüssel (dhl-api-key)',
-        'billing_number' => 'Abrechnungsnummer',
+        'username' => 'Benutzer / Client-ID',
+        'password' => 'Passwort / Client-Secret',
+        'api_key' => 'API-Schlüssel (nur DHL: dhl-api-key)',
+        'billing_number' => 'Abrechnungs-/Kontonummer',
         'sandbox' => 'Sandbox / Testumgebung',
         'active' => 'Aktiv',
         'weight_grams' => 'Gewicht (g)',
+        'length_cm' => 'Länge (cm)',
+        'width_cm' => 'Breite (cm)',
+        'height_cm' => 'Höhe (cm)',
     ],
 
     // Kurzlabel für die Versand-Statusanzeige (Rang 20).
@@ -57,7 +60,7 @@ return [
     'flash' => [
         'saved' => 'Carrier-Anbindung gespeichert.',
         'disconnected' => 'Carrier-Anbindung deaktiviert.',
-        'credentials_required' => 'Benutzer, Passwort und API-Schlüssel sind für eine neue Anbindung erforderlich.',
+        'credentials_required' => 'Für eine neue Anbindung sind Benutzer/Client-ID und Passwort/Client-Secret erforderlich (DHL zusätzlich: API-Schlüssel).',
         'no_recipient' => 'Die Auslieferung hat keinen Kunden als Empfänger.',
         'already_created' => 'Zu dieser Auslieferung besteht bereits ein Versandauftrag.',
         'no_connection' => 'Für den gewählten Carrier ist keine aktive Anbindung hinterlegt.',

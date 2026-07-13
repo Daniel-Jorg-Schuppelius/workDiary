@@ -60,7 +60,7 @@ class ShipmentService {
             throw $e;
         }
 
-        $this->storeLabel($shipment, $label->labelPdfBase64);
+        $this->storeLabel($shipment, $label);
 
         $shipment->forceFill([
             'status' => ShipmentStatus::Labeled->value,
@@ -191,22 +191,26 @@ class ShipmentService {
         return $provider;
     }
 
-    /** Label-PDF (Base64) als polymorphen Attachment ablegen. */
-    private function storeLabel(Shipment $shipment, string $labelPdfBase64): Attachment {
-        $binary = base64_decode($labelPdfBase64, true);
+    /**
+     * Label (Base64) als polymorphen Attachment ablegen — Endung/MIME folgen
+     * dem Carrier-Format ({@see ShipmentLabel::$format}: DHL/FedEx PDF, UPS GIF).
+     */
+    private function storeLabel(Shipment $shipment, ShipmentLabel $label): Attachment {
+        $binary = base64_decode($label->labelBase64, true);
         if ($binary === false || $binary === '') {
             throw new RuntimeException('Carrier returned an empty label.');
         }
 
-        $path = 'shipments/labels/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.pdf';
+        $extension = $label->extension();
+        $path = 'shipments/labels/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.' . $extension;
         Storage::disk('local')->put($path, $binary);
 
         /** @var Attachment $attachment */
         $attachment = $shipment->attachments()->create([
             'disk' => 'local',
             'path' => $path,
-            'original_name' => 'label.pdf',
-            'mime' => 'application/pdf',
+            'original_name' => 'label.' . $extension,
+            'mime' => $label->mime(),
             'size' => strlen($binary),
             'meta_type' => Shipment::LABEL_META,
         ]);

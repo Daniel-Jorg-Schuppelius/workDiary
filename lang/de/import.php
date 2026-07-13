@@ -51,6 +51,8 @@ return [
             'currency' => 'Währungscode muss aus 3 Großbuchstaben bestehen (ISO 4217).',
             'enum' => 'Wert ist kein gültiger Status.',
             'parse' => 'Datei konnte nicht gelesen werden: :reason',
+            'xlsxUnreadable' => 'Die Excel-Datei ist beschädigt oder kein gültiges XLSX-Format.',
+            'xlsxEmpty' => 'Das erste Tabellenblatt der Excel-Datei enthält keine Zeilen.',
             'date' => 'Kein gültiges Datum (erwartet z. B. „28.05.2026, 09:42:09").',
             'time' => 'Keine gültige Uhrzeit (erwartet HH:MM).',
             'status' => 'Wert ist kein gültiger Status.',

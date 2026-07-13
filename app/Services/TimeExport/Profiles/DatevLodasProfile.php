@@ -11,6 +11,7 @@
 namespace App\Services\TimeExport\Profiles;
 
 use App\Models\{TimeExport, TimeExportLine};
+use App\Services\TimeExport\WageTypeResolver;
 
 /**
  * DATEV-LODAS-naher CSV-Export (Feature 005, MVP).
@@ -22,8 +23,9 @@ use App\Models\{TimeExport, TimeExportLine};
  *   - Personalnummer: users.personnel_number, Fallback User-ID
  *   - Datum: TT.MM.JJJJ — bei tagesgenauen Zuschlagszeilen der Kalendertag,
  *     bei Monats-Summenzeilen (work.normal) der Monatsletzte (period_end)
- *   - Lohnart: TimeExportLine.wage_type_code (Zuschlagsregel) bzw. die
- *     konfigurierbare Default-Lohnart für Normalstunden (Option
+ *   - Lohnart: Org-Mapping ({@see WageTypeResolver}, A21) vor
+ *     TimeExportLine.wage_type_code (Zuschlagsregel) vor der
+ *     konfigurierbaren Default-Lohnart für Normalstunden (Option
  *     `normal_wage_type_code`, Default "1000")
  *   - Stunden: Dezimal mit Komma, 2 Nachkommastellen (LODAS-üblich)
  *   - Kostenstelle: TimeExportLine.cost_center (Rang 35 — Regeln je
@@ -60,6 +62,7 @@ class DatevLodasProfile implements ExportProfile {
     public function render(TimeExport $export): string {
         $rows = [implode(self::DELIMITER, ['Personalnummer', 'Datum', 'Lohnart', 'Stunden', 'Kostenstelle'])];
 
+        $resolver = new WageTypeResolver((int) $export->organization_id, $this->key());
         $lines = $export->lines()
             ->with('user:id,personnel_number')
             ->orderBy('user_id')
@@ -78,10 +81,8 @@ class DatevLodasProfile implements ExportProfile {
             // Monatszeilen (work.normal) laufen auf den Monatsletzten.
             $date = $line->period_end->format('d.m.Y');
 
-            $wageTypeCode = $line->wage_type_code;
-            if ($wageTypeCode === null || $wageTypeCode === '') {
-                $wageTypeCode = $this->normalWageTypeCode;
-            }
+            // Org-Mapping vor Regel-Code vor Default (A21, Rückwärtskompatibilität).
+            $wageTypeCode = $resolver->resolveCode($line) ?? $this->normalWageTypeCode;
 
             $rows[] = implode(self::DELIMITER, [
                 $personnelNo,

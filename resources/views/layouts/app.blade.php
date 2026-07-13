@@ -204,6 +204,14 @@
         }
     @endphp
     <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-linear-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}"@if ($_helpContextTopic) data-help-context="{{ $_helpContextTopic }}"@endif>
+        {{-- Barrierefreiheit (WCAG 2.4.1): Sprunglink zum Hauptinhalt. Visuell
+             ausgeblendet (sr-only), wird beim Tab-Fokus sichtbar und springt an
+             das <main id="main-content"> — Tastaturnutzer überspringen so die
+             Kopf-/Navigationsleiste. MUSS das erste fokussierbare Element sein. --}}
+        <a href="#main-content"
+           class="wd-skip-link sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-box focus:bg-primary focus:px-4 focus:py-2 focus:font-semibold focus:text-primary-content focus:shadow-lg focus:ring-2 focus:ring-primary/60">
+            {{ __('Zum Inhalt springen') }}
+        </a>
         @php
             $currentMode = session('work_mode', 'legacy');
             $legacyConfigured = filled(config('database.connections.legacy.database'));
@@ -365,6 +373,10 @@
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::CostCenterRuleViewAny->value)) {
                                         $adminNavItems[] = ['route' => 'admin.cost-center-rules.index', 'label' => __('costcenter.title.rules'), 'icon' => 'account_balance', 'modal' => false];
                                     }
+                                    // Lohnarten-Mapping + Export-Lieferung (A21 · MVP-019).
+                                    if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::WageTypeMappingViewAny->value)) {
+                                        $adminNavItems[] = ['route' => 'admin.wage-type-mappings.index', 'label' => __('wage_types.title.index'), 'icon' => 'badge', 'modal' => false];
+                                    }
                                     // Feature 002: Zielwerte & Benchmarks pflegen (GF/Admin).
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ReportTargetManage->value)) {
                                         $adminNavItems[] = ['route' => 'admin.report-targets.index', 'label' => __('reporting.target.nav'), 'icon' => 'flag', 'modal' => false];
@@ -444,9 +456,22 @@
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::PlatformOperationsManage->value)) {
                                         $adminNavItems[] = ['route' => 'admin.maintenance-windows.index', 'label' => __('maintenance.window.title'), 'icon' => 'engineering', 'modal' => false];
                                     }
-                                    // Admin-Aufgabencenter (Feature 041, MVP-058).
+                                    // Admin-Aufgabencenter (Feature 041, MVP-058). Badge = aktive Aufgaben
+                                    // der Org (B3/MVP-344): gecachter Count (kein Query pro Request);
+                                    // Invalidierung via OperationsTask::booted bei jeder Schreiboperation.
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::PlatformOperationsView->value)) {
-                                        $adminNavItems[] = ['route' => 'admin.operations.index',        'label' => __('operations.title.index'), 'icon' => 'task_alt', 'modal' => false];
+                                        $_opsOrg = $_authUser?->organization_id;
+                                        $_opsOpen = $_opsOrg !== null
+                                            ? (int) \Illuminate\Support\Facades\Cache::remember(
+                                                \App\Models\OperationsTask::navBadgeCacheKey((int) $_opsOrg),
+                                                \App\Models\OperationsTask::NAV_BADGE_TTL,
+                                                static fn(): int => \App\Models\OperationsTask::query()
+                                                    ->where('organization_id', $_opsOrg)
+                                                    ->active()
+                                                    ->count(),
+                                            )
+                                            : 0;
+                                        $adminNavItems[] = ['route' => 'admin.operations.index',        'label' => __('operations.title.index'), 'icon' => 'task_alt', 'modal' => false, 'badge' => $_opsOpen];
                                     }
                                     // Fehlermeldungs-Inbox (Feature 041, MVP-053).
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ProblemReportManage->value)) {
@@ -544,7 +569,7 @@
                                             'key'   => 'work-capture',
                                             'label' => __('Erfassung'),
                                             'icon'  => 'edit_note',
-                                            'items' => [
+                                            'items' => array_values(array_filter([
                                                 // „Heute" ist seit der Zusammenlegung auch die Tagesabschluss-Seite
                                                 // (MVP-015) für den eigenen Tag; daher matcht der Eintrag auch day-close.*
                                                 // (die day-close.*-Route bleibt für Fremdtage/Admin via ?user= erhalten).
@@ -552,8 +577,15 @@
                                                 ['route' => $indexRoute,       'label' => __('Arbeitsliste'),  'icon' => 'list_alt',          'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                                                 ['route' => 'week.index',      'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week','modal' => false, 'matches' => ['week.index']],
                                                 ['route' => 'kanban.index',    'label' => __('Kanban'),        'icon' => 'view_kanban',       'modal' => false, 'matches' => ['kanban.index']],
+                                                // Agiles Projektmanagement (Feature 064, B3/MVP-344): Einstieg über die
+                                                // org-weite Management-Übersicht (P10) — Board/Backlog sind projekt-
+                                                // gebunden und dort verlinkt. Recht wie die Route (agile.report.view),
+                                                // Modul-Gating via $moduleByItemRoute (module.agile_projects).
+                                                \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::AgileReportView->value)
+                                                    ? ['route' => 'agile.reports.overview', 'label' => __('Agile Übersicht'), 'icon' => 'sprint', 'modal' => false, 'matches' => ['agile.*']]
+                                                    : null,
                                                 ['route' => 'attendance.index','label' => __('Stempeluhr'),    'icon' => 'punch_clock',       'modal' => false, 'matches' => ['attendance.*']],
-                                            ],
+                                            ])),
                                         ],
                                         [
                                             'key'   => 'work-knowledge',
@@ -654,11 +686,26 @@
                                         \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ServiceTicketView->value)
                                             ? ['route' => 'service-tickets.index', 'label' => __('Tickets'), 'icon' => 'confirmation_number', 'modal' => false, 'matches' => ['service-tickets.*']]
                                             : null,
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ServiceTicketView->value)
+                                            ? ['route' => 'helpdesk.board.index', 'label' => __('Queue-Board'), 'icon' => 'view_kanban', 'modal' => false, 'matches' => ['helpdesk.board.*']]
+                                            : null,
                                         \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::HelpdeskQueueManage->value)
                                             ? ['route' => 'helpdesk.queues.index', 'label' => __('Queues'), 'icon' => 'inbox', 'modal' => false, 'matches' => ['helpdesk.queues.*']]
                                             : null,
                                         \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::HelpdeskQueueManage->value)
                                             ? ['route' => 'helpdesk.routing.index', 'label' => __('Ticket-Routing'), 'icon' => 'alt_route', 'modal' => false, 'matches' => ['helpdesk.routing.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\RequestItem::class)
+                                            ? ['route' => 'servicedesk.catalog.index', 'label' => __('Servicekatalog'), 'icon' => 'storefront', 'modal' => false, 'matches' => ['servicedesk.catalog.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::ServiceRequestApprove->value)
+                                            ? ['route' => 'servicedesk.approvals.index', 'label' => __('Genehmigungen'), 'icon' => 'approval', 'modal' => false, 'matches' => ['servicedesk.approvals.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Problem::class)
+                                            ? ['route' => 'servicedesk.problems.index', 'label' => __('Probleme'), 'icon' => 'troubleshoot', 'modal' => false, 'matches' => ['servicedesk.problems.*']]
+                                            : null,
+                                        \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Change::class)
+                                            ? ['route' => 'servicedesk.changes.index', 'label' => __('Changes'), 'icon' => 'published_with_changes', 'modal' => false, 'matches' => ['servicedesk.changes.*', 'servicedesk.change-templates.*']]
                                             : null,
                                         \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SlaContractView->value)
                                             ? ['route' => 'sla-contracts.index', 'label' => __('SLA-Verträge'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['sla-contracts.*']]
@@ -1065,6 +1112,7 @@
                             // (viewAny der zugehoerigen Policy via NavGate).
                             $moduleByItemRoute = [
                                 'kanban.index' => 'module.kanban',
+                                'agile.reports.overview' => 'module.agile_projects',
                                 'tenders.index' => 'module.applications',
                                 'investments.index' => 'module.investments',
                                 'crisis.index' => 'module.crisis_management',
@@ -1162,7 +1210,7 @@
 
                         @if ($isLegacyMode)
                             {{-- Legacy-Modus: klassische Inline-/Dropdown-Navigation im Header --}}
-                            <nav class="hidden xl:flex items-center gap-1">
+                            <nav class="hidden xl:flex items-center gap-1" aria-label="{{ __('Hauptnavigation') }}">
                                 @foreach ($mainNavItems as $item)
                                     @php $active = collect($item['matches'])->contains(fn ($m) => request()->routeIs($m)); @endphp
                                     <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
@@ -1724,7 +1772,7 @@
                                             <select name="organization_id"
                                                     id="org-switch-select"
                                                     class="select select-bordered select-sm w-full"
-                                                    onchange="this.form.submit()"
+                                                    data-autosubmit
                                                     aria-label="{{ __('Aktive Organisation waehlen') }}"
                                                     title="{{ __('Aktive Organisation waehlen') }}">
                                                 @foreach ($_orgList as $_orgItem)
@@ -2191,7 +2239,9 @@
                  (kein Leerraum); den Abstand zum main bringt der gepushte Block mit. --}}
             @stack('page-header')
 
-            <main class="wd-surface @yield('main-class', '')">
+            {{-- id + tabindex="-1": Ziel des Sprunglinks (WCAG 2.4.1); der
+                 <main>-Landmark trägt die implizite role="main". --}}
+            <main id="main-content" tabindex="-1" class="wd-surface @yield('main-class', '')">
                 @yield('content')
             </main>
 

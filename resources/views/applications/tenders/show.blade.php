@@ -124,7 +124,7 @@
                             @can('update', $opportunity)
                                 <form method="POST" action="{{ route('tenders.requirements.update', [$opportunity, $requirement]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
-                                    <select name="status" class="select select-xs select-bordered" onchange="this.form.submit()">
+                                    <select name="status" class="select select-xs select-bordered" data-autosubmit>
                                         @foreach (\App\Models\Applications\ApplicationRequirement::STATUSES as $status)
                                             <option value="{{ $status }}" @selected($requirement->status === $status)>{{ __("values.$status") }}</option>
                                         @endforeach

@@ -21,9 +21,13 @@ return [
     ],
     'weather' => [
         'heading' => 'Consulta automática del clima',
-        'description' => 'Al crear un protocolo, obtén automáticamente una instantánea del clima (Open-Meteo) para su ubicación y momento — como evidencia. Los proyectos pueden anularlo.',
+        'description' => 'Al crear un protocolo, obtén automáticamente una instantánea del clima para su ubicación y momento — como evidencia. Los proyectos pueden anularlo.',
         'auto_fetch' => 'Consultar el clima automáticamente al crear un protocolo',
         'auto_fetch_hint' => 'Solo si hay coordenadas de ubicación; de lo contrario no ocurre nada. Predeterminado: desactivado.',
+        'provider' => 'Servicio meteorológico',
+        'provider_hint' => 'Open-Meteo: mundial, sin registro. DWD Open Data: datos oficiales de estaciones alemanas (CC BY 4.0, atribución «Deutscher Wetterdienst»), solo para ubicaciones en Alemania con una estación al alcance.',
+        'dwd_max_station_km' => 'DWD: distancia máxima a la estación (km)',
+        'dwd_max_station_km_hint' => 'Si no hay ninguna estación DWD activa dentro de esta distancia, no se crea ninguna instantánea — mejor ningún valor que uno erróneo. Predeterminado: 30 km.',
     ],
     'hint' => 'Dejar vacío para usar el valor predeterminado del sistema.',
     'pagination' => [

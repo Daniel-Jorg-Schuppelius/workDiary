@@ -28,7 +28,7 @@
 
     <x-filter-bar :action="route('reports.arbzg-compliance')" :reset="route('reports.arbzg-compliance')">
         <x-filter-field :label="__('compliance.report.filter.kind')" for="rep-kind">
-            <select id="rep-kind" name="kind" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="rep-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('compliance.report.filter.all') }}</option>
                 @foreach ($kinds as $kind)
                     <option value="{{ $kind }}" @selected($kindFilter === $kind)>{{ __('compliance.report.kind.' . $kind) }}</option>

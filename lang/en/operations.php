@@ -103,4 +103,9 @@ return [
         'ignored' => 'Task ignored.',
         'reopened' => 'Task reopened.',
     ],
+    'widget' => [
+        'open' => 'Open tasks',
+        'empty' => 'No open operations tasks.',
+        'all' => 'Show all operations tasks',
+    ],
 ];

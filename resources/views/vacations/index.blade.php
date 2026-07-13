@@ -36,7 +36,7 @@
     <x-filter-bar :action="route('vacations.index')" :reset="route('vacations.index')">
         @if ($isAdmin && $users->isNotEmpty())
             <x-filter-field :label="__('Mitarbeiter')" for="vac-user">
-                <select id="vac-user" name="user_id" class="select select-bordered select-sm" onchange="this.form.submit()">
+                <select id="vac-user" name="user_id" class="select select-bordered select-sm" data-autosubmit>
                     <option value="">{{ __('Alle Mitarbeiter') }}</option>
                     @foreach ($users as $u)
                         @php
@@ -50,7 +50,7 @@
         @endif
 
         <x-filter-field :label="__('Status')" for="vac-status">
-            <select id="vac-status" name="status" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <select id="vac-status" name="status" class="select select-bordered select-sm" data-autosubmit>
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach (\App\Enums\Vacation\VacationStatus::options() as $value => $label)
                     <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
@@ -59,7 +59,7 @@
         </x-filter-field>
 
         <x-filter-field :label="__('Typ')" for="vac-type">
-            <select id="vac-type" name="type" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <select id="vac-type" name="type" class="select select-bordered select-sm" data-autosubmit>
                 <option value="">{{ __('Alle Typen') }}</option>
                 @foreach (\App\Enums\Vacation\VacationType::options() as $value => $label)
                     <option value="{{ $value }}" @selected(($filters['type'] ?? '') === $value)>{{ $label }}</option>

@@ -15,7 +15,7 @@
         </x-slot:actions>
         <x-filter-bar :action="route('vehicles.index')" submit-label="{{ __('Anwenden') }}">
             <x-filter-field :label="__('Ansicht')" for="veh-archived">
-                <select id="veh-archived" name="archived" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="veh-archived" name="archived" class="select select-sm select-bordered" data-autosubmit>
                     <option value="" @selected(! $showArchived)>{{ __('Aktive') }}</option>
                     <option value="1" @selected($showArchived)>{{ __('Archiv') }}</option>
                 </select>

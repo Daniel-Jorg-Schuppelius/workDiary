@@ -18,6 +18,9 @@
                     {{ $article->status->label() }}
                 </span>
                 <span class="text-base-content/70">{{ __('article.field.base_unit') }}: <strong>{{ $article->base_unit }}</strong></span>
+                @foreach ($tags ?? collect() as $tag)
+                    <x-tag-badge :tag="$tag" />
+                @endforeach
             </div>
             <x-slot:actions>
                 @if ($canManage)

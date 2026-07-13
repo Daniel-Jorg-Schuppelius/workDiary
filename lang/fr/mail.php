@@ -20,6 +20,7 @@ return [
     'inbox' => [
         'no_subject' => '(sans objet)',
         'book_action' => 'Enregistrer comme note de communication',
+        'book_ticket_action' => 'Enregistrer comme ticket de service',
         'book_customer_placeholder' => '… client (vide = expéditeur détecté)',
     ],
 
@@ -70,6 +71,10 @@ return [
         'polled' => 'Relève lancée.',
         'booked' => 'E-mail enregistré comme entrée de communication.',
         'book_failed' => 'Enregistrement échoué.',
+        'ticket_booked' => 'E-mail enregistré comme ticket de service.',
+        'ticket_failed' => 'Création du ticket échouée.',
+        'dms_failed' => 'Reprise dans la gestion documentaire échouée.',
+        'already_resolved' => 'Cette entrée est déjà résolue.',
         'password_required' => 'Une nouvelle boîte nécessite un mot de passe.',
         'customer_required' => 'Aucun client associé.',
     ],

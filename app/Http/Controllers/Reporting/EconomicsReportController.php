@@ -10,12 +10,13 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\Expense\ExpenseStatus;
 use App\Enums\Reporting\{ReportTargetMetric, ReportTargetScope};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{Project, User};
+use App\Models\{Expense, MaterialUsage, Project, TimeEntry, Timesheet, User};
 use App\Services\Reporting\{EconomicsReportBuilder, ReportTargetEvaluator};
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
@@ -57,6 +58,10 @@ class EconomicsReportController extends Controller {
         $byProject = $this->builder->byProject($from, $to, $projectId !== null ? [$projectId] : null);
         $byCustomer = $this->builder->byCustomer($from, $to);
 
+        // MVP-332: LV-Dimension nur bei konkretem Projektfilter (die
+        // Positionssicht ist projektgebunden; hasBoq=false → leerer Zustand).
+        $boqDimension = $projectId !== null ? $this->builder->byBoqPosition($from, $to, $projectId) : null;
+
         $exportContext = [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
@@ -66,13 +71,13 @@ class EconomicsReportController extends Controller {
         if ($request->query('export') === 'csv') {
             $this->auditExport($request, 'economics', 'csv', $exportContext);
 
-            return $this->exportCsv($byCustomer, $byProject, $from->toDateString(), $to->toDateString(), $exportContext);
+            return $this->exportCsv($byCustomer, $byProject, $from->toDateString(), $to->toDateString(), $exportContext, $boqDimension);
         }
 
         if ($request->query('export') === 'pdf') {
             $this->auditExport($request, 'economics', 'pdf', $exportContext);
 
-            return $this->exportPdf($byCustomer, $byProject, $range['label'], $from->toDateString(), $to->toDateString());
+            return $this->exportPdf($byCustomer, $byProject, $range['label'], $from->toDateString(), $to->toDateString(), $boqDimension);
         }
 
         $rankProjects = collect($byProject)->filter(static fn(array $r): bool => $r['revenue'] > 0.0 || $r['cost'] > 0.0);
@@ -113,6 +118,7 @@ class EconomicsReportController extends Controller {
         }
 
         return view('reports.economics', [
+            'boqDimension' => $boqDimension,
             'marginTarget' => $marginTarget,
             'actualMargin' => $actualMargin,
             'customerMarginTargets' => $customerMarginTargets,
@@ -135,8 +141,9 @@ class EconomicsReportController extends Controller {
      * @param  list<array<string, mixed>>  $byCustomer
      * @param  list<array<string, mixed>>  $byProject
      * @param  array<string, mixed>        $filters
+     * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>}|null  $byBoq
      */
-    private function exportCsv(array $byCustomer, array $byProject, string $from, string $to, array $filters): Response {
+    private function exportCsv(array $byCustomer, array $byProject, string $from, string $to, array $filters, ?array $byBoq = null): Response {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
@@ -150,6 +157,36 @@ class EconomicsReportController extends Controller {
         }
         foreach ($byProject as $r) {
             $out[] = $this->csvRow('Projekt', (string) $r['projectName'], (string) $r['customerName'], $r);
+        }
+
+        // MVP-332: LV-Dimension als eigene Sektion (nur mit Projektfilter + LV).
+        if ($byBoq !== null && $byBoq['hasBoq']) {
+            $num = static fn($v): string => $v === null ? '' : number_format((float) $v, 2, '.', '');
+            $out[] = [''];
+            $out[] = [
+                'LVPosition', 'Nachtrag', 'Kurztext', 'MengeAufmass', 'Einheit',
+                'ErloesAufmassEUR', 'ZeitMin', 'KostenZeitEUR', 'KostenMaterialEUR', 'KostenEUR', 'DeckungsbeitragEUR',
+            ];
+            foreach ($byBoq['positions'] as $p) {
+                $out[] = [
+                    (string) $p['referenceNo'],
+                    $p['isAddendum'] ? 'ja' : 'nein',
+                    (string) ($p['shortText'] ?? ''),
+                    number_format((float) $p['measuredQuantity'], 4, '.', ''),
+                    (string) ($p['unit'] ?? ''),
+                    $num($p['revenue']),
+                    (string) $p['timeMinutes'],
+                    $num($p['costTime']),
+                    $num($p['costMaterial']),
+                    $num($p['cost']),
+                    $num($p['contribution']),
+                ];
+            }
+            $u = $byBoq['unassigned'];
+            $out[] = [
+                '(ohne Zuordnung)', '', '', '', '',
+                '', (string) $u['timeMinutes'], $num($u['costTime']), $num($u['costMaterial']), $num($u['cost']), '',
+            ];
         }
 
         return $this->csvWithMetadata($out, $filename, 'economics', $filters);
@@ -186,24 +223,31 @@ class EconomicsReportController extends Controller {
     /**
      * @param  list<array<string, mixed>>  $byCustomer
      * @param  list<array<string, mixed>>  $byProject
+     * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>}|null  $byBoq
      */
-    private function exportPdf(array $byCustomer, array $byProject, string $label, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $byCustomer, array $byProject, string $label, string $from, string $to, ?array $byBoq = null): SymfonyResponse {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.pdf', $from, $to);
 
         return $this->pdfDownload('reports.pdf.economics', [
             'byCustomer' => $byCustomer,
             'byProject' => $byProject,
+            'byBoq' => $byBoq,
             'label' => $label,
         ], $filename, 'landscape');
     }
+
     /**
-     * Beleg-Drilldown (Rang 59c): Zeiteinträge einer Report-Zelle — Zugriff
-     * nur über signierten, kurzlebigen Link (temporarySignedRoute) PLUS
-     * Report-Recht (Whitebox-Leitplanke Export-Authz); org-Scope über die
-     * Global Scopes. Summen-Konsistenz: Fußzeile == Zellenwert.
+     * Beleg-Drilldown (Rang 59c + MVP-332 Belegtiefe): Quellposten einer
+     * Report-Zelle — Zugriff nur über signierten, kurzlebigen Link
+     * (temporarySignedRoute) PLUS Report-Recht (Whitebox-Leitplanke
+     * Export-Authz; DSGVO: der Drilldown zeigt nur, was der Report ohnehin
+     * aggregiert, unter demselben Recht); org-Scope über die Global Scopes.
+     * Summen-Konsistenz: Fußzeile == Zellenwert; `expected` trägt den
+     * Zellenwert und meldet Abweichungen sichtbar. Seitenwechsel bleibt
+     * signiert, weil `page` von der Signaturprüfung ausgenommen ist.
      */
     public function drilldown(Request $request): View {
-        abort_unless($request->hasValidSignature(), 403);
+        abort_unless($request->hasValidSignatureWhileIgnoring(['page']), 403);
 
         $authUser = Auth::user();
         $allowed = $authUser instanceof User
@@ -211,14 +255,39 @@ class EconomicsReportController extends Controller {
         abort_unless($allowed, 403);
 
         $kind = (string) $request->query('kind');
-        abort_unless(in_array($kind, ['rework', 'goodwill'], true), 404);
+        abort_unless(in_array($kind, ['rework', 'goodwill', 'time', 'material', 'expense'], true), 404);
 
-        $project = Project::query()->findOrFail((int) $request->query('project'));
+        $project = Project::query()->findOrFail(Sqid::decodeOrNumeric(Project::class, $request->query('project')) ?? 0);
         $from = (string) $request->query('from');
         $to = (string) $request->query('to');
+        $expected = $request->query('expected') !== null ? (float) $request->query('expected') : null;
 
+        $data = match ($kind) {
+            'time' => $this->timeDrilldown($project, $from, $to),
+            'material' => $this->materialDrilldown($project, $from, $to),
+            'expense' => $this->expenseDrilldown($project, $from, $to),
+            default => $this->reasonDrilldown($kind, $project, $from, $to),
+        };
+
+        return view('reports.economics-drilldown', array_merge([
+            'kind' => $kind,
+            'project' => $project,
+            'from' => $from,
+            'to' => $to,
+            'expected' => $expected,
+            'consistent' => $expected === null || abs($expected - (float) ($data['totalCost'] ?? 0.0)) < 0.01,
+        ], $data));
+    }
+
+    /**
+     * Bestands-Drilldown Nacharbeit/Kulanz (Rang 59c) — unverändert ungeteilt,
+     * die Summe der Fußzeile entspricht dem Zellenwert (Minuten).
+     *
+     * @return array<string, mixed>
+     */
+    private function reasonDrilldown(string $kind, Project $project, string $from, string $to): array {
         $column = $kind === 'rework' ? 'rework_reason_classification_id' : 'goodwill_reason_classification_id';
-        $entries = \App\Models\TimeEntry::query()
+        $entries = TimeEntry::query()
             ->where('project_id', $project->id)
             ->whereBetween('date', [$from, $to])
             ->whereNotNull($column)
@@ -226,13 +295,85 @@ class EconomicsReportController extends Controller {
             ->orderBy('date')
             ->get();
 
-        return view('reports.economics-drilldown', [
-            'kind' => $kind,
-            'project' => $project,
+        return [
             'entries' => $entries,
-            'from' => $from,
-            'to' => $to,
             'totalMinutes' => (int) $entries->sum('minutes'),
-        ]);
+        ];
+    }
+
+    /**
+     * Belegtiefe Zeit: alle Zeiteinträge des Projekts im Zeitraum (Kosten =
+     * interner Satz; Erlös nur für abrechenbare Einträge) — identische
+     * Abgrenzung wie {@see EconomicsReportBuilder::byProject()}.
+     *
+     * @return array<string, mixed>
+     */
+    private function timeDrilldown(Project $project, string $from, string $to): array {
+        $base = TimeEntry::query()
+            ->where('project_id', $project->id)
+            ->whereBetween('date', [$from, $to]);
+
+        return [
+            'totalMinutes' => (int) $base->clone()->sum('minutes'),
+            'totalRevenue' => round((float) $base->clone()->where('billable', true)->sum('rate'), 2),
+            'totalCost' => round((float) $base->clone()->sum('internal_rate'), 2),
+            'rows' => $base->clone()
+                ->with('user:id,name')
+                ->orderBy('date')->orderBy('id')
+                ->paginate(50)->withQueryString(),
+        ];
+    }
+
+    /**
+     * Belegtiefe Material: Materialpositionen über die Projekt-Timesheets im
+     * Zeitraum (Kosten = Netto-Direktaufwand, Erlös = abgerechnete Positionen).
+     *
+     * @return array<string, mixed>
+     */
+    private function materialDrilldown(Project $project, string $from, string $to): array {
+        $timesheetIds = Timesheet::query()
+            ->where('project_id', $project->id)
+            ->whereBetween('work_date', [$from, $to])
+            ->pluck('id')
+            ->all();
+
+        $base = MaterialUsage::query()->whereIn('timesheet_id', $timesheetIds === [] ? [0] : $timesheetIds);
+
+        return [
+            'totalRevenue' => round((float) $base->clone()->where('billed', true)->sum('line_total_net'), 2),
+            'totalCost' => round((float) $base->clone()->sum('line_total_net'), 2),
+            'rows' => $base->clone()
+                ->with(['timesheet:id,work_date', 'material:id,name'])
+                ->orderBy('timesheet_id')->orderBy('id')
+                ->paginate(50)->withQueryString(),
+        ];
+    }
+
+    /**
+     * Belegtiefe Spesen/Belege: freigegebene/erstattete/fakturierte Spesen des
+     * Projekts im Zeitraum inkl. Kategorie und Verknüpfung zum Beleg.
+     *
+     * @return array<string, mixed>
+     */
+    private function expenseDrilldown(Project $project, string $from, string $to): array {
+        $settled = [
+            ExpenseStatus::Approved->value,
+            ExpenseStatus::Reimbursed->value,
+            ExpenseStatus::Invoiced->value,
+        ];
+
+        $base = Expense::query()
+            ->where('project_id', $project->id)
+            ->whereBetween('date', [$from, $to])
+            ->whereIn('status', $settled);
+
+        return [
+            'totalRevenue' => round((float) $base->clone()->where('billable', true)->sum('amount_net'), 2),
+            'totalCost' => round((float) $base->clone()->sum('amount_net'), 2),
+            'rows' => $base->clone()
+                ->with('category:id,label')
+                ->orderBy('date')->orderBy('id')
+                ->paginate(50)->withQueryString(),
+        ];
     }
 }

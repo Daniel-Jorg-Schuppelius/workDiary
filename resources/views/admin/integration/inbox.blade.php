@@ -25,25 +25,25 @@
     <x-slot:actions>
         <a href="{{ route('admin.integration.mappings.index') }}" class="btn btn-sm btn-outline">{{ __('Zuordnungen verwalten') }}</a>
         <form method="GET" action="{{ route('admin.integration.inbox') }}" class="flex flex-nowrap items-center gap-2">
-            <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="status" class="select select-sm select-bordered" data-autosubmit>
                 @foreach ($statusLabels as $value => $label)
                     <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
                 @endforeach
                 <option value="all" @selected($filters['status'] === 'all')>{{ __('Alle') }}</option>
             </select>
-            <select name="case" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="case" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($filters['case'] === 'all')>{{ __('Alle Typen') }}</option>
                 @foreach ($caseLabels as $value => $label)
                     <option value="{{ $value }}" @selected($filters['case'] === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <select name="plugin" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="plugin" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($filters['plugin'] === 'all')>{{ __('Alle Quellen') }}</option>
                 @foreach ($plugins as $p)
                     <option value="{{ $p }}" @selected($filters['plugin'] === $p)>{{ $p }}</option>
                 @endforeach
             </select>
-            <select name="target" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="target" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($filters['target'] === 'all')>{{ __('Alle Entitäten') }}</option>
                 @foreach ($targets as $type => $label)
                     <option value="{{ $type }}" @selected($filters['target'] === $type)>{{ $label }}</option>
@@ -146,7 +146,7 @@
                     </form>
                     @endif
                     <form method="POST" action="{{ route('admin.integration.inbox.group.dismiss') }}" class="mt-2 flex justify-end"
-                          onsubmit="return confirm(@js(__('Diese Gruppe verwerfen?')));">
+                          data-confirm-dialog data-confirm-message="{{ __('Diese Gruppe verwerfen?') }}">
                         @csrf
                         <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
                         <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
@@ -226,22 +226,44 @@
                                     </select>
                                     <button class="join-item btn btn-sm btn-primary">{{ __('mail.inbox.book_action') }}</button>
                                 </form>
-                            @elseif ($item->plugin_id === \App\Plugins\Webdav\Services\DocumentMirrorService::PLUGIN_ID && $item->case_type === IntegrationInboxItem::CASE_CONFLICT)
-                                {{-- WebDAV-Spiegelkonflikt (Feature 058, Rang 18): Datei-Divergenz, kein Feld-Diff. --}}
-                                <form method="POST" action="{{ route('admin.webdav.conflict.overwrite', $item) }}"
-                                      onsubmit="return confirm(@js(__('webdav.conflict.confirm.overwrite')));">
+                                {{-- Mail → Service-Ticket (MVP-343): Queue des Eingangspostfachs,
+                                     Kunde leer = automatisch erkannter Absender-Kunde. --}}
+                                @feature('module.helpdesk')
+                                    <form method="POST" action="{{ route('admin.mail.inbox.book-ticket') }}">
+                                        @csrf
+                                        <input type="hidden" name="item" value="{{ $item->sqid }}">
+                                        <button class="btn btn-sm btn-outline">{{ __('mail.inbox.book_ticket_action') }}</button>
+                                    </form>
+                                @endfeature
+                                {{-- Anhang-Übernahme ins DMS (MVP-343): nur wenn beim Intake
+                                     Anhänge persistiert wurden; idempotent je Message-ID+Index. --}}
+                                @php
+                                    $mailHasStoredAttachments = collect((array) (($item->remote_snapshot ?? [])['attachments'] ?? []))
+                                        ->contains(fn ($a) => is_array($a) && ($a['stored'] ?? false) === true);
+                                @endphp
+                                @if ($mailHasStoredAttachments)
+                                    <form method="POST" action="{{ route('admin.mail.inbox.import-dms') }}">
+                                        @csrf
+                                        <input type="hidden" name="item" value="{{ $item->sqid }}">
+                                        <button class="btn btn-sm btn-outline">{{ __('mail.dms.action') }}</button>
+                                    </form>
+                                @endif
+                            @elseif (in_array($item->plugin_id, [\App\Plugins\Webdav\WebdavPlugin::ID, \App\Plugins\Sharepoint\SharepointPlugin::ID], true) && $item->case_type === IntegrationInboxItem::CASE_CONFLICT)
+                                {{-- Ablage-Spiegelkonflikt WebDAV/SharePoint (Feature 058 Rang 18 / MVP-330): Datei-Divergenz, kein Feld-Diff. --}}
+                                <form method="POST" action="{{ route('admin.' . $item->plugin_id . '.conflict.overwrite', $item) }}"
+                                      data-confirm-dialog data-confirm-message="{{ __($item->plugin_id . '.conflict.confirm.overwrite') }}">
                                     @csrf
-                                    <button class="btn btn-sm btn-primary">{{ __('webdav.conflict.action.overwrite') }}</button>
+                                    <button class="btn btn-sm btn-primary">{{ __($item->plugin_id . '.conflict.action.overwrite') }}</button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.webdav.conflict.import', $item) }}"
-                                      onsubmit="return confirm(@js(__('webdav.conflict.confirm.import')));">
+                                <form method="POST" action="{{ route('admin.' . $item->plugin_id . '.conflict.import', $item) }}"
+                                      data-confirm-dialog data-confirm-message="{{ __($item->plugin_id . '.conflict.confirm.import') }}">
                                     @csrf
-                                    <button class="btn btn-sm btn-outline">{{ __('webdav.conflict.action.import') }}</button>
+                                    <button class="btn btn-sm btn-outline">{{ __($item->plugin_id . '.conflict.action.import') }}</button>
                                 </form>
-                                <form method="POST" action="{{ route('admin.webdav.conflict.detach', $item) }}"
-                                      onsubmit="return confirm(@js(__('webdav.conflict.confirm.detach')));">
+                                <form method="POST" action="{{ route('admin.' . $item->plugin_id . '.conflict.detach', $item) }}"
+                                      data-confirm-dialog data-confirm-message="{{ __($item->plugin_id . '.conflict.confirm.detach') }}">
                                     @csrf
-                                    <button class="btn btn-sm btn-ghost">{{ __('webdav.conflict.action.detach') }}</button>
+                                    <button class="btn btn-sm btn-ghost">{{ __($item->plugin_id . '.conflict.action.detach') }}</button>
                                 </form>
                             @elseif ($item->case_type === IntegrationInboxItem::CASE_CONFLICT)
                                 <form method="POST" action="{{ route('admin.integration.inbox.accept-remote', $item) }}">
@@ -275,7 +297,7 @@
                                 @endif
 
                                 <form method="POST" action="{{ route('admin.integration.inbox.create', $item) }}"
-                                      onsubmit="return confirm(@js(__('Als neuen Datensatz anlegen?')));">
+                                      data-confirm-dialog data-confirm-message="{{ __('Als neuen Datensatz anlegen?') }}">
                                     @csrf
                                     <button class="btn btn-sm btn-outline">{{ __('Neu anlegen') }}</button>
                                 </form>

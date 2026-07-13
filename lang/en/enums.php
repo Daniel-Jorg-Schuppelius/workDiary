@@ -233,6 +233,9 @@ return [
                 'customerReplied' => 'Customer replied',
                 'waitingExpired' => 'Ticket follow-up due',
             ],
+            'problem' => [
+                'effectivenessDue' => 'Problem effectiveness review due',
+            ],
             'openIssue' => [
                 'assigned' => 'Open issue assigned',
                 'dueSoon' => 'Open issue due soon',
@@ -317,6 +320,7 @@ return [
             'push' => 'Push',
             'teams' => 'Microsoft Teams',
             'mattermost' => 'Mattermost',
+            'calendar' => 'Calendar',
         ],
     ],
 
@@ -830,6 +834,7 @@ return [
             'lexoffice' => 'Lexoffice leads',
             'datev' => 'DATEV leads',
             'orgamax' => 'orgaMAX leads',
+            'sevdesk' => 'sevDesk leads',
         ],
         'transfer-channel' => [
             'time' => 'Services/time',
@@ -839,6 +844,7 @@ return [
             'lexoffice' => 'Lexoffice',
             'datev' => 'DATEV',
             'orgamax' => 'orgaMAX (order)',
+            'sevdesk' => 'sevDesk (invoice draft)',
             'file' => 'File export',
         ],
         'transfer-status' => [
@@ -860,6 +866,11 @@ return [
         'bank-statement-format' => [
             'camt053' => 'CAMT.053',
             'mt940' => 'MT940',
+            'ofx' => 'OFX',
+            'qif' => 'QIF',
+            'qxf' => 'QXF',
+            'pain001' => 'PAIN.001',
+            'pain008' => 'PAIN.008',
         ],
         'transaction-direction' => [
             'credit' => 'Incoming',
@@ -883,6 +894,7 @@ return [
             'partial' => 'Partial payment',
             'overpayment' => 'Overpayment',
             'reimbursement' => 'Reimbursement',
+            'chargeback' => 'Chargeback',
         ],
     ],
 

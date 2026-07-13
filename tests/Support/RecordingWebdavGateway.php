@@ -10,14 +10,15 @@
 
 namespace Tests\Support;
 
-use App\Plugins\Webdav\Contracts\WebdavGateway;
+use App\Plugins\Support\Mirror\RemoteFileGateway;
 
 /**
- * Test-Double für {@see WebdavGateway} (Feature 058, MVP-127): protokolliert
- * PUT-/MKCOL-Aufrufe und liefert konfigurierbare Ergebnisse + Server-Signatur
- * (für die Konflikterkennung) — kein HTTP.
+ * Test-Double für {@see RemoteFileGateway} (Feature 058, MVP-127; Interface
+ * seit A10/MVP-330 im gemeinsamen Spiegel-Kern): protokolliert PUT-/Ordner-
+ * Aufrufe und liefert konfigurierbare Ergebnisse + Server-Signatur (für die
+ * Konflikterkennung) — kein HTTP.
  */
-class RecordingWebdavGateway implements WebdavGateway {
+class RecordingWebdavGateway implements RemoteFileGateway {
     /** @var list<string> */
     public array $puts = [];
 

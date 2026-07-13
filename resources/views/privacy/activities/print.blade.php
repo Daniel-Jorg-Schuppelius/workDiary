@@ -13,7 +13,7 @@
     </style>
 </head>
 <body>
-    <button class="noprint" onclick="window.print()">{{ __('Drucken') }}</button>
+    <button class="noprint" data-print>{{ __('Drucken') }}</button>
     <h1>{{ __('Verzeichnis von Verarbeitungstätigkeiten') }}</h1>
     <p class="meta">{{ $snapshot['organization'] ?? '' }} · {{ __('Stand') }}: {{ \Illuminate\Support\Carbon::parse($snapshot['generated_at'] ?? now())->format('d.m.Y H:i') }}</p>
 
@@ -38,5 +38,6 @@
     @empty
         <p>{{ __('Keine Verarbeitungstätigkeiten.') }}</p>
     @endforelse
+@include('partials.print-script')
 </body>
 </html>

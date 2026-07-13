@@ -308,8 +308,9 @@
                         <option value="extension">{{ __('Verlängerungsoption') }}</option>
                         <option value="early_termination">{{ __('Vorzeitige Kündigung') }}</option>
                     </x-select-field>
-                    <x-input-field name="exercisable_from" type="date" :label="__('Ausübbar ab')" />
-                    <x-input-field name="exercisable_until" type="date" :label="__('Ausübbar bis')" />
+                    <x-date-range layout="split" form-control grid-class="flex flex-wrap items-end gap-2"
+                                  from-name="exercisable_from" to-name="exercisable_until" type="date"
+                                  :from-label="__('Ausübbar ab')" :to-label="__('Ausübbar bis')" />
                     <x-input-field name="amount" type="number" step="0.01" min="0" :label="__('Betrag')" />
                     <button type="submit" class="btn btn-sm">{{ __('Option hinterlegen') }}</button>
                 </form>

@@ -84,7 +84,7 @@
                                 @endcan
                                 @can('reject', $c)
                                     <button type="button" class="btn btn-sm btn-warning"
-                                            onclick="document.getElementById('reject-{{ $c->id }}').showModal()">
+                                            data-open-dialog="reject-{{ $c->id }}">
                                         <span class="material-symbols-outlined text-base">close</span>
                                     </button>
                                     <dialog id="reject-{{ $c->id }}" class="modal">
@@ -96,7 +96,7 @@
                                                       placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
                                             <div class="modal-action">
                                                 <x-button type="button" tone="ghost" size="sm"
-                                                        onclick="document.getElementById('reject-{{ $c->id }}').close()">{{ __('Abbrechen') }}</x-button>
+                                                        data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
                                                 <x-button type="submit" tone="warning" size="sm">{{ __('Ablehnen') }}</x-button>
                                             </div>
                                         </form>
@@ -105,7 +105,7 @@
                                 @can('reopen', $c)
                                     @if (in_array($c->status, [MonthClosureStatus::Approved, MonthClosureStatus::Locked], true))
                                         <button type="button" class="btn btn-sm btn-ghost"
-                                                onclick="document.getElementById('reopen-{{ $c->id }}').showModal()"
+                                                data-open-dialog="reopen-{{ $c->id }}"
                                                 aria-label="{{ __('Wieder öffnen') }}">
                                             <span class="material-symbols-outlined text-base">lock_open</span>
                                         </button>
@@ -118,7 +118,7 @@
                                                           placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
                                                 <div class="modal-action">
                                                     <x-button type="button" tone="ghost" size="sm"
-                                                            onclick="document.getElementById('reopen-{{ $c->id }}').close()">{{ __('Abbrechen') }}</x-button>
+                                                            data-entry-modal-close>{{ __('Abbrechen') }}</x-button>
                                                     <x-button type="submit" tone="warning" size="sm">{{ __('Wieder öffnen') }}</x-button>
                                                 </div>
                                             </form>

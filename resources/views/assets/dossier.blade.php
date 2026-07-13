@@ -63,7 +63,7 @@
 </head>
 <body>
     <div class="actions no-print">
-        <button class="btn" onclick="window.print()">{{ __('timeline.action.print') }}</button>
+        <button class="btn" data-print>{{ __('timeline.action.print') }}</button>
         <a class="btn" href="{{ route('assets.show', $asset) }}">{{ __('asset.dossier.back') }}</a>
     </div>
 
@@ -358,7 +358,8 @@
     @endif
 
     @if ($autoPrint)
-        <script>window.addEventListener('load', () => window.print());</script>
+        <script @cspNonce>window.addEventListener('load', () => window.print());</script>
     @endif
+@include('partials.print-script')
 </body>
 </html>

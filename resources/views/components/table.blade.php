@@ -14,6 +14,7 @@
     'emptyTitle'   => null,
     'emptyMessage' => null,
     'emptyIcon'    => null,
+    'caption'      => null,    // Barrierefreiheit: sr-only <caption> als Tabellenname für Screenreader
 ])
 
 {{--
@@ -88,6 +89,9 @@
         @if ($scroll === 'flex')
             <div class="h-full overflow-auto">
                 <table class="{{ $tableClasses }}"{!! $tableAttrs !!}>
+                    @if ($caption)
+                        <caption class="sr-only">{{ $caption }}</caption>
+                    @endif
                     @isset($head)
                         <thead>{{ $head }}</thead>
                     @endisset
@@ -99,6 +103,9 @@
             </div>
         @else
             <table class="{{ $tableClasses }}"{!! $tableAttrs !!}>
+                @if ($caption)
+                    <caption class="sr-only">{{ $caption }}</caption>
+                @endif
                 @isset($head)
                     <thead>{{ $head }}</thead>
                 @endisset

@@ -103,4 +103,9 @@ return [
         'ignored' => 'Aufgabe ignoriert.',
         'reopened' => 'Aufgabe wieder geöffnet.',
     ],
+    'widget' => [
+        'open' => 'Offene Aufgaben',
+        'empty' => 'Keine offenen Betriebsaufgaben.',
+        'all' => 'Alle Betriebsaufgaben anzeigen',
+    ],
 ];

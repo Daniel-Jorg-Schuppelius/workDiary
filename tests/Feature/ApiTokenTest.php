@@ -11,8 +11,9 @@
 namespace Tests\Feature;
 
 use App\Models\{Organization, User};
+use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use Laravel\Sanctum\{PersonalAccessToken, Sanctum};
 use Tests\TestCase;
 
 class ApiTokenTest extends TestCase {
@@ -53,7 +54,7 @@ class ApiTokenTest extends TestCase {
         $token = $user->createToken('temp')->accessToken;
 
         $this->actingAs($user)
-            ->delete(route('profile.api-tokens.destroy', $token->id))
+            ->delete(route('profile.api-tokens.destroy', Sqid::encode(PersonalAccessToken::class, $token->id)))
             ->assertRedirect();
 
         $this->assertDatabaseMissing('personal_access_tokens', ['id' => $token->id]);

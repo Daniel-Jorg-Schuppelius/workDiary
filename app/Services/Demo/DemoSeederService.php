@@ -20,7 +20,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType, ProtocolStatus, ProtocolType, ProtocolVisibility};
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Enums\User\UserRole;
-use App\Models\{Asset, Attachment, CommunicationNote, Customer, DiaryEntry, Invoice, Material, MaterialUsage, OpenIssue, Organization, ProcedureRun, ProcedureTemplate, Project, Protocol, ProtocolItem, TimeEntry, Timesheet, User};
+use App\Models\{Asset, Attachment, AuditLog, CommunicationNote, Customer, DiaryEntry, Invoice, Material, MaterialUsage, OpenIssue, Organization, ProcedureRun, ProcedureTemplate, Project, Protocol, ProtocolItem, TimeEntry, Timesheet, User};
 use App\Services\Classification\BranchProfileInstaller;
 use App\Services\Procedure\{BackupProofService, ProcedureExecutionService, ProcedureTemplateService, SecondPersonGate};
 use Carbon\CarbonImmutable;
@@ -73,6 +73,71 @@ class DemoSeederService {
      */
     public function seed(Organization $organization, ?User $actor = null, ?DemoIndustry $industry = null): array {
         return $this->withOrganizationContext($organization, fn(): array => $this->doSeed($organization, $actor, $industry));
+    }
+
+    /**
+     * freshDemoOrg (demo-mandant.md §2): legt eine NEUE, isolierte Demo-Organisation
+     * an (nie eine bestehende) und befüllt sie vollständig. Gemeinsamer Kern für
+     * CLI (`demo:fresh-org`) und Plattform-Admin-UI (MVP-349).
+     *
+     * Audit (§8): `demo.orgCreated` (Branche, Org, Ersteller, optionales Mitglied)
+     * plus `demo.seeded` mit den Counts — etablierter Schreibweg über AuditLog.
+     *
+     * Optional wird ein Plattform-Admin als Mitglied der neuen Org zugewiesen
+     * (`users.organization_id`, Ein-Org-Modell) — er bleibt Cross-Tenant-fähig
+     * und kann jederzeit über den Org-Switcher zurückwechseln.
+     *
+     * @return array{organization: Organization, counts: array<string, int|string>}
+     */
+    public function freshOrg(?DemoIndustry $industry = null, ?User $actor = null, ?User $member = null): array {
+        $industry ??= DemoIndustry::default();
+
+        // Eindeutiger Name — nie Kollision mit bestehenden (echten) Orgs.
+        $base = 'Demo ' . $industry->label();
+        $name = $base;
+        $suffix = 2;
+        while (Organization::query()->where('name', $name)->orWhere('name', $name . ' (Demo)')->exists()) {
+            $name = $base . ' #' . $suffix++;
+        }
+
+        $organization = Organization::query()->create([
+            'name' => $name,
+            'plan' => 'enterprise',
+            'locale' => 'de',
+            'timezone' => config('app.timezone', 'Europe/Berlin'),
+            'is_active' => true,
+        ]);
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $actor?->id,
+            'event' => 'demo.orgCreated',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => [
+                'industry' => $industry->value,
+                'organization_id' => $organization->id,
+                'created_by' => $actor?->id,
+                'member_user_id' => $member?->id,
+            ],
+        ]);
+
+        $counts = $this->seed($organization, $actor, $industry);
+
+        if ($member !== null) {
+            $member->forceFill(['organization_id' => $organization->id])->save();
+        }
+
+        AuditLog::query()->create([
+            'organization_id' => $organization->id,
+            'user_id' => $actor?->id,
+            'event' => 'demo.seeded',
+            'auditable_type' => Organization::class,
+            'auditable_id' => $organization->id,
+            'changes' => $counts,
+        ]);
+
+        return ['organization' => $organization->refresh(), 'counts' => $counts];
     }
 
     /**
@@ -1682,6 +1747,46 @@ class DemoSeederService {
                     'comm_body' => 'Telefonat mit Objektleitung zur Freigabe der erforderlichen Kleinreparaturen.',
                 ],
                 'background_title' => 'Demo-Objektrunde',
+            ],
+            DemoIndustry::WartungService => [
+                'customers' => [
+                    ['name' => 'Maschinenbau Muster AG', 'city' => 'Essen'],
+                    ['name' => 'Getränke Beispiel GmbH', 'city' => 'Bremen'],
+                    ['name' => 'Pumpenwerk Musterstadt', 'city' => 'Kassel'],
+                ],
+                'projects' => [
+                    0 => ['Wartungsvertrag Produktionslinie 1', 'Störungsdienst Muster AG'],
+                    1 => ['Jahreswartung Abfüllanlage'],
+                    2 => ['Pumpenservice Musterstadt', 'Ersatzteilmanagement Musterstadt'],
+                ],
+                'asset' => [
+                    'name' => 'Kompressor KAE-200',
+                    'manufacturer' => 'Beispiel Drucklufttechnik',
+                    'model' => 'KAE-200',
+                    'class' => AssetClass::Machine,
+                    'location' => 'Halle 2 Essen',
+                ],
+                'materials' => [
+                    ['sku' => 'WS-FILTER-LUFT', 'name' => 'Luftfilterelement', 'unit' => 'Stk', 'price' => '24.9000'],
+                    ['sku' => 'WS-OEL-46', 'name' => 'Hydrauliköl HLP 46', 'unit' => 'l', 'price' => '6.5000'],
+                    ['sku' => 'WS-KEIL-XPA', 'name' => 'Keilriemen XPA 1250', 'unit' => 'Stk', 'price' => '11.8000'],
+                ],
+                'main_case' => [
+                    'title' => 'Jahreswartung Kompressor KAE-200 — Beispielauftrag',
+                    'content' => 'Wartung nach Herstellervorgabe gemäß Wartungsvertrag (Prüfintervall 12 Monate, SLA-Reaktion 4 h): Filter-/Ölwechsel, Keilriemen prüfen, Probelauf mit Messwerten. Plan: 480 min.',
+                    'time_desc' => 'Demo-Zeiterfassung Jahreswartung',
+                    'open_issue_title' => 'Nachschmierung Antriebslager fällig',
+                    'open_issue_desc' => 'Lager der Antriebseinheit innerhalb der SLA-Frist nachschmieren und im Wartungsnachweis dokumentieren.',
+                    'protocol_title' => 'Abnahme Jahreswartung Kompressor',
+                    'protocol_items' => [
+                        ['label' => 'Filter und Öl gewechselt', 'result' => ProtocolItemResult::Ok],
+                        ['label' => 'Probelauf ohne Befund', 'result' => ProtocolItemResult::Ok],
+                        ['label' => 'Messwerte im Sollbereich dokumentiert', 'result' => ProtocolItemResult::Open],
+                    ],
+                    'comm_subject' => 'Terminbestätigung Wartungsfenster Halle 2',
+                    'comm_body' => 'Telefonat mit der Instandhaltungsleitung zur Freigabe des Wartungsfensters und Abstimmung des Probelaufs.',
+                ],
+                'background_title' => 'Demo-Serviceeinsatz',
             ],
         };
     }

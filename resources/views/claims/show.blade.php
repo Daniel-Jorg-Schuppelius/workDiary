@@ -109,19 +109,19 @@
                     <select name="defect_type_classification_id" class="select select-sm select-bordered" aria-label="{{ __('Mangelart') }}">
                         <option value="">{{ __('Mangelart …') }}</option>
                         @foreach ($defectTypes as $c)
-                            <option value="{{ $c->id }}" @selected($claim->defect_type_classification_id === $c->id)>{{ $c->label }}</option>
+                            <option value="{{ $c->sqid }}" @selected($claim->defect_type_classification_id === $c->id)>{{ $c->label }}</option>
                         @endforeach
                     </select>
                     <select name="root_cause_classification_id" class="select select-sm select-bordered" aria-label="{{ __('Ursache') }}">
                         <option value="">{{ __('Ursache …') }}</option>
                         @foreach ($rootCauses as $c)
-                            <option value="{{ $c->id }}" @selected($claim->root_cause_classification_id === $c->id)>{{ $c->label }}</option>
+                            <option value="{{ $c->sqid }}" @selected($claim->root_cause_classification_id === $c->id)>{{ $c->label }}</option>
                         @endforeach
                     </select>
                     <select name="goodwill_reason_classification_id" class="select select-sm select-bordered" aria-label="{{ __('Kulanzgrund') }}">
                         <option value="">{{ __('Kulanzgrund …') }}</option>
                         @foreach ($goodwillReasons as $c)
-                            <option value="{{ $c->id }}" @selected($claim->goodwill_reason_classification_id === $c->id)>{{ $c->label }}</option>
+                            <option value="{{ $c->sqid }}" @selected($claim->goodwill_reason_classification_id === $c->id)>{{ $c->label }}</option>
                         @endforeach
                     </select>
                     <button type="submit" class="btn btn-sm">{{ __('Speichern') }}</button>

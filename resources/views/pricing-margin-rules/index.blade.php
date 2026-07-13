@@ -63,7 +63,7 @@
                         <td class="text-right tabular-nums">{{ $rule->priority }}</td>
                         <td class="text-right">
                             <form method="POST" action="{{ route('pricing-margin-rules.destroy', $rule) }}"
-                                  onsubmit="return confirm('{{ __('procurement.margin.confirm_delete') }}')">
+                                  data-confirm-dialog data-confirm-message="{{ __('procurement.margin.confirm_delete') }}">
                                 @csrf @method('DELETE')
                                 <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Löschen')" />
                             </form>

@@ -49,13 +49,13 @@
 @if ($isOwnDay && $isClosedState && ! $monthLocked && $pendingCorrections->isEmpty())
     @can('requestCorrection', $closure)
         <x-button type="button" tone="warning"
-                onclick="document.getElementById('day-correction-dialog').showModal()" icon="edit_note">{{ __('day-close.action.request_correction') }}</x-button>
+                data-open-dialog="day-correction-dialog" icon="edit_note">{{ __('day-close.action.request_correction') }}</x-button>
     @endcan
 @endif
 
 @if ($closure->exists && $isClosedState && ! $monthLocked)
     @can('reopen', $closure)
         <x-button type="button" tone="ghost"
-                onclick="document.getElementById('day-reopen-dialog').showModal()" icon="lock_open">{{ __('day-close.action.reopen') }}</x-button>
+                data-open-dialog="day-reopen-dialog" icon="lock_open">{{ __('day-close.action.reopen') }}</x-button>
     @endcan
 @endif

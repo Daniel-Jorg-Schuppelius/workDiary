@@ -12,6 +12,11 @@ return [
     'source' => 'Source',
     'fetched' => 'Fetched',
     'none' => 'No weather data attached.',
+    'providers' => [
+        // Weather service display names (proper nouns; DWD requires CC-BY attribution).
+        'open-meteo' => 'Open-Meteo',
+        'dwd' => 'Deutscher Wetterdienst (DWD)',
+    ],
     'attach' => [
         'button' => 'Fetch weather',
         'success' => 'Weather for the day attached.',

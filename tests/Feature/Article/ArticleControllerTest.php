@@ -107,4 +107,44 @@ final class ArticleControllerTest extends TestCase {
         $this->assertSame('color=red', $variant->option_signature);
         $this->assertStringStartsWith('ART-', (string) $variant->sku);
     }
+
+    public function test_article_can_be_tagged_on_store_and_update(): void {
+        $existing = \App\Models\Tag::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Verschleißteil',
+        ]);
+
+        // Anlage: bestehender Tag (als Sqid, wie ihn der Tag-Picker sendet)
+        // plus Frei-Text-Neuanlage.
+        $this->actingAs($this->admin)->post(route('articles.store'), [
+            'name' => 'Dichtungssatz',
+            'type' => 'raw',
+            'base_unit' => 'Stk',
+            'status' => 'active',
+            'tag_ids' => [$existing->sqid],
+            'new_tags' => 'Ersatzteil',
+        ])->assertRedirect();
+
+        $article = Article::query()->where('name', 'Dichtungssatz')->firstOrFail();
+        $this->assertEqualsCanonicalizing(
+            ['Ersatzteil', 'Verschleißteil'],
+            $article->tags()->pluck('name')->all(),
+        );
+
+        // Update ersetzt die Auswahl (Sync-Semantik wie beim Lieferanten).
+        $this->actingAs($this->admin)->put(route('articles.update', $article), [
+            'name' => 'Dichtungssatz',
+            'type' => 'raw',
+            'base_unit' => 'Stk',
+            'status' => 'active',
+            'tag_ids' => [$existing->sqid],
+        ])->assertRedirect();
+
+        $this->assertSame(['Verschleißteil'], $article->tags()->pluck('name')->all());
+
+        // Artikelseite zeigt die Tags.
+        $this->actingAs($this->admin)->get(route('articles.show', $article))
+            ->assertOk()
+            ->assertSee('Verschleißteil');
+    }
 }

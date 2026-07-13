@@ -12,6 +12,8 @@ namespace Tests\Feature\Metrics;
 
 use App\Models\{FeatureUsageCounter, Organization};
 use App\Services\Metrics\OperationsMetricsService;
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -96,5 +98,67 @@ class OperationsMetricsServiceTest extends TestCase {
         $this->service->increment('documents.created');
 
         $this->assertSame(0, FeatureUsageCounter::withoutGlobalScopes()->count());
+    }
+
+    public function test_telemetry_default_is_enabled_because_counters_stay_local(): void {
+        // Charakterisierung (MVP-337): Die Zähler verlassen die Installation
+        // nie (nur feature_usage_counters, lokal) — deshalb ist der Default
+        // bewusst AN (Opt-out), anders als updates.check_mode, dessen
+        // Opt-in-Semantik EXTERNE Kommunikation gated.
+        $this->assertTrue((bool) config('telemetry.enabled'));
+        $this->assertTrue($this->service->telemetryEnabled());
+
+        $org = Organization::factory()->create();
+        $this->service->increment('documents.created', (int) $org->id);
+
+        $this->assertSame(1, FeatureUsageCounter::withoutGlobalScopes()->where('organization_id', $org->id)->count());
+    }
+
+    public function test_increment_skips_when_disabled_system_wide(): void {
+        $org = Organization::factory()->create();
+        Setting::set('telemetry.enabled', false, SettingScope::System);
+
+        $this->service->increment('documents.created', (int) $org->id);
+
+        $this->assertSame(0, FeatureUsageCounter::withoutGlobalScopes()->count());
+
+        // Wieder einschalten → es wird weitergezählt (Aggregate bleiben,
+        // nur der Schreibpfad war gated).
+        Setting::set('telemetry.enabled', true, SettingScope::System);
+        $this->service->increment('documents.created', (int) $org->id);
+
+        $this->assertSame(1, FeatureUsageCounter::withoutGlobalScopes()->count());
+    }
+
+    public function test_increment_respects_org_opt_out_on_every_path(): void {
+        $optedOut = Organization::factory()->create();
+        $counting = Organization::factory()->create();
+        Setting::set('telemetry.enabled', false, SettingScope::Organization, $optedOut);
+
+        // Pfad 1: gebundener Mandantenkontext (normaler HTTP-Fluss).
+        app()->instance('currentOrganization', $optedOut->fresh());
+        $this->service->increment('documents.created', (int) $optedOut->id);
+        app()->forgetInstance('currentOrganization');
+
+        // Pfad 2: OHNE gebundenen Kontext (Queue nach der Org-Hygiene aus
+        // AppServiceProvider) — das Opt-out der Ziel-Org greift trotzdem.
+        $this->service->increment('documents.created', (int) $optedOut->id);
+
+        // Nachbar-Org ohne Override zählt weiter (Gate ist org-isoliert).
+        $this->service->increment('documents.created', (int) $counting->id);
+
+        $this->assertSame(0, FeatureUsageCounter::withoutGlobalScopes()->where('organization_id', $optedOut->id)->count());
+        $this->assertSame(1, FeatureUsageCounter::withoutGlobalScopes()->where('organization_id', $counting->id)->count());
+    }
+
+    public function test_collect_exposes_telemetry_status_and_counter_catalogue(): void {
+        $metrics = $this->service->collect();
+
+        $this->assertTrue($metrics['telemetry']['enabled']);
+        $this->assertSame(OperationsMetricsService::FEATURE_COUNTERS, $metrics['telemetry']['counters']);
+
+        Setting::set('telemetry.enabled', false, SettingScope::System);
+
+        $this->assertFalse($this->service->collect()['telemetry']['enabled']);
     }
 }

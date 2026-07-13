@@ -11,9 +11,9 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Support\Mirror\{MirrorConnection, MirrorsDocumentFolders};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 /**
  * WebDAV-Ablage einer Organisation (Feature 058, MVP-127). Das App-Passwort ist
@@ -35,13 +35,14 @@ use Illuminate\Support\Str;
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_mirrored_at
  */
-class WebdavConnection extends Model {
+class WebdavConnection extends Model implements MirrorConnection {
     use Auditable;
 
     use BelongsToOrganization;
     use HasConnectionHealth;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use MirrorsDocumentFolders;
 
     /** Tabellenname explizit (defensiv, konsistent zur Migration). */
     protected $table = 'webdav_connections';
@@ -74,49 +75,13 @@ class WebdavConnection extends Model {
         'last_mirrored_at' => 'datetime',
     ];
 
-    /** Spiegelbare Quellen (Rang 19); null/leer = nur DMS-Dokumente (rückwärtskompatibel). */
-    public const SOURCES = ['document', 'invoice_pdf', 'protocol_pdf'];
-
     /** Betriebsbereit: aktiv geschaltet und vollständig konfiguriert. */
     public function isActive(): bool {
         return $this->active && $this->base_url !== '' && $this->username !== '' && $this->app_password !== '';
     }
 
-    /** Spiegelt diese Anbindung die angegebene Quelle? Ohne Auswahl nur `document`. */
-    public function mirrorsSource(string $source): bool {
-        $sources = $this->sources;
-        if (! is_array($sources) || $sources === []) {
-            return $source === 'document';
-        }
-
-        return in_array($source, $sources, true);
-    }
-
-    /** Zielordner (relativ zur base_url) für einen Dokumenttyp; sonst der Standardordner. */
-    public function folderFor(string $documentType): string {
-        $map = $this->folder_map ?? [];
-        $folder = $map[$documentType] ?? $this->default_folder;
-
-        return trim((string) $folder, '/');
-    }
-
     /** Vollständige URL eines Objekts (Collection-Root + relativer Pfad). */
     public function objectUrl(string $relativePath): string {
         return rtrim($this->base_url, '/') . '/' . ltrim($relativePath, '/');
-    }
-
-    /** Relativer Zielpfad eines Dokuments (Ordner nach Typ + stabiler Dateiname). */
-    public function relativePathFor(string $documentType, int $documentId, string $originalName): string {
-        $ext = '';
-        if (str_contains($originalName, '.')) {
-            $candidate = strtolower((string) Str::of($originalName)->afterLast('.'));
-            if (preg_match('/^[a-z0-9]{1,8}$/', $candidate) === 1) {
-                $ext = '.' . $candidate;
-            }
-        }
-        $folder = $this->folderFor($documentType);
-        $file = 'document-' . $documentId . $ext;
-
-        return $folder !== '' ? $folder . '/' . $file : $file;
     }
 }

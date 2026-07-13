@@ -25,6 +25,7 @@ return [
         'active_users' => 'Aktive Benutzer (30 Tage)',
         'module_counts' => 'Datensätze je Kernmodul',
         'feature_usage' => 'Feature-Nutzung (30 Tage)',
+        'transparency' => 'Metrik-Transparenz',
     ],
 
     'field' => [
@@ -36,6 +37,34 @@ return [
         'feature' => 'Feature',
         'usage_total' => 'Anzahl',
         'last_used_on' => 'Zuletzt genutzt',
+        'counter_description' => 'Was gezählt wird',
+    ],
+
+    'transparency' => [
+        'status_enabled' => 'Nutzungszähler aktiv',
+        'status_disabled' => 'Nutzungszähler deaktiviert',
+        'settings_link' => 'Schalter „telemetry.enabled" in den Einstellungen',
+        'intro' => 'Diese Installation erhebt ausschließlich die folgenden Nutzungszähler — je Organisation und Tag aggregiert, ohne Personenbezug und ohne fachliche Inhalte. Weitere Telemetrie existiert nicht.',
+        'storage' => 'Speicherort: lokale Datenbank dieser Installation (Tabelle feature_usage_counters). Es findet kein Versand an externe Systeme statt.',
+        'retention' => 'Aufbewahrung: Tages-Aggregate verbleiben lokal; die Auswertung oben betrachtet die letzten 30 Tage. Bei deaktiviertem Schalter wird nicht gezählt — bestehende Aggregate bleiben erhalten.',
+    ],
+
+    'counter' => [
+        'communications' => [
+            'created' => 'Angelegte Kommunikationsnotizen (nur Anzahl)',
+        ],
+        'documents' => [
+            'created' => 'Angelegte Dokumente (nur Anzahl)',
+        ],
+        'forms' => [
+            'submitted' => 'Ausgefüllte Formulare (nur Anzahl)',
+        ],
+        'knowledge' => [
+            'created' => 'Angelegte Wissensartikel (nur Anzahl)',
+        ],
+        'timeExports' => [
+            'built' => 'Erstellte Zeit-/Lohnexporte (nur Anzahl)',
+        ],
     ],
 
     'module' => [

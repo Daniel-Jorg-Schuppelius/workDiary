@@ -37,6 +37,8 @@ class SchedulerRegistrationTest extends TestCase {
         'operations:scan' => ['0 * * * *', true, true],
         // Neu mit MVP-054 (kein Alt-Eintrag): Update-Check (Opt-in-Gate im Command).
         'updates:check' => ['30 6 * * *', true, true],
+        // Neu mit Bauturbo A17 (MVP-335): täglicher GoBD-Integritätsnachweis.
+        'audit:verify' => ['30 2 * * *', true, true],
         'archive:run' => ['0 3 * * *', true, true],
         'plans:purge' => ['30 3 * * *', true, true],
         'privacy:deadlines' => ['0 6 * * *', true, true],
@@ -54,6 +56,8 @@ class SchedulerRegistrationTest extends TestCase {
         'toggl:import' => ['0 * * * *', true, true],
         'openproject:import' => ['0 * * * *', true, true],
         'todoist:sync' => ['0 * * * *', true, true],
+        // Neu mit Bauturbo A9 (MVP-329): CardDAV-Kontakt-Lese-Sync.
+        'carddav:sync' => ['0 * * * *', true, true],
         'openproject:push' => ['0 * * * *', true, true],
         'workdiary:backup:check-restore' => ['0 5 * * *', true, true],
         'maintenance:scan-due' => ['30 5 * * *', true, true],

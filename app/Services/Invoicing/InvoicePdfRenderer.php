@@ -32,8 +32,7 @@ use RuntimeException;
  * Ausgabe unverändert (Systemfallback).
  */
 class InvoicePdfRenderer {
-    public function __construct(private readonly DocumentDesignRenderer $design) {
-    }
+    public function __construct(private readonly DocumentDesignRenderer $design) {}
 
     /** PDF-Bytes der Rechnung (A4). */
     public function output(Invoice $invoice): string {

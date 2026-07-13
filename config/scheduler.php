@@ -62,6 +62,18 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        // --- GoBD-Integritätsnachweis (Bauturbo A17, MVP-335) ---
+        // Rechnet alle Audit-Hash-Ketten (config/audit.php) nach; Exit-Code 1
+        // bei Manipulation → Watchdog/Laufnachweis schlägt an. Quelle:
+        // gobd-gap-analyse.md ("audit:verify in CI/Cron einhängen").
+        'audit.verify' => [
+            'command' => 'audit:verify',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:30'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 15,
+        ],
+
         // --- Kern/Housekeeping (täglich) ---
         'archive.run' => [
             'command' => 'archive:run',
@@ -225,6 +237,14 @@ return [
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
+        ],
+        // --- CardDAV-Kontakt-Lese-Sync (Bauturbo A9, MVP-329) ---
+        'carddav.sync' => [
+            'command' => 'carddav:sync',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
         ],
         'openproject.push' => [
             'command' => 'openproject:push',

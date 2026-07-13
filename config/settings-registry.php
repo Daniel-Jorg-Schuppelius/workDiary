@@ -68,6 +68,13 @@ return [
     'updates.check_mode' => ['type' => 'enum', 'scopes' => ['system'], 'options' => ['disabled', 'manual', 'auto'], 'fallback' => 'manual', 'affects' => ['updates.check']],
     'updates.feed_url' => ['type' => 'string', 'scopes' => ['system'], 'rules' => 'nullable|url'],
 
+    // --- Telemetrie (Feature 036, MVP-337) ---
+    // Lokale Feature-Nutzungszähler (feature_usage_counters). Kein externer
+    // Versand — daher Opt-out mit Default AN (config/telemetry.php) statt
+    // Opt-in wie updates.check_mode; Org-Scope erlaubt mandantenweises
+    // Abschalten, System-Scope schaltet die ganze Installation.
+    'telemetry.enabled' => ['type' => 'boolean', 'scopes' => ['system', 'organization'], 'fallback' => true],
+
     // --- Fehlermeldesystem (Feature 041, MVP-053) ---
     // Diagnose-Anhang: ask (Melder entscheidet) / always / never.
     'support.problem_reports.diagnostics' => ['type' => 'enum', 'scopes' => ['system', 'organization'], 'options' => ['ask', 'always', 'never'], 'fallback' => 'ask'],
@@ -92,6 +99,12 @@ return [
     // --- Wetter/Zeiterfassung ---
     // weather.auto_fetch hat keinen config-Default (harter Default false in Protocol)
     'weather.auto_fetch' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Provider-Auswahl (Bauturbo A7/MVP-131): open-meteo (Default) oder dwd
+    // (amtliche DWD-Open-Data-Tageswerte, CC BY 4.0, nur Deutschland).
+    'weather.provider' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['open-meteo', 'dwd'], 'fallback' => 'open-meteo'],
+    // DWD: maximale Entfernung zur nächsten Station — darüber hinaus lieber
+    // kein Snapshot als falsche Daten.
+    'weather.dwd_max_station_km' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:200', 'fallback' => 30],
     // edit_window_days: kein config-Default; null = kein Bearbeitungsfenster erzwungen
     'timesheet.edit_window_days' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:365'],
 
@@ -162,4 +175,12 @@ return [
     'maintenance.message' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:300'],
     'maintenance.until' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'date'],
     'maintenance.block_ingest' => ['type' => 'boolean', 'scopes' => ['organization']],
+
+    // --- Rechtstexte (config/legal.php, MVP-326) ---
+    // Öffentliches Impressum/Datenschutzerklärung der Installation —
+    // betreiberspezifisch, daher nur System-Scope. Klartext mit
+    // Zeilenumbrüchen; Ausgabe HTML-escaped auf /impressum bzw.
+    // /datenschutz.
+    'legal.imprint' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
+    'legal.privacy' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
 ];

@@ -34,7 +34,7 @@
 
     <x-filter-bar :action="route('reports.project-details')" :reset="route('reports.project-details')">
         <x-filter-field :label="__('Projekt')" for="rep-project">
-            <select id="rep-project" name="project_id" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="rep-project" name="project_id" class="select select-sm select-bordered" data-autosubmit>
                 @foreach ($projects as $p)
                     <option value="{{ $p->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\Project::class, $projectId) === $p->sqid)>
                         {{ $p->name }}@if ($p->customer) — {{ $p->customer->name }}@endif

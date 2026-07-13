@@ -17,7 +17,7 @@
         <x-filter-bar :action="route('energy-logs.index')" :reset="route('energy-logs.index')">
             @if ($selectableUsers)
                 <x-filter-field :label="__('Nutzer')" for="energy-user">
-                    <select id="energy-user" name="user" class="select select-bordered select-sm" onchange="this.form.submit()">
+                    <select id="energy-user" name="user" class="select select-bordered select-sm" data-autosubmit>
                         <option value="">{{ __('— eigene —') }}</option>
                         <option value="all" @selected(request('user') === 'all')>{{ __('Alle') }}</option>
                         @foreach ($selectableUsers as $u)
@@ -27,7 +27,7 @@
                 </x-filter-field>
             @endif
             <x-filter-field :label="__('Fahrzeug')" for="energy-vehicle">
-                <select id="energy-vehicle" name="vehicle" class="select select-bordered select-sm" onchange="this.form.submit()">
+                <select id="energy-vehicle" name="vehicle" class="select select-bordered select-sm" data-autosubmit>
                     <option value="">{{ __('Alle Fahrzeuge') }}</option>
                     @foreach ($vehicles as $v)
                         <option value="{{ $v->sqid }}" @selected((string) ($selectedVehicleSqid ?? '') === $v->sqid)>{{ $v->displayName() }}</option>

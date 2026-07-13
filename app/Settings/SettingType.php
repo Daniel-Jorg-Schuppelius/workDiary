@@ -19,6 +19,7 @@ namespace App\Settings;
  */
 enum SettingType: string {
     case String_ = 'string';
+    case Text = 'text';     // mehrzeiliger Freitext (Textarea)
     case Integer = 'integer';
     case Decimal = 'decimal';
     case Boolean = 'boolean';
@@ -30,7 +31,7 @@ enum SettingType: string {
     /** Grundvalidierung, die der fachlichen rules-Angabe vorangestellt wird. */
     public function baseRule(): string {
         return match ($this) {
-            self::String_, self::Enum_ => 'string',
+            self::String_, self::Text, self::Enum_ => 'string',
             self::Integer, self::Duration => 'integer',
             self::Decimal => 'numeric',
             self::Boolean => 'boolean',

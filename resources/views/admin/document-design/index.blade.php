@@ -3,7 +3,7 @@
 @section('nav-title', __('document_design.title'))
 
 @section('content')
-<x-page-shell>
+<x-index-page :subtitle="__('document_design.intro')">
     <x-slot:actions>
         @if ($canManage)
             <x-icon-btn icon="add" tone="ghost" size="sm"
@@ -17,7 +17,6 @@
         @endif
     </x-slot:actions>
 
-    <div class="space-y-4">
         @if (session('success'))
             <div class="alert alert-success text-sm">{{ session('success') }}</div>
         @endif
@@ -28,23 +27,13 @@
             <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
         @endif
 
-        <div role="alert" class="alert alert-info alert-soft">
-            <x-icon name="info" />
-            <div>
-                <h3 class="font-semibold">{{ __('document_design.title') }}</h3>
-                <div class="text-sm">{{ __('document_design.intro') }}</div>
-            </div>
-        </div>
-
         {{-- Renderprofile --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.profiles_heading') }}</h2>
+        <x-card :title="__('document_design.profiles_heading')">
             @if ($profiles->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('document_design.no_profiles') }}</p>
+                <x-empty-state icon="design_services" :title="__('document_design.no_profiles')" compact />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('document_design.profile.name') }}</th>
                                 <th>{{ __('document_design.profile.status') }}</th>
@@ -53,8 +42,7 @@
                                 <th>{{ __('document_design.profile.default') }}</th>
                                 <th class="text-right">{{ __('document_design.actions') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($profiles as $profile)
                                 <tr>
                                     <td class="font-medium">{{ $profile->name }}</td>
@@ -80,21 +68,17 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
-        </div>
+        </x-card>
 
         {{-- Firmenbögen --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.assets_heading') }}</h2>
+        <x-card :title="__('document_design.assets_heading')">
             @if ($assets->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('document_design.no_assets') }}</p>
+                <x-empty-state icon="wallpaper" :title="__('document_design.no_assets')" compact />
             @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead>
+                <x-table bare>
+                    <x-slot:head>
                             <tr>
                                 <th>{{ __('document_design.asset.name') }}</th>
                                 <th>{{ __('document_design.asset.page_role') }}</th>
@@ -103,8 +87,7 @@
                                 <th>{{ __('document_design.asset.uploaded') }}</th>
                                 <th class="text-right">{{ __('document_design.actions') }}</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                    </x-slot:head>
                             @foreach ($assets as $asset)
                                 <tr>
                                     <td class="font-medium">{{ $asset->name }}</td>
@@ -136,11 +119,8 @@
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                </x-table>
             @endif
-        </div>
-    </div>
-</x-page-shell>
+        </x-card>
+</x-index-page>
 @endsection

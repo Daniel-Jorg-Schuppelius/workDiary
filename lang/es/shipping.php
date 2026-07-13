@@ -10,7 +10,7 @@
 
 return [
     'title' => 'Envío y logística',
-    'intro' => 'Conexiones de transportista para etiquetas de envío y seguimiento de envíos (DHL Paket y otros). Una conexión por transportista y organización; las credenciales se almacenan cifradas.',
+    'intro' => 'Conexiones de transportista para etiquetas de envío y seguimiento de envíos (DHL Paket, UPS, FedEx). Una conexión por transportista y organización; las credenciales se almacenan cifradas.',
 
     'form_heading' => 'Añadir / editar conexión',
     'form_hint' => 'Elige el transportista e introduce sus credenciales. Guardar de nuevo con el mismo transportista actualiza la conexión existente.',
@@ -21,13 +21,16 @@ return [
     'field' => [
         'carrier' => 'Transportista',
         'name' => 'Denominación',
-        'username' => 'Usuario (cuenta comercial)',
-        'password' => 'Contraseña',
-        'api_key' => 'Clave API (dhl-api-key)',
-        'billing_number' => 'Número de facturación',
+        'username' => 'Usuario / ID de cliente',
+        'password' => 'Contraseña / secreto de cliente',
+        'api_key' => 'Clave API (solo DHL: dhl-api-key)',
+        'billing_number' => 'Número de facturación / de cuenta',
         'sandbox' => 'Sandbox / entorno de pruebas',
         'active' => 'Activo',
         'weight_grams' => 'Peso (g)',
+        'length_cm' => 'Longitud (cm)',
+        'width_cm' => 'Anchura (cm)',
+        'height_cm' => 'Altura (cm)',
     ],
 
     'label_short' => 'Envío',
@@ -56,7 +59,7 @@ return [
     'flash' => [
         'saved' => 'Conexión de transportista guardada.',
         'disconnected' => 'Conexión de transportista desactivada.',
-        'credentials_required' => 'El usuario, la contraseña y la clave API son obligatorios para una nueva conexión.',
+        'credentials_required' => 'Una nueva conexión requiere usuario/ID de cliente y contraseña/secreto de cliente (DHL además: clave API).',
         'no_recipient' => 'La entrega no tiene un cliente como destinatario.',
         'already_created' => 'Ya existe un envío para esta entrega.',
         'no_connection' => 'No hay una conexión activa configurada para el transportista seleccionado.',

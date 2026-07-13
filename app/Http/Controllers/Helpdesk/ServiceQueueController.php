@@ -112,11 +112,17 @@ class ServiceQueueController extends Controller {
 
     /** @return array<string, mixed> */
     private function validated(Request $request, ?ServiceQueue $queue = null): array {
+        foreach (['team_id' => Team::class, 'default_sla_contract_id' => SlaContract::class] as $field => $model) {
+            if ($request->filled($field)) {
+                $request->merge([$field => \App\Support\Sqid::decodeOrNumeric($model, $request->input($field))]);
+            }
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:120'],
             'purpose' => ['nullable', 'string', 'max:500'],
-            'team_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('teams')],
-            'default_sla_contract_id' => ['nullable', new \App\Rules\ExistsInCurrentOrganization('sla_contracts')],
+            'team_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('teams')],
+            'default_sla_contract_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('sla_contracts')],
             'visibility' => ['required', 'in:internal,portal'],
             'is_default' => ['nullable', 'boolean'],
         ]);

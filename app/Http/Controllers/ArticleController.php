@@ -73,8 +73,13 @@ class ArticleController extends Controller {
         Gate::authorize('create', Article::class);
 
         $data = $request->validated();
+        $tagIds = $data['tag_ids'] ?? [];
+        $newTagsRaw = (string) ($data['new_tags'] ?? '');
+        unset($data['tag_ids'], $data['new_tags']);
+
         $data['created_by'] = Auth::id();
         $article = $this->articles->createArticle($this->currentOrganization(), $data);
+        $article->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
 
         return redirect()->route('articles.show', $article)
             ->with('success', __('article.flash.created'));
@@ -92,6 +97,7 @@ class ArticleController extends Controller {
             'unitKinds' => ArticleUnitKind::cases(),
             'supplies' => $supplies,
             'recommendedSupplyId' => $comparator->recommend($article)?->id,
+            'tags' => $article->tags()->get(),
         ]);
     }
 
@@ -117,7 +123,13 @@ class ArticleController extends Controller {
     public function update(SaveArticleRequest $request, Article $article): RedirectResponse {
         Gate::authorize('update', $article);
 
-        $article->update($request->validated());
+        $data = $request->validated();
+        $tagIds = $data['tag_ids'] ?? [];
+        $newTagsRaw = (string) ($data['new_tags'] ?? '');
+        unset($data['tag_ids'], $data['new_tags']);
+
+        $article->update($data);
+        $article->syncTagsFromInput($tagIds, array_filter(array_map('trim', explode(',', $newTagsRaw))));
 
         return redirect()->route('articles.show', $article)
             ->with('success', __('article.flash.updated'));
@@ -225,6 +237,7 @@ class ArticleController extends Controller {
             'isDialog' => true,
             'types' => ArticleType::cases(),
             'statuses' => ArticleStatus::cases(),
+            'allTags' => \App\Models\Tag::query()->orderBy('name')->get(),
         ]);
     }
 }

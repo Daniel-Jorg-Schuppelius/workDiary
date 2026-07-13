@@ -7,7 +7,7 @@
     <x-index-page :subtitle="__('dispatch.reservations.subtitle')">
         <x-filter-bar :action="route('vehicle-reservations.index')" submit-label="{{ __('Anwenden') }}">
             <x-filter-field :label="__('dispatch.vehicle.label')" for="res-vehicle">
-                <select id="res-vehicle" name="vehicle" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="res-vehicle" name="vehicle" class="select select-sm select-bordered" data-autosubmit>
                     <option value="">{{ __('dispatch.reservations.all_vehicles') }}</option>
                     @foreach ($vehicles as $v)
                         <option value="{{ $v->sqid }}" @selected($vehicle && (int) $vehicle->id === (int) $v->id)>{{ $v->displayName() }}</option>

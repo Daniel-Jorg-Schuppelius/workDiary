@@ -90,6 +90,40 @@ class NotificationRuleAdminTest extends TestCase {
         $this->assertSame(['teamleitung'], $rule->recipient_roles);
     }
 
+    public function test_admin_can_configure_escalation_ladder_and_calendar_channel(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $fixed = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($admin)
+            ->put(route('admin.notification-rules.update', ['event' => NotificationEvent::OpenIssueOverdue->value]), [
+                'enabled' => '1',
+                'channels' => [NotificationChannel::InApp->value, NotificationChannel::Calendar->value],
+                'notify_affected' => '1',
+                'escalation_enabled' => '1',
+                'escalate_after_hours' => '4',
+                'escalation_role' => 'teamleitung',
+                'escalation2_after_hours' => '8',
+                'escalation2_roles' => ['admin'],
+                'escalation3_after_hours' => '12',
+                'escalation3_users' => [$fixed->sqid],
+            ])
+            ->assertRedirect(route('admin.notification-rules.index'));
+
+        $rule = NotificationRule::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $this->organization->id)
+            ->where('event', NotificationEvent::OpenIssueOverdue->value)
+            ->firstOrFail();
+
+        $this->assertContains(NotificationChannel::Calendar->value, (array) $rule->channels);
+        $this->assertSame(8, $rule->escalation2_after_hours);
+        $this->assertSame(['admin'], $rule->escalation2_roles);
+        $this->assertSame(12, $rule->escalation3_after_hours);
+        $this->assertSame([$fixed->id], $rule->escalation3_user_ids);
+        $this->assertTrue($rule->escalationLevelConfigured(2));
+        $this->assertTrue($rule->escalationLevelConfigured(3));
+    }
+
     public function test_unknown_event_returns_404(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 

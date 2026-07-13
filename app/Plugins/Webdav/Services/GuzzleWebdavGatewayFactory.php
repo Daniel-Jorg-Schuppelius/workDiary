@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Webdav\Services;
 
 use App\Models\WebdavConnection;
-use App\Plugins\Webdav\Contracts\{WebdavGateway, WebdavGatewayFactory};
+use App\Plugins\Support\Mirror\RemoteFileGateway;
+use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use GuzzleHttp\Client;
 
 /**
@@ -21,7 +22,7 @@ use GuzzleHttp\Client;
  * mit einem frischen Guzzle-Client. Im Test durch eine Fake-Factory ersetzt.
  */
 class GuzzleWebdavGatewayFactory implements WebdavGatewayFactory {
-    public function for(WebdavConnection $connection): WebdavGateway {
+    public function for(WebdavConnection $connection): RemoteFileGateway {
         return new HttpWebdavGateway(new Client(['timeout' => 30]), $connection);
     }
 }

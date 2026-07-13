@@ -12,7 +12,8 @@ namespace Tests\Feature\Plugins\Webdav;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationInboxItem, User, WebdavConnection};
-use App\Plugins\Webdav\Services\DocumentMirrorService;
+use App\Plugins\Support\Mirror\DocumentMirrorService;
+use App\Plugins\Webdav\{WebdavMirrorTarget, WebdavPlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Queue, Storage};
 use RuntimeException;
@@ -85,7 +86,7 @@ final class DocumentMirrorServiceTest extends TestCase {
         $connection = $this->connection();
         $gateway = new RecordingWebdavGateway();
 
-        $result = (new DocumentMirrorService())->mirror($document, $connection, $gateway);
+        $result = (new DocumentMirrorService())->mirror(new WebdavMirrorTarget(), $document, $connection, $gateway);
 
         $this->assertSame(DocumentMirrorService::RESULT_MIRRORED, $result);
         $expectedPath = 'Pruefberichte/document-' . $document->id . '.pdf';
@@ -93,7 +94,7 @@ final class DocumentMirrorServiceTest extends TestCase {
         $this->assertContains('Pruefberichte', $gateway->collections);
 
         $ref = ExternalReference::query()
-            ->where('plugin_id', DocumentMirrorService::PLUGIN_ID)
+            ->where('plugin_id', WebdavPlugin::ID)
             ->where('external_type', DocumentMirrorService::EXTERNAL_TYPE)
             ->first();
         $this->assertNotNull($ref);
@@ -110,9 +111,9 @@ final class DocumentMirrorServiceTest extends TestCase {
         $connection = $this->connection();
         $service = new DocumentMirrorService();
 
-        $service->mirror($document, $connection, new RecordingWebdavGateway());
+        $service->mirror(new WebdavMirrorTarget(), $document, $connection, new RecordingWebdavGateway());
         $gateway = new RecordingWebdavGateway();
-        $result = $service->mirror($document->refresh(), $connection, $gateway);
+        $result = $service->mirror(new WebdavMirrorTarget(), $document->refresh(), $connection, $gateway);
 
         $this->assertSame(DocumentMirrorService::RESULT_UNCHANGED, $result);
         $this->assertSame([], $gateway->puts);
@@ -123,10 +124,10 @@ final class DocumentMirrorServiceTest extends TestCase {
         $connection = $this->connection();
         $service = new DocumentMirrorService();
 
-        $service->mirror($document, $connection, new RecordingWebdavGateway(signature: 'etag-1'));
+        $service->mirror(new WebdavMirrorTarget(), $document, $connection, new RecordingWebdavGateway(signature: 'etag-1'));
         Storage::disk('local')->put($path, 'V2'); // Inhalt geändert, Remote unverändert (gleiche Signatur)
         $gateway = new RecordingWebdavGateway(signature: 'etag-1');
-        $result = $service->mirror($document->refresh(), $connection, $gateway);
+        $result = $service->mirror(new WebdavMirrorTarget(), $document->refresh(), $connection, $gateway);
 
         $this->assertSame(DocumentMirrorService::RESULT_MIRRORED, $result);
         $this->assertNotEmpty($gateway->puts);
@@ -137,16 +138,16 @@ final class DocumentMirrorServiceTest extends TestCase {
         $connection = $this->connection();
         $service = new DocumentMirrorService();
 
-        $service->mirror($document, $connection, new RecordingWebdavGateway(signature: 'etag-1'));
+        $service->mirror(new WebdavMirrorTarget(), $document, $connection, new RecordingWebdavGateway(signature: 'etag-1'));
         Storage::disk('local')->put($path, 'V2'); // lokal geändert
         // Remote wurde fremdverändert → aktuelle Signatur weicht von der aufgezeichneten ab.
         $gateway = new RecordingWebdavGateway(signature: 'etag-EXTERN');
-        $result = $service->mirror($document->refresh(), $connection, $gateway);
+        $result = $service->mirror(new WebdavMirrorTarget(), $document->refresh(), $connection, $gateway);
 
         $this->assertSame(DocumentMirrorService::RESULT_CONFLICT, $result);
         $this->assertSame([], $gateway->puts); // NIE stilles Überschreiben
         $this->assertSame(1, IntegrationInboxItem::query()
-            ->where('plugin_id', DocumentMirrorService::PLUGIN_ID)
+            ->where('plugin_id', WebdavPlugin::ID)
             ->where('case_type', IntegrationInboxItem::CASE_CONFLICT)
             ->count());
     }
@@ -157,7 +158,7 @@ final class DocumentMirrorServiceTest extends TestCase {
         $gateway = new RecordingWebdavGateway(putOk: false);
 
         $this->expectException(RuntimeException::class);
-        (new DocumentMirrorService())->mirror($document, $connection, $gateway);
+        (new DocumentMirrorService())->mirror(new WebdavMirrorTarget(), $document, $connection, $gateway);
     }
 
     public function test_skips_when_local_file_missing(): void {
@@ -180,7 +181,7 @@ final class DocumentMirrorServiceTest extends TestCase {
         ]);
         $document->forceFill(['current_version_id' => $version->id])->save();
 
-        $result = (new DocumentMirrorService())->mirror($document, $this->connection(), new RecordingWebdavGateway());
+        $result = (new DocumentMirrorService())->mirror(new WebdavMirrorTarget(), $document, $this->connection(), new RecordingWebdavGateway());
 
         $this->assertSame(DocumentMirrorService::RESULT_SKIPPED, $result);
     }

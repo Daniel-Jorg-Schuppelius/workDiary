@@ -29,9 +29,13 @@ return [
     ],
     'weather' => [
         'heading' => 'Automatic weather fetch',
-        'description' => 'When a protocol is created, automatically pull a weather snapshot (Open-Meteo) for its location and time — as evidence. Projects can override this.',
+        'description' => 'When a protocol is created, automatically pull a weather snapshot for its location and time — as evidence. Projects can override this.',
         'auto_fetch' => 'Fetch weather automatically when a protocol is created',
         'auto_fetch_hint' => 'Only when location coordinates are available; otherwise nothing happens. Default: off.',
+        'provider' => 'Weather service',
+        'provider_hint' => 'Open-Meteo: worldwide, no sign-up. DWD Open Data: official German station data (CC BY 4.0, attribution “Deutscher Wetterdienst”), only for locations in Germany with a station in range.',
+        'dwd_max_station_km' => 'DWD: maximum station distance (km)',
+        'dwd_max_station_km_hint' => 'If no active DWD station lies within this distance, no snapshot is created — better no value than a wrong one. Default: 30 km.',
     ],
     'hint' => 'Leave empty to use the system default.',
     'pagination' => [

@@ -39,7 +39,8 @@
                             </td>
                             <td class="text-right">
                                 <x-icon-btn icon="edit" type="button"
-                                            onclick='shiftTypeOpenEdit(@js($t->sqid), @js([
+                                            data-type-edit="{{ $t->sqid }}"
+                                            data-type-payload="{{ json_encode([
                                                 'id' => $t->sqid,
                                                 'name' => $t->name,
                                                 'abbreviation' => $t->abbreviation,
@@ -47,10 +48,10 @@
                                                 'default_start_time' => $t->default_start_time,
                                                 'default_end_time' => $t->default_end_time,
                                                 'is_active' => (bool) $t->is_active,
-                                            ]))'
+                                            ]) }}"
                                             :label="__('Bearbeiten')" />
                                 <x-icon-btn icon="delete" tone="error" type="button"
-                                            onclick='shiftTypeDelete(@js($t->sqid))'
+                                            data-type-delete="{{ $t->sqid }}"
                                             :label="__('Löschen')" />
                             </td>
                         </tr>
@@ -108,7 +109,7 @@
             <div id="shift-type-error" class="alert alert-error alert-sm hidden text-sm"></div>
 
             <div class="flex justify-between">
-                <x-icon-btn icon="restart_alt" size="sm" type="button" id="shift-type-reset" onclick="shiftTypeResetForm()" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
+                <x-icon-btn icon="restart_alt" size="sm" type="button" id="shift-type-reset" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>
                 <x-icon-btn icon="save" tone="primary" size="sm" type="submit" id="shift-type-save" show-label>{{ __('Speichern') }}</x-icon-btn>
             </div>
         </form>

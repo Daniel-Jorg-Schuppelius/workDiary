@@ -95,7 +95,7 @@
                         @if ($canManage)
                             <form method="POST" action="{{ route('isms.audit-programs.update', $program) }}">
                                 @csrf @method('PUT')
-                                <select name="status" class="select select-xs select-bordered" onchange="this.form.submit()">
+                                <select name="status" class="select select-xs select-bordered" data-autosubmit>
                                     <option value="">{{ __('Status …') }}</option>
                                     <option value="active">{{ __('aktiv') }}</option>
                                     <option value="completed">{{ __('abgeschlossen') }}</option>

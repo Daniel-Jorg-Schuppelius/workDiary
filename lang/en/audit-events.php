@@ -55,6 +55,17 @@ return [
         'member_added'              => 'User group: member added',
         'member_removed'            => 'User group: member removed',
     ],
+    // role/permission assignment to users/groups (Bauturbo A17, MVP-335)
+    'user' => [
+        'role' => [
+            'assigned'              => 'Role assigned',
+            'revoked'               => 'Role revoked',
+        ],
+        'permission' => [
+            'granted'               => 'Permission granted',
+            'revoked'               => 'Permission revoked',
+        ],
+    ],
 
     // support / reports
     'support' => [
@@ -91,6 +102,17 @@ return [
     ],
     'token' => [
         'revoked'                   => 'Token revoked',
+    ],
+
+    // privacy page (MVP-005/MVP-327)
+    'privacy' => [
+        'overviewExported'          => 'Privacy overview exported',
+        'report' => [
+            'exported'              => 'Privacy report exported',
+        ],
+    ],
+    'integration' => [
+        'changed'                   => 'Integration enabled/disabled',
     ],
 
     // tenant / export

@@ -30,4 +30,7 @@ return [
     'story_points' => "Medida relativa del esfuerzo de un elemento de trabajo — comparable dentro del equipo, nunca convertida en horas o dinero.",
     'wip' => "Work in progress: límite de elementos simultáneos por columna; superarlo requiere una justificación.",
     'velocity' => "Story points completados por sprint finalizado (mediana + rango) — magnitud de planificación, no de rendimiento.",
+    'abnahme' => "Recepción: confirmación formal del cliente de que el trabajo se entregó según lo acordado — documentada mediante protocolo firmado; inicia garantía y facturación.",
+    'prozedur' => "Procedimiento: instrucción de trabajo guiada paso a paso a partir de una plantilla versionada; cada ejecución se registra de forma trazable.",
+    'zeitkonto' => "Cuenta de tiempo de trabajo: registra horas de más o de menos respecto al tiempo contractual — base para compensación en tiempo libre o pago.",
 ];

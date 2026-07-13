@@ -61,13 +61,13 @@
             @if (! $isDialog && in_array('pause', $actions, true))
                 @can('pause', $diary)
                     <x-icon-btn type="button" icon="pause" tone="warning" size="sm" show-label
-                        onclick="document.getElementById('order-pause-{{ $dialogSuffix }}').showModal()">{{ __('Pausieren') }}</x-icon-btn>
+                        data-open-dialog="order-pause-{{ $dialogSuffix }}">{{ __('Pausieren') }}</x-icon-btn>
                 @endcan
             @endif
             @if (! $isDialog && in_array('complete', $actions, true))
                 @can('complete', $diary)
                     <x-icon-btn type="button" icon="task_alt" tone="success" size="sm" show-label
-                        onclick="document.getElementById('order-complete-{{ $dialogSuffix }}').showModal()">{{ __('Abschließen') }}</x-icon-btn>
+                        data-open-dialog="order-complete-{{ $dialogSuffix }}">{{ __('Abschließen') }}</x-icon-btn>
                 @endcan
             @endif
             @if (in_array('handover', $actions, true))
@@ -86,13 +86,13 @@
             @if (! $isDialog && in_array('markInvoiced', $actions, true))
                 @can('markInvoiced', $diary)
                     <x-icon-btn type="button" icon="receipt_long" tone="success" size="sm" show-label
-                        onclick="document.getElementById('order-invoice-{{ $dialogSuffix }}').showModal()">{{ __('Als berechnet markieren') }}</x-icon-btn>
+                        data-open-dialog="order-invoice-{{ $dialogSuffix }}">{{ __('Als berechnet markieren') }}</x-icon-btn>
                 @endcan
             @endif
             @if (! $isDialog && in_array('cancel', $actions, true))
                 @can('cancel', $diary)
                     <x-icon-btn type="button" icon="cancel" tone="error" size="sm" show-label
-                        onclick="document.getElementById('order-cancel-{{ $dialogSuffix }}').showModal()">{{ __('Stornieren') }}</x-icon-btn>
+                        data-open-dialog="order-cancel-{{ $dialogSuffix }}">{{ __('Stornieren') }}</x-icon-btn>
                 @endcan
             @endif
         </div>

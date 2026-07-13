@@ -23,8 +23,10 @@
             @endforeach
         </x-select-field>
         <x-input-field name="contract_no" :label="__('Vertragsnummer (extern)')" :value="old('contract_no')" />
-        <x-input-field name="starts_on" type="date" :label="__('Beginn')" :value="old('starts_on')" required />
-        <x-input-field name="ends_on" type="date" :label="__('Ende')" :value="old('ends_on')" />
+        <x-date-range class="md:col-span-2" layout="split" form-control
+                      from-name="starts_on" to-name="ends_on" type="date" fromId="af-starts-on" toId="af-ends-on"
+                      :from-label="__('Beginn')" :to-label="__('Ende')"
+                      :from="old('starts_on')" :to="old('ends_on')" />
         <x-input-field name="notice_period_days" type="number" min="0" :label="__('Kündigungsfrist (Tage)')" :value="old('notice_period_days')" />
         <x-select-field name="responsible_user_id" :label="__('Verantwortlich')">
             <option value="">{{ __('-- später zuweisen --') }}</option>

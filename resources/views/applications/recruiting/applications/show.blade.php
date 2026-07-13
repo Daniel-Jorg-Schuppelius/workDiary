@@ -30,7 +30,7 @@
                 @if (in_array($application->status, \App\Models\Applications\JobApplication::PIPELINE_STATUSES, true))
                     <form method="POST" action="{{ route('recruiting.applications.status', $application) }}" class="flex items-center gap-1">
                         @csrf
-                        <select name="status" class="select select-sm select-bordered" onchange="this.form.submit()" aria-label="{{ __('Status') }}">
+                        <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
                             @foreach (['screened', 'interview_planned', 'interviewed', 'task_open'] as $status)
                                 <option value="{{ $status }}" @selected($application->status === $status)>{{ __("values.$status") }}</option>
                             @endforeach

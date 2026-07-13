@@ -54,7 +54,7 @@
             <x-card class="space-y-2">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neue Version') }}</h2>
                 <x-icon-btn icon="add" tone="primary" size="sm"
-                            onclick="document.getElementById('dlg-tom-version').showModal()" show-label>{{ __('Version speichern') }}</x-icon-btn>
+                            data-open-dialog="dlg-tom-version" show-label>{{ __('Version speichern') }}</x-icon-btn>
                 <x-modal :embedded="false" id="dlg-tom-version" :title="__('Neue Version')"
                          icon="add" tone="primary"
                          :action="route('dataprotection.tom.version', $measure)" method="POST"
@@ -115,7 +115,7 @@
             @can('update', $measure)
                 <div class="pt-2">
                     <x-icon-btn icon="add" tone="primary" size="sm"
-                                onclick="document.getElementById('dlg-tom-review').showModal()" show-label>{{ __('Prüfung dokumentieren') }}</x-icon-btn>
+                                data-open-dialog="dlg-tom-review" show-label>{{ __('Prüfung dokumentieren') }}</x-icon-btn>
                 </div>
                 <x-modal :embedded="false" id="dlg-tom-review" :title="__('Wirksamkeitsprüfung erfassen')"
                          icon="fact_check" tone="primary"

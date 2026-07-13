@@ -68,6 +68,7 @@ return [
         'show' => 'Show',
         'download' => 'Download original file',
         'confirm' => 'Confirm',
+        'confirm_selected' => 'Confirm selection',
         'ignore' => 'Set aside',
         'unassignable' => 'Unassignable',
         'unmatch' => 'Undo allocation',
@@ -80,6 +81,7 @@ return [
     'import' => [
         'dialog_title' => 'Import bank file',
         'dialog_hint' => 'CAMT.053 (XML) or MT940. The import only creates transactions in the review area and does not change any invoice or expense status.',
+        'format_hint' => 'Supported formats: CAMT.053, MT940, OFX, QIF, QXF and PAIN.001/008 (payment orders as announced transactions). Detection is content-based, not by file extension.',
         'file' => 'File',
         'account_optional' => 'Bank account (optional, otherwise auto-matched via IBAN)',
         'flash' => [
@@ -102,6 +104,27 @@ return [
         'error' => [
             'no_allocations' => 'No allocation was provided.',
             'target_not_found' => 'The allocation target was not found.',
+        ],
+    ],
+    // Lastschrift-Rückläufer-Workflow (MVP-334).
+    'return' => [
+        'badge' => 'Return',
+        'title' => 'Process direct debit return',
+        'action' => 'Compensate',
+        'reason_placeholder' => 'Reason (e.g. AC04)',
+        'flash' => [
+            'processed' => 'Return processed — original allocation compensated, item reopened.',
+        ],
+        'error' => [
+            'same_transaction' => 'The allocation belongs to the return transaction itself.',
+            'not_compensatable' => 'This allocation cannot be compensated.',
+            'already_compensated' => 'This allocation has already been compensated.',
+        ],
+        'reason' => [
+            'amount' => 'Amount matches',
+            'reference' => 'Reference match',
+            'mandate' => 'Mandate reference',
+            'date' => 'Date proximity',
         ],
     ],
     'account' => [

@@ -91,6 +91,8 @@ enum NotificationEvent: string implements HasLabel {
     case TicketAssigned = 'ticket.assigned';
     case TicketCustomerReplied = 'ticket.customerReplied';
     case TicketWaitingExpired = 'ticket.waitingExpired';
+    /** Scanner: Wirksamkeitsprüfung eines gelösten Problems/Known Errors überfällig (Feature 065, MVP-156). */
+    case ProblemEffectivenessDue = 'problem.effectivenessDue';
 
         // Betriebsereignisse (Feature 041, MVP-053–058): Quellen melden über
         // den OperationsAlertService — Empfänger sind Adminrollen, nie die
@@ -149,7 +151,7 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::MaintenanceDueSoon, self::MaintenanceOverdue, self::SlaQuotaWarning], true);
+        return ! in_array($this, [self::TimeCorrectionRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::SlaQuotaWarning], true);
     }
 
     /**
@@ -196,8 +198,10 @@ enum NotificationEvent: string implements HasLabel {
             // Überfällige Asset-Rückgabe: primär die ausleihende Person
             // (notify_affected), Fallback/Eskalationskette die Teamleitung.
             self::AssetReturnOverdue => [UserRole::Teamleitung->value],
-            // Wartungs-/Prüffälligkeit betrifft keine Einzelperson — an die
-            // Teamleitung, Eskalation der Überfälligkeit zusätzlich an Admin.
+            // Wartungs-/Prüffälligkeit (MVP-336): primär der Asset-
+            // Verantwortliche (notify_affected = aktueller Ausgabe-Inhaber),
+            // die Teamleitung als Fallback/Mitwisser; die Überfälligkeit
+            // eskaliert zusätzlich über die Eskalationsleiter (MVP-331).
             self::MaintenanceDueSoon,
             self::MaintenanceOverdue => [UserRole::Teamleitung->value],
             // Kritisches Sicherheitsereignis: betrifft keine einzelne Person —
@@ -226,6 +230,9 @@ enum NotificationEvent: string implements HasLabel {
             // Prüffälligkeit (Feature 075): betrifft keine Einzelperson —
             // an die Teamleitung (Prüfmittelverantwortung).
             self::AssetInspectionDue => [UserRole::Teamleitung->value],
+            // Fällige Wirksamkeitsprüfung (Feature 065, MVP-156): primär der
+            // Problem-Owner (notify_affected), Teamleitung als Fallback.
+            self::ProblemEffectivenessDue => [UserRole::Teamleitung->value],
             default => [],
         };
     }
@@ -273,6 +280,7 @@ enum NotificationEvent: string implements HasLabel {
             self::TicketAssigned => 'confirmation_number',
             self::TicketCustomerReplied => 'mark_email_unread',
             self::TicketWaitingExpired => 'alarm',
+            self::ProblemEffectivenessDue => 'troubleshoot',
             self::OperationsBackupOverdue,
             self::OperationsBackupFailed => 'backup',
             self::OperationsRestoreTestOverdue => 'settings_backup_restore',
@@ -304,6 +312,8 @@ enum NotificationEvent: string implements HasLabel {
             self::SlaBreached,
             self::AssetReturnOverdue,
             self::MaintenanceOverdue,
+            // Überfällige Wirksamkeitsprüfung (Feature 065, MVP-156).
+            self::ProblemEffectivenessDue,
             self::RentalReturnOverdue,
             self::AssetFinanceDeadline,
             self::AssetInspectionDue,

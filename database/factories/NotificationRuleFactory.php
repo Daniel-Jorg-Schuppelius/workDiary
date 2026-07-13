@@ -33,6 +33,12 @@ class NotificationRuleFactory extends Factory {
             'escalation_enabled' => false,
             'escalate_after_hours' => null,
             'escalation_role' => null,
+            'escalation2_after_hours' => null,
+            'escalation2_roles' => [],
+            'escalation2_user_ids' => [],
+            'escalation3_after_hours' => null,
+            'escalation3_roles' => [],
+            'escalation3_user_ids' => [],
         ];
     }
 

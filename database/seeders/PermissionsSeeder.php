@@ -425,6 +425,14 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ServiceTicketClose,
             PermissionEnum::HelpdeskQueueManage,
             PermissionEnum::HelpdeskTicketInternalNote,
+            // Servicekatalog + Genehmigungs-Inbox (Feature 065, MVP-154).
+            PermissionEnum::ServiceCatalogManage,
+            PermissionEnum::ServiceRequestApprove,
+            // Problem-Management (Feature 065, MVP-156).
+            PermissionEnum::ServiceDeskProblemManage,
+            // Change-/CAB-Management (Feature 065, MVP-157) — Freigaben
+            // laufen über ServiceRequestApprove (eine Inbox-Mechanik).
+            PermissionEnum::ServiceDeskChangeManage,
             PermissionEnum::SlaContractView,
             PermissionEnum::SlaContractManage,
             PermissionEnum::SlaViewAny,
@@ -634,6 +642,10 @@ class PermissionsSeeder extends Seeder {
             // Kostenstellen-Regeln für den Zeitexport (Rang 35): gleiche Zielgruppe.
             PermissionEnum::CostCenterRuleViewAny,
             PermissionEnum::CostCenterRuleManage,
+            // Lohnarten-Mapping + automatische Export-Lieferung (A21 · MVP-019):
+            // gleiche Zielgruppe (Lohnbüro/Buchhaltung).
+            PermissionEnum::WageTypeMappingViewAny,
+            PermissionEnum::WageTypeMappingManage,
             PermissionEnum::ReportView,
             PermissionEnum::ReportExport,
             // ArbZG-Compliance auf Ist-Arbeitszeit (Feature 006).

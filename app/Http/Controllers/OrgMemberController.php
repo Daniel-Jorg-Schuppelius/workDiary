@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\{Permission, UserRole};
-use App\Http\Controllers\Concerns\ManagesUserContactDetails;
+use App\Http\Controllers\Concerns\{AuditsAccessChanges, ManagesUserContactDetails};
 use App\Models\User;
 use App\Services\Licensing\LimitGuard;
 use App\Support\SortableQuery;
@@ -27,6 +27,7 @@ use Spatie\Permission\Models\Role;
  * Nur Org-Admins dürfen zugreifen (Gate 'manage-members' via OrganizationPolicy).
  */
 class OrgMemberController extends Controller {
+    use AuditsAccessChanges;
     use ManagesUserContactDetails;
     public function index(Request $request): View {
         /** @var User $auth */
@@ -113,6 +114,9 @@ class OrgMemberController extends Controller {
 
         $role = Role::findOrCreate($data['role'], 'web');
         $user->assignRole($role);
+        // Bauturbo A17 (MVP-335): Rollen-Vergabe revisionssicher auditieren
+        // (supportzugriff-grundsaetze.md §4.1). Neuer User → immer echte Vergabe.
+        $this->auditAssignedRole($user, $role);
 
         return redirect()->route('org.members.index')
             ->with('success', __('Mitglied wurde angelegt.'));
@@ -191,7 +195,9 @@ class OrgMemberController extends Controller {
         $this->syncUserBankAccount($member, (array) ($data['bank'] ?? []));
 
         $role = Role::findOrCreate($data['role'], 'web');
-        $member->syncRoles([$role]);
+        // Bauturbo A17 (MVP-335): Rollen-Wechsel als assigned/revoked-Diff
+        // auditieren; unveränderte Rolle erzeugt kein Event.
+        $this->syncRolesAudited($member, [$role]);
 
         return redirect()->route('org.members.index')
             ->with('success', __('Mitglied wurde aktualisiert.'));

@@ -50,6 +50,9 @@ class OperationsTask extends Model {
     use Auditable;
     use HasSqid;
 
+    /** Cache-TTL des Nav-Badge-Zählers (Sekunden) — Fallback, falls kein Write-Event feuert. */
+    public const NAV_BADGE_TTL = 300;
+
     protected $table = 'operations_tasks';
 
     protected $fillable = [
@@ -88,6 +91,24 @@ class OperationsTask extends Model {
         'resolved_at' => 'immutable_datetime',
         'acted_at' => 'immutable_datetime',
     ];
+
+    protected static function booted(): void {
+        // Nav-Badge-Zähler (B3/MVP-344): der Sidebar-Badge liest einen
+        // gecachten Count je Org — jede Änderung an einer Aufgabe
+        // invalidiert ihn, damit der Badge nicht bis zum TTL-Ablauf lügt.
+        $flush = static function (self $task): void {
+            \Illuminate\Support\Facades\Cache::forget(self::navBadgeCacheKey((int) $task->organization_id));
+        };
+        static::saved($flush);
+        static::deleted($flush);
+    }
+
+    /**
+     * Cache-Key des Nav-Badge-Zählers (aktive Aufgaben je Organisation).
+     */
+    public static function navBadgeCacheKey(int $organizationId): string {
+        return 'operations.nav_badge.' . $organizationId;
+    }
 
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo {

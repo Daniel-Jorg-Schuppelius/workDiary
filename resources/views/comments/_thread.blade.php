@@ -35,7 +35,7 @@
                     <div class="flex gap-1">
                         @can('update', $comment)
                             <x-icon-btn icon="edit" type="button" :label="__('Bearbeiten')"
-                                onclick="document.getElementById('comment-edit-{{ $comment->id }}').classList.toggle('hidden')" />
+                                data-toggle-hidden="comment-edit-{{ $comment->id }}" />
                         @endcan
                         @can('delete', $comment)
                             <x-action-form :action="route('comments.destroy', $comment)"

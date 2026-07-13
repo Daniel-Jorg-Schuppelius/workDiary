@@ -68,6 +68,7 @@ return [
         'show' => 'Anzeigen',
         'download' => 'Originaldatei herunterladen',
         'confirm' => 'Bestätigen',
+        'confirm_selected' => 'Auswahl bestätigen',
         'ignore' => 'Beiseitelegen',
         'unassignable' => 'Nicht zuordenbar',
         'unmatch' => 'Zuordnung zurücknehmen',
@@ -80,6 +81,7 @@ return [
     'import' => [
         'dialog_title' => 'Bankdatei importieren',
         'dialog_hint' => 'CAMT.053 (XML) oder MT940. Der Import legt die Umsätze nur im Prüfbereich an und ändert keine Rechnungs- oder Spesenstatus.',
+        'format_hint' => 'Unterstützte Formate: CAMT.053, MT940, OFX, QIF, QXF sowie PAIN.001/008 (Zahlungsaufträge als angekündigte Umsätze). Die Erkennung erfolgt anhand des Inhalts, nicht der Dateiendung.',
         'file' => 'Datei',
         'account_optional' => 'Bankkonto (optional, sonst Auto-Zuordnung über IBAN)',
         'flash' => [
@@ -102,6 +104,27 @@ return [
         'error' => [
             'no_allocations' => 'Es wurde keine Zuordnung angegeben.',
             'target_not_found' => 'Das Zuordnungsziel wurde nicht gefunden.',
+        ],
+    ],
+    // Lastschrift-Rückläufer-Workflow (MVP-334).
+    'return' => [
+        'badge' => 'Rückläufer',
+        'title' => 'Lastschrift-Rückläufer verarbeiten',
+        'action' => 'Kompensieren',
+        'reason_placeholder' => 'Grund (z. B. AC04)',
+        'flash' => [
+            'processed' => 'Rückläufer verarbeitet — ursprüngliche Zuordnung kompensiert, Posten wieder geöffnet.',
+        ],
+        'error' => [
+            'same_transaction' => 'Die Zuordnung gehört zum Rückläufer-Umsatz selbst.',
+            'not_compensatable' => 'Diese Zuordnung kann nicht kompensiert werden.',
+            'already_compensated' => 'Diese Zuordnung wurde bereits kompensiert.',
+        ],
+        'reason' => [
+            'amount' => 'Betrag passt',
+            'reference' => 'Referenz-Treffer',
+            'mandate' => 'Mandatsreferenz',
+            'date' => 'Datumsnähe',
         ],
     ],
     'account' => [

@@ -11,14 +11,14 @@
     <x-filter-bar :action="route('reports.expenses')" :reset="route('reports.expenses')">
         @if ($isAdmin)
             <x-filter-field :label="__('Bereich')" for="rep-scope">
-                <select id="rep-scope" name="scope" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="rep-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope === 'mine')>{{ __('Nur eigene') }}</option>
                     <option value="team" @selected($scope === 'team')>{{ __('Gesamte Organisation') }}</option>
                 </select>
             </x-filter-field>
         @endif
         <x-filter-field :label="__('Status')" for="rep-status">
-            <select id="rep-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="rep-status" name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('Alle') }}</option>
                 @foreach ($statusOptions as $opt)
                     <option value="{{ $opt->value }}" @selected($statusFilter === $opt->value)>{{ $opt->label() }}</option>

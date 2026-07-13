@@ -39,7 +39,7 @@
                     <x-slot:head>
                         <tr>
                             <x-table.th>
-                                <input type="checkbox" id="rep-inactive-all" class="checkbox checkbox-xs" onclick="document.querySelectorAll('[name=&quot;project_ids[]&quot;]').forEach(c=>c.checked=this.checked)">
+                                <input type="checkbox" id="rep-inactive-all" class="checkbox checkbox-xs" data-check-all='[name="project_ids[]"]' data-check-all-scope="document">
                             </x-table.th>
                             <x-table.th sort type="string">{{ __('Projekt') }}</x-table.th>
                             <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>

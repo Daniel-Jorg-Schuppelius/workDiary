@@ -35,7 +35,7 @@ class FetchProtocolWeatherJob implements ShouldQueue {
 
     public function __construct(public readonly int $protocolId) {}
 
-    public function handle(WeatherService $weather): void {
+    public function handle(): void {
         $protocol = Protocol::query()->find($this->protocolId);
         if (! $protocol instanceof Protocol) {
             return;
@@ -48,6 +48,9 @@ class FetchProtocolWeatherJob implements ShouldQueue {
             app()->instance('currentOrganization', $org);
         }
 
-        $weather->snapshotForProtocol($protocol);
+        // Bewusst NACH dem Org-Binding aus dem Container auflösen (keine
+        // Methoden-Injection): die Provider-Auswahl `weather.provider` liest
+        // das Org-Setting bereits beim Auflösen des Bindings (Bauturbo A7).
+        app(WeatherService::class)->snapshotForProtocol($protocol);
     }
 }

@@ -30,4 +30,7 @@ return [
     'story_points' => "Relatives Aufwandsmaß eines Arbeitselements — Team-intern vergleichbar, nie in Stunden oder Geld umgerechnet.",
     'wip' => "Work in Progress: Obergrenze gleichzeitiger Elemente je Spalte; Überschreitung nur begründet übersteuerbar.",
     'velocity' => "Erledigte Story Points je abgeschlossenem Sprint (Median + Spannweite) — Planungsgröße, kein Leistungsmaß.",
+    'abnahme' => "Formelle Bestätigung des Kunden, dass die Leistung vertragsgemäß erbracht wurde — dokumentiert per signiertem Protokoll; startet Gewährleistung und Abrechnung.",
+    'prozedur' => "Geführte Schritt-für-Schritt-Arbeitsanweisung aus einer versionierten Vorlage; jeder Durchlauf wird nachvollziehbar protokolliert.",
+    'zeitkonto' => "Arbeitszeitkonto: dokumentiert Mehr- und Minderstunden gegenüber der vertraglichen Soll-Arbeitszeit — Grundlage für Freizeitausgleich oder Auszahlung.",
 ];

@@ -12,7 +12,7 @@ namespace App\Services\Notification;
 
 use App\Enums\Integration\WebhookEvent;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
-use App\Jobs\Notification\ChatWebhookDeliveryJob;
+use App\Jobs\Notification\{CalendarEventPublishJob, ChatWebhookDeliveryJob};
 use App\Models\{ChatWebhook, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Notifications\GenericEventNotification;
@@ -44,8 +44,8 @@ class NotificationDispatcher {
      *
      * @param  Model  $subject  fachliches Subjekt (OpenIssue, Document, …)
      * @param  User|null  $affected  betroffene Person (Empfänger bei notify_affected)
-     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null}  $payload
-     * @param  string  $stage  initial|escalation (Dedup-Stufe)
+     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
+     * @param  string  $stage  initial|escalation|escalation2|escalation3 (Dedup-Stufe)
      * @param  bool  $dedup  true = pro (Org, Event, Subjekt, Stufe) nur einmal versenden (Scanner)
      * @return int Anzahl benachrichtigter Empfänger
      */
@@ -65,6 +65,7 @@ class NotificationDispatcher {
         if ($stage === NotificationDispatchLog::STAGE_INITIAL) {
             $this->publishWebhook($event, $subject, $payload);
             $this->publishChatChannels($event, $subject, $payload);
+            $this->publishCalendarChannel($event, $subject, $payload);
         }
 
         try {
@@ -84,11 +85,17 @@ class NotificationDispatcher {
     }
 
     /**
-     * Eskalation light (Scanner): wenn die Erst-Benachrichtigung länger als
+     * Eskalationsleiter (Scanner): wenn die Erst-Benachrichtigung länger als
      * escalate_after_hours zurückliegt und das Subjekt weiterhin unerledigt
-     * ist, zusätzlich (einmalig) an die Eskalations-Rolle senden.
+     * ist, zusätzlich (einmalig) an die Eskalations-Rolle senden (Stufe 1,
+     * Bestand). Optional konfigurierte weitere Stufen (MVP-331, Bauturbo A11)
+     * feuern je einmalig, wenn der Versand der VORHERIGEN Stufe länger als
+     * ihre eigene Frist zurückliegt: Stufe 2 nach dem Stufe-1-Versand,
+     * Stufe 3 nach dem Stufe-2-Versand — jede an ihre eigene Empfängergruppe
+     * (Rollen/feste User). Ohne Stufen-Konfiguration verhält sich die Regel
+     * exakt wie vor MVP-331 (einstufig).
      *
-     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null}  $payload
+     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
      */
     public function escalateIfDue(NotificationEvent $event, Model $subject, array $payload): int {
         $organizationId = $this->organizationIdOf($subject, null);
@@ -102,21 +109,45 @@ class NotificationDispatcher {
             return 0;
         }
 
-        $initial = NotificationDispatchLog::query()
+        $sent = 0;
+
+        // Stufe 1 (Bestand): Frist ab der Erst-Benachrichtigung.
+        if ($this->stageOlderThan($organizationId, $event, $subject, NotificationDispatchLog::STAGE_INITIAL, (int) $rule->escalate_after_hours)) {
+            $sent += $this->notify($event, $subject, null, $payload, NotificationDispatchLog::STAGE_ESCALATION, true);
+        }
+
+        // Stufe 2/3 (MVP-331): Frist jeweils ab dem Versand der vorherigen
+        // Stufe — die Leiter greift damit nur, wenn die Vorstufe real gefeuert
+        // hat, und rückt pro Scanner-Lauf höchstens eine Stufe weiter.
+        if ($rule->escalationLevelConfigured(2)
+            && $this->stageOlderThan($organizationId, $event, $subject, NotificationDispatchLog::STAGE_ESCALATION, (int) $rule->escalationAfterHoursFor(2))) {
+            $sent += $this->notify($event, $subject, null, $payload, NotificationDispatchLog::STAGE_ESCALATION2, true);
+        }
+
+        if ($rule->escalationLevelConfigured(3)
+            && $this->stageOlderThan($organizationId, $event, $subject, NotificationDispatchLog::STAGE_ESCALATION2, (int) $rule->escalationAfterHoursFor(3))) {
+            $sent += $this->notify($event, $subject, null, $payload, NotificationDispatchLog::STAGE_ESCALATION3, true);
+        }
+
+        return $sent;
+    }
+
+    /**
+     * Liegt der Dedup-Log-Eintrag der Stufe mindestens $afterHours Stunden
+     * zurück? Ohne Eintrag (Stufe nie versendet) false — die Leiter wartet.
+     */
+    private function stageOlderThan(int $organizationId, NotificationEvent $event, Model $subject, string $stage, int $afterHours): bool {
+        $entry = NotificationDispatchLog::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('event', $event->value)
             ->where('subject_type', $subject::class)
             ->where('subject_id', $subject->getKey())
-            ->where('stage', NotificationDispatchLog::STAGE_INITIAL)
+            ->where('stage', $stage)
             ->first();
 
-        if ($initial === null || $initial->created_at === null
-            || $initial->created_at->gt(Carbon::now()->subHours((int) $rule->escalate_after_hours))) {
-            return 0;
-        }
-
-        return $this->notify($event, $subject, null, $payload, NotificationDispatchLog::STAGE_ESCALATION, true);
+        return $entry !== null && $entry->created_at !== null
+            && ! $entry->created_at->gt(Carbon::now()->subHours($afterHours));
     }
 
     /** @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null}  $payload */
@@ -138,9 +169,12 @@ class NotificationDispatcher {
             return 0;
         }
 
-        $recipients = $stage === NotificationDispatchLog::STAGE_ESCALATION
-            ? $this->roleUsers($organizationId, array_filter([(string) $rule->escalation_role]))
-            : $this->resolveRecipients($rule, $organizationId, $affected);
+        $recipients = match ($stage) {
+            NotificationDispatchLog::STAGE_ESCALATION => $this->roleUsers($organizationId, array_filter([(string) $rule->escalation_role])),
+            NotificationDispatchLog::STAGE_ESCALATION2 => $this->escalationLevelRecipients($rule, $organizationId, 2),
+            NotificationDispatchLog::STAGE_ESCALATION3 => $this->escalationLevelRecipients($rule, $organizationId, 3),
+            default => $this->resolveRecipients($rule, $organizationId, $affected),
+        };
 
         if ($recipients->isEmpty()) {
             return 0;
@@ -179,6 +213,28 @@ class NotificationDispatcher {
         }
 
         $userIds = array_values(array_filter(array_map('intval', (array) $rule->recipient_user_ids)));
+        if ($userIds !== []) {
+            $recipients = $recipients->merge(
+                User::query()
+                    ->where('organization_id', $organizationId)
+                    ->whereIn('id', $userIds)
+                    ->get()
+            );
+        }
+
+        return $recipients->unique(fn(User $u): int => (int) $u->id)->values();
+    }
+
+    /**
+     * Empfänger einer Eskalationsstufe 2/3 (MVP-331): Rollen-Inhaber plus
+     * feste User der Stufe — dedupliziert, nur Mitglieder der Organisation.
+     *
+     * @return Collection<int, User>
+     */
+    private function escalationLevelRecipients(NotificationRule $rule, int $organizationId, int $level): Collection {
+        $recipients = $this->roleUsers($organizationId, $rule->escalationRolesFor($level));
+
+        $userIds = $rule->escalationUserIdsFor($level);
         if ($userIds !== []) {
             $recipients = $recipients->merge(
                 User::query()
@@ -409,6 +465,58 @@ class NotificationDispatcher {
                 throw $e;
             }
             Log::warning('chat: hook failed', [
+                'event' => $event->value,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Additiver Kalender-Kanal (MVP-331, Bauturbo A11): terminartige
+     * Ereignisse (Payload mit `due_at`) werden — sofern die Regel den Kanal
+     * „Kalender" wählt — asynchron als Kalendereintrag in die verbundenen
+     * Kalender der Organisation publiziert ({@see CalendarEventPublishJob},
+     * A8-Publish-Infrastruktur: CalDAV/Microsoft 365/Google). Idempotent über
+     * die stabile UID + ExternalReference: erneutes Feuern (z. B. dueSoon →
+     * overdue) aktualisiert den Eintrag statt ihn zu duplizieren. Ohne
+     * Kalender-Verbindung passiert still nichts (kein Fehler).
+     *
+     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
+     */
+    private function publishCalendarChannel(NotificationEvent $event, Model $subject, array $payload): void {
+        try {
+            $dueAt = $payload['due_at'] ?? null;
+            if ($dueAt instanceof \DateTimeInterface) {
+                $dueAtIso = Carbon::instance($dueAt)->toIso8601String();
+            } elseif (is_string($dueAt) && $dueAt !== '') {
+                $dueAtIso = Carbon::parse($dueAt)->toIso8601String();
+            } else {
+                return; // kein Datumsbezug → kein Kalendereintrag
+            }
+
+            $organizationId = $this->organizationIdOf($subject, null);
+            if ($organizationId === null) {
+                return;
+            }
+
+            $rule = NotificationRule::resolveFor($organizationId, $event);
+            if (! $rule->enabled || ! $rule->usesChannel(NotificationChannel::Calendar)) {
+                return;
+            }
+
+            CalendarEventPublishJob::dispatch(
+                $organizationId,
+                $subject->getMorphClass(),
+                (int) $subject->getKey(),
+                (string) $payload['title'],
+                isset($payload['message']) && $payload['message'] !== '' ? (string) $payload['message'] : null,
+                $dueAtIso,
+            );
+        } catch (Throwable $e) {
+            if (app()->runningUnitTests()) {
+                throw $e;
+            }
+            Log::warning('calendar: hook failed', [
                 'event' => $event->value,
                 'error' => $e->getMessage(),
             ]);

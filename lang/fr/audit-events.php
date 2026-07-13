@@ -41,6 +41,17 @@ return [
         'member_added' => 'Groupe d\'utilisateurs : membre ajouté',
         'member_removed' => 'Groupe d\'utilisateurs : membre retiré',
     ],
+    // Attribution de rôles/permissions (Bauturbo A17, MVP-335)
+    'user' => [
+        'role' => [
+            'assigned' => 'Rôle attribué',
+            'revoked' => 'Rôle retiré',
+        ],
+        'permission' => [
+            'granted' => 'Permission accordée',
+            'revoked' => 'Permission retirée',
+        ],
+    ],
     'support' => [
         'test' => 'Test de support',
         'reportGenerated' => 'Rapport de support généré',
@@ -67,6 +78,15 @@ return [
     ],
     'token' => [
         'revoked' => 'Jeton révoqué',
+    ],
+    'privacy' => [
+        'overviewExported' => 'Aperçu de la protection des données exporté',
+        'report' => [
+            'exported' => 'Rapport de protection des données exporté',
+        ],
+    ],
+    'integration' => [
+        'changed' => 'Intégration activée/désactivée',
     ],
     'tenant' => [
         'export' => [

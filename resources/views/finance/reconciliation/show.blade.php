@@ -5,6 +5,9 @@
   Auszug-Detail (Feature 045, Priorität 3): Transaktionsliste mit
   match_status-Badge, Vorschlägen (inline „Bestätigen") und reversiblen
   Zuordnungen. Bankumsätze sind NIE editierbar — nur ihr Zuordnungsstatus.
+  MVP-334: Sammelbuchungen lassen sich über Mehrfachauswahl + Teilbeträge in
+  Einzelpositionen auflösen; Lastschrift-Rückläufer werden erkannt und über
+  eine GoBD-konforme Kompensation der Original-Zuordnung verarbeitet.
 --}}
 
 @extends('layouts.app')
@@ -68,7 +71,15 @@
                                 @endif
                             </div>
                         </div>
-                        <x-status-badge :tone="$transaction->match_status->tone()" :label="$transaction->match_status->label()" />
+                        <div class="flex items-center gap-2">
+                            @if ($transaction->isReturnCandidate())
+                                {{-- Rückläufer-Kennzeichen (MVP-334): RVSL bzw. ISO-Rückgabegrund. --}}
+                                <span class="badge badge-error badge-outline badge-sm">
+                                    {{ __('bank.return.badge') }}@if ($transaction->return_reason) · {{ $transaction->return_reason }}@endif
+                                </span>
+                            @endif
+                            <x-status-badge :tone="$transaction->match_status->tone()" :label="$transaction->match_status->label()" />
+                        </div>
                     </div>
 
                     {{-- Bestätigte Zuordnungen (reversibel) --}}
@@ -93,33 +104,88 @@
                         </div>
                     @endif
 
-                    {{-- Vorschläge für offene Umsätze --}}
+                    {{-- Vorschläge für offene Umsätze — Mehrfachauswahl mit Teilbeträgen
+                         (MVP-334: Sammelbuchung in Einzelpositionen auflösen). --}}
                     @if ($canReconcile && $transaction->match_status->isOpen())
                         @php $txSuggestions = $suggestions[$transaction->id] ?? []; @endphp
                         <div class="mt-3 border-t border-base-200 pt-2">
-                            @forelse ($txSuggestions as $suggestion)
-                                @php $target = $suggestion['target']; @endphp
+                            @if ($txSuggestions !== [])
                                 <form method="POST" action="{{ route('finance.reconciliation.confirm', $transaction->sqid) }}"
-                                      class="flex flex-wrap items-center justify-between gap-2 py-1">
+                                      x-data="{ picked: { '0': true } }">
                                     @csrf
-                                    <input type="hidden" name="allocations[0][type]" value="{{ $target instanceof \App\Models\Invoice ? 'invoice' : 'expense' }}">
-                                    <input type="hidden" name="allocations[0][id]" value="{{ $target->sqid }}">
-                                    <input type="hidden" name="allocations[0][amount]" value="{{ $transaction->amount }}">
-                                    <div class="text-sm">
-                                        <span class="font-medium">
-                                            {{ $target instanceof \App\Models\Invoice ? $target->number : (__('bank.title.menu') . ' #' . $target->id) }}
-                                        </span>
-                                        · {{ number_format($suggestion['open_amount'], 2, ',', '.') }}
-                                        @foreach ($suggestion['reasons'] as $reason)
-                                            <span class="badge badge-xs badge-ghost">{{ __('bank.reason.' . $reason) }}</span>
+                                    <div class="space-y-1">
+                                        @foreach ($txSuggestions as $index => $suggestion)
+                                            @php $target = $suggestion['target']; @endphp
+                                            <div class="flex flex-wrap items-center gap-2 py-1">
+                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                    <input type="checkbox" class="checkbox checkbox-xs"
+                                                           x-model="picked[{{ $index }}]">
+                                                    <span class="text-sm">
+                                                        <span class="font-medium">
+                                                            {{ $target instanceof \App\Models\Invoice ? $target->number : (__('bank.title.menu') . ' #' . $target->id) }}
+                                                        </span>
+                                                        · {{ number_format($suggestion['open_amount'], 2, ',', '.') }}
+                                                        @foreach ($suggestion['reasons'] as $reason)
+                                                            <span class="badge badge-xs badge-ghost">{{ __('bank.reason.' . $reason) }}</span>
+                                                        @endforeach
+                                                    </span>
+                                                </label>
+                                                <input type="hidden" name="allocations[{{ $index }}][type]"
+                                                       value="{{ $target instanceof \App\Models\Invoice ? 'invoice' : 'expense' }}"
+                                                       :disabled="!picked[{{ $index }}]">
+                                                <input type="hidden" name="allocations[{{ $index }}][id]" value="{{ $target->sqid }}"
+                                                       :disabled="!picked[{{ $index }}]">
+                                                <input type="number" step="0.01" min="0.01"
+                                                       name="allocations[{{ $index }}][amount]"
+                                                       value="{{ number_format(min((float) $transaction->amount, $suggestion['open_amount']), 2, '.', '') }}"
+                                                       :disabled="!picked[{{ $index }}]"
+                                                       class="input input-bordered input-xs w-28"
+                                                       aria-label="{{ __('bank.field.amount') }}">
+                                            </div>
                                         @endforeach
                                     </div>
-                                    <x-icon-btn icon="check" tone="success" size="xs" type="submit"
-                                                show-label>{{ __('bank.action.confirm') }}</x-icon-btn>
+                                    <div class="flex justify-end mt-1">
+                                        <x-icon-btn icon="check" tone="success" size="xs" type="submit"
+                                                    show-label>{{ __('bank.action.confirm_selected') }}</x-icon-btn>
+                                    </div>
                                 </form>
-                            @empty
+                            @else
                                 <div class="text-sm text-base-content/60">{{ __('bank.empty.suggestions') }}</div>
-                            @endforelse
+                            @endif
+
+                            {{-- Lastschrift-Rückläufer (MVP-334): Original-Zuordnung kompensieren. --}}
+                            @php $txOrigins = $returnOrigins[$transaction->id] ?? []; @endphp
+                            @if ($txOrigins !== [])
+                                <div class="mt-3 border-t border-base-200 pt-2">
+                                    <div class="text-sm font-medium mb-1">{{ __('bank.return.title') }}</div>
+                                    <form method="POST" action="{{ route('finance.reconciliation.return', $transaction->sqid) }}">
+                                        @csrf
+                                        <div class="space-y-1">
+                                            @foreach ($txOrigins as $originIndex => $origin)
+                                                @php $allocation = $origin['allocation']; @endphp
+                                                <label class="flex flex-wrap items-center gap-2 text-sm cursor-pointer">
+                                                    <input type="radio" name="allocation" value="{{ $allocation->sqid }}"
+                                                           class="radio radio-xs" @checked($originIndex === 0)>
+                                                    <x-status-badge size="xs" :tone="$allocation->kind->tone()" :label="$allocation->kind->label()" />
+                                                    {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
+                                                    · {{ number_format((float) $allocation->amount, 2, ',', '.') }}
+                                                    @foreach ($origin['reasons'] as $reason)
+                                                        <span class="badge badge-xs badge-ghost">{{ __('bank.return.reason.' . $reason) }}</span>
+                                                    @endforeach
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        <div class="flex flex-wrap items-center justify-end gap-2 mt-1">
+                                            <input type="text" name="reason" maxlength="255"
+                                                   value="{{ $transaction->return_reason }}"
+                                                   placeholder="{{ __('bank.return.reason_placeholder') }}"
+                                                   class="input input-bordered input-xs w-48">
+                                            <x-icon-btn icon="undo" tone="error" size="xs" type="submit"
+                                                        show-label>{{ __('bank.return.action') }}</x-icon-btn>
+                                        </div>
+                                    </form>
+                                </div>
+                            @endif
 
                             <div class="flex gap-2 mt-2">
                                 <form method="POST" action="{{ route('finance.reconciliation.ignore', $transaction->sqid) }}">

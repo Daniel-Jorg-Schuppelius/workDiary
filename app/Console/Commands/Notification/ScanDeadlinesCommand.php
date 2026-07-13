@@ -15,7 +15,7 @@ use App\Enums\Notification\NotificationEvent;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\Shift\ShiftExchangeStatus;
-use App\Models\{AssetAssignment, CommunicationNote, Document, MaintenancePlan, OpenIssue, ServiceTicket, ShiftExchange, SlaContract, SlaContractQuota, User, UserQualification};
+use App\Models\{AssetAssignment, CommunicationNote, Document, MaintenancePlan, OpenIssue, Problem, ServiceTicket, ShiftExchange, SlaContract, SlaContractQuota, User, UserQualification};
 use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAssessment, IsmsSupplierAssessment, IsmsVulnerability};
 use App\Services\Isms\ConformityService;
 use App\Services\Notification\NotificationDispatcher;
@@ -31,6 +31,11 @@ use Illuminate\Support\Carbon;
  * ablaufende Dokumente und feuert die zugehörigen NotificationEvents über den
  * zentralen Dispatcher. Idempotent: das notification_dispatch_log verhindert
  * pro (Organisation, Ereignis, Subjekt, Stufe) jeden Doppel-Versand.
+ *
+ * Die Fristen-Payloads tragen zusätzlich `due_at` (MVP-331, Bauturbo A11):
+ * darüber publiziert der Kalender-Kanal terminartige Ereignisse als
+ * Kalendereintrag (Dispatcher → CalendarEventPublishJob); für In-App/Mail/
+ * Chat/Webhook bleibt der Schlüssel ohne Wirkung.
  *
  * Läuft ohne Mandantenkontext (Konsolen-Prozess) und sieht damit alle
  * Organisationen; die Regel-Auflösung erfolgt pro Datensatz über dessen
@@ -58,6 +63,7 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanIsmsSupplierReviews($dispatcher);
         $sent += $this->scanSlaTickets($dispatcher, app(SlaTimer::class));
         $sent += $this->scanWaitingTickets($dispatcher);
+        $sent += $this->scanProblemEffectiveness($dispatcher);
         $sent += $this->scanSlaQuotas($dispatcher, app(SlaQuotaService::class));
         $sent += $this->scanAssetReturns($dispatcher);
         $sent += $this->scanMaintenance($dispatcher, $expiringDays);
@@ -406,6 +412,7 @@ class ScanDeadlinesCommand extends Command {
                             'title' => (string) __('Wiedervorlage fällig: Ticket :no', ['no' => $ticket->ticket_no]),
                             'body' => (string) ($ticket->wait_reason ?? $ticket->title),
                             'url' => route('service-tickets.show', $ticket),
+                            'due_at' => $ticket->wait_until,
                         ],
                         dedup: true,
                     );
@@ -413,6 +420,53 @@ class ScanDeadlinesCommand extends Command {
             });
 
         return $sent;
+    }
+
+    /**
+     * Problem-Management (Feature 065, MVP-156): gelöste bzw. Known-Error-
+     * Probleme mit überschrittener Wirksamkeitsfrist (effectiveness_check_
+     * due_at) und ohne dokumentierte Prüfung melden — Empfänger ist der
+     * Problem-Owner (notify_affected), Default-Fallback die Rolle
+     * teamleitung (NotificationEvent). Dedup über das
+     * notification_dispatch_log pro Problem; Eskalation analog zu den
+     * übrigen Überfälligkeits-Ereignissen (Muster scanIsmsCorrectiveActions).
+     */
+    private function scanProblemEffectiveness(NotificationDispatcher $dispatcher): int {
+        $sent = 0;
+
+        Problem::query()
+            ->whereIn('status', ['resolved', 'known_error'])
+            ->whereNotNull('effectiveness_check_due_at')
+            ->where('effectiveness_check_due_at', '<=', Carbon::now())
+            ->whereNull('effectiveness_checked_at')
+            ->chunkById(200, function (Collection $problems) use ($dispatcher, &$sent): void {
+                /** @var Collection<int, Problem> $problems */
+                foreach ($problems as $problem) {
+                    $payload = $this->problemEffectivenessPayload($problem);
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::ProblemEffectivenessDue,
+                        $problem,
+                        $problem->owner()->first(),
+                        $payload,
+                        dedup: true,
+                    );
+                    $sent += $dispatcher->escalateIfDue(NotificationEvent::ProblemEffectivenessDue, $problem, $payload);
+                }
+            });
+
+        return $sent;
+    }
+
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
+    private function problemEffectivenessPayload(Problem $problem): array {
+        return [
+            'title' => (string) $problem->title,
+            'message' => (string) __('Wirksamkeitsprüfung fällig seit :date.', [
+                'date' => $problem->effectiveness_check_due_at?->format('d.m.Y H:i') ?? '–',
+            ]),
+            'url' => route('servicedesk.problems.show', $problem),
+            'due_at' => $problem->effectiveness_check_due_at,
+        ];
     }
 
     private function scanSlaTickets(NotificationDispatcher $dispatcher, SlaTimer $timer): int {
@@ -653,7 +707,7 @@ class ScanDeadlinesCommand extends Command {
         }
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function qualificationPayload(UserQualification $assignment): array {
         $name = (string) ($assignment->qualification->name ?? '');
 
@@ -663,10 +717,11 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $assignment->valid_until?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('reports.qualifications'),
+            'due_at' => $assignment->valid_until,
         ];
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function assetReturnPayload(AssetAssignment $assignment): array {
         $asset = $assignment->asset;
         $title = $asset !== null ? trim($asset->asset_no . ' — ' . $asset->name, ' —') : '';
@@ -677,6 +732,7 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $assignment->expected_return_at?->format('d.m.Y H:i') ?? '–',
             ]),
             'url' => $asset !== null ? route('assets.show', $asset) : null,
+            'due_at' => $assignment->expected_return_at,
         ];
     }
 
@@ -686,7 +742,7 @@ class ScanDeadlinesCommand extends Command {
         return $issue->assignee ?? $issue->creator;
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function issuePayload(OpenIssue $issue, string $messageKey): array {
         return [
             'title' => (string) $issue->title,
@@ -694,6 +750,7 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $issue->due_at?->format('d.m.Y H:i') ?? '–',
             ]),
             'url' => \App\Support\NotificationLinks::openIssueUrl($issue),
+            'due_at' => $issue->due_at,
         ];
     }
 
@@ -703,7 +760,7 @@ class ScanDeadlinesCommand extends Command {
             : User::query()->find((int) $note->getAttribute('created_by_user_id'));
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function notePayload(CommunicationNote $note, string $messageKey): array {
         return [
             'title' => (string) ($note->getAttribute('next_action') ?: $note->getAttribute('subject') ?: __('notification.message.followup_fallback_title')),
@@ -711,6 +768,7 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $note->next_action_due_at?->format('d.m.Y H:i') ?? '–',
             ]),
             'url' => null,
+            'due_at' => $note->next_action_due_at,
         ];
     }
 
@@ -718,21 +776,28 @@ class ScanDeadlinesCommand extends Command {
         return User::query()->find((int) $document->getAttribute('created_by_user_id'));
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function documentPayload(Document $document, string $messageKey): array {
+        $validUntil = $document->getAttribute('valid_until');
+
         return [
             'title' => (string) $document->getAttribute('title'),
             'message' => (string) __('notification.message.' . $messageKey, [
-                'date' => $document->getAttribute('valid_until')?->format('d.m.Y') ?? '–',
+                'date' => $validUntil?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('documents.index'),
+            'due_at' => $validUntil instanceof \Illuminate\Support\Carbon ? $validUntil : null,
         ];
     }
 
     /**
-     * Wartungs-/Prüfpläne (Feature 009): fällig innerhalb des Vorlaufs →
-     * dueSoon; überschrittene Fälligkeit → overdue + Eskalationsstufe an den
-     * Org-Admin. Betrifft keine Einzelperson (an die Teamleitung).
+     * Wartungs-/Prüfpläne (Feature 009, MVP-336): fällig innerhalb des
+     * Vorlaufs → dueSoon; überschrittene, unerledigte Fälligkeit → overdue
+     * mit Eskalationskette (escalateIfDue — Stufe 1 an die Eskalationsrolle,
+     * optionale Stufen 2/3 gemäß Regel, MVP-331). Empfänger ist der Asset-
+     * Verantwortliche (aktueller Ausgabe-Inhaber, notify_affected),
+     * Default-Fallback/Mitwisser die Rolle teamleitung (NotificationEvent).
+     * Dedup über das notification_dispatch_log pro Plan und Stufe.
      */
     private function scanMaintenance(NotificationDispatcher $dispatcher, int $expiringDays): int {
         $sent = 0;
@@ -743,12 +808,13 @@ class ScanDeadlinesCommand extends Command {
             ->where('is_active', true)
             ->whereNotNull('next_due_on')
             ->whereBetween('next_due_on', [$today, $soon])
+            ->with('asset.currentAssignment.assignedToUser')
             ->chunkById(200, function (Collection $plans) use ($dispatcher, &$sent): void {
                 foreach ($plans as $plan) {
                     $sent += $dispatcher->notify(
                         NotificationEvent::MaintenanceDueSoon,
                         $plan,
-                        null,
+                        $this->maintenanceAffected($plan),
                         $this->maintenancePayload($plan, 'maintenance_due_soon'),
                         dedup: true,
                     );
@@ -759,10 +825,11 @@ class ScanDeadlinesCommand extends Command {
             ->where('is_active', true)
             ->whereNotNull('next_due_on')
             ->where('next_due_on', '<', $today)
+            ->with('asset.currentAssignment.assignedToUser')
             ->chunkById(200, function (Collection $plans) use ($dispatcher, &$sent): void {
                 foreach ($plans as $plan) {
                     $payload = $this->maintenancePayload($plan, 'maintenance_overdue');
-                    $sent += $dispatcher->notify(NotificationEvent::MaintenanceOverdue, $plan, null, $payload, dedup: true);
+                    $sent += $dispatcher->notify(NotificationEvent::MaintenanceOverdue, $plan, $this->maintenanceAffected($plan), $payload, dedup: true);
                     $sent += $dispatcher->escalateIfDue(NotificationEvent::MaintenanceOverdue, $plan, $payload);
                 }
             });
@@ -770,7 +837,16 @@ class ScanDeadlinesCommand extends Command {
         return $sent;
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /**
+     * Asset-Verantwortlicher eines Wartungsplans (MVP-336): der aktuelle
+     * Ausgabe-Inhaber des verknüpften Assets (offene Zuweisung), sofern
+     * vorhanden — sonst greift der Rollen-Fallback der Regel (teamleitung).
+     */
+    private function maintenanceAffected(MaintenancePlan $plan): ?User {
+        return $plan->asset?->currentAssignment?->assignedToUser;
+    }
+
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function maintenancePayload(MaintenancePlan $plan, string $messageKey): array {
         return [
             'title' => (string) $plan->label,
@@ -779,10 +855,11 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $plan->next_due_on?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('assets.index'),
+            'due_at' => $plan->next_due_on,
         ];
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function certificatePayload(IsmsCertificate $certificate): array {
         $normStatus = $certificate->normStatus()->withTrashed()->first();
 
@@ -792,6 +869,7 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $certificate->valid_until->format('d.m.Y'),
             ]),
             'url' => route('isms.conformity.index'),
+            'due_at' => $certificate->valid_until,
         ];
     }
 
@@ -799,7 +877,7 @@ class ScanDeadlinesCommand extends Command {
         return $assessment->risk()->withTrashed()->first()?->owner()->first();
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function riskAssessmentPayload(IsmsRiskAssessment $assessment): array {
         /** @var IsmsRisk|null $risk */
         $risk = $assessment->risk()->withTrashed()->first();
@@ -810,10 +888,11 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $assessment->valid_until?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('isms.risks.index'),
+            'due_at' => $assessment->valid_until,
         ];
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function vulnerabilityPayload(IsmsVulnerability $vulnerability): array {
         return [
             'title' => trim($vulnerability->displayNo() . ' — ' . $vulnerability->title, ' —'),
@@ -821,10 +900,11 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $vulnerability->due_on?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('isms.vulnerabilities.index'),
+            'due_at' => $vulnerability->due_on,
         ];
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function supplierReviewPayload(IsmsSupplierAssessment $assessment): array {
         return [
             'title' => trim($assessment->displayNo() . ' — ' . $assessment->displayName(), ' —'),
@@ -832,6 +912,7 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $assessment->next_review_on?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('isms.suppliers.index'),
+            'due_at' => $assessment->next_review_on,
         ];
     }
 
@@ -890,7 +971,7 @@ class ScanDeadlinesCommand extends Command {
         ];
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function slaPayload(ServiceTicket $ticket, string $messageKey): array {
         return [
             'title' => trim($ticket->ticket_no . ' — ' . $ticket->title, ' —'),
@@ -898,10 +979,11 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $ticket->resolution_due_at?->format('d.m.Y H:i') ?? '–',
             ]),
             'url' => route('service-tickets.show', $ticket),
+            'due_at' => $ticket->resolution_due_at,
         ];
     }
 
-    /** @return array{title: string, message: string, url: string|null} */
+    /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
     private function correctiveActionPayload(IsmsCorrectiveAction $action): array {
         $finding = $action->finding()->withTrashed()->first();
 
@@ -911,6 +993,7 @@ class ScanDeadlinesCommand extends Command {
                 'date' => $action->due_on?->format('d.m.Y') ?? '–',
             ]),
             'url' => route('isms.audits.index'),
+            'due_at' => $action->due_on,
         ];
     }
 }

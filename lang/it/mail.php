@@ -20,6 +20,7 @@ return [
     'inbox' => [
         'no_subject' => '(senza oggetto)',
         'book_action' => 'Registra come nota di comunicazione',
+        'book_ticket_action' => 'Registra come ticket di servizio',
         'book_customer_placeholder' => '… cliente (vuoto = mittente rilevato)',
     ],
 
@@ -70,6 +71,10 @@ return [
         'polled' => 'Interrogazione avviata.',
         'booked' => 'E-mail registrata come voce di comunicazione.',
         'book_failed' => 'Registrazione non riuscita.',
+        'ticket_booked' => 'E-mail registrata come ticket di servizio.',
+        'ticket_failed' => 'Registrazione del ticket non riuscita.',
+        'dms_failed' => 'Importazione nell’archivio documenti non riuscita.',
+        'already_resolved' => 'Questa voce è già risolta.',
         'password_required' => 'Una nuova casella richiede una password.',
         'customer_required' => 'Nessun cliente associato.',
     ],

@@ -25,6 +25,8 @@
                     <a href="{{ route('customer.assets.index') }}" class="hover:underline">{{ __('Objekte') }}</a>
                     <a href="{{ route('customer.time-entries.index') }}" class="hover:underline">{{ __('Zeiten') }}</a>
                     <a href="{{ route('customer.invoices.index') }}" class="hover:underline">{{ __('Rechnungen') }}</a>
+                    <a href="{{ route('customer.catalog.index') }}" class="hover:underline">{{ __('Servicekatalog') }}</a>
+                    <a href="{{ route('customer.known-errors.index') }}" class="hover:underline">{{ __('Bekannte Fehler') }}</a>
                     <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>
                     <form method="POST" action="{{ route('customer.logout') }}">
                         @csrf

@@ -18,7 +18,7 @@
 
     <x-filter-bar :action="route('duty-plans.index')" :reset="route('duty-plans.index')">
         <x-filter-field :label="__('Status')" for="dp-status">
-            <select id="dp-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="dp-status" name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach (\App\Enums\Shift\DutyPlanStatus::values() as $st)
                     <option value="{{ $st }}" @selected($status === $st)>{{ __('duty_plan.status.' . $st) }}</option>

@@ -14,7 +14,7 @@ namespace App\Http\Controllers\AssetCompliance;
 
 use App\Enums\AssetCompliance\{AssetInspectionResult, AssetInspectionScheduleStatus};
 use App\Http\Controllers\Controller;
-use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile, AssetInspectionSchedule};
+use App\Models\AssetCompliance\{AssetComplianceAssignment, AssetComplianceProfile, AssetComplianceRequirement, AssetInspectionSchedule};
 use App\Models\{ExternalContact, User};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetCompliance\AssetComplianceService;
@@ -99,6 +99,18 @@ class AssetInspectionController extends Controller {
 
         if ($request->filled('schedule_id')) {
             $request->merge(['schedule_id' => Sqid::decodeOrNumeric(AssetInspectionSchedule::class, $request->input('schedule_id'))]);
+        }
+
+        // Formular liefert Requirement-Sqids (Konvention: Sqid in Formularen) —
+        // vor der Validierung auf die numerischen IDs zurückführen.
+        $results = $request->input('results');
+        if (is_array($results)) {
+            foreach ($results as $i => $row) {
+                if (is_array($row) && isset($row['requirement_id']) && $row['requirement_id'] !== '') {
+                    $results[$i]['requirement_id'] = Sqid::decodeOrNumeric(AssetComplianceRequirement::class, $row['requirement_id']);
+                }
+            }
+            $request->merge(['results' => $results]);
         }
 
         $data = $request->validate([

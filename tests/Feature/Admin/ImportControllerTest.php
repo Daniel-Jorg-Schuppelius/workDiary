@@ -176,4 +176,118 @@ class ImportControllerTest extends TestCase {
             ->whereIn('number', ['K-100', 'K-200'])
             ->count());
     }
+
+    // ── A13: XLSX-Annahme ─────────────────────────────────────────────────────
+
+    /**
+     * Baut eine XLSX-Fixture über die Toolkit-Writer (Builder + Generator).
+     * Der Generator referenziert für Datumszellen Style-Index 1, schreibt aber
+     * nur einen cellXf — das Datumsformat wird wie bei Excel-erzeugten Dateien
+     * nachgerüstet (Klasse-C-Lücke im Toolkit, siehe A13-Bericht).
+     *
+     * @param  list<string>  $header
+     * @param  list<list<mixed>>  $rows
+     */
+    private function makeXlsxUpload(array $header, array $rows, string $filename = 'customers.xlsx'): UploadedFile {
+        $builder = (new \CommonToolkit\Builders\XLSXDocumentBuilder)->sheet('Tabelle1')->setHeader($header);
+        foreach ($rows as $row) {
+            // Bekannter Generator-Bug (Klasse-C-Kandidat): dateTimeToExcel
+            // korrigiert den Lotus-Bug doppelt (Epoche 1899-12-30 UND +1 Tag),
+            // Serial ist einen Tag zu spät. Fixture kompensiert, damit die
+            // Datei dem entspricht, was Excel für das Datum schreibt.
+            $builder->addRow(array_map(
+                static fn ($v) => $v instanceof \DateTimeImmutable ? $v->modify('-1 day') : $v,
+                $row,
+            ));
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'a13_') . '.xlsx';
+        \CommonToolkit\Generators\XLSX\XLSXGenerator::toFile($builder->build(), $path);
+
+        $zip = new \ZipArchive;
+        $zip->open($path);
+        $styles = (string) $zip->getFromName('xl/styles.xml');
+        $styles = str_replace('<cellXfs count="1">', '<cellXfs count="2">', $styles);
+        $styles = str_replace('</cellXfs>', '<xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" /></cellXfs>', $styles);
+        $zip->addFromString('xl/styles.xml', $styles);
+        $zip->close();
+
+        return new UploadedFile($path, $filename, \App\Support\XlsxExport::MIME, null, true);
+    }
+
+    public function test_xlsx_preflight_produces_same_preview_and_import_as_csv(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        // Äquivalente Inhalte: Text, Nummer, Dezimalzahl (Float-Zelle) und Datum (Datumszelle).
+        $csv = "name;number;hourly_rate;comment\nACME;K-1;25.5;2026-07-01\nFoo;K-2;100;Text\n";
+        $this->actingAs($admin)->post(route('admin.imports.preflight'), [
+            'entity' => 'customers',
+            'file' => UploadedFile::fake()->createWithContent('customers.csv', $csv),
+        ])->assertRedirect();
+        $csvRun = ImportRun::query()->latest('id')->firstOrFail();
+
+        $xlsx = $this->makeXlsxUpload(
+            ['name', 'number', 'hourly_rate', 'comment'],
+            [
+                ['ACME', 'K-1', 25.5, new \DateTimeImmutable('2026-07-01')],
+                ['Foo', 'K-2', 100, 'Text'],
+            ],
+        );
+        $this->actingAs($admin)->post(route('admin.imports.preflight'), [
+            'entity' => 'customers',
+            'file' => $xlsx,
+        ])->assertRedirect();
+        $xlsxRun = ImportRun::query()->latest('id')->firstOrFail();
+
+        $this->assertNotSame($csvRun->id, $xlsxRun->id);
+        $this->assertSame(ImportRunState::AwaitingApproval, $xlsxRun->state);
+        $this->assertSame('customers.xlsx', $xlsxRun->input_filename);
+        // Nach der Überführung liegt intern EINE CSV-Struktur (ein Wizard-Pfad).
+        $this->assertTrue(str_ends_with($xlsxRun->storage_path, '.csv'));
+        $this->assertTrue(Storage::disk('local')->exists($xlsxRun->storage_path));
+
+        // Gleiche Vorschau wie das äquivalente CSV.
+        $this->assertSame($csvRun->preview, $xlsxRun->preview);
+
+        // Gleiches Import-Ergebnis.
+        $this->actingAs($admin)->post(route('admin.imports.confirm', $xlsxRun))->assertRedirect();
+        $customer = Customer::query()->where('number', 'K-1')->firstOrFail();
+        $this->assertSame('ACME', $customer->name);
+        $this->assertSame('2026-07-01', $customer->comment);
+        $this->assertEqualsWithDelta(25.5, (float) $customer->hourly_rate, 0.001);
+    }
+
+    public function test_corrupt_xlsx_fails_preflight_with_readable_error(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $file = UploadedFile::fake()->createWithContent('broken.xlsx', 'kein gültiges zip-archiv');
+
+        $this->actingAs($admin)->post(route('admin.imports.preflight'), [
+            'entity' => 'customers',
+            'file' => $file,
+        ])->assertRedirect(); // kein 500
+
+        $run = ImportRun::query()->latest('id')->firstOrFail();
+        $this->assertSame(ImportRunState::Failed, $run->state);
+        $this->assertTrue(
+            $run->errors()->get()->contains(
+                fn ($err) => str_contains((string) $err->message, (string) __('import.error.format.xlsxUnreadable')),
+            ),
+            'Erwartete verständliche XLSX-Fehlermeldung fehlt.',
+        );
+    }
+
+    public function test_size_limit_applies_to_xlsx_upload(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        // 6 MB > 5-MB-Limit des Wizards.
+        $file = UploadedFile::fake()->create('big.xlsx', 6 * 1024, \App\Support\XlsxExport::MIME);
+
+        $this->actingAs($admin)->post(route('admin.imports.preflight'), [
+            'entity' => 'customers',
+            'file' => $file,
+        ])->assertSessionHasErrors('file');
+
+        $this->assertSame(0, ImportRun::query()->count());
+    }
 }

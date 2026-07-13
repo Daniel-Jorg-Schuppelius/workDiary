@@ -7,7 +7,7 @@
 <x-index-page :subtitle="__('settingsregistry.title.subtitle')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.settings.index') }}" class="flex flex-wrap items-center gap-2">
-            <select name="scope" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <select name="scope" class="select select-bordered select-sm" data-autosubmit>
                 <option value="system" @selected($scope->value === 'system')>{{ __('settingsregistry.scopes.system') }}</option>
                 <option value="organization" @selected($scope->value === 'organization')>{{ __('settingsregistry.scopes.organization') }}</option>
             </select>
@@ -75,6 +75,9 @@
                                     <input type="number" name="value" class="input input-bordered input-sm w-28"
                                            step="{{ $definition->type === \App\Settings\SettingType::Decimal ? '0.01' : '1' }}"
                                            value="{{ $displayValue !== null && is_scalar($displayValue) ? $displayValue : '' }}">
+                                @elseif ($definition->type === \App\Settings\SettingType::Text)
+                                    <textarea name="value" rows="6" class="textarea textarea-bordered textarea-sm w-96 font-mono text-xs"
+                                              placeholder="{{ $definition->sensitive ? __('settingsregistry.field.sensitive_placeholder') : '' }}">{{ $definition->sensitive ? '' : (is_string($displayValue) ? $displayValue : '') }}</textarea>
                                 @else
                                     <input type="{{ $definition->sensitive ? 'password' : 'text' }}" name="value" class="input input-bordered input-sm w-64"
                                            placeholder="{{ $definition->sensitive ? __('settingsregistry.field.sensitive_placeholder') : '' }}"

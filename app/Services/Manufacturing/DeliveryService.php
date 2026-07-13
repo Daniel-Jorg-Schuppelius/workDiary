@@ -129,6 +129,7 @@ class DeliveryService {
             BillingMode::Lexoffice => 'lexoffice',
             BillingMode::Datev => 'datev',
             BillingMode::OrgaMax => 'orgamax',
+            BillingMode::SevDesk => 'sevdesk',
             BillingMode::Workdiary => 'workdiary',
         };
     }

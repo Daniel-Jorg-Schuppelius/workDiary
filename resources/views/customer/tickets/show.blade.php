@@ -1,8 +1,9 @@
 @extends('customer.layout')
 
-{{-- Portal-Ticketdetail (Feature 065, MVP-160): nur public-Inhalte;
-     SLA-Zusage aus dem eingefrorenen Snapshot; bestätigen/wiedereröffnen/
-     bewerten nach Abschluss. --}}
+{{-- Portal-Ticketdetail (Feature 065, MVP-160): nur public-Inhalte —
+     Leak-Schutz strukturell über ServiceTicketTimelineService::forCustomer()
+     (MVP-152); SLA-Zusage aus dem eingefrorenen Snapshot; bestätigen/
+     wiedereröffnen/bewerten nach Abschluss. --}}
 
 @section('content')
     <h1 class="text-2xl font-semibold mb-1">{{ $ticket->title }}</h1>
@@ -14,20 +15,33 @@
     </p>
 
     <div class="space-y-2">
-        @forelse ($messages as $message)
+        @forelse ($timeline['items'] as $item)
             <div class="rounded border border-base-300 bg-base-100 px-3 py-2">
-                <p class="mb-1 text-xs text-base-content/60">{{ $message->created_at->isoFormat('L LT') }} · {{ $message->kind->label() }}</p>
-                <p class="whitespace-pre-line text-sm">{{ $message->body }}</p>
+                <p class="mb-1 text-xs text-base-content/60">
+                    {{ $item->occurredAt?->isoFormat('L LT') ?? '—' }} · {{ $item->title }}
+                    @if ($item->actor)
+                        · {{ $item->actor }}
+                    @endif
+                </p>
+                @if ($item->summary)
+                    <p class="whitespace-pre-line text-sm">{{ $item->summary }}</p>
+                @endif
             </div>
         @empty
             <p class="text-sm text-base-content/50">{{ __('Noch keine Nachrichten.') }}</p>
         @endforelse
     </div>
 
-    <form method="POST" action="{{ route('customer.tickets.reply', $ticket) }}" class="mt-4">
+    <form method="POST" action="{{ route('customer.tickets.reply', $ticket) }}" enctype="multipart/form-data" class="mt-4">
         @csrf
         <textarea name="body" rows="3" required minlength="2" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Ihre Antwort…') }}"></textarea>
-        <button type="submit" class="btn btn-primary btn-sm mt-1">{{ __('Antworten') }}</button>
+        <div class="mt-1 flex flex-wrap items-center gap-2">
+            <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
+                   aria-label="{{ __('Anhänge (optional)') }}">
+            <button type="submit" class="btn btn-primary btn-sm">{{ __('Antworten') }}</button>
+        </div>
+        @error('files')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
+        @error('files.*')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
     </form>
 
     @if ($ticket->status->value === 'done')

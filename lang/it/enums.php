@@ -233,6 +233,9 @@ return [
                 'customerReplied' => 'Il cliente ha risposto',
                 'waitingExpired' => 'Richiamo ticket scaduto',
             ],
+            'problem' => [
+                'effectivenessDue' => 'Verifica di efficacia di un problema in scadenza',
+            ],
             'openIssue' => [
                 'assigned' => 'Punto aperto assegnato',
                 'dueSoon' => 'Punto aperto in scadenza',
@@ -317,6 +320,7 @@ return [
             'push' => 'Push',
             'teams' => 'Microsoft Teams',
             'mattermost' => 'Mattermost',
+            'calendar' => 'Calendario',
         ],
     ],
 
@@ -830,6 +834,7 @@ return [
             'lexoffice' => 'Lexoffice guida',
             'datev' => 'DATEV guida',
             'orgamax' => 'orgaMAX guida',
+            'sevdesk' => 'sevDesk guida',
         ],
         'transfer-channel' => [
             'time' => 'Prestazioni/tempo',
@@ -839,6 +844,7 @@ return [
             'lexoffice' => 'Lexoffice',
             'datev' => 'DATEV',
             'orgamax' => 'orgaMAX (ordine)',
+            'sevdesk' => 'sevDesk (bozza di fattura)',
             'file' => 'Esportazione file',
         ],
         'transfer-status' => [
@@ -860,6 +866,11 @@ return [
         'bank-statement-format' => [
             'camt053' => 'CAMT.053',
             'mt940' => 'MT940',
+            'ofx' => 'OFX',
+            'qif' => 'QIF',
+            'qxf' => 'QXF',
+            'pain001' => 'PAIN.001',
+            'pain008' => 'PAIN.008',
         ],
         'transaction-direction' => [
             'credit' => 'Entrata',
@@ -883,6 +894,7 @@ return [
             'partial' => 'Pagamento parziale',
             'overpayment' => 'Pagamento in eccesso',
             'reimbursement' => 'Rimborso',
+            'chargeback' => 'Storno di addebito',
         ],
     ],
 

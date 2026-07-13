@@ -7,7 +7,7 @@
 <x-index-page :subtitle="__('problemreport.title.inbox_subtitle')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.problem-reports.index') }}" class="flex items-center gap-2">
-            <select name="status" class="select select-bordered select-sm" onchange="this.form.submit()">
+            <select name="status" class="select select-bordered select-sm" data-autosubmit>
                 <option value="">{{ __('problemreport.filter.all_statuses') }}</option>
                 @foreach (\App\Enums\Support\ProblemReportStatus::cases() as $status)
                     <option value="{{ $status->value }}" @selected($statusFilter === $status)>{{ $status->label() }}</option>

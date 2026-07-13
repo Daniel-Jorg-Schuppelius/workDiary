@@ -10,7 +10,7 @@
 
 return [
     'title' => 'Spedizione e logistica',
-    'intro' => 'Connessioni corriere per etichette di spedizione e tracciamento delle spedizioni (DHL Paket e altri). Una connessione per corriere e organizzazione; le credenziali sono memorizzate cifrate.',
+    'intro' => 'Connessioni corriere per etichette di spedizione e tracciamento delle spedizioni (DHL Paket, UPS, FedEx). Una connessione per corriere e organizzazione; le credenziali sono memorizzate cifrate.',
 
     'form_heading' => 'Aggiungi / modifica connessione',
     'form_hint' => 'Scegli il corriere e inserisci le sue credenziali. Salvando di nuovo con lo stesso corriere si aggiorna la connessione esistente.',
@@ -21,13 +21,16 @@ return [
     'field' => [
         'carrier' => 'Corriere',
         'name' => 'Denominazione',
-        'username' => 'Utente (account aziendale)',
-        'password' => 'Password',
-        'api_key' => 'Chiave API (dhl-api-key)',
-        'billing_number' => 'Numero di fatturazione',
+        'username' => 'Utente / ID client',
+        'password' => 'Password / secret client',
+        'api_key' => 'Chiave API (solo DHL: dhl-api-key)',
+        'billing_number' => 'Numero di fatturazione / conto',
         'sandbox' => 'Sandbox / ambiente di test',
         'active' => 'Attivo',
         'weight_grams' => 'Peso (g)',
+        'length_cm' => 'Lunghezza (cm)',
+        'width_cm' => 'Larghezza (cm)',
+        'height_cm' => 'Altezza (cm)',
     ],
 
     'label_short' => 'Spedizione',
@@ -56,7 +59,7 @@ return [
     'flash' => [
         'saved' => 'Connessione corriere salvata.',
         'disconnected' => 'Connessione corriere disattivata.',
-        'credentials_required' => 'Utente, password e chiave API sono obbligatori per una nuova connessione.',
+        'credentials_required' => 'Per una nuova connessione sono obbligatori utente/ID client e password/secret client (DHL in più: chiave API).',
         'no_recipient' => 'La consegna non ha un cliente come destinatario.',
         'already_created' => 'Esiste già una spedizione per questa consegna.',
         'no_connection' => 'Nessuna connessione attiva configurata per il corriere selezionato.',

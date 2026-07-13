@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.11">
+  <CstmrDrctDbtInitn>
+    <GrpHdr>
+      <MsgId>DD-WD-001</MsgId>
+      <CreDtTm>2026-05-01T12:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <CtrlSum>119.00</CtrlSum>
+      <InitgPty>
+        <Nm>WorkDiary GmbH</Nm>
+      </InitgPty>
+    </GrpHdr>
+    <PmtInf>
+      <PmtInfId>PMT-DD-WD-001</PmtInfId>
+      <PmtMtd>DD</PmtMtd>
+      <ReqdColltnDt>2026-05-20</ReqdColltnDt>
+      <Cdtr>
+        <Nm>WorkDiary GmbH</Nm>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>DE89370400440532013000</IBAN>
+        </Id>
+      </CdtrAcct>
+      <CdtrAgt>
+        <FinInstnId>
+          <BICFI>COBADEFFXXX</BICFI>
+        </FinInstnId>
+      </CdtrAgt>
+      <DrctDbtTxInf>
+        <PmtId>
+          <EndToEndId>RE-2026-0007</EndToEndId>
+        </PmtId>
+        <InstdAmt Ccy="EUR">119.00</InstdAmt>
+        <DrctDbtTx>
+          <MndtRltdInf>
+            <MndtId>MANDATE-0815</MndtId>
+            <DtOfSgntr>2025-12-01</DtOfSgntr>
+          </MndtRltdInf>
+        </DrctDbtTx>
+        <Dbtr>
+          <Nm>Muster GmbH</Nm>
+        </Dbtr>
+        <DbtrAcct>
+          <Id>
+            <IBAN>DE02120300000000202051</IBAN>
+          </Id>
+        </DbtrAcct>
+        <RmtInf>
+          <Ustrd>Rechnung RE-2026-0007</Ustrd>
+        </RmtInf>
+      </DrctDbtTxInf>
+    </PmtInf>
+  </CstmrDrctDbtInitn>
+</Document>

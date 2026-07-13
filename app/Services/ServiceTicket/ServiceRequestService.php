@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Enums\ServiceTicket\ServiceTicketKind;
-use App\Models\{Approval, DiaryEntry, Project, RequestItem, ServiceRequest, ServiceTicket, Task, User};
+use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketSource};
+use App\Models\{Approval, DiaryEntry, Project, RequestItem, ServiceQueue, ServiceRequest, ServiceTicket, Task, User};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -52,23 +52,82 @@ class ServiceRequestService {
     }
 
     /**
+     * Portal-Sicht auf den Katalog (Feature 065, MVP-154): nur aktive
+     * Einträge mit visibility.portal; optional zusätzlich auf bestimmte
+     * Kunden beschränkt (visibility.customer_ids). Serverseitig gefiltert —
+     * das Portal bekommt nie mehr als seine Sicht.
+     *
+     * @return \Illuminate\Support\Collection<int, RequestItem>
+     */
+    public function visibleItemsForPortal(User $portalUser): \Illuminate\Support\Collection {
+        return RequestItem::query()
+            ->where('organization_id', (int) $portalUser->organization_id)
+            ->where('active', true)
+            ->orderBy('name')
+            ->get()
+            ->filter(fn(RequestItem $item): bool => $this->isPortalVisible($item, $portalUser))
+            ->values();
+    }
+
+    /** Portal-Sichtbarkeitsregel für einen einzelnen Katalogeintrag. */
+    public function isPortalVisible(RequestItem $item, User $portalUser): bool {
+        if (! $item->active || (int) $item->organization_id !== (int) $portalUser->organization_id) {
+            return false;
+        }
+
+        $visibility = (array) ($item->visibility ?? []);
+        if (! (bool) ($visibility['portal'] ?? false)) {
+            return false;
+        }
+
+        $customerIds = array_map('intval', (array) ($visibility['customer_ids'] ?? []));
+
+        return $customerIds === [] || in_array((int) $portalUser->customer_id, $customerIds, true);
+    }
+
+    /**
      * Request einreichen: Ticket (kind=service_request) + Request mit
      * eingefrorenen Snapshots + Genehmigungsschritte (leer → direkt approved).
      *
+     * Portal-Kontext (`viaPortal`, MVP-154): Ticket landet in der Portal-
+     * Queue mit Source customer_portal und Kundenbezug; der Portal-User wird
+     * als requester am Ticket verankert (Muster CustomerPortal/TicketController).
+     *
      * @param array<string, mixed> $formAnswers
      */
-    public function submit(RequestItem $item, User $requester, array $formAnswers = []): ServiceRequest {
+    public function submit(RequestItem $item, User $requester, array $formAnswers = [], bool $viaPortal = false): ServiceRequest {
         if (! $item->active) {
             throw new \RuntimeException((string) __('Der Katalogeintrag ist nicht aktiv.'));
         }
 
-        return DB::transaction(function () use ($item, $requester, $formAnswers): ServiceRequest {
-            $ticket = app(ServiceTicketService::class)->create($item->organization()->firstOrFail(), $requester, [
+        return DB::transaction(function () use ($item, $requester, $formAnswers, $viaPortal): ServiceRequest {
+            $payload = [
                 'title' => $item->name,
                 'description' => $item->description,
                 'kind' => ServiceTicketKind::ServiceRequest->value,
                 'sla_contract_id' => $item->sla_contract_id,
-            ]);
+            ];
+
+            if ($viaPortal) {
+                $payload['customer_id'] = $requester->customer_id;
+                $payload['source'] = ServiceTicketSource::CustomerPortal->value;
+                $portalQueueId = ServiceQueue::query()
+                    ->where('organization_id', $item->organization_id)
+                    ->where('visibility', 'portal')
+                    ->value('id');
+                if ($portalQueueId !== null) {
+                    $payload['queue_id'] = (int) $portalQueueId;
+                }
+            }
+
+            $ticket = app(ServiceTicketService::class)->create($item->organization()->firstOrFail(), $requester, $payload);
+
+            if ($viaPortal) {
+                $ticket->forceFill([
+                    'requester_type' => $requester->getMorphClass(),
+                    'requester_id' => $requester->id,
+                ])->save();
+            }
 
             $chain = array_values((array) ($item->approval_chain ?? []));
             $request = ServiceRequest::query()->create([
@@ -105,15 +164,16 @@ class ServiceRequestService {
 
     /**
      * Genehmigungsentscheidung mit Selbstfreigabe-Sperre; question hält den
-     * Schritt offen (Rückfrage), rejected beendet den Request.
+     * Schritt offen (Rückfrage), rejected beendet den Request, delegated
+     * erzeugt einen neuen offenen Schritt gleicher Nummer (MVP-154).
      */
-    public function decide(Approval $approval, User $actor, string $decision, ?string $reason = null): ServiceRequest {
+    public function decide(Approval $approval, User $actor, string $decision, ?string $reason = null, ?int $delegateUserId = null): ServiceRequest {
         /** @var ServiceRequest $request */
         $request = $approval->approvable()->firstOrFail();
         $requesterId = (int) $request->ticket()->firstOrFail()->reported_by_user_id;
 
-        return DB::transaction(function () use ($approval, $actor, $decision, $reason, $request, $requesterId): ServiceRequest {
-            $outcome = app(ApprovalService::class)->decide($approval, $actor, $decision, $reason, $requesterId);
+        return DB::transaction(function () use ($approval, $actor, $decision, $reason, $delegateUserId, $request, $requesterId): ServiceRequest {
+            $outcome = app(ApprovalService::class)->decide($approval, $actor, $decision, $reason, $requesterId, $delegateUserId);
 
             if ($outcome === 'rejected') {
                 $request->update(['status' => ServiceRequest::STATUS_REJECTED]);

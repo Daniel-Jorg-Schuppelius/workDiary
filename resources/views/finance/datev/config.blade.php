@@ -97,6 +97,43 @@
                 </div>
             </x-form-group>
 
+            {{-- MVP-334: differenzierte Aufwands-/Vorsteuerkonten je Spesenkategorie. --}}
+            @if ($expenseCategories->isNotEmpty())
+                <x-form-group :legend="__('finance.datev.config.expense_group')" icon="receipt" tone="error" cols="1" compact>
+                    <p class="text-xs text-base-content/60">{{ __('finance.datev.config.expense_group_hint') }}</p>
+                    <div class="overflow-x-auto">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>{{ __('finance.datev.config.expense_category') }}</th>
+                                    <th>{{ __('finance.datev.config.expense_account') }}</th>
+                                    <th>{{ __('finance.datev.config.expense_tax_key') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($expenseCategories as $category)
+                                    <tr>
+                                        <td>{{ $category->label }}</td>
+                                        <td>
+                                            <input type="text" maxlength="12"
+                                                   name="datev[expense_accounts][{{ $category->sqid }}][account]"
+                                                   value="{{ old('datev.expense_accounts.' . $category->sqid . '.account', data_get($config->expenseAccounts, $category->id . '.account', '')) }}"
+                                                   class="input input-bordered input-sm w-full">
+                                        </td>
+                                        <td>
+                                            <input type="text" maxlength="4"
+                                                   name="datev[expense_accounts][{{ $category->sqid }}][tax_key]"
+                                                   value="{{ old('datev.expense_accounts.' . $category->sqid . '.tax_key', data_get($config->expenseAccounts, $category->id . '.tax_key', '')) }}"
+                                                   class="input input-bordered input-sm w-full">
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </x-form-group>
+            @endif
+
             <x-form-group :legend="__('finance.datev.config.export_group')" icon="tune" tone="ghost" cols="2" compact>
                 <div class="fieldset">
                     <label class="label cursor-pointer justify-start gap-3">

@@ -67,6 +67,7 @@ return [
         'target_by_mode' => 'El destino se preselecciona según el canal de facturación del cliente.',
         'period_sources' => 'Solo se recopilan fuentes facturables, aún no facturadas/entregadas en el período.',
         'lexoffice_draft_created' => 'Borrador de factura creado en Lexoffice:',
+        'sevdesk_draft_created' => 'Borrador de factura creado en sevDesk:',
     ],
 
     'confirm_execute' => '¿Traspasar ahora al destino? Si tiene éxito, las fuentes se marcarán como entregadas.',
@@ -98,6 +99,11 @@ return [
         'total' => 'Total',
     ],
 
+    'sevdesk' => [
+        'introduction' => 'Entrega desde WorkDiary — :channel, período :from – :to.',
+        'tax_text' => 'IVA :rate %',
+    ],
+
     'lexoffice' => [
         'introduction' => 'Entrega desde WorkDiary — :channel, período :from – :to.',
         'delivery_title' => 'Albarán',
@@ -119,6 +125,8 @@ return [
         'entry_already_transferred' => 'El registro de tiempo ya se ha entregado a la facturación y no puede corregirse más.',
         'target_not_allowed' => 'Este destino no está permitido para el canal de facturación «:mode».',
         'lexoffice_not_configured' => 'Lexoffice no está configurado para esta organización (falta la clave API).',
+        'sevdesk_not_configured' => 'sevDesk no está configurado para esta organización (falta el token de API).',
+        'sevdesk_outcome_unclear' => 'Resultado de la entrega a sevDesk incierto (tiempo de espera agotado tras el envío): no reintentar a ciegas; la próxima ejecución concilia mediante el marcador de origen.',
         'lexoffice_contact_missing' => 'No hay contacto de Lexoffice para el cliente — sincronice primero el contacto.',
         'lexoffice_delivery_no_customer' => 'Una entrega sin cliente no puede transferirse como albarán.',
         'lexoffice_delivery_not_linked' => 'No hay ningún albarán de Lexoffice vinculado a esta entrega.',
@@ -151,6 +159,9 @@ return [
             'amount' => 'Importe (bruto)',
             'lock_flag' => 'Bloqueo definitivo',
             'include_expenses' => 'Incluir gastos aprobados',
+            'include_reversals' => 'Transmitir documentos anulados (contrapartida general)',
+            'reversal' => 'GU',
+            'reversal_badge' => 'Contrapartida general',
             'debtor_no' => 'Número de deudor (DATEV)',
             'debtor_no_hint' => 'Déjelo vacío para derivar el número automáticamente del rango de numeración configurado.',
         ],
@@ -158,12 +169,19 @@ return [
             'on' => 'bloqueado definitivamente',
             'off' => 'no bloqueado definitivamente',
         ],
+
+        'selection' => [
+            'manual' => 'Selección parcial',
+        ],
         'action' => [
             'create' => 'Crear lote',
             'finalize' => 'Finalizar',
             'download' => 'Descargar CSV',
             'configure' => 'Configuración',
             'save_config' => 'Guardar configuración',
+            'discard' => 'Descartar borrador',
+            'remove_selected' => 'Quitar selección',
+            'select_source' => 'Seleccionar asiento',
         ],
         'dialog' => [
             'create_title' => 'Crear lote de asientos DATEV',
@@ -172,11 +190,14 @@ return [
         'hint' => [
             'period_sources' => 'Se tienen en cuenta las facturas emitidas/pagadas con fecha de comprobante dentro del periodo que aún no pertenezcan a ningún lote finalizado.',
             'include_expenses' => 'Opcional: incorporar además los gastos aprobados como asiento de gasto (MVP — cuentas simplificadas).',
+            'include_reversals' => 'Opcional: transmitir documentos anulados y ya transferidos como asientos de contrapartida general.',
         ],
         'flash' => [
             'created' => 'Lote de asientos creado como borrador.',
             'finalized' => 'Lote de asientos finalizado — CSV generado y fuentes marcadas como entregadas.',
             'config_saved' => 'Configuración contable guardada.',
+            'sources_removed' => 'Asientos seleccionados eliminados — vuelven a estar disponibles para el próximo lote.',
+            'discarded' => 'Borrador del lote descartado — sus fuentes vuelven a estar disponibles.',
         ],
         'error' => [
             'no_sources' => 'No se encontraron comprobantes listos para contabilizar en el periodo seleccionado.',
@@ -186,6 +207,9 @@ return [
             'preflight_failed' => 'El lote no puede finalizarse debido a errores de verificación previa.',
             'no_organization' => 'No se pudo resolver ninguna organización.',
             'roundtrip_failed' => 'El archivo DATEV generado no superó la comprobación de relectura: :errors',
+            'no_selection' => 'Ningún asiento seleccionado.',
+            'selection_empty_batch' => 'Al menos un asiento debe permanecer en el lote.',
+            'source_already_exported' => 'El documento :ref ya forma parte de otro lote exportado.',
         ],
         'preflight' => [
             'no_sources' => 'El lote no contiene asientos.',
@@ -236,6 +260,11 @@ return [
             'finalize_hint' => 'Marca los asientos como bloqueados definitivamente al exportar.',
             'encoding' => 'Juego de caracteres',
             'encoding_hint' => 'Lo habitual en DATEV es ISO-8859-1; UTF-8 solo si se desea expresamente.',
+            'expense_group' => 'Cuentas de gasto/IVA soportado por categoría de gasto',
+            'expense_group_hint' => 'Dejar vacío para usar la asignación simplificada (slot de la cuenta de ingresos + clave BU por tipo impositivo). BU de IVA soportado p. ej. 9 = 19 %, 8 = 7 %.',
+            'expense_category' => 'Categoría de gasto',
+            'expense_account' => 'Cuenta de gasto',
+            'expense_tax_key' => 'Clave BU de IVA soportado',
         ],
     ],
 ];

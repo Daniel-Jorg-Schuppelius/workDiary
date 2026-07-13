@@ -436,20 +436,11 @@ class ClassificationController extends Controller {
      * @return array<string, string>
      */
     private function domainLabels(): array {
-        return [
-            ClassificationDomain::EntryType->value => __('Auftragstypen'),
-            ClassificationDomain::Activity->value => __('Tätigkeiten'),
-            ClassificationDomain::DefectType->value => __('Fehlertypen'),
-            ClassificationDomain::RootCause->value => __('Ursachen'),
-            ClassificationDomain::Result->value => __('Ergebnisse'),
-            ClassificationDomain::Priority->value => __('Prioritäten'),
-            ClassificationDomain::GoodwillReason->value => __('Kulanzgründe'),
-            ClassificationDomain::ReworkReason->value => __('Nacharbeitsgründe'),
-            ClassificationDomain::ProductGroup->value => __('Produktgruppen'),
-            ClassificationDomain::DienstmittelType->value => __('Dienstmitteltypen'),
-            ClassificationDomain::Allergen->value => __('Allergene'),
-            ClassificationDomain::Trade->value => __('Gewerke'),
-            ClassificationDomain::PermitType->value => __('Genehmigungsarten'),
-        ];
+        $labels = [];
+        foreach (ClassificationDomain::cases() as $domain) {
+            $labels[$domain->value] = $domain->label();
+        }
+
+        return $labels;
     }
 }

@@ -22,7 +22,7 @@
                 <x-form-group :label="__('Abo-URL')" name="feed_url">
                     <div class="join w-full">
                         <input type="text" readonly value="{{ $url }}" class="input input-bordered join-item w-full font-mono text-xs">
-                        <button type="button" class="btn join-item" onclick="navigator.clipboard.writeText('{{ $url }}')">
+                        <button type="button" class="btn join-item" data-copy-text="{{ $url }}">
                             {{ __('Kopieren') }}
                         </button>
                     </div>

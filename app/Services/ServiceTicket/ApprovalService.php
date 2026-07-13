@@ -38,8 +38,8 @@ class ApprovalService {
     /**
      * @return 'approved_all'|'rejected'|'pending' Gesamtzustand nach dem Entscheid
      */
-    public function decide(Approval $approval, User $actor, string $decision, ?string $reason, ?int $blockedUserId): string {
-        if (! in_array($decision, ['approved', 'rejected', 'question'], true)) {
+    public function decide(Approval $approval, User $actor, string $decision, ?string $reason, ?int $blockedUserId, ?int $delegateUserId = null): string {
+        if (! in_array($decision, ['approved', 'rejected', 'question', 'delegated'], true)) {
             throw new \InvalidArgumentException('Unbekannte Entscheidung.');
         }
         if ($blockedUserId !== null && $blockedUserId === (int) $actor->id) {
@@ -51,6 +51,29 @@ class ApprovalService {
         if ($decision === 'rejected' && trim((string) $reason) === '') {
             throw new \InvalidArgumentException((string) __('Ablehnung braucht eine Begründung.'));
         }
+        if ($decision === 'delegated' && trim((string) $reason) === '') {
+            throw new \InvalidArgumentException((string) __('Delegation braucht eine Begründung.'));
+        }
+
+        // Delegation (MVP-154): Empfänger ist Pflicht, org-gescopt und darf
+        // nicht der Antragsteller sein — die Selbstfreigabe-Sperre greift
+        // damit beim Delegaten erneut (und über blockedUserId auch bei
+        // dessen späterer Entscheidung).
+        $delegate = null;
+        if ($decision === 'delegated') {
+            $delegate = $delegateUserId !== null
+                ? User::query()
+                    ->whereKey($delegateUserId)
+                    ->where('organization_id', $approval->organization_id)
+                    ->first()
+                : null;
+            if ($delegate === null) {
+                throw new \InvalidArgumentException((string) __('Delegation braucht einen Empfänger der eigenen Organisation.'));
+            }
+            if ($blockedUserId !== null && (int) $delegate->id === $blockedUserId) {
+                throw new \RuntimeException((string) __('Selbstfreigabe ist nicht zulässig.'));
+            }
+        }
 
         $approval->update([
             'decided_by' => $actor->id,
@@ -58,6 +81,20 @@ class ApprovalService {
             'reason' => $reason !== null ? trim($reason) : null,
             'decided_at' => now(),
         ]);
+
+        if ($delegate !== null) {
+            // Neuer offener Schritt mit GLEICHER step-Nummer: der Delegat
+            // übernimmt die Zuständigkeit, die Kette wird nicht verlängert.
+            Approval::query()->create([
+                'organization_id' => (int) $approval->organization_id,
+                'approvable_type' => $approval->approvable_type,
+                'approvable_id' => $approval->approvable_id,
+                'step' => $approval->step,
+                'approver_rule' => ['type' => 'user', 'value' => (int) $delegate->id],
+            ]);
+
+            return 'pending';
+        }
 
         if ($decision === 'rejected') {
             return 'rejected';

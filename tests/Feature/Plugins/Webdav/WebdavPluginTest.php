@@ -14,9 +14,9 @@ use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
 use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationOutboxEntry, User, WebdavConnection};
 use App\Plugins\{PluginDiscovery, PluginHealth};
-use App\Plugins\Webdav\Contracts\{WebdavGateway, WebdavGatewayFactory};
-use App\Plugins\Webdav\Services\{DocumentMirrorService, WebdavOutboxDispatcher};
-use App\Plugins\Webdav\WebdavPlugin;
+use App\Plugins\Support\Mirror\{DocumentMirrorService, MirrorOutboxDispatcher, RemoteFileGateway};
+use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
+use App\Plugins\Webdav\{WebdavMirrorTarget, WebdavPlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Queue, Storage};
 use Tests\Concerns\WithOrganization;
@@ -45,9 +45,9 @@ final class WebdavPluginTest extends TestCase {
         $gateway = new RecordingWebdavGateway(pingOk: $pingOk);
 
         $this->app->instance(WebdavGatewayFactory::class, new class($gateway) implements WebdavGatewayFactory {
-            public function __construct(private WebdavGateway $gateway) {}
+            public function __construct(private RemoteFileGateway $gateway) {}
 
-            public function for(WebdavConnection $connection): WebdavGateway {
+            public function for(WebdavConnection $connection): RemoteFileGateway {
                 return $this->gateway;
             }
         });
@@ -101,8 +101,8 @@ final class WebdavPluginTest extends TestCase {
         $document = $this->activeDocument();
 
         $entry = IntegrationOutboxEntry::query()
-            ->where('plugin_id', DocumentMirrorService::PLUGIN_ID)
-            ->where('operation', WebdavOutboxDispatcher::OP_MIRROR)
+            ->where('plugin_id', WebdavPlugin::ID)
+            ->where('operation', MirrorOutboxDispatcher::OP_MIRROR)
             ->first();
         $this->assertNotNull($entry);
         $this->assertSame('mirror:doc-' . $document->id . ':v' . $document->current_version_id, $entry->idempotency_key);
@@ -117,7 +117,7 @@ final class WebdavPluginTest extends TestCase {
         $document->forceFill(['title' => 'Prüfbericht (aktualisiert)'])->save();
 
         $this->assertSame(1, IntegrationOutboxEntry::query()
-            ->where('plugin_id', DocumentMirrorService::PLUGIN_ID)
+            ->where('plugin_id', WebdavPlugin::ID)
             ->count());
     }
 
@@ -163,14 +163,14 @@ final class WebdavPluginTest extends TestCase {
         $this->activeDocument(); // Version zeigt auf documents/x.pdf
 
         $entry = IntegrationOutboxEntry::query()
-            ->where('plugin_id', DocumentMirrorService::PLUGIN_ID)
+            ->where('plugin_id', WebdavPlugin::ID)
             ->firstOrFail();
 
-        $confirmed = (new WebdavOutboxDispatcher())->dispatch($entry);
+        $confirmed = (new MirrorOutboxDispatcher(new WebdavMirrorTarget()))->dispatch($entry);
 
         $this->assertTrue($confirmed);
         $this->assertSame(1, ExternalReference::query()
-            ->where('plugin_id', DocumentMirrorService::PLUGIN_ID)
+            ->where('plugin_id', WebdavPlugin::ID)
             ->where('external_type', DocumentMirrorService::EXTERNAL_TYPE)
             ->count());
     }

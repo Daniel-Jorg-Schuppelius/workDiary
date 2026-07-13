@@ -17,6 +17,7 @@ use App\Models\{Project, User};
 use App\Services\Reporting\CustomerAnalysisReportBuilder;
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -80,7 +81,14 @@ class CustomerAnalysisReportController extends Controller {
             'projectId' => $projectId,
             'userId' => $userId,
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            'reportUsers' => User::query()->orderBy('name')->get(['id', 'name']),
+            // Mandantengrenze: User hat KEINEN globalen OrganizationScope
+            // (Authenticatable-Sonderfall) — ohne expliziten Org-Filter listete
+            // das Dropdown User ALLER Organisationen (Tenant-Leak, Bauturbo A17,
+            // belegt durch ReportPdfTenantTest).
+            'reportUsers' => User::query()
+                ->where('organization_id', Auth::user()?->organization_id)
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'topByMinutes' => $topByMinutes,
             'topByRework' => $topByRework,
             'topByNonBillable' => $topByNonBillable,

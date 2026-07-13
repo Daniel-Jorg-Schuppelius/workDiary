@@ -15,17 +15,21 @@ namespace App\Services\Import;
 use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
 use App\Models\{ImportRun, ImportRunError, Organization, User};
 use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
-use CommonToolkit\Parsers\CSVDocumentParser;
+use CommonToolkit\Parsers\{CSVDocumentParser, XLSXDocumentParser};
+use DateTimeInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
+use RuntimeException;
 use Throwable;
 
 /**
- * MVP-049 — CSV-Vorprüfung.
+ * MVP-049 — CSV-/XLSX-Vorprüfung.
  *
- * Liest eine hochgeladene Datei, erkennt Delimiter, prüft Header gegen
- * die {@see EntitySpec}, normalisiert die ersten ≤20 Zeilen für eine
+ * Liest eine hochgeladene Datei (XLSX wird vorab über den Toolkit-Parser in
+ * die interne CSV-Struktur überführt, A13), erkennt Delimiter, prüft Header
+ * gegen die {@see EntitySpec}, normalisiert die ersten ≤20 Zeilen für eine
  * Vorschau und validiert die gesamte Datei zeilenweise. Erzeugt einen
  * {@see ImportRun} im Zustand `awaitingApproval` (alles ok) oder
  * `failed` (Header-Probleme); per-Zeilen-Fehler werden in
@@ -60,19 +64,11 @@ class CsvPreflightAnalyzer {
         // Datei speichern (Tenant-Pfad), damit der Job sie später nachladen kann.
         $stored = $file->store(self::STORAGE_DIR . '/' . $organization->id, self::DISK);
         if ($stored === false) {
-            throw new \RuntimeException('Konnte Import-Datei nicht speichern.');
+            throw new RuntimeException('Konnte Import-Datei nicht speichern.');
         }
         $absolutePath = Storage::disk(self::DISK)->path($stored);
         $hash = ToolkitFile::hash($absolutePath);
-
-        // Entitätsspezifische Vorverarbeitung des Roh-Inhalts (z. B. Excel-`sep=`-
-        // Vorzeile entfernen). Nur bei tatsächlicher Änderung neu schreiben, damit
-        // der Default-Pfad (keine Vorverarbeitung) das gestreamte File unberührt lässt.
-        $raw = ToolkitFile::read($absolutePath);
-        $processed = $spec->preprocessRaw($raw);
-        if ($processed !== $raw) {
-            Storage::disk(self::DISK)->put($stored, $processed);
-        }
+        $isXlsx = strtolower($file->getClientOriginalExtension()) === 'xlsx';
 
         $run = new ImportRun([
             'organization_id' => $organization->id,
@@ -87,6 +83,23 @@ class CsvPreflightAnalyzer {
         $run->save();
 
         try {
+            // A13: XLSX vorab in die interne CSV-Struktur überführen (erstes
+            // Tabellenblatt) — danach läuft EIN gemeinsamer Wizard-Pfad.
+            if ($isXlsx) {
+                $stored = $this->convertXlsxToCsv($absolutePath, $stored);
+                $run->storage_path = $stored;
+                $absolutePath = Storage::disk(self::DISK)->path($stored);
+            }
+
+            // Entitätsspezifische Vorverarbeitung des Roh-Inhalts (z. B. Excel-`sep=`-
+            // Vorzeile entfernen). Nur bei tatsächlicher Änderung neu schreiben, damit
+            // der Default-Pfad (keine Vorverarbeitung) das gestreamte File unberührt lässt.
+            $raw = ToolkitFile::read($absolutePath);
+            $processed = $spec->preprocessRaw($raw);
+            if ($processed !== $raw) {
+                Storage::disk(self::DISK)->put($stored, $processed);
+            }
+
             $delimiter = CSVDocumentParser::detectDelimiter($absolutePath);
             $run->delimiter = $delimiter;
 
@@ -165,20 +178,13 @@ class CsvPreflightAnalyzer {
                 }
             });
 
-            // Rang 58: nur wirklich unbekannte Werte behalten (kein Mapping,
-            // kein Namens-Tag) — sie blockieren die Bestätigung bis zur Zuordnung.
+            // Rang 58/A13: nur wirklich unbekannte Werte behalten (kein Mapping,
+            // kein Namens-Tag, kein eindeutiger Klassifikations-Code) — sie
+            // blockieren die Bestätigung bis zur Zuordnung.
             if ($spec instanceof \App\Services\Import\HasMappableValues && $unresolvedValues !== []) {
                 $pending = [];
                 foreach ($unresolvedValues as $value) {
-                    if (\App\Models\ImportValueMapping::resolveValue((int) $organization->id, $spec->entity()->value, $value) !== null) {
-                        continue;
-                    }
-                    $known = \App\Models\Tag::query()
-                        ->withoutGlobalScopes()
-                        ->where('organization_id', $organization->id)
-                        ->whereRaw('LOWER(name) = ?', [\App\Models\ImportValueMapping::normalize($value)])
-                        ->exists();
-                    if (! $known) {
+                    if ($spec->unresolvedMappableValues($organization, $value, $spec->entity()->value) !== []) {
                         $pending[] = $value;
                     }
                 }
@@ -289,5 +295,66 @@ class CsvPreflightAnalyzer {
 
     private function normKey(string $key): string {
         return mb_strtolower(trim($key));
+    }
+
+    /**
+     * A13: Überführt das ERSTE Tabellenblatt einer XLSX-Datei über den
+     * Toolkit-Parser in die interne CSV-Struktur (Kopfzeile + Datenzeilen,
+     * Semikolon-getrennt) und ersetzt die gespeicherte Datei. Zellwerte
+     * werden so normalisiert, wie der CSV-Pfad sie erwartet (Datum `Y-m-d`
+     * bzw. `Y-m-d H:i:s`, Zahlen mit Dezimalpunkt, Bool als 1/0).
+     *
+     * @param  string  $absolutePath  absoluter Pfad der gespeicherten XLSX-Datei
+     * @param  string  $stored  relativer Storage-Pfad der XLSX-Datei
+     * @return string relativer Storage-Pfad der erzeugten CSV-Datei
+     */
+    private function convertXlsxToCsv(string $absolutePath, string $stored): string {
+        try {
+            $document = XLSXDocumentParser::fromFile($absolutePath, hasHeader: false, sheetIndex: 0);
+        } catch (Throwable) {
+            throw new RuntimeException((string) __('import.error.format.xlsxUnreadable'));
+        }
+
+        $sheet = $document->getFirstSheet();
+        if ($sheet === null || $sheet->count() === 0) {
+            throw new RuntimeException((string) __('import.error.format.xlsxEmpty'));
+        }
+
+        $lines = [];
+        foreach ($sheet->getRows() as $row) {
+            $cells = array_map(
+                fn (\CommonToolkit\Entities\XLSX\Cell $cell): string => $this->cellToString($cell),
+                $row->getCells(),
+            );
+            $lines[] = StringHelper::encodeLine($cells, ';', '"');
+        }
+
+        $csvPath = (string) preg_replace('/\.[A-Za-z0-9]+$/', '', $stored) . '.csv';
+        Storage::disk(self::DISK)->put($csvPath, implode("\r\n", $lines) . "\r\n");
+        Storage::disk(self::DISK)->delete($stored);
+
+        return $csvPath;
+    }
+
+    /**
+     * Normalisiert einen XLSX-Zellwert auf die String-Repräsentation des
+     * CSV-Pfads (Specs parsen Strings, z. B. {@see AbstractEntitySpec::decimal()}).
+     */
+    private function cellToString(\CommonToolkit\Entities\XLSX\Cell $cell): string {
+        $value = $cell->getValue();
+
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('H:i:s') === '00:00:00'
+                ? $value->format('Y-m-d')
+                : $value->format('Y-m-d H:i:s');
+        }
+        if (is_float($value)) {
+            // Kein (string)-Cast: vermeidet Exponentialschreibweise.
+            $formatted = number_format($value, 10, '.', '');
+
+            return rtrim(rtrim($formatted, '0'), '.');
+        }
+
+        return $cell->getStringValue();
     }
 }

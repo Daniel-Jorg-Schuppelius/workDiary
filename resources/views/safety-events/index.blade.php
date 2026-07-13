@@ -16,7 +16,7 @@
 
     <x-filter-bar :action="route('safety-events.index')" :reset="route('safety-events.index')">
         <x-filter-field :label="__('safety.field.kind')" for="flt-kind">
-            <select id="flt-kind" name="kind" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="flt-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('Alle') }}</option>
                 @foreach (\App\Enums\Safety\SafetyEventKind::cases() as $k)
                     <option value="{{ $k->value }}" @selected($kind === $k->value)>{{ $k->label() }}</option>
@@ -24,7 +24,7 @@
             </select>
         </x-filter-field>
         <x-filter-field :label="__('safety.field.severity')" for="flt-sev">
-            <select id="flt-sev" name="severity" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="flt-sev" name="severity" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('Alle') }}</option>
                 @foreach (\App\Enums\Safety\SafetyEventSeverity::cases() as $s)
                     <option value="{{ $s->value }}" @selected($severity === $s->value)>{{ $s->label() }}</option>
@@ -32,7 +32,7 @@
             </select>
         </x-filter-field>
         <x-filter-field :label="__('safety.field.status')" for="flt-status">
-            <select id="flt-status" name="status" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select id="flt-status" name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('Alle') }}</option>
                 @foreach (\App\Enums\Safety\SafetyEventStatus::cases() as $st)
                     <option value="{{ $st->value }}" @selected($status === $st->value)>{{ $st->label() }}</option>

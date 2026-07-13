@@ -43,7 +43,8 @@
 </head>
 <body>
     <div class="actions no-print">
-        <button class="btn" onclick="window.print()">{{ __('timeline.action.print') }}</button>
+        <button class="btn" data-print>{{ __('timeline.action.print') }}</button>
+        <a class="btn" href="{{ route('diary.case-file.pdf', $diary) }}">{{ __('timeline.action.pdf') }}</a>
         <a class="btn" href="{{ route('diary.show', $diary) }}">{{ __('timeline.action.back_to_order') }}</a>
     </div>
 
@@ -133,7 +134,7 @@
 
     {{-- Protokolle & Abnahmen --}}
     @if ($protocols->isNotEmpty())
-        <h2>{{ __('timeline.case.protocols') }}</h2>
+        <h2><x-term glossary="abnahme">{{ __('timeline.case.protocols') }}</x-term></h2>
         <table>
             <thead>
                 <tr>
@@ -169,7 +170,7 @@
                             @if ($ws)
                                 <div class="text-xs">
                                     <div>{{ $ws->temp_min }}–{{ $ws->temp_max }} °C · {{ $ws->precipitation_mm }} mm · {{ $ws->wind_gust_kmh }} km/h</div>
-                                    <div class="text-base-content/50">{{ __('weather.source') }}: {{ $ws->provider }} · {{ $ws->fetched_at?->fdatetime() }}</div>
+                                    <div class="text-base-content/50">{{ __('weather.source') }}: {{ \App\Support\Trans::or('weather.providers.' . $ws->provider, $ws->provider) }} · {{ $ws->fetched_at?->fdatetime() }}</div>
                                 </div>
                             @elseif (auth()->user()?->can('update', $protocol))
                                 <form method="POST" action="{{ route('protocols.weather', $protocol) }}">
@@ -354,5 +355,6 @@
             </tbody>
         </table>
     @endif
+@include('partials.print-script')
 </body>
 </html>

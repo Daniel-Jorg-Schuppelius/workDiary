@@ -103,4 +103,9 @@ return [
         'ignored' => 'Tâche ignorée.',
         'reopened' => 'Tâche rouverte.',
     ],
+    'widget' => [
+        'open' => 'Tâches ouvertes',
+        'empty' => "Aucune tâche d'exploitation ouverte.",
+        'all' => "Afficher toutes les tâches d'exploitation",
+    ],
 ];

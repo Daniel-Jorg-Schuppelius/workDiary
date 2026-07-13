@@ -25,6 +25,7 @@ return [
         'active_users' => 'Active users (30 days)',
         'module_counts' => 'Records per core module',
         'feature_usage' => 'Feature usage (30 days)',
+        'transparency' => 'Metrics transparency',
     ],
 
     'field' => [
@@ -36,6 +37,34 @@ return [
         'feature' => 'Feature',
         'usage_total' => 'Count',
         'last_used_on' => 'Last used',
+        'counter_description' => 'What is counted',
+    ],
+
+    'transparency' => [
+        'status_enabled' => 'Usage counters active',
+        'status_disabled' => 'Usage counters disabled',
+        'settings_link' => 'Switch "telemetry.enabled" in the settings',
+        'intro' => 'This installation collects only the following usage counters — aggregated per organisation and day, without personal reference and without business content. No other telemetry exists.',
+        'storage' => 'Storage location: local database of this installation (table feature_usage_counters). Nothing is sent to external systems.',
+        'retention' => 'Retention: daily aggregates remain local; the evaluation above covers the last 30 days. With the switch disabled nothing is counted — existing aggregates are kept.',
+    ],
+
+    'counter' => [
+        'communications' => [
+            'created' => 'Communication notes created (count only)',
+        ],
+        'documents' => [
+            'created' => 'Documents created (count only)',
+        ],
+        'forms' => [
+            'submitted' => 'Forms submitted (count only)',
+        ],
+        'knowledge' => [
+            'created' => 'Knowledge articles created (count only)',
+        ],
+        'timeExports' => [
+            'built' => 'Time/payroll exports built (count only)',
+        ],
     ],
 
     'module' => [

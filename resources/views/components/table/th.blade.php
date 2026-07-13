@@ -11,6 +11,7 @@
     'type'    => null,    // string|number|date|duration (client only)
     'default' => null,    // asc|desc (client only); für server: nicht-null markiert Default-Spalte
     'align'   => null,    // left|right|center
+    'scope'   => 'col',   // Barrierefreiheit: Spaltenkopf (Default) | 'row' für Zeilenkopf | '' zum Weglassen
 ])
 
 @php
@@ -33,7 +34,7 @@
 @endphp
 
 @if ($tableSort === 'server' && is_string($sort) && $sort !== '')
-    <th {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align']) }}>
+    <th @if ($scope) scope="{{ $scope }}" @endif {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align', 'scope']) }}>
         <x-sort-th
             :column="$sort"
             :route="$route"
@@ -45,11 +46,12 @@
     </th>
 @elseif ($tableSort === 'client' && $sort)
     <th
+        @if ($scope) scope="{{ $scope }}" @endif
         data-sort
         @if ($type) data-sort-type="{{ $type }}" @endif
         @if ($default) data-sort-default="{{ $default }}" @endif
-        {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align']) }}
+        {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align', 'scope']) }}
     >{{ $slot }}</th>
 @else
-    <th {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align']) }}>{{ $slot }}</th>
+    <th @if ($scope) scope="{{ $scope }}" @endif {{ $attributes->class([$alignClass])->except(['sort', 'type', 'default', 'align', 'scope']) }}>{{ $slot }}</th>
 @endif

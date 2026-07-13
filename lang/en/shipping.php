@@ -10,7 +10,7 @@
 
 return [
     'title' => 'Shipping & Logistics',
-    'intro' => 'Carrier connections for shipping labels and shipment tracking (DHL Parcel and others). One connection per carrier and organization; credentials are stored encrypted.',
+    'intro' => 'Carrier connections for shipping labels and shipment tracking (DHL Parcel, UPS, FedEx). One connection per carrier and organization; credentials are stored encrypted.',
 
     'form_heading' => 'Add / edit connection',
     'form_hint' => 'Pick the carrier and enter its credentials. Saving again with the same carrier updates the existing connection.',
@@ -21,13 +21,16 @@ return [
     'field' => [
         'carrier' => 'Carrier',
         'name' => 'Label',
-        'username' => 'User (business account)',
-        'password' => 'Password',
-        'api_key' => 'API key (dhl-api-key)',
-        'billing_number' => 'Billing number',
+        'username' => 'User / client ID',
+        'password' => 'Password / client secret',
+        'api_key' => 'API key (DHL only: dhl-api-key)',
+        'billing_number' => 'Billing/account number',
         'sandbox' => 'Sandbox / test environment',
         'active' => 'Active',
         'weight_grams' => 'Weight (g)',
+        'length_cm' => 'Length (cm)',
+        'width_cm' => 'Width (cm)',
+        'height_cm' => 'Height (cm)',
     ],
 
     'label_short' => 'Shipping',
@@ -56,7 +59,7 @@ return [
     'flash' => [
         'saved' => 'Carrier connection saved.',
         'disconnected' => 'Carrier connection deactivated.',
-        'credentials_required' => 'User, password and API key are required for a new connection.',
+        'credentials_required' => 'A new connection requires user/client ID and password/client secret (DHL additionally: API key).',
         'no_recipient' => 'The delivery has no customer as recipient.',
         'already_created' => 'A shipment already exists for this delivery.',
         'no_connection' => 'No active connection is configured for the selected carrier.',

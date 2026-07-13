@@ -82,7 +82,8 @@ class DhlPluginTest extends TestCase {
 
         $this->assertSame('00340433339300000001', $label->trackingNumber);
         $this->assertSame('00340433339300000001', $label->carrierShipmentId);
-        $this->assertSame($pdf, $label->labelPdfBase64);
+        $this->assertSame($pdf, $label->labelBase64);
+        $this->assertSame('pdf', $label->format);
 
         $fake->assertSent(function (RequestInterface $request): bool {
             if (! str_contains((string) $request->getUri(), '/parcel/de/shipping/v2/orders')) {

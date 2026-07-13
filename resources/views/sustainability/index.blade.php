@@ -77,8 +77,11 @@
                     </select>
                     <input name="amount" type="number" step="0.001" min="0" required class="input input-sm input-bordered" placeholder="{{ __('Menge') }}">
                     <input name="unit" required maxlength="20" class="input input-sm input-bordered" placeholder="{{ __('Einheit (kWh/l/km/kg/m3)') }}">
-                    <input name="period_start" type="date" required class="input input-sm input-bordered" value="{{ now()->startOfMonth()->toDateString() }}">
-                    <input name="period_end" type="date" required class="input input-sm input-bordered" value="{{ now()->toDateString() }}">
+                    <x-date-range class="sm:col-span-2" layout="join"
+                                  from-name="period_start" to-name="period_end" type="date" required
+                                  :label="__('Zeitraum')"
+                                  :from="now()->startOfMonth()->toDateString()"
+                                  :to="now()->toDateString()" />
                     <select name="data_quality" class="select select-sm select-bordered">
                         <option value="measured">{{ __('values.measured') }}</option>
                         <option value="calculated">{{ __('values.calculated') }}</option>

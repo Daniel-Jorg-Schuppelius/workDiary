@@ -15,8 +15,10 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, User};
 use App\Services\Demo\DemoSeederService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class DemoTenantController extends Controller {
@@ -77,6 +79,64 @@ class DemoTenantController extends Controller {
         $this->writeAudit($user, $organization, 'demo.reset', $counts);
 
         return back()->with('success', __('Demo-Mandant wurde zurückgesetzt.'));
+    }
+
+    /**
+     * freshDemoOrg-Dialog (MVP-349, demo-mandant.md §2): Modal-Partial nach
+     * Mandantenverwaltungs-Muster. NUR Plattform-Admin — die `create`-Ability
+     * der OrganizationPolicy lässt ausschließlich `is_platform_admin` durch
+     * (org-lokale Admins: 403), genau wie das reguläre Anlegen von Mandanten.
+     */
+    public function createFreshOrg(): View {
+        Gate::authorize('create', Organization::class);
+
+        return view('admin.demo._fresh_org_dialog', [
+            'industries' => DemoIndustry::all(),
+            'defaultIndustry' => DemoIndustry::default(),
+            'platformAdmins' => User::query()
+                ->where('is_platform_admin', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'email']),
+        ]);
+    }
+
+    /**
+     * freshDemoOrg ausführen: neue, isolierte Demo-Organisation aus der
+     * Musterbranche erzeugen (Kern: {@see DemoSeederService::freshOrg()},
+     * inkl. `demo.orgCreated`-Audit). Optional wird ein Plattform-Admin als
+     * Mitglied zugewiesen, damit er den Mandanten direkt einsehen kann.
+     */
+    public function storeFreshOrg(Request $request): RedirectResponse {
+        Gate::authorize('create', Organization::class);
+
+        $data = $request->validate([
+            'industry' => ['required', \Illuminate\Validation\Rule::in(array_map(
+                static fn(DemoIndustry $i): string => $i->value,
+                DemoIndustry::all(),
+            ))],
+            'member' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        /** @var User $actor */
+        $actor = $request->user();
+
+        $member = null;
+        if (filled($data['member'] ?? null)) {
+            $memberId = Sqid::decodeOrNumeric(User::class, (string) $data['member']);
+            $member = $memberId !== null
+                ? User::query()->whereKey($memberId)->where('is_platform_admin', true)->first()
+                : null;
+            if ($member === null) {
+                throw ValidationException::withMessages([
+                    'member' => __('Der ausgewählte Benutzer ist kein Plattform-Admin.'),
+                ]);
+            }
+        }
+
+        $result = $this->seeder->freshOrg(DemoIndustry::fromKey((string) $data['industry']), $actor, $member);
+
+        return redirect()->route('admin.organizations.index')
+            ->with('success', __('Demo-Organisation ":name" wurde angelegt.', ['name' => $result['organization']->name]));
     }
 
     /** @param array<string, int|string> $counts */

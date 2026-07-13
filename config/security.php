@@ -16,4 +16,15 @@ return [
     | produktiv aktivieren — sonst werden nicht-noncte Inline-Scripts blockiert.
     */
     'csp_script_nonce' => env('CSP_SCRIPT_NONCE', false),
+
+    /*
+    | CSP Stufe 2: Alpine läuft im @alpinejs/csp-Build (kein eval/new Function)
+    | → 'unsafe-eval' entfällt aus script-src. DASSELBE Flag steuert den
+    | Vite-Build-Switch (vite.config.js, Alias alpinejs → @alpinejs/csp):
+    | nach dem Umschalten zwingend `npm run build` ausführen, sonst passt der
+    | CSP-Header nicht zum ausgelieferten Bundle. Erst nach Browser-Smoke-Test
+    | aller interaktiven Seiten (Dialoge, Tabs, Picker, Gantt, Stoppuhr)
+    | aktivieren — der CSP-Build ändert Laufzeit-Semantik.
+    */
+    'csp_alpine_csp_build' => env('ALPINE_CSP_BUILD', false),
 ];

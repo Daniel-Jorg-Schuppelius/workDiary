@@ -21,11 +21,11 @@
         <x-filter-bar :action="route('dispatch.map')" :reset="route('dispatch.map')">
             <x-filter-field :label="__('Nur SLA-Risiko')" for="map-risk">
                 <input id="map-risk" type="checkbox" name="risk" value="1"
-                       class="toggle toggle-sm toggle-error" @checked($onlyRisk) onchange="this.form.requestSubmit()" />
+                       class="toggle toggle-sm toggle-error" @checked($onlyRisk) data-autosubmit="request" />
             </x-filter-field>
             <x-filter-field :label="__('Nur unbestätigte')" for="map-unconfirmed">
                 <input id="map-unconfirmed" type="checkbox" name="unconfirmed" value="1"
-                       class="toggle toggle-sm" @checked($onlyUnconfirmed) onchange="this.form.requestSubmit()" />
+                       class="toggle toggle-sm" @checked($onlyUnconfirmed) data-autosubmit="request" />
             </x-filter-field>
             @if ($selectableUsers !== null)
                 <x-filter-field :label="__('Mitarbeiter')" for="map-user">

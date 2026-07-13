@@ -1,8 +1,10 @@
-// Standard-Alpine-Build. Der gesamte Code ist bereits CSP-konform refactored
-// (alle Komponenten via Alpine.data in resources/js/alpine/components.js, keine
-// Inline-Ausdrücke in Direktiven). Der Wechsel auf den strengeren CSP-Build
-// (`@alpinejs/csp`) ist EIN Einzeiler — aber erst nach einem Browser-Smoke-Test
-// aller interaktiven Seiten produktiv schalten (zusammen mit CSP_SCRIPT_NONCE).
+// Alpine-Build-Switch (CSP Stufe 2, MVP-346): welcher Build hier landet,
+// entscheidet die ENV ALPINE_CSP_BUILD über den Vite-Alias in vite.config.js
+// (alpinejs → @alpinejs/csp). Der gesamte Code ist CSP-konform refactored
+// (alle Komponenten via Alpine.data in resources/js/alpine/components.js,
+// keine vom CSP-Parser abgelehnten Inline-Ausdrücke in Direktiven; Gate:
+// CspNonceTest + Sweep). Produktiv umschalten erst nach Browser-Smoke-Test
+// aller interaktiven Seiten (zusammen mit CSP_SCRIPT_NONCE, dann rebuild).
 import Alpine from "alpinejs";
 import { registerAlpineComponents } from "./alpine/components.js";
 import { registerIdeaEditor } from "./idea-editor.js";
@@ -17,6 +19,7 @@ import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { __ } from "./i18n.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
+import "./inline-actions.js";
 import "./global-search.js";
 import "./header-autohide.js";
 import "./help-drawer.js";

@@ -74,10 +74,20 @@ return [
         // Standortbasierte Zeiterfassung (Geofences/Geräte/Review)
         'geofences.*' => 'location.overview',
         'location.*' => 'location.overview',
-        // Helpdesk-Verwaltung (Feature 065): Queues/Routing/Berichte
+        // Helpdesk-Verwaltung (Feature 065): Board/Queues/Routing/Berichte
+        'helpdesk.board.*' => 'helpdesk.overview',
         'helpdesk.queues.*' => 'helpdesk.overview',
         'helpdesk.routing.*' => 'helpdesk.overview',
         'helpdesk.reports.*' => 'helpdesk.overview',
+        // Servicekatalog + Genehmigungs-Inbox (Feature 065, MVP-154):
+        // bewusst KEIN neues Topic (Paritätspflicht ×alle Locales).
+        'servicedesk.catalog.*' => 'helpdesk.overview',
+        'servicedesk.approvals.*' => 'helpdesk.overview',
+        // Problem-Management (Feature 065, MVP-156): gleiches Topic.
+        'servicedesk.problems.*' => 'helpdesk.overview',
+        // Change-/CAB-Management (Feature 065, MVP-157): gleiches Topic.
+        'servicedesk.changes.*' => 'helpdesk.overview',
+        'servicedesk.change-templates.*' => 'helpdesk.overview',
         // Externe Bestands-Outbox (E1): Konfliktliste
         'inventory.conflicts.*' => 'inventory.conflicts',
         // Externe Kontakte = externe Protokoll-Teilnehmer
@@ -92,8 +102,12 @@ return [
         'home' => 'dashboard.overview',
         // Admin: Integrations-Verwaltung (ein gemeinsames Topic)
         'admin.caldav.*' => 'admin.integrations',
+        'admin.carddav.*' => 'admin.integrations',
         'admin.clockify.*' => 'admin.integrations',
         'admin.cti.*' => 'admin.integrations',
+        'admin.google-calendar.*' => 'admin.integrations',
+        'admin.msgraph.*' => 'admin.integrations',
+        'admin.sharepoint.*' => 'admin.integrations',
         'admin.jtl.*' => 'admin.jtl-wawi',
         'admin.kimai.*' => 'admin.integrations',
         'admin.mail.*' => 'admin.integrations',
@@ -113,6 +127,9 @@ return [
         'admin.settings.*' => 'admin.settings',
         'admin.data-ownership.*' => 'admin.data-ownership',
         'admin.cost-center-rules.*' => 'admin.cost-center-rules',
+        // Lohnarten-Mapping + Export-Lieferung (A21 · MVP-019): Teil des
+        // Zeit-Export-Prozesses, gleicher Hilfetext wie exports.*.
+        'admin.wage-type-mappings.*' => 'exports.payroll',
         // Fernwartungszugriffe → bestehendes Remote-Support-Topic
         'admin.support.grants.*' => 'admin.remote-support',
 

@@ -46,7 +46,7 @@
             <span class="inline-block h-3 w-3 rounded-full border border-base-300" aria-hidden="true"
                   data-color-preview style="background-color: var(--color-{{ $currentColor }});"></span>
             <select id="expcat-color" name="color" class="select select-bordered select-sm w-full"
-                    onchange="this.previousElementSibling.style.backgroundColor='var(--color-'+this.value+')'">
+                    data-color-preview>
                 @foreach ($colorOptions as $tone => $label)
                     <option value="{{ $tone }}" @selected($currentColor === $tone)>{{ $label }}</option>
                 @endforeach

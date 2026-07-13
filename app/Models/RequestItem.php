@@ -66,4 +66,9 @@ class RequestItem extends Model {
     public function formTemplate(): BelongsTo {
         return $this->belongsTo(FormTemplate::class, 'form_template_id');
     }
+
+    /** @return BelongsTo<SlaContract, $this> */
+    public function slaContract(): BelongsTo {
+        return $this->belongsTo(SlaContract::class, 'sla_contract_id');
+    }
 }

@@ -419,7 +419,7 @@
                                 <div class="shrink-0">
                                     @if ($status === \App\Enums\Licensing\ModuleStatus::Active)
                                         <button type="button" class="btn btn-sm btn-outline btn-warning"
-                                                onclick="document.getElementById('{{ $dialogId }}').showModal()">
+                                                data-open-dialog="{{ $dialogId }}">
                                             {{ __('Deaktivieren') }}
                                         </button>
                                         <dialog id="{{ $dialogId }}" class="modal">
@@ -438,7 +438,7 @@
                                                               placeholder="{{ __('Interne Begründung (optional)') }}"></textarea>
                                                     <div class="flex justify-end gap-2">
                                                         <button type="button" class="btn btn-sm btn-ghost"
-                                                                onclick="document.getElementById('{{ $dialogId }}').close()">{{ __('Abbrechen') }}</button>
+                                                                data-entry-modal-close>{{ __('Abbrechen') }}</button>
                                                         <button type="submit" class="btn btn-sm btn-warning">{{ __('Deaktivieren') }}</button>
                                                     </div>
                                                 </form>

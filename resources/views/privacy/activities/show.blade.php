@@ -67,7 +67,7 @@
                 <div class="flex items-center justify-between">
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Neue Version anlegen') }}</h2>
                     <x-icon-btn icon="add" tone="primary" size="sm"
-                                onclick="document.getElementById('dlg-activity-version').showModal()" show-label>{{ __('Neue Version') }}</x-icon-btn>
+                                data-open-dialog="dlg-activity-version" show-label>{{ __('Neue Version') }}</x-icon-btn>
                 </div>
             </x-card>
 

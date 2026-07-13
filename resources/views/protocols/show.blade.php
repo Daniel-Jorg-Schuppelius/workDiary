@@ -25,7 +25,7 @@
     <x-page-toolbar>
         <x-slot:title>{{ $protocol->title }}</x-slot:title>
         <x-slot:subtitle>
-            {{ $protocol->type->label() }} · {{ \App\Support\EntityType::label($protocol->subject_type) }}@if ($subjectLabel !== null): {{ $subjectLabel }}@endif
+            <x-term :glossary="$protocol->type === \App\Enums\Protocol\ProtocolType::Acceptance ? 'abnahme' : null">{{ $protocol->type->label() }}</x-term> · {{ \App\Support\EntityType::label($protocol->subject_type) }}@if ($subjectLabel !== null): {{ $subjectLabel }}@endif
         </x-slot:subtitle>
         <x-slot:actions>
             <x-status-badge size="sm">{{ $protocol->status->label() }}</x-status-badge>
@@ -63,7 +63,8 @@
                     <x-detail-grid.row :label="__('Temperatur (min/max)')" :value="$weather->temp_min . ' / ' . $weather->temp_max . ' °C'" />
                     <x-detail-grid.row :label="__('Niederschlag')" :value="$weather->precipitation_mm . ' mm'" />
                     <x-detail-grid.row :label="__('Windspitze')" :value="$weather->wind_gust_kmh . ' km/h'" />
-                    <x-detail-grid.row :label="__('Quelle')" :value="$weather->provider . ' · ' . $weather->fetched_at?->fdatetime()" />
+                    {{-- Provider-Label statt roher Kennung; beim DWD zugleich der CC-BY-Quellenvermerk (A7/MVP-131). --}}
+                    <x-detail-grid.row :label="__('Quelle')" :value="\App\Support\Trans::or('weather.providers.' . $weather->provider, $weather->provider) . ' · ' . $weather->fetched_at?->fdatetime()" />
                 </x-detail-grid>
             @else
                 <div class="flex items-center justify-between gap-2">

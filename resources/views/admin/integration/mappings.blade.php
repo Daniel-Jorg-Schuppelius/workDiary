@@ -7,13 +7,13 @@
     <x-slot:actions>
         <a href="{{ route('admin.integration.inbox') }}" class="btn btn-sm btn-outline">{{ __('Zur Inbox') }}</a>
         <form method="GET" action="{{ route('admin.integration.mappings.index') }}" class="flex items-center gap-2">
-            <select name="plugin" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="plugin" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($filters['plugin'] === 'all')>{{ __('Alle Quellen') }}</option>
                 @foreach ($plugins as $p)
                     <option value="{{ $p }}" @selected($filters['plugin'] === $p)>{{ $p }}</option>
                 @endforeach
             </select>
-            <select name="type" class="select select-sm select-bordered" onchange="this.form.submit()">
+            <select name="type" class="select select-sm select-bordered" data-autosubmit>
                 <option value="all" @selected($filters['type'] === 'all')>{{ __('Alle Typen') }}</option>
                 @foreach ($types as $t)
                     <option value="{{ $t }}" @selected($filters['type'] === $t)>{{ \App\Support\Trans::or('integration.external_type.' . $t, $t) }}</option>
@@ -66,7 +66,7 @@
                                 <td class="text-xs text-base-content/60">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</td>
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('admin.integration.mappings.destroy', $ref) }}"
-                                          onsubmit="return confirm(@js(__('Diese Verknüpfung wirklich lösen?')));">
+                                          data-confirm-dialog data-confirm-message="{{ __('Diese Verknüpfung wirklich lösen?') }}">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-xs btn-ghost text-error">{{ __('Lösen') }}</button>
                                     </form>

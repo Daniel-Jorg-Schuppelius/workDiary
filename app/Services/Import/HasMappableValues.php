@@ -15,8 +15,8 @@ namespace App\Services\Import;
 /**
  * Capability-Interface (Rang 58, Muster InboxFirstSpec): Specs mit einer
  * Tag-/Kategorie-Spalte deklarieren sie hierüber — die Preflight sammelt
- * unbekannte Quellwerte, das Mapping-Formular ordnet sie zu, der Import
- * wendet sie an (nie Blind-Neuanlage).
+ * unbekannte Quellwerte, das Mapping-Formular ordnet sie zu (Tag oder
+ * Klassifikation, A13), der Import wendet sie an (nie Blind-Neuanlage).
  */
 interface HasMappableValues {
     /** Kanonischer Spaltenname der Mehrfachwerte (z. B. 'tags'). */
@@ -28,4 +28,12 @@ interface HasMappableValues {
      * @return list<string>
      */
     public function splitMappableValues(?string $raw): array;
+
+    /**
+     * Unbekannte Werte eines Rohwerts (weder Mapping noch Tag-Namens- oder
+     * Klassifikations-Code-Treffer) — Datengrundlage des Mapping-Formulars.
+     *
+     * @return list<string>
+     */
+    public function unresolvedMappableValues(\App\Models\Organization $organization, ?string $raw, string $entity): array;
 }

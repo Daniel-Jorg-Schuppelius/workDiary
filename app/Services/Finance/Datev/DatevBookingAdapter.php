@@ -41,7 +41,7 @@ final class DatevBookingAdapter {
     /**
      * Erzeugt die DATEV-V700-CSV als String.
      *
-     * @param  list<array{amount: float, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string}>  $rows
+     * @param  list<array{amount: float, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}>  $rows
      */
     public function generate(DatevBookingBatch $batch, DatevBookingConfig $config, array $rows): string {
         FinancialFormatsSupport::ensureAvailable();
@@ -137,8 +137,10 @@ final class DatevBookingAdapter {
      * Baut eine DATEV-Buchungszeile (DataLine) mit allen relevanten Feldern —
      * inkl. BU-Schlüssel und Festschreibung, die die Builder-Convenience
      * {@see BookingDocumentBuilder::addSimpleBooking()} nicht setzt.
+     * MVP-334: Storno-Übergaben tragen das Generalumkehr-Kennzeichen
+     * (EXTF-Feld 118 „Generalumkehr (GU)" = 1) — DATEV kehrt die Buchung um.
      *
-     * @param  array{amount: float, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string}  $row
+     * @param  array{amount: float, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}  $row
      */
     private function buildLine(
         BookingBatchHeaderLine $header,
@@ -166,6 +168,9 @@ final class DatevBookingAdapter {
         $set(F::Belegfeld1, $this->clip($row['document_ref'], 36));
         $set(F::Buchungstext, $this->clip($row['text'], 60));
         $set(F::Festschreibung, $batch->finalized_locked ? '1' : '0');
+        if (($row['is_reversal'] ?? false) === true) {
+            $set(F::Generalumkehr, '1');
+        }
 
         return new DataLine($values, ';', '"');
     }

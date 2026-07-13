@@ -18,6 +18,7 @@ use App\Models\{Customer, EntryType, User};
 use App\Services\Reporting\EntryTypeAnalysisReportBuilder;
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -73,7 +74,13 @@ class EntryTypeAnalysisReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'reportUsers' => User::query()->orderBy('name')->get(['id', 'name']),
+            // Mandantengrenze: User hat KEINEN globalen OrganizationScope —
+            // ohne expliziten Org-Filter listete das Dropdown User ALLER
+            // Organisationen (Tenant-Leak, Bauturbo A17).
+            'reportUsers' => User::query()
+                ->where('organization_id', Auth::user()?->organization_id)
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'entryTypes' => EntryType::query()->ordered()->get(['id', 'label']),
             'customerId' => $customerId,
             'userId' => $userId,

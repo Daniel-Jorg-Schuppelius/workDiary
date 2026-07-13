@@ -40,10 +40,17 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
-        // Wetterprovider (Feature 062): Open-Meteo über Guzzle; Tests binden
-        // einen MockHandler-Client. Providerneutral über das Interface.
+        // Wetterprovider (Feature 062): Auswahl je Organisation über das
+        // Setting `weather.provider` (Open-Meteo als Default, DWD-Open-Data
+        // amtlich; Bauturbo A7/MVP-131). Tests binden einen MockHandler-
+        // Client. Providerneutral über das Interface — Aufrufer, die org-
+        // abhängig auflösen wollen, müssen den Org-Kontext VOR der
+        // Container-Auflösung binden (vgl. FetchProtocolWeatherJob).
         $this->app->bind(\App\Services\Weather\Contracts\WeatherProvider::class, static function (): \App\Services\Weather\Contracts\WeatherProvider {
-            return new \App\Services\Weather\OpenMeteoProvider(new \GuzzleHttp\Client);
+            return match (\App\Support\Setting::get('weather.provider', 'open-meteo')) {
+                'dwd' => new \App\Services\Weather\DwdProvider(new \GuzzleHttp\Client),
+                default => new \App\Services\Weather\OpenMeteoProvider(new \GuzzleHttp\Client),
+            };
         });
 
         // E-Mail-Eingang (Feature 056): IMAP-Transport über webklex/php-imap;
@@ -485,6 +492,12 @@ class AppServiceProvider extends ServiceProvider {
         // Prüftermine: update-Ability für die Einladung externer Prüfer (MVP-290).
         Gate::policy(\App\Models\AssetCompliance\AssetInspectionSchedule::class, \App\Policies\AssetCompliance\AssetInspectionSchedulePolicy::class);
         Gate::policy(\App\Models\ServiceQueue::class, \App\Policies\ServiceQueuePolicy::class);
+        // Servicekatalog (Feature 065, MVP-154): view = Ticket-Sicht, manage = service_catalog.manage.
+        Gate::policy(\App\Models\RequestItem::class, \App\Policies\RequestItemPolicy::class);
+        // Problem-Management (Feature 065, MVP-156): view = Ticket-Sicht, manage = service_desk.problem.manage.
+        Gate::policy(\App\Models\Problem::class, \App\Policies\ProblemPolicy::class);
+        // Change-/CAB-Management (Feature 065, MVP-157): view = Ticket-Sicht, manage = service_desk.change.manage.
+        Gate::policy(\App\Models\Change::class, \App\Policies\ChangePolicy::class);
         Gate::policy(\App\Models\Chat\Channel::class, \App\Policies\Chat\ChannelPolicy::class);
         Gate::policy(\App\Models\Chat\Message::class, \App\Policies\Chat\MessagePolicy::class);
         Gate::policy(\App\Models\Whistleblowing\WhistleblowingCase::class, \App\Policies\WhistleblowingCasePolicy::class);
@@ -856,5 +869,7 @@ class AppServiceProvider extends ServiceProvider {
         // erhalten. Der Widget-Loop bleibt für nicht-überlappende Widgets (z. B. Lesezeichen).
         $registry->register($this->app->make(\App\Dashboard\Widgets\BookmarksWidget::class));
         $registry->register($this->app->make(\App\Dashboard\Widgets\DataProtectionWidget::class));
+        // Aufgabencenter-Kachel (Feature 041/MVP-058, nachgezogen als B3/MVP-344).
+        $registry->register($this->app->make(\App\Dashboard\Widgets\OperationsTasksWidget::class));
     }
 }

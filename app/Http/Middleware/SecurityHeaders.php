@@ -40,18 +40,23 @@ class SecurityHeaders {
     /**
      * script-src je nach Konfiguration: streng (Nonce) oder kompatibel
      * (unsafe-inline, bis alle Inline-Scripts produktiv per Browser verifiziert
-     * wurden). 'unsafe-eval' bleibt immer (Alpine.js Standard-Build).
+     * wurden). 'unsafe-eval' hängt am Alpine-Build: der Standard-Build braucht
+     * es, der @alpinejs/csp-Build nicht — Stufe 2 (security.csp_alpine_csp_build
+     * / ALPINE_CSP_BUILD) entfernt es, an DIESELBE Bedingung gekoppelt wie der
+     * Vite-Build-Switch (vite.config.js). Nie hart entfernen, solange der
+     * Standard-Build ausgeliefert wird.
      */
     private function scriptSrc(): string {
+        // Stufe 2: Alpine-CSP-Build aktiv → kein eval mehr nötig.
+        $eval = config('security.csp_alpine_csp_build', false) ? '' : " 'unsafe-eval'";
+
         $nonce = \Illuminate\Support\Facades\Vite::cspNonce();
         if (config('security.csp_script_nonce', false) && is_string($nonce) && $nonce !== '') {
-            // Stufe 1: Nonce ersetzt 'unsafe-inline'. 'unsafe-eval' bleibt, solange
-            // Alpine im Standard-Build läuft. Beim Wechsel auf @alpinejs/csp (Stufe 2)
-            // kann 'unsafe-eval' hier ebenfalls entfernt werden.
-            return "script-src 'self' 'nonce-{$nonce}' 'unsafe-eval'";
+            // Stufe 1: Nonce ersetzt 'unsafe-inline'.
+            return "script-src 'self' 'nonce-{$nonce}'" . $eval;
         }
 
-        return "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+        return "script-src 'self' 'unsafe-inline'" . $eval;
     }
 
     private function buildCsp(Request $request): string {

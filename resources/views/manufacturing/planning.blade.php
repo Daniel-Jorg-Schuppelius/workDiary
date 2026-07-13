@@ -12,7 +12,7 @@
         <form method="GET" action="{{ route('manufacturing-planning.index') }}" class="flex flex-wrap items-end gap-3">
             <div class="fieldset min-w-0 grow">
                 <label class="fieldset-label" for="plan-article">{{ __('Artikel') }}</label>
-                <select id="plan-article" name="article" class="select select-sm select-bordered w-full" onchange="this.form.submit()">
+                <select id="plan-article" name="article" class="select select-sm select-bordered w-full" data-autosubmit>
                     @foreach ($articles as $a)
                         <option value="{{ $a->sqid }}" @selected($article && $article->id === $a->id)>{{ $a->name }}</option>
                     @endforeach

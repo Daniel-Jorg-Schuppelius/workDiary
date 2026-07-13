@@ -88,7 +88,8 @@ class ImportController extends Controller {
         $organization = $this->currentOrganization();
         $data = $request->validate([
             'entity' => ['required', \Illuminate\Validation\Rule::enum(ImportEntity::class)],
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
+            // A13: neben CSV auch Excel (.xlsx) — gleiches Größenlimit, ein Wizard-Pfad.
+            'file' => ['required', 'file', 'mimes:csv,txt,xlsx', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
             'match_policy' => ['nullable', 'in:auto_create,inbox_first'],
         ]);
         $entity = ImportEntity::from($data['entity']);
@@ -128,20 +129,36 @@ class ImportController extends Controller {
             ->withQueryString();
 
         // Rang 58: Tag-Auswahl fürs Wert-Mapping-Formular.
-        $tagOptions = $import->unresolved_values !== null && $import->unresolved_values !== []
+        $hasPending = $import->unresolved_values !== null && $import->unresolved_values !== [];
+        $tagOptions = $hasPending
             ? \App\Models\Tag::query()->where('organization_id', $import->organization_id)->orderBy('name')->get(['id', 'name'])
             : collect();
+
+        // A13: Klassifikations-Auswahl (effektiver Katalog je Domäne) — nur für
+        // Entitäten, deren Zielmodell Klassifikationen trägt.
+        $classificationOptions = [];
+        if ($hasPending && $import->entity->supportsClassifications()) {
+            $resolver = app(\App\Services\Classification\ClassificationResolver::class);
+            foreach (\App\Enums\Classification\ClassificationDomain::cases() as $domain) {
+                $list = $resolver->list($import->organization_id, $domain);
+                if ($list->isNotEmpty()) {
+                    $classificationOptions[$domain->value] = $list;
+                }
+            }
+        }
 
         return view('admin.imports.show', [
             'run' => $import,
             'errors' => $errors,
             'tagOptions' => $tagOptions,
+            'classificationOptions' => $classificationOptions,
         ]);
     }
 
     /**
-     * Wert-Mapping (Rang 58): unbekannte Tag-/Kategorie-Quellwerte zuordnen —
-     * bestehendes Tag, neu anlegen oder ignorieren. Persistiert je Org +
+     * Wert-Mapping (Rang 58, A13): unbekannte Tag-/Kategorie-Quellwerte
+     * zuordnen — bestehendes Tag, neues Tag, Klassifikation (nur Entitäten
+     * mit Klassifikations-Trägerschaft) oder ignorieren. Persistiert je Org +
      * Entität (import_value_mappings), Wiederholimporte lösen automatisch auf.
      */
     public function mapping(Request $request, ImportRun $import): RedirectResponse {
@@ -151,8 +168,9 @@ class ImportController extends Controller {
         $data = $request->validate([
             'mappings' => ['required', 'array'],
             'mappings.*.value' => ['required', 'string', 'max:191'],
-            'mappings.*.action' => ['required', 'in:tag,new,ignore'],
+            'mappings.*.action' => ['required', 'in:tag,new,ignore,classification'],
             'mappings.*.tag_id' => ['nullable', 'integer'],
+            'mappings.*.classification_id' => ['nullable', 'string', 'max:32'],
         ]);
 
         $pendingColumn = array_key_first((array) $import->unresolved_values) ?? 'tags';
@@ -166,6 +184,7 @@ class ImportController extends Controller {
             }
 
             $tagId = null;
+            $classificationId = null;
             $kind = \App\Models\ImportValueMapping::KIND_IGNORE;
             if ($entry['action'] === 'new') {
                 $tagId = \App\Models\Tag::findOrCreateByName($value, is_int(Auth::id()) ? Auth::id() : null)->id;
@@ -180,6 +199,22 @@ class ImportController extends Controller {
                 }
                 $tagId = $tag->id;
                 $kind = \App\Models\ImportValueMapping::KIND_TAG;
+            } elseif ($entry['action'] === 'classification') {
+                // A13: nur für Entitäten, deren Zielmodell Klassifikationen
+                // trägt; org-gescoped (eigene + Plattform-Defaults, aktiv).
+                if (! $import->entity->supportsClassifications()) {
+                    continue;
+                }
+                $classification = \App\Models\Classification::query()
+                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\Classification::class, $entry['classification_id'] ?? null) ?? 0)
+                    ->where('active', true)
+                    ->where(fn ($q) => $q->whereNull('organization_id')->orWhere('organization_id', $import->organization_id))
+                    ->first();
+                if ($classification === null) {
+                    continue;
+                }
+                $classificationId = $classification->id;
+                $kind = \App\Models\ImportValueMapping::KIND_CLASSIFICATION;
             }
 
             \App\Models\ImportValueMapping::query()->updateOrCreate(
@@ -188,7 +223,7 @@ class ImportController extends Controller {
                     'entity' => $import->entity->value,
                     'source_value' => $normalized,
                 ],
-                ['target_kind' => $kind, 'tag_id' => $tagId],
+                ['target_kind' => $kind, 'tag_id' => $tagId, 'classification_id' => $classificationId],
             );
 
             $pending = $pending->reject(fn (string $p): bool => \App\Models\ImportValueMapping::normalize($p) === $normalized)->values();

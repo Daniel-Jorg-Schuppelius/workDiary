@@ -32,7 +32,7 @@
 
         <form method="GET" action="{{ route('legacy.archive.week') }}" class="flex items-center gap-2 ml-2">
             <input type="week" name="week_date" value="{{ $selectedWeek ?? $monday->format('o-\\WW') }}"
-                   class="input input-bordered input-sm" onchange="this.form.submit()">
+                   class="input input-bordered input-sm" data-autosubmit>
         </form>
 
         <span class="ml-3 font-['Space_Grotesk'] text-base-content">

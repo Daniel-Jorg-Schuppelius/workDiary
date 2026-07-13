@@ -11,10 +11,12 @@
 namespace Tests\Feature\Privacy;
 
 use App\Models\User;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
 use Tests\TestCase;
 
 class PrivacyTokenRevokeTest extends TestCase {
@@ -30,7 +32,7 @@ class PrivacyTokenRevokeTest extends TestCase {
 
         $this->actingAs($user)
             ->from(route('admin.privacy.index'))
-            ->delete(route('admin.privacy.tokens.destroy', ['id' => $tokenId]))
+            ->delete(route('admin.privacy.tokens.destroy', ['id' => Sqid::encode(PersonalAccessToken::class, $tokenId)]))
             ->assertForbidden();
     }
 
@@ -41,7 +43,7 @@ class PrivacyTokenRevokeTest extends TestCase {
 
         $this->actingAs($admin)
             ->from(route('admin.privacy.index'))
-            ->delete(route('admin.privacy.tokens.destroy', ['id' => $tokenId]))
+            ->delete(route('admin.privacy.tokens.destroy', ['id' => Sqid::encode(PersonalAccessToken::class, $tokenId)]))
             ->assertRedirect(route('admin.privacy.index'));
 
         $this->assertDatabaseMissing('personal_access_tokens', ['id' => $tokenId]);
@@ -59,7 +61,7 @@ class PrivacyTokenRevokeTest extends TestCase {
 
         $this->actingAs($admin)
             ->from(route('admin.privacy.index'))
-            ->delete(route('admin.privacy.tokens.destroy', ['id' => $tokenId]))
+            ->delete(route('admin.privacy.tokens.destroy', ['id' => Sqid::encode(PersonalAccessToken::class, $tokenId)]))
             ->assertNotFound();
 
         $this->assertDatabaseHas('personal_access_tokens', ['id' => $tokenId]);

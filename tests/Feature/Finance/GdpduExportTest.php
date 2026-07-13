@@ -10,8 +10,11 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Expense\ExpenseStatus;
+use App\Enums\Finance\{AllocationKind, TransactionDirection};
 use App\Enums\User\Permission;
-use App\Models\{Customer, GobdExport, Invoice, InvoiceItem, Organization, Project, TimeEntry, User};
+use App\Models\{Customer, Expense, ExpenseCategory, GobdExport, Invoice, InvoiceItem, Organization, Project, TimeEntry, User};
+use App\Models\Finance\{BankStatement, BankTransaction, DatevBookingBatch, PaymentAllocation};
 use App\Services\Finance\GdpduExportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -263,5 +266,295 @@ final class GdpduExportTest extends TestCase {
             ->post(route('finance.gobd.export'), ['from' => '2025-01-01', 'to' => '2025-12-31', 'sections' => ['invoices']])
             ->assertOk()
             ->assertHeader('Content-Type', 'application/zip');
+    }
+
+    /** Exportierter (festgeschriebener) Stapel samt Quellposten-Snapshots. */
+    private function exportedBatch(Organization $org, int $batchNo, string $documentRef = 'RE-2025-100', bool $withReversal = true): DatevBookingBatch {
+        $batch = DatevBookingBatch::factory()->exported()->create([
+            'organization_id' => $org->id,
+            'batch_no' => $batchNo,
+            'period_from' => '2025-06-01',
+            'period_to' => '2025-06-30',
+            'selection_mode' => 'manual',
+            'booking_count' => $withReversal ? 2 : 1,
+            'total_amount' => '238.00',
+            'finalized_at' => Carbon::parse('2025-07-01 10:00:00'),
+            'file_hash' => hash('sha256', 'nachweis-' . $batchNo),
+        ]);
+        $batch->sources()->create([
+            'source_type' => Invoice::class,
+            'source_id' => 1,
+            'debtor_account' => '10001',
+            'revenue_account' => '8400',
+            'soll_haben' => 'S',
+            'amount' => '119.00',
+            'tax_key' => '3',
+            'document_ref' => $documentRef,
+            'is_reversal' => false,
+        ]);
+        if ($withReversal) {
+            $batch->sources()->create([
+                'source_type' => Invoice::class,
+                'source_id' => 2,
+                'debtor_account' => '10001',
+                'revenue_account' => '8400',
+                'soll_haben' => 'S',
+                'amount' => '119.00',
+                'tax_key' => '3',
+                'document_ref' => 'STORNO-' . $documentRef,
+                'is_reversal' => true,
+            ]);
+        }
+
+        return $batch;
+    }
+
+    private function bankTransaction(Organization $org, string $bookingDate, string $amount, TransactionDirection $direction = TransactionDirection::Credit, ?string $endToEndId = null, bool $isReversal = false): BankTransaction {
+        return BankTransaction::factory()->create([
+            'organization_id' => $org->id,
+            'bank_statement_id' => BankStatement::factory()->create(['organization_id' => $org->id])->id,
+            'booking_date' => $bookingDate,
+            'amount' => $amount,
+            'direction' => $direction,
+            'end_to_end_id' => $endToEndId,
+            'is_reversal' => $isReversal,
+        ]);
+    }
+
+    private function expense(Organization $org, ExpenseStatus $status, string $description, string $date = '2025-06-05', ?ExpenseCategory $category = null, ?User $approver = null): Expense {
+        $user = User::factory()->user()->create(['organization_id' => $org->id]);
+
+        return Expense::factory()->create([
+            'organization_id' => $org->id,
+            'user_id' => $user->id,
+            'expense_category_id' => ($category ?? ExpenseCategory::factory()->create(['organization_id' => $org->id]))->id,
+            'date' => $date,
+            'vendor' => 'Bahn AG',
+            'description' => $description,
+            'amount_net' => '100.00',
+            'tax_rate' => '19.00',
+            'status' => $status->value,
+            'decided_at' => $status === ExpenseStatus::Draft || $status === ExpenseStatus::Pending ? null : Carbon::parse('2025-06-06 08:00:00'),
+            'decided_by' => $status === ExpenseStatus::Draft || $status === ExpenseStatus::Pending ? null : $approver?->id,
+        ]);
+    }
+
+    public function test_booking_batch_sections_export_persisted_evidence_only(): void {
+        $batch = $this->exportedBatch($this->organization, 4242);
+        // Entwurfs-Stapel (nicht festgeschrieben) und Fremd-Stapel bleiben außen vor.
+        DatevBookingBatch::factory()->create([
+            'organization_id' => $this->organization->id,
+            'batch_no' => 7777,
+            'period_from' => '2025-06-01',
+            'period_to' => '2025-06-30',
+        ]);
+        $this->exportedBatch(Organization::factory()->create(), 9999, 'RE-FREMD-1');
+
+        $result = $this->service->build(
+            $this->organization,
+            Carbon::parse('2025-01-01'),
+            Carbon::parse('2025-12-31'),
+            ['booking_batches', 'booking_batch_items'],
+            $this->accountant,
+        );
+        $files = $this->unzip($result['content']);
+
+        // Stapel-Kopf: Nummer, Zeitraum, Export-Zeitpunkt, Nachweis-Hash, Teilauswahl (A15).
+        $head = $files['buchungsstapel.csv'];
+        $this->assertStringContainsString('4242', $head);
+        $this->assertStringContainsString('2025-06-01', $head);
+        $this->assertStringContainsString('2025-07-01 10:00:00', $head);
+        $this->assertStringContainsString((string) $batch->file_hash, $head);
+        $this->assertStringContainsString('manual', $head);
+        $this->assertStringContainsString('238,00', $head);
+        $this->assertStringNotContainsString('7777', $head);
+        $this->assertStringNotContainsString('9999', $head);
+
+        // Positionen: persistierter Buchungs-Snapshot inkl. GU-/Storno-Kennzeichen.
+        $items = $files['buchungsstapelpositionen.csv'];
+        $this->assertStringContainsString('RE-2025-100', $items);
+        $this->assertStringContainsString('STORNO-RE-2025-100', $items);
+        $this->assertStringContainsString('Invoice', $items);
+        $this->assertStringContainsString('8400', $items);
+        $this->assertStringContainsString('Ja', $items);   // Generalumkehr
+        $this->assertStringContainsString('Nein', $items);
+        $this->assertStringNotContainsString('RE-FREMD-1', $items);
+
+        // index.xml deklariert beide Tabellen im Beschreibungsstandard.
+        $this->assertStringContainsString('Buchungsstapel', $files['index.xml']);
+        $this->assertStringContainsString('buchungsstapel.csv', $files['index.xml']);
+        $this->assertStringContainsString('buchungsstapelpositionen.csv', $files['index.xml']);
+        $this->assertStringContainsString('Generalumkehr', $files['index.xml']);
+
+        // Revisionssicherer Nachweis schließt die neuen Sections ein.
+        $this->assertDatabaseHas('gobd_exports', [
+            'organization_id' => $this->organization->id,
+            'package_sha256' => $result['package_sha256'],
+            'record_count' => 3, // 1 Stapel-Kopf + 2 Positionen
+        ]);
+    }
+
+    public function test_payment_allocations_section_exports_allocations_with_chargeback(): void {
+        $invoice = $this->invoice($this->organization, 'RE-2025-777');
+
+        $tx = $this->bankTransaction($this->organization, '2025-06-10', '119.00', endToEndId: 'E2E-4711');
+        PaymentAllocation::factory()->create([
+            'organization_id' => $this->organization->id,
+            'bank_transaction_id' => $tx->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '119.00',
+            'kind' => AllocationKind::Payment,
+            'confirmed_at' => Carbon::parse('2025-06-11 09:00:00'),
+        ]);
+
+        // Rückläufer-Kompensation (MVP-334): negativer Betrag + Grund im note-Feld.
+        $returnTx = $this->bankTransaction($this->organization, '2025-06-20', '119.00', TransactionDirection::Debit, isReversal: true);
+        PaymentAllocation::factory()->create([
+            'organization_id' => $this->organization->id,
+            'bank_transaction_id' => $returnTx->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '-119.00',
+            'kind' => AllocationKind::Chargeback,
+            'note' => 'RET#1 Rueckgabe MD06',
+            'confirmed_at' => Carbon::parse('2025-06-21 09:00:00'),
+        ]);
+
+        // Außerhalb des Zeitraums, aufgehoben (unmatch) und fremde Organisation: nicht enthalten.
+        $lateTx = $this->bankTransaction($this->organization, '2026-02-10', '50.00');
+        PaymentAllocation::factory()->create([
+            'organization_id' => $this->organization->id,
+            'bank_transaction_id' => $lateTx->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '50.00',
+            'note' => 'AUSSERHALB-ZEITRAUM',
+        ]);
+        $unmatchedTx = $this->bankTransaction($this->organization, '2025-06-15', '10.00');
+        PaymentAllocation::factory()->create([
+            'organization_id' => $this->organization->id,
+            'bank_transaction_id' => $unmatchedTx->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '10.00',
+            'note' => 'GELOESTE-ZUORDNUNG',
+        ])->delete();
+        $foreignOrg = Organization::factory()->create();
+        PaymentAllocation::factory()->create([
+            'organization_id' => $foreignOrg->id,
+            'bank_transaction_id' => $this->bankTransaction($foreignOrg, '2025-06-12', '77.00')->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '77.00',
+            'note' => 'FREMD-ZUORDNUNG',
+        ]);
+
+        $result = $this->service->build(
+            $this->organization,
+            Carbon::parse('2025-01-01'),
+            Carbon::parse('2025-12-31'),
+            ['payment_allocations'],
+            $this->accountant,
+        );
+        $files = $this->unzip($result['content']);
+
+        $csv = $files['zahlungszuordnungen.csv'];
+        $this->assertStringContainsString('2025-06-10', $csv);
+        $this->assertStringContainsString('E2E-4711', $csv);
+        $this->assertStringContainsString('payment', $csv);
+        $this->assertStringContainsString('RE-2025-777', $csv);   // Gegenseite offener Posten
+        $this->assertStringContainsString('chargeback', $csv);
+        $this->assertStringContainsString('-119,00', $csv);       // Kompensation negativ
+        $this->assertStringContainsString('RET#1 Rueckgabe MD06', $csv);
+        $this->assertStringNotContainsString('AUSSERHALB-ZEITRAUM', $csv);
+        $this->assertStringNotContainsString('GELOESTE-ZUORDNUNG', $csv);
+        $this->assertStringNotContainsString('FREMD-ZUORDNUNG', $csv);
+
+        $this->assertStringContainsString('Zahlungszuordnungen', $files['index.xml']);
+        $this->assertStringContainsString('zahlungszuordnungen.csv', $files['index.xml']);
+    }
+
+    public function test_expenses_section_exports_only_approved_expenses(): void {
+        $approver = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $category = ExpenseCategory::factory()->create(['organization_id' => $this->organization->id, 'label' => 'Reisekosten']);
+
+        $approved = $this->expense($this->organization, ExpenseStatus::Approved, 'Fahrt Kundentermin', category: $category, approver: $approver);
+        $reimbursed = $this->expense($this->organization, ExpenseStatus::Reimbursed, 'ERSTATTET-SPESE', approver: $approver);
+        $reimbursed->forceFill(['reimbursed_at' => Carbon::parse('2025-06-30 12:00:00')])->save();
+
+        // Entwurf, offen, abgelehnt und fremde Organisation: nicht enthalten.
+        $this->expense($this->organization, ExpenseStatus::Draft, 'ENTWURF-SPESE');
+        $this->expense($this->organization, ExpenseStatus::Pending, 'OFFENE-SPESE');
+        $this->expense($this->organization, ExpenseStatus::Rejected, 'ABGELEHNTE-SPESE', approver: $approver);
+        $this->expense(Organization::factory()->create(), ExpenseStatus::Approved, 'FREMD-SPESE');
+
+        $result = $this->service->build(
+            $this->organization,
+            Carbon::parse('2025-01-01'),
+            Carbon::parse('2025-12-31'),
+            ['expenses'],
+            $this->accountant,
+        );
+        $files = $this->unzip($result['content']);
+
+        $csv = $files['spesen.csv'];
+        $this->assertStringContainsString('E-' . $approved->id, $csv); // Beleg-Nr. wie im DATEV-Export
+        $this->assertStringContainsString('Reisekosten', $csv);
+        $this->assertStringContainsString('Bahn AG', $csv);
+        $this->assertStringContainsString('Fahrt Kundentermin', $csv);
+        $this->assertStringContainsString('100,00', $csv);  // Netto
+        $this->assertStringContainsString('19,00', $csv);   // USt-Satz/-Betrag
+        $this->assertStringContainsString('119,00', $csv);  // Brutto
+        $this->assertStringContainsString('2025-06-06 08:00:00', $csv);          // Freigabe-Zeitpunkt
+        $this->assertStringContainsString((string) $approver->id, $csv);         // Freigabe-Person als ID
+        $this->assertStringContainsString('2025-06-30 12:00:00', $csv);          // Zahlungsstatus (Erstattung)
+        $this->assertStringNotContainsString('ENTWURF-SPESE', $csv);
+        $this->assertStringNotContainsString('OFFENE-SPESE', $csv);
+        $this->assertStringNotContainsString('ABGELEHNTE-SPESE', $csv);
+        $this->assertStringNotContainsString('FREMD-SPESE', $csv);
+
+        $this->assertStringContainsString('Spesen', $files['index.xml']);
+        $this->assertStringContainsString('spesen.csv', $files['index.xml']);
+    }
+
+    public function test_package_hash_is_reproducible_for_new_sections(): void {
+        $this->exportedBatch($this->organization, 4242);
+        $invoice = $this->invoice($this->organization, 'RE-2025-888');
+        PaymentAllocation::factory()->create([
+            'organization_id' => $this->organization->id,
+            'bank_transaction_id' => $this->bankTransaction($this->organization, '2025-06-10', '119.00')->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '119.00',
+            'confirmed_at' => Carbon::parse('2025-06-11 09:00:00'),
+        ]);
+        $this->expense($this->organization, ExpenseStatus::Approved, 'Fahrt Kundentermin');
+
+        $args = [
+            $this->organization,
+            Carbon::parse('2025-01-01'),
+            Carbon::parse('2025-12-31'),
+            ['booking_batches', 'booking_batch_items', 'payment_allocations', 'expenses'],
+            $this->accountant,
+        ];
+
+        $a = $this->service->build(...$args);
+        $b = $this->service->build(...$args);
+
+        $this->assertSame($a['package_sha256'], $b['package_sha256']);
+    }
+
+    public function test_preflight_warns_about_draft_booking_batches(): void {
+        DatevBookingBatch::factory()->create([
+            'organization_id' => $this->organization->id,
+            'batch_no' => 7777,
+            'period_from' => '2025-06-01',
+            'period_to' => '2025-06-30',
+        ]);
+
+        $preflight = $this->service->preflight($this->organization, Carbon::parse('2025-01-01'), Carbon::parse('2025-12-31'));
+
+        $this->assertContains((string) __('gobd.preflight.draft_batches', ['count' => 1]), $preflight['warnings']);
     }
 }

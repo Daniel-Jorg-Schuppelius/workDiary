@@ -17,7 +17,9 @@
     /** @var bool $canRevokeTokens */
     /** @var \Illuminate\Support\Collection $exports */
     /** @var \Illuminate\Support\Collection $supportAccesses */
+    /** @var array<int, array<string, mixed>> $integrations */
     /** @var \Illuminate\Database\Eloquent\Collection $auditActors */
+    /** @var bool $canViewIntegrations */
     /** @var bool $canViewExports */
     /** @var bool $canViewSupport */
     /** @var bool $canExportReport */
@@ -51,7 +53,10 @@
 >
     @if (! empty($canExportReport))
         <x-slot:actions>
-            <x-icon-btn icon="download" tone="primary" size="sm"
+            <x-icon-btn icon="picture_as_pdf" tone="primary" size="sm"
+                        :href="route('admin.privacy.report')"
+                        show-label>{{ __('Bericht (PDF)') }}</x-icon-btn>
+            <x-icon-btn icon="download" tone="ghost" size="sm"
                         :href="route('admin.privacy.export', ['format' => 'json'])"
                         show-label>{{ __('Bericht (JSON)') }}</x-icon-btn>
             <x-icon-btn icon="table_view" tone="ghost" size="sm"
@@ -221,7 +226,7 @@
                                     <td class="text-xs">{{ $token->expires_at ? \Carbon\CarbonImmutable::parse($token->expires_at)->translatedFormat('d.m.Y') : __('—') }}</td>
                                     @if ($canRevokeTokens)
                                         <td class="text-right">
-                                            <x-action-form :action="route('admin.privacy.tokens.destroy', ['id' => $token->id])"
+                                            <x-action-form :action="route('admin.privacy.tokens.destroy', ['id' => \App\Support\Sqid::encode(\Laravel\Sanctum\PersonalAccessToken::class, $token->id)])"
                                                   method="DELETE"
                                                   :confirm="__('Token wirklich widerrufen?')"
                                                   confirm-icon="key_off"
@@ -239,6 +244,68 @@
             @endif
         </div>
     </article>
+
+    {{-- §3.5 Externe Integrationen / Datenflüsse (MVP-327): Config-Dienste + org-aktive Plugins --}}
+    @if ($canViewIntegrations)
+        <article class="card border border-base-300 bg-base-100 shadow-sm" data-section="integrations">
+            <div class="card-body gap-3">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Externe Integrationen und Datenflüsse') }}</h2>
+                <p class="text-xs text-base-content/60">
+                    {{ __('Systemweite Dienste mit Datenabfluss sowie die in dieser Organisation aktivierten Plugins. Angezeigt werden nur Identität, Quelle und Status — niemals Zugangsdaten.') }}
+                </p>
+                <div class="overflow-x-auto">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>{{ __('Integration') }}</th>
+                                <th>{{ __('Quelle') }}</th>
+                                <th>{{ __('Daten, die abfließen') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Dokumentation') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($integrations as $integration)
+                                @php
+                                    $integrationStatus = (string) ($integration['status'] ?? 'not_configured');
+                                    $integrationStatusLabel = match ($integrationStatus) {
+                                        'active' => __('aktiv'),
+                                        'inactive' => __('inaktiv'),
+                                        default => __('nicht konfiguriert'),
+                                    };
+                                    $integrationStatusClass = $integrationStatus === 'active' ? 'badge-success' : 'badge-ghost';
+                                @endphp
+                                <tr>
+                                    <td class="font-medium">
+                                        {{ $integration['name'] }}
+                                        @if (($integration['type'] ?? '') === 'plugin')
+                                            <span class="badge badge-sm badge-outline badge-info">{{ __('Plugin') }}</span>
+                                        @endif
+                                    </td>
+                                    <td class="font-mono text-xs text-base-content/70">{{ $integration['source'] }}</td>
+                                    <td class="text-xs text-base-content/70">{{ $integration['data'] }}</td>
+                                    <td>
+                                        <span class="badge badge-outline {{ $integrationStatusClass }}">{{ $integrationStatusLabel }}</span>
+                                    </td>
+                                    <td class="text-xs">
+                                        @if (! empty($integration['docs_url']))
+                                            <a href="{{ $integration['docs_url'] }}" class="link link-primary" target="_blank" rel="noopener">{{ __('Anbieter-Doku') }}</a>
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <div class="rounded-box border border-base-300 bg-base-200 p-3 text-xs text-base-content/70">
+                    <p>{{ __('WorkDiary nutzt keine Tracking-, Analytics- oder Werbe-Dienste.') }}</p>
+                    <p>{{ __('Es findet keine produktübergreifende Auswertung von Kundendaten statt.') }}</p>
+                </div>
+            </div>
+        </article>
+    @endif
 
     {{-- §3.6 Mandantenexporte (letzte 20 Audit-Events mit Präfix tenant.export.*) --}}
     @if ($canViewExports)
@@ -340,10 +407,7 @@
 
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
-            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Folge-Sektionen') }}</h2>
-            <p class="text-sm text-base-content/70">
-                {{ __('Externe Integrationen und der DSGVO-PDF-Bericht folgen in separaten MVPs.') }}
-            </p>
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Dokumentation') }}</h2>
             <p class="text-sm text-base-content/70">
                 {{ __('Konzeptdokumente (Datenschutzseite-Konzept, Supportzugriff-Grundsätze, Rollen-Matrix) liegen im internen Architektur-Repository unter security/.') }}
             </p>

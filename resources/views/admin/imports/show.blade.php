@@ -87,12 +87,16 @@
         <div class="alert alert-error text-sm">{{ session('error') }}</div>
     @endif
 
-    {{-- Wert-Mapping (Rang 58): unbekannte Tag-/Kategorie-Quellwerte zuordnen. --}}
+    {{-- Wert-Mapping (Rang 58, A13): unbekannte Tag-/Kategorie-Quellwerte zuordnen. --}}
     @php($pendingValues = (array) (($run->unresolved_values ?? [])['tags'] ?? []))
+    @php($supportsClassifications = $classificationOptions !== [])
     @if ($pendingValues !== [])
         <x-card :title="__('Unbekannte Tags/Kategorien zuordnen')" icon="sell" :count="count($pendingValues)">
             <p class="mb-3 text-sm text-base-content/60">
                 {{ __('Diese Quellwerte sind weder gemappt noch als Tag bekannt. Entscheidungen werden je Organisation gemerkt — Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}
+                @if ($supportsClassifications)
+                    {{ __('Alternativ kann ein Wert einer Klassifikation des Katalogs zugeordnet werden.') }}
+                @endif
             </p>
             <form method="POST" action="{{ route('admin.imports.mapping', $run) }}" class="space-y-2">
                 @csrf
@@ -103,6 +107,9 @@
                         <select name="mappings[{{ $i }}][action]" class="select select-sm select-bordered">
                             <option value="new">{{ __('Als neues Tag anlegen') }}</option>
                             <option value="tag">{{ __('Bestehendem Tag zuordnen') }}</option>
+                            @if ($supportsClassifications)
+                                <option value="classification">{{ __('Klassifikation zuordnen') }}</option>
+                            @endif
                             <option value="ignore">{{ __('Ignorieren') }}</option>
                         </select>
                         <select name="mappings[{{ $i }}][tag_id]" class="select select-sm select-bordered">
@@ -111,6 +118,18 @@
                                 <option value="{{ $tag->id }}">{{ $tag->name }}</option>
                             @endforeach
                         </select>
+                        @if ($supportsClassifications)
+                            <select name="mappings[{{ $i }}][classification_id]" class="select select-sm select-bordered">
+                                <option value="">{{ __('– Klassifikation wählen –') }}</option>
+                                @foreach ($classificationOptions as $domainValue => $classifications)
+                                    <optgroup label="{{ \App\Enums\Classification\ClassificationDomain::from($domainValue)->label() }}">
+                                        @foreach ($classifications as $classification)
+                                            <option value="{{ $classification->sqid }}">{{ $classification->label }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
                 @endforeach
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Zuordnung speichern') }}</x-button>

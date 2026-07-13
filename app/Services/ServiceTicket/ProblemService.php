@@ -23,8 +23,13 @@ use Illuminate\Support\Facades\DB;
  * es gibt bewusst keinerlei Kopplungs-Code.
  */
 class ProblemService {
-    /** @var array<string, list<string>> */
-    private const TRANSITIONS = [
+    /**
+     * Einzige Wahrheit der Übergangsmatrix — die Problem-UI (MVP-156)
+     * leitet ihre Statusoptionen hieraus ab, statt sie zu duplizieren.
+     *
+     * @var array<string, list<string>>
+     */
+    public const TRANSITIONS = [
         'open' => ['analyzing', 'closed'],
         'analyzing' => ['known_error', 'resolved', 'open'],
         'known_error' => ['resolved'],

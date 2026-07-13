@@ -51,7 +51,7 @@
                     <td>
                         <div class="flex items-center gap-1">
                             @can('decide', $v)
-                                @if ($v->status === \App\Models\VacationStatus::Pending->value)
+                                @if ($v->status === VacationStatus::Pending)
                                     <x-action-form :action="route('vacations.approve', $v)" method="PATCH">
                                         <x-icon-btn icon="check" tone="success" type="submit" :label="__('Genehmigen')" />
                                     </x-action-form>

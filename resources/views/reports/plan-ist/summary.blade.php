@@ -24,6 +24,9 @@
         <x-slot:subtitle>{{ $from->fdate() }} – {{ $to->fdate() }}</x-slot:subtitle>
     </x-page-toolbar>
 
+    {{-- Dimension-Umschalter (A14 · MVP-333): Anwesenheit | Schicht | Projekt | Standort. --}}
+    @include('reports.plan-ist._dimensions')
+
     <x-card>
         <form method="GET" class="flex flex-wrap items-end gap-2">
             @if ($scope === 'team' && $teams->count() > 1)
