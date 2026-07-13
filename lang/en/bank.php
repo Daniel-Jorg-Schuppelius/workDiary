@@ -106,6 +106,14 @@ return [
             'target_not_found' => 'The allocation target was not found.',
         ],
     ],
+    // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    'split' => [
+        'title' => 'Resolve batch booking',
+        'return_title' => 'Batch direct debit return — process per single transaction',
+        'target' => 'Item',
+        'target_placeholder' => '— Select item —',
+        'no_match' => 'No matching item found',
+    ],
     // Lastschrift-Rückläufer-Workflow (MVP-334).
     'return' => [
         'badge' => 'Return',

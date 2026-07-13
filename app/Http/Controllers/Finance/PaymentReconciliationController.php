@@ -112,10 +112,26 @@ class PaymentReconciliationController extends Controller {
 
         $suggestions = [];
         $returnOrigins = [];
+        $splitSuggestions = [];
+        $detailReturnOrigins = [];
         foreach ($statement->transactions as $transaction) {
             if (! $transaction->match_status->isOpen()) {
                 continue;
             }
+
+            // Sammelbuchung (Toolkit-Folgepaket 2): je TransactionDetail einen
+            // Vorschlag; Sammel-Rücklastschriften (Details mit Rückgabegrund)
+            // laufen über die Rückläufer-Kompensation je Detail statt über
+            // den Split-Confirm.
+            if ($transaction->hasSplitDetails()) {
+                $detailReturnOrigins[$transaction->id] = $this->matchingService->suggestReturnOriginsForDetails($transaction);
+                if ($detailReturnOrigins[$transaction->id] === []) {
+                    $splitSuggestions[$transaction->id] = $this->matchingService->suggestSplitFor($transaction);
+                }
+
+                continue;
+            }
+
             $suggestions[$transaction->id] = $this->matchingService->suggestFor($transaction);
             // Rückläufer-Workflow (MVP-334): Kandidaten der ursprünglichen
             // Zuordnung für Storno-/Return-Umsätze vorschlagen.
@@ -128,8 +144,49 @@ class PaymentReconciliationController extends Controller {
             'statement' => $statement,
             'suggestions' => $suggestions,
             'returnOrigins' => $returnOrigins,
+            'splitSuggestions' => $splitSuggestions,
+            'detailReturnOrigins' => $detailReturnOrigins,
+            'splitTargets' => $splitSuggestions !== [] ? $this->splitTargetOptions() : [],
             'kinds' => AllocationKind::cases(),
         ]);
+    }
+
+    /**
+     * Kandidatenpool für die editierbaren Zeilen der Sammelbuchungs-Auflösung:
+     * offene Rechnungen und freigegebene, unerstattete Spesen (org-scoped über
+     * die Modell-Scopes — derselbe Pool, den der MatchingService durchsucht).
+     * Werte im Format `invoice:<sqid>` / `expense:<sqid>` für den bestehenden
+     * confirm-Mehrfach-Pfad.
+     *
+     * @return list<array{value: string, label: string}>
+     */
+    private function splitTargetOptions(): array {
+        $options = [];
+
+        $invoices = Invoice::query()
+            ->whereNotIn('status', [Invoice::STATUS_PAID, Invoice::STATUS_CANCELLED])
+            ->where('type', Invoice::TYPE_INVOICE)
+            ->orderBy('number')
+            ->get();
+        foreach ($invoices as $invoice) {
+            $options[] = [
+                'value' => 'invoice:' . $invoice->sqid,
+                'label' => $invoice->number . ' · ' . number_format((float) $invoice->total, 2, ',', '.'),
+            ];
+        }
+
+        $expenses = Expense::query()
+            ->where('status', \App\Enums\Expense\ExpenseStatus::Approved->value)
+            ->whereNull('reimbursed_at')
+            ->get();
+        foreach ($expenses as $expense) {
+            $options[] = [
+                'value' => 'expense:' . $expense->sqid,
+                'label' => \App\Support\EntityType::label(Expense::class) . ' #' . $expense->id . ' · ' . number_format((float) $expense->amount_gross, 2, ',', '.'),
+            ];
+        }
+
+        return $options;
     }
 
     /**

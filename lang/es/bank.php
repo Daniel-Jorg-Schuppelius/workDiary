@@ -106,6 +106,14 @@ return [
             'target_not_found' => 'No se encontró el destino de la asignación.',
         ],
     ],
+    // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    'split' => [
+        'title' => 'Desglosar asiento colectivo',
+        'return_title' => 'Devolución colectiva de adeudo — procesar por transacción individual',
+        'target' => 'Partida',
+        'target_placeholder' => '— Seleccionar partida —',
+        'no_match' => 'No se encontró ninguna partida',
+    ],
     // Lastschrift-Rückläufer-Workflow (MVP-334).
     'return' => [
         'badge' => 'Devolución',

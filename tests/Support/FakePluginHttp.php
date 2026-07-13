@@ -10,6 +10,7 @@
 
 namespace Tests\Support;
 
+use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Closure;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
@@ -80,22 +81,40 @@ class FakePluginHttp extends PluginHttpFactory {
     }
 
     public function client(string $pluginId, string $baseUrl): PluginApiClient {
-        $handler = HandlerStack::create(function (RequestInterface $request, array $options): PromiseInterface {
-            $this->recorded[] = ['request' => $request, 'options' => $options];
-
-            return Create::promiseFor($this->respondTo($request));
-        });
-
-        $client = new PluginApiClient($pluginId, $baseUrl, new GuzzleClient([
-            'base_uri' => $baseUrl,
-            'handler' => $handler,
-        ]));
+        $client = new PluginApiClient($pluginId, $baseUrl, $this->mockedGuzzle($baseUrl));
 
         // Tests sollen bei Retry-Pfaden (429/503) nicht real schlafen.
         $client->setBaseRetryDelay(0);
         $client->setMaxRetryDelay(0);
 
         return $client;
+    }
+
+    public function clientCredentialsGrant(string $pluginId, string $clientId, string $clientSecret, string $tokenUrl): OAuth2ClientCredentialsGrant {
+        $grant = $this->configureGrant(
+            new OAuth2ClientCredentialsGrant($clientId, $clientSecret, $tokenUrl, null, $this->mockedGuzzle($tokenUrl)),
+            $pluginId,
+        );
+
+        // Auch Token-Endpunkt-Retries (429/503) sollen nicht real schlafen.
+        $grant->setBaseRetryDelay(0);
+        $grant->setMaxRetryDelay(0);
+
+        return $grant;
+    }
+
+    /** Guzzle-Client gegen den aufzeichnenden Mock-Handler (Stubs siehe Klassen-Doku). */
+    protected function mockedGuzzle(string $baseUri): GuzzleClient {
+        $handler = HandlerStack::create(function (RequestInterface $request, array $options): PromiseInterface {
+            $this->recorded[] = ['request' => $request, 'options' => $options];
+
+            return Create::promiseFor($this->respondTo($request));
+        });
+
+        return new GuzzleClient([
+            'base_uri' => $baseUri,
+            'handler' => $handler,
+        ]);
     }
 
     protected function respondTo(RequestInterface $request): Psr7Response {

@@ -46,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property array<int, string>|null $extracted_refs
  * @property bool $is_reversal
  * @property string|null $return_reason
+ * @property list<array<string, mixed>>|null $transaction_details
  * @property string $fingerprint
  * @property MatchStatus $match_status
  * @property Carbon|null $created_at
@@ -78,6 +79,7 @@ class BankTransaction extends Model {
         'extracted_refs',
         'is_reversal',
         'return_reason',
+        'transaction_details',
         'fingerprint',
         'match_status',
     ];
@@ -95,6 +97,8 @@ class BankTransaction extends Model {
         'purpose' => 'encrypted',
         'extracted_refs' => 'array',
         'is_reversal' => 'boolean',
+        // PII (Namen/IBAN/Zweck je Detail) ⇒ verschlüsselt wie counterparty_*.
+        'transaction_details' => 'encrypted:array',
         'match_status' => MatchStatus::class,
     ];
 
@@ -123,5 +127,20 @@ class BankTransaction extends Model {
     /** Signierter Betrag aus Kontosicht (Haben +, Soll −). */
     public function signedAmount(): float {
         return $this->direction->sign() * (float) $this->amount;
+    }
+
+    /**
+     * Einzeltransaktionen der Sammelbuchung (Toolkit-Folgepaket 2). Der Import
+     * persistiert die Liste NUR bei mehreren TxDtls — sonst null.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function transactionDetails(): array {
+        return $this->transaction_details ?? [];
+    }
+
+    /** Sammelbuchung mit auflösbaren Einzeltransaktionen? */
+    public function hasSplitDetails(): bool {
+        return count($this->transaction_details ?? []) > 1;
     }
 }

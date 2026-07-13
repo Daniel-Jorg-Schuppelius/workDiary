@@ -12,52 +12,77 @@ declare(strict_types=1);
 
 namespace App\Services\Shipping;
 
+use APIToolkit\API\Authentication\OAuth2\OAuth2Token;
 use App\Models\CarrierConnection;
-use Closure;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\{Cache, Crypt};
+use InvalidArgumentException;
 
 /**
- * OAuth2-Access-Token-Cache der Carrier-Anbindungen (Feature 059, MVP-128):
- * UPS/FedEx vergeben kurzlebige Client-Credentials-Tokens (~4 h bzw. 60 min).
- * Der Cache hält sie je Organisation + Carrier + Umgebung (Sandbox/Prod) mit
- * Ablauf-Sicherheitsfenster; abgelegt wird verschlüsselt (APP_KEY), da
+ * Verschlüsselte OAuth2-Token-Ablage der Carrier-Anbindungen (Feature 059,
+ * MVP-128): UPS/FedEx vergeben kurzlebige Client-Credentials-Tokens (~4 h
+ * bzw. 60 min). Abgelegt wird je Organisation + Carrier + Umgebung
+ * (Sandbox/Prod) mit Ablauf-Sicherheitsfenster; verschlüsselt (APP_KEY), da
  * Cache-Stores (file/redis) sonst Klartext-Bearer-Tokens trügen.
  *
- * Hinweis Toolkit-first: das `php-api-toolkit` bietet derzeit nur einen
- * Authorization-Code-Grant — der Client-Credentials-Grant ist ein
- * Erweiterungskandidat (Klasse C, wie beim JTL-Cloud-Gateway dokumentiert);
- * bis zum Toolkit-Release lebt der Austausch bewusst in den Carrier-Plugins.
+ * Die Grant-Logik (Token holen, Ablauf-Leeway, 401 ⇒ verwerfen + genau ein
+ * Retry) lebt seit php-api-toolkit v2.3.3 im Toolkit
+ * ({@see \APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsAuthentication});
+ * diese Klasse ist nur noch der Storage darunter und dockt über den
+ * {@see CarrierConnectionTokenStore} an dessen Store-Interface an.
  */
 final class CarrierTokenCache {
-    /** Sicherheitsfenster: so viele Sekunden vor Ablauf gilt der Token als abgelaufen. */
+    /** Sicherheitsfenster: so viele Sekunden vor Ablauf fällt der Eintrag aus dem Cache. */
     private const EXPIRY_LEEWAY_SECONDS = 60;
 
-    /**
-     * Liefert den gecachten Access-Token oder holt über `$fetch` einen neuen.
-     *
-     * @param  Closure(): array{access_token: string, expires_in: int}  $fetch
-     */
-    public function remember(CarrierConnection $connection, Closure $fetch): string {
+    /** Liefert den abgelegten Token oder null (nichts gecacht, abgelaufen oder nicht entschlüsselbar). */
+    public function get(CarrierConnection $connection): ?OAuth2Token {
         $key = $this->key($connection);
 
         $cached = Cache::get($key);
-        if (is_string($cached) && $cached !== '') {
-            try {
-                return Crypt::decryptString($cached);
-            } catch (DecryptException) {
-                Cache::forget($key); // z. B. APP_KEY-Rotation → frisch holen
-            }
+        if (! is_string($cached) || $cached === '') {
+            return null;
         }
 
-        ['access_token' => $token, 'expires_in' => $expiresIn] = $fetch();
+        try {
+            $data = json_decode(Crypt::decryptString($cached), true);
+        } catch (DecryptException) {
+            Cache::forget($key); // z. B. APP_KEY-Rotation → frisch holen
 
-        Cache::put($key, Crypt::encryptString($token), max(self::EXPIRY_LEEWAY_SECONDS, $expiresIn - self::EXPIRY_LEEWAY_SECONDS));
+            return null;
+        }
 
-        return $token;
+        if (! is_array($data)) {
+            return null;
+        }
+
+        try {
+            /** @var array<string, mixed> $data */
+            return OAuth2Token::fromArray($data);
+        } catch (InvalidArgumentException) {
+            return null;
+        }
     }
 
-    /** Verwirft den gecachten Token (z. B. nach einem 401 des Carriers). */
+    /** Legt einen frischen Token verschlüsselt ab (TTL bis Ablauf minus Sicherheitsfenster). */
+    public function put(CarrierConnection $connection, OAuth2Token $token): void {
+        // FedEx liefert `token_type` klein ("bearer"); für byte-gleiche
+        // Authorization-Header wie bisher auf "Bearer" normalisieren.
+        if ($token->getTokenType() !== 'Bearer' && strcasecmp($token->getTokenType(), 'Bearer') === 0) {
+            $token = new OAuth2Token($token->getAccessToken(), $token->getRefreshToken(), $token->getExpiresAt(), $token->getScope(), 'Bearer');
+        }
+
+        $expiresAt = $token->getExpiresAt();
+        $expiresIn = $expiresAt !== null ? $expiresAt->getTimestamp() - time() : 0;
+
+        Cache::put(
+            $this->key($connection),
+            Crypt::encryptString((string) json_encode($token->toArray())),
+            max(self::EXPIRY_LEEWAY_SECONDS, $expiresIn - self::EXPIRY_LEEWAY_SECONDS),
+        );
+    }
+
+    /** Verwirft den abgelegten Token (z. B. nach einem 401 des Carriers). */
     public function forget(CarrierConnection $connection): void {
         Cache::forget($this->key($connection));
     }

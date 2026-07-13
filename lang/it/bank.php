@@ -106,6 +106,14 @@ return [
             'target_not_found' => 'Destinazione dell’assegnazione non trovata.',
         ],
     ],
+    // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    'split' => [
+        'title' => 'Scomponi registrazione cumulativa',
+        'return_title' => 'Storno cumulativo di addebito — elabora per singola transazione',
+        'target' => 'Posta',
+        'target_placeholder' => '— Seleziona posta —',
+        'no_match' => 'Nessuna posta trovata',
+    ],
     // Lastschrift-Rückläufer-Workflow (MVP-334).
     'return' => [
         'badge' => 'Storno',

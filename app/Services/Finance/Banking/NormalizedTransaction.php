@@ -37,5 +37,13 @@ final class NormalizedTransaction {
         public readonly bool $isReversal,
         /** ISO-20022-Rückgabegrund (RtrInf/Rsn/Cd, z. B. AC04) — MVP-334. */
         public readonly ?string $returnReason = null,
+        /**
+         * Einzeltransaktionen einer Sammelbuchung (Toolkit-Folgepaket 2):
+         * NUR gefüllt, wenn die CAMT-Buchung mehrere TxDtls trägt — die
+         * Buchung selbst bleibt EINE Transaktion (Kontoauszugs-Treue).
+         *
+         * @var list<NormalizedTransactionDetail>
+         */
+        public readonly array $details = [],
     ) {}
 }

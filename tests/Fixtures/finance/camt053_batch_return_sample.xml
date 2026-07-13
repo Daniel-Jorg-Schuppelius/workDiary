@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+    <BkToCstmrStmt>
+        <GrpHdr>
+            <MsgId>TEST-CAMT-053-BATCH-RET-0001</MsgId>
+            <CreDtTm>2026-06-30T23:59:00+02:00</CreDtTm>
+        </GrpHdr>
+        <Stmt>
+            <Id>STMT-BATCH-RET-0001</Id>
+            <Acct>
+                <Id>
+                    <IBAN>DE89370400440532013000</IBAN>
+                </Id>
+                <Ccy>EUR</Ccy>
+            </Acct>
+            <Bal>
+                <Tp><CdOrPrtry><Cd>OPBD</Cd></CdOrPrtry></Tp>
+                <Amt Ccy="EUR">1269.00</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <Dt><Dt>2026-06-01</Dt></Dt>
+            </Bal>
+            <Bal>
+                <Tp><CdOrPrtry><Cd>CLBD</Cd></CdOrPrtry></Tp>
+                <Amt Ccy="EUR">1050.00</Amt>
+                <CdtDbtInd>CRDT</CdtDbtInd>
+                <Dt><Dt>2026-06-30</Dt></Dt>
+            </Bal>
+            <Ntry>
+                <NtryRef>0001</NtryRef>
+                <Amt Ccy="EUR">219.00</Amt>
+                <CdtDbtInd>DBIT</CdtDbtInd>
+                <Sts><Cd>BOOK</Cd></Sts>
+                <BookgDt><Dt>2026-06-10</Dt></BookgDt>
+                <ValDt><Dt>2026-06-10</Dt></ValDt>
+                <NtryDtls>
+                    <TxDtls>
+                        <Refs>
+                            <EndToEndId>RE-2026-0201</EndToEndId>
+                            <MndtId>MNDT-0201</MndtId>
+                        </Refs>
+                        <Amt Ccy="EUR">119.00</Amt>
+                        <CdtDbtInd>DBIT</CdtDbtInd>
+                        <RltdPties>
+                            <Cdtr>
+                                <Nm>Muster GmbH</Nm>
+                            </Cdtr>
+                            <CdtrAcct>
+                                <Id><IBAN>DE02120300000000202051</IBAN></Id>
+                            </CdtrAcct>
+                        </RltdPties>
+                        <RtrInf>
+                            <Rsn><Cd>AC04</Cd></Rsn>
+                            <AddtlInf>Konto aufgeloest</AddtlInf>
+                        </RtrInf>
+                        <RmtInf>
+                            <Ustrd>RUECKLASTSCHRIFT RE-2026-0201</Ustrd>
+                        </RmtInf>
+                    </TxDtls>
+                    <TxDtls>
+                        <Refs>
+                            <EndToEndId>RE-2026-0202</EndToEndId>
+                            <MndtId>MNDT-0202</MndtId>
+                        </Refs>
+                        <Amt Ccy="EUR">100.00</Amt>
+                        <CdtDbtInd>DBIT</CdtDbtInd>
+                        <RltdPties>
+                            <Cdtr>
+                                <Nm>Beispiel AG</Nm>
+                            </Cdtr>
+                            <CdtrAcct>
+                                <Id><IBAN>DE02500105170137075030</IBAN></Id>
+                            </CdtrAcct>
+                        </RltdPties>
+                        <RtrInf>
+                            <Rsn><Cd>MS03</Cd></Rsn>
+                        </RtrInf>
+                        <RmtInf>
+                            <Ustrd>RUECKLASTSCHRIFT RE-2026-0202</Ustrd>
+                        </RmtInf>
+                    </TxDtls>
+                </NtryDtls>
+            </Ntry>
+        </Stmt>
+    </BkToCstmrStmt>
+</Document>

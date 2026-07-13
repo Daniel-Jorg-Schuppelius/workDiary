@@ -176,11 +176,40 @@ class BankImportService {
             'extracted_refs' => $tx->extractedRefs,
             'is_reversal' => $tx->isReversal,
             'return_reason' => $tx->returnReason,
+            // Sammelbuchung (Toolkit-Folgepaket 2): Detail-Liste NUR bei
+            // mehreren TxDtls; sonst NULL (nie leerer encrypted-Payload).
+            'transaction_details' => $tx->details !== [] ? $this->detailRows($tx) : null,
             'fingerprint' => $fingerprint,
             'match_status' => MatchStatus::Unmatched,
         ]);
 
         return true;
+    }
+
+    /**
+     * Persistenzform der Einzeltransaktionen einer Sammelbuchung: Betrag
+     * signiert (Haben +, Soll −), Referenzen, Gegenpartei inkl. IBAN-Hash
+     * (Matching-Ableitung wie counterparty_iban_hash), Zweck und
+     * Rückgabegrund je Detail. Liegt als Ganzes verschlüsselt at-rest.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function detailRows(NormalizedTransaction $tx): array {
+        $rows = [];
+        foreach ($tx->details as $detail) {
+            $rows[] = [
+                'amount' => number_format($detail->signedAmount, 2, '.', ''),
+                'end_to_end_id' => $detail->endToEndId,
+                'mandate_ref' => $detail->mandateRef,
+                'counterparty_name' => $detail->counterpartyName,
+                'counterparty_iban' => $detail->counterpartyIban,
+                'counterparty_iban_hash' => BankHelper::hashIBAN($detail->counterpartyIban),
+                'purpose' => $detail->purpose,
+                'return_reason' => $detail->returnReason,
+            ];
+        }
+
+        return $rows;
     }
 
     /**

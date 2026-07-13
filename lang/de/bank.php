@@ -106,6 +106,14 @@ return [
             'target_not_found' => 'Das Zuordnungsziel wurde nicht gefunden.',
         ],
     ],
+    // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    'split' => [
+        'title' => 'Sammelbuchung auflösen',
+        'return_title' => 'Sammel-Rücklastschrift — Rückläufer je Einzeltransaktion',
+        'target' => 'Posten',
+        'target_placeholder' => '— Posten wählen —',
+        'no_match' => 'Kein Posten gefunden',
+    ],
     // Lastschrift-Rückläufer-Workflow (MVP-334).
     'return' => [
         'badge' => 'Rückläufer',

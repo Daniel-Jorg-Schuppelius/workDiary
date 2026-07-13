@@ -181,9 +181,10 @@ class ImportControllerTest extends TestCase {
 
     /**
      * Baut eine XLSX-Fixture über die Toolkit-Writer (Builder + Generator).
-     * Der Generator referenziert für Datumszellen Style-Index 1, schreibt aber
-     * nur einen cellXf — das Datumsformat wird wie bei Excel-erzeugten Dateien
-     * nachgerüstet (Klasse-C-Lücke im Toolkit, siehe A13-Bericht).
+     * Seit php-common-toolkit v1.15.8 schreibt der Generator Datumszellen
+     * korrekt (eigener Datums-cellXf, `dateTimeToExcel` ohne doppelte
+     * Lotus-Korrektur) — die Fixture schreibt das echte Datum ohne die
+     * früheren Kompensationen (Datum −1 Tag, styles.xml-Nachrüstung).
      *
      * @param  list<string>  $header
      * @param  list<list<mixed>>  $rows
@@ -191,26 +192,11 @@ class ImportControllerTest extends TestCase {
     private function makeXlsxUpload(array $header, array $rows, string $filename = 'customers.xlsx'): UploadedFile {
         $builder = (new \CommonToolkit\Builders\XLSXDocumentBuilder)->sheet('Tabelle1')->setHeader($header);
         foreach ($rows as $row) {
-            // Bekannter Generator-Bug (Klasse-C-Kandidat): dateTimeToExcel
-            // korrigiert den Lotus-Bug doppelt (Epoche 1899-12-30 UND +1 Tag),
-            // Serial ist einen Tag zu spät. Fixture kompensiert, damit die
-            // Datei dem entspricht, was Excel für das Datum schreibt.
-            $builder->addRow(array_map(
-                static fn ($v) => $v instanceof \DateTimeImmutable ? $v->modify('-1 day') : $v,
-                $row,
-            ));
+            $builder->addRow($row);
         }
 
         $path = tempnam(sys_get_temp_dir(), 'a13_') . '.xlsx';
         \CommonToolkit\Generators\XLSX\XLSXGenerator::toFile($builder->build(), $path);
-
-        $zip = new \ZipArchive;
-        $zip->open($path);
-        $styles = (string) $zip->getFromName('xl/styles.xml');
-        $styles = str_replace('<cellXfs count="1">', '<cellXfs count="2">', $styles);
-        $styles = str_replace('</cellXfs>', '<xf numFmtId="14" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" /></cellXfs>', $styles);
-        $zip->addFromString('xl/styles.xml', $styles);
-        $zip->close();
 
         return new UploadedFile($path, $filename, \App\Support\XlsxExport::MIME, null, true);
     }

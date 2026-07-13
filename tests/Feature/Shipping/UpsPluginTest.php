@@ -10,12 +10,13 @@
 
 namespace Tests\Feature\Shipping;
 
+use APIToolkit\API\Authentication\OAuth2\OAuth2Token;
 use App\Enums\Shipping\ShipmentStatus;
 use App\Models\{CarrierConnection, Organization, Shipment};
 use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\PluginDiscovery;
 use App\Plugins\Ups\UpsPlugin;
-use App\Services\Shipping\{CarrierTokenCache, ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService, ShippingProviderRegistry};
+use App\Services\Shipping\{CarrierConnectionTokenStore, CarrierTokenCache, ShipmentPackage, ShipmentRecipient, ShipmentRequest, ShipmentService, ShippingProviderRegistry};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Psr\Http\Message\RequestInterface;
@@ -220,23 +221,20 @@ class UpsPluginTest extends TestCase {
             'active' => true,
         ]);
 
-        $fetches = 0;
-        $fetch = function () use (&$fetches): array {
-            $fetches++;
+        $storeA = new CarrierConnectionTokenStore($cache, $connectionA);
+        $storeB = new CarrierConnectionTokenStore($cache, $connectionB);
 
-            return ['access_token' => 'token-org-' . $fetches, 'expires_in' => 3600];
-        };
+        $storeA->save(new OAuth2Token('token-org-a', null, new \DateTimeImmutable('+1 hour')));
 
-        $tokenA = $cache->remember($connectionA, $fetch);
-        $tokenB = $cache->remember($connectionB, $fetch);
+        // Jede Organisation braucht ihren eigenen Token: der Token der einen
+        // Verbindung ist über den Store der anderen nicht sichtbar.
+        $this->assertNull($storeB->load());
 
-        $this->assertSame(2, $fetches, 'Jede Organisation braucht ihren eigenen Token.');
-        $this->assertNotSame($tokenA, $tokenB);
+        $storeB->save(new OAuth2Token('token-org-b', null, new \DateTimeImmutable('+1 hour')));
 
-        // Wiederholung je Verbindung trifft den Cache (kein weiterer Austausch).
-        $this->assertSame($tokenA, $cache->remember($connectionA, $fetch));
-        $this->assertSame($tokenB, $cache->remember($connectionB, $fetch));
-        $this->assertSame(2, $fetches);
+        // Wiederholtes Laden je Verbindung trifft den eigenen Cache-Eintrag.
+        $this->assertSame('token-org-a', $storeA->load()?->getAccessToken());
+        $this->assertSame('token-org-b', $storeB->load()?->getAccessToken());
     }
 
     public function test_create_shipment_failure_throws_and_counts_connection_failure(): void {

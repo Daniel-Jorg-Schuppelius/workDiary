@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance;
 
-use App\Enums\Finance\AllocationKind;
+use App\Enums\Finance\{AllocationKind, TransactionDirection};
 use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Services\Finance\Banking\ReferenceExtractor;
@@ -179,6 +179,103 @@ class MatchingService {
         }
 
         return $results;
+    }
+
+    /**
+     * Auto-Split-Vorschlag für Sammelbuchungen (Toolkit-Folgepaket 2): je
+     * gespeichertem TransactionDetail wird EIN Zuordnungsvorschlag gegen die
+     * offenen Posten ermittelt — mit DERSELBEN Kandidatenlogik wie das
+     * Einzel-Matching ({@see suggestFor}), nur mit Betrag, EndToEndId,
+     * Gegenpartei-IBAN-Hash und Verwendungszweck-Referenzen des Details.
+     * Match-Schlüssel damit implizit: Betrag + EndToEndId (reference+amount),
+     * dann Gegenpartei-IBAN + Verwendungszweck-Heuristik (extracted refs).
+     * Jedes Ziel wird nur EINMAL je Split vorgeschlagen (bester Score zuerst).
+     *
+     * @return list<array{index: int, detail: array<string, mixed>, suggestion: array{target: Model, kind: AllocationKind, score: int, reasons: list<string>, open_amount: float, foreign_currency: bool}|null}>
+     */
+    public function suggestSplitFor(BankTransaction $transaction): array {
+        $details = $transaction->transactionDetails();
+        if (count($details) < 2) {
+            return [];
+        }
+
+        $rows = [];
+        $taken = [];
+        foreach ($details as $index => $detail) {
+            $suggestion = null;
+            foreach ($this->suggestFor($this->detailProbe($transaction, $detail)) as $candidate) {
+                $key = $candidate['target']::class . '#' . $candidate['target']->getKey();
+                if (isset($taken[$key])) {
+                    continue;
+                }
+                $taken[$key] = true;
+                $suggestion = $candidate;
+                break;
+            }
+
+            $rows[] = [
+                'index' => $index,
+                'detail' => $detail,
+                'suggestion' => $suggestion,
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Rückläufer-Kandidaten je Einzeltransaktion einer Sammel-Rücklastschrift
+     * (Toolkit-Folgepaket 2): nur Details mit ISO-Rückgabegrund (isReturn)
+     * werden betrachtet; je Detail läuft {@see suggestReturnOrigins} mit
+     * Betrag, EndToEndId und Mandatsreferenz DES DETAILS, sodass
+     * {@see ReconciliationService::processReturn()} je ursprünglicher
+     * Zuordnung vorgeschlagen werden kann.
+     *
+     * @return array<int, list<array{allocation: PaymentAllocation, score: int, reasons: list<string>}>> Detail-Index ⇒ Kandidaten.
+     */
+    public function suggestReturnOriginsForDetails(BankTransaction $returnTransaction, int $limit = 5): array {
+        $result = [];
+        foreach ($returnTransaction->transactionDetails() as $index => $detail) {
+            $reason = $detail['return_reason'] ?? null;
+            if (! is_string($reason) || $reason === '') {
+                continue;
+            }
+
+            $origins = $this->suggestReturnOrigins($this->detailProbe($returnTransaction, $detail), $limit);
+            if ($origins !== []) {
+                $result[$index] = $origins;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Nicht persistierte Kopie des Bankumsatzes mit den Werten EINES
+     * TransactionDetails (Betrag, Richtung aus dem Vorzeichen, Referenzen,
+     * IBAN-Hash, Zweck-Referenzen) — so laufen Split- und Rückläufer-Matching
+     * über exakt dieselbe Kandidatenlogik wie das Einzel-Matching.
+     *
+     * @param  array<string, mixed>  $detail
+     */
+    private function detailProbe(BankTransaction $transaction, array $detail): BankTransaction {
+        $signed = (float) ($detail['amount'] ?? 0.0);
+        $endToEnd = isset($detail['end_to_end_id']) && is_string($detail['end_to_end_id']) ? $detail['end_to_end_id'] : null;
+        $purpose = isset($detail['purpose']) && is_string($detail['purpose']) ? $detail['purpose'] : null;
+
+        $probe = $transaction->replicate();
+        // replicate() lässt den Primärschlüssel aus — für die Selbst-Ausschluss-
+        // Klausel in suggestReturnOrigins wird er explizit mitgegeben.
+        $probe->id = $transaction->id;
+        $probe->amount = number_format(abs($signed), 2, '.', '');
+        $probe->direction = $signed < 0 ? TransactionDirection::Debit : TransactionDirection::Credit;
+        $probe->end_to_end_id = $endToEnd;
+        $probe->mandate_ref = isset($detail['mandate_ref']) && is_string($detail['mandate_ref']) ? $detail['mandate_ref'] : null;
+        $probe->counterparty_iban_hash = isset($detail['counterparty_iban_hash']) && is_string($detail['counterparty_iban_hash']) ? $detail['counterparty_iban_hash'] : null;
+        $probe->extracted_refs = ReferenceExtractor::extract($purpose, $endToEnd);
+        $probe->return_reason = isset($detail['return_reason']) && is_string($detail['return_reason']) ? $detail['return_reason'] : null;
+
+        return $probe;
     }
 
     /**

@@ -10,6 +10,8 @@
 
 namespace App\Plugins\Support;
 
+use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
+
 /**
  * Baut die {@see PluginApiClient}-Instanzen der Plugins. Als Container-
  * Singleton ist die Factory der Austauschpunkt für Tests: dort ersetzt
@@ -19,5 +21,25 @@ namespace App\Plugins\Support;
 class PluginHttpFactory {
     public function client(string $pluginId, string $baseUrl): PluginApiClient {
         return new PluginApiClient($pluginId, $baseUrl);
+    }
+
+    /**
+     * Baut den OAuth2-Client-Credentials-Grant (php-api-toolkit ≥ v2.3.3)
+     * eines Plugins gegen den vollständigen Token-Endpunkt — mit denselben
+     * Transport-Defaults wie {@see PluginApiClient}; auch hier ersetzen
+     * Tests den Guzzle-Transport über {@see \Tests\Support\FakePluginHttp}.
+     */
+    public function clientCredentialsGrant(string $pluginId, string $clientId, string $clientSecret, string $tokenUrl): OAuth2ClientCredentialsGrant {
+        return $this->configureGrant(new OAuth2ClientCredentialsGrant($clientId, $clientSecret, $tokenUrl), $pluginId);
+    }
+
+    /** Transport-Defaults analog {@see PluginApiClient}: User-Agent, Timeout 10 s, kein Throttling. */
+    protected function configureGrant(OAuth2ClientCredentialsGrant $grant, string $pluginId): OAuth2ClientCredentialsGrant {
+        $grant->setUserAgent('workDiary-plugin/' . $pluginId);
+        $grant->setTimeout(10.0);
+        $grant->setRequestInterval(0.0);
+        $grant->setMaxRetries(3);
+
+        return $grant;
     }
 }

@@ -106,6 +106,14 @@ return [
             'target_not_found' => 'La cible d’affectation est introuvable.',
         ],
     ],
+    // Sammelbuchungs-Auflösung je TransactionDetail (Toolkit-Folgepaket 2).
+    'split' => [
+        'title' => 'Décomposer l’écriture groupée',
+        'return_title' => 'Rejet de prélèvement groupé — traiter par transaction individuelle',
+        'target' => 'Poste',
+        'target_placeholder' => '— Choisir un poste —',
+        'no_match' => 'Aucun poste trouvé',
+    ],
     // Lastschrift-Rückläufer-Workflow (MVP-334).
     'return' => [
         'badge' => 'Rejet',

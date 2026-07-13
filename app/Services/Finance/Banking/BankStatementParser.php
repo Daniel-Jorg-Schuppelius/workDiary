@@ -44,6 +44,13 @@ use Throwable;
  * Umsätze). Alle Formate münden in dasselbe interne Schema; Dedup-/
  * Idempotenzregeln (Datei-Hash, Umsatz-Fingerprint) bleiben identisch.
  * QIF/QXF tragen keine Währung — Default EUR (dokumentierte Vereinfachung).
+ *
+ * Toolkit-Folgepaket 2 (v1.6.2): Sammelbuchungen — trägt eine CAMT-Buchung
+ * mehrere TxDtls ({@see \CommonToolkit\FinancialFormats\Entities\ISO20022\Camt\TransactionDetail}),
+ * wird je Detail eine {@see NormalizedTransactionDetail} mitgeführt (Betrag
+ * signiert, EndToEndId, Mandat, Gegenpartei, Zweck, Rückgabegrund). Buchungen
+ * mit genau EINEM TxDtls bleiben byte-identisch zum Bestand (die
+ * Einzelwert-Accessors des Toolkits liefern unverändert das erste TxDtls).
  */
 final class BankStatementParser {
     /** Fallback-Währung für Formate ohne Währungsangabe (QIF/QXF). */
@@ -147,6 +154,7 @@ final class BankStatementParser {
                     extractedRefs: $refs,
                     isReversal: $entry->isReversal(),
                     returnReason: $entry->getReturnReason()?->value,
+                    details: $this->camtTransactionDetails($entry),
                 );
             }
 
@@ -490,6 +498,35 @@ final class BankStatementParser {
             extractedRefs: $refs,
             isReversal: false,
         );
+    }
+
+    /**
+     * Einzeltransaktionen einer CAMT-Sammelbuchung (Toolkit-Folgepaket 2):
+     * NUR wenn die Buchung mehrere TxDtls trägt, wird die Detail-Liste
+     * mitgeführt — bei genau einem TxDtls bleibt das Verhalten byte-identisch
+     * zum Bestand (Einzelwert-Accessors decken das erste TxDtls bereits ab).
+     *
+     * @return list<NormalizedTransactionDetail>
+     */
+    private function camtTransactionDetails(Camt053Transaction $entry): array {
+        if (! $entry->hasMultipleTransactionDetails()) {
+            return [];
+        }
+
+        $details = [];
+        foreach ($entry->getTransactionDetails() as $detail) {
+            $details[] = new NormalizedTransactionDetail(
+                signedAmount: round($detail->getSignedAmount(), 2),
+                endToEndId: $this->nullableRef($detail->getEndToEndId()),
+                mandateRef: $this->nullableRef($detail->getMandateId()),
+                counterpartyName: $detail->getCounterpartyName(),
+                counterpartyIban: $detail->getCounterpartyIban(),
+                purpose: $detail->getRemittanceInfo(),
+                returnReason: $detail->getReturnReason()?->value,
+            );
+        }
+
+        return $details;
     }
 
     /**

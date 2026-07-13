@@ -8,6 +8,11 @@
   MVP-334: Sammelbuchungen lassen sich über Mehrfachauswahl + Teilbeträge in
   Einzelpositionen auflösen; Lastschrift-Rückläufer werden erkannt und über
   eine GoBD-konforme Kompensation der Original-Zuordnung verarbeitet.
+  Toolkit-Folgepaket 2: trägt der Umsatz eine TxDtls-Detail-Liste
+  (Sammelbuchung), wird eine VORBEFÜLLTE Aufteilung angezeigt (je Detail eine
+  Zeile mit Betrag + gematchtem Posten); die Bestätigung läuft unverändert
+  über den confirm-Mehrfach-Pfad. Sammel-Rücklastschriften bieten die
+  Kompensation je Einzeltransaktion an.
 --}}
 
 @extends('layouts.app')
@@ -107,9 +112,96 @@
                     {{-- Vorschläge für offene Umsätze — Mehrfachauswahl mit Teilbeträgen
                          (MVP-334: Sammelbuchung in Einzelpositionen auflösen). --}}
                     @if ($canReconcile && $transaction->match_status->isOpen())
-                        @php $txSuggestions = $suggestions[$transaction->id] ?? []; @endphp
+                        @php
+                            $txSuggestions = $suggestions[$transaction->id] ?? [];
+                            $txSplit = $splitSuggestions[$transaction->id] ?? [];
+                            $txDetailOrigins = $detailReturnOrigins[$transaction->id] ?? [];
+                        @endphp
                         <div class="mt-3 border-t border-base-200 pt-2">
-                            @if ($txSuggestions !== [])
+                            @if ($txSplit !== [])
+                                {{-- Sammelbuchung (Toolkit-Folgepaket 2): vorbefüllte Aufteilung
+                                     je TransactionDetail; nicht gematchte Details bleiben
+                                     editierbare Zeilen. Bestätigung über den EXISTIERENDEN
+                                     confirm-Mehrfach-Pfad. --}}
+                                @php
+                                    $splitRows = [];
+                                    foreach ($txSplit as $splitRow) {
+                                        $splitTarget = $splitRow['suggestion']['target'] ?? null;
+                                        $splitRows[$splitRow['index']] = [
+                                            'picked' => $splitTarget !== null,
+                                            'target' => $splitTarget !== null
+                                                ? (($splitTarget instanceof \App\Models\Invoice ? 'invoice:' : 'expense:') . $splitTarget->sqid)
+                                                : '',
+                                        ];
+                                    }
+                                @endphp
+                                <div class="text-sm font-medium mb-1">
+                                    {{ __('bank.split.title') }}
+                                    <span class="badge badge-ghost badge-xs">{{ count($txSplit) }}</span>
+                                </div>
+                                <form method="POST" action="{{ route('finance.reconciliation.confirm', $transaction->sqid) }}"
+                                      x-data="{ rows: {{ \Illuminate\Support\Js::from($splitRows) }} }">
+                                    @csrf
+                                    <div class="space-y-1">
+                                        @foreach ($txSplit as $splitRow)
+                                            @php
+                                                $index = $splitRow['index'];
+                                                $detail = $splitRow['detail'];
+                                                $detailSigned = (float) ($detail['amount'] ?? 0);
+                                            @endphp
+                                            <div class="flex flex-wrap items-center gap-2 py-1">
+                                                <label class="flex items-center gap-2 cursor-pointer">
+                                                    <input type="checkbox" class="checkbox checkbox-xs"
+                                                           x-model="rows[{{ $index }}].picked">
+                                                    <span class="text-sm">
+                                                        <span class="font-medium {{ $detailSigned >= 0 ? 'text-success' : 'text-base-content' }}">
+                                                            {{ $detailSigned >= 0 ? '+' : '−' }}{{ number_format(abs($detailSigned), 2, ',', '.') }}
+                                                        </span>
+                                                        @if (! empty($detail['counterparty_name']))
+                                                            · {{ $detail['counterparty_name'] }}
+                                                        @endif
+                                                        @if (! empty($detail['end_to_end_id']))
+                                                            · <span class="text-base-content/50">{{ $detail['end_to_end_id'] }}</span>
+                                                        @endif
+                                                        @if ($splitRow['suggestion'] !== null)
+                                                            @foreach ($splitRow['suggestion']['reasons'] as $reason)
+                                                                <span class="badge badge-xs badge-ghost">{{ __('bank.reason.' . $reason) }}</span>
+                                                            @endforeach
+                                                        @else
+                                                            <span class="badge badge-xs badge-warning badge-outline">{{ __('bank.split.no_match') }}</span>
+                                                        @endif
+                                                    </span>
+                                                </label>
+                                                <select class="select select-bordered select-xs w-56"
+                                                        x-model="rows[{{ $index }}].target"
+                                                        :disabled="!rows[{{ $index }}].picked"
+                                                        aria-label="{{ __('bank.split.target') }}">
+                                                    <option value="">{{ __('bank.split.target_placeholder') }}</option>
+                                                    @foreach ($splitTargets as $option)
+                                                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <input type="hidden" name="allocations[{{ $index }}][type]"
+                                                       :value="(rows[{{ $index }}].target || ':').split(':')[0]"
+                                                       :disabled="!rows[{{ $index }}].picked || !rows[{{ $index }}].target">
+                                                <input type="hidden" name="allocations[{{ $index }}][id]"
+                                                       :value="(rows[{{ $index }}].target || ':').split(':')[1]"
+                                                       :disabled="!rows[{{ $index }}].picked || !rows[{{ $index }}].target">
+                                                <input type="number" step="0.01" min="0.01"
+                                                       name="allocations[{{ $index }}][amount]"
+                                                       value="{{ number_format(abs($detailSigned), 2, '.', '') }}"
+                                                       :disabled="!rows[{{ $index }}].picked || !rows[{{ $index }}].target"
+                                                       class="input input-bordered input-xs w-28"
+                                                       aria-label="{{ __('bank.field.amount') }}">
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                    <div class="flex justify-end mt-1">
+                                        <x-icon-btn icon="check" tone="success" size="xs" type="submit"
+                                                    show-label>{{ __('bank.action.confirm_selected') }}</x-icon-btn>
+                                    </div>
+                                </form>
+                            @elseif ($txSuggestions !== [])
                                 <form method="POST" action="{{ route('finance.reconciliation.confirm', $transaction->sqid) }}"
                                       x-data="{ picked: { '0': true } }">
                                     @csrf
@@ -149,8 +241,61 @@
                                                     show-label>{{ __('bank.action.confirm_selected') }}</x-icon-btn>
                                     </div>
                                 </form>
-                            @else
+                            @elseif ($txDetailOrigins === [])
                                 <div class="text-sm text-base-content/60">{{ __('bank.empty.suggestions') }}</div>
+                            @endif
+
+                            {{-- Sammel-Rücklastschrift (Toolkit-Folgepaket 2): Kompensation je
+                                 Einzeltransaktion — jede Zeile speist den bestehenden
+                                 processReturn-Pfad je Original-Zuordnung. --}}
+                            @if ($txDetailOrigins !== [])
+                                <div class="mt-3 border-t border-base-200 pt-2">
+                                    <div class="text-sm font-medium mb-1">{{ __('bank.split.return_title') }}</div>
+                                    @foreach ($txDetailOrigins as $detailIndex => $origins)
+                                        @php
+                                            $detail = $transaction->transactionDetails()[$detailIndex] ?? [];
+                                            $detailSigned = (float) ($detail['amount'] ?? 0);
+                                        @endphp
+                                        <form method="POST" action="{{ route('finance.reconciliation.return', $transaction->sqid) }}" class="mb-2">
+                                            @csrf
+                                            <div class="text-xs text-base-content/60 mb-1">
+                                                {{ $detailSigned >= 0 ? '+' : '−' }}{{ number_format(abs($detailSigned), 2, ',', '.') }}
+                                                @if (! empty($detail['counterparty_name']))
+                                                    · {{ $detail['counterparty_name'] }}
+                                                @endif
+                                                @if (! empty($detail['end_to_end_id']))
+                                                    · {{ $detail['end_to_end_id'] }}
+                                                @endif
+                                                @if (! empty($detail['return_reason']))
+                                                    · <span class="badge badge-error badge-outline badge-xs">{{ $detail['return_reason'] }}</span>
+                                                @endif
+                                            </div>
+                                            <div class="space-y-1">
+                                                @foreach ($origins as $originIndex => $origin)
+                                                    @php $allocation = $origin['allocation']; @endphp
+                                                    <label class="flex flex-wrap items-center gap-2 text-sm cursor-pointer">
+                                                        <input type="radio" name="allocation" value="{{ $allocation->sqid }}"
+                                                               class="radio radio-xs" @checked($originIndex === 0)>
+                                                        <x-status-badge size="xs" :tone="$allocation->kind->tone()" :label="$allocation->kind->label()" />
+                                                        {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
+                                                        · {{ number_format((float) $allocation->amount, 2, ',', '.') }}
+                                                        @foreach ($origin['reasons'] as $reason)
+                                                            <span class="badge badge-xs badge-ghost">{{ __('bank.return.reason.' . $reason) }}</span>
+                                                        @endforeach
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                            <div class="flex flex-wrap items-center justify-end gap-2 mt-1">
+                                                <input type="text" name="reason" maxlength="255"
+                                                       value="{{ $detail['return_reason'] ?? $transaction->return_reason }}"
+                                                       placeholder="{{ __('bank.return.reason_placeholder') }}"
+                                                       class="input input-bordered input-xs w-48">
+                                                <x-icon-btn icon="undo" tone="error" size="xs" type="submit"
+                                                            show-label>{{ __('bank.return.action') }}</x-icon-btn>
+                                            </div>
+                                        </form>
+                                    @endforeach
+                                </div>
                             @endif
 
                             {{-- Lastschrift-Rückläufer (MVP-334): Original-Zuordnung kompensieren. --}}

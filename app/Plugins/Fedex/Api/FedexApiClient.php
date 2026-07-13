@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Fedex\Api;
 
+use APIToolkit\API\Authentication\OAuth2\{OAuth2ClientCredentialsAuthentication, OAuth2ClientCredentialsGrant};
 use App\Models\CarrierConnection;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use App\Services\Shipping\CarrierTokenCache;
+use App\Services\Shipping\{CarrierConnectionTokenStore, CarrierTokenCache};
 use Illuminate\Http\Client\Response;
 use RuntimeException;
 
@@ -24,25 +25,28 @@ use RuntimeException;
  * `Retry-After`); der Transport kommt aus der {@see PluginHttpFactory} —
  * Tests ersetzen ihn über {@see \Tests\Support\FakePluginHttp}.
  *
- * Auth: OAuth2 Client-Credentials (`POST /oauth/token`, client_id/client_secret
- * im Form-Body — FedEx nutzt kein Basic). Der Access-Token (60 min) wird über
- * den {@see CarrierTokenCache} je Organisation/Umgebung gehalten; ein 401 der
- * Fach-Endpunkte verwirft ihn und wiederholt den Request genau einmal mit
- * frischem Token. Deckt Ship (`/ship/v1/shipments`, Cancel) und Track
- * (`/track/v1/trackingnumbers`) ab; JSON-Verträge nach der öffentlichen
- * FedEx-Doku — ein Lauf gegen die echte Sandbox (`apis-sandbox.fedex.com`,
- * self-service) steht aus.
+ * Auth: OAuth2 Client-Credentials über den Toolkit-Grant
+ * ({@see OAuth2ClientCredentialsGrant}, `POST /oauth/token`,
+ * client_id/client_secret im Form-Body — Toolkit-Default, FedEx nutzt kein
+ * Basic) mit {@see OAuth2ClientCredentialsAuthentication}: Ablauf-Leeway
+ * 60 s, ein 401 der Fach-Endpunkte verwirft den Token und wiederholt den
+ * Request genau einmal mit frischem Token. Der Access-Token (60 min) liegt
+ * über den {@see CarrierConnectionTokenStore} im verschlüsselten
+ * {@see CarrierTokenCache} je Organisation/Umgebung. Deckt Ship
+ * (`/ship/v1/shipments`, Cancel) und Track (`/track/v1/trackingnumbers`)
+ * ab; JSON-Verträge nach der öffentlichen FedEx-Doku — ein Lauf gegen die
+ * echte Sandbox (`apis-sandbox.fedex.com`, self-service) steht aus.
  */
 class FedexApiClient {
     private PluginApiClient $api;
 
+    private OAuth2ClientCredentialsGrant $grant;
+
+    private CarrierConnectionTokenStore $store;
+
     private string $base;
 
-    private string $clientId;
-
-    private string $clientSecret;
-
-    public function __construct(private readonly CarrierConnection $connection, private readonly CarrierTokenCache $tokens) {
+    public function __construct(CarrierConnection $connection, CarrierTokenCache $tokens) {
         $cfg = config('plugins.fedex');
         $base = $connection->sandbox
             ? (string) ($cfg['sandbox_base_url'] ?? 'https://apis-sandbox.fedex.com')
@@ -54,10 +58,15 @@ class FedexApiClient {
         if ($clientId === null || $clientSecret === null) {
             throw new RuntimeException('FedEx connection is missing client_id/client_secret.');
         }
-        $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
 
-        $this->api = app(PluginHttpFactory::class)->client('fedex', $this->base);
+        $factory = app(PluginHttpFactory::class);
+
+        // FedEx: Credentials im Form-Body — der Toolkit-Default (AUTH_METHOD_POST).
+        $this->grant = $factory->clientCredentialsGrant('fedex', $clientId, $clientSecret, $this->base . '/oauth/token');
+        $this->store = new CarrierConnectionTokenStore($tokens, $connection);
+
+        $this->api = $factory->client('fedex', $this->base);
+        $this->api->setAuthentication(new OAuth2ClientCredentialsAuthentication($this->grant, $this->store));
     }
 
     /**
@@ -67,7 +76,7 @@ class FedexApiClient {
      * @param  array<string, mixed>  $body
      */
     public function createShipment(array $body): Response {
-        return $this->authed('post', $this->base . '/ship/v1/shipments', ['json' => $body]);
+        return $this->api->postJson($this->base . '/ship/v1/shipments', $body);
     }
 
     /**
@@ -76,17 +85,15 @@ class FedexApiClient {
      * @param  array<string, mixed>  $body
      */
     public function cancelShipment(array $body): Response {
-        return $this->authed('put', $this->base . '/ship/v1/shipments/cancel', ['json' => $body]);
+        return $this->api->putJson($this->base . '/ship/v1/shipments/cancel', $body);
     }
 
     /** Ruft den Sendungsverlauf zu einer Trackingnummer ab. */
     public function trackShipment(string $trackingNumber): Response {
-        return $this->authed('post', $this->base . '/track/v1/trackingnumbers', [
-            'json' => [
-                'includeDetailedScans' => true,
-                'trackingInfo' => [
-                    ['trackingNumberInfo' => ['trackingNumber' => $trackingNumber]],
-                ],
+        return $this->api->postJson($this->base . '/track/v1/trackingnumbers', [
+            'includeDetailedScans' => true,
+            'trackingInfo' => [
+                ['trackingNumberInfo' => ['trackingNumber' => $trackingNumber]],
             ],
         ]);
     }
@@ -96,71 +103,9 @@ class FedexApiClient {
      * hinterlegten Zugangsdaten (validiert Client-ID/Secret gegen FedEx).
      */
     public function ping(): bool {
-        $this->tokens->forget($this->connection);
-        $this->token();
+        $this->store->clear();
+        $this->store->save($this->grant->fetchToken());
 
-        return true; // fetchToken() wirft bei Ablehnung
-    }
-
-    /**
-     * OAuth2-Token-Austausch (Client-Credentials im Form-Body) — ungecacht.
-     *
-     * @return array{access_token: string, expires_in: int}
-     */
-    public function fetchToken(): array {
-        $client = app(PluginHttpFactory::class)->client('fedex', $this->base);
-
-        $response = $client->requestResponse('post', $this->base . '/oauth/token', [
-            'form_params' => [
-                'grant_type' => 'client_credentials',
-                'client_id' => $this->clientId,
-                'client_secret' => $this->clientSecret,
-            ],
-        ]);
-
-        if (! $response->successful()) {
-            throw new RuntimeException("FedEx token request failed (HTTP {$response->status()}).");
-        }
-
-        $token = (string) $response->json('access_token', '');
-        if ($token === '') {
-            throw new RuntimeException('FedEx token response contained no access_token.');
-        }
-
-        return ['access_token' => $token, 'expires_in' => (int) $response->json('expires_in', 0)];
-    }
-
-    /** Gültiger Access-Token aus dem Cache; holt bei Bedarf einen frischen. */
-    private function token(): string {
-        return $this->tokens->remember($this->connection, fn(): array => $this->fetchToken());
-    }
-
-    /**
-     * Request mit Bearer-Token; bei 401 wird der gecachte Token verworfen und
-     * genau einmal mit frischem Token wiederholt.
-     *
-     * @param  array<string, mixed>  $options
-     */
-    private function authed(string $method, string $url, array $options = []): Response {
-        $response = $this->send($method, $url, $options, $this->token());
-
-        if ($response->status() === 401) {
-            $this->tokens->forget($this->connection);
-            $response = $this->send($method, $url, $options, $this->token());
-        }
-
-        return $response;
-    }
-
-    /**
-     * @param  array<string, mixed>  $options
-     */
-    private function send(string $method, string $url, array $options, string $token): Response {
-        $options['headers'] = array_merge(
-            ['Authorization' => 'Bearer ' . $token],
-            is_array($options['headers'] ?? null) ? $options['headers'] : [],
-        );
-
-        return $this->api->requestResponse($method, $url, $options);
+        return true; // fetchToken() wirft bei Ablehnung (typisierte ApiException)
     }
 }
