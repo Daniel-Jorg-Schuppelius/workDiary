@@ -62,8 +62,10 @@ class MaintenanceWindowService {
             severity: OperationsTaskSeverity::Warning,
             titleKey: 'operations.task.maintenance_scheduled',
             params: [
-                'from' => $window->starts_at->format('d.m.Y H:i'),
-                'to' => $window->ends_at->format('d.m.Y H:i'),
+                // ISO statt fertig formatiert → Anzeige übersetzt/formatiert
+                // je Betrachter (NotificationText).
+                'from' => $window->starts_at->toIso8601String(),
+                'to' => $window->ends_at->toIso8601String(),
                 'scope' => $window->message !== null ? ' ' . $window->message : '',
             ],
             organizationId: $window->scope === MaintenanceWindow::SCOPE_ORGANIZATION

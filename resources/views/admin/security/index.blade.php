@@ -22,7 +22,7 @@
     badge-tone="info"
 >
     {{-- Datenschutz-/Geheimnis-Hinweis: niemals Token-Werte/Secrets. --}}
-    <div class="alert alert-info bg-info/10 border-info/30 text-sm" role="note">
+    <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
         <x-icon name="lock" />
         <span>{{ __('security.privacy_notice') }}</span>
     </div>

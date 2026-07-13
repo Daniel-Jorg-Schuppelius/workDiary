@@ -1618,7 +1618,7 @@
                                                class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0 {{ $_nUnread ? 'bg-primary/5' : '' }}">
                                                 <span class="material-symbols-outlined text-base {{ $_nUnread ? 'text-primary' : 'opacity-50' }}" aria-hidden="true">{{ $_nd['icon'] ?? 'notifications' }}</span>
                                                 <span class="flex-1 min-w-0">
-                                                    <span class="block text-sm font-medium truncate">{{ $_nd['title'] ?? '' }}</span>
+                                                    <span class="block text-sm font-medium truncate">{{ \App\Support\NotificationText::title($_nd) }}</span>
                                                     @if (! empty($_nd['message']))
                                                         <span class="block text-xs opacity-60 mt-0.5 truncate">{{ $_nd['message'] }}</span>
                                                     @endif

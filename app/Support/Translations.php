@@ -136,6 +136,67 @@ class Translations {
     }
 
     /**
+     * Alle im Quellcode (Blade-Views + app/) verwendeten JSON-Stil-Keys —
+     * deutsche Quelltexte in __()/trans(). Namespace-Keys (auflösbar über
+     * lang/de/<datei>.php bzw. dotted-lowercase) werden ausgefiltert, ebenso
+     * dynamische Aufrufe (Interpolation/Konkatenation).
+     *
+     * Grundlage des Quell-Scans in lang:check/TranslationParityTest: ein Key,
+     * der hier auftaucht, aber in en.json fehlt, fällt in ALLEN Sprachen auf
+     * den deutschen Quelltext zurück — genau die Lücke, die reine
+     * Katalog-Paritätsprüfungen (en ↔ fr/it/es) nicht sehen können.
+     *
+     * @return list<string>
+     */
+    public static function sourceJsonKeys(): array {
+        $namespaces = array_fill_keys(
+            array_map(static fn(string $f): string => substr($f, 0, -4), self::namespaceFiles()),
+            true,
+        );
+
+        $files = [];
+        foreach ([base_path('resources/views'), base_path('app')] as $dir) {
+            $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
+            foreach ($it as $file) {
+                if ($file instanceof \SplFileInfo && str_ends_with($file->getFilename(), '.php')) {
+                    $files[] = $file->getPathname();
+                }
+            }
+        }
+
+        $keys = [];
+        foreach ($files as $path) {
+            $src = (string) file_get_contents($path);
+            if (! preg_match_all('~(?<![A-Za-z0-9_])(?:__|trans)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1\s*[,)]~s', $src, $m)) {
+                continue;
+            }
+            foreach ($m[2] as $raw) {
+                $k = stripcslashes($raw);
+                if ($k === '' || str_contains($k, '$') || str_contains($k, '{')) {
+                    continue; // dynamisch/interpoliert
+                }
+                if (! str_contains($k, ' ')) {
+                    if (str_contains($k, '.') && isset($namespaces[explode('.', $k, 2)[0]])) {
+                        continue; // Namespace-Key (lang/de/<datei>.php)
+                    }
+                    if (preg_match('/^[a-z0-9_]+(\.[a-z0-9_:-]+)+$/', $k) === 1) {
+                        continue; // dotted-lowercase = Namespace-Konvention
+                    }
+                    if (str_ends_with($k, '.') || str_ends_with($k, ':') || str_ends_with($k, '_')) {
+                        continue; // Konkatenations-Präfix
+                    }
+                }
+                $keys[$k] = true;
+            }
+        }
+
+        $out = array_keys($keys);
+        sort($out);
+
+        return $out;
+    }
+
+    /**
      * Rekursiver PHP-Array-Export im Projektstil (short syntax, 4-Space).
      *
      * @param  array<int|string, mixed>  $arr

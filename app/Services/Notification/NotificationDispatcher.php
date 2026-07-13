@@ -18,7 +18,7 @@ use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Notifications\GenericEventNotification;
 use App\Services\Integration\WebhookDispatchService;
 use App\Services\WebPushService;
-use App\Support\Setting;
+use App\Support\{NotificationText, Setting};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\Log;
@@ -344,7 +344,7 @@ class NotificationDispatcher {
             && filter_var(data_get($prefs, 'push_enabled', true), FILTER_VALIDATE_BOOL)) {
             $truncate = (int) Setting::get('notifications.push.body_truncate', 120);
             $sent = $this->webPush->sendToUser($user, [
-                'title' => $payload['title'],
+                'title' => $this->titleFor($user, $payload),
                 'body' => mb_substr((string) ($payload['message'] ?? $event->label()), 0, $truncate),
                 'url' => (string) ($payload['url'] ?? ''),
                 'tag' => 'notification-' . $event->value,
@@ -353,6 +353,34 @@ class NotificationDispatcher {
         }
 
         return $delivered;
+    }
+
+    /**
+     * Titel für einen konkreten Empfänger: trägt der Payload einen Lang-Key,
+     * wird in dessen bevorzugter Sprache frisch gerendert (Push läuft — anders
+     * als database/mail — nicht durch Laravels preferredLocale-Wrapping).
+     *
+     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null}  $payload
+     */
+    private function titleFor(User $user, array $payload): string {
+        $key = $payload['title_key'] ?? null;
+        if (! is_string($key) || $key === '') {
+            return (string) $payload['title'];
+        }
+
+        $params = (array) ($payload['title_params'] ?? []);
+        $locale = $user->preferredLocale() ?? app()->getLocale();
+        if ($locale === app()->getLocale()) {
+            return NotificationText::render($key, $params);
+        }
+
+        $previous = app()->getLocale();
+        app()->setLocale($locale);
+        try {
+            return NotificationText::render($key, $params);
+        } finally {
+            app()->setLocale($previous);
+        }
     }
 
     /**

@@ -13,10 +13,7 @@ namespace App\Models;
 use App\Enums\User\{CompensationModel, UserRole};
 use App\Legacy\LegacyBridge;
 use App\Legacy\Models\LegacyUser;
-use App\Models\Concerns\{Auditable, HasAttachments, HasSqid};
-use App\Services\Sickness\ContinuedPaymentService;
-use App\Support\Sickness\ContinuedPaymentStatus;
-use Carbon\CarbonInterface;
+use App\Models\Concerns\{Auditable, HasAttachments, HasEffectivePermissions, HasPreferences, HasSqid, InteractsWithTwoFactor, InteractsWithWorkSchedule};
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, PhoneNumberHelper};
 use Database\Factories\UserFactory;
@@ -25,9 +22,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, MorphMany};
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\{Carbon, Collection};
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -73,11 +69,23 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SpatiePermission> $permissions
+ *
+ * Fachfremde Methoden-Cluster liegen in Concerns (Refactoring Welle 2, B6b):
+ * {@see HasPreferences} (Präferenz-Bag/Locale/Zeitzone/Arbeitsmodus),
+ * {@see InteractsWithTwoFactor} (2FA-Helfer),
+ * {@see HasEffectivePermissions} (Gruppen-/Rollen-Rechte) und
+ * {@see InteractsWithWorkSchedule} (Arbeitszeit/Gleitzeit/Lohnfortzahlung).
+ * Auth-/Rollenlogik, Relations und Casts bleiben bewusst hier — das Modell
+ * trägt aus Sicherheitsgründen KEINEN OrganizationScope (tenant-audit).
  */
 #[Hidden(['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
-class User extends Authenticatable {
+class User extends Authenticatable implements \Illuminate\Contracts\Translation\HasLocalePreference {
     /** @use HasFactory<UserFactory> */
     use Auditable, HasApiTokens, HasAttachments, HasFactory, HasRoles, HasSqid, Notifiable;
+    use HasEffectivePermissions;
+    use HasPreferences;
+    use InteractsWithTwoFactor;
+    use InteractsWithWorkSchedule;
 
     public function isAdmin(): bool {
         // Plattform-Betreiber ist in jedem Org-Kontext Admin (behält seinen
@@ -107,21 +115,6 @@ class User extends Authenticatable {
     /** @return HasMany<\App\Models\Auth\TwoFactorCredential, $this> */
     public function twoFactorCredentials(): HasMany {
         return $this->hasMany(\App\Models\Auth\TwoFactorCredential::class)->orderBy('id');
-    }
-
-    /**
-     * Bestaetigte zweite Faktoren (alle Methoden).
-     *
-     * @return Collection<int, \App\Models\Auth\TwoFactorCredential>
-     */
-    public function confirmedTwoFactorCredentials(): Collection {
-        return $this->twoFactorCredentials()->whereNotNull('confirmed_at')->get();
-    }
-
-    /** Zwei-Faktor aktiv: mindestens ein bestaetigter Faktor (oder Legacy-TOTP). */
-    public function hasTwoFactorEnabled(): bool {
-        return $this->twoFactorCredentials()->whereNotNull('confirmed_at')->exists()
-            || ($this->two_factor_confirmed_at !== null && filled($this->two_factor_secret));
     }
 
     /**
@@ -200,45 +193,6 @@ class User extends Authenticatable {
      */
     public function canLogin(): bool {
         return ! $this->isDeactivated();
-    }
-
-    /**
-     * Persistierter Arbeitsmodus des Users, normalisiert auf einen tatsächlich
-     * erlaubten Wert. Dient als Default, wenn die Session (noch) keinen
-     * work_mode trägt – so überlebt die Modus-Wahl Session-Ablauf, neuen Login
-     * und F5. Liegt in der Per-User-Präferenz-Bag (preferences['work_mode']).
-     */
-    public function preferredWorkMode(): string {
-        $stored = $this->getPreference('work_mode');
-        $mode = in_array($stored, ['legacy', 'new'], true) ? $stored : 'legacy';
-
-        if ($mode === 'new' && ! $this->canAccessNew()) {
-            return $this->canAccessLegacy() ? 'legacy' : 'new';
-        }
-        if ($mode === 'legacy' && ! $this->canAccessLegacy()) {
-            return $this->canAccessNew() ? 'new' : 'legacy';
-        }
-
-        return $mode;
-    }
-
-    /**
-     * Liest eine Per-User-Präferenz aus preferences (inkl. Merge mit den
-     * Defaults aus config/personalization.php).
-     */
-    public function getPreference(string $key, mixed $default = null): mixed {
-        return $this->preferences()[$key] ?? $default;
-    }
-
-    /**
-     * Setzt eine Per-User-Präferenz in der preferences-Bag und persistiert sie.
-     * Zentraler Schreibweg, damit Caller nicht selbst mergen müssen.
-     */
-    public function setPreference(string $key, mixed $value): void {
-        $stored = (array) ($this->getAttribute('preferences') ?? []);
-        $stored[$key] = $value;
-        $this->setAttribute('preferences', $stored);
-        $this->save();
     }
 
     /**
@@ -453,66 +407,6 @@ class User extends Authenticatable {
         return $this->hasMany(Team::class, 'lead_user_id');
     }
 
-    /**
-     * Alle Permission-Namen, die der User effektiv besitzt:
-     *   - direkte Permissions am User,
-     *   - Permissions via eigene Rollen,
-     *   - Permissions via Gruppen-Mitgliedschaften (eigene Permissions der
-     *     Gruppe und Permissions der Rollen, die der Gruppe zugewiesen sind).
-     *
-     * Wird sowohl von Policies (über {@see hasEffectivePermission()}) als
-     * auch von der Admin-UI für die Anzeige verwendet.
-     *
-     * @return Collection<int, string>
-     */
-    public function effectivePermissionNames(): Collection {
-        /** @var Collection<int, SpatiePermission> $direct */
-        $direct = $this->getAllPermissions();
-        $names = $direct->pluck('name');
-
-        $this->loadMissing(['userGroups.permissions', 'userGroups.roles.permissions']);
-
-        foreach ($this->userGroups as $group) {
-            /** @var Collection<int, SpatiePermission> $groupPermissions */
-            $groupPermissions = $group->getAllPermissions();
-            foreach ($groupPermissions as $permission) {
-                $names->push($permission->name);
-            }
-        }
-
-        return $names->unique()->values();
-    }
-
-    /**
-     * Schnelle Prüfung, ob der User die übergebene Permission effektiv
-     * besitzt — wird vom Gate::before-Hook in AuthServiceProvider
-     * aufgerufen, damit `$user->can('xy')` auch Gruppen-Permissions
-     * berücksichtigt.
-     */
-    public function hasEffectivePermission(string $permission): bool {
-        try {
-            if ($this->hasPermissionTo($permission)) {
-                return true;
-            }
-        } catch (PermissionDoesNotExist) {
-            return false;
-        }
-
-        $this->loadMissing(['userGroups.permissions', 'userGroups.roles.permissions']);
-
-        foreach ($this->userGroups as $group) {
-            try {
-                if ($group->hasPermissionTo($permission)) {
-                    return true;
-                }
-            } catch (PermissionDoesNotExist) {
-                return false;
-            }
-        }
-
-        return false;
-    }
-
     /** @return BelongsToMany<Qualification, $this> */
     public function qualifications(): BelongsToMany {
         return $this->belongsToMany(Qualification::class, 'user_qualifications')
@@ -560,13 +454,6 @@ class User extends Authenticatable {
         return $this->hasMany(SickLeave::class);
     }
 
-    public function currentSicknessStatus(?CarbonInterface $on = null): ContinuedPaymentStatus {
-        /** @var ContinuedPaymentService $svc */
-        $svc = app(ContinuedPaymentService::class);
-
-        return $svc->statusFor($this, $on);
-    }
-
     /** @return HasMany<PushSubscription, $this> */
     public function pushSubscriptions(): HasMany {
         return $this->hasMany(PushSubscription::class);
@@ -582,41 +469,9 @@ class User extends Authenticatable {
         return $this->hasMany(TimeEntry::class);
     }
 
-    public function workSchedule(?CarbonInterface $on = null): ?WorkSchedule {
-        $on = $on ? $on->copy()->startOfDay() : now()->startOfDay();
-
-        return WorkSchedule::query()
-            ->where('user_id', $this->id)
-            ->where('valid_from', '<=', $on)
-            ->where(function ($q) use ($on) {
-                $q->whereNull('valid_to')->orWhere('valid_to', '>=', $on);
-            })
-            ->orderByDesc('valid_from')
-            ->first();
-    }
-
     /** @return HasMany<FlexEligibility, $this> */
     public function flexEligibilities(): HasMany {
         return $this->hasMany(FlexEligibility::class);
-    }
-
-    /**
-     * Ist der User am angegebenen Stichtag (Default: heute) für die
-     * Gleitzeit-Erfassung freigeschaltet? Stützt sich auf
-     * {@see FlexEligibility}: jede Lücke zwischen Perioden bedeutet
-     * explizit "nicht berechtigt", auch wenn vor- oder nachher Perioden
-     * existieren.
-     */
-    public function isFlexEligible(?CarbonInterface $on = null): bool {
-        $on = $on ? $on->copy()->startOfDay() : now()->startOfDay();
-
-        return FlexEligibility::query()
-            ->where('user_id', $this->id)
-            ->where('valid_from', '<=', $on)
-            ->where(function ($q) use ($on): void {
-                $q->whereNull('valid_to')->orWhere('valid_to', '>=', $on);
-            })
-            ->exists();
     }
 
     public function legacyUser(): ?LegacyUser {
@@ -630,34 +485,6 @@ class User extends Authenticatable {
      */
     public function avatar(): ?Attachment {
         return $this->attachmentByMeta(Attachment::META_AVATAR);
-    }
-
-    /**
-     * Persönliche Präferenzen gemerged mit den Defaults aus
-     * config/personalization.php. Liefert immer ein vollständig
-     * gefülltes Array; leere Felder bedeuten "Default verwenden".
-     *
-     * @return array<string, mixed>
-     */
-    public function preferences(): array {
-        /** @var array<string, mixed> $defaults */
-        $defaults = (array) config('personalization.defaults', []);
-        /** @var array<string, mixed> $stored */
-        $stored = (array) ($this->preferences ?? []);
-
-        return array_replace($defaults, $stored);
-    }
-
-    /**
-     * Persönliche Anzeige-Zeitzone (Override der Organisations-Zeitzone).
-     * Liegt in preferences['timezone']; null bedeutet "Organisation verwenden".
-     * Wird von App\Support\Tz ausgewertet.
-     */
-    public function getTimezoneAttribute(): ?string {
-        $stored = (array) ($this->preferences ?? []);
-        $tz = $stored['timezone'] ?? null;
-
-        return is_string($tz) && $tz !== '' ? $tz : null;
     }
 
     /**

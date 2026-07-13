@@ -29,8 +29,15 @@ class CrisisExerciseController extends Controller {
 
         return view('crisis.exercises', [
             'exercises' => CrisisExercise::query()->with('playbookTemplate')->orderByDesc('id')->paginate(25),
-            'templates' => ProcedureTemplate::query()->orderBy('name')->get(['id', 'name']),
             'canManage' => Gate::allows('create', CrisisCase::class),
+        ]);
+    }
+
+    public function create(): View {
+        Gate::authorize('create', CrisisCase::class);
+
+        return view('crisis._exercise_form_dialog', [
+            'templates' => ProcedureTemplate::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -53,6 +60,12 @@ class CrisisExerciseController extends Controller {
         ]);
 
         return back()->with('status', __('Übung geplant.'));
+    }
+
+    public function documentForm(CrisisExercise $exercise): View {
+        Gate::authorize('create', CrisisCase::class);
+
+        return view('crisis._exercise_document_dialog', ['exercise' => $exercise]);
     }
 
     /** Durchführung dokumentieren: Beobachtungen, Abweichungen, Wirksamkeit. */

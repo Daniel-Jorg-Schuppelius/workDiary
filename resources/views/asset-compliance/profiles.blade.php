@@ -124,7 +124,7 @@
         </x-card>
     @endcan
 
-    <x-card :title="__('Normen-Referenzmatrix (MVP-293) — Referenz ohne Konformitätszusage')" padding="p-0">
+    <x-card :title="__('Normen-Referenzmatrix — Referenz ohne Konformitätszusage')" padding="p-0">
         <x-table bare>
             <x-slot:head><tr><th>{{ __('Prüfart') }}</th><th>{{ __('Rechtsraum') }}</th><th>{{ __('Norm/Regelwerk') }}</th><th>{{ __('Gültigkeit') }}</th><th>{{ __('Rahmenversion') }}</th></tr></x-slot:head>
             @forelse ($norms as $norm)

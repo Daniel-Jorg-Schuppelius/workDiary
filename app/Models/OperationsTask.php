@@ -130,7 +130,9 @@ class OperationsTask extends Model {
     }
 
     public function title(): string {
-        return (string) __($this->title_key, (array) ($this->params ?? []));
+        // Params können ISO-Daten/Trans-Referenzen tragen — zentral rendern,
+        // damit Datum/Label in Sprache+Zeitzone des Betrachters erscheinen.
+        return \App\Support\NotificationText::render($this->title_key, (array) ($this->params ?? []));
     }
 
     public function url(): ?string {

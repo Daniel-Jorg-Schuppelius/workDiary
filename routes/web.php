@@ -1490,7 +1490,9 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'store'])->name('store');
             Route::post('stabsrollen', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'storeRole'])->name('roles.store');
             Route::get('uebungen', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'index'])->name('exercises.index');
+            Route::get('uebungen/neu', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'create'])->name('exercises.create');
             Route::post('uebungen', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'store'])->name('exercises.store');
+            Route::get('uebungen/{exercise}/dokumentieren', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'documentForm'])->name('exercises.document.form');
             Route::post('uebungen/{exercise}/dokumentieren', [\App\Http\Controllers\Crisis\CrisisExerciseController::class, 'document'])->name('exercises.document');
             Route::get('{case}', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'show'])->name('show');
             Route::post('{case}/status', [\App\Http\Controllers\Crisis\CrisisCaseController::class, 'updateStatus'])->name('status');

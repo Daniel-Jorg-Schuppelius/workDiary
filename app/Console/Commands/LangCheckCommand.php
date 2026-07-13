@@ -69,6 +69,19 @@ class LangCheckCommand extends Command {
             }
         }
 
+        // Quell-Scan: JSON-Stil-Keys aus Views/app, die in en.json fehlen —
+        // solche Keys fallen in ALLEN Sprachen auf den deutschen Quelltext
+        // zurück; die Katalog-Parität oben kann das nicht sehen.
+        $sourceMissing = array_values(array_filter(
+            Translations::sourceJsonKeys(),
+            static fn(string $k): bool => ! isset($refSet[$k]),
+        ));
+        if ($sourceMissing !== []) {
+            $gaps++;
+            $this->warn(sprintf('Quellcode: %d verwendete Keys fehlen in en.json (bleiben überall deutsch)', count($sourceMissing)));
+            $this->sample('  fehlt', $sourceMissing);
+        }
+
         if ($gaps === 0) {
             $this->info('Übersetzungen vollständig über alle Sprachen (' . implode(', ', Locales::enabledCodes()) . ').');
 

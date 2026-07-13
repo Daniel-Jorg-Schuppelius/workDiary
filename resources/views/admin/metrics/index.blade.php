@@ -22,7 +22,7 @@
     badge-tone="info"
 >
     {{-- Telemetrie-Hinweis: Daten bleiben lokal, kein externes Senden. --}}
-    <div class="alert alert-info bg-info/10 border-info/30 text-sm" role="note">
+    <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
         <x-icon name="privacy_tip" />
         <span>{{ __('metrics.privacy_notice') }}</span>
     </div>

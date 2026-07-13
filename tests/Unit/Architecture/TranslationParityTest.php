@@ -37,6 +37,20 @@ class TranslationParityTest extends TestCase {
         }
     }
 
+    public function test_all_source_json_keys_exist_in_the_reference_catalog(): void {
+        // Ein im Quellcode verwendeter JSON-Stil-Key, der in en.json fehlt,
+        // fällt in ALLEN Sprachen auf den deutschen Quelltext zurück — die
+        // Katalog-Parität (en ↔ fr/it/es) ist dafür blind. Genau so blieben
+        // die Verleih-/Leasing-/Prüfmittel-Views unübersetzt (2026-07).
+        $reference = array_fill_keys(Translations::jsonReferenceKeys(), true);
+        $missing = array_values(array_filter(
+            Translations::sourceJsonKeys(),
+            static fn(string $k): bool => ! isset($reference[$k]),
+        ));
+
+        $this->assertSame([], $missing, 'Im Quellcode verwendete Keys fehlen in en.json (und damit überall).');
+    }
+
     public function test_every_enabled_locale_has_all_namespace_files(): void {
         $missing = [];
         foreach (Translations::namespaceFiles() as $file) {

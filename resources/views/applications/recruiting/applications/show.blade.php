@@ -75,7 +75,7 @@
             @endif
         </x-card>
 
-        <x-card :title="__('Datenschutzstatus (MVP-192)')">
+        <x-card :title="__('Datenschutzstatus')">
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Löschvormerkung')">{{ optional($application->retention_until)->fdate() ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Talentpool-Einwilligung')">{{ $application->consent_talent_pool_at !== null ? $application->consent_talent_pool_at->fdate() : '—' }}</x-detail-grid.row>

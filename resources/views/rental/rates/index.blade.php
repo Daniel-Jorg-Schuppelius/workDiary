@@ -18,11 +18,26 @@
         <x-card :title="__('Neue Preisliste / neue Version')">
             <form method="POST" action="{{ route('rental.rates.store') }}" class="flex flex-wrap items-end gap-2">
                 @csrf
-                <x-input-field name="name" :label="__('Name (gleicher Name = neue Version)')" required />
-                <x-input-field name="valid_from" type="date" :label="__('Gültig ab')" />
-                <x-input-field name="note" :label="__('Notiz')" />
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Version anlegen') }}</button>
+                <x-filter-field :label="__('Name (gleicher Name = neue Version)')" for="rate-name" show-label>
+                    <input type="text" id="rate-name" name="name" required aria-required="true"
+                           value="{{ old('name') }}"
+                           class="input input-sm input-bordered w-64 @error('name') input-error @enderror">
+                </x-filter-field>
+                <x-filter-field :label="__('Gültig ab')" for="rate-valid-from" show-label>
+                    <input type="date" id="rate-valid-from" name="valid_from"
+                           value="{{ old('valid_from') }}"
+                           class="input input-sm input-bordered @error('valid_from') input-error @enderror">
+                </x-filter-field>
+                <x-filter-field :label="__('Notiz')" for="rate-note" show-label>
+                    <input type="text" id="rate-note" name="note"
+                           value="{{ old('note') }}"
+                           class="input input-sm input-bordered w-64 @error('note') input-error @enderror">
+                </x-filter-field>
+                <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Version anlegen') }}</x-icon-btn>
             </form>
+            @error('name')
+                <p class="mt-1 text-error text-sm">{{ $message }}</p>
+            @enderror
         </x-card>
     @endcan
 

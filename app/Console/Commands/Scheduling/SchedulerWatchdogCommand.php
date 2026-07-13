@@ -94,7 +94,13 @@ class SchedulerWatchdogCommand extends Command {
                         ? \App\Enums\Operations\OperationsTaskSeverity::Critical
                         : \App\Enums\Operations\OperationsTaskSeverity::Warning,
                     titleKey: 'operations.task.scheduler_overdue',
-                    params: ['job' => $definition->label(), 'due' => $due->format('d.m.Y H:i')],
+                    // Roh statt fertig formatiert: Label-Key und ISO-Zeitpunkt
+                    // werden erst beim Anzeigen in Sprache/Zeitzone/Format des
+                    // Betrachters aufgelöst (NotificationText).
+                    params: [
+                        'job' => ['key' => 'scheduler.job.' . $key, 'fallback' => $key],
+                        'due' => $due->toIso8601String(),
+                    ],
                     linkRoute: 'admin.scheduler.index',
                 ));
         }

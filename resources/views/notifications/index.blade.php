@@ -29,7 +29,7 @@
                     <x-icon :name="$data['icon'] ?? 'notifications'" class="mt-0.5 {{ $isUnread ? 'text-primary' : 'text-base-content/50' }}" />
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
-                            <span class="text-sm font-medium {{ $isUnread ? '' : 'opacity-70' }}">{{ $data['title'] ?? '' }}</span>
+                            <span class="text-sm font-medium {{ $isUnread ? '' : 'opacity-70' }}">{{ \App\Support\NotificationText::title($data) }}</span>
                             @if (($data['stage'] ?? '') === 'escalation')
                                 <x-status-badge size="xs" tone="error">{{ __('notification.field.escalation') }}</x-status-badge>
                             @endif

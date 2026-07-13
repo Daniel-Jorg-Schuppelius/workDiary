@@ -4,7 +4,7 @@
 @section('nav-title', __('Prüfkalender'))
 
 @section('content')
-<x-index-page :subtitle="__('Prüftermine mit internen Prüfern oder externen Prüfstellen; Prüfungen werden als unveränderbare Protokolle erfasst (MVP-285/286).')">
+<x-index-page :subtitle="__('Prüftermine mit internen Prüfern oder externen Prüfstellen; Prüfungen werden als unveränderbare Protokolle erfasst.')">
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif

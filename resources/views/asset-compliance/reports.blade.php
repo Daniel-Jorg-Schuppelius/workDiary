@@ -4,7 +4,7 @@
 @section('nav-title', __('Auditbericht'))
 
 @section('content')
-<x-index-page :subtitle="__('Fällige und überfällige Prüfungen, Sperren, Abweichungen und Prüfquote mit Drilldown (MVP-291).')">
+<x-index-page :subtitle="__('Fällige und überfällige Prüfungen, Sperren, Abweichungen und Prüfquote mit Drilldown.')">
     <x-slot:actions>
         <form method="POST" action="{{ route('asset-compliance.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf

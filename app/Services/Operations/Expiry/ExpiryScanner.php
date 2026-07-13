@@ -161,7 +161,7 @@ class ExpiryScanner {
             dedupeKey: 'license_expiring',
             severity: $critical ? OperationsTaskSeverity::Critical : OperationsTaskSeverity::Warning,
             titleKey: 'operations.task.license_expiring',
-            params: ['date' => $expiry->format('d.m.Y'), 'days' => max(0, $daysLeft)],
+            params: ['date' => $expiry->toDateString(), 'days' => max(0, $daysLeft)],
             linkRoute: 'admin.license.index',
         )];
     }
@@ -187,7 +187,7 @@ class ExpiryScanner {
                 params: [
                     'kind' => 'API-Token',
                     'name' => (string) $row->name,
-                    'date' => CarbonImmutable::parse((string) $row->expires_at)->format('d.m.Y'),
+                    'date' => CarbonImmutable::parse((string) $row->expires_at)->toDateString(),
                 ],
                 organizationId: (int) $row->organization_id,
             ))
@@ -214,7 +214,7 @@ class ExpiryScanner {
                     params: [
                         'kind' => 'OAuth-Token (Todoist)',
                         'name' => (string) ($connection->todoist_user_email ?? 'Todoist'),
-                        'date' => $connection->token_expires_at->format('d.m.Y'),
+                        'date' => $connection->token_expires_at->toDateString(),
                     ],
                     organizationId: $orgId,
                 );
@@ -306,7 +306,7 @@ class ExpiryScanner {
             dedupeKey: 'component_eol:php:' . $minor,
             severity: $eol->isPast() ? OperationsTaskSeverity::Critical : OperationsTaskSeverity::Warning,
             titleKey: 'operations.task.component_eol',
-            params: ['component' => 'PHP', 'version' => $minor, 'date' => $eol->format('d.m.Y')],
+            params: ['component' => 'PHP', 'version' => $minor, 'date' => $eol->toDateString()],
             linkRoute: 'admin.components.index',
         )];
     }

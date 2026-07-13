@@ -10,21 +10,20 @@
 
 namespace App\Services\Install;
 
-use App\Enums\User\UserRole;
-use App\Models\{Organization, User};
-use Illuminate\Encryption\Encrypter;
-use Illuminate\Support\Facades\{Artisan, Config, DB, Hash};
-use Illuminate\Support\Str;
-use Minishlink\WebPush\VAPID;
-use PDO;
+use App\Models\User;
+use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\PermissionRegistrar;
 use Throwable;
 
 /**
- * Kapselt die gesamte Installationslogik für den Web-Installer und das
- * begleitende `app:install` Artisan-Command.
+ * Fassade über die gesamte Installationslogik für den Web-Installer und das
+ * begleitende `app:install` Artisan-Command. Die Bausteine liegen seit der
+ * God-Klassen-Aufteilung (Refactoring Welle 2, B6b) in
+ * {@see AppConfigurator} (APP_-Variablen, APP_KEY, SQIDS_SALT),
+ * {@see DatabaseConfigurator} (Verbindungstest/.env/Runtime),
+ * {@see MailIntegrationsConfigurator} (MAIL_-Variablen, Lexoffice, VAPID) und
+ * {@see OrganizationProvisioner} (Erst-Org + Admin) — der öffentliche
+ * Vertrag dieser Fassade ist unverändert.
  *
  * Die Installation gilt als abgeschlossen, sobald die Lock-Datei
  * {@see self::lockPath()} existiert. Solange sie fehlt, leitet
@@ -36,8 +35,20 @@ class InstallationManager {
 
     private readonly string $lockPath;
 
+    private readonly AppConfigurator $app;
+
+    private readonly DatabaseConfigurator $database;
+
+    private readonly MailIntegrationsConfigurator $mail;
+
+    private readonly OrganizationProvisioner $provisioner;
+
     public function __construct(private readonly EnvWriter $env, ?string $lockPath = null) {
         $this->lockPath = $lockPath ?? storage_path('installed');
+        $this->app = new AppConfigurator($env);
+        $this->database = new DatabaseConfigurator($env);
+        $this->mail = new MailIntegrationsConfigurator($env);
+        $this->provisioner = new OrganizationProvisioner($this->database);
     }
 
     public static function make(): self {
@@ -141,7 +152,7 @@ class InstallationManager {
             ];
         }
 
-        foreach ($this->driverExtensions($driver) as $ext) {
+        foreach ($this->database->driverExtensions($driver) as $ext) {
             $checks[] = [
                 'label' => 'Extension: ' . $ext,
                 'ok' => extension_loaded($ext),
@@ -173,92 +184,34 @@ class InstallationManager {
     // ── Anwendungs-/APP_KEY-Konfiguration ────────────────────────────────
 
     /**
-     * Setzt grundlegende Anwendungs-Variablen und erzeugt — falls noch nicht
-     * vorhanden — einen APP_KEY. Ein bereits gesetzter Key wird NIEMALS
-     * überschrieben, da daran verschlüsselte Felder (PluginSetting.settings,
-     * SoftwareInstallation.license_key) hängen.
-     *
      * @param  array{app_name?: string, app_url?: string, app_env?: string, locale?: string, timezone?: string}  $data
+     *
+     * @see AppConfigurator::configureApp()
      */
     public function configureApp(array $data): void {
-        $this->env->ensureFileExists();
-
-        $values = [];
-        if (isset($data['app_name'])) {
-            $values['APP_NAME'] = $data['app_name'];
-        }
-        if (isset($data['app_url'])) {
-            $values['APP_URL'] = rtrim($data['app_url'], '/');
-        }
-        if (isset($data['app_env'])) {
-            $values['APP_ENV'] = $data['app_env'];
-            $values['APP_DEBUG'] = $data['app_env'] === 'local' ? 'true' : 'false';
-        }
-        if (isset($data['locale'])) {
-            $values['APP_LOCALE'] = $data['locale'];
-        }
-        if (isset($data['timezone'])) {
-            $values['APP_TIMEZONE'] = $data['timezone'];
-        }
-
-        if ($values !== []) {
-            $this->env->setMany($values);
-        }
-
-        $this->ensureAppKey();
-        $this->ensureSqidsSalt();
+        $this->app->configureApp($data);
     }
 
     /**
-     * Erzeugt einen APP_KEY, sofern noch keiner gesetzt ist. Lädt den Key in
-     * die Laufzeit-Config, damit Folge-Schritte (Session, Verschlüsselung)
-     * sofort funktionieren.
-     *
      * @return bool true, wenn ein neuer Key erzeugt wurde
+     *
+     * @see AppConfigurator::ensureAppKey()
      */
     public function ensureAppKey(): bool {
-        $this->env->ensureFileExists();
-
-        $current = $this->env->get('APP_KEY');
-        if (is_string($current) && $current !== '') {
-            $this->applyKeyToRuntime($current);
-
-            return false;
-        }
-
-        $key = 'base64:' . base64_encode(Encrypter::generateKey($this->cipher()));
-        $this->env->set('APP_KEY', $key);
-        $this->applyKeyToRuntime($key);
-
-        return true;
+        return $this->app->ensureAppKey();
     }
 
     public function hasAppKey(): bool {
-        $current = $this->env->get('APP_KEY');
-
-        return is_string($current) && $current !== '';
+        return $this->app->hasAppKey();
     }
 
     /**
-     * Erzeugt einen SQIDS_SALT, sofern noch keiner gesetzt ist. Der Salt geht
-     * in die Permutation des Sqids-Alphabets ein; ohne ihn verweigert der
-     * SqidEncoder in Produktion den Dienst (RuntimeException). Ein bereits
-     * gesetzter Salt wird NIEMALS überschrieben, da daran die öffentlich
-     * sichtbaren Route-Keys (Sqids) hängen.
-     *
      * @return bool true, wenn ein neuer Salt erzeugt wurde
+     *
+     * @see AppConfigurator::ensureSqidsSalt()
      */
     public function ensureSqidsSalt(): bool {
-        $this->env->ensureFileExists();
-
-        $current = $this->env->get('SQIDS_SALT');
-        if (is_string($current) && $current !== '') {
-            Config::set('sqids.salt', $current);
-
-            return false;
-        }
-
-        return $this->writeSqidsSalt();
+        return $this->app->ensureSqidsSalt();
     }
 
     /**
@@ -267,93 +220,31 @@ class InstallationManager {
      * bereits verteilte URLs werden ungültig.
      */
     public function regenerateSqidsSalt(): void {
-        $this->env->ensureFileExists();
-        $this->writeSqidsSalt();
-    }
-
-    private function writeSqidsSalt(): bool {
-        $salt = bin2hex(random_bytes(32));
-        $this->env->set('SQIDS_SALT', $salt);
-        Config::set('sqids.salt', $salt);
-        // SqidEncoder-Singleton neu binden, damit der frische Salt sofort greift.
-        app()->forgetInstance(\App\Services\SqidEncoder::class);
-
-        return true;
+        $this->app->regenerateSqidsSalt();
     }
 
     public function hasSqidsSalt(): bool {
-        $current = $this->env->get('SQIDS_SALT');
-
-        return is_string($current) && $current !== '';
+        return $this->app->hasSqidsSalt();
     }
 
     // ── Datenbank ────────────────────────────────────────────────────────
 
     /**
-     * Testet eine Datenbank-Verbindung mit den übergebenen Parametern, ohne
-     * die Laufzeit-Config dauerhaft zu verändern.
-     *
      * @param  array<string, string|int|null>  $config
+     *
+     * @see DatabaseConfigurator::testConnection()
      */
     public function testConnection(array $config): bool {
-        $driver = (string) ($config['driver'] ?? 'sqlite');
-
-        try {
-            if ($driver === 'sqlite') {
-                $database = (string) ($config['database'] ?? database_path('database.sqlite'));
-                if ($database !== ':memory:' && ! is_file($database)) {
-                    @touch($database);
-                }
-
-                return is_file($database) || $database === ':memory:';
-            }
-
-            $pdo = new PDO(
-                $this->dsn($config),
-                (string) ($config['username'] ?? ''),
-                (string) ($config['password'] ?? ''),
-                [PDO::ATTR_TIMEOUT => 5, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],
-            );
-            $pdo->query('SELECT 1');
-
-            return true;
-        } catch (Throwable) {
-            return false;
-        }
+        return $this->database->testConnection($config);
     }
 
     /**
-     * Persistiert die Datenbank-Konfiguration in der .env und aktiviert sie
-     * für die laufende Runtime (damit Migrationen direkt laufen können).
-     *
      * @param  array<string, string|int|null>  $config
+     *
+     * @see DatabaseConfigurator::configureDatabase()
      */
     public function configureDatabase(array $config): void {
-        $driver = (string) ($config['driver'] ?? 'sqlite');
-        $this->env->ensureFileExists();
-
-        if ($driver === 'sqlite') {
-            $database = (string) ($config['database'] ?? database_path('database.sqlite'));
-            if ($database !== ':memory:' && ! is_file($database)) {
-                @touch($database);
-            }
-
-            $this->env->setMany([
-                'DB_CONNECTION' => 'sqlite',
-                'DB_DATABASE' => $database,
-            ]);
-        } else {
-            $this->env->setMany([
-                'DB_CONNECTION' => $driver,
-                'DB_HOST' => (string) ($config['host'] ?? '127.0.0.1'),
-                'DB_PORT' => (string) ($config['port'] ?? ($driver === 'pgsql' ? 5432 : 3306)),
-                'DB_DATABASE' => (string) ($config['database'] ?? ''),
-                'DB_USERNAME' => (string) ($config['username'] ?? ''),
-                'DB_PASSWORD' => (string) ($config['password'] ?? ''),
-            ]);
-        }
-
-        $this->applyDatabaseToRuntime($config);
+        $this->database->configureDatabase($config);
     }
 
     public function runMigrations(bool $fresh = false): void {
@@ -401,197 +292,53 @@ class InstallationManager {
     // ── Organisation & Admin ─────────────────────────────────────────────
 
     /**
-     * Legt die erste Organisation samt Admin-Benutzer an. Idempotent in dem
-     * Sinne, dass eine bestehende Organisation mit gleichem Slug erweitert
-     * statt dupliziert wird.
-     *
      * @param  array{org_name: string, name: string, email: string, password: string}  $data
      * @param  bool  $platformAdmin  Erst-Betreiber (darf Org-Kontext wechseln).
      *         Installer setzen true; app:admin nur mit --platform.
+     *
+     * @see OrganizationProvisioner::createOrganizationAndAdmin()
      */
     public function createOrganizationAndAdmin(array $data, bool $platformAdmin = true): User {
-        // Dieser Schritt läuft in einem eigenen HTTP-Request, in dem die
-        // (ggf. gecachte) Config noch auf die alte Verbindung zeigen kann.
-        // Daher die in der .env hinterlegte DB-Verbindung erneut aktivieren,
-        // damit der Admin garantiert in der konfigurierten Datenbank landet.
-        $this->applyConfiguredDatabaseToRuntime();
-
-        // Spatie-Permission-Cache während der Anlage auf den array-Store legen.
-        // Sonst schreibt die Cache-Invalidierung (assignRole) in die SQLite
-        // `cache`-Tabelle, während diese Transaktion bereits einen Write-Lock
-        // hält – das führt zu „database is locked“.
-        $this->usePermissionArrayCache();
-
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        return DB::transaction(function () use ($data, $platformAdmin): User {
-            $org = Organization::firstOrCreate(
-                ['slug' => Str::slug($data['org_name']) ?: 'default'],
-                [
-                    'name' => $data['org_name'],
-                    'plan' => Organization::PLAN_FREE,
-                    'locale' => (string) config('app.locale', 'de'),
-                    'timezone' => (string) config('app.timezone', 'Europe/Berlin'),
-                    'is_active' => true,
-                ],
-            );
-
-            /** @var User $user */
-            $user = User::create([
-                'organization_id' => $org->id,
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'password' => Hash::make($data['password']),
-                'is_new_system' => true,
-            ]);
-
-            // Der über den Installer angelegte Erst-Admin ist der
-            // Plattform-Betreiber (darf den Org-Kontext wechseln). Bewusst
-            // separat gesetzt — is_platform_admin ist nicht massenzuweisbar.
-            if ($platformAdmin) {
-                $user->forceFill(['is_platform_admin' => true])->save();
-            }
-
-            if ($org->owner_id === null) {
-                $org->update(['owner_id' => $user->id]);
-            }
-
-            app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
-            $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
-            $user->assignRole($adminRole);
-
-            return $user;
-        });
+        return $this->provisioner->createOrganizationAndAdmin($data, $platformAdmin);
     }
 
     /**
-     * Setzt das Passwort eines bestehenden Benutzers neu und stellt sicher,
-     * dass er die Admin-Rolle seiner Organisation besitzt. Reaktiviert vorher
-     * die in der .env konfigurierte DB-Verbindung, damit auch bei gecachter
-     * Config die richtige Datenbank getroffen wird.
+     * @see OrganizationProvisioner::resetAdminPassword()
      */
     public function resetAdminPassword(string $email, string $password): User {
-        $this->applyConfiguredDatabaseToRuntime();
-
-        $this->usePermissionArrayCache();
-
-        app(PermissionRegistrar::class)->forgetCachedPermissions();
-
-        return DB::transaction(function () use ($email, $password): User {
-            /** @var User|null $user */
-            $user = User::where('email', $email)->first();
-            if ($user === null) {
-                throw new RuntimeException("Kein Benutzer mit E-Mail {$email} gefunden.");
-            }
-
-            // Cast 'password' => 'hashed' übernimmt das Hashing beim Speichern.
-            // is_new_system aktivieren, damit der Login das neue bcrypt-Passwort
-            // prüft und nicht weiter auf das Legacy-Klartextpasswort zurückfällt.
-            $user->password = $password;
-            $user->is_new_system = true;
-            $user->save();
-
-            if ($user->organization_id !== null) {
-                app(PermissionRegistrar::class)->setPermissionsTeamId($user->organization_id);
-            }
-            $adminRole = Role::findOrCreate(UserRole::Admin->value, 'web');
-            $user->assignRole($adminRole);
-
-            return $user;
-        });
+        return $this->provisioner->resetAdminPassword($email, $password);
     }
 
     // ── Mail / Integrationen ─────────────────────────────────────────────
 
     /**
      * @param  array<string, string|int|null>  $data
+     *
+     * @see MailIntegrationsConfigurator::configureMail()
      */
     public function configureMail(array $data): void {
-        $this->env->ensureFileExists();
-        $values = [];
-        foreach (
-            [
-                'mailer' => 'MAIL_MAILER',
-                'host' => 'MAIL_HOST',
-                'port' => 'MAIL_PORT',
-                'username' => 'MAIL_USERNAME',
-                'password' => 'MAIL_PASSWORD',
-                'scheme' => 'MAIL_SCHEME',
-                'from_address' => 'MAIL_FROM_ADDRESS',
-                'from_name' => 'MAIL_FROM_NAME',
-            ] as $key => $envKey
-        ) {
-            if (array_key_exists($key, $data) && $data[$key] !== null && $data[$key] !== '') {
-                $values[$envKey] = (string) $data[$key];
-            }
-        }
-
-        if ($values !== []) {
-            $this->env->setMany($values);
-        }
+        $this->mail->configureMail($data);
     }
 
     /**
      * @param  array<string, string|null>  $data
+     *
+     * @see MailIntegrationsConfigurator::configureIntegrations()
      */
     public function configureIntegrations(array $data): void {
-        $this->env->ensureFileExists();
-        $values = [];
-        foreach (
-            [
-                'lexoffice_api_key' => 'LEXOFFICE_API_KEY',
-                'vapid_public_key' => 'VAPID_PUBLIC_KEY',
-                'vapid_private_key' => 'VAPID_PRIVATE_KEY',
-                'vapid_subject' => 'VAPID_SUBJECT',
-            ] as $key => $envKey
-        ) {
-            if (array_key_exists($key, $data) && $data[$key] !== null && $data[$key] !== '') {
-                $values[$envKey] = (string) $data[$key];
-            }
-        }
-
-        if ($values !== []) {
-            $this->env->setMany($values);
-        }
+        $this->mail->configureIntegrations($data);
     }
 
     /**
-     * Erzeugt ein neues VAPID-Schlüsselpaar für Web-Push. Die Schlüssel werden
-     * NICHT persistiert – das übernimmt der Integrations-Schritt, sobald der
-     * Anwender das Formular absendet.
-     *
      * @return array{publicKey: string, privateKey: string}
+     *
+     * @see MailIntegrationsConfigurator::generateVapidKeys()
      */
     public function generateVapidKeys(): array {
-        /** @var array{publicKey: string, privateKey: string} $keys */
-        $keys = VAPID::createVapidKeys();
-
-        return $keys;
+        return $this->mail->generateVapidKeys();
     }
 
     // ── Interne Helfer ───────────────────────────────────────────────────
-
-    /**
-     * Schaltet den Spatie-Permission-Cache auf den flüchtigen array-Store um.
-     * Verhindert, dass Cache-Invalidierungen während einer offenen DB-Trans-
-     * aktion in die (gleiche) SQLite-Datenbank schreiben und dort auf einen
-     * Write-Lock laufen („database is locked“). Der frische Registrar wird neu
-     * aus dem Container aufgelöst, damit die geänderte Store-Konfiguration greift.
-     */
-    private function usePermissionArrayCache(): void {
-        Config::set('permission.cache.store', 'array');
-        app()->forgetInstance(PermissionRegistrar::class);
-    }
-
-    /** @return list<string> */
-    private function driverExtensions(?string $driver): array {
-        return match ($driver) {
-            'mysql' => ['pdo_mysql'],
-            'pgsql' => ['pdo_pgsql'],
-            'sqlite' => ['pdo_sqlite'],
-            default => [],
-        };
-    }
 
     /** @return list<string> */
     private function writablePaths(): array {
@@ -608,77 +355,5 @@ class InstallationManager {
         $base = base_path();
 
         return str_starts_with($path, $base) ? ltrim(substr($path, strlen($base)), '/') : $path;
-    }
-
-    private function applyKeyToRuntime(string $key): void {
-        Config::set('app.key', $key);
-        // Encrypter-Singleton neu binden, damit Session-/Cookie-Verschlüsselung
-        // den frischen Key sofort verwendet.
-        app()->forgetInstance('encrypter');
-    }
-
-    /**
-     * Liest die in der .env hinterlegte Datenbank-Konfiguration und aktiviert
-     * sie für die laufende Runtime. Nötig in Wizard-Schritten nach dem
-     * Datenbank-Schritt, die in eigenen Requests laufen und sonst eine
-     * (gecachte) Alt-Verbindung verwenden würden.
-     */
-    private function applyConfiguredDatabaseToRuntime(): void {
-        $driver = $this->env->get('DB_CONNECTION');
-
-        // Nur eingreifen, wenn die .env eine Verbindung definiert. Ohne
-        // Eintrag (z. B. in Tests) bleibt die bestehende Runtime-Verbindung
-        // unangetastet.
-        if (! is_string($driver) || $driver === '') {
-            return;
-        }
-
-        $this->applyDatabaseToRuntime([
-            'driver' => $driver,
-            'host' => $this->env->get('DB_HOST'),
-            'port' => $this->env->get('DB_PORT'),
-            'database' => $this->env->get('DB_DATABASE'),
-            'username' => $this->env->get('DB_USERNAME'),
-            'password' => $this->env->get('DB_PASSWORD'),
-        ]);
-    }
-
-    /**
-     * @param  array<string, string|int|null>  $config
-     */
-    private function applyDatabaseToRuntime(array $config): void {
-        $driver = (string) ($config['driver'] ?? 'sqlite');
-        Config::set('database.default', $driver);
-
-        if ($driver === 'sqlite') {
-            Config::set('database.connections.sqlite.database', (string) ($config['database'] ?? database_path('database.sqlite')));
-        } else {
-            Config::set("database.connections.{$driver}.host", (string) ($config['host'] ?? '127.0.0.1'));
-            Config::set("database.connections.{$driver}.port", (string) ($config['port'] ?? ($driver === 'pgsql' ? 5432 : 3306)));
-            Config::set("database.connections.{$driver}.database", (string) ($config['database'] ?? ''));
-            Config::set("database.connections.{$driver}.username", (string) ($config['username'] ?? ''));
-            Config::set("database.connections.{$driver}.password", (string) ($config['password'] ?? ''));
-        }
-
-        DB::purge($driver);
-        DB::reconnect($driver);
-    }
-
-    /**
-     * @param  array<string, string|int|null>  $config
-     */
-    private function dsn(array $config): string {
-        $driver = (string) ($config['driver'] ?? 'mysql');
-        $host = (string) ($config['host'] ?? '127.0.0.1');
-        $port = (string) ($config['port'] ?? ($driver === 'pgsql' ? 5432 : 3306));
-        $database = (string) ($config['database'] ?? '');
-
-        return $driver === 'pgsql'
-            ? "pgsql:host={$host};port={$port};dbname={$database}"
-            : "mysql:host={$host};port={$port};dbname={$database}";
-    }
-
-    private function cipher(): string {
-        return (string) config('app.cipher', 'AES-256-CBC');
     }
 }

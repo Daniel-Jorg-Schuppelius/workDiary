@@ -29,7 +29,7 @@
         </div>
     @endforeach
 
-    <x-select-field name="follow_up" :label="__('Folgeentscheidung (MVP-289)')">
+    <x-select-field name="follow_up" :label="__('Folgeentscheidung')">
         <option value="none">{{ __('Keine / Freigabe') }}</option>
         <option value="recalibration">{{ __('Nachkalibrierung (sperrt)') }}</option>
         <option value="repair">{{ __('Reparatur (sperrt)') }}</option>
@@ -41,7 +41,7 @@
     <x-input-field name="follow_up_note" :label="__('Begründung der Maßnahme')" />
 
     <details>
-        <summary class="cursor-pointer text-sm font-medium">{{ __('Zertifikat / Prüfnachweis (MVP-287)') }}</summary>
+        <summary class="cursor-pointer text-sm font-medium">{{ __('Zertifikat / Prüfnachweis') }}</summary>
         <div class="mt-2 grid gap-2">
             <x-input-field name="certificate_no" :label="__('Zertifikatsnummer')" />
             <x-input-field name="certificate_issuer" :label="__('Aussteller')" />

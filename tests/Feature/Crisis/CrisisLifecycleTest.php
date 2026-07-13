@@ -201,4 +201,37 @@ final class CrisisLifecycleTest extends TestCase {
         $this->actingAs($lead)->post(route('crisis.sitrep.store', $case), ['content' => 'x'])->assertForbidden();
         $this->actingAs($lead)->post(route('crisis.activate', $case))->assertForbidden();
     }
+
+    public function test_exercise_dialogs_plan_and_document(): void {
+        $this->actingAs($this->admin)->get(route('crisis.exercises.index'))->assertOk();
+
+        // Plan-Dialog + Anlage.
+        $this->actingAs($this->admin)->get(route('crisis.exercises.create'))
+            ->assertOk()
+            ->assertSee('Übung planen');
+        $this->actingAs($this->admin)->post(route('crisis.exercises.store'), [
+            'title' => 'Ausfall Rechenzentrum',
+            'scenario' => 'Stromausfall legt das primäre RZ lahm.',
+        ])->assertSessionHas('status');
+
+        $exercise = \App\Models\Crisis\CrisisExercise::query()->firstOrFail();
+
+        // Dokumentieren-Dialog + Dokumentation mit allen Feldern.
+        $this->actingAs($this->admin)->get(route('crisis.exercises.document.form', $exercise))
+            ->assertOk()
+            ->assertSee('Übung dokumentieren');
+        $this->actingAs($this->admin)->post(route('crisis.exercises.document', $exercise), [
+            'participants' => 'Krisenstab, IT-Betrieb',
+            'observations' => 'Failover nach 20 Minuten.',
+            'deviations' => 'Alarmierungskette unvollständig.',
+            'effectiveness' => 'partly',
+            'follow_up' => 'Playbook um Eskalationspfad ergänzen.',
+        ])->assertSessionHas('status');
+        $this->assertNotNull($exercise->fresh()->exercised_at);
+
+        // Ohne Führungsrechte weder planen noch dokumentieren.
+        $lead = $this->userWithRole(UserRole::Teamleitung->value);
+        $this->actingAs($lead)->get(route('crisis.exercises.create'))->assertForbidden();
+        $this->actingAs($lead)->get(route('crisis.exercises.document.form', $exercise))->assertForbidden();
+    }
 }

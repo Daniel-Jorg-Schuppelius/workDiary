@@ -4,7 +4,7 @@
 @section('nav-title', __('Gerätepool'))
 
 @section('content')
-<x-index-page :subtitle="__('Leihfähige Geräte und Maschinen mit Gerätegruppe, Pufferzeiten, Prüfpflicht und Standard-Preisliste (MVP-259).')">
+<x-index-page :subtitle="__('Leihfähige Geräte und Maschinen mit Gerätegruppe, Pufferzeiten, Prüfpflicht und Standard-Preisliste.')">
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif

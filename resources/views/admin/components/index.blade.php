@@ -22,7 +22,7 @@
     :badge="__('isms.components.field.app_version') . ' ' . $appVersion"
     badge-tone="info"
 >
-    <div class="alert alert-info bg-info/10 border-info/30 text-sm" role="note">
+    <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
         <x-icon name="privacy_tip" />
         <span>{{ __('isms.components.sbom_note') }}</span>
     </div>

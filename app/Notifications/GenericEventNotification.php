@@ -24,7 +24,7 @@ class GenericEventNotification extends Notification {
     use Queueable;
 
     /**
-     * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
+     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
      * @param  list<string>  $channels  Laravel-Kanäle, z. B. ['database', 'mail']
      */
     public function __construct(
@@ -46,7 +46,9 @@ class GenericEventNotification extends Notification {
 
     public function toMail(object $notifiable): MailMessage {
         // Nutzertext gegen Markdown-Link-Injection entschärfen (s. MailText).
-        $title = \App\Support\MailText::plain((string) $this->payload['title']);
+        // Mit title_key wird der Titel hier — bereits in der Empfänger-Locale
+        // (HasLocalePreference auf User) — frisch gerendert.
+        $title = \App\Support\MailText::plain($this->title());
         $message = \App\Support\MailText::plain((string) ($this->payload['message'] ?? ''));
         $url = $this->payload['url'] ?? null;
 
@@ -68,6 +70,11 @@ class GenericEventNotification extends Notification {
         return $mail;
     }
 
+    /** Titel in der aktuell aktiven Locale (title_key gewinnt über title). */
+    public function title(): string {
+        return \App\Support\NotificationText::title($this->payload);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(object $notifiable): array {
         unset($notifiable);
@@ -76,6 +83,10 @@ class GenericEventNotification extends Notification {
             'event' => $this->event->value,
             'stage' => $this->stage,
             'title' => $this->payload['title'],
+            // Lang-Key + Rohparameter mitschreiben, damit die Anzeige in der
+            // Sprache des Betrachters übersetzen kann (NotificationText).
+            'title_key' => $this->payload['title_key'] ?? null,
+            'title_params' => $this->payload['title_params'] ?? null,
             'message' => $this->payload['message'] ?? null,
             'url' => $this->payload['url'] ?? null,
             'icon' => $this->payload['icon'] ?? $this->event->icon(),

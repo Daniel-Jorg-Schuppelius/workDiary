@@ -4,7 +4,7 @@
 @section('nav-title', __('Verleihbericht'))
 
 @section('content')
-<x-index-page :subtitle="__('Auslastung, Umsatz, Überfälligkeit und Schäden mit Drilldown bis zur Verleihakte (MVP-268).')">
+<x-index-page :subtitle="__('Auslastung, Umsatz, Überfälligkeit und Schäden mit Drilldown bis zur Verleihakte.')">
     <x-slot:actions>
         <form method="POST" action="{{ route('rental.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf

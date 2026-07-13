@@ -31,7 +31,7 @@
         </x-slot:actions>
 
         {{-- 046-Freigaberegel als sichtbarer Hinweis. --}}
-        <div class="alert alert-info bg-info/10 border-info/30 text-sm" role="note">
+        <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="grading" />
             <span>{{ __('isms.review.approval_rule') }}</span>
         </div>

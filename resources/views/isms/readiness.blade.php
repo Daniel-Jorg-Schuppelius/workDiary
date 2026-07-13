@@ -41,7 +41,7 @@
 
         {{-- Selbsteinschätzungs-Disclaimer: prominent und immer sichtbar
              (046-Prinzip: keine automatische Konformitätsbehauptung). --}}
-        <div class="alert alert-info bg-info/10 border-info/30 text-sm" role="note">
+        <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="info" />
             <span>{{ __('isms.readiness.disclaimer') }}</span>
         </div>

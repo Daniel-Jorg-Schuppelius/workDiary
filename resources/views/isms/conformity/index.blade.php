@@ -44,7 +44,7 @@
         @endif
 
         {{-- Strikte 046-Regel als sichtbarer Hinweis. --}}
-        <div class="alert alert-info bg-info/10 border-info/30 text-sm" role="note">
+        <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
             <x-icon name="workspace_premium" />
             <span>{{ __('isms.conformity.certified_rule') }}</span>
         </div>
@@ -67,10 +67,9 @@
             @if ($scope !== null)
                 <input type="hidden" name="scope" value="{{ $scope->sqid }}">
             @endif
-            <label class="fieldset">
-                <span class="fieldset-label text-xs">{{ __('Bewertungsstand zum Stichtag') }}</span>
-                <input type="date" name="as_of" value="{{ request('as_of') }}" class="input input-sm input-bordered">
-            </label>
+            <x-filter-field :label="__('Bewertungsstand zum Stichtag')" for="isms-conformity-as-of" show-label>
+                <input type="date" id="isms-conformity-as-of" name="as_of" value="{{ request('as_of') }}" class="input input-sm input-bordered">
+            </x-filter-field>
             <x-icon-btn icon="history" tone="outline" size="sm" type="submit" show-label>{{ __('Rekonstruieren') }}</x-icon-btn>
         </form>
         @if (($reconstruction ?? null) !== null)

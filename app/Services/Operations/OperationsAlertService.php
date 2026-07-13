@@ -15,7 +15,7 @@ namespace App\Services\Operations;
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus};
 use App\Models\{OperationsTask, Organization};
 use App\Services\Notification\NotificationDispatcher;
-use App\Support\Setting;
+use App\Support\{NotificationText, Setting};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
 
@@ -148,8 +148,13 @@ class OperationsAlertService {
             }
         }
 
+        // title bleibt als in der Erzeuger-Locale gerenderter Fallback (Webhook/
+        // Chat/Kalender sind org-weit ohne Betrachter); database/mail/push
+        // übersetzen über title_key + Rohparameter je Empfänger (NotificationText).
         $this->notifications->notify($event, $subject, null, [
-            'title' => (string) __($signal->titleKey, $signal->params),
+            'title' => NotificationText::render($signal->titleKey, $signal->params),
+            'title_key' => $signal->titleKey,
+            'title_params' => $signal->params,
             'message' => $signal->message ?? '',
             'url' => $task?->url(),
         ]);

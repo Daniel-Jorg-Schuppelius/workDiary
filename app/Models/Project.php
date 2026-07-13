@@ -10,10 +10,9 @@
 
 namespace App\Models;
 
-use App\Enums\Diary\{LocationMode, Status as DiaryStatus};
+use App\Enums\Diary\LocationMode;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Support\Setting;
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, ResolvesEffectiveProjectSettings};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -48,6 +47,11 @@ use Illuminate\Support\{Carbon, Collection, Str};
  * @property bool $global_activities
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ *
+ * Speicher-Seiteneffekte (Slug, Parent-/Kunden-/Status-Vererbung) liegen im
+ * {@see \App\Observers\ProjectObserver}; effektive Einstellungen mit
+ * Vererbung im Concern {@see ResolvesEffectiveProjectSettings}
+ * (Refactoring Welle 2, B6b).
  */
 class Project extends Model {
     use Auditable;
@@ -56,6 +60,7 @@ class Project extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;
+    use ResolvesEffectiveProjectSettings;
 
     protected $fillable = [
         'organization_id',
@@ -194,92 +199,6 @@ class Project extends Model {
         return $this->newQuery()->where($field ?? 'slug', $value)->first();
     }
 
-    protected static function booted(): void {
-        static::saving(function (Project $project): void {
-            if ($project->parent_id !== null) {
-                $parent = static::query()->find($project->parent_id);
-                if ($parent === null) {
-                    throw new \InvalidArgumentException('Parent-Projekt existiert nicht.');
-                }
-                if ($project->exists && (int) $parent->id === (int) $project->id) {
-                    throw new \InvalidArgumentException('Ein Projekt kann nicht sein eigenes Übergeordnetes Projekt sein.');
-                }
-                if ($project->exists && $project->isAncestorOf($parent)) {
-                    throw new \InvalidArgumentException('Zyklus erkannt: das gewählte Parent-Projekt ist ein Sub-Projekt dieses Projekts.');
-                }
-                // Sub-Projekte erben den Customer vom Parent.
-                $project->customer_id = $parent->customer_id;
-                $project->foreign_customer_id = $parent->foreign_customer_id;
-                // Sub-Projekte dürfen kein Standardprojekt sein.
-                $project->is_default = false;
-            }
-
-            if (! $project->slug) {
-                $project->slug = static::uniqueSlug($project->name, $project->customer_id);
-            }
-        });
-
-        // Sicherstellen, dass pro Kunde höchstens ein Standardprojekt existiert.
-        static::saved(function (Project $project): void {
-            if ($project->wasChanged('customer_id')) {
-                $newCustomerId = $project->customer_id;
-
-                // Sub-Projekte erben den neuen Kunden mit (rekursiv via Events).
-                static::query()
-                    ->where('parent_id', $project->id)
-                    ->where(function (Builder $q) use ($newCustomerId): void {
-                        $q->where('customer_id', '!=', $newCustomerId)
-                            ->orWhereNull('customer_id');
-                    })
-                    ->get()
-                    ->each(function (Project $child) use ($newCustomerId): void {
-                        $child->customer_id = $newCustomerId;
-                        $child->save();
-                    });
-
-                // DiaryEntries mitziehen, außer finalisierte oder stornierte.
-                DiaryEntry::query()
-                    ->where('project_id', $project->id)
-                    ->whereNotIn('status', [
-                        DiaryStatus::Completed->value,
-                        DiaryStatus::AcceptedFinal->value,
-                        DiaryStatus::Invoiced->value,
-                        DiaryStatus::Cancelled->value,
-                    ])
-                    ->update(['customer_id' => $newCustomerId]);
-
-                // Rechnungen mitziehen, außer freigegebene/bezahlte/stornierte (nur DRAFT).
-                Invoice::query()
-                    ->where('project_id', $project->id)
-                    ->where('status', Invoice::STATUS_DRAFT)
-                    ->update(['customer_id' => $newCustomerId]);
-            }
-
-            if ($project->wasChanged('status')) {
-                $newStatus = $project->status;
-
-                // Sub-Projekte erben den Status rekursiv mit (Events feuern auch für deren Children).
-                static::query()
-                    ->where('parent_id', $project->id)
-                    ->where('status', '!=', $newStatus)
-                    ->get()
-                    ->each(function (Project $child) use ($newStatus): void {
-                        $child->status = $newStatus;
-                        $child->save();
-                    });
-            }
-
-            if (! $project->is_default || $project->customer_id === null) {
-                return;
-            }
-            static::query()
-                ->where('customer_id', $project->customer_id)
-                ->where('id', '!=', $project->id)
-                ->where('is_default', true)
-                ->update(['is_default' => false]);
-        });
-    }
-
     public static function uniqueSlug(string $name, ?int $customerId = null, ?int $ignoreId = null): string {
         $base = Str::slug($name) ?: 'project';
         $slug = $base;
@@ -348,109 +267,9 @@ class Project extends Model {
         return false;
     }
 
-    /**
-     * Stundensatz mit Vererbung: eigener Wert > Parent (rekursiv) > Customer.
-     */
-    public function effectiveHourlyRate(): ?float {
-        if ($this->hourly_rate !== null) {
-            return (float) $this->hourly_rate;
-        }
-        if ($this->parent !== null) {
-            return $this->parent->effectiveHourlyRate();
-        }
-
-        return $this->customer?->hourly_rate !== null ? (float) $this->customer->hourly_rate : null;
-    }
-
-    public function effectiveInternalRate(): ?float {
-        if ($this->internal_rate !== null) {
-            return (float) $this->internal_rate;
-        }
-        if ($this->parent !== null) {
-            return $this->parent->effectiveInternalRate();
-        }
-
-        return $this->customer?->internal_rate !== null ? (float) $this->customer->internal_rate : null;
-    }
-
-    public function effectiveBillable(): bool {
-        if ($this->billable !== null) {
-            return (bool) $this->billable;
-        }
-        if ($this->parent !== null) {
-            return $this->parent->effectiveBillable();
-        }
-
-        return (bool) ($this->customer->billable ?? true);
-    }
-
-    /**
-     * Automatischer Wetter-Abruf mit Vererbung (Feature 062, Rang 12):
-     * eigener Wert > Parent (rekursiv) > Org-Setting `weather.auto_fetch` > false.
-     * null bedeutet „erben".
-     */
-    public function effectiveWeatherAutoFetch(): bool {
-        if ($this->weather_auto_fetch !== null) {
-            return (bool) $this->weather_auto_fetch;
-        }
-        if ($this->parent !== null) {
-            return $this->parent->effectiveWeatherAutoFetch();
-        }
-
-        return (bool) Setting::get('weather.auto_fetch', false);
-    }
-
-    /**
-     * Abrechnungs-Taktung in Minuten mit Vererbung:
-     * eigener Wert > Parent (rekursiv) > Kunde > 1 (minutengenau).
-     */
-    public function effectiveBillingIncrement(): int {
-        if ($this->billing_increment_minutes !== null) {
-            return max(1, (int) $this->billing_increment_minutes);
-        }
-        if ($this->parent !== null) {
-            return $this->parent->effectiveBillingIncrement();
-        }
-        $customerValue = $this->customer?->billing_increment_minutes;
-
-        return $customerValue !== null ? max(1, (int) $customerValue) : 1;
-    }
-
-    /**
-     * Max. Lücke (Minuten), bis zu der Einträge zusammengefasst werden, mit
-     * Vererbung: eigener Wert > Parent (rekursiv) > Kunde > 0 (keine Zusammenfassung).
-     */
-    public function effectiveBillingGroupingGap(): int {
-        if ($this->billing_grouping_gap_minutes !== null) {
-            return max(0, (int) $this->billing_grouping_gap_minutes);
-        }
-        if ($this->parent !== null) {
-            return $this->parent->effectiveBillingGroupingGap();
-        }
-        $customerValue = $this->customer?->billing_grouping_gap_minutes;
-
-        return $customerValue !== null ? max(0, (int) $customerValue) : 0;
-    }
-
     /** @return HasMany<ProjectBillingRule, $this> */
     public function billingRules(): HasMany {
         return $this->hasMany(ProjectBillingRule::class);
-    }
-
-    /**
-     * Liefert die passendste Billing-Regel für ein Kind (kind-Match vor Fallback,
-     * höchste priority). Fällt rekursiv auf Parent-Projekt zurück.
-     */
-    public function resolveBillingRule(?string $kind, string $plugin = 'lexoffice'): ?ProjectBillingRule {
-        $rule = $this->billingRules()
-            ->where('plugin_id', $plugin)
-            ->forKind($kind)
-            ->first();
-        if ($rule !== null) {
-            return $rule;
-        }
-
-        return $this->parent?->resolveBillingRule($kind, $plugin);
     }
 
     /** @return HasMany<DiaryEntry, $this> */

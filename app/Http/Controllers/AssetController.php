@@ -10,19 +10,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Asset\{AssetClass, AssetOwnership, AssetStatus};
+use App\Enums\Asset\{AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
-use App\Models\{Asset, Attachment, Building, Customer, DiaryEntry, Floor, ForeignCustomer, MaintenancePlan, MaterialUsage, Protocol, Room, Site, Tag, User};
-use App\Services\Asset\{AssetLifecycleService, AssetService, AssetStatusVisibilityService, AssetTimelineService};
+use App\Models\{Asset, Tag, User};
+use App\Services\Asset\{AssetDetailAssembler, AssetFormOptions, AssetService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
+/**
+ * Detail-Aggregation und Options-/Formulardaten liegen in
+ * {@see AssetDetailAssembler} bzw. {@see AssetFormOptions}
+ * (Refactoring Welle 2, B6b).
+ */
 class AssetController extends Controller {
     private const ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
+
+    public function __construct(private readonly AssetFormOptions $options) {}
 
     /**
      * Trennt die Tag-Eingaben aus dem validierten Payload heraus (sie sind
@@ -88,8 +94,8 @@ class AssetController extends Controller {
         }
 
         $assets = $assetsQuery->paginate(20)->withQueryString();
-        $classOptions = $this->assetClassOptions();
-        $statusOptions = $this->assetStatusOptions();
+        $classOptions = $this->options->classOptions();
+        $statusOptions = $this->options->statusOptions();
 
         $statusCounts = Asset::query()
             ->selectRaw('status, count(*) as aggregate')
@@ -128,7 +134,7 @@ class AssetController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', Asset::class);
 
-        $prefill = $this->resolvePrefill($request);
+        $prefill = $this->options->resolvePrefill($request);
 
         return view('assets._form_dialog', [
             'asset' => new Asset([
@@ -136,14 +142,14 @@ class AssetController extends Controller {
                 'customer_id' => $prefill['customer_id'],
                 'room_id' => $prefill['room_id'],
             ]),
-            'classOptions' => $this->assetClassOptions(),
-            'statusOptions' => $this->assetStatusOptionsForCreate(),
-            'customers' => $this->customerOptions(),
-            'foreignCustomers' => $this->foreignCustomerOptions(),
-            'categoryOptions' => $this->categoryOptions(),
+            'classOptions' => $this->options->classOptions(),
+            'statusOptions' => $this->options->statusOptionsForCreate(),
+            'customers' => $this->options->customerOptions(),
+            'foreignCustomers' => $this->options->foreignCustomerOptions(),
+            'categoryOptions' => $this->options->categoryOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),
-        ] + $this->facilityData());
+        ] + $this->options->facilityData());
     }
 
     public function store(SaveAssetRequest $request, AssetService $assetService): RedirectResponse {
@@ -177,7 +183,7 @@ class AssetController extends Controller {
         Gate::authorize('update', $asset);
 
         $room = $asset->room_id !== null
-            ? Room::query()->with('floorRelation.building.site')->find($asset->room_id)
+            ? \App\Models\Room::query()->with('floorRelation.building.site')->find($asset->room_id)
             : null;
         $prefill = [
             'customer_id' => $asset->customer_id,
@@ -190,14 +196,14 @@ class AssetController extends Controller {
 
         return view('assets._form_dialog', [
             'asset' => $asset->load('tags'),
-            'classOptions' => $this->assetClassOptions(),
-            'statusOptions' => $this->assetStatusOptions(),
-            'customers' => $this->customerOptions(),
-            'foreignCustomers' => $this->foreignCustomerOptions(),
-            'categoryOptions' => $this->categoryOptions(),
+            'classOptions' => $this->options->classOptions(),
+            'statusOptions' => $this->options->statusOptions(),
+            'customers' => $this->options->customerOptions(),
+            'foreignCustomers' => $this->options->foreignCustomerOptions(),
+            'categoryOptions' => $this->options->categoryOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),
-        ] + $this->facilityData());
+        ] + $this->options->facilityData());
     }
 
     public function update(SaveAssetRequest $request, Asset $asset, AssetService $assetService): RedirectResponse {
@@ -229,14 +235,7 @@ class AssetController extends Controller {
             ->with('success', __('Asset aktualisiert.'));
     }
 
-    public function show(
-        Asset $asset,
-        Request $request,
-        AssetTimelineService $assetTimeline,
-        AssetStatusVisibilityService $assetStatusVisibility,
-        \App\Services\Asset\AssetAssignmentService $assignmentService,
-        AssetLifecycleService $assetLifecycle,
-    ): View {
+    public function show(Asset $asset, Request $request, AssetDetailAssembler $assembler): View {
         Gate::authorize('view', $asset);
         $user = $request->user();
 
@@ -244,124 +243,7 @@ class AssetController extends Controller {
             abort(403);
         }
 
-        $asset->load([
-            'customer:id,name',
-            'room.floorRelation.building.site',
-            'room.cleaningProfile',
-            'room.requirements' => fn($q) => $q->where('is_active', true),
-            'softwareInstallations.software',
-            'operatingSystem.software',
-            'tags:id,name,color,slug',
-        ]);
-        $asset->loadCount(['diaryEntries', 'protocols', 'materialUsages', 'attachments']);
-
-        $currentAssignment = $assignmentService->openAssignment($asset);
-        $currentAssignment?->load(['assignedToUser:id,name', 'assignedToTeam:id,name', 'checkedOutBy:id,name', 'diaryEntry:id,title']);
-        $assignmentHistory = $asset->assignments()
-            ->whereNotNull('returned_at')
-            ->with(['assignedToUser:id,name', 'assignedToTeam:id,name'])
-            ->limit(12)
-            ->get();
-        $defects = $asset->defects()
-            ->with(['reportedBy:id,name', 'resolvedBy:id,name', 'attachments'])
-            ->limit(20)
-            ->get();
-
-        $diaryEntries = $asset->diaryEntries()
-            ->with(['user:id,name', 'project:id,name'])
-            ->limit(12)
-            ->get()
-            ->filter(fn(DiaryEntry $entry): bool => Gate::forUser($user)->allows('view', $entry))
-            ->values();
-
-        $protocols = $asset->protocols()
-            ->with(['creator:id,name'])
-            ->limit(12)
-            ->get()
-            ->filter(fn(Protocol $protocol): bool => Gate::forUser($user)->allows('view', $protocol))
-            ->values();
-
-        $materialUsages = $asset->materialUsages()
-            ->with(['timesheet:id,work_date,user_id', 'timesheet.user:id,name'])
-            ->latest('updated_at')
-            ->limit(12)
-            ->get()
-            ->filter(fn(MaterialUsage $usage): bool => Gate::forUser($user)->allows('view', $usage))
-            ->values();
-
-        $attachments = $asset->attachments()
-            ->latest('created_at')
-            ->limit(12)
-            ->get()
-            ->filter(fn(Attachment $attachment): bool => Gate::forUser($user)->allows('view', $attachment))
-            ->values();
-
-        $visibleDiaryIds = $diaryEntries->pluck('id')->all();
-        $visibleProtocolIds = $protocols->pluck('id')->all();
-        $visibleMaterialIds = $materialUsages->pluck('id')->all();
-        $visibleAttachmentIds = $attachments->pluck('id')->all();
-
-        $timelineEntries = collect($assetTimeline->build($asset, 24))
-            ->filter(function (array $event) use ($visibleAttachmentIds, $visibleDiaryIds, $visibleMaterialIds, $visibleProtocolIds): bool {
-                $kind = (string) ($event['kind'] ?? '');
-                $payload = is_array($event['payload'] ?? null) ? $event['payload'] : [];
-                $id = (int) ($payload['id'] ?? 0);
-
-                return match ($kind) {
-                    'order.linked' => in_array($id, $visibleDiaryIds, true),
-                    'protocol.linked' => in_array($id, $visibleProtocolIds, true),
-                    'material.linked' => in_array($id, $visibleMaterialIds, true),
-                    'attachment.linked' => in_array($id, $visibleAttachmentIds, true),
-                    default => true,
-                };
-            })
-            ->map(fn(array $event): array => $this->formatTimelineEvent($event))
-            ->values();
-
-        $visibilitySummary = $assetStatusVisibility->summarize($asset);
-
-        $maintenancePlans = $asset->maintenancePlans()->get();
-        $intervalKindOptions = collect(\App\Enums\Asset\MaintenanceIntervalKind::cases())
-            ->mapWithKeys(fn(\App\Enums\Asset\MaintenanceIntervalKind $k): array => [$k->value => match ($k) {
-                \App\Enums\Asset\MaintenanceIntervalKind::Days => __('Tage'),
-                \App\Enums\Asset\MaintenanceIntervalKind::Weeks => __('Wochen'),
-                \App\Enums\Asset\MaintenanceIntervalKind::Months => __('Monate'),
-                \App\Enums\Asset\MaintenanceIntervalKind::OperatingHours => __('Betriebsstunden'),
-                \App\Enums\Asset\MaintenanceIntervalKind::Kilometers => __('Kilometer'),
-            }])
-            ->all();
-        $canManageMaintenance = Gate::forUser($user)->allows('create', MaintenancePlan::class);
-
-        return view('assets.show', [
-            'asset' => $asset,
-            'lifecycle' => $assetLifecycle->summary($asset),
-            'roomRequirements' => $asset->room_id !== null && $asset->room !== null ? $asset->room->requirements : collect(),
-            'classOptions' => $this->assetClassOptions(),
-            'statusOptions' => $this->assetStatusOptions(),
-            'diaryEntries' => $diaryEntries,
-            'protocols' => $protocols,
-            'materialUsages' => $materialUsages,
-            'attachments' => $attachments,
-            'timelineEntries' => $timelineEntries,
-            'statusSummary' => $visibilitySummary,
-            'currentAssignment' => $currentAssignment,
-            'assignmentHistory' => $assignmentHistory,
-            'defects' => $defects,
-            'isCheckedOut' => $currentAssignment !== null,
-            'isDefectBlocked' => $assignmentService->isBlocked($asset),
-            'canCheckout' => Gate::forUser($user)->allows('checkout', $asset),
-            'canManageDefects' => Gate::forUser($user)->allows('manageDefects', $asset),
-            'canUnblock' => Gate::forUser($user)->allows('update', $asset),
-            'maintenancePlans' => $maintenancePlans,
-            'intervalKindOptions' => $intervalKindOptions,
-            'canManageMaintenance' => $canManageMaintenance,
-            'visibleCounts' => [
-                'diary' => $diaryEntries->count(),
-                'protocols' => $protocols->count(),
-                'material' => $materialUsages->count(),
-                'attachments' => $attachments->count(),
-            ],
-        ]);
+        return view('assets.show', $assembler->assemble($asset, $user));
     }
 
     public function unblock(Asset $asset, Request $request, AssetService $assetService): RedirectResponse {
@@ -381,228 +263,11 @@ class AssetController extends Controller {
             ->with('success', __('Asset-Sperre aufgehoben.'));
     }
 
-    /**
-     * @param  array<string, mixed>  $event
-     * @return array{kind: string, title: string, detail: string, occurred_at_formatted: string}
-     */
-    private function formatTimelineEvent(array $event): array {
-        $kind = (string) ($event['kind'] ?? '');
-        $payload = is_array($event['payload'] ?? null) ? $event['payload'] : [];
-        $auditEvent = (string) ($payload['event'] ?? '');
-
-        $title = match ($kind) {
-            'order.linked' => __('Auftrag verknüpft'),
-            'protocol.linked' => __('Protokoll verknüpft'),
-            'material.linked' => __('Materialeinsatz verknüpft'),
-            'attachment.linked' => __('Anhang verknüpft'),
-            'asset.audit' => $this->assetAuditTitle($auditEvent),
-            default => __('Ereignis'),
-        };
-
-        $detail = match ($kind) {
-            'order.linked' => (string) ($payload['title'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
-            'protocol.linked' => (string) ($payload['title'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
-            'material.linked' => (string) ($payload['description'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
-            'attachment.linked' => (string) ($payload['name'] ?? ('#' . ((int) ($payload['id'] ?? 0)))),
-            'asset.audit' => $this->assetAuditDetail($payload),
-            default => __('Unbekanntes Ereignis'),
-        };
-
-        return [
-            'kind' => $kind,
-            'title' => $title,
-            'detail' => $detail,
-            'occurred_at_formatted' => $this->formatTimelineDate($event['occurred_at'] ?? null),
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $payload
-     */
-    private function assetAuditDetail(array $payload): string {
-        $name = trim((string) ($payload['user_name'] ?? ''));
-
-        return $name !== '' ? __('durch :name', ['name' => $name]) : '';
-    }
-
-    private function assetAuditTitle(string $auditEvent): string {
-        return match ($auditEvent) {
-            'asset.statusChanged' => __('Status geändert'),
-            'asset.decommissioned' => __('Außer Betrieb gesetzt'),
-            'asset.ownershipTransferred' => __('Eigentum übertragen'),
-            'asset.moved' => __('Standort geändert'),
-            'asset.updated' => __('Asset aktualisiert'),
-            'asset.created' => __('Asset angelegt'),
-            'created' => __('Datensatz angelegt'),
-            'updated' => __('Datensatz geändert'),
-            'deleted' => __('Datensatz gelöscht'),
-            default => __('Asset-Ereignis'),
-        };
-    }
-
-    private function formatTimelineDate(mixed $value): string {
-        if (! is_string($value) || trim($value) === '') {
-            return '—';
-        }
-
-        return Carbon::parse($value)->format('d.m.Y H:i');
-    }
-
     private function normalizeAssetClass(string $value): ?string {
-        return array_key_exists($value, $this->assetClassOptions()) ? $value : null;
+        return array_key_exists($value, $this->options->classOptions()) ? $value : null;
     }
 
     private function normalizeAssetStatus(string $value): ?string {
-        return array_key_exists($value, $this->assetStatusOptions()) ? $value : null;
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    private function customerOptions(): array {
-        return Customer::query()
-            ->orderBy('name')
-            ->pluck('name', 'id')
-            ->all();
-    }
-
-    /**
-     * @return \Illuminate\Support\Collection<int, ForeignCustomer>
-     */
-    private function foreignCustomerOptions(): \Illuminate\Support\Collection {
-        return ForeignCustomer::query()
-            ->whereNull('archived_at')
-            ->orderBy('name')
-            ->get(['id', 'name', 'customer_id']);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function categoryOptions(): array {
-        /** @var array<string, string> $pool */
-        $pool = (array) config('asset_categories', []);
-
-        return $pool;
-    }
-
-    /**
-     * Liefert die Sammlungen für den Facility-Picker.
-     *
-     * @return array{sites: \Illuminate\Support\Collection<int, Site>, buildings: \Illuminate\Support\Collection<int, Building>, floors: \Illuminate\Support\Collection<int, Floor>, rooms: \Illuminate\Support\Collection<int, Room>}
-     */
-    private function facilityData(): array {
-        return [
-            'sites' => Site::query()->orderBy('name')->get(['id', 'name', 'customer_id']),
-            'buildings' => Building::query()->orderBy('name')->get(['id', 'name', 'site_id']),
-            'floors' => Floor::query()->orderBy('level')->get(['id', 'label', 'level', 'building_id']),
-            'rooms' => Room::query()->orderBy('name')->get(['id', 'name', 'floor_id', 'customer_id']),
-        ];
-    }
-
-    /**
-     * Leitet die Picker-Vorbelegung (Customer/Site/Building/Floor/Room) aus den
-     * Query-Parametern ab. Akzeptiert ?room=, ?floor=, ?building=, ?site=
-     * oder ?customer=; höhere Ebenen werden aufgefüllt.
-     *
-     * @return array{customer_id: int|null, foreign_customer_id: int|null, site_id: int|null, building_id: int|null, floor_id: int|null, room_id: int|null}
-     */
-    private function resolvePrefill(Request $request): array {
-        $rawRoom = (string) $request->query('room', '');
-        $rawFloor = (string) $request->query('floor', '');
-        $rawBuilding = (string) $request->query('building', '');
-        $rawSite = (string) $request->query('site', '');
-        $rawCustomer = (string) $request->query('customer', '');
-
-        $roomId = Sqid::decodeOrNumeric(Room::class, $rawRoom);
-        $floorId = Sqid::decodeOrNumeric(Floor::class, $rawFloor);
-        $buildingId = Sqid::decodeOrNumeric(Building::class, $rawBuilding);
-        $siteId = Sqid::decodeOrNumeric(Site::class, $rawSite);
-        $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomer);
-
-        if ($roomId !== null) {
-            $room = Room::query()->with('floorRelation.building.site')->find($roomId);
-            if ($room !== null) {
-                $floorId ??= $room->floor_id;
-                $buildingId ??= $room->floorRelation?->building_id;
-                $siteId ??= $room->floorRelation?->building?->site_id;
-                $customerId ??= $room->customer_id ?? $room->floorRelation?->building?->site?->customer_id;
-            }
-        }
-        if ($floorId !== null) {
-            $floor = Floor::query()->with('building.site')->find($floorId);
-            if ($floor !== null) {
-                $buildingId ??= $floor->building_id;
-                $siteId ??= $floor->building?->site_id;
-                $customerId ??= $floor->building?->site?->customer_id;
-            }
-        }
-        if ($buildingId !== null && $siteId === null) {
-            $building = Building::query()->with('site')->find($buildingId);
-            if ($building !== null) {
-                $siteId = $building->site_id;
-                $customerId ??= $building->site?->customer_id;
-            }
-        }
-        if ($siteId !== null && $customerId === null) {
-            $customerId = Site::query()->whereKey($siteId)->value('customer_id');
-        }
-
-        return [
-            'customer_id' => $customerId,
-            'foreign_customer_id' => null,
-            'site_id' => $siteId,
-            'building_id' => $buildingId,
-            'floor_id' => $floorId,
-            'room_id' => $roomId,
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function assetClassOptions(): array {
-        return [
-            AssetClass::Device->value => __('Gerät'),
-            AssetClass::Machine->value => __('Maschine'),
-            AssetClass::Tool->value => __('Werkzeug'),
-            AssetClass::Vehicle->value => __('Fahrzeug'),
-            AssetClass::Installation->value => __('Installation'),
-            AssetClass::Software->value => __('Software'),
-            AssetClass::Other->value => __('Sonstiges'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function assetStatusOptions(): array {
-        return [
-            AssetStatus::Active->value => __('Aktiv'),
-            AssetStatus::InMaintenance->value => __('In Wartung'),
-            AssetStatus::InRepair->value => __('In Reparatur'),
-            AssetStatus::Blocked->value => __('Gesperrt'),
-            AssetStatus::Reserved->value => __('Reserviert'),
-            AssetStatus::LoanOut->value => __('Ausgeliehen'),
-            AssetStatus::Replaced->value => __('Ersetzt'),
-            AssetStatus::Decommissioned->value => __('Außer Betrieb'),
-            AssetStatus::Lost->value => __('Verloren'),
-        ];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function assetStatusOptionsForCreate(): array {
-        return [
-            AssetStatus::Active->value => __('Aktiv'),
-            AssetStatus::InMaintenance->value => __('In Wartung'),
-            AssetStatus::InRepair->value => __('In Reparatur'),
-            AssetStatus::Blocked->value => __('Gesperrt'),
-            AssetStatus::Reserved->value => __('Reserviert'),
-            AssetStatus::LoanOut->value => __('Ausgeliehen'),
-            AssetStatus::Replaced->value => __('Ersetzt'),
-            AssetStatus::Lost->value => __('Verloren'),
-        ];
+        return array_key_exists($value, $this->options->statusOptions()) ? $value : null;
     }
 }

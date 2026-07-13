@@ -299,7 +299,7 @@ class TimeCorrectionService {
         if (! in_array($targetType, self::ALLOWED_TARGETS, true)) {
             throw new TimeCorrectionWorkflowException(
                 'unsupportedTarget',
-                __('Target-Typ :type wird in MVP-017 nicht unterstützt.', ['type' => $targetType]),
+                __('Target-Typ :type wird nicht unterstützt.', ['type' => $targetType]),
                 ['target_type' => $targetType],
             );
         }
