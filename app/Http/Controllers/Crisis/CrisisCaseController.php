@@ -98,7 +98,7 @@ class CrisisCaseController extends Controller {
         return view('crisis.show', [
             'case' => $case,
             'roles' => CrisisRole::query()->where('active', true)->orderBy('name')->get(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'deadlines' => $this->deadlines->deadlinesFor($case),
             'canManage' => Gate::allows('update', $case),
         ]);

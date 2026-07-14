@@ -71,6 +71,7 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanPendingShiftExchanges($dispatcher);
         $sent += $this->scanRentalReturns();
         $sent += $this->scanAssetFinanceDeadlines();
+        $sent += $this->scanContractObligations();
         $sent += $this->scanAssetInspections();
 
         $this->info(sprintf('%d Benachrichtigung(en) versendet.', $sent));
@@ -589,6 +590,32 @@ class ScanDeadlinesCommand extends Command {
             $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
             if ($organization !== null) {
                 $sent += $service->scanDeadlines($organization);
+            }
+        }
+
+        return $sent;
+    }
+
+    /**
+     * Allgemeine Vertragsobligationen (Welle D, CLM): Warnung ab Vorwarnzeit
+     * + Eskalation; abgelaufene Obligationen laufender Verträge → missed.
+     * Logik im ContractService je Organisation. Payload trägt due_at → der
+     * Kalender-Kanal (A11) publiziert den Termin automatisch.
+     */
+    private function scanContractObligations(): int {
+        $service = app(\App\Services\Contract\ContractService::class);
+        $sent = 0;
+
+        $organizationIds = \App\Models\Contract\ContractObligation::query()
+            ->withoutGlobalScopes()
+            ->where('status', 'open')
+            ->distinct()
+            ->pluck('organization_id');
+
+        foreach ($organizationIds as $organizationId) {
+            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
+            if ($organization !== null) {
+                $sent += $service->scanObligations($organization);
             }
         }
 

@@ -113,7 +113,7 @@ class ArchiveSummaryService {
 
         return [
             'isAdmin' => $isAdmin,
-            'users' => $isAdmin ? User::query()->orderBy('name')->get(['id', 'name']) : collect(),
+            'users' => $isAdmin ? User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']) : collect(),
             'tab' => $tab,
             'statusFilter' => $statusFilter,
             'filters' => array_merge(

@@ -53,6 +53,15 @@ class DocumentPolicy {
         return $this->update($user, $document);
     }
 
+    /**
+     * Fürs Kundenportal freigeben/zurückziehen folgt dem bestehenden
+     * Doku-Verwaltungsrecht (wie Metadaten ändern): Erfasser für eigene
+     * Dokumente, Verwaltungsrollen (archive/delete) für alle.
+     */
+    public function releaseToCustomer(User $user, Document $document): bool {
+        return $this->update($user, $document);
+    }
+
     public function archive(User $user, Document $document): bool {
         return $user->can(P::DocumentArchive->value);
     }

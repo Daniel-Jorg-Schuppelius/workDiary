@@ -77,7 +77,7 @@ class AssetFinanceContractController extends Controller {
                 ->with('investmentCase')
                 ->first(),
             'termKinds' => AssetFinanceTermKind::cases(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'assets' => Asset::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -89,7 +89,7 @@ class AssetFinanceContractController extends Controller {
         return view('asset-finance._form_dialog', [
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'assets' => Asset::query()->orderBy('name')->get(['id', 'name']),
             'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(['id', 'code', 'label']),
             'investmentCases' => InvestmentCase::query()->orderByDesc('id')->limit(100)->get(['id', 'title']),

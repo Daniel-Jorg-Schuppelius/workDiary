@@ -167,6 +167,7 @@ return [
         'rental' => 'Equipment rental',
         'asset-finance' => 'Leasing & asset contracts',
         'asset-compliance' => 'Test equipment & calibration',
+        'contracts' => 'Contract management',
     ],
 
     'permission' => [
@@ -597,6 +598,11 @@ return [
         'assetFinance.view' => 'View leasing file (without terms)',
         'assetFinance.manage' => 'Create and manage leasing files',
         'assetFinance.finance' => 'View and maintain confidential terms',
+
+        // General contract management (Wave D, CLM)
+        'contract.viewAny' => 'List contracts',
+        'contract.view' => 'View contract',
+        'contract.manage' => 'Create and manage contracts',
 
         // Test equipment / calibration (feature 075)
         'assetCompliance.viewAny' => 'List inspection duties and test equipment',

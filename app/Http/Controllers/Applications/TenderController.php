@@ -61,7 +61,7 @@ class TenderController extends Controller {
         return view('applications.tenders._form_dialog', [
             'opportunity' => new ApplicationOpportunity(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -97,7 +97,7 @@ class TenderController extends Controller {
         return view('applications.tenders._form_dialog', [
             'opportunity' => $opportunity,
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

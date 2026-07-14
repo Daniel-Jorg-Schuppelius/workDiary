@@ -22,6 +22,7 @@
         <x-slot:subtitle>{{ $from }} – {{ $to }}</x-slot:subtitle>
         <x-slot:actions>
             <x-icon-btn icon="table_view" tone="outline" size="sm" :href="route('reports.arbzg-compliance')" show-label>{{ __('Einzelreport') }}</x-icon-btn>
+            <x-icon-btn icon="fact_check" tone="outline" size="sm" :href="route('reports.compliance.history')" show-label>{{ __('compliance.history.nav') }}</x-icon-btn>
         </x-slot:actions>
     </x-page-toolbar>
 

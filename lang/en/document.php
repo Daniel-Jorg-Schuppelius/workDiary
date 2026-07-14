@@ -81,6 +81,34 @@ return [
         'upload' => 'Allowed: PDF, images, Office files, text/CSV, ZIP — max. 25 MB.',
     ],
 
+    // Customer release for the customer portal (wave D — document mirroring).
+    'customer' => [
+        'section' => 'Customer release',
+        'released' => 'Released to customer portal',
+        'not_released' => 'Not released',
+        'released_at' => 'Released on',
+        'released_by' => 'Released by',
+        'badge' => 'Portal',
+        'not_linked_hint' => 'Only documents linked to a customer or a job can be released.',
+        'action' => [
+            'release' => 'Release to customer portal',
+            'revoke' => 'Withdraw release',
+        ],
+        'confirm_revoke' => 'Really withdraw the customer portal release?',
+        'flash' => [
+            'released' => 'Document has been released to the customer portal.',
+            'revoked' => 'The customer portal release has been withdrawn.',
+        ],
+        'error' => [
+            'not_linked' => 'Only documents linked to a customer or a job can be released.',
+        ],
+        'portal' => [
+            'title' => 'Documents',
+            'subtitle' => 'The documents released to you.',
+            'empty' => 'No documents have been released to you yet.',
+        ],
+    ],
+
     'empty' => 'No documents yet.',
     'empty_title' => 'No documents found',
     'empty_filtered' => 'No documents match the current filters.',

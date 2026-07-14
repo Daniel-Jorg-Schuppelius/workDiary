@@ -46,7 +46,7 @@ class JobRequisitionController extends Controller {
 
         return view('applications.recruiting.requisitions._form_dialog', [
             'requisition' => new JobRequisition(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -77,7 +77,7 @@ class JobRequisitionController extends Controller {
 
         return view('applications.recruiting.requisitions._form_dialog', [
             'requisition' => $requisition,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

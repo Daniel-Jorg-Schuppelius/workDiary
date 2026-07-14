@@ -419,7 +419,7 @@ class InvestmentController extends Controller {
     private function formView(InvestmentCase $case): View {
         return view('investments._form_dialog', [
             'case' => $case,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'costCenters' => CostCenter::query()->where('active', true)->orderBy('code')->get(),
         ]);
     }

@@ -28,7 +28,7 @@ class ProjectRecurrenceRuleController extends Controller {
             'rule' => new RecurrenceRule,
             'entryTypes' => EntryType::query()->active()->ordered()->get(['id', 'label']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -56,7 +56,7 @@ class ProjectRecurrenceRuleController extends Controller {
             'rule' => $recurrenceRule,
             'entryTypes' => EntryType::query()->active()->ordered()->get(['id', 'label']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

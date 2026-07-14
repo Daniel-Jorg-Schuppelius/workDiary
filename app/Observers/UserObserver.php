@@ -15,10 +15,10 @@ use App\Support\LookupCache;
 
 class UserObserver {
     public function saved(User $user): void {
-        LookupCache::forgetUserDropdown();
+        LookupCache::forgetUserDropdown($user->organization_id !== null ? (int) $user->organization_id : null);
     }
 
     public function deleted(User $user): void {
-        LookupCache::forgetUserDropdown();
+        LookupCache::forgetUserDropdown($user->organization_id !== null ? (int) $user->organization_id : null);
     }
 }

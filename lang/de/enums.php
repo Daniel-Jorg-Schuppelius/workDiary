@@ -225,6 +225,9 @@ return [
             'assetFinance' => [
                 'deadline' => 'Leasingfrist fällig',
             ],
+            'contract' => [
+                'deadlineDue' => 'Vertragsfrist fällig',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Prüfung fällig/überfällig',
             ],
@@ -662,6 +665,14 @@ return [
             'preparing' => 'In Vorbereitung',
             'ready' => 'Bereit',
             'failed' => 'Fehlgeschlagen',
+        ],
+    ],
+    'compliance' => [
+        'finding-status' => [
+            'open' => 'Offen',
+            'acknowledged' => 'Quittiert',
+            'resolved' => 'Behoben',
+            'accepted' => 'Akzeptiert',
         ],
     ],
     'isms' => [

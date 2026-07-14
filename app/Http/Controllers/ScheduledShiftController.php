@@ -21,7 +21,7 @@ class ScheduledShiftController extends Controller {
         Gate::authorize('view', $shift);
 
         $shift->load(['user', 'shiftType', 'dutyPlan']);
-        $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $users = User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']);
         $types = ShiftType::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'abbreviation']);
 
         return view('scheduled-shifts._form_dialog', compact('shift', 'users', 'types'));
@@ -30,7 +30,7 @@ class ScheduledShiftController extends Controller {
     public function edit(ScheduledShift $shift): View {
         Gate::authorize('update', $shift);
 
-        $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $users = User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']);
         $types = ShiftType::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'abbreviation']);
 
         return view('scheduled-shifts._form_dialog', compact('shift', 'users', 'types'));

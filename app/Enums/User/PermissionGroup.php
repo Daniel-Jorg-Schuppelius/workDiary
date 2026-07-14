@@ -55,6 +55,7 @@ enum PermissionGroup: string implements HasLabel {
     case Rental = 'rental';
     case AssetFinance = 'asset-finance';
     case AssetCompliance = 'asset-compliance';
+    case Contracts = 'contracts';
     case Platform = 'platform';
 
     public function label(): string {
@@ -98,6 +99,7 @@ enum PermissionGroup: string implements HasLabel {
             self::Rental => 'forklift',
             self::AssetFinance => 'request_quote',
             self::AssetCompliance => 'rule_settings',
+            self::Contracts => 'contract',
             self::Platform => 'memory',
         };
     }

@@ -58,4 +58,12 @@ class DocumentFactory extends Factory {
             'status' => DocumentStatus::Archived->value,
         ]);
     }
+
+    /** Fürs Kundenportal freigegeben (Welle D — Dokument-Spiegelung). */
+    public function releasedToCustomer(): self {
+        return $this->state(fn() => [
+            'customer_visible' => true,
+            'customer_released_at' => now(),
+        ]);
+    }
 }

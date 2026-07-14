@@ -36,6 +36,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $description
  * @property int $created_by_user_id
  * @property int|null $current_version_id
+ * @property bool $customer_visible
+ * @property Carbon|null $customer_released_at
+ * @property int|null $customer_released_by
  */
 class Document extends Model {
     use Auditable;
@@ -61,6 +64,9 @@ class Document extends Model {
         'current_version_id',
         'webdav_mirror_detached',
         'sharepoint_mirror_detached',
+        'customer_visible',
+        'customer_released_at',
+        'customer_released_by',
     ];
 
     protected $casts = [
@@ -70,6 +76,8 @@ class Document extends Model {
         'valid_until' => 'date',
         'webdav_mirror_detached' => 'boolean',
         'sharepoint_mirror_detached' => 'boolean',
+        'customer_visible' => 'boolean',
+        'customer_released_at' => 'datetime',
     ];
 
     /** @return MorphTo<Model, $this> */
@@ -90,6 +98,77 @@ class Document extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function customerReleaser(): BelongsTo {
+        return $this->belongsTo(User::class, 'customer_released_by');
+    }
+
+    /**
+     * Kundenzuordnung des Dokuments: für kunden-/auftragsgebundene Dokumente
+     * die zugehörige Kunden-ID, sonst null. Grundlage der Freigabe-Validierung
+     * („nur kunden-/auftragsgebundene Dokumente sind freigebbar") und des
+     * Portal-Scopes. Liest die geladene `documentable`-Relation.
+     */
+    public function customerId(): ?int {
+        return match ($this->documentable_type) {
+            Customer::class => $this->documentable_id !== null ? (int) $this->documentable_id : null,
+            Project::class, DiaryEntry::class, Asset::class => ($cid = $this->documentable?->getAttribute('customer_id')) !== null ? (int) $cid : null,
+            default => null,
+        };
+    }
+
+    /**
+     * Freigebbar ist ein Dokument nur, wenn es einem Kunden oder einem Auftrag
+     * (direkt oder über Projekt/Asset) zugeordnet ist — ein freies oder rein
+     * internes Dokument kann keinem Portal-Kunden zugeordnet werden.
+     */
+    public function isReleasableToCustomer(): bool {
+        return $this->customerId() !== null;
+    }
+
+    /**
+     * Harte Portal-Sichtbarkeitsgrenze: NUR freigegebene Dokumente der
+     * eigenen Organisation, die dem Kunden direkt (Kundenkonto) oder über
+     * einen seiner Aufträge/Projekte/Objekte zugeordnet sind. Interne oder
+     * fremde Dokumente können hier prinzipiell nicht auftauchen.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeVisibleToCustomer(Builder $query, int $organizationId, int $customerId): Builder {
+        return $query
+            ->where('organization_id', $organizationId)
+            ->where('customer_visible', true)
+            ->where(function (Builder $outer) use ($organizationId, $customerId): void {
+                $outer
+                    ->where(function (Builder $q) use ($customerId): void {
+                        $q->where('documentable_type', Customer::class)
+                            ->where('documentable_id', $customerId);
+                    })
+                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
+                        $q->where('documentable_type', Project::class)
+                            ->whereIn('documentable_id', Project::query()
+                                ->where('organization_id', $organizationId)
+                                ->where('customer_id', $customerId)
+                                ->select('id'));
+                    })
+                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
+                        $q->where('documentable_type', DiaryEntry::class)
+                            ->whereIn('documentable_id', DiaryEntry::query()
+                                ->where('organization_id', $organizationId)
+                                ->where('customer_id', $customerId)
+                                ->select('id'));
+                    })
+                    ->orWhere(function (Builder $q) use ($organizationId, $customerId): void {
+                        $q->where('documentable_type', Asset::class)
+                            ->whereIn('documentable_id', Asset::query()
+                                ->where('organization_id', $organizationId)
+                                ->where('customer_id', $customerId)
+                                ->select('id'));
+                    });
+            });
     }
 
     /**

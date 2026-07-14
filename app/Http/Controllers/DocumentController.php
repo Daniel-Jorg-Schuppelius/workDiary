@@ -117,6 +117,7 @@ class DocumentController extends Controller {
             'currentVersion',
             'documentable',
             'creator:id,name',
+            'customerReleaser:id,name',
         ]);
 
         return view('documents.show', [
@@ -182,6 +183,43 @@ class DocumentController extends Controller {
         return redirect()
             ->back()
             ->with('success', __('document.flash.updated'))
+            ->withFragment('document-' . $document->id);
+    }
+
+    /**
+     * Gibt das Dokument fürs Kundenportal frei (Welle D). Nur kunden-/
+     * auftragsgebundene Dokumente sind freigebbar — ein freies/internes
+     * Dokument lässt sich keinem Portal-Kunden zuordnen.
+     */
+    public function release(Document $document): RedirectResponse {
+        Gate::authorize('releaseToCustomer', $document);
+
+        $document->loadMissing('documentable');
+        if (! $document->isReleasableToCustomer()) {
+            return redirect()->back()->with('error', __('document.customer.error.not_linked'));
+        }
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->service->releaseToCustomer($document, $actor);
+
+        return redirect()
+            ->back()
+            ->with('success', __('document.customer.flash.released'))
+            ->withFragment('document-' . $document->id);
+    }
+
+    /** Zieht die Kundenfreigabe zurück (Welle D). */
+    public function revoke(Document $document): RedirectResponse {
+        Gate::authorize('releaseToCustomer', $document);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $this->service->revokeFromCustomer($document, $actor);
+
+        return redirect()
+            ->back()
+            ->with('success', __('document.customer.flash.revoked'))
             ->withFragment('document-' . $document->id);
     }
 

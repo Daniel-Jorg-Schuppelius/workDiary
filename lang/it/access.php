@@ -146,6 +146,7 @@ return [
         'rental' => 'Noleggio attrezzature',
         'asset-finance' => 'Leasing e contratti asset',
         'asset-compliance' => 'Strumenti di misura e taratura',
+        'contracts' => 'Gestione contratti',
     ],
     'permission' => [
         'access.manage' => 'Apri la gestione accessi',
@@ -554,6 +555,11 @@ return [
         'assetFinance.view' => 'Consultare la pratica di leasing (senza condizioni)',
         'assetFinance.manage' => 'Creare e gestire le pratiche di leasing',
         'assetFinance.finance' => 'Consultare e gestire le condizioni riservate',
+
+        // Gestione generale dei contratti (Onda D, CLM)
+        'contract.viewAny' => 'Elencare i contratti',
+        'contract.view' => 'Visualizzare un contratto',
+        'contract.manage' => 'Creare e gestire i contratti',
 
         // Strumenti di misura / taratura (funzionalità 075)
         'assetCompliance.viewAny' => 'Elencare obblighi di verifica e strumenti di misura',

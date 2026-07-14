@@ -225,6 +225,9 @@ return [
             'assetFinance' => [
                 'deadline' => 'Leasing deadline due',
             ],
+            'contract' => [
+                'deadlineDue' => 'Contract deadline due',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Inspection due/overdue',
             ],
@@ -662,6 +665,14 @@ return [
             'preparing' => 'Preparing',
             'ready' => 'Ready',
             'failed' => 'Failed',
+        ],
+    ],
+    'compliance' => [
+        'finding-status' => [
+            'open' => 'Open',
+            'acknowledged' => 'Acknowledged',
+            'resolved' => 'Resolved',
+            'accepted' => 'Accepted',
         ],
     ],
     'isms' => [

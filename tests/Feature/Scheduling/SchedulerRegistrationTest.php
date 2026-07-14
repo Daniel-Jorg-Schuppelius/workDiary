@@ -74,6 +74,8 @@ class SchedulerRegistrationTest extends TestCase {
         'catalog:fetch-due' => ['*/15 * * * *', true, true],
         'security:advisories-pull' => ['30 5 * * *', true, true],
         'privacy:retention-scan' => ['30 4 * * 1', true, true],
+        // Neu mit Feature 006 (Welle D): ArbZG-Verstoß-Persistenz.
+        'compliance:scan-findings' => ['30 1 * * *', true, true],
     ];
 
     /** @return array<string, array{expression: string, onOneServer: bool, withoutOverlapping: bool}> */

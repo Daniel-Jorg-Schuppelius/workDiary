@@ -75,7 +75,7 @@ class RentalCaseController extends Controller {
             'case' => $rental,
             'chargeSuggestions' => Gate::allows('finance', $rental) ? $this->billing->suggestCharges($rental) : [],
             'rentableAssets' => $this->rentableAssets(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -86,7 +86,7 @@ class RentalCaseController extends Controller {
         return view('rental._form_dialog', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'rateCards' => RentalRateCard::query()->active()->orderBy('name')->get(['id', 'name', 'version']),
             'assets' => $this->rentableAssets(),
         ]);

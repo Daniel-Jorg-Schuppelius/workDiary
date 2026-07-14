@@ -13,8 +13,10 @@ namespace App\Http\Controllers\Isms;
 use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
+use App\Models\Privacy\ProcessingAgreement;
 use App\Models\{Supplier, User};
 use App\Services\Isms\SupplierAssessmentService;
+use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -29,6 +31,7 @@ use Illuminate\View\View;
 class SupplierAssessmentController extends Controller {
     public function __construct(
         private readonly SupplierAssessmentService $service,
+        private readonly SqidEncoder $sqids,
     ) {}
 
     public function index(Request $request): View {
@@ -41,7 +44,7 @@ class SupplierAssessmentController extends Controller {
             'sort' => (string) $request->query('sort', 'criticality'),
         ];
 
-        $query = IsmsSupplierAssessment::query()->with(['owner', 'supplier', 'scope']);
+        $query = IsmsSupplierAssessment::query()->with(['owner', 'supplier', 'scope', 'processingAgreement']);
 
         if (SupplierAssessmentStatus::tryFrom($filters['status']) !== null) {
             $query->where('status', $filters['status']);
@@ -85,6 +88,7 @@ class SupplierAssessmentController extends Controller {
             'suppliers' => $this->supplierOptions(),
             'scopes' => $this->scopeOptions(),
             'owners' => $this->ownerOptions(),
+            'agreements' => $this->agreementOptions(),
         ]);
     }
 
@@ -106,6 +110,7 @@ class SupplierAssessmentController extends Controller {
             'suppliers' => $this->supplierOptions(),
             'scopes' => $this->scopeOptions(),
             'owners' => $this->ownerOptions(),
+            'agreements' => $this->agreementOptions(),
         ]);
     }
 
@@ -148,6 +153,13 @@ class SupplierAssessmentController extends Controller {
      * @return array<string, mixed>
      */
     private function validateAssessment(Request $request, User $actor): array {
+        // Das AVV-Feld kommt als opake Sqid (ProcessingAgreement) aus dem Select
+        // — vor der Validierung in den numerischen FK dekodieren, damit die
+        // org-gescopte exists-Rule greift (ungültig/leer ⇒ null).
+        $request->merge([
+            'processing_agreement_id' => $this->decodeAgreementId($request->input('processing_agreement_id')),
+        ]);
+
         $data = $request->validate([
             'supplier_id' => [
                 'nullable', 'integer',
@@ -165,6 +177,12 @@ class SupplierAssessmentController extends Controller {
             'has_nda' => ['nullable', 'boolean'],
             'has_dpa' => ['nullable', 'boolean'],
             'dpa_ref' => ['nullable', 'string', 'max:250'],
+            // AVV-Kopplung (Welle D): org-gescopt — ein AVV einer fremden
+            // Organisation wird abgelehnt (Cross-Tenant-Schutz).
+            'processing_agreement_id' => [
+                'nullable', 'integer',
+                Rule::exists('privacy_processing_agreements', 'id')->where('organization_id', $actor->organization_id),
+            ],
             'audit_right' => ['nullable', 'boolean'],
             'last_review_on' => ['nullable', 'date'],
             'next_review_on' => ['nullable', 'date'],
@@ -184,9 +202,35 @@ class SupplierAssessmentController extends Controller {
         return $data;
     }
 
+    /**
+     * Dekodiert den AVV-Sqid aus dem Select in den numerischen FK. Leere /
+     * ungültige Werte ⇒ null (nullable/exists regelt die Validierung).
+     */
+    private function decodeAgreementId(mixed $value): ?int {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        return $this->sqids->decode(ProcessingAgreement::class, $value);
+    }
+
     /** @return \Illuminate\Support\Collection<int, Supplier> */
     private function supplierOptions() {
         return Supplier::query()->orderBy('name')->get(['id', 'name', 'number']);
+    }
+
+    /**
+     * Org-eigene Auftragsverarbeitungsverträge für die AVV-Verknüpfung
+     * (org-gescopt über den globalen Org-Scope des ProcessingAgreement).
+     *
+     * @return \Illuminate\Support\Collection<int, ProcessingAgreement>
+     */
+    private function agreementOptions() {
+        return ProcessingAgreement::query()
+            ->with('processor:id,name')
+            ->orderByDesc('valid_from')
+            ->orderBy('title')
+            ->get(['id', 'processor_id', 'title', 'status', 'valid_from']);
     }
 
     /** @return \Illuminate\Support\Collection<int, IsmsScope> */

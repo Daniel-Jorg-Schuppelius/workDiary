@@ -74,6 +74,12 @@
             <span class="label-text">{{ __('isms.field.has_dpa') }}</span>
         </label>
         <x-input-field name="dpa_ref" :label="__('isms.field.dpa_ref')" maxlength="250" :value="old('dpa_ref', $assessment?->dpa_ref)" placeholder="{{ __('isms.hint.dpa_ref') }}" />
+        <x-select-field name="processing_agreement_id" :label="__('isms.field.processing_agreement')" span="2" :hint="__('isms.hint.processing_agreement')">
+                <option value="">{{ __('isms.hint.processing_agreement_none') }}</option>
+                @foreach ($agreements as $agreementOption)
+                    <option value="{{ $agreementOption->sqid }}" @selected((string) old('processing_agreement_id', $assessment?->processingAgreement?->sqid) === (string) $agreementOption->sqid)>{{ $agreementOption->title }}{{ $agreementOption->processor?->name ? ' — ' . $agreementOption->processor->name : '' }}</option>
+                @endforeach
+        </x-select-field>
         <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('isms.hint.dpa_loose') }}</p>
     </x-form-group>
 

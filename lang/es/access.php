@@ -146,6 +146,7 @@ return [
         'rental' => 'Alquiler de equipos',
         'asset-finance' => 'Leasing y contratos de activos',
         'asset-compliance' => 'Equipos de medición y calibración',
+        'contracts' => 'Gestión de contratos',
     ],
     'permission' => [
         'access.manage' => 'Abrir la gestión de accesos',
@@ -554,6 +555,11 @@ return [
         'assetFinance.view' => 'Consultar expediente de leasing (sin condiciones)',
         'assetFinance.manage' => 'Crear y gestionar expedientes de leasing',
         'assetFinance.finance' => 'Consultar y gestionar condiciones confidenciales',
+
+        // Gestión general de contratos (Ola D, CLM)
+        'contract.viewAny' => 'Listar contratos',
+        'contract.view' => 'Ver contrato',
+        'contract.manage' => 'Crear y gestionar contratos',
 
         // Equipos de medición / calibración (funcionalidad 075)
         'assetCompliance.viewAny' => 'Listar obligaciones de inspección y equipos de medición',

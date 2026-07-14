@@ -139,6 +139,16 @@ return [
             'allowed' => ['weeklyOn', 'dailyAt', 'monthlyOn'],
             'criticality' => 'core',
         ],
+        // --- ArbZG-Compliance-Verstoß-Persistenz (Feature 006, Welle D) ---
+        // Persistiert die on-the-fly berechneten Verstöße revisionssicher
+        // (Dedup, Auto-„behoben", Audit) je Organisation.
+        'compliance.scan_findings' => [
+            'command' => 'compliance:scan-findings',
+            'cadence' => ['type' => 'dailyAt', 'time' => '01:30'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         'events.check_certificates' => [
             'command' => 'events:check-certificates',
             'cadence' => ['type' => 'dailyAt', 'time' => '06:00'],

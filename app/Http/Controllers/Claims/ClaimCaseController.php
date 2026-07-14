@@ -51,7 +51,7 @@ class ClaimCaseController extends Controller {
             'openCount' => ClaimCase::query()->open()->count(),
             'overdueCount' => ClaimCase::query()->overdue()->count(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -76,7 +76,7 @@ class ClaimCaseController extends Controller {
             'defectTypes' => $resolver->list($orgId, ClassificationDomain::DefectType),
             'rootCauses' => $resolver->list($orgId, ClassificationDomain::RootCause),
             'goodwillReasons' => $resolver->list($orgId, ClassificationDomain::GoodwillReason),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'duplicates' => $this->service->duplicates($claim->only([
                 'diary_entry_id', 'invoice_id', 'asset_id', 'stock_serial_id', 'serial_no', 'customer_id', 'title',
             ]), (int) $claim->id),
@@ -89,7 +89,7 @@ class ClaimCaseController extends Controller {
 
         return view('claims._form_dialog', [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

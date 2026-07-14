@@ -14,6 +14,7 @@ namespace App\Models\Privacy;
 
 use App\Enums\Privacy\AgreementStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Isms\IsmsSupplierAssessment;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
 
@@ -72,6 +73,16 @@ class ProcessingAgreement extends Model {
     /** @return HasMany<Subprocessor, $this> */
     public function subprocessors(): HasMany {
         return $this->hasMany(Subprocessor::class, 'agreement_id')->orderBy('name');
+    }
+
+    /**
+     * ISMS-Lieferantenbewertungen, die dieses AVV referenzieren (Feature 044,
+     * Welle D — AVV-Kopplung). Wiederverwendung des AVV als Lieferantennachweis.
+     *
+     * @return HasMany<IsmsSupplierAssessment, $this>
+     */
+    public function supplierAssessments(): HasMany {
+        return $this->hasMany(IsmsSupplierAssessment::class, 'processing_agreement_id');
     }
 
     /** @return BelongsToMany<ProcessingActivity, $this> */

@@ -81,6 +81,34 @@ return [
         'upload' => 'Permitido: PDF, imágenes, archivos de Office, texto/CSV, ZIP — máx. 25 MB.',
     ],
 
+    // Liberación para el portal de clientes (fase D — reflejo de documentos).
+    'customer' => [
+        'section' => 'Liberación al cliente',
+        'released' => 'Liberado al portal de clientes',
+        'not_released' => 'No liberado',
+        'released_at' => 'Liberado el',
+        'released_by' => 'Liberado por',
+        'badge' => 'Portal',
+        'not_linked_hint' => 'Solo se pueden liberar documentos vinculados a un cliente o a un trabajo.',
+        'action' => [
+            'release' => 'Liberar al portal de clientes',
+            'revoke' => 'Retirar la liberación',
+        ],
+        'confirm_revoke' => '¿Retirar realmente la liberación al portal de clientes?',
+        'flash' => [
+            'released' => 'El documento se ha liberado al portal de clientes.',
+            'revoked' => 'Se ha retirado la liberación al portal de clientes.',
+        ],
+        'error' => [
+            'not_linked' => 'Solo se pueden liberar documentos vinculados a un cliente o a un trabajo.',
+        ],
+        'portal' => [
+            'title' => 'Documentos',
+            'subtitle' => 'Los documentos liberados para usted.',
+            'empty' => 'Todavía no se ha liberado ningún documento para usted.',
+        ],
+    ],
+
     'empty' => 'Aún no hay documentos.',
     'empty_title' => 'No se encontraron documentos',
     'empty_filtered' => 'Ningún documento coincide con los filtros actuales.',

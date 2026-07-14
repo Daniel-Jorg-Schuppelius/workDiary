@@ -225,6 +225,9 @@ return [
             'assetFinance' => [
                 'deadline' => 'Échéance de leasing',
             ],
+            'contract' => [
+                'deadlineDue' => 'Échéance contractuelle',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Contrôle à échéance/en retard',
             ],
@@ -662,6 +665,14 @@ return [
             'preparing' => 'En préparation',
             'ready' => 'Prêt',
             'failed' => 'Échoué',
+        ],
+    ],
+    'compliance' => [
+        'finding-status' => [
+            'open' => 'Ouvert',
+            'acknowledged' => 'Acquitté',
+            'resolved' => 'Résolu',
+            'accepted' => 'Accepté',
         ],
     ],
     'isms' => [

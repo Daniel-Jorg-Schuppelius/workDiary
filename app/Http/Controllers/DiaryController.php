@@ -142,7 +142,10 @@ class DiaryController extends Controller {
         $owner = $auth;
         $requestedUserId = (int) ($data['user_id'] ?? 0);
         if ($requestedUserId > 0 && $requestedUserId !== $auth->id && $auth->canCreateEntriesForOthers()) {
-            $owner = User::findOrFail($requestedUserId);
+            // Mandantengrenze explizit: fremde User-ID darf keinen Eintrag für
+            // einen Benutzer einer anderen Organisation anlegen (User trägt
+            // keinen globalen OrganizationScope; kanonischer Scope-Helfer).
+            $owner = User::forOrganization($auth->organization_id)->findOrFail($requestedUserId);
         }
         unset($data['user_id']);
 

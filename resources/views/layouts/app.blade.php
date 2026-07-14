@@ -866,6 +866,18 @@
                                         ],
                                     ];
                                 }
+                                // Welle D (CLM): Allgemeine Vertragsverwaltung — eigene Rechte
+                                // (contract.viewAny), Modul-Gating via $moduleByItemRoute (module.contracts).
+                                if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Contract\Contract::class)) {
+                                    $sidebarSections[] = [
+                                        'key'         => 'contracts',
+                                        'label'       => __('Verträge'),
+                                        'collapsible' => true,
+                                        'items'       => [
+                                            ['route' => 'contracts.index', 'label' => __('Vertragsakten'), 'icon' => 'contract', 'modal' => false, 'matches' => ['contracts.index', 'contracts.show']],
+                                        ],
+                                    ];
+                                }
                                 // Feature 075: Prüfmittel/Eichung/Kalibrierung — eigene Rechte
                                 // (assetCompliance.viewAny), Modul-Gating via $moduleByItemRoute (module.asset_compliance).
                                 if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\AssetCompliance\AssetComplianceProfile::class)) {
@@ -1127,6 +1139,7 @@
                                 'asset-finance.index' => 'module.asset_finance',
                                 'asset-finance.deadlines.index' => 'module.asset_finance',
                                 'asset-finance.reports.index' => 'module.asset_finance',
+                                'contracts.index' => 'module.contracts',
                                 'asset-compliance.index' => 'module.asset_compliance',
                                 'asset-compliance.profiles.index' => 'module.asset_compliance',
                                 'asset-compliance.schedules.index' => 'module.asset_compliance',

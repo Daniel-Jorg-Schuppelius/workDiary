@@ -12,6 +12,7 @@ return [
     'Classification' => 'Classification',
     'ClassificationRequirement' => 'Exigence de classification',
     'Comment' => 'Commentaire',
+    'ComplianceFinding' => 'Infraction de conformité',
     'CoverageRequirement' => 'Exigence de couverture',
     'Customer' => 'Client',
     'ForeignCustomer' => 'Client externe',

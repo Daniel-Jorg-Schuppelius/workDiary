@@ -90,7 +90,7 @@ class SustainabilityController extends Controller {
                 ->get(),
             'records' => SustainabilityActivityRecord::query()->orderByDesc('period_end')->limit(15)->get(),
             'mappings' => SustainabilityFrameMapping::query()->where('active', true)->whereNull('organization_id')->orderBy('section_code')->get(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'canManage' => Auth::user()?->can(P::SustainabilityManage->value) || (Auth::user()?->isAdmin() ?? false),
         ]);
     }

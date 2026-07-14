@@ -190,7 +190,7 @@ class DashboardService {
             ->whereBetween('archived_at', [$now->startOfDay(), $now->endOfDay()])
             ->count();
 
-        $userCount = User::query()->count();
+        $userCount = User::inCurrentOrganization()->count();
 
         $recentActivity = Comment::query()
             ->where('commentable_type', DiaryEntry::class)

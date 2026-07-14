@@ -32,6 +32,7 @@ class IsmsSupplierAssessmentFactory extends Factory {
             'has_nda' => false,
             'has_dpa' => false,
             'dpa_ref' => null,
+            'processing_agreement_id' => null,
             'audit_right' => false,
             'last_review_on' => null,
             'next_review_on' => null,

@@ -54,4 +54,31 @@ return [
             'yes' => 'ja',
         ],
     ],
+    'history' => [
+        'title' => 'Compliance-Verstöße',
+        'nav' => 'Verstoß-Historie',
+        'subtitle' => 'Persistierte ArbZG-Verstöße mit Bearbeitungsstand und Quittierung.',
+        'to_report' => 'Einzelreport',
+        'to_dashboard' => 'Dashboard',
+        'filter' => [
+            'status' => 'Status',
+            'all' => 'Alle Status',
+        ],
+        'col' => [
+            'employee' => 'Mitarbeiter',
+            'status' => 'Status',
+        ],
+        'empty' => 'Keine persistierten Verstöße.',
+        'note_placeholder' => 'Begründung (Pflicht bei „akzeptiert")',
+        'btn' => [
+            'acknowledge' => 'Quittieren',
+            'accept' => 'Akzeptieren',
+        ],
+        'acknowledged' => 'Verstoß aktualisiert.',
+        'error' => [
+            'invalid_status' => 'Ungültiger Zielstatus.',
+            'not_acknowledgeable' => 'Dieser Verstoß kann nicht mehr quittiert werden.',
+            'note_required' => 'Für „akzeptiert" ist eine Begründung erforderlich.',
+        ],
+    ],
 ];

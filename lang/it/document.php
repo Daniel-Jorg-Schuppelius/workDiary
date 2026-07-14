@@ -81,6 +81,34 @@ return [
         'upload' => 'Consentiti: PDF, immagini, file Office, testo/CSV, ZIP — max. 25 MB.',
     ],
 
+    // Rilascio al portale clienti (ondata D — copia dei documenti).
+    'customer' => [
+        'section' => 'Rilascio al cliente',
+        'released' => 'Rilasciato al portale clienti',
+        'not_released' => 'Non rilasciato',
+        'released_at' => 'Rilasciato il',
+        'released_by' => 'Rilasciato da',
+        'badge' => 'Portale',
+        'not_linked_hint' => 'Solo i documenti collegati a un cliente o a un lavoro possono essere rilasciati.',
+        'action' => [
+            'release' => 'Rilascia al portale clienti',
+            'revoke' => 'Revoca il rilascio',
+        ],
+        'confirm_revoke' => 'Revocare davvero il rilascio al portale clienti?',
+        'flash' => [
+            'released' => 'Il documento è stato rilasciato al portale clienti.',
+            'revoked' => 'Il rilascio al portale clienti è stato revocato.',
+        ],
+        'error' => [
+            'not_linked' => 'Solo i documenti collegati a un cliente o a un lavoro possono essere rilasciati.',
+        ],
+        'portal' => [
+            'title' => 'Documenti',
+            'subtitle' => 'I documenti rilasciati per te.',
+            'empty' => 'Non è ancora stato rilasciato alcun documento per te.',
+        ],
+    ],
+
     'empty' => 'Ancora nessun documento.',
     'empty_title' => 'Nessun documento trovato',
     'empty_filtered' => 'Nessun documento corrisponde ai filtri attuali.',

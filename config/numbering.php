@@ -59,6 +59,15 @@ return [
             'reset_per_year' => true,
             'starts_at' => 0,
         ],
+        'contract' => [
+            'prefix' => 'VTR',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
         'problem_report' => [
             'prefix' => 'PR',
             'prefix_separator' => '-',

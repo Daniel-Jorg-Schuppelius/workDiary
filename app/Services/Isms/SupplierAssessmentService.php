@@ -12,6 +12,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
+use App\Models\Privacy\ProcessingAgreement;
 use App\Models\{Supplier, User};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -26,8 +27,9 @@ use Illuminate\Validation\ValidationException;
  *   Lieferanten ⇒ null). Der Anzeigename (supplier_name) bleibt als
  *   Freitext-Fallback erhalten — bei verknüpftem Supplier wird er, falls
  *   leer, aus dem Lieferantennamen befüllt.
- * - AVV-Bezug zum Datenschutzmanagement bleibt BEWUSST lose (Flag has_dpa +
- *   Freitext dpa_ref) — KEIN FK auf die Privacy-WIP-Tabellen.
+ * - AVV-Kopplung (Feature 044, Welle D): optionaler FK auf ProcessingAgreement
+ *   (Feature 043 stabil), org-gescopt aufgelöst (fremde AVV ⇒ null). Die alten
+ *   losen Felder (Flag has_dpa + Freitext dpa_ref) bleiben als Fallback.
  * - Statusübergänge ausschließlich über transition() entlang
  *   SupplierAssessmentStatus::allowedTransitions().
  *
@@ -57,6 +59,7 @@ class SupplierAssessmentService {
                 'has_nda' => (bool) ($attributes['has_nda'] ?? false),
                 'has_dpa' => (bool) ($attributes['has_dpa'] ?? false),
                 'dpa_ref' => $attributes['dpa_ref'] ?? null,
+                'processing_agreement_id' => $this->resolveProcessingAgreementId($creator, $attributes['processing_agreement_id'] ?? null),
                 'audit_right' => (bool) ($attributes['audit_right'] ?? false),
                 'last_review_on' => $attributes['last_review_on'] ?? null,
                 'next_review_on' => $attributes['next_review_on'] ?? null,
@@ -96,6 +99,9 @@ class SupplierAssessmentService {
                 'has_nda' => array_key_exists('has_nda', $attributes) ? (bool) $attributes['has_nda'] : $assessment->has_nda,
                 'has_dpa' => array_key_exists('has_dpa', $attributes) ? (bool) $attributes['has_dpa'] : $assessment->has_dpa,
                 'dpa_ref' => array_key_exists('dpa_ref', $attributes) ? $attributes['dpa_ref'] : $assessment->dpa_ref,
+                'processing_agreement_id' => array_key_exists('processing_agreement_id', $attributes)
+                    ? $this->resolveProcessingAgreementId($actor, $attributes['processing_agreement_id'])
+                    : $assessment->processing_agreement_id,
                 'audit_right' => array_key_exists('audit_right', $attributes) ? (bool) $attributes['audit_right'] : $assessment->audit_right,
                 'last_review_on' => array_key_exists('last_review_on', $attributes) ? $attributes['last_review_on'] : $assessment->last_review_on,
                 'next_review_on' => array_key_exists('next_review_on', $attributes) ? $attributes['next_review_on'] : $assessment->next_review_on,
@@ -200,6 +206,26 @@ class SupplierAssessmentService {
         }
 
         return $name;
+    }
+
+    /**
+     * Löst die AVV-ID (ProcessingAgreement) org-gescopt auf (fremde AVV ⇒
+     * null). Defense-in-depth zur org-gescopten Validierung im Request: über
+     * die Mandantengrenze hinweg ist keine Verknüpfung möglich, auch nicht bei
+     * direktem Service-Aufruf.
+     */
+    private function resolveProcessingAgreementId(User $actor, mixed $agreementId): ?int {
+        if (empty($agreementId)) {
+            return null;
+        }
+
+        $exists = ProcessingAgreement::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $actor->organization_id)
+            ->whereKey((int) $agreementId)
+            ->exists();
+
+        return $exists ? (int) $agreementId : null;
     }
 
     /** Löst die Scope-ID org-gescopt auf (fremde Scopes ⇒ null). */

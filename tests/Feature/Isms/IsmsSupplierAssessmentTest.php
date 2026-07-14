@@ -12,11 +12,15 @@ namespace Tests\Feature\Isms;
 
 use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Enums\Notification\NotificationEvent;
+use App\Enums\Privacy\{AgreementStatus, ProcessorRole};
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
 use App\Models\{Organization, Supplier, User};
+use App\Models\Privacy\{ProcessingAgreement, Processor};
 use App\Services\Isms\ReadinessService;
 use App\Services\Notification\NotificationDispatcher;
+use App\Services\Privacy\DataProtectionPermissions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 /**
@@ -26,6 +30,11 @@ use Tests\TestCase;
  */
 class IsmsSupplierAssessmentTest extends TestCase {
     use RefreshDatabase;
+
+    protected function tearDown(): void {
+        app(PermissionRegistrar::class)->setPermissionsTeamId(null);
+        parent::tearDown();
+    }
 
     public function test_admin_can_create_assessment_with_freetext_supplier(): void {
         $admin = User::factory()->admin()->create();
@@ -235,6 +244,129 @@ class IsmsSupplierAssessmentTest extends TestCase {
         // 046-Prinzip: das Ergebnis behauptet nie automatisch Konformität.
         $content = $response->getContent();
         $this->assertStringNotContainsStringIgnoringCase('zertifiziert', $content === false ? '' : $content);
+    }
+
+    // ── AVV-Kopplung (Feature 044, Welle D) ────────────────────────────────
+
+    public function test_admin_can_link_processing_agreement(): void {
+        $admin = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $admin->organization);
+        $agreement = $this->makeAgreement((int) $admin->organization_id);
+
+        $this->actingAs($admin)
+            ->from(route('isms.suppliers.index'))
+            ->post(route('isms.suppliers.store'), [
+                'supplier_name' => 'Acme Cloud GmbH',
+                // Sqid des AVV — wird im Controller org-gescopt dekodiert/validiert.
+                'processing_agreement_id' => $agreement->sqid,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('isms_supplier_assessments', [
+            'supplier_name' => 'Acme Cloud GmbH',
+            'organization_id' => $admin->organization_id,
+            'processing_agreement_id' => $agreement->id,
+        ]);
+    }
+
+    public function test_processing_agreement_link_can_be_removed(): void {
+        $admin = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $admin->organization);
+        $agreement = $this->makeAgreement((int) $admin->organization_id);
+        $assessment = IsmsSupplierAssessment::factory()->create([
+            'organization_id' => $admin->organization_id,
+            'supplier_name' => 'Acme',
+            'processing_agreement_id' => $agreement->id,
+        ]);
+
+        $this->actingAs($admin)
+            ->from(route('isms.suppliers.index'))
+            ->put(route('isms.suppliers.update', $assessment), [
+                'supplier_name' => 'Acme',
+                'processing_agreement_id' => '', // Verknüpfung entfernen
+            ])
+            ->assertRedirect();
+
+        $this->assertNull($assessment->refresh()->processing_agreement_id);
+    }
+
+    public function test_foreign_organization_processing_agreement_is_rejected(): void {
+        $admin = User::factory()->admin()->create();
+        $otherOrg = Organization::factory()->create(['slug' => 'isms-sa-avv-cross']);
+        $foreignAgreement = $this->makeAgreement((int) $otherOrg->id);
+
+        app()->instance('currentOrganization', $admin->organization);
+        $this->actingAs($admin)
+            ->from(route('isms.suppliers.index'))
+            ->post(route('isms.suppliers.store'), [
+                'supplier_name' => 'Acme',
+                // Fremd-Org-AVV: org-gescopte exists-Rule lehnt ab (Cross-Tenant).
+                'processing_agreement_id' => $foreignAgreement->sqid,
+            ])
+            ->assertSessionHasErrors('processing_agreement_id');
+
+        $this->assertDatabaseCount('isms_supplier_assessments', 0);
+    }
+
+    public function test_detail_links_agreement_when_viewer_may_read_it(): void {
+        $admin = User::factory()->admin()->create();
+        $org = Organization::findOrFail($admin->organization_id);
+        app()->instance('currentOrganization', $org);
+
+        // Betrachter erhält Datenschutz-Leserecht (AVV sichtbar) über die
+        // Datenschutz-Rolle.
+        DataProtectionPermissions::seedOrganization($org);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
+        $admin->assignRole(DataProtectionPermissions::ROLE_DATENSCHUTZ);
+
+        $agreement = $this->makeAgreement((int) $org->id, 'Sichtbares Hosting-AVV');
+        IsmsSupplierAssessment::factory()->create([
+            'organization_id' => $org->id,
+            'processing_agreement_id' => $agreement->id,
+        ]);
+
+        // sort=review nutzt IS NULL statt FIELD() (SQLite-kompatibel).
+        $this->actingAs($admin)
+            ->get(route('isms.suppliers.index', ['sort' => 'review']))
+            ->assertOk()
+            ->assertSee('Sichtbares Hosting-AVV')
+            ->assertSee(route('dataprotection.agreements.show', $agreement), false);
+    }
+
+    public function test_detail_shows_agreement_without_link_without_read_permission(): void {
+        $admin = User::factory()->admin()->create();
+        $org = Organization::findOrFail($admin->organization_id);
+        app()->instance('currentOrganization', $org);
+
+        // KEIN Datenschutz-Leserecht: Titel wird angezeigt, aber nicht verlinkt.
+        $agreement = $this->makeAgreement((int) $org->id, 'Verstecktes Hosting-AVV');
+        IsmsSupplierAssessment::factory()->create([
+            'organization_id' => $org->id,
+            'processing_agreement_id' => $agreement->id,
+        ]);
+
+        // sort=review nutzt IS NULL statt FIELD() (SQLite-kompatibel).
+        $this->actingAs($admin)
+            ->get(route('isms.suppliers.index', ['sort' => 'review']))
+            ->assertOk()
+            ->assertSee('Verstecktes Hosting-AVV')
+            ->assertDontSee(route('dataprotection.agreements.show', $agreement), false);
+    }
+
+    private function makeAgreement(int $orgId, string $title = 'Hosting-AVV'): ProcessingAgreement {
+        $processor = Processor::create([
+            'organization_id' => $orgId,
+            'name' => 'Cloud GmbH',
+            'role' => ProcessorRole::Processor->value,
+        ]);
+
+        return ProcessingAgreement::create([
+            'organization_id' => $orgId,
+            'processor_id' => $processor->id,
+            'title' => $title,
+            'version' => '1.0',
+            'status' => AgreementStatus::Active->value,
+        ]);
     }
 
     /**

@@ -165,6 +165,48 @@ class DocumentService {
         });
     }
 
+    /**
+     * Gibt ein kunden-/auftragsgebundenes Dokument fürs Kundenportal frei
+     * (Welle D). Idempotent. Neben dem Auditable-`updated`-Diff wird das
+     * fachliche Event `document.released_to_customer` in die Hash-Kette
+     * geschrieben. Die NOT-NULL-Spalte `created_by_user_id` bleibt unberührt —
+     * nur die Freigabe-Felder werden gesetzt.
+     */
+    public function releaseToCustomer(Document $document, User $actor): Document {
+        if ($document->customer_visible) {
+            return $document;
+        }
+
+        return DB::transaction(function () use ($document, $actor): Document {
+            $document->update([
+                'customer_visible' => true,
+                'customer_released_at' => now(),
+                'customer_released_by' => $actor->id,
+            ]);
+            $document->audit('document.released_to_customer', ['actor_user_id' => $actor->id]);
+
+            return $document;
+        });
+    }
+
+    /** Zieht die Kundenfreigabe zurück (Welle D). Idempotent. */
+    public function revokeFromCustomer(Document $document, User $actor): Document {
+        if (! $document->customer_visible) {
+            return $document;
+        }
+
+        return DB::transaction(function () use ($document, $actor): Document {
+            $document->update([
+                'customer_visible' => false,
+                'customer_released_at' => null,
+                'customer_released_by' => null,
+            ]);
+            $document->audit('document.revoked_from_customer', ['actor_user_id' => $actor->id]);
+
+            return $document;
+        });
+    }
+
     /** Archiviert manuell (Dokument bleibt mit Historie erhalten). */
     public function archive(Document $document, User $actor): Document {
         if ($document->status === DocumentStatus::Archived) {

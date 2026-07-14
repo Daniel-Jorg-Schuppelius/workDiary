@@ -90,7 +90,7 @@ class ReportTargetController extends Controller {
             'periodOptions' => ReportTargetPeriod::cases(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ];
     }
 
@@ -103,7 +103,7 @@ class ReportTargetController extends Controller {
         return [
             'customer' => Customer::query()->pluck('name', 'id')->map(static fn($v): string => (string) $v)->all(),
             'project' => Project::query()->pluck('name', 'id')->map(static fn($v): string => (string) $v)->all(),
-            'user' => User::query()->pluck('name', 'id')->map(static fn($v): string => (string) $v)->all(),
+            'user' => User::inCurrentOrganization()->pluck('name', 'id')->map(static fn($v): string => (string) $v)->all(),
         ];
     }
 }

@@ -1115,6 +1115,13 @@ Route::middleware('auth')->group(function () {
         Route::post('purchase-orders/advices/{advice}/cancel', [\App\Http\Controllers\PurchaseOrderController::class, 'cancelAdvice'])->name('purchase-orders.advices.cancel');
         Route::post('purchase-orders/{purchaseOrder}/cancel', [\App\Http\Controllers\PurchaseOrderController::class, 'cancel'])->name('purchase-orders.cancel');
 
+        // ── Lieferantenperformance-Scorecards (Bauturbo Welle D) ─ Gate supplier-scorecards.* → module.lager
+        // Termintreue/Reklamationsquote/Preisentwicklung/ISMS-Qualität je Lieferant,
+        // aggregiert aus Einkauf/Lager/Claims/ISMS; signierte Beleg-Drilldowns.
+        Route::get('supplier-scorecards', [\App\Http\Controllers\Reporting\SupplierScorecardController::class, 'index'])->name('supplier-scorecards.index');
+        Route::get('supplier-scorecards/{supplier}/drilldown', [\App\Http\Controllers\Reporting\SupplierScorecardController::class, 'drilldown'])->name('supplier-scorecards.drilldown');
+        Route::get('supplier-scorecards/{supplier}', [\App\Http\Controllers\Reporting\SupplierScorecardController::class, 'show'])->name('supplier-scorecards.show');
+
         // ── Lieferantenkataloge (Feature 050, MVP-091/092) ─ Gate supplier-catalogs.* → module.lager
         Route::get('supplier-catalogs', [\App\Http\Controllers\SupplierCatalogController::class, 'index'])->name('supplier-catalogs.index');
         Route::get('supplier-catalogs/create', [\App\Http\Controllers\SupplierCatalogController::class, 'create'])->name('supplier-catalogs.create');
@@ -1446,6 +1453,21 @@ Route::middleware('auth')->group(function () {
             Route::post('{contract}/ende', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeEndProcess'])->name('ends.store');
             Route::post('ende/{endProcess}/abschliessen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'completeEndProcess'])->name('ends.complete');
             Route::post('{contract}/kosten-snapshot', [\App\Http\Controllers\Reporting\AssetFinanceReportController::class, 'costSnapshot'])->name('costs.snapshot');
+        });
+
+        // ── Allgemeine Vertragsverwaltung (Welle D CLM, module.contracts) ──
+        Route::prefix('vertraege')->name('contracts.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Contract\ContractController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Contract\ContractController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Contract\ContractController::class, 'store'])->name('store');
+            Route::get('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'show'])->name('show');
+            Route::put('{contract}', [\App\Http\Controllers\Contract\ContractController::class, 'update'])->name('update');
+            Route::post('{contract}/aktivieren', [\App\Http\Controllers\Contract\ContractController::class, 'activate'])->name('activate');
+            Route::post('{contract}/kuendigen', [\App\Http\Controllers\Contract\ContractController::class, 'terminate'])->name('terminate');
+            Route::post('{contract}/beenden', [\App\Http\Controllers\Contract\ContractController::class, 'end'])->name('end');
+            Route::post('{contract}/obligationen', [\App\Http\Controllers\Contract\ContractController::class, 'storeObligation'])->name('obligations.store');
+            Route::post('obligationen/{obligation}/erledigen', [\App\Http\Controllers\Contract\ContractController::class, 'completeObligation'])->name('obligations.complete');
+            Route::post('{contract}/leasing-verknuepfen', [\App\Http\Controllers\Contract\ContractController::class, 'linkAssetFinance'])->name('asset-finance.link');
         });
 
         // ── Prüfmittel/Eichung/Kalibrierung (Feature 075, module.asset_compliance) ──
@@ -1789,6 +1811,9 @@ Route::middleware('auth')->group(function () {
         Route::post('documents/{document}/versions', [\App\Http\Controllers\DocumentController::class, 'addVersion'])->name('documents.versions.store');
         Route::get('documents/{document}/download/{version?}', [\App\Http\Controllers\DocumentController::class, 'download'])->name('documents.download');
         Route::post('documents/{document}/archive', [\App\Http\Controllers\DocumentController::class, 'archive'])->name('documents.archive');
+        // Kundenfreigabe fürs Kundenportal (Welle D — Dokument-Spiegelung).
+        Route::post('documents/{document}/customer-release', [\App\Http\Controllers\DocumentController::class, 'release'])->name('documents.customer-release');
+        Route::post('documents/{document}/customer-revoke', [\App\Http\Controllers\DocumentController::class, 'revoke'])->name('documents.customer-revoke');
         Route::delete('documents/{document}', [\App\Http\Controllers\DocumentController::class, 'destroy'])->name('documents.destroy');
 
         // ── Wissensbasis & Problemhistorie (Feature 011) ───────────────────
@@ -2285,6 +2310,11 @@ Route::middleware('auth')->group(function () {
             ->name('reports.compliance.dashboard');
         Route::get('reports/arbzg-compliance', [\App\Http\Controllers\Reporting\ArbZgComplianceReportController::class, 'index'])
             ->name('reports.arbzg-compliance');
+        // Persistierte Verstoß-Historie + Acknowledge-Workflow (Feature 006, Welle D).
+        Route::get('reports/compliance/history', [\App\Http\Controllers\Reporting\ArbZgComplianceReportController::class, 'history'])
+            ->name('reports.compliance.history');
+        Route::post('reports/compliance/findings/{finding}/acknowledge', [\App\Http\Controllers\Reporting\ArbZgComplianceReportController::class, 'acknowledge'])
+            ->name('reports.compliance.acknowledge');
         Route::post('reports/sla/violations/{violation}/acknowledge', [\App\Http\Controllers\Reporting\SlaReportController::class, 'acknowledge'])
             ->name('reports.sla.acknowledge');
 

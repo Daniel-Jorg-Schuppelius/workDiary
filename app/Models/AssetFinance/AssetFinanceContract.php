@@ -44,7 +44,7 @@ class AssetFinanceContract extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'number', 'kind', 'status', 'partner_name',
+        'organization_id', 'contract_id', 'number', 'kind', 'status', 'partner_name',
         'supplier_id', 'contract_no', 'starts_on', 'ends_on',
         'notice_period_days', 'payment_rhythm', 'rate_amount', 'currency',
         'special_payment', 'residual_value', 'purchase_option_amount',
@@ -82,6 +82,16 @@ class AssetFinanceContract extends Model {
     /** @return BelongsTo<Supplier, $this> */
     public function supplier(): BelongsTo {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /**
+     * Optionaler additiver Bezug auf den allgemeinen Vertrag (Welle D, CLM).
+     * Der Spezialfall bleibt eigenständig; die Verknüpfung ist rein additiv.
+     *
+     * @return BelongsTo<\App\Models\Contract\Contract, $this>
+     */
+    public function contract(): BelongsTo {
+        return $this->belongsTo(\App\Models\Contract\Contract::class);
     }
 
     /** @return BelongsTo<CostCenter, $this> */

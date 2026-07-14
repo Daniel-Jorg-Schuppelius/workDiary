@@ -10,19 +10,20 @@
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\Attendance\AttendanceStatus;
+use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{Attendance, Organization, Team, TimeCorrectionRequest, User};
-use App\Services\Compliance\{AttendanceComplianceChecker, AttendanceComplianceFinding};
-use App\Support\{Sqid, Tz};
+use App\Models\{ComplianceFinding, Organization, Team, TimeCorrectionRequest, User};
+use App\Services\Compliance\{AttendanceComplianceChecker, ComplianceFindingService, ComplianceScanService};
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\{Request, Response};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{DB, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -176,42 +177,34 @@ class ArbZgComplianceReportController extends Controller {
      * @return array{rows: array<int, array{user: User, findings: list<array<string, mixed>>, counts: array<string,int>}>}
      */
     private function build(CarbonImmutable $from, CarbonImmutable $to): array {
-        /** @var Organization|null $org */
-        $org = app()->bound('currentOrganization') && app('currentOrganization') instanceof Organization
-            ? app('currentOrganization')
-            : null;
-        $checker = AttendanceComplianceChecker::forOrganization($org);
+        $org = $this->currentOrganization();
+        if (! $org instanceof Organization) {
+            return ['rows' => []];
+        }
+
+        // Verstöße weiterhin ON-THE-FLY berechnen (unverändertes Report-
+        // Verhalten). Die reine Ermittlung liegt jetzt im ComplianceScanService,
+        // damit Report (Anzeige) und Scan-Command (Persistenz) dieselbe Logik
+        // teilen; die Anzeige-Aufbereitung (Sqid, Korrektur-Badge) bleibt hier.
+        $findingsByUser = app(ComplianceScanService::class)->findingsForRange($org, $from, $to);
+        if ($findingsByUser === []) {
+            return ['rows' => []];
+        }
 
         // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne
         // expliziten Org-Filter erschienen User ALLER Organisationen als
         // Report-Zeilen (Tenant-Leak, Bauturbo A17).
         /** @var Collection<int, User> $users */
         $users = User::query()
-            ->where('organization_id', $org?->getKey())
+            ->where('organization_id', $org->getKey())
             ->orderBy('name')
             ->get(['id', 'name']);
-        if ($users->isEmpty() || ! $checker->enabled()) {
-            return ['rows' => []];
-        }
-        $userIds = $users->pluck('id')->map(static fn($v): int => (int) $v)->all();
-
-        // Stempel-Spannen im Zeitraum laden (ohne abgesagte/offene). Ruhezeit
-        // braucht den Vortag → Fenster um einen Tag nach vorn erweitern.
-        /** @var Collection<int, Attendance> $attendances */
-        $attendances = Attendance::query()
-            ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$from->copy()->subDay()->toDateString(), $to->toDateString()])
-            ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
-            ->whereNotNull('started_at')
-            ->whereNotNull('ended_at')
-            ->orderBy('started_at')
-            ->get();
 
         // Genehmigte/angewandte Zeitkorrekturen im Zeitraum (nur Anzeige/Verweis).
         /** @var array<int, array<string, bool>> $correctedByUserDate */
         $correctedByUserDate = [];
         TimeCorrectionRequest::query()
-            ->whereIn('user_id', $userIds)
+            ->whereIn('user_id', array_keys($findingsByUser))
             ->whereIn('status', [TimeCorrectionStatus::Approved->value, TimeCorrectionStatus::Applied->value])
             ->whereBetween('scope_date', [$from->toDateString(), $to->toDateString()])
             ->get(['user_id', 'scope_date'])
@@ -219,39 +212,10 @@ class ArbZgComplianceReportController extends Controller {
                 $correctedByUserDate[(int) $r->user_id][$r->scope_date->toDateString()] = true;
             });
 
-        $tz = Tz::current();
-
-        /** @var array<int, array<string, list<array{started_at: CarbonImmutable, ended_at: ?CarbonImmutable, break_minutes: int}>>> $spansByUserDate */
-        $spansByUserDate = [];
-        foreach ($attendances as $a) {
-            if (! $a->started_at || ! $a->ended_at) {
-                continue;
-            }
-            // Kalendertag in der Anzeige-Zeitzone (wie Attendance::saving()).
-            $dateKey = $a->started_at->copy()->setTimezone($tz)->toDateString();
-            $spansByUserDate[(int) $a->user_id][$dateKey][] = [
-                'started_at' => CarbonImmutable::parse($a->started_at->toIso8601String()),
-                'ended_at' => CarbonImmutable::parse($a->ended_at->toIso8601String()),
-                'break_minutes' => $a->break_minutes_total,
-            ];
-        }
-
-        $fromStr = $from->toDateString();
         $rows = [];
         foreach ($users as $u) {
             $uid = (int) $u->id;
-            $byDate = $spansByUserDate[$uid] ?? [];
-            if ($byDate === []) {
-                continue;
-            }
-            $findings = $checker->checkUser($uid, $byDate);
-
-            // Verstöße ausserhalb des angefragten Zeitraums (Tag −1 nur für die
-            // Ruhezeit-Vorlauf) verwerfen.
-            $findings = array_values(array_filter(
-                $findings,
-                static fn(AttendanceComplianceFinding $f): bool => $f->date >= $fromStr,
-            ));
+            $findings = $findingsByUser[$uid] ?? [];
             if ($findings === []) {
                 continue;
             }
@@ -274,6 +238,86 @@ class ArbZgComplianceReportController extends Controller {
         }
 
         return ['rows' => $rows];
+    }
+
+    /**
+     * Verstoß-Historie (Feature 006, Welle D): die persistierten
+     * {@see ComplianceFinding} mit Status-Filter und Acknowledge-Workflow.
+     * Ergänzt die on-the-fly-Ansicht um die revisionssichere Sicht samt
+     * Bearbeitungsstand.
+     */
+    public function history(Request $request): View {
+        Gate::authorize(Permission::ComplianceViewAny->value);
+
+        $statuses = array_column(ComplianceFindingStatus::cases(), 'value');
+        $statusFilter = $request->string('status')->toString();
+        $statusFilter = in_array($statusFilter, $statuses, true) ? $statusFilter : '';
+
+        $query = ComplianceFinding::query()
+            ->with(['subject', 'acknowledgedByUser:id,name'])
+            ->orderByDesc('scope_date')
+            ->orderBy('rule_code')
+            ->orderByDesc('id');
+        if ($statusFilter !== '') {
+            $query->where('status', $statusFilter);
+        }
+
+        $findings = $query->paginate(50)->withQueryString();
+
+        /** @var \Illuminate\Support\Collection<string, int> $counts */
+        $counts = ComplianceFinding::query()
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        return view('reports.compliance-history', [
+            'findings' => $findings,
+            'statuses' => $statuses,
+            'statusFilter' => $statusFilter,
+            'counts' => $counts,
+            'thresholds' => $this->thresholdLabels(),
+            'canManage' => Gate::allows(Permission::ComplianceViewAny->value),
+        ]);
+    }
+
+    /**
+     * Einen Verstoß quittieren (status=acknowledged) oder bewusst akzeptieren
+     * (status=accepted, Pflicht-Begründung). Recht = bestehendes
+     * Compliance-Recht (compliance.viewAny); Org-Isolation über die
+     * Sqid-Route-Bindung (OrganizationScope). Statuswechsel wird auditiert.
+     */
+    public function acknowledge(Request $request, ComplianceFinding $finding, ComplianceFindingService $service): RedirectResponse {
+        Gate::authorize(Permission::ComplianceViewAny->value);
+
+        $user = $request->user();
+        if (! $user instanceof User) {
+            abort(403);
+        }
+
+        $data = $request->validate([
+            'status' => ['required', Rule::in([
+                ComplianceFindingStatus::Acknowledged->value,
+                ComplianceFindingStatus::Accepted->value,
+            ])],
+            'note' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $service->acknowledge(
+            $finding,
+            ComplianceFindingStatus::from($data['status']),
+            $user,
+            $data['note'] ?? null,
+        );
+
+        return redirect()
+            ->route('reports.compliance.history')
+            ->with('success', __('compliance.history.acknowledged'));
+    }
+
+    private function currentOrganization(): ?Organization {
+        return app()->bound('currentOrganization') && app('currentOrganization') instanceof Organization
+            ? app('currentOrganization')
+            : null;
     }
 
     /**
@@ -309,10 +353,7 @@ class ArbZgComplianceReportController extends Controller {
 
     /** @return array<string, string> Schwellwert-Beschriftungen (aus dem Bestand abgeleitet). */
     private function thresholdLabels(): array {
-        /** @var Organization|null $org */
-        $org = app()->bound('currentOrganization') && app('currentOrganization') instanceof Organization
-            ? app('currentOrganization')
-            : null;
+        $org = $this->currentOrganization();
         $s = $org ? $org->complianceSettings() : Organization::COMPLIANCE_DEFAULTS;
 
         return [

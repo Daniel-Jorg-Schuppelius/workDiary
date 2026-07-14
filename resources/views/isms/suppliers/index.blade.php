@@ -114,6 +114,16 @@
                                 @if ($assessment->dpa_ref)
                                     <p><span class="font-semibold">{{ __('isms.field.dpa_ref') }}:</span> {{ $assessment->dpa_ref }}</p>
                                 @endif
+                                @if ($assessment->processingAgreement)
+                                    <p>
+                                        <span class="font-semibold">{{ __('isms.field.processing_agreement') }}:</span>
+                                        @can('view', $assessment->processingAgreement)
+                                            <a href="{{ route('dataprotection.agreements.show', $assessment->processingAgreement) }}" class="link link-primary">{{ $assessment->processingAgreement->title }}</a>
+                                        @else
+                                            {{ $assessment->processingAgreement->title }}
+                                        @endcan
+                                    </p>
+                                @endif
                                 @if ($assessment->findings)
                                     <p><span class="font-semibold">{{ __('isms.field.findings') }}:</span> {{ $assessment->findings }}</p>
                                 @endif

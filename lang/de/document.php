@@ -81,6 +81,34 @@ return [
         'upload' => 'Erlaubt: PDF, Bilder, Office-Dateien, Text/CSV, ZIP — max. 25 MB.',
     ],
 
+    // Kundenfreigabe fürs Kundenportal (Welle D — Dokument-Spiegelung).
+    'customer' => [
+        'section' => 'Kundenfreigabe',
+        'released' => 'Fürs Kundenportal freigegeben',
+        'not_released' => 'Nicht freigegeben',
+        'released_at' => 'Freigegeben am',
+        'released_by' => 'Freigegeben von',
+        'badge' => 'Portal',
+        'not_linked_hint' => 'Nur kunden- oder auftragsgebundene Dokumente können freigegeben werden.',
+        'action' => [
+            'release' => 'Fürs Kundenportal freigeben',
+            'revoke' => 'Freigabe zurückziehen',
+        ],
+        'confirm_revoke' => 'Freigabe fürs Kundenportal wirklich zurückziehen?',
+        'flash' => [
+            'released' => 'Dokument wurde fürs Kundenportal freigegeben.',
+            'revoked' => 'Freigabe fürs Kundenportal wurde zurückgezogen.',
+        ],
+        'error' => [
+            'not_linked' => 'Nur kunden- oder auftragsgebundene Dokumente können freigegeben werden.',
+        ],
+        'portal' => [
+            'title' => 'Dokumente',
+            'subtitle' => 'Die für Sie freigegebenen Dokumente.',
+            'empty' => 'Es wurden noch keine Dokumente für Sie freigegeben.',
+        ],
+    ],
+
     'empty' => 'Noch keine Dokumente vorhanden.',
     'empty_title' => 'Keine Dokumente gefunden',
     'empty_filtered' => 'Für die aktuellen Filter wurden keine Dokumente gefunden.',

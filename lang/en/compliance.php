@@ -54,4 +54,31 @@ return [
             'yes' => 'yes',
         ],
     ],
+    'history' => [
+        'title' => 'Compliance violations',
+        'nav' => 'Violation history',
+        'subtitle' => 'Persisted ArbZG violations with processing status and acknowledgement.',
+        'to_report' => 'Detail report',
+        'to_dashboard' => 'Dashboard',
+        'filter' => [
+            'status' => 'Status',
+            'all' => 'All statuses',
+        ],
+        'col' => [
+            'employee' => 'Employee',
+            'status' => 'Status',
+        ],
+        'empty' => 'No persisted violations.',
+        'note_placeholder' => 'Reason (required for “accepted”)',
+        'btn' => [
+            'acknowledge' => 'Acknowledge',
+            'accept' => 'Accept',
+        ],
+        'acknowledged' => 'Violation updated.',
+        'error' => [
+            'invalid_status' => 'Invalid target status.',
+            'not_acknowledgeable' => 'This violation can no longer be acknowledged.',
+            'note_required' => 'A reason is required for “accepted”.',
+        ],
+    ],
 ];

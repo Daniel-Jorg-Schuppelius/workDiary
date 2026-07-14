@@ -167,6 +167,7 @@ return [
         'rental' => 'Geräteverleih',
         'asset-finance' => 'Leasing & Asset-Verträge',
         'asset-compliance' => 'Prüfmittel & Kalibrierung',
+        'contracts' => 'Vertragsverwaltung',
     ],
 
     'permission' => [
@@ -597,6 +598,11 @@ return [
         'assetFinance.view' => 'Leasingakte einsehen (ohne Konditionen)',
         'assetFinance.manage' => 'Leasingakten anlegen und führen',
         'assetFinance.finance' => 'Vertrauliche Konditionen einsehen und pflegen',
+
+        // Allgemeine Vertragsverwaltung (Welle D, CLM)
+        'contract.viewAny' => 'Verträge auflisten',
+        'contract.view' => 'Vertrag einsehen',
+        'contract.manage' => 'Verträge anlegen und führen',
 
         // Prüfmittel/Eichung/Kalibrierung (Feature 075)
         'assetCompliance.viewAny' => 'Prüfpflichten und Prüfmittel auflisten',

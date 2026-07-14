@@ -370,7 +370,7 @@ class TourController extends Controller {
                 'color' => '#9333ea',
             ];
         }
-        foreach (User::query()->whereNotNull('home_lat')->whereNotNull('home_lng')->get(['id', 'name', 'home_lat', 'home_lng']) as $driver) {
+        foreach (User::inCurrentOrganization()->whereNotNull('home_lat')->whereNotNull('home_lng')->get(['id', 'name', 'home_lat', 'home_lng']) as $driver) {
             $markers[] = [
                 'lat' => (float) $driver->home_lat,
                 'lng' => (float) $driver->home_lng,
@@ -414,7 +414,7 @@ class TourController extends Controller {
     /** @return Collection<int, User> */
     private function loadSelectableUsers(): Collection {
         /** @var Collection<int, User> $users */
-        $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $users = User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']);
 
         return $users;
     }

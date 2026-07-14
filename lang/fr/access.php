@@ -146,6 +146,7 @@ return [
         'rental' => 'Location de matériel',
         'asset-finance' => 'Leasing et contrats d\'actifs',
         'asset-compliance' => 'Moyens de contrôle et étalonnage',
+        'contracts' => 'Gestion des contrats',
     ],
     'permission' => [
         'access.manage' => 'Ouvrir la gestion des accès',
@@ -554,6 +555,11 @@ return [
         'assetFinance.view' => 'Consulter un dossier de leasing (sans conditions)',
         'assetFinance.manage' => 'Créer et gérer les dossiers de leasing',
         'assetFinance.finance' => 'Consulter et gérer les conditions confidentielles',
+
+        // Gestion générale des contrats (Vague D, CLM)
+        'contract.viewAny' => 'Lister les contrats',
+        'contract.view' => 'Consulter un contrat',
+        'contract.manage' => 'Créer et gérer les contrats',
 
         // Moyens de contrôle / étalonnage (fonctionnalité 075)
         'assetCompliance.viewAny' => 'Lister les obligations de contrôle et moyens de contrôle',

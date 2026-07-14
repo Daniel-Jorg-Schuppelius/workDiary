@@ -270,6 +270,11 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::RentalManage,
             PermissionEnum::RentalHandover,
             PermissionEnum::RentalRates,
+            // Welle D (CLM): allgemeine Vertragsakten operativ führen inkl.
+            // Vertragskalender (Obligationen).
+            PermissionEnum::ContractViewAny,
+            PermissionEnum::ContractView,
+            PermissionEnum::ContractManage,
             // D12: Sperren setzen/aufheben ist Leitungsaufgabe — die
             // Ausnahmefreigabe (override) bleibt GF/Admin.
             PermissionEnum::AssetBlockManage,
@@ -554,6 +559,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::AssetFinanceView,
             PermissionEnum::AssetFinanceManage,
             PermissionEnum::AssetFinanceFinance,
+            // Welle D (CLM): allgemeine Vertragsakten führen (Controlling).
+            PermissionEnum::ContractViewAny,
+            PermissionEnum::ContractView,
+            PermissionEnum::ContractManage,
             // Feature 068: Wertpotenzial/Angebotsstände lesend (Forecast).
             PermissionEnum::TenderViewAny,
             PermissionEnum::TenderView,

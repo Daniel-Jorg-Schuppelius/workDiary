@@ -682,6 +682,15 @@ class AppServiceProvider extends ServiceProvider {
         // bei Überschreitung heilt der stündliche Polling-Abgleich (todoist:sync).
         RateLimiter::for('todoist-webhook', fn(Request $request) => Limit::perMinute(120)->by('twh:' . $request->ip()));
 
+        // Sessionlose Token-Ingest-Endpunkte (CTI-Webhook, Stempelterminal,
+        // Standort-Push): wie die Plugin-Webhooks (GitHub/GitLab/Zammad/Todoist)
+        // gegen Flooding und Token-Brute-Force gedeckelt (Bauturbo Welle D,
+        // Webhook-Tenant-Audit). Pro-IP großzügig bemessen (240/min ≈ 4/s), damit
+        // reale Geräte-/Batch-Bursts nie gedrosselt werden, ein Brute-Force auf den
+        // Pfad-Token aber ins 429 läuft. Reihenfolge egal: die Token-Auflösung
+        // (SHA-256-Hash) findet erst nach der Middleware statt.
+        RateLimiter::for('webhook-ingest', fn(Request $request) => Limit::perMinute(240)->by('whi:' . $request->ip()));
+
         // @feature('code') Blade-Direktive (Folge zu MVP-047). Identisch
         // zu @if (app(FeatureFlagResolver::class)->isEnabled('code')), nur
         // kürzer in Views. Mit @endfeature schließen.

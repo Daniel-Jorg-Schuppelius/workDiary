@@ -83,6 +83,68 @@ class RequirementIndexFilter {
     }
 
     /**
+     * Wendet die (bereits normalisierten) Index-Filter auf die Query an.
+     *
+     * @param  Builder<ClassificationRequirement>  $requirementsQuery
+     * @param  array{q: string, domain: ?string, condition: ?string, allow_multi: ?string, note: ?string, max_count: ?string, phase: ?string, severity: ?string}  $filters
+     */
+    public function applyFilters(Builder $requirementsQuery, array $filters): void {
+        if ($filters['q'] !== '') {
+            $requirementsQuery->where(function ($builder) use ($filters): void {
+                $builder
+                    ->whereLikeEscaped('entry_type_code', $filters['q'])
+                    ->orWhereLikeEscaped('required_domain', $filters['q'])
+                    ->orWhereLikeEscaped('note', $filters['q'])
+                    ->orWhereLikeEscaped('only_if_json', $filters['q']);
+            });
+        }
+
+        if ($filters['domain'] !== null) {
+            $requirementsQuery->where('required_domain', $filters['domain']);
+        }
+
+        if ($filters['condition'] === 'conditional') {
+            $requirementsQuery->whereNotNull('only_if_json');
+        }
+
+        if ($filters['condition'] === 'always') {
+            $requirementsQuery->whereNull('only_if_json');
+        }
+
+        if ($filters['allow_multi'] === 'multi') {
+            $requirementsQuery->where('allow_multi', true);
+        }
+
+        if ($filters['allow_multi'] === 'single') {
+            $requirementsQuery->where('allow_multi', false);
+        }
+
+        if ($filters['note'] === 'with_note') {
+            $requirementsQuery->whereNotNull('note');
+        }
+
+        if ($filters['note'] === 'without_note') {
+            $requirementsQuery->whereNull('note');
+        }
+
+        if ($filters['max_count'] === 'bounded') {
+            $requirementsQuery->whereNotNull('max_count');
+        }
+
+        if ($filters['max_count'] === 'open') {
+            $requirementsQuery->whereNull('max_count');
+        }
+
+        if ($filters['phase'] !== null) {
+            $requirementsQuery->where('enforce_phase', $filters['phase']);
+        }
+
+        if ($filters['severity'] !== null) {
+            $requirementsQuery->where('severity', $filters['severity']);
+        }
+    }
+
+    /**
      * @param  Builder<ClassificationRequirement>  $requirementsQuery
      */
     public function applySorting(Builder $requirementsQuery, string $sortField): void {

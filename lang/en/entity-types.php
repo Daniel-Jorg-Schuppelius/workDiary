@@ -18,6 +18,7 @@ return [
     'Classification'                => 'Classification',
     'ClassificationRequirement'     => 'Classification requirement',
     'Comment'                       => 'Comment',
+    'ComplianceFinding' => 'Compliance violation',
     'CoverageRequirement'           => 'Coverage requirement',
     'Customer'                      => 'Customer',
     'ForeignCustomer'               => 'Foreign customer',

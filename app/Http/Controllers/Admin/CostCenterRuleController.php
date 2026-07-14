@@ -115,7 +115,7 @@ class CostCenterRuleController extends Controller {
 
     /** @return array<int, array{sqid: string, label: string}> */
     private function userOptions(): array {
-        return User::query()
+        return User::inCurrentOrganization()
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn (User $u): array => ['sqid' => (string) $u->sqid, 'label' => (string) $u->name])

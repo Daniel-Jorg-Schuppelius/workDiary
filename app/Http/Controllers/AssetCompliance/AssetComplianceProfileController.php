@@ -43,7 +43,7 @@ class AssetComplianceProfileController extends Controller {
             'kinds' => AssetInspectionKind::cases(),
             'blockModes' => AssetComplianceBlockMode::cases(),
             'assets' => Asset::query()->orderBy('name')->get(['id', 'name']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'externalContacts' => \App\Models\ExternalContact::query()->orderBy('name')->limit(200)->get(['id', 'name']),
             'norms' => AssetComplianceNormReference::query()
                 ->forOrganization($organizationId)

@@ -205,6 +205,7 @@ return [
         'has_nda' => 'NDA disponible',
         'has_dpa' => 'CT (DPA) disponible',
         'dpa_ref' => 'Referencia CT',
+        'processing_agreement' => 'CT vinculado',
         'audit_right' => 'Derecho de auditoría',
         'last_review_on' => 'Última revisión',
         'next_review_on' => 'Próxima revisión',
@@ -456,6 +457,8 @@ return [
         'security_requirements' => 'Requisitos exigidos: canales de notificación, disponibilidad, subcontratistas, evidencias …',
         'dpa_ref' => 'p. ej. número/referencia del CT en la gestión de protección de datos.',
         'dpa_loose' => 'El vínculo del CT es solo una referencia a la gestión de protección de datos — los expedientes no se fusionan.',
+        'processing_agreement' => 'Opcional: vincula un contrato de encargo (art. 28) de la gestión de protección de datos — reutilizado como evidencia del proveedor.',
+        'processing_agreement_none' => 'Sin CT vinculado',
         'next_review_on' => 'Una fecha vencida la informa el escáner de plazos y cuenta como «proveedor no verificado» en la preparación para la auditoría mientras la evaluación no esté aprobada.',
     ],
 

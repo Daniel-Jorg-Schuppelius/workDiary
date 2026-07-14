@@ -16,6 +16,9 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('compliance.report.subtitle')">
             <x-slot:actions>
+                <x-icon-btn icon="fact_check" tone="outline" size="sm"
+                            :href="route('reports.compliance.history')"
+                            show-label>{{ __('compliance.history.nav') }}</x-icon-btn>
                 <x-icon-btn icon="download" tone="outline" size="sm"
                             :href="route('reports.arbzg-compliance', array_filter(['kind' => $kindFilter ?: null, 'export' => 'csv']))"
                             show-label>CSV</x-icon-btn>

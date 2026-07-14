@@ -79,6 +79,16 @@ return [
     'token' => [
         'revoked' => 'Token revocato',
     ],
+    // ArbZG-Compliance-Verstöße (Feature 006, Welle D)
+    'compliance' => [
+        'finding' => [
+            'detected' => 'Violazione rilevata',
+            'acknowledged' => 'Violazione confermata',
+            'accepted' => 'Violazione accettata',
+            'resolved' => 'Violazione risolta',
+            'reopened' => 'Violazione ricomparsa',
+        ],
+    ],
     'privacy' => [
         'overviewExported' => 'Panoramica privacy esportata',
         'report' => [

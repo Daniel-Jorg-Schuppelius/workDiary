@@ -13,14 +13,11 @@ namespace App\Plugins\Toggl\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project, User};
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
-use App\Plugins\Toggl\{TogglConfig, TogglExportImporter, TogglImportService, TogglPlugin};
-use App\Support\Sqid;
+use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglImportService, TogglOptionBuilder, TogglPlugin};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
-use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -32,6 +29,8 @@ use Illuminate\View\View;
 class TogglController extends Controller {
     public function __construct(
         private readonly TogglImportService $service,
+        private readonly TogglOptionBuilder $options,
+        private readonly TogglExportArchiveService $archive,
         private readonly TogglExportImporter $exportImporter = new TogglExportImporter,
     ) {}
 
@@ -103,8 +102,8 @@ class TogglController extends Controller {
 
         return view('toggl::admin.mappings', [
             'mappings' => $mappings,
-            'customers' => $this->customerOptions($customers),
-            'projects' => $this->projectOptions($projects),
+            'customers' => $this->options->customerOptions($customers),
+            'projects' => $this->options->projectOptions($projects),
         ]);
     }
 
@@ -115,9 +114,9 @@ class TogglController extends Controller {
         $ref = $this->findMapping($organization, $reference);
 
         if ($ref->external_type === TogglImportService::EXT_TYPE_CLIENT) {
-            $target = Customer::query()->whereKey($this->decodeId(Customer::class, $request->input('target_id')))->firstOrFail();
+            $target = Customer::query()->whereKey($this->options->decodeId(Customer::class, $request->input('target_id')))->firstOrFail();
         } else {
-            $target = Project::query()->whereKey($this->decodeId(Project::class, $request->input('target_id')))->firstOrFail();
+            $target = Project::query()->whereKey($this->options->decodeId(Project::class, $request->input('target_id')))->firstOrFail();
         }
         abort_unless((int) $target->organization_id === (int) $organization->id, 403);
 
@@ -146,38 +145,11 @@ class TogglController extends Controller {
      * enthaltenen Workspace-Ordner erkannt und je Workspace abgefragt, was
      * passieren soll (eigener Workspace / als ein Kunde / überspringen).
      */
-    /**
-     * Beschränkt einen vom Admin angegebenen Import-Pfad auf erlaubte
-     * Basisverzeichnisse (konfigurierter Toggl-Export-Pfad + storage/app/toggl-imports)
-     * via realpath-Prefix. Verhindert das Auslesen beliebiger Server-Verzeichnisse.
-     */
-    private function safeImportPath(string $path): ?string {
-        if (trim($path) === '') {
-            return null;
-        }
-        $real = realpath($path);
-        if ($real === false || ! is_dir($real)) {
-            return null;
-        }
-        $bases = array_filter([
-            (string) config('plugins.toggl.export_path', ''),
-            storage_path('app/toggl-imports'),
-        ]);
-        foreach ($bases as $base) {
-            $realBase = realpath((string) $base);
-            if ($realBase !== false && ($real === $realBase || str_starts_with($real, $realBase . DIRECTORY_SEPARATOR))) {
-                return $real;
-            }
-        }
-
-        return null;
-    }
-
     public function importExport(Request $request): View {
         $admin = $this->admin();
 
         $path = trim((string) $request->query('path', (string) config('plugins.toggl.export_path', '')));
-        $safePath = $this->safeImportPath($path);
+        $safePath = $this->archive->safeImportPath($path);
         $workspaces = [];
         $togglUsers = [];
         if ($safePath !== null) {
@@ -191,7 +163,7 @@ class TogglController extends Controller {
                     'projects' => count($reader->projects($dir)),
                     'users' => count($users),
                 ];
-                $this->collectTogglUsers($togglUsers, $users);
+                $this->options->collectTogglUsers($togglUsers, $users);
             }
         }
 
@@ -200,9 +172,9 @@ class TogglController extends Controller {
             'pathValid' => $safePath !== null,
             'workspaces' => $workspaces,
             'summary' => session('toggl_export_summary'),
-            'customers' => $this->customerSelectOptions(),
-            'systemUsers' => $this->userSelectOptions(),
-            'togglUsers' => $this->sortTogglUsers($togglUsers),
+            'customers' => $this->options->customerSelectOptions(),
+            'systemUsers' => $this->options->userSelectOptions(),
+            'togglUsers' => $this->options->sortTogglUsers($togglUsers),
         ]);
     }
 
@@ -227,7 +199,7 @@ class TogglController extends Controller {
             'user_map.*' => ['nullable', 'string', 'max:191'],
         ]);
 
-        $safePath = $this->safeImportPath($validated['path']);
+        $safePath = $this->archive->safeImportPath($validated['path']);
         abort_unless($safePath !== null, 422, (string) __('Pfad nicht gefunden oder nicht erlaubt.'));
         $validated['path'] = $safePath;
 
@@ -235,11 +207,11 @@ class TogglController extends Controller {
         foreach ($validated['folders'] as $i => $folder) {
             $workspaceModes[$folder] = [
                 'mode' => $validated['modes'][$i] ?? TogglExportImporter::MODE_SKIP,
-                'customer_id' => $this->optionalCustomerId($validated['customer_ids'][$i] ?? null),
+                'customer_id' => $this->options->optionalCustomerId($validated['customer_ids'][$i] ?? null),
                 'customer_name' => $validated['customer_names'][$i] ?? null,
             ];
         }
-        $userMap = $this->buildUserMap($validated['user_map'] ?? [], $organization);
+        $userMap = $this->options->buildUserMap($validated['user_map'] ?? [], $organization);
 
         $dryRun = $validated['action'] === 'preview';
         $summary = $this->exportImporter->import($validated['path'], $organization, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
@@ -268,35 +240,11 @@ class TogglController extends Controller {
             'archive' => ['required', 'file', 'mimes:zip', 'max:204800'], // bis 200 MB
         ]);
 
-        $base = storage_path('app/toggl-imports');
-        if (! is_dir($base)) {
-            @mkdir($base, 0775, true);
-        }
-        $this->pruneOldImports($base);
-
-        $target = $base . '/' . now()->format('Ymd_His') . '_' . Str::random(8);
-        @mkdir($target, 0775, true);
-
-        $archivePath = (string) $request->file('archive')->getRealPath();
-        if (! ZipFile::isZipFile($archivePath)) {
-            $this->rrmdir($target);
-
-            return back()->withErrors(['archive' => (string) __('Keine gültige ZIP-Datei.')]);
-        }
-
         try {
-            // Zip-Slip-Schutz über das Toolkit: jeder Eintrag wird gegen das
-            // normalisierte Zielverzeichnis (realpath-Containment) geprüft —
-            // strenger als ein „..“-/Wurzel-String-Check. Die hochgeladene
-            // Temp-Datei wird nicht gelöscht (Laravel räumt sie selbst auf).
-            ZipFile::extract($archivePath, $target, deleteSourceFile: false);
-        } catch (\Throwable $e) {
-            $this->rrmdir($target);
-
-            return back()->withErrors(['archive' => (string) __('ZIP konnte nicht entpackt werden.')]);
+            $root = $this->archive->extractUpload((string) $request->file('archive')->getRealPath());
+        } catch (TogglArchiveException $e) {
+            return back()->withErrors(['archive' => $e->getMessage()]);
         }
-
-        $root = $this->resolveExportRoot($target);
 
         return redirect()->route('admin.toggl.import-export', ['path' => $root]);
     }
@@ -335,7 +283,7 @@ class TogglController extends Controller {
                     'projects' => count($source->projects()),
                     'users' => count($users),
                 ];
-                $this->collectTogglUsers($togglUsers, $users);
+                $this->options->collectTogglUsers($togglUsers, $users);
             }
         }
 
@@ -343,9 +291,9 @@ class TogglController extends Controller {
             'tokenSet' => $tokenSet,
             'workspaces' => $workspaces,
             'summary' => session('toggl_api_summary'),
-            'customers' => $this->customerSelectOptions(),
-            'systemUsers' => $this->userSelectOptions(),
-            'togglUsers' => $this->sortTogglUsers($togglUsers),
+            'customers' => $this->options->customerSelectOptions(),
+            'systemUsers' => $this->options->userSelectOptions(),
+            'togglUsers' => $this->options->sortTogglUsers($togglUsers),
         ]);
     }
 
@@ -394,14 +342,14 @@ class TogglController extends Controller {
             $sources[$label] = new ApiWorkspaceSource($client, (int) $wid, $from, $to);
             $workspaceModes[$label] = [
                 'mode' => $mode,
-                'customer_id' => $this->optionalCustomerId($validated['customer_ids'][$i] ?? null),
+                'customer_id' => $this->options->optionalCustomerId($validated['customer_ids'][$i] ?? null),
                 'customer_name' => $validated['customer_names'][$i] ?? null,
             ];
         }
 
         abort_if($sources === [], 422, (string) __('Kein Workspace ausgewählt.'));
 
-        $userMap = $this->buildUserMap($validated['user_map'] ?? [], $organization);
+        $userMap = $this->options->buildUserMap($validated['user_map'] ?? [], $organization);
 
         $dryRun = $validated['action'] === 'preview';
         $summary = $this->exportImporter->importFromApi($organization, $sources, $workspaceModes, $validated['user_mode'], $dryRun, $userMap);
@@ -430,137 +378,6 @@ class TogglController extends Controller {
             ->firstOrFail();
     }
 
-    /**
-     * Dekodiert eine Sqid (oder akzeptiert eine numerische ID) zu einer Model-ID.
-     *
-     * @param  class-string  $model
-     */
-    private function decodeId(string $model, mixed $raw): int {
-        $id = Sqid::decode($model, (string) $raw);
-        if ($id === null && is_numeric($raw)) {
-            $id = (int) $raw;
-        }
-        abort_if($id === null, 422, (string) __('Ungültige Auswahl.'));
-
-        return $id;
-    }
-
-    /**
-     * @param  \Illuminate\Support\Collection<int, Customer>  $customers
-     * @return array<int, array{sqid: string, id: int, label: string}>
-     */
-    private function customerOptions(\Illuminate\Support\Collection $customers): array {
-        return $customers->map(fn(Customer $c): array => [
-            'sqid' => $c->sqid,
-            'id' => (int) $c->id,
-            'label' => (string) ($c->company ?: $c->name),
-        ])->all();
-    }
-
-    /**
-     * Kunden der Organisation als Dropdown-Optionen (für die Workspace-Import-Modi).
-     *
-     * @return array<int, array{sqid: string, id: int, label: string}>
-     */
-    private function customerSelectOptions(): array {
-        return $this->customerOptions(
-            Customer::query()->orderBy('name')->get(['id', 'name', 'company'])
-        );
-    }
-
-    /**
-     * Benutzer der Organisation als Dropdown-Optionen (für die explizite
-     * Benutzer-Zuordnung der Toggl-Workspace-Benutzer).
-     *
-     * @return array<int, array{sqid: string, label: string}>
-     */
-    private function userSelectOptions(): array {
-        return User::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'email'])
-            ->map(fn(User $u): array => [
-                'sqid' => $u->sqid,
-                'label' => trim((string) $u->name) !== ''
-                    ? $u->name . ' (' . $u->email . ')'
-                    : (string) $u->email,
-            ])->all();
-    }
-
-    /**
-     * Sammelt distinkte Toggl-Workspace-Benutzer (über alle Workspaces hinweg,
-     * dedupliziert per E-Mail) für die Zuordnungs-Oberfläche.
-     *
-     * @param  array<string, array{email: string, name: string}>  $bucket  (per Referenz, Schlüssel = lower(email))
-     * @param  array<int, array{email: string, name: string, timezone?: ?string}>  $users
-     */
-    private function collectTogglUsers(array &$bucket, array $users): void {
-        foreach ($users as $u) {
-            $email = trim($u['email']);
-            if ($email === '') {
-                continue;
-            }
-            $key = mb_strtolower($email);
-            $bucket[$key] ??= ['email' => $email, 'name' => trim($u['name']) ?: $email];
-        }
-    }
-
-    /**
-     * @param  array<string, array{email: string, name: string}>  $bucket
-     * @return array<int, array{email: string, name: string}>
-     */
-    private function sortTogglUsers(array $bucket): array {
-        ksort($bucket);
-
-        return array_values($bucket);
-    }
-
-    /** Optionale Kunden-Sqid → ID (null bei leerer Auswahl, z. B. „neuer Kunde"). */
-    private function optionalCustomerId(?string $sqid): ?int {
-        $sqid = trim((string) $sqid);
-
-        return $sqid === '' ? null : $this->decodeId(Customer::class, $sqid);
-    }
-
-    /**
-     * Baut die explizite Benutzer-Zuordnung aus der UI (Toggl-E-Mail → System-User).
-     * Leere Auswahlen und Benutzer fremder Organisationen werden ignoriert.
-     *
-     * @param  array<string, string|null>  $raw  E-Mail → User-Sqid
-     * @return array<string, int>  lower(email) → User-ID
-     */
-    private function buildUserMap(array $raw, Organization $organization): array {
-        $map = [];
-        foreach ($raw as $email => $sqid) {
-            $email = trim((string) $email);
-            $sqid = trim((string) $sqid);
-            if ($email === '' || $sqid === '') {
-                continue;
-            }
-            $userId = Sqid::decode(User::class, $sqid);
-            if ($userId === null) {
-                continue;
-            }
-            $user = User::query()->whereKey($userId)->first();
-            if ($user instanceof User && (int) $user->organization_id === (int) $organization->id) {
-                $map[mb_strtolower($email)] = (int) $user->id;
-            }
-        }
-
-        return $map;
-    }
-
-    /**
-     * @param  \Illuminate\Support\Collection<int, Project>  $projects
-     * @return array<int, array{sqid: string, customer_id: int|null, name: string}>
-     */
-    private function projectOptions(\Illuminate\Support\Collection $projects): array {
-        return $projects->map(fn(Project $p): array => [
-            'sqid' => $p->sqid,
-            'customer_id' => $p->customer_id !== null ? (int) $p->customer_id : null,
-            'name' => (string) $p->name,
-        ])->all();
-    }
-
     private function admin(): User {
         /** @var User $user */
         $user = Auth::user();
@@ -575,68 +392,5 @@ class TogglController extends Controller {
         abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
 
         return $org;
-    }
-
-    /**
-     * Findet den tatsächlichen Export-Wurzelordner im entpackten ZIP:
-     *  - durchläuft transparente „Wrapper"-Ordner (genau ein Unterordner),
-     *  - und packt einen flachen Single-Workspace-Export (projects.json direkt
-     *    im Ordner, keine Unterordner) in einen benannten Unterordner, damit
-     *    {@see TogglWorkspaceReader::detectWorkspaces()} ihn erkennt.
-     */
-    private function resolveExportRoot(string $dir): string {
-        for ($depth = 0; $depth < 6; $depth++) {
-            if (TogglWorkspaceReader::detectWorkspaces($dir) !== []) {
-                return $dir;
-            }
-
-            // Flacher Single-Workspace-Export → in Unterordner „Workspace" heben.
-            if (is_file($dir . '/projects.json')) {
-                $wrap = $dir . '/Workspace';
-                @mkdir($wrap, 0775, true);
-                foreach ((array) glob($dir . '/*') as $item) {
-                    if ($item === $wrap) {
-                        continue;
-                    }
-                    @rename((string) $item, $wrap . '/' . basename((string) $item));
-                }
-
-                return $dir;
-            }
-
-            $subdirs = array_values(array_filter((array) glob($dir . '/*', GLOB_ONLYDIR)));
-            if (count($subdirs) === 1) {
-                $dir = $subdirs[0];
-
-                continue;
-            }
-            break;
-        }
-
-        return $dir;
-    }
-
-    /** Entfernt entpackte Import-Ordner, die älter als einen Tag sind (Best-Effort). */
-    private function pruneOldImports(string $base): void {
-        foreach ((array) glob($base . '/*', GLOB_ONLYDIR) as $dir) {
-            if (is_string($dir) && @filemtime($dir) !== false && filemtime($dir) < now()->subDay()->getTimestamp()) {
-                $this->rrmdir($dir);
-            }
-        }
-    }
-
-    /** Rekursives Löschen eines Verzeichnisses (Best-Effort). */
-    private function rrmdir(string $dir): void {
-        if (! is_dir($dir)) {
-            return;
-        }
-        foreach ((array) scandir($dir) as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $path = $dir . '/' . $entry;
-            is_dir($path) ? $this->rrmdir($path) : @unlink($path);
-        }
-        @rmdir($dir);
     }
 }

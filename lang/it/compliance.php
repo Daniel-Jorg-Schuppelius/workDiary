@@ -54,4 +54,31 @@ return [
             'yes' => 'sì',
         ],
     ],
+    'history' => [
+        'title' => 'Violazioni di conformità',
+        'nav' => 'Cronologia violazioni',
+        'subtitle' => 'Violazioni ArbZG persistite con stato di elaborazione e presa in carico.',
+        'to_report' => 'Report dettagliato',
+        'to_dashboard' => 'Dashboard',
+        'filter' => [
+            'status' => 'Stato',
+            'all' => 'Tutti gli stati',
+        ],
+        'col' => [
+            'employee' => 'Dipendente',
+            'status' => 'Stato',
+        ],
+        'empty' => 'Nessuna violazione persistita.',
+        'note_placeholder' => 'Motivazione (obbligatoria per «accettato»)',
+        'btn' => [
+            'acknowledge' => 'Conferma',
+            'accept' => 'Accetta',
+        ],
+        'acknowledged' => 'Violazione aggiornata.',
+        'error' => [
+            'invalid_status' => 'Stato di destinazione non valido.',
+            'not_acknowledgeable' => 'Questa violazione non può più essere confermata.',
+            'note_required' => 'Per «accettato» è richiesta una motivazione.',
+        ],
+    ],
 ];

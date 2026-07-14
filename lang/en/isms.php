@@ -199,6 +199,7 @@ return [
         'has_nda' => 'NDA in place',
         'has_dpa' => 'DPA in place',
         'dpa_ref' => 'DPA reference',
+        'processing_agreement' => 'Linked DPA',
         'audit_right' => 'Audit right',
         'last_review_on' => 'Last review',
         'next_review_on' => 'Next review',
@@ -456,6 +457,8 @@ return [
         'security_requirements' => 'Required controls: reporting channels, availability, subcontractors, evidence …',
         'dpa_ref' => 'e.g. DPA number/reference in data protection management.',
         'dpa_loose' => 'The DPA link is a loose pointer to data protection management — the case files are not merged.',
+        'processing_agreement' => 'Optional: link a data processing agreement (Art. 28) from data protection management — reused as a supplier record.',
+        'processing_agreement_none' => 'No DPA linked',
         'next_review_on' => 'An overdue date is reported by the deadline scanner and counts as an "unchecked supplier" in audit readiness while the assessment is not approved.',
     ],
 

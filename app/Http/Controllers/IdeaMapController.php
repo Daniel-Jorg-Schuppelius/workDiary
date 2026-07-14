@@ -119,7 +119,7 @@ class IdeaMapController extends Controller {
             'canUpdate' => Gate::allows('update', $map),
             'canShare' => $canShare,
             'shares' => $canShare ? $map->shares()->with(['user:id,name', 'team:id,name'])->get() : collect(),
-            'shareUsers' => $canShare ? User::query()->where('id', '!=', $map->owner_user_id)->orderBy('name')->limit(500)->get(['id', 'name']) : collect(),
+            'shareUsers' => $canShare ? User::query()->where('organization_id', $map->organization_id)->where('id', '!=', $map->owner_user_id)->orderBy('name')->limit(500)->get(['id', 'name']) : collect(),
             'shareTeams' => $canShare ? Team::query()->orderBy('name')->get(['id', 'name']) : collect(),
         ]);
     }

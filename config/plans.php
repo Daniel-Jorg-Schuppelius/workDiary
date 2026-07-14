@@ -57,6 +57,7 @@ return [
             'module.claims',
             'module.rental',
             'module.asset_compliance',
+            'module.contracts',
         ],
         'enterprise' => [
             'module.kanban',
@@ -93,6 +94,7 @@ return [
             'module.rental',
             'module.asset_finance',
             'module.asset_compliance',
+            'module.contracts',
             'protocols.signed',
             'module.sso',
         ],
@@ -110,6 +112,7 @@ return [
         'module.rental' => 'Geräte- & Maschinenverleih',
         'module.asset_finance' => 'Leasing & Asset-Verträge',
         'module.asset_compliance' => 'Prüfmittel & Kalibrierung',
+        'module.contracts' => 'Vertragsverwaltung & Fristen',
         'module.agile_projects' => 'Agiles Projektmanagement',
         'module.helpdesk' => 'Helpdesk',
         'module.service_desk' => 'Service Desk (ITSM)',
@@ -149,6 +152,7 @@ return [
         'module.rental' => 'Verleihakten mit Verfügbarkeitskalender, Reservierung, Übergabe-/Rücknahmeprotokollen, Kaution und Faktura-Übergabe.',
         'module.asset_finance' => 'Leasing- und Finanzierungsakten mit Konditionen-Snapshot, Fristenkalender, Nutzungslimits und Soll-Ist-Sicht.',
         'module.asset_compliance' => 'Prüfprofile, Prüfpflichten, Prüfprotokolle, Kalibrierzertifikate und Einsatzsperren für prüfpflichtige Assets.',
+        'module.contracts' => 'Allgemeine Vertragsakten beliebiger Art mit Laufzeit-/Verlängerungslogik, Kündigungsfrist, Indexierungsregel und Obligationen-/Vertragskalender.',
         'module.agile_projects' => 'Produkt-Backlog, Projektboards (Kanban/Scrum), Sprints und agile Berichte je Projekt.',
         'module.helpdesk' => 'Tickets mit Queues, Konversation, SLA und Omnichannel-Eingang.',
         'module.service_desk' => 'Servicekatalog, Requests mit Genehmigungen, Incident/Problem/Change (setzt Helpdesk voraus).',
@@ -217,6 +221,7 @@ return [
         'work-centers.*' => 'module.lager',
         'serials.*' => 'module.lager',
         'purchase-orders.*' => 'module.lager',
+        'supplier-scorecards.*' => 'module.lager', // Bauturbo Welle D Lieferantenperformance-Scorecards
         'supplier-catalogs.*' => 'module.lager', // Feature 050 Lieferantenkataloge
         'pricing-margin-rules.*' => 'module.lager', // Feature 050 Margenregeln
         'oci-carts.*' => 'module.lager', // Feature 050 OCI-Warenkorb
@@ -237,6 +242,7 @@ return [
         'rental.*' => 'module.rental', // Feature 073 Geräte-/Maschinenverleih
         'asset-finance.*' => 'module.asset_finance', // Feature 074 Leasing/Finanzierung/Asset-Verträge
         'asset-compliance.*' => 'module.asset_compliance', // Feature 075 Prüfmittel/Eichung/Kalibrierung
+        'contracts.*' => 'module.contracts', // Welle D — Allgemeines Contract-Lifecycle-Management
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',
         'projects.*' => 'module.vertrieb',
@@ -323,6 +329,7 @@ return [
         'module.rental' => false,           // Übergabe-/Rücknahme-/Abrechnungsnachweise → Aufbewahrung
         'module.asset_finance' => false,    // Vertrags-/Fristen-/Kostennachweise → Aufbewahrung
         'module.asset_compliance' => false, // Prüfprotokolle/Zertifikate → unveränderbare Nachweise
+        'module.contracts' => false,        // Vertrags-/Fristennachweise → Aufbewahrung (GoBD/§147 AO)
         'module.fuhrpark' => true,
         'module.liegenschaften' => true,
         'module.auswertungen_team' => true, // nur Auswertungen, keine Primaerdaten

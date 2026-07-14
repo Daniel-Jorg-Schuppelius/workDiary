@@ -20,6 +20,7 @@ Route::pattern('project', '[A-Za-z0-9]+|[a-z0-9-]+/[a-z0-9-]+');
 // im Pfad statt Sanctum – die Apps können sich nicht interaktiv anmelden.
 Route::match(['get', 'post'], 'location/ingest/{token}', [LocationController::class, 'ingest'])
     ->where('token', '[A-Za-z0-9]+')
+    ->middleware('throttle:webhook-ingest')
     ->name('api.location.ingest');
 
 // CTI-Webhook (Feature 056, MVP-118): Telefonanlagen/Provider (sipgate u. a.)
@@ -27,12 +28,14 @@ Route::match(['get', 'post'], 'location/ingest/{token}', [LocationController::cl
 // nie Gesprächsinhalte.
 Route::match(['get', 'post'], 'cti/webhook/{token}', \App\Http\Controllers\Api\CtiWebhookController::class)
     ->where('token', '[A-Za-z0-9_]+')
+    ->middleware('throttle:webhook-ingest')
     ->name('api.cti.webhook');
 
 // Terminal-Ingest (Feature 061, MVP-130): Hardware-Stempelterminals POSTen
 // Badge-Scans. Auth über einen Gerätetoken im Pfad (Muster location/ingest).
 Route::post('terminal/ingest/{token}', \App\Http\Controllers\Api\TerminalIngestController::class)
     ->where('token', '[A-Za-z0-9_]+')
+    ->middleware('throttle:webhook-ingest')
     ->name('api.terminal.ingest');
 
 Route::middleware('auth:sanctum')->group(function () {

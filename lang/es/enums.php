@@ -225,6 +225,9 @@ return [
             'assetFinance' => [
                 'deadline' => 'Plazo de leasing vencido',
             ],
+            'contract' => [
+                'deadlineDue' => 'Plazo contractual vencido',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Inspección pendiente/vencida',
             ],
@@ -662,6 +665,14 @@ return [
             'preparing' => 'En preparación',
             'ready' => 'Listo',
             'failed' => 'Fallido',
+        ],
+    ],
+    'compliance' => [
+        'finding-status' => [
+            'open' => 'Abierto',
+            'acknowledged' => 'Confirmado',
+            'resolved' => 'Resuelto',
+            'accepted' => 'Aceptado',
         ],
     ],
     'isms' => [

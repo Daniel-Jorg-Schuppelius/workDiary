@@ -199,6 +199,7 @@ return [
         'has_nda' => 'Geheimhaltung (NDA)',
         'has_dpa' => 'AVV vorhanden',
         'dpa_ref' => 'AVV-Verweis',
+        'processing_agreement' => 'Verknüpftes AVV',
         'audit_right' => 'Prüfungsrecht',
         'last_review_on' => 'Letzte Prüfung',
         'next_review_on' => 'Nächste Prüfung',
@@ -456,6 +457,8 @@ return [
         'security_requirements' => 'Geforderte Anforderungen: Meldewege, Verfügbarkeit, Unterauftragnehmer, Nachweise …',
         'dpa_ref' => 'z. B. AVV-Nummer/Aktenzeichen im Datenschutzmanagement.',
         'dpa_loose' => 'Der AVV-Bezug ist ein loser Hinweis auf das Datenschutzmanagement — die Fallakten werden nicht zusammengelegt.',
+        'processing_agreement' => 'Optional: Auftragsverarbeitungsvertrag (Art. 28) aus dem Datenschutzmanagement verknüpfen — Wiederverwendung als Lieferantennachweis.',
+        'processing_agreement_none' => 'Kein AVV verknüpft',
         'next_review_on' => 'Ein überschrittenes Datum meldet der Fristen-Scanner und zählt in der Auditbereitschaft als „ungeprüfter Lieferant", solange die Bewertung nicht freigegeben ist.',
     ],
 

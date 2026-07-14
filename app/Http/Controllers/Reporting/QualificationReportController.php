@@ -42,7 +42,7 @@ class QualificationReportController extends Controller {
             ->orderBy('name')
             ->get(['id', 'name', 'abbreviation', 'is_active']);
 
-        $usersQuery = User::query()
+        $usersQuery = User::inCurrentOrganization()
             ->whereHas('qualifications')
             ->orderBy('name');
         if (! $isAdmin) {

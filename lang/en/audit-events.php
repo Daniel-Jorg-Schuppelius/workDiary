@@ -105,6 +105,16 @@ return [
     ],
 
     // privacy page (MVP-005/MVP-327)
+    // ArbZG-Compliance-Verstöße (Feature 006, Welle D)
+    'compliance' => [
+        'finding' => [
+            'detected' => 'Violation detected',
+            'acknowledged' => 'Violation acknowledged',
+            'accepted' => 'Violation accepted',
+            'resolved' => 'Violation resolved',
+            'reopened' => 'Violation recurred',
+        ],
+    ],
     'privacy' => [
         'overviewExported'          => 'Privacy overview exported',
         'report' => [

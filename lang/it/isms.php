@@ -205,6 +205,7 @@ return [
         'has_nda' => 'NDA presente',
         'has_dpa' => 'DPA presente',
         'dpa_ref' => 'Riferimento DPA',
+        'processing_agreement' => 'DPA collegato',
         'audit_right' => 'Diritto di audit',
         'last_review_on' => 'Ultimo riesame',
         'next_review_on' => 'Prossimo riesame',
@@ -456,6 +457,8 @@ return [
         'security_requirements' => 'Requisiti richiesti: canali di segnalazione, disponibilità, subfornitori, evidenze …',
         'dpa_ref' => 'es. numero/riferimento DPA nella gestione della protezione dei dati.',
         'dpa_loose' => 'Il collegamento DPA è un semplice rimando alla gestione della protezione dei dati — i fascicoli non vengono uniti.',
+        'processing_agreement' => 'Facoltativo: collega un contratto di trattamento (art. 28) dalla gestione della protezione dei dati — riutilizzato come evidenza del fornitore.',
+        'processing_agreement_none' => 'Nessun DPA collegato',
         'next_review_on' => 'Una data superata viene segnalata dallo scanner delle scadenze e conta come « fornitore non verificato » nella prontezza all’audit finché la valutazione non è approvata.',
     ],
 

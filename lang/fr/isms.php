@@ -205,6 +205,7 @@ return [
         'has_nda' => 'Accord de confidentialité (NDA)',
         'has_dpa' => 'CTST (DPA) en place',
         'dpa_ref' => 'Référence CTST',
+        'processing_agreement' => 'CTST lié',
         'audit_right' => 'Droit d’audit',
         'last_review_on' => 'Dernier examen',
         'next_review_on' => 'Prochain examen',
@@ -456,6 +457,8 @@ return [
         'security_requirements' => 'Exigences requises : canaux de signalement, disponibilité, sous-traitants, preuves …',
         'dpa_ref' => 'p. ex. numéro/référence CTST dans la gestion de la protection des données.',
         'dpa_loose' => 'Le lien CTST est un simple renvoi vers la gestion de la protection des données — les dossiers ne sont pas fusionnés.',
+        'processing_agreement' => 'Facultatif : lier un contrat de sous-traitance (art. 28) issu de la gestion de la protection des données — réutilisé comme justificatif fournisseur.',
+        'processing_agreement_none' => 'Aucun CTST lié',
         'next_review_on' => 'Une date dépassée est signalée par le scanner d’échéances et compte comme « fournisseur non vérifié » dans la préparation à l’audit tant que l’évaluation n’est pas approuvée.',
     ],
 

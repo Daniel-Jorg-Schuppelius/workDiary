@@ -54,4 +54,31 @@ return [
             'yes' => 'oui',
         ],
     ],
+    'history' => [
+        'title' => 'Infractions de conformité',
+        'nav' => 'Historique des infractions',
+        'subtitle' => 'Infractions ArbZG persistées avec état de traitement et acquittement.',
+        'to_report' => 'Rapport détaillé',
+        'to_dashboard' => 'Tableau de bord',
+        'filter' => [
+            'status' => 'Statut',
+            'all' => 'Tous les statuts',
+        ],
+        'col' => [
+            'employee' => 'Employé',
+            'status' => 'Statut',
+        ],
+        'empty' => 'Aucune infraction persistée.',
+        'note_placeholder' => 'Motif (obligatoire pour « accepté »)',
+        'btn' => [
+            'acknowledge' => 'Acquitter',
+            'accept' => 'Accepter',
+        ],
+        'acknowledged' => 'Infraction mise à jour.',
+        'error' => [
+            'invalid_status' => 'Statut cible invalide.',
+            'not_acknowledgeable' => 'Cette infraction ne peut plus être acquittée.',
+            'note_required' => 'Un motif est requis pour « accepté ».',
+        ],
+    ],
 ];

@@ -91,6 +91,47 @@
         @endif
     </x-card>
 
+    {{-- Kundenfreigabe (Welle D — Dokument-Spiegelung ins Kundenportal). --}}
+    <x-card :title="__('document.customer.section')" icon="share">
+        @php $isReleasable = $document->isReleasableToCustomer(); @endphp
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-col gap-1">
+                @if ($document->customer_visible)
+                    <x-status-badge size="sm" tone="success">{{ __('document.customer.released') }}</x-status-badge>
+                    <span class="text-xs text-base-content/60">
+                        {{ __('document.customer.released_at') }}: {{ $document->customer_released_at?->fdatetime() ?? '—' }}
+                        @if ($document->customerReleaser)
+                            · {{ __('document.customer.released_by') }}: {{ $document->customerReleaser->name }}
+                        @endif
+                    </span>
+                @else
+                    <x-status-badge size="sm" tone="ghost" outline>{{ __('document.customer.not_released') }}</x-status-badge>
+                    @unless ($isReleasable)
+                        <span class="text-xs text-base-content/60">{{ __('document.customer.not_linked_hint') }}</span>
+                    @endunless
+                @endif
+            </div>
+            @can('releaseToCustomer', $document)
+                <div class="flex items-center gap-2">
+                    @if ($document->customer_visible)
+                        <x-action-form :action="route('documents.customer-revoke', $document)"
+                              data-confirm-title="{{ __('document.customer.action.revoke') }}"
+                              :confirm="__('document.customer.confirm_revoke')"
+                              confirm-icon="link_off"
+                              confirm-tone="warning"
+                              :confirm-label="__('document.customer.action.revoke')">
+                            <x-icon-btn icon="link_off" tone="warning" size="sm" type="submit" show-label>{{ __('document.customer.action.revoke') }}</x-icon-btn>
+                        </x-action-form>
+                    @elseif ($isReleasable)
+                        <x-action-form :action="route('documents.customer-release', $document)">
+                            <x-icon-btn icon="share" tone="primary" size="sm" type="submit" show-label>{{ __('document.customer.action.release') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
+                </div>
+            @endcan
+        </div>
+    </x-card>
+
     {{-- Externe Beteiligte (Feature 033, Rang 28): Einladen/Widerrufen je Dokument. --}}
     @include('external-participants._panel', ['subject' => $document, 'externalType' => 'document'])
 </x-page-shell>

@@ -38,7 +38,7 @@ class DispatchSuggestionController extends Controller {
             'date' => ['nullable', 'date'],
         ]);
 
-        $users = User::query()->orderBy('name')->get(['id', 'name']);
+        $users = User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']);
         $selected = isset($data['user_id'])
             ? $users->firstWhere('id', (int) $data['user_id'])
             : null;

@@ -122,7 +122,7 @@ class DispatchBoardController extends Controller {
 
         $rows = [];
         if ($required->isNotEmpty()) {
-            $users = User::query()->with('qualifications')->orderBy('name')->get();
+            $users = User::inCurrentOrganization()->with('qualifications')->orderBy('name')->get();
             foreach ($users as $user) {
                 $rows[] = [
                     'user' => $user,

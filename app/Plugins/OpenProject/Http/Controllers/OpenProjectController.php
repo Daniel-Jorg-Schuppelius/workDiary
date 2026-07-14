@@ -223,7 +223,7 @@ class OpenProjectController extends Controller {
      * @return array<int, array{sqid: string, name: string}>
      */
     private function userOptions(): array {
-        return User::query()
+        return User::inCurrentOrganization()
             ->orderBy('name')
             ->get(['id', 'name', 'email'])
             ->map(fn(User $u): array => [

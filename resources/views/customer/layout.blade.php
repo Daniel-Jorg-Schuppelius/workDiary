@@ -23,6 +23,7 @@
                     <a href="{{ route('customer.dashboard') }}" class="hover:underline">{{ __('Übersicht') }}</a>
                     <a href="{{ route('customer.diary.index') }}" class="hover:underline">{{ __('Auftragsbuch') }}</a>
                     <a href="{{ route('customer.assets.index') }}" class="hover:underline">{{ __('Objekte') }}</a>
+                    <a href="{{ route('customer.documents.index') }}" class="hover:underline">{{ __('document.customer.portal.title') }}</a>
                     <a href="{{ route('customer.time-entries.index') }}" class="hover:underline">{{ __('Zeiten') }}</a>
                     <a href="{{ route('customer.invoices.index') }}" class="hover:underline">{{ __('Rechnungen') }}</a>
                     <a href="{{ route('customer.catalog.index') }}" class="hover:underline">{{ __('Servicekatalog') }}</a>

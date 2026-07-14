@@ -606,6 +606,13 @@ enum Permission: string implements HasLabel {
     case AssetComplianceInspect = 'assetCompliance.inspect';
     case AssetComplianceRelease = 'assetCompliance.release';
 
+        // ── Allgemeine Vertragsverwaltung (Welle D, CLM) ───────────────
+        // Verträge beliebiger Art mit Laufzeit/Kündigung/Indexierung und
+        // Vertragskalender (Obligationen). Additiv zum Leasing-Modell.
+    case ContractViewAny = 'contract.viewAny';
+    case ContractView = 'contract.view';
+    case ContractManage = 'contract.manage';
+
     public function label(): string {
         // Permission-Slugs enthalten Punkte (z. B. "project.view") — Laravels
         // __() / trans() würde die als verschachtelten Pfad interpretieren und
@@ -691,6 +698,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'rental.') => PermissionGroup::Rental,
             str_starts_with($this->value, 'assetFinance.') => PermissionGroup::AssetFinance,
             str_starts_with($this->value, 'assetCompliance.') => PermissionGroup::AssetCompliance,
+            str_starts_with($this->value, 'contract.') => PermissionGroup::Contracts,
             str_starts_with($this->value, 'platform.'), str_starts_with($this->value, 'metrics.'), str_starts_with($this->value, 'backup.'), str_starts_with($this->value, 'security.') => PermissionGroup::Platform,
             default => PermissionGroup::MasterData,
         };

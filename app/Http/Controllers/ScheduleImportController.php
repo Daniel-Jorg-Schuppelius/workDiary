@@ -97,8 +97,8 @@ class ScheduleImportController extends Controller {
         $rows = $this->parseFile(storage_path("app/{$import['path']}"), $import['extension']);
         $data = array_slice($rows, 1); // skip header
 
-        $users = User::pluck('id', 'name');
-        $userEmails = User::pluck('id', 'email');
+        $users = User::inCurrentOrganization()->pluck('id', 'name');
+        $userEmails = User::inCurrentOrganization()->pluck('id', 'email');
         $shiftTypes = ShiftType::pluck('id', 'name');
 
         $imported = 0;

@@ -51,7 +51,7 @@ class AssetInspectionController extends Controller {
                 ->with(['asset', 'profile'])
                 ->orderBy('next_due_on')
                 ->get(),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'externalContacts' => ExternalContact::query()->orderBy('name')->limit(200)->get(['id', 'name']),
             'results' => AssetInspectionResult::cases(),
         ]);

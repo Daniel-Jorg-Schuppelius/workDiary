@@ -12,6 +12,7 @@ namespace App\Models\Isms;
 
 use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Privacy\ProcessingAgreement;
 use App\Models\{Supplier, User};
 use Database\Factories\Isms\IsmsSupplierAssessmentFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,9 +28,13 @@ use Illuminate\Support\Carbon;
  * wiederkehrende Reviews. State-Machine im SupplierAssessmentService.
  *
  * Supplier-Bezug ist OPTIONAL: entweder loser FK auf {@see Supplier}
- * (Stammdaten) ODER der Freitext supplier_name als Fallback. Die
- * AVV-Kopplung zum Datenschutzmanagement bleibt BEWUSST lose (Flag has_dpa +
- * Freitext dpa_ref) — KEIN FK auf die Privacy-WIP-Tabellen.
+ * (Stammdaten) ODER der Freitext supplier_name als Fallback.
+ *
+ * AVV-Kopplung (Feature 044, Welle D): optionaler, nullable FK auf den
+ * Auftragsverarbeitungsvertrag ({@see ProcessingAgreement}, Feature 043 jetzt
+ * stabil). Die alte lose Kopplung (Flag has_dpa + Freitext dpa_ref) bleibt als
+ * Fallback erhalten. Die Org-Konsistenz wird zusätzlich im
+ * SupplierAssessmentService/Request erzwungen (fremde AVV ⇒ abgelehnt/null).
  *
  * @property int $id
  * @property int $organization_id
@@ -43,6 +48,7 @@ use Illuminate\Support\Carbon;
  * @property bool $has_nda
  * @property bool $has_dpa
  * @property string|null $dpa_ref
+ * @property int|null $processing_agreement_id
  * @property bool $audit_right
  * @property Carbon|null $last_review_on
  * @property Carbon|null $next_review_on
@@ -75,6 +81,7 @@ class IsmsSupplierAssessment extends Model {
         'has_nda',
         'has_dpa',
         'dpa_ref',
+        'processing_agreement_id',
         'audit_right',
         'last_review_on',
         'next_review_on',
@@ -114,6 +121,17 @@ class IsmsSupplierAssessment extends Model {
     /** @return BelongsTo<IsmsScope, $this> */
     public function scope(): BelongsTo {
         return $this->belongsTo(IsmsScope::class, 'isms_scope_id');
+    }
+
+    /**
+     * Verknüpfter Auftragsverarbeitungsvertrag (AVV) aus dem
+     * Datenschutzmanagement (Feature 043). Optional; org-konsistent gesichert
+     * im SupplierAssessmentService.
+     *
+     * @return BelongsTo<ProcessingAgreement, $this>
+     */
+    public function processingAgreement(): BelongsTo {
+        return $this->belongsTo(ProcessingAgreement::class, 'processing_agreement_id');
     }
 
     /** @return BelongsTo<User, $this> */

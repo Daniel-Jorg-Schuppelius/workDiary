@@ -225,6 +225,9 @@ return [
             'assetFinance' => [
                 'deadline' => 'Scadenza leasing',
             ],
+            'contract' => [
+                'deadlineDue' => 'Scadenza contrattuale',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Verifica in scadenza/scaduta',
             ],
@@ -662,6 +665,14 @@ return [
             'preparing' => 'In preparazione',
             'ready' => 'Pronto',
             'failed' => 'Non riuscito',
+        ],
+    ],
+    'compliance' => [
+        'finding-status' => [
+            'open' => 'Aperto',
+            'acknowledged' => 'Confermato',
+            'resolved' => 'Risolto',
+            'accepted' => 'Accettato',
         ],
     ],
     'isms' => [

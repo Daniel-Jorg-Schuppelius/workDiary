@@ -10,24 +10,22 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\ClassificationRequirement;
-use App\Services\Classification\{ClassificationResolver, RequirementIndexFilter, RequirementPresets};
+use App\Services\Classification\{RequirementIndexFilter, RequirementInput, RequirementPresets};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ClassificationRequirementController extends Controller {
     use ResolvesCurrentOrganization;
 
     public function __construct(
-        private readonly ClassificationResolver $resolver,
         private readonly RequirementIndexFilter $indexFilter,
         private readonly RequirementPresets $presets,
+        private readonly RequirementInput $input,
     ) {}
 
     public function index(Request $request): View {
@@ -47,59 +45,16 @@ class ClassificationRequirementController extends Controller {
         $requirementsQuery = ClassificationRequirement::query()
             ->where('organization_id', $organization->id);
 
-        if ($query !== '') {
-            $requirementsQuery->where(function ($builder) use ($query): void {
-                $builder
-                    ->whereLikeEscaped('entry_type_code', $query)
-                    ->orWhereLikeEscaped('required_domain', $query)
-                    ->orWhereLikeEscaped('note', $query)
-                    ->orWhereLikeEscaped('only_if_json', $query);
-            });
-        }
-
-        if ($domainFilter !== null) {
-            $requirementsQuery->where('required_domain', $domainFilter);
-        }
-
-        if ($conditionFilter === 'conditional') {
-            $requirementsQuery->whereNotNull('only_if_json');
-        }
-
-        if ($conditionFilter === 'always') {
-            $requirementsQuery->whereNull('only_if_json');
-        }
-
-        if ($allowMultiFilter === 'multi') {
-            $requirementsQuery->where('allow_multi', true);
-        }
-
-        if ($allowMultiFilter === 'single') {
-            $requirementsQuery->where('allow_multi', false);
-        }
-
-        if ($noteFilter === 'with_note') {
-            $requirementsQuery->whereNotNull('note');
-        }
-
-        if ($noteFilter === 'without_note') {
-            $requirementsQuery->whereNull('note');
-        }
-
-        if ($maxCountFilter === 'bounded') {
-            $requirementsQuery->whereNotNull('max_count');
-        }
-
-        if ($maxCountFilter === 'open') {
-            $requirementsQuery->whereNull('max_count');
-        }
-
-        if ($phaseFilter !== null) {
-            $requirementsQuery->where('enforce_phase', $phaseFilter);
-        }
-
-        if ($severityFilter !== null) {
-            $requirementsQuery->where('severity', $severityFilter);
-        }
+        $this->indexFilter->applyFilters($requirementsQuery, [
+            'q' => $query,
+            'domain' => $domainFilter,
+            'condition' => $conditionFilter,
+            'allow_multi' => $allowMultiFilter,
+            'note' => $noteFilter,
+            'max_count' => $maxCountFilter,
+            'phase' => $phaseFilter,
+            'severity' => $severityFilter,
+        ]);
 
         $this->indexFilter->applySorting($requirementsQuery, $sortField);
 
@@ -158,7 +113,7 @@ class ClassificationRequirementController extends Controller {
                 'allow_multi' => false,
                 'min_count' => 1,
             ]),
-            'entryTypeOptions' => $this->entryTypeOptions(),
+            'entryTypeOptions' => $this->input->entryTypeOptions($this->currentOrganization()),
             'entryTypePresets' => $this->presets->entryTypePresets(),
             'requiredDomainPresets' => $this->presets->requiredDomainPresets(),
             'requiredDomainOptions' => $this->indexFilter->requiredDomainOptions(),
@@ -171,10 +126,11 @@ class ClassificationRequirementController extends Controller {
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', ClassificationRequirement::class);
 
-        $validated = $this->validatePayload($request);
+        $organization = $this->currentOrganization();
+        $validated = $this->input->validated($request, $organization);
 
         ClassificationRequirement::query()->create(array_merge(
-            ['organization_id' => $this->currentOrganization()->id],
+            ['organization_id' => $organization->id],
             $validated,
         ));
 
@@ -188,7 +144,7 @@ class ClassificationRequirementController extends Controller {
 
         return view('admin.classification-requirements._form_dialog', [
             'requirement' => $classificationRequirement,
-            'entryTypeOptions' => $this->entryTypeOptions(),
+            'entryTypeOptions' => $this->input->entryTypeOptions($this->currentOrganization()),
             'entryTypePresets' => $this->presets->entryTypePresets(),
             'requiredDomainPresets' => $this->presets->requiredDomainPresets(),
             'requiredDomainOptions' => $this->indexFilter->requiredDomainOptions(),
@@ -204,7 +160,7 @@ class ClassificationRequirementController extends Controller {
         Gate::authorize('update', $classificationRequirement);
         $this->ensureOrganizationScoped($classificationRequirement);
 
-        $validated = $this->validatePayload($request, $classificationRequirement);
+        $validated = $this->input->validated($request, $this->currentOrganization(), $classificationRequirement);
         $classificationRequirement->update($validated);
 
         return redirect()->route('admin.classification-requirements.index')
@@ -223,119 +179,5 @@ class ClassificationRequirementController extends Controller {
 
     private function ensureOrganizationScoped(ClassificationRequirement $classificationRequirement): void {
         abort_unless($classificationRequirement->organization_id === $this->currentOrganization()->id, 403);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function validatePayload(Request $request, ?ClassificationRequirement $requirement = null): array {
-        $request->merge($this->presets->applyFallbacks($request->all()));
-
-        $organization = $this->currentOrganization();
-        $entryTypeCodes = array_keys($this->entryTypeOptions());
-        $requiredDomains = array_keys($this->indexFilter->requiredDomainOptions());
-        $phases = array_map(static fn(ClassificationRequirementPhase $phase): string => $phase->value, ClassificationRequirementPhase::cases());
-        $severities = array_map(static fn(ClassificationRequirementSeverity $severity): string => $severity->value, ClassificationRequirementSeverity::cases());
-
-        $validated = $request->validate([
-            'entry_type_code' => [
-                'required',
-                'string',
-                Rule::in($entryTypeCodes),
-                Rule::unique('classification_requirements')
-                    ->ignore($requirement?->id)
-                    ->where(static function ($query) use ($organization, $request): void {
-                        $query
-                            ->where('organization_id', $organization->id)
-                            ->where('required_domain', (string) $request->input('required_domain'))
-                            ->where('enforce_phase', (string) $request->input('enforce_phase'));
-                    }),
-            ],
-            'required_domain' => ['required', 'string', Rule::in($requiredDomains)],
-            'enforce_phase' => ['required', 'string', Rule::in($phases)],
-            'severity' => ['required', 'string', Rule::in($severities)],
-            'allow_multi' => ['nullable', 'boolean'],
-            'min_count' => ['required', 'integer', 'min:1', 'max:50'],
-            'max_count' => ['nullable', 'integer', 'min:1', 'max:50'],
-            'only_if_json' => ['nullable', 'string'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $onlyIfJson = $this->parseOnlyIfJson($validated['only_if_json'] ?? null);
-        $maxCount = $validated['max_count'] ?? null;
-        if ($maxCount !== null && (int) $maxCount < (int) $validated['min_count']) {
-            back()->withInput()->withErrors(['max_count' => __('Maximalanzahl darf nicht kleiner als Minimalanzahl sein.')])->throwResponse();
-        }
-
-        return [
-            'entry_type_code' => (string) $validated['entry_type_code'],
-            'required_domain' => (string) $validated['required_domain'],
-            'enforce_phase' => (string) $validated['enforce_phase'],
-            'severity' => (string) $validated['severity'],
-            'allow_multi' => $request->boolean('allow_multi'),
-            'min_count' => (int) $validated['min_count'],
-            'max_count' => $maxCount !== null ? (int) $maxCount : null,
-            'only_if_json' => $onlyIfJson,
-            'note' => $this->nullableString($validated['note'] ?? null),
-        ];
-    }
-
-    /**
-     * @return array<string, list<string>>|null
-     */
-    private function parseOnlyIfJson(?string $json): ?array {
-        if ($json === null || trim($json) === '') {
-            return null;
-        }
-
-        try {
-            $decoded = JsonHelper::decode($json);
-        } catch (\InvalidArgumentException) {
-            return back()->withInput()->withErrors(['only_if_json' => __('Bedingung muss valides JSON sein.')])->throwResponse();
-        }
-        if (! is_array($decoded)) {
-            return back()->withInput()->withErrors(['only_if_json' => __('Bedingung muss valides JSON sein.')])->throwResponse();
-        }
-
-        $normalized = [];
-        foreach ($decoded as $key => $values) {
-            if (! is_string($key) || $key === '' || ! is_array($values)) {
-                return back()->withInput()->withErrors(['only_if_json' => __('Bedingung muss ein Objekt aus String-Keys und Listen sein.')])->throwResponse();
-            }
-
-            $normalizedValues = [];
-            foreach ($values as $value) {
-                if (! is_scalar($value)) {
-                    return back()->withInput()->withErrors(['only_if_json' => __('Bedingungswerte müssen Strings oder Zahlen sein.')])->throwResponse();
-                }
-                $normalizedValues[] = (string) $value;
-            }
-            $normalized[$key] = array_values(array_unique($normalizedValues));
-        }
-
-        return $normalized;
-    }
-
-    private function nullableString(mixed $value): ?string {
-        if (! is_string($value)) {
-            return null;
-        }
-
-        $trimmed = trim($value);
-
-        return $trimmed === '' ? null : $trimmed;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function entryTypeOptions(): array {
-        $rows = $this->resolver->list($this->currentOrganization()->id, ClassificationDomain::EntryType);
-        $options = [];
-        foreach ($rows as $row) {
-            $options[$row->code] = $row->label;
-        }
-
-        return $options;
     }
 }

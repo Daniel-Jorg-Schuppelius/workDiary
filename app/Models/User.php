@@ -18,6 +18,7 @@ use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, PhoneNumberHelper};
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, MorphMany};
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -303,6 +304,50 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo {
         return $this->belongsTo(Organization::class);
+    }
+
+    /**
+     * EXPLIZITE, opt-in Mandanten-Einschränkung. Das User-Modell trägt aus
+     * Sicherheitsgründen bewusst KEINEN globalen OrganizationScope
+     * (Authenticatable-/Org-Wechsel-Sonderfall, tenant-audit-2026.md §Allow-List) —
+     * deshalb muss jede org-Daten-Query (Mitglieder-/Assignee-/Report-Picker)
+     * die Mandantengrenze selbst ziehen. Diese beiden Scopes sind der EINE
+     * kanonische Weg dafür; rohes `User::query()` in Org-Kontexten ist per
+     * Architektur-Gate `Tests\Unit\Architecture\UserOrgScopingRuleTest` verboten.
+     *
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopeForOrganization(Builder $query, Organization|int|null $organization): Builder {
+        $organizationId = $organization instanceof Organization ? $organization->id : $organization;
+
+        return $query->where($this->getTable() . '.organization_id', $organizationId);
+    }
+
+    /**
+     * Beschränkt die Query auf die aktuell gebundene Organisation
+     * (`app('currentOrganization')`) — spiegelt die Semantik des
+     * {@see \App\Models\Scopes\OrganizationScope} für Modelle mit Trait, ohne
+     * einen globalen Scope zu booten. Defensiv: ist keine Organisation gebunden
+     * (Konsole/Queue/Plattform-Admin ohne Org-Kontext), bleibt die Query
+     * unverändert — identisch zum No-op des globalen Scopes. Im Web-/API-Stack
+     * bindet {@see \App\Http\Middleware\SetOrganizationContext} die Organisation
+     * stets, sodass Picker im Org-Kontext hart gescopt sind.
+     *
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
+    public function scopeInCurrentOrganization(Builder $query): Builder {
+        if (! app()->bound('currentOrganization')) {
+            return $query;
+        }
+
+        $organization = app('currentOrganization');
+        if ($organization instanceof Organization) {
+            return $query->where($this->getTable() . '.organization_id', $organization->id);
+        }
+
+        return $query;
     }
 
     /** @return BelongsTo<Customer, $this> */

@@ -135,7 +135,12 @@
                             {{ $document->valid_until->fdate() }}
                         @endif
                     </td>
-                    <td><x-status-badge :tone="$effective->tone()">{{ $effective->label() }}</x-status-badge></td>
+                    <td>
+                        <x-status-badge :tone="$effective->tone()">{{ $effective->label() }}</x-status-badge>
+                        @if ($document->customer_visible)
+                            <x-status-badge size="xs" tone="info" outline>{{ __('document.customer.badge') }}</x-status-badge>
+                        @endif
+                    </td>
                     <td>
                         <a href="{{ route('documents.versions', $document) }}" data-entry-modal-trigger class="link link-hover font-mono">
                             v{{ $document->currentVersion?->version_no ?? '—' }}
@@ -157,6 +162,24 @@
                                             data-entry-modal-trigger
                                             :href="route('documents.edit', $document)"
                                             :label="__('document.action.edit')" />
+                            @endcan
+                            @can('releaseToCustomer', $document)
+                                @if ($document->customer_visible)
+                                    <x-action-form :action="route('documents.customer-revoke', $document)"
+                                          data-confirm-title="{{ __('document.customer.action.revoke') }}"
+                                          :confirm="__('document.customer.confirm_revoke')"
+                                          confirm-icon="link_off"
+                                          confirm-tone="warning"
+                                          :confirm-label="__('document.customer.action.revoke')">
+                                        <x-icon-btn icon="link_off" tone="warning" size="xs" type="submit"
+                                                    :label="__('document.customer.action.revoke')" />
+                                    </x-action-form>
+                                @elseif ($document->isReleasableToCustomer())
+                                    <x-action-form :action="route('documents.customer-release', $document)">
+                                        <x-icon-btn icon="share" tone="primary" size="xs" type="submit"
+                                                    :label="__('document.customer.action.release')" />
+                                    </x-action-form>
+                                @endif
                             @endcan
                             @if ($document->status !== \App\Enums\Document\DocumentStatus::Archived)
                                 @can('archive', $document)

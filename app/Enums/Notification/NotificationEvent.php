@@ -110,6 +110,9 @@ enum NotificationEvent: string implements HasLabel {
     // Feature 074: Leasing-/Vertragsfrist wird fällig (MVP-273/278).
     case AssetFinanceDeadline = 'assetFinance.deadline';
 
+    // Welle D (CLM): allgemeine Vertragsfrist/-obligation wird fällig.
+    case ContractDeadlineDue = 'contract.deadlineDue';
+
     // Feature 075: Prüfung fällig/überfällig (MVP-285/288).
     case AssetInspectionDue = 'assetCompliance.inspectionDue';
 
@@ -227,6 +230,9 @@ enum NotificationEvent: string implements HasLabel {
             // Leasingfristen (Feature 074): Vertrags-/Fristensteuerung ist
             // Leitungsaufgabe; der Verantwortliche der Akte via Service.
             self::AssetFinanceDeadline => [UserRole::Teamleitung->value],
+            // Allgemeine Vertragsfristen (Welle D, CLM): Vertragssteuerung ist
+            // Leitungsaufgabe; der Verantwortliche der Obligation via Service.
+            self::ContractDeadlineDue => [UserRole::Teamleitung->value],
             // Prüffälligkeit (Feature 075): betrifft keine Einzelperson —
             // an die Teamleitung (Prüfmittelverantwortung).
             self::AssetInspectionDue => [UserRole::Teamleitung->value],
@@ -267,6 +273,7 @@ enum NotificationEvent: string implements HasLabel {
             self::ClaimEscalation => 'assignment_late',
             self::RentalReturnOverdue => 'forklift',
             self::AssetFinanceDeadline => 'request_quote',
+            self::ContractDeadlineDue => 'contract',
             self::AssetInspectionDue => 'rule_settings',
             self::QualificationExpiring => 'workspace_premium',
             self::ShiftExchangeRequested,
@@ -316,6 +323,7 @@ enum NotificationEvent: string implements HasLabel {
             self::ProblemEffectivenessDue,
             self::RentalReturnOverdue,
             self::AssetFinanceDeadline,
+            self::ContractDeadlineDue,
             self::AssetInspectionDue,
             // Backup-Alarm eskaliert 26 h→72 h (Feature 017, MVP-056).
             self::OperationsBackupOverdue,

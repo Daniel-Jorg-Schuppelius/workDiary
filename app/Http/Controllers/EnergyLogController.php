@@ -184,7 +184,7 @@ class EnergyLogController extends Controller {
     /** @return Collection<int, User> */
     private function loadSelectableUsers(): Collection {
         /** @var Collection<int, User> $users */
-        $users = User::query()->orderBy('name')->get();
+        $users = User::inCurrentOrganization()->orderBy('name')->get();
 
         return $users;
     }

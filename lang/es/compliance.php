@@ -54,4 +54,31 @@ return [
             'yes' => 'sí',
         ],
     ],
+    'history' => [
+        'title' => 'Infracciones de cumplimiento',
+        'nav' => 'Historial de infracciones',
+        'subtitle' => 'Infracciones de la ArbZG persistidas con estado de tratamiento y acuse.',
+        'to_report' => 'Informe detallado',
+        'to_dashboard' => 'Panel',
+        'filter' => [
+            'status' => 'Estado',
+            'all' => 'Todos los estados',
+        ],
+        'col' => [
+            'employee' => 'Empleado',
+            'status' => 'Estado',
+        ],
+        'empty' => 'No hay infracciones persistidas.',
+        'note_placeholder' => 'Motivo (obligatorio para «aceptado»)',
+        'btn' => [
+            'acknowledge' => 'Confirmar',
+            'accept' => 'Aceptar',
+        ],
+        'acknowledged' => 'Infracción actualizada.',
+        'error' => [
+            'invalid_status' => 'Estado de destino no válido.',
+            'not_acknowledgeable' => 'Esta infracción ya no se puede confirmar.',
+            'note_required' => 'Se requiere un motivo para «aceptado».',
+        ],
+    ],
 ];

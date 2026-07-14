@@ -54,7 +54,7 @@ class JobApplicationController extends Controller {
 
         return view('applications.recruiting.applications._form_dialog', [
             'requisitions' => JobRequisition::query()->whereIn('status', ['draft', 'open'])->orderBy('title')->get(['id', 'title']),
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -90,7 +90,7 @@ class JobApplicationController extends Controller {
 
         return view('applications.recruiting.applications.show', [
             'application' => $application,
-            'users' => User::query()->orderBy('name')->get(['id', 'name']),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

@@ -81,6 +81,34 @@ return [
         'upload' => 'Autorisé : PDF, images, fichiers Office, texte/CSV, ZIP — max. 25 Mo.',
     ],
 
+    // Publication vers le portail client (vague D — miroir de documents).
+    'customer' => [
+        'section' => 'Publication client',
+        'released' => 'Publié sur le portail client',
+        'not_released' => 'Non publié',
+        'released_at' => 'Publié le',
+        'released_by' => 'Publié par',
+        'badge' => 'Portail',
+        'not_linked_hint' => 'Seuls les documents liés à un client ou à une mission peuvent être publiés.',
+        'action' => [
+            'release' => 'Publier sur le portail client',
+            'revoke' => 'Retirer la publication',
+        ],
+        'confirm_revoke' => 'Retirer vraiment la publication sur le portail client ?',
+        'flash' => [
+            'released' => 'Le document a été publié sur le portail client.',
+            'revoked' => 'La publication sur le portail client a été retirée.',
+        ],
+        'error' => [
+            'not_linked' => 'Seuls les documents liés à un client ou à une mission peuvent être publiés.',
+        ],
+        'portal' => [
+            'title' => 'Documents',
+            'subtitle' => 'Les documents publiés pour vous.',
+            'empty' => 'Aucun document n\'a encore été publié pour vous.',
+        ],
+    ],
+
     'empty' => 'Aucun document pour le moment.',
     'empty_title' => 'Aucun document trouvé',
     'empty_filtered' => 'Aucun document ne correspond aux filtres actuels.',
