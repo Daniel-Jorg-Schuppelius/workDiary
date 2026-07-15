@@ -68,18 +68,28 @@ return [
     'job' => [
         'archive' => ['run' => 'Esecuzione archiviazione'],
         'attendance' => ['close_open' => 'Chiudere le timbrature dimenticate'],
-        'backup' => ['check_restore' => 'Verifica dei backup'],
+        'audit' => ['verify' => 'Verificare la catena di audit'],
+        'backup' => [
+            'check_restore' => 'Verifica dei backup',
+            'cloud-run' => 'Esecuzione del backup cloud',
+            'cloud-verify' => 'Verifica del backup cloud',
+        ],
+        'carddav' => ['sync' => 'Sincronizzazione CardDAV'],
         'catalog' => ['fetch_due' => 'Recuperare le fonti di catalogo'],
         'chat' => [
             'send_reminders' => 'Inviare i promemoria chat',
             'send_scheduled' => 'Inviare i messaggi chat pianificati',
         ],
+        'claims' => ['escalate' => 'Escalation delle scadenze dei reclami'],
+        'cloud-intake' => ['sync' => 'Recuperare la ricezione documenti cloud'],
+        'compliance' => ['scan_findings' => 'Scansione dei rilievi di conformità'],
         'events' => [
             'check_certificates' => 'Verificare la scadenza dei certificati',
             'dispatch_reminders' => 'Inviare i promemoria eventi',
             'materialize_recurrences' => 'Materializzare gli eventi ricorrenti',
         ],
         'integration' => ['purge_inbox' => 'Ripulire la inbox delle integrazioni'],
+        'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],
         'lexoffice' => [
             'sync_articles' => 'Sincronizzare gli articoli Lexoffice',
             'sync_contacts' => 'Sincronizzare i contatti Lexoffice',
@@ -93,6 +103,7 @@ return [
             'push' => 'Trasferire i tempi a OpenProject',
         ],
         'operations' => ['scan' => 'Sincronizzare le attività operative'],
+        'orgamax' => ['sync' => 'Sincronizzazione orgaMAX'],
         'payroll' => ['import_minimum_wages' => 'Importare i salari minimi UE'],
         'plans' => ['purge' => 'Eliminare i dati dei moduli retrocessi'],
         'plugin' => ['healthcheck' => 'Controllo di integrità dei plugin'],

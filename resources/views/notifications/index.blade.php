@@ -37,8 +37,8 @@
                                 <span class="badge badge-primary badge-xs">{{ __('notification.field.unread') }}</span>
                             @endif
                         </div>
-                        @if (! empty($data['message']))
-                            <p class="text-sm opacity-70 mt-0.5">{{ $data['message'] }}</p>
+                        @if (($notificationMessage = \App\Support\NotificationText::message($data)) !== '')
+                            <p class="text-sm opacity-70 mt-0.5">{{ $notificationMessage }}</p>
                         @endif
                         <p class="text-xs opacity-50 mt-1">
                             {{ $notification->created_at?->diffForHumans() }}

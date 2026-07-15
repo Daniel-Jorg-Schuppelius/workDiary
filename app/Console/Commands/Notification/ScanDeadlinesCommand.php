@@ -411,6 +411,8 @@ class ScanDeadlinesCommand extends Command {
                         $owner,
                         [
                             'title' => (string) __('Wiedervorlage fällig: Ticket :no', ['no' => $ticket->ticket_no]),
+                            'title_key' => 'Wiedervorlage fällig: Ticket :no',
+                            'title_params' => ['no' => $ticket->ticket_no],
                             'body' => (string) ($ticket->wait_reason ?? $ticket->title),
                             'url' => route('service-tickets.show', $ticket),
                             'due_at' => $ticket->wait_until,
@@ -465,6 +467,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('Wirksamkeitsprüfung fällig seit :date.', [
                 'date' => $problem->effectiveness_check_due_at?->format('d.m.Y H:i') ?? '–',
             ]),
+            'message_key' => 'Wirksamkeitsprüfung fällig seit :date.',
+            'message_params' => ['date' => $problem->effectiveness_check_due_at?->toIso8601String() ?? '–'],
             'url' => route('servicedesk.problems.show', $problem),
             'due_at' => $problem->effectiveness_check_due_at,
         ];
@@ -719,9 +723,12 @@ class ScanDeadlinesCommand extends Command {
     private function shiftExchangePayload(ShiftExchange $exchange): array {
         return [
             'title' => (string) __('schedule.exchange.notification_request_title'),
+            'title_key' => 'schedule.exchange.notification_request_title',
             'message' => (string) __('schedule.exchange.notification_pending_message', [
                 'date' => $exchange->scheduledShift?->date?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'schedule.exchange.notification_pending_message',
+            'message_params' => ['date' => $exchange->scheduledShift?->date?->toDateString() ?? '–'],
             'url' => $this->safeRoute('schedule.exchanges.index'),
         ];
     }
@@ -743,6 +750,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.qualification_expiring', [
                 'date' => $assignment->valid_until?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'notification.message.qualification_expiring',
+            'message_params' => ['date' => $assignment->valid_until?->toDateString() ?? '–'],
             'url' => route('reports.qualifications'),
             'due_at' => $assignment->valid_until,
         ];
@@ -758,6 +767,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.asset_return_overdue', [
                 'date' => $assignment->expected_return_at?->format('d.m.Y H:i') ?? '–',
             ]),
+            'message_key' => 'notification.message.asset_return_overdue',
+            'message_params' => ['date' => $assignment->expected_return_at?->toIso8601String() ?? '–'],
             'url' => $asset !== null ? route('assets.show', $asset) : null,
             'due_at' => $assignment->expected_return_at,
         ];
@@ -776,6 +787,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.' . $messageKey, [
                 'date' => $issue->due_at?->format('d.m.Y H:i') ?? '–',
             ]),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => ['date' => $issue->due_at?->toIso8601String() ?? '–'],
             'url' => \App\Support\NotificationLinks::openIssueUrl($issue),
             'due_at' => $issue->due_at,
         ];
@@ -791,9 +804,12 @@ class ScanDeadlinesCommand extends Command {
     private function notePayload(CommunicationNote $note, string $messageKey): array {
         return [
             'title' => (string) ($note->getAttribute('next_action') ?: $note->getAttribute('subject') ?: __('notification.message.followup_fallback_title')),
+            'title_key' => ($note->getAttribute('next_action') ?: $note->getAttribute('subject')) ? null : 'notification.message.followup_fallback_title',
             'message' => (string) __('notification.message.' . $messageKey, [
                 'date' => $note->next_action_due_at?->format('d.m.Y H:i') ?? '–',
             ]),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => ['date' => $note->next_action_due_at?->toIso8601String() ?? '–'],
             'url' => null,
             'due_at' => $note->next_action_due_at,
         ];
@@ -812,6 +828,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.' . $messageKey, [
                 'date' => $validUntil?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => ['date' => $validUntil instanceof \Illuminate\Support\Carbon ? $validUntil->toDateString() : '–'],
             'url' => route('documents.index'),
             'due_at' => $validUntil instanceof \Illuminate\Support\Carbon ? $validUntil : null,
         ];
@@ -881,6 +899,11 @@ class ScanDeadlinesCommand extends Command {
                 'label' => (string) $plan->label,
                 'date' => $plan->next_due_on?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => [
+                'label' => (string) $plan->label,
+                'date' => $plan->next_due_on?->toDateString() ?? '–',
+            ],
             'url' => route('assets.index'),
             'due_at' => $plan->next_due_on,
         ];
@@ -895,6 +918,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.certificate_expiring', [
                 'date' => $certificate->valid_until->format('d.m.Y'),
             ]),
+            'message_key' => 'notification.message.certificate_expiring',
+            'message_params' => ['date' => $certificate->valid_until->toDateString()],
             'url' => route('isms.conformity.index'),
             'due_at' => $certificate->valid_until,
         ];
@@ -914,6 +939,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.risk_review_due', [
                 'date' => $assessment->valid_until?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'notification.message.risk_review_due',
+            'message_params' => ['date' => $assessment->valid_until?->toDateString() ?? '–'],
             'url' => route('isms.risks.index'),
             'due_at' => $assessment->valid_until,
         ];
@@ -926,6 +953,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.vulnerability_overdue', [
                 'date' => $vulnerability->due_on?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'notification.message.vulnerability_overdue',
+            'message_params' => ['date' => $vulnerability->due_on?->toDateString() ?? '–'],
             'url' => route('isms.vulnerabilities.index'),
             'due_at' => $vulnerability->due_on,
         ];
@@ -938,6 +967,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.supplier_review_overdue', [
                 'date' => $assessment->next_review_on?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'notification.message.supplier_review_overdue',
+            'message_params' => ['date' => $assessment->next_review_on?->toDateString() ?? '–'],
             'url' => route('isms.suppliers.index'),
             'due_at' => $assessment->next_review_on,
         ];
@@ -994,6 +1025,13 @@ class ScanDeadlinesCommand extends Command {
                 'included' => (int) $usage['included_minutes'],
                 'period' => (string) $usage['period_key'],
             ]),
+            'message_key' => 'notification.message.sla_quota_warning',
+            'message_params' => [
+                'percent' => (int) $usage['percentage'],
+                'consumed' => (int) $usage['consumed_minutes'],
+                'included' => (int) $usage['included_minutes'],
+                'period' => (string) $usage['period_key'],
+            ],
             'url' => null,
         ];
     }
@@ -1005,6 +1043,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.' . $messageKey, [
                 'date' => $ticket->resolution_due_at?->format('d.m.Y H:i') ?? '–',
             ]),
+            'message_key' => 'notification.message.' . $messageKey,
+            'message_params' => ['date' => $ticket->resolution_due_at?->toIso8601String() ?? '–'],
             'url' => route('service-tickets.show', $ticket),
             'due_at' => $ticket->resolution_due_at,
         ];
@@ -1019,6 +1059,8 @@ class ScanDeadlinesCommand extends Command {
             'message' => (string) __('notification.message.corrective_action_overdue', [
                 'date' => $action->due_on?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'notification.message.corrective_action_overdue',
+            'message_params' => ['date' => $action->due_on?->toDateString() ?? '–'],
             'url' => route('isms.audits.index'),
             'due_at' => $action->due_on,
         ];

@@ -1652,8 +1652,8 @@
                                                 <span class="material-symbols-outlined text-base {{ $_nUnread ? 'text-primary' : 'opacity-50' }}" aria-hidden="true">{{ $_nd['icon'] ?? 'notifications' }}</span>
                                                 <span class="flex-1 min-w-0">
                                                     <span class="block text-sm font-medium truncate">{{ \App\Support\NotificationText::title($_nd) }}</span>
-                                                    @if (! empty($_nd['message']))
-                                                        <span class="block text-xs opacity-60 mt-0.5 truncate">{{ $_nd['message'] }}</span>
+                                                    @if (($_nMessage = \App\Support\NotificationText::message($_nd)) !== '')
+                                                        <span class="block text-xs opacity-60 mt-0.5 truncate">{{ $_nMessage }}</span>
                                                     @endif
                                                 </span>
                                                 @if ($_nUnread)

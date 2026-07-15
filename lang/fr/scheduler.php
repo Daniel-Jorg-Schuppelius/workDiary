@@ -68,18 +68,28 @@ return [
     'job' => [
         'archive' => ['run' => 'Exécution de l\'archivage'],
         'attendance' => ['close_open' => 'Clôturer les pointages oubliés'],
-        'backup' => ['check_restore' => 'Vérification des sauvegardes'],
+        'audit' => ['verify' => 'Vérifier la chaîne d\'audit'],
+        'backup' => [
+            'check_restore' => 'Vérification des sauvegardes',
+            'cloud-run' => 'Exécution de la sauvegarde cloud',
+            'cloud-verify' => 'Vérification de la sauvegarde cloud',
+        ],
+        'carddav' => ['sync' => 'Synchronisation CardDAV'],
         'catalog' => ['fetch_due' => 'Récupérer les sources de catalogue'],
         'chat' => [
             'send_reminders' => 'Envoyer les rappels de chat',
             'send_scheduled' => 'Envoyer les messages de chat planifiés',
         ],
+        'claims' => ['escalate' => 'Escalade des délais de réclamation'],
+        'cloud-intake' => ['sync' => 'Relever la réception de documents cloud'],
+        'compliance' => ['scan_findings' => 'Analyser les constats de conformité'],
         'events' => [
             'check_certificates' => 'Vérifier l\'expiration des certificats',
             'dispatch_reminders' => 'Envoyer les rappels d\'événements',
             'materialize_recurrences' => 'Matérialiser les événements récurrents',
         ],
         'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
+        'jtl' => ['sync' => 'Synchronisation JTL Wawi'],
         'lexoffice' => [
             'sync_articles' => 'Synchroniser les articles Lexoffice',
             'sync_contacts' => 'Synchroniser les contacts Lexoffice',
@@ -93,6 +103,7 @@ return [
             'push' => 'Transférer les temps vers OpenProject',
         ],
         'operations' => ['scan' => 'Synchroniser les tâches d\'exploitation'],
+        'orgamax' => ['sync' => 'Synchronisation orgaMAX'],
         'payroll' => ['import_minimum_wages' => 'Importer les salaires minimums UE'],
         'plans' => ['purge' => 'Purger les données de modules rétrogradés'],
         'plugin' => ['healthcheck' => 'Contrôle de santé des plugins'],

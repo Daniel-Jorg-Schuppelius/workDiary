@@ -318,7 +318,14 @@ class AssetFinanceService {
                     'kind' => $deadline->kind->label(),
                     'number' => $contract->number ?? '—',
                 ]),
+                'title_key' => 'Leasingfrist fällig: :kind (:number)',
+                'title_params' => [
+                    'kind' => ['key' => $deadline->kind->labelKey()],
+                    'number' => $contract->number ?? '—',
+                ],
                 'message' => (string) __('Fällig am :date.', ['date' => $deadline->due_on->format('d.m.Y')]),
+                'message_key' => 'Fällig am :date.',
+                'message_params' => ['date' => $deadline->due_on->toDateString()],
                 'url' => $contract !== null ? route('asset-finance.show', $contract) : null,
             ];
 

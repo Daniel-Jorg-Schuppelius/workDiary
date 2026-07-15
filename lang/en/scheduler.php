@@ -68,18 +68,28 @@ return [
     'job' => [
         'archive' => ['run' => 'Archiving run'],
         'attendance' => ['close_open' => 'Close forgotten clock-ins'],
-        'backup' => ['check_restore' => 'Backup check'],
+        'audit' => ['verify' => 'Verify audit chain'],
+        'backup' => [
+            'check_restore' => 'Backup check',
+            'cloud-run' => 'Cloud backup run',
+            'cloud-verify' => 'Cloud backup check',
+        ],
+        'carddav' => ['sync' => 'CardDAV sync'],
         'catalog' => ['fetch_due' => 'Fetch catalog sources'],
         'chat' => [
             'send_reminders' => 'Send chat reminders',
             'send_scheduled' => 'Send scheduled chat messages',
         ],
+        'claims' => ['escalate' => 'Claims deadline escalation'],
+        'cloud-intake' => ['sync' => 'Fetch cloud document intake'],
+        'compliance' => ['scan_findings' => 'Scan compliance findings'],
         'events' => [
             'check_certificates' => 'Check certificate expiry',
             'dispatch_reminders' => 'Send event reminders',
             'materialize_recurrences' => 'Materialize recurring events',
         ],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
+        'jtl' => ['sync' => 'JTL Wawi sync'],
         'lexoffice' => [
             'sync_articles' => 'Sync Lexoffice articles',
             'sync_contacts' => 'Sync Lexoffice contacts',
@@ -93,6 +103,7 @@ return [
             'push' => 'Push times to OpenProject',
         ],
         'operations' => ['scan' => 'Sync operations tasks'],
+        'orgamax' => ['sync' => 'orgaMAX sync'],
         'payroll' => ['import_minimum_wages' => 'Import EU minimum wages'],
         'plans' => ['purge' => 'Purge downgraded module data'],
         'plugin' => ['healthcheck' => 'Plugin health check'],

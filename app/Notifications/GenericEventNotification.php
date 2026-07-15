@@ -24,7 +24,7 @@ class GenericEventNotification extends Notification {
     use Queueable;
 
     /**
-     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
+     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null, message?: string|null, message_key?: string|null, message_params?: array<string, mixed>|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
      * @param  list<string>  $channels  Laravel-Kanäle, z. B. ['database', 'mail']
      */
     public function __construct(
@@ -49,7 +49,7 @@ class GenericEventNotification extends Notification {
         // Mit title_key wird der Titel hier — bereits in der Empfänger-Locale
         // (HasLocalePreference auf User) — frisch gerendert.
         $title = \App\Support\MailText::plain($this->title());
-        $message = \App\Support\MailText::plain((string) ($this->payload['message'] ?? ''));
+        $message = \App\Support\MailText::plain($this->message());
         $url = $this->payload['url'] ?? null;
 
         // Alle Eskalationsstufen (escalation/escalation2/escalation3, MVP-331)
@@ -75,6 +75,11 @@ class GenericEventNotification extends Notification {
         return \App\Support\NotificationText::title($this->payload);
     }
 
+    /** Nachricht in der aktuell aktiven Locale (message_key gewinnt über message). */
+    public function message(): string {
+        return \App\Support\NotificationText::message($this->payload);
+    }
+
     /** @return array<string, mixed> */
     public function toArray(object $notifiable): array {
         unset($notifiable);
@@ -88,6 +93,8 @@ class GenericEventNotification extends Notification {
             'title_key' => $this->payload['title_key'] ?? null,
             'title_params' => $this->payload['title_params'] ?? null,
             'message' => $this->payload['message'] ?? null,
+            'message_key' => $this->payload['message_key'] ?? null,
+            'message_params' => $this->payload['message_params'] ?? null,
             'url' => $this->payload['url'] ?? null,
             'icon' => $this->payload['icon'] ?? $this->event->icon(),
         ];

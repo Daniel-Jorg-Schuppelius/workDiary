@@ -167,6 +167,11 @@ class SafetyEventService {
                     'severity' => $event->severity->label(),
                     'location' => $event->location ?: '–',
                 ]),
+                'message_key' => 'notification.message.safety_critical_event',
+                'message_params' => [
+                    'severity' => ['key' => 'enums.safety.severity.' . $event->severity->value, 'fallback' => $event->severity->label()],
+                    'location' => $event->location ?: '–',
+                ],
                 'url' => route('safety-events.show', $event),
             ],
             dedup: true,

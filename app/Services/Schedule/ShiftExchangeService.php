@@ -213,9 +213,12 @@ class ShiftExchangeService {
         $exchange->loadMissing('scheduledShift.shiftType');
         $payload = [
             'title' => (string) __('schedule.exchange.notification_request_title'),
+            'title_key' => 'schedule.exchange.notification_request_title',
             'message' => (string) __('schedule.exchange.notification_request_message', [
                 'date' => $exchange->scheduledShift?->date?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'schedule.exchange.notification_request_message',
+            'message_params' => ['date' => $exchange->scheduledShift?->date?->toDateString() ?? '–'],
             'url' => $this->safeRoute('schedule.exchanges.index'),
         ];
 
@@ -235,10 +238,16 @@ class ShiftExchangeService {
         $exchange->loadMissing('scheduledShift');
         $payload = [
             'title' => (string) __('schedule.exchange.notification_decided_title'),
+            'title_key' => 'schedule.exchange.notification_decided_title',
             'message' => (string) __('schedule.exchange.notification_decided_message', [
                 'status' => $exchange->status->label(),
                 'date' => $exchange->scheduledShift?->date?->format('d.m.Y') ?? '–',
             ]),
+            'message_key' => 'schedule.exchange.notification_decided_message',
+            'message_params' => [
+                'status' => ['key' => 'enums.shift.exchange_status.' . $exchange->status->value, 'fallback' => $exchange->status->label()],
+                'date' => $exchange->scheduledShift?->date?->toDateString() ?? '–',
+            ],
             'url' => $this->safeRoute('schedule.exchanges.index'),
         ];
 

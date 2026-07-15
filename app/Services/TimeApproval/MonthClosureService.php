@@ -138,6 +138,11 @@ class MonthClosureService {
                     'user' => (string) $owner->name,
                     'period' => sprintf('%02d/%d', (int) $closure->period_month, (int) $closure->period_year),
                 ]),
+                'title_key' => 'notification.message.month_submitted_title',
+                'title_params' => [
+                    'user' => (string) $owner->name,
+                    'period' => sprintf('%02d/%d', (int) $closure->period_month, (int) $closure->period_year),
+                ],
                 'message' => null,
                 'url' => route('admin.month-approval.index'),
             ],

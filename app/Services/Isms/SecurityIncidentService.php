@@ -92,6 +92,7 @@ class SecurityIncidentService {
                 [
                     'title' => trim($incident->displayNo() . ' — ' . $incident->title, ' —'),
                     'message' => (string) __('notification.message.incident_critical'),
+                    'message_key' => 'notification.message.incident_critical',
                     'url' => route('isms.incidents.index'),
                 ],
                 dedup: true,

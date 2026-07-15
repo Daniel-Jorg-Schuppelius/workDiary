@@ -162,6 +162,8 @@ class IdeaMapService {
             [
                 'title' => (string) $map->title,
                 'message' => (string) __('ideas.notification.shared', ['actor' => $actor->name]),
+                'message_key' => 'ideas.notification.shared',
+                'message_params' => ['actor' => $actor->name],
                 'url' => route('ideas.show', $map),
             ],
         );

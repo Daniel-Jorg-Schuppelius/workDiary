@@ -224,4 +224,45 @@ class NotificationDispatcherTest extends TestCase {
         $this->assertSame(NotificationEvent::OpenIssueAssigned->value, $data['event'] ?? null);
         $this->assertSame('Testpunkt', $data['title'] ?? null);
     }
+
+    public function test_title_and_message_keys_render_in_recipient_locale(): void {
+        // Scheduler/Queue laufen in der App-Default-Locale (de) — Empfänger
+        // mit anderer Sprachpräferenz müssen Titel UND Nachricht trotzdem in
+        // ihrer Sprache sehen (render-time via title_key/message_key), und
+        // ISO-Datums-Params werden erst bei der Anzeige formatiert.
+        $this->affected->setPreference('locale', 'en');
+
+        $sent = $this->dispatcher()->notify(
+            NotificationEvent::OpenIssueAssigned,
+            $this->makeIssue(),
+            $this->affected,
+            [
+                'title' => 'Wiedervorlage fällig: Ticket 42',
+                'title_key' => 'Wiedervorlage fällig: Ticket :no',
+                'title_params' => ['no' => '42'],
+                'message' => 'Fällig am 15.07.2026.',
+                'message_key' => 'Fällig am :date.',
+                'message_params' => ['date' => '2026-07-15'],
+                'url' => null,
+            ],
+        );
+
+        $this->assertSame(1, $sent);
+
+        $data = (array) $this->affected->notifications()->first()?->data;
+        $this->assertSame('Wiedervorlage fällig: Ticket :no', $data['title_key'] ?? null);
+        $this->assertSame('Fällig am :date.', $data['message_key'] ?? null);
+
+        $previous = app()->getLocale();
+        app()->setLocale('en');
+        try {
+            $this->assertSame('Follow-up due: ticket 42', \App\Support\NotificationText::title($data));
+            $message = \App\Support\NotificationText::message($data);
+            $this->assertStringStartsWith('Due on', $message);
+            // ISO-Param wurde in ein Anzeigeformat übersetzt
+            $this->assertStringNotContainsString('2026-07-15', $message);
+        } finally {
+            app()->setLocale($previous);
+        }
+    }
 }

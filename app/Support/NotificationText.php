@@ -45,6 +45,22 @@ final class NotificationText {
         return self::render($key, (array) ($data['title_params'] ?? []));
     }
 
+    /**
+     * Nachricht einer gespeicherten database-Notification — analog zu title():
+     * message_key/message_params gewinnen, Altbestand fällt auf den beim
+     * Erzeugen gerenderten message-Text zurück.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public static function message(array $data): string {
+        $key = $data['message_key'] ?? null;
+        if (! is_string($key) || $key === '') {
+            return (string) ($data['message'] ?? '');
+        }
+
+        return self::render($key, (array) ($data['message_params'] ?? []));
+    }
+
     /** @param  array<string, mixed>  $params */
     public static function render(string $key, array $params): string {
         return (string) __($key, array_map(self::param(...), $params));

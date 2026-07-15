@@ -382,12 +382,18 @@ class RentalCaseService {
             // Rollen-Empfänger (Teamleitung) über die Org-Regel mit.
             $this->notifier->notify(NotificationEvent::RentalReturnOverdue, $case, $case->responsible, [
                 'title' => (string) __('Verleih überfällig: :number', ['number' => $case->number]),
+                'title_key' => 'Verleih überfällig: :number',
+                'title_params' => ['number' => $case->number],
                 'message' => (string) __('Rückgabe war bis :date vereinbart.', ['date' => $case->ends_at->format('d.m.Y H:i')]),
+                'message_key' => 'Rückgabe war bis :date vereinbart.',
+                'message_params' => ['date' => $case->ends_at->toIso8601String()],
                 'url' => route('rental.show', $case),
             ], NotificationDispatchLog::STAGE_INITIAL, true);
 
             $this->notifier->escalateIfDue(NotificationEvent::RentalReturnOverdue, $case, [
                 'title' => (string) __('Eskalation: Verleih :number weiterhin überfällig', ['number' => $case->number]),
+                'title_key' => 'Eskalation: Verleih :number weiterhin überfällig',
+                'title_params' => ['number' => $case->number],
                 'url' => route('rental.show', $case),
             ]);
         }

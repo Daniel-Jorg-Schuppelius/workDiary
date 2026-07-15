@@ -181,6 +181,8 @@ class ServiceTicketService {
                     $assignee,
                     [
                         'title' => (string) __('Ticket :no zugewiesen', ['no' => $ticket->ticket_no]),
+                        'title_key' => 'Ticket :no zugewiesen',
+                        'title_params' => ['no' => $ticket->ticket_no],
                         'body' => (string) $ticket->title,
                         'url' => route('service-tickets.show', $ticket),
                     ],

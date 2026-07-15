@@ -147,6 +147,8 @@ class TicketConversationService {
                     $assignee,
                     [
                         'title' => (string) __('Kundenantwort zu Ticket :no', ['no' => $ticket->ticket_no]),
+                        'title_key' => 'Kundenantwort zu Ticket :no',
+                        'title_params' => ['no' => $ticket->ticket_no],
                         'body' => mb_substr($message->body, 0, 200),
                         'url' => route('service-tickets.show', $ticket),
                     ],

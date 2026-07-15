@@ -83,4 +83,50 @@ class TranslationParityTest extends TestCase {
 
         $this->assertSame([], $offenders, 'Namespace-Keys fehlen: ' . implode(', ', array_slice($offenders, 0, 10)));
     }
+
+    public function test_every_scheduler_job_has_a_label_in_every_locale(): void {
+        // JobDefinition::label() fällt via Trans::or auf den technischen Key
+        // zurück — ein unbenanntes Job-Registry-Element zeigt in der
+        // Scheduler-Übersicht sonst z. B. "claims.escalate" in ALLEN Sprachen.
+        // Gleiches gilt für Kadenz-/Kritikalitäts-Labels der Enums.
+        $keys = [];
+        foreach (array_keys((array) config('scheduler.jobs', [])) as $jobKey) {
+            $keys[] = 'scheduler.job.' . $jobKey;
+        }
+        foreach (\App\Scheduling\CadenceType::cases() as $cadence) {
+            $keys[] = 'scheduler.cadence.' . $cadence->value;
+        }
+        foreach (\App\Scheduling\JobCriticality::cases() as $criticality) {
+            $keys[] = 'scheduler.criticality.' . $criticality->value;
+        }
+
+        $offenders = [];
+        foreach ($keys as $key) {
+            foreach (Locales::enabledCodes() as $code) {
+                if (! app('translator')->has($key, $code, false)) {
+                    $offenders[] = "$code: $key";
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, 'Scheduler-Labels fehlen: ' . implode(', ', $offenders));
+    }
+
+    public function test_every_permission_has_a_real_label_in_every_locale(): void {
+        // Permission::label() fällt auf den Slug zurück — ein fehlender oder
+        // als Stub (Wert == Slug) angelegter Eintrag zeigt in der
+        // Rechte-Matrix den rohen Code, in allen Sprachen.
+        $offenders = [];
+        foreach (Locales::enabledCodes() as $code) {
+            $map = (array) trans('access.permission', [], $code);
+            foreach (\App\Enums\User\Permission::cases() as $permission) {
+                $label = $map[$permission->value] ?? null;
+                if (! is_string($label) || $label === '' || $label === $permission->value) {
+                    $offenders[] = "$code: {$permission->value}";
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, 'Permissions ohne Label: ' . implode(', ', array_slice($offenders, 0, 15)));
+    }
 }

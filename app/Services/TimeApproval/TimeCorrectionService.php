@@ -122,6 +122,11 @@ class TimeCorrectionService {
                     'user' => (string) ($owner->name ?? '–'),
                     'date' => $request->scope_date->format('d.m.Y'),
                 ]),
+                'title_key' => 'notification.message.correction_requested_title',
+                'title_params' => [
+                    'user' => (string) ($owner->name ?? '–'),
+                    'date' => $request->scope_date->toDateString(),
+                ],
                 'message' => (string) $request->reason,
                 'url' => route('admin.corrections.show', $request),
             ],
@@ -181,9 +186,13 @@ class TimeCorrectionService {
                 'title' => (string) __('notification.message.correction_decided_title', [
                     'date' => $request->scope_date->format('d.m.Y'),
                 ]),
+                'title_key' => 'notification.message.correction_decided_title',
+                'title_params' => ['date' => $request->scope_date->toDateString()],
                 'message' => (string) __('notification.message.' . $decisionKey, [
                     'note' => (string) ($request->decision_note ?? ''),
                 ]),
+                'message_key' => 'notification.message.' . $decisionKey,
+                'message_params' => ['note' => (string) ($request->decision_note ?? '')],
                 'url' => route('corrections.show', $request),
             ],
         );

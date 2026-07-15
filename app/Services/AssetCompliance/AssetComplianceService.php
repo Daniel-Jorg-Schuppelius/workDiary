@@ -270,7 +270,11 @@ class AssetComplianceService {
             if ($assignment->isDueSoon() || $assignment->isOverdue()) {
                 $payload = [
                     'title' => (string) __('Prüfung fällig: :profile (:asset)', ['profile' => $profile->name, 'asset' => $asset->name]),
+                    'title_key' => 'Prüfung fällig: :profile (:asset)',
+                    'title_params' => ['profile' => $profile->name, 'asset' => $asset->name],
                     'message' => (string) __('Fällig am :date.', ['date' => $assignment->next_due_on?->format('d.m.Y') ?? '—']),
+                    'message_key' => 'Fällig am :date.',
+                    'message_params' => ['date' => $assignment->next_due_on?->toDateString() ?? '—'],
                     'url' => route('asset-compliance.index'),
                 ];
                 $sent += $this->notifier->notify(NotificationEvent::AssetInspectionDue, $assignment, $assignment->responsible, $payload, dedup: true);

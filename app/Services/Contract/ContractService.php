@@ -263,10 +263,20 @@ class ContractService {
                     'kind' => $obligation->kind->label(),
                     'number' => $contract->number,
                 ]),
+                'title_key' => 'Vertragsfrist fällig: :kind (:number)',
+                'title_params' => [
+                    'kind' => ['key' => $obligation->kind->labelKey()],
+                    'number' => $contract->number,
+                ],
                 'message' => (string) __(':title — fällig am :date.', [
                     'title' => $obligation->title,
                     'date' => $obligation->due_on->format('d.m.Y'),
                 ]),
+                'message_key' => ':title — fällig am :date.',
+                'message_params' => [
+                    'title' => $obligation->title,
+                    'date' => $obligation->due_on->toDateString(),
+                ],
                 'url' => route('contracts.show', $contract),
                 'due_at' => $obligation->due_on,
             ];

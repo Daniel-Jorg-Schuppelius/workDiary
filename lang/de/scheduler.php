@@ -68,18 +68,28 @@ return [
     'job' => [
         'archive' => ['run' => 'Archivierungslauf'],
         'attendance' => ['close_open' => 'Offene Stempelungen schließen'],
-        'backup' => ['check_restore' => 'Backup-Prüfung'],
+        'audit' => ['verify' => 'Audit-Kette prüfen'],
+        'backup' => [
+            'check_restore' => 'Backup-Prüfung',
+            'cloud-run' => 'Cloud-Backup-Lauf',
+            'cloud-verify' => 'Cloud-Backup-Prüfung',
+        ],
+        'carddav' => ['sync' => 'CardDAV-Abgleich'],
         'catalog' => ['fetch_due' => 'Katalogquellen abrufen'],
         'chat' => [
             'send_reminders' => 'Chat-Erinnerungen versenden',
             'send_scheduled' => 'Geplante Chat-Nachrichten senden',
         ],
+        'claims' => ['escalate' => 'Reklamations-Fristeneskalation'],
+        'cloud-intake' => ['sync' => 'Cloud-Dokumenteingang abrufen'],
+        'compliance' => ['scan_findings' => 'Compliance-Befunde prüfen'],
         'events' => [
             'check_certificates' => 'Zertifikatsablauf prüfen',
             'dispatch_reminders' => 'Event-Erinnerungen versenden',
             'materialize_recurrences' => 'Wiederkehrende Events anlegen',
         ],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
+        'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
         'lexoffice' => [
             'sync_articles' => 'Lexoffice-Artikel synchronisieren',
             'sync_contacts' => 'Lexoffice-Kontakte synchronisieren',
@@ -93,6 +103,7 @@ return [
             'push' => 'Zeiten nach OpenProject übertragen',
         ],
         'operations' => ['scan' => 'Betriebsaufgaben abgleichen'],
+        'orgamax' => ['sync' => 'orgaMAX-Abgleich'],
         'payroll' => ['import_minimum_wages' => 'EU-Mindestlöhne importieren'],
         'plans' => ['purge' => 'Downgrade-Daten bereinigen'],
         'plugin' => ['healthcheck' => 'Plugin-Healthcheck'],

@@ -27,14 +27,23 @@ enum ContractObligationKind: string {
     case Other = 'other';
 
     public function label(): string {
+        return (string) __($this->labelKey());
+    }
+
+    /**
+     * Quell-Key des Labels (JSON-Katalog) — für render-time-i18n-Params
+     * (NotificationText: ['key' => …]), damit Empfänger das Label in ihrer
+     * Sprache sehen statt in der des Erzeugers.
+     */
+    public function labelKey(): string {
         return match ($this) {
-            self::NoticeDeadline => (string) __('Kündigungsfrist'),
-            self::RenewalWarning => (string) __('Verlängerungswarnung'),
-            self::Payment => (string) __('Zahlungstermin'),
-            self::Review => (string) __('Prüftermin'),
-            self::Indexation => (string) __('Indexanpassung'),
-            self::Documentation => (string) __('Nachweis/Dokument'),
-            self::Other => (string) __('Sonstige Pflicht'),
+            self::NoticeDeadline => 'Kündigungsfrist',
+            self::RenewalWarning => 'Verlängerungswarnung',
+            self::Payment => 'Zahlungstermin',
+            self::Review => 'Prüftermin',
+            self::Indexation => 'Indexanpassung',
+            self::Documentation => 'Nachweis/Dokument',
+            self::Other => 'Sonstige Pflicht',
         };
     }
 }

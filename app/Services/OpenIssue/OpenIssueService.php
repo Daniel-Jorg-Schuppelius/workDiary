@@ -140,6 +140,8 @@ class OpenIssueService {
             [
                 'title' => (string) $issue->title,
                 'message' => (string) __('notification.message.issue_assigned', ['actor' => $actor->name]),
+                'message_key' => 'notification.message.issue_assigned',
+                'message_params' => ['actor' => $actor->name],
                 'url' => \App\Support\NotificationLinks::openIssueUrl($issue),
             ],
         );

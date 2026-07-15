@@ -343,9 +343,10 @@ class NotificationDispatcher {
         if ($rule->usesChannel(NotificationChannel::Push) && ! $quiet
             && filter_var(data_get($prefs, 'push_enabled', true), FILTER_VALIDATE_BOOL)) {
             $truncate = (int) Setting::get('notifications.push.body_truncate', 120);
+            [$pushTitle, $pushBody] = $this->pushTextFor($user, $event, $payload);
             $sent = $this->webPush->sendToUser($user, [
-                'title' => $this->titleFor($user, $payload),
-                'body' => mb_substr((string) ($payload['message'] ?? $event->label()), 0, $truncate),
+                'title' => $pushTitle,
+                'body' => mb_substr($pushBody, 0, $truncate),
                 'url' => (string) ($payload['url'] ?? ''),
                 'tag' => 'notification-' . $event->value,
             ]);
@@ -356,28 +357,30 @@ class NotificationDispatcher {
     }
 
     /**
-     * Titel für einen konkreten Empfänger: trägt der Payload einen Lang-Key,
-     * wird in dessen bevorzugter Sprache frisch gerendert (Push läuft — anders
-     * als database/mail — nicht durch Laravels preferredLocale-Wrapping).
+     * Push-Titel und -Text für einen konkreten Empfänger: tragen die Payloads
+     * Lang-Keys, wird in dessen bevorzugter Sprache frisch gerendert (Push
+     * läuft — anders als database/mail — nicht durch Laravels
+     * preferredLocale-Wrapping).
      *
-     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null}  $payload
+     * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null, message?: string|null, message_key?: string|null, message_params?: array<string, mixed>|null}  $payload
+     * @return array{0: string, 1: string}
      */
-    private function titleFor(User $user, array $payload): string {
-        $key = $payload['title_key'] ?? null;
-        if (! is_string($key) || $key === '') {
-            return (string) $payload['title'];
-        }
+    private function pushTextFor(User $user, NotificationEvent $event, array $payload): array {
+        $render = static function () use ($payload, $event): array {
+            $body = NotificationText::message($payload);
 
-        $params = (array) ($payload['title_params'] ?? []);
+            return [NotificationText::title($payload), $body !== '' ? $body : $event->label()];
+        };
+
         $locale = $user->preferredLocale() ?? app()->getLocale();
         if ($locale === app()->getLocale()) {
-            return NotificationText::render($key, $params);
+            return $render();
         }
 
         $previous = app()->getLocale();
         app()->setLocale($locale);
         try {
-            return NotificationText::render($key, $params);
+            return $render();
         } finally {
             app()->setLocale($previous);
         }

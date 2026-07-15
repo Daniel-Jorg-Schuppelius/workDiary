@@ -27,15 +27,24 @@ enum AssetFinanceDeadlineKind: string {
     case DocumentExpiry = 'document_expiry';
 
     public function label(): string {
+        return (string) __($this->labelKey());
+    }
+
+    /**
+     * Quell-Key des Labels (JSON-Katalog) — für render-time-i18n-Params
+     * (NotificationText: ['key' => …]), damit Empfänger das Label in ihrer
+     * Sprache sehen statt in der des Erzeugers.
+     */
+    public function labelKey(): string {
         return match ($this) {
-            self::Termination => (string) __('Kündigungsfrist'),
-            self::Extension => (string) __('Verlängerungsoption'),
-            self::PurchaseOption => (string) __('Kaufoption'),
-            self::Return => (string) __('Rückgabe'),
-            self::FinalInspection => (string) __('Endprüfung'),
-            self::Insurance => (string) __('Versicherung'),
-            self::Service => (string) __('Service/Wartung'),
-            self::DocumentExpiry => (string) __('Dokumentablauf'),
+            self::Termination => 'Kündigungsfrist',
+            self::Extension => 'Verlängerungsoption',
+            self::PurchaseOption => 'Kaufoption',
+            self::Return => 'Rückgabe',
+            self::FinalInspection => 'Endprüfung',
+            self::Insurance => 'Versicherung',
+            self::Service => 'Service/Wartung',
+            self::DocumentExpiry => 'Dokumentablauf',
         };
     }
 }
