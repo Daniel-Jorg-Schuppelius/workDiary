@@ -41,6 +41,7 @@ class AssetService {
             'name' => (string) $payload['name'],
             'manufacturer' => $payload['manufacturer'] ?? null,
             'model' => $payload['model'] ?? null,
+            'product_id' => $payload['product_id'] ?? null,
             'serial_no' => $payload['serial_no'] ?? null,
             'inventory_no' => $payload['inventory_no'] ?? null,
             'customer_id' => $payload['customer_id'] ?? null,

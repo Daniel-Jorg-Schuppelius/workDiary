@@ -56,6 +56,9 @@ final class WebhookTenantTest extends TestCase {
      * @var list<string>
      */
     private const INBOUND_ENDPOINTS = [
+        'api/webhooks/dropbox',
+        'api/webhooks/google-drive',
+        'api/webhooks/msgraph-intake',
         'api/webhooks/github/{setting}',
         'api/webhooks/gitlab/{setting}',
         'api/webhooks/zammad/{connection}',
@@ -224,6 +227,117 @@ final class WebhookTenantTest extends TestCase {
 
         $this->assertSame(0, TodoistWebhookDelivery::query()->withoutGlobalScopes()->count());
         Queue::assertNothingPushed();
+    }
+
+    // ────────────────────────────────────────────────────────────────────
+    // Dropbox (Feature 080) — signaturgeprüftes Aufwecksignal; der Mandant
+    // wird ausschließlich serverseitig über external_account_id gespeicherter
+    // Verbindungen aufgelöst, nie aus dem Payload.
+    // ────────────────────────────────────────────────────────────────────
+
+    public function test_dropbox_webhook_rejects_invalid_signature_and_wakes_only_matching_connections(): void {
+        config(['plugins.dropbox.client_secret' => 'app-secret']);
+
+        $connB = \App\Models\CloudIntake\CloudDocumentConnection::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'external_account_id' => 'dbid:org-b',
+        ]);
+        $connA = \App\Models\CloudIntake\CloudDocumentConnection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'external_account_id' => 'dbid:org-a',
+        ]);
+
+        $raw = (string) json_encode(['list_folder' => ['accounts' => ['dbid:org-b']], 'delta' => ['users' => []]]);
+
+        // Falsche Signatur ⇒ 403, kein Aufwecksignal.
+        $this->call('POST', '/api/webhooks/dropbox', [], [], [], [
+            'HTTP_X-Dropbox-Signature' => 'falsch',
+            'CONTENT_TYPE' => 'application/json',
+        ], $raw)->assertStatus(403);
+
+        $wake = app(\App\Services\CloudIntake\IntakeWakeSignal::class);
+        $this->assertFalse($wake->consume((int) $connB->id));
+
+        // Gültige Signatur ⇒ 200; NUR die Verbindung mit passender Konto-ID
+        // wird geweckt (Payload-Konto bestimmt nie den Mandanten direkt).
+        $this->call('POST', '/api/webhooks/dropbox', [], [], [], [
+            'HTTP_X-Dropbox-Signature' => hash_hmac('sha256', $raw, 'app-secret'),
+            'CONTENT_TYPE' => 'application/json',
+        ], $raw)->assertStatus(200);
+
+        $this->assertTrue($wake->consume((int) $connB->id));
+        $this->assertFalse($wake->consume((int) $connA->id));
+
+        // Verifikations-Challenge (GET) wird als text/plain gespiegelt.
+        $this->get('/api/webhooks/dropbox?challenge=abc123')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+            ->assertSee('abc123');
+    }
+
+    // ────────────────────────────────────────────────────────────────────
+    // Microsoft Graph Intake (Feature 080) — Zuordnung ausschließlich über
+    // subscriptionId + clientState (Konstantzeit) der gespeicherten
+    // Verbindung; falsches clientState wird still ignoriert (kein Oracle).
+    // ────────────────────────────────────────────────────────────────────
+
+    public function test_msgraph_intake_webhook_validates_client_state_per_connection(): void {
+        $connB = \App\Models\CloudIntake\CloudDocumentConnection::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Microsoft,
+            'subscription_id' => 'sub-b',
+            'webhook_secret' => 'geheim-b',
+        ]);
+
+        $wake = app(\App\Services\CloudIntake\IntakeWakeSignal::class);
+
+        // Subscription-Validierung wird als text/plain gespiegelt.
+        $this->post('/api/webhooks/msgraph-intake?validationToken=tok-123')
+            ->assertOk()
+            ->assertSee('tok-123');
+
+        // Falsches clientState ⇒ 202, aber KEIN Aufwecksignal.
+        $this->postJson('/api/webhooks/msgraph-intake', [
+            'value' => [['subscriptionId' => 'sub-b', 'clientState' => 'falsch']],
+        ])->assertStatus(202);
+        $this->assertFalse($wake->consume((int) $connB->id));
+
+        // Korrektes clientState weckt genau die zugehörige Verbindung.
+        $this->postJson('/api/webhooks/msgraph-intake', [
+            'value' => [['subscriptionId' => 'sub-b', 'clientState' => 'geheim-b']],
+        ])->assertStatus(202);
+        $this->assertTrue($wake->consume((int) $connB->id));
+    }
+
+    // ────────────────────────────────────────────────────────────────────
+    // Google Drive Watch-Channel (Feature 080) — Channel-ID + Channel-Token
+    // (Konstantzeit) der gespeicherten Verbindung; Payload zählt nicht.
+    // ────────────────────────────────────────────────────────────────────
+
+    public function test_google_drive_channel_requires_matching_token(): void {
+        $connB = \App\Models\CloudIntake\CloudDocumentConnection::factory()->create([
+            'organization_id' => $this->orgB->id,
+            'provider' => \App\Enums\CloudIntake\CloudIntakeProvider::Google,
+            'subscription_id' => 'chan-b',
+            'webhook_secret' => 'token-b',
+        ]);
+
+        $wake = app(\App\Services\CloudIntake\IntakeWakeSignal::class);
+
+        // Fehlende/falsche Header ⇒ 403, kein Signal.
+        $this->post('/api/webhooks/google-drive')->assertStatus(403);
+        $this->call('POST', '/api/webhooks/google-drive', [], [], [], [
+            'HTTP_X-Goog-Channel-ID' => 'chan-b',
+            'HTTP_X-Goog-Channel-Token' => 'falsch',
+        ])->assertStatus(403);
+        $this->assertFalse($wake->consume((int) $connB->id));
+
+        // Korrekte Kombination weckt genau diese Verbindung.
+        $this->call('POST', '/api/webhooks/google-drive', [], [], [], [
+            'HTTP_X-Goog-Channel-ID' => 'chan-b',
+            'HTTP_X-Goog-Channel-Token' => 'token-b',
+        ])->assertStatus(200);
+        $this->assertTrue($wake->consume((int) $connB->id));
     }
 
     // ────────────────────────────────────────────────────────────────────

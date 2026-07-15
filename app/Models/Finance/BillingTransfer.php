@@ -25,6 +25,11 @@ use Illuminate\Support\Carbon;
  * laufen ausschließlich über {@see \App\Services\Finance\BillingTransferService}
  * und schreiben je Statuswechsel ein {@see BillingTransferEvent} (Hash-Kette).
  *
+ * Unveränderlich nach Übergabe: ein transferierter Nachweis (transferred/
+ * transferred_at gesetzt) darf nicht mehr gespeichert/gelöscht werden (Guard
+ * in booted()) — analog DatevBookingBatch (exported); `Transferred` ist in der
+ * Statusmaschine terminal, Korrekturen laufen über Storno-/Differenzübergaben.
+ *
  * @property int $id
  * @property int|null $organization_id
  * @property int $customer_id
@@ -87,6 +92,26 @@ class BillingTransfer extends Model {
         'total_quantity' => 'decimal:2',
         'transferred_at' => 'datetime',
     ];
+
+    protected static function booted(): void {
+        static::updating(function (self $transfer): void {
+            // Unveränderlich nach Übergabe: der Service setzt transferred_at
+            // innerhalb der markTransferred()-Transaktion (confirmed →
+            // transferred ist erlaubt, weil der ORIGINAL-Wert noch leer ist).
+            $originalStatus = $transfer->getOriginal('status');
+            if ($transfer->getOriginal('transferred_at') !== null
+                || $originalStatus === TransferStatus::Transferred
+                || $originalStatus === TransferStatus::Transferred->value) {
+                throw new \RuntimeException('BillingTransfer ist nach erfolgter Übergabe unveränderlich.');
+            }
+        });
+
+        static::deleting(function (self $transfer): void {
+            if ($transfer->wasTransferred() && ! $transfer->isForceDeleting()) {
+                throw new \RuntimeException('Ein übergebener BillingTransfer darf nicht gelöscht werden.');
+            }
+        });
+    }
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {

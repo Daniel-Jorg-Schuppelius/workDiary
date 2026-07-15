@@ -38,6 +38,12 @@ enum PluginCapability: string {
     /** Kann Versandlabels erzeugen/stornieren und Sendungen verfolgen (Feature 059, z. B. DHL). */
     case ShippingProvider = 'shipping_provider';
 
+    /** Kann Dokumente aus überwachten Cloud-Ordnern lesend übernehmen (Feature 080). */
+    case DocumentIntake = 'document_intake';
+
+    /** Kann verschlüsselte Backup-Generationen in einen eigenen Cloud-Bereich schreiben (Feature 017, Phase 32). */
+    case BackupTarget = 'backup_target';
+
     /**
      * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren muss.
      *
@@ -52,6 +58,8 @@ enum PluginCapability: string {
             self::TaskSync => TaskSyncer::class,
             self::CalendarPublish => CalendarPublisher::class,
             self::ShippingProvider => ShippingProvider::class,
+            self::DocumentIntake => DocumentIntakeSource::class,
+            self::BackupTarget => BackupTarget::class,
         };
     }
 }

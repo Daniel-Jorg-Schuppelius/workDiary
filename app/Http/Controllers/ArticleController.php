@@ -238,6 +238,11 @@ class ArticleController extends Controller {
             'types' => ArticleType::cases(),
             'statuses' => ArticleStatus::cases(),
             'allTags' => \App\Models\Tag::query()->orderBy('name')->get(),
+            // Typ-Picker (produktmodell-konzept.md, MVP-370).
+            'products' => \App\Models\Product::query()
+                ->orderBy('manufacturer')
+                ->orderBy('model')
+                ->get(['id', 'manufacturer', 'model', 'name']),
         ]);
     }
 }

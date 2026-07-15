@@ -334,6 +334,10 @@ enum Permission: string implements HasLabel {
     // Feature 002: Zielwerte/Benchmarks je Kennzahl pflegen (GF/Admin).
     case ReportTargetManage = 'report.target.manage';
     case ImportViewReports = 'import.viewReports';
+        // ── Cloud-Dokumenteingang (Feature 080, MVP-351) ─────────────────
+    case CloudIntakeConnectionManage = 'cloudIntake.connection.manage';
+    case CloudIntakeRouteManage = 'cloudIntake.route.manage';
+    case CloudIntakeRunPreview = 'cloudIntake.run.preview';
     case AuditLogView = 'audit-log.view';
     case AttendanceViewAny = 'attendance.viewAny';
     case AttendanceManage = 'attendance.manage';
@@ -524,6 +528,9 @@ enum Permission: string implements HasLabel {
     case ArticleView = 'article.view';
     case ArticleManage = 'article.manage';
     case ArticleImport = 'article.import';
+        // ── Produktmodell (MVP-369): Typ-Ebene Hersteller-Modell ─────────
+    case ProductViewAny = 'product.viewAny';
+    case ProductManage = 'product.manage';
         // ── Lagerwirtschaft (Feature 048, MVP-066/067) ──────────
     case InventoryViewAny = 'inventory.viewAny';
     case InventoryPost = 'inventory.post';

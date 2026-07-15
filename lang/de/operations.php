@@ -67,6 +67,8 @@ return [
     'task' => [
         'backup_overdue' => 'Letztes Backup ist :hours Stunden alt (Schwelle :threshold h).',
         'backup_failed' => 'Backup-Prüfung fehlgeschlagen: :reason',
+        'backup_target_failed' => 'Cloud-Backup fehlgeschlagen: :reason',
+        'backup_target_verify_failed' => 'Cloud-Backup-Verifikation fehlgeschlagen: :reason',
         'restore_test_overdue' => 'Letzter Restore-Test liegt :days Tage zurück (Schwelle :threshold Tage).',
         'restore_test_missing' => 'Es wurde noch nie ein Restore-Test protokolliert.',
         'update_available' => 'Update für :component verfügbar: :installed → :available.',

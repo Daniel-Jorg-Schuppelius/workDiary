@@ -142,6 +142,38 @@ return [
             'cancelled' => 'Annulé',
         ],
     ],
+    'cloud_intake' => [
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'connection_status' => [
+            'draft' => 'Brouillon',
+            'active' => 'Active',
+            'reauth_required' => 'Reconnexion requise',
+            'blocked' => 'Bloquée',
+            'disabled' => 'Désactivée',
+        ],
+        'route_target' => [
+            'incoming_invoice' => 'Factures entrantes',
+            'document' => 'Document (GED)',
+        ],
+        'item_status' => [
+            'imported' => 'Importé',
+            'inbox' => 'Boîte de réception',
+            'rejected' => 'Rejeté',
+            'duplicate' => 'Doublon',
+            'source_gone' => 'Source supprimée',
+        ],
+    ],
+    'product' => [
+        'status' => [
+            'active' => 'Actif',
+            'phasing_out' => 'En fin de vie',
+            'discontinued' => 'Abandonné',
+        ],
+    ],
     'project' => [
         'status' => [
             'active' => 'Actif',
@@ -928,6 +960,32 @@ return [
 
     // Résultat du test de restauration (Feature 017).
     'backup' => [
+        // Cibles de sauvegarde cloud (fonctionnalité 017, phase 32).
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'target_status' => [
+            'draft' => 'Brouillon',
+            'active' => 'Active',
+            'reauth_required' => 'Reconnexion requise',
+            'blocked' => 'Bloquée',
+            'disabled' => 'Désactivée',
+        ],
+        'generation_status' => [
+            'building' => 'En création',
+            'uploading' => 'Envoi en cours',
+            'committed' => 'Validée',
+            'verified' => 'Vérifiée',
+            'verify_failed' => 'Vérification échouée',
+            'failed' => 'Échouée',
+        ],
+        'retention_class' => [
+            'daily' => 'Quotidienne',
+            'weekly' => 'Hebdomadaire',
+            'monthly' => 'Mensuelle',
+        ],
         'restore-test-result' => [
             'passed' => 'Réussi',
             'partial' => 'Avec réserves',

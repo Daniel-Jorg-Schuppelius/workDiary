@@ -67,6 +67,8 @@ return [
     'task' => [
         'backup_overdue' => 'La última copia de seguridad tiene :hours horas (umbral :threshold h).',
         'backup_failed' => 'Falló la comprobación de la copia de seguridad: :reason',
+        'backup_target_failed' => 'Copia de seguridad en la nube fallida: :reason',
+        'backup_target_verify_failed' => 'Verificación de la copia en la nube fallida: :reason',
         'restore_test_overdue' => 'La última prueba de restauración fue hace :days días (umbral :threshold días).',
         'restore_test_missing' => 'Nunca se ha registrado una prueba de restauración.',
         'update_available' => 'Actualización disponible para :component: :installed → :available.',

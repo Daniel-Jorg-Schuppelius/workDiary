@@ -49,13 +49,13 @@ class WorkCenterController extends Controller {
     }
 
     public function create(): View {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
 
         return view('manufacturing.work-centers._form_dialog', ['isDialog' => true]);
     }
 
     public function store(Request $request): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:32'],

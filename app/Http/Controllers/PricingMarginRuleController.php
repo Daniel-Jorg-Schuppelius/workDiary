@@ -17,7 +17,7 @@ use App\Http\Requests\SavePricingMarginRuleRequest;
 use App\Models\{PriceChangeRequest, PricingMarginRule, Supplier, User};
 use App\Services\Procurement\PriceApprovalService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -148,6 +148,6 @@ class PricingMarginRuleController extends Controller {
     }
 
     private function canManage(): void {
-        abort_unless(Auth::user()?->can(P::InventoryConfigure->value) ?? false, 403);
+        Gate::authorize(P::InventoryConfigure->value);
     }
 }

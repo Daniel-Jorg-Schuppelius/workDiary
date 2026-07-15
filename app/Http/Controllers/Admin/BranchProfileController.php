@@ -153,11 +153,11 @@ class BranchProfileController extends Controller {
     }
 
     private function authorizeViewCatalog(): void {
-        abort_unless(Gate::allows('branchProfile.viewCatalog'), 403);
+        Gate::authorize('branchProfile.viewCatalog');
     }
 
     private function authorizeInstall(): void {
-        abort_unless(Gate::allows('branchProfile.install'), 403);
+        Gate::authorize('branchProfile.install');
     }
 
     private function normalizeInstalledFilter(string $value): string {

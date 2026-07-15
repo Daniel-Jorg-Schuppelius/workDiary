@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Crisis;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
 use App\Models\Crisis\{CrisisCase, CrisisCommunication, CrisisRole, CrisisTeamAssignment};
 use App\Models\User;
 use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService};
@@ -66,16 +67,9 @@ class CrisisCaseController extends Controller {
         return view('crisis._form_dialog', ['case' => new CrisisCase()]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(StoreCrisisCaseRequest $request): RedirectResponse {
         Gate::authorize('create', CrisisCase::class);
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:200'],
-            'category' => ['required', 'in:' . implode(',', CrisisCase::CATEGORIES)],
-            'severity' => ['required', 'in:minor,major,critical'],
-            'trigger_source' => ['nullable', 'string', 'max:200'],
-            'description' => ['nullable', 'string', 'max:10000'],
-            'affected_summary' => ['nullable', 'string', 'max:10000'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -117,11 +111,9 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Krise aktiviert — Meldefristen laufen ab jetzt.'));
     }
 
-    public function updateStatus(Request $request, CrisisCase $case): RedirectResponse {
+    public function updateStatus(UpdateCrisisCaseStatusRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'status' => ['required', 'in:assessed,in_progress,stabilized,recovery,discarded'],
-        ]);
+        $data = $request->validated();
         $case->update(['status' => $data['status']]);
 
         return back()->with('status', __('Status aktualisiert.'));
@@ -151,12 +143,9 @@ class CrisisCaseController extends Controller {
 
     // ── Krisenstab + Alarmierung (MVP-213) ───────────────────────────────
 
-    public function storeRole(Request $request): RedirectResponse {
+    public function storeRole(StoreCrisisRoleRequest $request): RedirectResponse {
         Gate::authorize('create', CrisisCase::class);
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'description' => ['nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -168,19 +157,9 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Stabsrolle angelegt.'));
     }
 
-    public function assignTeam(Request $request, CrisisCase $case): RedirectResponse {
+    public function assignTeam(AssignCrisisTeamRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $request->merge([
-            'crisis_role_id' => \App\Support\Sqid::decodeOrNumeric(CrisisRole::class, $request->input('crisis_role_id')),
-            'user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('user_id')),
-            'deputy_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('deputy_user_id')),
-        ]);
-        $data = $request->validate([
-            'crisis_role_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('crisis_roles')],
-            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
-            'deputy_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users'), 'different:user_id'],
-            'contact_note' => ['nullable', 'string', 'max:300'],
-        ]);
+        $data = $request->validated();
 
         $assignment = $case->team()->firstOrCreate([
             'organization_id' => $case->organization_id,
@@ -234,14 +213,9 @@ class CrisisCaseController extends Controller {
 
     // ── Lagebild + Entscheidungen (MVP-214) ──────────────────────────────
 
-    public function storeSituationReport(Request $request, CrisisCase $case): RedirectResponse {
+    public function storeSituationReport(StoreCrisisSituationReportRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'content' => ['required', 'string', 'max:10000'],
-            'risks' => ['nullable', 'string', 'max:5000'],
-            'communication_status' => ['nullable', 'string', 'max:5000'],
-            'recovery_status' => ['nullable', 'string', 'max:5000'],
-        ]);
+        $data = $request->validated();
 
         $case->situationReports()->create([
             'organization_id' => $case->organization_id,
@@ -253,12 +227,9 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Lagebericht (neue Version) dokumentiert.'));
     }
 
-    public function storeDecision(Request $request, CrisisCase $case): RedirectResponse {
+    public function storeDecision(StoreCrisisDecisionRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'decision' => ['required', 'string', 'max:1000'],
-            'rationale' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $case->decisions()->create([
             'organization_id' => $case->organization_id,
@@ -273,15 +244,9 @@ class CrisisCaseController extends Controller {
 
     // ── Maßnahmen (MVP-216) ──────────────────────────────────────────────
 
-    public function storeAction(Request $request, CrisisCase $case): RedirectResponse {
+    public function storeAction(StoreCrisisActionRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $request->merge(['assignee_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('assignee_id'))]);
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:300'],
-            'assignee_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
-            'due_at' => ['nullable', 'date'],
-            'priority' => ['required', 'in:low,medium,high'],
-        ]);
+        $data = $request->validated();
 
         $case->actions()->create([
             'organization_id' => $case->organization_id,
@@ -292,13 +257,10 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Maßnahme erfasst.'));
     }
 
-    public function updateAction(Request $request, CrisisCase $case, \App\Models\Crisis\CrisisAction $action): RedirectResponse {
+    public function updateAction(UpdateCrisisActionRequest $request, CrisisCase $case, \App\Models\Crisis\CrisisAction $action): RedirectResponse {
         Gate::authorize('update', $case);
         abort_unless($action->crisis_case_id === $case->id, 404);
-        $data = $request->validate([
-            'status' => ['required', 'in:' . implode(',', \App\Models\Crisis\CrisisAction::STATUSES)],
-            'evidence_note' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $action->update([
             'status' => $data['status'],
@@ -311,13 +273,9 @@ class CrisisCaseController extends Controller {
 
     // ── Kommunikation (MVP-217) ──────────────────────────────────────────
 
-    public function storeCommunication(Request $request, CrisisCase $case): RedirectResponse {
+    public function storeCommunication(StoreCrisisCommunicationRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'audience' => ['required', 'in:' . implode(',', CrisisCommunication::AUDIENCES)],
-            'subject' => ['required', 'string', 'max:300'],
-            'body' => ['required', 'string', 'max:20000'],
-        ]);
+        $data = $request->validated();
 
         $case->communications()->create([
             'organization_id' => $case->organization_id,
@@ -345,13 +303,13 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Kommunikation freigegeben.'));
     }
 
-    public function markCommunicationSent(Request $request, CrisisCase $case, CrisisCommunication $communication): RedirectResponse {
+    public function markCommunicationSent(MarkCrisisCommunicationSentRequest $request, CrisisCase $case, CrisisCommunication $communication): RedirectResponse {
         Gate::authorize('update', $case);
         abort_unless($communication->crisis_case_id === $case->id, 404);
         if ($communication->status !== 'approved') {
             return back()->with('error', __('Aussendung erst nach Freigabe.'));
         }
-        $data = $request->validate(['channel' => ['required', 'string', 'max:100']]);
+        $data = $request->validated();
 
         $communication->update(['status' => 'sent', 'channel' => $data['channel'], 'sent_at' => now()]);
         $case->audit('crisis.communication_sent', ['audience' => $communication->audience, 'channel' => $data['channel']]);
@@ -361,15 +319,9 @@ class CrisisCaseController extends Controller {
 
     // ── BCM (MVP-219), Verknüpfung (MVP-218), Nachbereitung (MVP-221) ────
 
-    public function storeContinuityImpact(Request $request, CrisisCase $case): RedirectResponse {
+    public function storeContinuityImpact(StoreCrisisContinuityImpactRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'process_name' => ['required', 'string', 'max:200'],
-            'rto_hours' => ['nullable', 'integer', 'min:0', 'max:65000'],
-            'rpo_hours' => ['nullable', 'integer', 'min:0', 'max:65000'],
-            'workaround' => ['nullable', 'string', 'max:1000'],
-            'substitute_process' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $case->continuityImpacts()->create([
             'organization_id' => $case->organization_id,
@@ -380,25 +332,18 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Kritischen Prozess erfasst.'));
     }
 
-    public function updateContinuityImpact(Request $request, CrisisCase $case, \App\Models\Crisis\CrisisContinuityImpact $impact): RedirectResponse {
+    public function updateContinuityImpact(UpdateCrisisContinuityImpactRequest $request, CrisisCase $case, \App\Models\Crisis\CrisisContinuityImpact $impact): RedirectResponse {
         Gate::authorize('update', $case);
         abort_unless($impact->crisis_case_id === $case->id, 404);
-        $data = $request->validate([
-            'status' => ['required', 'in:' . implode(',', \App\Models\Crisis\CrisisContinuityImpact::STATUSES)],
-            'residual_note' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
         $impact->update($data);
 
         return back()->with('status', __('Wiederanlaufstatus aktualisiert.'));
     }
 
-    public function addLink(Request $request, CrisisCase $case): RedirectResponse {
+    public function addLink(AddCrisisLinkRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'linkable_type' => ['required', 'in:service_ticket,isms_incident,privacy_incident,safety_event,procedure_run,document'],
-            'linkable_sqid' => ['required', 'string', 'max:64'],
-            'note' => ['nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         $map = [
             'service_ticket' => \App\Models\ServiceTicket::class,
@@ -428,7 +373,7 @@ class CrisisCaseController extends Controller {
         return back()->with('status', __('Vorgang verknüpft — das Fachmodul bleibt führend.'));
     }
 
-    public function storeReview(Request $request, CrisisCase $case): RedirectResponse {
+    public function storeReview(StoreCrisisReviewRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
         if (! in_array($case->status, ['all_clear', 'post_review'], true)) {
             return back()->with('error', __('Nachbereitung erst nach der Entwarnung.'));
@@ -437,11 +382,7 @@ class CrisisCaseController extends Controller {
             return back()->with('error', __('Es existiert bereits eine Nachbereitung.'));
         }
 
-        $data = $request->validate([
-            'summary' => ['required', 'string', 'max:10000'],
-            'lessons' => ['nullable', 'string', 'max:10000'],
-            'follow_up' => ['nullable', 'string', 'max:10000'],
-        ]);
+        $data = $request->validated();
 
         $case->review()->create([
             'organization_id' => $case->organization_id,

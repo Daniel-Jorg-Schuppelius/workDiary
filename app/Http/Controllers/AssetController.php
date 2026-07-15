@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Asset\{AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
 use App\Http\Requests\SaveAssetRequest;
-use App\Models\{Asset, Tag, User};
+use App\Models\{Asset, Product, Tag, User};
 use App\Services\Asset\{AssetDetailAssembler, AssetFormOptions, AssetService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -29,6 +29,46 @@ class AssetController extends Controller {
     private const ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
 
     public function __construct(private readonly AssetFormOptions $options) {}
+
+    /**
+     * Produkt-Auswahloptionen für den Typ-Picker (MVP-370, org-gescopt).
+     *
+     * @return \Illuminate\Support\Collection<int, Product>
+     */
+    private function productOptions(): \Illuminate\Support\Collection {
+        return Product::query()
+            ->orderBy('manufacturer')
+            ->orderBy('model')
+            ->get(['id', 'manufacturer', 'model', 'name']);
+    }
+
+    /**
+     * Typ-Zuordnung (MVP-370): Ist ein Produkt gewählt und Hersteller/Modell
+     * leer, werden sie aus dem Produkt vorbelegt (produktmodell-konzept.md §2).
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    private function applyProductPrefill(array $payload): array {
+        $productId = $payload['product_id'] ?? null;
+        if ($productId === null || $productId === '') {
+            return $payload;
+        }
+
+        $product = Product::query()->find((int) $productId);
+        if ($product === null) {
+            return $payload;
+        }
+
+        if (trim((string) ($payload['manufacturer'] ?? '')) === '') {
+            $payload['manufacturer'] = $product->manufacturer;
+        }
+        if (trim((string) ($payload['model'] ?? '')) === '') {
+            $payload['model'] = $product->model;
+        }
+
+        return $payload;
+    }
 
     /**
      * Trennt die Tag-Eingaben aus dem validierten Payload heraus (sie sind
@@ -147,6 +187,7 @@ class AssetController extends Controller {
             'customers' => $this->options->customerOptions(),
             'foreignCustomers' => $this->options->foreignCustomerOptions(),
             'categoryOptions' => $this->options->categoryOptions(),
+            'products' => $this->productOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),
         ] + $this->options->facilityData());
@@ -160,7 +201,7 @@ class AssetController extends Controller {
             abort(403);
         }
 
-        $payload = $request->validated();
+        $payload = $this->applyProductPrefill($request->validated());
         [$tagIds, $newTags] = $this->extractTagInput($payload);
         $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
             ? AssetOwnership::Organization->value
@@ -201,6 +242,7 @@ class AssetController extends Controller {
             'customers' => $this->options->customerOptions(),
             'foreignCustomers' => $this->options->foreignCustomerOptions(),
             'categoryOptions' => $this->options->categoryOptions(),
+            'products' => $this->productOptions(),
             'prefill' => $prefill,
             'allTags' => Tag::query()->orderBy('name')->get(),
         ] + $this->options->facilityData());
@@ -214,7 +256,7 @@ class AssetController extends Controller {
             abort(403);
         }
 
-        $payload = $request->validated();
+        $payload = $this->applyProductPrefill($request->validated());
         [$tagIds, $newTags] = $this->extractTagInput($payload);
         $payload['owned_by'] = ($payload['customer_id'] ?? null) === null
             ? AssetOwnership::Organization->value

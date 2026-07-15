@@ -8396,5 +8396,13 @@
     "kein Kundenbezug": "no customer reference",
     "versäumt": "missed",
     "wiederkehrend": "recurring",
-    "— auswählen —": "— select —"
+    "— auswählen —": "— select —",
+    "Offline erfasste Änderungen — werden bei Verbindung synchronisiert": "Changes captured offline — will sync when connected",
+    "Keine Berechtigung für Anwesenheits-Stempel.": "No permission for attendance clocking.",
+    "Kein offener Anwesenheits-Stempel zum Beenden.": "No open attendance record to clock out.",
+    "Keine Berechtigung für Kommentare.": "No permission for comments.",
+    "Auftrag nicht gefunden.": "Order not found.",
+    "Keine Berechtigung für Formulare.": "No permission for forms.",
+    "Formularvorlage nicht gefunden.": "Form template not found.",
+    "Bezugsobjekt nicht gefunden.": "Related record not found."
 }

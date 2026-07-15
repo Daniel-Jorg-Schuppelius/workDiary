@@ -10,9 +10,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Protocol\{ProtocolItemPhotoPhase, ProtocolItemType, ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolType, ProtocolVisibility};
+use App\Enums\Protocol\ProtocolItemPhotoPhase;
 use App\Enums\User\Permission;
 use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
+use App\Http\Requests\Protocol\{AddProtocolItemRequest, FillProtocolItemRequest, IssueProtocolSignatureTokenRequest, StoreProtocolRequest, TransitionProtocolRequest, UpdateProtocolRequest, UploadProtocolItemPhotoRequest};
 use App\Models\{Asset, Customer, DiaryEntry, Project, Protocol, ProtocolItem, ProtocolItemPhoto, User};
 use App\Services\Protocol\{ProtocolItemPhotoService, ProtocolPdfRenderer, ProtocolService, ProtocolSignatureTokenService};
 use App\Services\Weather\WeatherService;
@@ -20,17 +21,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
-use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProtocolController extends Controller {
     /**
-     * Whitelist der erlaubten Subject-Typen für Protokolle.
+     * Whitelist der erlaubten Subject-Typen für Protokolle (auch von
+     * {@see StoreProtocolRequest} referenziert).
      *
      * @var array<string, class-string<Model>>
      */
-    private const SUBJECT_MAP = [
+    public const SUBJECT_MAP = [
         'diary' => DiaryEntry::class,
         'project' => Project::class,
         'customer' => Customer::class,
@@ -64,24 +65,10 @@ class ProtocolController extends Controller {
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(StoreProtocolRequest $request): RedirectResponse {
         Gate::authorize('create', Protocol::class);
 
-        $data = $request->validate([
-            'subject_kind' => ['required', 'string', 'in:' . implode(',', array_keys(self::SUBJECT_MAP))],
-            'subject_id' => ['required', 'integer', 'min:1'],
-            'type' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolType::cases(), 'value'))],
-            'title' => ['required', 'string', 'max:180'],
-            'description' => ['nullable', 'string', 'max:10000'],
-            'state_initial' => ['nullable', 'string', 'max:10000'],
-            'occurred_at' => ['nullable', 'date'],
-            'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
-            'template_id' => ['nullable', 'integer', 'min:1'],
-            'template_version' => ['nullable', 'integer', 'min:1'],
-            'tag_ids' => ['nullable', 'array'],
-            'tag_ids.*' => ['nullable', 'string', 'max:64'],
-            'new_tags' => ['nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         $subjectClass = self::SUBJECT_MAP[$data['subject_kind']];
         /** @var Model|null $subject */
@@ -102,21 +89,10 @@ class ProtocolController extends Controller {
             ->withFragment('protocol-' . $protocol->id);
     }
 
-    public function update(Request $request, Protocol $protocol): RedirectResponse {
+    public function update(UpdateProtocolRequest $request, Protocol $protocol): RedirectResponse {
         Gate::authorize('update', $protocol);
 
-        $data = $request->validate([
-            'title' => ['sometimes', 'required', 'string', 'max:180'],
-            'description' => ['sometimes', 'nullable', 'string', 'max:10000'],
-            'state_initial' => ['sometimes', 'nullable', 'string', 'max:10000'],
-            'state_final' => ['sometimes', 'nullable', 'string', 'max:10000'],
-            'occurred_at' => ['sometimes', 'nullable', 'date'],
-            'visibility' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolVisibility::cases(), 'value'))],
-            'type' => ['sometimes', 'nullable', 'string', 'in:' . implode(',', array_column(ProtocolType::cases(), 'value'))],
-            'tag_ids' => ['sometimes', 'nullable', 'array'],
-            'tag_ids.*' => ['nullable', 'string', 'max:64'],
-            'new_tags' => ['sometimes', 'nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -142,7 +118,7 @@ class ProtocolController extends Controller {
         return redirect()->back()->with('success', __('protocol.flash.deleted'));
     }
 
-    public function transition(Request $request, Protocol $protocol, string $action): RedirectResponse {
+    public function transition(TransitionProtocolRequest $request, Protocol $protocol, string $action): RedirectResponse {
         Gate::authorize($this->actionToAbility($action), $protocol);
 
         /** @var User $actor */
@@ -154,14 +130,14 @@ class ProtocolController extends Controller {
                 'returnToDraft' => $this->service->returnToDraft(
                     $protocol,
                     $actor,
-                    $request->validate(['reason' => ['nullable', 'string', 'max:2000']])['reason'] ?? null,
+                    $request->validated()['reason'] ?? null,
                 ),
-                'sign' => $this->service->sign($protocol, $actor, $this->validateSignature($request)),
+                'sign' => $this->service->sign($protocol, $actor, $request->signaturePayload()),
                 'archive' => $this->service->archive($protocol, $actor),
                 'supersede' => $this->service->supersede(
                     $protocol,
                     $actor,
-                    (string) $request->validate(['reason' => ['required', 'string', 'max:2000']])['reason'],
+                    (string) $request->validated()['reason'],
                 ),
                 default => throw new InvalidArgumentException('Unbekannte Aktion: ' . $action),
             };
@@ -179,27 +155,10 @@ class ProtocolController extends Controller {
             ->withFragment('protocol-' . $protocol->id);
     }
 
-    public function addItem(Request $request, Protocol $protocol): RedirectResponse {
+    public function addItem(AddProtocolItemRequest $request, Protocol $protocol): RedirectResponse {
         Gate::authorize('update', $protocol);
 
-        $data = $request->validate([
-            'label' => ['required', 'string', 'max:180'],
-            'description' => ['nullable', 'string', 'max:5000'],
-            'required' => ['nullable', 'boolean'],
-            'item_type' => ['nullable', 'string', 'max:40', Rule::in(array_map(static fn($c) => $c->value, ProtocolItemType::cases()))],
-            // Org-Bindung läuft über das Eltern-Protokoll (Items tragen
-            // keine eigene organization_id).
-            'parent_item_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('protocol_items', 'id')->where(function ($q): void {
-                    $orgId = app()->bound('currentOrganization') ? (app('currentOrganization')->id ?? null) : null;
-                    if ($orgId !== null) {
-                        $q->whereIn('protocol_id', \Illuminate\Support\Facades\DB::table('protocols')->where('organization_id', $orgId)->select('id'));
-                    }
-                }),
-            ],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -213,14 +172,10 @@ class ProtocolController extends Controller {
         return redirect()->back()->with('success', __('protocol.flash.item.added'));
     }
 
-    public function fillItem(Request $request, ProtocolItem $item): RedirectResponse {
+    public function fillItem(FillProtocolItemRequest $request, ProtocolItem $item): RedirectResponse {
         Gate::authorize('update', $item->protocol);
 
-        $data = $request->validate([
-            'result' => ['nullable', 'string', 'max:20'],
-            'note' => ['nullable', 'string', 'max:5000'],
-            'value_json' => ['nullable', 'array'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -251,7 +206,7 @@ class ProtocolController extends Controller {
     }
 
     public function uploadPhoto(
-        Request $request,
+        UploadProtocolItemPhotoRequest $request,
         ProtocolItem $item,
         ProtocolItemPhotoService $photos,
     ): RedirectResponse {
@@ -260,21 +215,7 @@ class ProtocolController extends Controller {
         $u = Auth::user();
         $allowGeo = $u->can(Permission::ProtocolItemPhotoViewGeo->value);
 
-        $data = $request->validate([
-            'photo' => [
-                'required',
-                'file',
-                'image',
-                'max:' . (ProtocolItemPhotoService::MAX_BYTES / 1024),
-            ],
-            'phase' => [
-                'required',
-                'string',
-                Rule::in(array_column(ProtocolItemPhotoPhase::cases(), 'value')),
-            ],
-            'caption' => ['nullable', 'string', 'max:180'],
-            'allow_geo' => ['nullable', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $phase = ProtocolItemPhotoPhase::from($data['phase']);
 
@@ -314,7 +255,7 @@ class ProtocolController extends Controller {
     }
 
     public function issueSignatureToken(
-        Request $request,
+        IssueProtocolSignatureTokenRequest $request,
         Protocol $protocol,
         ProtocolSignatureTokenService $tokens,
     ): RedirectResponse {
@@ -325,12 +266,7 @@ class ProtocolController extends Controller {
             abort(403);
         }
 
-        $data = $request->validate([
-            'role' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
-            'signer_name' => ['nullable', 'string', 'max:120'],
-            'signer_email' => ['required', 'email', 'max:180'],
-            'ttl_days' => ['nullable', 'integer', 'min:1', 'max:30'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -398,29 +334,6 @@ class ProtocolController extends Controller {
         )));
 
         $protocol->syncTagsFromInput($tagIds, $newTags);
-    }
-
-    /**
-     * @return array<string, mixed>|null
-     */
-    private function validateSignature(Request $request): ?array {
-        if (! $request->boolean('with_signature')) {
-            return null;
-        }
-
-        $data = $request->validate([
-            'signature.role' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureRole::cases(), 'value'))],
-            'signature.signer_name' => ['required', 'string', 'max:120'],
-            'signature.signer_email' => ['nullable', 'email', 'max:180'],
-            'signature.method' => ['required', 'string', 'in:' . implode(',', array_column(ProtocolSignatureMethod::cases(), 'value'))],
-            'signature.signature_image_path' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $sig = $data['signature'];
-        $sig['ip'] = $request->ip();
-        $sig['user_agent'] = (string) $request->userAgent();
-
-        return $sig;
     }
 
     private function actionToAbility(string $action): string {

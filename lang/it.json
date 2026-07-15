@@ -8396,5 +8396,13 @@
     "kein Kundenbezug": "nessun cliente collegato",
     "versäumt": "mancata",
     "wiederkehrend": "ricorrente",
-    "— auswählen —": "— seleziona —"
+    "— auswählen —": "— seleziona —",
+    "Offline erfasste Änderungen — werden bei Verbindung synchronisiert": "Modifiche registrate offline — verranno sincronizzate alla connessione",
+    "Keine Berechtigung für Anwesenheits-Stempel.": "Nessuna autorizzazione per la timbratura delle presenze.",
+    "Kein offener Anwesenheits-Stempel zum Beenden.": "Nessuna timbratura di presenza aperta da chiudere.",
+    "Keine Berechtigung für Kommentare.": "Nessuna autorizzazione per i commenti.",
+    "Auftrag nicht gefunden.": "Commessa non trovata.",
+    "Keine Berechtigung für Formulare.": "Nessuna autorizzazione per i moduli.",
+    "Formularvorlage nicht gefunden.": "Modello di modulo non trovato.",
+    "Bezugsobjekt nicht gefunden.": "Oggetto di riferimento non trovato."
 }

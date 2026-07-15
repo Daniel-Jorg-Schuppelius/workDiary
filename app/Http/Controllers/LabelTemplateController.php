@@ -14,7 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\LabelTemplate;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
 
 /**
@@ -107,6 +107,6 @@ class LabelTemplateController extends Controller {
     }
 
     private function canManage(): void {
-        abort_unless(Auth::user()?->can(P::InventoryConfigure->value) ?? false, 403);
+        Gate::authorize(P::InventoryConfigure->value);
     }
 }

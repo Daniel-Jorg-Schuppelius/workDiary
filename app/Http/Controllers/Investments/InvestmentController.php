@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Investments;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Investments\{AddInvestmentActualRequest, AddInvestmentDeviationRequest, AddInvestmentLinkRequest, AddInvestmentOptionRequest, DecideInvestmentDeviationRequest, RejectInvestmentBudgetRequest, SaveInvestmentCaseRequest, StoreCostCenterRequest, StoreInvestmentReviewRequest, SubmitInvestmentBudgetRequest, SupplementInvestmentBudgetRequest, UpdateInvestmentStatusRequest};
 use App\Models\CostCenter;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation, InvestmentOption};
 use App\Models\{Supplier, User};
@@ -57,13 +58,13 @@ class InvestmentController extends Controller {
         return $this->formView(new InvestmentCase());
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(SaveInvestmentCaseRequest $request): RedirectResponse {
         Gate::authorize('create', InvestmentCase::class);
 
         /** @var User $actor */
         $actor = Auth::user();
         $case = InvestmentCase::query()->create([
-            ...$this->validated($request),
+            ...$request->validated(),
             'organization_id' => (int) $actor->organization_id,
             'created_by' => $actor->id,
         ]);
@@ -90,9 +91,9 @@ class InvestmentController extends Controller {
         return $this->formView($case);
     }
 
-    public function update(Request $request, InvestmentCase $case): RedirectResponse {
+    public function update(SaveInvestmentCaseRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $case->update($this->validated($request));
+        $case->update($request->validated());
 
         return redirect()->route('investments.show', $case)->with('status', __('Akte aktualisiert.'));
     }
@@ -105,12 +106,9 @@ class InvestmentController extends Controller {
         return redirect()->route('investments.index')->with('status', __('Akte gelöscht.'));
     }
 
-    public function updateStatus(Request $request, InvestmentCase $case): RedirectResponse {
+    public function updateStatus(UpdateInvestmentStatusRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            // Freigabe-/Abschluss-Status laufen NUR über Service-Aktionen.
-            'status' => ['required', 'in:idea,screening,comparison,budget_request,in_progress,completed,deferred'],
-        ]);
+        $data = $request->validated();
 
         // Umsetzung/Abschluss erst nach genehmigtem Budget.
         if (in_array($data['status'], ['in_progress', 'completed'], true) && $case->approvedBudget() === null) {
@@ -123,12 +121,9 @@ class InvestmentController extends Controller {
 
     // ── Kostenstellen (D2, Blocked-State-Auflösung) ──────────────────────
 
-    public function storeCostCenter(Request $request): RedirectResponse {
+    public function storeCostCenter(StoreCostCenterRequest $request): RedirectResponse {
         Gate::authorize('create', InvestmentCase::class);
-        $data = $request->validate([
-            'code' => ['required', 'string', 'max:30'],
-            'label' => ['required', 'string', 'max:200'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -142,20 +137,9 @@ class InvestmentController extends Controller {
 
     // ── Variantenvergleich (MVP-201) ─────────────────────────────────────
 
-    public function addOption(Request $request, InvestmentCase $case): RedirectResponse {
+    public function addOption(AddInvestmentOptionRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $request->merge(['supplier_id' => \App\Support\Sqid::decodeOrNumeric(Supplier::class, $request->input('supplier_id'))]);
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:200'],
-            'supplier_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('suppliers')],
-            'one_time_cost' => ['required', 'numeric', 'min:0'],
-            'recurring_cost_yearly' => ['nullable', 'numeric', 'min:0'],
-            'delivery_weeks' => ['nullable', 'integer', 'min:0', 'max:520'],
-            'useful_life_years' => ['nullable', 'integer', 'min:0', 'max:99'],
-            'quality_score' => ['nullable', 'integer', 'min:1', 'max:5'],
-            'risk_note' => ['nullable', 'string', 'max:1000'],
-            'note' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $case->options()->create([
             'organization_id' => $case->organization_id,
@@ -190,17 +174,9 @@ class InvestmentController extends Controller {
 
     // ── Budgetantrag + Freigabe (MVP-202/203) ────────────────────────────
 
-    public function submitBudget(Request $request, InvestmentCase $case): RedirectResponse {
+    public function submitBudget(SubmitInvestmentBudgetRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $request->merge(['cost_center_id' => \App\Support\Sqid::decodeOrNumeric(CostCenter::class, $request->input('cost_center_id'))]);
-        $data = $request->validate([
-            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999'],
-            'cost_kind' => ['required', 'in:purchase,leasing,service,mixed'],
-            'financing' => ['required', 'in:cash,loan,leasing,subsidy,mixed'],
-            'cost_center_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('cost_centers')],
-            'payment_plan' => ['nullable', 'string', 'max:5000'],
-            'note' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         if (isset($data['cost_center_id'])) {
             $case->update(['cost_center_id' => $data['cost_center_id']]);
@@ -230,10 +206,10 @@ class InvestmentController extends Controller {
             : __('Freigabestufe erteilt — weitere Stufe offen (Vier-Augen).'));
     }
 
-    public function rejectBudget(Request $request, InvestmentCase $case, InvestmentBudgetRequest $budgetRequest): RedirectResponse {
+    public function rejectBudget(RejectInvestmentBudgetRequest $request, InvestmentCase $case, InvestmentBudgetRequest $budgetRequest): RedirectResponse {
         Gate::authorize('approve', $case);
         abort_unless($budgetRequest->investment_case_id === $case->id, 404);
-        $data = $request->validate(['reason' => ['required', 'string', 'max:1000']]);
+        $data = $request->validated();
 
         try {
             $this->investments->rejectBudget($budgetRequest, $this->actor(), $data['reason']);
@@ -246,17 +222,13 @@ class InvestmentController extends Controller {
 
     // ── Verknüpfungen + Ist-Werte (MVP-204/205) ──────────────────────────
 
-    public function addLink(Request $request, InvestmentCase $case): RedirectResponse {
+    public function addLink(AddInvestmentLinkRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
         if ($case->approvedBudget() === null) {
             return back()->with('error', __('Folgeobjekte werden erst nach der Freigabe verknüpft.'));
         }
 
-        $data = $request->validate([
-            'linkable_type' => ['required', 'in:project,purchase_order,asset,incoming_einvoice,document'],
-            'linkable_sqid' => ['required', 'string', 'max:64'],
-            'note' => ['nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         $map = [
             'project' => \App\Models\Project::class,
@@ -288,13 +260,9 @@ class InvestmentController extends Controller {
         return back()->with('status', __('Verknüpfung angelegt.'));
     }
 
-    public function addActual(Request $request, InvestmentCase $case): RedirectResponse {
+    public function addActual(AddInvestmentActualRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'amount' => ['required', 'numeric', 'min:-999999999', 'max:999999999'],
-            'occurred_on' => ['required', 'date'],
-            'note' => ['nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         $case->actuals()->create([
             'organization_id' => $case->organization_id,
@@ -310,13 +278,9 @@ class InvestmentController extends Controller {
 
     // ── Abweichungen + Nachtrag (MVP-206) ────────────────────────────────
 
-    public function addDeviation(Request $request, InvestmentCase $case): RedirectResponse {
+    public function addDeviation(AddInvestmentDeviationRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validate([
-            'kind' => ['required', 'in:budget,schedule,scope,cancellation'],
-            'description' => ['required', 'string', 'max:1000'],
-            'amount_delta' => ['nullable', 'numeric'],
-        ]);
+        $data = $request->validated();
 
         $case->deviations()->create([
             'organization_id' => $case->organization_id,
@@ -330,13 +294,10 @@ class InvestmentController extends Controller {
         return back()->with('status', __('Abweichung dokumentiert.'));
     }
 
-    public function decideDeviation(Request $request, InvestmentCase $case, InvestmentDeviation $deviation): RedirectResponse {
+    public function decideDeviation(DecideInvestmentDeviationRequest $request, InvestmentCase $case, InvestmentDeviation $deviation): RedirectResponse {
         Gate::authorize('approve', $case);
         abort_unless($deviation->investment_case_id === $case->id, 404);
-        $data = $request->validate([
-            'decision' => ['required', 'in:approved,rejected'],
-            'note' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         try {
             $this->investments->decideDeviation($deviation, $data['decision'], $data['note'] ?? null, $this->actor());
@@ -347,13 +308,10 @@ class InvestmentController extends Controller {
         return back()->with('status', __('Abweichung entschieden.'));
     }
 
-    public function supplementBudget(Request $request, InvestmentCase $case, InvestmentDeviation $deviation): RedirectResponse {
+    public function supplementBudget(SupplementInvestmentBudgetRequest $request, InvestmentCase $case, InvestmentDeviation $deviation): RedirectResponse {
         Gate::authorize('update', $case);
         abort_unless($deviation->investment_case_id === $case->id, 404);
-        $data = $request->validate([
-            'amount' => ['required', 'numeric', 'min:0.01', 'max:999999999'],
-            'note' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         try {
             $this->investments->supplementBudget($case, $deviation, $data, $this->actor());
@@ -366,7 +324,7 @@ class InvestmentController extends Controller {
 
     // ── Nachbewertung (MVP-207) ──────────────────────────────────────────
 
-    public function storeReview(Request $request, InvestmentCase $case): RedirectResponse {
+    public function storeReview(StoreInvestmentReviewRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
         if (! in_array($case->status, ['completed', 'cancelled'], true)) {
             return back()->with('error', __('Nachbewertung erst nach Abschluss oder Abbruch.'));
@@ -375,12 +333,7 @@ class InvestmentController extends Controller {
             return back()->with('error', __('Es existiert bereits eine Nachbewertung.'));
         }
 
-        $data = $request->validate([
-            'benefit_result' => ['required', 'string', 'max:5000'],
-            'economics_result' => ['nullable', 'string', 'max:5000'],
-            'lessons' => ['nullable', 'string', 'max:5000'],
-            'follow_up' => ['nullable', 'string', 'max:5000'],
-        ]);
+        $data = $request->validated();
 
         $case->review()->create([
             'organization_id' => $case->organization_id,
@@ -392,28 +345,6 @@ class InvestmentController extends Controller {
         $case->audit('investment.reviewed', []);
 
         return back()->with('status', __('Nachbewertung dokumentiert.'));
-    }
-
-    /** @return array<string, mixed> */
-    private function validated(Request $request): array {
-        $request->merge([
-            'responsible_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('responsible_user_id')),
-            'cost_center_id' => \App\Support\Sqid::decodeOrNumeric(CostCenter::class, $request->input('cost_center_id')),
-        ]);
-
-        return $request->validate([
-            'title' => ['required', 'string', 'max:200'],
-            'category' => ['required', 'in:' . implode(',', InvestmentCase::CATEGORIES)],
-            'reason' => ['nullable', 'string', 'max:5000'],
-            'objective' => ['nullable', 'string', 'max:5000'],
-            'urgency' => ['required', 'in:low,medium,high'],
-            'risk_note' => ['nullable', 'string', 'max:5000'],
-            'responsible_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users')],
-            'cost_center_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('cost_centers')],
-            'cost_center_label' => ['nullable', 'string', 'max:200'],
-            'starts_on' => ['nullable', 'date'],
-            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
-        ]);
     }
 
     private function formView(InvestmentCase $case): View {

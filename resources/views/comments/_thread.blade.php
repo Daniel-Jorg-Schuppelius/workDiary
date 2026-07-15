@@ -65,7 +65,10 @@
     </div>
 
     @can('create', App\Models\Comment::class)
-        <form method="POST" action="{{ $storeRoute }}" class="space-y-2">
+        {{-- Offline-Sync (Feature 035): Auftrags-Kommentare sind offline
+             erfassbar (append-only); andere Parents posten nur online. --}}
+        <form method="POST" action="{{ $storeRoute }}" class="space-y-2"
+            @if (($parent ?? null) instanceof \App\Models\DiaryEntry) data-offline-sync="comment.diary" data-sync-payload-diary="{{ $parent->sqid }}" @endif>
             @csrf
             <textarea name="body" rows="3" required maxlength="5000"
                 class="textarea textarea-bordered textarea-sm w-full @error('body') ring-2 ring-error/30 @enderror"

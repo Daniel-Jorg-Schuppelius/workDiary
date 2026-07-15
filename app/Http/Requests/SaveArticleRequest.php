@@ -28,6 +28,7 @@ class SaveArticleRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'default_procedure_template_version_id' => \App\Models\ProcedureTemplateVersion::class,
         'tag_ids' => \App\Models\Tag::class,
+        'product_id' => \App\Models\Product::class,
     ];
 
     /** @var list<string> */
@@ -64,6 +65,8 @@ class SaveArticleRequest extends BaseFormRequest {
                     ->ignore($article?->id),
             ],
             'gtin' => ['nullable', 'string', 'max:14'],
+            // Typ-Zuordnung (produktmodell-konzept.md, MVP-370).
+            'product_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('products')],
             'type' => ['required', Rule::enum(ArticleType::class)],
             'base_unit' => ['required', 'string', 'max:20'],
             'tax_class' => ['nullable', 'string', 'max:40'],

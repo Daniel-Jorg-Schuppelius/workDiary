@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Models\StockSerial;
 use App\Services\Inventory\SerialService;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
@@ -107,6 +107,6 @@ class SerialController extends Controller {
     }
 
     private function canManage(): void {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
     }
 }

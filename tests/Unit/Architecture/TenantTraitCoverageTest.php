@@ -103,6 +103,13 @@ class TenantTraitCoverageTest extends TestCase {
         // System-weiter Backup-Heartbeat (MVP-046 §5): externer Backup-Job postet
         // ohne Tenant-Kontext, gehört bewusst nicht zur Mandantengrenze.
         BackupHeartbeat::class,
+        // Verschlüsselte Cloud-Backupziele (Feature 017 Phase 32, MVP-361):
+        // Backups sichern die GESAMTE Installation — Verbindungen, Generationen
+        // und Teile sind bewusst systemweit (Verwaltung nur Plattform-Admin,
+        // Policies hart auf isGlobalAdmin, keine Org-Sicht).
+        \App\Models\Backup\BackupTargetConnection::class,
+        \App\Models\Backup\BackupGeneration::class,
+        \App\Models\Backup\BackupGenerationPart::class,
         // Todoist-Webhook-Dedup (Feature 055, MVP-115): die Zeile entsteht VOR
         // der Org-Zuordnung (Signaturprüfung → erst danach Mapping über
         // todoist_user_id); nullable organization_id, ein Global-Scope würde

@@ -15,7 +15,7 @@ use App\Models\StockLot;
 use App\Services\Inventory\{LotService, LotSplitService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -101,6 +101,6 @@ class LotController extends Controller {
     }
 
     private function canManage(): void {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
     }
 }

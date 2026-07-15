@@ -41,6 +41,17 @@ return [
         'applications.report' => 'applications.overview',
         // Reklamation/Gewährleistung (Feature 072)
         'claims.*' => 'claims.overview',
+
+        'contracts.*' => 'contracts.overview',
+        // Cloud-Dokumenteingang (Feature 080).
+        'admin.cloud-intake.*' => 'cloud-intake.overview',
+        // Cloud-Backupziele (Feature 017 Phase 32).
+        'admin.backup-targets.*' => 'backup-targets.overview',
+        // Produktstamm (Typ-Ebene, MVP-354).
+        'products.*' => 'products.overview',
+        'supplier-scorecards.*' => 'supplier-scorecards.overview',
+        // Offline-Sync (Feature 035, MVP-351): Offline-Änderungs-Seite.
+        'offline.*' => 'offline.changes',
         // Geräte-/Maschinenverleih (Feature 073)
         'rental.*' => 'rental.overview',
         // Leasing/Finanzierung/Asset-Verträge (Feature 074)

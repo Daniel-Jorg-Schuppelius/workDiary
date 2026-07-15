@@ -16,6 +16,7 @@ use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationExcept
 use App\Models\{DiaryEntry, Protocol, ProtocolEvent, ProtocolItem, ProtocolSignature, User};
 use App\Services\Diary\OrderService;
 use App\Services\OpenIssue\OpenIssueService;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -43,14 +44,12 @@ class ProtocolService {
      * @param  array<string, mixed>  $attributes
      */
     public function create(Model $subject, User $creator, array $attributes): Protocol {
-        $type = $this->parseType($attributes['type'] ?? ProtocolType::Service->value);
+        $type = $this->parseType($this->stringAttribute($attributes, 'type', ProtocolType::Service->value));
         $visibility = $this->parseVisibility(
-            $attributes['visibility'] ?? ProtocolVisibility::Internal->value
+            $this->stringAttribute($attributes, 'visibility', ProtocolVisibility::Internal->value)
         );
 
-        $occurredAt = isset($attributes['occurred_at'])
-            ? Carbon::parse($attributes['occurred_at'])
-            : Carbon::now();
+        $occurredAt = $this->dateAttribute($attributes['occurred_at'] ?? null, 'occurred_at') ?? Carbon::now();
 
         return DB::transaction(function () use ($subject, $creator, $attributes, $type, $visibility, $occurredAt): Protocol {
             $protocol = Protocol::query()->create([
@@ -240,11 +239,18 @@ class ProtocolService {
     public function addItem(Protocol $protocol, User $actor, array $attributes): ProtocolItem {
         $this->assertEditable($protocol);
 
-        $type = $this->parseItemType($attributes['item_type'] ?? ProtocolItemType::Text->value);
+        $type = $this->parseItemType($this->stringAttribute($attributes, 'item_type', ProtocolItemType::Text->value));
+
+        $sortOrder = $attributes['sort_order'] ?? null;
+        if ($sortOrder === null) {
+            // Ans Ende einsortieren; max() liefert numerisch oder null (noch keine Items).
+            $maxSort = $protocol->items()->max('sort_order');
+            $sortOrder = is_numeric($maxSort) ? (int) $maxSort + 1 : 1;
+        }
 
         $item = $protocol->items()->create([
             'parent_item_id' => $attributes['parent_item_id'] ?? null,
-            'sort_order' => $attributes['sort_order'] ?? ($protocol->items()->max('sort_order') + 1),
+            'sort_order' => $sortOrder,
             'item_type' => $type->value,
             'label' => $attributes['label'],
             'description' => $attributes['description'] ?? null,
@@ -279,7 +285,8 @@ class ProtocolService {
         $protocol = $this->protocolOf($item);
         $this->assertEditable($protocol);
 
-        $newValue = $values['value_json'] ?? $item->value_json;
+        $provided = $values['value_json'] ?? null;
+        $newValue = $provided !== null ? $this->valueJsonFrom($provided) : $item->value_json;
 
         // Defect-Punkt: bei erster Befuellung automatisch Open-Issue anlegen
         // (MVP-021 §3.12, Integration mit MVP-024).
@@ -288,21 +295,26 @@ class ProtocolService {
             && is_array($newValue)
             && empty($newValue['open_issue_id'])
             && $protocol->subject !== null
-            && trim((string) ($newValue['description'] ?? '')) !== ''
         ) {
-            $issue = $this->openIssues->create($protocol->subject, $actor, [
-                'title' => sprintf('%s: %s', $item->label, mb_substr((string) $newValue['description'], 0, 80)),
-                'description' => (string) $newValue['description'],
-                'severity' => $this->mapDefectSeverity((string) ($newValue['severity'] ?? 'low')),
-                'category' => $newValue['category'] ?? null,
-                'source_type' => 'protocolDefect',
-                'source_ref_id' => (string) $item->id,
-            ]);
-            $newValue['open_issue_id'] = $issue->id;
+            $descriptionRaw = $newValue['description'] ?? '';
+            $description = is_scalar($descriptionRaw) ? (string) $descriptionRaw : '';
+            $severityRaw = $newValue['severity'] ?? 'low';
+            if (trim($description) !== '') {
+                $issue = $this->openIssues->create($protocol->subject, $actor, [
+                    'title' => sprintf('%s: %s', $item->label, mb_substr($description, 0, 80)),
+                    'description' => $description,
+                    'severity' => $this->mapDefectSeverity(is_scalar($severityRaw) ? (string) $severityRaw : 'low'),
+                    'category' => $newValue['category'] ?? null,
+                    'source_type' => 'protocolDefect',
+                    'source_ref_id' => (string) $item->id,
+                ]);
+                $newValue['open_issue_id'] = $issue->id;
+            }
         }
 
-        $explicitResult = isset($values['result'])
-            ? ProtocolItemResult::tryFrom((string) $values['result'])
+        $resultRaw = $values['result'] ?? null;
+        $explicitResult = is_scalar($resultRaw)
+            ? ProtocolItemResult::tryFrom((string) $resultRaw)
             : null;
 
         $tempItem = (clone $item);
@@ -356,11 +368,12 @@ class ProtocolService {
      * @param  array<string, mixed>  $data
      */
     public function addSignature(Protocol $protocol, User $actor, array $data): ProtocolSignature {
-        $role = $this->parseRole($data['role'] ?? ProtocolSignatureRole::Contractor->value);
-        $method = $this->parseMethod($data['method'] ?? ProtocolSignatureMethod::Onscreen->value);
+        $role = $this->parseRole($this->stringAttribute($data, 'role', ProtocolSignatureRole::Contractor->value));
+        $method = $this->parseMethod($this->stringAttribute($data, 'method', ProtocolSignatureMethod::Onscreen->value));
 
-        $signerName = (string) ($data['signer_name'] ?? $actor->name);
-        $signedAt = isset($data['signed_at']) ? Carbon::parse($data['signed_at']) : Carbon::now();
+        $signerNameRaw = $data['signer_name'] ?? null;
+        $signerName = is_scalar($signerNameRaw) ? (string) $signerNameRaw : $actor->name;
+        $signedAt = $this->dateAttribute($data['signed_at'] ?? null, 'signed_at') ?? Carbon::now();
         $imagePath = $data['signature_image_path'] ?? null;
 
         $hash = $this->hasher->contentHash(
@@ -416,6 +429,60 @@ class ProtocolService {
             'critical' => 'critical',
             default => 'low',
         };
+    }
+
+    /**
+     * Liest einen String-Wert aus einem Attribut-Array; fehlende/null-Werte
+     * fallen auf den Default zurück, Nicht-Strings werden früh abgewiesen
+     * (die aufrufenden Requests validieren diese Felder als String).
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function stringAttribute(array $attributes, string $key, string $default): string {
+        $value = $attributes[$key] ?? $default;
+        if (! is_string($value)) {
+            throw new InvalidArgumentException(sprintf('Attribut „%s" muss ein String sein.', $key));
+        }
+
+        return $value;
+    }
+
+    /**
+     * Verengt einen Attributwert auf einen Carbon-Zeitpunkt; null bleibt
+     * null (Default setzt der Aufrufer), unparsebare Typen werden abgewiesen.
+     */
+    private function dateAttribute(mixed $value, string $key): ?Carbon {
+        if ($value === null) {
+            return null;
+        }
+        if ($value instanceof DateTimeInterface || is_string($value) || is_int($value) || is_float($value)) {
+            return Carbon::parse($value);
+        }
+
+        throw new InvalidArgumentException(sprintf('Attribut „%s" ist kein gültiger Zeitpunkt.', $key));
+    }
+
+    /**
+     * Verengt den übergebenen value_json-Wert auf das im Modell garantierte
+     * string-indizierte Array — alle Item-Typen arbeiten auf oberster Ebene
+     * mit benannten Schlüsseln; alles andere wird früh abgewiesen.
+     *
+     * @return array<string, mixed>
+     */
+    private function valueJsonFrom(mixed $value): array {
+        if (! is_array($value)) {
+            throw new InvalidArgumentException('value_json muss ein Array sein.');
+        }
+
+        $result = [];
+        foreach ($value as $key => $entry) {
+            if (! is_string($key)) {
+                throw new InvalidArgumentException('value_json muss string-indizierte Schlüssel haben.');
+            }
+            $result[$key] = $entry;
+        }
+
+        return $result;
     }
 
     private function protocolOf(ProtocolItem $item): Protocol {

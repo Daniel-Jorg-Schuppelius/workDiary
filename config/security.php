@@ -10,21 +10,23 @@
 
 return [
     /*
-    | Wenn aktiv, ersetzt die CSP 'unsafe-inline' in script-src durch ein
-    | Pro-Request-Nonce. Alle Inline-Scripts tragen via @cspNonce das Nonce.
-    | Erst nach einem Browser-Smoke-Test (alle Seiten ohne CSP-Konsolenfehler)
-    | produktiv aktivieren — sonst werden nicht-noncte Inline-Scripts blockiert.
+    | Ersetzt die CSP 'unsafe-inline' in script-src durch ein Pro-Request-Nonce.
+    | Alle Inline-Scripts tragen via @cspNonce das Nonce. Seit 2026-07-14
+    | Default AN (B4/MVP-345); bei CSP-Konsolenfehlern (nicht-nonctes
+    | Inline-Script) per CSP_SCRIPT_NONCE=false zurückschalten und die Stelle
+    | auf @cspNonce umstellen.
     */
-    'csp_script_nonce' => env('CSP_SCRIPT_NONCE', false),
+    'csp_script_nonce' => env('CSP_SCRIPT_NONCE', true),
 
     /*
     | CSP Stufe 2: Alpine läuft im @alpinejs/csp-Build (kein eval/new Function)
     | → 'unsafe-eval' entfällt aus script-src. DASSELBE Flag steuert den
     | Vite-Build-Switch (vite.config.js, Alias alpinejs → @alpinejs/csp):
     | nach dem Umschalten zwingend `npm run build` ausführen, sonst passt der
-    | CSP-Header nicht zum ausgelieferten Bundle. Erst nach Browser-Smoke-Test
-    | aller interaktiven Seiten (Dialoge, Tabs, Picker, Gantt, Stoppuhr)
-    | aktivieren — der CSP-Build ändert Laufzeit-Semantik.
+    | CSP-Header nicht zum ausgelieferten Bundle. Seit 2026-07-14 Default AN
+    | (B5/MVP-346; der 3.15.x-CSP-Build wertet Objektliterale, Zuweisungen,
+    | Ternaries etc. über einen Sandbox-Parser aus). Bei Laufzeitproblemen
+    | ALPINE_CSP_BUILD=false setzen UND npm run build ausführen.
     */
-    'csp_alpine_csp_build' => env('ALPINE_CSP_BUILD', false),
+    'csp_alpine_csp_build' => env('ALPINE_CSP_BUILD', true),
 ];

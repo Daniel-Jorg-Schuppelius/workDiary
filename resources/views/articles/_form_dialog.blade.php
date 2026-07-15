@@ -49,6 +49,13 @@
         </x-select-field>
         <x-input-field name="gtin" :label="__('article.field.gtin')" maxlength="14"
                        :value="old('gtin', $article?->gtin)" />
+        <x-select-field name="product_id" :label="__('products.field.product')" :hint="__('products.field.product_help')">
+            <option value="">{{ __('products.field.no_product') }}</option>
+            @foreach ($products ?? [] as $productOption)
+                <option value="{{ \App\Support\Sqid::encode(\App\Models\Product::class, $productOption->id) }}"
+                        @selected(old('product_id', $article?->product_id ? \App\Support\Sqid::encode(\App\Models\Product::class, $article->product_id) : '') === \App\Support\Sqid::encode(\App\Models\Product::class, $productOption->id))>{{ $productOption->name }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('article.group.pricing')" icon="payments" tone="primary" cols="3">

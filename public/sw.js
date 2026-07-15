@@ -1,24 +1,46 @@
-/* Push Service Worker (PWA-Manifest separat im Layout)
+/* Push Service Worker + minimaler Offline-Fallback (Feature 035, MVP-368)
  *
- * Bewusst KEIN fetch-Handler und KEIN clients.claim(): der SW soll Navigationen
- * NICHT abfangen, damit das normale Laravel-Rendering (Header inkl. Org-Switch,
- * Sprache, Theme, Benutzermenü) unverändert beim Browser ankommt. PWA-Installation
- * wird allein über das Web App Manifest (link rel="manifest") und Theme-Color
- * gesteuert.
+ * Abwägung (ersetzt das frühere „bewusst KEIN fetch-Handler"): Der Handler
+ * greift AUSSCHLIESSLICH bei Navigationen und arbeitet strikt network-first —
+ * online kommt also weiterhin IMMER das frische Laravel-Rendering (Header
+ * inkl. Org-Switch, Sprache, Theme, Benutzermenü) unverändert beim Browser
+ * an. Erst wenn das Netz fehlt, wird das beim install vorgecachte
+ * offline.html geliefert. Authentifizierte Seiten werden NIE gecacht;
+ * Assets/XHR laufen unverändert am SW vorbei (Schreibpfade gehen explizit
+ * über die IndexedDB-Outbox, resources/js/offline-sync.js).
  */
+const OFFLINE_CACHE = "workdiary-offline-v1";
+const OFFLINE_URL = "/offline.html";
+
 self.addEventListener("install", (event) => {
-    event.waitUntil(self.skipWaiting());
+    event.waitUntil(
+        caches
+            .open(OFFLINE_CACHE)
+            .then((cache) => cache.add(OFFLINE_URL))
+            .then(() => self.skipWaiting()),
+    );
 });
 
 self.addEventListener("activate", (event) => {
-    // Eventuell vorhandene Caches aus früheren PWA-Iterationen aufräumen UND
-    // sofort die Kontrolle über alle offenen Tabs übernehmen, damit ein alter
-    // SW mit fetch-Handler (Offline-Fallback) garantiert nicht weiter aktiv ist.
+    // Caches früherer Iterationen aufräumen (nur der aktuelle Offline-Cache
+    // bleibt) und sofort die Kontrolle über alle offenen Tabs übernehmen.
     event.waitUntil(
         caches
             .keys()
-            .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+            .then((keys) => Promise.all(keys.filter((k) => k !== OFFLINE_CACHE).map((k) => caches.delete(k))))
             .then(() => self.clients.claim()),
+    );
+});
+
+self.addEventListener("fetch", (event) => {
+    if (event.request.mode !== "navigate") return;
+
+    event.respondWith(
+        fetch(event.request).catch(() =>
+            caches
+                .match(OFFLINE_URL)
+                .then((cached) => cached || Response.error()),
+        ),
     );
 });
 

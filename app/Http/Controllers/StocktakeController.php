@@ -36,7 +36,7 @@ class StocktakeController extends Controller {
 
     /** Eröffnet eine zyklische Inventur über eine ABC-Klasse (Feature 048, E6). */
     public function openCycle(Request $request): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
 
         $warehouse = Warehouse::query()->findOrFail(Sqid::decodeOrNumeric(Warehouse::class, $request->input('warehouse')));
         $class = strtoupper($request->string('abc_class')->toString() ?: 'A');
@@ -52,7 +52,7 @@ class StocktakeController extends Controller {
 
     /** Erfasst eine Zählmenge per Scan in eine laufende Inventur (Feature 048, E6). */
     public function recordScan(Request $request, StockCount $count): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
         abort_unless($count->status->isOpen(), 422);
 
         $data = $request->validate([
@@ -92,7 +92,7 @@ class StocktakeController extends Controller {
     }
 
     public function open(Request $request): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
 
         $warehouse = Warehouse::query()->findOrFail(Sqid::decodeOrNumeric(Warehouse::class, $request->input('warehouse')));
         $count = $this->stocktake->open($warehouse, Auth::id() !== null ? (int) Auth::id() : null);
@@ -113,7 +113,7 @@ class StocktakeController extends Controller {
     }
 
     public function record(Request $request, StockCount $count): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
         abort_unless($count->status->isOpen(), 422);
 
         $data = $request->validate([
@@ -133,7 +133,7 @@ class StocktakeController extends Controller {
     }
 
     public function apply(StockCount $count): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryConfigure->value) ?? false, 403);
+        Gate::authorize(P::InventoryConfigure->value);
         abort_unless($count->status->isOpen(), 422);
 
         try {

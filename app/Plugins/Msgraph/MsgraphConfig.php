@@ -18,7 +18,7 @@ namespace App\Plugins\Msgraph;
  * (Default 'common' = Multi-Tenant).
  */
 class MsgraphConfig {
-    /** @return array{client_id: string, client_secret: string, tenant: string, api_base: string, authorize_url: string, token_url: string, scopes: string} */
+    /** @return array{client_id: string, client_secret: string, tenant: string, api_base: string, authorize_url: string, token_url: string, scopes: string, intake_scopes: string, intake_page_size: int, backup_scopes: string} */
     public static function resolve(): array {
         $tenant = trim((string) config('plugins.msgraph.tenant', 'common')) ?: 'common';
 
@@ -30,6 +30,11 @@ class MsgraphConfig {
             'authorize_url' => str_replace('{tenant}', $tenant, (string) config('plugins.msgraph.authorize_url', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize')),
             'token_url' => str_replace('{tenant}', $tenant, (string) config('plugins.msgraph.token_url', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token')),
             'scopes' => (string) config('plugins.msgraph.scopes', 'offline_access Calendars.ReadWrite'),
+            // Cloud-Dokumenteingang (Feature 080, MVP-354).
+            'intake_scopes' => (string) config('plugins.msgraph.intake_scopes', 'offline_access Files.Read.All Sites.Read.All'),
+            'intake_page_size' => (int) config('plugins.msgraph.intake_page_size', 200),
+            // Cloud-Backupziel (Feature 017 Phase 32, MVP-363).
+            'backup_scopes' => (string) config('plugins.msgraph.backup_scopes', 'offline_access User.Read Files.ReadWrite'),
         ];
     }
 

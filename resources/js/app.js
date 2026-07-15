@@ -16,6 +16,7 @@ import { German } from "flatpickr/dist/l10n/de.js";
 import weekSelect from "flatpickr/dist/plugins/weekSelect/weekSelect.js";
 import { bindPushToggle } from "./push.js";
 import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
+import { initOfflineSync } from "./offline-sync.js";
 import { __ } from "./i18n.js";
 import "./sortable-tables.js";
 import "./bulk-selection.js";
@@ -33,6 +34,9 @@ if (typeof window !== "undefined") {
     window.addEventListener("load", () => {
         registerServiceWorker();
         bindInstallPrompt();
+        // Offline-Sync-Outbox (Feature 035, Phase 2): fängt markierte
+        // Formulare nur im Offline-Fall ab und flusht bei Online/Fokus.
+        initOfflineSync();
     });
 }
 

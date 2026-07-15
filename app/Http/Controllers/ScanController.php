@@ -16,7 +16,7 @@ use App\Models\Warehouse;
 use App\Services\Inventory\{BarcodeResolver, ScanActionService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -46,7 +46,7 @@ class ScanController extends Controller {
     }
 
     public function book(Request $request): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
 
         $data = $request->validate([
             'code' => ['required', 'string'],

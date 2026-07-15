@@ -17,7 +17,7 @@ use App\Models\{Article, BillOfQuantity, BoqItem, Material, Project};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request, Response};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
@@ -256,14 +256,14 @@ class BillOfQuantityController extends Controller {
     }
 
     private function canView(): void {
-        abort_unless(Auth::user()?->can(P::ProjectViewAny->value) ?? false, 403);
+        Gate::authorize(P::ProjectViewAny->value);
     }
 
     private function canImport(): void {
-        abort_unless(Auth::user()?->can(P::ProjectImport->value) ?? false, 403);
+        Gate::authorize(P::ProjectImport->value);
     }
 
     private function canManage(): void {
-        abort_unless(Auth::user()?->can(P::ProjectUpdate->value) ?? false, 403);
+        Gate::authorize(P::ProjectUpdate->value);
     }
 }

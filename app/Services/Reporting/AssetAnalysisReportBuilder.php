@@ -46,10 +46,11 @@ class AssetAnalysisReportBuilder {
         string $groupBy,
     ): array {
         $assets = Asset::query()
+            ->with('product:id,name')
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->when($categoryCode !== null, fn($q) => $q->where('category_code', $categoryCode))
             ->when($manufacturer !== null, fn($q) => $q->where('manufacturer', $manufacturer))
-            ->get(['id', 'name', 'asset_no', 'category_code', 'manufacturer', 'model']);
+            ->get(['id', 'name', 'asset_no', 'category_code', 'manufacturer', 'model', 'product_id']);
 
         if ($assets->isEmpty()) {
             return [];
@@ -146,11 +147,20 @@ class AssetAnalysisReportBuilder {
                     (string) ($asset->category_code ?? __('Ohne Produktgruppe')),
                     ['category_code' => $asset->category_code],
                 ],
-                'model' => [
-                    trim((string) $asset->manufacturer) . '|' . trim((string) $asset->model),
-                    trim(sprintf('%s %s', (string) $asset->manufacturer, (string) $asset->model)) ?: (string) __('Ohne Modell'),
-                    ['manufacturer' => $asset->manufacturer, 'model' => $asset->model],
-                ],
+                // MVP-371 (produktmodell-konzept.md): typisierte Assets gruppieren
+                // über das Produkt (stabiler Schlüssel statt String-Paar);
+                // untypisierte fallen auf manufacturer|model zurück.
+                'model' => $asset->product_id !== null
+                    ? [
+                        'product:' . (int) $asset->product_id,
+                        (string) ($asset->product->name ?? __('Ohne Modell')),
+                        ['product_id' => (int) $asset->product_id],
+                    ]
+                    : [
+                        trim((string) $asset->manufacturer) . '|' . trim((string) $asset->model),
+                        trim(sprintf('%s %s', (string) $asset->manufacturer, (string) $asset->model)) ?: (string) __('Ohne Modell'),
+                        ['manufacturer' => $asset->manufacturer, 'model' => $asset->model],
+                    ],
                 default => [
                     'a:' . $asset->id,
                     sprintf('%s — %s', (string) $asset->asset_no, (string) $asset->name),

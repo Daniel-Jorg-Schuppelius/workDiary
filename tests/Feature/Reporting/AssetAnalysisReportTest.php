@@ -122,6 +122,52 @@ class AssetAnalysisReportTest extends TestCase {
         $this->assertStringContainsString('ACME PX-100', $rows[0]['label']);
     }
 
+    public function test_group_by_model_uses_product_for_typed_assets_with_string_fallback(): void {
+        // MVP-371 (produktmodell-konzept.md): typisierte Assets gruppieren übers
+        // Produkt (auch bei abweichender Schreibweise der Freitexte), untypisierte
+        // fallen auf den manufacturer|model-String zurück.
+        $product = \App\Models\Product::factory()->create([
+            'organization_id' => $this->organization->id,
+            'manufacturer' => 'Kärcher',
+            'model' => 'KAE-200',
+            'name' => 'Kärcher KAE-200',
+        ]);
+        Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'manufacturer' => 'Kärcher',
+            'model' => 'KAE-200',
+            'product_id' => $product->id,
+        ]);
+        Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'manufacturer' => ' kärcher',
+            'model' => 'kae-200',
+            'product_id' => $product->id,
+        ]);
+        Asset::factory()->create([
+            'organization_id' => $this->organization->id,
+            'manufacturer' => 'ACME',
+            'model' => 'PX-100',
+            'product_id' => null,
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('reports.assets', ['group_by' => 'model']));
+        $response->assertOk();
+        /** @var list<array<string, mixed>> $rows */
+        $rows = $response->viewData('rows');
+
+        $byKey = collect($rows)->keyBy('key');
+        $productRow = $byKey->get('product:' . $product->id);
+        $this->assertNotNull($productRow, 'Produkt-Gruppe fehlt');
+        $this->assertSame(2, $productRow['assetCount']);
+        $this->assertSame('Kärcher KAE-200', $productRow['label']);
+        $this->assertSame($product->id, $productRow['drilldown']['product_id'] ?? null);
+
+        $fallbackRow = $byKey->get('ACME|PX-100');
+        $this->assertNotNull($fallbackRow, 'String-Fallback-Gruppe fehlt');
+        $this->assertSame(1, $fallbackRow['assetCount']);
+    }
+
     public function test_csv_export_audit_log_is_written(): void {
         Asset::factory()->create([
             'organization_id' => $this->organization->id,

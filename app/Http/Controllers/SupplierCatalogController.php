@@ -18,7 +18,7 @@ use App\Models\{Article, ArticleVariant, PricingChangeAlert, Supplier, SupplierC
 use App\Services\Procurement\{CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -469,6 +469,6 @@ class SupplierCatalogController extends Controller {
     }
 
     private function canManage(): void {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
     }
 }

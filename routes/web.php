@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProductController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, SyncCommandController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MaintenanceWindowController, MetricsController, OperationsTaskController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, ProblemReportInboxController, SchedulerController, SecurityController, SettingsController, SupportAccessAuditController, SupportAccessGrantController, SupportImpersonationController, SupportReportController};
 use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
@@ -1004,6 +1004,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('suppliers', SupplierController::class);
         Route::post('suppliers/{supplier}/archive', [SupplierController::class, 'archive'])->name('suppliers.archive');
         Route::post('suppliers/{supplier}/restore', [SupplierController::class, 'restore'])->name('suppliers.restore');
+
+        // ── Produktstamm (Typ-Ebene Hersteller-Modell, MVP-370) — Kern-
+        // Stammdaten (Artikel UND Assets verweisen), bewusst OHNE Modul-Gate.
+        Route::resource('products', ProductController::class)->except('show');
 
         // ── Artikelstamm (Feature 048, MVP-060) ─ Modul-Gate articles.* → module.lager
         Route::resource('articles', \App\Http\Controllers\ArticleController::class);
@@ -2137,6 +2141,46 @@ Route::middleware('auth')->group(function () {
 
         // ── Geocoding (intern) ──────────────────────────────────────────────
         Route::post('api/internal/geocode', GeocodeController::class)->name('api.internal.geocode');
+
+        // ── Cloud-Dokumenteingang (Feature 080) ─────────────────────────────
+        Route::get('admin/cloud-intake', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'index'])
+            ->name('admin.cloud-intake.index');
+        Route::post('admin/cloud-intake/{connection}/folder', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'selectFolder'])
+            ->name('admin.cloud-intake.folder');
+        Route::post('admin/cloud-intake/{connection}/preview', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'preview'])
+            ->name('admin.cloud-intake.preview');
+        Route::delete('admin/cloud-intake/{connection}', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'disconnect'])
+            ->name('admin.cloud-intake.disconnect');
+        Route::get('admin/cloud-intake/{connection}/routes/create', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'createRoute'])
+            ->name('admin.cloud-intake.routes.create');
+        Route::post('admin/cloud-intake/{connection}/routes', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'storeRoute'])
+            ->name('admin.cloud-intake.routes.store');
+        Route::get('admin/cloud-intake/routes/{cloudRoute}/edit', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'editRoute'])
+            ->name('admin.cloud-intake.routes.edit');
+        Route::put('admin/cloud-intake/routes/{cloudRoute}', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'updateRoute'])
+            ->name('admin.cloud-intake.routes.update');
+        Route::delete('admin/cloud-intake/routes/{cloudRoute}', [\App\Http\Controllers\Admin\CloudIntakeAdminController::class, 'destroyRoute'])
+            ->name('admin.cloud-intake.routes.destroy');
+
+        // ── Cloud-Backupziele (Feature 017 Phase 32) — Plattform-Admin ──────
+        Route::get('admin/backup-targets', [\App\Http\Controllers\Admin\BackupTargetAdminController::class, 'index'])
+            ->name('admin.backup-targets.index');
+        Route::delete('admin/backup-targets/{backupConnection}', [\App\Http\Controllers\Admin\BackupTargetAdminController::class, 'disconnect'])
+            ->name('admin.backup-targets.disconnect');
+        Route::post('admin/backup-targets/generations/{backupGeneration}/hold', [\App\Http\Controllers\Admin\BackupTargetAdminController::class, 'toggleHold'])
+            ->name('admin.backup-targets.generations.hold');
+        Route::get('admin/backup-targets/{backupConnection}/cleanup', [\App\Http\Controllers\Admin\BackupTargetAdminController::class, 'cleanupPreview'])
+            ->name('admin.backup-targets.cleanup.preview');
+        Route::delete('admin/backup-targets/generations/{backupGeneration}', [\App\Http\Controllers\Admin\BackupTargetAdminController::class, 'destroyGeneration'])
+            ->name('admin.backup-targets.generations.destroy');
+
+        // ── Offline-Sync-Outbox (Feature 035, Phase 1) ──────────────────────
+        Route::post('api/internal/sync/commands', SyncCommandController::class)
+            ->middleware('throttle:60,1')
+            ->name('api.internal.sync.commands');
+        // Phase 3 (MVP-367): Geräte-lokale Liste der Outbox-/abgelehnten
+        // Befehle; Inhalte rendert resources/js/offline-sync.js aus IndexedDB.
+        Route::view('offline/changes', 'offline.changes')->name('offline.changes');
 
         // ── Globale Suche / Command-Palette ─────────────────────────────────
         Route::get('api/internal/search', GlobalSearchController::class)->name('api.internal.search');

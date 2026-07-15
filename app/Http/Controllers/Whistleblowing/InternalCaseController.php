@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Whistleblowing;
 
 use App\Enums\Whistleblowing\{CaseRole, CaseStatus};
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Whistleblowing\{AssignWhistleblowingCaseRequest, DeclareWhistleblowingConflictRequest, ExportWhistleblowingCaseRequest, GrantWhistleblowingEmergencyAccessRequest, MarkWhistleblowingSubjectRequest, StoreWhistleblowingMessageRequest, UpdateWhistleblowingCaseStatusRequest};
 use App\Models\User;
 use App\Models\Whistleblowing\WhistleblowingCase;
 use App\Services\Whistleblowing\{
@@ -27,7 +28,6 @@ use App\Services\Whistleblowing\{
 };
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -66,24 +66,18 @@ class InternalCaseController extends Controller {
         return back()->with('success', __('Eingang bestätigt.'));
     }
 
-    public function status(Request $request, WhistleblowingCase $case, WhistleblowingCaseWorkflowService $workflow): RedirectResponse {
+    public function status(UpdateWhistleblowingCaseStatusRequest $request, WhistleblowingCase $case, WhistleblowingCaseWorkflowService $workflow): RedirectResponse {
         Gate::authorize('process', $case);
-        $data = $request->validate([
-            'to' => ['required', Rule::in(array_column(CaseStatus::cases(), 'value'))],
-            'reason' => ['nullable', 'string', 'max:5000'],
-        ]);
+        $data = $request->validated();
 
         $workflow->transition($case, CaseStatus::from($data['to']), $this->user(), $data['reason'] ?? null);
 
         return back()->with('success', __('Status aktualisiert.'));
     }
 
-    public function assign(Request $request, WhistleblowingCase $case, WhistleblowingAssignmentService $assignments): RedirectResponse {
+    public function assign(AssignWhistleblowingCaseRequest $request, WhistleblowingCase $case, WhistleblowingAssignmentService $assignments): RedirectResponse {
         Gate::authorize('assign', $case);
-        $data = $request->validate([
-            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'role' => ['required', Rule::in(array_column(CaseRole::cases(), 'value'))],
-        ]);
+        $data = $request->validated();
 
         /** @var User $user */
         $user = User::query()->findOrFail($data['user_id']);
@@ -92,27 +86,27 @@ class InternalCaseController extends Controller {
         return back()->with('success', __('Bearbeiter zugewiesen.'));
     }
 
-    public function note(Request $request, WhistleblowingCase $case, WhistleblowingMessageService $messages): RedirectResponse {
+    public function note(StoreWhistleblowingMessageRequest $request, WhistleblowingCase $case, WhistleblowingMessageService $messages): RedirectResponse {
         Gate::authorize('note', $case);
-        $data = $request->validate(['body' => ['required', 'string', 'max:20000']]);
+        $data = $request->validated();
 
         $messages->addInternalNote($case, $data['body'], $this->user());
 
         return back()->with('success', __('Notiz gespeichert.'));
     }
 
-    public function message(Request $request, WhistleblowingCase $case, WhistleblowingMessageService $messages): RedirectResponse {
+    public function message(StoreWhistleblowingMessageRequest $request, WhistleblowingCase $case, WhistleblowingMessageService $messages): RedirectResponse {
         Gate::authorize('message', $case);
-        $data = $request->validate(['body' => ['required', 'string', 'max:20000']]);
+        $data = $request->validated();
 
         $messages->sendToReporter($case, $data['body'], $this->user());
 
         return back()->with('success', __('Nachricht an die meldende Person gesendet.'));
     }
 
-    public function conflict(Request $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
+    public function conflict(DeclareWhistleblowingConflictRequest $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
         Gate::authorize('declareConflict', $case);
-        $data = $request->validate(['reason' => ['nullable', 'string', 'max:2000']]);
+        $data = $request->validated();
 
         $access->declareConflict($case, $this->user(), $data['reason'] ?? null);
 
@@ -121,12 +115,9 @@ class InternalCaseController extends Controller {
             ->with('success', __('Sie haben sich wegen Interessenkonflikts gesperrt.'));
     }
 
-    public function emergency(Request $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
+    public function emergency(GrantWhistleblowingEmergencyAccessRequest $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
         Gate::authorize('grantEmergency', $case);
-        $data = $request->validate([
-            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'reason' => ['required', 'string', 'max:2000'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $grantee */
         $grantee = User::query()->findOrFail($data['user_id']);
@@ -135,12 +126,9 @@ class InternalCaseController extends Controller {
         return back()->with('success', __('Notfallfreigabe erteilt.'));
     }
 
-    public function subject(Request $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
+    public function subject(MarkWhistleblowingSubjectRequest $request, WhistleblowingCase $case, WhistleblowingAccessService $access): RedirectResponse {
         Gate::authorize('process', $case);
-        $data = $request->validate([
-            'user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'note' => ['nullable', 'string', 'max:2000'],
-        ]);
+        $data = $request->validated();
 
         /** @var User $user */
         $user = User::query()->findOrFail($data['user_id']);
@@ -149,9 +137,9 @@ class InternalCaseController extends Controller {
         return back()->with('success', __('Betroffene Person markiert (für den Fall gesperrt).'));
     }
 
-    public function export(Request $request, WhistleblowingCase $case, WhistleblowingExportService $export): BinaryFileResponse {
+    public function export(ExportWhistleblowingCaseRequest $request, WhistleblowingCase $case, WhistleblowingExportService $export): BinaryFileResponse {
         Gate::authorize('export', $case);
-        $data = $request->validate(['reason' => ['required', 'string', 'max:2000']]);
+        $data = $request->validated();
 
         $result = $export->export($case, $data['reason'], $this->user());
 

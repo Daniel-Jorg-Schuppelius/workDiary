@@ -96,7 +96,7 @@ class StockController extends Controller {
     }
 
     public function releaseReservation(StockReservation $reservation): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
 
         $this->reservations->release($reservation);
 
@@ -104,7 +104,7 @@ class StockController extends Controller {
     }
 
     public function setLevels(Request $request): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryConfigure->value) ?? false, 403);
+        Gate::authorize(P::InventoryConfigure->value);
 
         $data = $request->validate([
             'warehouse' => ['required', 'string'],
@@ -122,7 +122,7 @@ class StockController extends Controller {
     }
 
     public function storeMovement(Request $request): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
 
         $data = $request->validate([
             'warehouse' => ['required', 'string'],

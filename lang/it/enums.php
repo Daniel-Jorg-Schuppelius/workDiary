@@ -142,6 +142,38 @@ return [
             'cancelled' => 'Annullato',
         ],
     ],
+    'cloud_intake' => [
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'connection_status' => [
+            'draft' => 'Bozza',
+            'active' => 'Attiva',
+            'reauth_required' => 'Nuova autenticazione',
+            'blocked' => 'Bloccata',
+            'disabled' => 'Disattivata',
+        ],
+        'route_target' => [
+            'incoming_invoice' => 'Fatture in entrata',
+            'document' => 'Documento (DMS)',
+        ],
+        'item_status' => [
+            'imported' => 'Importato',
+            'inbox' => 'Inbox',
+            'rejected' => 'Rifiutato',
+            'duplicate' => 'Duplicato',
+            'source_gone' => 'Origine rimossa',
+        ],
+    ],
+    'product' => [
+        'status' => [
+            'active' => 'Attivo',
+            'phasing_out' => 'In esaurimento',
+            'discontinued' => 'Fuori produzione',
+        ],
+    ],
     'project' => [
         'status' => [
             'active' => 'Attivo',
@@ -928,6 +960,32 @@ return [
 
     // Esito del test di ripristino (Feature 017).
     'backup' => [
+        // Destinazioni di backup cloud (funzionalità 017, fase 32).
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'target_status' => [
+            'draft' => 'Bozza',
+            'active' => 'Attiva',
+            'reauth_required' => 'Nuovo accesso richiesto',
+            'blocked' => 'Bloccata',
+            'disabled' => 'Disattivata',
+        ],
+        'generation_status' => [
+            'building' => 'In creazione',
+            'uploading' => 'Caricamento in corso',
+            'committed' => 'Completata',
+            'verified' => 'Verificata',
+            'verify_failed' => 'Verifica fallita',
+            'failed' => 'Fallita',
+        ],
+        'retention_class' => [
+            'daily' => 'Giornaliera',
+            'weekly' => 'Settimanale',
+            'monthly' => 'Mensile',
+        ],
         'restore-test-result' => [
             'passed' => 'Superato',
             'partial' => 'Con riserve',

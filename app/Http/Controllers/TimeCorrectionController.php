@@ -124,7 +124,7 @@ class TimeCorrectionController extends Controller {
         // Nur mit Permission und nur innerhalb derselben Organisation.
         $owner = $user;
         if (! empty($data['user_id']) && (int) $data['user_id'] !== (int) $user->id) {
-            abort_unless($user->can(Permission::CorrectionCreateForOthers->value), 403);
+            Gate::authorize(Permission::CorrectionCreateForOthers->value);
             $owner = User::query()
                 ->where('organization_id', $user->organization_id)
                 ->findOrFail((int) $data['user_id']);

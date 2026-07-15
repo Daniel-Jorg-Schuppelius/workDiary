@@ -37,6 +37,13 @@
 
     <x-input-field name="inventory_no" :label="__('Inventarnummer')" :value="old('inventory_no', $asset->inventory_no)" />
 
+    <x-select-field name="product_id" :label="__('products.field.product')" span="2" :hint="__('products.field.product_help')">
+        <option value="">{{ __('products.field.no_product') }}</option>
+        @foreach ($products ?? [] as $productOption)
+            <option value="{{ $productOption->id }}" @selected((int) old('product_id', $asset->product_id ?? 0) === $productOption->id)>{{ $productOption->name }}</option>
+        @endforeach
+    </x-select-field>
+
     <x-input-field name="manufacturer" :label="__('Hersteller')" :value="old('manufacturer', $asset->manufacturer)" />
 
     <x-input-field name="model" :label="__('Modell')" :value="old('model', $asset->model)" />

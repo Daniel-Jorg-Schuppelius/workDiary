@@ -142,6 +142,38 @@ return [
             'cancelled' => 'Cancelled',
         ],
     ],
+    'cloud_intake' => [
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'connection_status' => [
+            'draft' => 'Draft',
+            'active' => 'Active',
+            'reauth_required' => 'Re-authenticate',
+            'blocked' => 'Blocked',
+            'disabled' => 'Disabled',
+        ],
+        'route_target' => [
+            'incoming_invoice' => 'Incoming invoices',
+            'document' => 'Document (DMS)',
+        ],
+        'item_status' => [
+            'imported' => 'Imported',
+            'inbox' => 'Inbox',
+            'rejected' => 'Rejected',
+            'duplicate' => 'Duplicate',
+            'source_gone' => 'Source removed',
+        ],
+    ],
+    'product' => [
+        'status' => [
+            'active' => 'Active',
+            'phasing_out' => 'Phasing out',
+            'discontinued' => 'Discontinued',
+        ],
+    ],
     'project' => [
         'status' => [
             'active' => 'Active',
@@ -928,6 +960,32 @@ return [
 
     // Restore test result (Feature 017).
     'backup' => [
+        // Cloud backup targets (feature 017, phase 32).
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'target_status' => [
+            'draft' => 'Draft',
+            'active' => 'Active',
+            'reauth_required' => 'Re-authentication required',
+            'blocked' => 'Blocked',
+            'disabled' => 'Disabled',
+        ],
+        'generation_status' => [
+            'building' => 'Building',
+            'uploading' => 'Uploading',
+            'committed' => 'Committed',
+            'verified' => 'Verified',
+            'verify_failed' => 'Verification failed',
+            'failed' => 'Failed',
+        ],
+        'retention_class' => [
+            'daily' => 'Daily',
+            'weekly' => 'Weekly',
+            'monthly' => 'Monthly',
+        ],
         'restore-test-result' => [
             'passed' => 'Passed',
             'partial' => 'With conditions',

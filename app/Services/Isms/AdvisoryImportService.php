@@ -61,12 +61,14 @@ class AdvisoryImportService {
      * @throws ValidationException bei ungültigem JSON
      */
     public function importCsaf(string $jsonContent, Organization $organization, User $importer, AdvisoryFormat $format = AdvisoryFormat::Csaf): IsmsAdvisory {
-        $document = json_decode($jsonContent, true);
-        if (! is_array($document)) {
+        $decoded = json_decode($jsonContent, true);
+        if (! is_array($decoded)) {
             throw ValidationException::withMessages([
                 'advisory' => __('isms.error.advisory_invalid_json'),
             ]);
         }
+        // CSAF-Dokumente sind JSON-Objekte ⇒ auf string-indiziertes Array verengen.
+        $document = $this->stringKeyed($decoded);
 
         $hash = CryptoHelper::hash($jsonContent);
 
@@ -122,16 +124,17 @@ class AdvisoryImportService {
         }
 
         $count = 0;
-        foreach ($vulns as $vuln) {
-            if (! is_array($vuln)) {
+        foreach ($vulns as $vulnData) {
+            if (! is_array($vulnData)) {
                 continue;
             }
+            $vuln = $this->stringKeyed($vulnData);
 
             $cve = $this->stringAt($vuln, ['cve']);
             $vulnTitle = $this->stringAt($vuln, ['title']) ?? $cve ?? __('isms.advisory.untitled');
             $cvss = $this->extractCvss($vuln);
 
-            $productStatus = is_array($vuln['product_status'] ?? null) ? $vuln['product_status'] : [];
+            $productStatus = $this->stringKeyed($vuln['product_status'] ?? null);
             $vexReason = $this->vexReason($vuln);
 
             // known_affected ⇒ open / underInvestigation (NIE automatisch exploitable).
@@ -266,7 +269,7 @@ class AdvisoryImportService {
             $query->where('product_version', $version);
         }
         $match = $query->value('id');
-        if ($match !== null) {
+        if (is_numeric($match)) {
             return (int) $match;
         }
 
@@ -277,7 +280,7 @@ class AdvisoryImportService {
             ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
             ->value('id');
 
-        return $nameOnly !== null ? (int) $nameOnly : null;
+        return is_numeric($nameOnly) ? (int) $nameOnly : null;
     }
 
     /**
@@ -316,10 +319,11 @@ class AdvisoryImportService {
 
         $fullNames = $tree['full_product_names'] ?? [];
         if (is_array($fullNames)) {
-            foreach ($fullNames as $entry) {
-                if (! is_array($entry)) {
+            foreach ($fullNames as $entryData) {
+                if (! is_array($entryData)) {
                     continue;
                 }
+                $entry = $this->stringKeyed($entryData);
                 $id = $this->stringAt($entry, ['product_id']);
                 $name = $this->stringAt($entry, ['name']);
                 if ($id === null || $name === null) {
@@ -330,7 +334,7 @@ class AdvisoryImportService {
         }
 
         if (is_array($tree['branches'] ?? null)) {
-            $this->collectBranches($tree['branches'], null, $map);
+            $this->collectBranches(array_values($tree['branches']), null, $map);
         }
 
         return $map;
@@ -344,16 +348,17 @@ class AdvisoryImportService {
      * @param  array<string, array{name: string, version: string|null}>  $map
      */
     private function collectBranches(array $branches, ?string $inheritedVersion, array &$map): void {
-        foreach ($branches as $branch) {
-            if (! is_array($branch)) {
+        foreach ($branches as $branchData) {
+            if (! is_array($branchData)) {
                 continue;
             }
+            $branch = $this->stringKeyed($branchData);
             $category = $this->stringAt($branch, ['category']);
             $branchName = $this->stringAt($branch, ['name']);
             $version = $category === 'product_version' ? $branchName : $inheritedVersion;
 
-            $product = $branch['product'] ?? null;
-            if (is_array($product)) {
+            $product = $this->stringKeyed($branch['product'] ?? null);
+            if ($product !== []) {
                 $id = $this->stringAt($product, ['product_id']);
                 $name = $this->stringAt($product, ['name']);
                 if ($id !== null && $name !== null) {
@@ -365,7 +370,7 @@ class AdvisoryImportService {
             }
 
             if (is_array($branch['branches'] ?? null)) {
-                $this->collectBranches($branch['branches'], $version, $map);
+                $this->collectBranches(array_values($branch['branches']), $version, $map);
             }
         }
     }
@@ -389,13 +394,19 @@ class AdvisoryImportService {
 
         $components = [];
         foreach ($decoded['components'] as $component) {
-            if (! is_array($component) || ! isset($component['name'])) {
+            if (! is_array($component)) {
                 continue;
             }
+            $name = $component['name'] ?? null;
+            if (! is_scalar($name)) {
+                continue;
+            }
+            $version = $component['version'] ?? null;
+            $purl = $component['purl'] ?? null;
             $components[] = [
-                'name' => (string) $component['name'],
-                'version' => isset($component['version']) ? (string) $component['version'] : null,
-                'purl' => isset($component['purl']) ? (string) $component['purl'] : null,
+                'name' => (string) $name,
+                'version' => is_scalar($version) ? (string) $version : null,
+                'purl' => is_scalar($purl) ? (string) $purl : null,
             ];
         }
 
@@ -463,10 +474,11 @@ class AdvisoryImportService {
     private function vexReason(array $vuln): ?string {
         $threats = $vuln['threats'] ?? [];
         if (is_array($threats)) {
-            foreach ($threats as $threat) {
-                if (! is_array($threat)) {
+            foreach ($threats as $threatData) {
+                if (! is_array($threatData)) {
                     continue;
                 }
+                $threat = $this->stringKeyed($threatData);
                 $category = $this->stringAt($threat, ['category']);
                 $details = $this->stringAt($threat, ['details']);
                 if ($category === 'impact' && $details !== null) {
@@ -501,7 +513,11 @@ class AdvisoryImportService {
             if (! is_array($score)) {
                 continue;
             }
-            $base = $score['cvss_v3']['baseScore'] ?? null;
+            $cvssV3 = $score['cvss_v3'] ?? null;
+            if (! is_array($cvssV3)) {
+                continue;
+            }
+            $base = $cvssV3['baseScore'] ?? null;
             if (is_numeric($base)) {
                 return round((float) $base, 1);
             }
@@ -522,6 +538,29 @@ class AdvisoryImportService {
         }
 
         return null;
+    }
+
+    /**
+     * Verengt einen mixed-Wert auf ein string-indiziertes Array (JSON-Objekt).
+     * Nicht-Arrays ergeben ein leeres Array; numerische Schlüssel (JSON-
+     * Sonderfall) werden verworfen — alle ausgewerteten CSAF-/CycloneDX-Pfade
+     * laufen über benannte Schlüssel.
+     *
+     * @return array<string, mixed>
+     */
+    private function stringKeyed(mixed $value): array {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $result = [];
+        foreach ($value as $key => $item) {
+            if (is_string($key)) {
+                $result[$key] = $item;
+            }
+        }
+
+        return $result;
     }
 
     /**

@@ -19,7 +19,7 @@
     size="lg"
     :action="route('form-submissions.store')"
     method="POST"
-    :form-data="['data-entry-form' => '', 'enctype' => 'multipart/form-data']"
+    :form-data="['data-entry-form' => '', 'enctype' => 'multipart/form-data', 'data-offline-sync' => 'form.submission']"
     :submit-label="__('form.action.submit')">
 
     <input type="hidden" name="form_template_id" value="{{ $template->sqid }}">

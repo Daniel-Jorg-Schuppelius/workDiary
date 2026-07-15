@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dded05613f5a5a7d955c90ec416e9601",
+    "content-hash": "ecf3c7d51d372d658f6242fda196b72a",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -676,71 +676,6 @@
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.4.4"
             },
             "time": "2026-06-28T16:06:39+00:00"
-        },
-        {
-            "name": "daniel-jorg-schuppelius/php-financial-formats",
-            "version": "v1.6.2",
-            "source": {
-                "type": "git",
-                "url": "git@github.com:Daniel-Jorg-Schuppelius/php-financial-formats.git",
-                "reference": "2eeee8bc46dc3ebab6de453a1f608885d36eaba0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-financial-formats/zipball/2eeee8bc46dc3ebab6de453a1f608885d36eaba0",
-                "reference": "2eeee8bc46dc3ebab6de453a1f608885d36eaba0",
-                "shasum": ""
-            },
-            "require": {
-                "dschuppelius/php-common-toolkit": "^1.11",
-                "php": ">=8.2 <8.6"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.27",
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^11.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "CommonToolkit\\FinancialFormats\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "format": [
-                    "vendor/bin/pint --test"
-                ],
-                "format:fix": [
-                    "vendor/bin/pint"
-                ],
-                "lint": [
-                    "vendor/bin/phpstan analyse --memory-limit=1G"
-                ],
-                "qa": [
-                    "@format",
-                    "@lint",
-                    "@test"
-                ]
-            },
-            "license": [
-                "AGPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Daniel Joerg Schuppelius",
-                    "email": "info@schuppelius.org"
-                }
-            ],
-            "description": "PHP library for parsing, validating and processing financial and banking file formats such as CAMT, MT and PAIN.",
-            "time": "2026-07-13T17:48:52+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",

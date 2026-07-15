@@ -25,7 +25,7 @@
             <div class="font-['Space_Grotesk'] text-lg font-bold tabular-nums text-success" x-text="display">00:00:00</div>
 
             <div class="ml-auto flex flex-wrap items-center justify-end gap-1.5">
-                <form method="POST" action="{{ route('attendance.clock-out') }}" class="flex flex-wrap items-center justify-end gap-1.5">
+                <form method="POST" action="{{ route('attendance.clock-out') }}" class="flex flex-wrap items-center justify-end gap-1.5" data-offline-sync="attendance.clock-out">
                     @csrf
                     <div class="join">
                         <span class="join-item flex h-7 items-center border border-base-300 bg-base-200 px-2 text-xs text-base-content/60">{{ __('Pause') }}</span>
@@ -43,7 +43,7 @@
             </div>
         </div>
     @else
-        <form method="POST" action="{{ route('attendance.clock-in') }}" class="mt-2 flex justify-end leading-none">
+        <form method="POST" action="{{ route('attendance.clock-in') }}" class="mt-2 flex justify-end leading-none" data-offline-sync="attendance.clock-in">
             @csrf
             <x-button type="submit" tone="success" size="xs" class="h-7 min-h-7 gap-1 px-2" title="{{ __('Einstempeln') }}">
                 <x-icon name="login" class="text-[0.95rem]" /> {{ __('Einstempeln') }}

@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $category_code
  * @property string $name
  * @property string|null $manufacturer
+ * @property int|null $product_id
  * @property string|null $model
  * @property string|null $serial_no
  * @property string|null $inventory_no
@@ -47,6 +48,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $next_inspection_on
  * @property string|null $notes
  * @property array<string, mixed>|null $custom
+ * @property-read Product|null $product
  */
 class Asset extends Model {
     /** @use HasFactory<AssetFactory> */
@@ -60,6 +62,7 @@ class Asset extends Model {
         'name',
         'manufacturer',
         'model',
+        'product_id',
         'serial_no',
         'inventory_no',
         'customer_id',
@@ -103,6 +106,15 @@ class Asset extends Model {
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * Typ-Ebene Hersteller-Modell (produktmodell-konzept.md, MVP-369).
+     *
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo {
+        return $this->belongsTo(Product::class);
     }
 
     /**

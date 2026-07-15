@@ -26,6 +26,14 @@ class SaveAssetRequest extends BaseFormRequest {
             'name' => ['required', 'string', 'max:255'],
             'manufacturer' => ['nullable', 'string', 'max:120'],
             'model' => ['nullable', 'string', 'max:120'],
+            // Typ-Zuordnung (produktmodell-konzept.md, MVP-370).
+            'product_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('products', 'id')->where(
+                    fn($query) => $query->where('organization_id', $orgId)
+                ),
+            ],
             'serial_no' => ['nullable', 'string', 'max:120'],
             'inventory_no' => ['nullable', 'string', 'max:120'],
             'location_text' => ['nullable', 'string', 'max:255'],

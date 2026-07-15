@@ -30,4 +30,17 @@ return [
     'authorize_url' => env('MSGRAPH_AUTHORIZE_URL', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/authorize'),
     'token_url' => env('MSGRAPH_TOKEN_URL', 'https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token'),
     'scopes' => 'offline_access Calendars.ReadWrite',
+    // Cloud-Dokumenteingang (Feature 080, MVP-354): eigene LESENDE Verbindung
+    // (cloud_document_connections), getrennt von der Kalender-Verbindung.
+    // Files.Read.All deckt eigene + geteilte Drives, Sites.Read.All die
+    // SharePoint-Bibliotheksauswahl; engere Scopes (Sites.Selected) sind ein
+    // Enterprise-Ausbau mit eigenem Admin-Consent-Prozess (Konzept §Provider).
+    'intake_scopes' => env('MSGRAPH_INTAKE_SCOPES', 'offline_access Files.Read.All Sites.Read.All'),
+    // Seitengröße des Delta-Laufs.
+    'intake_page_size' => (int) env('MSGRAPH_INTAKE_PAGE_SIZE', 200),
+    // Cloud-Backupziel (Feature 017 Phase 32, MVP-363): EIGENE systemweite
+    // Verbindung. Files.ReadWrite ist die engste produktiv verfügbare
+    // delegierte Berechtigung — nur für ein bestätigtes Integrationskonto
+    // verwenden (Konzept §Bedrohungsmodell).
+    'backup_scopes' => env('MSGRAPH_BACKUP_SCOPES', 'offline_access User.Read Files.ReadWrite'),
 ];

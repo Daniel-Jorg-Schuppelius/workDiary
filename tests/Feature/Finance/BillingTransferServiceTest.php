@@ -245,6 +245,34 @@ class BillingTransferServiceTest extends TestCase {
         $this->artisan('audit:verify', ['--chain' => 'billing_transfer_events'])->assertExitCode(0);
     }
 
+    public function test_transferred_transfer_is_immutable(): void {
+        $this->makeTimeEntry();
+
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::File);
+        $this->service->confirm($transfer);
+        $transfer = $this->service->markTransferred($transfer->fresh(), filePath: 'exports/datev/run-1.zip');
+
+        // Model-Guard (GoBD-Festschreibung): nach der Übergabe wirft jedes
+        // Update — unabhängig vom Aufrufweg (GobdLockGuardRuleTest).
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('unveränderlich');
+
+        $transfer->fresh()->update(['file_path' => 'exports/datev/manipuliert.zip']);
+    }
+
+    public function test_transferred_transfer_cannot_be_deleted(): void {
+        $this->makeTimeEntry();
+
+        $transfer = $this->service->createDraft($this->customer, TransferChannel::Time, TransferTarget::File);
+        $this->service->confirm($transfer);
+        $transfer = $this->service->markTransferred($transfer->fresh());
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('nicht gelöscht');
+
+        $transfer->fresh()->delete();
+    }
+
     public function test_mark_transferred_consumes_material_sources(): void {
         $usage = $this->makeMaterialUsage();
 

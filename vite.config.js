@@ -3,16 +3,18 @@ import laravel from "laravel-vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig(({ mode }) => {
-    // CSP Stufe 2 (MVP-346): ALPINE_CSP_BUILD=true in .env tauscht den
-    // Alpine-Standard-Build gegen @alpinejs/csp (kein eval/new Function).
-    // DASSELBE Flag entfernt serverseitig 'unsafe-eval' aus script-src
-    // (config/security.php → SecurityHeaders) — nach dem Umschalten zwingend
-    // `npm run build`, sonst passt der CSP-Header nicht zum Bundle.
+    // CSP Stufe 2 (MVP-346): Default ist der @alpinejs/csp-Build (kein
+    // eval/new Function); ALPINE_CSP_BUILD=false in .env schaltet auf den
+    // Alpine-Standard-Build zurück. DASSELBE Flag entfernt serverseitig
+    // 'unsafe-eval' aus script-src (config/security.php → SecurityHeaders) —
+    // beide Defaults sind bewusst gekoppelt (fehlender Key ⇒ beidseitig CSP),
+    // nach jedem Umschalten zwingend `npm run build`, sonst passt der
+    // CSP-Header nicht zum Bundle.
     // Exakter Alias (Regex) — Subpfad-Importe wie alpinejs/src/* (vom
     // CSP-Build selbst genutzt) bleiben unberührt.
     const env = loadEnv(mode, process.cwd(), "");
-    const useAlpineCspBuild = ["true", "1"].includes(
-        String(env.ALPINE_CSP_BUILD ?? "").toLowerCase(),
+    const useAlpineCspBuild = !["false", "0"].includes(
+        String(env.ALPINE_CSP_BUILD ?? "true").toLowerCase(),
     );
 
     return {

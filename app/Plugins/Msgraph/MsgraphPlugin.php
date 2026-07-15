@@ -10,12 +10,17 @@
 
 namespace App\Plugins\Msgraph;
 
+use App\Models\Backup\BackupTargetConnection;
+use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\{MsgraphConnection, Organization, PluginSetting};
-use App\Plugins\Contracts\{CalendarPublisher, Plugin, PluginCapability};
-use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use App\Plugins\Contracts\{BackupTarget, CalendarPublisher, DocumentIntakeSource, Plugin, PluginCapability};
+use App\Plugins\Msgraph\Api\{MsgraphBackupClient, MsgraphCalendarClient, MsgraphIntakeClient};
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
+use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use Closure;
+use Psr\Http\Message\StreamInterface;
 use Throwable;
 
 /**
@@ -31,9 +36,12 @@ use Throwable;
  * - Pro Organisation verbunden ({@see MsgraphConnection}, Tokens verschlüsselt
  *   at-rest); Rückimport externer Termine ist bewusst NICHT Teil des Piloten.
  *
- * Kündigt {@see PluginCapability::CalendarPublish} an.
+ * Kündigt {@see PluginCapability::CalendarPublish} an; seit Feature 080
+ * (MVP-354) zusätzlich {@see PluginCapability::DocumentIntake} — LESENDER
+ * Dokumenteingang aus OneDrive/SharePoint über eigene, von der
+ * Kalender-Verbindung getrennte {@see CloudDocumentConnection}s.
  */
-class MsgraphPlugin implements CalendarPublisher, Plugin {
+class MsgraphPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSource, Plugin {
     use PluginDefaults;
 
     public const ID = 'msgraph';
@@ -73,7 +81,57 @@ class MsgraphPlugin implements CalendarPublisher, Plugin {
     public function capabilities(): array {
         return [
             PluginCapability::CalendarPublish,
+            PluginCapability::DocumentIntake,
+            PluginCapability::BackupTarget,
         ];
+    }
+
+    // ── DocumentIntakeSource (Feature 080, MVP-354) ─────────────────────
+
+    public function intakeAccount(CloudDocumentConnection $connection): IntakeAccount {
+        return (new MsgraphIntakeClient($connection))->account();
+    }
+
+    public function intakeContainers(CloudDocumentConnection $connection): array {
+        return (new MsgraphIntakeClient($connection))->containers();
+    }
+
+    public function intakeChanges(CloudDocumentConnection $connection, ?string $checkpoint): IntakeChangePage {
+        return (new MsgraphIntakeClient($connection))->changes($checkpoint);
+    }
+
+    public function intakeDownload(CloudDocumentConnection $connection, IntakeItem $item): StreamInterface {
+        return (new MsgraphIntakeClient($connection))->download($item);
+    }
+
+    // ── BackupTarget (Feature 017 Phase 32, MVP-363) ────────────────────
+
+    public function backupAccount(BackupTargetConnection $connection): BackupAccount {
+        return (new MsgraphBackupClient($connection))->account();
+    }
+
+    public function backupQuota(BackupTargetConnection $connection): array {
+        return (new MsgraphBackupClient($connection))->quota();
+    }
+
+    public function backupEnsureFolder(BackupTargetConnection $connection, string $path): string {
+        return (new MsgraphBackupClient($connection))->ensureFolder($path);
+    }
+
+    public function backupList(BackupTargetConnection $connection, string $prefix): array {
+        return (new MsgraphBackupClient($connection))->listObjects($prefix);
+    }
+
+    public function backupUploadPart(BackupTargetConnection $connection, string $localPath, string $remoteName): string {
+        return (new MsgraphBackupClient($connection))->uploadPart($localPath, $remoteName);
+    }
+
+    public function backupDownload(BackupTargetConnection $connection, string $remoteRef): StreamInterface {
+        return (new MsgraphBackupClient($connection))->download($remoteRef);
+    }
+
+    public function backupDelete(BackupTargetConnection $connection, string $remoteRef): bool {
+        return (new MsgraphBackupClient($connection))->delete($remoteRef);
     }
 
     /**

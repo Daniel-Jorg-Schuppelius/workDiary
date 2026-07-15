@@ -174,7 +174,7 @@ class AssetDrilldownReportController extends Controller {
     }
 
     /**
-     * @return array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int}
+     * @return array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}
      */
     private function collectFilters(Request $request): array {
         return [
@@ -183,11 +183,13 @@ class AssetDrilldownReportController extends Controller {
             'manufacturer' => $request->filled('manufacturer') ? (string) $request->string('manufacturer') : null,
             'model' => $request->filled('model') ? (string) $request->string('model') : null,
             'asset_id' => $request->filled('asset_id') ? (int) $request->integer('asset_id') : null,
+            // MVP-371: Produkt-Gruppierung „Pro Modell" (typisierte Assets).
+            'product_id' => $request->filled('product_id') ? (int) $request->integer('product_id') : null,
         ];
     }
 
     /**
-     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int}  $filters
+     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      * @return array<int, int>
      */
     private function assetIds(array $filters): array {
@@ -197,6 +199,7 @@ class AssetDrilldownReportController extends Controller {
             ->when($filters['category_code'] !== null, fn($q) => $q->where('category_code', $filters['category_code']))
             ->when($filters['manufacturer'] !== null, fn($q) => $q->where('manufacturer', $filters['manufacturer']))
             ->when($filters['model'] !== null, fn($q) => $q->where('model', $filters['model']))
+            ->when($filters['product_id'] !== null, fn($q) => $q->where('product_id', $filters['product_id']))
             ->pluck('id')
             ->map(static fn($v): int => (int) $v)
             ->values()
@@ -204,7 +207,7 @@ class AssetDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int}  $filters
+     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      */
     private function scopeLabel(array $filters): string {
         if ($filters['asset_id'] !== null) {
@@ -213,6 +216,13 @@ class AssetDrilldownReportController extends Controller {
                 return sprintf('%s — %s', (string) $asset->asset_no, (string) $asset->name);
             }
             return '#' . $filters['asset_id'];
+        }
+        if ($filters['product_id'] !== null) {
+            $product = \App\Models\Product::query()->find($filters['product_id']);
+            if ($product !== null) {
+                return $product->name;
+            }
+            return '#' . $filters['product_id'];
         }
         if ($filters['model'] !== null || $filters['manufacturer'] !== null) {
             $value = trim(sprintf('%s %s', (string) $filters['manufacturer'], (string) $filters['model']));
@@ -226,7 +236,7 @@ class AssetDrilldownReportController extends Controller {
 
     /**
      * @param  list<OpenIssue>  $issues
-     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int}  $filters
+     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      */
     private function exportOpenIssuesCsv(array $issues, array $filters, string $from, string $to, bool $escalatedOnly): Response {
         $filename = sprintf(
@@ -276,7 +286,7 @@ class AssetDrilldownReportController extends Controller {
 
     /**
      * @param  list<OpenIssue>  $issues
-     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int}  $filters
+     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      */
     private function exportOpenIssuesPdf(array $issues, array $filters, string $label, string $from, string $to, bool $escalatedOnly): SymfonyResponse {
         $filename = sprintf('produktanalyse-drilldown-open-issues_%s_%s%s.pdf', $from, $to, $escalatedOnly ? '-escalated' : '');
@@ -291,7 +301,7 @@ class AssetDrilldownReportController extends Controller {
 
     /**
      * @param  list<Protocol>  $protocols
-     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int}  $filters
+     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      */
     private function exportProtocolsCsv(array $protocols, array $filters, string $from, string $to): Response {
         $filename = sprintf('produktanalyse-drilldown-defektprotokolle_%s_%s.csv', $from, $to);
@@ -314,7 +324,7 @@ class AssetDrilldownReportController extends Controller {
 
     /**
      * @param  list<Protocol>  $protocols
-     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int}  $filters
+     * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      */
     private function exportProtocolsPdf(array $protocols, array $filters, string $label, string $from, string $to): SymfonyResponse {
         $filename = sprintf('produktanalyse-drilldown-defektprotokolle_%s_%s.pdf', $from, $to);

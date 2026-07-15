@@ -67,6 +67,8 @@ return [
     'task' => [
         'backup_overdue' => "L'ultimo backup risale a :hours ore fa (soglia :threshold h).",
         'backup_failed' => 'Controllo del backup non riuscito: :reason',
+        'backup_target_failed' => 'Backup cloud fallito: :reason',
+        'backup_target_verify_failed' => 'Verifica del backup cloud fallita: :reason',
         'restore_test_overdue' => "L'ultimo test di ripristino risale a :days giorni fa (soglia :threshold giorni).",
         'restore_test_missing' => 'Non è mai stato registrato un test di ripristino.',
         'update_available' => 'Aggiornamento disponibile per :component: :installed → :available.',

@@ -14,7 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Models\{PendingExternalConflict, User};
 use App\Services\Inventory\InventoryConflictResolver;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -33,7 +33,7 @@ class InventoryConflictController extends Controller {
 
     public function index(Request $request): View {
         $user = $this->user();
-        abort_unless($user->can(P::InventoryViewAny->value), 403);
+        Gate::authorize(P::InventoryViewAny->value);
 
         $status = (string) $request->input('status', PendingExternalConflict::STATUS_OPEN);
 
@@ -80,7 +80,7 @@ class InventoryConflictController extends Controller {
 
     private function authorizeResolve(PendingExternalConflict $conflict): void {
         $user = $this->user();
-        abort_unless($user->can(P::InventoryPost->value), 403);
+        Gate::authorize(P::InventoryPost->value);
         abort_unless($conflict->organization_id === $user->organization_id, 403);
     }
 

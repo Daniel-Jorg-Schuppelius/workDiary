@@ -1,0 +1,75 @@
+<?php
+/*
+ * Created on   : Tue Jul 14 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : backup_targets.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+return [
+    'title' => 'Cloud-Backupziele',
+    'description' => 'Verschlüsselte Offsite-Kopien der gesamten Installation (3-2-1-Strategie). Der Klartext verlässt die Installation nie — hochgeladen werden ausschließlich verschlüsselte Teile.',
+
+    'master_key_missing' => 'BACKUP_MASTER_KEY ist nicht gesetzt — ohne Installations-Backup-Schlüssel können keine Backups erstellt oder wiederhergestellt werden.',
+    'recovery_key_missing' => 'Kein Recovery-Schlüssel hinterlegt: Geht der BACKUP_MASTER_KEY verloren, sind alle Cloud-Backups unwiederbringlich verloren. BACKUP_RECOVERY_PUBLIC_KEY setzen und den privaten Schlüssel offline sichern.',
+
+    'connect' => 'Verbinden',
+    'reconnect' => 'Neu anmelden',
+    'disconnect' => 'Trennen',
+    'disconnect_confirm' => 'Verbindung wirklich trennen? Remote-Daten bleiben unberührt; laufende Backups stoppen.',
+    'cleanup' => 'Bereinigung',
+    'no_connections' => 'Noch kein Backupziel verbunden.',
+    'account' => 'Konto',
+    'quota' => 'Speicher',
+    'quota_value' => ':used von :total belegt',
+    'quota_unknown' => 'Speicherstand unbekannt',
+    'pilot_note' => 'Pilot offen: Dieser Adapter wurde noch nicht gegen den echten Provider getestet.',
+
+    'generations' => [
+        'title' => 'Backup-Generationen',
+        'empty' => 'Noch keine Backup-Generation vorhanden.',
+        'snapshot' => 'Snapshot',
+        'target' => 'Ziel',
+        'class' => 'Klasse',
+        'age' => 'Erstellt',
+        'size' => 'Größe',
+        'status' => 'Status',
+        'verified' => 'Verifiziert',
+        'restore_tested' => 'Restore-Test',
+        'restore_pending' => 'gesichert, Wiederherstellung nicht bestätigt',
+        'hold' => 'Legal Hold',
+        'actions' => 'Aktionen',
+        'hold_set_action' => 'Hold setzen',
+        'hold_release_action' => 'Hold lösen',
+        'delete_action' => 'Löschen',
+        'delete_confirm' => 'Generation wirklich löschen? Remote-Daten und Nachweis werden entfernt.',
+    ],
+
+    'cleanup_page' => [
+        'title' => 'Bereinigung — Remote-Bestand',
+        'description' => 'Vorschau der Objekte im Backupbereich dieser Verbindung. Gelöscht wird ausschließlich nach Bestätigung je Generation.',
+        'empty' => 'Keine Remote-Objekte im Backupbereich gefunden.',
+        'known' => 'Bekannte Generation',
+        'orphan' => 'Verwaist (kein Nachweis in der Datenbank)',
+        'error' => 'Remote-Bestand konnte nicht geladen werden: :message',
+        'back' => 'Zurück zur Übersicht',
+    ],
+
+    'flash' => [
+        'not_configured' => 'Der Provider ist nicht konfiguriert (Client-ID/-Secret fehlen).',
+        'state_invalid' => 'Der Anmeldevorgang ist abgelaufen oder ungültig — bitte erneut starten.',
+        'oauth_denied' => 'Die Freigabe wurde abgebrochen oder verweigert.',
+        'oauth_failed' => 'Token-Tausch fehlgeschlagen (:class).',
+        'account_failed' => 'Kontobestätigung fehlgeschlagen (:class).',
+        'scope_missing' => 'Erforderliche Berechtigung fehlt (:scope) — das Ziel ist blockiert.',
+        'connected' => 'Backupziel verbunden und aktiv.',
+        'disconnected' => 'Verbindung getrennt. Remote-Daten bleiben unberührt.',
+        'hold_set' => 'Legal Hold gesetzt — die Generation ist vor Löschung geschützt.',
+        'hold_released' => 'Legal Hold gelöst.',
+        'hold_blocks_delete' => 'Diese Generation trägt einen Legal Hold und kann nicht gelöscht werden.',
+        'cleanup_failed' => 'Remote-Bereinigung fehlgeschlagen (:class).',
+        'generation_deleted' => 'Generation entfernt (remote und Nachweis).',
+    ],
+];

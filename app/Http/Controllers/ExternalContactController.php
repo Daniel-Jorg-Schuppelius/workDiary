@@ -14,7 +14,7 @@ use App\Enums\ExternalParticipant\ExternalParty;
 use App\Enums\User\Permission;
 use App\Models\ExternalContact;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -88,6 +88,6 @@ class ExternalContactController extends Controller {
     }
 
     private function authorizeManage(): void {
-        abort_unless(Auth::user()?->can(Permission::ExternalParticipantManage->value) ?? false, 403);
+        Gate::authorize(Permission::ExternalParticipantManage->value);
     }
 }

@@ -248,6 +248,29 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        // --- Cloud-Dokumenteingang (Feature 080, MVP-359) ---
+        'cloud-intake.sync' => [
+            'command' => 'cloud-intake:sync',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        // --- Cloud-Backupziele (Feature 017 Phase 32, MVP-364/365) ---
+        'backup.cloud-run' => [
+            'command' => 'workdiary:backup:run',
+            'cadence' => ['type' => 'dailyAt', 'time' => '01:30'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 60,
+        ],
+        'backup.cloud-verify' => [
+            'command' => 'workdiary:backup:verify',
+            'cadence' => ['type' => 'weeklyOn', 'day' => 6, 'time' => '03:30'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 30,
+        ],
         // --- CardDAV-Kontakt-Lese-Sync (Bauturbo A9, MVP-329) ---
         'carddav.sync' => [
             'command' => 'carddav:sync',

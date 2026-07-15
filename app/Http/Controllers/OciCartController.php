@@ -16,7 +16,7 @@ use App\Models\{Organization, Supplier, SupplierCatalogSource, User, Warehouse};
 use App\Services\Procurement\OciCartImportService;
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 /**
  * OCI-/IDS-Warenkorb-Übernahme (Feature 050, MVP-096). Der externe Shop sendet
@@ -30,7 +30,7 @@ class OciCartController extends Controller {
     use ResolvesCurrentOrganization;
 
     public function import(Request $request, OciCartImportService $service): RedirectResponse {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
 
         $supplier = $this->resolve(Supplier::class, (string) $request->input('supplier'));
         $warehouse = $this->resolve(Warehouse::class, (string) $request->input('warehouse'));

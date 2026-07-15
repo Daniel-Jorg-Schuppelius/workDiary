@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
+use App\Http\Requests\OpenIssue\{AssignOpenIssueRequest, StoreOpenIssueRequest, TransitionOpenIssueRequest, UpdateOpenIssueRequest};
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, User};
 use App\Services\OpenIssue\OpenIssueService;
 use App\Support\{Sqid, Tz};
@@ -24,11 +25,12 @@ use InvalidArgumentException;
 class OpenIssueController extends Controller {
     /**
      * Whitelist der erlaubten Subject-Typen. Verhindert, dass Aufrufer beliebige
-     * Klassen an `subject_type` setzen können.
+     * Klassen an `subject_type` setzen können (auch von
+     * {@see StoreOpenIssueRequest} referenziert).
      *
      * @var array<string, class-string<Model>>
      */
-    private const SUBJECT_MAP = [
+    public const SUBJECT_MAP = [
         'diary' => DiaryEntry::class,
         'project' => Project::class,
         'customer' => Customer::class,
@@ -71,20 +73,10 @@ class OpenIssueController extends Controller {
         ]);
     }
 
-    public function store(Request $request): RedirectResponse {
+    public function store(StoreOpenIssueRequest $request): RedirectResponse {
         Gate::authorize('create', OpenIssue::class);
 
-        $data = $request->validate([
-            'subject_kind' => ['required', 'string', 'in:' . implode(',', array_keys(self::SUBJECT_MAP))],
-            'subject_id' => ['required', 'string'],
-            'title' => ['required', 'string', 'max:180'],
-            'description' => ['nullable', 'string', 'max:10000'],
-            'category' => ['nullable', 'string', 'max:40'],
-            'severity' => ['nullable', 'string', 'in:' . implode(',', array_column(OpenIssueSeverity::cases(), 'value'))],
-            'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-            'due_at' => ['nullable', 'date'],
-            'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(OpenIssueVisibility::cases(), 'value'))],
-        ]);
+        $data = $request->validated();
 
         if (($data['visibility'] ?? OpenIssueVisibility::Internal->value) === OpenIssueVisibility::Customer->value) {
             Gate::authorize('publishToCustomer', OpenIssue::class);
@@ -125,14 +117,10 @@ class OpenIssueController extends Controller {
             ->withFragment('open-issue-' . $issue->id);
     }
 
-    public function update(Request $request, OpenIssue $issue): RedirectResponse {
+    public function update(UpdateOpenIssueRequest $request, OpenIssue $issue): RedirectResponse {
         Gate::authorize('update', $issue);
 
-        $data = $request->validate([
-            'title' => ['sometimes', 'required', 'string', 'max:180'],
-            'description' => ['sometimes', 'nullable', 'string', 'max:10000'],
-            'category' => ['sometimes', 'nullable', 'string', 'max:40'],
-        ]);
+        $data = $request->validated();
 
         $issue->update($data);
 
@@ -151,12 +139,10 @@ class OpenIssueController extends Controller {
             ->with('success', __('open-issue.flash.deleted'));
     }
 
-    public function assign(Request $request, OpenIssue $issue): RedirectResponse {
+    public function assign(AssignOpenIssueRequest $request, OpenIssue $issue): RedirectResponse {
         Gate::authorize('assign', OpenIssue::class);
 
-        $data = $request->validate([
-            'assignee_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
-        ]);
+        $data = $request->validated();
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -167,7 +153,7 @@ class OpenIssueController extends Controller {
         return redirect()->back()->with('success', __('open-issue.flash.assigned'));
     }
 
-    public function transition(Request $request, OpenIssue $issue, string $action): RedirectResponse {
+    public function transition(TransitionOpenIssueRequest $request, OpenIssue $issue, string $action): RedirectResponse {
         Gate::authorize('update', $issue);
 
         /** @var User $actor */
@@ -176,27 +162,11 @@ class OpenIssueController extends Controller {
         try {
             match ($action) {
                 'start' => $this->service->start($issue, $actor),
-                'block' => $this->service->block(
-                    $issue,
-                    $actor,
-                    (string) $request->validate(['reason' => ['required', 'string', 'max:2000']])['reason'],
-                ),
+                'block' => $this->service->block($issue, $actor, (string) $request->validated('reason')),
                 'unblock' => $this->service->unblock($issue, $actor),
-                'complete' => $this->service->complete(
-                    $issue,
-                    $actor,
-                    (string) $request->validate(['resolution' => ['required', 'string', 'max:5000']])['resolution'],
-                ),
-                'wontDo' => $this->service->wontDo(
-                    $issue,
-                    $actor,
-                    (string) $request->validate(['reason' => ['required', 'string', 'max:2000']])['reason'],
-                ),
-                'reopen' => $this->service->reopen(
-                    $issue,
-                    $actor,
-                    (string) $request->validate(['reason' => ['required', 'string', 'max:2000']])['reason'],
-                ),
+                'complete' => $this->service->complete($issue, $actor, (string) $request->validated('resolution')),
+                'wontDo' => $this->service->wontDo($issue, $actor, (string) $request->validated('reason')),
+                'reopen' => $this->service->reopen($issue, $actor, (string) $request->validated('reason')),
                 default => throw new InvalidArgumentException('Unbekannte Aktion: ' . $action),
             };
         } catch (InvalidOpenIssueTransitionException $e) {

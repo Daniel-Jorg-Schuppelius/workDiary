@@ -8396,5 +8396,13 @@
     "kein Kundenbezug": "sin cliente vinculado",
     "versäumt": "omitido",
     "wiederkehrend": "recurrente",
-    "— auswählen —": "— seleccionar —"
+    "— auswählen —": "— seleccionar —",
+    "Offline erfasste Änderungen — werden bei Verbindung synchronisiert": "Cambios registrados sin conexión — se sincronizarán al conectarse",
+    "Keine Berechtigung für Anwesenheits-Stempel.": "Sin permiso para fichajes de presencia.",
+    "Kein offener Anwesenheits-Stempel zum Beenden.": "No hay ningún fichaje de presencia abierto que finalizar.",
+    "Keine Berechtigung für Kommentare.": "Sin permiso para comentarios.",
+    "Auftrag nicht gefunden.": "Orden no encontrada.",
+    "Keine Berechtigung für Formulare.": "Sin permiso para formularios.",
+    "Formularvorlage nicht gefunden.": "Plantilla de formulario no encontrada.",
+    "Bezugsobjekt nicht gefunden.": "Objeto de referencia no encontrado."
 }

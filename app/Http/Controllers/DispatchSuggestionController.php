@@ -18,7 +18,7 @@ use App\Services\Dispatch\GapFillSuggester;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 /**
  * Leerzeit-/Lückenfüller-Vorschläge (Epic 14.2, MVP-245): Vorschlagsliste
@@ -30,7 +30,7 @@ class DispatchSuggestionController extends Controller {
     public function __construct(private readonly GapFillSuggester $suggester) {}
 
     public function index(Request $request): View {
-        abort_unless(Auth::user()?->can(Permission::DispatchViewAny->value) ?? false, 403);
+        Gate::authorize(Permission::DispatchViewAny->value);
 
         $request->merge(['user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         $data = $request->validate([
@@ -54,7 +54,7 @@ class DispatchSuggestionController extends Controller {
     }
 
     public function apply(Request $request, DiaryEntry $entry): RedirectResponse {
-        abort_unless(Auth::user()?->can(Permission::DispatchManage->value) ?? false, 403);
+        Gate::authorize(Permission::DispatchManage->value);
 
         $request->merge(['user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         $data = $request->validate([
@@ -76,7 +76,7 @@ class DispatchSuggestionController extends Controller {
     }
 
     public function dismiss(Request $request, DiaryEntry $entry): RedirectResponse {
-        abort_unless(Auth::user()?->can(Permission::DispatchManage->value) ?? false, 403);
+        Gate::authorize(Permission::DispatchManage->value);
 
         $request->merge(['user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         $data = $request->validate([

@@ -603,6 +603,14 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ArticleView,
             PermissionEnum::ArticleManage,
             PermissionEnum::ArticleLexofficeSync,
+            // Produktmodell (MVP-369): gleiche Zielgruppe wie der Artikelstamm.
+            PermissionEnum::ProductViewAny,
+            PermissionEnum::ProductManage,
+            // Cloud-Dokumenteingang (Feature 080, MVP-351): Org-Admin-Aufgabe
+            // wie die übrigen Integrations-Anbindungen.
+            PermissionEnum::CloudIntakeConnectionManage,
+            PermissionEnum::CloudIntakeRouteManage,
+            PermissionEnum::CloudIntakeRunPreview,
             PermissionEnum::VoucherViewAny,
             PermissionEnum::VoucherLexofficeSync,
             PermissionEnum::ProjectViewAny,

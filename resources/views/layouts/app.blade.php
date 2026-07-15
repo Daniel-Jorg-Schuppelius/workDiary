@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="sync-endpoint" content="{{ route('api.internal.sync.commands') }}">
         <meta name="geocode-url" content="{{ route('api.internal.geocode') }}">
 
         {{-- Font-Preloads: starten den Download von IBM Plex Sans (400/600),
@@ -300,6 +301,7 @@
                                     ['route' => 'customers.index',          'label' => __('Kunden'),         'icon' => 'badge',            'modal' => false, 'matches' => ['customers.*']],
                                     ['route' => 'customer-queries.index',   'label' => __('customer-query.title'), 'icon' => 'contact_support', 'modal' => false, 'matches' => ['customer-queries.*']],
                                     ['route' => 'suppliers.index',          'label' => __('Lieferanten'),    'icon' => 'local_shipping',   'modal' => false, 'matches' => ['suppliers.*']],
+                                    ['route' => 'products.index',           'label' => __('products.title.index'), 'icon' => 'category',   'modal' => false, 'matches' => ['products.*']],
                                     ['route' => 'articles.index',           'label' => __('article.title'),  'icon' => 'inventory_2',      'modal' => false, 'matches' => ['articles.*']],
                                     ['route' => 'warehouses.index',         'label' => __('inventory.title'),'icon' => 'warehouse',        'modal' => false, 'matches' => ['warehouses.*', 'inventory.*']],
                                     ['route' => 'manufacturing-orders.index','label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
@@ -366,6 +368,13 @@
                                     }
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::WebhookViewAny->value)) {
                                         $adminNavItems[] = ['route' => 'admin.webhooks.index', 'label' => __('integration.webhook.title.index'), 'icon' => 'webhook', 'modal' => false, 'matches' => ['admin.webhooks.*']];
+                                    }
+                                    if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\CloudIntake\CloudDocumentConnection::class)) {
+                                        $adminNavItems[] = ['route' => 'admin.cloud-intake.index', 'label' => __('cloud_intake.title.index'), 'icon' => 'cloud_download', 'modal' => false, 'matches' => ['admin.cloud-intake.*']];
+                                    }
+                                    // Cloud-Backupziele (Feature 017 Phase 32): nur Plattform-Admin.
+                                    if (\Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\Backup\BackupTargetConnection::class)) {
+                                        $adminNavItems[] = ['route' => 'admin.backup-targets.index', 'label' => __('backup_targets.title'), 'icon' => 'cloud_upload', 'modal' => false, 'matches' => ['admin.backup-targets.*']];
                                     }
                                     if (\Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::SurchargeRuleViewAny->value)) {
                                         $adminNavItems[] = ['route' => 'admin.surcharge-rules.index', 'label' => __('surcharge.title.rules'), 'icon' => 'percent', 'modal' => false];
@@ -759,6 +768,7 @@
                                             'label' => __('Lager & Fertigung'),
                                             'icon'  => 'warehouse',
                                             'items' => [
+                                                ['route' => 'products.index',  'label' => __('products.title.index'), 'icon' => 'category',  'modal' => false, 'matches' => ['products.*']],
                                                 ['route' => 'articles.index',  'label' => __('article.title'),  'icon' => 'inventory_2',     'modal' => false, 'matches' => ['articles.*']],
                                                 ['route' => 'warehouses.index','label' => __('inventory.title'),'icon' => 'warehouse',       'modal' => false, 'matches' => ['warehouses.*', 'inventory.*']],
                                                 ['route' => 'manufacturing-orders.index','label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
@@ -1489,6 +1499,16 @@
                             @endif
                         @endisset
 
+                        {{-- Offline-Sync-Status (Feature 035, §3.5): nur sichtbar,
+                             wenn offline oder Änderungen ausstehend/abgelehnt sind;
+                             Inhalt pflegt resources/js/offline-sync.js. --}}
+                        <a href="{{ route('offline.changes') }}" data-sync-status hidden
+                           class="badge badge-warning badge-sm items-center gap-1"
+                           title="{{ __('Offline erfasste Änderungen — werden bei Verbindung synchronisiert') }}">
+                            <x-icon name="cloud_off" class="text-[0.9rem]" />
+                            <span data-sync-pending-count class="tabular-nums">0</span>
+                        </a>
+
                         @isset($attendanceCurrent)
                             @if ($attendanceCurrent)
                                 <div class="flex items-center gap-1.5 rounded-box border border-success/40 bg-success/10 px-2 py-1 shadow-xs"
@@ -1497,7 +1517,7 @@
                                     <x-icon name="badge" class="text-[1rem] text-success" />
                                     <span class="font-['Space_Grotesk'] text-sm font-semibold tabular-nums text-success"
                                           x-text="displayShort">00:00</span>
-                                    <form method="POST" action="{{ route('attendance.clock-out') }}" class="leading-none">
+                                    <form method="POST" action="{{ route('attendance.clock-out') }}" class="leading-none" data-offline-sync="attendance.clock-out">
                                         @csrf
                                         <button type="submit" class="btn btn-xs btn-ghost btn-square text-warning" title="{{ __('Ausstempeln') }}" aria-label="{{ __('Ausstempeln') }}">
                                             <x-icon name="logout" />
@@ -1505,7 +1525,7 @@
                                     </form>
                                 </div>
                             @else
-                                <form method="POST" action="{{ route('attendance.clock-in') }}" class="leading-none">
+                                <form method="POST" action="{{ route('attendance.clock-in') }}" class="leading-none" data-offline-sync="attendance.clock-in">
                                     @csrf
                                     <x-button type="submit" tone="success" size="xs" class="gap-1" title="{{ __('Einstempeln') }}">
                                         <x-icon name="login" class="text-[1rem]" />

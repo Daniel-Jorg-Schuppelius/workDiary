@@ -29,3 +29,24 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/msgraph/calendar', [MsgraphAdminController::class, 'selectCalendar'])->name('admin.msgraph.calendar.store');
     Route::post('admin/msgraph/publish', [MsgraphAdminController::class, 'publish'])->name('admin.msgraph.publish');
 });
+
+// ── Cloud-Dokumenteingang (Feature 080, MVP-354) ────────────────────────
+// Eigener LESENDER Intake-Flow, getrennt von der Kalender-Verbindung.
+Route::middleware(['web', 'auth'])->group(function (): void {
+    Route::post('admin/cloud-intake/microsoft/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphIntakeController::class, 'startOAuth'])->name('admin.cloud-intake.microsoft.oauth.start');
+    Route::get('admin/cloud-intake/microsoft/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphIntakeController::class, 'oauthCallback'])->name('admin.cloud-intake.microsoft.oauth.callback');
+});
+
+// Graph-Change-Notification: sessionlos ('api'), Validierung + clientState im
+// Controller; reines Aufwecksignal (Cursor-Lauf bleibt maßgeblich).
+Route::middleware(['api', 'throttle:webhook-ingest'])
+    ->post('api/webhooks/msgraph-intake', \App\Plugins\Msgraph\Http\Controllers\MsgraphIntakeWebhookController::class)
+    ->name('api.webhooks.msgraph-intake');
+
+// ── Cloud-Backupziel (Feature 017 Phase 32, MVP-363) ────────────────────
+// Systemweiter OAuth-Flow (Plattform-Admin, Policy im Controller);
+// eigene Verbindung + Schreib-Scopes, getrennt vom Dokumenteingang.
+Route::middleware(['web', 'auth'])->group(function (): void {
+    Route::post('admin/backup-targets/microsoft/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphBackupTargetController::class, 'startOAuth'])->name('admin.backup-targets.microsoft.oauth.start');
+    Route::get('admin/backup-targets/microsoft/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphBackupTargetController::class, 'oauthCallback'])->name('admin.backup-targets.microsoft.oauth.callback');
+});

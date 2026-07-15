@@ -142,6 +142,38 @@ return [
             'cancelled' => 'Storniert',
         ],
     ],
+    'cloud_intake' => [
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'connection_status' => [
+            'draft' => 'Entwurf',
+            'active' => 'Aktiv',
+            'reauth_required' => 'Neu anmelden',
+            'blocked' => 'Blockiert',
+            'disabled' => 'Deaktiviert',
+        ],
+        'route_target' => [
+            'incoming_invoice' => 'Eingangsrechnungen',
+            'document' => 'Dokument (DMS)',
+        ],
+        'item_status' => [
+            'imported' => 'Übernommen',
+            'inbox' => 'Inbox',
+            'rejected' => 'Abgelehnt',
+            'duplicate' => 'Dublette',
+            'source_gone' => 'Quelle entfernt',
+        ],
+    ],
+    'product' => [
+        'status' => [
+            'active' => 'Aktiv',
+            'phasing_out' => 'Auslaufend',
+            'discontinued' => 'Abgekündigt',
+        ],
+    ],
     'project' => [
         'status' => [
             'active' => 'Aktiv',
@@ -929,6 +961,32 @@ return [
 
     // Restore-Test-Ergebnis (Feature 017).
     'backup' => [
+        // Cloud-Backupziele (Feature 017, Phase 32).
+        'provider' => [
+            'dropbox' => 'Dropbox',
+            'microsoft' => 'Microsoft OneDrive/SharePoint',
+            'google' => 'Google Drive',
+        ],
+        'target_status' => [
+            'draft' => 'Entwurf',
+            'active' => 'Aktiv',
+            'reauth_required' => 'Neu anmelden',
+            'blocked' => 'Blockiert',
+            'disabled' => 'Deaktiviert',
+        ],
+        'generation_status' => [
+            'building' => 'Wird erstellt',
+            'uploading' => 'Wird hochgeladen',
+            'committed' => 'Abgeschlossen',
+            'verified' => 'Verifiziert',
+            'verify_failed' => 'Verifikation fehlgeschlagen',
+            'failed' => 'Fehlgeschlagen',
+        ],
+        'retention_class' => [
+            'daily' => 'Täglich',
+            'weekly' => 'Wöchentlich',
+            'monthly' => 'Monatlich',
+        ],
         'restore-test-result' => [
             'passed' => 'Bestanden',
             'partial' => 'Mit Auflagen',

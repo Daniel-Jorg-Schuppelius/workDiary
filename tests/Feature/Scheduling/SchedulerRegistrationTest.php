@@ -56,6 +56,11 @@ class SchedulerRegistrationTest extends TestCase {
         'toggl:import' => ['0 * * * *', true, true],
         'openproject:import' => ['0 * * * *', true, true],
         'todoist:sync' => ['0 * * * *', true, true],
+        // Neu mit Feature 080 (MVP-359): Cloud-Dokumenteingang-Delta-Lauf.
+        'cloud-intake:sync' => ['*/15 * * * *', true, true],
+        // Neu mit Feature 017 Phase 32 (MVP-364/365): Cloud-Backup + Verify.
+        'workdiary:backup:run' => ['30 1 * * *', true, true],
+        'workdiary:backup:verify' => ['30 3 * * 6', true, true],
         // Neu mit Bauturbo A9 (MVP-329): CardDAV-Kontakt-Lese-Sync.
         'carddav:sync' => ['0 * * * *', true, true],
         'openproject:push' => ['0 * * * *', true, true],

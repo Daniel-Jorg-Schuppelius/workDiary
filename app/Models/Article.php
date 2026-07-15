@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $organization_id
  * @property string|null $number
  * @property string|null $gtin
+ * @property int|null $product_id
  * @property string $name
  * @property ArticleType $type
  * @property string $base_unit
@@ -43,6 +44,7 @@ class Article extends Model {
         'organization_id',
         'number',
         'gtin',
+        'product_id',
         'name',
         'description',
         'type',
@@ -114,6 +116,15 @@ class Article extends Model {
     /** @return BelongsTo<ProcedureTemplateVersion, $this> */
     public function defaultProcedureVersion(): BelongsTo {
         return $this->belongsTo(ProcedureTemplateVersion::class, 'default_procedure_template_version_id');
+    }
+
+    /**
+     * Typ-Ebene Hersteller-Modell (produktmodell-konzept.md, MVP-369).
+     *
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo {
+        return $this->belongsTo(Product::class);
     }
 
     /** Der Artikel führt nur dann selbst Bestand, wenn er keine Varianten hat. */

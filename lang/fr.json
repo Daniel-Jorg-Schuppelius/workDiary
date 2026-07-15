@@ -8396,5 +8396,13 @@
     "kein Kundenbezug": "aucun client lié",
     "versäumt": "manqué",
     "wiederkehrend": "récurrent",
-    "— auswählen —": "— sélectionner —"
+    "— auswählen —": "— sélectionner —",
+    "Offline erfasste Änderungen — werden bei Verbindung synchronisiert": "Modifications saisies hors ligne — synchronisées dès la connexion",
+    "Keine Berechtigung für Anwesenheits-Stempel.": "Aucune autorisation pour le pointage de présence.",
+    "Kein offener Anwesenheits-Stempel zum Beenden.": "Aucun pointage de présence ouvert à clôturer.",
+    "Keine Berechtigung für Kommentare.": "Aucune autorisation pour les commentaires.",
+    "Auftrag nicht gefunden.": "Commande introuvable.",
+    "Keine Berechtigung für Formulare.": "Aucune autorisation pour les formulaires.",
+    "Formularvorlage nicht gefunden.": "Modèle de formulaire introuvable.",
+    "Bezugsobjekt nicht gefunden.": "Objet de référence introuvable."
 }

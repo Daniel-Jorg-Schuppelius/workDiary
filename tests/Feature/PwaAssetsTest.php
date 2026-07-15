@@ -27,7 +27,7 @@ final class PwaAssetsTest extends TestCase {
         $this->assertNotEmpty($json['icons'] ?? []);
     }
 
-    public function test_service_worker_keeps_push_handlers(): void {
+    public function test_service_worker_keeps_push_handlers_and_minimal_offline_fallback(): void {
         $path = public_path('sw.js');
         $this->assertFileExists($path);
 
@@ -35,9 +35,17 @@ final class PwaAssetsTest extends TestCase {
         // Push-Handler bleiben erhalten.
         $this->assertStringContainsString("addEventListener(\"push\"", $code);
         $this->assertStringContainsString("notificationclick", $code);
-        // Es darf KEIN fetch-Handler / clients.claim() existieren, damit der SW
-        // Navigationen NICHT abf\u00e4ngt und das Server-Rendering unangetastet l\u00e4sst.
-        $this->assertStringNotContainsString("addEventListener(\"fetch\"", $code);
+        // MVP-368 (offline-sync-architektur.md Phase 4): Der fetch-Handler ist
+        // BEWUSST minimal \u2014 nur Navigationen, strikt network-first mit
+        // offline.html-Fallback. Online kommt damit weiterhin immer das
+        // frische Server-Rendering an; authentifizierte Seiten werden nie
+        // gecacht.
+        $this->assertStringContainsString("addEventListener(\"fetch\"", $code);
+        $this->assertStringContainsString('request.mode !== "navigate"', $code);
+        $this->assertStringContainsString('fetch(event.request).catch', $code);
+        $this->assertStringContainsString('OFFLINE_URL', $code);
+        // Kein Caching von Navigations-Antworten (nur das install-Precache).
+        $this->assertStringNotContainsString('cache.put', $code);
     }
 
     public function test_offline_fallback_page_exists(): void {

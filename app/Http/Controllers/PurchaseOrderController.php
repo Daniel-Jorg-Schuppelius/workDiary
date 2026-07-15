@@ -19,7 +19,7 @@ use App\Services\Procurement\{AdviceService, DespatchAdviceImportService, GoodsR
 use App\Services\SqidEncoder;
 use ERechnungToolkit\Parsers\UglInvoiceParser;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -404,6 +404,6 @@ class PurchaseOrderController extends Controller {
     }
 
     private function canManage(): void {
-        abort_unless(Auth::user()?->can(P::InventoryPost->value) ?? false, 403);
+        Gate::authorize(P::InventoryPost->value);
     }
 }
