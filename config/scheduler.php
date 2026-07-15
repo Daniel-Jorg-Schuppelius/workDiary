@@ -217,18 +217,21 @@ return [
         // --- Integrationen (Plugins, stündlich) ---
         'plugin.healthcheck' => [
             'command' => 'plugin:healthcheck --no-fail',
+            'plugin' => '*',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
         ],
         'remote.sync_sessions' => [
             'command' => 'remote:sync-sessions',
+            'plugin' => 'remote-support',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
         ],
         'toggl.import' => [
             'command' => 'toggl:import',
+            'plugin' => 'toggl',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -236,6 +239,7 @@ return [
         ],
         'openproject.import' => [
             'command' => 'openproject:import',
+            'plugin' => 'openproject',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -243,6 +247,7 @@ return [
         ],
         'todoist.sync' => [
             'command' => 'todoist:sync',
+            'plugin' => 'todoist',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -251,6 +256,7 @@ return [
         // --- Cloud-Dokumenteingang (Feature 080, MVP-359) ---
         'cloud-intake.sync' => [
             'command' => 'cloud-intake:sync',
+            'plugin' => 'dropbox,google-drive,sharepoint',
             'cadence' => ['type' => 'everyFifteenMinutes'],
             'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
             'criticality' => 'integration',
@@ -274,6 +280,7 @@ return [
         // --- CardDAV-Kontakt-Lese-Sync (Bauturbo A9, MVP-329) ---
         'carddav.sync' => [
             'command' => 'carddav:sync',
+            'plugin' => 'carddav',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -281,6 +288,7 @@ return [
         ],
         'openproject.push' => [
             'command' => 'openproject:push',
+            'plugin' => 'openproject',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -288,6 +296,7 @@ return [
         ],
         'lexoffice.sync_contacts' => [
             'command' => 'lexoffice:sync-contacts',
+            'plugin' => 'lexoffice',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -295,6 +304,7 @@ return [
         ],
         'lexoffice.sync_articles' => [
             'command' => 'lexoffice:sync-articles',
+            'plugin' => 'lexoffice',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -302,6 +312,7 @@ return [
         ],
         'lexoffice.sync_vouchers' => [
             'command' => 'lexoffice:sync-vouchers',
+            'plugin' => 'lexoffice',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -309,6 +320,7 @@ return [
         ],
         'jtl.sync' => [
             'command' => 'jtl:sync',
+            'plugin' => 'jtl_wawi',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
@@ -316,6 +328,7 @@ return [
         ],
         'orgamax.sync' => [
             'command' => 'orgamax:sync',
+            'plugin' => 'orgamax',
             'cadence' => ['type' => 'hourly'],
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',

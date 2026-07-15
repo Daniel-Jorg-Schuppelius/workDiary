@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Scheduling;
 
-use App\Models\{ScheduledJobRun, ScheduledJobState};
+use App\Models\{Organization, PluginSetting, ScheduledJobRun, ScheduledJobState};
 use App\Scheduling\ScheduleRunRecorder;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Events\{ScheduledTaskFinished, ScheduledTaskStarting};
@@ -30,6 +30,16 @@ class SchedulerRuntimeTest extends TestCase {
 
     private function recorder(): ScheduleRunRecorder {
         return app(ScheduleRunRecorder::class);
+    }
+
+    /** toggl.import ist plugin-gebunden — für Watchdog-Tests Plugin irgendwo aktivieren. */
+    private function enableTogglPlugin(): void {
+        PluginSetting::query()->create([
+            'organization_id' => Organization::factory()->create()->id,
+            'plugin_id' => 'toggl',
+            'enabled' => true,
+            'settings' => [],
+        ]);
     }
 
     public function test_successful_run_is_recorded_with_state_aggregation(): void {
@@ -85,6 +95,7 @@ class SchedulerRuntimeTest extends TestCase {
     }
 
     public function test_watchdog_flags_overdue_job_once_per_due_run(): void {
+        $this->enableTogglPlugin();
         // Zeit einfrieren: 45 min nach der vollen Stunde — der Hourly-Soll-
         // Lauf (:00) ist damit sicher jenseits von Laufzeit+Grace (30 min).
         $this->travelTo(now()->startOfHour()->addMinutes(45));
@@ -107,6 +118,7 @@ class SchedulerRuntimeTest extends TestCase {
     }
 
     public function test_watchdog_ignores_fresh_and_never_started_jobs(): void {
+        $this->enableTogglPlugin();
         // Frischer Erfolg → kein Befund; nie gestartete Jobs → kein Befund.
         ScheduledJobState::query()->create([
             'job_key' => 'toggl.import',
@@ -118,6 +130,7 @@ class SchedulerRuntimeTest extends TestCase {
     }
 
     public function test_watchdog_skips_paused_jobs_and_purges_old_runs(): void {
+        $this->enableTogglPlugin();
         ScheduledJobState::query()->create([
             'job_key' => 'toggl.import',
             'last_started_at' => CarbonImmutable::now()->subHours(5),
@@ -133,5 +146,29 @@ class SchedulerRuntimeTest extends TestCase {
 
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
         $this->assertDatabaseCount('scheduled_job_runs', 0);
+    }
+
+    public function test_watchdog_skips_jobs_of_inactive_plugins(): void {
+        // Kein plugin_settings-Eintrag: toggl ist nirgends aktiviert. Der
+        // eigentlich überfällige Sync darf dann weder alarmieren noch den
+        // Dedup-Marker setzen — sonst meldet der Wächter Anbindungen, die
+        // bewusst nicht laufen.
+        $this->travelTo(now()->startOfHour()->addMinutes(45));
+        ScheduledJobState::query()->create([
+            'job_key' => 'toggl.import',
+            'last_started_at' => CarbonImmutable::now()->subHours(3),
+            'last_success_at' => CarbonImmutable::now()->subHours(3),
+            'last_status' => ScheduledJobRun::STATUS_FAILED,
+        ]);
+
+        $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
+
+        $state = ScheduledJobState::query()->where('job_key', 'toggl.import')->firstOrFail();
+        $this->assertNull($state->overdue_notified_at);
+        $this->assertDatabaseCount('operations_tasks', 0);
+
+        // Sobald das Plugin irgendwo aktiv ist, greift die Überwachung wieder.
+        $this->enableTogglPlugin();
+        $this->assertSame(1, Artisan::call('scheduler:watchdog', ['--fail' => true]));
     }
 }

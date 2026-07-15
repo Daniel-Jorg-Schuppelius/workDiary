@@ -38,6 +38,7 @@ final readonly class JobDefinition {
         public bool $runsInMaintenance = true,
         public bool $perOrganization = false,
         public ?string $cadenceSettingKey = null, // Registry-Setting, das die dailyAt-Zeit liefert (z. B. archive.schedule_at)
+        public ?string $plugin = null, // Plugin-Bindung: Watchdog meldet nur bei irgendwo aktivem Plugin ('*' = mind. ein Plugin aktiv)
         public array $dependsOn = [],
     ) {
         if ($allowedCadences === []) {
@@ -64,6 +65,7 @@ final readonly class JobDefinition {
             runsInMaintenance: (bool) ($data['runs_in_maintenance'] ?? true),
             perOrganization: (bool) ($data['per_organization'] ?? false),
             cadenceSettingKey: isset($data['cadence_setting_key']) ? (string) $data['cadence_setting_key'] : null,
+            plugin: isset($data['plugin']) ? (string) $data['plugin'] : null,
             dependsOn: array_values((array) ($data['depends_on'] ?? [])),
         );
     }

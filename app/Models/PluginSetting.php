@@ -67,6 +67,36 @@ class PluginSetting extends Model {
     }
 
     /**
+     * Ist das Plugin in mindestens einer Organisation aktiviert (oder global
+     * über den ENV-/Config-Fallback `plugins.<id>.enabled`)? Konsolen-Kontext
+     * ohne Organisation (Scheduler/Watchdog) — daher ohne Scopes.
+     */
+    public static function enabledAnywhere(string $pluginId): bool {
+        $exists = static::query()
+            ->withoutGlobalScopes()
+            ->where('plugin_id', $pluginId)
+            ->where('enabled', true)
+            ->exists();
+
+        return $exists || (bool) config('plugins.' . $pluginId . '.enabled', false);
+    }
+
+    /** Ist überhaupt irgendein Plugin irgendwo aktiviert? (s. enabledAnywhere) */
+    public static function anyPluginEnabled(): bool {
+        if (static::query()->withoutGlobalScopes()->where('enabled', true)->exists()) {
+            return true;
+        }
+
+        foreach ((array) config('plugins', []) as $entry) {
+            if (is_array($entry) && (bool) ($entry['enabled'] ?? false)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Sucht die Settings eines Plugins für eine Organisation, mit
      * stillem Fallback auf ein leeres, nicht persistiertes Objekt.
      */

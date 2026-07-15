@@ -38,6 +38,9 @@ class SchedulerWatchdogCommand extends Command {
     protected $description = 'Prüft Registry-Jobs auf Überfälligkeit und räumt alte Laufnachweise ab';
 
     public function handle(JobRegistry $registry, SchedulerRegistrar $registrar): int {
+        // Command-Instanzen werden im Container wiederverwendet (Tests,
+        // schedule:work) — Plugin-Cache gilt nur für EINEN Wächter-Lauf.
+        $this->pluginActiveCache = [];
         $now = CarbonImmutable::now();
         $overrides = ScheduledJobOverride::systemMap();
         $overdue = [];
@@ -71,6 +74,13 @@ class SchedulerWatchdogCommand extends Command {
             }
             if ($state->overdue_notified_at !== null && $state->overdue_notified_at->greaterThanOrEqualTo($due)) {
                 continue; // bereits für diesen Soll-Lauf gemeldet
+            }
+            if (! $this->pluginActive($definition)) {
+                // Plugin-gebundener Job, dessen Plugin nirgends aktiviert ist:
+                // Der Sync läuft bewusst nicht — eine Überfälligkeits-Meldung
+                // wäre reines Rauschen (z. B. Lexoffice/JTL auf Instanzen ohne
+                // diese Anbindungen).
+                continue;
             }
 
             $overdue[] = $key;
@@ -112,6 +122,34 @@ class SchedulerWatchdogCommand extends Command {
         }
 
         return ($this->option('fail') && $overdue !== []) ? self::FAILURE : self::SUCCESS;
+    }
+
+    /** @var array<string, bool> Ergebnis-Cache je Plugin-Bindung (Lauf-Lebensdauer). */
+    private array $pluginActiveCache = [];
+
+    /**
+     * Ist die Plugin-Bindung des Jobs erfüllt? Ohne Bindung immer true;
+     * '*' = mindestens ein Plugin aktiv; Kommaliste = eines der genannten.
+     */
+    private function pluginActive(\App\Scheduling\JobDefinition $definition): bool {
+        $binding = $definition->plugin;
+        if ($binding === null || $binding === '') {
+            return true;
+        }
+
+        return $this->pluginActiveCache[$binding] ??= (function () use ($binding): bool {
+            if ($binding === '*') {
+                return \App\Models\PluginSetting::anyPluginEnabled();
+            }
+
+            foreach (explode(',', $binding) as $pluginId) {
+                if (\App\Models\PluginSetting::enabledAnywhere(trim($pluginId))) {
+                    return true;
+                }
+            }
+
+            return false;
+        })();
     }
 
     private function purgeOldRuns(CarbonImmutable $now): void {
