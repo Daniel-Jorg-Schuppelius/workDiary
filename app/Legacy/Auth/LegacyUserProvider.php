@@ -10,6 +10,7 @@
 
 namespace App\Legacy\Auth;
 
+use App\Legacy\Support\LegacyConnectivity;
 use App\Models\User;
 use Illuminate\Auth\EloquentUserProvider;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -163,11 +164,17 @@ class LegacyUserProvider extends EloquentUserProvider {
         }
 
         try {
-            return DB::connection('legacy')
-                ->table('user')
-                ->where('uname', $username)
-                ->where('userpw', $password) // Klartext-Vergleich (Legacy-System)
-                ->first();
+            // attempt(): überspringt den Connect sofort, wenn die legacy-DB als
+            // down markiert ist, und setzt den Marker bei Verbindungsfehlern —
+            // sonst kostet ein toter Legacy-Host jeden Login einen Connect-Timeout.
+            return LegacyConnectivity::attempt(
+                fn (): ?object => DB::connection('legacy')
+                    ->table('user')
+                    ->where('uname', $username)
+                    ->where('userpw', $password) // Klartext-Vergleich (Legacy-System)
+                    ->first(),
+                null,
+            );
         } catch (\Exception) {
             return null;
         }

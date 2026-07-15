@@ -112,7 +112,14 @@ final class DatabaseHealth {
     private static function markerPath(string $connection): string {
         $safe = preg_replace('/[^a-zA-Z0-9_-]/', '_', $connection) ?? 'default';
 
-        return storage_path('framework/cache/db-down-' . $safe . '.flag');
+        // Unter ParaTest je Worker isolieren (TEST_TOKEN): ein im Test gesetzter
+        // Marker darf nie in parallel laufende Test-Prozesse leaken. Bewusst
+        // ohne env()/Facade, damit der Pfad auch im Fail-Safe-Pfad ohne
+        // funktionierenden Container bestimmbar bleibt.
+        $token = (string) ($_SERVER['TEST_TOKEN'] ?? $_ENV['TEST_TOKEN'] ?? '');
+        $suffix = $token === '' ? '' : '-' . (preg_replace('/[^a-zA-Z0-9_-]/', '_', $token) ?? '');
+
+        return storage_path('framework/cache/db-down-' . $safe . $suffix . '.flag');
     }
 
     public static function defaultConnection(): string {

@@ -18,7 +18,7 @@ use App\Support\DatabaseHealth;
  * lesen, ohne sich den Connection-Namen merken zu müssen.
  */
 final class LegacyConnectivity {
-    private const CONNECTION = 'legacy';
+    public const CONNECTION = 'legacy';
 
     public static function isAvailable(): bool {
         if (! filled(config('database.connections.legacy.database'))) {

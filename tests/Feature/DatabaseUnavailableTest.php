@@ -10,6 +10,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\DatabaseHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -37,5 +38,21 @@ class DatabaseUnavailableTest extends TestCase {
 
         $response->assertStatus(503);
         $response->assertExactJson(['message' => 'Database temporarily unavailable.']);
+    }
+
+    public function test_marked_legacy_connection_short_circuits_legacy_area_only(): void {
+        DatabaseHealth::markUnavailable('legacy');
+
+        try {
+            // Legacy-Bereich: sofort 503 aus dem Marker, ohne Connect-Versuch.
+            $this->get('/legacy/diary')
+                ->assertStatus(503)
+                ->assertSee('Datenbank vorübergehend nicht erreichbar', false);
+
+            // Rest der App bleibt davon unberührt.
+            $this->get('/login')->assertOk();
+        } finally {
+            DatabaseHealth::reset('legacy');
+        }
     }
 }

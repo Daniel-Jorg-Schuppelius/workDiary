@@ -10,6 +10,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Legacy\Support\LegacyConnectivity;
 use App\Support\DatabaseHealth;
 use Closure;
 use Illuminate\Database\QueryException;
@@ -41,6 +42,13 @@ class HandleDatabaseUnavailable {
         // Fast-Path: Wenn die Default-Verbindung erst kürzlich versagt hat,
         // sparen wir uns die erneute Wartezeit.
         if (! DatabaseHealth::isAvailable($defaultConnection)) {
+            return $this->renderUnavailable($request, null);
+        }
+
+        // Gleicher Fast-Path für den Legacy-Bereich: Er hängt vollständig an
+        // der legacy-Connection. Ist die als down markiert, sofort 503 statt
+        // pro Request erneut in den Connect-Timeout zu laufen.
+        if ($request->is('legacy', 'legacy/*') && ! DatabaseHealth::isAvailable(LegacyConnectivity::CONNECTION)) {
             return $this->renderUnavailable($request, null);
         }
 

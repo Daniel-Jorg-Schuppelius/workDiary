@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
 use App\Http\Controllers\Controller;
+use App\Legacy\Support\LegacyConnectivity;
 use App\Models\{SsoConnection, User};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, RateLimiter};
@@ -171,19 +172,26 @@ class LoginController extends Controller {
         }
 
         try {
-            $legacy = DB::connection('legacy')
-                ->table('user')
-                ->select(['id', 'uname'])
-                ->where('uname', $submittedUsername)
-                ->first();
-
-            if (! $legacy && filled($authUser->name)) {
-                $legacy = DB::connection('legacy')
+            // attempt(): kein Connect-Versuch, wenn die legacy-DB als down
+            // markiert ist — das Mapping ist Best-Effort und darf den Login
+            // weder blockieren noch verzögern.
+            $legacy = LegacyConnectivity::attempt(function () use ($submittedUsername, $authUser): ?object {
+                $found = DB::connection('legacy')
                     ->table('user')
                     ->select(['id', 'uname'])
-                    ->where('uname', (string) $authUser->name)
+                    ->where('uname', $submittedUsername)
                     ->first();
-            }
+
+                if (! $found && filled($authUser->name)) {
+                    $found = DB::connection('legacy')
+                        ->table('user')
+                        ->select(['id', 'uname'])
+                        ->where('uname', (string) $authUser->name)
+                        ->first();
+                }
+
+                return $found;
+            }, null);
 
             if ($legacy && (int) $legacy->id > 0) {
                 $authUser->legacy_user_id = (int) $legacy->id;

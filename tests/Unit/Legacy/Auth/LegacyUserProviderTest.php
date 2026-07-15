@@ -14,6 +14,7 @@ namespace Tests\Unit\Legacy\Auth;
 
 use App\Legacy\Auth\LegacyUserProvider;
 use App\Models\User;
+use App\Support\DatabaseHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Hash};
 use Tests\TestCase;
@@ -96,5 +97,26 @@ class LegacyUserProviderTest extends TestCase {
         $this->assertTrue($provider->validateCredentials($user, ['password' => 'weak-pw']));
         // Falsches Legacy-Passwort schlägt fehl
         $this->assertFalse($provider->validateCredentials($user, ['password' => 'wrong']));
+    }
+
+    public function test_local_login_works_while_legacy_connection_marked_down(): void {
+        $local = User::factory()->create(['password' => Hash::make('secret-123')]);
+
+        // Legacy-DB als nicht erreichbar markiert: der Legacy-Lookup wird
+        // übersprungen (kein Connect-Versuch), der lokale Fallback greift.
+        DatabaseHealth::markUnavailable('legacy');
+
+        try {
+            $provider = new LegacyUserProvider(Hash::driver());
+            $user = $provider->retrieveByCredentials([
+                'username' => $local->email,
+                'password' => 'secret-123',
+            ]);
+
+            $this->assertInstanceOf(User::class, $user);
+            $this->assertTrue($user->is($local));
+        } finally {
+            DatabaseHealth::reset('legacy');
+        }
     }
 }

@@ -84,4 +84,27 @@ class AuditLogTest extends TestCase {
             ->assertOk()
             ->assertSee(__('entity-types.Comment'));
     }
+
+    public function test_audit_index_tolerates_non_model_auditable_type(): void {
+        $admin = User::factory()->admin()->create();
+
+        // Report-Exporte schreiben den konkreten Controller (kein Model) als
+        // auditable_type (WritesReportCsv::auditExport). Die Liste darf solche
+        // Zeilen nie über die MorphTo-Relation instanziieren (=> 500er).
+        AuditLog::create([
+            'organization_id' => $admin->organization_id,
+            'user_id' => $admin->id,
+            'event' => 'report.exported',
+            'auditable_type' => \App\Http\Controllers\Reporting\HelpdeskReportExportController::class,
+            'auditable_id' => 0,
+            'changes' => ['report_code' => 'helpdesk_volume', 'format' => 'csv'],
+            'ip' => '127.0.0.1',
+            'user_agent' => 'phpunit',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('audit.index', ['sort' => 'created_at', 'dir' => 'asc']))
+            ->assertOk()
+            ->assertSee('HelpdeskReportExportController');
+    }
 }

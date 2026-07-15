@@ -47,7 +47,10 @@ class AuditLogController extends Controller {
             return redirect()->route('audit.index', $request->except(['from', 'to']));
         }
 
-        $query = AuditLog::query()->with(['user:id,name', 'auditable']);
+        // 'auditable' nie eager laden: auditable_type enthält auch Nicht-Model-
+        // Klassen (Report-Exporte via WritesReportCsv), die MorphTo beim
+        // Instanziieren crashen lassen. Die View braucht nur Typ-Label und ID.
+        $query = AuditLog::query()->with('user:id,name');
 
         if ($event = $request->string('event')->toString()) {
             $query->where('event', $event);
