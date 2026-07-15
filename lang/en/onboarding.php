@@ -52,6 +52,11 @@ return [
                 'description' => 'Pick a branch profile so suitable defaults for classifications are available.',
                 'link' => 'Open branch profiles',
             ],
+            'scope' => [
+                'title' => 'Choose feature scope',
+                'description' => 'Pick a feature-scope preset or adjust the active modules — anything you do not need stays hidden without losing any data.',
+                'link' => 'Open feature scope',
+            ],
         ],
         'users' => [
             'invite' => [

@@ -8404,5 +8404,14 @@
     "Auftrag nicht gefunden.": "Orden no encontrada.",
     "Keine Berechtigung für Formulare.": "Sin permiso para formularios.",
     "Formularvorlage nicht gefunden.": "Plantilla de formulario no encontrada.",
-    "Bezugsobjekt nicht gefunden.": "Objeto de referencia no encontrado."
+    "Bezugsobjekt nicht gefunden.": "Objeto de referencia no encontrado.",
+    "Schlanker Start": "Inicio ligero",
+    "Service & Handwerk": "Servicio y oficios",
+    "Büro & Dienstleistung": "Oficina y servicios",
+    "Voller Umfang": "Alcance completo",
+    "Nur der Kern: Auftragsbuch, Zeiterfassung und persönliche Auswertungen — alle Zusatzmodule bleiben ausgeblendet.": "Solo el núcleo: libro de órdenes, registro de tiempos e informes personales; todos los módulos adicionales permanecen ocultos.",
+    "Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.": "Núcleo más planificación, viajes y gastos, ventas, flota, documentos, formularios, base de conocimiento e informes de equipo.",
+    "Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.": "Núcleo más kanban, planificación, ventas, documentos, formularios, base de conocimiento, chat e informes de equipo.",
+    "Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.": "Todos los módulos licenciados activos: el comportamiento predeterminado sin una elección explícita.",
+    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Módulo desconocido «:module» en la recomendación de módulos; perfil rechazado."
 }

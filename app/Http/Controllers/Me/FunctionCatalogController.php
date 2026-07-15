@@ -1,0 +1,120 @@
+<?php
+/*
+ * Created on   : Wed Jul 15 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : FunctionCatalogController.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Http\Controllers\Me;
+
+use App\Enums\Licensing\ModuleStatus;
+use App\Enums\User\Permission;
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\Licensing\{ModuleCatalog, ModuleStatusResolver};
+use App\Services\Navigation\NavigationRegistry;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
+
+/**
+ * Funktionskatalog „Alle Funktionen" (Feature 081, MVP-375): Registry-gespeiste
+ * Übersicht aller Bereiche mit Zustand je Nutzer — sichtbar, selbst
+ * ausgeblendet (Einblenden-Aktion), org-deaktiviert (Link auf den
+ * Funktionsumfang bei Recht) oder nicht lizenziert (Upsell-Text aus
+ * plans.descriptions). Sicherheitsventil gegen „Funktion verschwunden":
+ * reine Projektion, kein Persistenzbedarf, kein Sonderrecht.
+ */
+class FunctionCatalogController extends Controller {
+    public function __construct(
+        private readonly NavigationRegistry $registry,
+        private readonly ModuleStatusResolver $status,
+        private readonly ModuleCatalog $catalog,
+    ) {}
+
+    public function index(): View {
+        /** @var User $user */
+        $user = Auth::user();
+        $organization = $user->organization;
+
+        $hidden = $this->registry->hiddenNavKeys($user);
+        $moduleBySection = $this->registry->moduleBySectionKey();
+        $moduleByItem = $this->registry->moduleByItemRoute();
+        $moduleByGroup = $this->registry->moduleByGroupKey();
+
+        $moduleStatus = [];
+        if ($organization !== null) {
+            foreach ($this->status->forOrganization($organization) as $row) {
+                $moduleStatus[$row['code']] = $row['status'];
+            }
+        }
+
+        $statusOf = static function (?string $module) use ($moduleStatus): ?ModuleStatus {
+            if ($module === null) {
+                return null;
+            }
+
+            return $moduleStatus[$module] ?? ModuleStatus::NotLicensed;
+        };
+
+        $sections = [];
+        foreach ($this->registry->sidebarBlueprint('duties.index') as $section) {
+            $sectionKey = (string) $section['key'];
+            $sectionModule = $moduleBySection[$sectionKey] ?? null;
+            $sectionHidden = in_array(NavigationRegistry::KEY_SECTION . $sectionKey, $hidden, true);
+
+            $entries = [];
+            $collect = function (array $items, ?string $groupModule, bool $groupHidden) use (&$entries, $moduleByItem, $sectionModule, $sectionHidden, $hidden, $statusOf): void {
+                foreach ($items as $item) {
+                    if (! is_array($item) || ! $this->registry->mayAccessRoute((string) $item['route'])) {
+                        continue;
+                    }
+                    $module = $moduleByItem[(string) $item['route']] ?? $groupModule ?? $sectionModule;
+                    $status = $statusOf($module);
+                    $itemHidden = $sectionHidden || $groupHidden
+                        || in_array(NavigationRegistry::KEY_ITEM . (string) $item['route'], $hidden, true);
+
+                    $entries[] = [
+                        'route' => (string) $item['route'],
+                        'label' => (string) $item['label'],
+                        'icon' => (string) ($item['icon'] ?? 'circle'),
+                        'key' => NavigationRegistry::KEY_ITEM . (string) $item['route'],
+                        'module' => $module,
+                        'module_label' => $module !== null ? $this->catalog->label($module) : null,
+                        'module_description' => $module !== null ? $this->catalog->description($module) : null,
+                        'status' => $status,
+                        'hidden' => $itemHidden,
+                        'visible' => ($status === null || $status === ModuleStatus::Active) && ! $itemHidden,
+                    ];
+                }
+            };
+
+            if (! empty($section['items']) && is_array($section['items'])) {
+                $collect($section['items'], null, false);
+            }
+            foreach ((array) ($section['groups'] ?? []) as $group) {
+                if (! is_array($group)) {
+                    continue;
+                }
+                $groupHidden = in_array(NavigationRegistry::KEY_GROUP . (string) $group['key'], $hidden, true);
+                $collect((array) ($group['items'] ?? []), $moduleByGroup[(string) $group['key']] ?? null, $groupHidden);
+            }
+
+            if ($entries !== []) {
+                $sections[] = [
+                    'key' => $sectionKey,
+                    'label' => (string) $section['label'],
+                    'hidden' => $sectionHidden,
+                    'entries' => $entries,
+                ];
+            }
+        }
+
+        return view('me.functions', [
+            'sections' => $sections,
+            'canManageScope' => $user->can(Permission::OrganizationScopeManage->value),
+        ]);
+    }
+}

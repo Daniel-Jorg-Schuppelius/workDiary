@@ -75,6 +75,8 @@ enum Permission: string implements HasLabel {
     case PlatformLicenseView = 'platform.license.view';
     case PlatformLicenseInstall = 'platform.license.install';
     case PlatformFeatureFlagOverride = 'platform.featureFlag.override';
+        // ── Funktionsumfang der Organisation (Feature 081, MVP-373) ─
+    case OrganizationScopeManage = 'organization.scope.manage';
         // ── Demo-Mandant (MVP-050) ──────────────────────────────────
     case PlatformDemoCreate = 'platform.demo.create';
     case PlatformDemoReset = 'platform.demo.reset';

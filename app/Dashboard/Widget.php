@@ -40,9 +40,23 @@ abstract class Widget {
     }
 
     /**
+     * Modul-Flag (module.*), an dem das Widget hängt, oder null = Core
+     * (Feature 081, MVP-372: generisches Modul-Gating statt Einzel-Checks
+     * in availableFor()-Overrides).
+     */
+    public function requiredModule(): ?string {
+        return null;
+    }
+
+    /**
      * Returns true if the widget is allowed for the given user.
      */
     public function availableFor(User $user): bool {
+        $module = $this->requiredModule();
+        if ($module !== null && ! app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled($module)) {
+            return false;
+        }
+
         $ability = $this->requiredAbility();
         if ($ability === null) {
             return true;

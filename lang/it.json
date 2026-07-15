@@ -8404,5 +8404,14 @@
     "Auftrag nicht gefunden.": "Commessa non trovata.",
     "Keine Berechtigung für Formulare.": "Nessuna autorizzazione per i moduli.",
     "Formularvorlage nicht gefunden.": "Modello di modulo non trovato.",
-    "Bezugsobjekt nicht gefunden.": "Oggetto di riferimento non trovato."
+    "Bezugsobjekt nicht gefunden.": "Oggetto di riferimento non trovato.",
+    "Schlanker Start": "Avvio essenziale",
+    "Service & Handwerk": "Servizi e artigianato",
+    "Büro & Dienstleistung": "Ufficio e servizi",
+    "Voller Umfang": "Ambito completo",
+    "Nur der Kern: Auftragsbuch, Zeiterfassung und persönliche Auswertungen — alle Zusatzmodule bleiben ausgeblendet.": "Solo il nucleo: registro degli incarichi, rilevazione dei tempi e report personali; tutti i moduli aggiuntivi restano nascosti.",
+    "Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.": "Nucleo più pianificazione, viaggi e spese, vendite, parco veicoli, documenti, moduli, base di conoscenza e report di team.",
+    "Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.": "Nucleo più kanban, pianificazione, vendite, documenti, moduli, base di conoscenza, chat e report di team.",
+    "Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.": "Tutti i moduli con licenza attivi: il comportamento predefinito senza una scelta esplicita.",
+    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Modulo sconosciuto «:module» nella raccomandazione dei moduli; profilo rifiutato."
 }

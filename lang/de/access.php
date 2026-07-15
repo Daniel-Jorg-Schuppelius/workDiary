@@ -206,6 +206,7 @@ return [
         'platform.license.view' => 'Lizenzstatus einsehen',
         'platform.license.install' => 'Lizenz installieren / hochladen',
         'platform.featureFlag.override' => 'Feature-Flag manuell übersteuern',
+        'organization.scope.manage' => 'Funktionsumfang der Organisation festlegen',
         'platform.demo.create' => 'Demo-Mandant anlegen',
         'platform.demo.reset' => 'Demo-Mandant zurücksetzen',
         'org.demo.seed' => 'Eigene Organisation mit Demo-Daten befüllen',

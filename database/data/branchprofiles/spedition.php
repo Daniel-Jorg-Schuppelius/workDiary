@@ -14,6 +14,21 @@ return [
     'code' => 'spedition',
     'label' => 'Spedition und Transportlogistik',
     'version' => 1,
+    // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
+    // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
+    'modules_recommended' => [
+        'module.planung',
+        'module.spesen',
+        'module.vertrieb',
+        'module.documents',
+        'module.forms',
+        'module.knowledge',
+        'module.auswertungen_team',
+        'module.fuhrpark',
+        'module.standorterfassung',
+        'module.lager',
+        'module.versand',
+    ],
     'classifications' => [
         'entry_type' => [
             ['code' => 'transportauftrag', 'label' => 'Transportauftrag'],

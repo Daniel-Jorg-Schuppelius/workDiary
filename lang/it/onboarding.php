@@ -41,6 +41,11 @@ return [
                 'description' => 'Seleziona un profilo di settore per avere valori predefiniti adatti alle classificazioni.',
                 'link' => 'Apri profili di settore',
             ],
+            'scope' => [
+                'title' => 'Scegliere l\'ambito funzionale',
+                'description' => 'Scegli un preset di ambito funzionale o adatta i moduli attivi: ciò che non serve resta nascosto senza perdere dati.',
+                'link' => 'Apri l\'ambito funzionale',
+            ],
         ],
         'users' => [
             'invite' => [

@@ -181,6 +181,56 @@ return [
         'module.sso' => 'Single-Sign-on und Verzeichnisdienste (SCIM-Provisionierung, OIDC-SSO, SAML 2.0).',
     ],
 
+    // Funktionsumfang-Presets (Feature 081, MVP-373): kuratierte Startumfänge.
+    // Ein Preset ist eine reine Schreibhilfe für die Modulkonfiguration
+    // (MVP-052): gespeichert wird ausschließlich der Modulstatus
+    // (LicenseFlagOverride, nur deaktivierend) — nie ein eigener
+    // „Preset-Zustand". `modules` = aktiv bleibende Katalogmodule; alle
+    // übrigen lizenzierten Module werden org-deaktiviert. `modules = null`
+    // bedeutet Vollumfang (alle lizenzierten Module aktiv, heutiger Default).
+    // Labels/Beschreibungen sind deutsche Quelltexte und werden beim Rendern
+    // per __() übersetzt (wie plans.labels).
+    'presets' => [
+        'schlank' => [
+            'label' => 'Schlanker Start',
+            'description' => 'Nur der Kern: Auftragsbuch, Zeiterfassung und persönliche Auswertungen — alle Zusatzmodule bleiben ausgeblendet.',
+            'modules' => [],
+        ],
+        'service_handwerk' => [
+            'label' => 'Service & Handwerk',
+            'description' => 'Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.',
+            'modules' => [
+                'module.planung',
+                'module.spesen',
+                'module.vertrieb',
+                'module.fuhrpark',
+                'module.documents',
+                'module.forms',
+                'module.knowledge',
+                'module.auswertungen_team',
+            ],
+        ],
+        'buero_dienstleistung' => [
+            'label' => 'Büro & Dienstleistung',
+            'description' => 'Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.',
+            'modules' => [
+                'module.kanban',
+                'module.planung',
+                'module.vertrieb',
+                'module.documents',
+                'module.forms',
+                'module.knowledge',
+                'module.chat',
+                'module.auswertungen_team',
+            ],
+        ],
+        'voll' => [
+            'label' => 'Voller Umfang',
+            'description' => 'Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.',
+            'modules' => null,
+        ],
+    ],
+
     // Route-Namen-Muster → Modul-Code (zentrales Route-Gating durch
     // EnforcePlanModules). Erste passende Regel gewinnt. Nicht gelistete
     // Routen gelten als Core (immer erreichbar). Persoenliche Auswertungen

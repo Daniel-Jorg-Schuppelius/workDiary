@@ -14,6 +14,20 @@ return [
     'code' => 'kfz-fuhrparkservice',
     'label' => 'Kfz- und Fuhrparkservice',
     'version' => 1,
+    // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
+    // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
+    'modules_recommended' => [
+        'module.planung',
+        'module.spesen',
+        'module.vertrieb',
+        'module.documents',
+        'module.forms',
+        'module.knowledge',
+        'module.auswertungen_team',
+        'module.fuhrpark',
+        'module.lager',
+        'module.rental',
+    ],
     'classifications' => [
         'entry_type' => [
             ['code' => 'annahme', 'label' => 'Fahrzeugannahme'],

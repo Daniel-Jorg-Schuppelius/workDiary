@@ -52,6 +52,11 @@ return [
                 'description' => 'Wähle ein Branchenprofil, damit passende Defaults für Klassifikationen bereitstehen.',
                 'link' => 'Branchenprofile öffnen',
             ],
+            'scope' => [
+                'title' => 'Funktionsumfang wählen',
+                'description' => 'Wähle ein Funktionsumfang-Preset oder passe die aktiven Module an — nicht Benötigtes bleibt ausgeblendet, ohne dass Daten verloren gehen.',
+                'link' => 'Funktionsumfang öffnen',
+            ],
         ],
         'users' => [
             'invite' => [

@@ -41,6 +41,11 @@ return [
                 'description' => 'Selecciona un perfil de sector para disponer de valores predeterminados adecuados para las clasificaciones.',
                 'link' => 'Abrir perfiles de sector',
             ],
+            'scope' => [
+                'title' => 'Elegir el alcance funcional',
+                'description' => 'Elige un preajuste de alcance funcional o ajusta los módulos activos: lo que no necesites permanece oculto sin perder datos.',
+                'link' => 'Abrir alcance funcional',
+            ],
         ],
         'users' => [
             'invite' => [

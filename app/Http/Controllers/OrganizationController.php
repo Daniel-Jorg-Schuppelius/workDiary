@@ -70,11 +70,22 @@ class OrganizationController extends Controller {
             'locale' => ['required', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
             'timezone' => ['required', 'timezone'],
             'is_active' => ['boolean'],
+            // Funktionsumfang-Preset (Feature 081, MVP-373): optional beim
+            // Anlegen; ohne Auswahl bleibt der volle Lizenzumfang aktiv.
+            'scope_preset' => ['nullable', 'string', \Illuminate\Validation\Rule::in(array_keys((array) config('plans.presets', [])))],
         ]);
+
+        $scopePreset = $data['scope_preset'] ?? null;
+        unset($data['scope_preset']);
 
         $data['is_active'] = $request->boolean('is_active', true);
 
         $organization = Organization::create($data);
+
+        if (is_string($scopePreset) && $scopePreset !== '' && $request->user() instanceof User) {
+            app(\App\Services\Licensing\ModuleScopeService::class)
+                ->applyPreset($organization, $scopePreset, $request->user());
+        }
 
         // Wenn der ausführende Admin (noch) keiner Organisation zugeordnet
         // ist – typischerweise nach Lösch-/Bootstrap-Szenarien – weisen wir

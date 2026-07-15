@@ -8404,5 +8404,14 @@
     "Auftrag nicht gefunden.": "Commande introuvable.",
     "Keine Berechtigung für Formulare.": "Aucune autorisation pour les formulaires.",
     "Formularvorlage nicht gefunden.": "Modèle de formulaire introuvable.",
-    "Bezugsobjekt nicht gefunden.": "Objet de référence introuvable."
+    "Bezugsobjekt nicht gefunden.": "Objet de référence introuvable.",
+    "Schlanker Start": "Démarrage allégé",
+    "Service & Handwerk": "Service & artisanat",
+    "Büro & Dienstleistung": "Bureau & prestations",
+    "Voller Umfang": "Périmètre complet",
+    "Nur der Kern: Auftragsbuch, Zeiterfassung und persönliche Auswertungen — alle Zusatzmodule bleiben ausgeblendet.": "Uniquement le cœur : journal des interventions, saisie des temps et rapports personnels — tous les modules supplémentaires restent masqués.",
+    "Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.": "Cœur plus planification, déplacements & frais, ventes, parc de véhicules, documents, formulaires, base de connaissances et rapports d'équipe.",
+    "Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.": "Cœur plus kanban, planification, ventes, documents, formulaires, base de connaissances, messagerie et rapports d'équipe.",
+    "Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.": "Tous les modules sous licence actifs — le comportement par défaut sans choix explicite.",
+    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Module inconnu « :module » dans la recommandation de modules — profil rejeté."
 }

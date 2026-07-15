@@ -14,6 +14,20 @@ return [
     'code' => 'steuerberater',
     'label' => 'Steuerberatung',
     'version' => 1,
+    // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
+    // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
+    'modules_recommended' => [
+        'module.planung',
+        'module.spesen',
+        'module.vertrieb',
+        'module.documents',
+        'module.forms',
+        'module.knowledge',
+        'module.auswertungen_team',
+        'module.kanban',
+        'module.chat',
+        'module.datenschutz',
+    ],
     'classifications' => [
         'entry_type' => [
             ['code' => 'fibu', 'label' => 'Finanzbuchfuehrung'],

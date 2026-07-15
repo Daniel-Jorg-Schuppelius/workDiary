@@ -183,6 +183,7 @@ return [
         'platform.license.view' => 'Visualizza lo stato della licenza',
         'platform.license.install' => 'Installa / carica una licenza',
         'platform.featureFlag.override' => 'Sostituisci manualmente un feature flag',
+        'organization.scope.manage' => 'Definire l\'ambito funzionale dell\'organizzazione',
         'platform.demo.create' => 'Crea un tenant demo',
         'platform.demo.reset' => 'Reimposta il tenant demo',
         'org.demo.seed' => 'Popola la propria organizzazione con dati demo',

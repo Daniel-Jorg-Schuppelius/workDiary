@@ -24,6 +24,7 @@ class OnboardingController extends Controller {
     private const STEP_CODES = [
         'org.profile',
         'org.branch_profile',
+        'org.scope',
         'users.invite',
         'roles.check',
         'classification.check',
@@ -46,6 +47,7 @@ class OnboardingController extends Controller {
     private const STEP_ROUTES = [
         'org.profile' => 'account.profile.edit',
         'org.branch_profile' => 'admin.branch-profiles.index',
+        'org.scope' => 'admin.scope.index',
         'users.invite' => 'org-members.index',
         'roles.check' => 'admin.access.members.index',
         'classification.check' => 'admin.classifications.index',

@@ -206,6 +206,7 @@ return [
         'platform.license.view' => 'View licence status',
         'platform.license.install' => 'Install / upload licence',
         'platform.featureFlag.override' => 'Override feature flag manually',
+        'organization.scope.manage' => 'Manage the organization\'s feature scope',
         'platform.demo.create' => 'Create demo tenant',
         'platform.demo.reset' => 'Reset demo tenant',
         'org.demo.seed' => 'Seed own organisation with demo data',

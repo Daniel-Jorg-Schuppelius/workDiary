@@ -229,6 +229,16 @@ Route::middleware('auth')->group(function () {
     Route::post('me/dashboard/customize', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'save'])
         ->name('dashboard.customize.save');
 
+    // Per-User-Menüanpassung + Funktionskatalog (Feature 081, MVP-374/375).
+    Route::get('me/navigation/customize', [\App\Http\Controllers\Me\NavigationCustomizationController::class, 'index'])
+        ->name('me.navigation.customize');
+    Route::post('me/navigation/customize', [\App\Http\Controllers\Me\NavigationCustomizationController::class, 'save'])
+        ->name('me.navigation.customize.save');
+    Route::post('me/navigation/unhide', [\App\Http\Controllers\Me\NavigationCustomizationController::class, 'unhide'])
+        ->name('me.navigation.unhide');
+    Route::get('me/functions', [\App\Http\Controllers\Me\FunctionCatalogController::class, 'index'])
+        ->name('me.functions');
+
     // Persönlicher Kalender-Feed (Token-Generierung + Subscribe-URL).
     Route::get('account/calendar', [CalendarFeedController::class, 'show'])
         ->name('account.calendar.show');
@@ -731,6 +741,11 @@ Route::middleware('auth')->group(function () {
             ->name('admin.support.impersonate.start');
         Route::post('admin/support/impersonate-stop', [SupportImpersonationController::class, 'destroy'])
             ->name('admin.support.impersonate.stop');
+
+        // Funktionsumfang der Organisation (Feature 081, MVP-373):
+        // Presets + Modul-Checkliste, Recht organization.scope.manage.
+        Route::get('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'index'])->name('admin.scope.index');
+        Route::post('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'save'])->name('admin.scope.save');
 
         // Lizenz-Admin (MVP-047)
         Route::get('admin/license', [LicenseAdminController::class, 'index'])->name('admin.license.index');

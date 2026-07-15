@@ -136,6 +136,13 @@ class BranchProfileController extends Controller {
             }
         }
 
+        // Feature 081 (MVP-373): Modul-Empfehlungen nur mit bekannten Katalog-Codes.
+        foreach ((array) ($profile['modules_recommended'] ?? []) as $module) {
+            if (! app(\App\Services\Licensing\ModuleCatalog::class)->has((string) $module)) {
+                return back()->with('error', __('Unbekanntes Modul ":module" in der Modul-Empfehlung — Profil abgelehnt.', ['module' => (string) $module]));
+            }
+        }
+
         /** @var \App\Models\User $actor */
         $actor = $request->user();
 

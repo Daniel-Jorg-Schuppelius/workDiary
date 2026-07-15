@@ -14,6 +14,19 @@ return [
     'code' => 'handwerk',
     'label' => 'Handwerk / Service allgemein',
     'version' => 1,
+    // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
+    // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
+    'modules_recommended' => [
+        'module.planung',
+        'module.spesen',
+        'module.vertrieb',
+        'module.documents',
+        'module.forms',
+        'module.knowledge',
+        'module.auswertungen_team',
+        'module.fuhrpark',
+        'module.lager',
+    ],
     'classifications' => [
         'entry_type' => [
             ['code' => 'service', 'label' => 'Service'],

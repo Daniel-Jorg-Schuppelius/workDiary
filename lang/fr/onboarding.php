@@ -41,6 +41,11 @@ return [
                 'description' => 'Sélectionnez un profil de secteur pour disposer de valeurs par défaut adaptées aux classifications.',
                 'link' => 'Ouvrir les profils de secteur',
             ],
+            'scope' => [
+                'title' => 'Choisir le périmètre fonctionnel',
+                'description' => 'Choisissez un préréglage de périmètre fonctionnel ou ajustez les modules actifs — ce dont vous n\'avez pas besoin reste masqué, sans perte de données.',
+                'link' => 'Ouvrir le périmètre fonctionnel',
+            ],
         ],
         'users' => [
             'invite' => [

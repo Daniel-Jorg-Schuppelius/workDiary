@@ -14,7 +14,6 @@ use App\Dashboard\Widget;
 use App\Enums\Privacy\DataSubjectRequestStatus;
 use App\Models\Privacy\{DataSubjectRequest, ProcessingActivity};
 use App\Models\User;
-use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 
@@ -36,9 +35,15 @@ class DataProtectionWidget extends Widget {
         return 'privacy_tip';
     }
 
+    public function requiredModule(): ?string {
+        return 'module.datenschutz';
+    }
+
     public function availableFor(User $user): bool {
-        return Gate::forUser($user)->allows('viewAny', ProcessingActivity::class)
-            && app(FeatureFlagResolver::class)->isEnabled('module.datenschutz');
+        // Modul-Gating übernimmt die Basisklasse (requiredModule); hier bleibt
+        // nur der Policy-Check ohne Admin-Bypass (dataprotection.view).
+        return parent::availableFor($user)
+            && Gate::forUser($user)->allows('viewAny', ProcessingActivity::class);
     }
 
     public function render(User $user): View|string {

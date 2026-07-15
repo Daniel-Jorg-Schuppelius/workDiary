@@ -23,6 +23,20 @@ return [
     'code' => 'partyservice',
     'label' => 'Partyservice / Catering',
     'version' => 1,
+    // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
+    // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
+    'modules_recommended' => [
+        'module.planung',
+        'module.spesen',
+        'module.vertrieb',
+        'module.documents',
+        'module.forms',
+        'module.knowledge',
+        'module.auswertungen_team',
+        'module.fuhrpark',
+        'module.lager',
+        'module.rental',
+    ],
     'classifications' => [
         'entry_type' => [
             ['code' => 'anfrage', 'label' => 'Anfrage'],

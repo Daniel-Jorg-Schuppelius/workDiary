@@ -31,6 +31,9 @@ class OnboardingChecklistResolver {
     private const STEPS = [
         ['code' => 'org.profile', 'required' => true],
         ['code' => 'org.branch_profile', 'required' => true],
+        // Feature 081 (MVP-373): bewusste Funktionsumfang-Entscheidung —
+        // optional, „Voller Umfang" bleibt gültiger Default ohne Auswahl.
+        ['code' => 'org.scope', 'required' => false],
         ['code' => 'users.invite', 'required' => false],
         ['code' => 'roles.check', 'required' => true],
         ['code' => 'classification.check', 'required' => false],
@@ -105,6 +108,7 @@ class OnboardingChecklistResolver {
         return [
             'org.profile' => filled($organization->name) && filled($organization->locale) && filled($organization->timezone),
             'org.branch_profile' => $this->organizationHasBranchProfile($organization),
+            'org.scope' => $this->organizationHasConfiguredScope($organization),
             'users.invite' => $usersInOrg->count() >= 2,
             'roles.check' => $adminExists && $operatorExists,
             'classification.check' => Classification::query()->where('organization_id', $organization->id)->exists(),
@@ -122,6 +126,23 @@ class OnboardingChecklistResolver {
                 ->where('created_at', '>=', now()->subHours(26))
                 ->exists(),
         ];
+    }
+
+    /**
+     * Funktionsumfang bewusst gewählt (Feature 081)? Erfüllt durch die Seite
+     * „Funktionsumfang" (settings.scope_configured_at) oder — bei Bestands-
+     * Organisationen — durch einen früheren Scope-Audit-Eintrag.
+     */
+    private function organizationHasConfiguredScope(Organization $organization): bool {
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+        if (filled($settings['scope_configured_at'] ?? null)) {
+            return true;
+        }
+
+        return AuditLog::query()
+            ->where('organization_id', $organization->id)
+            ->where('event', 'license.scopeConfigured')
+            ->exists();
     }
 
     private function organizationHasBranchProfile(Organization $organization): bool {

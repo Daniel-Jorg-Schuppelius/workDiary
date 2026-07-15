@@ -183,6 +183,7 @@ return [
         'platform.license.view' => 'Ver el estado de la licencia',
         'platform.license.install' => 'Instalar / subir una licencia',
         'platform.featureFlag.override' => 'Sustituir manualmente un indicador de función',
+        'organization.scope.manage' => 'Definir el alcance funcional de la organización',
         'platform.demo.create' => 'Crear un inquilino de demostración',
         'platform.demo.reset' => 'Restablecer el inquilino de demostración',
         'org.demo.seed' => 'Poblar la propia organización con datos de demostración',

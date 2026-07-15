@@ -30,6 +30,11 @@ return [
     ],
 
     'routes' => [
+        // Oberflächen-Konfiguration (Feature 081): Funktionsumfang,
+        // Menüanpassung und Funktionskatalog.
+        'admin.scope.*' => 'scope.overview',
+        'me.navigation.*' => 'navigation.customize',
+        'me.functions' => 'navigation.customize',
         // PDF-Dokumentdesign / Firmenbogen (Feature 076, Phase 28)
         'admin.document-design.*' => 'admin.document-design',
         // orgaMAX-Buchhaltung-Plugin (Feature 077, Phase 29)

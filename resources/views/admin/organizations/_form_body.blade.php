@@ -60,6 +60,19 @@
         @endforeach
     </x-select-field>
 
+    @if (! ($organization?->exists ?? false))
+        {{-- Funktionsumfang-Preset (Feature 081, MVP-373): optionaler schlanker
+             Start; ohne Auswahl bleibt der volle Lizenzumfang aktiv. --}}
+        <x-select-field name="scope_preset" :label="__('scope.title.index')">
+            <option value="">{{ __('scope.presets.all_modules') }}</option>
+            @foreach ((array) config('plans.presets', []) as $presetKey => $preset)
+                <option value="{{ $presetKey }}" @selected(old('scope_preset') === $presetKey)>
+                    {{ __((string) ($preset['label'] ?? $presetKey)) }}
+                </option>
+            @endforeach
+        </x-select-field>
+    @endif
+
     @unless ($skipStatusControls)
     <div class="fieldset">
         <label class="fieldset-label">{{ __('Aktiv') }}</label>

@@ -8404,5 +8404,14 @@
     "Auftrag nicht gefunden.": "Order not found.",
     "Keine Berechtigung für Formulare.": "No permission for forms.",
     "Formularvorlage nicht gefunden.": "Form template not found.",
-    "Bezugsobjekt nicht gefunden.": "Related record not found."
+    "Bezugsobjekt nicht gefunden.": "Related record not found.",
+    "Schlanker Start": "Lean start",
+    "Service & Handwerk": "Service & trades",
+    "Büro & Dienstleistung": "Office & services",
+    "Voller Umfang": "Full scope",
+    "Nur der Kern: Auftragsbuch, Zeiterfassung und persönliche Auswertungen — alle Zusatzmodule bleiben ausgeblendet.": "Just the core: work diary, time tracking and personal reports — all additional modules stay hidden.",
+    "Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.": "Core plus planning, travel & expenses, sales, fleet, documents, forms, knowledge base and team reports.",
+    "Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.": "Core plus kanban, planning, sales, documents, forms, knowledge base, chat and team reports.",
+    "Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.": "All licensed modules active — the default behaviour without an explicit choice.",
+    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Unknown module \":module\" in the module recommendation — profile rejected."
 }
