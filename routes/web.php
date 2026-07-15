@@ -205,6 +205,9 @@ Route::middleware('auth')->group(function () {
     Route::get('notifications', [\App\Http\Controllers\NotificationCenterController::class, 'index'])->name('notifications.index');
     Route::post('notifications/read-all', [\App\Http\Controllers\NotificationCenterController::class, 'readAll'])->name('notifications.readAll');
     Route::post('notifications/{id}/read', [\App\Http\Controllers\NotificationCenterController::class, 'read'])->name('notifications.read');
+    // destroyRead VOR destroy registrieren — sonst fängt {id} den Pfad "read" ab.
+    Route::delete('notifications/read', [\App\Http\Controllers\NotificationCenterController::class, 'destroyRead'])->name('notifications.destroyRead');
+    Route::delete('notifications/{id}', [\App\Http\Controllers\NotificationCenterController::class, 'destroy'])->name('notifications.destroy');
 
     // Persönliche Lesezeichen (Phase H)
     Route::get('account/bookmarks', [UserBookmarkController::class, 'index'])->name('bookmarks.index');

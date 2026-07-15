@@ -99,4 +99,45 @@ class NotificationCenterTest extends TestCase {
         $data = (array) $this->user->notifications()->first()?->data;
         $this->assertSame(NotificationEvent::OpenIssueAssigned->value, $data['event'] ?? null);
     }
+
+    public function test_user_can_delete_own_notification(): void {
+        $this->pushNotification($this->user);
+        $id = (string) $this->user->notifications()->first()?->id;
+
+        $this->actingAs($this->user)
+            ->delete(route('notifications.destroy', $id))
+            ->assertRedirect();
+
+        $this->assertSame(0, $this->user->notifications()->count());
+    }
+
+    public function test_user_cannot_delete_foreign_notification(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->pushNotification($other);
+        $id = (string) $other->notifications()->first()?->id;
+
+        $this->actingAs($this->user)
+            ->delete(route('notifications.destroy', $id))
+            ->assertNotFound();
+
+        $this->assertSame(1, $other->notifications()->count());
+    }
+
+    public function test_delete_read_removes_only_read_notifications_of_user(): void {
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->pushNotification($this->user); // bleibt ungelesen
+        $this->pushNotification($this->user);
+        $this->pushNotification($other);
+        $this->user->notifications()->latest('id')->first()?->markAsRead();
+        $other->notifications()->first()?->markAsRead();
+
+        $this->actingAs($this->user)
+            ->delete(route('notifications.destroyRead'))
+            ->assertRedirect();
+
+        // Nur die EIGENE gelesene ist weg; ungelesene und fremde bleiben.
+        $this->assertSame(1, $this->user->notifications()->count());
+        $this->assertSame(1, $this->user->unreadNotifications()->count());
+        $this->assertSame(1, $other->notifications()->count());
+    }
 }

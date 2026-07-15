@@ -60,14 +60,22 @@ return [
     'action' => [
         'mark_read' => 'Mark as read',
         'mark_all_read' => 'Mark all as read',
+        'delete' => 'Delete',
+        'delete_read' => 'Delete read',
         'open' => 'Open',
         'show_all' => 'Show all',
         'edit' => 'Edit',
         'save' => 'Save',
     ],
 
+    'confirm' => [
+        'delete_read' => 'Permanently delete all read notifications?',
+    ],
+
     'flash' => [
         'all_read' => 'All notifications were marked as read.',
+        'deleted' => 'Notification deleted.',
+        'read_deleted' => ':count read notification(s) deleted.',
         'rule_saved' => 'Notification rule for ":event" was saved.',
     ],
 

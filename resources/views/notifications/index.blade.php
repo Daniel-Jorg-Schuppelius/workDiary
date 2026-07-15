@@ -16,6 +16,19 @@
                 </x-icon-btn>
             </form>
         @endif
+        @if (($readCount ?? 0) > 0)
+            <form method="POST" action="{{ route('notifications.destroyRead') }}" class="inline"
+                  data-confirm-dialog
+                  data-confirm-message="{{ __('notification.confirm.delete_read') }}"
+                  data-confirm-icon="delete_sweep" data-confirm-tone="error"
+                  data-confirm-label="{{ __('notification.action.delete_read') }}">
+                @csrf
+                @method('DELETE')
+                <x-icon-btn icon="delete_sweep" tone="error" size="sm" type="submit" show-label>
+                    {{ __('notification.action.delete_read') }}
+                </x-icon-btn>
+            </form>
+        @endif
     </x-slot:actions>
 
     <div class="flex-1 min-h-0 overflow-y-auto">
@@ -61,6 +74,11 @@
                                 <x-icon-btn icon="done" size="sm" type="submit" :label="__('notification.action.mark_read')" />
                             </form>
                         @endif
+                        <form method="POST" action="{{ route('notifications.destroy', $notification->id) }}" class="inline">
+                            @csrf
+                            @method('DELETE')
+                            <x-icon-btn icon="delete" tone="error" size="sm" type="submit" :label="__('notification.action.delete')" />
+                        </form>
                     </div>
                 </li>
             @empty

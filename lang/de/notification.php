@@ -60,14 +60,22 @@ return [
     'action' => [
         'mark_read' => 'Als gelesen markieren',
         'mark_all_read' => 'Alle als gelesen markieren',
+        'delete' => 'Löschen',
+        'delete_read' => 'Gelesene löschen',
         'open' => 'Öffnen',
         'show_all' => 'Alle anzeigen',
         'edit' => 'Bearbeiten',
         'save' => 'Speichern',
     ],
 
+    'confirm' => [
+        'delete_read' => 'Alle gelesenen Benachrichtigungen endgültig löschen?',
+    ],
+
     'flash' => [
         'all_read' => 'Alle Benachrichtigungen wurden als gelesen markiert.',
+        'deleted' => 'Benachrichtigung wurde gelöscht.',
+        'read_deleted' => ':count gelesene Benachrichtigung(en) wurden gelöscht.',
         'rule_saved' => 'Benachrichtigungsregel für „:event" wurde gespeichert.',
     ],
 

@@ -60,14 +60,22 @@ return [
     'action' => [
         'mark_read' => 'Marcar como leída',
         'mark_all_read' => 'Marcar todas como leídas',
+        'delete' => 'Eliminar',
+        'delete_read' => 'Eliminar leídas',
         'open' => 'Abrir',
         'show_all' => 'Mostrar todas',
         'edit' => 'Editar',
         'save' => 'Guardar',
     ],
 
+    'confirm' => [
+        'delete_read' => '¿Eliminar definitivamente todas las notificaciones leídas?',
+    ],
+
     'flash' => [
         'all_read' => 'Todas las notificaciones se marcaron como leídas.',
+        'deleted' => 'La notificación se ha eliminado.',
+        'read_deleted' => ':count notificación(es) leída(s) eliminada(s).',
         'rule_saved' => 'La regla de notificación para «:event» se ha guardado.',
     ],
 

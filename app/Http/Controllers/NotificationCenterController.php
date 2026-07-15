@@ -31,6 +31,7 @@ class NotificationCenterController extends Controller {
         return view('notifications.index', [
             'notifications' => $notifications,
             'unreadCount' => $user->unreadNotifications()->count(),
+            'readCount' => $user->readNotifications()->count(),
         ]);
     }
 
@@ -61,5 +62,27 @@ class NotificationCenterController extends Controller {
 
         return redirect()->back(fallback: route('notifications.index'))
             ->with('success', __('notification.flash.all_read'));
+    }
+
+    /** Einzelne Benachrichtigung löschen (nur die eigene — findOrFail scoped). */
+    public function destroy(string $id): RedirectResponse {
+        /** @var User $user */
+        $user = $this->authUser();
+
+        $user->notifications()->findOrFail($id)->delete();
+
+        return redirect()->back(fallback: route('notifications.index'))
+            ->with('success', __('notification.flash.deleted'));
+    }
+
+    /** Alle bereits gelesenen Benachrichtigungen des Users löschen. */
+    public function destroyRead(): RedirectResponse {
+        /** @var User $user */
+        $user = $this->authUser();
+
+        $deleted = (int) $user->readNotifications()->delete();
+
+        return redirect()->back(fallback: route('notifications.index'))
+            ->with('success', __('notification.flash.read_deleted', ['count' => $deleted]));
     }
 }

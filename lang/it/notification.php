@@ -60,14 +60,22 @@ return [
     'action' => [
         'mark_read' => 'Segna come letta',
         'mark_all_read' => 'Segna tutte come lette',
+        'delete' => 'Elimina',
+        'delete_read' => 'Elimina lette',
         'open' => 'Apri',
         'show_all' => 'Mostra tutte',
         'edit' => 'Modifica',
         'save' => 'Salva',
     ],
 
+    'confirm' => [
+        'delete_read' => 'Eliminare definitivamente tutte le notifiche lette?',
+    ],
+
     'flash' => [
         'all_read' => 'Tutte le notifiche sono state segnate come lette.',
+        'deleted' => 'La notifica è stata eliminata.',
+        'read_deleted' => ':count notifica/notifiche lette eliminate.',
         'rule_saved' => 'La regola di notifica per «:event» è stata salvata.',
     ],
 

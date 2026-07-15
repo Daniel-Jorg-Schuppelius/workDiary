@@ -60,14 +60,22 @@ return [
     'action' => [
         'mark_read' => 'Marquer comme lu',
         'mark_all_read' => 'Tout marquer comme lu',
+        'delete' => 'Supprimer',
+        'delete_read' => 'Supprimer les lues',
         'open' => 'Ouvrir',
         'show_all' => 'Tout afficher',
         'edit' => 'Modifier',
         'save' => 'Enregistrer',
     ],
 
+    'confirm' => [
+        'delete_read' => 'Supprimer définitivement toutes les notifications lues ?',
+    ],
+
     'flash' => [
         'all_read' => 'Toutes les notifications ont été marquées comme lues.',
+        'deleted' => 'La notification a été supprimée.',
+        'read_deleted' => ':count notification(s) lue(s) supprimée(s).',
         'rule_saved' => 'La règle de notification pour « :event » a été enregistrée.',
     ],
 
