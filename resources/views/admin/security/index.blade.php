@@ -112,6 +112,21 @@
                 @else
                     <p class="text-sm italic text-base-content/50">{{ __('security.empty.integrations') }}</p>
                 @endif
+                {{-- KI-Dienste (Feature 025): aktive Provider-Verbindungen, nie Schlüssel. --}}
+                <dl class="grid grid-cols-1 gap-1 text-sm">
+                    <div class="flex items-baseline justify-between gap-2 border-t border-base-200/70 pt-1">
+                        <dt class="text-base-content/60">{{ __('ai.security.active_connections') }}</dt>
+                        <dd class="font-mono text-xs">{{ $integrations['ai_count'] ?? 0 }}</dd>
+                    </div>
+                </dl>
+                @if (! empty($integrations['ai_connections']))
+                    <div class="flex flex-wrap gap-1">
+                        @foreach ($integrations['ai_connections'] as $ai)
+                            <span class="badge badge-outline badge-sm font-mono"
+                                  title="{{ $ai['name'] }}">{{ $ai['provider'] }} ({{ $ai['local'] ? __('ai.field.local') : __('ai.field.cloud') }})</span>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </article>
     </div>

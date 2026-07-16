@@ -66,4 +66,11 @@ return [
 
     /* Ergebnis-Cache in Tagen (gleicher Input + Prompt-Version + Verbindung). */
     'cache_ttl_days' => 7,
+
+    /*
+     * Zeichen-Budget des KI-Gedächtnisses je Aufruf (MVP-401). Bei
+     * Überschreitung werden Einträge nach Ebene (Kunde > Organisation >
+     * Capability-Default), Nutzungshäufigkeit und Aktualität priorisiert.
+     */
+    'memory_budget_characters' => 4000,
 ];

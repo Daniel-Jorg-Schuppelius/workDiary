@@ -1450,6 +1450,28 @@ Route::middleware('auth')->group(function () {
             Route::delete('{connection}', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'destroy'])->name('destroy');
         });
 
+        // ── KI-Assistenz (Feature 025, MVP-400/401, module.ai) ──
+        // Gating via config/plans.routes: admin.ai.* → module.ai.
+        Route::prefix('admin/ki')->name('admin.ai.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'index'])->name('index');
+            Route::get('verbinden', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'store'])->name('store');
+            // Statische Segmente VOR dem {connection}-Wildcard.
+            Route::get('gedaechtnis', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'index'])->name('memory');
+            Route::get('gedaechtnis/neu', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'create'])->name('memory.create');
+            Route::post('gedaechtnis', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'store'])->name('memory.store');
+            Route::post('gedaechtnis/{entry}/umschalten', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'toggle'])->name('memory.toggle');
+            Route::delete('gedaechtnis/{entry}', [\App\Http\Controllers\Admin\Ai\AiMemoryController::class, 'destroy'])->name('memory.destroy');
+            Route::get('capability/{capability}', [\App\Http\Controllers\Admin\Ai\AiCapabilityController::class, 'edit'])->name('capability.edit');
+            Route::post('capability/{capability}', [\App\Http\Controllers\Admin\Ai\AiCapabilityController::class, 'update'])->name('capability.update');
+            Route::get('vorschau/{capability}', [\App\Http\Controllers\Admin\Ai\AiCapabilityController::class, 'preview'])->name('capability.preview');
+            Route::post('{connection}/pruefen', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'test'])->name('test');
+            Route::post('{connection}/sperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'block'])->name('block');
+            Route::post('{connection}/entsperren', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'unblock'])->name('unblock');
+            Route::post('{connection}/zugangsdaten', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'rotate'])->name('rotate');
+            Route::delete('{connection}', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'destroy'])->name('destroy');
+        });
+
         Route::prefix('domains')->name('domains.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Domain\DomainController::class, 'index'])->name('index');
             // Statische Segmente VOR dem {domain}-Wildcard.

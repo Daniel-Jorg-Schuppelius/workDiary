@@ -6,6 +6,7 @@ return [
         'verb' => ['formulate' => 'Formulieren', 'summarize' => 'Zusammenfassen', 'classify' => 'Klassifizieren', 'explain' => 'Erklären', 'find' => 'Finden', 'translate' => 'Übersetzen'],
         'provider' => ['anthropic' => 'Anthropic Claude', 'openai' => 'OpenAI', 'gemini' => 'Google Gemini', 'azure_openai' => 'Azure OpenAI', 'openai_compatible' => 'OpenAI-kompatibel (generisch)', 'ollama' => 'Ollama (lokal)', 'deepl' => 'DeepL', 'azure_translator' => 'Azure Translator', 'google_translate' => 'Google Cloud Translation', 'libretranslate' => 'LibreTranslate (lokal)', 'fake' => 'Test-Provider'],
         'connection_status' => ['draft' => 'Entwurf', 'active' => 'Aktiv', 'blocked' => 'Gesperrt'],
+        'memory_type' => ['glossary' => 'Glossar', 'style_rule' => 'Stil-Regel', 'example' => 'Beispielpaar'],
         'sensitivity' => ['low' => 'Niedrig', 'medium' => 'Mittel', 'high' => 'Hoch'],
     ],
     'domain' => [

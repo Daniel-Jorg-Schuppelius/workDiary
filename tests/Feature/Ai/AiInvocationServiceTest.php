@@ -19,7 +19,7 @@ use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiTextResult, ClassifyRequest, FormulateRequest};
 use App\Services\Ai\Exceptions\{AiBudgetExceededException, AiUnavailableException};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{RegistersAiCapabilities, WithOrganization};
 use Tests\Support\{FakeAiProvider, FakeAiProviderFactory};
 use Tests\TestCase;
 
@@ -30,6 +30,7 @@ use Tests\TestCase;
  */
 class AiInvocationServiceTest extends TestCase {
     use RefreshDatabase;
+    use RegistersAiCapabilities;
     use WithOrganization;
 
     private const CAPABILITY = 'test.formulate';
@@ -41,13 +42,7 @@ class AiInvocationServiceTest extends TestCase {
         $this->setUpOrganization();
         $this->fake = FakeAiProviderFactory::install();
 
-        config()->set('ai.capabilities.' . self::CAPABILITY, [
-            'verb' => 'formulate',
-            'sensitivity' => 'medium',
-            'data_classes' => ['text'],
-            'memory_scopes' => [],
-            'prompt_version' => 1,
-        ]);
+        $this->registerAiCapability(self::CAPABILITY);
     }
 
     private function service(): AiInvocationService {
@@ -117,7 +112,7 @@ class AiInvocationServiceTest extends TestCase {
         $this->setUpCapability((int) $connection->id);
 
         $this->service()->invoke($this->organization, self::CAPABILITY, $this->request());
-        config()->set('ai.capabilities.' . self::CAPABILITY . '.prompt_version', 2);
+        $this->registerAiCapability(self::CAPABILITY, ['prompt_version' => 2]);
         $second = $this->service()->invoke($this->organization, self::CAPABILITY, $this->request());
 
         $this->assertFalse($second->fromCache);
@@ -172,13 +167,7 @@ class AiInvocationServiceTest extends TestCase {
     }
 
     public function test_classification_never_returns_values_outside_catalog(): void {
-        config()->set('ai.capabilities.test.classify', [
-            'verb' => 'classify',
-            'sensitivity' => 'low',
-            'data_classes' => ['text'],
-            'memory_scopes' => [],
-            'prompt_version' => 1,
-        ]);
+        $this->registerAiCapability('test.classify', ['verb' => 'classify', 'sensitivity' => 'low']);
         $connection = $this->connection();
         AiCapabilitySetting::factory()->create([
             'organization_id' => $this->organization->id,

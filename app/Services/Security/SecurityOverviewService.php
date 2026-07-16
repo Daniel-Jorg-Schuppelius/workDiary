@@ -190,10 +190,28 @@ class SecurityOverviewService {
 
         $references = (int) ExternalReference::query()->count();
 
+        // KI-Provider-Verbindungen (Feature 025, MVP-400): keine Plugins,
+        // aber aktive externe Dienste — nur Provider/Familie/Lokalität,
+        // nie Schlüssel oder Endpunkt-Details.
+        $aiConnections = \App\Models\Ai\AiProviderConnection::query()
+            ->where('status', \App\Enums\Ai\AiConnectionStatus::Active)
+            ->orderBy('name')
+            ->get(['name', 'provider', 'family', 'is_local'])
+            ->map(static fn (\App\Models\Ai\AiProviderConnection $c): array => [
+                'name' => (string) $c->name,
+                'provider' => $c->provider->value,
+                'family' => $c->family->value,
+                'local' => (bool) $c->is_local,
+            ])
+            ->values()
+            ->all();
+
         return [
             'count' => count($plugins),
             'plugins' => $plugins,
             'references' => $references,
+            'ai_connections' => $aiConnections,
+            'ai_count' => count($aiConnections),
         ];
     }
 

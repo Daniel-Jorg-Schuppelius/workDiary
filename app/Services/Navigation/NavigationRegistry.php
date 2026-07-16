@@ -207,6 +207,7 @@ class NavigationRegistry {
             'domain-reseller.index' => 'module.domain',
             'domains.reports' => 'module.domain',
             'admin.domain-provider.index' => 'module.domain',
+            'admin.ai.index' => 'module.ai',
             'rental.index' => 'module.rental',
             'rental.calendar' => 'module.rental',
             'rental.profiles.index' => 'module.rental',
@@ -1120,6 +1121,10 @@ class NavigationRegistry {
                 // DomainReselling-Verbindungen (Feature 083): gegated via module.domain.
                 if (Gate::allows('viewAny', \App\Models\Domain\DomainProviderConnection::class)) {
                     $adminNavItems[] = ['route' => 'admin.domain-provider.index', 'label' => __('domain.title.connections'), 'icon' => 'dns', 'modal' => false, 'matches' => ['admin.domain-provider.*']];
+                }
+                // KI-Dienste (Feature 025, MVP-400): gegated via module.ai.
+                if (Gate::allows('viewAny', \App\Models\Ai\AiProviderConnection::class)) {
+                    $adminNavItems[] = ['route' => 'admin.ai.index', 'label' => __('ai.title.connections'), 'icon' => 'smart_toy', 'modal' => false, 'matches' => ['admin.ai.*']];
                 }
                 // Cloud-Backupziele (Feature 017 Phase 32): nur Plattform-Admin.
                 if (Gate::allows('viewAny', \App\Models\Backup\BackupTargetConnection::class)) {
