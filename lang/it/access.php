@@ -191,6 +191,8 @@ return [
         'platform.problemReports.manage' => 'Gestire le segnalazioni di problemi ricevute',
         'metrics.view' => 'Visualizzare le metriche operative',
         'security.view' => 'Visualizzare la panoramica di sicurezza',
+        'security.sessions.view' => 'Visualizzare le sessioni attive',
+        'security.sessions.revoke' => 'Revocare le sessioni da remoto',
         'backup.view' => 'Visualizzare lo stato di backup e ripristino',
         'backup.restoreTest.log' => 'Registrare un test di ripristino',
         'platform.support.export' => 'Genera un report di supporto',

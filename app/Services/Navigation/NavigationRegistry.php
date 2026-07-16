@@ -1183,6 +1183,9 @@ class NavigationRegistry {
                 if (Gate::allows(Permission::SecurityView->value)) {
                     $adminNavItems[] = ['route' => 'admin.security.index', 'label' => __('security.title.index'), 'icon' => 'shield_lock', 'modal' => false];
                 }
+                if (Gate::allows(Permission::SecuritySessionsView->value)) {
+                    $adminNavItems[] = ['route' => 'admin.sessions.index', 'label' => __('sessions.title.index'), 'icon' => 'devices', 'modal' => false, 'matches' => ['admin.sessions.*']];
+                }
                 if (Gate::allows(Permission::BackupView->value)) {
                     $adminNavItems[] = ['route' => 'admin.backup.status', 'label' => __('backup.title.status'), 'icon' => 'backup', 'modal' => false];
                 }

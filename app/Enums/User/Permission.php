@@ -65,6 +65,9 @@ enum Permission: string implements HasLabel {
     case MetricsView = 'metrics.view';
         // ── Admin-Sicherheitsübersicht (Feature 016) ────────────────
     case SecurityView = 'security.view';
+        // ── Sitzungsverwaltung / Fernabmeldung (Feature 085) ────────
+    case SecuritySessionsView = 'security.sessions.view';
+    case SecuritySessionsRevoke = 'security.sessions.revoke';
         // ── Backup & Restore-Status (Feature 017) ───────────────────
     case BackupView = 'backup.view';
     case BackupRestoreTestLog = 'backup.restoreTest.log';

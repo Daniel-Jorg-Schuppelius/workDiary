@@ -214,6 +214,8 @@ return [
         'platform.problemReports.manage' => 'Manage incoming problem reports',
         'metrics.view' => 'View operations metrics',
         'security.view' => 'View security overview',
+        'security.sessions.view' => 'View active sessions',
+        'security.sessions.revoke' => 'Revoke sessions remotely',
         'backup.view' => 'View backup & restore status',
         'backup.restoreTest.log' => 'Log a restore test',
         'platform.support.export' => 'Generate support report',

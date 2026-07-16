@@ -214,6 +214,8 @@ return [
         'platform.problemReports.manage' => 'Eingegangene Fehlermeldungen verwalten',
         'metrics.view' => 'Betriebsmetriken einsehen',
         'security.view' => 'Sicherheitsübersicht einsehen',
+        'security.sessions.view' => 'Angemeldete Sitzungen einsehen',
+        'security.sessions.revoke' => 'Sitzungen fernabmelden',
         'backup.view' => 'Backup- & Restore-Status einsehen',
         'backup.restoreTest.log' => 'Restore-Test protokollieren',
         'platform.support.export' => 'Supportbericht erzeugen',

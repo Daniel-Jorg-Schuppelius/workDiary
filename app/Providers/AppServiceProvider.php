@@ -282,6 +282,13 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // IP-Geolokalisierung (Feature 085): lokale .mmdb aus config/geoip.php.
+        // Ohne DB-Datei degradiert IpLocationHelper::lookup() sauber zu null.
+        \CommonToolkit\Helper\Geo\IpLocationHelper::configure([
+            'database' => config('geoip.database'),
+            'locale' => (string) config('geoip.locale', 'de'),
+        ]);
+
         // LIKE-Suche mit escapten Wildcards (`%`/`_` in Nutzereingaben wirken
         // sonst als Wildcards). Explizites ESCAPE-Zeichen '!' statt Backslash,
         // da Backslash in MySQL- und SQLite-String-Literalen unterschiedlich
