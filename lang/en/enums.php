@@ -1,6 +1,13 @@
 <?php
 
 return [
+    'ai' => [
+        'family' => ['llm' => 'Language model (LLM)', 'translation' => 'Translation'],
+        'verb' => ['formulate' => 'Formulate', 'summarize' => 'Summarize', 'classify' => 'Classify', 'explain' => 'Explain', 'find' => 'Find', 'translate' => 'Translate'],
+        'provider' => ['anthropic' => 'Anthropic Claude', 'openai' => 'OpenAI', 'gemini' => 'Google Gemini', 'azure_openai' => 'Azure OpenAI', 'openai_compatible' => 'OpenAI-compatible (generic)', 'ollama' => 'Ollama (local)', 'deepl' => 'DeepL', 'azure_translator' => 'Azure Translator', 'google_translate' => 'Google Cloud Translation', 'libretranslate' => 'LibreTranslate (local)', 'fake' => 'Test provider'],
+        'connection_status' => ['draft' => 'Draft', 'active' => 'Active', 'blocked' => 'Blocked'],
+        'sensitivity' => ['low' => 'Low', 'medium' => 'Medium', 'high' => 'High'],
+    ],
     'domain' => [
         'environment' => ['ote' => 'OT&E (test/pilot)', 'production' => 'Production'],
         'connection_status' => ['draft' => 'Draft', 'active' => 'Active', 'blocked' => 'Blocked'],

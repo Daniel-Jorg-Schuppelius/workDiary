@@ -640,6 +640,14 @@ enum Permission: string implements HasLabel {
     case DomainInvoiceView = 'domain.invoice.view';
     case DomainInvoiceDownload = 'domain.invoice.download';
 
+        // ── KI-Assistenz (Feature 025, MVP-398–401) ──
+        // manage = Provider-Verbindungen und Capability-Routing verwalten
+        // (Admin-UI folgt in MVP-400); use = KI-Vorschläge anfordern —
+        // Capability-Consumer (z. B. Feature 084) prüfen zusätzlich ihre
+        // Fachrechte.
+    case AiManage = 'ai.manage';
+    case AiUse = 'ai.use';
+
     public function label(): string {
         // Slugs enthalten Punkte — __()/trans() würde sie als verschachtelten
         // Pfad lesen; die Übersetzungen liegen flach unter `access.permission`.

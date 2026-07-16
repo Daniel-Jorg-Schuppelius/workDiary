@@ -150,6 +150,8 @@ return [
         'contracts' => 'Gestione contratti',
     ],
     'permission' => [
+        'ai.manage' => 'Gestire le connessioni ai provider di IA e il routing delle capability',
+        'ai.use' => 'Richiedere suggerimenti IA',
         'domain.provider.view' => 'Vedere connessione DomainReselling e stato',
         'domain.provider.manage' => 'Configurare/ruotare la connessione DomainReselling',
         'domain.viewAny' => 'Vedere il portafoglio dei domini',

@@ -172,6 +172,8 @@ return [
     ],
 
     'permission' => [
+        'ai.manage' => 'Manage AI provider connections and capability routing',
+        'ai.use' => 'Request AI suggestions',
         'domain.provider.view' => 'See DomainReselling connection and health',
         'domain.provider.manage' => 'Configure/rotate DomainReselling connection',
         'domain.viewAny' => 'See domain portfolio',

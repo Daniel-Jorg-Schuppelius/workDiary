@@ -172,6 +172,8 @@ return [
     ],
 
     'permission' => [
+        'ai.manage' => 'KI-Provider-Verbindungen und Capability-Routing verwalten',
+        'ai.use' => 'KI-Vorschläge anfordern',
         'domain.provider.view' => 'DomainReselling-Verbindung und Health sehen',
         'domain.provider.manage' => 'DomainReselling-Verbindung konfigurieren/rotieren',
         'domain.viewAny' => 'Domain-Portfolio sehen',
