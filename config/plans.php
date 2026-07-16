@@ -97,6 +97,7 @@ return [
             'module.asset_compliance',
             'module.contracts',
             'module.domain',
+            'module.ai',
             'protocols.signed',
             'module.sso',
         ],
@@ -116,6 +117,7 @@ return [
         'module.asset_compliance' => 'Prüfmittel & Kalibrierung',
         'module.contracts' => 'Vertragsverwaltung & Fristen',
         'module.domain' => 'Domainverwaltung & DomainReselling',
+        'module.ai' => 'KI-Assistenz',
         'module.agile_projects' => 'Agiles Projektmanagement',
         'module.helpdesk' => 'Helpdesk',
         'module.service_desk' => 'Service Desk (ITSM)',
@@ -147,6 +149,7 @@ return [
     // Nur Module mit Beschreibung gelten als konfigurierbarer Katalogeintrag.
     'descriptions' => [
         'module.kanban' => 'Aufgaben als Kanban-Board organisieren.',
+        'module.ai' => 'Optionale KI-Assistenz: Vorschläge aus konfigurierten Provider-Verbindungen (Cloud oder lokal), opt-in je Capability.',
         'module.applications' => 'Auftragsbewerbungen/Ausschreibungsakten und Personalbewerbungen mit Vertragsverhandlung.',
         'module.investments' => 'Investitionsakten mit Varianten, Budgetantrag, Freigabekette und Soll-Ist-Verfolgung.',
         'module.crisis_management' => 'Krisenakten mit Lagebild, Krisenstab, Alarmierung, Maßnahmen, Kommunikation und Übungen.',
@@ -292,6 +295,7 @@ return [
         'asset-finance.*' => 'module.asset_finance', // Feature 074 Leasing/Finanzierung/Asset-Verträge
         'asset-compliance.*' => 'module.asset_compliance', // Feature 075 Prüfmittel/Eichung/Kalibrierung
         'contracts.*' => 'module.contracts', // Welle D — Allgemeines Contract-Lifecycle-Management
+        'admin.ai.*' => 'module.ai', // Feature 025 KI-Assistenz (Admin-UI folgt in MVP-400)
         'admin.domain-provider.*' => 'module.domain', // Feature 083 Domainverwaltung/DomainReselling
         'domains.*' => 'module.domain',
         'domain-reseller.*' => 'module.domain',
