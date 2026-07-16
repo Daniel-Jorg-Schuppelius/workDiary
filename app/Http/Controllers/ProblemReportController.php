@@ -47,17 +47,24 @@ class ProblemReportController extends Controller {
         // Seite kommen statt des nackten Modal-Fragments (sonst: Text ohne CSS).
         $embedded = $request->boolean('dialog') || $request->ajax();
 
+        // Request-ID des fehlgeschlagenen Requests (von der Fehlerseite):
+        // damit zeigt der Log-Auszug die Zeilen des FEHLERS, nicht die des
+        // Melde-Requests. Format wie AssignRequestId.
+        $rid = (string) $request->query('rid', '');
+        $errorRequestId = preg_match('/^[A-Za-z0-9\-_.]{8,64}$/', $rid) === 1 ? $rid : null;
+
         return view($embedded ? 'problem-reports._form_dialog' : 'problem-reports.create', [
             'context' => [
                 'route' => substr((string) $request->query('route', ''), 0, 150),
                 'url' => substr((string) $request->query('url', ''), 0, 500),
                 'help_topic' => substr((string) $request->query('topic', ''), 0, 150),
                 'error_code' => $request->query('code') !== null ? (int) $request->query('code') : null,
+                'request_id' => $errorRequestId,
             ],
             'diagnosticsMode' => $mode,
             'diagnosticsPreview' => $mode === ProblemReportService::DIAG_MODE_NEVER
                 ? null
-                : $this->service->buildDiagnosticExcerpt(),
+                : $this->service->buildDiagnosticExcerpt($errorRequestId),
         ]);
     }
 
@@ -77,6 +84,7 @@ class ProblemReportController extends Controller {
             'context_url' => ['nullable', 'string', 'max:500'],
             'context_topic' => ['nullable', 'string', 'max:150'],
             'context_error_code' => ['nullable', 'integer'],
+            'context_request_id' => ['nullable', 'string', 'regex:/^[A-Za-z0-9\-_.]{8,64}$/'],
             'screenshots' => ['nullable', 'array', 'max:3'],
             'screenshots.*' => ['file', 'max:' . (int) Setting::get('uploads.customer_attachment_kb', 10240), 'mimes:png,jpg,jpeg,webp,pdf'],
         ]);
@@ -89,6 +97,7 @@ class ProblemReportController extends Controller {
                 'url' => $validated['context_url'] ?? null,
                 'help_topic' => $validated['context_topic'] ?? null,
                 'error_code' => $validated['context_error_code'] ?? null,
+                'request_id' => $validated['context_request_id'] ?? null,
             ],
             array_values($request->file('screenshots', [])),
         );

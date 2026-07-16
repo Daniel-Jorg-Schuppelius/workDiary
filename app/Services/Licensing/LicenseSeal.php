@@ -49,6 +49,8 @@ final class LicenseSeal {
 
     public static function flushCache(): void {
         self::$cache = null;
+        // Seal-Zustand geändert ⇒ memoisiertes Integritätsergebnis ist ungültig.
+        LicenseService::flushIntegrityCache();
     }
 
     /**

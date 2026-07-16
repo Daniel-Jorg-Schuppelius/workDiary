@@ -89,7 +89,9 @@ class TwoFactorChallengeController extends Controller {
         if (! $this->hasEmailFactor($user) || ! $this->emailOtp->canSend($user)) {
             return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
         }
-        $this->emailOtp->send($user);
+        if (! $this->emailOtp->send($user)) {
+            return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
+        }
 
         return back()->with('success', __('Code an Ihre E-Mail gesendet.'));
     }

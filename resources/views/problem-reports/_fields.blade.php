@@ -61,6 +61,9 @@
     @if ($context['error_code'] !== null)
         <input type="hidden" name="context_error_code" value="{{ $context['error_code'] }}">
     @endif
+    @if (($context['request_id'] ?? null) !== null)
+        <input type="hidden" name="context_request_id" value="{{ $context['request_id'] }}">
+    @endif
     <p class="text-xs text-base-content/70">{{ __('problemreport.hint.context') }}</p>
     <ul class="text-xs font-mono text-base-content/60 space-y-0.5">
         @if ($context['route'])<li>{{ __('problemreport.context.route') }}: {{ $context['route'] }}</li>@endif

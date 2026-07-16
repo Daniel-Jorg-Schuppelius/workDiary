@@ -24,6 +24,15 @@ class LicenseService {
     private const CACHE_KEY = 'license:current';
     private const STATUS_KEY = 'license:lastStatus';
 
+    /**
+     * Memo der Datei-Integritätsprüfung. Ohne Memo hasht jeder
+     * current()/forOrganization()-Aufruf alle versiegelten Dateien neu —
+     * der Ergebnis-Cache greift erst danach. Das TTL-Fenster begrenzt das
+     * Memo in langlaufenden Prozessen (Queue-Worker/Octane).
+     */
+    private static ?LicenseResult $integrityResult = null;
+    private static ?float $integrityCheckedAt = null;
+
     public function __construct(
         private readonly Filesystem $files,
         private readonly CacheRepository $cache,
@@ -477,6 +486,24 @@ class LicenseService {
      * App noch nicht versiegelt wurde), sonst ein Fehlerergebnis.
      */
     private function checkIntegrity(): ?LicenseResult {
+        $ttl = (int) config('license.cache_ttl', 300);
+        if ($ttl > 0 && self::$integrityCheckedAt !== null && (microtime(true) - self::$integrityCheckedAt) < $ttl) {
+            return self::$integrityResult;
+        }
+
+        $result = $this->verifySealedFiles();
+        self::$integrityResult = $result;
+        self::$integrityCheckedAt = microtime(true);
+
+        return $result;
+    }
+
+    public static function flushIntegrityCache(): void {
+        self::$integrityResult = null;
+        self::$integrityCheckedAt = null;
+    }
+
+    private function verifySealedFiles(): ?LicenseResult {
         if (! LicenseSeal::isSealed()) {
             return null;
         }

@@ -72,7 +72,9 @@
                 <x-button href="{{ url()->previous() }}" tone="ghost" size="sm" class="gap-1" icon="arrow_back">{{ __('Zurück') }}</x-button>
                 <x-button href="{{ url('/') }}" tone="primary" size="sm" class="gap-1" icon="home">{{ __('Zur Startseite') }}</x-button>
                 @if (auth()->check() && \Illuminate\Support\Facades\Route::has('problem-reports.create'))
-                    <x-button href="{{ route('problem-reports.create', ['context' => 'error', 'code' => $code ?? null]) }}" tone="warning" size="sm" class="gap-1" icon="flag">{{ __('errors.report_problem') }}</x-button>
+                    {{-- rid: Request-ID des FEHLGESCHLAGENEN Requests — nur damit findet
+                         der Diagnose-Auszug die zugehörigen Logzeilen wieder. --}}
+                    <x-button href="{{ route('problem-reports.create', ['context' => 'error', 'code' => $code ?? null, 'rid' => $requestId]) }}" tone="warning" size="sm" class="gap-1" icon="flag">{{ __('errors.report_problem') }}</x-button>
                 @endif
             </x-button-group>
         </div>

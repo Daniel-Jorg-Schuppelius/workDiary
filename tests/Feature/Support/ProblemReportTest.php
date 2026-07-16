@@ -110,6 +110,38 @@ class ProblemReportTest extends TestCase {
         $this->assertSame($user->id, $report->diagnostics_approved_by);
     }
 
+    public function test_error_request_id_flows_from_error_page_into_report(): void {
+        // Fehlerseiten-Flow: rid (Request-ID des FEHLGESCHLAGENEN Requests)
+        // muss vom Link über das Formular bis in page_context durchgereicht
+        // werden — sonst zeigt der Diagnose-Auszug die Logzeilen des
+        // Melde-Requests statt der des Fehlers.
+        $user = User::factory()->user()->create();
+        $rid = '01KXPAQN560C6FEMMS77B4D3GG';
+
+        $this->actingAs($user)
+            ->get(route('problem-reports.create', ['context' => 'error', 'code' => 500, 'rid' => $rid]))
+            ->assertOk()
+            ->assertSee('name="context_request_id"', false)
+            ->assertSee($rid);
+
+        $this->actingAs($user)->post(route('problem-reports.store'), $this->payload([
+            'context_request_id' => $rid,
+            'include_diagnostics' => '1',
+        ]));
+
+        $report = ProblemReport::query()->firstOrFail();
+        $this->assertSame($rid, $report->page_context['error_request_id']);
+    }
+
+    public function test_invalid_error_request_id_is_ignored(): void {
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->get(route('problem-reports.create', ['rid' => 'zu-kurz']))
+            ->assertOk()
+            ->assertDontSee('context_request_id');
+    }
+
     public function test_never_mode_ignores_opt_in(): void {
         \App\Support\Setting::set('support.problem_reports.diagnostics', 'never', \App\Settings\SettingScope::System);
         $user = User::factory()->user()->create();

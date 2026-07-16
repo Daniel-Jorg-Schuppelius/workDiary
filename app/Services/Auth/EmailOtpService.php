@@ -14,7 +14,8 @@ namespace App\Services\Auth;
 
 use App\Mail\TwoFactorCodeMail;
 use App\Models\User;
-use Illuminate\Support\Facades\{Cache, Hash, Mail, RateLimiter};
+use Illuminate\Support\Facades\{Cache, Hash, Log, Mail, RateLimiter};
+use Throwable;
 
 /**
  * E-Mail-Einmalcode als zweiter Faktor. Der Code wird nur GEHASHT im Cache
@@ -43,8 +44,12 @@ class EmailOtpService {
         return '2fa:email:cd:' . $user->getKey();
     }
 
-    /** Erzeugt einen 6-stelligen Code, hasht ihn in den Cache und mailt ihn. */
-    public function send(User $user): void {
+    /**
+     * Erzeugt einen 6-stelligen Code, hasht ihn in den Cache und mailt ihn.
+     * false bei Versandfehler (geloggt) — der synchrone SMTP-Transport darf
+     * die 2FA-Seiten nie mit einem 500er abbrechen.
+     */
+    public function send(User $user): bool {
         // Missbrauch begrenzen: 5/Stunde UND mindestens 30s zwischen zwei Versänden.
         RateLimiter::hit($this->hourKey($user), 3600);
         RateLimiter::hit($this->cooldownKey($user), self::RESEND_COOLDOWN);
@@ -54,7 +59,18 @@ class EmailOtpService {
         // Fehlversuchszähler für diesen Code zurücksetzen.
         Cache::put($this->attemptsKey($user), 0, self::TTL_SECONDS);
 
-        Mail::to($user->email)->send(new TwoFactorCodeMail($code, (int) ceil(self::TTL_SECONDS / 60)));
+        try {
+            Mail::to($user->email)->send(new TwoFactorCodeMail($code, (int) ceil(self::TTL_SECONDS / 60)));
+        } catch (Throwable $e) {
+            Log::error('2FA-E-Mail-Code konnte nicht versendet werden.', [
+                'user_id' => $user->getKey(),
+                'exception' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     public function canSend(User $user): bool {

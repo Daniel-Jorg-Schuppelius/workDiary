@@ -129,7 +129,9 @@ class TwoFactorController extends Controller {
         if (! $this->emailOtp->canSend($user)) {
             return back()->withErrors(['email_code' => __('Zu viele Anfragen. Bitte später erneut versuchen.')]);
         }
-        $this->emailOtp->send($user);
+        if (! $this->emailOtp->send($user)) {
+            return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
+        }
 
         return redirect()->route('account.2fa.show')->with('success', __('Code an Ihre E-Mail gesendet.'));
     }
@@ -140,7 +142,9 @@ class TwoFactorController extends Controller {
         if (! $this->emailOtp->canSend($user)) {
             return back()->withErrors(['email_code' => __('Zu viele Anfragen. Bitte später erneut versuchen.')]);
         }
-        $this->emailOtp->send($user);
+        if (! $this->emailOtp->send($user)) {
+            return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
+        }
 
         return back()->with('success', __('Neuer Code gesendet.'));
     }

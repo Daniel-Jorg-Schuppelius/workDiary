@@ -12,11 +12,12 @@ namespace App\Services\Backup;
 
 use App\Enums\Backup\{BackupGenerationStatus, BackupRetentionClass, BackupTargetStatus};
 use App\Models\Backup\{BackupGeneration, BackupGenerationPart, BackupTargetConnection};
+use App\Models\BackupHeartbeat;
 use App\Plugins\Contracts\BackupTarget;
 use App\Plugins\PluginManager;
 use App\Services\Backup\Exceptions\{BackupKeyMissingException, BackupPreflightException};
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\{Cache, Log};
 use SensitiveParameter;
 use Throwable;
 
@@ -283,6 +284,24 @@ class BackupRunService {
             'last_error' => null,
         ])->save();
         $connection->recordConnectionSuccess();
+        $this->recordHeartbeat($connection, $generation, $commit['manifest_sha256']);
+    }
+
+    /**
+     * Meldet den erfolgreichen Lauf an die Backup-Health (Diagnose liest
+     * `backup_heartbeats`). Best effort: darf den Lauf nie scheitern lassen.
+     */
+    private function recordHeartbeat(BackupTargetConnection $connection, BackupGeneration $generation, string $manifestSha256): void {
+        try {
+            BackupHeartbeat::query()->create([
+                'occurred_at' => now()->toImmutable(),
+                'size_bytes' => (int) $generation->cipher_size,
+                'manifest_hash' => strtolower($manifestSha256),
+                'source' => 'cloud:' . $connection->name,
+            ]);
+        } catch (Throwable $e) {
+            Log::warning('Backup-Heartbeat konnte nicht gespeichert werden.', ['exception' => $e->getMessage()]);
+        }
     }
 
     /**

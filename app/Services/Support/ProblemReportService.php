@@ -86,7 +86,9 @@ class ProblemReportService {
             'actual_behavior' => $input['actual_behavior'] ?? null,
             'contact_ok' => (bool) ($input['contact_ok'] ?? false),
             'page_context' => $this->buildContext($reporter, $clientContext),
-            'diagnostic_excerpt' => $includeDiagnostics ? $this->buildDiagnosticExcerpt() : null,
+            'diagnostic_excerpt' => $includeDiagnostics
+                ? $this->buildDiagnosticExcerpt(isset($clientContext['request_id']) ? (string) $clientContext['request_id'] : null)
+                : null,
             'diagnostics_approved_by' => $includeDiagnostics ? $reporter->id : null,
             'delivery_target' => $this->deliveryTarget(),
         ]);
@@ -136,6 +138,9 @@ class ProblemReportService {
             'request_id' => app()->bound(AssignRequestId::CONTAINER_KEY)
                 ? (string) app(AssignRequestId::CONTAINER_KEY)
                 : null,
+            // Request-ID des FEHLGESCHLAGENEN Requests (Fehlerseite → Dialog);
+            // request_id oben ist die des Melde-Requests.
+            'error_request_id' => substr((string) ($clientContext['request_id'] ?? ''), 0, 64) ?: null,
             'occurred_at' => now()->toIso8601String(),
         ];
     }
@@ -144,10 +149,12 @@ class ProblemReportService {
      * Redaktierter Diagnoseauszug (DoD: keine fachlichen Kundendaten):
      * Diagnose-Ampeln + Meldungen sowie die letzten Logzeilen zur
      * Request-ID, gefiltert durch die bestehende SupportReport-Redaktion.
+     * $requestId: ID des fehlgeschlagenen Requests (Fehlerseiten-Flow) —
+     * ohne sie greift die ID des aktuellen (Melde-)Requests.
      *
      * @return array<string, mixed>
      */
-    public function buildDiagnosticExcerpt(): array {
+    public function buildDiagnosticExcerpt(?string $requestId = null): array {
         $sections = [];
         try {
             foreach ($this->diagnostics->collect()->sections as $section) {
@@ -164,13 +171,13 @@ class ProblemReportService {
             'generated_at' => now()->toIso8601String(),
             'app_version' => (string) config('app.version'),
             'health' => $sections,
-            'log_excerpt' => $this->logExcerptForRequest(),
+            'log_excerpt' => $this->logExcerptForRequest($requestId),
         ];
     }
 
     /** @return list<string> */
-    private function logExcerptForRequest(): array {
-        $requestId = app()->bound(AssignRequestId::CONTAINER_KEY)
+    private function logExcerptForRequest(?string $requestId = null): array {
+        $requestId ??= app()->bound(AssignRequestId::CONTAINER_KEY)
             ? (string) app(AssignRequestId::CONTAINER_KEY)
             : null;
         $path = storage_path('logs/laravel.log');

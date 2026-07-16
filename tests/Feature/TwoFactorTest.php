@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Hash, Mail};
 use PragmaRX\Google2FAQRCode\Google2FA;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Tests\TestCase;
 
 class TwoFactorTest extends TestCase {
@@ -140,6 +141,20 @@ class TwoFactorTest extends TestCase {
 
         $this->assertTrue($user->twoFactorCredentials()->where('type', 'email')->whereNotNull('confirmed_at')->exists());
         $this->assertTrue($user->fresh()->hasTwoFactorEnabled());
+    }
+
+    public function test_email_otp_enable_survives_mail_transport_failure(): void {
+        // Synchroner SMTP-Versand: ein Transportfehler darf die 2FA-Seite
+        // nicht mit einem 500er abbrechen, sondern eine Fehlermeldung zeigen.
+        Mail::shouldReceive('to->send')->andThrow(new TransportException('SMTP down'));
+        $user = User::factory()->user()->create(['is_new_system' => true]);
+
+        $response = $this->actingAs($user)
+            ->from(route('account.2fa.show'))
+            ->post(route('account.2fa.email.enable'));
+
+        $response->assertRedirect(route('account.2fa.show'));
+        $response->assertSessionHasErrors('email_code');
     }
 
     public function test_login_challenge_via_email_code_authenticates(): void {
