@@ -31,6 +31,8 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string|null $external_account_id
  * @property string|null $external_account_label
+ * @property string|null $server_url
+ * @property string|null $username
  * @property string|null $access_token
  * @property string|null $refresh_token
  * @property Carbon|null $token_expires_at
@@ -63,6 +65,9 @@ class CloudDocumentConnection extends Model {
         'name',
         'external_account_id',
         'external_account_label',
+        // Nextcloud (MVP-382): Server-URL + Nutzer; App-Passwort in access_token.
+        'server_url',
+        'username',
         'access_token',
         'refresh_token',
         'token_expires_at',

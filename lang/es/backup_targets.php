@@ -27,6 +27,23 @@ return [
     'quota_unknown' => 'Uso de almacenamiento desconocido',
     'pilot_note' => 'Piloto pendiente: este adaptador aún no se ha probado contra el proveedor real.',
 
+    'nextcloud' => [
+        'connect_title' => 'Conectar Nextcloud',
+        'connect_legend' => 'Credenciales',
+        'connect_submit' => 'Conectar',
+        'field' => [
+            'name' => 'Nombre',
+            'server_url' => 'URL del servidor',
+            'server_url_help' => 'Solo HTTPS. Ejemplo: https://cloud.example.com',
+            'username' => 'Nombre de usuario',
+            'app_password' => 'Contraseña de aplicación',
+            'app_password_help' => 'Una contraseña de aplicación revocable (Ajustes › Seguridad), nunca la contraseña normal de la cuenta.',
+        ],
+        'validation' => [
+            'https_required' => 'La URL del servidor debe comenzar con https://.',
+            'unsafe_url' => 'La URL del servidor debe ser accesible públicamente (sin destino interno/privado).',
+        ],
+    ],
     'generations' => [
         'title' => 'Generaciones de copia',
         'empty' => 'Todavía no hay ninguna generación de copia.',

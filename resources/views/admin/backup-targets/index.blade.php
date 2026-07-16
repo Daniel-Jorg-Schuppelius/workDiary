@@ -26,6 +26,11 @@
             @csrf
             <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>Google Drive</x-icon-btn>
         </form>
+        {{-- Nextcloud (MVP-383): Zugangsdaten-Dialog statt OAuth-Redirect. --}}
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.backup-targets.nextcloud.connect-form')"
+                    show-label>Nextcloud</x-icon-btn>
     </x-slot:actions>
 
     @if (session('success'))
@@ -63,10 +68,18 @@
                         <x-status-badge size="xs" :tone="$connection->status->tone()">{{ $connection->status->label() }}</x-status-badge>
                         <span class="text-sm text-base-content/60">{{ $connection->external_account_label ?? __('backup_targets.account') }}</span>
                         <div class="ml-auto flex items-center gap-1.5">
-                            <form method="POST" action="{{ route('admin.backup-targets.' . ($connection->provider->value === 'microsoft' ? 'microsoft' : ($connection->provider->value === 'google' ? 'google' : 'dropbox')) . '.oauth.start', ['connection' => $connection->sqid]) }}" class="leading-none">
-                                @csrf
-                                <x-icon-btn icon="sync" tone="ghost" size="xs" type="submit" show-label>{{ __('backup_targets.reconnect') }}</x-icon-btn>
-                            </form>
+                            @if ($connection->provider === \App\Enums\Backup\BackupProvider::Nextcloud)
+                                {{-- Nextcloud: Re-Auth über den Zugangsdaten-Dialog (kein OAuth-Redirect). --}}
+                                <x-icon-btn icon="sync" tone="ghost" size="xs"
+                                            data-entry-modal-trigger
+                                            :href="route('admin.backup-targets.nextcloud.connect-form', ['connection' => $connection->sqid])"
+                                            show-label>{{ __('backup_targets.reconnect') }}</x-icon-btn>
+                            @else
+                                <form method="POST" action="{{ route('admin.backup-targets.' . ($connection->provider->value === 'microsoft' ? 'microsoft' : ($connection->provider->value === 'google' ? 'google' : 'dropbox')) . '.oauth.start', ['connection' => $connection->sqid]) }}" class="leading-none">
+                                    @csrf
+                                    <x-icon-btn icon="sync" tone="ghost" size="xs" type="submit" show-label>{{ __('backup_targets.reconnect') }}</x-icon-btn>
+                                </form>
+                            @endif
                             <a href="{{ route('admin.backup-targets.cleanup.preview', $connection) }}" class="btn btn-ghost btn-xs">{{ __('backup_targets.cleanup') }}</a>
                             <x-action-form :action="route('admin.backup-targets.disconnect', $connection)"
                                   method="DELETE"

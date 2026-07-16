@@ -147,6 +147,7 @@ return [
             'dropbox' => 'Dropbox',
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
+            'nextcloud' => 'Nextcloud',
         ],
         'connection_status' => [
             'draft' => 'Entwurf',
@@ -966,6 +967,7 @@ return [
             'dropbox' => 'Dropbox',
             'microsoft' => 'Microsoft OneDrive/SharePoint',
             'google' => 'Google Drive',
+            'nextcloud' => 'Nextcloud',
         ],
         'target_status' => [
             'draft' => 'Entwurf',

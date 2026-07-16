@@ -36,6 +36,7 @@ return [
         'connect_dropbox' => 'Collega Dropbox',
         'connect_microsoft' => 'Collega Microsoft 365',
         'connect_google' => 'Collega Google Drive',
+        'connect_nextcloud' => 'Collega Nextcloud',
         'preview' => 'Anteprima',
         'save_folder' => 'Applica cartella',
         'disconnect' => 'Scollega',
@@ -74,6 +75,29 @@ return [
             'attention' => 'Almeno una connessione Google Drive richiede attenzione (riautenticazione/bloccata).',
             'ok' => 'Connessioni Google Drive in ordine.',
             'error' => 'Controllo stato non riuscito (:class).',
+        ],
+    ],
+    'nextcloud' => [
+        'description' => 'Acquisisce documenti dalle cartelle Nextcloud monitorate (WebDAV) — con regole di cartella, prova di consegna e posta in arrivo per i casi ambigui.',
+        'health' => [
+            'no_org_context' => 'Nessun contesto organizzazione (esecuzione di sistema).',
+            'attention' => 'Almeno una connessione Nextcloud richiede attenzione (ri-autenticazione/bloccata).',
+            'ok' => 'Connessioni Nextcloud in ordine.',
+            'error' => 'Controllo di integrità non riuscito (:class).',
+        ],
+        'connect_title' => 'Collega Nextcloud',
+        'connect_legend' => 'Credenziali',
+        'connect_submit' => 'Collega',
+        'field' => [
+            'server_url' => 'URL del server',
+            'server_url_help' => 'Solo HTTPS. Esempio: https://cloud.example.com',
+            'username' => 'Nome utente',
+            'app_password' => 'Password app',
+            'app_password_help' => 'Una password app revocabile (Impostazioni › Sicurezza), mai la password normale dell’account.',
+        ],
+        'validation' => [
+            'https_required' => 'L’URL del server deve iniziare con https://.',
+            'unsafe_url' => 'L’URL del server deve essere raggiungibile pubblicamente (nessuna destinazione interna/privata).',
         ],
     ],
     'route' => [

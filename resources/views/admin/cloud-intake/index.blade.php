@@ -27,6 +27,11 @@
                 @csrf
                 <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('cloud_intake.action.connect_google') }}</x-icon-btn>
             </form>
+            {{-- Nextcloud (MVP-382): Zugangsdaten-Dialog statt OAuth-Redirect. --}}
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.cloud-intake.nextcloud.connect-form')"
+                        show-label>{{ __('cloud_intake.action.connect_nextcloud') }}</x-icon-btn>
         @endif
     </x-slot:actions>
 

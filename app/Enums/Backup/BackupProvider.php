@@ -25,6 +25,7 @@ enum BackupProvider: string implements HasLabel {
     case Dropbox = 'dropbox';
     case Microsoft = 'microsoft';
     case Google = 'google';
+    case Nextcloud = 'nextcloud';
 
     public function label(): string {
         return (string) __('enums.backup.provider.' . $this->value);
@@ -36,6 +37,7 @@ enum BackupProvider: string implements HasLabel {
             self::Dropbox => 'dropbox',
             self::Microsoft => 'msgraph',
             self::Google => 'google-drive',
+            self::Nextcloud => 'nextcloud',
         };
     }
 }

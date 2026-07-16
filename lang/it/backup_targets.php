@@ -27,6 +27,23 @@ return [
     'quota_unknown' => 'Utilizzo dello spazio sconosciuto',
     'pilot_note' => 'Pilota in sospeso: questo adattatore non è ancora stato testato contro il provider reale.',
 
+    'nextcloud' => [
+        'connect_title' => 'Collega Nextcloud',
+        'connect_legend' => 'Credenziali',
+        'connect_submit' => 'Collega',
+        'field' => [
+            'name' => 'Nome',
+            'server_url' => 'URL del server',
+            'server_url_help' => 'Solo HTTPS. Esempio: https://cloud.example.com',
+            'username' => 'Nome utente',
+            'app_password' => 'Password app',
+            'app_password_help' => 'Una password app revocabile (Impostazioni › Sicurezza), mai la password normale dell’account.',
+        ],
+        'validation' => [
+            'https_required' => 'L’URL del server deve iniziare con https://.',
+            'unsafe_url' => 'L’URL del server deve essere raggiungibile pubblicamente (nessuna destinazione interna/privata).',
+        ],
+    ],
     'generations' => [
         'title' => 'Generazioni di backup',
         'empty' => 'Nessuna generazione di backup presente.',

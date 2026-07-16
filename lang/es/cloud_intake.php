@@ -36,6 +36,7 @@ return [
         'connect_dropbox' => 'Conectar Dropbox',
         'connect_microsoft' => 'Conectar Microsoft 365',
         'connect_google' => 'Conectar Google Drive',
+        'connect_nextcloud' => 'Conectar Nextcloud',
         'preview' => 'Vista previa',
         'save_folder' => 'Aplicar carpeta',
         'disconnect' => 'Desconectar',
@@ -74,6 +75,29 @@ return [
             'attention' => 'Al menos una conexión de Google Drive necesita atención (reautenticación/bloqueada).',
             'ok' => 'Conexiones de Google Drive correctas.',
             'error' => 'La comprobación de estado falló (:class).',
+        ],
+    ],
+    'nextcloud' => [
+        'description' => 'Incorpora documentos de carpetas de Nextcloud supervisadas (WebDAV) — con reglas de carpeta, comprobante de entrega y bandeja de entrada para casos ambiguos.',
+        'health' => [
+            'no_org_context' => 'Sin contexto de organización (ejecución del sistema).',
+            'attention' => 'Al menos una conexión de Nextcloud requiere atención (reautenticación/bloqueada).',
+            'ok' => 'Conexiones de Nextcloud en orden.',
+            'error' => 'La comprobación de estado falló (:class).',
+        ],
+        'connect_title' => 'Conectar Nextcloud',
+        'connect_legend' => 'Credenciales',
+        'connect_submit' => 'Conectar',
+        'field' => [
+            'server_url' => 'URL del servidor',
+            'server_url_help' => 'Solo HTTPS. Ejemplo: https://cloud.example.com',
+            'username' => 'Nombre de usuario',
+            'app_password' => 'Contraseña de aplicación',
+            'app_password_help' => 'Una contraseña de aplicación revocable (Ajustes › Seguridad), nunca la contraseña normal de la cuenta.',
+        ],
+        'validation' => [
+            'https_required' => 'La URL del servidor debe comenzar con https://.',
+            'unsafe_url' => 'La URL del servidor debe ser accesible públicamente (sin destino interno/privado).',
         ],
     ],
     'route' => [

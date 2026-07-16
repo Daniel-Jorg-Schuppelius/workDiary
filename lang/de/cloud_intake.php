@@ -36,6 +36,7 @@ return [
         'connect_dropbox' => 'Dropbox verbinden',
         'connect_microsoft' => 'Microsoft 365 verbinden',
         'connect_google' => 'Google Drive verbinden',
+        'connect_nextcloud' => 'Nextcloud verbinden',
         'preview' => 'Vorschau',
         'save_folder' => 'Ordner übernehmen',
         'disconnect' => 'Trennen',
@@ -74,6 +75,29 @@ return [
             'attention' => 'Mindestens eine Google-Drive-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
             'ok' => 'Google-Drive-Verbindungen in Ordnung.',
             'error' => 'Health-Prüfung fehlgeschlagen (:class).',
+        ],
+    ],
+    'nextcloud' => [
+        'description' => 'Übernimmt Dokumente lesend aus überwachten Nextcloud-Ordnern (WebDAV) — mit Ordnerregeln, Übergabenachweis und Inbox für unklare Fälle.',
+        'health' => [
+            'no_org_context' => 'Kein Organisationskontext (Systemlauf).',
+            'attention' => 'Mindestens eine Nextcloud-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
+            'ok' => 'Nextcloud-Verbindungen in Ordnung.',
+            'error' => 'Health-Prüfung fehlgeschlagen (:class).',
+        ],
+        'connect_title' => 'Nextcloud verbinden',
+        'connect_legend' => 'Zugangsdaten',
+        'connect_submit' => 'Verbinden',
+        'field' => [
+            'server_url' => 'Server-URL',
+            'server_url_help' => 'Nur HTTPS. Beispiel: https://cloud.example.com',
+            'username' => 'Benutzername',
+            'app_password' => 'App-Passwort',
+            'app_password_help' => 'Ein widerrufbares App-Passwort (Einstellungen › Sicherheit), nie das reguläre Kontopasswort.',
+        ],
+        'validation' => [
+            'https_required' => 'Die Server-URL muss mit https:// beginnen.',
+            'unsafe_url' => 'Die Server-URL muss öffentlich erreichbar sein (kein internes/privates Ziel).',
         ],
     ],
     'route' => [

@@ -36,6 +36,7 @@ return [
         'connect_dropbox' => 'Connect Dropbox',
         'connect_microsoft' => 'Connect Microsoft 365',
         'connect_google' => 'Connect Google Drive',
+        'connect_nextcloud' => 'Connect Nextcloud',
         'preview' => 'Preview',
         'save_folder' => 'Apply folder',
         'disconnect' => 'Disconnect',
@@ -74,6 +75,29 @@ return [
             'attention' => 'At least one Google Drive connection needs attention (re-auth/blocked).',
             'ok' => 'Google Drive connections healthy.',
             'error' => 'Health check failed (:class).',
+        ],
+    ],
+    'nextcloud' => [
+        'description' => 'Reads documents from watched Nextcloud folders (WebDAV) — with folder rules, handover proof and an inbox for ambiguous cases.',
+        'health' => [
+            'no_org_context' => 'No organization context (system run).',
+            'attention' => 'At least one Nextcloud connection needs attention (re-auth/blocked).',
+            'ok' => 'Nextcloud connections are healthy.',
+            'error' => 'Health check failed (:class).',
+        ],
+        'connect_title' => 'Connect Nextcloud',
+        'connect_legend' => 'Credentials',
+        'connect_submit' => 'Connect',
+        'field' => [
+            'server_url' => 'Server URL',
+            'server_url_help' => 'HTTPS only. Example: https://cloud.example.com',
+            'username' => 'Username',
+            'app_password' => 'App password',
+            'app_password_help' => 'A revocable app password (Settings › Security), never the regular account password.',
+        ],
+        'validation' => [
+            'https_required' => 'The server URL must start with https://.',
+            'unsafe_url' => 'The server URL must be publicly reachable (no internal/private target).',
         ],
     ],
     'route' => [

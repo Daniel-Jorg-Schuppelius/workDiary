@@ -36,6 +36,7 @@ return [
         'connect_dropbox' => 'Connecter Dropbox',
         'connect_microsoft' => 'Connecter Microsoft 365',
         'connect_google' => 'Connecter Google Drive',
+        'connect_nextcloud' => 'Connecter Nextcloud',
         'preview' => 'Aperçu',
         'save_folder' => 'Appliquer le dossier',
         'disconnect' => 'Déconnecter',
@@ -74,6 +75,29 @@ return [
             'attention' => 'Au moins une connexion Google Drive demande attention (reconnexion/bloquée).',
             'ok' => 'Connexions Google Drive en bon état.',
             'error' => 'Vérification d’état échouée (:class).',
+        ],
+    ],
+    'nextcloud' => [
+        'description' => 'Récupère les documents des dossiers Nextcloud surveillés (WebDAV) — avec règles de dossier, preuve de remise et boîte de réception pour les cas ambigus.',
+        'health' => [
+            'no_org_context' => 'Aucun contexte d’organisation (exécution système).',
+            'attention' => 'Au moins une connexion Nextcloud nécessite une attention (ré-authentification/bloquée).',
+            'ok' => 'Connexions Nextcloud en ordre.',
+            'error' => 'Échec du contrôle de santé (:class).',
+        ],
+        'connect_title' => 'Connecter Nextcloud',
+        'connect_legend' => 'Identifiants',
+        'connect_submit' => 'Connecter',
+        'field' => [
+            'server_url' => 'URL du serveur',
+            'server_url_help' => 'HTTPS uniquement. Exemple : https://cloud.example.com',
+            'username' => 'Nom d’utilisateur',
+            'app_password' => 'Mot de passe d’application',
+            'app_password_help' => 'Un mot de passe d’application révocable (Paramètres › Sécurité), jamais le mot de passe du compte.',
+        ],
+        'validation' => [
+            'https_required' => 'L’URL du serveur doit commencer par https://.',
+            'unsafe_url' => 'L’URL du serveur doit être accessible publiquement (pas de cible interne/privée).',
         ],
     ],
     'route' => [
