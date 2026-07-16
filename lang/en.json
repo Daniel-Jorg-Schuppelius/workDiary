@@ -4593,6 +4593,7 @@
     "E-Mail-Code": "Email code",
     "E-Mail-Code aktivieren": "Enable email code",
     "E-Mail-Code als zweiter Faktor aktiviert.": "Email code enabled as second factor.",
+    "E-Mail-Versand fehlgeschlagen — Mailserver nicht erreichbar oder falsch konfiguriert. Bitte informieren Sie Ihre Administration.": "Email delivery failed — mail server unreachable or misconfigured. Please inform your administrator.",
     "Eigene Infrastruktur mitbetroffen": "Own infrastructure also affected",
     "Eigene Infrastruktur mitbetroffen – ggf. zusätzlich einen eigenen Meldefall (als Verantwortlicher) prüfen.": "Own infrastructure also affected – if applicable, additionally check a separate report case (as controller).",
     "Eigene Themes": "Custom themes",

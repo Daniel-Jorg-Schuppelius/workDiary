@@ -4593,6 +4593,7 @@
     "E-Mail-Code": "Codice e-mail",
     "E-Mail-Code aktivieren": "Attiva codice e-mail",
     "E-Mail-Code als zweiter Faktor aktiviert.": "Codice e-mail attivato come secondo fattore.",
+    "E-Mail-Versand fehlgeschlagen — Mailserver nicht erreichbar oder falsch konfiguriert. Bitte informieren Sie Ihre Administration.": "Invio dell'e-mail non riuscito — server di posta non raggiungibile o configurato in modo errato. Informare l'amministrazione.",
     "Eigene Infrastruktur mitbetroffen": "Infrastruttura propria coinvolta",
     "Eigene Infrastruktur mitbetroffen – ggf. zusätzlich einen eigenen Meldefall (als Verantwortlicher) prüfen.": "Infrastruttura propria coinvolta – se del caso, verificare inoltre un caso di segnalazione proprio (come titolare).",
     "Eigene Themes": "Temi personalizzati",

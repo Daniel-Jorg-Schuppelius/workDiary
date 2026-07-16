@@ -130,7 +130,7 @@ class TwoFactorController extends Controller {
             return back()->withErrors(['email_code' => __('Zu viele Anfragen. Bitte später erneut versuchen.')]);
         }
         if (! $this->emailOtp->send($user)) {
-            return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
+            return back()->withErrors(['email_code' => __('E-Mail-Versand fehlgeschlagen — Mailserver nicht erreichbar oder falsch konfiguriert. Bitte informieren Sie Ihre Administration.')]);
         }
 
         return redirect()->route('account.2fa.show')->with('success', __('Code an Ihre E-Mail gesendet.'));
@@ -143,7 +143,7 @@ class TwoFactorController extends Controller {
             return back()->withErrors(['email_code' => __('Zu viele Anfragen. Bitte später erneut versuchen.')]);
         }
         if (! $this->emailOtp->send($user)) {
-            return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
+            return back()->withErrors(['email_code' => __('E-Mail-Versand fehlgeschlagen — Mailserver nicht erreichbar oder falsch konfiguriert. Bitte informieren Sie Ihre Administration.')]);
         }
 
         return back()->with('success', __('Neuer Code gesendet.'));
