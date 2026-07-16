@@ -26,17 +26,11 @@ use Illuminate\Support\{Carbon, Str};
 
 /**
  * Publiziert eine terminartige Benachrichtigung als Kalendereintrag
- * (Kalender-Kanal, MVP-331, Bauturbo A11) über die A8-Publish-Infrastruktur:
- * alle aktivierten Plugins mit {@see PluginCapability::CalendarPublish}
- * (CalDAV/Microsoft 365/Google) erhalten das Element über
+ * (Kalender-Kanal, MVP-331, Bauturbo A11): alle aktivierten Plugins mit
+ * {@see PluginCapability::CalendarPublish} erhalten das Element über
  * {@see CalendarPublisher::publishCalendarItem()}.
- *
- * Idempotent: die UID ist stabil pro Subjekt ({@see uidFor()}), der Publish-
- * Zustand liegt in ExternalReference (Hash-Vergleich) — erneutes Feuern
- * aktualisiert den Eintrag statt ihn zu duplizieren; ohne Kalender-Verbindung
- * passiert still nichts. Plugin-Fehler sind über {@see PluginManager::invoke()}
- * isoliert (Aufzeichnung statt Job-Fehlschlag), Transportfehler zählen in den
- * Publish-Services auf die einheitliche Verbindungs-Gesundheit ein.
+ * Idempotent über die stabile UID ({@see uidFor()}); Plugin-Fehler sind über
+ * {@see PluginManager::invoke()} isoliert (Aufzeichnung statt Job-Fehlschlag).
  */
 class CalendarEventPublishJob implements ShouldQueue {
     use Dispatchable;
@@ -54,9 +48,8 @@ class CalendarEventPublishJob implements ShouldQueue {
     ) {}
 
     /**
-     * Stabile Kalender-UID einer Benachrichtigung: pro fachlichem Subjekt —
-     * dueSoon/overdue desselben Subjekts meinen denselben Fristen-Eintrag
-     * (Update statt zweiter Termin). Muster analog IcsFeedService::eventUid().
+     * Stabile Kalender-UID pro Subjekt: dueSoon/overdue desselben Subjekts meinen
+     * denselben Eintrag (Update statt Duplikat). Muster analog IcsFeedService::eventUid().
      */
     public static function uidFor(string $subjectType, int $subjectId): string {
         return 'notify-' . Str::slug(str_replace('\\', '-', $subjectType)) . '-' . $subjectId . '@workdiary';
@@ -84,10 +77,8 @@ class CalendarEventPublishJob implements ShouldQueue {
             referenceableId: $this->subjectId,
         );
 
-        // Org-Kontext binden: per-Org-Plugin-Schalter/Auto-Disable und die
-        // Verbindungs-Abfragen der Plugins brauchen die Ziel-Organisation.
-        // Vorherige Bindung sichern/wiederherstellen (der sync-Driver läuft
-        // INNERHALB eines Requests — Request-Kontext nicht wegwerfen).
+        // Org-Kontext binden (Plugins brauchen die Ziel-Org); vorherige Bindung
+        // sichern/wiederherstellen, da der sync-Driver im Request läuft.
         $previous = app()->bound('currentOrganization') ? app('currentOrganization') : null;
         app()->instance('currentOrganization', $organization);
 

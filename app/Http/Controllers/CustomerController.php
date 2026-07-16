@@ -19,10 +19,7 @@ use App\Plugins\PluginManager;
 use App\Services\{CustomerCsvImporter, CustomerStatsService};
 use App\Support\Setting;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
-// HINWEIS: Lexoffice-Push-Logik ist in das Plugin verlagert
-// (App\Plugins\Lexoffice\Http\Controllers\LexofficeCustomerController).
-// Die Imports oben werden nur noch für die Show-View (Anzeige der bisherigen
-// Referenzen) gebraucht.
+// HINWEIS: Lexoffice-Push liegt im Plugin (LexofficeCustomerController); Imports oben nur noch für die Show-View.
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -42,9 +39,7 @@ class CustomerController extends Controller {
         ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
             = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
-        // Lexoffice „alle pushen" nur anbieten, wenn das Plugin in der aktiven
-        // Organisation tatsächlich aktiv ist (gleicher Check wie die Aktion) —
-        // sonst erscheint der Button, läuft aber in „nicht aktiviert".
+        // Lexoffice „alle pushen" nur bei org-aktivem Plugin anbieten (gleicher Check wie die Aktion).
         $lexofficeEnabled = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID) !== null;
 
         $customers = Customer::query()
@@ -109,12 +104,10 @@ class CustomerController extends Controller {
             ->get()
             : collect();
 
-        // Lexoffice-Belege (Rechnungen/Aufträge/Angebote …) auf den globalen
-        // Header-Zeitraum eingrenzen — wie die übrigen zeitraumbezogenen Ansichten.
+        // Lexoffice-Belege auf den globalen Header-Zeitraum eingrenzen (wie die übrigen zeitraumbezogenen Ansichten).
         $lexofficeVoucherRange = $this->globalDateRange();
 
-        // Lokale Rechnungen (App\Models\Invoice) desselben Kunden im Header-Zeitraum.
-        // Zusammen mit den Lexoffice-Belegen ergibt das die Rechnungssicht.
+        // Lokale Rechnungen desselben Kunden im Header-Zeitraum (ergänzen die Lexoffice-Belege zur Rechnungssicht).
         $localInvoices = Gate::allows('viewAny', Invoice::class)
             ? Invoice::query()
             ->where('customer_id', $customer->getKey())
@@ -127,8 +120,7 @@ class CustomerController extends Controller {
             ->get()
             : collect();
 
-        // Vollwertige Kunden-Timeline (MVP-340): serverseitiger Typ-Filter +
-        // Nachlade-Fenster — Muster der Auftrags-Detailseite (DiaryController).
+        // Vollwertige Kunden-Timeline (MVP-340): serverseitiger Typ-Filter + Nachlade-Fenster (Muster wie DiaryController).
         /** @var User $viewer */
         $viewer = Auth::user();
         $timelineType = (string) request()->query('timeline_type', '');

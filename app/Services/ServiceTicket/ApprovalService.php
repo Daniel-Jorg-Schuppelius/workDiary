@@ -55,10 +55,8 @@ class ApprovalService {
             throw new \InvalidArgumentException((string) __('Delegation braucht eine Begründung.'));
         }
 
-        // Delegation (MVP-154): Empfänger ist Pflicht, org-gescopt und darf
-        // nicht der Antragsteller sein — die Selbstfreigabe-Sperre greift
-        // damit beim Delegaten erneut (und über blockedUserId auch bei
-        // dessen späterer Entscheidung).
+        // Delegation (MVP-154): Empfänger ist Pflicht, org-gescopt und ≠ Antragsteller — die Selbstfreigabe-Sperre
+        // greift beim Delegaten erneut (über blockedUserId auch bei dessen späterer Entscheidung).
         $delegate = null;
         if ($decision === 'delegated') {
             $delegate = $delegateUserId !== null
@@ -83,8 +81,7 @@ class ApprovalService {
         ]);
 
         if ($delegate !== null) {
-            // Neuer offener Schritt mit GLEICHER step-Nummer: der Delegat
-            // übernimmt die Zuständigkeit, die Kette wird nicht verlängert.
+            // Neuer offener Schritt mit gleicher step-Nummer: der Delegat übernimmt, die Kette wird nicht verlängert.
             Approval::query()->create([
                 'organization_id' => (int) $approval->organization_id,
                 'approvable_type' => $approval->approvable_type,

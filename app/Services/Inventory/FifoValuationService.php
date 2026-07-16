@@ -80,8 +80,7 @@ class FifoValuationService implements InventoryValuationStrategy {
         $qty = $this->positive($qty);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $allowNegative, $actorUserId): StockMovement {
-            // Verfügbarkeit gesperrt und innerhalb der Transaktion prüfen, damit der
-            // Schichtverbrauch nicht gegen einen veralteten Saldo läuft.
+            // Verfügbarkeit gesperrt in der Transaktion prüfen, damit der Schichtverbrauch nicht gegen veralteten Saldo läuft.
             if (! $allowNegative && bccomp($this->ledger->availableForUpdate($variant, $warehouse), $qty, self::SCALE) < 0) {
                 throw new RuntimeException('Abgang übersteigt den verfügbaren Bestand.');
             }
@@ -104,11 +103,8 @@ class FifoValuationService implements InventoryValuationStrategy {
                 $remaining = bcsub($remaining, $take, self::SCALE);
             }
 
-            // Restmenge ohne deckende Schicht (Negativbestand) zum zuletzt
-            // bekannten Einzelpreis bewerten. Wurde in DIESEM Lauf keine
-            // Schicht durchlaufen (leeres/erschöpftes Konto), den Preis der
-            // jüngsten historischen Schicht heranziehen — sonst würde der
-            // Abgang mit 0 bewertet und die Bestandsbewertung verzerrt.
+            // Restmenge ohne deckende Schicht (Negativbestand) zum zuletzt bekannten Einzelpreis bewerten;
+            // ohne durchlaufene Schicht den Preis der jüngsten historischen Schicht (sonst 0-Bewertung, Verzerrung).
             if (bccomp($remaining, '0', self::SCALE) > 0) {
                 if (bccomp($lastCost, '0', self::SCALE) === 0) {
                     $historic = StockValuationLayer::query()

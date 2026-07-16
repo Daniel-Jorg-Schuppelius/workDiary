@@ -19,10 +19,9 @@ use Illuminate\Http\{JsonResponse, Request};
 
 /**
  * Ingest-Endpunkt für Hardware-Stempelterminals (Feature 061, MVP-130).
- * Sessionlos und ohne CSRF; autorisiert über einen Gerätetoken im Pfad (nur
- * SHA-256-Hash gespeichert, Muster `location/ingest`). Ein Badge-Scan wird über
- * den {@see TerminalStampService} zu einem Anwesenheitsstempel — fremdes Token
- * und unbekannter Badge werden abgewiesen und auditiert (DoD).
+ * Sessionlos, ohne CSRF; Auth über Gerätetoken im Pfad (nur SHA-256-Hash
+ * gespeichert). Badge-Scan → Anwesenheitsstempel via {@see TerminalStampService};
+ * fremdes Token und unbekannter Badge werden abgewiesen und auditiert (DoD).
  */
 class TerminalIngestController extends Controller {
     public function __invoke(Request $request, string $token, TerminalStampService $service): JsonResponse {
@@ -39,8 +38,7 @@ class TerminalIngestController extends Controller {
         if ($organization instanceof Organization) {
             app()->instance('currentOrganization', $organization);
 
-            // Wartungsmodus (Rang 65): Stempeln läuft standardmäßig weiter;
-            // nur bei explizitem block_ingest pausiert der Ingest.
+            // Wartungsmodus (Rang 65): Ingest pausiert nur bei explizitem block_ingest.
             if ($organization->maintenanceBlocksIngest()) {
                 return response()->json(['status' => 'maintenance'], 503, ['Retry-After' => '3600']);
             }
@@ -51,9 +49,7 @@ class TerminalIngestController extends Controller {
             return response()->json(['status' => 'missing_badge'], 422);
         }
 
-        // Fachlicher Ereignistyp: work (Kommen/Gehen, Default) oder break
-        // (Pausen-Toggle). Unbekannte Werte werden auf work normalisiert
-        // (rückwärtskompatibel: alte Terminals senden das Feld nicht).
+        // Ereignistyp work (Default) oder break; unbekannt → work (alte Terminals senden das Feld nicht).
         $eventType = strtolower(trim((string) ($request->input('event_type') ?? 'work')));
         if ($eventType !== 'break') {
             $eventType = 'work';

@@ -16,10 +16,8 @@ use App\Services\Navigation\NavFocusService;
 use Illuminate\Http\{RedirectResponse, Request};
 
 /**
- * Arbeitsbereich wechseln (Feature 082, MVP-378): per Nutzer umschaltbarer
- * Fokus über die Navigation. Rein kosmetisch (D13) — es werden keine Rechte,
- * Module oder Daten berührt; nur die sichtbare Menüauswahl ändert sich.
- * Persistenz in Session (Spiegel) und users.preferences (überlebt Login/F5).
+ * Arbeitsbereich wechseln (Feature 082): per Nutzer umschaltbarer, rein
+ * kosmetischer Menü-Fokus (D13). Persistenz in Session + users.preferences.
  */
 class FocusController extends Controller {
     public function __construct(private readonly NavFocusService $focus) {}

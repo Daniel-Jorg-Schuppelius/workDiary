@@ -74,10 +74,8 @@ class ProjectObserver {
                 ])
                 ->update(['customer_id' => $newCustomerId]);
 
-            // Rechnungen mitziehen, außer freigegebene/bezahlte/stornierte (nur
-            // DRAFT). Über das Modell, damit Ausstellungs-Guard und Auditable
-            // greifen (GobdLockGuardRuleTest). Rechnungen brauchen immer einen
-            // Kunden — verliert das Projekt seinen, behalten Entwürfe den alten.
+            // Rechnungen mitziehen, nur DRAFT (freigegebene/bezahlte/stornierte nicht). Über das Modell, damit
+            // Ausstellungs-Guard + Auditable greifen (GobdLockGuardRuleTest); verliert das Projekt den Kunden, behalten Entwürfe den alten.
             if ($newCustomerId !== null) {
                 Invoice::query()
                     ->where('project_id', $project->id)

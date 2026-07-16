@@ -193,11 +193,8 @@ class DateRangeContext {
             case self::PRESET_THIS_YEAR:
                 return 'year';
         }
-        // Custom: leite Einheit aus Range ab, damit Vor/Zurück sinnvoll ist.
-        // Tag-genauer Vergleich (isSameDay), da Custom-Ranges nur als Datum
-        // (ohne Uhrzeit) in der Session liegen und endOf*-Zeiten beim Roundtrip
-        // verloren gehen. Sonst würde ein voller Monat/Jahr fälschlich als
-        // 'custom' erkannt und beim Vor/Zurück um Tage driften (Schaltjahre).
+        // Custom: Einheit aus Range ableiten (tag-genau via isSameDay, da Custom-Ranges nur als Datum
+        // in der Session liegen). Sonst würde ein voller Monat/Jahr als 'custom' driften (Schaltjahre).
         if ($from->isSameDay($to)) {
             return 'day';
         }

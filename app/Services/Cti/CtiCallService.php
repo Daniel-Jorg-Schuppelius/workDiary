@@ -53,11 +53,8 @@ class CtiCallService {
         $number = $call->counterpartyNumber();
         $customer = $this->matchCustomer((int) $connection->organization_id, $number);
 
-        // Anrufer-Pop-up an den opted-in Mitarbeiter der angerufenen Durchwahl
-        // (unabhängig davon, ob der Anrufer als Kunde erkannt wurde). Liegt vor
-        // der unmatched-Rückkehr, damit auch unbekannte Anrufer angekündigt
-        // werden; sitzt hinter dem Idempotenz-Skip, damit ein erneut
-        // zugestelltes recorded-Ereignis nicht doppelt benachrichtigt.
+        // Anrufer-Pop-up an den opted-in Mitarbeiter der Durchwahl (auch bei unbekanntem Anrufer):
+        // vor der unmatched-Rückkehr, aber hinter dem Idempotenz-Skip (kein Doppel bei Replay).
         $this->notifyCalleeOptIn($connection, $call, $number, $customer instanceof Customer ? $customer : null);
 
         if (! $customer instanceof Customer) {

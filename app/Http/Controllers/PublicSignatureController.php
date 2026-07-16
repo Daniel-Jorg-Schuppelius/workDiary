@@ -38,18 +38,14 @@ class PublicSignatureController extends Controller {
     }
 
     protected function resolve(string $token): Timesheet {
-        // TENANT-BYPASS: Public-Route ohne Auth-Middleware; magic_token muss
-        // ohne currentOrganization-Bindung auflösbar sein. Token-Entropie
-        // (Random-String) plus magic_expires_at-Check verhindern Enumeration.
+        // TENANT-BYPASS: Public-Route ohne Auth; magic_token ohne Org-Bindung aufgelöst,
+        // Enumeration verhindert durch Token-Entropie + magic_expires_at-Check.
         $timesheet = Timesheet::query()->withoutGlobalScopes()->where('magic_token', $token)->first();
         abort_if(! $timesheet, 404);
         abort_if($timesheet->magic_expires_at && $timesheet->magic_expires_at->isPast(), 410);
 
-        // Hardening: Nach erfolgreichem Token-Lookup currentOrganization an die
-        // Org des Timesheets binden, damit alle nachgelagerten Queries
-        // (SignatureService, eventgetriggerte Listeners, Audit) wieder unter
-        // dem regulären OrganizationScope laufen und nicht versehentlich
-        // fremde Mandantendaten sehen oder schreiben.
+        // Hardening: currentOrganization an die Timesheet-Org binden, damit alle Folge-Queries
+        // (SignatureService, Listener, Audit) wieder unter dem OrganizationScope laufen.
         if (! empty($timesheet->organization_id)) {
             $org = Organization::query()
                 ->withoutGlobalScopes()

@@ -43,8 +43,7 @@ class ProjectController extends Controller {
             ->with(['parent:id,name', 'customer:id,name,slug', 'foreignCustomer:id,name,color'])
             ->get();
 
-        // Hierarchische, flache Zeilenliste aufbauen: Wurzel-Projekte (oder Waisen,
-        // deren Parent nicht im gefilterten Set liegt) gefolgt von ihren Kindern.
+        // Flache Zeilenliste: Wurzeln (inkl. Waisen mit gefiltertem Parent) gefolgt von ihren Kindern.
         $byId = $projects->keyBy('id');
         $childrenByParent = $projects->groupBy(fn(Project $p): int => $p->parent_id ?? 0);
 
@@ -106,10 +105,8 @@ class ProjectController extends Controller {
     public function show(Project $project): View {
         Gate::authorize('view', $project);
 
-        // Aufträge (Tab 4): alle DiaryEntries, die das Projekt entweder als
-        // Initialprojekt haben ODER über mind. einen TimeEntry mit diesem
-        // Projekt verknüpft sind. Sortierung nach letzter Aktivität —
-        // Backlog/Deadline/Window haben kein start_at.
+        // Aufträge (Tab 4): DiaryEntries mit dem Projekt als Initialprojekt ODER via TimeEntry
+        // verknüpft; nach updated_at, da Backlog/Deadline/Window kein start_at haben.
         $entries = DiaryEntry::query()
             ->with(['user:id,name', 'tags:id,name,color'])
             ->where(function ($q) use ($project): void {
@@ -343,8 +340,7 @@ class ProjectController extends Controller {
             ];
         };
 
-        // Bei Mehrfach-Zuweisung erscheint eine Aufgabe in der Zeile jedes
-        // Bearbeiters; Aufgaben ohne Bearbeiter sammeln sich unter „Ohne Zuweisung".
+        // Bei Mehrfach-Zuweisung erscheint die Aufgabe je Bearbeiter; ohne Bearbeiter unter „Ohne Zuweisung".
         $buckets = [];
         foreach ($tasks as $t) {
             $row = $rowFor($t);

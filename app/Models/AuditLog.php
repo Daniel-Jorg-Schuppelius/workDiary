@@ -15,14 +15,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
 /**
- * Revisionssicheres Änderungsprotokoll (GoBD). Jede Zeile ist über eine
- * SHA-256-Hash-Kette mit ihrer Vorgängerzeile verbunden und append-only –
- * die Mechanik steckt im {@see HashChained}-Trait (geteilt mit
- * {@see OrganizationAuditLog}), nachweisbar über `php artisan audit:verify`.
- *
- * Der einzige Schreibpfad ist {@see static::create()} (Eloquent) – sowohl der
- * {@see \App\Models\Concerns\Auditable}-Trait als auch direkte Aufrufer gehen
- * darüber; es gibt keine rohen Inserts.
+ * Revisionssicheres Änderungsprotokoll (GoBD): SHA-256-Hash-Kette + append-only
+ * über {@see HashChained} (geteilt mit {@see OrganizationAuditLog}), prüfbar via
+ * `php artisan audit:verify`. Einziger Schreibpfad ist {@see static::create()}
+ * (keine rohen Inserts).
  *
  * @phpstan-consistent-constructor
  */
@@ -47,9 +43,8 @@ class AuditLog extends Model implements HashChainable {
     ];
 
     /**
-     * Die in den Hash eingehenden Nutzdaten dieser Zeile. Ganzzahl-IDs werden
-     * null-erhaltend zu int normalisiert, damit Schreib- und Prüfpfad über alle
-     * DB-Treiber denselben Hash erzeugen.
+     * In den Hash eingehende Nutzdaten. IDs werden null-erhaltend zu int
+     * normalisiert, damit Schreib- und Prüfpfad DB-treiberübergreifend gleich hashen.
      *
      * @return array<string, mixed>
      */
@@ -60,9 +55,7 @@ class AuditLog extends Model implements HashChainable {
             'event' => $this->getAttribute('event'),
             'auditable_type' => $this->getAttribute('auditable_type'),
             'auditable_id' => $this->nullableInt($this->getAttribute('auditable_id')),
-            // Bewusst getAttribute(): die Spalte `changes` kollidiert im
-            // Klassen-Scope mit Eloquents interner $changes-Property
-            // (Dirty-Tracking), $this->changes läse sonst [] statt der Nutzdaten.
+            // Bewusst getAttribute(): Spalte `changes` kollidiert mit Eloquents interner $changes-Property.
             'changes' => $this->getAttribute('changes'),
             'ip' => $this->getAttribute('ip'),
             'user_agent' => $this->getAttribute('user_agent'),

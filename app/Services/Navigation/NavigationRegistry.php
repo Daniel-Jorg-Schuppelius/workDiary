@@ -20,24 +20,13 @@ use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Support\Facades\{Auth, Cache, Gate, Route};
 
 /**
- * Zentrale, adressierbare Navigations-Registry (Feature 081, MVP-372).
- *
- * Einzige Quelle aller Menüstrukturen (Sidebar-Sektionen, Haupt-/Verwaltungs-/
- * Systemmenü, Schnellerstellung, Benutzermenü) — zuvor als Inline-Arrays in
- * layouts/app.blade.php. Jeder Eintrag trägt einen stabilen Schlüssel
- * (Sektionen/Untergruppen: `key`, Items: der Routenname), auf den sich die
- * Per-User-Menüanpassung (MVP-374) und der Funktionskatalog (MVP-375) beziehen.
- *
- * Sichtbarkeitsregeln (unverändert zur Blade-Vorlage, Golden-Test
- * {@see \Tests\Feature\Navigation\NavigationGoldenTest}):
- *  - Sidebar: Sektions-/Gruppen-/Item-Modul-Gating über die kuratierten Maps
- *    + Rechte über {@see NavGate::mayAccess()}.
- *  - Haupt-/Verwaltungsmenü: {@see NavGate::allows()} (Plan UND Recht).
- *  - Systemmenü: seit MVP-372 ebenfalls einheitlich über NavGate::allows()
- *    (ersetzt die früheren Inline-Modul-Checks module.theming/finance/forms
- *    und schließt bislang ungegatete Einträge wie Zuschlagsregeln ein).
- *  - Per-User-Ausblendungen (`nav_hidden`) filtern NACH Modul und Recht und
- *    sind reine Darstellung — nie Zugriffsschutz (D13).
+ * Zentrale, adressierbare Navigations-Registry: einzige Quelle aller
+ * Menüstrukturen (Sidebar, Haupt-/Verwaltungs-/Systemmenü, Schnellerstellung,
+ * Benutzermenü). Jeder Eintrag trägt einen stabilen Schlüssel für die
+ * Per-User-Menüanpassung und den Funktionskatalog. Sichtbarkeit: Modul-Gating +
+ * Rechte über {@see NavGate}, dann Per-User-Ausblendungen (nur Darstellung, D13);
+ * die Struktur hält {@see \Tests\Feature\Navigation\NavigationGoldenTest} fest.
+ * Konzept: Feature 081 (WorkDiary-Architecture).
  */
 class NavigationRegistry {
     /** Präfixe der stabilen Ausblende-Schlüssel (MVP-374). */
@@ -58,6 +47,12 @@ class NavigationRegistry {
     /**
      * Baut alle Menüstrukturen für den aktuellen Nutzer/Request.
      *
+     *
+     * @param  ?string  $focusKey  Aktiver Arbeitsbereich (Feature 082, MVP-377);
+     *                             `null` = kein Fokusfilter (heutiges Verhalten,
+     *                             Golden-Snapshot). Der Fokus greift NUR im neuen
+     *                             Modus und ausschließlich als letzter, rein
+     *                             kosmetischer Filterschritt (D13).
      * @return array{
      *     mainNavItems: list<array<string, mixed>>,
      *     manageNavItems: list<array<string, mixed>>,
@@ -68,12 +63,6 @@ class NavigationRegistry {
      *     pluginPanelItems: list<array<string, mixed>>,
      *     pluginPanelRoutes: list<string>,
      * }
-     *
-     * @param  ?string  $focusKey  Aktiver Arbeitsbereich (Feature 082, MVP-377);
-     *                             `null` = kein Fokusfilter (heutiges Verhalten,
-     *                             Golden-Snapshot). Der Fokus greift NUR im neuen
-     *                             Modus und ausschließlich als letzter, rein
-     *                             kosmetischer Filterschritt (D13).
      */
     public function build(bool $isLegacyMode, string $indexRoute, ?string $focusKey = null): array {
         $user = Auth::user();
@@ -105,16 +94,14 @@ class NavigationRegistry {
             $manageNavItems,
             fn(array $it): bool => $this->gate->allows(isset($it['route']) ? (string) $it['route'] : null)
         ));
-        // Arbeitsbereich-Filter (MVP-380): schränkt das Verwaltungsmenü auf die
-        // im aktiven Fokus gelisteten Routen ein. `null` = unverändert.
+        // Arbeitsbereich-Filter: Verwaltungsmenü auf die Fokus-Routen einschränken; null = unverändert.
         if ($focusManage !== null) {
             $manageNavItems = array_values(array_filter(
                 $manageNavItems,
                 static fn(array $it): bool => \in_array((string) ($it['route'] ?? ''), $focusManage, true)
             ));
         }
-        // MVP-372: Systemmenü einheitlich über NavGate (Plan UND Recht) statt
-        // punktueller Inline-Modul-Checks.
+        // Systemmenü einheitlich über NavGate (Plan UND Recht).
         $adminNavItems = array_values(array_filter(
             $adminNavItems,
             fn(array $it): bool => $this->gate->allows(isset($it['route']) ? (string) $it['route'] : null)
@@ -241,8 +228,7 @@ class NavigationRegistry {
             'finance.bank-accounts.index' => 'module.finance',
             'finance.datev.index' => 'module.finance',
             'finance.gobd.index' => 'module.finance',
-            // Lager & Fertigung (Untergruppe „Lager & Fertigung" in Vertrieb & Abrechnung):
-            // ohne module.lager ausblenden, statt nur per Route-Gate (423) zu sperren.
+            // Lager & Fertigung: ohne module.lager ausblenden statt nur per Route-Gate (423) sperren.
             'articles.index' => 'module.lager',
             'warehouses.index' => 'module.lager',
             'manufacturing-orders.index' => 'module.lager',
@@ -279,6 +265,7 @@ class NavigationRegistry {
      * @return list<array<string, mixed>>
      */
     public function sidebarBlueprint(string $indexRoute): array {
+        /** @var User|null $user */
         $user = Auth::user();
         $isGlobalAdmin = $user instanceof User && $user->isAdmin();
 
@@ -293,17 +280,12 @@ class NavigationRegistry {
                     'label' => __('Erfassung'),
                     'icon' => 'edit_note',
                     'items' => $this->compactItems([
-                        // „Heute" ist seit der Zusammenlegung auch die Tagesabschluss-Seite
-                        // (MVP-015) für den eigenen Tag; daher matcht der Eintrag auch day-close.*
-                        // (die day-close.*-Route bleibt für Fremdtage/Admin via ?user= erhalten).
+                        // „Heute" ist seit MVP-015 auch der Tagesabschluss (day-close.* für Fremdtage/Admin via ?user=).
                         ['route' => 'today.show', 'label' => __('Heute'), 'icon' => 'today', 'modal' => false, 'matches' => ['today.show', 'day-close.*']],
                         ['route' => $indexRoute, 'label' => __('Arbeitsliste'), 'icon' => 'list_alt', 'modal' => false, 'matches' => [$indexRoute, 'diary.*']],
                         ['route' => 'week.index', 'label' => __('Wochenansicht'), 'icon' => 'calendar_view_week', 'modal' => false, 'matches' => ['week.index']],
                         ['route' => 'kanban.index', 'label' => __('Kanban'), 'icon' => 'view_kanban', 'modal' => false, 'matches' => ['kanban.index']],
-                        // Agiles Projektmanagement (Feature 064, B3/MVP-344): Einstieg über die
-                        // org-weite Management-Übersicht (P10) — Board/Backlog sind projekt-
-                        // gebunden und dort verlinkt. Recht wie die Route (agile.report.view),
-                        // Modul-Gating via moduleByItemRoute (module.agile_projects).
+                        // Agile Übersicht (Feature 064): org-weiter Einstieg; Board/Backlog sind projektgebunden.
                         Gate::allows(Permission::AgileReportView->value)
                             ? ['route' => 'agile.reports.overview', 'label' => __('Agile Übersicht'), 'icon' => 'sprint', 'modal' => false, 'matches' => ['agile.*']]
                             : null,
@@ -315,11 +297,8 @@ class NavigationRegistry {
                     'label' => __('Wissen & Doku'),
                     'icon' => 'menu_book',
                     'items' => $this->compactItems([
-                        // Dokumente & Formulare (MVP-031/032) sind auf der Seite per Tab-Leiste
-                        // (documents/_tabs) zusammengelegt → ein Menüeintrag. Die Route zeigt auf
-                        // die jeweils zugängliche Seite (Recht UND Modul), damit der Eintrag auch
-                        // sichtbar bleibt, wenn nur eines von beiden verfügbar ist; der bestehende
-                        // Filter (Modul + mayAccess) validiert die gewählte Route.
+                        // Dokumente & Formulare per Tab zusammengelegt → ein Eintrag. Route zeigt auf die
+                        // zugängliche Seite, bleibt sichtbar, wenn nur eines von beiden (Recht/Modul) verfügbar ist.
                         [
                             'route' => (Gate::allows('viewAny', \App\Models\Document::class)
                                     && $this->features->isEnabled('module.documents'))
@@ -328,14 +307,9 @@ class NavigationRegistry {
                             'icon' => 'folder_open', 'modal' => false,
                             'matches' => ['documents.*', 'form-submissions.*'],
                         ],
-                        // Wissensbasis (Feature 011): Recht via NavGate (@can knowledge.viewAny
-                        // über KnowledgeArticle-Policy), Modul-Gating via moduleByItemRoute.
                         ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
-                        // Ideenlandkarten (Feature 054): Recht via NavGate (ideas.viewAny),
-                        // Modul-Gating via moduleByItemRoute.
                         ['route' => 'ideas.index', 'label' => __('ideas.title.index'), 'icon' => 'emoji_objects', 'modal' => false, 'matches' => ['ideas.*']],
-                        // Sicherheitsereignisse (Arbeitsschutz, Feature 013): sichtbar
-                        // für Melder (safety.report) und Register-Berechtigte (safety.viewAny/manage).
+                        // Sicherheitsereignisse: sichtbar für Melder (create) und Register-Berechtigte (viewAny).
                         (Gate::allows('viewAny', \App\Models\SafetyEvent::class)
                             || Gate::allows('create', \App\Models\SafetyEvent::class))
                             ? ['route' => 'safety-events.index', 'label' => __('safety.title.index'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['safety-events.*']]
@@ -349,16 +323,14 @@ class NavigationRegistry {
             'label' => __('Planung'),
             'collapsible' => true,
             'items' => $this->compactItems([
-                // Dienstpläne + Verfügbarkeit/Wunschdienste sind auf der Seite per
-                // Tab-Leiste zusammengelegt (schedule/_duty_tabs) → ein Menüeintrag.
+                // Dienstpläne + Verfügbarkeit/Wunschdienste per Tab zusammengelegt → ein Eintrag.
                 ['route' => 'duty-plans.index', 'label' => __('Dienstpläne'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['duty-plans.*', 'schedule.availability.*']],
-                // Schichtplan + Schichttausch ebenso (schedule/_shift_tabs).
+                // Schichtplan + Schichttausch ebenso.
                 ['route' => 'schedule.index', 'label' => __('Schichtplan'), 'icon' => 'schedule', 'modal' => false, 'matches' => ['schedule.index', 'schedule.api.*', 'schedule.shifts.*', 'schedule.types.*', 'schedule.import.*', 'schedule.suggest', 'schedule.exchanges.*']],
                 ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description', 'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                 ['route' => 'flex.index', 'label' => __('Arbeitszeitkonto'), 'icon' => 'hourglass_top', 'modal' => false, 'matches' => ['flex.*']],
                 ['route' => 'tours.index', 'label' => __('Touren'), 'icon' => 'route', 'modal' => false, 'matches' => ['tours.index', 'tours.map', 'tours.create', 'tours.show', 'tours.edit']],
-                // Leitstelle (Feature 029): Dispatch-Board + Karte. Recht über die
-                // Permission dispatch.viewAny (Feature 028), Modul-Gating module.planung.
+                // Leitstelle (Feature 029): Dispatch-Board + Karte.
                 Gate::allows(Permission::DispatchViewAny->value)
                     ? ['route' => 'dispatch.board', 'label' => __('Leitstelle'), 'icon' => 'dashboard', 'modal' => false, 'matches' => ['dispatch.board', 'dispatch.map']]
                     : null,
@@ -461,8 +433,6 @@ class NavigationRegistry {
                         ['route' => 'suppliers.index', 'label' => __('Lieferanten'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['suppliers.*']],
                         ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
                         ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
-                        // Feature 068: Auftragsbewerbungen — Recht via NavGate (tender.viewAny),
-                        // Modul-Gating via moduleByItemRoute (module.applications).
                         ['route' => 'tenders.index', 'label' => __('Ausschreibungen'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['tenders.*']],
                     ],
                 ],
@@ -471,7 +441,6 @@ class NavigationRegistry {
                     'label' => __('Personalgewinnung'),
                     'icon' => 'person_search',
                     'items' => [
-                        // Feature 068: Bewerberdaten — eigener Rechtebereich (recruiting.*).
                         ['route' => 'recruiting.requisitions.index', 'label' => __('Stellen'), 'icon' => 'work', 'modal' => false, 'matches' => ['recruiting.requisitions.*']],
                         ['route' => 'recruiting.applications.index', 'label' => __('Bewerbungen'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['recruiting.applications.*']],
                     ],
@@ -502,28 +471,16 @@ class NavigationRegistry {
                     'icon' => 'request_quote',
                     'items' => [
                         ['route' => 'invoices.index', 'label' => __('Rechnungen & Belege'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['invoices.*', 'lexoffice.vouchers.*']],
-                        // Faktura-Übergabe (Feature 045): Recht via NavGate (@can finance.viewAny
-                        // über BillingTransfer-Policy), Modul-Gating via moduleByItemRoute (module.finance).
                         ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*', 'finance.reconciliation.*', 'finance.bank-accounts.*']],
-                        // DATEV-Buchungsstapel (Feature 045, Priorität 2): Recht via NavGate
-                        // (@can finance.booking.export über DatevBookingBatch-Policy),
-                        // Modul-Gating via moduleByItemRoute (module.finance).
                         ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
-                        // GoBD-Z3-Datenträgerüberlassung (Feature 063): Recht via NavGate
-                        // (finance.gobd.* → GobdExport::viewAny = finance.gobd.export),
-                        // Modul-Gating via moduleByItemRoute (module.finance).
                         ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
-                        // Feature 069: Investitionsplanung — Recht via NavGate (investment.viewAny),
-                        // Modul-Gating via moduleByItemRoute (module.investments).
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
                     ],
                 ],
             ],
         ];
-        // Hinweisgeber/Meldestelle: nur fuer eigens Berechtigte
-        // (NICHT automatisch fuer Admins), siehe WhistleblowingCasePolicy.
-        // „Meldeportal"-Einstellungen liegen im Admin-Header-Menue.
+        // Meldestelle: nur für eigens Berechtigte (NICHT automatisch Admins), s. WhistleblowingCasePolicy.
         if (Gate::allows('viewAny', \App\Models\Whistleblowing\WhistleblowingCase::class)) {
             $sidebarSections[] = [
                 'key' => 'compliance',
@@ -534,8 +491,6 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Feature 071: Nachhaltigkeit/ESG — eigene Rechte (sustainability.viewAny),
-        // Modul-Gating via moduleByItemRoute (module.sustainability).
         if (Gate::allows('viewAny', \App\Models\Sustainability\SustainabilityAssessment::class)) {
             $sidebarSections[] = [
                 'key' => 'sustainability',
@@ -546,8 +501,6 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Feature 072: Reklamation/Gewährleistung — eigene Rechte
-        // (claim.viewAny), Modul-Gating via moduleByItemRoute (module.claims).
         if (Gate::allows('viewAny', \App\Models\Claims\ClaimCase::class)) {
             $sidebarSections[] = [
                 'key' => 'claims',
@@ -559,8 +512,6 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Feature 073: Geräte-/Maschinenverleih — eigene Rechte
-        // (rental.viewAny), Modul-Gating via moduleByItemRoute (module.rental).
         if (Gate::allows('viewAny', \App\Models\Rental\RentalCase::class)) {
             $sidebarSections[] = [
                 'key' => 'rental',
@@ -575,8 +526,6 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Feature 074: Leasing/Finanzierung — eigene Rechte
-        // (assetFinance.viewAny), Modul-Gating via moduleByItemRoute (module.asset_finance).
         if (Gate::allows('viewAny', \App\Models\AssetFinance\AssetFinanceContract::class)) {
             $sidebarSections[] = [
                 'key' => 'asset-finance',
@@ -589,8 +538,6 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Welle D (CLM): Allgemeine Vertragsverwaltung — eigene Rechte
-        // (contract.viewAny), Modul-Gating via moduleByItemRoute (module.contracts).
         if (Gate::allows('viewAny', \App\Models\Contract\Contract::class)) {
             $sidebarSections[] = [
                 'key' => 'contracts',
@@ -601,8 +548,6 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Feature 075: Prüfmittel/Eichung/Kalibrierung — eigene Rechte
-        // (assetCompliance.viewAny), Modul-Gating via moduleByItemRoute (module.asset_compliance).
         if (Gate::allows('viewAny', \App\Models\AssetCompliance\AssetComplianceProfile::class)) {
             $sidebarSections[] = [
                 'key' => 'asset-compliance',
@@ -616,8 +561,6 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Feature 070: Krisenmanagement — eigene Rechte (crisis.viewAny),
-        // Modul-Gating via moduleByItemRoute (module.crisis_management).
         if (Gate::allows('viewAny', \App\Models\Crisis\CrisisCase::class)) {
             $sidebarSections[] = [
                 'key' => 'crisis',
@@ -629,8 +572,7 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // Datenschutzmanagement: nur fuer die Rolle `datenschutz`
-        // (NICHT automatisch fuer Admins); modul-gegatet (Pro+).
+        // Datenschutz: nur Rolle `datenschutz` (NICHT automatisch Admins); Pro+.
         if (
             Gate::allows('viewAny', \App\Models\Privacy\ProcessingActivity::class)
             || Gate::allows('viewAny', \App\Models\Privacy\DataSubjectRequest::class)
@@ -664,8 +606,7 @@ class NavigationRegistry {
                 ],
             ];
         }
-        // ISMS (Feature 044): admin + geschaeftsfuehrung (isms.viewAny);
-        // modul-gegatet (NUR Enterprise, module.isms).
+        // ISMS (Feature 044): admin + Geschäftsführung; nur Enterprise (module.isms).
         if (Gate::allows('viewAny', \App\Models\Isms\IsmsRisk::class)) {
             $sidebarSections[] = [
                 'key' => 'isms',
@@ -677,9 +618,7 @@ class NavigationRegistry {
                         'label' => __('Steuerung'),
                         'icon' => 'monitoring',
                         'items' => [
-                            // Auditbereitschaft (Feature 044, MVP 1): bewusst ERSTER Eintrag des Bereichs.
                             ['route' => 'isms.dashboard', 'label' => __('isms.title.dashboard'), 'icon' => 'monitoring', 'modal' => false, 'matches' => ['isms.dashboard']],
-                            // Reifegrad-/Readiness-Assessment (Feature 044, MVP 3): begruendete Selbsteinschaetzung.
                             ['route' => 'isms.readiness', 'label' => __('isms.title.readiness'), 'icon' => 'speed', 'modal' => false, 'matches' => ['isms.readiness']],
                             ['route' => 'isms.requirements.index', 'label' => __('isms.title.requirements'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['isms.requirements.*', 'isms.statements.*']],
                             ['route' => 'isms.csf', 'label' => __('isms.title.csf'), 'icon' => 'radar', 'modal' => false, 'matches' => ['isms.csf', 'isms.csf.*']],
@@ -692,7 +631,6 @@ class NavigationRegistry {
                         'label' => __('Betrieb'),
                         'icon' => 'report',
                         'items' => [
-                            // Betrieb und Wirksamkeit (Feature 044, MVP 2): Vorfaelle, Schwachstellen, Advisories.
                             ['route' => 'isms.incidents.index', 'label' => __('isms.title.incidents'), 'icon' => 'report', 'modal' => false, 'matches' => ['isms.incidents.*']],
                             ['route' => 'isms.vulnerabilities.index', 'label' => __('isms.title.vulnerabilities'), 'icon' => 'bug_report', 'modal' => false, 'matches' => ['isms.vulnerabilities.*', 'isms.advisories.*']],
                             ['route' => 'isms.software.index', 'label' => __('isms.title.software'), 'icon' => 'apps', 'modal' => false, 'matches' => ['isms.software.*']],
@@ -703,14 +641,13 @@ class NavigationRegistry {
                         'label' => __('Lieferanten & Audit'),
                         'icon' => 'handshake',
                         'items' => $this->compactItems([
-                            // Lieferanten und Vertraege (Feature 044, MVP 2/3): Lieferantenbewertung.
                             ['route' => 'isms.suppliers.index', 'label' => __('isms.title.suppliers'), 'icon' => 'handshake', 'modal' => false, 'matches' => ['isms.suppliers.*']],
                             ['route' => 'isms.conformity.index', 'label' => __('isms.title.conformity'), 'icon' => 'workspace_premium', 'modal' => false, 'matches' => ['isms.conformity.*']],
                             ['route' => 'isms.audits.index', 'label' => __('isms.title.audits'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['isms.audits.*']],
                             ['route' => 'isms.reviews.index', 'label' => __('isms.title.reviews'), 'icon' => 'grading', 'modal' => false, 'matches' => ['isms.reviews.*']],
                             ['route' => 'isms.packages.index', 'label' => __('isms.title.packages'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['isms.packages.*']],
                             ['route' => 'isms.soa', 'label' => __('isms.title.soa'), 'icon' => 'rule_folder', 'modal' => true, 'matches' => ['isms.soa']],
-                            // Geltungsbereiche: Verwaltungsflaeche, nur isms.manage (IsmsScopePolicy).
+                            // Geltungsbereiche: nur isms.manage (IsmsScopePolicy).
                             Gate::allows('viewAny', \App\Models\Isms\IsmsScope::class)
                                 ? ['route' => 'isms.scopes.index', 'label' => __('isms.title.scopes'), 'icon' => 'travel_explore', 'modal' => false, 'matches' => ['isms.scopes.*']]
                                 : null,
@@ -939,8 +876,7 @@ class NavigationRegistry {
             if (in_array(self::KEY_CREATE . (string) ($group['key'] ?? ''), $hidden, true)) {
                 continue;
             }
-            // Ausgeblendete Sidebar-Sektion blendet die thematisch zugehörige
-            // Erstellgruppe mit aus (gleicher Schlüssel; 'master' hat keine Sektion).
+            // Ausgeblendete Sidebar-Sektion blendet die gleichnamige Erstellgruppe mit aus ('master' hat keine Sektion).
             if (in_array(self::KEY_SECTION . (string) ($group['key'] ?? ''), $hidden, true)) {
                 continue;
             }
@@ -975,7 +911,7 @@ class NavigationRegistry {
      */
     public function applyFocus(array $sections, ?array $keep): array {
         if ($keep === null) {
-            return array_values($sections);
+            return $sections;
         }
         $set = array_flip($keep);
 
@@ -1000,7 +936,7 @@ class NavigationRegistry {
                     }
                 }
                 if ($groups !== []) {
-                    $section['groups'] = array_values($groups);
+                    $section['groups'] = $groups;
                     $out[] = $section;
                 }
                 continue;
@@ -1027,7 +963,7 @@ class NavigationRegistry {
             }
         }
 
-        return array_values($out);
+        return $out;
     }
 
     /**
@@ -1042,7 +978,7 @@ class NavigationRegistry {
      */
     public function applyFocusCreateGroups(array $groups, ?array $keep): array {
         if ($keep === null) {
-            return array_values($groups);
+            return $groups;
         }
         $set = array_flip($keep);
 
@@ -1056,7 +992,7 @@ class NavigationRegistry {
             }
         }
 
-        return array_values($out);
+        return $out;
     }
 
     /**
@@ -1122,10 +1058,8 @@ class NavigationRegistry {
         $isGlobalAdmin = $user->isAdmin();
         $isPlatformAdmin = $user->isGlobalAdmin();
 
-        // Admin-/Verwaltungs-Menü: sowohl Legacy-Admins (ID ≤ 3 bzw.
-        // Namens-Fallback) als auch echte App-Admins (Spatie-Rolle
-        // Admin) erhalten Zugriff. Sonst sieht ein frisch angelegter
-        // Admin ohne Legacy-ID die Verwaltung nicht.
+        // Zugriff für Legacy-Admins (ID ≤ 3/Namens-Fallback) UND echte App-Admins (Spatie-Rolle),
+        // sonst sähe ein frisch angelegter Admin ohne Legacy-ID die Verwaltung nicht.
         $isAppAdmin = $isLegacyAdmin || $isGlobalAdmin;
         if ($isAppAdmin) {
             if ($isLegacyMode) {
@@ -1146,10 +1080,7 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization_id], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
-                // Theme-Editor: Plan-Gating (module.theming) läuft seit MVP-372
-                // einheitlich über NavGate::allows (plans.routes: admin.themes.*).
                 $adminNavItems[] = ['route' => 'admin.themes.index', 'label' => __('Themes'), 'icon' => 'format_paint', 'modal' => false, 'matches' => ['admin.themes.*']];
-                // Funktionsumfang der Organisation (Feature 081, MVP-373).
                 if (Gate::allows(Permission::OrganizationScopeManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.scope.index', 'label' => __('scope.title.index'), 'icon' => 'tune', 'modal' => false, 'matches' => ['admin.scope.*']];
                     $adminNavItems[] = ['route' => 'admin.workspaces.index', 'label' => __('scope.focus.admin.title'), 'icon' => 'dashboard_customize', 'modal' => false, 'matches' => ['admin.workspaces.*']];
@@ -1180,25 +1111,18 @@ class NavigationRegistry {
                 if (Gate::allows(Permission::CostCenterRuleViewAny->value)) {
                     $adminNavItems[] = ['route' => 'admin.cost-center-rules.index', 'label' => __('costcenter.title.rules'), 'icon' => 'account_balance', 'modal' => false];
                 }
-                // Lohnarten-Mapping + Export-Lieferung (A21 · MVP-019).
                 if (Gate::allows(Permission::WageTypeMappingViewAny->value)) {
                     $adminNavItems[] = ['route' => 'admin.wage-type-mappings.index', 'label' => __('wage_types.title.index'), 'icon' => 'badge', 'modal' => false];
                 }
-                // Feature 002: Zielwerte & Benchmarks pflegen (GF/Admin).
                 if (Gate::allows(Permission::ReportTargetManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.report-targets.index', 'label' => __('reporting.target.nav'), 'icon' => 'flag', 'modal' => false];
                 }
-                // Eigene Bankkonten (Feature 045): Verwaltung über finance.config;
-                // Plan-Gating (module.finance) seit MVP-372 einheitlich über NavGate.
                 if (Gate::allows(Permission::FinanceConfig->value)) {
                     $adminNavItems[] = ['route' => 'finance.bank-accounts.index', 'label' => __('bank.title.accounts'), 'icon' => 'account_balance', 'modal' => false];
                 }
-                // Formularvorlagen (Feature 032): Plan-Gating (module.forms)
-                // seit MVP-372 einheitlich über NavGate.
                 if (Gate::allows(Permission::FormTemplateViewAny->value)) {
                     $adminNavItems[] = ['route' => 'form-templates.index', 'label' => __('form.title.templates'), 'icon' => 'assignment', 'modal' => false];
                 }
-                // Prozedurvorlagen-Designer (Feature 026): Verwaltung wie Formularvorlagen.
                 if (Gate::allows(Permission::ProcedureTemplateView->value)) {
                     $adminNavItems[] = ['route' => 'procedures.index', 'label' => __('procedure.title.templates'), 'icon' => 'rule', 'modal' => false, 'matches' => ['procedures.*']];
                 }
@@ -1234,32 +1158,24 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::MetricsView->value)) {
                     $adminNavItems[] = ['route' => 'admin.metrics.index', 'label' => __('metrics.title.index'), 'icon' => 'monitoring', 'modal' => false];
-                    // Komponenten- und Versionsübersicht inkl. Release-SBOM (Feature 044) — gleiche Admin-Schutzstufe.
                     $adminNavItems[] = ['route' => 'admin.components.index', 'label' => __('isms.components.title'), 'icon' => 'receipt_long', 'modal' => false];
                 }
-                // Admin-Sicherheitsübersicht (Feature 016) — eigene Schutzstufe security.view.
                 if (Gate::allows(Permission::SecurityView->value)) {
                     $adminNavItems[] = ['route' => 'admin.security.index', 'label' => __('security.title.index'), 'icon' => 'shield_lock', 'modal' => false];
                 }
-                // Backup- & Restore-Status (Feature 017) — plattformweite Admin-Sicht.
                 if (Gate::allows(Permission::BackupView->value)) {
                     $adminNavItems[] = ['route' => 'admin.backup.status', 'label' => __('backup.title.status'), 'icon' => 'backup', 'modal' => false];
                 }
-                // Scheduler-Steuerung (Feature 067, MVP-176).
                 if (Gate::allows(Permission::PlatformSchedulerManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.scheduler.index', 'label' => __('scheduler.title.index'), 'icon' => 'schedule', 'modal' => false];
                 }
-                // Einstellungs-Registry (Feature 067, MVP-174).
                 if (Gate::allows(Permission::PlatformSettingsManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.settings.index', 'label' => __('settingsregistry.title.index'), 'icon' => 'tune', 'modal' => false];
                 }
-                // Wartungsfenster (Feature 022/041, MVP-055).
                 if (Gate::allows(Permission::PlatformOperationsManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.maintenance-windows.index', 'label' => __('maintenance.window.title'), 'icon' => 'engineering', 'modal' => false];
                 }
-                // Admin-Aufgabencenter (Feature 041, MVP-058). Badge = aktive Aufgaben
-                // der Org (B3/MVP-344): gecachter Count (kein Query pro Request);
-                // Invalidierung via OperationsTask::booted bei jeder Schreiboperation.
+                // Badge = aktive Aufgaben der Org: gecachter Count (kein Query/Request), Invalidierung via OperationsTask::booted.
                 if (Gate::allows(Permission::PlatformOperationsView->value)) {
                     $opsOrg = $user->organization_id;
                     $opsOpen = $opsOrg !== null
@@ -1274,11 +1190,9 @@ class NavigationRegistry {
                         : 0;
                     $adminNavItems[] = ['route' => 'admin.operations.index', 'label' => __('operations.title.index'), 'icon' => 'task_alt', 'modal' => false, 'badge' => $opsOpen];
                 }
-                // Fehlermeldungs-Inbox (Feature 041, MVP-053).
                 if (Gate::allows(Permission::ProblemReportManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.problem-reports.index', 'label' => __('problemreport.title.inbox'), 'icon' => 'flag', 'modal' => false];
                 }
-                // Temporäre Supportfreigaben (Rang 64) — Kundenadmin-Sicht.
                 if (Gate::allows(Permission::SupportGrantManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.support.grants.index', 'label' => __('Supportfreigaben'), 'icon' => 'support_agent', 'modal' => false];
                 }
@@ -1288,8 +1202,7 @@ class NavigationRegistry {
                 $adminNavItems[] = ['route' => 'admin.plugins.index', 'label' => __('Plugins'), 'icon' => 'extension', 'modal' => false];
                 $adminNavItems[] = ['route' => 'admin.plugin-errors.index', 'label' => __('Plugin-Fehler'), 'icon' => 'bug_report', 'modal' => false];
 
-                // Aktive Plugins mit eigenem Admin-Panel (adminPanel()) dynamisch
-                // ins Systemmenü aufnehmen — gruppiert unter „Plugins" (siehe adminGroups).
+                // Aktive Plugins mit eigenem Admin-Panel dynamisch ins Systemmenü („Plugins").
                 foreach (app(PluginManager::class)->enabled() as $plugin) {
                     $panel = $plugin->adminPanel();
                     if ($panel === null || empty($panel['route'])) {
@@ -1299,8 +1212,7 @@ class NavigationRegistry {
                     if ($routeDef === null) {
                         continue; // Route (noch) nicht registriert – Plugin liefert sie ggf. erst bei Aktivierung
                     }
-                    // Manche Plugins zeigen auf admin.plugins.edit/{plugin}; benötigte
-                    // Parameter mit der Plugin-ID auffüllen, sonst wirft route() beim Rendern.
+                    // admin.plugins.edit/{plugin}: Parameter mit Plugin-ID füllen, sonst wirft route() beim Rendern.
                     $params = count($routeDef->parameterNames()) > 0 ? [$plugin->id()] : [];
                     $item = [
                         'route' => (string) $panel['route'],
@@ -1318,13 +1230,10 @@ class NavigationRegistry {
             $adminNavItems[] = ['route' => 'admin.legacy-migration.index', 'label' => __('Legacy-Migration'), 'icon' => 'sync_alt', 'modal' => false];
         }
         if (! $isLegacyMode && (Gate::allows('manage-members') || $user->can(Permission::UserPayrollManage->value))) {
-            // Admin (volle Verwaltung) ODER Personalverwaltung/Geschäftsführung
-            // (Personal-/Lohndaten + Arbeitszeit-Modell) erreichen den Bereich.
+            // Admin ODER Personalverwaltung/GF (Personal-/Lohndaten + Arbeitszeit-Modell).
             $manageNavItems[] = ['route' => 'org.members.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
         } elseif (! $isLegacyMode && $isPlatformAdmin) {
-            // Plattform-Betreiber ohne Org-Kontext: Eintrag verlinkt auf die
-            // Mandanten-Verwaltung, damit er sich (oder eine Organisation)
-            // zuordnen kann, bevor Mitglieder gepflegt werden.
+            // Plattform-Betreiber ohne Org-Kontext: Link auf Mandanten-Verwaltung zur Zuordnung.
             $manageNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Mitarbeiter'), 'icon' => 'group', 'modal' => false];
         }
         if (! $isLegacyMode && $user->can(Permission::TeamViewAny->value)) {
@@ -1352,7 +1261,6 @@ class NavigationRegistry {
             $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => true];
             $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
             $userNavItems[] = ['route' => 'bookmarks.index', 'label' => __('Lesezeichen'), 'modal' => false];
-            // Feature 081 (MVP-374/375): Menü anpassen + Funktionskatalog.
             $userNavItems[] = ['route' => 'me.navigation.customize', 'label' => __('scope.nav.customize'), 'modal' => false];
             $userNavItems[] = ['route' => 'me.functions', 'label' => __('scope.nav.functions'), 'modal' => false];
         } else {

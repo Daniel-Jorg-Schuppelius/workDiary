@@ -96,10 +96,8 @@ class DatevBookingBatch extends Model {
 
     protected static function booted(): void {
         static::updating(function (self $batch): void {
-            // Unveränderlich nach Finalisierung: ein exportierter Stapel darf
-            // nicht mehr geändert werden. Der Service setzt den Status
-            // innerhalb der finalize()-Transaktion (saving auf draft → exported
-            // ist erlaubt, weil der ORIGINAL-Wert noch draft ist).
+            // Unveränderlich nach Finalisierung: ein exportierter Stapel darf nicht mehr geändert werden. Der Service
+            // setzt den Status in der finalize()-Transaktion (saving draft → exported erlaubt, weil ORIGINAL noch draft).
             $original = $batch->getOriginal('status');
             if ($original === DatevBatchStatus::Exported->value || $original === DatevBatchStatus::Exported) {
                 throw new \RuntimeException('DatevBookingBatch ist nach Finalisierung unveränderlich.');

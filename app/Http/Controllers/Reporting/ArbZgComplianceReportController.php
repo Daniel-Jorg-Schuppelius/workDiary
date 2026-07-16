@@ -28,15 +28,10 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
- * ArbZG-Compliance-Auswertung (Feature 006) auf der TATSÄCHLICH erfassten
- * Arbeitszeit (Attendance/Ist), nicht auf der Dienstplan-Vorausschau.
- *
- * Prüft je Mitarbeiter/Tag gegen die ArbZG-Schwellen aus dem Bestand
- * ({@see AttendanceComplianceChecker} → Organization::complianceSettings() +
- * BreakRuleEvaluator) und listet Verstöße (Art, Wert, Schwelle, Schweregrad).
- * Verstöße werden on-the-fly berechnet (keine Persistenz; die zugrunde
- * liegenden Attendance-Datensätze sind über die Audit-Hash-Kette ohnehin
- * revisionssicher).
+ * ArbZG-Compliance-Auswertung (Feature 006) auf der tatsächlich erfassten
+ * Arbeitszeit (Ist), nicht auf der Dienstplan-Vorausschau. Prüft je
+ * Mitarbeiter/Tag gegen die ArbZG-Schwellen ({@see AttendanceComplianceChecker});
+ * Verstöße werden on-the-fly berechnet (keine Persistenz).
  */
 class ArbZgComplianceReportController extends Controller {
     use RendersReportPdf;
@@ -58,8 +53,7 @@ class ArbZgComplianceReportController extends Controller {
         $data = $this->build($from, $to);
         $rows = $data['rows'];
         if ($kindFilter !== '') {
-            // Auf die gewählte Verstoßart eingrenzen: sowohl Zeilen als auch die
-            // darin gelisteten Befunde (und Counts) werden gefiltert.
+            // Auf die gewählte Verstoßart eingrenzen (Zeilen, Befunde und Counts).
             $filtered = [];
             foreach ($rows as $r) {
                 $findings = array_values(array_filter(
@@ -97,10 +91,9 @@ class ArbZgComplianceReportController extends Controller {
 
     /**
      * Org-Dashboard (Rang 39): KPI-Kacheln, Verstoß-Zeitreihe je Regel und
-     * Team-Aggregation (bewusst teambezogen — kein Personen-Scoring in der
-     * Übersicht, Drilldown führt in den Einzelreport). „Offen" = Befund ohne
-     * genehmigte Zeitkorrektur am betroffenen Tag; Berechnung identisch zum
-     * Einzelreport (gleiches build()).
+     * Team-Aggregation (bewusst teambezogen — kein Personen-Scoring, Drilldown
+     * führt in den Einzelreport). „Offen" = Befund ohne genehmigte Zeitkorrektur
+     * am Tag; Berechnung wie im Einzelreport (build()).
      */
     public function dashboard(): View {
         Gate::authorize(Permission::ComplianceViewAny->value);
@@ -182,18 +175,15 @@ class ArbZgComplianceReportController extends Controller {
             return ['rows' => []];
         }
 
-        // Verstöße weiterhin ON-THE-FLY berechnen (unverändertes Report-
-        // Verhalten). Die reine Ermittlung liegt jetzt im ComplianceScanService,
-        // damit Report (Anzeige) und Scan-Command (Persistenz) dieselbe Logik
-        // teilen; die Anzeige-Aufbereitung (Sqid, Korrektur-Badge) bleibt hier.
+        // Ermittlung im ComplianceScanService, damit Report (Anzeige) und Scan-Command
+        // (Persistenz) dieselbe Logik teilen; Anzeige-Aufbereitung (Sqid, Korrektur-Badge) bleibt hier.
         $findingsByUser = app(ComplianceScanService::class)->findingsForRange($org, $from, $to);
         if ($findingsByUser === []) {
             return ['rows' => []];
         }
 
-        // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne
-        // expliziten Org-Filter erschienen User ALLER Organisationen als
-        // Report-Zeilen (Tenant-Leak, Bauturbo A17).
+        // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne expliziten
+        // Org-Filter erschienen User aller Orgs als Zeilen (Tenant-Leak, Bauturbo A17).
         /** @var Collection<int, User> $users */
         $users = User::query()
             ->where('organization_id', $org->getKey())
@@ -241,10 +231,8 @@ class ArbZgComplianceReportController extends Controller {
     }
 
     /**
-     * Verstoß-Historie (Feature 006, Welle D): die persistierten
-     * {@see ComplianceFinding} mit Status-Filter und Acknowledge-Workflow.
-     * Ergänzt die on-the-fly-Ansicht um die revisionssichere Sicht samt
-     * Bearbeitungsstand.
+     * Verstoß-Historie (Feature 006, Welle D): persistierte {@see ComplianceFinding}
+     * mit Status-Filter und Acknowledge-Workflow (revisionssichere Sicht samt Bearbeitungsstand).
      */
     public function history(Request $request): View {
         Gate::authorize(Permission::ComplianceViewAny->value);
@@ -281,10 +269,8 @@ class ArbZgComplianceReportController extends Controller {
     }
 
     /**
-     * Einen Verstoß quittieren (status=acknowledged) oder bewusst akzeptieren
-     * (status=accepted, Pflicht-Begründung). Recht = bestehendes
-     * Compliance-Recht (compliance.viewAny); Org-Isolation über die
-     * Sqid-Route-Bindung (OrganizationScope). Statuswechsel wird auditiert.
+     * Verstoß quittieren (acknowledged) oder bewusst akzeptieren (accepted, Pflicht-Begründung).
+     * Recht: compliance.viewAny; Org-Isolation via Sqid-Route-Bindung; Statuswechsel wird auditiert.
      */
     public function acknowledge(Request $request, ComplianceFinding $finding, ComplianceFindingService $service): RedirectResponse {
         Gate::authorize(Permission::ComplianceViewAny->value);

@@ -74,11 +74,8 @@ class ClaimFinancialService {
         return DB::transaction(function () use ($outcome, $actor): ClaimFinancialOutcome {
             $result = null;
             if ($outcome->kind->producesInvoice()) {
-                // Beleghoheit (Feature 045): führt Lexoffice/DATEV die
-                // Rechnungen, entsteht KEIN lokaler Korrekturbeleg — beide
-                // Systeme kennen ohnehin keinen Minderungsbeleg-Typ; dort
-                // wird eine Rechnungskorrektur/Gutschrift angelegt und die
-                // Belegnummer hier nachgetragen (external_reference).
+                // Beleghoheit (Feature 045): führt Lexoffice/DATEV die Rechnungen, entsteht kein lokaler
+                // Korrekturbeleg — dort wird korrigiert, die Belegnummer hier nachgetragen (external_reference).
                 $mode = $this->billingModeFor($outcome);
                 if ($mode->isExternal()) {
                     $hint = (string) __('Beleghoheit liegt bei :system — Rechnungskorrektur dort anlegen und Belegnummer hier nachtragen.', ['system' => $mode->label()]);

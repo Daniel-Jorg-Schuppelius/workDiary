@@ -62,8 +62,7 @@ class InvoiceItem extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'service_date' => 'date',
-        // Mengen-/Preispräzision der Quellposten erhalten (Material 3 NK,
-        // km-Satz 4 NK); der Zeilenbetrag bleibt kaufmännisch 2 NK.
+        // Mengen-/Preispräzision der Quellposten erhalten (Material 3 NK, km-Satz 4 NK); Zeilenbetrag 2 NK.
         'quantity' => 'decimal:3',
         'unit_price' => 'decimal:4',
         'amount' => 'decimal:2',
@@ -74,11 +73,8 @@ class InvoiceItem extends Model {
             $i->amount = (string) round(((float) $i->quantity) * ((float) $i->unit_price), 2);
         });
 
-        // Beim Löschen einer Position werden ALLE Quellposten wieder freigegeben
-        // (Spese → Approved, Zeiten → exported=false, Material → billed=false,
-        // Tour → travel_billed=false), damit sie erneut abrechenbar sind.
-        // Muss im deleting-Hook passieren: nach dem DB-Delete hätte die Cascade
-        // die Pivot-Zuordnung (invoice_item_time_entries) bereits entfernt.
+        // Beim Löschen alle Quellposten wieder freigeben (Spese→Approved, Zeiten→exported=false,
+        // Material→billed=false, Tour→travel_billed=false). Im deleting-Hook: danach ist die Pivot-Zuordnung weg.
         static::deleting(function (InvoiceItem $i): void {
             if ($i->expense_id !== null) {
                 $expense = Expense::query()->find($i->expense_id);

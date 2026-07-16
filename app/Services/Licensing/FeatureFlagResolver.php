@@ -85,10 +85,9 @@ class FeatureFlagResolver {
 
         $map = [];
 
-        // Org-gebundene Lizenz hat Vorrang; hat die Organisation keine (nutzbare)
-        // eigene Lizenz, gilt als Fallback die installationsweite Lizenz
-        // (Rueckwaertskompatibilitaet mit globalen Lizenzen). Erst wenn BEIDE
-        // fehlen, greift produktiv hart free.
+        // Org-gebundene Lizenz hat Vorrang; ohne nutzbare eigene Lizenz greift
+        // die installationsweite (globale) als Fallback, erst wenn BEIDE fehlen
+        // produktiv hart free.
         $org = $this->currentOrg();
         $licenseResult = $org !== null ? $this->licenses->forOrganization($org) : $this->licenses->current();
         if (! $licenseResult->isUsable() && $org !== null) {
@@ -100,10 +99,9 @@ class FeatureFlagResolver {
         $payload = $licenseResult->payload;
         $usable = $payload !== null && $licenseResult->isUsable();
 
-        // Effektiver Plan (Tier): eine nutzbare Lizenz traegt das Tier. OHNE
-        // nutzbare Lizenz gilt produktiv HART free (pro/enterprise nur per Lizenz);
-        // in local/testing dient organizations.plan als Fallback, sonst verloeren
-        // Dev-Umgebung und Bestandstests ihre Module.
+        // Effektiver Plan (Tier): eine nutzbare Lizenz trägt das Tier. Ohne
+        // nutzbare Lizenz produktiv HART free; in local/testing dient
+        // organizations.plan als Fallback (sonst verlören Dev/Tests ihre Module).
         if ($usable && in_array($payload->plan, Organization::$plans, true)) {
             $plan = (string) $payload->plan;
         } elseif (! $usable && app()->environment('local', 'testing')) {

@@ -31,11 +31,9 @@ class OnboardingChecklistResolver {
     private const STEPS = [
         ['code' => 'org.profile', 'required' => true],
         ['code' => 'org.branch_profile', 'required' => true],
-        // Feature 081 (MVP-373): bewusste Funktionsumfang-Entscheidung —
-        // optional, „Voller Umfang" bleibt gültiger Default ohne Auswahl.
+        // optional (Feature 081): ohne Auswahl gilt „Voller Umfang"
         ['code' => 'org.scope', 'required' => false],
-        // Feature 082 (MVP-379): Arbeitsbereiche kuratieren — optional, ohne
-        // Auswahl bleibt „Alles anzeigen" der Default.
+        // optional (Feature 082): ohne Auswahl gilt „Alles anzeigen"
         ['code' => 'org.workspaces', 'required' => false],
         ['code' => 'users.invite', 'required' => false],
         ['code' => 'roles.check', 'required' => true],
@@ -94,8 +92,7 @@ class OnboardingChecklistResolver {
             'steps' => $steps,
             'required_done' => $requiredDone,
             'required_total' => $requiredTotal,
-            // max(1, …) statt Null-Guard: STEPS enthält strukturell immer
-            // Pflichtschritte (PHPStan beweist $requiredTotal > 0).
+            // max(1,…): STEPS enthält strukturell immer Pflichtschritte (PHPStan-Guard).
             'progress_percent' => (int) floor(($requiredDone * 100) / max(1, $requiredTotal)),
             'all_required_done' => $allRequiredDone,
         ];
@@ -133,9 +130,8 @@ class OnboardingChecklistResolver {
     }
 
     /**
-     * Funktionsumfang bewusst gewählt (Feature 081)? Erfüllt durch die Seite
-     * „Funktionsumfang" (settings.scope_configured_at) oder — bei Bestands-
-     * Organisationen — durch einen früheren Scope-Audit-Eintrag.
+     * Funktionsumfang bewusst gewählt (Feature 081)? Über settings.scope_configured_at
+     * oder — bei Bestands-Orgs — einen früheren Scope-Audit-Eintrag.
      */
     private function organizationHasConfiguredScope(Organization $organization): bool {
         $settings = is_array($organization->settings) ? $organization->settings : [];
@@ -150,8 +146,8 @@ class OnboardingChecklistResolver {
     }
 
     /**
-     * Arbeitsbereiche bewusst kuratiert (Feature 082)? Erfüllt, sobald die Seite
-     * „Arbeitsbereiche" gespeichert wurde (settings.nav_focus_*). Rein optional.
+     * Arbeitsbereiche bewusst kuratiert (Feature 082)? Sobald settings.nav_focus_*
+     * gesetzt ist. Rein optional.
      */
     private function organizationHasConfiguredWorkspaces(Organization $organization): bool {
         $settings = is_array($organization->settings) ? $organization->settings : [];
@@ -222,8 +218,7 @@ class OnboardingChecklistResolver {
         foreach ($steps as $step) {
             $existing = $existingRows->get($step['code']);
 
-            // Manuell auf "skipped" gesetzte Schritte werden nicht überschrieben,
-            // solange die Bedingung noch nicht erfüllt ist.
+            // Manuell übersprungene Schritte nicht überschreiben, solange die Bedingung offen ist.
             if ($existing instanceof OnboardingProgress && $existing->state === 'skipped' && ! $step['done']) {
                 continue;
             }

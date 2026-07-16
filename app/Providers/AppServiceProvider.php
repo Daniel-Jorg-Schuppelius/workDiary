@@ -40,12 +40,9 @@ use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider {
     public function register(): void {
-        // Wetterprovider (Feature 062): Auswahl je Organisation über das
-        // Setting `weather.provider` (Open-Meteo als Default, DWD-Open-Data
-        // amtlich; Bauturbo A7/MVP-131). Tests binden einen MockHandler-
-        // Client. Providerneutral über das Interface — Aufrufer, die org-
-        // abhängig auflösen wollen, müssen den Org-Kontext VOR der
-        // Container-Auflösung binden (vgl. FetchProtocolWeatherJob).
+        // Wetterprovider (Feature 062): je Org über Setting `weather.provider`
+        // aufgelöst. Org-Kontext muss VOR der Container-Auflösung gebunden sein
+        // (vgl. FetchProtocolWeatherJob).
         $this->app->bind(\App\Services\Weather\Contracts\WeatherProvider::class, static function (): \App\Services\Weather\Contracts\WeatherProvider {
             return match (\App\Support\Setting::get('weather.provider', 'open-meteo')) {
                 'dwd' => new \App\Services\Weather\DwdProvider(new \GuzzleHttp\Client),
@@ -89,9 +86,8 @@ class AppServiceProvider extends ServiceProvider {
                 },
             ));
 
-            // Bewerbungen (Feature 068, MVP-192): Löschvormerkung steht am
-            // Datensatz (retention_until); der Scan schlägt Anonymisierung
-            // vor — purge anonymisiert (Kennzahlen bleiben, PII verschwindet).
+            // Bewerbungen (Feature 068, MVP-192): purge anonymisiert
+            // (Kennzahlen bleiben, PII verschwindet).
             $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
                 area: 'applications',
                 modelClass: \App\Models\Applications\JobApplication::class,
@@ -180,9 +176,8 @@ class AppServiceProvider extends ServiceProvider {
             };
         });
 
-        // Web-Installer: EnvWriter/InstallationManager mit Default-Pfaden binden,
-        // damit Middleware und Controller sie auflösen können. Tests können diese
-        // Bindings auf temporäre Pfade umbiegen.
+        // Web-Installer: EnvWriter/InstallationManager mit Default-Pfaden binden;
+        // Tests biegen die Bindings auf temporäre Pfade um.
         $this->app->singleton(EnvWriter::class, static fn(): EnvWriter => EnvWriter::forApp());
         $this->app->singleton(InstallationManager::class, function (Application $app): InstallationManager {
             return new InstallationManager($app->make(EnvWriter::class));
@@ -287,11 +282,10 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
-        // LIKE-Suche mit escapten Wildcards: `%`/`_` in Nutzereingaben wirken
-        // sonst als Wildcards (Suche nach "%" matcht alles). Explizites
-        // ESCAPE-Zeichen '!' statt Backslash, weil Backslash in MySQL- und
-        // SQLite-String-Literalen unterschiedlich behandelt wird (die frühere
-        // str_replace-Variante war auf SQLite wirkungslos).
+        // LIKE-Suche mit escapten Wildcards (`%`/`_` in Nutzereingaben wirken
+        // sonst als Wildcards). Explizites ESCAPE-Zeichen '!' statt Backslash,
+        // da Backslash in MySQL- und SQLite-String-Literalen unterschiedlich
+        // behandelt wird.
         \Illuminate\Database\Query\Builder::macro('whereLikeEscaped', function (string $column, string $term, string $side = 'both', string $boolean = 'and') {
             /** @var \Illuminate\Database\Query\Builder $this */
             $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
@@ -301,10 +295,9 @@ class AppServiceProvider extends ServiceProvider {
                 default => '%' . $escaped . '%',
             };
 
-            // $column wird über die Grammar gequotet (injection-sicher), der
-            // Suchbegriff läuft als Bindung. PHPStan kann die literal-string-
-            // Eigenschaft nach dem Laufzeit-Quoting nicht beweisen (gleiches
-            // Muster wie Integration/Match/ExactField).
+            // $column über die Grammar gequotet (injection-sicher), Suchbegriff
+            // als Bindung. PHPStan kann die literal-string-Eigenschaft nach dem
+            // Laufzeit-Quoting nicht beweisen.
             // @phpstan-ignore argument.type
             return $this->whereRaw($this->grammar->wrap($column) . " like ? escape '!'", [$pattern], $boolean);
         });
@@ -314,14 +307,10 @@ class AppServiceProvider extends ServiceProvider {
         });
 
         // Mandanten-Hygiene im langlebigen Queue-Worker (Whitebox 2026-07-10,
-        // J1/J2): Jobs wie FetchProtocolWeather/ProcessLocationBatch binden
-        // 'currentOrganization' und würden es sonst in den NÄCHSTEN Job
-        // desselben Workers verschleppen — org-gescopte Nachlade-Queries
-        // filtern dann still auf die falsche Org (Import hängt, Sync
-        // übersprungen, Setting::get liest fremde Settings). Jeder Job
-        // startet deshalb mit sauberem Container. Der sync-Driver läuft
-        // INNERHALB eines Requests — dort darf der Request-Kontext nicht
-        // weggeworfen werden.
+        // J1/J2): Jeder Job startet mit sauberem Container, sonst verschleppt
+        // ein gebundenes 'currentOrganization' in den nächsten Job (org-gescopte
+        // Queries filtern still auf die falsche Org). Der sync-Driver läuft
+        // INNERHALB eines Requests — dort bleibt der Request-Kontext erhalten.
         \Illuminate\Support\Facades\Queue::before(static function (\Illuminate\Queue\Events\JobProcessing $event): void {
             if ($event->connectionName === 'sync') {
                 return;
@@ -329,9 +318,8 @@ class AppServiceProvider extends ServiceProvider {
             app()->forgetInstance('currentOrganization');
         });
 
-        // Queue-Worker-Heartbeat (Feature 067, MVP-177-Vorgriff): Die
-        // Diagnose-Seite liest diesen Cache-Key; geschrieben wird er hier
-        // beim Worker-Loop (gedrosselt, damit kein Cache-Spam entsteht).
+        // Queue-Worker-Heartbeat (Feature 067, MVP-177-Vorgriff): Cache-Key für
+        // die Diagnose-Seite, im Worker-Loop gedrosselt geschrieben.
         \Illuminate\Support\Facades\Queue::looping(static function (): void {
             static $lastWritten = null;
             $now = \Carbon\CarbonImmutable::now();
@@ -374,11 +362,9 @@ class AppServiceProvider extends ServiceProvider {
             fn($model) => app(\App\Services\Isms\AssessmentSnapshotService::class)->record($model),
         );
 
-        // Task→Board-Sync (Feature 064, P3): Statuswechsel außerhalb des
-        // Boards (projects.tasks.complete, Importe) schiebt das Work-Item in
-        // die ERSTE Spalte der Zielkategorie — nur wenn ein Work-Item
-        // existiert; Herkunft im Event-Payload. Kein Task-Write hier →
-        // keine Endlos-Schleife mit AgileBoardService::move().
+        // Task→Board-Sync (Feature 064, P3): Statuswechsel außerhalb des Boards
+        // schiebt das Work-Item in die erste Spalte der Zielkategorie. Kein
+        // Task-Write hier → keine Endlos-Schleife mit AgileBoardService::move().
         \App\Models\Task::saved(function (\App\Models\Task $task): void {
             if (! $task->wasChanged('status')) {
                 return;
@@ -414,17 +400,10 @@ class AppServiceProvider extends ServiceProvider {
             ]);
         });
 
-        // Carbon-Macro: wandelt einen (in UTC gespeicherten) Zeitpunkt in die
-        // aktive Anzeige-Zeitzone um (User-Override → Organisation → Fallback).
-        // Auf allen Carbon-Varianten registriert, da Eloquent-Casts
-        // Illuminate\Support\Carbon liefern, manuelle Aufrufe aber auch
-        // Carbon\Carbon / CarbonImmutable nutzen.
-        // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt). Inline an macro()
-        // übergeben, damit larastan $this korrekt an die Carbon-Instanz bindet.
-        //   ->orgTz()     : in die aktive Anzeige-Zeitzone umrechnen
-        //   ->fdate()     : reines Datum im konfigurierten Format (ohne TZ-Umrechnung)
-        //   ->fdatetime() : Datum+Uhrzeit in Anzeige-Zeitzone + Format
-        //   ->ftime()     : nur Uhrzeit in Anzeige-Zeitzone + Format
+        // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/
+        // fdatetime/ftime. Auf allen Carbon-Varianten registriert (Eloquent-Casts
+        // liefern Illuminate\Support\Carbon, manuelle Aufrufe auch Carbon\Carbon).
+        // Inline an macro() übergeben, damit larastan $this an die Instanz bindet.
         CarbonMutable::macro('orgTz', fn() => CarbonFmt::orgTz($this));
         CarbonImmutable::macro('orgTz', fn() => CarbonFmt::orgTz($this));
         \Illuminate\Support\Carbon::macro('orgTz', fn() => CarbonFmt::orgTz($this));
@@ -596,22 +575,17 @@ class AppServiceProvider extends ServiceProvider {
         // manage-members: Org-Admin darf Mitglieder der eigenen Org verwalten
         Gate::define('manage-members', [OrganizationPolicy::class, 'manageMembers']);
 
-        // manage-access: Verwaltung des Rechte-Bereichs (Rollen, Gruppen,
-        // Zuweisungen). Erfordert die feingranulare Permission access.manage —
-        // damit auch Nicht-Org-Admins (z. B. dedizierte Rechte-Verwalter)
-        // adressierbar sind. Globale Plattform-Admins kommen über den
-        // Spatie-Permission-Check ebenfalls hier durch, sofern sie die
-        // Permission via PermissionsSeeder erhalten haben.
+        // manage-access: Verwaltung des Rechte-Bereichs über die feingranulare
+        // Permission access.manage, damit auch dedizierte Rechte-Verwalter ohne
+        // Org-Admin-Rolle adressierbar sind.
         Gate::define('manage-access', static function (User $user): bool {
             return $user->isAdmin() || $user->hasEffectivePermission('access.manage');
         });
 
-        // Sekundärer Gate::before-Hook: berücksichtigt zusätzlich Permissions,
-        // die ein Nutzer via Gruppen-Mitgliedschaft erbt. Spatie's eigener
-        // Hook (aktiviert über permission.register_permission_check_method)
-        // prüft nur direkte + via-eigene-Rolle erlangte Permissions am User.
-        // Nur greifen, wenn die Ability einem registrierten Permission-Namen
-        // entspricht, damit wir keine Ressource-Policies kurzschließen.
+        // Sekundärer Gate::before-Hook: berücksichtigt zusätzlich via Gruppen
+        // geerbte Permissions (Spaties eigener Hook prüft nur direkte + über die
+        // eigene Rolle erlangte). Nur bei ability mit '.', damit keine
+        // Ressource-Policies kurzgeschlossen werden.
         Gate::before(static function (User $user, string $ability): ?bool {
             if (! str_contains($ability, '.')) {
                 return null;
@@ -676,30 +650,25 @@ class AppServiceProvider extends ServiceProvider {
             ];
         });
 
-        // Sessionloser Todoist-Webhook (Feature 055, MVP-115): großzügig, weil
-        // Todoist bei vielen gleichzeitigen Änderungen bursten kann — aber
-        // gedeckelt gegen Flooding des unauthentifizierten Endpunkts. Verluste
-        // bei Überschreitung heilt der stündliche Polling-Abgleich (todoist:sync).
+        // Sessionloser Todoist-Webhook (Feature 055, MVP-115): großzügig gegen
+        // Bursts, aber gegen Flooding gedeckelt; Verluste heilt der stündliche
+        // Polling-Abgleich (todoist:sync).
         RateLimiter::for('todoist-webhook', fn(Request $request) => Limit::perMinute(120)->by('twh:' . $request->ip()));
 
         // Sessionlose Token-Ingest-Endpunkte (CTI-Webhook, Stempelterminal,
-        // Standort-Push): wie die Plugin-Webhooks (GitHub/GitLab/Zammad/Todoist)
-        // gegen Flooding und Token-Brute-Force gedeckelt (Bauturbo Welle D,
-        // Webhook-Tenant-Audit). Pro-IP großzügig bemessen (240/min ≈ 4/s), damit
-        // reale Geräte-/Batch-Bursts nie gedrosselt werden, ein Brute-Force auf den
-        // Pfad-Token aber ins 429 läuft. Reihenfolge egal: die Token-Auflösung
-        // (SHA-256-Hash) findet erst nach der Middleware statt.
+        // Standort-Push; Bauturbo Welle D): pro-IP großzügig (240/min ≈ 4/s) für
+        // reale Geräte-/Batch-Bursts, aber gegen Token-Brute-Force auf den
+        // Pfad-Token gedeckelt.
         RateLimiter::for('webhook-ingest', fn(Request $request) => Limit::perMinute(240)->by('whi:' . $request->ip()));
 
-        // @feature('code') Blade-Direktive (Folge zu MVP-047). Identisch
-        // zu @if (app(FeatureFlagResolver::class)->isEnabled('code')), nur
-        // kürzer in Views. Mit @endfeature schließen.
+        // @feature('code') Blade-Direktive (Folge zu MVP-047): Kurzform für
+        // @if (app(FeatureFlagResolver::class)->isEnabled('code')); @endfeature.
         \Illuminate\Support\Facades\Blade::if('feature', function (string $code): bool {
             return app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled($code);
         });
 
-        // Pro-Request-Nonce für alle @vite-erzeugten Script-Tags. Derselbe Nonce
-        // wird für Inline-Scripts (@cspNonce) und den CSP-Header verwendet.
+        // Pro-Request-Nonce für @vite-Script-Tags; derselbe Nonce dient
+        // Inline-Scripts (@cspNonce) und dem CSP-Header.
         \Illuminate\Support\Facades\Vite::useCspNonce();
 
         // @cspNonce → nonce="..."-Attribut für Inline-<script>-Tags (CSP).
@@ -709,13 +678,9 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     /**
-     * Stellt der App-Layout-View den aktuell laufenden Stoppuhr-Eintrag
-     * (TimeEntry|null) als $stopwatchEntry bereit, damit das Header-Widget
-     * den Live-Timer rendern kann.
-     *
-     * Fängt DB-/Infrastruktur-Fehler ab, damit Fehlerseiten und der
-     * Login-Screen auch bei nicht erreichbarer Datenbank gerendert werden
-     * können.
+     * Stellt dem App-Layout den laufenden Stoppuhr-Eintrag als $stopwatchEntry
+     * bereit. Fängt DB-/Infrastruktur-Fehler ab, damit Fehler- und Login-Seite
+     * auch bei nicht erreichbarer Datenbank rendern.
      */
     private function registerStopwatchViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
@@ -734,18 +699,8 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     /**
-     * Stellt der App-Layout-View den global gewählten Zeitraum
-     * (Preset + Von/Bis) als $globalDateRange bereit, damit das Header-
-     * Widget und Report-Controller einen einheitlichen State teilen.
-     *
-     * Fällt bei Session-/DB-Fehlern auf einen statischen Fallback zurück,
-     * damit das Layout (z.B. die Fehlerseite) noch gerendert werden kann.
-     */
-    /**
-     * Stellt der App-Layout-View die aktuell offene Stempelung
-     * (Attendance|null) als $attendanceCurrent bereit, damit das
-     * Stempeluhr-Widget im Header den Live-Timer und die Clock-in/out-
-     * Buttons rendern kann.
+     * Stellt dem App-Layout die offene Stempelung als $attendanceCurrent
+     * bereit (Live-Timer + Clock-in/out im Header-Widget).
      */
     private function registerAttendanceViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
@@ -764,10 +719,8 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     /**
-     * Stellt der App-Layout-View die kontextsensitiven Smart-Reminder
-     * (siehe `ReminderService::for()`) als `$reminderItems` zur Verfügung.
-     * Fällt bei Fehlern auf eine leere Liste zurück, damit das Layout
-     * (insb. die Fehlerseite) stets gerendert werden kann.
+     * Stellt dem App-Layout die Smart-Reminder ({@see ReminderService::for()})
+     * als `$reminderItems` bereit; bei Fehlern leere Liste (Fehlerseite rendert).
      */
     private function registerReminderViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
@@ -786,10 +739,9 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     /**
-     * Stellt dem App-Layout die flachen JS-Übersetzungen (siehe
-     * {@see JsTranslationProvider}) als `$jsTranslations` bereit, damit das
-     * Layout sie via `<script>window.__translations = …</script>` an den
-     * Client-Side-`__()`-Helper übergeben kann.
+     * Stellt dem App-Layout die flachen JS-Übersetzungen
+     * ({@see JsTranslationProvider}) als `$jsTranslations` für den
+     * Client-Side-`__()`-Helper bereit.
      */
     private function registerJsTranslationsViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
@@ -824,10 +776,8 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     /**
-     * Stellt allen Layout- und PDF-Views den BrandingService als
-     * `$branding` bereit – die Views müssen den Service nicht selbst
-     * resolven und können ohne Type-Hint auf `appName()`, `logoUrl()`
-     * etc. zugreifen.
+     * Stellt allen Layout- und PDF-Views den BrandingService als `$branding`
+     * bereit (kein eigenes resolve nötig).
      */
     private function registerBrandingViewComposer(): void {
         View::composer(['layouts.*', 'auth.*', 'pdf.*', 'reports.pdf.*', 'reports.drilldown.pdf.*', 'components.pdf-layout'], function ($view): void {
@@ -853,10 +803,7 @@ class AppServiceProvider extends ServiceProvider {
         });
     }
 
-    /**
-     * Stellt dem App-Layout die Lesezeichen des eingeloggten Users
-     * als `$userBookmarks` bereit (Phase H).
-     */
+    /** Stellt dem App-Layout die Lesezeichen des Users als `$userBookmarks` bereit (Phase H). */
     private function registerBookmarksViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
             $user = Auth::user();
@@ -865,18 +812,14 @@ class AppServiceProvider extends ServiceProvider {
         });
     }
 
-    /**
-     * Registriert die Standard-Dashboard-Widgets in der Registry (Phase G).
-     */
+    /** Registriert die Standard-Dashboard-Widgets in der Registry (Phase G). */
     private function registerDashboardWidgets(): void {
         /** @var \App\Dashboard\WidgetRegistry $registry */
         $registry = $this->app->make(\App\Dashboard\WidgetRegistry::class);
 
-        // Personal-KPIs, Team-KPIs, Finance, Urlaub/Flex, Schichten, Notdienste und
-        // Onboarding werden bereits fest im Tab-Dashboard (dashboard/index.blade.php)
-        // gerendert und sind daher hier NICHT als konfigurierbare Widgets registriert
-        // (sonst doppelte Anzeige). Die Klassen bleiben für eine spätere Reaktivierung
-        // erhalten. Der Widget-Loop bleibt für nicht-überlappende Widgets (z. B. Lesezeichen).
+        // Personal-/Team-KPIs, Finance, Urlaub/Flex, Schichten, Notdienste und
+        // Onboarding rendert das Tab-Dashboard fest → hier NICHT als Widget
+        // registriert (sonst doppelt); Klassen bleiben für spätere Reaktivierung.
         $registry->register($this->app->make(\App\Dashboard\Widgets\BookmarksWidget::class));
         $registry->register($this->app->make(\App\Dashboard\Widgets\DataProtectionWidget::class));
         // Aufgabencenter-Kachel (Feature 041/MVP-058, nachgezogen als B3/MVP-344).

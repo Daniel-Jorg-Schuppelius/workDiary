@@ -46,10 +46,8 @@ class CatalogFetchService {
             throw new RuntimeException((string) __('procurement.catalog.error.no_remote'));
         }
 
-        // SSRF-Laufzeit-Guard (auch gegen DNS-Rebinding / Altbestand-Quellen):
-        // niemals interne/private/reservierte Ziele abrufen. Redirects bleiben
-        // deaktiviert, damit ein externer Server nicht auf interne Ziele
-        // weiterleiten kann.
+        // SSRF-Laufzeit-Guard (auch gegen DNS-Rebinding/Altbestand): nie interne/private/reservierte Ziele abrufen.
+        // Redirects bleiben deaktiviert, damit ein externer Server nicht auf interne Ziele weiterleitet.
         if (! UrlSafety::isPubliclyRoutableHttpUrl($url)) {
             throw new RuntimeException((string) __('procurement.catalog.error.host_not_allowed'));
         }

@@ -55,8 +55,7 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
     }
 
     public function schemaVersion(): string {
-        // Aktuell liefert das Lexoffice-Plugin keine eigenen Migrations.
-        // Wird beim ersten Plugin-eigenen Schema-Wechsel hochgezogen.
+        // Noch keine Plugin-eigenen Migrations; wird beim ersten Schema-Wechsel hochgezogen.
         return '1.0.0';
     }
 
@@ -77,11 +76,8 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
     }
 
     public function healthCheck(): PluginHealth {
-        // Per-Org-Plugin: der geplante `plugin:healthcheck` bindet je Organisation
-        // den Kontext, daher wird der Schlüssel der GEBUNDENEN Org frisch aufgelöst
-        // (nicht der env-/Singleton-Key). Liefert die Auflösung keinen Key (kein
-        // Kontext / env leer), greift der injizierte Service — so bleiben DI/Tests
-        // und env-Single-Tenant abgedeckt.
+        // Per-Org-Plugin: healthcheck bindet je Org den Kontext → Schlüssel der gebundenen Org frisch auflösen
+        // (nicht env/Singleton). Ohne Key (kein Kontext/env leer) greift der injizierte Service (DI/Tests/Single-Tenant).
         $config = LexofficeConfig::resolve();
         if (! empty($config['api_key'])) {
             return $this->checkService(new LexofficeService(
@@ -118,8 +114,7 @@ class LexofficePlugin implements ContactSyncer, Plugin, SlotRenderer, TimeExport
         } catch (LexofficeRateLimitException $e) {
             return PluginHealth::degraded($e->getMessage());
         } catch (ConnectException $e) {
-            // Verbindungsfehler propagieren seit der php-api-toolkit-Migration
-            // als Guzzle-ConnectException (nach ausgeschöpften Retries).
+            // Verbindungsfehler propagieren seit der php-api-toolkit-Migration als Guzzle-ConnectException (nach Retries).
             return PluginHealth::degraded(__('Lexoffice ist momentan nicht erreichbar (Netzwerk-/Timeout-Fehler).'));
         } catch (Throwable $e) {
             return PluginHealth::failing($e->getMessage());

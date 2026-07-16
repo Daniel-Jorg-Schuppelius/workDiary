@@ -38,8 +38,7 @@ class SchedulerWatchdogCommand extends Command {
     protected $description = 'Prüft Registry-Jobs auf Überfälligkeit und räumt alte Laufnachweise ab';
 
     public function handle(JobRegistry $registry, SchedulerRegistrar $registrar): int {
-        // Command-Instanzen werden im Container wiederverwendet (Tests,
-        // schedule:work) — Plugin-Cache gilt nur für EINEN Wächter-Lauf.
+        // Command-Instanzen werden im Container wiederverwendet (Tests, schedule:work) — Plugin-Cache gilt nur pro Lauf.
         $this->pluginActiveCache = [];
         $now = CarbonImmutable::now();
         $overrides = ScheduledJobOverride::systemMap();
@@ -55,9 +54,8 @@ class SchedulerWatchdogCommand extends Command {
 
             $state = ScheduledJobState::query()->where('job_key', $key)->first();
             if ($state === null || ($state->last_started_at === null && $state->last_success_at === null)) {
-                // Nie gestartet (z. B. Frischinstallation, selten laufende
-                // Jobs wie payroll 2×/Jahr): kein belastbarer Beleg — der
-                // Scheduler-Heartbeat deckt den Totalausfall ab.
+                // Nie gestartet (Frischinstallation, selten laufende Jobs wie payroll 2×/Jahr): kein belastbarer
+                // Beleg — der Scheduler-Heartbeat deckt den Totalausfall ab.
                 continue;
             }
 
@@ -76,10 +74,8 @@ class SchedulerWatchdogCommand extends Command {
                 continue; // bereits für diesen Soll-Lauf gemeldet
             }
             if (! $this->pluginActive($definition)) {
-                // Plugin-gebundener Job, dessen Plugin nirgends aktiviert ist:
-                // Der Sync läuft bewusst nicht — eine Überfälligkeits-Meldung
-                // wäre reines Rauschen (z. B. Lexoffice/JTL auf Instanzen ohne
-                // diese Anbindungen).
+                // Plugin-gebundener Job, dessen Plugin nirgends aktiviert ist: läuft bewusst nicht — eine
+                // Überfälligkeits-Meldung wäre Rauschen (z. B. Lexoffice/JTL auf Instanzen ohne diese Anbindungen).
                 continue;
             }
 
@@ -104,9 +100,8 @@ class SchedulerWatchdogCommand extends Command {
                         ? \App\Enums\Operations\OperationsTaskSeverity::Critical
                         : \App\Enums\Operations\OperationsTaskSeverity::Warning,
                     titleKey: 'operations.task.scheduler_overdue',
-                    // Roh statt fertig formatiert: Label-Key und ISO-Zeitpunkt
-                    // werden erst beim Anzeigen in Sprache/Zeitzone/Format des
-                    // Betrachters aufgelöst (NotificationText).
+                    // Roh statt formatiert: Label-Key und ISO-Zeitpunkt werden erst beim Anzeigen in
+                    // Sprache/Zeitzone/Format des Betrachters aufgelöst (NotificationText).
                     params: [
                         'job' => ['key' => 'scheduler.job.' . $key, 'fallback' => $key],
                         'due' => $due->toIso8601String(),

@@ -16,21 +16,13 @@ use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
 /**
- * Persistiert die ArbZG-Ist-Verstöße (Feature 006, Welle D) revisionssicher.
- *
- * Läuft je Organisation über ein festes Rückblick-Fenster (Default 90 Tage):
- * berechnet die Verstöße mit derselben Logik wie der Report
- * ({@see ComplianceScanService}) und speichert/aktualisiert sie über den
+ * Persistiert die ArbZG-Ist-Verstöße (Feature 006, Welle D) revisionssicher:
+ * scannt je Organisation über ein festes Fenster (Default 90 Tage) mit der
+ * Report-Logik ({@see ComplianceScanService}) und speichert sie über den
  * {@see ComplianceFindingRecorder} (Dedup, Auto-„behoben", Audit).
  *
- * Ein FESTES Fenster ist bewusst gewählt: nur so ist die Auto-„behoben"-
- * Semantik korrekt (ein Verstoß gilt als behoben, wenn er im vollständig
- * gescannten Fenster nicht mehr auftritt) — an der nutzer-gefilterten
- * Report-Ansicht wäre „nicht mehr aufgetreten" nicht von „ausgefiltert"
- * unterscheidbar.
- *
- * Der Org-Kontext wird je Iteration gebunden, damit Zeitzone/Tagesgrenzen
- * exakt der Report-Ansicht entsprechen.
+ * Festes (statt nutzer-gefiltertes) Fenster, weil sonst Auto-„behoben" nicht
+ * von „ausgefiltert" unterscheidbar wäre.
  */
 class ScanComplianceFindingsCommand extends Command {
     protected $signature = 'compliance:scan-findings
@@ -45,10 +37,8 @@ class ScanComplianceFindingsCommand extends Command {
 
         $totals = ['created' => 0, 'updated' => 0, 'reopened' => 0, 'resolved' => 0];
 
-        // Vorherige Org-Bindung sichern und am Ende wiederherstellen (im
-        // Konsolen-Betrieb gibt es keine; im Test/Queue-Kontext bleibt sie so
-        // erhalten). Je Iteration wird der Org-Kontext neu gebunden, damit
-        // Zeitzone/Tagesgrenzen exakt der Report-Ansicht entsprechen.
+        // Vorherige Org-Bindung sichern/wiederherstellen (Test/Queue-Kontext); je
+        // Iteration neu binden, damit Zeitzone/Tagesgrenzen der Report-Ansicht entsprechen.
         $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
         $previous = $bound instanceof Organization ? $bound : null;
 

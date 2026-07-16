@@ -13,10 +13,8 @@ namespace App\Http\Requests;
 class SaveTimesheetRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
-        // status NICHT hier: Anlegen erzwingt Draft, Statusübergänge laufen
-        // ausschließlich über submit/sign/lock (Policy + SignatureService).
-        // Sonst könnte ein Owner per Massenzuweisung status=signed/locked
-        // setzen und Signatur-/Lock-Freigabe umgehen.
+        // status NICHT hier: Anlegen erzwingt Draft, Übergänge nur über submit/sign/lock (Policy + SignatureService).
+        // Sonst könnte ein Owner per Massenzuweisung status=signed/locked setzen und die Freigabe umgehen.
         return [
             'work_date' => ['required', 'date'],
             'customer_name' => ['nullable', 'string', 'max:255'],

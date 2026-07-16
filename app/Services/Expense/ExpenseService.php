@@ -82,10 +82,8 @@ class ExpenseService {
 
         if ($wasSubmitted) {
             $expense->loadMissing('user');
-            // Automation-Hook: gibt eine aktive Regel ggf. direkt approve/route.
-            // Wird vor der Approver-Notification ausgeführt, damit auto-approve
-            // sofortige Entscheidungs-Benachrichtigung statt offener Anfrage
-            // an Approver auslöst.
+            // Automation-Hook: eine aktive Regel kann direkt approve/route. Vor der Approver-Notification,
+            // damit auto-approve eine Entscheidungs- statt Anfrage-Benachrichtigung auslöst.
             try {
                 app(\App\Automation\RuleEngine::class)->dispatch('expense.submitted', $expense);
                 $expense->refresh();

@@ -187,17 +187,14 @@ class QuoteService {
         }
 
         return DB::transaction(function () use ($quote, $actor): Invoice {
-            // Steuerkontext wie im InvoiceGenerator über den TaxResolver
-            // (Kleinunternehmer § 19, Reverse Charge, Drittland) statt
-            // hartkodierter 19 % — sonst droht unrichtiger Steuerausweis
-            // nach § 14c UStG (Whitebox 2026-07-10, G3).
+            // Steuerkontext wie im InvoiceGenerator über den TaxResolver (§19, Reverse Charge, Drittland) statt
+            // hartkodierter 19 % — sonst unrichtiger Steuerausweis nach § 14c UStG (Whitebox 2026-07-10, G3).
             $tax = app(TaxResolver::class)->resolve($quote->organization()->firstOrFail(), $quote->customer()->firstOrFail());
             $notes = (string) __('Gemäß Angebot :number (Version :version)', ['number' => $quote->number, 'version' => $quote->version]);
             if ($tax['note'] !== null) {
                 $notes .= "\n" . $tax['note'];
             }
-            // Bei 0-%-Kontext (§ 19/RC/Drittland) gelten keine Positionssätze
-            // aus dem Angebot — der Kopfsatz 0,00 bestimmt alle Positionen.
+            // Bei 0-%-Kontext (§19/RC/Drittland) gelten keine Positionssätze — der Kopfsatz 0,00 bestimmt alle Positionen.
             $suppressItemRates = $tax['reverse_charge'] || (float) $tax['rate'] === 0.0;
 
             $invoice = Invoice::query()->create([

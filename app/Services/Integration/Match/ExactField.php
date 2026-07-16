@@ -33,14 +33,12 @@ class ExactField extends MatchStrategy {
             return null;
         }
 
-        // Normalisierter Vergleich auf DB-Ebene (Trim/Lower/ohne Spaces), damit
-        // Groß-/Kleinschreibung und Leerzeichen keine Treffer verhindern.
-        // replace/lower/trim sind in SQLite (Dev) wie MySQL (Prod) vorhanden.
+        // Normalisierter Vergleich auf DB-Ebene (Trim/Lower/ohne Spaces), damit Groß-/Kleinschreibung/Leerzeichen
+        // keine Treffer verhindern (replace/lower/trim in SQLite wie MySQL vorhanden).
         $column = $this->safeColumn();
 
-        // $column ist über safeColumn() auf [a-z0-9_] beschränkt (injection-sicher);
-        // der Wert läuft als Bindung. PHPStan kann die literal-string-Eigenschaft
-        // nach der Laufzeit-Sanitisierung nicht beweisen.
+        // $column ist über safeColumn() auf [a-z0-9_] beschränkt (injection-sicher); der Wert läuft als
+        // Bindung — PHPStan kann die literal-string-Eigenschaft nach der Sanitisierung nicht beweisen.
         // @phpstan-ignore argument.type
         return $base->whereRaw("replace(lower(trim($column)), ' ', '') = ?", [$value]);
     }

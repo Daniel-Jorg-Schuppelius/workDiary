@@ -73,11 +73,8 @@ trait Auditable {
     }
 
     /**
-     * Ermittelt die user_id für den AuditLog-Eintrag. Bewusst über
-     * Auth::user() (nicht Auth::id()): Auth::id() liest nur die Session und
-     * kann auf einen Benutzer zeigen, der gar nicht (mehr) existiert – etwa
-     * eine veraltete Session nach `migrate:fresh` oder während des Installers.
-     * Ein solcher Insert würde sonst den FK-Constraint auf users.id verletzen.
+     * user_id für den AuditLog. Bewusst Auth::user() statt Auth::id(): eine
+     * veraltete Session (Auth::id() liest nur die Session) würde sonst den FK auf users.id verletzen.
      */
     protected function resolveAuditUserId(): ?int {
         $user = Auth::user();
@@ -86,18 +83,12 @@ trait Auditable {
     }
 
     /**
-     * Ermittelt die organization_id für den AuditLog-Eintrag.
-     * Reihenfolge: eigenes Modell ist Organization → eigene ID (außer bei
-     * `deleted`, dann null, da die FK-Referenz sonst ins Leere zeigt);
-     * sonst organization_id des Modells; sonst aktive Org aus dem Container;
-     * sonst Org des eingeloggten Users.
+     * organization_id für den AuditLog. Reihenfolge: eigenes Modell/Org →
+     * organization_id des Modells → aktive Org (Container) → Org des Users.
      */
     protected function resolveAuditOrganizationId(string $event = ''): ?int {
         if ($this instanceof Organization) {
-            // Bei `deleted` ist die Org-Zeile bereits weg; ein FK-Insert
-            // mit dieser ID würde eine PDOException (FK-Constraint) werfen
-            // und den globalen Exception-Handler die DB als "unavailable"
-            // markieren lassen. Wir loggen das Delete daher org-übergreifend.
+            // Bei `deleted` ist die Org-Zeile weg; ein FK-Insert würde die DB als "unavailable" markieren lassen.
             if ($event === 'deleted') {
                 return null;
             }

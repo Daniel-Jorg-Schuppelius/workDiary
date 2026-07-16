@@ -111,8 +111,7 @@ class SystemHealthCommand extends Command {
     /** @return array{0: string, 1: bool, 2: string} */
     private function checkMigrations(): array {
         try {
-            // migrate:status --pending liefert FAILURE, sobald Migrationen
-            // ausstehen oder die migrations-Tabelle fehlt.
+            // migrate:status --pending liefert FAILURE, sobald Migrationen ausstehen oder die Tabelle fehlt.
             $exit = $this->callSilently('migrate:status', ['--pending' => true]);
 
             return $exit === self::SUCCESS
@@ -179,8 +178,7 @@ class SystemHealthCommand extends Command {
         $from = (string) config('mail.from.address', '');
         $detail = sprintf('Mailer "%s", From: %s', $default, $from !== '' ? $from : '—');
 
-        // Nur Config-Check (kein Versand): log/array sind gültig konfiguriert,
-        // für Produktion weist die Diagnose-Seite gesondert darauf hin.
+        // Nur Config-Check (kein Versand); für Produktion weist die Diagnose-Seite gesondert hin.
         return $from !== ''
             ? ['Mail', true, $detail]
             : ['Mail', false, 'Keine Absender-Adresse konfiguriert (MAIL_FROM_ADDRESS)'];
@@ -204,10 +202,8 @@ class SystemHealthCommand extends Command {
             /** @var BackupHeartbeat|null $latest */
             $latest = BackupHeartbeat::query()->orderByDesc('occurred_at')->first();
             if ($latest === null) {
-                // Noch nie ein Heartbeat eingegangen (frische Installation,
-                // Test/CI, Backup noch nicht eingerichtet) ⇒ Hinweis statt
-                // hartem Fehler. Der rote „kein Backup registriert"-Hinweis
-                // steht auf der Admin-Backup-Statusseite (Feature 017).
+                // Noch nie ein Heartbeat (Frischinstallation, Test/CI, Backup nicht eingerichtet) ⇒ Hinweis statt
+                // hartem Fehler; der rote „kein Backup"-Hinweis steht auf der Admin-Backup-Statusseite (Feature 017).
                 return ['Backup-Heartbeat', true, 'Kein Backup registriert (Hinweis — Backup einrichten)'];
             }
 
@@ -244,9 +240,8 @@ class SystemHealthCommand extends Command {
 
             $maxDays = max(1, (int) config('backup.restore_test_overdue_days', 180));
             if ($lastPassed === null) {
-                // Noch kein protokollierter Restore-Test ⇒ Hinweis statt
-                // hartem Fehler (Überfälligkeit eines BESTEHENDEN Tests bleibt
-                // rot). Nudge zum Eintragen steht auf der Admin-Statusseite.
+                // Noch kein protokollierter Restore-Test ⇒ Hinweis statt hartem Fehler (Überfälligkeit eines
+                // bestehenden Tests bleibt rot). Nudge zum Eintragen steht auf der Admin-Statusseite.
                 return ['Restore-Test', true, sprintf('Noch kein erfolgreicher Restore-Test (Hinweis — Schwelle %d Tage)', $maxDays)];
             }
 
@@ -269,9 +264,8 @@ class SystemHealthCommand extends Command {
 
             $result = $licenses->current();
 
-            // Ohne (gültige) Lizenz läuft die Installation als Free-Tier weiter
-            // (hart-Free) — gesund. Rot wird der Check nur, wenn eine
-            // vorhandene Lizenz kaputt ist (manipuliert/abgelaufen/Signatur).
+            // Ohne (gültige) Lizenz läuft die Installation als Free-Tier weiter (hart-Free) — gesund.
+            // Rot nur, wenn eine vorhandene Lizenz kaputt ist (manipuliert/abgelaufen/Signatur).
             $broken = in_array($result->status, [
                 LicenseStatus::Expired,
                 LicenseStatus::Tampered,

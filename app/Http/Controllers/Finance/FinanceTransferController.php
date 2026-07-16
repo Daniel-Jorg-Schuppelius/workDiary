@@ -27,13 +27,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 /**
- * Faktura-Übergabe (Feature 045, Teil B): Liste, Anlage (Modal), Vorschau
- * und Ausführung von Übergabenachweisen an Lexoffice bzw. als
- * Datei-Übergabepaket. Statusmaschine läuft ausschließlich über den
- * {@see BillingTransferService}; die Ziel-Seite über die
- * {@see FacturationTargetRegistry}-Adapter. Autorisierung über
- * BillingTransferPolicy (finance.viewAny lesend, finance.transfer.time/
- * material kanal-spezifisch schreibend).
+ * Faktura-Übergabe (Feature 045, Teil B): Liste, Anlage, Vorschau und
+ * Ausführung von Übergabenachweisen an Lexoffice bzw. als Datei-Paket.
+ * Statusmaschine über {@see BillingTransferService}, Ziele über
+ * {@see FacturationTargetRegistry}.
  */
 class FinanceTransferController extends Controller {
     use ResolvesGlobalDateRange;
@@ -61,9 +58,7 @@ class FinanceTransferController extends Controller {
             ->when(TransferStatus::tryFrom($filters['status']) !== null, fn($q) => $q->where('status', $filters['status']))
             ->orderByDesc('created_at');
 
-        // Zeitraum kommt aus der globalen Header-Auswahl (Hausstandard):
-        // Überlappung mit dem Leistungszeitraum, offene Grenzen zählen als
-        // Treffer — analog overlappingDateRange-Prinzip.
+        // Globaler Header-Zeitraum, Überlappung mit Leistungszeitraum (offene Grenzen = Treffer).
         $range = $this->globalDateRange();
         $query->where(fn($q) => $q->whereNull('period_to')->orWhereDate('period_to', '>=', $range['from']->toDateString()));
         $query->where(fn($q) => $q->whereNull('period_from')->orWhereDate('period_from', '<=', $range['to']->toDateString()));
@@ -84,8 +79,7 @@ class FinanceTransferController extends Controller {
 
     /**
      * Anlage-Dialog (Modal-Partial). Optionaler ?customer={sqid} belegt das
-     * Ziel aus dem effektiven billing_mode vor (lexoffice ⇒ lexoffice,
-     * datev ⇒ file mit Hinweis „Desktop-API folgt", workdiary ⇒ nur file).
+     * Ziel aus dem effektiven billing_mode vor.
      */
     public function create(Request $request): View {
         $allowedChannels = $this->allowedChannels();
@@ -132,8 +126,7 @@ class FinanceTransferController extends Controller {
         /** @var Customer $customer */
         $customer = Customer::query()->findOrFail($data['customer_id']);
 
-        // Ziel gegen den effektiven Fakturierungsweg prüfen: Lexoffice nur,
-        // wenn Lexoffice führt; datev/workdiary laufen über das Datei-Paket.
+        // Ziel gegen effektiven Fakturierungsweg prüfen (Lexoffice nur bei Lexoffice-Hoheit).
         $target = TransferTarget::from($data['target']);
         $mode = $this->modeResolver->effectiveFor($customer);
         if (! in_array($target, self::allowedTargetsFor($mode), true)) {
@@ -200,8 +193,7 @@ class FinanceTransferController extends Controller {
     public function execute(BillingTransfer $transfer, FacturationTargetRegistry $targets): RedirectResponse {
         Gate::authorize('markTransferred', $transfer);
 
-        // Guard VOR dem Ziel-Aufruf: kein Remote-Entwurf/Datei aus einem
-        // nicht bestätigten Transfer (Statusmaschine würde erst danach greifen).
+        // Guard VOR Ziel-Aufruf: kein Remote-Entwurf aus unbestätigtem Transfer.
         if ($transfer->status !== TransferStatus::Confirmed) {
             return back()->withErrors([
                 'status' => (string) __('finance.error.illegal_transition', [
@@ -244,9 +236,7 @@ class FinanceTransferController extends Controller {
         Gate::authorize('view', $transfer);
 
         $path = (string) $transfer->file_path;
-        // Pfad-Härtung: nur Pakete aus dem Finance-Export-Verzeichnis, keine
-        // Traversal-Segmente — file_path wird zwar nur serverseitig gesetzt,
-        // der Download bleibt trotzdem defensiv.
+        // Pfad-Härtung: nur Finance-Export-Verzeichnis, keine Traversal-Segmente (defensiv, obwohl serverseitig gesetzt).
         abort_unless($path !== '' && str_starts_with($path, FileTarget::BASE_PATH . '/'), 404);
         abort_if(str_contains($path, '..'), 404);
 
@@ -279,9 +269,8 @@ class FinanceTransferController extends Controller {
     }
 
     /**
-     * Zulässige Ziele je Fakturierungsweg: Lexoffice nur bei Lexoffice-Hoheit;
-     * das Datei-Paket steht immer offen (datev ⇒ Datei, bis die Desktop-API
-     * als eigener Adapter existiert).
+     * Zulässige Ziele je Fakturierungsweg: Lexoffice nur bei Lexoffice-Hoheit,
+     * das Datei-Paket steht immer offen.
      *
      * @return list<TransferTarget>
      */
@@ -304,9 +293,8 @@ class FinanceTransferController extends Controller {
     }
 
     /**
-     * Vorschau-Positionen wie sie das Ziel erzeugen würde: Zeit über die
-     * bestehende Aggregation (Taktung!), Material je Verwendung. Snapshot-
-     * Summen (total_*) bleiben die Referenz des Nachweises.
+     * Vorschau-Positionen wie das Ziel sie erzeugen würde: Zeit über die
+     * bestehende Aggregation (Taktung!), Material je Verwendung.
      *
      * @return list<array{name: string, quantity: string, unit: string, unit_price: string, amount: string}>
      */

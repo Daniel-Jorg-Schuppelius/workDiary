@@ -23,8 +23,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class AttachmentController extends Controller {
     public function __construct(private readonly ImageMetaUploader $imageUploader) {}
 
-    // Öffentlich: die Datei-Policy gilt auch für Uploads über eigene
-    // Controller (z. B. Portal-Tickets, MVP-152) — EINE Wahrheit statt Kopien.
+    // Öffentlich: gilt auch für Uploads über eigene Controller (Portal-Tickets, MVP-152) — eine Wahrheit.
     public const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
     public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
@@ -60,10 +59,8 @@ class AttachmentController extends Controller {
     ];
 
     /**
-     * Spezialrollen (meta_type), die als Bild-Uploads mit stricter
-     * Validierung und automatischer Ersetzung des Vorgängers behandelt
-     * werden. Wert = maximal erlaubte Größe in KB (aus
-     * config/branding.php).
+     * Größenlimit (KB, aus config/branding.php) für Bild-Metarollen (Logo/Avatar)
+     * mit strikter Validierung + Vorgänger-Ersetzung; null = kein Spezialpfad.
      */
     private function imageMetaLimitKb(string $meta): ?int {
         return match ($meta) {
@@ -80,16 +77,12 @@ class AttachmentController extends Controller {
         $meta = $request->input('meta_type');
         $meta = is_string($meta) && $meta !== '' ? $meta : null;
 
-        // Branding-/Avatar-Uploads laufen über einen separaten,
-        // strengeren Pfad (Bildtypen, eigene Größenlimits, Ersetzen des
-        // Vorgängers, eigene Autorisierung).
+        // Branding-/Avatar-Uploads laufen über einen separaten, strengeren Pfad.
         if ($meta !== null && $this->imageMetaLimitKb($meta) !== null) {
             return $this->storeImageMeta($request, $parent, $meta);
         }
 
-        // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt – nicht nur
-        // dessen Sichtbarkeit. Verhindert, dass ein Org-Benutzer Dateien an
-        // Objekte hängt, die er nicht bearbeiten darf.
+        // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt, nicht nur Sichtbarkeit.
         Gate::authorize('update', $parent);
 
         $request->validate([
@@ -126,12 +119,9 @@ class AttachmentController extends Controller {
     }
 
     /**
-     * Spezialisierter Upload-Pfad für Branding-Logos und Avatare.
-     * - Erzwingt Bildformate (jpg/png/webp; KEIN SVG)
-     * - Verwendet meta-spezifische Größenlimits (config/branding.php)
-     * - Ersetzt einen ggf. vorhandenen vorherigen Anhang gleichen
-     *   `meta_type` am selben Elternobjekt (inkl. Storage-Cleanup)
-     * - Eigene Autorisierung statt der generischen Attachment-Policy
+     * Spezialisierter Upload-Pfad für Branding-Logos und Avatare: erzwingt
+     * Bildformate (KEIN SVG), meta-spezifische Größenlimits, ersetzt den
+     * Vorgänger gleichen meta_type (inkl. Storage-Cleanup), eigene Autorisierung.
      */
     private function storeImageMeta(Request $request, Model $parent, string $meta): RedirectResponse {
         /** @var Organization|User $parent */

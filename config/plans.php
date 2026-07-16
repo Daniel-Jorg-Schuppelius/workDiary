@@ -181,15 +181,11 @@ return [
         'module.sso' => 'Single-Sign-on und Verzeichnisdienste (SCIM-Provisionierung, OIDC-SSO, SAML 2.0).',
     ],
 
-    // Funktionsumfang-Presets (Feature 081, MVP-373): kuratierte Startumfänge.
-    // Ein Preset ist eine reine Schreibhilfe für die Modulkonfiguration
-    // (MVP-052): gespeichert wird ausschließlich der Modulstatus
-    // (LicenseFlagOverride, nur deaktivierend) — nie ein eigener
-    // „Preset-Zustand". `modules` = aktiv bleibende Katalogmodule; alle
-    // übrigen lizenzierten Module werden org-deaktiviert. `modules = null`
-    // bedeutet Vollumfang (alle lizenzierten Module aktiv, heutiger Default).
-    // Labels/Beschreibungen sind deutsche Quelltexte und werden beim Rendern
-    // per __() übersetzt (wie plans.labels).
+    // Funktionsumfang-Presets (Feature 081, MVP-373): reine Schreibhilfe für
+    // die Modulkonfiguration (MVP-052) — gespeichert wird nur der Modulstatus
+    // (LicenseFlagOverride, deaktivierend). `modules` = aktiv bleibende Module,
+    // alle übrigen werden org-deaktiviert; `modules = null` = Vollumfang.
+    // Labels/Beschreibungen werden beim Rendern per __() übersetzt.
     'presets' => [
         'schlank' => [
             'label' => 'Schlanker Start',

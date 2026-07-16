@@ -85,9 +85,8 @@ class SupplierScorecardService {
      * @return list<array<string, mixed>>
      */
     public function ranking(CarbonImmutable $from, CarbonImmutable $to): array {
-        // Nur Lieferanten mit tatsächlichem Einkaufsbezug (mind. eine Bestellung)
-        // ODER Reklamation/ISMS-Bewertung — reine Stammdaten ohne jede Aktivität
-        // blähen das Ranking nicht auf.
+        // Nur Lieferanten mit Aktivität (Bestellung, Reklamation oder
+        // ISMS-Bewertung) — reine Stammdaten blähen das Ranking nicht auf.
         $supplierIds = collect()
             ->merge(PurchaseOrder::query()->distinct()->pluck('supplier_id'))
             ->merge(ClaimCase::query()->whereNotNull('supplier_id')->distinct()->pluck('supplier_id'))

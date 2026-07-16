@@ -19,16 +19,11 @@ use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Resolves the current organization from the authenticated user and binds it
- * into the service container as 'currentOrganization'.
+ * Bindet die aktuelle Organisation des Users als 'currentOrganization' in den Container,
+ * worüber OrganizationScope alle tenant-scoped Queries filtert.
  *
- * This enables OrganizationScope to automatically filter all tenant-scoped
- * Eloquent queries to the correct organization.
- *
- * Globale Admins (Spatie-Rolle "admin") dürfen über einen Session-Override
- * (siehe OrganizationSwitchController) eine andere Organisation als die in
- * users.organization_id eingetragene aktivieren. Dies ist die einzige Stelle,
- * an der ein Wechsel des Org-Kontexts zur Laufzeit zulässig ist.
+ * Einzige Stelle für einen Laufzeit-Wechsel des Org-Kontexts: globale Admins via
+ * Session-Override ({@see OrganizationSwitchController}).
  */
 class SetOrganizationContext {
     public function handle(Request $request, Closure $next): Response {
@@ -41,20 +36,12 @@ class SetOrganizationContext {
             if ($org instanceof Organization) {
                 app()->instance('currentOrganization', $org);
 
-                // Spatie-Teams: aktive Organisation als Team-Kontext setzen,
-                // damit Org-spezifische Rollen-Zuweisungen ausgewertet werden.
-                // Globale Rollen (team_id = NULL, z. B. der Plattform-"admin")
-                // bleiben in jedem Kontext gültig.
+                // Aktive Org als Spatie-Team-Kontext; globale Rollen (team_id = NULL) bleiben überall gültig.
                 $registrar = app(PermissionRegistrar::class);
                 $registrar->setPermissionsTeamId($org->id);
 
-                // Spatie's HasRoles cached die geladenen Rollen/Permissions
-                // sowohl global im Registrar als auch in den geladenen
-                // Eloquent-Relationen des Users. Nach einem Wechsel des
-                // Team-Kontexts (Admin-Override, frischer Request nach
-                // Login, Test-Setup mit mehreren `actingAs`-Calls) muss
-                // beides zurückgesetzt werden, sonst werten Policies und
-                // `isAdmin()`-Checks gegen den alten Team-Cache aus.
+                // Nach Team-Wechsel beide Spatie-Caches (Registrar + geladene User-Relationen) leeren,
+                // sonst werten Policies/isAdmin() gegen den alten Team-Cache aus.
                 $registrar->forgetCachedPermissions();
                 $user->unsetRelation('roles');
                 $user->unsetRelation('permissions');

@@ -25,11 +25,8 @@ use Throwable;
 
 /**
  * OAuth-Anbindung einer Dropbox-Quelle (Feature 080, MVP-353). Der `state`
- * ist kurzlebig, einmalig einlösbar und an Organisation, Nutzer UND optional
- * eine bestehende Verbindung (Re-Auth) gebunden; der PKCE-Verifier wandert
- * mit dem state (Muster GoogleCalendar). Nach dem Token-Tausch wird die
- * Kontoidentität geladen und an der Verbindung BESTÄTIGBAR hinterlegt —
- * aktiv importiert wird erst nach Ordner-Wahl + gültiger Route (P8).
+ * ist einmalig einlösbar und org-/nutzer-/verbindungsgebunden; aktiv
+ * importiert wird erst nach Ordner-Wahl + gültiger Route (P8).
  */
 class DropboxIntakeController extends Controller {
     private const STATE_TTL_SECONDS = 600;
@@ -109,7 +106,6 @@ class DropboxIntakeController extends Controller {
             'disabled_at' => null,
         ])->save();
 
-        // Kontoidentität laden und zur Bestätigung hinterlegen.
         try {
             $account = (new DropboxClient($connection))->account();
             $connection->forceFill([
@@ -122,8 +118,7 @@ class DropboxIntakeController extends Controller {
             return $this->backToOverview()->with('error', __('cloud_intake.flash.account_failed', ['class' => class_basename($e)]));
         }
 
-        // Re-Auth einer eingerichteten Verbindung wird wieder lauffähig;
-        // Neuanlagen bleiben Entwurf bis Ordner + Route stehen (P8).
+        // Re-Auth wird wieder lauffähig; Neuanlagen bleiben Entwurf bis Ordner + Route stehen (P8).
         $connection->forceFill([
             'status' => $connection->isRunnable()
                 ? CloudIntakeConnectionStatus::Active

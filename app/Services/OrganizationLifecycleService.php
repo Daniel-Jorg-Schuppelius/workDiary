@@ -233,10 +233,8 @@ class OrganizationLifecycleService {
             $orgId = (int) $org->id;
             $tables = $this->organizationTables();
 
-            // Iterative Pässe: in jedem Durchlauf alle noch nicht leeren
-            // Tabellen einmal versuchen. Schlägt eine Tabelle wegen FK
-            // fehl, wird sie im nächsten Pass erneut versucht – nachdem
-            // ihre Abhängigkeiten in diesem Pass entfernt wurden.
+            // Iterative Pässe: FK-blockierte Tabellen werden im nächsten Pass
+            // erneut versucht, sobald ihre Abhängigkeiten entfernt sind.
             $remaining = $tables;
             for ($pass = 0; $pass < self::PURGE_MAX_PASSES; $pass++) {
                 $stillRemaining = [];
@@ -251,8 +249,7 @@ class OrganizationLifecycleService {
                             $progressed = true;
                         }
                     } catch (\Throwable $e) {
-                        // FK-Verletzung o. Ä.: in nächstem Pass nochmal
-                        // versuchen.
+                        // FK-Verletzung o. Ä.: im nächsten Pass erneut versuchen.
                         $stillRemaining[] = $table;
                         continue;
                     }

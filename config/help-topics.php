@@ -240,9 +240,8 @@ return [
         // Prozedurvorlagen-Designer (Feature 026): Listenseite + Editor.
         'procedures.*' => 'procedures.designer',
 
-        // Hinweis: procedures.run hat (noch) keine eigene Seite — Prozedurläufe
-        // finden in der Auftrags-Detailansicht statt und sind dort über den
-        // manuellen <x-help-button topic="procedures.run"> erreichbar.
+        // procedures.run hat keine eigene Seite — Läufe stehen in der Auftrags-
+        // Detailansicht via manuellem <x-help-button topic="procedures.run">.
 
         // Sicherheitsereignis-Register (Arbeitsschutz, Feature 013)
         'safety-events.*' => 'safety.overview',

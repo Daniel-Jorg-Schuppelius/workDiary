@@ -23,9 +23,8 @@ class HomeController extends Controller {
         /** @var User|null $user */
         $user = Auth::user();
 
-        // Ohne aktiven Session-Modus greift die persistierte Modus-Wahl des
-        // Users (statt hart 'legacy'), damit F5/neuer Login nicht in Legacy
-        // zurückfällt.
+        // Ohne Session-Modus greift die persistierte Modus-Wahl statt hart 'legacy'
+        // (sonst fällt F5/neuer Login in Legacy zurück).
         $default = $user instanceof User ? $user->preferredWorkMode() : 'legacy';
         $currentMode = $request->session()->get('work_mode', $default);
 
@@ -51,8 +50,7 @@ class HomeController extends Controller {
             return redirect()->route('dashboard');
         }
 
-        // Ab hier nur noch Gäste: öffentliche Produkt-Landingpage. Authentifizierte
-        // Nutzer wurden oben bereits ins Dashboard bzw. Legacy umgeleitet.
+        // Ab hier nur noch Gäste: öffentliche Produkt-Landingpage.
         return view('home');
     }
 
@@ -81,9 +79,8 @@ class HomeController extends Controller {
 
         $request->session()->put('work_mode', $mode);
 
-        // Wahl dauerhaft am User merken, damit sie Session-Ablauf, neuen Login
-        // und F5 überlebt (siehe EnsureNewSystemAccess / HomeController-Default).
-        // Liegt in der Per-User-Präferenz-Bag (preferences['work_mode']).
+        // Wahl dauerhaft am User merken, damit sie Session-Ablauf/Login/F5 überlebt
+        // (siehe EnsureNewSystemAccess / HomeController-Default).
         if ($user instanceof User && $user->getPreference('work_mode') !== $mode) {
             $user->setPreference('work_mode', $mode);
         }

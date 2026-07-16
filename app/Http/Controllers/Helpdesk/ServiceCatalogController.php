@@ -23,12 +23,9 @@ use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
 /**
- * Servicekatalog-Pflege (Feature 065, MVP-154): EINE Index-Seite mit drei
- * gruppierten Ebenen (BusinessService → ServiceOffering → RequestItem),
- * je Ebene Modal-CRUD (Muster ServiceQueueController). Die Genehmigungs-
- * kette wird als strukturierte Step-Liste gepflegt (user/role — kein
- * Freitext-JSON); Löschen nur ohne abhängige Inhalte (kein stilles
- * Kaskadieren trotz DB-Cascade).
+ * Servicekatalog-Pflege (Feature 065, MVP-154): drei gruppierte Ebenen
+ * (BusinessService → ServiceOffering → RequestItem) mit Modal-CRUD; Löschen
+ * nur ohne abhängige Inhalte (kein stilles Kaskadieren trotz DB-Cascade).
  */
 class ServiceCatalogController extends Controller {
     public function index(): View {
@@ -205,8 +202,7 @@ class ServiceCatalogController extends Controller {
     public function updateItem(Request $request, RequestItem $item): RedirectResponse {
         Gate::authorize('update', $item);
 
-        // Katalog ist versioniert (MVP-154): jede Änderung erhöht die Version;
-        // laufende Requests bleiben über ihre Snapshots unberührt.
+        // Katalog ist versioniert (MVP-154): laufende Requests bleiben über ihre Snapshots unberührt.
         $item->update([
             ...$this->validatedItem($request),
             'version' => (int) $item->version + 1,

@@ -15,16 +15,12 @@ namespace App\Services\Navigation;
 use App\Models\{Organization, User};
 
 /**
- * Arbeitsbereiche — schaltbare Fokus-Ansichten (Feature 082, MVP-377).
- *
- * Kapselt Definition (config/navigation_focus.php), Org-Kuratierung (MVP-379)
- * und Auflösung des aktiven Fokus. Der Fokus ist REIN KOSMETISCH (D13): er wird
- * in {@see NavigationRegistry::build()} als letzter Filterschritt angewandt und
- * kann nie etwas freischalten oder eine Rechte-/Modulgrenze überschreiben.
- *
- * Auflösungsreihenfolge des aktiven Fokus: Session → Nutzer-Preference →
- * Org-Default → Config-Default. Jeder Wert wird gegen die für die Organisation
- * verfügbaren Bereiche validiert; ungültige Werte fallen auf den Default zurück.
+ * Arbeitsbereiche — schaltbare, rein kosmetische Fokus-Ansichten (D13): filtert
+ * in {@see NavigationRegistry::build()} nur die sichtbare Menüauswahl, schaltet
+ * nie Rechte/Module frei. Kapselt Definition (config/navigation_focus.php),
+ * Org-Kuratierung und Auflösung (Session → Preference → Org-Default → Config,
+ * jeder Wert gegen die verfügbaren Bereiche validiert).
+ * Konzept: Feature 082 (WorkDiary-Architecture).
  */
 class NavFocusService {
     /** Per-User-Preference (users.preferences) mit dem gewählten Arbeitsbereich. */
@@ -157,9 +153,8 @@ class NavFocusService {
     }
 
     /**
-     * Vom installierten Branchenprofil empfohlener Default-Arbeitsbereich
-     * (optionales Feld `nav_focus_default` in der Profildatei). Nur ein Vorschlag
-     * (D16) — greift ausschließlich, solange die Org keinen eigenen Default setzt.
+     * Vom Branchenprofil empfohlener Default (Feld `nav_focus_default` der
+     * Profildatei) — nur ein Vorschlag (D16), greift nur ohne Org-Default.
      */
     private function branchProfileDefault(?Organization $organization): ?string {
         $code = $this->settings($organization)['branch_profile_code'] ?? null;
@@ -196,7 +191,10 @@ class NavFocusService {
         return $this->defaultFor($organization);
     }
 
-    /** @param array<string, mixed> $def @param array<string, mixed> $labels */
+    /**
+     * @param array<string, mixed> $def
+     * @param array<string, mixed> $labels
+     */
     private function labelFrom(array $def, array $labels, string $key): string {
         $override = $labels[$key] ?? null;
         if (is_string($override) && $override !== '') {

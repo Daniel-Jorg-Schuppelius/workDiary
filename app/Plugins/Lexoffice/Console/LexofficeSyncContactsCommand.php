@@ -49,10 +49,8 @@ class LexofficeSyncContactsCommand extends Command {
             $policyValue = (string) ($this->option('policy') ?: $config['match_policy']);
             $policy = LexofficeMatchPolicy::fromSetting($policyValue);
             $stageUnmatched = (bool) $this->option('stage-unmatched');
-            // Staging hat Vorrang: ist es aktiv, neutralisiert es das in der
-            // Plugin-Config gesetzte create_missing_local (fehlende Kontakte
-            // werden zum Mergen in die Inbox gestellt statt blind angelegt).
-            // Explizites CLI --create-missing bleibt davon unberührt.
+            // Staging hat Vorrang: aktiv neutralisiert es create_missing_local aus der Plugin-Config (fehlende
+            // Kontakte gehen zum Mergen in die Inbox statt blind angelegt). CLI --create-missing bleibt unberührt.
             $createMissing = (bool) $this->option('create-missing') || ($config['create_missing_local'] && ! $stageUnmatched);
             $only = (string) ($this->option('only') ?: 'both');
             if (! in_array($only, ['both', 'customers', 'suppliers'], true)) {

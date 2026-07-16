@@ -84,10 +84,8 @@ class GlobalSearchController extends Controller {
                 ->all(),
         );
 
-        // Aufträge / Tagebucheinträge (MVP-014): durchsucht Titel, Beschreibung
-        // und Rückmeldung. Sichtbarkeit wie der Index — wer kein diary.viewAny
-        // besitzt (und kein Admin ist), sieht ausschließlich EIGENE oder ihm
-        // zugewiesene Aufträge. Mandantengrenze über den Organization-Scope.
+        // Aufträge / Tagebucheinträge (MVP-014): Sichtbarkeit wie der Index — ohne
+        // diary.viewAny (und kein Admin) nur EIGENE bzw. zugewiesene Aufträge.
         $diaryQuery = DiaryEntry::query()
             ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
             ->where(fn($q) => $q->whereLikeEscaped('title', $term)
@@ -188,10 +186,8 @@ class GlobalSearchController extends Controller {
             );
         }
 
-        // Kommunikationsnotizen (MVP-012): nur mit communication.viewAny;
-        // der visibleTo-Scope blendet vertrauliche Notizen Dritter aus
-        // (sichtbar nur für Erfasser + communication.confidential.manage).
-        // Mandantengrenze: BelongsToOrganization-Global-Scope.
+        // Kommunikationsnotizen (MVP-012): nur mit communication.viewAny; der
+        // visibleTo-Scope blendet vertrauliche Notizen Dritter aus.
         if (Gate::allows('viewAny', CommunicationNote::class)) {
             $notes = CommunicationNote::query()
                 ->visibleTo($user)

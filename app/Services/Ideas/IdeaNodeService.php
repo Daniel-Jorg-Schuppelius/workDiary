@@ -40,10 +40,8 @@ class IdeaNodeService {
                 'title' => $title,
                 'color' => IdeaNodeColor::Default->value,
                 'sort_order' => $sort + 1,
-                // Explizit setzen (statt auf den DB-Default zu vertrauen): sonst
-                // trägt die zurückgegebene In-Memory-Instanz lock_version = null,
-                // der Editor sendet 0, und die erste Mutation scheitert an
-                // `min:1` (HTTP 422). Muss dem Migrations-Default entsprechen.
+                // Explizit setzen (statt DB-Default): sonst trägt die In-Memory-Instanz lock_version = null, der Editor
+                // sendet 0, und die erste Mutation scheitert an `min:1` (HTTP 422). Muss dem Migrations-Default entsprechen.
                 'lock_version' => 1,
                 'created_by' => $actor?->id,
             ]);
@@ -75,9 +73,8 @@ class IdeaNodeService {
 
         $node->refresh();
 
-        // Das atomare Query-Update feuert keine Eloquent-Events — Verlauf
-        // (MVP-108) daher explizit schreiben. Reine Positionsänderungen
-        // (Canvas-Drag) bleiben bewusst außen vor (Rauschen).
+        // Atomares Query-Update feuert keine Eloquent-Events — Verlauf (MVP-108) explizit schreiben. Reine
+        // Positionsänderungen (Canvas-Drag) bleiben bewusst außen vor (Rauschen).
         $audited = array_intersect_key($allowed, array_flip(['title', 'note', 'color', 'node_status']));
         if ($audited !== []) {
             $node->audit('updated', ['after' => $audited]);
@@ -146,8 +143,7 @@ class IdeaNodeService {
     /** Stellt einen gelöschten Knoten samt Teilbaum wieder her. */
     public function restoreSubtree(IdeaNode $node): void {
         DB::transaction(function () use ($node): void {
-            // Hängt der Elternknoten selbst im Papierkorb, wird unter der Wurzel
-            // wiederhergestellt (kein Restore in einen unsichtbaren Zweig).
+            // Hängt der Elternknoten im Papierkorb, wird unter der Wurzel wiederhergestellt (kein Restore in unsichtbaren Zweig).
             $parent = $node->parent()->withTrashed()->first();
             if ($parent !== null && $parent->trashed()) {
                 $root = $node->map()->firstOrFail()->rootNode()->firstOrFail();

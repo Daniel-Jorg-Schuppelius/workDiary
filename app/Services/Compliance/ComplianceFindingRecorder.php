@@ -98,12 +98,8 @@ final class ComplianceFindingRecorder {
                 }
             }
 
-            // Auto-„behoben": Befunde im Scan-Fenster, die in diesem Lauf NICHT
-            // erneut erkannt wurden und noch nicht behoben sind. Abgrenzung über
-            // die in diesem Lauf berührten IDs (exakt, unabhängig von
-            // Timestamp-Präzision). Ältere Befunde ausserhalb des Fensters
-            // (scope_date < from) bleiben unangetastet — dieser Zeitraum wurde
-            // nicht neu gescannt.
+            // Auto-„behoben": Befunde im Scan-Fenster, die dieser Lauf nicht erneut erkannte, abgegrenzt
+            // über die berührten IDs. Ältere ausserhalb des Fensters (scope_date < from) bleiben unberührt.
             ComplianceFinding::query()
                 ->where('organization_id', $orgId)
                 ->whereIn('status', [

@@ -38,9 +38,7 @@ trait BelongsToOrganization {
                 }
             }
 
-            // Fallback: organization_id vom zugehörigen Benutzer ableiten.
-            // Hilfreich in Konsolen-/Queue-/Test-Kontexten, in denen kein
-            // HTTP-Request die currentOrganization-Bindung gesetzt hat.
+            // Fallback: organization_id vom Benutzer ableiten (Konsole/Queue/Test ohne currentOrganization-Bindung).
             if (
                 empty($model->organization_id)
                 && array_key_exists('user_id', $model->getAttributes())
@@ -54,12 +52,8 @@ trait BelongsToOrganization {
                 }
             }
 
-            // Verhindert „Waisen"-Records: wenn ein eingeloggter Benutzer
-            // ohne Organisations-Zuordnung versucht, einen tenant-scoped
-            // Datensatz anzulegen, brechen wir mit klarer Fehlermeldung ab.
-            // Konsolen-/Queue-/Seeder-Kontexte ohne Auth bleiben unberührt;
-            // sie müssen organization_id ohnehin explizit setzen oder per
-            // Model::withoutEvents() bewusst globale Vorlagen erzeugen.
+            // Verhindert Waisen-Records: eingeloggter Benutzer ohne Org-Zuordnung darf keinen
+            // tenant-scoped Datensatz anlegen. Auth-lose Kontexte (Konsole/Queue/Seeder) bleiben unberührt.
             if (
                 empty($model->organization_id)
                 && Auth::check()

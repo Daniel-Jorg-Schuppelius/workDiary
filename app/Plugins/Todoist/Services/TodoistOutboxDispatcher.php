@@ -20,16 +20,11 @@ use App\Plugins\Todoist\TodoistPlugin;
 use RuntimeException;
 
 /**
- * Exportiert WorkDiary-geführte Aufgabenänderungen nach Todoist
- * (Feature 055, MVP-114) — Gegenstück zum Import-Feldadapter: title→content,
- * priority urgent/high/medium/low→4/3/2/1, due_date→due_date,
- * time_budget→duration (Minuten), assigned_to→responsible_uid (nur über
- * explizite Kollaborator-Zuordnung), Done-Grenze→close/reopen. Der Dispatcher
- * liest den AKTUELLEN lokalen Stand und überträgt nur Felder, die von der
- * gemeinsamen Konfliktbasis (`base` im ExternalReference-Payload) abweichen;
- * nach Erfolg wird `base` genau für die übertragenen Felder fortgeschrieben
- * (sonst Phantom-Konflikte beim nächsten Import). Löschungen werden nie
- * weitergegeben (kein `data:delete`-Scope).
+ * Exportiert WorkDiary-geführte Aufgabenänderungen nach Todoist (Feature 055,
+ * MVP-114). Überträgt nur Felder, die von der gemeinsamen Konfliktbasis (`base`
+ * im ExternalReference-Payload) abweichen, und schreibt `base` nach Erfolg fort
+ * (sonst Phantom-Konflikte). Löschungen werden nie weitergegeben (kein
+ * `data:delete`-Scope).
  */
 class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
     public const OP_TASK_UPDATE = 'task.update';
@@ -49,10 +44,9 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
     }
 
     /**
-     * Legt eine lokal entstandene Aufgabe in Todoist an und verankert sie über
-     * eine neue {@see ExternalReference} inkl. initialem `base`-Snapshot
-     * (Konfliktbasis). Doppelanlage-Schutz: eine bereits verknüpfte Aufgabe wird
-     * übersprungen (idempotent zusammen mit dem Outbox-Schlüssel).
+     * Legt eine lokal entstandene Aufgabe in Todoist an und verankert sie über eine
+     * neue {@see ExternalReference} inkl. initialem `base`-Snapshot; bereits
+     * verknüpfte Aufgaben werden übersprungen (idempotent).
      */
     private function dispatchCreate(IntegrationOutboxEntry $entry): bool {
         $payload = $entry->payload;
@@ -84,9 +78,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             throw new RuntimeException('Todoist-Verbindung inaktiv.'); // Queue wiederholt
         }
 
-        // Idempotenz gegen Queue-Retry nach Teil-Erfolg (createTask ok,
-        // Crash vor ExternalReference::create): stabiler X-Request-Id je
-        // Outbox-Eintrag — Todoist dedupliziert den zweiten Create.
+        // Idempotenz gegen Queue-Retry: stabiler X-Request-Id je Outbox-Eintrag — Todoist dedupliziert den zweiten Create.
         $created = (new TodoistApiClient($connection))->createTask(
             $this->buildCreatePayload($task, $link),
             substr(hash('sha256', 'todoist-task-create-' . $entry->id), 0, 36),
@@ -153,8 +145,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
 
     private function dispatchUpdate(IntegrationOutboxEntry $entry): bool {
         $payload = $entry->payload;
-        // task_id aus dem Payload (Observer) oder dem Morph-Subject (z. B.
-        // „lokal behalten"-Entscheidung aus der Inbox, MVP-116).
+        // task_id aus dem Payload (Observer) oder dem Morph-Subject (Inbox-Entscheidung, MVP-116).
         $task = Task::query()->withoutGlobalScopes()->find((int) ($payload['task_id'] ?? $entry->subject_id ?? 0));
         if (! $task instanceof Task) {
             return true; // lokal gelöscht → keine Löschweitergabe, nichts zu übertragen
@@ -185,9 +176,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
         $refPayload = (array) ($reference->payload ?? []);
         $base = (array) ($refPayload['base'] ?? []);
 
-        // Offener Feldkonflikt (Import hat beidseitige Änderung erkannt):
-        // die betroffenen Felder dürfen NICHT exportiert werden, sonst käme
-        // Last-write-wins durch die Hintertür — Auflösung nur über die Inbox.
+        // Offener Feldkonflikt: betroffene Felder nicht exportieren, sonst Last-write-wins durch die Hintertür — Auflösung nur über die Inbox.
         $conflicted = (array) (IntegrationInboxItem::query()->withoutGlobalScopes()
             ->where('organization_id', $entry->organization_id)
             ->where('plugin_id', TodoistPlugin::ID)
@@ -195,8 +184,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             ->where('status', IntegrationInboxItem::STATUS_OPEN)
             ->value('diff_fields') ?? []);
 
-        // Nur Felder übertragen, die wirklich von der Konfliktbasis abweichen —
-        // hat der Import die Basis inzwischen fortgeschrieben, ist nichts zu tun.
+        // Nur von der Konfliktbasis abweichende Felder übertragen.
         $diff = [];
         foreach (TodoistImportService::SYNCED_FIELDS as $field) {
             if (in_array($field, $conflicted, true)) {
@@ -265,9 +253,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             $api->updateTask($externalId, $update);
         }
 
-        // Statuswechsel: (1) Abschnitts-Move, sofern der Status einer Todoist-
-        // Sektion zugeordnet ist (Gegenstück zur Import-Section-Map, kein
-        // Ping-Pong dank base-Fortschreibung), (2) Done-Grenze über close/reopen.
+        // Statuswechsel: (1) Abschnitts-Move bei zugeordneter Sektion, (2) Done-Grenze über close/reopen.
         if (in_array('status', $diff, true)) {
             $statusExported = false;
 
@@ -298,8 +284,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             }
             $refPayload['base'] = $base;
             if (in_array('status', $exported, true)) {
-                // done wurde lokal gesetzt → lokal geführt: Todoist-Reopen setzt
-                // nicht zurück (done_origin bleibt leer, Regel aus MVP-113).
+                // done lokal gesetzt → lokal geführt: Todoist-Reopen setzt nicht zurück (Regel aus MVP-113).
                 $refPayload['done_origin'] = null;
             }
             $reference->forceFill(['payload' => $refPayload, 'synced_at' => now()])->save();

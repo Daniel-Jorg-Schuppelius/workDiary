@@ -32,15 +32,12 @@ class FlexCalculator {
     }
 
     public function actualMinutes(User $user, CarbonInterface $day): int {
-        // 1. Stempelzeiten (Attendance) sind die primäre Quelle für Ist-Arbeitszeit.
-        //    Geschlossene Stempelungen liefern bereits eine pausenbereinigte
-        //    `duration_minutes`. Offene Stempelungen (z. B. heute laufend)
-        //    werden live bis jetzt hochgerechnet.
+        // 1. Stempelzeiten (Attendance) sind primär: geschlossene liefern pausenbereinigte `duration_minutes`,
+        //    offene (heute laufend) werden live hochgerechnet.
         $attendanceMinutes = $this->attendanceMinutes($user, $day);
 
-        // 2. Zusätzlich manuelle TimeEntries OHNE Attendance-Bezug (z. B. nachträglich
-        //    erfasste Projektzeiten ohne Stempeluhr). TimeEntries, die an eine
-        //    Attendance gehängt sind, würden doppelt zählen und werden ausgeschlossen.
+        // 2. Zusätzlich manuelle TimeEntries OHNE Attendance-Bezug; an eine Attendance gehängte würden doppelt
+        //    zählen und werden ausgeschlossen.
         $entryMinutes = (int) TimeEntry::query()
             ->where('user_id', $user->id)
             ->whereDate('date', $day->toDateString())
@@ -70,8 +67,7 @@ class FlexCalculator {
                 $sum += (int) $a->duration_minutes;
                 continue;
             }
-            // Offene Stempelung: live bis jetzt rechnen (nur, wenn der
-            // Start in der Vergangenheit liegt).
+            // Offene Stempelung: live bis jetzt rechnen (nur wenn der Start in der Vergangenheit liegt).
             if ($a->started_at !== null && $a->started_at->lessThan($now)) {
                 $gross = (int) $a->started_at->diffInMinutes($now, false);
                 $breaks = (int) ($a->break_minutes_auto ?? 0) + (int) ($a->break_minutes_manual ?? 0);

@@ -42,10 +42,8 @@ final class BillingBlock {
     ) {}
 
     public function billedHours(): float {
-        // 3 NK (statt 2): die Mengen-Quantisierung war die Hauptursache der
-        // Abweichung zwischen Rechnungsbetrag und TimeEntry-Umsatz-Snapshot
-        // (50 min @ 85 €/h: 0,83 h × 85 = 70,55 € statt 70,83 €). Ein
-        // Cent-Rest bleibt konstruktionsbedingt (Menge × Preis) möglich.
+        // 3 NK (statt 2): die Mengen-Quantisierung war die Hauptursache der Abweichung Rechnungsbetrag ↔
+        // TimeEntry-Snapshot (50 min @ 85 €/h: 0,83 h × 85 = 70,55 statt 70,83). Ein Cent-Rest bleibt möglich.
         return round($this->billedMinutes / 60.0, 3);
     }
 

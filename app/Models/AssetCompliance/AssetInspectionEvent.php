@@ -56,9 +56,7 @@ class AssetInspectionEvent extends Model {
     ];
 
     protected static function booted(): void {
-        // Prüfprotokolle sind unveränderbare Nachweise: nach dem Anlegen
-        // sind nur versionierte Korrekturen (neues Event mit supersedes_id)
-        // zulässig.
+        // Unveränderbarer Nachweis: nur versionierte Korrekturen (neues Event mit supersedes_id).
         static::updating(function (): bool {
             return false;
         });

@@ -19,15 +19,10 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Nimmt eine geparste Eingangsnachricht in die Integrations-Inbox auf
- * (Feature 056, MVP-117) — **Inbox-First, nie blind anlegen**:
- *
- * - **Dublettenschutz** über die Message-ID (`dedupe_key = 'message:…'`,
- *   abgesichert durch den Unique-Index org+plugin+dedupe_key).
- * - **Zuordnung** der Absenderadresse zu einem Kunden über den
- *   {@see EntityMatcher} ({@see CustomerMatchProfile}); E-Mail matcht als
- *   `likely` → landet als **ambiguous** (Mensch entscheidet), ohne Treffer als
- *   **unmatched**. Es entsteht nie automatisch ein Datensatz.
- * - **Herkunftsnachweis** (Postfach, Message-ID) im `remote_snapshot` (DoD 056).
+ * (Feature 056, MVP-117) — Inbox-First, nie blind anlegen: Dublettenschutz über
+ * die Message-ID (Unique-Index org+plugin+dedupe_key), Kunden-Zuordnung nur als
+ * Vorschlag ({@see EntityMatcher}/{@see CustomerMatchProfile}; Treffer →
+ * ambiguous, sonst unmatched), Herkunftsnachweis im `remote_snapshot` (DoD 056).
  */
 class MailIntakeService {
     public const PLUGIN_ID = 'email';
@@ -45,10 +40,8 @@ class MailIntakeService {
      * @return 'created'|'skipped'|'ticket_message'|'einvoice'
      */
     public function intake(Organization $organization, EmailConnection $connection, ParsedMessage $message): string {
-        // E-Rechnungs-Postfach (Feature 066, MVP-165): Anhänge eines dedizierten
-        // Rechnungs-Postfachs laufen durch DIESELBE Eingangsverarbeitung wie der
-        // Upload (Hash-Dedup, Parse, Validierung, Prüfbereich). Nicht lesbare
-        // Nachrichten fallen in die normale Inbox durch — nichts geht verloren.
+        // E-Rechnungs-Postfach (Feature 066, MVP-165): Anhänge laufen durch dieselbe
+        // Eingangsverarbeitung wie der Upload; nicht lesbare Nachrichten fallen in die normale Inbox durch.
         if ($connection->einvoice_intake && $message->attachments !== []) {
             $result = $this->intakeEInvoices($organization, $connection, $message);
             if ($result !== null) {
@@ -56,10 +49,8 @@ class MailIntakeService {
             }
         }
 
-        // Ticket-Pipeline (Feature 065, P2): Ist das Postfach einer Queue
-        // zugeordnet, greift zuerst das Mail-Threading — eine Antwort auf
-        // eine bekannte Ticket-Nachricht (In-Reply-To/References) oder eine
-        // Ticket-Nummer im Betreff hängt die Mail ans bestehende Ticket.
+        // Ticket-Pipeline (Feature 065, P2): bei Queue-Postfach greift zuerst das
+        // Mail-Threading (In-Reply-To/References oder Ticket-Nr. im Betreff → bestehendes Ticket).
         $queue = \App\Models\ServiceQueue::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $connection->organization_id)
@@ -87,9 +78,7 @@ class MailIntakeService {
                     $message->subject,
                 );
 
-                // Anhänge der Kundenmail (MVP-152): dieselbe Whitelist-/Größen-
-                // Policy wie beim Inbox-Intake, dann idempotent an die neue
-                // Nachricht kopieren (Dedupe zusätzlich über die Message-ID oben).
+                // Anhänge der Kundenmail (MVP-152): dieselbe Whitelist-/Größen-Policy wie beim Inbox-Intake, idempotent kopiert.
                 if ($message->attachments !== []) {
                     $stored = $this->attachments->persistFromMessage($organization, $message);
                     $conversation->attachStoredMailAttachments($ticketMessage, $stored);

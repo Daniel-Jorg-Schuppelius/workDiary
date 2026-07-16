@@ -57,11 +57,9 @@ class NotificationDispatcher {
         string $stage = NotificationDispatchLog::STAGE_INITIAL,
         bool $dedup = false,
     ): int {
-        // Additiver Webhook-Hook (Feature 008): jedes real gefeuerte
-        // Ereignis, das eine WebhookEvent-Entsprechung hat, wird an die
-        // aktiven, abonnierten Endpunkte der Organisation gefächert — ohne
-        // Einfluss auf die Benachrichtigungs-Geschäftslogik. Nur die initiale
-        // Stufe wird publiziert (Eskalationen sind rein interne Vorgänge).
+        // Additiver Webhook-Hook (Feature 008): nur die initiale Stufe wird an
+        // die aktiven, abonnierten Endpunkte der Org gefächert (Eskalationen
+        // bleiben intern) — ohne Einfluss auf die Benachrichtigungslogik.
         if ($stage === NotificationDispatchLog::STAGE_INITIAL) {
             $this->publishWebhook($event, $subject, $payload);
             $this->publishChatChannels($event, $subject, $payload);
@@ -85,15 +83,11 @@ class NotificationDispatcher {
     }
 
     /**
-     * Eskalationsleiter (Scanner): wenn die Erst-Benachrichtigung länger als
-     * escalate_after_hours zurückliegt und das Subjekt weiterhin unerledigt
-     * ist, zusätzlich (einmalig) an die Eskalations-Rolle senden (Stufe 1,
-     * Bestand). Optional konfigurierte weitere Stufen (MVP-331, Bauturbo A11)
-     * feuern je einmalig, wenn der Versand der VORHERIGEN Stufe länger als
-     * ihre eigene Frist zurückliegt: Stufe 2 nach dem Stufe-1-Versand,
-     * Stufe 3 nach dem Stufe-2-Versand — jede an ihre eigene Empfängergruppe
-     * (Rollen/feste User). Ohne Stufen-Konfiguration verhält sich die Regel
-     * exakt wie vor MVP-331 (einstufig).
+     * Eskalationsleiter (Scanner): liegt der Versand der jeweils vorherigen
+     * Stufe länger als deren Frist zurück und ist das Subjekt weiter unerledigt,
+     * feuert die nächste Stufe je einmalig an ihre eigene Empfängergruppe.
+     * Stufe 1 = escalate_after_hours ab Erst-Benachrichtigung; Stufen 2/3
+     * optional (MVP-331). Ohne Stufen-Konfiguration einstufig wie zuvor.
      *
      * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
      */
@@ -503,14 +497,11 @@ class NotificationDispatcher {
     }
 
     /**
-     * Additiver Kalender-Kanal (MVP-331, Bauturbo A11): terminartige
-     * Ereignisse (Payload mit `due_at`) werden — sofern die Regel den Kanal
-     * „Kalender" wählt — asynchron als Kalendereintrag in die verbundenen
-     * Kalender der Organisation publiziert ({@see CalendarEventPublishJob},
-     * A8-Publish-Infrastruktur: CalDAV/Microsoft 365/Google). Idempotent über
-     * die stabile UID + ExternalReference: erneutes Feuern (z. B. dueSoon →
-     * overdue) aktualisiert den Eintrag statt ihn zu duplizieren. Ohne
-     * Kalender-Verbindung passiert still nichts (kein Fehler).
+     * Additiver Kalender-Kanal (MVP-331): terminartige Ereignisse (Payload mit
+     * `due_at`) werden bei gewähltem Kalender-Kanal asynchron in die verbundenen
+     * Kalender publiziert ({@see CalendarEventPublishJob}). Idempotent über
+     * stabile UID + ExternalReference (erneutes Feuern aktualisiert statt
+     * dupliziert); ohne Kalender-Verbindung passiert still nichts.
      *
      * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
      */

@@ -50,10 +50,8 @@ class AttendanceClockService {
      */
     public function clockIn(User $user, array $context = []): Attendance {
         return DB::transaction(function () use ($user, $context) {
-            // Per-User serialisieren: MySQL (prod) kennt keinen partiellen
-            // Unique-Index auf `ended_at IS NULL` (nur SQLite/PG), sonst laufen
-            // zwei parallele Kommen-Requests/Terminal-Retries beide an current()
-            // vorbei und legen ZWEI offene Stempel an (doppelte Arbeitszeit).
+            // Per-User serialisieren: MySQL (prod) kennt keinen partiellen Unique-Index auf `ended_at IS NULL`
+            // (nur SQLite/PG), sonst legen zwei parallele Kommen-Requests zwei offene Stempel an (doppelte Arbeitszeit).
             User::query()->whereKey($user->id)->lockForUpdate()->first();
 
             if ($this->current($user)) {
@@ -69,8 +67,7 @@ class AttendanceClockService {
                 'user_id' => $user->id,
                 'started_at' => $start,
                 'ended_at' => null,
-                // 'date' wird im Model-Hook (Attendance::booted) aus started_at in
-                // der aktiven Anzeige-Zeitzone abgeleitet – nicht hier in UTC.
+                // 'date' wird im Model-Hook (Attendance::booted) aus started_at in der Anzeige-Zeitzone abgeleitet – nicht hier in UTC.
                 'source' => $context['source'] ?? AttendanceSource::Clock->value,
                 'status' => AttendanceStatus::Open->value,
                 'started_lat' => $context['lat'] ?? null,
@@ -116,8 +113,7 @@ class AttendanceClockService {
                 $attendance->break_minutes_manual = (int) $context['break_minutes'];
                 $attendance->break_started_at = null;
             } elseif ($attendance->break_started_at !== null) {
-                // Noch laufende Terminal-Pause wird zum Gehen-Zeitpunkt beendet und
-                // die verstrichenen Minuten mitgezählt.
+                // Noch laufende Terminal-Pause wird zum Gehen-Zeitpunkt beendet und die Minuten mitgezählt.
                 $attendance->break_minutes_manual = (int) $attendance->break_minutes_manual
                     + max(0, (int) $attendance->break_started_at->diffInMinutes($end));
                 $attendance->break_started_at = null;

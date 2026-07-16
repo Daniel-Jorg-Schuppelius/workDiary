@@ -17,10 +17,9 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
- * Admin-Oberfläche für die White-Label-/Branding-Einstellungen der
- * aktuellen Organisation: Stammdaten, Kontakt, Rechtliches, Farben und
- * pro-PDF-Typ Toggles. Die eigentlichen Logo-Uploads laufen über den
- * AttachmentController (Polymorphic Attachment + meta_type).
+ * Admin-Oberfläche für die White-Label-/Branding-Einstellungen der aktuellen
+ * Organisation (Stammdaten, Kontakt, Rechtliches, Farben, pro-PDF-Typ Toggles).
+ * Logo-Uploads laufen über den {@see AttachmentController}.
  */
 class BrandingController extends Controller {
     public function edit(): View|RedirectResponse {
@@ -75,9 +74,7 @@ class BrandingController extends Controller {
             'branding.pdf.*.show_footer' => ['nullable', 'boolean'],
         ]);
 
-        // Checkbox-Booleans für nicht gesendete Werte vorbelegen, sonst
-        // bleibt der bisherige Wert in der DB. Wir wollen aber explizit
-        // den UI-Zustand übernehmen.
+        // Nicht gesendete Checkbox-Booleans vorbelegen, sonst bleibt der alte DB-Wert stehen statt den UI-Zustand zu übernehmen.
         $pdfTypes = array_keys((array) config('branding.pdf', []));
         foreach ($pdfTypes as $type) {
             $data['branding']['pdf'][$type]['show_contact'] = (bool) ($request->input("branding.pdf.$type.show_contact"));
@@ -100,9 +97,7 @@ class BrandingController extends Controller {
         $current['branding'] = $branding;
         $organization->update(['settings' => $current]);
 
-        // Cache der BrandingService-Resolution invalidieren wäre nice,
-        // ist hier aber unnötig – jede Request resolved frisch und der
-        // Service hält nur In-Memory-State pro Request.
+        // Keine Cache-Invalidierung nötig: BrandingService hält nur In-Memory-State pro Request.
 
         return redirect()
             ->route('admin.branding.edit')
@@ -110,12 +105,10 @@ class BrandingController extends Controller {
     }
 
     /**
-     * Ermittelt die Organisation des eingeloggten Admins. Ohne
-     * Organisation-Kontext gibt es nichts zu branden → 404.
+     * Ermittelt die Organisation des eingeloggten Admins.
      */
     private function currentOrganization(): ?Organization {
-        // Bevorzugt das vom SetOrganizationContext-Middleware gebundene
-        // Modell verwenden – das ist die Single-Source-of-Truth des Requests.
+        // Bevorzugt das vom SetOrganizationContext-Middleware gebundene Modell (Single-Source-of-Truth des Requests).
         if (app()->bound('currentOrganization')) {
             $bound = app('currentOrganization');
             if ($bound instanceof Organization) {
@@ -130,8 +123,7 @@ class BrandingController extends Controller {
     }
 
     /**
-     * Entfernt leere Strings/Null-Werte rekursiv, damit unten die
-     * config-Defaults greifen, sobald ein Feld geleert wird.
+     * Entfernt leere Strings/Null-Werte rekursiv, damit die config-Defaults greifen, sobald ein Feld geleert wird.
      *
      * @param  array<string, mixed>  $values
      * @return array<string, mixed>

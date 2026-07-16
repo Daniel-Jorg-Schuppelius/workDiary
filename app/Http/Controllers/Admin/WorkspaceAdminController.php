@@ -21,12 +21,10 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Admin-Seite „Arbeitsbereiche" (Feature 082, MVP-379): Org-Admins kuratieren,
- * welche der Produkt-Arbeitsbereiche in ihrer Organisation angeboten werden,
- * benennen sie optional um und setzen einen Org-Default. Rein kosmetisch
- * (D13/D16): der Fokus ändert keine Rechte/Module; der Default ist immer nur
- * vorschlagend, der Nutzer wählt frei. Recht analog zum Funktionsumfang
- * (`organization.scope.manage`).
+ * Admin-Seite „Arbeitsbereiche" (Feature 082): Org-Admins kuratieren die
+ * angebotenen Arbeitsbereiche, benennen sie um und setzen einen Org-Default.
+ * Rein kosmetisch (D13/D16) — ändert keine Rechte/Module, der Default schlägt
+ * nur vor. Recht: `organization.scope.manage`.
  */
 class WorkspaceAdminController extends Controller {
     public function __construct(private readonly NavFocusService $focus) {}
@@ -40,8 +38,7 @@ class WorkspaceAdminController extends Controller {
         $available = $settings[NavFocusService::SETTING_AVAILABLE] ?? null;
         $labels = is_array($settings[NavFocusService::SETTING_LABELS] ?? null) ? $settings[NavFocusService::SETTING_LABELS] : [];
 
-        // Alle Produkt-Bereiche als Zeilen (auch nicht angebotene, damit der
-        // Admin sie wieder aktivieren kann). 'all' ist immer angeboten (Pflicht).
+        // Alle Produkt-Bereiche (auch nicht angebotene, zum Reaktivieren); 'all' Pflicht.
         $rows = [];
         foreach ($this->focus->all() as $key => $def) {
             $rows[] = [
@@ -76,8 +73,7 @@ class WorkspaceAdminController extends Controller {
             'labels.*' => ['nullable', 'string', 'max:60'],
         ]);
 
-        // Angebotene Bereiche: gewählte + 'all' (immer). Reihenfolge wie in der
-        // Config, damit der Dialog stabil sortiert bleibt.
+        // Angebotene = gewählte + 'all' (Pflicht); Config-Reihenfolge für stabile Sortierung.
         $chosen = array_values((array) ($data['available'] ?? []));
         $available = array_values(array_filter(
             $keys,
@@ -90,7 +86,7 @@ class WorkspaceAdminController extends Controller {
             $default = 'all';
         }
 
-        // Nur nicht-leere, vom Default abweichende Labels speichern.
+        // Nur nicht-leere Labels übernehmen.
         $labels = [];
         foreach ((array) ($data['labels'] ?? []) as $key => $value) {
             $value = trim((string) $value);

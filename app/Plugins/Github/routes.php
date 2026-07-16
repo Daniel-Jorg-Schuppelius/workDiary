@@ -18,8 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 // Webhook (MVP-129): sessionlos ohne CSRF ('api'-Gruppe) — Autorisierung über
 // die HMAC-Signatur (X-Hub-Signature-256) des Raw-Bodys im Controller,
-// Org-Zuordnung über die plugin_settings-ID im Pfad. Polling heilt Ausfälle;
-// throttle gegen Flooding des unauthentifizierten Endpunkts.
+// Org-Zuordnung über die plugin_settings-ID im Pfad.
 Route::middleware(['api', 'throttle:30,1'])
     ->post('api/webhooks/github/{setting}', GithubWebhookController::class)
     ->name('api.webhooks.github');

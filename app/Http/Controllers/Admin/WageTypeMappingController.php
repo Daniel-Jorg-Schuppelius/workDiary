@@ -20,12 +20,9 @@ use Illuminate\Validation\Rule;
 
 /**
  * Admin-UI für Lohnarten-Mapping + automatische Export-Lieferung
- * (A21 · MVP-019): Listenseite + Modal-CRUD analog admin/cost-center-rules.
- * Zuordnung interner Lohnarten (work.normal, surcharge.<code>, …) auf
- * externe Lohnartennummern je Export-Profil; je Profil optional die
- * automatische Lieferung (E-Mail-Empfänger, SFTP-Ziel — Passwort at-rest
- * verschlüsselt, leere Eingabe behält den Bestand). Pflege durch Admin und
- * Buchhaltung/Lohnbüro (wageTypeMapping.manage).
+ * (A21 · MVP-019): interne Lohnarten → externe Lohnartennummern je
+ * Export-Profil, optional automatische Lieferung (Mail/SFTP-Ziel).
+ * Pflege durch Admin und Buchhaltung/Lohnbüro (wageTypeMapping.manage).
  */
 class WageTypeMappingController extends Controller {
     public function index(): View {
@@ -110,8 +107,7 @@ class WageTypeMappingController extends Controller {
         Gate::authorize('create', WageTypeMapping::class);
         abort_unless(array_key_exists($profile, $this->profileLabels()), 404);
 
-        // Empfänger-Rohtext (Komma/Semikolon/Zeilenumbruch) in eine Liste
-        // überführen, damit die Adress-Validierung je Eintrag greift.
+        // Empfänger-Rohtext splitten, damit die Adress-Validierung je Eintrag greift.
         $rawRecipients = (string) $request->input('mail_recipients_raw', '');
         $recipients = array_values(array_filter(array_map(
             'trim',

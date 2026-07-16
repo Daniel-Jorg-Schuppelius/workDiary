@@ -40,16 +40,12 @@ class AutomationRuleRun extends Model {
     ];
 
     protected static function booted(): void {
-        // RuleEngine wird i. d. R. aus Queue-/Konsolen-Kontexten heraus
-        // aufgerufen, dort ist currentOrganization nicht gebunden. Wir
-        // leiten die Org daher zusätzlich aus der zugehörigen Regel ab.
+        // RuleEngine läuft meist aus Queue/Konsole ohne currentOrganization-Bindung; Org aus der Regel ableiten.
         static::creating(function (self $run): void {
             if (! empty($run->organization_id) || empty($run->rule_id)) {
                 return;
             }
-            // TENANT-BYPASS: Queue-Worker hat keine currentOrganization-Bindung;
-            // organization_id wird direkt aus der zugehörigen AutomationRule
-            // übernommen, deren Mandantengrenze damit auch für den Run greift.
+            // TENANT-BYPASS: organization_id direkt aus der AutomationRule; deren Mandantengrenze gilt auch für den Run.
             $rule = AutomationRule::query()->withoutGlobalScopes()->find($run->rule_id);
             if ($rule instanceof AutomationRule && ! empty($rule->organization_id)) {
                 $run->organization_id = $rule->organization_id;

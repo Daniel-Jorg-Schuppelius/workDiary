@@ -195,9 +195,7 @@ class DiaryEntry extends Model {
             }
 
             if ($entry->isDirty('start_at') || $entry->planned_start_at === null) {
-                // start_at ist als 'datetime' (Carbon), planned_start_at als
-                // 'immutable_datetime' (CarbonImmutable) gecastet — explizit
-                // wandeln, damit die Typen zusammenpassen.
+                // start_at ist 'datetime' (Carbon), planned_start_at 'immutable_datetime' — explizit wandeln.
                 $entry->planned_start_at = $entry->start_at?->toImmutable();
             }
             if ($entry->isDirty('end_at') || $entry->planned_end_at === null) {

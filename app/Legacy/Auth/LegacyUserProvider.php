@@ -19,15 +19,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Authentifiziert zuerst gegen die Legacy-Tabelle user (userpw als Klartext),
- * legt dann bei Erstlogin einen "Schatten"-Datensatz in users an (ohne
- * nutzbares Passwort und mit is_new_system=false) und nutzt danach Standard-
- * Eloquent f\u00fcr alle weiteren Checks. Reine Neu-Accounts (kein
- * legacy_user_id) werden \u00fcber den lokalen Hash gepr\u00fcft.
+ * Authentifiziert zuerst gegen die Legacy-Tabelle `user` (userpw als Klartext),
+ * legt bei Erstlogin einen Schatten-Datensatz in `users` an (kein nutzbares
+ * Passwort, is_new_system=false) und nutzt danach Standard-Eloquent.
  *
- * Wichtig: Legacy-Passw\u00f6rter werden NIE in users.password \u00fcbernommen,
- * damit ein kompromittiertes Legacy-Passwort keinen Zugriff auf das neue
- * System verschaffen kann.
+ * Wichtig: Legacy-Passw\u00f6rter werden NIE nach users.password \u00fcbernommen, damit
+ * ein kompromittiertes Legacy-Passwort keinen Zugriff auf das neue System gibt.
  */
 class LegacyUserProvider extends EloquentUserProvider {
     public function __construct(Hasher $hasher) {
@@ -63,7 +60,7 @@ class LegacyUserProvider extends EloquentUserProvider {
             return null;
         }
 
-        // Schritt 1: Legacy-Tabelle pr\u00fcfen (userpw ist Klartext, varchar 15)
+        // Schritt 1: Legacy-Tabelle pr\u00fcfen (userpw ist Klartext).
         $legacyUser = $this->findLegacyUser($username, $password);
 
         if ($legacyUser) {
@@ -74,8 +71,8 @@ class LegacyUserProvider extends EloquentUserProvider {
                 ->first();
 
             if ($existing instanceof User) {
-                // Vorhandenen Datensatz nur in unkritischen Feldern auffrischen.
-                // password und is_new_system bleiben unangetastet.
+                // Nur unkritische Felder auffrischen; password und is_new_system
+                // bleiben unangetastet.
                 $existing->fill([
                     'name' => $legacyUser->uname,
                     'email' => $existing->email ?: ($legacyUser->email ?: $legacyUser->uname . '@workdiary.local'),
@@ -94,15 +91,13 @@ class LegacyUserProvider extends EloquentUserProvider {
             ]);
         }
 
-        // Schritt 2: Fallback auf lokale Users-Tabelle (f\u00fcr im neuen System
-        // freigeschaltete/portierte Accounts mit eigenem Passwort). Portal-
-        // Accounts (`customer_id IS NOT NULL`) sind hier explizit ausgeschlossen,
-        // damit sie nie ueber den internen Guard authentifiziert werden koennen.
+        // Schritt 2: Fallback auf lokale users-Tabelle (portierte Accounts mit
+        // eigenem Passwort). Portal-Accounts (customer_id IS NOT NULL) sind
+        // ausgeschlossen \u2014 nie \u00fcber den internen Guard authentifizierbar.
         $candidate = parent::retrieveByCredentials(['email' => $username, 'password' => $password]);
 
-        // Unbekannter oder als Portal-Account ausgeschlossener Login: Dummy-bcrypt-
-        // Check, damit die Antwortzeit der eines bekannten Logins entspricht
-        // (Schutz gegen User-Enumeration über Timing-Messung).
+        // Dummy-bcrypt-Check bei unbekanntem/ausgeschlossenem Login, damit die
+        // Antwortzeit gleich bleibt (Schutz gegen Timing-User-Enumeration).
         if (! $candidate instanceof User || $candidate->customer_id !== null) {
             $this->equalizeTiming((string) $password);
 
@@ -132,9 +127,8 @@ class LegacyUserProvider extends EloquentUserProvider {
         if (! $user->canLogin()) {
             return false;
         }
-        // SSO-Pflicht (Feature 057, MVP-120): erzwingt eine Organisation SSO,
-        // ist der Passwort-Login serverseitig gesperrt — Ausnahme ist nur das
-        // Break-Glass-Konto (users.sso_exempt). Gilt für neu UND legacy.
+        // SSO-Pflicht (Feature 057, MVP-120): erzwingt eine Org SSO, ist der
+        // Passwort-Login gesperrt — Ausnahme nur Break-Glass (users.sso_exempt).
         if (! $user->sso_exempt && \App\Models\SsoConnection::enforcementActiveFor($user->organization_id)) {
             return false;
         }
@@ -142,9 +136,8 @@ class LegacyUserProvider extends EloquentUserProvider {
         if ($user->customer_id !== null) {
             return false;
         }
-        // Neu-System-Accounts (inkl. ehemals Legacy-verkn\u00fcpfter, denen ein Admin
-        // ein neues Passwort gesetzt hat) werden per bcrypt gegen users.password
-        // gepr\u00fcft \u2013 unabh\u00e4ngig von einer Legacy-Verkn\u00fcpfung.
+        // Neu-System-Accounts (inkl. ehemals Legacy-verkn\u00fcpfter mit neuem
+        // Passwort): bcrypt gegen users.password, unabh\u00e4ngig von Legacy.
         if ($user->is_new_system) {
             return $this->hasher->check($password, $user->getAuthPassword());
         }
@@ -164,9 +157,8 @@ class LegacyUserProvider extends EloquentUserProvider {
         }
 
         try {
-            // attempt(): überspringt den Connect sofort, wenn die legacy-DB als
-            // down markiert ist, und setzt den Marker bei Verbindungsfehlern —
-            // sonst kostet ein toter Legacy-Host jeden Login einen Connect-Timeout.
+            // attempt() überspringt den Connect, wenn die legacy-DB als down
+            // markiert ist — sonst kostet ein toter Host jeden Login einen Timeout.
             return LegacyConnectivity::attempt(
                 fn (): ?object => DB::connection('legacy')
                     ->table('user')

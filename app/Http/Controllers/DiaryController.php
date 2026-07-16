@@ -196,9 +196,8 @@ class DiaryController extends Controller {
             $timelineLimit,
         );
 
-        // Prozeduren (Feature 026): bereits laufende Läufe + per
-        // ProcedureApplicabilityResolver vorgeschlagene, noch nicht
-        // gestartete Vorlagen für diesen Auftrag.
+        // Prozeduren (Feature 026): laufende Läufe + vorgeschlagene, noch nicht
+        // gestartete Vorlagen.
         $procedureRuns = collect();
         $suggestedProcedures = collect();
         if (Gate::allows(\App\Enums\User\Permission::ProcedureRunView->value)) {
@@ -361,10 +360,9 @@ class DiaryController extends Controller {
         /** @var Collection<int, EntryType> $types */
         $types = EntryType::query()->active()->ordered()->get();
 
-        // Edit-Fall: Der Ist-Typ des Eintrags bleibt wählbar, auch wenn er
-        // inzwischen deaktiviert wurde. Sonst fiele das Select still auf
-        // „ohne Typ" zurück (Typverlust beim Speichern) bzw. der Server
-        // erzwänge Pflichtfelder, die das Formular gar nicht anzeigt.
+        // Edit-Fall: der Ist-Typ bleibt wählbar, auch wenn inzwischen
+        // deaktiviert — sonst droht Typverlust beim Speichern bzw. der Server
+        // erzwingt Pflichtfelder, die das Formular gar nicht anzeigt.
         if ($entry?->entry_type_id !== null && ! $types->contains('id', $entry->entry_type_id)) {
             $current = EntryType::query()->find($entry->entry_type_id);
             if ($current instanceof EntryType) {

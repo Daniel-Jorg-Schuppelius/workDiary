@@ -117,10 +117,8 @@ class ManufacturingOrderController extends Controller {
     /**
      * Erzeugt aus einer Auslieferung einen Versandauftrag und ruft (idempotent)
      * das Label beim gewählten Carrier ab (Feature 059, MVP-128, Rang 20).
-     * Empfänger aus dem Kunden der Auslieferung; Paketgewicht aus dem Formular.
-     * Serien der Auslieferung sind bereits beim Ausliefern an den Empfänger
-     * gebunden (SerialService::ship) — der Versandbezug ergibt sich transitiv über
-     * `stock_delivery_id`.
+     * Versandbezug ergibt sich transitiv über `stock_delivery_id` (Serien sind
+     * beim Ausliefern bereits an den Empfänger gebunden).
      */
     public function createShipment(Request $request, ManufacturingOrder $order, StockDelivery $delivery, ShipmentService $shipping): RedirectResponse {
         Gate::authorize('update', $order);
@@ -137,14 +135,12 @@ class ManufacturingOrderController extends Controller {
         $data = $request->validate([
             'carrier' => ['required', 'string', 'max:24'],
             'weight_grams' => ['required', 'integer', 'min:1', 'max:1000000'],
-            // Optionale Packstück-Maße (cm) — UPS/FedEx übernehmen sie in den
-            // Dimensions-Block; nur wirksam, wenn alle drei angegeben sind.
+            // Optionale Packstück-Maße (cm); UPS/FedEx nur wirksam, wenn alle drei gesetzt.
             'length_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
             'width_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
             'height_cm' => ['nullable', 'integer', 'min:1', 'max:400'],
         ]);
 
-        // Aktive Anbindung für den gewählten Carrier muss existieren.
         $hasConnection = CarrierConnection::query()
             ->where('carrier', $data['carrier'])
             ->where('active', true)

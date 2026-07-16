@@ -22,10 +22,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 /**
- * Admin-UI für ausgehende Webhook-Endpunkte (Feature 008): Listenseite mit
- * Zustellprotokoll + Modal-CRUD. Der Signing-Key (secret) wird verschlüsselt
- * abgelegt und NUR einmalig bei Anlage/Rotation im Klartext angezeigt (Flash);
- * danach nie wieder. Pflege durch Admin (webhook.manage).
+ * Admin-UI für ausgehende Webhook-Endpunkte (Feature 008): Liste mit
+ * Zustellprotokoll + Modal-CRUD. Signing-Key verschlüsselt abgelegt, nur
+ * einmalig bei Anlage/Rotation im Klartext (Flash). Pflege durch Admin
+ * (webhook.manage).
  */
 class WebhookEndpointController extends Controller {
     public function index(): View {
@@ -47,7 +47,7 @@ class WebhookEndpointController extends Controller {
         Gate::authorize('create', WebhookEndpoint::class);
 
         return view('admin.webhooks._form_dialog', [
-            'endpoint' => new WebhookEndpoint(['active' => true, 'events' => []]),
+            'endpoint' => (new WebhookEndpoint())->fill(['active' => true, 'events' => []]),
             'events' => WebhookEvent::cases(),
         ]);
     }
@@ -58,7 +58,7 @@ class WebhookEndpointController extends Controller {
         $data = $this->validated($request);
         $secret = WebhookEndpoint::generateSecret();
 
-        $endpoint = new WebhookEndpoint($data);
+        $endpoint = (new WebhookEndpoint())->fill($data);
         $endpoint->secret = $secret;
         $endpoint->created_by_user_id = $this->authUser()->id;
         $endpoint->save();
@@ -131,9 +131,8 @@ class WebhookEndpointController extends Controller {
             'label' => ['required', 'string', 'max:120'],
             'url' => [
                 'required', 'url', 'max:2048', 'starts_with:https://,http://',
-                // SSRF-Schutz (Konfigurationszeit, ohne blockierendes DNS):
-                // keine offensichtlich internen/privaten Ziele. Die verbindliche
-                // DNS-basierte Prüfung erfolgt zur Laufzeit im WebhookDeliveryJob.
+                // SSRF-Schutz zur Konfigurationszeit (ohne DNS); verbindliche
+                // DNS-Prüfung erfolgt zur Laufzeit im WebhookDeliveryJob.
                 static function (string $attribute, mixed $value, \Closure $fail): void {
                     if (! is_string($value) || ! \App\Support\UrlSafety::isAcceptableExternalHttpUrl($value)) {
                         $fail(__('Die URL muss ein öffentlich erreichbares Ziel sein (keine internen/privaten Adressen).'));

@@ -58,10 +58,8 @@ class AssetAssignmentService {
         }
 
         return DB::transaction(function () use ($asset, $actor, $targetUser, $targetTeam, $expectedReturnAt, $diaryEntry, $conditionOut, $note): AssetAssignment {
-            // Asset-Zeile sperren und Verfügbarkeit/offene Zuweisung INNERHALB
-            // der Transaktion prüfen. Vorher lagen die Guards außerhalb → zwei
-            // parallele Checkouts gaben dasselbe Asset doppelt aus (kein
-            // partieller Unique-Index gegen zwei offene Zuweisungen).
+            // Asset-Zeile sperren und Verfügbarkeit/offene Zuweisung INNERHALB der Transaktion prüfen. Vorher lagen
+            // die Guards außerhalb → zwei parallele Checkouts gaben dasselbe Asset doppelt aus (kein partieller Unique-Index).
             $asset = Asset::query()->whereKey($asset->id)->lockForUpdate()->firstOrFail();
 
             if ($this->isBlocked($asset)) {
@@ -117,8 +115,7 @@ class AssetAssignmentService {
 
             $asset = $assignment->asset()->first();
             if ($asset instanceof Asset) {
-                // Nach Rückgabe wieder verfügbar — sofern kein blockierender
-                // Defekt besteht (dann bleibt/bewegt sich der Status auf blocked).
+                // Nach Rückgabe wieder verfügbar — sofern kein blockierender Defekt besteht (sonst bleibt Status blocked).
                 if ($this->isBlocked($asset)) {
                     $this->syncStatusTo($asset, AssetStatus::Blocked);
                 } else {

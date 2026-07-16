@@ -58,10 +58,8 @@ class SaveTaskRequest extends BaseFormRequest {
                     }
                     $assignable = $project->assignableUsers();
                     if ($assignable->isEmpty()) {
-                        // Kein Team/Mitglied zugeordnet → mindestens die
-                        // Mandantengrenze der Projekt-Organisation erzwingen,
-                        // sonst wären org-fremde Bearbeiter zuweisbar
-                        // (Whitebox-Befund 2026-07).
+                        // Kein Team/Mitglied zugeordnet → mindestens die Mandantengrenze der Projekt-Org erzwingen,
+                        // sonst wären org-fremde Bearbeiter zuweisbar (Whitebox 2026-07).
                         $inOrg = User::query()
                             ->whereKey((int) $value)
                             ->where('organization_id', $project->organization_id)

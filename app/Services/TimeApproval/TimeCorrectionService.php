@@ -104,10 +104,8 @@ class TimeCorrectionService {
 
         $request = $request->refresh();
 
-        // Benachrichtigung (MVP-018, additiv): Entscheider informieren.
-        // Default-Regel: Rolle Teamleitung, nicht der Antragsteller selbst.
-        // Selbstkorrektur-Orgs überspringen — dort wird direkt selfApply()
-        // angewendet, eine Entscheider-Anfrage wäre nur Rauschen.
+        // Benachrichtigung (MVP-018): Entscheider informieren (Default-Regel Teamleitung, nicht der Antragsteller).
+        // Selbstkorrektur-Orgs überspringen — dort greift direkt selfApply().
         if ($this->selfApplicable($request)) {
             return $request;
         }
@@ -313,10 +311,8 @@ class TimeCorrectionService {
             );
         }
 
-        // Übergabe-Guard (Feature 045, additiv): bereits an die Fakturierung
-        // übergebene Zeiteinträge (exported, z. B. via BillingTransfer) dürfen
-        // nicht mehr still korrigiert werden — Korrekturen erfordern eine
-        // Storno-/Differenzübergabe im führenden System.
+        // Übergabe-Guard (Feature 045): bereits an die Fakturierung übergebene Zeiteinträge (exported) dürfen nicht
+        // mehr still korrigiert werden — Korrekturen erfordern eine Storno-/Differenzübergabe im führenden System.
         if (
             $targetType === TimeEntry::class
             && in_array($item->action, ['update', 'delete'], true)

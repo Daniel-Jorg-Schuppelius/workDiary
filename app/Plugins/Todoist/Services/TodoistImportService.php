@@ -22,22 +22,16 @@ use Throwable;
 
 /**
  * Aufgabenimport aus Todoist (Feature 055, MVP-113): je aktiver
- * Projektzuordnung werden Aufgaben cursor-basiert geladen und über stabile
- * Fremdreferenzen aufgelöst — ein externer Task je Org gehört zu genau einer
- * lokalen Aufgabe. Der gemeinsame Feld-Snapshot (`base`) im
- * `ExternalReference.payload` ist die Konfliktbasis (3-Wege, MVP-114):
- * remote geändert + lokal geändert + ungleich → Feld stoppt und landet als
- * `conflict` in der Integrations-Inbox — kein Last-write-wins. Wiederholte
- * Läufe sind idempotent; eine fehlerhafte Aufgabe bricht den Projektlauf
- * nicht ab.
+ * Projektzuordnung werden Aufgaben über stabile Fremdreferenzen aufgelöst
+ * (ein externer Task je Org = eine lokale Aufgabe). Der `base`-Snapshot im
+ * `ExternalReference.payload` ist die 3-Wege-Konfliktbasis (MVP-114):
+ * beidseitig geändert + ungleich → `conflict` in die Integrations-Inbox
+ * statt Last-write-wins. Läufe sind idempotent; eine fehlerhafte Aufgabe
+ * bricht den Projektlauf nicht ab.
  *
- * Feldadapter (fest, getestet — Plan 055): content→title,
- * description→description, checked→done (Reopen nur, wenn `done` aus Todoist
- * stammte), priority 4/3/2/1→urgent/high/medium/low, due.date→due_date
- * (Termine MIT Uhrzeit nur im Todoist-geführten Lesemodus),
- * duration→time_budget, responsible_uid→assigned_to (nur nach Zuordnung),
- * parent_id→parent_task_id (nur innerhalb derselben Projektzuordnung),
- * section_id→open/in_progress (nur über explizite Abschnittszuordnung).
+ * Feldadapter s. {@see self::mapFields()} (Plan 055); nicht-offensichtliche
+ * Regeln (Reopen, Termine nur im Lesemodus, Eltern/Bearbeiter nur nach
+ * Zuordnung) sind an der jeweiligen Codestelle kommentiert.
  */
 class TodoistImportService {
     /** Felder des gemeinsamen base-Snapshots (Konfliktbasis). */

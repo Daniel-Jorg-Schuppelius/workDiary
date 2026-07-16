@@ -20,34 +20,23 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Fängt Datenbank-Verbindungsfehler ab, die in nachgelagerten Middlewares
- * (z. B. StartSession bei SESSION_DRIVER=database) oder Controllern auftreten,
- * und liefert eine schlanke 503-Antwort aus, ohne dass die Session-/Cookie-
- * Schicht erneut auf die Datenbank zugreift.
+ * Fängt DB-Verbindungsfehler nachgelagerter Middlewares/Controller ab und liefert 503,
+ * ohne dass die Session-/Cookie-Schicht erneut auf die DB zugreift. Pflegt einen
+ * Datei-Marker pro Connection (DatabaseHealth) für den Fast-Path.
  *
- * Zusätzlich wird ein Datei-Marker pro Connection gepflegt (DatabaseHealth):
- * - Vor dem Request wird geprüft, ob die Default-Connection als "down" markiert
- *   ist. Trifft das zu, geht sofort 503 raus — ohne erneut 3 s in den
- *   Connect-Timeout zu laufen.
- * - Bei einer Exception wird die betroffene Connection markiert.
- *
- * Diese Middleware muss in der web-Gruppe ganz oben (prepend) registriert sein,
- * damit StartSession innerhalb von $next ausgeführt wird und Exceptions hier
- * abgefangen werden, bevor sie an die globale Pipeline weitergegeben werden.
+ * Muss in der web-Gruppe ganz oben (prepend) stehen, damit StartSession innerhalb von
+ * $next läuft und Exceptions hier vor der globalen Pipeline abgefangen werden.
  */
 class HandleDatabaseUnavailable {
     public function handle(Request $request, Closure $next): Response {
         $defaultConnection = DatabaseHealth::defaultConnection();
 
-        // Fast-Path: Wenn die Default-Verbindung erst kürzlich versagt hat,
-        // sparen wir uns die erneute Wartezeit.
+        // Fast-Path: kürzlich versagte Verbindung spart die erneute Wartezeit.
         if (! DatabaseHealth::isAvailable($defaultConnection)) {
             return $this->renderUnavailable($request, null);
         }
 
-        // Gleicher Fast-Path für den Legacy-Bereich: Er hängt vollständig an
-        // der legacy-Connection. Ist die als down markiert, sofort 503 statt
-        // pro Request erneut in den Connect-Timeout zu laufen.
+        // Gleicher Fast-Path für den Legacy-Bereich (hängt vollständig an der legacy-Connection).
         if ($request->is('legacy', 'legacy/*') && ! DatabaseHealth::isAvailable(LegacyConnectivity::CONNECTION)) {
             return $this->renderUnavailable($request, null);
         }
@@ -79,8 +68,7 @@ class HandleDatabaseUnavailable {
     }
 
     private function markFromException(Throwable $e, string $defaultConnection): void {
-        // Bei QueryException kennt Laravel den exakten Verbindungsnamen,
-        // sonst nehmen wir die Default-Connection an.
+        // QueryException kennt den exakten Verbindungsnamen, sonst Default-Connection.
         $connection = $e instanceof QueryException && $e->connectionName !== ''
             ? $e->connectionName
             : $defaultConnection;

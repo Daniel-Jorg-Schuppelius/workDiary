@@ -30,10 +30,8 @@ class WeekViewService {
      * }
      */
     public function build(CarbonInterface $anchor, User $user, bool $teamScope, ?int $filterUserId = null): array {
-        // Tagesgrenzen in der aktiven Anzeige-Zeitzone (Org/User) verankern, damit
-        // Positionierung und Tagesspalten der lokalen Wanduhr entsprechen. Die
-        // Werte sind echte Instants (lokale Mitternacht) – diffInMinutes/Vergleiche
-        // rechnen instant-basiert, daher ist keine weitere Umrechnung nötig.
+        // Tagesgrenzen in der aktiven Anzeige-Zeitzone verankern, damit Positionierung/Tagesspalten der Wanduhr
+        // entsprechen. Die Werte sind echte Instants (lokale Mitternacht) – Vergleiche rechnen instant-basiert.
         $tz = Tz::current();
         $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();
         $end = $start->addDays(7); // exclusive

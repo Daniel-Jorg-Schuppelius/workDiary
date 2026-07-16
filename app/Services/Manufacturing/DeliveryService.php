@@ -56,10 +56,8 @@ class DeliveryService {
         $qty = $this->positive($qty);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $order, $customer, $allowNegative, $createdBy, $serialIds): StockDelivery {
-            // Lagerbuchung zuerst — schlägt sie fehl (Unterdeckung), entsteht
-            // gar keine Auslieferung. Der Abgang wird über das aktive
-            // Bewertungsverfahren (Durchschnitt/FIFO/FEFO) der Org/des Artikels
-            // gebucht, damit der COGS-Kostensnapshot an der Bewegung steht.
+            // Lagerbuchung zuerst — schlägt sie fehl (Unterdeckung), entsteht keine Auslieferung. Abgang über das
+            // aktive Bewertungsverfahren (Durchschnitt/FIFO/FEFO), damit der COGS-Kostensnapshot an der Bewegung steht.
             $organization = Organization::query()->find($variant->organization_id);
             $issueMovement = $organization instanceof Organization
                 ? ($this->valuation ?? app(InventoryValuationManager::class))->forVariant($variant, $organization)

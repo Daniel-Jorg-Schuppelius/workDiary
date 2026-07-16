@@ -19,18 +19,15 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Massen-Auflösung offener Zuordnungs-Inbox-Items (CASE_UNMATCHED). Läuft jedes
- * Item durch die generische {@see EntityMatcher}-Engine des passenden
- * {@see \App\Services\Integration\Match\MatchProfile} und:
+ * Massen-Auflösung offener Zuordnungs-Inbox-Items über die generische
+ * {@see EntityMatcher}-Engine des passenden
+ * {@see \App\Services\Integration\Match\MatchProfile}: eindeutige Exact-Treffer
+ * automatisch zuordnen (--auto-link), unsichere anreichern, fehlende optional
+ * anlegen (--create).
  *
- *   - eindeutiger Exact-Match  → automatisch zuordnen (mergen, --auto-link)
- *   - mehrere/unsichere Treffer → Kandidaten anreichern, manuell entscheiden
- *   - kein Treffer & --create   → neuen lokalen Datensatz anlegen
- *
- * Die Items werden sequenziell verarbeitet: ein frisch angelegter Datensatz wird
- * für nachfolgende Items zum Exact-Kandidaten, wodurch sich der Stapel selbst
- * dedupliziert. Eine Hijack-Sperre verhindert, dass ein Kandidat gekapert wird,
- * der bereits an eine andere Fremd-ID gebunden ist.
+ * Sequenzielle Verarbeitung, damit ein frisch angelegter Datensatz für Folge-
+ * Items zum Exact-Kandidaten wird (Selbst-Dedup); eine Hijack-Sperre verhindert
+ * das Kapern eines bereits fremd gebundenen Kandidaten.
  */
 class IntegrationResolveInboxCommand extends Command {
     protected $signature = 'integration:resolve-inbox
@@ -140,7 +137,6 @@ class IntegrationResolveInboxCommand extends Command {
         $mapped = (array) ($item->mapped_snapshot ?? []);
         $result = $matcher->match($org, $profile, $mapped);
 
-        // 1. Eindeutiger Exact-Treffer → automatisch zuordnen (mergen).
         $exact = $result->uniqueExact();
         if ($autoLink && $exact instanceof Model) {
             if ($this->wouldHijack($item, $exact)) {
@@ -158,7 +154,6 @@ class IntegrationResolveInboxCommand extends Command {
             return;
         }
 
-        // 2. Mehrere/unsichere Kandidaten → anreichern, manuell entscheiden.
         if (! $result->isEmpty()) {
             $this->markAmbiguous($item, $result, $dry);
             $counters['suggested']++;
@@ -166,7 +161,6 @@ class IntegrationResolveInboxCommand extends Command {
             return;
         }
 
-        // 3. Kein Kandidat → optional neu anlegen.
         if ($create) {
             if (! $dry) {
                 $actions->createFromItem($item);

@@ -38,8 +38,7 @@ class FlexController extends Controller {
         // Admins/Buchhaltung dürfen via ?user=… (Sqid) die Gleitzeit eines anderen Users sehen.
         $rawTarget = (string) $request->input('user', '');
         $targetId = Sqid::decodeOrNumeric(User::class, $rawTarget, (int) $authUser->id);
-        // Mandantengrenze: das Ziel muss zur eigenen Organisation gehören — User
-        // hat keinen globalen OrganizationScope (Whitebox-Befund 2026-07).
+        // Mandantengrenze: Ziel muss zur eigenen Organisation gehören — User hat keinen globalen OrganizationScope (Whitebox-Befund 2026-07).
         $user = ($canSeeOthers && $targetId !== (int) $authUser->id)
             ? User::query()->where('organization_id', $authUser->organization_id)->findOrFail($targetId)
             : $authUser;
@@ -78,12 +77,9 @@ class FlexController extends Controller {
         $year = $active['year'];
         $month = $active['month'];
 
-        // Im Berechtigungs-Modus (Admin/Buchhaltung) alle Mitarbeiter der eigenen
-        // Organisation auflisten: User hat keinen globalen OrganizationScope, daher
-        // muss hier explizit gefiltert werden (sonst tauchen Legacy-/Cross-Org-
-        // Accounts auf). Wir filtern hier NICHT mehr auf bestehende
-        // flexEligibilities, sonst ist die Auswahl in frischen Organisationen
-        // komplett leer und die Berechtigten können niemanden anklicken.
+        // Berechtigungs-Modus: alle Mitarbeiter der eigenen Organisation (User hat
+        // keinen globalen OrganizationScope). Nicht auf flexEligibilities filtern —
+        // sonst ist die Auswahl in frischen Organisationen leer.
         $users = $canSeeOthers && $authUser->organization_id
             ? User::query()
             ->where('organization_id', $authUser->organization_id)
@@ -91,9 +87,7 @@ class FlexController extends Controller {
             ->get()
             : collect();
 
-        // Aktives Arbeitszeit-Modell des Monats (für Badge/typgerechte Anzeige).
-        // Das Badge spiegelt das Modell zum Monatsende; weicht der Monatsanfang
-        // ab, wird auf einen Modellwechsel im Zeitraum hingewiesen.
+        // Aktives Arbeitszeit-Modell zum Monatsende (Badge); weicht der Monatsanfang ab, wird auf einen Modellwechsel hingewiesen.
         $activeStart = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
         $schedFirst = $this->resolver->for($user, $activeStart);
         $schedActive = $this->resolver->for($user, $activeStart->endOfMonth());

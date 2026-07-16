@@ -29,9 +29,7 @@ class WeekController extends Controller {
     private const MAX_WEEKS = 12;
 
     public function __invoke(Request $request, WeekViewService $service, HolidayService $holidays): View|RedirectResponse {
-        // Backward-Compat: alte Bookmarks/Links mit ?date=YYYY-MM-DD setzen einmalig
-        // den globalen Range auf die entsprechende Woche und leiten dann auf die
-        // saubere Wochen-URL um. Der globale Header-Selektor übernimmt danach.
+        // Backward-Compat: ?date=YYYY-MM-DD setzt den globalen Range auf die Woche und leitet auf die saubere URL um.
         if ($request->filled('date')) {
             $date = $this->parseDate((string) $request->query('date'));
             $weekStart = $date->startOfWeek(WeekDay::MONDAY);
@@ -66,10 +64,7 @@ class WeekController extends Controller {
         $today = CarbonImmutable::today();
         [$weekViews, $activeKey] = $this->buildWeekViews($weeks, $service, $authUser, $teamScope, $filterUserId, $today);
 
-        // User-Tabs in Team-Sicht: Vereinigung aller Benutzer, die in den
-        // geladenen Wochen Einträge / Shifts / Notdienste haben. Bewusst
-        // unabhängig vom aktuell gewählten User-Filter, damit nach Auswahl
-        // eines Users die anderen Tabs erhalten bleiben.
+        // Bewusst unabhängig vom User-Filter, damit die anderen Tabs nach Auswahl erhalten bleiben.
         $weekUsers = $this->collectWeekUsers($weekViews, $service, $teamScope);
 
         return view('week.index', [

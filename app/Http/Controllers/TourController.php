@@ -91,8 +91,7 @@ class TourController extends Controller {
         $auth = Auth::user();
         $data = $request->validated();
 
-        // Mandantengrenze: der Fahrer muss zur eigenen Organisation gehören
-        // (kein globaler OrganizationScope auf User — Whitebox-Befund 2026-07).
+        // Mandantengrenze: der Fahrer muss zur eigenen Org gehören (kein globaler OrganizationScope auf User — Whitebox 2026-07).
         $driver = User::query()
             ->where('organization_id', $auth->organization_id)
             ->findOrFail((int) $data['user_id']);
@@ -154,10 +153,8 @@ class TourController extends Controller {
             ->orderBy('id')
             ->get();
 
-        // Flex-Backlog: Aufträge ohne festen Termin, deren Modus den Tour-Tag
-        // sinnvoll trifft (Deadline noch nicht überschritten / Tag im Fenster
-        // / Backlog jederzeit / Wiederkehr fällig). Tour-Planer kann sie als
-        // Lückenfüller einplanen — `service_minutes` hilft beim Auswählen.
+        // Flex-Backlog: Aufträge ohne festen Termin, deren Modus den Tour-Tag trifft (Deadline offen / Tag im
+        // Fenster / Backlog jederzeit / Wiederkehr fällig) — als Lückenfüller einplanbar (`service_minutes` hilft).
         $flexBacklog = DiaryEntry::query()
             ->whereNull('tour_id')
             ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::Problem->value])
@@ -198,9 +195,8 @@ class TourController extends Controller {
     public function update(SaveTourRequest $request, Tour $tour): RedirectResponse {
         Gate::authorize('update', $tour);
 
-        // status NICHT per Massenzuweisung: Übergänge laufen über start()/
-        // complete() (TourService mit Transition-Guards). Direktes Setzen
-        // würde diese Guards und Seiteneffekte umgehen.
+        // status NICHT per Massenzuweisung: Übergänge über start()/complete() (TourService mit Transition-Guards);
+        // direktes Setzen umginge Guards und Seiteneffekte.
         $data = collect($request->validated())->except('status')->all();
         $tour->fill($data)->save();
 

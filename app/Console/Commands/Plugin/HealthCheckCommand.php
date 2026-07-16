@@ -45,8 +45,7 @@ class HealthCheckCommand extends Command {
         $exitCode = self::SUCCESS;
         foreach ($plugins as $plugin) {
             if ($plugin->isPerOrganization()) {
-                // Per-Org-Plugin: je Organisation mit gebundenem Kontext prüfen,
-                // damit healthCheck() den jeweils gespeicherten Schlüssel nutzt.
+                // Per-Org-Plugin: je Organisation mit gebundenem Kontext prüfen (jeweils gespeicherter Schlüssel).
                 foreach (Organization::query()->get() as $org) {
                     app()->instance('currentOrganization', $org);
                     if (! $plugin->isEnabled()) {
@@ -66,11 +65,8 @@ class HealthCheckCommand extends Command {
             }
         }
 
-        // Bei `--no-fail` (geplante Läufe) zählt nur, dass die Checks liefen und
-        // die Ergebnisse persistiert/aufgezeichnet wurden — ein ungesundes Plugin
-        // ist ein erfasster Zustand, kein Kommando-Fehlschlag. So erzeugt der
-        // Scheduler keinen irreführenden „failed"-Eintrag, der Auto-Disable-Zähler
-        // und die Statusanzeige bleiben aber unberührt.
+        // Bei `--no-fail` (geplante Läufe) zählt nur, dass die Checks liefen — ein ungesundes Plugin ist
+        // ein erfasster Zustand, kein Kommando-Fehlschlag (kein irreführender „failed"; Auto-Disable bleibt).
         if ($this->option('no-fail')) {
             return self::SUCCESS;
         }
@@ -92,9 +88,7 @@ class HealthCheckCommand extends Command {
         $state->organization_id = $organizationId;
         $state->last_health_check_at = now();
 
-        // Kompatibilitätsprüfung VOR dem eigentlichen Healthcheck: ein zur
-        // Kernversion inkompatibles Plugin gilt als failing (zählt auf
-        // Auto-Disable ein), ohne dass sein Remote-Endpunkt angefasst wird.
+        // Kompatibilitätsprüfung VOR dem Healthcheck: inkompatibles Plugin gilt als failing (Auto-Disable), ohne Remote-Zugriff.
         $compat = PluginCompatibility::for($plugin);
         if (! $compat->compatible) {
             $state->last_health_status = PluginHealth::STATUS_FAILING;

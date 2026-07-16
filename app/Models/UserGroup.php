@@ -76,10 +76,8 @@ class UserGroup extends Model {
                 $slug = $base;
                 $i = 2;
                 while (
-                    // TENANT-BYPASS: Slug-Eindeutigkeit innerhalb der Org wird
-                    // explizit via where('organization_id', ...) erzwungen.
-                    // Global Scope umgangen, weil booted() im Admin-Kontext
-                    // ohne gebundene currentOrganization läuft.
+                    // TENANT-BYPASS: Slug-Eindeutigkeit in der Org explizit via where('organization_id', ...).
+                    // Global Scope umgangen, weil booted() im Admin-Kontext ohne gebundene currentOrganization läuft.
                     static::query()
                     ->withoutGlobalScopes()
                     ->where('organization_id', $group->organization_id)

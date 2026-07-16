@@ -114,9 +114,8 @@ class AssetCheckoutController extends Controller {
             return null;
         }
 
-        // Mandantengrenze: ein Dienstmittel darf nur an einen Nutzer der eigenen
-        // Organisation ausgegeben werden — User hat keinen globalen
-        // OrganizationScope (Whitebox-Befund 2026-07).
+        // Mandantengrenze: Ausgabe nur an Nutzer der eigenen Org — User hat keinen
+        // globalen OrganizationScope (Whitebox-Befund 2026-07).
         $authUser = auth()->user();
         $orgId = $authUser instanceof User ? $authUser->organization_id : null;
 

@@ -24,11 +24,8 @@ use Throwable;
 
 /**
  * Stellt einen Outbox-Eintrag an das externe Bestandssystem zu (Feature 048,
- * MVP-072). Idempotent über den `idempotency_key`; Wiederholung mit Backoff über
- * die Queue. Nach Aufbrauchen aller Versuche wird der Eintrag als
- * kompensationspflichtig markiert und – falls eine lokale Bewegung existiert –
- * ein {@see PendingExternalConflict} zur manuellen Auflösung angelegt (die lokal
- * gebuchte Bewegung bleibt bestehen; Ausgleich erfolgt fachlich).
+ * MVP-072). Idempotent über `idempotency_key`; nach Aufbrauchen aller Versuche
+ * kompensationspflichtig + {@see PendingExternalConflict} (lokale Bewegung bleibt).
  */
 class InventoryOutboxDeliveryJob implements ShouldQueue {
     use Dispatchable;
@@ -49,10 +46,8 @@ class InventoryOutboxDeliveryJob implements ShouldQueue {
             return;
         }
 
-        // MVP-052 §5: ein bereits eingequeue-ter Job prüft den Modulstatus VOR
-        // der fachlichen Wirkung. Ist „Lager" für die Organisation deaktiviert,
-        // beendet er sich nachvollziehbar ohne externe Zustellung. Der Eintrag
-        // bleibt unverändert offen und wird nach Reaktivierung erneut verarbeitet.
+        // MVP-052 §5: Modulstatus VOR der Wirkung prüfen — ist „Lager" für die Org
+        // deaktiviert, ohne Zustellung beenden (Eintrag bleibt offen, später erneut).
         $org = Organization::query()->withoutGlobalScopes()->find($entry->organization_id);
         if ($org !== null && ! app(ModuleStatusResolver::class)->isActiveFor($org, 'module.lager')) {
             return;
@@ -60,8 +55,7 @@ class InventoryOutboxDeliveryJob implements ShouldQueue {
 
         $dispatcher = $resolver->for($entry->plugin_id);
         if ($dispatcher === null) {
-            // Kein Plugin registriert → kann nicht zugestellt werden. Nicht endlos
-            // wiederholen; die Bereitstellung erfolgt mit dem Plugin (MVP-073).
+            // Kein Plugin registriert → nicht endlos wiederholen (Bereitstellung mit MVP-073).
             $outbox->markFailed($entry, 'kein Dispatcher für Plugin: ' . ($entry->plugin_id ?? '—'));
 
             return;

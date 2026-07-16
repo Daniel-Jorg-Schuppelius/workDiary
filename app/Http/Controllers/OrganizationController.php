@@ -22,12 +22,8 @@ class OrganizationController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', Organization::class);
 
-        // Recovery: ist der Admin (noch) keiner Org zugeordnet, aber es
-        // existiert mindestens eine Organisation (etwa nach Löschen der
-        // eigenen Org oder Bootstrap), weisen wir ihn der ersten zu.
-        // Damit greifen org-gebundene Policies (manage-members, Branding,
-        // …) wieder, ohne dass der Admin die Zuordnung manuell pflegen
-        // muss. Cross-Org-Wechsel bleibt über den Org-Switcher möglich.
+        // Recovery: Admin ohne Org-Zuordnung (nach Löschen/Bootstrap) wird der
+        // ersten Organisation zugewiesen, damit org-gebundene Policies wieder greifen.
         $user = Auth::user();
         if ($user instanceof User && $user->isAdmin() && empty($user->organization_id)) {
             $first = Organization::query()->orderBy('id')->first();

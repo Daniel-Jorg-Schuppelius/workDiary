@@ -186,11 +186,8 @@ class Project extends Model {
             return $query->first();
         }
 
-        // Opake Sqid (API/JSON) — vor dem reinen Slug-Fallback versuchen.
-        // Kollision Sqid↔Slug ist praktisch ausgeschlossen: Der decode()
-        // verlangt einen exakten Roundtrip gegen das modell-spezifische
-        // Alphabet (min_length 10), den ein menschenlesbarer Slug nicht
-        // zufällig erfüllt. Schlägt das Decoding fehl, greift der Slug-Pfad.
+        // Opake Sqid (API/JSON) vor dem Slug-Fallback versuchen. Kollision Sqid↔Slug praktisch ausgeschlossen:
+        // decode() verlangt exakten Roundtrip (min_length 10); scheitert es, greift der Slug-Pfad.
         $sqidId = app(\App\Services\SqidEncoder::class)->decode(static::class, $value);
         if ($sqidId !== null) {
             return $this->newQuery()->whereKey($sqidId)->first();

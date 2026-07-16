@@ -34,9 +34,7 @@ class ServiceTicketService {
         $customerId = isset($payload['customer_id']) ? (int) $payload['customer_id'] : null;
         $projectId = isset($payload['project_id']) ? (int) $payload['project_id'] : null;
 
-        // Auftragsbezug (Feature 010 → Rang 42): aus dem verknüpften Auftrag
-        // Kunde/Projekt vorbefüllen, wenn nicht explizit gesetzt. Der Eintrag
-        // wird strikt org-gescopt aufgelöst (kein Cross-Tenant).
+        // Auftragsbezug (Feature 010): Kunde/Projekt aus dem org-gescopten Eintrag vorbefüllen, wenn nicht gesetzt.
         $diaryEntryId = isset($payload['diary_entry_id']) ? (int) $payload['diary_entry_id'] : null;
         if ($diaryEntryId !== null) {
             $entry = DiaryEntry::query()
@@ -78,9 +76,7 @@ class ServiceTicketService {
             'reported_at' => $reportedAt,
         ]);
 
-        // Vertrag: expliziter (org-gescopter) Vertrag aus dem Payload gewinnt —
-        // z. B. der Vertragspflicht-Wartungsplan (Rang 43) —, sonst Auflösung
-        // über den Kunden.
+        // Expliziter (org-gescopter) Vertrag aus dem Payload gewinnt, sonst Auflösung über den Kunden (Rang 43).
         $contract = $this->resolveExplicitContract($organization, $payload)
             ?? $this->slaTimer->resolveContract($organization->id, $customerId);
         if ($contract !== null) {
@@ -88,9 +84,7 @@ class ServiceTicketService {
             $deadlines = $this->slaTimer->computeDeadlines($contract, $priority, $reportedAt);
             $ticket->reaction_due_at = $deadlines['reaction_due_at'];
             $ticket->resolution_due_at = $deadlines['resolution_due_at'];
-            // Vertragsstand einfrieren (Feature 065, P3): spätere
-            // Vertragsänderungen deuten bestehende Tickets NIE um (DoD) —
-            // Ableitungen lesen die eingefrorenen Fristen bzw. den Snapshot.
+            // Vertragsstand einfrieren (Feature 065, P3): spätere Vertragsänderungen deuten bestehende Tickets nie um (DoD).
             $ticket->sla_snapshot = [
                 'contract_id' => $contract->id,
                 'contract_name' => $contract->label,
@@ -143,8 +137,7 @@ class ServiceTicketService {
             'to' => $to->value,
         ]);
 
-        // SLA-Verletzungsregister (Feature 010): erste Reaktion bzw. Lösung zu
-        // spät ⇒ je Ticket+Typ genau eine Violation festhalten (idempotent).
+        // SLA-Verletzungsregister (Feature 010): je Ticket+Typ genau eine Violation (idempotent).
         if (! $wasAcknowledged && $ticket->acknowledged_at !== null
             && $ticket->reaction_due_at !== null && $ticket->acknowledged_at->greaterThan($ticket->reaction_due_at)) {
             $this->slaViolations->recordResponseBreach($ticket);
@@ -170,8 +163,7 @@ class ServiceTicketService {
             'to' => $assigneeId,
         ]);
 
-        // ticket.assigned (Feature 065, P3): nur bei echtem Wechsel auf
-        // eine Person — dedupliziert über den Dispatcher.
+        // ticket.assigned (Feature 065, P3): nur bei echtem Wechsel auf eine Person, dedupliziert.
         if ($assigneeId !== null && $assigneeId !== $previous) {
             $assignee = User::query()->find($assigneeId);
             if ($assignee !== null) {
@@ -195,10 +187,8 @@ class ServiceTicketService {
     }
 
     /**
-     * Queue-Wechsel (Feature 065, MVP-160): harte Tenant-Grenze, idempotent
-     * (kein Audit-Rauschen bei unveränderter Queue). Das Audit-Event
-     * `service_ticket.requeued` ist Datenbasis für die Weiterleitungs-
-     * Kennzahlen in MVP-159 — Event-Name nicht ändern.
+     * Queue-Wechsel (Feature 065, MVP-160): harte Tenant-Grenze, idempotent.
+     * Audit-Event `service_ticket.requeued` ist Datenbasis für MVP-159 — Event-Name nicht ändern.
      */
     public function moveToQueue(ServiceTicket $ticket, User $actor, ServiceQueue $queue): ServiceTicket {
         if ((int) $queue->organization_id !== (int) $ticket->organization_id) {
@@ -246,9 +236,8 @@ class ServiceTicketService {
     }
 
     /**
-     * Wartezustand (Feature 065, P1): Grund + Wiedervorlage sind PFLICHT;
-     * die SLA-Uhr pausiert NUR, wenn der Vertrag den Zielstatus in
-     * pause_rules deklariert (dann je offener Frist ein Uhr-Segment).
+     * Wartezustand (Feature 065, P1): Grund + Wiedervorlage Pflicht; SLA-Uhr pausiert
+     * nur, wenn der Vertrag den Zielstatus in pause_rules deklariert.
      */
     public function wait(ServiceTicket $ticket, User $actor, ServiceTicketStatus $to, string $reason, \DateTimeInterface $until, ?int $ownerId = null): ServiceTicket {
         if (! $to->isWaiting()) {
@@ -315,9 +304,8 @@ class ServiceTicketService {
     }
 
     /**
-     * Wiederöffnung (Feature 065, P1): nur aus done/accepted/closed und nur
-     * mit Grund; historische reaction/resolution-Zeitstempel bleiben
-     * UNVERÄNDERT (Guard + Test — DoD).
+     * Wiederöffnung (Feature 065, P1): nur aus done/accepted/closed mit Grund;
+     * historische reaction/resolution-Zeitstempel bleiben unverändert (DoD).
      */
     public function reopen(ServiceTicket $ticket, User $actor, string $reason): ServiceTicket {
         if (trim($reason) === '') {
@@ -408,8 +396,7 @@ class ServiceTicketService {
     }
 
     /**
-     * Löst einen im Payload explizit gesetzten SLA-Vertrag org-gescopt auf
-     * (nur aktive Verträge der eigenen Organisation; nie cross-tenant).
+     * Löst einen im Payload explizit gesetzten SLA-Vertrag org-gescopt auf (nie cross-tenant).
      *
      * @param  array<string, mixed>  $payload
      */

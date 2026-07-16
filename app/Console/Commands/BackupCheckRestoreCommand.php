@@ -17,16 +17,10 @@ use Illuminate\Console\Command;
 use Throwable;
 
 /**
- * Tägliche Plausibilitätsprüfung der Backup-Heartbeats (MVP-046 §6).
- *
- * Liest den jüngsten {@see BackupHeartbeat}, prüft Alter und Größe gegen
- * Schwellwerte aus `config/backup.php` und schreibt ein Audit-Event
- * `backup.checkRestore` mit dem Status (`ok`, `warn`, `critical`).
- *
- * Kein echter Restore-Drill — der Befehl kann von einer separaten,
- * externen Pipeline ergänzt werden (Spec: §6, "Heartbeat + Alter/Größe").
- *
- * Exit-Codes: 0 = ok, 1 = warn, 2 = critical.
+ * Tägliche Plausibilitätsprüfung der Backup-Heartbeats (MVP-046 §6): prüft
+ * Alter/Größe des jüngsten {@see BackupHeartbeat} gegen `config/backup.php` und
+ * protokolliert das Ergebnis als Audit-Event `backup.checkRestore`.
+ * Kein echter Restore-Drill (Spec §6). Exit-Codes: 0 = ok, 1 = warn, 2 = critical.
  */
 class BackupCheckRestoreCommand extends Command {
     protected $signature = 'workdiary:backup:check-restore '
@@ -141,9 +135,8 @@ class BackupCheckRestoreCommand extends Command {
             $this->warn('Audit-Log konnte nicht geschrieben werden: ' . $e->getMessage());
         }
 
-        // Größen-/Integritätsbefund als Betriebsaufgabe (Feature 041,
-        // MVP-056): Alters-Überfälligkeit meldet operations:scan gestaffelt;
-        // hier zählt nur der Prüf-Befund (Größeneinbruch/Mindestgröße).
+        // Größen-/Integritätsbefund als Betriebsaufgabe (Feature 041, MVP-056);
+        // Alters-Überfälligkeit meldet operations:scan separat.
         try {
             $alerts = app(\App\Services\Operations\OperationsAlertService::class);
             $sizeIssues = array_values(array_filter($messages, static fn(string $m): bool => str_contains($m, 'Größe')));

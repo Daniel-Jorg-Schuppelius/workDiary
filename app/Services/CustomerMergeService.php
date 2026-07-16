@@ -128,9 +128,8 @@ class CustomerMergeService {
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
 
-            // Hartes Löschen ohne den DeletePolicy-Guard (Projekte/Refs sind
-            // bereits umgehängt). Der Quell-Kunde verschwindet endgültig; der
-            // Audit-Log hält das „deleted"-Ereignis fest.
+            // Hartes Löschen ohne DeletePolicy-Guard (Projekte/Refs bereits umgehängt). Quell-Kunde verschwindet
+            // endgültig; der Audit-Log hält „deleted" fest.
             $source->delete();
         });
     }
@@ -143,8 +142,7 @@ class CustomerMergeService {
         $hasSlug = Schema::hasColumn('projects', 'slug');
         $hasDefault = Schema::hasColumn('projects', 'is_default');
 
-        // Slug-Kollisionen auflösen: Ziel-Slugs einsammeln, kollidierende
-        // Quell-Projekte vor dem Umhängen eindeutig umbenennen.
+        // Slug-Kollisionen auflösen: Ziel-Slugs einsammeln, kollidierende Quell-Projekte vor dem Umhängen umbenennen.
         if ($hasSlug) {
             $targetSlugs = DB::table('projects')->where('customer_id', $targetId)->pluck('slug')->all();
             $taken = array_flip(array_map('strval', $targetSlugs));
@@ -165,8 +163,7 @@ class CustomerMergeService {
             }
         }
 
-        // Hat das Ziel bereits ein Standardprojekt, verlieren die Quell-Defaults
-        // ihren Default-Status (es darf nur eines geben).
+        // Hat das Ziel bereits ein Standardprojekt, verlieren die Quell-Defaults ihren Default-Status (nur eines erlaubt).
         if ($hasDefault) {
             $targetHasDefault = DB::table('projects')
                 ->where('customer_id', $targetId)->where('is_default', true)->exists();

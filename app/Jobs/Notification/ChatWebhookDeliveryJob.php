@@ -26,10 +26,9 @@ use Throwable;
 
 /**
  * Stellt eine Benachrichtigung an einen Team-Messenger-Kanal zu (Feature 056,
- * MVP-119): Microsoft Teams (MessageCard) bzw. Mattermost/Rocket.Chat (`{text}`).
- * HTTP-POST über die `Http`-Fassade mit SSRF-Guard und Timeout; Wiederholung mit
- * Backoff über die Queue, Auto-Deaktivierung des Kanals nach zu vielen
- * aufeinanderfolgenden Fehlern (analog `webhook_endpoints`).
+ * MVP-119): Teams (MessageCard) bzw. Mattermost/Rocket.Chat (`{text}`). POST mit
+ * SSRF-Guard und Timeout; Retry/Backoff über die Queue, Auto-Deaktivierung nach
+ * zu vielen aufeinanderfolgenden Fehlern.
  */
 class ChatWebhookDeliveryJob implements ShouldQueue {
     use Dispatchable;
@@ -64,9 +63,7 @@ class ChatWebhookDeliveryJob implements ShouldQueue {
         }
 
         $body = $formatter->format($webhook->kind, $this->eventLabel, $this->payload);
-        // Keine Redirects folgen: sonst könnte ein zunächst öffentliches Ziel
-        // per 30x auf einen internen Host umleiten und den SSRF-Guard oben
-        // umgehen (Whitebox-Befund 2026-07).
+        // Keine Redirects: ein 30x auf internen Host würde den SSRF-Guard umgehen (Whitebox 2026-07).
         $response = Http::timeout(10)->withoutRedirecting()->asJson()->post($url, $body); // Netzfehler → Exception → Retry
 
         if ($response->successful()) {

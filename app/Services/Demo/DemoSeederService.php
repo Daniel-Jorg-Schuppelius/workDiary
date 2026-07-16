@@ -35,25 +35,12 @@ use RuntimeException;
  * Seedet einen Demo-Mandanten mit deterministischen, branchenspezifischen
  * End-to-End-Inhalten (Feature 040 / MVP-050).
  *
- * Determinismus: Fester Faker-Seed `42`, stabile Reihenfolge der Inserts.
- * Gleicher Aufruf (gleiche Branche) ergibt vergleichbare Inhalte; `reset()`
- * löscht alle Demo-Daten der Org und re-seedet — ausschließlich für Orgs mit
- * `is_demo = true` (harter Schutz, niemals echte Mandanten).
- *
- * Je Musterbranche wird zusätzlich das passende Branchenprofil über den
- * {@see BranchProfileInstaller} installiert (Klassifikationen, Tags, SLAs,
- * Prozedurvorlagen …), sodass die Demo auf realer Branchenkonfiguration
- * aufsetzt. Über die {@see DemoIndustry} unterscheiden sich Firma, Kunden,
- * Projekte, Hauptauftrag, Material und Asset erkennbar.
- *
- * Das Onboarding-Hauptszenario deckt nun ab: Kunden, Projekte, Aufträge in
- * verschiedenen Stati, Zeitbuchungen, Material (über einen Stundenzettel),
- * ein signiertes Abnahmeprotokoll mit Prüfpunkten, einen offenen Punkt, ein
- * Asset und einen Kommunikationseintrag.
- *
- * Branchen-Inhalte liefert der {@see DemoBlueprintProvider}; die
- * Feature-Vorführszenarien (Agile/Helpdesk/§19/… ) liegen im
- * {@see DemoShowcaseSeeder} (Refactoring Welle 2, B6b).
+ * Determinismus: fester Faker-Seed `42`, stabile Insert-Reihenfolge. `reset()`
+ * löscht/re-seedet — nur für Orgs mit `is_demo = true` (harter Schutz).
+ * Je Branche wird das passende Branchenprofil über den
+ * {@see BranchProfileInstaller} installiert; Branchen-Inhalte liefert der
+ * {@see DemoBlueprintProvider}, die Feature-Vorführszenarien der
+ * {@see DemoShowcaseSeeder}.
  */
 class DemoSeederService {
     public const DEMO_FAKER_SEED = 42;
@@ -90,16 +77,10 @@ class DemoSeederService {
     }
 
     /**
-     * freshDemoOrg (demo-mandant.md §2): legt eine NEUE, isolierte Demo-Organisation
-     * an (nie eine bestehende) und befüllt sie vollständig. Gemeinsamer Kern für
-     * CLI (`demo:fresh-org`) und Plattform-Admin-UI (MVP-349).
-     *
-     * Audit (§8): `demo.orgCreated` (Branche, Org, Ersteller, optionales Mitglied)
-     * plus `demo.seeded` mit den Counts — etablierter Schreibweg über AuditLog.
-     *
-     * Optional wird ein Plattform-Admin als Mitglied der neuen Org zugewiesen
-     * (`users.organization_id`, Ein-Org-Modell) — er bleibt Cross-Tenant-fähig
-     * und kann jederzeit über den Org-Switcher zurückwechseln.
+     * freshDemoOrg (demo-mandant.md §2): legt eine NEUE, isolierte Demo-Org an
+     * (nie eine bestehende) und befüllt sie. Kern für CLI (`demo:fresh-org`)
+     * und Plattform-Admin-UI (MVP-349). Audit (§8): `demo.orgCreated` +
+     * `demo.seeded`. Optionales Mitglied bleibt Cross-Tenant-fähig.
      *
      * @return array{organization: Organization, counts: array<string, int|string>}
      */
@@ -242,55 +223,42 @@ class DemoSeederService {
             $background = $this->seedBackgroundEntries($organization, $customers, $projects, $users, $faker, $blueprint);
             $counts['background_diary_entries'] = $background;
 
-            // Vorführ-Ausbau (Feature 040 Nachtrag): Beispiel-Anhänge +
-            // vollständig durchgespielter Prozedurlauf inkl. Backup-Proof
-            // und Vier-Augen-Freigabe.
+            // Vorführ-Ausbau (Feature 040 Nachtrag): Beispiel-Anhänge + Prozedurlauf.
             $counts['attachments'] = $this->seedAttachments($organization, $mainDiary, $users);
             $counts['procedure_runs'] = $this->seedProcedureRun($organization, $mainDiary, $users);
 
-            // Agile Vorführ-Boards (Feature 064, P7): Scrum mit Sprint-
-            // Historie über mehrere Wochen + Kanban mit WIP/Blockierung.
+            // Agile Vorführ-Boards (Feature 064, P7): Scrum + Kanban.
             $showcase = $this->showcaseSeeder();
             $counts['agile_boards'] = $showcase->seedAgileBoards($projects, $users);
 
-            // IT-Demoszenario Helpdesk (Feature 065, P10):
-            // Anfrage → Incident → Problem → Change durchgängig.
+            // IT-Demoszenario Helpdesk (Feature 065, P10): Anfrage → Incident → Problem → Change.
             $counts['helpdesk_tickets'] = $showcase->seedHelpdesk($organization, $mainCustomer, $users);
 
-            // Kleinunternehmer-Faktura §19 (Feature 066, MVP-169): Angebot →
-            // Annahme → Rechnung (0 % USt., §-19-Hinweis) → Ausstellung.
+            // Kleinunternehmer-Faktura §19 (Feature 066, MVP-169).
             $counts['invoices'] = $showcase->seedSmallBusinessInvoicing($organization, $mainCustomer, $users->first());
 
-            // Bewerbungs-/Ausschreibungs-Demo (Feature 068, MVP-194/198):
-            // gewonnene Ausschreibung + Bewerbung bis zum Mitarbeiter-Entwurf.
+            // Bewerbungs-/Ausschreibungs-Demo (Feature 068, MVP-194/198).
             $counts['applications'] = $showcase->seedApplications($organization, $mainCustomer, $users->first());
 
-            // Investitions-Demo (Feature 069, MVP-209): Akte mit Varianten
-            // und offenem Budgetantrag (zeigt die Freigabekette).
+            // Investitions-Demo (Feature 069, MVP-209).
             $counts['investments'] = $showcase->seedInvestments($organization, $users->first());
 
-            // Krisen-Demo (Feature 070, MVP-222): geplante Übung — bewusst
-            // KEINE echte Krisenakte im Demo-Datenbestand.
+            // Krisen-Demo (Feature 070, MVP-222): geplante Übung, bewusst keine echte Krisenakte.
             $counts['crisis_exercises'] = $showcase->seedCrisisExercise($organization, $users->first());
 
-            // Nachhaltigkeits-Demo (Feature 071, MVP-235): Kriterien +
-            // Aktivitätsdaten + finalisierte Gerätebewertung.
+            // Nachhaltigkeits-Demo (Feature 071, MVP-235).
             $counts['sustainability'] = $showcase->seedSustainability($organization, $users->first());
 
-            // Reklamations-Demo (Feature 072, MVP-256): Fall mit Bewertung
-            // und Entscheidung — zeigt den geführten Ablauf.
+            // Reklamations-Demo (Feature 072, MVP-256).
             $counts['claims'] = $showcase->seedClaims($organization, $users->first());
 
-            // Verleih-Demo (Feature 073, MVP-269): leihfähiges Gerät mit
-            // Preisliste, reservierter Akte und Konditionen-Snapshot.
+            // Verleih-Demo (Feature 073, MVP-269).
             $counts['rental'] = $showcase->seedRental($organization, $users->first());
 
-            // Leasing-Demo (Feature 074, MVP-280): aktivierter Vertrag mit
-            // eingefrorenen Konditionen, Ratenplan und Kündigungsfrist.
+            // Leasing-Demo (Feature 074, MVP-280).
             $counts['asset_finance'] = $showcase->seedAssetFinance($organization, $users->first());
 
-            // Prüfmittel-Demo (Feature 075, MVP-292): Prüfpflicht aus dem
-            // globalen Katalog mit dokumentierter Prüfung inkl. Zertifikat.
+            // Prüfmittel-Demo (Feature 075, MVP-292).
             $counts['asset_compliance'] = $showcase->seedAssetCompliance($organization, $users->first());
         });
 

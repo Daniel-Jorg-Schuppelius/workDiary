@@ -16,10 +16,8 @@ use Illuminate\Support\Facades\Route;
  * und Webhook-Empfang. Admin-Autorisierung wird im Controller geprüft.
  */
 
-// Webhook (MVP-129): sessionlos ohne CSRF ('api'-Gruppe) — Autorisierung über
-// HMAC-Signatur (X-Hub-Signature) des Raw-Bodys im Controller, Org-Zuordnung
-// über die Anbindungs-ID im Pfad. Polling heilt Ausfälle; throttle gegen
-// Flooding des unauthentifizierten Endpunkts.
+// Webhook (MVP-129): sessionlos ohne CSRF ('api'), Autorisierung über HMAC (X-Hub-Signature) des Raw-Bodys,
+// Org-Zuordnung über die Anbindungs-ID im Pfad. Polling heilt Ausfälle; throttle gegen Flooding.
 Route::middleware(['api', 'throttle:30,1'])
     ->post('api/webhooks/zammad/{connection}', ZammadWebhookController::class)
     ->name('api.webhooks.zammad');

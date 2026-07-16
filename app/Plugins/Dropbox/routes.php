@@ -12,8 +12,7 @@ use App\Plugins\Dropbox\Http\Controllers\{DropboxIntakeController, DropboxWebhoo
 use Illuminate\Support\Facades\Route;
 
 /**
- * Plugin-Routen (Feature 080, MVP-353): OAuth-Verbindungsflow in der
- * eingeloggten Sitzung (state org-/nutzergebunden, Rechte im Controller)
+ * Plugin-Routen (Feature 080, MVP-353): OAuth-Verbindungsflow (eingeloggt)
  * + öffentlicher, signaturgeprüfter Webhook als reines Aufwecksignal
  * (Mandant serverseitig über gespeicherte Konto-IDs, WebhookTenantTest).
  */
@@ -28,8 +27,7 @@ Route::middleware(['api', 'throttle:webhook-ingest'])->group(function (): void {
 });
 
 // ── Cloud-Backupziel (Feature 017 Phase 32, MVP-363) ────────────────────
-// Systemweiter OAuth-Flow (Plattform-Admin, Policy im Controller);
-// eigene Verbindung + Schreib-Scopes, getrennt vom Dokumenteingang.
+// Systemweiter OAuth-Flow (Plattform-Admin); eigene Schreib-Verbindung.
 Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/backup-targets/dropbox/oauth/start', [\App\Plugins\Dropbox\Http\Controllers\DropboxBackupTargetController::class, 'startOAuth'])->name('admin.backup-targets.dropbox.oauth.start');
     Route::get('admin/backup-targets/dropbox/oauth/callback', [\App\Plugins\Dropbox\Http\Controllers\DropboxBackupTargetController::class, 'oauthCallback'])->name('admin.backup-targets.dropbox.oauth.callback');

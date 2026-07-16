@@ -30,10 +30,8 @@ class SendDeadlineReminders extends Command {
         $requests = $service->remind();
         $incidents = $service->remindIncidents();
 
-        // Fristen-Scan der Compliance-Lücken (Nachtrag 043b/c): hält
-        // ablaufende AVV und TOM-Nachweise automatisch aktuell — nur für
-        // Organisationen, die das Datenschutzmodul bereits nutzen (mindestens
-        // ein Katalog-/Befund-Datensatz), keine Zwangs-Materialisierung.
+        // Fristen-Scan der Compliance-Lücken (Nachtrag 043b/c): hält ablaufende AVV/TOM-Nachweise aktuell — nur für
+        // Orgs, die das Datenschutzmodul bereits nutzen (min. ein Katalog-/Befund-Datensatz), keine Zwangs-Materialisierung.
         $orgIds = ComplianceFinding::query()->withoutGlobalScopes()
             ->distinct()->pluck('organization_id')
             ->merge(\App\Models\Privacy\PrivacyRequirement::query()->withoutGlobalScopes()->distinct()->pluck('organization_id'))

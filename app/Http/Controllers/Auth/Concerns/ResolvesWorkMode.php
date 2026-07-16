@@ -21,23 +21,17 @@ use Illuminate\Http\{RedirectResponse, Request};
 trait ResolvesWorkMode {
     protected function applyWorkModeAndRedirect(Request $request, User $user): RedirectResponse {
         $legacyConfigured = filled(config('database.connections.legacy.database'));
-        // Beim Login die zuletzt persistierte Modus-Wahl des Users übernehmen,
-        // statt hart auf 'legacy' zu defaulten.
+        // Zuletzt persistierte Modus-Wahl übernehmen statt hart auf 'legacy'.
         $sessionMode = (string) session('work_mode', $user->preferredWorkMode());
 
         $canLegacy = $legacyConfigured && $user->canAccessLegacy();
         $canNew = $user->canAccessNew();
 
         if (! $canLegacy && ! $canNew) {
-            // Weder Legacy noch Neu erlaubt: Legacy-Startseite mit Hinweis.
             $sessionMode = 'legacy';
         } elseif ($sessionMode === 'legacy' && ! $canLegacy) {
-            // Kein Legacy-Zugriff, aber Neu erlaubt (sonst hätte der erste
-            // Zweig gegriffen) → in den neuen Bereich wechseln.
             $sessionMode = 'new';
         } elseif ($sessionMode === 'new' && ! $canNew) {
-            // Kein Neu-Zugriff, aber Legacy erlaubt (erster Zweig griff
-            // nicht) → zurück auf Legacy.
             $sessionMode = 'legacy';
         }
         $request->session()->put('work_mode', $sessionMode);

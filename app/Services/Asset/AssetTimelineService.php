@@ -20,10 +20,8 @@ class AssetTimelineService {
     public function build(Asset $asset, int $limit = 120): array {
         $events = [];
 
-        // Generische Trait-Events (created/updated/deleted) werden für Assets
-        // ausgeblendet, weil der AssetService für jeden Vorgang ein
-        // spezifischeres `asset.*`-Event schreibt und sonst Duplikate
-        // in der Timeline erscheinen.
+        // Generische Trait-Events (created/updated/deleted) für Assets ausblenden, weil der AssetService je
+        // Vorgang ein spezifischeres `asset.*`-Event schreibt (sonst Duplikate in der Timeline).
         $genericEvents = ['created', 'updated', 'deleted'];
 
         foreach ($asset->auditLogs()->with('user:id,name')->limit($limit)->get() as $log) {
@@ -95,8 +93,7 @@ class AssetTimelineService {
             ];
         }
 
-        // Ausgabe/Rückgabe (Feature 009): jeweils ein Checkout- und (falls
-        // zurückgegeben) ein Return-Event aus derselben Zuweisung.
+        // Ausgabe/Rückgabe (Feature 009): Checkout- und (falls zurückgegeben) Return-Event aus derselben Zuweisung.
         foreach ($asset->assignments()->limit($limit)->get() as $assignment) {
             $events[] = [
                 'kind' => 'assignment.checkedOut',
@@ -145,8 +142,7 @@ class AssetTimelineService {
             }
         }
 
-        // Durchgeführte Wartungen (MaintenancePlan.last_run_at) sowie geplante
-        // Fälligkeiten (next_due_on) als Lebenszyklus-Marker.
+        // Durchgeführte Wartungen (last_run_at) + geplante Fälligkeiten (next_due_on) als Lebenszyklus-Marker.
         foreach ($asset->maintenancePlans()->get() as $plan) {
             if ($plan->last_run_at !== null) {
                 $events[] = [

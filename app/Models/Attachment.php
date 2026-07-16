@@ -74,12 +74,8 @@ class Attachment extends Model {
     ];
 
     protected static function booted(): void {
-        // Letzte Verteidigungslinie für organization_id: weder ein
-        // gesetzter currentOrganization-Kontext (Trait-Hook) noch ein
-        // user_id-Fallback haben gegriffen — z. B. in Tests, die das
-        // Attachment per Factory ohne Auth/Org-Kontext anlegen. Wir
-        // leiten dann aus dem polymorphen Parent ab, damit Anhänge
-        // niemals als „Waisen" über den Org-Scope-Filter fallen.
+        // Letzte Verteidigungslinie für organization_id (falls Kontext- und user_id-Fallback fehlten):
+        // aus dem polymorphen Parent ableiten, damit Anhänge nicht als Waisen aus dem Org-Scope fallen.
         static::creating(function (Attachment $attachment): void {
             if (! empty($attachment->organization_id)) {
                 return;

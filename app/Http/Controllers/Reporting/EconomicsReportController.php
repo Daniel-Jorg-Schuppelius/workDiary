@@ -26,11 +26,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
  * Feature 014 (Nachkalkulation & Wirtschaftlichkeit): Deckungsbeitrags- und
- * Wirtschaftlichkeitssicht je Kunde und je Projekt, inkl. Ranking (Top/Flop),
- * Nicht-Abrechenbar-/Nacharbeits-Proxy und Plan-vs-Ist (Zeit & Geld).
- *
- * Org-weite Finanzdaten → nur für Administratoren bzw. report.view-Berechtigte
- * (Geschäftsführung/Buchhaltung). Plan-Gating wie übrige Team-Auswertungen.
+ * Wirtschaftlichkeitssicht je Kunde/Projekt, inkl. Ranking (Top/Flop),
+ * Nicht-Abrechenbar-/Nacharbeits-Proxy und Plan-vs-Ist. Org-weite Finanzdaten
+ * → nur für Admins bzw. report.view-Berechtigte.
  */
 class EconomicsReportController extends Controller {
     use RendersReportPdf;

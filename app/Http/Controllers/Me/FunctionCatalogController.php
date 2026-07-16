@@ -20,12 +20,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * Funktionskatalog „Alle Funktionen" (Feature 081, MVP-375): Registry-gespeiste
- * Übersicht aller Bereiche mit Zustand je Nutzer — sichtbar, selbst
- * ausgeblendet (Einblenden-Aktion), org-deaktiviert (Link auf den
- * Funktionsumfang bei Recht) oder nicht lizenziert (Upsell-Text aus
- * plans.descriptions). Sicherheitsventil gegen „Funktion verschwunden":
- * reine Projektion, kein Persistenzbedarf, kein Sonderrecht.
+ * Funktionskatalog „Alle Funktionen" (Feature 081): Registry-gespeiste Übersicht
+ * aller Bereiche mit Zustand je Nutzer — sichtbar, selbst ausgeblendet,
+ * org-deaktiviert oder nicht lizenziert (Upsell). Sicherheitsventil gegen
+ * „Funktion verschwunden": reine Projektion, kein Persistenzbedarf.
  */
 class FunctionCatalogController extends Controller {
     public function __construct(
@@ -60,9 +58,8 @@ class FunctionCatalogController extends Controller {
             return $moduleStatus[$module] ?? ModuleStatus::NotLicensed;
         };
 
-        // Aktiver Arbeitsbereich (Feature 082, MVP-380): markiert Einträge, die
-        // der Fokus gerade ausblendet — über diesen Katalog bleiben sie auffindbar.
-        // `keepSet === null` = Arbeitsbereich „Alles anzeigen" (kein Filter).
+        // Aktiver Arbeitsbereich markiert Einträge, die der Fokus ausblendet — über
+        // diesen Katalog bleiben sie auffindbar. `keepSet === null` = kein Filter.
         $activeFocus = $this->focus->resolveActive($user, $organization, session(NavFocusService::SESSION_KEY));
         $focusKeep = $this->focus->keepKeys($activeFocus);
         $keepSet = $focusKeep !== null ? array_flip($focusKeep) : null;
@@ -77,7 +74,7 @@ class FunctionCatalogController extends Controller {
             $entries = [];
             $collect = function (array $items, ?string $groupKey, ?string $groupModule, bool $groupHidden) use (&$entries, $moduleByItem, $sectionModule, $sectionHidden, $hidden, $statusOf, $keepSet, $sectionInFocus): void {
                 $groupInFocus = $sectionInFocus
-                    || ($groupKey !== null && $keepSet !== null && isset($keepSet[NavigationRegistry::KEY_GROUP . $groupKey]));
+                    || ($groupKey !== null && isset($keepSet[NavigationRegistry::KEY_GROUP . $groupKey]));
                 foreach ($items as $item) {
                     if (! is_array($item) || ! $this->registry->mayAccessRoute((string) $item['route'])) {
                         continue;
@@ -101,8 +98,7 @@ class FunctionCatalogController extends Controller {
                         'status' => $status,
                         'hidden' => $itemHidden,
                         'visible' => $visible,
-                        // Lizenziert/aktiv und nicht persönlich ausgeblendet, aber vom
-                        // aktiven Arbeitsbereich ausgeblendet.
+                        // sichtbar, aber vom aktiven Arbeitsbereich ausgeblendet
                         'in_focus_hidden' => $visible && ! $inFocus,
                     ];
                 }

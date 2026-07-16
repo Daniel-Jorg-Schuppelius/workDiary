@@ -97,11 +97,8 @@ class LexofficeVoucherFileService {
         $type = (string) ($voucher->voucher_type ?? '');
         $endpoint = self::SALES_DOCUMENT_ENDPOINTS[$type] ?? null;
 
-        // Verkaufsdokumente (Rechnungen, Gutschriften …) liefern ihr gerendertes
-        // PDF über den /document-Endpunkt. Liegt (noch) keines vor, antwortet
-        // Lexoffice mit 406; generische Belege tragen ihre Datei stattdessen im
-        // /vouchers/{id}-files-Array. Beide Wege werden als Fallback versucht,
-        // damit die Anzeige unabhängig von der Belegquelle funktioniert.
+        // Verkaufsdokumente liefern ihr PDF über /document (fehlt es: 406); generische Belege über das
+        // /vouchers/{id}-files-Array. Beide Wege als Fallback, damit die Anzeige quellenunabhängig ist.
         $fileId = $endpoint !== null
             ? $this->fileIdFromDocument($endpoint, $voucher->external_id)
             : '';
@@ -151,8 +148,7 @@ class LexofficeVoucherFileService {
     private function fileIdFromDocument(string $endpoint, string $externalId): string {
         $response = $this->api()->getResponse($this->baseUrl . '/' . $endpoint . '/' . $externalId . '/document');
 
-        // 406 = kein gerendertes Dokument verfügbar (z. B. Entwurf). Das ist
-        // kein harter Fehler — der Aufrufer fällt auf andere Quellen zurück.
+        // 406 = kein gerendertes Dokument (z. B. Entwurf) — kein harter Fehler, Aufrufer nutzt andere Quellen.
         if (! $response->successful()) {
             return '';
         }

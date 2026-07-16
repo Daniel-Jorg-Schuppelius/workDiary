@@ -101,15 +101,11 @@ class Attendance extends Model {
     protected static function booted(): void {
         static::saving(function (Attendance $a): void {
             if (! $a->date && $a->started_at) {
-                // Kalendertag in der aktiven Anzeige-Zeitzone bestimmen, nicht in
-                // UTC – sonst landet z. B. ein Einstempeln um 23:30 (lokal) auf
-                // dem Folgetag (UTC). started_at bleibt UTC.
+                // Kalendertag in der Anzeige-Zeitzone, nicht UTC (23:30 lokal sonst auf Folgetag); started_at bleibt UTC.
                 $a->date = $a->started_at->copy()->setTimezone(\App\Support\Tz::current())->startOfDay();
             }
             if ($a->started_at && $a->ended_at) {
-                // Apply statutory minimum breaks (ArbZG §4) before computing the
-                // net duration so under-recorded breaks are topped up into
-                // `break_minutes_auto` once the attendance is closed.
+                // Gesetzliche Mindestpausen (ArbZG §4) in break_minutes_auto ergänzen, bevor die Netto-Dauer folgt.
                 $eval = app(BreakRuleEvaluator::class);
                 if ($eval->autoApplyEnabled()) {
                     $eval->applyMissingBreak($a);

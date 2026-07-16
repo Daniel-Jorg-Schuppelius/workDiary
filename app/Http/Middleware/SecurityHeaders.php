@@ -38,13 +38,9 @@ class SecurityHeaders {
     }
 
     /**
-     * script-src je nach Konfiguration: streng (Nonce) oder kompatibel
-     * (unsafe-inline, bis alle Inline-Scripts produktiv per Browser verifiziert
-     * wurden). 'unsafe-eval' hängt am Alpine-Build: der Standard-Build braucht
-     * es, der @alpinejs/csp-Build nicht — Stufe 2 (security.csp_alpine_csp_build
-     * / ALPINE_CSP_BUILD) entfernt es, an DIESELBE Bedingung gekoppelt wie der
-     * Vite-Build-Switch (vite.config.js). Nie hart entfernen, solange der
-     * Standard-Build ausgeliefert wird.
+     * script-src: streng (Nonce) oder kompatibel (unsafe-inline). 'unsafe-eval' ist an
+     * den Alpine-Build gekoppelt (security.csp_alpine_csp_build / ALPINE_CSP_BUILD, wie
+     * der Vite-Build-Switch) — nie hart entfernen, solange der Standard-Build läuft.
      */
     private function scriptSrc(): string {
         // Stufe 2: Alpine-CSP-Build aktiv → kein eval mehr nötig.
@@ -65,16 +61,11 @@ class SecurityHeaders {
             ? ''
             : ' http://127.0.0.1:5173 http://localhost:5173 ws://127.0.0.1:5173 ws://localhost:5173';
 
-        // Kartenkacheln werden clientseitig als <img> vom (ggf. self-hosted)
-        // Tile-Server geladen. Dessen Origin muss explizit in img-src stehen,
-        // sonst blockiert der Browser die Tiles und die Karte bleibt grau.
+        // Tile-Server-Origin muss explizit in img-src stehen, sonst blockt der Browser die Kartenkacheln.
         $tileOrigin = $this->originFromUrl(\App\Support\Setting::get('routing.tiles.url'));
         $imgHosts = $tileOrigin !== '' ? ' ' . $tileOrigin : '';
 
-        // Reverb-WebSocket (Echtzeit-Chat) für connect-src zulassen – sonst
-        // blockt die CSP die WS-Verbindung des Browsers. Host/Port aus der
-        // Broadcasting-Config; lokale Varianten (ws/wss, localhost/127.0.0.1)
-        // für die Entwicklung ergänzt.
+        // Reverb-WebSocket (Chat) für connect-src zulassen, sonst blockt die CSP die WS-Verbindung; Host/Port aus Broadcasting-Config + lokale Varianten.
         $reverbHost = (string) config('broadcasting.connections.reverb.options.host', '127.0.0.1');
         $reverbPort = (string) config('broadcasting.connections.reverb.options.port', '8080');
         $reverbHosts = array_values(array_unique(array_filter([$reverbHost, '127.0.0.1', 'localhost'])));
@@ -85,21 +76,12 @@ class SecurityHeaders {
 
         $directives = [
             "default-src 'self'",
-            // Tailwind/daisyUI sind kompiliert; inline Styles für Alpine x-bind/Color-Tokens noch erlaubt.
-            // Fonts (IBM Plex Sans, Space Grotesk, Material Symbols) werden lokal aus dem App-Bundle ausgeliefert.
+            // unsafe-inline für Alpine x-bind/Color-Tokens noch nötig.
             "style-src 'self' 'unsafe-inline'" . $viteDev,
-            // script-src: Sobald config security.csp_script_nonce aktiv ist, wird
-            // 'unsafe-inline' durch ein Pro-Request-Nonce ersetzt (echtes XSS-Netz).
-            // 'unsafe-eval' bleibt: Alpine.js (Standard-Build) benötigt es.
-            // Alle Inline-Scripts tragen via @cspNonce bereits das Nonce.
+            // Nonce ersetzt 'unsafe-inline' bei aktivem csp_script_nonce; Details in scriptSrc().
             $this->scriptSrc() . $viteDev,
             "img-src 'self' data: blob:" . $imgHosts,
-            // Webfonts werden im Production-Build aus /build/assets/ geladen.
-            // Im Dev-Modus liefert Vite die Fonts unter $viteDev aus
-            // (node_modules/@fontsource/… und node_modules/material-symbols/…),
-            // daher muss die gleiche Origin auch hier zugelassen sein, sonst
-            // blockiert der Browser die woff2-Requests still und fällt auf
-            // Times / unrenderte Material-Symbol-Ligaturen zurück.
+            // Dev-Modus: Vite-Origin ($viteDev) muss auch für Webfonts erlaubt sein, sonst still blockierte woff2-Requests.
             "font-src 'self' data:" . $viteDev,
             "connect-src 'self'" . $viteDev . $reverbWs,
             "media-src 'self' blob:",

@@ -50,17 +50,14 @@ class EventParticipant extends Pivot {
     ];
 
     protected static function booted(): void {
-        // Pivot-Inserts via Event::participants()->attach()/sync() laufen
-        // ohne den HTTP-Request-Kontext durch und der OrganizationScope-Hook
-        // im Trait würde organization_id nicht setzen. Hier den Wert noch
-        // einmal explizit aus dem Event ableiten.
+        // Pivot-Inserts via attach()/sync() laufen ohne HTTP-Request-Kontext, der OrganizationScope-Hook würde
+        // organization_id nicht setzen — hier explizit aus dem Event ableiten.
         static::creating(function (self $pivot): void {
             if (! empty($pivot->organization_id) || empty($pivot->event_id)) {
                 return;
             }
-            // TENANT-BYPASS: Pivot-Backfill aus Queue-/Admin-Kontexten ohne
-            // gebundene currentOrganization. Wir leiten organization_id direkt
-            // vom Parent-Event ab und übernehmen damit dessen Mandantengrenze.
+            // TENANT-BYPASS: Pivot-Backfill aus Queue-/Admin-Kontexten ohne gebundene currentOrganization;
+            // organization_id direkt vom Parent-Event ableiten (übernimmt dessen Mandantengrenze).
             $event = Event::query()->withoutGlobalScopes()->find($pivot->event_id);
             if ($event instanceof Event && ! empty($event->organization_id)) {
                 $pivot->organization_id = $event->organization_id;

@@ -25,21 +25,11 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
 /**
- * Fristen-Scanner für Benachrichtigungen & Eskalationen (MVP-018).
- *
- * Findet fällige/überfällige Offene Punkte, Kommunikations-Folgeaktionen und
- * ablaufende Dokumente und feuert die zugehörigen NotificationEvents über den
- * zentralen Dispatcher. Idempotent: das notification_dispatch_log verhindert
- * pro (Organisation, Ereignis, Subjekt, Stufe) jeden Doppel-Versand.
- *
- * Die Fristen-Payloads tragen zusätzlich `due_at` (MVP-331, Bauturbo A11):
- * darüber publiziert der Kalender-Kanal terminartige Ereignisse als
- * Kalendereintrag (Dispatcher → CalendarEventPublishJob); für In-App/Mail/
- * Chat/Webhook bleibt der Schlüssel ohne Wirkung.
- *
- * Läuft ohne Mandantenkontext (Konsolen-Prozess) und sieht damit alle
- * Organisationen; die Regel-Auflösung erfolgt pro Datensatz über dessen
- * organization_id.
+ * Fristen-Scanner für Benachrichtigungen & Eskalationen (MVP-018): findet
+ * fällige/überfällige Sätze und feuert NotificationEvents über den zentralen
+ * Dispatcher. Idempotent über das notification_dispatch_log. Payloads tragen
+ * `due_at` (MVP-331) für den Kalender-Kanal. Läuft ohne Mandantenkontext →
+ * sieht alle Organisationen; Regel-Auflösung pro Datensatz über organization_id.
  */
 class ScanDeadlinesCommand extends Command {
     protected $signature = 'notifications:scan-deadlines
@@ -207,11 +197,8 @@ class ScanDeadlinesCommand extends Command {
 
     /**
      * ISMS-Zertifikate (Feature 046, Inkrement B): erst den automatischen
-     * Verfall durchsetzen (certified ohne heute gültiges Zertifikat →
-     * certificateExpired, ConformityService), dann ablaufende Zertifikate
-     * melden (Vorlauf --expiring-days, Default 30 Tage; Empfänger gemäß
-     * Default-Regel an die Rollen teamleitung/admin). Dedup über das
-     * notification_dispatch_log pro Zertifikat.
+     * Verfall durchsetzen (ConformityService), dann ablaufende Zertifikate
+     * melden (Vorlauf --expiring-days).
      */
     private function scanIsmsCertificates(NotificationDispatcher $dispatcher, ConformityService $conformity, int $expiringDays): int {
         $expired = $conformity->expireOverdue();
@@ -242,12 +229,8 @@ class ScanDeadlinesCommand extends Command {
     }
 
     /**
-     * ISMS-Korrekturmaßnahmen (Feature 046, Inkrement C): überfällige
-     * Maßnahmen (due_on überschritten, Status open/inProgress) melden —
-     * Empfänger ist der Maßnahmen-Verantwortliche (notify_affected),
-     * Default-Fallback die Rolle teamleitung (NotificationEvent).
-     * Dedup über das notification_dispatch_log pro Maßnahme; Eskalation
-     * analog zu den übrigen Überfälligkeits-Ereignissen.
+     * ISMS-Korrekturmaßnahmen (Feature 046, Inkrement C): überfällige Maßnahmen
+     * melden (Empfänger Verantwortlicher, Fallback teamleitung) + Eskalation.
      */
     private function scanIsmsCorrectiveActions(NotificationDispatcher $dispatcher): int {
         $sent = 0;
@@ -272,23 +255,16 @@ class ScanDeadlinesCommand extends Command {
     }
 
     /**
-     * Risiko-Bewertungshistorie (Feature 046, Inkrement D): die JÜNGSTE
-     * freigegebene Netto-Bewertung je Risiko ist der maßgebliche Stand —
-     * liegt ihr valid_until (Ablauf-/Reviewdatum des akzeptierten
-     * Restrisikos) innerhalb des Vorlaufs (--expiring-days, Default 30
-     * Tage) oder ist es überschritten, geht isms.riskReviewDue an den
-     * Risikoeigentümer (notify_affected), Default-Fallback Teamleitung.
-     * Geschlossene Risiken werden übersprungen. Abgrenzung: das Feld
-     * isms_risks.review_due_on wird NICHT gescannt (nur UI-Hinweis im
-     * Register) — das Event feuert ausschließlich auf assessment.valid_until.
-     * Dedup über das notification_dispatch_log pro Bewertungsstand.
+     * Risiko-Bewertungshistorie (Feature 046, Inkrement D): jüngste freigegebene
+     * Netto-Bewertung je Risiko; feuert isms.riskReviewDue bei nahem/überschrittenem
+     * valid_until an den Risikoeigentümer (offene Risiken).
+     * Abgrenzung: isms_risks.review_due_on wird NICHT gescannt — nur assessment.valid_until.
      */
     private function scanIsmsRiskAssessments(NotificationDispatcher $dispatcher, int $expiringDays): int {
         $today = Carbon::today();
         $sent = 0;
 
-        // Nur der jüngste freigegebene Netto-Stand je Risiko zählt — ältere
-        // (abgelöste) Stände dürfen kein Review mehr anstoßen.
+        // Nur der jüngste freigegebene Netto-Stand je Risiko — ältere (abgelöste) dürfen kein Review anstoßen.
         $latestApprovedNetIds = IsmsRiskAssessment::query()
             ->approvedNet()
             ->selectRaw('max(id)')
@@ -316,11 +292,7 @@ class ScanDeadlinesCommand extends Command {
 
     /**
      * Schwachstellenregister (Feature 044, MVP 2): überfällige Schwachstellen
-     * (due_on überschritten, Status open/underReview/mitigating) melden —
-     * Empfänger ist der Schwachstellen-Verantwortliche (notify_affected),
-     * Default-Fallback die Rolle teamleitung (NotificationEvent). Dedup über
-     * das notification_dispatch_log pro Schwachstelle; Eskalation analog zu den
-     * übrigen Überfälligkeits-Ereignissen.
+     * melden (Empfänger Verantwortlicher, Fallback teamleitung) + Eskalation.
      */
     private function scanIsmsVulnerabilities(NotificationDispatcher $dispatcher): int {
         $sent = 0;
@@ -345,12 +317,8 @@ class ScanDeadlinesCommand extends Command {
     }
 
     /**
-     * Lieferantenbewertung (Feature 044, MVP 2/3): überfällige Lieferanten-
-     * Reviews (next_review_on überschritten, Status nicht „approved") melden —
-     * Empfänger ist der Bewertungs-Verantwortliche (notify_affected),
-     * Default-Fallback die Rolle teamleitung (NotificationEvent). Dedup über
-     * das notification_dispatch_log pro Bewertung; Eskalation analog zu den
-     * übrigen Überfälligkeits-Ereignissen.
+     * Lieferantenbewertung (Feature 044, MVP 2/3): überfällige Reviews melden
+     * (Empfänger Verantwortlicher, Fallback teamleitung) + Eskalation.
      */
     private function scanIsmsSupplierReviews(NotificationDispatcher $dispatcher): int {
         $sent = 0;
@@ -375,18 +343,12 @@ class ScanDeadlinesCommand extends Command {
     }
 
     /**
-     * SLA-Eskalation (Feature 010): offene Service-Tickets mit gefährdeter
-     * (Restzeit unter dem Schwellwert, SlaTimer::AT_RISK_FRACTION) bzw.
-     * überschrittener Lösungsfrist melden. Empfänger ist der Ticket-
-     * Verantwortliche (notify_affected), Default-Fallback/Eskalationskette die
-     * Rolle teamleitung (NotificationEvent). Maßgeblich ist die Lösungsfrist
-     * (resolution_due_at). Dedup über das notification_dispatch_log pro Ticket;
-     * verletzte Tickets eskalieren zusätzlich (supportsEscalation).
+     * SLA-Eskalation (Feature 010): offene Tickets mit gefährdeter/überschrittener
+     * Lösungsfrist (resolution_due_at) melden; verletzte eskalieren zusätzlich.
      */
     /**
      * Wiedervorlagen (Feature 065, P3): wartende Tickets mit überschrittener
-     * wait_until-Frist → Notification an den Wiedervorlage-Verantwortlichen
-     * (wait_owner, Fallback Bearbeiter). Dedup über das Dispatch-Log.
+     * wait_until → Notification an wait_owner (Fallback Bearbeiter).
      */
     private function scanWaitingTickets(NotificationDispatcher $dispatcher): int {
         $sent = 0;
@@ -426,13 +388,9 @@ class ScanDeadlinesCommand extends Command {
     }
 
     /**
-     * Problem-Management (Feature 065, MVP-156): gelöste bzw. Known-Error-
-     * Probleme mit überschrittener Wirksamkeitsfrist (effectiveness_check_
-     * due_at) und ohne dokumentierte Prüfung melden — Empfänger ist der
-     * Problem-Owner (notify_affected), Default-Fallback die Rolle
-     * teamleitung (NotificationEvent). Dedup über das
-     * notification_dispatch_log pro Problem; Eskalation analog zu den
-     * übrigen Überfälligkeits-Ereignissen (Muster scanIsmsCorrectiveActions).
+     * Problem-Management (Feature 065, MVP-156): gelöste/Known-Error-Probleme
+     * mit überschrittener Wirksamkeitsfrist ohne Prüfung melden (Empfänger
+     * Owner, Fallback teamleitung) + Eskalation.
      */
     private function scanProblemEffectiveness(NotificationDispatcher $dispatcher): int {
         $sent = 0;
@@ -515,11 +473,8 @@ class ScanDeadlinesCommand extends Command {
     }
 
     /**
-     * Ausgabe-/Rückgabe-Workflow (Feature 009): offene Asset-Zuweisungen
-     * (returned_at = null) mit überschrittener erwarteter Rückgabe melden.
-     * Empfänger ist die ausleihende Person (notify_affected), Default-Fallback/
-     * Eskalationskette die Rolle teamleitung (NotificationEvent). Dedup über das
-     * notification_dispatch_log pro Zuweisung.
+     * Ausgabe-/Rückgabe-Workflow (Feature 009): offene Asset-Zuweisungen mit
+     * überschrittener erwarteter Rückgabe melden (Empfänger Ausleiher) + Eskalation.
      */
     private function scanAssetReturns(NotificationDispatcher $dispatcher): int {
         $now = Carbon::now();

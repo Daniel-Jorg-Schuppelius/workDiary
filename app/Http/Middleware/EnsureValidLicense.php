@@ -29,21 +29,13 @@ class EnsureValidLicense {
 
         $result = $this->service->current($request->getHost());
 
-        // Lizenzmodell: free läuft IMMER ohne Lizenz. Eine fehlende oder
-        // ungültige (Missing/BadSignature/Malformed/Expired/OrgMismatch/…)
-        // installationsweite Lizenz sperrt die App daher NICHT mehr — der
-        // Tier-/Modul-Zugang wird ausschließlich über die org-gebundene Lizenz
-        // (FeatureFlagResolver + EnforcePlanModules) gesteuert. Das app-weite
-        // Gate schützt nur noch die Code-/Datei-Integrität: eine Seal-Verletzung
-        // (Tampered) sperrt weiterhin hart, auch über Bypass-Pfade (sonst
-        // bleiben /login & Co. trotz manipulierter Lizenzdateien offen).
+        // App-weites Gate schützt nur noch die Code-Integrität: nur Tampered sperrt hart.
+        // Tier-/Modul-Zugang läuft über die org-gebundene Lizenz (FeatureFlagResolver + EnforcePlanModules).
         if ($result->status === LicenseStatus::Tampered) {
             return $this->blocked($request, $result);
         }
 
-        // Abgelaufene, aber noch in der Schonfrist befindliche Lizenz: Banner
-        // weiterhin anzeigen lassen (die App läuft mit dem gebuchten Tier weiter,
-        // bis die Frist endet — danach greift wieder hart free).
+        // In der Schonfrist läuft die App mit gebuchtem Tier weiter (Banner via licenseGraceUntil).
         if ($result->status === LicenseStatus::GracePeriod && $result->payload !== null) {
             app()->instance('licenseGraceUntil', $result->payload->expiresAt?->addDays((int) config('license.grace_days', 14)));
         }

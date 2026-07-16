@@ -47,11 +47,8 @@ class SaveRecurrenceRuleRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
-        // Typ-Pflichten spiegeln (analog SaveDiaryEntryRequest): Serien-
-        // Einträge entstehen ohne Formular-Validierung, deshalb muss die
-        // Regel selbst den Typ-Vertrag erfüllen. Adresse/Tour kann eine
-        // Regel strukturell nicht liefern → solche Typen sind für
-        // Serienaufträge nicht wählbar.
+        // Typ-Pflichten spiegeln (analog SaveDiaryEntryRequest): Serien-Einträge entstehen ohne
+        // Formular-Validierung → Adresse/Tour sind strukturell nicht lieferbar, also nicht wählbar.
         $type = $this->resolveEntryType();
         $requiresCustomer = (bool) ($type?->requires_customer);
 
@@ -97,8 +94,7 @@ class SaveRecurrenceRuleRequest extends BaseFormRequest {
             return null;
         }
 
-        // rules() läuft VOR der Sqid-Dekodierung in validationData() —
-        // Formulare senden Sqids (s. Memory/SaveDiaryEntryRequest).
+        // rules() läuft VOR der Sqid-Dekodierung in validationData() — Formulare senden Sqids (s. SaveDiaryEntryRequest).
         $id = is_string($raw) && ! ctype_digit($raw)
             ? app(\App\Services\SqidEncoder::class)->decode(\App\Models\EntryType::class, $raw)
             : (int) $raw;

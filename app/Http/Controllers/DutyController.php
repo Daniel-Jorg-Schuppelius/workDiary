@@ -76,8 +76,7 @@ class DutyController extends Controller {
                 ? Sqid::decodeOrNumeric(User::class, $request->query('user_id'))
                 : (int) $authUser->id;
             if ($statusUserId !== null) {
-                // Mandantengrenze: nur Nutzer der eigenen Organisation (kein
-                // globaler OrganizationScope auf User — Whitebox-Befund 2026-07).
+                // Mandantengrenze: nur Nutzer der eigenen Org (kein globaler OrganizationScope auf User — Whitebox 2026-07).
                 $sicknessStatusUser = User::query()
                     ->where('organization_id', $authUser->organization_id)
                     ->find($statusUserId);
@@ -146,8 +145,7 @@ class DutyController extends Controller {
             ->with(['user:id,name', 'tags:id,name,color,slug'])
             ->orderByDesc('start_at');
 
-        // Gemeinsame Filterlogik mit /diary (Concern), damit beide Listen
-        // identisch filtern und nicht auseinanderlaufen.
+        // Gemeinsame Filterlogik mit /diary (Concern), damit beide Listen nicht auseinanderlaufen.
         $this->applyDiaryFilters($diaryQuery, $request, $rangeFrom, $rangeTo);
 
         return $diaryQuery;

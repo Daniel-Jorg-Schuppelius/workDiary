@@ -31,17 +31,14 @@ class ChannelController extends Controller {
             Gate::authorize('view', $channel);
         }
 
-        // Mitarbeiter der eigenen Organisation (Mandantengrenze explizit, da User
-        // kein globaler Org-Scope), ohne sich selbst.
+        // Mitarbeiter der eigenen Organisation (Org-Scope explizit, da User keinen globalen hat), ohne sich selbst.
         $users = User::query()
             ->where('organization_id', $user->organization_id)
             ->where('id', '!=', $user->id)
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        // Ohne expliziten Kanal: bei genau EINEM Kanal diesen direkt öffnen
-        // (es gibt nichts zu wählen); bei mehreren/keinem die Kanalliste (mobil)
-        // bzw. den Empty-State (Desktop) zeigen – damit der Zurück-Pfeil greift.
+        // Ohne expliziten Kanal: genau EINEN direkt öffnen, sonst Liste/Empty-State (damit der Zurück-Pfeil greift).
         $active = $channel && $channel->exists
             ? $channel
             : ($channels->count() === 1 ? $channels->first() : null);
@@ -131,9 +128,7 @@ class ChannelController extends Controller {
         $other = (int) $data['user_id'];
         abort_if($other === $user->id, 422);
 
-        // Bestehenden DM-Kanal genau zwischen diesen beiden Personen finden.
-        // has('members','=',2) erzeugt eine WHERE-Count-Subquery (kein HAVING/
-        // GROUP BY) und ist damit auch auf SQLite gültig.
+        // Bestehenden 1:1-DM-Kanal finden; has('members','=',2) als WHERE-Count-Subquery (SQLite-gültig, kein HAVING/GROUP BY).
         $existing = Channel::query()->where('type', 'direct')
             ->whereHas('members', fn ($q) => $q->whereKey($user->id))
             ->whereHas('members', fn ($q) => $q->whereKey($other))

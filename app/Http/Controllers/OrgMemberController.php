@@ -36,8 +36,7 @@ class OrgMemberController extends Controller {
 
         // TENANT-BYPASS: User-Model nutzt keinen BelongsToOrganization-Trait
         // (Authenticatable-Sonderfall, siehe ../WorkDiary-Architecture/security/tenant-audit-2026.md).
-        // Mandantengrenze wird hier durch where('organization_id', $auth->organization_id)
-        // explizit hergestellt.
+        // Mandantengrenze daher hier explizit über organization_id.
         $query = User::withoutGlobalScopes()
             ->where('organization_id', $auth->organization_id)
             ->with('roles');
@@ -168,8 +167,7 @@ class OrgMemberController extends Controller {
             ],
             'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $member->id],
             'role' => ['required', 'in:' . implode(',', [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value])],
-            // Admin kann optional ein neues Passwort setzen; der Mitarbeiter muss
-            // es beim nächsten Login ändern.
+            // Admin kann optional ein neues Passwort setzen (Mitarbeiter ändert es beim nächsten Login).
             'new_password' => ['nullable', 'confirmed', Password::defaults()],
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
 
@@ -264,8 +262,7 @@ class OrgMemberController extends Controller {
         if ($this->canManagePayroll($user)) {
             $rules['payroll_hourly_wage'] = ['nullable', 'numeric', 'min:0', 'max:99999999.99'];
 
-            // Vergütungsmodell (auch für externe Mitarbeiter). Je nach Modell
-            // sind Pauschale (Betrag + Intervall) bzw. Stundensatz erforderlich.
+            // Vergütungsmodell (auch extern): je nach Modell Pauschale (Betrag+Intervall) bzw. Stundensatz.
             $rules['compensation_model'] = ['nullable', Rule::enum(\App\Enums\User\CompensationModel::class)];
             $rules['flat_amount'] = ['nullable', 'required_if:compensation_model,pauschal', 'numeric', 'min:0', 'max:99999999.99'];
             $rules['flat_interval'] = ['nullable', 'required_if:compensation_model,pauschal', Rule::enum(\App\Enums\User\FlatInterval::class)];

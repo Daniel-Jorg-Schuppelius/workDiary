@@ -22,10 +22,8 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 
 /**
- * Krisenakten (Feature 070, MVP-212–221): Dashboard, Akte mit Lagebild,
- * Stab (Alarmierung/Quittierung/Eskalation), Entscheidungen, Maßnahmen,
- * Kommunikation (Entwurf→Freigabe→Aussendung), BCM-Sicht, Verknüpfungen,
- * Nachbereitung und Meldefristen (D9).
+ * Krisenakten (Feature 070, MVP-212–221, D9): Dashboard, Akte, Stab,
+ * Entscheidungen/Maßnahmen, Kommunikation, BCM, Verknüpfungen, Nachbereitung.
  */
 class CrisisCaseController extends Controller {
     public function __construct(

@@ -241,10 +241,8 @@ class Invoice extends Model {
     }
 
     protected static function booted(): void {
-        // Ausstellungs-Unveränderlichkeit (MVP-162): Anker ist der beim
-        // OFFIZIELLEN Ausstellen eingefrorene Partei-Snapshot (issue()/
-        // markSent() → freezeParties) — ab dann sind fachliche Felder
-        // gesperrt, nur die MUTABLE_AFTER_ISSUE-Whitelist bleibt änderbar.
+        // Ausstellungs-Unveränderlichkeit (MVP-162): Anker ist der beim offiziellen Ausstellen eingefrorene Partei-Snapshot
+        // (issue()/markSent() → freezeParties) — ab dann sind fachliche Felder gesperrt (nur MUTABLE_AFTER_ISSUE-Whitelist änderbar).
         static::updating(function (self $invoice): void {
             if ($invoice->getRawOriginal('party_snapshot') === null) {
                 return; // noch nicht offiziell ausgestellt (z. B. Alt-/Testdaten)
@@ -257,10 +255,8 @@ class Invoice extends Model {
             }
         });
 
-        // Positionen per Eloquent löschen statt sie der DB-Cascade zu
-        // überlassen: nur so feuern die InvoiceItem-Hooks, die die Quellposten
-        // (Zeiten/Material/Touren/Spesen) wieder freigeben — sonst blieben sie
-        // nach dem Löschen eines Entwurfs dauerhaft "abgerechnet" (G2).
+        // Positionen per Eloquent löschen (nicht DB-Cascade): nur so feuern die InvoiceItem-Hooks, die die
+        // Quellposten (Zeiten/Material/Touren/Spesen) wieder freigeben — sonst bleiben sie dauerhaft "abgerechnet" (G2).
         static::deleting(function (self $invoice): void {
             $invoice->items()->get()->each->delete();
         });
@@ -276,9 +272,8 @@ class Invoice extends Model {
         }
         $this->party_snapshot = app(\App\Services\Invoicing\InvoicePartySnapshot::class)->capture($this);
 
-        // Feature 076 (MVP-300): mit der Partei auch den Layoutstand
-        // einfrieren — finalisierte Belege rendern über den Snapshot, spätere
-        // Profiländerungen verändern alte Dokumente nicht.
+        // Feature 076: mit der Partei auch den Layoutstand einfrieren — finalisierte Belege rendern über den
+        // Snapshot, spätere Profiländerungen verändern alte Dokumente nicht.
         if ($this->exists && $this->organization !== null) {
             app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->snapshot(
                 $this,

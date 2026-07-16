@@ -77,9 +77,7 @@ class VacationController extends Controller {
 
         $data = $this->validateVacation($request);
 
-        // Owner-Manipulation verhindern (analog SickLeaveController): nur ein
-        // Admin darf user_id ändern; ein leerer Wert würde den Antrag sonst
-        // verwaisen lassen. Reguläre Nutzer können den Eigentümer nicht umschreiben.
+        // Nur Admins dürfen user_id ändern; leerer Wert würde den Antrag verwaisen.
         /** @var User $auth */
         $auth = Auth::user();
         if (! $auth->isAdmin() || empty($data['user_id'])) {

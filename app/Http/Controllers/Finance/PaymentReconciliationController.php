@@ -22,12 +22,9 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Zahlungsabgleich (Feature 045, „Priorität 3 / Phase 4"): Bankauszüge
- * importieren (CAMT.053/MT940), Umsätze prüfen, Zuordnungsvorschläge bestätigen
- * und reversibel zurücknehmen. Statusänderungen an Belegen erst nach
- * Bestätigung (ReconciliationService). Autorisierung über die Bank*-Policies
- * (finance.payment.import / finance.payment.reconcile); Modul-Gating
- * module.finance über die finance.*-Routen.
+ * Zahlungsabgleich (Feature 045): Bankauszüge importieren (CAMT.053/MT940),
+ * Umsätze prüfen, Zuordnungen bestätigen und reversibel zurücknehmen.
+ * Belegstatus ändert sich erst nach Bestätigung ({@see ReconciliationService}).
  */
 class PaymentReconciliationController extends Controller {
     private const STORAGE_DISK = 'local';
@@ -119,10 +116,8 @@ class PaymentReconciliationController extends Controller {
                 continue;
             }
 
-            // Sammelbuchung (Toolkit-Folgepaket 2): je TransactionDetail einen
-            // Vorschlag; Sammel-Rücklastschriften (Details mit Rückgabegrund)
-            // laufen über die Rückläufer-Kompensation je Detail statt über
-            // den Split-Confirm.
+            // Sammelbuchung: je TransactionDetail ein Vorschlag; Sammel-Rücklastschriften
+            // laufen über die Rückläufer-Kompensation je Detail statt über Split-Confirm.
             if ($transaction->hasSplitDetails()) {
                 $detailReturnOrigins[$transaction->id] = $this->matchingService->suggestReturnOriginsForDetails($transaction);
                 if ($detailReturnOrigins[$transaction->id] === []) {
@@ -133,8 +128,7 @@ class PaymentReconciliationController extends Controller {
             }
 
             $suggestions[$transaction->id] = $this->matchingService->suggestFor($transaction);
-            // Rückläufer-Workflow (MVP-334): Kandidaten der ursprünglichen
-            // Zuordnung für Storno-/Return-Umsätze vorschlagen.
+            // Rückläufer-Workflow (MVP-334): Kandidaten der ursprünglichen Zuordnung vorschlagen.
             if ($transaction->isReturnCandidate()) {
                 $returnOrigins[$transaction->id] = $this->matchingService->suggestReturnOrigins($transaction);
             }
@@ -152,11 +146,9 @@ class PaymentReconciliationController extends Controller {
     }
 
     /**
-     * Kandidatenpool für die editierbaren Zeilen der Sammelbuchungs-Auflösung:
-     * offene Rechnungen und freigegebene, unerstattete Spesen (org-scoped über
-     * die Modell-Scopes — derselbe Pool, den der MatchingService durchsucht).
-     * Werte im Format `invoice:<sqid>` / `expense:<sqid>` für den bestehenden
-     * confirm-Mehrfach-Pfad.
+     * Kandidatenpool für die Sammelbuchungs-Auflösung: offene Rechnungen und
+     * freigegebene, unerstattete Spesen (derselbe Pool wie im MatchingService).
+     * Werte im Format `invoice:<sqid>` / `expense:<sqid>`.
      *
      * @return list<array{value: string, label: string}>
      */
@@ -190,9 +182,9 @@ class PaymentReconciliationController extends Controller {
     }
 
     /**
-     * Lastschrift-Rückläufer verarbeiten (MVP-334): kompensiert die gewählte
-     * Original-Zuordnung GoBD-konform (negative Chargeback-Zuordnung, Original
-     * bleibt Historie) und öffnet den Posten wieder.
+     * Lastschrift-Rückläufer (MVP-334): kompensiert die Original-Zuordnung
+     * GoBD-konform (negative Chargeback, Original bleibt Historie) und öffnet
+     * den Posten wieder.
      */
     public function processReturn(Request $request, BankTransaction $transaction): RedirectResponse {
         Gate::authorize('reconcile', $transaction);

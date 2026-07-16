@@ -272,11 +272,8 @@ class BillingReportController extends Controller {
         $revenue = 0.0;
         foreach ($entries as $e) {
             $minutes += (int) $e->minutes;
-            // Kanonischen Abrechnungs-Snapshot (TimeEntry.rate) summieren statt
-            // minutes/60 × Stundensatz neu zu rechnen. Der Snapshot wird beim
-            // Speichern über den RateCalculator gepflegt (inkl. Festpreis,
-            // Billable-Hierarchie und Rundung je Eintrag) und entspricht dem,
-            // was tatsächlich fakturiert wird — vermeidet Rundungs-/Tarif-Drift.
+            // TimeEntry.rate (kanonischer Abrechnungs-Snapshot vom RateCalculator) summieren
+            // statt neu zu rechnen — vermeidet Rundungs-/Tarif-Drift.
             $revenue += (float) $e->rate;
         }
 

@@ -21,11 +21,10 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 /**
- * Self-contained „Passwort vergessen"-Flow: Da der Login über einen Legacy-
- * Provider (Username + Pflicht-Passwort) läuft, ist Laravels Password-Broker
- * nicht nutzbar. Daher eigene Token-Verwaltung in password_reset_tokens.
- * Nutzer werden per E-Mail identifiziert. Antworten sind bewusst generisch,
- * um nicht zu verraten, ob eine E-Mail existiert.
+ * Self-contained „Passwort vergessen"-Flow: Da der Login über den Legacy-
+ * Provider läuft, ist Laravels Password-Broker nicht nutzbar → eigene
+ * Token-Verwaltung in password_reset_tokens. Antworten bewusst generisch
+ * (keine Account-Enumeration).
  */
 class PasswordResetController extends Controller {
     private function expireMinutes(): int {
@@ -85,17 +84,14 @@ class PasswordResetController extends Controller {
             return back()->withErrors(['email' => __('Dieser Link ist ungültig oder abgelaufen.')]);
         }
 
-        // is_new_system aktivieren: sonst prüft der LegacyUserProvider beim Login
-        // weiter das alte Klartext-Legacy-Passwort und ignoriert das neue bcrypt-PW.
+        // is_new_system aktivieren, sonst prüft der LegacyUserProvider weiter das alte Klartext-Legacy-Passwort.
         $user->forceFill([
             'password' => Hash::make($data['password']),
             'is_new_system' => true,
             'must_change_password' => false,
         ])->save();
 
-        // Passwort-Reset entwertet ALLE bestehenden Sitzungen des Kontos
-        // (Account-Takeover-Schutz: ein Angreifer mit bestehender Session wird
-        // durch den Reset ausgesperrt).
+        // Reset entwertet ALLE bestehenden Sitzungen (Account-Takeover-Schutz).
         $sessions->invalidateAll($user);
 
         DB::table('password_reset_tokens')->where('email', $row->email)->delete();

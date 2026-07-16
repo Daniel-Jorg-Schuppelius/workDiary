@@ -101,9 +101,8 @@ class InvoiceController extends Controller {
         /** @var \App\Models\ForeignCustomer|null $foreignCustomer */
         $foreignCustomer = isset($data['foreign_customer_id']) ? \App\Models\ForeignCustomer::query()->find($data['foreign_customer_id']) : null;
 
-        // Hoheits-Sperre (Feature 045, additiv): führt ein externes Programm
-        // (Lexoffice/DATEV) die Fakturierung dieses Kunden, ist die lokale
-        // Rechnungserstellung gesperrt — Quellen gehen per Übergabenachweis.
+        // Hoheits-Sperre (Feature 045): führt ein externes Programm (Lexoffice/DATEV)
+        // die Fakturierung des Kunden, ist die lokale Rechnungserstellung gesperrt.
         $billingMode = app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($customer);
         if ($billingMode->isExternal()) {
             throw \Illuminate\Validation\ValidationException::withMessages([
@@ -116,13 +115,11 @@ class InvoiceController extends Controller {
             'to' => $data['to'] ?? null,
         ];
 
-        // Pro-forma (MVP-171): eigener Nummernkreis, keine Quellposten —
-        // Positionen kommen manuell über den Positions-Dialog.
+        // Pro-forma (MVP-171): eigener Nummernkreis, keine Quellposten (Positionen manuell).
         if (($data['content'] ?? 'service') === 'proforma') {
             $invoice = $gen->emptyProforma($customer, $project);
         } elseif (($data['content'] ?? 'service') === 'down_payment') {
-            // Abschlags-/Anzahlungsrechnung (Belegkette 066): Teilentgelt vor
-            // Leistung, keine Quellposten — Anrechnung in der Schlussrechnung.
+            // Abschlags-/Anzahlungsrechnung (Belegkette 066): Teilentgelt vor Leistung, Anrechnung in der Schlussrechnung.
             $invoice = $gen->downPaymentFor(
                 $customer,
                 $project,
@@ -137,8 +134,7 @@ class InvoiceController extends Controller {
             $invoice = $gen->fromTimeEntries($customer, $project, $range, $foreignCustomer);
         }
 
-        // Teilrechnung (Belegkette 066): fachlich abgrenzbarer Leistungsteil —
-        // reine Kennzeichnung des Entwurfs, keine Anrechnungslogik.
+        // Teilrechnung (Belegkette 066): reine Kennzeichnung des Entwurfs, keine Anrechnungslogik.
         if (! empty($data['mark_partial']) && $invoice->type === Invoice::TYPE_INVOICE) {
             $invoice->update(['type' => Invoice::TYPE_PARTIAL]);
         }
@@ -160,8 +156,7 @@ class InvoiceController extends Controller {
         Gate::authorize('view', $invoice);
         $invoice->load(['items', 'customer', 'project']);
 
-        // Belegkette 066: anrechenbare offene Abschläge für den
-        // Schlussrechnungs-CTA bzw. Rückverweis der Abschlagsrechnung.
+        // Belegkette 066: anrechenbare offene Abschläge für den Schlussrechnungs-CTA.
         $openDownPaymentCount = 0;
         if ($invoice->status === Invoice::STATUS_DRAFT && $invoice->type === Invoice::TYPE_INVOICE) {
             $openDownPaymentCount = app(InvoiceGenerator::class)
@@ -174,9 +169,8 @@ class InvoiceController extends Controller {
     }
 
     /**
-     * Belegkette 066: Entwurf zur Schlussrechnung machen — rechnet alle
-     * offenen Abschlagsrechnungen desselben Kontexts als Absetzungspositionen
-     * an (§ 14 Abs. 5 UStG).
+     * Belegkette 066: Entwurf zur Schlussrechnung machen — rechnet alle offenen
+     * Abschlagsrechnungen desselben Kontexts an (§ 14 Abs. 5 UStG).
      */
     public function makeFinal(Invoice $invoice, InvoiceGenerator $gen): RedirectResponse {
         Gate::authorize('update', $invoice);

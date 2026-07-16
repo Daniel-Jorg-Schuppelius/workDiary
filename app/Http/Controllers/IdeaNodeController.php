@@ -22,11 +22,8 @@ use RuntimeException;
 
 /**
  * Knotenbezogene Editor-API der Ideenlandkarten (Feature 054, MVP-106/108):
- * kleine JSON-Operationen je Knoten — nie „ganze Karte speichern". Jede
- * Response trägt den neuen `lock_version`-Stand; ein veralteter Stand liefert
- * HTTP 409 mit dem aktuellen Serverknoten (sichtbarer Konflikt statt stillem
- * Last-write-wins). Sichtbarkeit delegiert vollständig an die IdeaMapPolicy;
- * archivierte Karten lehnen Mutationen ab (Policy::update).
+ * kleine JSON-Operationen je Knoten, optimistisch per `lock_version` (HTTP 409
+ * mit Serverstand statt Last-write-wins); Sichtbarkeit über die IdeaMapPolicy.
  */
 class IdeaNodeController extends Controller {
     public function __construct(private readonly IdeaNodeService $nodes) {}
@@ -39,11 +36,9 @@ class IdeaNodeController extends Controller {
     }
 
     /**
-     * Whole-Map-Sync des Canvas (MVP-136): der Canvas schickt den kompletten
-     * Baum; {@see IdeaMapSyncService} gleicht ihn gegen `idea_nodes` ab
-     * (Sqid-Identität stabil) und sichert per karten-weiter `lock_version`.
-     * Ein veralteter Stand liefert HTTP 409 mit dem aktuellen Serverbaum —
-     * nie stilles Last-write-wins.
+     * Whole-Map-Sync des Canvas (MVP-136): der Canvas schickt den kompletten Baum,
+     * {@see IdeaMapSyncService} gleicht ihn gegen `idea_nodes` ab und sichert per
+     * karten-weiter `lock_version` (veralteter Stand → HTTP 409 mit Serverbaum).
      */
     public function sync(Request $request, IdeaMap $map, IdeaMapSyncService $sync): JsonResponse {
         Gate::authorize('update', $map);
@@ -56,9 +51,8 @@ class IdeaNodeController extends Controller {
             'summaries' => ['sometimes', 'nullable', 'array'],
         ]);
 
-        // Rohen Baum/Links/Summaries verwenden: `validate()` liefert nur die
-        // geprüften Pfade zurück und würde die verschachtelten Felder (u. a.
-        // `sqid`) verwerfen. Der Sync-Service sanitisiert alle Felder selbst.
+        // Rohen Input nutzen: `validate()` verwürfe die verschachtelten Felder
+        // (u. a. `sqid`); der Sync-Service sanitisiert selbst.
         $tree = (array) $request->input('tree');
         // weglassen (null) = unverändert lassen; leeres Array = alle löschen.
         $links = $request->has('links') ? (array) $request->input('links', []) : null;
@@ -243,9 +237,9 @@ class IdeaNodeController extends Controller {
     }
 
     /**
-     * Überführt den Knoten in ein Zielmodul (MVP-109): Aufgabe/Kanban,
-     * Projekt oder Wissensartikel-Entwurf. Idempotent je Zieltyp — ein
-     * zweiter Versuch liefert `existing: true` mit Link aufs bestehende Ziel.
+     * Überführt den Knoten in ein Zielmodul (MVP-109): Aufgabe/Kanban, Projekt
+     * oder Wissensartikel-Entwurf. Idempotent je Zieltyp (zweiter Versuch →
+     * `existing: true` mit Link aufs bestehende Ziel).
      */
     public function convert(Request $request, IdeaMap $map, IdeaNode $node, NodeConversionService $conversions): JsonResponse {
         Gate::authorize('update', $map);
@@ -353,11 +347,9 @@ class IdeaNodeController extends Controller {
     }
 
     /**
-     * Hebt die karten-weite `lock_version` nach jeder Knoten-Mutation aus der
-     * Gliederung (MVP-136) — so erkennt der Whole-Map-Sync des Canvas eine
-     * zwischenzeitliche Gliederungs-Änderung als Konflikt (HTTP 409) statt sie
-     * still zu überschreiben. Die feingranulare per-Knoten-Sperre bleibt davon
-     * unberührt.
+     * Hebt die karten-weite `lock_version` nach jeder Knoten-Mutation (MVP-136),
+     * damit der Whole-Map-Sync eine zwischenzeitliche Gliederungs-Änderung als
+     * Konflikt (HTTP 409) erkennt statt sie zu überschreiben.
      */
     private function bumpMapVersion(IdeaMap $map): void {
         $map->increment('lock_version');

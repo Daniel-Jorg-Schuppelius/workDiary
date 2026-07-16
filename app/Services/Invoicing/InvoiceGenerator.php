@@ -410,17 +410,6 @@ class InvoiceGenerator {
     }
 
     /**
-     * Erzeugt eine Gutschrift (Korrekturrechnung) zu einer bezahlten Rechnung.
-     *
-     * - Kopiert alle Positionen mit NEGATIVEN Mengen (DE-Buchhaltungsstandard).
-     * - Eigene Rechnungsnummer mit Prefix 'G' (z.B. G2026-0001).
-     * - parent_invoice_id verweist auf das Original.
-     * - Status startet als 'draft' — muss vom Benutzer gestellt werden.
-     *
-     * @throws \LogicException Wenn das Original nicht bezahlt ist oder bereits
-     *                         eine Gutschrift existiert.
-     */
-    /**
      * Stornorechnung (Feature 066, MVP-162/172): eigener Beleg im
      * Nummernkreis S mit vollständig negierten Positionen und dem
      * Steuerkontext des Originals; das Original wird als storniert

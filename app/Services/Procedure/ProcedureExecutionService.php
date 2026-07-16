@@ -142,11 +142,8 @@ class ProcedureExecutionService {
             }
         }
 
-        // Serverseitige Warte-/Trockenzeit (MVP-064): ein laufender Warteschritt
-        // darf auch über den allgemeinen Ausführungspfad nicht vorzeitig
-        // abgeschlossen werden — Neuladen/anderer Client umgeht das nicht. Die
-        // vorzeitige Fortsetzung ist ausschließlich als auditierte Abweichung
-        // über den WaitStepService möglich.
+        // Laufender Warteschritt (MVP-064) darf auch über den allgemeinen Pfad nicht vorzeitig enden
+        // (Neuladen/anderer Client umgeht das nicht); vorzeitige Fortsetzung nur auditiert via WaitStepService.
         if ($stepRun->status === ProcedureStepRunStatus::Blocked
             && $stepRun->wait_until !== null
             && Carbon::now()->lessThan($stepRun->wait_until)) {

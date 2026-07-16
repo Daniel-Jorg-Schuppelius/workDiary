@@ -22,25 +22,16 @@ use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\{Auth, DB, Storage};
 
 /**
- * DATEV-Buchungsstapel (Feature 045, „Priorität 2 / Phase 3"): stellt gestellte
- * Rechnungen/Gutschriften (und optional freigegebene Spesen) eines abgeschlossenen
- * Zeitraums als prüfbaren DATEV-V700-Buchungsstapel zusammen.
+ * DATEV-Buchungsstapel (Feature 045): stellt gestellte Rechnungen/Gutschriften
+ * (optional Spesen) eines Zeitraums als prüfbaren DATEV-V700-Buchungsstapel
+ * zusammen. Ablauf: collectBookingReady() → createDraft() → preflight() → finalize().
  *
- * Ablauf:
- *   collectBookingReady() → createDraft() → preflight() → finalize()
- *
- * Doppel-Übergabe-Schutz: collectBookingReady() schließt Quellen aus, die
- * bereits in einem aktiven Stapel (Draft ODER exportiert) hängen — Drafts
- * reservieren ihre Quellen, damit mehrere Stapel je Zeitraum (Teilauswahl,
- * MVP-334) nie dieselbe Quelle doppelt übergeben; finalize() prüft zusätzlich
- * hart gegen fremde exportierte Stapel. Hoheits-Ausschluss: Rechnungen extern
- * geführter Kunden (BillingMode external) gehören NICHT in den lokalen
- * Buchungsstapel — sie werden ausgeschlossen und im Preflight gewarnt.
- * Storno-Übergabe (MVP-334): stornierte Rechnungen, die bereits in einem
- * exportierten Stapel übergeben wurden, werden als Generalumkehr-Buchung
- * (EXTF-Feld „Generalumkehr (GU)" = 1) nachgereicht. Jeder Statuswechsel
- * schreibt ein {@see DatevBookingEvent} (revisionssichere Hash-Kette,
- * config('audit.chains'), `audit:verify`).
+ * Doppel-Übergabe-Schutz: Quellen in einem aktiven Stapel (Draft ODER exportiert)
+ * sind gesperrt (MVP-334: Teilauswahl je Zeitraum); finalize() prüft zusätzlich
+ * hart gegen fremde exportierte Stapel. Extern geführte Kunden (BillingMode
+ * external) gehören NICHT in den Stapel (Preflight-Warnung). Storno (MVP-334):
+ * bereits übergebene stornierte Rechnungen werden als Generalumkehr nachgereicht.
+ * Jeder Statuswechsel schreibt ein {@see DatevBookingEvent} (Hash-Kette, audit:verify).
  *
  * @phpstan-type BookingRow array{
  *   source_type: class-string,
@@ -715,11 +706,8 @@ class DatevBookingService {
      * @param  Collection<int, Invoice|Expense>  $sources
      */
     private function countExternallyLedInvoices(Organization $organization, Collection $sources): int {
-        // Bewusst gegen die Roh-Quellen im Zeitraum: $sources ist bereits
-        // gefiltert, daher zählen wir die im selben Zeitraum existierenden, aber
-        // extern geführten Rechnungen über einen leichten Marker. Im MVP genügt
-        // ein konservativer Hinweis: existieren extern geführte Kunden mit
-        // Rechnungen, wird gewarnt.
+        // $sources ist bereits gefiltert; für den Preflight-Hinweis genügt ein
+        // konservativer Zähler extern geführter Rechnungen der Org.
         unset($sources);
 
         return Invoice::query()

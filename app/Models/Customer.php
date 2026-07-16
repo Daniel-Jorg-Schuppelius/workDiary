@@ -168,10 +168,8 @@ class Customer extends Model {
         $slug = $base;
         $i = 2;
         while (
-            // TENANT-BYPASS: Slug-Eindeutigkeit muss ohne Global Scope geprüft
-            // werden, weil $organizationId hier explizit übergeben wird (z. B.
-            // beim Anlegen aus Admin-Kontexten ohne gebundene currentOrganization).
-            // Der explizite where('organization_id', ...) erhält die Mandantengrenze.
+            // TENANT-BYPASS: ohne Global Scope, weil $organizationId explizit übergeben wird;
+            // der explizite where('organization_id', ...) erhält die Mandantengrenze.
             static::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
@@ -191,9 +189,7 @@ class Customer extends Model {
      */
     public static function nextNumberFor(?int $organizationId): string {
         if ($organizationId === null) {
-            // Greenfield-Fallback: ohne Organisationskontext keine echte
-            // Mandanten-Sequenz möglich — sehr unwahrscheinlich (Test-Setup),
-            // wird hier deterministisch behandelt.
+            // Greenfield-Fallback ohne Org-Kontext (nur Test-Setup): deterministische Dummy-Nummer.
             return 'K-0001';
         }
 
@@ -283,9 +279,7 @@ class Customer extends Model {
     }
 
     /**
-     * Liefert das Standardprojekt des Kunden oder legt es lazy an.
-     * Wird vom CustomerObserver bei `created` aufgerufen und steht auch
-     * UI-/Service-seitig als Fallback bereit (z. B. Quick-Stundenzettel).
+     * Standardprojekt des Kunden oder lazy anlegen (vom CustomerObserver bei `created`, auch als UI-/Service-Fallback).
      */
     public function defaultProjectOrCreate(): Project {
         $existing = $this->defaultProject();

@@ -81,10 +81,8 @@ class CustomerAnalysisReportController extends Controller {
             'projectId' => $projectId,
             'userId' => $userId,
             'projects' => Project::query()->orderBy('name')->get(['id', 'name']),
-            // Mandantengrenze: User hat KEINEN globalen OrganizationScope
-            // (Authenticatable-Sonderfall) — ohne expliziten Org-Filter listete
-            // das Dropdown User ALLER Organisationen (Tenant-Leak, Bauturbo A17,
-            // belegt durch ReportPdfTenantTest).
+            // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne expliziten
+            // Org-Filter listete das Dropdown User aller Orgs (Tenant-Leak, Bauturbo A17, ReportPdfTenantTest).
             'reportUsers' => User::query()
                 ->where('organization_id', Auth::user()?->organization_id)
                 ->orderBy('name')

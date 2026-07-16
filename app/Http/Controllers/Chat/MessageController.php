@@ -111,8 +111,7 @@ class MessageController extends Controller {
             }
         }
 
-        // parent_id (Thread) und quoted_id (Zitat) kommen als Sqid → dekodieren
-        // und nur Nachrichten desselben Kanals zulassen.
+        // parent_id (Thread) / quoted_id (Zitat) als Sqid dekodieren; nur Nachrichten desselben Kanals zulassen.
         $parentId = $this->resolveChannelMessageId($channel, $data['parent_id'] ?? null);
         $quotedId = $this->resolveChannelMessageId($channel, $data['quoted_id'] ?? null);
 
@@ -290,15 +289,13 @@ class MessageController extends Controller {
         return view('chat._message', ['message' => $message, 'me' => Auth::user()])->render();
     }
 
-    /** Andere Kanal-Mitglieder über eine neue Nachricht informieren →
-     *  Sidebar-Kanalliste (Ungelesen-Markierung) live aktualisieren. */
+    /** Andere Kanal-Mitglieder informieren, damit die Sidebar-Kanalliste (Ungelesen) live aktualisiert. */
     private function notifyMembers(Channel $channel, int $exceptUserId): void {
         $channel->members()->where('users.id', '!=', $exceptUserId)->pluck('users.id')
             ->each(fn ($id) => broadcast(new \App\Events\Chat\ChannelListChanged((int) $id)));
     }
 
-    /** Dekodiert einen Nachrichten-Sqid und liefert die numerische ID nur,
-     *  wenn die Nachricht zum angegebenen Kanal gehört (sonst null). */
+    /** Dekodiert einen Nachrichten-Sqid und liefert die ID nur, wenn die Nachricht zum Kanal gehört (sonst null). */
     private function resolveChannelMessageId(Channel $channel, ?string $sqid): ?int {
         if (! filled($sqid)) {
             return null;
@@ -313,8 +310,7 @@ class MessageController extends Controller {
         if (! in_array($ext, self::ALLOWED_EXT, true)) {
             return;
         }
-        // Defense-in-Depth: serverseitig erkannten MIME-Typ gegen Allow-List prüfen
-        // (verhindert ausführbare/unerwünschte Inhalte hinter erlaubter Endung).
+        // Defense-in-Depth: erkannten MIME-Typ gegen Allow-List prüfen (verhindert unerwünschte Inhalte hinter erlaubter Endung).
         if (! in_array($file->getMimeType() ?? '', self::ALLOWED_MIMES, true)) {
             return;
         }

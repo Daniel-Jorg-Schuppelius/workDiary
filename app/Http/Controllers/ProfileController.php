@@ -52,8 +52,7 @@ class ProfileController extends Controller {
             'preferences.date_format' => ['nullable', Rule::in(\App\Support\Formats::dateOptions())],
             'preferences.time_format' => ['nullable', Rule::in(\App\Support\Formats::timeOptions())],
             'preferences.startpage' => ['nullable', 'string', Rule::in($startpages)],
-            // Benachrichtigungs-Präferenzen (MVP-018): Mail global an/aus,
-            // Ruhezeit gilt nur für Mail/Push — In-App sammelt immer.
+            // Benachrichtigungs-Präferenzen (MVP-018): Mail global an/aus, Ruhezeit nur für Mail/Push — In-App sammelt immer.
             'preferences.notifications' => ['sometimes', 'array'],
             'preferences.notifications.mail_enabled' => ['nullable', 'boolean'],
             'preferences.notifications.quiet_from' => ['nullable', 'date_format:H:i'],
@@ -71,8 +70,7 @@ class ProfileController extends Controller {
         $user->fill(['name' => $data['name'], 'email' => $data['email']]);
         $this->fillUserContactFields($user, $data);
 
-        // Durchwahl (Opt-in) verschlüsselt + Hash setzen; leere Eingabe hebt das
-        // Opt-in auf. Nur berühren, wenn das Feld Teil des Formulars war.
+        // Durchwahl (Opt-in) verschlüsselt + Hash setzen; leere Eingabe hebt das Opt-in auf. Nur bei Formular-Feld berühren.
         if ($request->has('cti_extension')) {
             $user->setCtiExtension(is_string($data['cti_extension'] ?? null) ? $data['cti_extension'] : null);
         }
@@ -82,10 +80,8 @@ class ProfileController extends Controller {
                 (array) ($data['preferences'] ?? []),
                 static fn($v) => $v !== null && $v !== ''
             );
-            // Vom Profilformular verwaltete Keys werden durch die Eingabe ersetzt
-            // (bzw. geleert, wenn leer gesendet). Andere Keys — insbesondere
-            // color_scheme vom Header-Umschalter — bleiben erhalten, damit ein
-            // Profil-Speichern die Hell/Dunkel-Wahl nicht zurücksetzt.
+            // Vom Profilformular verwaltete Keys ersetzt die Eingabe (bzw. leert sie); andere Keys — v. a.
+            // color_scheme vom Header-Umschalter — bleiben, damit Speichern die Hell/Dunkel-Wahl nicht zurücksetzt.
             $existing = (array) ($user->preferences ?? []);
             $formKeys = ['theme', 'locale', 'timezone', 'date_format', 'time_format', 'startpage', 'notifications'];
             $preserved = array_diff_key($existing, array_flip($formKeys));

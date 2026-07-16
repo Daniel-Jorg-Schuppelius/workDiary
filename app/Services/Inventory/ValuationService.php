@@ -85,10 +85,8 @@ class ValuationService implements InventoryValuationStrategy {
         $qty = $this->positive($qty);
 
         return DB::transaction(function () use ($variant, $warehouse, $qty, $allowNegative, $actorUserId): StockMovement {
-            // Verfügbarkeit UNTER Zeilensperre in der Transaktion prüfen
-            // (wie FifoValuationService): der ungesperrte Check davor war
-            // TOCTOU — zwei parallele Abgänge sahen beide genug Bestand und
-            // buchten zusammen ins Minus (Moving-Average-Verzerrung).
+            // Verfügbarkeit UNTER Zeilensperre in der Transaktion prüfen (wie FifoValuationService): der ungesperrte
+            // Check davor war TOCTOU — zwei parallele Abgänge buchten zusammen ins Minus (Moving-Average-Verzerrung).
             if (! $allowNegative && bccomp($this->ledger->availableForUpdate($variant, $warehouse), $qty, self::SCALE) < 0) {
                 throw new RuntimeException('Abgang übersteigt den verfügbaren Bestand.');
             }

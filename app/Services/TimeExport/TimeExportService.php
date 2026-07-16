@@ -512,11 +512,9 @@ class TimeExportService {
         /** @var array<string, array{rule: SurchargeRule, date: string, minutes: int, sources: list<int>}> $acc */
         $acc = [];
         foreach ($attendances as $attendance) {
-            // In die Anzeige-Zeitzone umrechnen, BEVOR der Calculator an
-            // Mitternachtsgrenzen splittet: Zuschlagsfenster (23:00–06:00)
-            // und Wochentage (Sa/So/Feiertag) sind lokale Begriffe — auf
-            // UTC-Instants verlöre Samstagsarbeit ab 00:30 lokal ihren
-            // Zuschlag (§ 3b EStG, DATEV-Lohnexport).
+            // In die Anzeige-Zeitzone umrechnen VOR dem Split an
+            // Mitternachtsgrenzen: Zuschlagsfenster und Wochentage sind lokale
+            // Begriffe (§ 3b EStG) — UTC-Instants verlören lokale Zuschläge.
             $tz = \App\Support\Tz::current();
             $shares = $this->surchargeCalculator->calculate(
                 CarbonImmutable::parse((string) $attendance->started_at)->setTimezone($tz),
@@ -561,9 +559,8 @@ class TimeExportService {
             ];
 
             // Steuerfrei/-pflichtig-Split (Rang 36): über der steuerfreien
-            // Obergrenze wird der Prozentsatz in zwei Zeilen mit getrennten
-            // Lohnarten geteilt — gleiche Stunden, die externe Lohnrechnung
-            // rechnet je Anteil (€-Deckel bleibt dort).
+            // Obergrenze in zwei Zeilen mit getrennten Lohnarten aufgeteilt
+            // (gleiche Stunden; €-Deckel bleibt in der externen Lohnrechnung).
             $split = $row['rule']->taxSplit();
             if ($split === null) {
                 TimeExportLine::query()->create($base + [

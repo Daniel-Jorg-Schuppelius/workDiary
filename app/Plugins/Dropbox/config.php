@@ -10,15 +10,7 @@
 
 /*
  * Dropbox-Plugin (Feature 080, MVP-353): LESENDER Cloud-Dokumenteingang.
- * OAuth2 Authorization-Code + PKCE mit `token_access_type=offline`
- * (kurzlebiges Access- + Refresh-Token); kleinstmögliche Scopes
- * (files.metadata.read + files.content.read, dazu account_info.read für die
- * Konto-Bestätigung). Delta über `files/list_folder` + `/continue`-Cursor
- * (include_deleted für Tombstones); der signaturgeprüfte Webhook
- * (X-Dropbox-Signature, HMAC-SHA256 mit App-Secret) ist NUR Aufwecksignal.
- *
  * App-Key/-Secret sind INSTALLATIONS-weit (ENV) — nie je Organisation.
- * Externe Hürde (P10/Welle C): Dropbox-App-Registrierung + Pilot.
  */
 
 return [
@@ -32,8 +24,7 @@ return [
     'scopes' => 'account_info.read files.metadata.read files.content.read',
     // Seitengröße des list_folder-Laufs (Dropbox-Max 2000).
     'page_size' => (int) env('DROPBOX_PAGE_SIZE', 500),
-    // Cloud-Backupziel (Feature 017 Phase 32, MVP-363): EIGENE systemweite
+    // Cloud-Backupziel (Feature 017 Phase 32, MVP-363): eigene systemweite
     // Verbindung mit Schreib-Scope, getrennt vom lesenden Dokumenteingang.
-    // Empfohlen: eigene App-Registrierung mit App-Folder-Zugriff.
     'backup_scopes' => env('DROPBOX_BACKUP_SCOPES', 'account_info.read files.metadata.read files.content.read files.content.write'),
 ];

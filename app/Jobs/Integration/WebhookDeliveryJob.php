@@ -23,17 +23,12 @@ use Illuminate\Support\Facades\Http;
 use Throwable;
 
 /**
- * Stellt eine einzelne Webhook-Nutzlast zu (Feature 008).
- *
- * Signiert den Body mit HMAC-SHA256 über `<timestamp>.<body>` (Replay-Schutz)
- * unter dem endpoint.secret und sendet ihn per POST mit kurzem Timeout. Jeder
- * Versuch wird in {@see WebhookDelivery} protokolliert. Retry mit Backoff über
- * die Laravel-Queue ($tries/$backoff). Nach
- * {@see WebhookEndpoint::MAX_CONSECUTIVE_FAILURES} aufeinanderfolgenden
- * Fehlversuchen wird der Endpunkt automatisch deaktiviert (disabled_at).
- *
- * Der Body wird bewusst vorab serialisiert übergeben (nicht das Payload-Array),
- * damit Signatur und payload_hash exakt über dieselben Bytes laufen.
+ * Stellt eine einzelne Webhook-Nutzlast zu (Feature 008): HMAC-SHA256-Signatur
+ * über `<timestamp>.<body>` (Replay-Schutz), POST mit kurzem Timeout, jeder
+ * Versuch in {@see WebhookDelivery} protokolliert. Retry/Backoff über die Queue;
+ * nach {@see WebhookEndpoint::MAX_CONSECUTIVE_FAILURES} Fehlern Auto-Deaktivierung.
+ * Der Body wird vorab serialisiert übergeben, damit Signatur und payload_hash
+ * über dieselben Bytes laufen.
  */
 class WebhookDeliveryJob implements ShouldQueue {
     use Dispatchable;
@@ -80,8 +75,7 @@ class WebhookDeliveryJob implements ShouldQueue {
         $delivery->attempt = $this->attempts();
         $delivery->save();
 
-        // SSRF-Laufzeit-Guard (auch gegen DNS-Rebinding / Altbestand-Endpunkte):
-        // niemals an interne/private/reservierte Ziele zustellen.
+        // SSRF-Laufzeit-Guard (DNS-Rebinding/Altbestand): nie an interne Ziele zustellen.
         if (! \App\Support\UrlSafety::isPubliclyRoutableHttpUrl((string) $endpoint->url)) {
             $this->markFailure($delivery, $endpoint, 'Blocked: non-public URL');
 
@@ -100,8 +94,7 @@ class WebhookDeliveryJob implements ShouldQueue {
                 'User-Agent' => 'WorkDiary-Webhook/1',
             ])
                 ->timeout(10)
-                // Keine Redirects folgen: ein 30x auf einen internen Host würde
-                // sonst den SSRF-Guard oben umgehen (Whitebox-Befund 2026-07).
+                // Keine Redirects: ein 30x auf internen Host würde den SSRF-Guard umgehen (Whitebox 2026-07).
                 ->withoutRedirecting()
                 ->withBody($this->body, 'application/json')
                 ->post($endpoint->url);
@@ -116,8 +109,7 @@ class WebhookDeliveryJob implements ShouldQueue {
                 return;
             }
 
-            // 410 Gone: der Empfänger (n8n/Make/Zapier) hat die Subscription
-            // entfernt → sofortiges Auto-Unsubscribe, KEIN Retry (Selbstheilung).
+            // 410 Gone: Subscription beim Empfänger gelöscht → Auto-Unsubscribe, kein Retry.
             if ($status === 410) {
                 $this->autoUnsubscribe($delivery, $endpoint);
 
@@ -131,10 +123,7 @@ class WebhookDeliveryJob implements ShouldQueue {
         }
     }
 
-    /**
-     * Wird von der Queue nach Aufbrauchen aller Versuche aufgerufen.
-     * Stellt sicher, dass auch der letzte Fehlschlag protokolliert/gezählt ist.
-     */
+    /** Queue-Netz nach Aufbrauchen aller Versuche: letzten Fehlschlag protokollieren/zählen. */
     public function failed(?Throwable $e): void {
         $delivery = WebhookDelivery::query()->withoutGlobalScopes()->find($this->deliveryId);
         if ($delivery === null || $delivery->status === WebhookDeliveryStatus::Success) {
@@ -173,12 +162,9 @@ class WebhookDeliveryJob implements ShouldQueue {
     }
 
     /**
-     * REST-Hooks-Selbstheilung (Feature 008 → Rang 61): Antwortet der Empfänger
-     * mit 410 Gone, ist die Subscription dort gelöscht. Wir bestellen sofort ab
-     * (deaktivieren + Soft-Delete), ohne Retry — ein erneuter Zustellversuch wäre
-     * sinnlos. Der `active`/`disabled_at`-Filter greift auch dort, wo der
-     * Dispatch-Service `withoutGlobalScopes()` nutzt (Soft-Delete allein reicht
-     * dort nicht).
+     * REST-Hooks-Selbstheilung (Feature 008): bei 410 Gone abbestellen (deaktivieren
+     * + Soft-Delete), kein Retry. `active`/`disabled_at` wird gesetzt, weil der
+     * Dispatch-Service `withoutGlobalScopes()` nutzt (Soft-Delete allein reicht nicht).
      */
     private function autoUnsubscribe(WebhookDelivery $delivery, WebhookEndpoint $endpoint): void {
         $delivery->status = WebhookDeliveryStatus::Failed;
@@ -196,9 +182,7 @@ class WebhookDeliveryJob implements ShouldQueue {
 
         $endpoint->forceFill(['last_delivery_at' => Carbon::now()])->saveQuietly();
 
-        // Endgültiger Fehlschlag (letzter Versuch) → Fehlerzähler erhöhen und
-        // ggf. auto-deaktivieren. Zwischen-Retries lassen den Zähler unberührt;
-        // sie laufen über die Queue erneut und können noch erfolgreich werden.
+        // Nur beim endgültigen Fehlschlag zählen; Zwischen-Retries lassen den Zähler unberührt.
         if ($this->attempts() >= $this->tries) {
             $this->registerEndpointFailure($endpoint);
         }
@@ -209,10 +193,7 @@ class WebhookDeliveryJob implements ShouldQueue {
         }
     }
 
-    /**
-     * Erhöht den Fehlerzähler des Endpunkts und deaktiviert ihn nach Erreichen
-     * der Schwelle automatisch.
-     */
+    /** Erhöht den Fehlerzähler und deaktiviert den Endpunkt bei Erreichen der Schwelle. */
     private function registerEndpointFailure(WebhookEndpoint $endpoint): void {
         $endpoint->refresh();
         $failures = (int) $endpoint->consecutive_failures + 1;

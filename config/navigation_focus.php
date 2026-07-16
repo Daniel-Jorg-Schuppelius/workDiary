@@ -9,31 +9,20 @@
  */
 
 /*
- * Arbeitsbereiche — schaltbare Fokus-Ansichten (Feature 082, MVP-377).
+ * Arbeitsbereiche — schaltbare, rein kosmetische Fokus-Ansichten (D13, wie
+ * nav_hidden): Filter als letzter Schritt in {@see NavigationRegistry::build()},
+ * schaltet nie etwas frei. Konzept: Feature 082 (WorkDiary-Architecture).
  *
- * Ein Arbeitsbereich ist eine kuratierte, per Nutzer mit einem Klick
- * umschaltbare Auswahl von Navigations-Bereichen. Er ist REIN KOSMETISCH
- * (D13, wie nav_hidden): der Filter läuft als LETZTER Schritt — nach Lizenz,
- * Modulstatus und Rechten ({@see NavigationRegistry::build()}) — und kann daher
- * nie etwas zeigen, das die Ebenen davor verbergen, und nie etwas freischalten.
- *
- * Aufbau je Eintrag:
- *  - label / description : deutsche Quelltexte, beim Rendern per __() übersetzt.
+ * Schema je Eintrag:
+ *  - label / description : deutsche Quelltexte, per __() übersetzt.
  *  - icon                : Material-Symbols-Name.
- *  - keys                : Sidebar-Bereiche, die SICHTBAR bleiben. Verwendet die
- *                          stabilen Registry-Schlüssel mit Präfix
- *                          `section:`, `group:` oder `item:` (dieselben wie
- *                          nav_hidden). `null` = kein Filter (voller Umfang).
- *                          Wird ein Gruppen-/Item-Schlüssel gelistet, bleibt nur
- *                          dieser Ausschnitt der Sektion; ein Sektions-Schlüssel
- *                          behält die ganze Sektion.
- *  - manage              : Routen des Verwaltungsmenüs, die sichtbar bleiben
- *                          (MVP-380). `null` = Verwaltungsmenü unverändert.
- *                          Konservative Vorbelegung: im Zweifel `null`, damit nie
- *                          Admin-Werkzeug unerwartet verschwindet.
- *
- * Der Schlüssel `all` ist der Voll-Umfang (heutiges Verhalten) und der Default
- * für Bestandsnutzer — deshalb `keys = null`.
+ *  - keys                : sichtbar bleibende Sidebar-Schlüssel (Registry-Präfix
+ *                          `section:`/`group:`/`item:`, wie nav_hidden). Gruppen-/
+ *                          Item-Schlüssel zeigen nur den Ausschnitt, `null` = kein
+ *                          Filter.
+ *  - manage              : sichtbar bleibende Verwaltungsmenü-Routen; `null` =
+ *                          unverändert (konservativer Default).
+ * `all` = Voll-Umfang und Default für Bestandsnutzer (`keys = null`).
  */
 
 return [
@@ -139,8 +128,6 @@ return [
         ],
     ],
 
-    // Default-Arbeitsbereich, wenn weder Nutzer, Organisation noch Branchenprofil
-    // eine Wahl treffen. Bestandsnutzer bleiben damit ohne Bruch beim vollen
-    // Umfang (opt-in).
+    // Default, wenn weder Nutzer, Org noch Branchenprofil wählen (opt-in: Voll-Umfang).
     'default' => 'all',
 ];

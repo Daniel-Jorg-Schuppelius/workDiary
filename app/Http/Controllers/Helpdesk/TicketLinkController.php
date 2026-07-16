@@ -22,10 +22,8 @@ use Illuminate\View\View;
 
 /**
  * Ticketverknüpfungen (Feature 065, MVP-160): Dialog + Anlage über
- * {@see TicketIncidentService::link()} (Tenant-Grenze + Idempotenz liegen im
- * Service). Der Dialog verknüpft Tickets untereinander (related/duplicate/
- * parent); security/privacy-Verknüpfungen entstehen weiterhin fachlich in den
- * ISMS-/Datenschutz-Prozessen.
+ * {@see TicketIncidentService::link()} (Tenant-Grenze + Idempotenz im Service);
+ * verknüpft Tickets untereinander (related/duplicate/parent).
  */
 class TicketLinkController extends Controller {
     public function __construct(private readonly TicketIncidentService $incidents) {}
@@ -52,9 +50,7 @@ class TicketLinkController extends Controller {
             'target' => ['required', 'string'],
         ]);
 
-        // Sqid STRIKT mit der Zielklasse dekodieren; org-gescopte Auflösung —
-        // fremde Organisationen enden 404 (der Service hält als zweite Linie
-        // die harte Tenant-Grenze).
+        // Sqid strikt mit Zielklasse dekodieren; fremde Org → 404 (Service hält Tenant-Grenze als zweite Linie).
         $targetId = Sqid::decode(ServiceTicket::class, $data['target']);
         $target = $targetId !== null
             ? ServiceTicket::query()

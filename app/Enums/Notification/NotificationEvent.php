@@ -94,10 +94,9 @@ enum NotificationEvent: string implements HasLabel {
     /** Scanner: Wirksamkeitsprüfung eines gelösten Problems/Known Errors überfällig (Feature 065, MVP-156). */
     case ProblemEffectivenessDue = 'problem.effectivenessDue';
 
-        // Betriebsereignisse (Feature 041, MVP-053–058): Quellen melden über
-        // den OperationsAlertService — Empfänger sind Adminrollen, nie die
-        // „betroffene Person". Routine (updateAvailable) ist drosselbar,
-        // Security-Hinweise bleiben in Diagnose/Komponenten immer sichtbar.
+        // Betriebsereignisse (Feature 041, MVP-053–058) über den
+        // OperationsAlertService — Empfänger sind Adminrollen, nie die
+        // „betroffene Person".
     // Feature 070: Krisenalarm an den Krisenstab (überstimmt Ruhezeiten, D7).
     case CrisisAlert = 'crisis.alert';
 
@@ -164,8 +163,7 @@ enum NotificationEvent: string implements HasLabel {
      */
     public function defaultRecipientRoles(): array {
         // Betriebsereignisse gehen per Default an die Admin-Rolle der Org
-        // (bei Selbst-Hosting zugleich Betreiber); MVP-058 führt sie
-        // zusätzlich als Aufgabe im Admin-Aufgabencenter.
+        // (MVP-058 führt sie zusätzlich als Aufgabe im Admin-Aufgabencenter).
         if (str_starts_with($this->value, 'operations.')) {
             return [UserRole::Admin->value];
         }
@@ -202,9 +200,8 @@ enum NotificationEvent: string implements HasLabel {
             // (notify_affected), Fallback/Eskalationskette die Teamleitung.
             self::AssetReturnOverdue => [UserRole::Teamleitung->value],
             // Wartungs-/Prüffälligkeit (MVP-336): primär der Asset-
-            // Verantwortliche (notify_affected = aktueller Ausgabe-Inhaber),
-            // die Teamleitung als Fallback/Mitwisser; die Überfälligkeit
-            // eskaliert zusätzlich über die Eskalationsleiter (MVP-331).
+            // Verantwortliche (notify_affected), Teamleitung als Fallback;
+            // Überfälligkeit eskaliert zusätzlich (MVP-331).
             self::MaintenanceDueSoon,
             self::MaintenanceOverdue => [UserRole::Teamleitung->value],
             // Kritisches Sicherheitsereignis: betrifft keine einzelne Person —
@@ -213,10 +210,8 @@ enum NotificationEvent: string implements HasLabel {
             // Ablaufende Qualifikation/Unterweisung: primär die betroffene
             // Person (notify_affected), Default-Fallback die Teamleitung.
             self::QualificationExpiring => [UserRole::Teamleitung->value],
-            // Schichttausch-Antrag (Feature 007): Empfänger sind die Teamleitung
-            // (Freigabe) zusätzlich zum optionalen Ziel-Kollegen (separat im
-            // Service adressiert). Bei der Entscheidung wird der Antragsteller
-            // über notify_affected erreicht.
+            // Schichttausch-Antrag (Feature 007): Teamleitung (Freigabe);
+            // der Ziel-Kollege wird separat im Service adressiert.
             self::ShiftExchangeRequested => [UserRole::Teamleitung->value],
             // Kunden-Rückfrage (Feature 012): betrifft keinen einzelnen
             // Mitarbeiter — Default an die Leitung zur Bearbeitung.

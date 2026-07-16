@@ -60,11 +60,8 @@ final class LicenseSeal {
         }
 
         $path = self::path();
-        // Existenz allein genügt nicht: Ist die Datei vorhanden, aber nicht
-        // lesbar (falsche Dateirechte auf dem Server), würde `require` eine
-        // ErrorException werfen und die gesamte App mit einem 500 lahmlegen.
-        // In diesem Fall fallen wir bewusst auf den unversiegelten Zustand
-        // (env-Konfiguration) zurück.
+        // Existenz genügt nicht: unlesbare Datei (falsche Serverrechte) ließe `require` mit ErrorException
+        // die App per 500 lahmlegen → bewusst auf den unversiegelten Zustand (env) zurückfallen.
         if (ToolkitFile::exists($path) && is_readable($path)) {
             /** @var mixed $loaded */
             $loaded = self::requireSeal($path);

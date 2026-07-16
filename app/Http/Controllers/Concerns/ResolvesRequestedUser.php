@@ -16,13 +16,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
- * Kanonische Auflösung des „angesehenen" Nutzers für Selbst-/Fremd-Listen
- * (Touren, Tankungen …): ohne `user`-Parameter der eingeloggte Nutzer, `all`
- * nur für Admins (→ null = alle), ein fremder Nutzer ebenfalls nur für Admins.
- *
- * Bewusst EINE Implementierung der sicherheitsrelevanten Eskalationssperre,
- * damit sie nicht je Controller neu geschrieben wird und auseinanderdriftet.
- * Nur die domänenspezifischen Fehlermeldungen werden hereingereicht.
+ * Kanonische Auflösung des „angesehenen" Nutzers für Selbst-/Fremd-Listen:
+ * ohne `user`-Parameter der eingeloggte Nutzer, `all` (→ null) und fremder
+ * Nutzer nur für Admins. Bewusst EINE Implementierung der sicherheitsrelevanten
+ * Eskalationssperre; nur die Fehlermeldungen werden hereingereicht.
  */
 trait ResolvesRequestedUser {
     protected function resolveRequestedUserOrAll(
@@ -52,10 +49,7 @@ trait ResolvesRequestedUser {
             throw new AccessDeniedHttpException($foreignDeniedMessage);
         }
 
-        // Mandantengrenze: auch Admins lösen nur Nutzer der EIGENEN Organisation
-        // auf. User trägt keinen globalen OrganizationScope, daher hier explizit
-        // filtern — sonst ist der Fremd-Nutzer-Parameter ein Cross-Tenant-Zugriff
-        // (Whitebox-Befund 2026-07). Org-übergreifend geht nur per Org-Wechsel.
+        // Mandantengrenze explizit (User hat keinen globalen OrganizationScope): sonst ist der Fremd-Nutzer-Parameter ein Cross-Tenant-Zugriff (Whitebox-Befund 2026-07).
         $target = User::query()
             ->where('organization_id', $authUser->organization_id)
             ->find($requestedId);

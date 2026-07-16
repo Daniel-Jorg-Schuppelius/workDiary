@@ -109,14 +109,11 @@ return [
     'timesheet.edit_window_days' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:365'],
 
     // =====================================================================
-    // Org-Formular-Keys (067-P3b): Der settings.*-Block des
-    // Organisationsformulars speist sich aus formRulesForScope(Organization)
-    // — jede hier org-scoped registrierte Einstellung ist dort validier-
-    // und setzbar. `options_from` referenziert dynamische Optionslisten
-    // als statisches [Klasse, Methode]-Paar (config-cachebar).
-    // settings.billing_mode bleibt bewusst UNregistriert: als punktloser
-    // Top-Level-Key unterläuft er die group.rest-Mechanik der Registry und
-    // wird im Controller separat validiert + Gate-gebunden geschrieben.
+    // Org-Formular-Keys (067-P3b): jede hier org-scoped registrierte
+    // Einstellung ist über formRulesForScope(Organization) validier- und
+    // setzbar; `options_from` = statisches [Klasse, Methode]-Paar.
+    // settings.billing_mode bleibt bewusst UNregistriert (punktloser
+    // Top-Level-Key) und wird im Controller separat + Gate-gebunden geschrieben.
     // =====================================================================
 
     // --- Personalisierung (Org-Default für Datums-/Zeitformat) ---
@@ -177,10 +174,8 @@ return [
     'maintenance.block_ingest' => ['type' => 'boolean', 'scopes' => ['organization']],
 
     // --- Rechtstexte (config/legal.php, MVP-326) ---
-    // Öffentliches Impressum/Datenschutzerklärung der Installation —
-    // betreiberspezifisch, daher nur System-Scope. Klartext mit
-    // Zeilenumbrüchen; Ausgabe HTML-escaped auf /impressum bzw.
-    // /datenschutz.
+    // Öffentliches Impressum/Datenschutzerklärung — betreiberspezifisch (nur
+    // System-Scope); Klartext, Ausgabe HTML-escaped auf /impressum bzw. /datenschutz.
     'legal.imprint' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
     'legal.privacy' => ['type' => 'text', 'scopes' => ['system'], 'rules' => 'nullable|max:65535'],
 ];

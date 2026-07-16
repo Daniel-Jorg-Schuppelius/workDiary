@@ -128,10 +128,8 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             return null;
         }
 
-        // rules() läuft VOR der Sqid-Dekodierung in validationData():
-        // Formulare senden Sqids, nur Altbestand/interne Aufrufe numerische
-        // IDs. Ohne Dekodierung wäre der Typ hier nie auffindbar und die
-        // requires_*-Pflichten liefen ins Leere.
+        // rules() läuft VOR der Sqid-Dekodierung in validationData(): Formulare senden Sqids (nur Altbestand/intern
+        // numerische IDs). Ohne Dekodierung wäre der Typ hier nicht auffindbar und die requires_*-Pflichten liefen ins Leere.
         $id = is_string($raw) && ! ctype_digit($raw)
             ? app(\App\Services\SqidEncoder::class)->decode(EntryType::class, $raw)
             : (int) $raw;

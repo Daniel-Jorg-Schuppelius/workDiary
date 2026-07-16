@@ -37,16 +37,12 @@ class OrganizationProvisioner {
      *         Installer setzen true; app:admin nur mit --platform.
      */
     public function createOrganizationAndAdmin(array $data, bool $platformAdmin = true): User {
-        // Dieser Schritt läuft in einem eigenen HTTP-Request, in dem die
-        // (ggf. gecachte) Config noch auf die alte Verbindung zeigen kann.
-        // Daher die in der .env hinterlegte DB-Verbindung erneut aktivieren,
-        // damit der Admin garantiert in der konfigurierten Datenbank landet.
+        // Läuft in eigenem HTTP-Request, in dem die (gecachte) Config noch auf die alte Verbindung zeigen kann;
+        // daher die in .env hinterlegte DB-Verbindung erneut aktivieren (Admin landet garantiert in der konfigurierten DB).
         $this->database->applyConfiguredDatabaseToRuntime();
 
-        // Spatie-Permission-Cache während der Anlage auf den array-Store legen.
-        // Sonst schreibt die Cache-Invalidierung (assignRole) in die SQLite
-        // `cache`-Tabelle, während diese Transaktion bereits einen Write-Lock
-        // hält – das führt zu „database is locked“.
+        // Spatie-Permission-Cache während der Anlage auf array-Store: sonst schreibt die Cache-Invalidierung
+        // (assignRole) in die SQLite `cache`-Tabelle, während diese Transaktion einen Write-Lock hält → „database is locked“.
         $this->usePermissionArrayCache();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
@@ -72,9 +68,8 @@ class OrganizationProvisioner {
                 'is_new_system' => true,
             ]);
 
-            // Der über den Installer angelegte Erst-Admin ist der
-            // Plattform-Betreiber (darf den Org-Kontext wechseln). Bewusst
-            // separat gesetzt — is_platform_admin ist nicht massenzuweisbar.
+            // Erst-Admin des Installers ist der Plattform-Betreiber (darf den Org-Kontext wechseln).
+            // Bewusst separat gesetzt — is_platform_admin ist nicht massenzuweisbar.
             if ($platformAdmin) {
                 $user->forceFill(['is_platform_admin' => true])->save();
             }
@@ -111,9 +106,8 @@ class OrganizationProvisioner {
                 throw new RuntimeException("Kein Benutzer mit E-Mail {$email} gefunden.");
             }
 
-            // Cast 'password' => 'hashed' übernimmt das Hashing beim Speichern.
-            // is_new_system aktivieren, damit der Login das neue bcrypt-Passwort
-            // prüft und nicht weiter auf das Legacy-Klartextpasswort zurückfällt.
+            // Cast 'password' => 'hashed' übernimmt das Hashing. is_new_system aktivieren, damit der Login
+            // das neue bcrypt-Passwort prüft und nicht auf das Legacy-Klartextpasswort zurückfällt.
             $user->password = $password;
             $user->is_new_system = true;
             $user->save();

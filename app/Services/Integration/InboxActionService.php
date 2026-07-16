@@ -69,10 +69,8 @@ class InboxActionService {
     public function keepLocal(IntegrationInboxItem $item): void {
         $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_LOCAL, $item->referenceable);
 
-        // „Lokal behalten" heißt: der lokale Stand soll auch extern gelten —
-        // sonst meldet der nächste Abgleich denselben Konflikt erneut. Hat das
-        // Plugin einen Outbox-Dispatcher (MVP-114), wird die Übertragung der
-        // Konfliktfelder enqueued; Plugins ohne Rückkanal bleiben unberührt.
+        // „Lokal behalten" heißt: der lokale Stand soll auch extern gelten — sonst meldet der nächste Abgleich
+        // denselben Konflikt. Mit Outbox-Dispatcher (MVP-114) werden die Konfliktfelder enqueued; ohne Rückkanal unberührt.
         $model = $item->referenceable;
         if ($model instanceof Model
             && $item->case_type === IntegrationInboxItem::CASE_CONFLICT
@@ -135,9 +133,8 @@ class InboxActionService {
             'resolved_at' => now(),
         ]);
 
-        // Nachvollziehbare Entscheidung (MVP-116): wer hat welchen Fall wie
-        // gelöst — inkl. Konfliktfeldern, ohne Snapshot-Inhalte. user_id über
-        // Auth::user() statt Auth::id() (vgl. Auditable::resolveAuditUserId).
+        // Nachvollziehbare Entscheidung (MVP-116): wer hat welchen Fall wie gelöst (inkl. Konfliktfeldern, ohne
+        // Snapshot-Inhalte). user_id über Auth::user() statt Auth::id() (vgl. Auditable::resolveAuditUserId).
         $actor = Auth::user();
         AuditLog::create([
             'organization_id' => $item->organization_id,

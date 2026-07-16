@@ -36,15 +36,12 @@ class PluginServiceProvider extends ServiceProvider {
         $this->app->singleton(PluginErrorRecorder::class);
         $this->app->singleton(PluginSchemaManager::class);
 
-        // Plugin-Klassen per Auto-Discovery (app/Plugins/*/*Plugin.php) plus
-        // optionaler expliziter Config-Liste — ein neues Plugin braucht keinen
-        // manuellen Eintrag mehr in config/plugins.php (s. {@see PluginDiscovery}).
+        // Plugin-Klassen per Auto-Discovery (app/Plugins/*/*Plugin.php) plus optionaler Config-Liste — ein neues
+        // Plugin braucht keinen manuellen Eintrag in config/plugins.php ({@see PluginDiscovery}).
         $classes = PluginDiscovery::classes();
 
-        // Plugin-Service-Provider VOR dem PluginManager registrieren, damit
-        // Container-Bindings (z. B. LexofficeService) verfügbar sind, sobald
-        // ein Plugin instanziiert wird. Konvention: Plugin-Klasse exponiert
-        // eine SERVICE_PROVIDER-Konstante mit dem Provider-FQCN.
+        // Plugin-Service-Provider VOR dem PluginManager registrieren, damit Container-Bindings (z. B. LexofficeService)
+        // verfügbar sind, sobald ein Plugin instanziiert wird. Konvention: Plugin-Klasse exponiert SERVICE_PROVIDER (Provider-FQCN).
         foreach ($classes as $class) {
             $this->registerPluginProvider($class);
         }
@@ -64,9 +61,8 @@ class PluginServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
-        // Defensiv: Auto-Schema-Upgrade nur in lokaler Umgebung. In Produktion
-        // wird der Admin per UI-Hinweis darauf aufmerksam gemacht und löst
-        // `php artisan plugin:upgrade` bewusst manuell aus.
+        // Defensiv: Auto-Schema-Upgrade nur lokal. In Produktion wird der Admin per UI-Hinweis aufmerksam gemacht
+        // und löst `php artisan plugin:upgrade` bewusst manuell aus.
         if (! $this->app->environment('local')) {
             return;
         }

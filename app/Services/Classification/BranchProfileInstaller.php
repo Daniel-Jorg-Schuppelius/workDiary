@@ -45,8 +45,7 @@ class BranchProfileInstaller {
      * @return array{profile_code: string, version: int, created: array<string, int>, updated: array<string, int>, skipped: array<string, int>}
      */
     public function installProfile(Organization $organization, array $profile, ?User $actor = null, bool $force = false, string $profileCode = ''): array {
-        // Versionsguard (Restpunkt 042): Profile können eine Mindest-App-
-        // Version verlangen (z. B. wenn sie neue Domänen/Felder nutzen).
+        // Versionsguard (Restpunkt 042): Profile können eine Mindest-App-Version verlangen (neue Domänen/Felder).
         $minAppVersion = trim((string) ($profile['min_app_version'] ?? ''));
         if ($minAppVersion !== '' && version_compare((string) config('app.version', '0.0.0'), $minAppVersion, '<')) {
             throw new \RuntimeException(sprintf(
@@ -374,19 +373,16 @@ class BranchProfileInstaller {
                 ->where('code', $code)
                 ->first();
 
-            // Vorlage existiert bereits (oder wurde lokal angepasst): idempotent
-            // überspringen, niemals überschreiben (auch nicht bei force – eine
-            // veröffentlichte Prozedurversion ist unveränderlich).
+            // Vorlage existiert bereits (oder lokal angepasst): idempotent überspringen, nie überschreiben
+            // (auch nicht bei force – eine veröffentlichte Prozedurversion ist unveränderlich).
             if ($existing instanceof ProcedureTemplate) {
                 $skipped['procedure_templates']++;
 
                 continue;
             }
 
-            // Vollständige Vorlage (Name/Schritte) wird nur installiert, wenn das
-            // Profil sie deklarativ beschreibt UND ein Akteur vorhanden ist (die
-            // Version benötigt einen Autor). Reine Code-Platzhalter ohne Schritte
-            // werden als Folgearbeit übersprungen.
+            // Vollständige Vorlage (Name/Schritte) nur bei deklarativer Beschreibung UND vorhandenem Akteur (die
+            // Version braucht einen Autor). Reine Code-Platzhalter ohne Schritte werden als Folgearbeit übersprungen.
             $name = isset($row['name']) ? trim((string) $row['name']) : '';
             /** @var list<array<string, mixed>> $steps */
             $steps = (array) ($row['steps'] ?? []);
@@ -478,10 +474,8 @@ class BranchProfileInstaller {
             $created['room_requirement_templates']++;
         }
 
-        // Datenschutz-Anforderungsvorlagen (Nachtrag 043c): Branchenprofile
-        // liefern Katalog-Presets (aktiv/inaktiv, Label) für die
-        // Compliance-Lückenanalyse. Manuell angepasste Einträge (source=
-        // manual) werden nie überschrieben.
+        // Datenschutz-Anforderungsvorlagen (Nachtrag 043c): Profile liefern Katalog-Presets (aktiv/inaktiv, Label)
+        // für die Compliance-Lückenanalyse. Manuell angepasste (source=manual) werden nie überschrieben.
         /** @var list<array<string, mixed>> $privacyRequirements */
         $privacyRequirements = (array) Arr::get($profile, 'dataprotection_requirements_seed', []);
         /** @var array<string, array{label?: string, category?: ?string}> $privacyDefaults */

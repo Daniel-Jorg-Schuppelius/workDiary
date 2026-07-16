@@ -25,9 +25,7 @@ class TwoFactorCodeMail extends Mailable {
     public function __construct(public readonly string $code, public readonly int $validMinutes = 10) {}
 
     public function envelope(): Envelope {
-        // Der Code steht bewusst NICHT im Betreff: Betreffzeilen erscheinen in
-        // Push-/Sperrbildschirm-Vorschauen, Mail-Logs und Gateways und würden
-        // den zweiten Faktor exponieren. Der Code wird nur im Body übermittelt.
+        // Code bewusst nicht im Betreff: Vorschauen/Logs/Gateways würden den zweiten Faktor exponieren.
         return new Envelope(subject: __('Ihr Bestätigungscode'));
     }
 

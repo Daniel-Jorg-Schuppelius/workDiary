@@ -35,9 +35,8 @@ class CompositeField extends MatchStrategy {
                 return null; // unvollständig → nicht anwendbar
             }
             $column = (string) preg_replace('/[^a-z0-9_]/', '', mb_strtolower($field));
-            // $column ist auf [a-z0-9_] beschränkt (injection-sicher); der Wert läuft
-            // als Bindung. PHPStan kann die literal-string-Eigenschaft nach der
-            // Laufzeit-Sanitisierung nicht beweisen.
+            // $column ist auf [a-z0-9_] beschränkt (injection-sicher); der Wert läuft als Bindung —
+            // PHPStan kann die literal-string-Eigenschaft nach der Sanitisierung nicht beweisen.
             // @phpstan-ignore argument.type
             $base = $base->whereRaw("replace(lower(trim($column)), ' ', '') = ?", [$value]);
         }

@@ -96,8 +96,7 @@ class InstallController extends Controller {
                 'driver' => $driver,
                 'host' => $env->get('DB_HOST') ?? '127.0.0.1',
                 'port' => $env->get('DB_PORT') ?? '3306',
-                // SQLite nutzt einen Dateipfad, Server-Treiber nur einen Namen –
-                // daher getrennte Defaults, damit sich die Felder nicht mischen.
+                // SQLite nutzt Dateipfad, Server-Treiber nur einen Namen → getrennte Defaults.
                 'database_sqlite' => $driver === 'sqlite' && $storedDb
                     ? $storedDb
                     : database_path('database.sqlite'),
@@ -245,9 +244,8 @@ class InstallController extends Controller {
     }
 
     /**
-     * Erzeugt per AJAX ein frisches VAPID-Schlüsselpaar für den
-     * Integrations-Schritt (Web-Push). Persistiert nichts – die Werte werden
-     * erst beim Absenden des Formulars gespeichert.
+     * Erzeugt per AJAX ein frisches VAPID-Schlüsselpaar (Web-Push). Persistiert
+     * nichts — die Werte werden erst beim Absenden des Formulars gespeichert.
      */
     public function generateVapidKeys(): JsonResponse {
         return response()->json($this->installer->generateVapidKeys());
@@ -265,14 +263,11 @@ class InstallController extends Controller {
     public function complete(): RedirectResponse {
         $this->installer->markInstalled();
 
-        // Während des Wizards geschriebene .env-Werte (DB, Mail, Lexoffice-Key,
-        // VAPID) werden von einem evtl. vorhandenen config:cache verdeckt. Vor
-        // dem Verlassen des Installers daher die Bootstrap-Caches verwerfen,
-        // damit die Konfiguration im Live-Betrieb sofort greift.
+        // .env-Werte des Wizards würden von einem evtl. vorhandenen config:cache
+        // verdeckt → Bootstrap-Caches verwerfen, damit die Konfig sofort greift.
         $this->installer->clearCaches();
 
-        // Sicherheitshalber alle ausgeloggt in den frisch installierten
-        // Zustand entlassen — der Admin meldet sich regulär neu an.
+        // Sicherheitshalber ausloggen — der Admin meldet sich regulär neu an.
         Auth::logout();
 
         return redirect()->route('login')

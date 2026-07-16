@@ -168,10 +168,8 @@ class EconomicsReportBuilder {
 
         $customers = Customer::query()->orderBy('name')->get(['id', 'name']);
 
-        // Projekte (inkl. Budget-Felder) einmal laden und nach Kunde gruppieren,
-        // statt pro Kunde je drei Queries (Projekt-IDs + zwei Budget-Summen) zu
-        // feuern. Die Geld-Aggregate bleiben kundenweise, um die Semantik der
-        // Projekt-/Kundenfilter unverändert zu lassen.
+        // Projekte (inkl. Budget) einmal laden + nach Kunde gruppieren statt N×3 Queries; Geld-Aggregate bleiben
+        // kundenweise, um die Semantik der Projekt-/Kundenfilter unverändert zu lassen.
         $projectsByCustomer = Project::query()
             ->get(['id', 'customer_id', 'time_budget', 'budget'])
             ->groupBy(static fn (Project $p): int => (int) $p->customer_id);
@@ -470,8 +468,7 @@ class EconomicsReportBuilder {
             ->groupBy('boq_item_id')
             ->pluck('measured', 'boq_item_id');
 
-        // Strukturelle Zuordnungs-Verknüpfungen (bewusst NICHT periodengefiltert:
-        // der Zeitraum wird über die Quellposten selbst eingegrenzt).
+        // Strukturelle Zuordnungs-Verknüpfungen (bewusst NICHT periodengefiltert; Zeitraum via Quellposten eingegrenzt).
         $diaryToItems = [];
         $usageToItems = [];
         BoqItemProgress::query()
@@ -548,8 +545,7 @@ class EconomicsReportBuilder {
             }
         }
 
-        // Spesen tragen keinen LV-Anker im Datenmodell → vollständig „ohne
-        // Zuordnung" (identische Abgrenzung wie expenseAggregate je Projekt).
+        // Spesen tragen keinen LV-Anker → vollständig „ohne Zuordnung" (wie expenseAggregate je Projekt).
         $unassigned['costExpense'] = $this->expenseAggregate($fromDate, $toDate, projectId: $projectId)['cost'];
 
         $unassigned['costTime'] = round($unassigned['costTime'], 2);

@@ -18,8 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 // Webhook (MVP-129): sessionlos ohne CSRF ('api'-Gruppe) — Autorisierung über
 // den statischen X-Gitlab-Token-Header im Controller, Org-Zuordnung über die
-// plugin_settings-ID im Pfad. Polling heilt Ausfälle; throttle gegen Flooding
-// des unauthentifizierten Endpunkts.
+// plugin_settings-ID im Pfad.
 Route::middleware(['api', 'throttle:30,1'])
     ->post('api/webhooks/gitlab/{setting}', GitlabWebhookController::class)
     ->name('api.webhooks.gitlab');

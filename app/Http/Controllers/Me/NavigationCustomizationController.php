@@ -18,11 +18,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
- * Per-User-Menüanpassung (Feature 081, MVP-374): Sektionen, Untergruppen und
- * einzelne Einträge der Sidebar sowie Gruppen der Schnellerstellung
- * ausblenden. Persistenz serverseitig in `users.preferences` (nav_hidden),
- * validiert gegen die Registry-Whitelist. Rein kosmetisch — Route-Gates,
- * Policies, globale Suche und Deep-Links bleiben unberührt (D13).
+ * Per-User-Menüanpassung (Feature 081): Sidebar-Sektionen/-Gruppen/-Einträge und
+ * Schnellerstellungs-Gruppen ausblenden. Persistenz in users.preferences
+ * (nav_hidden), gegen die Registry-Whitelist validiert. Rein kosmetisch —
+ * Gates, Policies, Suche, Deep-Links unberührt (D13).
  */
 class NavigationCustomizationController extends Controller {
     public function __construct(private readonly NavigationRegistry $registry) {}
@@ -49,11 +48,9 @@ class NavigationCustomizationController extends Controller {
             'visible.*' => ['string', 'max:160'],
         ]);
 
-        // Schalter EIN = sichtbar (intuitive Richtung). Ausgeblendet wird alles
-        // aus der bekannten Whitelist, das NICHT eingeschaltet ist. Die Seite
-        // rendert genau diese Whitelist und startet mit allem eingeschaltet —
-        // ein normales Speichern lässt daher alles sichtbar; nur bewusst
-        // ausgeschaltete Einträge werden ausgeblendet.
+        // Schalter EIN = sichtbar. Ausgeblendet wird alles aus der Whitelist, das
+        // NICHT eingeschaltet ist; die Seite startet mit allem an → normales
+        // Speichern blendet nichts aus.
         $allowed = $this->allowedKeys();
         $visible = array_intersect(
             array_map(static fn($v): string => (string) $v, $payload['visible'] ?? []),
@@ -87,9 +84,8 @@ class NavigationCustomizationController extends Controller {
     }
 
     /**
-     * Sidebar-Struktur, die der Nutzer anpassen darf: Modul- und Rechte-Filter
-     * angewendet, Per-User-Ausblendungen bewusst NICHT (damit Ausgeblendetes
-     * sichtbar und rücknehmbar bleibt).
+     * Sidebar-Struktur, die der Nutzer anpassen darf: Modul-/Rechte-Filter an,
+     * Per-User-Ausblendungen bewusst NICHT (Ausgeblendetes bleibt rücknehmbar).
      *
      * @return list<array<string, mixed>>
      */

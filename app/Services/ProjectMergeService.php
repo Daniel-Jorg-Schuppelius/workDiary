@@ -139,8 +139,7 @@ class ProjectMergeService {
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
 
-            // Hartes Löschen (Kinder/Refs sind bereits umgehängt). Über das Modell,
-            // damit der Audit-Log das „deleted"-Ereignis festhält.
+            // Hartes Löschen (Kinder/Refs bereits umgehängt). Über das Modell, damit der Audit-Log „deleted" festhält.
             $source->delete();
         });
     }
@@ -169,8 +168,7 @@ class ProjectMergeService {
                 continue;
             }
 
-            // Partner, die das Ziel bereits trägt, würden den Unique-Index
-            // verletzen → Quell-Zeilen dazu vorab löschen.
+            // Partner, die das Ziel bereits trägt, würden den Unique-Index verletzen → Quell-Zeilen dazu vorab löschen.
             $targetPartners = DB::table($table)
                 ->where('project_id', $targetId)
                 ->pluck($partnerColumn)->all();
@@ -205,10 +203,8 @@ class ProjectMergeService {
                 ->exists();
 
             if ($collision) {
-                // Ziel hat bereits eine Primär-Referenz für dieses Plugin/diesen Typ
-                // (Unique-Index). Die abweichende Quell-Fremd-ID (z. B. anderer
-                // Toggl-Projektname) als Alias aufs Ziel sichern, damit künftige
-                // Importe mit dem alten Schlüssel ohne Inbox-Umweg direkt landen.
+                // Ziel hat bereits eine Primär-Referenz für dieses Plugin/diesen Typ (Unique-Index). Abweichende
+                // Quell-Fremd-ID (z. B. anderer Toggl-Projektname) als Alias aufs Ziel sichern, damit alte Schlüssel direkt landen.
                 $this->writeAlias($morph, $targetId, $ref);
                 DB::table('external_references')->where('id', $ref->id)->delete();
                 continue;
@@ -307,8 +303,7 @@ class ProjectMergeService {
             return;
         }
 
-        // Tags, die das Ziel bereits trägt, dürfen nicht doppelt umgehängt
-        // werden (Primärschlüssel tag_id+taggable_id+taggable_type).
+        // Tags, die das Ziel bereits trägt, nicht doppelt umhängen (PK tag_id+taggable_id+taggable_type).
         $targetTagIds = DB::table('taggables')
             ->where('taggable_type', $morph)
             ->where('taggable_id', $targetId)

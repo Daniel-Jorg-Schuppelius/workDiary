@@ -88,9 +88,8 @@ class LangSyncCommand extends Command {
         if (! $fill) {
             return;
         }
-        // Für fehlende Namespace-Dateien einen en-Fallback-Stub anlegen
-        // (Projekt-Konvention, vgl. lang/fr, lang/it). Bestehende Dateien werden
-        // NIE angefasst (handformatierte Übersetzungen/Header bleiben erhalten).
+        // Fehlende Namespace-Dateien als en-Fallback-Stub anlegen (Projekt-Konvention);
+        // bestehende Dateien NIE anfassen (handformatierte Übersetzungen bleiben erhalten).
         $created = 0;
         foreach (Translations::namespaceFiles() as $file) {
             if (is_file(Translations::langPath($code) . '/' . $file)) {

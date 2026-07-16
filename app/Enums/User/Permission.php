@@ -393,9 +393,8 @@ enum Permission: string implements HasLabel {
     case KnowledgeDelete = 'knowledge.delete';
 
         // ── Ideenlandkarten (Feature 054, MVP-104) ─────────────────────────
-        // Inhaltszugriff (view/update/delete) läuft NICHT über Permissions,
-        // sondern über Eigentum + Freigaben (IdeaMapPolicy). Diese Rechte
-        // steuern nur Menü/Anlage bzw. die Metadaten-Verwaltung für Admins.
+        // Inhaltszugriff läuft über Eigentum + Freigaben (IdeaMapPolicy); diese
+        // Rechte steuern nur Menü/Anlage bzw. Admin-Metadatenpflege.
     case IdeasViewAny = 'ideas.viewAny';
     case IdeasCreate = 'ideas.create';
     case IdeasManageLifecycle = 'ideas.manageLifecycle';
@@ -540,8 +539,7 @@ enum Permission: string implements HasLabel {
 
         // ── Bewerbungen & Ausschreibungen (Feature 068, MVP-183) ──────────
         // Zwei GETRENNTE Rechtebereiche: Auftragsbewerbungen (tender.*) und
-        // Personalbewerbungen (recruiting.*) — Bewerberdaten sieht keine
-        // normale Projekt-/Auftragsrolle automatisch.
+        // Personalbewerbungen (recruiting.*) — Bewerberdaten sind abgeschottet.
     case TenderViewAny = 'tender.viewAny';
     case TenderView = 'tender.view';
     case TenderManage = 'tender.manage';
@@ -570,9 +568,7 @@ enum Permission: string implements HasLabel {
     case SustainabilityManage = 'sustainability.manage';
 
         // ── Reklamation/Gewährleistung (Feature 072, MVP-246) ──────────
-        // Rollen trennen Annahme (manage), Bewertung/Entscheidung (decide),
-        // kaufmännische Freigabe (finance), Lagerprüfung (warehouse) und
-        // Lieferantenregress (recourse).
+        // Getrennte Rollen: manage/decide/finance/warehouse/recourse.
     case ClaimViewAny = 'claim.viewAny';
     case ClaimView = 'claim.view';
     case ClaimManage = 'claim.manage';
@@ -623,10 +619,9 @@ enum Permission: string implements HasLabel {
     case ContractManage = 'contract.manage';
 
     public function label(): string {
-        // Permission-Slugs enthalten Punkte (z. B. "project.view") — Laravels
-        // __() / trans() würde die als verschachtelten Pfad interpretieren und
-        // den Lookup verfehlen, weil die Übersetzungen flach unter dem Key
-        // `access.permission` liegen. Daher hier das Array selbst auflösen.
+        // Slugs enthalten Punkte — __()/trans() würde sie als verschachtelten
+        // Pfad lesen; die Übersetzungen liegen flach unter `access.permission`.
+        // Daher das Array selbst auflösen.
         $translations = (array) trans('access.permission');
 
         return (string) ($translations[$this->value] ?? $this->value);

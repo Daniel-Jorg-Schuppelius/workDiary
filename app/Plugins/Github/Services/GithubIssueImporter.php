@@ -27,16 +27,6 @@ use Illuminate\Support\Carbon;
  * Zeiterfassung/Abrechnung. **Idempotent** über {@see ExternalReference}
  * (Plugin `github`, Typ `issue`, Schlüssel `owner/repo#number`): ein Replay
  * legt keine Dubletten an.
- *
- * - Die Issues-API liefert AUCH Pull Requests — Einträge mit
- *   `pull_request`-Schlüssel werden gefiltert (Recherche 2026-07).
- * - Status: `open` → offen, `closed` → erledigt (state_reason
- *   completed/not_planned landet im Payload; der Aufgaben-Vertrag kennt
- *   keinen Verwerfen-Status). Ein wieder geöffnetes Issue öffnet die
- *   verknüpfte, erledigte Aufgabe erneut — anders als beim create-only-
- *   Zammad-Muster gefahrlos, weil es keinen Status-Rückkanal gibt (kein Echo).
- * - Aufholpunkt: `since` = größtes gesehenes `updated_at` (serverseitige
- *   Uhr, kein Client-Drift), fortgeschrieben in plugin_settings.
  */
 class GithubIssueImporter {
     /** Settings-Schlüssel des Polling-Aufholpunkts (GitHub `since`). */

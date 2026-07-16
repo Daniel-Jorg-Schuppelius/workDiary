@@ -43,9 +43,7 @@ class LoginController extends Controller {
             ])->onlyInput('username');
         }
 
-        // SSO-Pflicht (Feature 057): statt eines nichtssagenden Fehlschlags
-        // direkt zum SSO-Start der Organisation umleiten. Die harte Sperre
-        // sitzt zusätzlich serverseitig im LegacyUserProvider.
+        // SSO-Pflicht (Feature 057): zum SSO-Start umleiten; harte Sperre sitzt zusätzlich im LegacyUserProvider.
         $ssoRedirect = $this->ssoEnforcedRedirect($credentials['username']);
         if ($ssoRedirect !== null) {
             return $ssoRedirect;
@@ -61,8 +59,7 @@ class LoginController extends Controller {
             /** @var User|null $user */
             $user = Auth::user();
 
-            // Zwei-Faktor aktiv: noch NICHT voll einloggen. Identität wird in der
-            // Session geparkt und erst nach erfolgreicher Code-Eingabe vollendet.
+            // Zwei-Faktor aktiv: noch NICHT voll einloggen, Identität bis zur Code-Eingabe in der Session parken.
             if ($user instanceof User && $user->hasTwoFactorEnabled()) {
                 $remember = $request->boolean('remember');
                 Auth::logout();
@@ -91,8 +88,7 @@ class LoginController extends Controller {
     }
 
     public function logout(Request $request): RedirectResponse {
-        // OIDC-RP-initiated Logout (Feature 057): end_session-Daten VOR dem
-        // Invalidieren der Session sichern.
+        // OIDC-RP-initiated Logout (Feature 057): end_session-Daten VOR dem Invalidieren der Session sichern.
         /** @var array{end_session_endpoint?: string, id_token?: string} $ssoLogout */
         $ssoLogout = (array) $request->session()->get('sso.logout', []);
 
@@ -172,9 +168,7 @@ class LoginController extends Controller {
         }
 
         try {
-            // attempt(): kein Connect-Versuch, wenn die legacy-DB als down
-            // markiert ist — das Mapping ist Best-Effort und darf den Login
-            // weder blockieren noch verzögern.
+            // attempt(): kein Connect-Versuch bei als down markierter legacy-DB; Mapping ist Best-Effort.
             $legacy = LegacyConnectivity::attempt(function () use ($submittedUsername, $authUser): ?object {
                 $found = DB::connection('legacy')
                     ->table('user')

@@ -34,8 +34,7 @@ class NumberSequenceService {
     public function next(Organization|int $organization, NumberScope $scope, ?CarbonInterface $when = null): string {
         $orgId = $organization instanceof Organization ? (int) $organization->id : (int) $organization;
 
-        // Bei externer Hoheit (z. B. Lexoffice) vergibt workDiary nur eine
-        // Entwurfsnummer; die offizielle Nummer kommt später per Sync/Push.
+        // Bei externer Hoheit (z. B. Lexoffice) nur Entwurfsnummer; offizielle Nummer kommt per Sync/Push.
         if ($this->authority->isExternal($orgId, $scope)) {
             return $this->draftNumber();
         }
@@ -136,10 +135,8 @@ class NumberSequenceService {
             return $sequence;
         }
 
-        // Defensive insert: bei Race kann der zweite Aufrufer hier landen.
-        // Wir verlassen uns auf die Unique-Constraint
-        // (organization_id, scope, period) und fangen den Konflikt durch
-        // erneutes lockForUpdate-Read auf.
+        // Defensive insert: bei Race landet der zweite Aufrufer hier; wir verlassen uns auf die
+        // Unique-Constraint (organization_id, scope, period) und fangen den Konflikt per erneutem lockForUpdate-Read.
         try {
             return NumberSequence::query()->create([
                 'organization_id' => $orgId,

@@ -34,11 +34,7 @@ class EnsureNewSystemAccess {
                 ], 403);
             }
 
-            // Legacy-only-User landen hier u. a. nach einem Klick auf einen
-            // Deep-Link ins neue System. Statt sie mit einer 403-Seite zu
-            // begrüßen, schalten wir den Modus zurück auf Legacy und leiten
-            // sie zur Legacy-Startseite. Das entspricht ihrem zulässigen
-            // Funktionsumfang ohne erklärungsbedürftigen Fehlerdialog.
+            // Legacy-only-User (z. B. via Deep-Link) statt 403 zurück in den Legacy-Modus leiten.
             $legacyConfigured = filled(config('database.connections.legacy.database'));
             if ($user instanceof User && $user->canAccessLegacy() && $legacyConfigured) {
                 $request->session()->put('work_mode', 'legacy');
@@ -50,18 +46,9 @@ class EnsureNewSystemAccess {
             throw new AccessDeniedHttpException(__('Kein Zugriff auf das neue System.'));
         }
 
-        // Harte Modus-Trennung: ist der User berechtigt für beide Bereiche,
-        // aber gerade im Legacy-Modus, darf er KEINE neue-Bereich-Seite per
-        // Direkt-URL öffnen. Die Trennung greift rein anhand des Modus.
-        // Default ist 'legacy' – identisch zu Layout (app.blade.php) und
-        // HomeController, damit ein noch nicht gesetzter work_mode nicht
-        // versehentlich als "neuer Modus" interpretiert wird.
+        // Harte Modus-Trennung: im Legacy-Modus keine neue-Bereich-Seite per Direkt-URL.
         $legacyConfigured = filled(config('database.connections.legacy.database'));
-        // Fehlt der Session-Modus (frische Session nach Ablauf/F5), greift die
-        // persistierte Modus-Wahl des Users statt hart 'legacy' – sonst landen
-        // Dual-Access-User (Admins) ungewollt wieder im Legacy-Modus. Der Wert
-        // wird in die Session zurückgeschrieben, damit Layout-Chrome (Body-Mode)
-        // konsistent bleibt.
+        // Fehlt der Session-Modus, greift die persistierte Wahl (sonst landen Dual-Access-User ungewollt im Legacy-Modus).
         if ($request->hasSession()) {
             if (! $request->session()->has('work_mode')) {
                 $request->session()->put('work_mode', $user->preferredWorkMode());
@@ -72,11 +59,7 @@ class EnsureNewSystemAccess {
         }
 
         if ($workMode === 'legacy' && $user->canAccessLegacy()) {
-            // Ohne konfigurierte Legacy-DB existiert kein Legacy-Bereich, in
-            // den wir umleiten könnten – der Legacy-Modus ist dann ein
-            // ungültiger Zustand. Wir normalisieren ihn auf "new" und lassen
-            // den Request durch (ein Redirect würde hier endlos schleifen,
-            // da die Startseite new-fähige User wieder ins neue System leitet).
+            // Ohne Legacy-DB ist der Legacy-Modus ungültig: auf "new" normalisieren und durchlassen (Redirect würde schleifen).
             if (! $legacyConfigured) {
                 $request->session()->put('work_mode', 'new');
 

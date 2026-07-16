@@ -19,12 +19,10 @@ use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
 
 /**
- * Nimmt Standort-Pushes von Geräte-Apps (OwnTracks, Traccar/OsmAnd) sowie
- * generische Batches entgegen. Authentifizierung über ein widerrufbares
- * Pro-Gerät-Token im Pfad – diese Apps können sich nicht interaktiv anmelden.
- *
- * Vor der Annahme werden zwei Schranken geprüft: das Lizenzmodul der
- * Organisation und das ausdrückliche Per-User-Opt-in (DSGVO-Einwilligung).
+ * Nimmt Standort-Pushes von Geräte-Apps (OwnTracks, Traccar/OsmAnd) und
+ * generische Batches entgegen. Auth über widerrufbares Pro-Gerät-Token im
+ * Pfad (Apps ohne interaktiven Login). Schranken vor Annahme: Lizenzmodul
+ * der Org + ausdrückliches Per-User-Opt-in (DSGVO).
  */
 class LocationController extends Controller {
     public const MODULE = 'module.standorterfassung';
@@ -62,7 +60,6 @@ class LocationController extends Controller {
             }
         }
 
-        // Lizenzmodul der Organisation.
         if (! $this->features->isEnabled(self::MODULE)) {
             return response()->json(['error' => 'module_disabled'], 403);
         }

@@ -21,16 +21,8 @@ use Throwable;
 /**
  * Google-Calendar-Gateway (API v3, MVP-328, Bauturbo A8) auf dem
  * `php-api-toolkit`-Fundament: OAuth2-Bearer über den org-gebundenen
- * {@see GoogleCalendarTokenStore} inkl. transparentem Refresh (abgelaufenes
- * Token vor dem Request; 401 ⇒ Refresh ⇒ genau ein Retry im ClientAbstract).
- *
- * - Anlegen: `events.insert` mit **deterministischer Event-ID** aus der
- *   stabilen UID (sha1-Hex ⊂ base32hex-Alphabet der API) — ein erneuter
- *   Insert derselben UID antwortet 409 und wird als Update behandelt
- *   (kein Duplikat, selbst wenn die Referenz verloren ging).
- * - Ändern: `events.update` (PUT); Löschen: `events.delete`
- *   (404/410 = idempotent ok). Ziel-Kalender: `calendar_id` (leer = primary).
- * - Fehlersemantik wie CalDAV-Gateway: Transport-/HTTP-Fehler ⇒ null/false.
+ * {@see GoogleCalendarTokenStore} inkl. transparentem Refresh. Fehlersemantik
+ * wie CalDAV-Gateway: Transport-/HTTP-Fehler ⇒ null/false.
  */
 class GoogleCalendarClient implements RemoteCalendarGateway {
     private PluginApiClient $api;

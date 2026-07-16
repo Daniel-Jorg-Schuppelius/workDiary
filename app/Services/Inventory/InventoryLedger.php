@@ -35,9 +35,8 @@ class InventoryLedger {
         $orgId = $posting->variant->organization_id;
 
         return DB::transaction(function () use ($posting, $orgId): StockMovement {
-            // Idempotenzprüfung in derselben Transaktion wie der Insert: ein
-            // paralleler Aufruf mit gleichem Schlüssel wird durch den Unique-Index
-            // abgefangen (siehe catch unten), nicht durch ein TOCTOU-Fenster.
+            // Idempotenzprüfung in derselben Transaktion wie der Insert; parallele Aufrufe
+            // fängt der Unique-Index ab (catch unten), kein TOCTOU-Fenster.
             if ($posting->idempotencyKey !== null && $orgId !== null) {
                 $existing = $this->findByIdempotencyKey($orgId, $posting->idempotencyKey, lock: true);
                 if ($existing !== null) {
@@ -69,18 +68,13 @@ class InventoryLedger {
                     'currency' => $posting->currency,
                 ]);
 
-                // Zentraler Spiegel (Feature 078, MVP-321): bei externer
-                // Bestandsführung wandert jedes physische Delta in die Outbox —
-                // unabhängig vom Buchungspfad (Stock-UI, Wareneingang, Inventur,
-                // Scan, Fertigung, …). Lazy aufgelöst, da der Mirror über den
-                // Provider-Resolver indirekt auf diese Engine zeigt (Zyklus).
-                // Idempotent-Replays (return oben/catch unten) spiegeln nicht erneut.
+                // Zentraler Spiegel (Feature 078): jedes physische Delta wandert bei externer
+                // Bestandsführung in die Outbox. Lazy (Provider-Resolver-Zyklus); Replays spiegeln nicht erneut.
                 app(ExternalStockMirror::class)->mirrorMovement($movement);
 
                 return $movement;
             } catch (QueryException $e) {
-                // Verlor das Rennen um den Unique-Index: bestehende Buchung
-                // idempotent zurückgeben statt mit 500 durchzuschlagen.
+                // Rennen um den Unique-Index verloren: bestehende Buchung idempotent zurückgeben statt 500.
                 if ($posting->idempotencyKey !== null && $orgId !== null) {
                     $existing = $this->findByIdempotencyKey($orgId, $posting->idempotencyKey, lock: false);
                     if ($existing !== null) {
@@ -180,8 +174,7 @@ class InventoryLedger {
     }
 
     public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        // Prüfung und Buchung in einer Transaktion: availableForUpdate() sperrt den
-        // Bestand, sodass parallele Abgänge nicht beide gegen denselben Saldo buchen.
+        // Prüfung + Buchung in einer Transaktion: availableForUpdate() sperrt den Bestand gegen parallele Abgänge.
         return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId): StockMovement {
             $this->guardSufficient($variant, $warehouse, $qty, $allowNegative);
 

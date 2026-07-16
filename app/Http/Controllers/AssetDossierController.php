@@ -20,18 +20,10 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
- * Objektakte / Lebenszyklus-Dossier (Feature 027): zusammenhängende
- * Read-Only-Gesamtsicht eines Assets über den vollständigen Lebenszyklus —
- * Pendant zur Auftrags-Fallakte (diary/case-file). Druckbar über Print-CSS
- * (?print=1 öffnet direkt den Druckdialog), kein eigener PDF-Generator.
- *
- * Wiederverwendung statt Duplikat:
- *  - {@see AssetTimelineService} liefert die aggregierte Historie (inkl. der
- *    additiv ergänzten Quellen Assignment/Defect/Maintenance).
- *  - {@see AssetLifecycleService} leitet die Lebenszyklus-Phase ab.
- *  - 009-Relationen assignments/defects/maintenancePlans direkt vom Asset.
- *
- * Zugriff = asset.view (Gate view), Cross-Org via Tenant-Scope → 404.
+ * Objektakte / Lebenszyklus-Dossier (Feature 027): Read-Only-Gesamtsicht eines
+ * Assets über den Lebenszyklus, druckbar über Print-CSS (?print=1), kein
+ * eigener PDF-Generator. Historie via {@see AssetTimelineService}, Phase via
+ * {@see AssetLifecycleService}. Zugriff = asset.view; Cross-Org via Tenant-Scope → 404.
  */
 class AssetDossierController extends Controller {
     public function __invoke(
@@ -133,9 +125,8 @@ class AssetDossierController extends Controller {
             'ownershipChanges' => $asset->ownershipChanges()
                 ->with(['changedBy:id,name', 'toCustomer:id,name', 'fromCustomer:id,name'])
                 ->get(),
-            // SLA-/Vertrags-Sektion (Feature 027 → Rang 48): geltender Vertrag =
-            // direkter Override, sonst Kunden-/Default-Auflösung. Anzeige nur mit
-            // Recht slaContract.view.
+            // SLA-/Vertrags-Sektion (Feature 027 → Rang 48): Vertrag = direkter Override,
+            // sonst Kunden-/Default-Auflösung; Anzeige nur mit slaContract.view.
             'canViewSla' => $user->can(Permission::SlaContractView->value),
             'slaContract' => $asset->slaContract
                 ?? app(SlaTimer::class)->resolveContract((int) $asset->organization_id, $asset->customer_id),
