@@ -8430,5 +8430,18 @@
     "Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.": "Cœur plus planification, déplacements & frais, ventes, parc de véhicules, documents, formulaires, base de connaissances et rapports d'équipe.",
     "Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.": "Cœur plus kanban, planification, ventes, documents, formulaires, base de connaissances, messagerie et rapports d'équipe.",
     "Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.": "Tous les modules sous licence actifs — le comportement par défaut sans choix explicite.",
-    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Module inconnu « :module » dans la recommandation de modules — profil rejeté."
+    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Module inconnu « :module » dans la recommandation de modules — profil rejeté.",
+    "Gerät verbinden": "Connecter l'appareil",
+    "Gerät widerrufen": "Révoquer l'appareil",
+    "JSON-Datei": "Fichier JSON",
+    "Lade einen Google-Standortverlauf (JSON-Export vom Handy) hoch. Der Import aktiviert deine Einwilligung.": "Téléverse un historique de localisation Google (export JSON du téléphone). L'import active ton consentement.",
+    "Leer = voller Zugriff (*).": "Vide = accès complet (*).",
+    "Nach dem Erzeugen wird einmalig eine Push-URL für OwnTracks/Traccar angezeigt. Das Verbinden aktiviert deine Einwilligung.": "Après la création, une URL push pour OwnTracks/Traccar s'affiche une seule fois. La connexion active ton consentement.",
+    "Neuen API-Token erstellen": "Créer un nouveau jeton d'API",
+    "Neuer Token": "Nouveau jeton",
+    "Noch kein Gerät verbunden": "Aucun appareil connecté pour le moment",
+    "Persönliche Zugriffstoken für den API-Zugang verwalten.": "Gérer les jetons d'accès personnels pour l'API.",
+    "Standortverlauf": "Historique de localisation",
+    "Token": "Jeton",
+    "Token widerrufen": "Révoquer le jeton"
 }
