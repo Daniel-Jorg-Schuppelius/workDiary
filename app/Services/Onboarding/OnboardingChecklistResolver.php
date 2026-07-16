@@ -34,6 +34,9 @@ class OnboardingChecklistResolver {
         // Feature 081 (MVP-373): bewusste Funktionsumfang-Entscheidung —
         // optional, „Voller Umfang" bleibt gültiger Default ohne Auswahl.
         ['code' => 'org.scope', 'required' => false],
+        // Feature 082 (MVP-379): Arbeitsbereiche kuratieren — optional, ohne
+        // Auswahl bleibt „Alles anzeigen" der Default.
+        ['code' => 'org.workspaces', 'required' => false],
         ['code' => 'users.invite', 'required' => false],
         ['code' => 'roles.check', 'required' => true],
         ['code' => 'classification.check', 'required' => false],
@@ -109,6 +112,7 @@ class OnboardingChecklistResolver {
             'org.profile' => filled($organization->name) && filled($organization->locale) && filled($organization->timezone),
             'org.branch_profile' => $this->organizationHasBranchProfile($organization),
             'org.scope' => $this->organizationHasConfiguredScope($organization),
+            'org.workspaces' => $this->organizationHasConfiguredWorkspaces($organization),
             'users.invite' => $usersInOrg->count() >= 2,
             'roles.check' => $adminExists && $operatorExists,
             'classification.check' => Classification::query()->where('organization_id', $organization->id)->exists(),
@@ -143,6 +147,18 @@ class OnboardingChecklistResolver {
             ->where('organization_id', $organization->id)
             ->where('event', 'license.scopeConfigured')
             ->exists();
+    }
+
+    /**
+     * Arbeitsbereiche bewusst kuratiert (Feature 082)? Erfüllt, sobald die Seite
+     * „Arbeitsbereiche" gespeichert wurde (settings.nav_focus_*). Rein optional.
+     */
+    private function organizationHasConfiguredWorkspaces(Organization $organization): bool {
+        $settings = is_array($organization->settings) ? $organization->settings : [];
+
+        return filled($settings['nav_focus_configured_at'] ?? null)
+            || filled($settings['nav_focus_available'] ?? null)
+            || filled($settings['nav_focus_default'] ?? null);
     }
 
     private function organizationHasBranchProfile(Organization $organization): bool {

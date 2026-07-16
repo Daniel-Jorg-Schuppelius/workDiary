@@ -14,6 +14,10 @@ return [
     'code' => 'facility',
     'label' => 'Facility Management und Hausmeisterdienste',
     'version' => 1,
+    // Feature 082 (MVP-379): vorgeschlagener Start-Arbeitsbereich. Nur ein
+    // Default-Vorschlag (D16), greift solange die Org keinen eigenen Default
+    // setzt und der Nutzer keine eigene Wahl getroffen hat.
+    'nav_focus_default' => 'facility',
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [

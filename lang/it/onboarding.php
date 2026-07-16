@@ -46,6 +46,11 @@ return [
                 'description' => 'Scegli un preset di ambito funzionale o adatta i moduli attivi: ciò che non serve resta nascosto senza perdere dati.',
                 'link' => 'Apri l\'ambito funzionale',
             ],
+            'workspaces' => [
+                'title' => 'Configura le aree di lavoro',
+                'description' => 'Scegli quali aree compaiono nel selettore e quale è predefinita — chiunque può cambiare in qualsiasi momento.',
+                'link' => 'Apri le aree di lavoro',
+            ],
         ],
         'users' => [
             'invite' => [

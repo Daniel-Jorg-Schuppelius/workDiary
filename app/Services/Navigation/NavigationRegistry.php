@@ -52,6 +52,7 @@ class NavigationRegistry {
     public function __construct(
         private readonly FeatureFlagResolver $features,
         private readonly NavGate $gate,
+        private readonly NavFocusService $focus,
     ) {}
 
     /**
@@ -67,8 +68,14 @@ class NavigationRegistry {
      *     pluginPanelItems: list<array<string, mixed>>,
      *     pluginPanelRoutes: list<string>,
      * }
+     *
+     * @param  ?string  $focusKey  Aktiver Arbeitsbereich (Feature 082, MVP-377);
+     *                             `null` = kein Fokusfilter (heutiges Verhalten,
+     *                             Golden-Snapshot). Der Fokus greift NUR im neuen
+     *                             Modus und ausschließlich als letzter, rein
+     *                             kosmetischer Filterschritt (D13).
      */
-    public function build(bool $isLegacyMode, string $indexRoute): array {
+    public function build(bool $isLegacyMode, string $indexRoute, ?string $focusKey = null): array {
         $user = Auth::user();
         if (! $user instanceof User) {
             return [
@@ -84,6 +91,9 @@ class NavigationRegistry {
         }
 
         $hidden = $isLegacyMode ? [] : $this->hiddenNavKeys($user);
+        // Arbeitsbereich-Filter nur im neuen Modus; `null` lässt alles unberührt.
+        $focusKeep = (! $isLegacyMode && $focusKey !== null) ? $this->focus->keepKeys($focusKey) : null;
+        $focusManage = (! $isLegacyMode && $focusKey !== null) ? $this->focus->manageKeep($focusKey) : null;
 
         [$adminNavItems, $manageNavItems, $pluginPanelItems, $pluginPanelRoutes] = $this->headerMenus($user, $isLegacyMode);
 
@@ -95,6 +105,14 @@ class NavigationRegistry {
             $manageNavItems,
             fn(array $it): bool => $this->gate->allows(isset($it['route']) ? (string) $it['route'] : null)
         ));
+        // Arbeitsbereich-Filter (MVP-380): schränkt das Verwaltungsmenü auf die
+        // im aktiven Fokus gelisteten Routen ein. `null` = unverändert.
+        if ($focusManage !== null) {
+            $manageNavItems = array_values(array_filter(
+                $manageNavItems,
+                static fn(array $it): bool => \in_array((string) ($it['route'] ?? ''), $focusManage, true)
+            ));
+        }
         // MVP-372: Systemmenü einheitlich über NavGate (Plan UND Recht) statt
         // punktueller Inline-Modul-Checks.
         $adminNavItems = array_values(array_filter(
@@ -111,8 +129,8 @@ class NavigationRegistry {
             'manageNavItems' => $manageNavItems,
             'adminNavItems' => $adminNavItems,
             'userNavItems' => $this->userNavItems($isLegacyMode),
-            'sidebarSections' => $isLegacyMode ? [] : $this->filterSidebar($this->sidebarBlueprint($indexRoute), $hidden),
-            'createGroups' => $isLegacyMode ? [] : $this->filterCreateGroups($this->createGroupsBlueprint(), $hidden),
+            'sidebarSections' => $isLegacyMode ? [] : $this->applyFocus($this->filterSidebar($this->sidebarBlueprint($indexRoute), $hidden), $focusKeep),
+            'createGroups' => $isLegacyMode ? [] : $this->applyFocusCreateGroups($this->filterCreateGroups($this->createGroupsBlueprint(), $hidden), $focusKeep),
             'pluginPanelItems' => $pluginPanelItems,
             'pluginPanelRoutes' => $pluginPanelRoutes,
         ];
@@ -941,6 +959,107 @@ class NavigationRegistry {
     }
 
     /**
+     * Arbeitsbereich-Filter auf den (bereits modul-/rechte-/ausblende-gefilterten)
+     * Sidebar-Bauplan (Feature 082, MVP-377). Rein kosmetisch, letzter Schritt.
+     *
+     * `$keep` ist eine Positivliste stabiler Schlüssel (`section:`/`group:`/
+     * `item:`). `null` = kein Filter (Arbeitsbereich 'all' oder keiner). Ein
+     * gelisteter Sektions-Schlüssel behält die ganze Sektion; ein Gruppen-/Item-
+     * Schlüssel behält nur diesen Ausschnitt. Enthält der aktive Fokus keine
+     * Referenz auf eine Sektion, verschwindet sie aus der Sidebar (bleibt aber
+     * über Suche, Funktionskatalog und „Alle anzeigen" erreichbar).
+     *
+     * @param  list<array<string, mixed>>  $sections
+     * @param  list<string>|null  $keep
+     * @return list<array<string, mixed>>
+     */
+    public function applyFocus(array $sections, ?array $keep): array {
+        if ($keep === null) {
+            return array_values($sections);
+        }
+        $set = array_flip($keep);
+
+        $out = [];
+        foreach ($sections as $section) {
+            $sectionKept = isset($set[self::KEY_SECTION . (string) ($section['key'] ?? '')]);
+
+            if (! empty($section['groups']) && \is_array($section['groups'])) {
+                $groups = [];
+                foreach ($section['groups'] as $group) {
+                    if ($sectionKept || isset($set[self::KEY_GROUP . (string) ($group['key'] ?? '')])) {
+                        $groups[] = $group;
+                        continue;
+                    }
+                    $items = array_values(array_filter(
+                        \is_array($group['items'] ?? null) ? $group['items'] : [],
+                        static fn(array $it): bool => isset($set[self::KEY_ITEM . (string) ($it['route'] ?? '')])
+                    ));
+                    if ($items !== []) {
+                        $group['items'] = $items;
+                        $groups[] = $group;
+                    }
+                }
+                if ($groups !== []) {
+                    $section['groups'] = array_values($groups);
+                    $out[] = $section;
+                }
+                continue;
+            }
+
+            if (! empty($section['items']) && \is_array($section['items'])) {
+                if ($sectionKept) {
+                    $out[] = $section;
+                    continue;
+                }
+                $items = array_values(array_filter(
+                    $section['items'],
+                    static fn(array $it): bool => isset($set[self::KEY_ITEM . (string) ($it['route'] ?? '')])
+                ));
+                if ($items !== []) {
+                    $section['items'] = $items;
+                    $out[] = $section;
+                }
+                continue;
+            }
+
+            if ($sectionKept) {
+                $out[] = $section;
+            }
+        }
+
+        return array_values($out);
+    }
+
+    /**
+     * Arbeitsbereich-Filter auf die Schnellerstellungs-Gruppen (MVP-377).
+     * Behält eine Gruppe, wenn ihr Schlüssel als Sektion/Erstellgruppe im Fokus
+     * gelistet ist; 'master' (Stammdaten) bleibt als übergreifende Gruppe immer.
+     * `null` = kein Filter.
+     *
+     * @param  list<array<string, mixed>>  $groups
+     * @param  list<string>|null  $keep
+     * @return list<array<string, mixed>>
+     */
+    public function applyFocusCreateGroups(array $groups, ?array $keep): array {
+        if ($keep === null) {
+            return array_values($groups);
+        }
+        $set = array_flip($keep);
+
+        $out = [];
+        foreach ($groups as $group) {
+            $key = (string) ($group['key'] ?? '');
+            if ($key === 'master'
+                || isset($set[self::KEY_SECTION . $key])
+                || isset($set[self::KEY_CREATE . $key])) {
+                $out[] = $group;
+            }
+        }
+
+        return array_values($out);
+    }
+
+    /**
      * Hauptnavigation (Header): pro Modus eine Liste mit Routenname + Label.
      *
      * @return list<array<string, mixed>>
@@ -1033,6 +1152,7 @@ class NavigationRegistry {
                 // Funktionsumfang der Organisation (Feature 081, MVP-373).
                 if (Gate::allows(Permission::OrganizationScopeManage->value)) {
                     $adminNavItems[] = ['route' => 'admin.scope.index', 'label' => __('scope.title.index'), 'icon' => 'tune', 'modal' => false, 'matches' => ['admin.scope.*']];
+                    $adminNavItems[] = ['route' => 'admin.workspaces.index', 'label' => __('scope.focus.admin.title'), 'icon' => 'dashboard_customize', 'modal' => false, 'matches' => ['admin.workspaces.*']];
                 }
                 $adminNavItems[] = ['route' => 'admin.entry-types.index', 'label' => __('Eintragstypen'), 'icon' => 'category', 'modal' => false];
                 $adminNavItems[] = ['route' => 'admin.classifications.index', 'label' => __('Klassifikationen'), 'icon' => 'category_search', 'modal' => false];

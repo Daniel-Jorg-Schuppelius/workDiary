@@ -9,6 +9,38 @@
  */
 
 return [
+    // Áreas de trabajo — vistas de enfoque conmutables (Feature 082).
+    'focus' => [
+        'admin' => [
+            'title' => 'Áreas de trabajo',
+            'subtitle' => 'Elige qué áreas de trabajo ofrece tu organización en el selector, renómbralas y define una predeterminada.',
+            'hint' => 'Solo una sugerencia: el área predeterminada nunca se impone — cualquiera puede cambiar en cualquier momento. Ocultar no cambia ningún permiso.',
+            'list_heading' => 'Áreas ofrecidas',
+            'configured_at' => 'Última modificación: :date',
+            'mandatory' => 'siempre disponible',
+            'is_default' => 'Predeterminada',
+            'rename' => 'Nombre mostrado',
+            'offered' => 'ofrecida',
+            'set_default' => 'Predeterminada',
+            'saved' => 'Áreas de trabajo guardadas.',
+        ],
+        'switcher' => 'Cambiar área de trabajo',
+        'eyebrow' => 'Área de trabajo',
+        'all' => 'Mostrar todo',
+        'active' => 'Activa',
+        'reveal' => 'Mostrar todo',
+        'reveal_off' => 'Mostrar solo el enfoque',
+        'dialog' => [
+            'eyebrow' => 'Enfocar la vista',
+            'title' => '¿En qué estás trabajando?',
+            'subtitle' => 'Elige un área de trabajo — la navegación mostrará solo las áreas relevantes. No se elimina ni se bloquea nada; puedes cambiar en cualquier momento.',
+            'footnote' => 'Las áreas ocultas siguen accesibles mediante la búsqueda global y «Mostrar todo».',
+        ],
+        'flash' => [
+            'unknown' => 'Área de trabajo desconocida.',
+            'switched' => 'Área de trabajo «:name» activa.',
+        ],
+    ],
     'title' => [
         'index' => 'Alcance funcional',
     ],
@@ -42,18 +74,21 @@ return [
         'no_recommendation' => 'No hay recomendación de perfil sectorial para esta organización.',
     ],
     'customize' => [
-        'subtitle' => 'Oculta las áreas de menú que no necesites personalmente. El ajuste solo te afecta a ti, en todos los dispositivos.',
+        'subtitle' => 'Activa lo que debe aparecer en tu menú — desactiva lo que no necesites. Solo te afecta a ti, en todos los dispositivos.',
         'cosmetic_hint' => 'Ocultar no cambia los permisos: la búsqueda, los marcadores y los enlaces directos siguen funcionando. Con «Todas las funciones» lo recuperas todo.',
         'sidebar_heading' => 'Navegación lateral',
         'hide_section' => 'ocultar toda la sección',
         'hide_group' => 'ocultar subgrupo',
         'create_heading' => 'Creación rápida («Nuevo …»)',
         'create_hint' => 'Los grupos ocultos dejan de aparecer en el menú «Nuevo …» de la barra lateral.',
-        'checkbox_hint' => 'Marcado = oculto.',
+        'checkbox_hint' => 'Activado = visible en el menú.',
         'saved' => 'Personalización del menú guardada.',
         'unhidden' => 'La entrada vuelve a estar visible.',
     ],
     'functions' => [
+        'focus_banner' => 'Área de trabajo activa «:name». Las áreas ocultas están marcadas abajo — aquí siguen accesibles.',
+        'in_focus_hidden' => 'Oculto por el área de trabajo',
+        'show_all' => 'Mostrar todo',
         'subtitle' => 'Resumen de todas las áreas y su estado, incluido lo oculto, desactivado o sin licencia.',
         'state' => [
             'hidden_section' => 'Sección oculta',

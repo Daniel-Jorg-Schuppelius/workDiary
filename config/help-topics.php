@@ -33,6 +33,8 @@ return [
         // Oberflächen-Konfiguration (Feature 081): Funktionsumfang,
         // Menüanpassung und Funktionskatalog.
         'admin.scope.*' => 'scope.overview',
+        // Arbeitsbereiche — schaltbare Fokus-Ansichten (Feature 082)
+        'admin.workspaces.*' => 'workspaces.overview',
         'me.navigation.*' => 'navigation.customize',
         'me.functions' => 'navigation.customize',
         // PDF-Dokumentdesign / Firmenbogen (Feature 076, Phase 28)

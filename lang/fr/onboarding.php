@@ -46,6 +46,11 @@ return [
                 'description' => 'Choisissez un préréglage de périmètre fonctionnel ou ajustez les modules actifs — ce dont vous n\'avez pas besoin reste masqué, sans perte de données.',
                 'link' => 'Ouvrir le périmètre fonctionnel',
             ],
+            'workspaces' => [
+                'title' => 'Configurer les espaces de travail',
+                'description' => 'Choisissez les espaces affichés dans le sélecteur et celui par défaut — chacun peut changer à tout moment.',
+                'link' => 'Ouvrir les espaces de travail',
+            ],
         ],
         'users' => [
             'invite' => [

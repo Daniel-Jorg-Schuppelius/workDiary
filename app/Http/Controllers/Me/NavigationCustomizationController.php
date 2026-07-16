@@ -45,16 +45,22 @@ class NavigationCustomizationController extends Controller {
         $user = Auth::user();
 
         $payload = $request->validate([
-            'hidden' => ['nullable', 'array'],
-            'hidden.*' => ['string', 'max:160'],
+            'visible' => ['nullable', 'array'],
+            'visible.*' => ['string', 'max:160'],
         ]);
 
+        // Schalter EIN = sichtbar (intuitive Richtung). Ausgeblendet wird alles
+        // aus der bekannten Whitelist, das NICHT eingeschaltet ist. Die Seite
+        // rendert genau diese Whitelist und startet mit allem eingeschaltet —
+        // ein normales Speichern lässt daher alles sichtbar; nur bewusst
+        // ausgeschaltete Einträge werden ausgeblendet.
         $allowed = $this->allowedKeys();
-        /** @var list<string> $hidden */
-        $hidden = array_values(array_intersect(
-            array_map(static fn($v): string => (string) $v, $payload['hidden'] ?? []),
+        $visible = array_intersect(
+            array_map(static fn($v): string => (string) $v, $payload['visible'] ?? []),
             $allowed
-        ));
+        );
+        /** @var list<string> $hidden */
+        $hidden = array_values(array_diff($allowed, $visible));
 
         $user->setPreference(NavigationRegistry::PREFERENCE_HIDDEN, $hidden);
 

@@ -46,6 +46,11 @@ return [
                 'description' => 'Elige un preajuste de alcance funcional o ajusta los módulos activos: lo que no necesites permanece oculto sin perder datos.',
                 'link' => 'Abrir alcance funcional',
             ],
+            'workspaces' => [
+                'title' => 'Configurar áreas de trabajo',
+                'description' => 'Elige qué áreas aparecen en el selector y cuál es la predeterminada — cualquiera puede cambiar en cualquier momento.',
+                'link' => 'Abrir áreas de trabajo',
+            ],
         ],
         'users' => [
             'invite' => [

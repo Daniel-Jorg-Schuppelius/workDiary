@@ -6,6 +6,8 @@
 @php
     /** @var list<array{key:string,label:string,hidden:bool,entries:list<array<string,mixed>>}> $sections */
     /** @var bool $canManageScope */
+    /** @var bool $focusActive */
+    /** @var string $activeFocusLabel */
 @endphp
 
 @section('content')
@@ -23,6 +25,20 @@
 
         @if (session('status'))
             <div class="alert alert-success">{{ session('status') }}</div>
+        @endif
+
+        {{-- Aktiver Arbeitsbereich (Feature 082, MVP-380): Hinweis + Rückweg zur
+             Vollansicht. Fokus-ausgeblendete Einträge sind unten markiert, bleiben
+             hier aber direkt erreichbar. --}}
+        @if ($focusActive)
+            <div class="alert alert-info mb-4 flex-wrap gap-2 rounded-2xl px-5 py-3 text-sm shadow-xs">
+                <x-icon name="filter_alt" class="text-base" />
+                <span class="flex-1">{{ __('scope.functions.focus_banner', ['name' => $activeFocusLabel]) }}</span>
+                <form method="POST" action="{{ route('me.focus.switch', 'all') }}">
+                    @csrf
+                    <x-button type="submit" tone="ghost" size="xs" icon="apps">{{ __('scope.functions.show_all') }}</x-button>
+                </form>
+            </div>
         @endif
 
         @foreach ($sections as $section)
@@ -57,6 +73,8 @@
                                         <span class="badge badge-warning badge-sm">{{ __('Gesperrt') }}</span>
                                     @elseif ($entry['hidden'])
                                         <span class="badge badge-neutral badge-sm">{{ __('scope.functions.state.hidden_by_me') }}</span>
+                                    @elseif ($entry['in_focus_hidden'])
+                                        <span class="badge badge-info badge-sm">{{ __('scope.functions.in_focus_hidden') }}</span>
                                     @endif
                                 </div>
                                 @if ($entry['status'] === \App\Enums\Licensing\ModuleStatus::NotLicensed && $entry['module_description'])

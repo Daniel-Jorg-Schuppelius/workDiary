@@ -9,6 +9,38 @@
  */
 
 return [
+    // Espaces de travail — vues à focus commutables (Feature 082).
+    'focus' => [
+        'admin' => [
+            'title' => 'Espaces de travail',
+            'subtitle' => 'Choisissez les espaces de travail proposés dans le sélecteur, renommez-les et définissez un espace par défaut.',
+            'hint' => 'Une simple suggestion : l’espace par défaut n’est jamais imposé — chacun peut changer à tout moment. Masquer ne modifie aucune autorisation.',
+            'list_heading' => 'Espaces proposés',
+            'configured_at' => 'Dernière modification : :date',
+            'mandatory' => 'toujours disponible',
+            'is_default' => 'Par défaut',
+            'rename' => 'Nom affiché',
+            'offered' => 'proposé',
+            'set_default' => 'Par défaut',
+            'saved' => 'Espaces de travail enregistrés.',
+        ],
+        'switcher' => 'Changer d’espace de travail',
+        'eyebrow' => 'Espace de travail',
+        'all' => 'Tout afficher',
+        'active' => 'Actif',
+        'reveal' => 'Tout afficher',
+        'reveal_off' => 'Afficher uniquement le focus',
+        'dialog' => [
+            'eyebrow' => 'Cibler l’affichage',
+            'title' => 'Sur quoi travaillez-vous ?',
+            'subtitle' => 'Choisissez un espace de travail — la navigation n’affiche alors que les domaines pertinents. Rien n’est supprimé ni verrouillé ; vous pouvez changer à tout moment.',
+            'footnote' => 'Les domaines masqués restent accessibles via la recherche globale et « Tout afficher ».',
+        ],
+        'flash' => [
+            'unknown' => 'Espace de travail inconnu.',
+            'switched' => 'Espace de travail « :name » actif.',
+        ],
+    ],
     'title' => [
         'index' => 'Périmètre fonctionnel',
     ],
@@ -42,18 +74,21 @@ return [
         'no_recommendation' => 'Aucune recommandation de profil métier pour cette organisation.',
     ],
     'customize' => [
-        'subtitle' => 'Masquez les zones de menu dont vous n\'avez pas besoin. Le réglage ne vaut que pour vous, sur tous vos appareils.',
+        'subtitle' => 'Activez ce qui doit apparaître dans votre menu — désactivez ce dont vous n\'avez pas besoin. Ne vaut que pour vous, sur tous vos appareils.',
         'cosmetic_hint' => 'Masquer ne change aucun droit : la recherche, les favoris et les liens directs continuent de fonctionner. « Toutes les fonctions » permet de tout récupérer.',
         'sidebar_heading' => 'Navigation latérale',
         'hide_section' => 'masquer toute la section',
         'hide_group' => 'masquer le sous-groupe',
         'create_heading' => 'Création rapide (« Nouveau … »)',
         'create_hint' => 'Les groupes masqués n\'apparaissent plus dans le menu « Nouveau … » de la barre latérale.',
-        'checkbox_hint' => 'Coché = masqué.',
+        'checkbox_hint' => 'Activé = visible dans le menu.',
         'saved' => 'Personnalisation du menu enregistrée.',
         'unhidden' => 'L\'entrée est de nouveau visible.',
     ],
     'functions' => [
+        'focus_banner' => 'Espace de travail actif « :name ». Les domaines masqués sont indiqués ci-dessous — ils restent accessibles ici.',
+        'in_focus_hidden' => 'Masqué par l’espace de travail',
+        'show_all' => 'Tout afficher',
         'subtitle' => 'Vue d\'ensemble de toutes les zones et de leur état — y compris ce qui est masqué, désactivé ou non licencié.',
         'state' => [
             'hidden_section' => 'Section masquée',

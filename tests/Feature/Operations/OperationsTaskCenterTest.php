@@ -175,6 +175,16 @@ class OperationsTaskCenterTest extends TestCase {
 
     public function test_watchdog_overdue_creates_task_and_success_resolves_it(): void {
         $this->travelTo(now()->startOfHour()->addMinutes(45));
+        // toggl.import ist plugin-gebunden (config/scheduler.php: plugin => 'toggl').
+        // Der Watchdog meldet Überfälligkeit NUR, wenn das Plugin irgendwo aktiv ist
+        // (sonst reines Rauschen auf Instanzen ohne Toggl). Precondition explizit
+        // setzen, damit der Überfälligkeitspfad überhaupt geprüft wird.
+        \App\Models\PluginSetting::query()->create([
+            'organization_id' => $this->admin->organization_id,
+            'plugin_id' => 'toggl',
+            'enabled' => true,
+            'settings' => [],
+        ]);
         \App\Models\ScheduledJobState::query()->create([
             'job_key' => 'toggl.import',
             'last_started_at' => now()->subHours(3),

@@ -239,6 +239,10 @@ Route::middleware('auth')->group(function () {
     Route::get('me/functions', [\App\Http\Controllers\Me\FunctionCatalogController::class, 'index'])
         ->name('me.functions');
 
+    // Arbeitsbereiche — schaltbare Fokus-Ansichten (Feature 082, MVP-378).
+    Route::post('me/focus/{focus}', [\App\Http\Controllers\Me\FocusController::class, 'switch'])
+        ->name('me.focus.switch');
+
     // Persönlicher Kalender-Feed (Token-Generierung + Subscribe-URL).
     Route::get('account/calendar', [CalendarFeedController::class, 'show'])
         ->name('account.calendar.show');
@@ -746,6 +750,11 @@ Route::middleware('auth')->group(function () {
         // Presets + Modul-Checkliste, Recht organization.scope.manage.
         Route::get('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'index'])->name('admin.scope.index');
         Route::post('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'save'])->name('admin.scope.save');
+
+        // Arbeitsbereiche kuratieren (Feature 082, MVP-379): welche Fokus-
+        // Ansichten die Org anbietet, Default + Umbenennung. Recht wie Scope.
+        Route::get('admin/workspaces', [\App\Http\Controllers\Admin\WorkspaceAdminController::class, 'index'])->name('admin.workspaces.index');
+        Route::post('admin/workspaces', [\App\Http\Controllers\Admin\WorkspaceAdminController::class, 'save'])->name('admin.workspaces.save');
 
         // Lizenz-Admin (MVP-047)
         Route::get('admin/license', [LicenseAdminController::class, 'index'])->name('admin.license.index');

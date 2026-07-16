@@ -15,7 +15,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Licensing\{ModuleCatalog, ModuleStatusResolver};
-use App\Services\Navigation\NavigationRegistry;
+use App\Services\Navigation\{NavFocusService, NavigationRegistry};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -32,6 +32,7 @@ class FunctionCatalogController extends Controller {
         private readonly NavigationRegistry $registry,
         private readonly ModuleStatusResolver $status,
         private readonly ModuleCatalog $catalog,
+        private readonly NavFocusService $focus,
     ) {}
 
     public function index(): View {
@@ -59,14 +60,24 @@ class FunctionCatalogController extends Controller {
             return $moduleStatus[$module] ?? ModuleStatus::NotLicensed;
         };
 
+        // Aktiver Arbeitsbereich (Feature 082, MVP-380): markiert Einträge, die
+        // der Fokus gerade ausblendet — über diesen Katalog bleiben sie auffindbar.
+        // `keepSet === null` = Arbeitsbereich „Alles anzeigen" (kein Filter).
+        $activeFocus = $this->focus->resolveActive($user, $organization, session(NavFocusService::SESSION_KEY));
+        $focusKeep = $this->focus->keepKeys($activeFocus);
+        $keepSet = $focusKeep !== null ? array_flip($focusKeep) : null;
+
         $sections = [];
         foreach ($this->registry->sidebarBlueprint('duties.index') as $section) {
             $sectionKey = (string) $section['key'];
             $sectionModule = $moduleBySection[$sectionKey] ?? null;
             $sectionHidden = in_array(NavigationRegistry::KEY_SECTION . $sectionKey, $hidden, true);
+            $sectionInFocus = $keepSet === null || isset($keepSet[NavigationRegistry::KEY_SECTION . $sectionKey]);
 
             $entries = [];
-            $collect = function (array $items, ?string $groupModule, bool $groupHidden) use (&$entries, $moduleByItem, $sectionModule, $sectionHidden, $hidden, $statusOf): void {
+            $collect = function (array $items, ?string $groupKey, ?string $groupModule, bool $groupHidden) use (&$entries, $moduleByItem, $sectionModule, $sectionHidden, $hidden, $statusOf, $keepSet, $sectionInFocus): void {
+                $groupInFocus = $sectionInFocus
+                    || ($groupKey !== null && $keepSet !== null && isset($keepSet[NavigationRegistry::KEY_GROUP . $groupKey]));
                 foreach ($items as $item) {
                     if (! is_array($item) || ! $this->registry->mayAccessRoute((string) $item['route'])) {
                         continue;
@@ -75,6 +86,9 @@ class FunctionCatalogController extends Controller {
                     $status = $statusOf($module);
                     $itemHidden = $sectionHidden || $groupHidden
                         || in_array(NavigationRegistry::KEY_ITEM . (string) $item['route'], $hidden, true);
+                    $inFocus = $keepSet === null || $groupInFocus
+                        || isset($keepSet[NavigationRegistry::KEY_ITEM . (string) $item['route']]);
+                    $visible = ($status === null || $status === ModuleStatus::Active) && ! $itemHidden;
 
                     $entries[] = [
                         'route' => (string) $item['route'],
@@ -86,20 +100,23 @@ class FunctionCatalogController extends Controller {
                         'module_description' => $module !== null ? $this->catalog->description($module) : null,
                         'status' => $status,
                         'hidden' => $itemHidden,
-                        'visible' => ($status === null || $status === ModuleStatus::Active) && ! $itemHidden,
+                        'visible' => $visible,
+                        // Lizenziert/aktiv und nicht persönlich ausgeblendet, aber vom
+                        // aktiven Arbeitsbereich ausgeblendet.
+                        'in_focus_hidden' => $visible && ! $inFocus,
                     ];
                 }
             };
 
             if (! empty($section['items']) && is_array($section['items'])) {
-                $collect($section['items'], null, false);
+                $collect($section['items'], null, null, false);
             }
             foreach ((array) ($section['groups'] ?? []) as $group) {
                 if (! is_array($group)) {
                     continue;
                 }
                 $groupHidden = in_array(NavigationRegistry::KEY_GROUP . (string) $group['key'], $hidden, true);
-                $collect((array) ($group['items'] ?? []), $moduleByGroup[(string) $group['key']] ?? null, $groupHidden);
+                $collect((array) ($group['items'] ?? []), (string) $group['key'], $moduleByGroup[(string) $group['key']] ?? null, $groupHidden);
             }
 
             if ($entries !== []) {
@@ -115,6 +132,8 @@ class FunctionCatalogController extends Controller {
         return view('me.functions', [
             'sections' => $sections,
             'canManageScope' => $user->can(Permission::OrganizationScopeManage->value),
+            'focusActive' => $activeFocus !== 'all',
+            'activeFocusLabel' => $this->focus->label($organization, $activeFocus),
         ]);
     }
 }

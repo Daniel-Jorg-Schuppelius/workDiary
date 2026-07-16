@@ -48,6 +48,7 @@ class OnboardingController extends Controller {
         'org.profile' => 'account.profile.edit',
         'org.branch_profile' => 'admin.branch-profiles.index',
         'org.scope' => 'admin.scope.index',
+        'org.workspaces' => 'admin.workspaces.index',
         'users.invite' => 'org-members.index',
         'roles.check' => 'admin.access.members.index',
         'classification.check' => 'admin.classifications.index',

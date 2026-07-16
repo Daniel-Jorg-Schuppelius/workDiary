@@ -57,6 +57,11 @@ return [
                 'description' => 'Pick a feature-scope preset or adjust the active modules — anything you do not need stays hidden without losing any data.',
                 'link' => 'Open feature scope',
             ],
+            'workspaces' => [
+                'title' => 'Set up workspaces',
+                'description' => 'Choose which workspaces appear in the switcher and which is the default — everyone can switch any time.',
+                'link' => 'Open workspaces',
+            ],
         ],
         'users' => [
             'invite' => [

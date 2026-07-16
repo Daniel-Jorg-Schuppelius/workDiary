@@ -57,6 +57,11 @@ return [
                 'description' => 'Wähle ein Funktionsumfang-Preset oder passe die aktiven Module an — nicht Benötigtes bleibt ausgeblendet, ohne dass Daten verloren gehen.',
                 'link' => 'Funktionsumfang öffnen',
             ],
+            'workspaces' => [
+                'title' => 'Arbeitsbereiche einrichten',
+                'description' => 'Lege fest, welche Arbeitsbereiche im Umschalter erscheinen und welcher der Standard ist — jede Person kann jederzeit wechseln.',
+                'link' => 'Arbeitsbereiche öffnen',
+            ],
         ],
         'users' => [
             'invite' => [

@@ -55,10 +55,17 @@ class NavigationGoldenTest extends TestCase {
             $response->assertOk();
             $html = $response->getContent();
 
+            // Feature 082: aktiver Arbeitsbereich „finance" schränkt die
+            // Sidebar-Sektionen rein kosmetisch ein — je Persona eingefroren,
+            // damit Änderungen an der Fokus-Filterung sichtbar werden.
+            $focusHtml = $this->withSession([\App\Services\Navigation\NavFocusService::SESSION_KEY => 'finance'])
+                ->get(route('dashboard'))->getContent();
+
             $snapshot[$name] = [
                 'sections' => $this->sectionKeys($html),
                 'sidebar' => $this->hrefs($this->between($html, '<aside id="app-sidebar"', '</aside>')),
                 'header' => $this->hrefs($this->between($html, '<header id="app-header"', '</header>')),
+                'sections_focus_finance' => $this->sectionKeys($this->between($focusHtml, '<aside id="app-sidebar"', '</aside>')),
             ];
         }
 

@@ -5,153 +5,131 @@
 
 @section('content')
 <x-page-shell>
+    <x-slot:toolbar>
+        <x-page-toolbar :subtitle="__('Zeitraum: :from – :to · erklärbare Kennzahlen, keine Konformitätszusage.', ['from' => $from, 'to' => $to])">
+            <x-slot:actions>
+                <x-icon-btn icon="download" size="sm" :href="route('sustainability.index', ['export' => 'csv', 'from' => $from, 'to' => $to])" show-label>{{ __('CSV') }}</x-icon-btn>
+                @if ($canManage)
+                    <x-action-form :action="route('sustainability.snapshot.store')">
+                        <input type="hidden" name="from" value="{{ $from }}">
+                        <input type="hidden" name="to" value="{{ $to }}">
+                        <x-icon-btn icon="photo_camera" size="sm" type="submit" show-label
+                                    :title="__('Kennzahlen + Methodik als Managementbewertungs-Snapshot einfrieren')">{{ __('Snapshot') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
+            </x-slot:actions>
+        </x-page-toolbar>
+    </x-slot:toolbar>
+
     @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-error">{{ session('error') }}</div>
+        <div class="alert alert-success rounded-2xl px-5 py-3 text-sm shadow-xs">{{ session('status') }}</div>
     @endif
 
-    <x-page-toolbar :title="__('Nachhaltigkeit & ESG')">
-        <div class="text-sm text-base-content/70">{{ __('Zeitraum: :from – :to · erklärbare Kennzahlen, keine Konformitätszusage.', ['from' => $from, 'to' => $to]) }}</div>
-        <x-slot:actions>
-            <x-icon-btn icon="download" size="sm" :href="route('sustainability.index', ['export' => 'csv', 'from' => $from, 'to' => $to])" show-label>{{ __('CSV') }}</x-icon-btn>
-            @if ($canManage)
-                <x-action-form :action="route('sustainability.snapshot.store')">
-                    <input type="hidden" name="from" value="{{ $from }}">
-                    <input type="hidden" name="to" value="{{ $to }}">
-                    <x-icon-btn icon="photo_camera" size="sm" type="submit" show-label
-                                :title="__('Kennzahlen + Methodik als Managementbewertungs-Snapshot einfrieren')">{{ __('Snapshot') }}</x-icon-btn>
-                </x-action-form>
-            @endif
-        </x-slot:actions>
-    </x-page-toolbar>
-
-    <div class="grid gap-4 sm:grid-cols-4">
-        <x-kpi-tile :label="__('CO₂e gesamt (kg)')" :value="number_format($aggregate['co2e_total_kg'], 0, ',', '.')" />
-        <x-kpi-tile :label="__('Kritische Bewertungen (rot)')" :value="$critical" />
-        <x-kpi-tile :label="__('Offene Maßnahmen')" :value="$openMeasures" />
-        <x-kpi-tile :label="__('Anteil Schätzwerte')" :value="$estimatedShare . ' %'" />
+    {{-- Kennzahlen --}}
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <x-kpi-tile :label="__('CO₂e gesamt (kg)')" :value="$aggregate['co2e_total_kg']" format="int" />
+        <x-kpi-tile :label="__('Kritische Bewertungen (rot)')" :value="$critical" :tone="$critical > 0 ? 'error' : 'neutral'" />
+        <x-kpi-tile :label="__('Offene Maßnahmen')" :value="$openMeasures" :tone="$openMeasures > 0 ? 'warning' : 'neutral'" />
+        <x-kpi-tile :label="__('Anteil Schätzwerte')" :value="$estimatedShare . ' %'" :tone="$estimatedShare > 50 ? 'warning' : 'info'"
+                    :hint="__('gemessen/berechnet vor geschätzt')" />
     </div>
 
     @if ($aggregate['missing_factors'] !== [])
-        <div class="alert alert-warning text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">warning</span>
-            {{ __('Für folgende Aktivitäten fehlt ein gültiger Emissionsfaktor (keine stille 0): :codes', ['codes' => implode(', ', $aggregate['missing_factors'])]) }}
+        <div class="alert alert-warning rounded-2xl px-5 py-3 text-sm shadow-xs">
+            <x-icon name="warning" class="text-base" />
+            <span>{{ __('Für folgende Aktivitäten fehlt ein gültiger Emissionsfaktor (keine stille 0): :codes', ['codes' => implode(', ', $aggregate['missing_factors'])]) }}</span>
         </div>
     @endif
 
+    {{-- Emissionen & Ziele --}}
     <div class="grid gap-4 lg:grid-cols-2">
-        <x-card :title="__('Emissionen nach Aktivität')">
-            @if (empty($aggregate['activities']))
-                <x-empty-state icon="eco" :title="__('Noch keine Aktivitätsdaten im Zeitraum.')" compact />
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead><tr><th>{{ __('Aktivität') }}</th><th class="text-right">{{ __('Menge') }}</th><th class="text-right">{{ __('CO₂e kg') }}</th><th>{{ __('Faktorquelle') }}</th></tr></thead>
-                        <tbody>
-                            @foreach ($aggregate['activities'] as $code => $activity)
-                                <tr>
-                                    <td>{{ __("values.$code") }}</td>
-                                    <td class="text-right tabular-nums">{{ number_format($activity['amount'], 1, ',', '.') }} {{ $activity['unit'] }}</td>
-                                    <td class="text-right tabular-nums">{{ $activity['co2e_kg'] !== null ? number_format($activity['co2e_kg'], 1, ',', '.') : '—' }}</td>
-                                    <td class="text-xs text-base-content/60">{{ $activity['factor_source'] ?? __('Faktor fehlt') }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot>
-                            @foreach ($aggregate['co2e_by_scope'] as $scope => $value)
-                                <tr><td colspan="2" class="text-right">{{ __('Scope :scope', ['scope' => $scope]) }}</td><td class="text-right tabular-nums">{{ number_format($value, 1, ',', '.') }}</td><td></td></tr>
-                            @endforeach
-                        </tfoot>
-                    </table>
-                </div>
-            @endif
+        <x-card padding="p-0" :title="__('Emissionen nach Aktivität')" icon="eco">
             @if ($canManage)
-                <form method="POST" action="{{ route('sustainability.activities.store') }}" class="mt-3 grid gap-2 sm:grid-cols-3">
-                    @csrf
-                    <select name="activity_code" class="select select-sm select-bordered">
-                        @foreach (\App\Models\Sustainability\SustainabilityActivityRecord::ACTIVITY_CODES as $code)
-                            <option value="{{ $code }}">{{ __("values.$code") }}</option>
+                <x-slot:actions>
+                    <x-button size="sm" tone="ghost" icon="add" data-open-dialog="activity-create">{{ __('Erfassen') }}</x-button>
+                </x-slot:actions>
+            @endif
+            @if (empty($aggregate['activities']))
+                <div class="p-4"><x-empty-state icon="eco" :title="__('Noch keine Aktivitätsdaten im Zeitraum.')" compact /></div>
+            @else
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Aktivität') }}</th>
+                            <th class="text-right">{{ __('Menge') }}</th>
+                            <th class="text-right">{{ __('CO₂e kg') }}</th>
+                            <th>{{ __('Faktorquelle') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    <x-slot:foot>
+                        @foreach ($aggregate['co2e_by_scope'] as $scope => $value)
+                            <tr>
+                                <td colspan="2" class="text-right text-xs uppercase tracking-wide text-base-content/60">{{ __('Scope :scope', ['scope' => $scope]) }}</td>
+                                <td class="text-right tabular-nums font-medium">{{ number_format($value, 1, ',', '.') }}</td>
+                                <td></td>
+                            </tr>
                         @endforeach
-                    </select>
-                    <input name="amount" type="number" step="0.001" min="0" required class="input input-sm input-bordered" placeholder="{{ __('Menge') }}">
-                    <input name="unit" required maxlength="20" class="input input-sm input-bordered" placeholder="{{ __('Einheit (kWh/l/km/kg/m3)') }}">
-                    <x-date-range class="sm:col-span-2" layout="join"
-                                  from-name="period_start" to-name="period_end" type="date" required
-                                  :label="__('Zeitraum')"
-                                  :from="now()->startOfMonth()->toDateString()"
-                                  :to="now()->toDateString()" />
-                    <select name="data_quality" class="select select-sm select-bordered">
-                        <option value="measured">{{ __('values.measured') }}</option>
-                        <option value="calculated">{{ __('values.calculated') }}</option>
-                        <option value="estimated">{{ __('values.estimated') }}</option>
-                    </select>
-                    <input name="source_note" maxlength="300" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Quelle (Zähler/Rechnung/Schätzung)') }}">
-                    <div><x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erfassen') }}</x-icon-btn></div>
-                </form>
+                    </x-slot:foot>
+                    @foreach ($aggregate['activities'] as $code => $activity)
+                        <tr>
+                            <td>{{ __("values.$code") }}</td>
+                            <td class="text-right tabular-nums">{{ number_format($activity['amount'], 1, ',', '.') }} {{ $activity['unit'] }}</td>
+                            <td class="text-right tabular-nums">{{ $activity['co2e_kg'] !== null ? number_format($activity['co2e_kg'], 1, ',', '.') : '—' }}</td>
+                            <td class="text-xs text-base-content/60">{{ $activity['factor_source'] ?? __('Faktor fehlt') }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
             @endif
         </x-card>
 
-        <x-card :title="__('Ziele & Zielpfade')">
-            @if ($targets->isEmpty())
-                <x-empty-state icon="flag" :title="__('Keine Ziele definiert.')" compact />
-            @else
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead><tr><th>{{ __('Ziel') }}</th><th class="text-right">{{ __('Soll (Pfad :year)', ['year' => now()->format('Y')]) }}</th><th class="text-right">{{ __('Ist (Zeitraum)') }}</th></tr></thead>
-                        <tbody>
-                            @foreach ($targets as $row)
-                                <tr @class(['text-error' => $row['actual'] !== null && $row['actual'] > $row['expected']])>
-                                    <td>{{ $row['target']->label }} <span class="text-xs text-base-content/60">({{ $row['target']->baseline_year }} → {{ $row['target']->target_year }})</span></td>
-                                    <td class="text-right tabular-nums">{{ number_format($row['expected'], 1, ',', '.') }} {{ $row['target']->unit }}</td>
-                                    <td class="text-right tabular-nums">{{ $row['actual'] !== null ? number_format($row['actual'], 1, ',', '.') . ' ' . $row['target']->unit : '—' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
+        <x-card padding="p-0" :title="__('Ziele & Zielpfade')" icon="flag">
             @if ($canManage)
-                <form method="POST" action="{{ route('sustainability.targets.store') }}" class="mt-3 grid gap-2 sm:grid-cols-3">
-                    @csrf
-                    <select name="metric" class="select select-sm select-bordered">
-                        <option value="co2e_total">{{ __('CO₂e gesamt') }}</option>
-                        <option value="energy_kwh">{{ __('Energie (kWh)') }}</option>
-                        <option value="waste_kg">{{ __('Abfall (kg)') }}</option>
-                        <option value="repair_quota">{{ __('Reparaturquote') }}</option>
-                        <option value="sustainable_procurement_share">{{ __('Nachhaltige Beschaffung') }}</option>
-                        <option value="custom">{{ __('Eigene Kennzahl') }}</option>
-                    </select>
-                    <input name="label" required maxlength="200" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Bezeichnung') }}">
-                    <input name="baseline_value" type="number" step="0.001" required class="input input-sm input-bordered" placeholder="{{ __('Basiswert') }}">
-                    <input name="baseline_year" type="number" required class="input input-sm input-bordered" value="{{ now()->format('Y') }}">
-                    <input name="unit" required maxlength="20" class="input input-sm input-bordered" placeholder="{{ __('Einheit') }}">
-                    <input name="target_value" type="number" step="0.001" required class="input input-sm input-bordered" placeholder="{{ __('Zielwert') }}">
-                    <input name="target_year" type="number" required class="input input-sm input-bordered" value="{{ (int) now()->format('Y') + 4 }}">
-                    <div><x-icon-btn icon="flag" tone="primary" size="sm" type="submit" show-label>{{ __('Ziel anlegen') }}</x-icon-btn></div>
-                </form>
+                <x-slot:actions>
+                    <x-button size="sm" tone="ghost" icon="add" data-open-dialog="target-create">{{ __('Ziel anlegen') }}</x-button>
+                </x-slot:actions>
+            @endif
+            @if ($targets->isEmpty())
+                <div class="p-4"><x-empty-state icon="flag" :title="__('Keine Ziele definiert.')" compact /></div>
+            @else
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Ziel') }}</th>
+                            <th class="text-right">{{ __('Soll (Pfad :year)', ['year' => now()->format('Y')]) }}</th>
+                            <th class="text-right">{{ __('Ist (Zeitraum)') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($targets as $row)
+                        <tr @class(['text-error' => $row['actual'] !== null && $row['actual'] > $row['expected']])>
+                            <td>{{ $row['target']->label }} <span class="text-xs text-base-content/60">({{ $row['target']->baseline_year }} → {{ $row['target']->target_year }})</span></td>
+                            <td class="text-right tabular-nums">{{ number_format($row['expected'], 1, ',', '.') }} {{ $row['target']->unit }}</td>
+                            <td class="text-right tabular-nums">{{ $row['actual'] !== null ? number_format($row['actual'], 1, ',', '.') . ' ' . $row['target']->unit : '—' }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
             @endif
         </x-card>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-2">
-        <x-card :title="__('Bewertungen (versioniert)')">
+    {{-- Bewertungen, Kriterien, Maßnahmen --}}
+    <div class="grid gap-4 lg:grid-cols-3">
+        <x-card :title="__('Bewertungen (versioniert)')" icon="grade" :count="$assessments->count()">
             @if ($canManage)
-                <form method="POST" action="{{ route('sustainability.assessments.store') }}" class="mb-3 flex flex-wrap items-end gap-2">
-                    @csrf
-                    <input name="subject_label" required maxlength="200" class="input input-sm input-bordered flex-1" placeholder="{{ __('Gerät/Prozess/Dienstleistung/Lieferant …') }}">
-                    <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Bewertung starten') }}</x-icon-btn>
-                </form>
-                <p class="mb-2 text-xs text-base-content/60">{{ $criteria->isEmpty() ? __('Blockiert: erst Kriterien anlegen (unten).') : __(':count aktive Kriterien im Katalog.', ['count' => $criteria->where('active', true)->count()]) }}</p>
+                <x-slot:actions>
+                    <x-button size="sm" tone="ghost" icon="add" data-open-dialog="assessment-create"
+                              :disabled="$criteria->where('active', true)->isEmpty()">{{ __('Bewertung starten') }}</x-button>
+                </x-slot:actions>
+            @endif
+            @if ($canManage && $criteria->where('active', true)->isEmpty())
+                <p class="mb-3 text-xs text-warning">{{ __('Blockiert: erst Kriterien anlegen (rechts).') }}</p>
             @endif
             @if ($assessments->isEmpty())
                 <x-empty-state icon="grade" :title="__('Noch keine Bewertungen.')" compact />
             @else
-                <ul class="space-y-1 text-sm">
+                <ul class="space-y-1.5 text-sm">
                     @foreach ($assessments as $assessment)
                         <li class="flex flex-wrap items-center gap-2">
-                            <a class="link" href="{{ route('sustainability.assessments.show', $assessment) }}">{{ $assessment->subject_label }} (V{{ $assessment->version }})</a>
+                            <a class="link link-hover font-medium" href="{{ route('sustainability.assessments.show', $assessment) }}">{{ $assessment->subject_label }} <span class="text-xs text-base-content/50">V{{ $assessment->version }}</span></a>
                             <x-status-badge size="xs" outline>{{ __("values.{$assessment->status}") }}</x-status-badge>
                             @if ($assessment->rating)
                                 <x-status-badge size="xs" :tone="$assessment->rating === 'green' ? 'success' : ($assessment->rating === 'yellow' ? 'warning' : 'error')">{{ $assessment->total_score }}</x-status-badge>
@@ -160,20 +138,17 @@
                     @endforeach
                 </ul>
             @endif
+        </x-card>
 
+        <x-card :title="__('Kriterienkatalog (E/S/G)')" icon="checklist" :count="$criteria->count()">
             @if ($canManage)
-                <h4 class="mt-4 text-sm font-semibold">{{ __('Kriterienkatalog (E/S/G)') }}</h4>
-                <form method="POST" action="{{ route('sustainability.criteria.store') }}" class="my-1 flex flex-wrap items-end gap-2">
-                    @csrf
-                    <select name="dimension" class="select select-sm select-bordered">
-                        <option value="environment">{{ __('values.environment') }}</option>
-                        <option value="social">{{ __('values.social') }}</option>
-                        <option value="governance">{{ __('values.governance') }}</option>
-                    </select>
-                    <input name="label" required maxlength="200" class="input input-sm input-bordered flex-1" placeholder="{{ __('Kriterium (z. B. Reparierbarkeit)') }}">
-                    <input name="weight" type="number" min="1" max="10" value="1" required class="input input-sm input-bordered w-20" aria-label="{{ __('Gewicht') }}">
-                    <x-icon-btn icon="add" size="sm" type="submit" show-label>{{ __('Anlegen') }}</x-icon-btn>
-                </form>
+                <x-slot:actions>
+                    <x-button size="sm" tone="ghost" icon="add" data-open-dialog="criterion-create">{{ __('Kriterium anlegen') }}</x-button>
+                </x-slot:actions>
+            @endif
+            @if ($criteria->isEmpty())
+                <x-empty-state icon="checklist" :title="__('Noch keine Kriterien.')" compact />
+            @else
                 <div class="flex flex-wrap gap-1 text-xs">
                     @foreach ($criteria as $criterion)
                         <span class="badge badge-outline badge-sm">{{ __("values.{$criterion->dimension}") }}: {{ $criterion->label }} (×{{ $criterion->weight }})</span>
@@ -182,36 +157,20 @@
             @endif
         </x-card>
 
-        <x-card :title="__('Maßnahmenregister')">
+        <x-card :title="__('Maßnahmenregister')" icon="task_alt" :count="$measures->count()">
             @if ($canManage)
-                <form method="POST" action="{{ route('sustainability.measures.store') }}" class="mb-3 grid gap-2 sm:grid-cols-3">
-                    @csrf
-                    <input name="title" required maxlength="300" class="input input-sm input-bordered sm:col-span-3" placeholder="{{ __('Maßnahme (z. B. Umstellung auf LED)') }}">
-                    <input name="expected_impact" maxlength="500" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Erwartete Wirkung') }}">
-                    <select name="effort" class="select select-sm select-bordered">
-                        <option value="low">{{ __('values.low') }}</option>
-                        <option value="medium" selected>{{ __('values.medium') }}</option>
-                        <option value="high">{{ __('values.high') }}</option>
-                    </select>
-                    <input name="cost_estimate" type="number" step="0.01" min="0" class="input input-sm input-bordered" placeholder="{{ __('Kosten €') }}">
-                    <select name="responsible_user_id" class="select select-sm select-bordered">
-                        <option value="">{{ __('Verantwortlich …') }}</option>
-                        @foreach ($users as $user)
-                            <option value="{{ $user->sqid }}">{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                    <input name="due_on" type="date" class="input input-sm input-bordered">
-                    <div><x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erfassen') }}</x-icon-btn></div>
-                </form>
+                <x-slot:actions>
+                    <x-button size="sm" tone="ghost" icon="add" data-open-dialog="measure-create">{{ __('Erfassen') }}</x-button>
+                </x-slot:actions>
             @endif
             @if ($measures->isEmpty())
-                <x-empty-state icon="checklist" :title="__('Keine Maßnahmen.')" compact />
+                <x-empty-state icon="task_alt" :title="__('Keine Maßnahmen.')" compact />
             @else
                 <ul class="space-y-2 text-sm">
                     @foreach ($measures as $measure)
                         <li class="flex flex-wrap items-center gap-2">
                             <x-status-badge size="xs" outline>{{ __("values.{$measure->status}") }}</x-status-badge>
-                            <span>{{ $measure->title }}</span>
+                            <span class="min-w-0 flex-1">{{ $measure->title }}</span>
                             @if ($measure->responsible)<span class="text-xs text-base-content/60">{{ $measure->responsible->name }}</span>@endif
                             @if ($measure->due_on)<span class="text-xs text-base-content/60">{{ $measure->due_on->fdate() }}</span>@endif
                             @if ($measure->effectiveness)
@@ -243,12 +202,23 @@
         </x-card>
     </div>
 
+    {{-- Methodik: Faktoren & VSME-Referenz --}}
     <div class="grid gap-4 lg:grid-cols-2">
-        <x-card :title="__('Faktorenbibliothek (versioniert, Org-Override)')">
-            @foreach ($factorSets as $set)
-                <div class="mb-2">
-                    <span class="font-medium">{{ $set->name }} {{ $set->year }}</span>
-                    <span class="text-xs text-base-content/60">({{ $set->source ?? '—' }}@if ($set->organization_id !== null) · {{ __('Org-Override') }}@endif)</span>
+        <x-card :title="__('Faktorenbibliothek (versioniert, Org-Override)')" icon="functions">
+            @if ($canManage)
+                <x-slot:actions>
+                    <x-button size="sm" tone="ghost" icon="add" data-open-dialog="factor-create">{{ __('Override anlegen') }}</x-button>
+                </x-slot:actions>
+            @endif
+            @forelse ($factorSets as $set)
+                <div class="mb-3 last:mb-0">
+                    <div class="flex flex-wrap items-baseline gap-2">
+                        <span class="font-medium">{{ $set->name }} {{ $set->year }}</span>
+                        <span class="text-xs text-base-content/60">{{ $set->source ?? '—' }}</span>
+                        @if ($set->organization_id !== null)
+                            <span class="badge badge-info badge-xs">{{ __('Org-Override') }}</span>
+                        @endif
+                    </div>
                     <div class="mt-1 flex flex-wrap gap-1 text-xs">
                         @foreach ($set->factors as $factor)
                             <span class="badge badge-outline badge-sm" title="{{ $factor->source_note }} · gültig ab {{ $factor->valid_from->fdate() }}">
@@ -257,44 +227,221 @@
                         @endforeach
                     </div>
                 </div>
-            @endforeach
-            @if ($canManage)
-                <form method="POST" action="{{ route('sustainability.factors.store') }}" class="mt-2 grid gap-2 sm:grid-cols-3">
-                    @csrf
-                    <select name="activity_code" class="select select-sm select-bordered">
+            @empty
+                <x-empty-state icon="functions" :title="__('Keine Faktor-Sets.')" compact />
+            @endforelse
+        </x-card>
+
+        <x-card padding="p-0" :title="__('VSME-Referenzmatrix')" icon="table_view"
+                :subtitle="__('vsme-1.0 · ohne Konformitätszusage')">
+            <x-table bare scroll="none" class="max-h-72 overflow-y-auto">
+                <x-slot:head>
+                    <tr><th>{{ __('Abschnitt') }}</th><th>{{ __('Datenquelle in WorkDiary') }}</th></tr>
+                </x-slot:head>
+                @foreach ($mappings as $mapping)
+                    <tr>
+                        <td class="whitespace-nowrap">{{ $mapping->section_code }} — {{ $mapping->section_label }}</td>
+                        <td class="text-xs text-base-content/70">{{ $mapping->mapping_note }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+            <p class="border-t border-base-300 px-4 py-3 text-xs text-base-content/60">{{ __('esrs-2.0 / iso14001-2026 folgen als weitere Matrixversionen nach den Watchlist-Checks (W4/W6).') }}</p>
+        </x-card>
+    </div>
+
+    {{-- ── Formular-Dialoge (Anlegen/Erfassen) — nur mit Verwaltungsrecht ── --}}
+    @if ($canManage)
+        <x-modal id="activity-create" :embedded="false" size="lg" tone="primary" icon="eco"
+                 :title="__('Aktivität erfassen')" :action="route('sustainability.activities.store')" :submitLabel="__('Erfassen')">
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="block sm:col-span-2">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Aktivität') }}</span>
+                    <select name="activity_code" class="select select-bordered select-sm w-full">
                         @foreach (\App\Models\Sustainability\SustainabilityActivityRecord::ACTIVITY_CODES as $code)
                             <option value="{{ $code }}">{{ __("values.$code") }}</option>
                         @endforeach
                     </select>
-                    <input name="label" required maxlength="200" class="input input-sm input-bordered" placeholder="{{ __('Bezeichnung') }}">
-                    <input name="factor" type="number" step="0.000001" min="0" required class="input input-sm input-bordered" placeholder="kg CO₂e/Einheit">
-                    <input name="unit_code" required maxlength="40" class="input input-sm input-bordered" placeholder="kg_co2e_per_kwh">
-                    <select name="scope" class="select select-sm select-bordered">
-                        <option value="1">Scope 1</option><option value="2">Scope 2</option><option value="3">Scope 3</option>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Menge') }}</span>
+                    <input name="amount" type="number" step="0.001" min="0" required class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Einheit (kWh/l/km/kg/m3)') }}</span>
+                    <input name="unit" required maxlength="20" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Datenqualität') }}</span>
+                    <select name="data_quality" class="select select-bordered select-sm w-full">
+                        <option value="measured">{{ __('values.measured') }}</option>
+                        <option value="calculated">{{ __('values.calculated') }}</option>
+                        <option value="estimated">{{ __('values.estimated') }}</option>
                     </select>
-                    <input name="valid_from" type="date" required class="input input-sm input-bordered" value="{{ now()->toDateString() }}">
-                    <input name="source_note" maxlength="300" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Quelle') }}">
-                    <div><x-icon-btn icon="add" size="sm" type="submit" show-label>{{ __('Override anlegen') }}</x-icon-btn></div>
-                </form>
-            @endif
-        </x-card>
-
-        <x-card :title="__('VSME-Referenzmatrix (vsme-1.0, ohne Konformitätszusage)')">
-            <div class="max-h-72 overflow-y-auto">
-                <table class="table table-sm">
-                    <thead><tr><th>{{ __('Abschnitt') }}</th><th>{{ __('Datenquelle in WorkDiary') }}</th></tr></thead>
-                    <tbody>
-                        @foreach ($mappings as $mapping)
-                            <tr>
-                                <td class="whitespace-nowrap">{{ $mapping->section_code }} — {{ $mapping->section_label }}</td>
-                                <td class="text-xs text-base-content/70">{{ $mapping->mapping_note }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                </label>
+                <div class="sm:col-span-2">
+                    <x-date-range layout="join" from-name="period_start" to-name="period_end" type="date" required
+                                  :label="__('Zeitraum')"
+                                  :from="now()->startOfMonth()->toDateString()" :to="now()->toDateString()" />
+                </div>
+                <label class="block sm:col-span-2">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Quelle (Zähler/Rechnung/Schätzung)') }}</span>
+                    <input name="source_note" maxlength="300" class="input input-bordered input-sm w-full">
+                </label>
             </div>
-            <p class="mt-2 text-xs text-base-content/60">{{ __('esrs-2.0 / iso14001-2026 folgen als weitere Matrixversionen nach den Watchlist-Checks (W4/W6).') }}</p>
-        </x-card>
-    </div>
+        </x-modal>
+
+        <x-modal id="target-create" :embedded="false" size="lg" tone="primary" icon="flag"
+                 :title="__('Ziel anlegen')" :action="route('sustainability.targets.store')" :submitLabel="__('Ziel anlegen')">
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Kennzahl') }}</span>
+                    <select name="metric" class="select select-bordered select-sm w-full">
+                        <option value="co2e_total">{{ __('CO₂e gesamt') }}</option>
+                        <option value="energy_kwh">{{ __('Energie (kWh)') }}</option>
+                        <option value="waste_kg">{{ __('Abfall (kg)') }}</option>
+                        <option value="repair_quota">{{ __('Reparaturquote') }}</option>
+                        <option value="sustainable_procurement_share">{{ __('Nachhaltige Beschaffung') }}</option>
+                        <option value="custom">{{ __('Eigene Kennzahl') }}</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Einheit') }}</span>
+                    <input name="unit" required maxlength="20" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Bezeichnung') }}</span>
+                    <input name="label" required maxlength="200" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Basiswert') }}</span>
+                    <input name="baseline_value" type="number" step="0.001" required class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Basisjahr') }}</span>
+                    <input name="baseline_year" type="number" required value="{{ now()->format('Y') }}" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Zielwert') }}</span>
+                    <input name="target_value" type="number" step="0.001" required class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Zieljahr') }}</span>
+                    <input name="target_year" type="number" required value="{{ (int) now()->format('Y') + 4 }}" class="input input-bordered input-sm w-full">
+                </label>
+            </div>
+        </x-modal>
+
+        <x-modal id="assessment-create" :embedded="false" tone="primary" icon="grade"
+                 :title="__('Bewertung starten')" :action="route('sustainability.assessments.store')" :submitLabel="__('Bewertung starten')">
+            <label class="block">
+                <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Gerät/Prozess/Dienstleistung/Lieferant …') }}</span>
+                <input name="subject_label" required maxlength="200" class="input input-bordered input-sm w-full">
+            </label>
+            <p class="mt-2 text-xs text-base-content/60">{{ __(':count aktive Kriterien im Katalog.', ['count' => $criteria->where('active', true)->count()]) }}</p>
+        </x-modal>
+
+        <x-modal id="criterion-create" :embedded="false" tone="primary" icon="checklist"
+                 :title="__('Kriterium anlegen')" :action="route('sustainability.criteria.store')" :submitLabel="__('Anlegen')">
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Dimension') }}</span>
+                    <select name="dimension" class="select select-bordered select-sm w-full">
+                        <option value="environment">{{ __('values.environment') }}</option>
+                        <option value="social">{{ __('values.social') }}</option>
+                        <option value="governance">{{ __('values.governance') }}</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Gewicht') }}</span>
+                    <input name="weight" type="number" min="1" max="10" value="1" required class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Kriterium (z. B. Reparierbarkeit)') }}</span>
+                    <input name="label" required maxlength="200" class="input input-bordered input-sm w-full">
+                </label>
+            </div>
+        </x-modal>
+
+        <x-modal id="measure-create" :embedded="false" size="lg" tone="primary" icon="task_alt"
+                 :title="__('Maßnahme erfassen')" :action="route('sustainability.measures.store')" :submitLabel="__('Erfassen')">
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="block sm:col-span-2">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Maßnahme (z. B. Umstellung auf LED)') }}</span>
+                    <input name="title" required maxlength="300" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Erwartete Wirkung') }}</span>
+                    <input name="expected_impact" maxlength="500" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Aufwand') }}</span>
+                    <select name="effort" class="select select-bordered select-sm w-full">
+                        <option value="low">{{ __('values.low') }}</option>
+                        <option value="medium" selected>{{ __('values.medium') }}</option>
+                        <option value="high">{{ __('values.high') }}</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Kosten €') }}</span>
+                    <input name="cost_estimate" type="number" step="0.01" min="0" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Verantwortlich …') }}</span>
+                    <select name="responsible_user_id" class="select select-bordered select-sm w-full">
+                        <option value="">{{ __('Verantwortlich …') }}</option>
+                        @foreach ($users as $user)
+                            <option value="{{ $user->sqid }}">{{ $user->name }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Fällig am') }}</span>
+                    <input name="due_on" type="date" class="input input-bordered input-sm w-full">
+                </label>
+            </div>
+        </x-modal>
+
+        <x-modal id="factor-create" :embedded="false" size="lg" tone="primary" icon="functions"
+                 :title="__('Faktor-Override anlegen')" :action="route('sustainability.factors.store')" :submitLabel="__('Override anlegen')">
+            <div class="grid gap-3 sm:grid-cols-2">
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Aktivität') }}</span>
+                    <select name="activity_code" class="select select-bordered select-sm w-full">
+                        @foreach (\App\Models\Sustainability\SustainabilityActivityRecord::ACTIVITY_CODES as $code)
+                            <option value="{{ $code }}">{{ __("values.$code") }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Bezeichnung') }}</span>
+                    <input name="label" required maxlength="200" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Faktor (kg CO₂e/Einheit)') }}</span>
+                    <input name="factor" type="number" step="0.000001" min="0" required class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Einheitencode (z. B. kg_co2e_per_kwh)') }}</span>
+                    <input name="unit_code" required maxlength="40" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Scope') }}</span>
+                    <select name="scope" class="select select-bordered select-sm w-full">
+                        <option value="1">Scope 1</option>
+                        <option value="2">Scope 2</option>
+                        <option value="3">Scope 3</option>
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Gültig ab') }}</span>
+                    <input name="valid_from" type="date" required value="{{ now()->toDateString() }}" class="input input-bordered input-sm w-full">
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Quelle') }}</span>
+                    <input name="source_note" maxlength="300" class="input input-bordered input-sm w-full">
+                </label>
+            </div>
+        </x-modal>
+    @endif
 </x-page-shell>
 @endsection

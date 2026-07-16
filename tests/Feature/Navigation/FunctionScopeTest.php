@@ -127,14 +127,19 @@ class FunctionScopeTest extends TestCase {
         $org = Organization::factory()->enterprise()->create();
         $admin = $this->admin($org);
 
+        // Schalter EIN = sichtbar: die Seite postet die eingeschalteten Schlüssel.
+        // Um „Fuhrpark" auszublenden, senden wir ALLE Schlüssel außer diesem.
+        $page = $this->actingAs($admin)->get(route('me.navigation.customize'))->getContent();
+        preg_match_all('/name="visible\[\]" value="([^"]+)"/', $page, $keyMatches);
+        $fleet = NavigationRegistry::KEY_SECTION . 'fleet';
+        $visible = array_values(array_filter($keyMatches[1], static fn(string $k): bool => $k !== $fleet));
+
         $this->actingAs($admin)
-            ->post(route('me.navigation.customize.save'), [
-                'hidden' => [NavigationRegistry::KEY_SECTION . 'fleet'],
-            ])
+            ->post(route('me.navigation.customize.save'), ['visible' => $visible])
             ->assertRedirect();
 
         $admin->refresh();
-        $this->assertSame([NavigationRegistry::KEY_SECTION . 'fleet'], $admin->getPreference(NavigationRegistry::PREFERENCE_HIDDEN));
+        $this->assertSame([$fleet], $admin->getPreference(NavigationRegistry::PREFERENCE_HIDDEN));
 
         // Sidebar zeigt die Fuhrpark-Sektion nicht mehr, aber die Route bleibt erreichbar.
         $html = $this->actingAs($admin)->get(route('dashboard'))->getContent();
@@ -158,18 +163,23 @@ class FunctionScopeTest extends TestCase {
         $this->actingAs($admin)->get(route('vehicles.index'))->assertOk();
     }
 
-    public function test_unknown_hidden_keys_are_rejected(): void {
+    public function test_unknown_customize_keys_are_ignored(): void {
         $org = Organization::factory()->enterprise()->create();
         $admin = $this->admin($org);
 
+        $page = $this->actingAs($admin)->get(route('me.navigation.customize'))->getContent();
+        preg_match_all('/name="visible\[\]" value="([^"]+)"/', $page, $keyMatches);
+
+        // Alles eingeschaltet + Müll: unbekannte Schlüssel werden verworfen,
+        // nichts wird ausgeblendet, und die Ausblende-Liste bleibt eine saubere
+        // Teilmenge der Whitelist (nie unbekannte Schlüssel).
         $this->actingAs($admin)
             ->post(route('me.navigation.customize.save'), [
-                'hidden' => ['item:this.route.does.not.exist', 'garbage'],
+                'visible' => array_merge($keyMatches[1], ['item:this.route.does.not.exist', 'garbage']),
             ])
             ->assertRedirect();
 
         $admin->refresh();
-        // Nur registrierte Schlüssel überleben die Whitelist.
         $this->assertSame([], $admin->getPreference(NavigationRegistry::PREFERENCE_HIDDEN));
     }
 

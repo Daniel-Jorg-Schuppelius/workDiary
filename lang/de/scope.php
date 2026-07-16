@@ -9,6 +9,38 @@
  */
 
 return [
+    // Arbeitsbereiche — schaltbare Fokus-Ansichten (Feature 082).
+    'focus' => [
+        'admin' => [
+            'title' => 'Arbeitsbereiche',
+            'subtitle' => 'Lege fest, welche Arbeitsbereiche deine Organisation im Umschalter anbietet, benenne sie um und wähle einen Standard.',
+            'hint' => 'Nur ein Vorschlag: der Standard-Arbeitsbereich wird niemandem aufgezwungen — jede Person kann jederzeit wechseln. Ausblenden ändert keine Rechte.',
+            'list_heading' => 'Angebotene Arbeitsbereiche',
+            'configured_at' => 'Zuletzt festgelegt: :date',
+            'mandatory' => 'immer verfügbar',
+            'is_default' => 'Standard',
+            'rename' => 'Anzeigename',
+            'offered' => 'angeboten',
+            'set_default' => 'Standard',
+            'saved' => 'Arbeitsbereiche gespeichert.',
+        ],
+        'switcher' => 'Arbeitsbereich wechseln',
+        'eyebrow' => 'Arbeitsbereich',
+        'all' => 'Alles anzeigen',
+        'active' => 'Aktiv',
+        'reveal' => 'Alle anzeigen',
+        'reveal_off' => 'Nur Fokus zeigen',
+        'dialog' => [
+            'eyebrow' => 'Ansicht fokussieren',
+            'title' => 'Womit arbeitest du gerade?',
+            'subtitle' => 'Wähle einen Arbeitsbereich — die Navigation zeigt dann nur die passenden Bereiche. Nichts wird gelöscht oder gesperrt; du kannst jederzeit wechseln.',
+            'footnote' => 'Ausgeblendete Bereiche bleiben über die globale Suche und „Alle anzeigen“ erreichbar.',
+        ],
+        'flash' => [
+            'unknown' => 'Unbekannter Arbeitsbereich.',
+            'switched' => 'Arbeitsbereich „:name“ aktiv.',
+        ],
+    ],
     'title' => [
         'index' => 'Funktionsumfang',
     ],
@@ -42,18 +74,21 @@ return [
         'no_recommendation' => 'Für diese Organisation liegt keine Branchenprofil-Empfehlung vor.',
     ],
     'customize' => [
-        'subtitle' => 'Blende Menübereiche aus, die du persönlich nicht brauchst. Die Einstellung gilt nur für dich und auf allen Geräten.',
+        'subtitle' => 'Schalte ein, was in deinem Menü erscheinen soll — schalte aus, was du persönlich nicht brauchst. Gilt nur für dich, auf allen Geräten.',
         'cosmetic_hint' => 'Ausblenden ändert keine Berechtigungen: Suche, Lesezeichen und direkte Links funktionieren weiterhin. Über „Alle Funktionen“ holst du alles zurück.',
         'sidebar_heading' => 'Seitennavigation',
         'hide_section' => 'ganzen Bereich ausblenden',
         'hide_group' => 'Untergruppe ausblenden',
         'create_heading' => 'Schnellerstellung („Neu …“)',
         'create_hint' => 'Ausgeblendete Gruppen erscheinen nicht mehr im „Neu …“-Menü der Sidebar.',
-        'checkbox_hint' => 'Angehakt = ausgeblendet.',
+        'checkbox_hint' => 'Eingeschaltet = im Menü sichtbar.',
         'saved' => 'Menüanpassung gespeichert.',
         'unhidden' => 'Eintrag wieder eingeblendet.',
     ],
     'functions' => [
+        'focus_banner' => 'Aktiver Arbeitsbereich „:name“. Ausgeblendete Bereiche sind unten markiert — hier bleiben sie erreichbar.',
+        'in_focus_hidden' => 'Im Arbeitsbereich ausgeblendet',
+        'show_all' => 'Alles anzeigen',
         'subtitle' => 'Übersicht aller Bereiche mit ihrem Zustand — inklusive allem, was ausgeblendet, deaktiviert oder nicht lizenziert ist.',
         'state' => [
             'hidden_section' => 'Bereich ausgeblendet',

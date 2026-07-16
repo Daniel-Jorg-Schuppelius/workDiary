@@ -9,6 +9,38 @@
  */
 
 return [
+    // Aree di lavoro — viste con focus commutabili (Feature 082).
+    'focus' => [
+        'admin' => [
+            'title' => 'Aree di lavoro',
+            'subtitle' => 'Scegli quali aree di lavoro l’organizzazione offre nel selettore, rinominale e imposta una predefinita.',
+            'hint' => 'Solo un suggerimento: l’area predefinita non è mai imposta — chiunque può cambiare in qualsiasi momento. Nascondere non modifica alcun permesso.',
+            'list_heading' => 'Aree offerte',
+            'configured_at' => 'Ultima modifica: :date',
+            'mandatory' => 'sempre disponibile',
+            'is_default' => 'Predefinita',
+            'rename' => 'Nome visualizzato',
+            'offered' => 'offerta',
+            'set_default' => 'Predefinita',
+            'saved' => 'Aree di lavoro salvate.',
+        ],
+        'switcher' => 'Cambia area di lavoro',
+        'eyebrow' => 'Area di lavoro',
+        'all' => 'Mostra tutto',
+        'active' => 'Attiva',
+        'reveal' => 'Mostra tutto',
+        'reveal_off' => 'Mostra solo il focus',
+        'dialog' => [
+            'eyebrow' => 'Focalizza la vista',
+            'title' => 'A cosa stai lavorando?',
+            'subtitle' => 'Scegli un’area di lavoro — la navigazione mostrerà solo gli ambiti pertinenti. Nulla viene eliminato o bloccato; puoi cambiare in qualsiasi momento.',
+            'footnote' => 'Gli ambiti nascosti restano raggiungibili tramite la ricerca globale e «Mostra tutto».',
+        ],
+        'flash' => [
+            'unknown' => 'Area di lavoro sconosciuta.',
+            'switched' => 'Area di lavoro «:name» attiva.',
+        ],
+    ],
     'title' => [
         'index' => 'Ambito funzionale',
     ],
@@ -42,18 +74,21 @@ return [
         'no_recommendation' => 'Per questa organizzazione non esiste una raccomandazione del profilo di settore.',
     ],
     'customize' => [
-        'subtitle' => 'Nascondi le aree di menu che non ti servono. L\'impostazione vale solo per te, su tutti i dispositivi.',
+        'subtitle' => 'Attiva ciò che deve comparire nel menu — disattiva ciò che non ti serve. Vale solo per te, su tutti i dispositivi.',
         'cosmetic_hint' => 'Nascondere non cambia i permessi: ricerca, segnalibri e link diretti continuano a funzionare. Con «Tutte le funzioni» recuperi tutto.',
         'sidebar_heading' => 'Navigazione laterale',
         'hide_section' => 'nascondi l\'intera sezione',
         'hide_group' => 'nascondi sottogruppo',
         'create_heading' => 'Creazione rapida («Nuovo …»)',
         'create_hint' => 'I gruppi nascosti non compaiono più nel menu «Nuovo …» della barra laterale.',
-        'checkbox_hint' => 'Selezionato = nascosto.',
+        'checkbox_hint' => 'Attivo = visibile nel menu.',
         'saved' => 'Personalizzazione del menu salvata.',
         'unhidden' => 'La voce è di nuovo visibile.',
     ],
     'functions' => [
+        'focus_banner' => 'Area di lavoro attiva «:name». Gli ambiti nascosti sono indicati sotto — qui restano raggiungibili.',
+        'in_focus_hidden' => 'Nascosto dall’area di lavoro',
+        'show_all' => 'Mostra tutto',
         'subtitle' => 'Panoramica di tutte le aree con il loro stato, incluso ciò che è nascosto, disattivato o senza licenza.',
         'state' => [
             'hidden_section' => 'Sezione nascosta',

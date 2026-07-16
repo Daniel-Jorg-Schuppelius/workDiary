@@ -283,10 +283,17 @@
                 <div class="header-right">
                     @auth
                         @php
+                            // Arbeitsbereiche (Feature 082, MVP-377): aktiver Fokus des Nutzers,
+                            // aufgelöst über Session → Preference → Org-Default → Config-Default.
+                            // Rein kosmetisch; greift nur im neuen Modus als letzter Filterschritt.
+                            $_focusSvc = app(\App\Services\Navigation\NavFocusService::class);
+                            $navFocusActive = $isLegacyMode ? 'all' : $_focusSvc->resolveActive($_authUser instanceof \App\Models\User ? $_authUser : null, $_activeOrg, session(\App\Services\Navigation\NavFocusService::SESSION_KEY));
+                            $navFocusAvailable = $isLegacyMode ? [] : $_focusSvc->availableFor($_activeOrg);
+
                             // Navigation (Feature 081, MVP-372): alle Menüstrukturen kommen aus
                             // der zentralen NavigationRegistry — stabile Schlüssel, einheitliches
                             // Plan-/Rechte-Gating (NavGate) und Per-User-Ausblendungen (MVP-374).
-                            $_navData = app(\App\Services\Navigation\NavigationRegistry::class)->build($isLegacyMode, $indexRoute);
+                            $_navData = app(\App\Services\Navigation\NavigationRegistry::class)->build($isLegacyMode, $indexRoute, $navFocusActive);
                             $mainNavItems = $_navData['mainNavItems'];
                             $manageNavItems = $_navData['manageNavItems'];
                             $adminNavItems = $_navData['adminNavItems'];
@@ -387,6 +394,7 @@
                                 </svg>
                             </button>
 
+
                             @if (! empty($manageNavItems))
                                 <div class="dropdown dropdown-end">
                                     <label tabindex="0"
@@ -464,7 +472,7 @@
                                         @php
                                             // Gruppierung der System-Einträge in aufklappbare Ordner.
                                             $adminGroups = [
-                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index']],
+                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index']],
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit']],
                                                 ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index']],
@@ -953,6 +961,27 @@
                 {{-- createGroups kommen aus der NavigationRegistry (im Header-Block gesetzt, Feature 081 MVP-372). --}}
 
                 <div class="sidebar-header px-3 py-4">
+                    {{-- Arbeitsbereich-Umschalter (Feature 082): öffnet den Großkachel-Dialog.
+                         Explizite helle Textfarbe (text-base-content löst im .wd-badge-Panel
+                         hell auf) + gefüllte base-200-Fläche — auf dem Anthrazit gut sichtbar.
+                         Eingeklappt: data-sidebar-label blendet aus, nur das Icon bleibt. --}}
+                    @php $_focusMeta = collect($navFocusAvailable)->firstWhere('key', $navFocusActive); @endphp
+                    <button type="button"
+                            class="mb-2 flex w-full items-center gap-2 rounded-field border border-base-content/20 bg-base-200 px-2.5 py-2 text-left text-base-content transition hover:border-primary hover:bg-base-300"
+                            data-open-dialog="focus-dialog"
+                            title="{{ __('scope.focus.switcher') }}"
+                            aria-haspopup="dialog"
+                            aria-label="{{ __('scope.focus.switcher') }}">
+                        <span class="flex size-7 shrink-0 items-center justify-center rounded-field bg-primary/25 text-primary">
+                            <x-icon :name="$_focusMeta['icon'] ?? 'apps'" class="text-[1.1rem]" />
+                        </span>
+                        <span data-sidebar-label class="min-w-0 flex-1 leading-tight">
+                            <span class="block text-[0.6rem] font-medium uppercase tracking-wider text-base-content/60">{{ __('scope.focus.eyebrow') }}</span>
+                            <span class="block truncate text-sm font-semibold text-base-content">{{ $_focusMeta['label'] ?? __('scope.focus.all') }}</span>
+                        </span>
+                        <x-icon name="expand_more" data-sidebar-label class="shrink-0 text-[1.1rem] text-base-content/70" />
+                    </button>
+
                     <div class="dropdown dropdown-bottom dropdown-start w-full">
                         <div tabindex="0" role="button"
                              class="sidebar-cta btn btn-sm btn-primary w-full gap-2"
@@ -1062,9 +1091,14 @@
                 </div>
 
                 <div class="sidebar-footer flex flex-col gap-2 px-3 py-4">
-                    {{-- Menü anpassen (Feature 081, MVP-374): persönliche Ausblendungen. --}}
+                    {{-- Menü anpassen (Feature 081, MVP-374): persönliche Ausblendungen.
+                         Plain `btn` (KEIN btn-ghost): setzt --btn-fg über
+                         var(--color-base-content) — löst in der .wd-badge-Sidebar lokal zu
+                         hell auf (btn-ghost erbt dagegen via currentColor die dunkle
+                         Body-Textfarbe → unsichtbar). Gleiche Größe wie die übrigen
+                         btn-sm-Buttons; base-200-Füllung + Rand machen ihn erkennbar. --}}
                     <a href="{{ route('me.navigation.customize') }}"
-                       class="btn btn-sm btn-ghost w-full justify-center gap-2 {{ request()->routeIs('me.navigation.*') ? 'btn-active' : '' }}"
+                       class="btn btn-sm w-full justify-center gap-2 border border-base-content/20 hover:border-primary {{ request()->routeIs('me.navigation.*') ? 'btn-active' : '' }}"
                        aria-label="{{ __('scope.nav.customize') }}"
                        title="{{ __('scope.nav.customize') }}">
                         <x-icon name="edit" />
@@ -1085,6 +1119,9 @@
              class="fixed inset-x-0 z-30 hidden bg-black/40 backdrop-blur-[1px] lg:hidden"
              style="top: var(--app-header-h); bottom: var(--app-footer-h);"
              data-sidebar-backdrop></div>
+
+        {{-- Arbeitsbereich-Dialog (Feature 082, MVP-378). --}}
+        @include('partials.focus-dialog')
         @endunless
         @endauth
 
