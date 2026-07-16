@@ -159,6 +159,7 @@ return [
         'module.asset_finance' => 'Leasing- und Finanzierungsakten mit Konditionen-Snapshot, Fristenkalender, Nutzungslimits und Soll-Ist-Sicht.',
         'module.asset_compliance' => 'Prüfprofile, Prüfpflichten, Prüfprotokolle, Kalibrierzertifikate und Einsatzsperren für prüfpflichtige Assets.',
         'module.contracts' => 'Allgemeine Vertragsakten beliebiger Art mit Laufzeit-/Verlängerungslogik, Kündigungsfrist, Indexierungsregel und Obligationen-/Vertragskalender.',
+        'module.domain' => 'Domainportfolio mit Kundenzuordnung, Registrierung, Kontakt-/Nameserver-/DNS-Pflege, Verlängerung/Transfer und Buchungsjournal (DomainReselling).',
         'module.agile_projects' => 'Produkt-Backlog, Projektboards (Kanban/Scrum), Sprints und agile Berichte je Projekt.',
         'module.helpdesk' => 'Tickets mit Queues, Konversation, SLA und Omnichannel-Eingang.',
         'module.service_desk' => 'Servicekatalog, Requests mit Genehmigungen, Incident/Problem/Change (setzt Helpdesk voraus).',
