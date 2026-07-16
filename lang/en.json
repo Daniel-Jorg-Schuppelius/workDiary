@@ -8430,5 +8430,18 @@
     "Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.": "Core plus planning, travel & expenses, sales, fleet, documents, forms, knowledge base and team reports.",
     "Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.": "Core plus kanban, planning, sales, documents, forms, knowledge base, chat and team reports.",
     "Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.": "All licensed modules active — the default behaviour without an explicit choice.",
-    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Unknown module \":module\" in the module recommendation — profile rejected."
+    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Unknown module \":module\" in the module recommendation — profile rejected.",
+    "Gerät verbinden": "Connect device",
+    "Gerät widerrufen": "Revoke device",
+    "JSON-Datei": "JSON file",
+    "Lade einen Google-Standortverlauf (JSON-Export vom Handy) hoch. Der Import aktiviert deine Einwilligung.": "Upload a Google location history (JSON export from your phone). Importing activates your consent.",
+    "Leer = voller Zugriff (*).": "Empty = full access (*).",
+    "Nach dem Erzeugen wird einmalig eine Push-URL für OwnTracks/Traccar angezeigt. Das Verbinden aktiviert deine Einwilligung.": "After creation, a push URL for OwnTracks/Traccar is shown once. Connecting activates your consent.",
+    "Neuen API-Token erstellen": "Create new API token",
+    "Neuer Token": "New token",
+    "Noch kein Gerät verbunden": "No device connected yet",
+    "Persönliche Zugriffstoken für den API-Zugang verwalten.": "Manage personal access tokens for API access.",
+    "Standortverlauf": "Location history",
+    "Token": "Token",
+    "Token widerrufen": "Revoke token"
 }

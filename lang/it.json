@@ -8430,5 +8430,18 @@
     "Kern plus Planung, Reisen & Spesen, Vertrieb, Fuhrpark, Dokumente, Formulare, Wissensbasis und Team-Auswertungen.": "Nucleo più pianificazione, viaggi e spese, vendite, parco veicoli, documenti, moduli, base di conoscenza e report di team.",
     "Kern plus Kanban, Planung, Vertrieb, Dokumente, Formulare, Wissensbasis, Chat und Team-Auswertungen.": "Nucleo più kanban, pianificazione, vendite, documenti, moduli, base di conoscenza, chat e report di team.",
     "Alle lizenzierten Module aktiv — das Standardverhalten ohne bewusste Auswahl.": "Tutti i moduli con licenza attivi: il comportamento predefinito senza una scelta esplicita.",
-    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Modulo sconosciuto «:module» nella raccomandazione dei moduli; profilo rifiutato."
+    "Unbekanntes Modul \":module\" in der Modul-Empfehlung — Profil abgelehnt.": "Modulo sconosciuto «:module» nella raccomandazione dei moduli; profilo rifiutato.",
+    "Gerät verbinden": "Collega dispositivo",
+    "Gerät widerrufen": "Revoca dispositivo",
+    "JSON-Datei": "File JSON",
+    "Lade einen Google-Standortverlauf (JSON-Export vom Handy) hoch. Der Import aktiviert deine Einwilligung.": "Carica una cronologia delle posizioni di Google (esportazione JSON dal telefono). L'importazione attiva il tuo consenso.",
+    "Leer = voller Zugriff (*).": "Vuoto = accesso completo (*).",
+    "Nach dem Erzeugen wird einmalig eine Push-URL für OwnTracks/Traccar angezeigt. Das Verbinden aktiviert deine Einwilligung.": "Dopo la creazione viene mostrato una sola volta un URL push per OwnTracks/Traccar. Il collegamento attiva il tuo consenso.",
+    "Neuen API-Token erstellen": "Crea nuovo token API",
+    "Neuer Token": "Nuovo token",
+    "Noch kein Gerät verbunden": "Nessun dispositivo ancora collegato",
+    "Persönliche Zugriffstoken für den API-Zugang verwalten.": "Gestire i token di accesso personali per l'API.",
+    "Standortverlauf": "Cronologia delle posizioni",
+    "Token": "Token",
+    "Token widerrufen": "Revoca token"
 }
