@@ -38,6 +38,16 @@ class LocationDeviceController extends Controller {
         ]);
     }
 
+    /** Modal-Dialog zum Verbinden eines Geräts (Standard: Formulare im Dialog). */
+    public function create(): View {
+        return view('location._device_form_dialog');
+    }
+
+    /** Modal-Dialog für den rückwirkenden Google-Timeline-Import. */
+    public function importGoogleForm(): View {
+        return view('location._google_import_dialog');
+    }
+
     public function consent(Request $request): RedirectResponse {
         $enabled = $request->boolean('enabled');
         $this->authUser()->setPreference(LocationController::OPT_IN_PREFERENCE, $enabled);

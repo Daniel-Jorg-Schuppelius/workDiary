@@ -91,10 +91,12 @@ class ApiTokenTest extends TestCase {
         $this->assertSame(0, $user->tokens()->count());
     }
 
-    public function test_index_shows_ability_checkboxes(): void {
+    public function test_create_dialog_shows_ability_checkboxes(): void {
         $user = User::factory()->user()->create();
 
-        $this->actingAs($user)->get(route('profile.api-tokens.index'))
+        // Anlegen läuft standardkonform über den Modal-Dialog (create), nicht mehr
+        // über ein Inline-Formular auf der Index-Seite.
+        $this->actingAs($user)->get(route('profile.api-tokens.create'))
             ->assertOk()
             ->assertSee('diary:read')
             ->assertSee(__('Aufträge lesen'));

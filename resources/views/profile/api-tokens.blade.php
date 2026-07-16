@@ -13,76 +13,58 @@
 @section('nav-title', __('API-Tokens'))
 
 @section('content')
-<x-page-shell>
+    <x-index-page :subtitle="__('Persönliche Zugriffstoken für den API-Zugang verwalten.')">
+        <x-slot:actions>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('profile.api-tokens.create')"
+                        show-label>{{ __('Neuer Token') }}</x-icon-btn>
+        </x-slot:actions>
 
-    @if (! empty($newToken))
-        <div class="rounded-box border border-success/30 bg-success/10 p-4">
-            <p class="font-semibold">{{ __('Neuer Token erstellt') }} ({{ $newTokenName }})</p>
-            <p class="text-sm">{{ __('Dieser Token wird nur einmalig angezeigt — bitte sicher speichern:') }}</p>
-            <code class="mt-2 block break-all rounded bg-base-200 p-2 text-sm">{{ $newToken }}</code>
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('profile.api-tokens.store') }}" class="card border border-base-300 bg-base-100 p-4">
-        @csrf
-        <div class="form-control">
-            <label class="label" for="name">{{ __('Token-Name') }}</label>
-            <input id="name" name="name" type="text" class="input input-bordered" maxlength="64" required>
-        </div>
-        @error('name')<div class="text-error text-sm">{{ $message }}</div>@enderror
-
-        {{-- Fähigkeiten (Feature 008 → Rang 60): leer = voller Zugriff (`*`). --}}
-        <div class="form-control mt-3">
-            <span class="label-text mb-1">{{ __('Fähigkeiten (leer = voller Zugriff)') }}</span>
-            <div class="grid gap-1 sm:grid-cols-2">
-                @foreach ($abilities as $ability)
-                    <label class="flex items-center gap-2 text-sm">
-                        <input type="checkbox" name="abilities[]" value="{{ $ability->value }}" class="checkbox checkbox-sm">
-                        <span>{{ $ability->label() }} <code class="text-xs opacity-60">{{ $ability->value }}</code></span>
-                    </label>
-                @endforeach
+        @if (! empty($newToken))
+            <div class="rounded-box border border-success/30 bg-success/10 p-4">
+                <p class="font-semibold">{{ __('Neuer Token erstellt') }} ({{ $newTokenName }})</p>
+                <p class="text-sm">{{ __('Dieser Token wird nur einmalig angezeigt — bitte sicher speichern:') }}</p>
+                <code class="mt-2 block break-all rounded bg-base-200 p-2 text-sm">{{ $newToken }}</code>
             </div>
-        </div>
+        @endif
 
-        <div class="card-actions justify-end mt-3">
-            <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erstellen') }}</x-icon-btn>
-        </div>
-    </form>
-
-    <x-table table-sort="client">
-        <x-slot:head>
-            <tr>
-                <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('Fähigkeiten') }}</x-table.th>
-                <x-table.th sort type="date">{{ __('Erstellt') }}</x-table.th>
-                <x-table.th sort type="date">{{ __('Zuletzt benutzt') }}</x-table.th>
-                <th></th>
-            </tr>
-        </x-slot:head>
-
-        @forelse ($tokens as $token)
-            <tr>
-                <td>{{ $token->name }}</td>
-                <td class="text-xs">
-                    @if (in_array('*', (array) $token->abilities, true))
-                        <span class="badge badge-warning badge-sm" title="{{ __('Für eingeschränkten Zugriff neu ausstellen.') }}">{{ __('Voller Zugriff') }}</span>
-                    @else
-                        {{ implode(', ', (array) $token->abilities) }}
-                    @endif
-                </td>
-                <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->fdatetime() }}</td>
-                <td data-sort-value="{{ optional($token->last_used_at)->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
-                <td class="text-right">
-                    <x-action-form :action="route('profile.api-tokens.destroy', \App\Support\Sqid::encode(\Laravel\Sanctum\PersonalAccessToken::class, $token->id))" method="DELETE"
-                          :confirm="__('Token wirklich widerrufen?')"
-                          :confirm-label="__('Widerrufen')">
-                        <x-icon-btn icon="block" tone="error" type="submit" :label="__('Widerrufen')" />
-                    </x-action-form>
-                </td>
-            </tr>
-        @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="5" :title="__('Keine API-Token vorhanden')" compact />
-        @endforelse
-    </x-table>
-</x-page-shell>
+        <x-table :zebra="true" table-sort="client">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Fähigkeiten') }}</x-table.th>
+                    <x-table.th sort type="date">{{ __('Erstellt') }}</x-table.th>
+                    <x-table.th sort type="date">{{ __('Zuletzt benutzt') }}</x-table.th>
+                    <th class="w-32 text-right">{{ __('Aktion') }}</th>
+                </tr>
+            </x-slot:head>
+            <tbody>
+                @forelse ($tokens as $token)
+                    <tr class="hover">
+                        <td class="font-semibold">{{ $token->name }}</td>
+                        <td class="text-xs">
+                            @if (in_array('*', (array) $token->abilities, true))
+                                <span class="badge badge-warning badge-sm" title="{{ __('Für eingeschränkten Zugriff neu ausstellen.') }}">{{ __('Voller Zugriff') }}</span>
+                            @else
+                                {{ implode(', ', (array) $token->abilities) }}
+                            @endif
+                        </td>
+                        <td data-sort-value="{{ optional($token->created_at)->format('Y-m-d H:i:s') }}">{{ optional($token->created_at)->fdatetime() }}</td>
+                        <td data-sort-value="{{ optional($token->last_used_at)->format('Y-m-d H:i:s') }}">{{ $token->last_used_at ? $token->last_used_at->diffForHumans() : '—' }}</td>
+                        <td class="text-right whitespace-nowrap">
+                            <x-action-form :action="route('profile.api-tokens.destroy', \App\Support\Sqid::encode(\Laravel\Sanctum\PersonalAccessToken::class, $token->id))" method="DELETE"
+                                  data-confirm-title="{{ __('Token widerrufen') }}"
+                                  :confirm="__('Token wirklich widerrufen?')"
+                                  :confirm-label="__('Widerrufen')">
+                                <x-icon-btn icon="block" tone="error" type="submit" :label="__('Widerrufen')" />
+                            </x-action-form>
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="5" :title="__('Keine API-Token vorhanden')" compact />
+                @endforelse
+            </tbody>
+        </x-table>
+    </x-index-page>
 @endsection

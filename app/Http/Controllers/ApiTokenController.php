@@ -28,6 +28,12 @@ class ApiTokenController extends Controller {
             'tokens' => $tokens,
             'newToken' => session('newToken'),
             'newTokenName' => session('newTokenName'),
+        ]);
+    }
+
+    /** Modal-Dialog zum Anlegen eines Tokens (Standard: Formulare im Dialog). */
+    public function create(): View {
+        return view('profile.api-tokens._form_dialog', [
             'abilities' => ApiAbility::cases(),
         ]);
     }

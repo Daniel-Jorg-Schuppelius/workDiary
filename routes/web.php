@@ -1011,8 +1011,10 @@ Route::middleware('auth')->group(function () {
         Route::post('location/review/{entry}/confirm', [\App\Http\Controllers\Location\LocationReviewController::class, 'confirm'])->name('location.review.confirm');
         Route::post('location/review/{entry}/dismiss', [\App\Http\Controllers\Location\LocationReviewController::class, 'dismiss'])->name('location.review.dismiss');
         Route::get('location/devices', [\App\Http\Controllers\Location\LocationDeviceController::class, 'index'])->name('location.devices.index');
+        Route::get('location/devices/create', [\App\Http\Controllers\Location\LocationDeviceController::class, 'create'])->name('location.devices.create');
         Route::post('location/devices', [\App\Http\Controllers\Location\LocationDeviceController::class, 'store'])->name('location.devices.store');
         Route::post('location/consent', [\App\Http\Controllers\Location\LocationDeviceController::class, 'consent'])->name('location.devices.consent');
+        Route::get('location/import/google', [\App\Http\Controllers\Location\LocationDeviceController::class, 'importGoogleForm'])->name('location.devices.import-google.form');
         Route::post('location/import/google', [\App\Http\Controllers\Location\LocationDeviceController::class, 'importGoogle'])->name('location.devices.import-google');
         Route::delete('location/devices/{device}', [\App\Http\Controllers\Location\LocationDeviceController::class, 'destroy'])->name('location.devices.destroy');
 
@@ -2803,6 +2805,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('push/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
         Route::get('profile/api-tokens', [ApiTokenController::class, 'index'])->name('profile.api-tokens.index');
+        Route::get('profile/api-tokens/create', [ApiTokenController::class, 'create'])->name('profile.api-tokens.create');
         Route::post('profile/api-tokens', [ApiTokenController::class, 'store'])->name('profile.api-tokens.store');
         Route::delete('profile/api-tokens/{id}', [ApiTokenController::class, 'destroy'])
             ->where('id', '[A-Za-z0-9]+')

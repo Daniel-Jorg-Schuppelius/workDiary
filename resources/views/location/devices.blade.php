@@ -14,6 +14,16 @@
 
 @section('content')
 <x-index-page :subtitle="__('Einwilligung verwalten und Geräte (OwnTracks/Traccar) verbinden.')">
+    <x-slot:actions>
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('location.devices.create')"
+                    show-label>{{ __('Gerät verbinden') }}</x-icon-btn>
+        <x-icon-btn icon="upload" tone="ghost" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('location.devices.import-google.form')"
+                    show-label>{{ __('Google-Timeline importieren') }}</x-icon-btn>
+    </x-slot:actions>
 
     {{-- Einwilligung (Opt-in) --}}
     <x-card class="mb-4">
@@ -42,16 +52,6 @@
         </x-card>
     @endif
 
-    {{-- Neues Gerät --}}
-    <x-card class="mb-4">
-        <x-slot:title>{{ __('Gerät hinzufügen') }}</x-slot:title>
-        <form method="POST" action="{{ route('location.devices.store') }}" class="flex flex-wrap items-end gap-3">
-            @csrf
-            <x-input-field name="label" :label="__('Bezeichnung')" :value="old('label')" maxlength="120" required placeholder="{{ __('z. B. Mein Diensthandy') }}" />
-            <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Token erzeugen') }}</x-icon-btn>
-        </form>
-    </x-card>
-
     {{-- Punktueller Browser-Stempel --}}
     <x-card class="mb-4">
         <x-slot:title>{{ __('Hier einstempeln') }}</x-slot:title>
@@ -64,36 +64,20 @@
         <p class="text-error text-sm mt-2 hidden" data-stamp-error>{{ __('Standort konnte nicht gesendet werden.') }}</p>
     </x-card>
 
-    {{-- Rückwirkender Google-Timeline-Import --}}
-    <x-card class="mb-4">
-        <x-slot:title>{{ __('Google-Timeline importieren') }}</x-slot:title>
-        <p class="text-sm text-base-content/70 mb-3">
-            {{ __('Lade einen Google-Standortverlauf (JSON-Export vom Handy) hoch.') }}
-        </p>
-        <form method="POST" action="{{ route('location.devices.import-google') }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-3">
-            @csrf
-            <input type="file" name="file" accept=".json,application/json" required class="file-input file-input-bordered file-input-sm">
-            <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Importieren') }}</x-icon-btn>
-        </form>
-    </x-card>
-
     {{-- Geräteliste --}}
-    @if ($tokens->isEmpty())
-        <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">smartphone</span>' />
-    @else
-        <x-table>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Gerät') }}</th>
-                    <th>{{ __('Zuletzt benutzt') }}</th>
-                    <th class="text-end">{{ __('Status') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @foreach ($tokens as $device)
-                <tr>
-                    <td>{{ $device->label }}</td>
+    <x-table :zebra="true">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Gerät') }}</th>
+                <th>{{ __('Zuletzt benutzt') }}</th>
+                <th class="text-end">{{ __('Status') }}</th>
+                <th class="w-32 text-right">{{ __('Aktion') }}</th>
+            </tr>
+        </x-slot:head>
+        <tbody>
+            @forelse ($tokens as $device)
+                <tr class="hover">
+                    <td class="font-semibold">{{ $device->label }}</td>
                     <td>{{ $device->last_used_at?->translatedFormat('d.m.Y H:i') ?? '—' }}</td>
                     <td class="text-end">
                         @if ($device->isActive())
@@ -102,18 +86,23 @@
                             <x-status-badge tone="ghost" size="sm">{{ __('widerrufen') }}</x-status-badge>
                         @endif
                     </td>
-                    <td class="text-right">
+                    <td class="text-right whitespace-nowrap">
                         @if ($device->isActive())
                             <x-action-form :action="route('location.devices.destroy', $device)" method="DELETE"
+                                           data-confirm-title="{{ __('Gerät widerrufen') }}"
                                            :confirm="__('Gerät widerrufen?')" :confirm-label="__('Widerrufen')">
                                 <x-icon-btn icon="link_off" tone="error" size="sm" type="submit" :label="__('Widerrufen')" />
                             </x-action-form>
                         @endif
                     </td>
                 </tr>
-            @endforeach
-        </x-table>
-    @endif
+            @empty
+                <x-table.empty :colspan="4"
+                    icon='<span class="material-symbols-outlined" aria-hidden="true">smartphone</span>'
+                    :title="__('Noch kein Gerät verbunden')" compact />
+            @endforelse
+        </tbody>
+    </x-table>
 </x-index-page>
 
 <script @cspNonce>
