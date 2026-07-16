@@ -131,6 +131,7 @@ return [
     ],
 
     'group' => [
+        'domains' => 'Domain management',
         'access' => 'Access & Audit',
         'organization' => 'Organization',
         'members' => 'Members',
@@ -171,6 +172,20 @@ return [
     ],
 
     'permission' => [
+        'domain.provider.view' => 'See DomainReselling connection and health',
+        'domain.provider.manage' => 'Configure/rotate DomainReselling connection',
+        'domain.viewAny' => 'See domain portfolio',
+        'domain.view' => 'See domain detail',
+        'domain.customer.assign' => 'Map domains to customers/resellers',
+        'domain.register' => 'Check and register domains',
+        'domain.contact.manage' => 'Change registry contacts',
+        'domain.dns.manage' => 'Change nameservers and DNS zones',
+        'domain.renewal.manage' => 'Change renewal mode and renewal',
+        'domain.transfer.manage' => 'Manage transfers and transfer lock',
+        'domain.dangerous.approve' => 'Approve high-risk actions (four-eyes)',
+        'domain.accounting.view' => 'See domain accounting and balances',
+        'domain.invoice.view' => 'See domain invoices (capability-gated)',
+        'domain.invoice.download' => 'Download domain invoice documents (capability-gated)',
         'access.manage' => 'Open access management',
         'access.roles.assign' => 'Assign roles',
         'access.groups.assign' => 'Assign groups',

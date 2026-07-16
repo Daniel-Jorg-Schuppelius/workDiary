@@ -57,6 +57,12 @@ return [
         // Produktstamm (Typ-Ebene, MVP-354).
         'products.*' => 'products.overview',
         'supplier-scorecards.*' => 'supplier-scorecards.overview',
+        // Domainverwaltung / DomainReselling (Feature 083, module.domain):
+        // Admin richtet die Provider-Verbindung ein; das Modul verwaltet
+        // Portfolio, DNS, Laufzeiten und Reseller/Subuser (ein Topic).
+        'admin.domain-provider.*' => 'admin.domain-provider',
+        'domains.*' => 'domains.overview',
+        'domain-reseller.*' => 'domains.overview',
         // Offline-Sync (Feature 035, MVP-351): Offline-Änderungs-Seite.
         'offline.*' => 'offline.changes',
         // Geräte-/Maschinenverleih (Feature 073)

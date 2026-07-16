@@ -227,6 +227,9 @@ foreach (walk(ROOT . '/resources/views', ['.blade.php']) as $file) {
             if (preg_match('/[{}@]/', $raw)) { continue; }
             // skip PHP-code-ish fragments that leaked through (arrow ops, scope ops, $vars, function calls).
             if (preg_match('/->|::|\$[a-zA-Z_]|\([^)]*\)\s*$|=>/u', $raw)) { continue; }
+            // skip mehrwortige Markennamen (Eigennamen, wie die Geschwister-Buttons
+            // Dropbox/Microsoft/Nextcloud einzeilig — nie zu übersetzen).
+            if (in_array($raw, ['Google Drive'], true)) { continue; }
             // keyword filter
             $low = mb_strtolower($raw);
             $isGerman = (bool) preg_match('/[äöüÄÖÜß]/u', $raw)

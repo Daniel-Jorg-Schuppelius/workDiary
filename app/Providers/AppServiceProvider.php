@@ -462,6 +462,10 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Sustainability\SustainabilityAssessment::class, \App\Policies\Sustainability\SustainabilityAssessmentPolicy::class);
         // Feature 072: Reklamation/Gewährleistung (getrennte Rollen-Rechte).
         Gate::policy(\App\Models\Claims\ClaimCase::class, \App\Policies\Claims\ClaimCasePolicy::class);
+        // Feature 083: Domainverwaltung / DomainReselling (Verbindung, Portfolio, Reseller).
+        Gate::policy(\App\Models\Domain\DomainProviderConnection::class, \App\Policies\Domain\DomainProviderConnectionPolicy::class);
+        Gate::policy(\App\Models\Domain\DomainProjection::class, \App\Policies\Domain\DomainProjectionPolicy::class);
+        Gate::policy(\App\Models\Domain\DomainResellerAccount::class, \App\Policies\Domain\DomainResellerAccountPolicy::class);
         // Feature 073: Geräte-/Maschinenverleih (Akte + versionierte Preislisten).
         Gate::policy(\App\Models\Rental\RentalCase::class, \App\Policies\Rental\RentalCasePolicy::class);
         Gate::policy(\App\Models\Rental\RentalRateCard::class, \App\Policies\Rental\RentalRateCardPolicy::class);

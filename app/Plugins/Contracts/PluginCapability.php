@@ -44,6 +44,9 @@ enum PluginCapability: string {
     /** Kann verschlüsselte Backup-Generationen in einen eigenen Cloud-Bereich schreiben (Feature 017, Phase 32). */
     case BackupTarget = 'backup_target';
 
+    /** Kann Domains bei einem Registrar-/Reseller-Provider projizieren und kontrolliert verwalten (Feature 083). */
+    case DomainRegistrar = 'domain_registrar';
+
     /**
      * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren muss.
      *
@@ -60,6 +63,7 @@ enum PluginCapability: string {
             self::ShippingProvider => ShippingProvider::class,
             self::DocumentIntake => DocumentIntakeSource::class,
             self::BackupTarget => BackupTarget::class,
+            self::DomainRegistrar => DomainRegistrar::class,
         };
     }
 }

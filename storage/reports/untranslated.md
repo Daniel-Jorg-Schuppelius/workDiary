@@ -1,9 +1,9 @@
 # Untranslated strings report
 
-Generated: 2026-07-13T15:40:29+00:00
+Generated: 2026-07-16T15:06:00+00:00
 
-- Blade hits: 47346
-- JS hits:    944
+- Blade hits: 47432
+- JS hits:    979
 
 ## BLADE
 
@@ -2506,28 +2506,38 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/documents/index.blade.php:119` — `ghost`
 - `resources/views/documents/index.blade.php:131` — `error`
 - `resources/views/documents/index.blade.php:133` — `warning`
-- `resources/views/documents/index.blade.php:140` — `link link-hover font-mono`
-- `resources/views/documents/index.blade.php:144` — `text-right`
-- `resources/views/documents/index.blade.php:145` — `flex justify-end gap-1`
-- `resources/views/documents/index.blade.php:147` — `download`
-- `resources/views/documents/index.blade.php:147` — `outline`
-- `resources/views/documents/index.blade.php:151` — `history`
-- `resources/views/documents/index.blade.php:151` — `outline`
-- `resources/views/documents/index.blade.php:155` — `update`
-- `resources/views/documents/index.blade.php:156` — `edit`
+- `resources/views/documents/index.blade.php:141` — `info`
+- `resources/views/documents/index.blade.php:145` — `link link-hover font-mono`
+- `resources/views/documents/index.blade.php:149` — `text-right`
+- `resources/views/documents/index.blade.php:150` — `flex justify-end gap-1`
+- `resources/views/documents/index.blade.php:152` — `download`
+- `resources/views/documents/index.blade.php:152` — `outline`
+- `resources/views/documents/index.blade.php:156` — `history`
 - `resources/views/documents/index.blade.php:156` — `outline`
-- `resources/views/documents/index.blade.php:162` — `archive`
-- `resources/views/documents/index.blade.php:166` — `archive`
-- `resources/views/documents/index.blade.php:167` — `warning`
-- `resources/views/documents/index.blade.php:169` — `archive`
-- `resources/views/documents/index.blade.php:169` — `warning`
-- `resources/views/documents/index.blade.php:169` — `submit`
-- `resources/views/documents/index.blade.php:174` — `delete`
-- `resources/views/documents/index.blade.php:178` — `delete`
-- `resources/views/documents/index.blade.php:179` — `error`
-- `resources/views/documents/index.blade.php:181` — `delete`
-- `resources/views/documents/index.blade.php:181` — `error`
-- `resources/views/documents/index.blade.php:181` — `submit`
+- `resources/views/documents/index.blade.php:160` — `update`
+- `resources/views/documents/index.blade.php:161` — `edit`
+- `resources/views/documents/index.blade.php:161` — `outline`
+- `resources/views/documents/index.blade.php:166` — `releaseToCustomer`
+- `resources/views/documents/index.blade.php:168` — `documents.customer-revoke`
+- `resources/views/documents/index.blade.php:172` — `warning`
+- `resources/views/documents/index.blade.php:174` — `warning`
+- `resources/views/documents/index.blade.php:174` — `submit`
+- `resources/views/documents/index.blade.php:178` — `documents.customer-release`
+- `resources/views/documents/index.blade.php:179` — `share`
+- `resources/views/documents/index.blade.php:179` — `primary`
+- `resources/views/documents/index.blade.php:179` — `submit`
+- `resources/views/documents/index.blade.php:185` — `archive`
+- `resources/views/documents/index.blade.php:189` — `archive`
+- `resources/views/documents/index.blade.php:190` — `warning`
+- `resources/views/documents/index.blade.php:192` — `archive`
+- `resources/views/documents/index.blade.php:192` — `warning`
+- `resources/views/documents/index.blade.php:192` — `submit`
+- `resources/views/documents/index.blade.php:197` — `delete`
+- `resources/views/documents/index.blade.php:201` — `delete`
+- `resources/views/documents/index.blade.php:202` — `error`
+- `resources/views/documents/index.blade.php:204` — `delete`
+- `resources/views/documents/index.blade.php:204` — `error`
+- `resources/views/documents/index.blade.php:204` — `submit`
 - `resources/views/documents/_form_dialog.blade.php:21` — `primary`
 - `resources/views/documents/_form_dialog.blade.php:24` — `POST'`
 - `resources/views/documents/_form_dialog.blade.php:26` — `data-entry-form`
@@ -2598,9 +2608,24 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/documents/show.blade.php:84` — `download`
 - `resources/views/documents/show.blade.php:84` — `ghost`
 - `resources/views/documents/show.blade.php:86` — `Herunterladen`
-- `resources/views/documents/show.blade.php:95` — `subject`
-- `resources/views/documents/show.blade.php:95` — `externalType`
-- `resources/views/documents/show.blade.php:95` — `document`
+- `resources/views/documents/show.blade.php:95` — `share`
+- `resources/views/documents/show.blade.php:97` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/documents/show.blade.php:98` — `flex flex-col gap-1`
+- `resources/views/documents/show.blade.php:100` — `success`
+- `resources/views/documents/show.blade.php:108` — `ghost`
+- `resources/views/documents/show.blade.php:114` — `releaseToCustomer`
+- `resources/views/documents/show.blade.php:115` — `flex items-center gap-2`
+- `resources/views/documents/show.blade.php:117` — `documents.customer-revoke`
+- `resources/views/documents/show.blade.php:121` — `warning`
+- `resources/views/documents/show.blade.php:123` — `warning`
+- `resources/views/documents/show.blade.php:123` — `submit`
+- `resources/views/documents/show.blade.php:126` — `documents.customer-release`
+- `resources/views/documents/show.blade.php:127` — `share`
+- `resources/views/documents/show.blade.php:127` — `primary`
+- `resources/views/documents/show.blade.php:127` — `submit`
+- `resources/views/documents/show.blade.php:136` — `subject`
+- `resources/views/documents/show.blade.php:136` — `externalType`
+- `resources/views/documents/show.blade.php:136` — `document`
 - `resources/views/archive/index.blade.php:2` — `title`
 - `resources/views/archive/index.blade.php:2` — `Archiv`
 - `resources/views/archive/index.blade.php:2` — `app.name', 'WorkDiary`
@@ -3955,6 +3980,92 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/investments/show.blade.php:340` — `submit`
 - `resources/views/investments/show.blade.php:340` — `Nachbewertung speichern`
 - `resources/views/investments/show.blade.php:344` — `Nachbewertung wird nach Abschluss oder Abbruch möglich.`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:13` — `primary`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:14` — `admin.domain-provider.store`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:19` — `primary`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:20` — `fieldset`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:21` — `fieldset-label`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:21` — `dr-name`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:22` — `dr-name`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:22` — `text`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:22` — `name`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:23` — `name', 'DomainReselling`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:23` — `input input-bordered w-full`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:24` — `name`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:24` — `mt-1 text-sm text-error`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:27` — `fieldset`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:28` — `fieldset-label`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:28` — `dr-env`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:29` — `dr-env`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:29` — `environment`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:29` — `select select-bordered w-full`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:31` — `environment', 'ote`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:37` — `fieldset`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:38` — `fieldset-label`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:38` — `dr-login`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:39` — `dr-login`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:39` — `text`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:39` — `login`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:40` — `login`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:40` — `input input-bordered w-full`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:41` — `login`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:41` — `mt-1 text-sm text-error`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:44` — `fieldset`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:45` — `fieldset-label`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:45` — `dr-pass`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:46` — `dr-pass`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:46` — `password`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:46` — `password`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:46` — `new-password`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:47` — `input input-bordered w-full font-mono`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:49` — `password`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:49` — `mt-1 text-sm text-error`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:52` — `fieldset`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:53` — `fieldset-label`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:53` — `dr-suser`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:54` — `dr-suser`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:54` — `text`
+- `resources/views/admin/domain-provider/_connect_dialog.blade.php:55` — `input input-bordered w-full`
+- `resources/views/admin/domain-provider/index.blade.php:10` — `title`
+- `resources/views/admin/domain-provider/index.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/admin/domain-provider/index.blade.php:11` — `nav-title`
+- `resources/views/admin/domain-provider/index.blade.php:13` — `content`
+- `resources/views/admin/domain-provider/index.blade.php:17` — `primary`
+- `resources/views/admin/domain-provider/index.blade.php:19` — `admin.domain-provider.create`
+- `resources/views/admin/domain-provider/index.blade.php:25` — `success`
+- `resources/views/admin/domain-provider/index.blade.php:26` — `alert`
+- `resources/views/admin/domain-provider/index.blade.php:26` — `alert alert-success`
+- `resources/views/admin/domain-provider/index.blade.php:26` — `success`
+- `resources/views/admin/domain-provider/index.blade.php:28` — `error`
+- `resources/views/admin/domain-provider/index.blade.php:29` — `alert`
+- `resources/views/admin/domain-provider/index.blade.php:29` — `alert alert-error`
+- `resources/views/admin/domain-provider/index.blade.php:29` — `error`
+- `resources/views/admin/domain-provider/index.blade.php:32` — `overflow-x-auto`
+- `resources/views/admin/domain-provider/index.blade.php:33` — `table`
+- `resources/views/admin/domain-provider/index.blade.php:39` — `text-right`
+- `resources/views/admin/domain-provider/index.blade.php:40` — `text-right`
+- `resources/views/admin/domain-provider/index.blade.php:48` — `font-medium`
+- `resources/views/admin/domain-provider/index.blade.php:55` — `badge badge-warning badge-sm`
+- `resources/views/admin/domain-provider/index.blade.php:58` — `badge badge-error badge-sm`
+- `resources/views/admin/domain-provider/index.blade.php:61` — `text-right tabular-nums`
+- `resources/views/admin/domain-provider/index.blade.php:62` — `text-right tabular-nums`
+- `resources/views/admin/domain-provider/index.blade.php:63` — `text-right whitespace-nowrap`
+- `resources/views/admin/domain-provider/index.blade.php:65` — `admin.domain-provider.test`
+- `resources/views/admin/domain-provider/index.blade.php:65` — `inline`
+- `resources/views/admin/domain-provider/index.blade.php:67` — `submit`
+- `resources/views/admin/domain-provider/index.blade.php:69` — `admin.domain-provider.sync`
+- `resources/views/admin/domain-provider/index.blade.php:69` — `inline`
+- `resources/views/admin/domain-provider/index.blade.php:71` — `sync`
+- `resources/views/admin/domain-provider/index.blade.php:71` — `submit`
+- `resources/views/admin/domain-provider/index.blade.php:74` — `admin.domain-provider.pilot`
+- `resources/views/admin/domain-provider/index.blade.php:74` — `inline`
+- `resources/views/admin/domain-provider/index.blade.php:76` — `verified`
+- `resources/views/admin/domain-provider/index.blade.php:76` — `submit`
+- `resources/views/admin/domain-provider/index.blade.php:79` — `admin.domain-provider.destroy`
+- `resources/views/admin/domain-provider/index.blade.php:79` — `inline`
+- `resources/views/admin/domain-provider/index.blade.php:82` — `error`
+- `resources/views/admin/domain-provider/index.blade.php:82` — `submit`
 - `resources/views/admin/wage-type-mappings/index.blade.php:12` — `title`
 - `resources/views/admin/wage-type-mappings/index.blade.php:13` — `nav-title`
 - `resources/views/admin/wage-type-mappings/index.blade.php:14` — `wrapper-height-class', 'wd-page-fill`
@@ -4400,6 +4511,265 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/admin/document-design/index.blade.php:115` — `archive`
 - `resources/views/admin/document-design/index.blade.php:115` — `error`
 - `resources/views/admin/document-design/index.blade.php:115` — `submit`
+- `resources/views/admin/scope/index.blade.php:3` — `title`
+- `resources/views/admin/scope/index.blade.php:3` — `app.name', 'WorkDiary`
+- `resources/views/admin/scope/index.blade.php:4` — `nav-title`
+- `resources/views/admin/scope/index.blade.php:13` — `content`
+- `resources/views/admin/scope/index.blade.php:18` — `ghost`
+- `resources/views/admin/scope/index.blade.php:18` — `Lizenz`
+- `resources/views/admin/scope/index.blade.php:23` — `alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/admin/scope/index.blade.php:24` — `info`
+- `resources/views/admin/scope/index.blade.php:24` — `text-base`
+- `resources/views/admin/scope/index.blade.php:29` — `mt-4`
+- `resources/views/admin/scope/index.blade.php:30` — `mb-1 text-sm font-semibold uppercase tracking-wider opacity-60`
+- `resources/views/admin/scope/index.blade.php:34` — `flex`
+- `resources/views/admin/scope/index.blade.php:36` — `hidden`
+- `resources/views/admin/scope/index.blade.php:36` — `preset`
+- `resources/views/admin/scope/index.blade.php:37` — `submit`
+- `resources/views/admin/scope/index.blade.php:39` — `preset`
+- `resources/views/admin/scope/index.blade.php:39` — `label`
+- `resources/views/admin/scope/index.blade.php:40` — `font-semibold`
+- `resources/views/admin/scope/index.blade.php:40` — `label`
+- `resources/views/admin/scope/index.blade.php:41` — `description`
+- `resources/views/admin/scope/index.blade.php:42` — `mt-2 block text-xs font-medium text-primary`
+- `resources/views/admin/scope/index.blade.php:43` — `modules`
+- `resources/views/admin/scope/index.blade.php:43` — `modules`
+- `resources/views/admin/scope/index.blade.php:43` — `count`
+- `resources/views/admin/scope/index.blade.php:43` — `modules`
+- `resources/views/admin/scope/index.blade.php:53` — `mt-4`
+- `resources/views/admin/scope/index.blade.php:54` — `flex flex-wrap items-center justify-between gap-3`
+- `resources/views/admin/scope/index.blade.php:55` — `min-w-0`
+- `resources/views/admin/scope/index.blade.php:56` — `text-sm font-semibold uppercase tracking-wider opacity-60`
+- `resources/views/admin/scope/index.blade.php:58` — `profile`
+- `resources/views/admin/scope/index.blade.php:58` — `label`
+- `resources/views/admin/scope/index.blade.php:60` — `mt-2 flex flex-wrap gap-1`
+- `resources/views/admin/scope/index.blade.php:61` — `modules`
+- `resources/views/admin/scope/index.blade.php:62` — `badge badge-outline badge-sm`
+- `resources/views/admin/scope/index.blade.php:68` — `hidden`
+- `resources/views/admin/scope/index.blade.php:69` — `submit`
+- `resources/views/admin/scope/index.blade.php:69` — `primary`
+- `resources/views/admin/scope/index.blade.php:69` — `storefront`
+- `resources/views/admin/scope/index.blade.php:76` — `mt-4`
+- `resources/views/admin/scope/index.blade.php:79` — `flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3`
+- `resources/views/admin/scope/index.blade.php:80` — `text-sm font-semibold uppercase tracking-wider opacity-60`
+- `resources/views/admin/scope/index.blade.php:82` — `text-xs opacity-60`
+- `resources/views/admin/scope/index.blade.php:82` — `date`
+- `resources/views/admin/scope/index.blade.php:85` — `divide-y divide-base-300`
+- `resources/views/admin/scope/index.blade.php:87` — `flex items-start gap-3 p-3`
+- `resources/views/admin/scope/index.blade.php:88` — `status`
+- `resources/views/admin/scope/index.blade.php:88` — `opacity-50`
+- `resources/views/admin/scope/index.blade.php:89` — `checkbox`
+- `resources/views/admin/scope/index.blade.php:91` — `code`
+- `resources/views/admin/scope/index.blade.php:92` — `toggle toggle-primary toggle-sm`
+- `resources/views/admin/scope/index.blade.php:93` — `status`
+- `resources/views/admin/scope/index.blade.php:94` — `status`
+- `resources/views/admin/scope/index.blade.php:96` — `min-w-0 flex-1`
+- `resources/views/admin/scope/index.blade.php:97` — `flex flex-wrap items-center gap-2`
+- `resources/views/admin/scope/index.blade.php:98` — `font-semibold`
+- `resources/views/admin/scope/index.blade.php:98` — `label`
+- `resources/views/admin/scope/index.blade.php:99` — `status`
+- `resources/views/admin/scope/index.blade.php:99` — `status`
+- `resources/views/admin/scope/index.blade.php:101` — `description`
+- `resources/views/admin/scope/index.blade.php:102` — `description`
+- `resources/views/admin/scope/index.blade.php:104` — `status`
+- `resources/views/admin/scope/index.blade.php:113` — `mt-4 flex justify-end`
+- `resources/views/admin/scope/index.blade.php:114` — `submit`
+- `resources/views/admin/scope/index.blade.php:114` — `primary`
+- `resources/views/admin/scope/index.blade.php:114` — `save`
+- `resources/views/admin/scope/index.blade.php:114` — `Speichern`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:16` — `cloud`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:17` — `primary`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:18` — `admin.cloud-intake.nextcloud.connect`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:20` — `data-entry-form`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:24` — `hidden`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:24` — `connection`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:27` — `cloud`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:27` — `primary`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:28` — `fieldset`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:29` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:29` — `nc-name`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:30` — `nc-name`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:30` — `text`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:30` — `name`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:31` — `name`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:31` — `Nextcloud`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:32` — `input input-bordered w-full`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:33` — `name`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:33` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:36` — `fieldset`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:37` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:37` — `nc-server`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:38` — `nc-server`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:40` — `input input-bordered w-full font-mono`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:42` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:45` — `fieldset`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:46` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:46` — `nc-user`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:47` — `nc-user`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:47` — `text`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:47` — `username`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:48` — `username`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:49` — `input input-bordered w-full`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:50` — `username`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:50` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:53` — `fieldset`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:54` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:54` — `nc-pass`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:55` — `nc-pass`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:55` — `password`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:55` — `new-password`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:56` — `input input-bordered w-full font-mono`
+- `resources/views/admin/cloud-intake/_nextcloud_connect_dialog.blade.php:58` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/index.blade.php:11` — `title`
+- `resources/views/admin/cloud-intake/index.blade.php:11` — `app.name', 'WorkDiary`
+- `resources/views/admin/cloud-intake/index.blade.php:12` — `nav-title`
+- `resources/views/admin/cloud-intake/index.blade.php:14` — `content`
+- `resources/views/admin/cloud-intake/index.blade.php:18` — `admin.cloud-intake.dropbox.oauth.start`
+- `resources/views/admin/cloud-intake/index.blade.php:18` — `leading-none`
+- `resources/views/admin/cloud-intake/index.blade.php:20` — `primary`
+- `resources/views/admin/cloud-intake/index.blade.php:20` — `submit`
+- `resources/views/admin/cloud-intake/index.blade.php:22` — `admin.cloud-intake.microsoft.oauth.start`
+- `resources/views/admin/cloud-intake/index.blade.php:22` — `leading-none`
+- `resources/views/admin/cloud-intake/index.blade.php:24` — `primary`
+- `resources/views/admin/cloud-intake/index.blade.php:24` — `submit`
+- `resources/views/admin/cloud-intake/index.blade.php:26` — `admin.cloud-intake.google.oauth.start`
+- `resources/views/admin/cloud-intake/index.blade.php:26` — `leading-none`
+- `resources/views/admin/cloud-intake/index.blade.php:28` — `primary`
+- `resources/views/admin/cloud-intake/index.blade.php:28` — `submit`
+- `resources/views/admin/cloud-intake/index.blade.php:31` — `primary`
+- `resources/views/admin/cloud-intake/index.blade.php:33` — `admin.cloud-intake.nextcloud.connect-form`
+- `resources/views/admin/cloud-intake/index.blade.php:38` — `success`
+- `resources/views/admin/cloud-intake/index.blade.php:39` — `alert`
+- `resources/views/admin/cloud-intake/index.blade.php:39` — `alert alert-success`
+- `resources/views/admin/cloud-intake/index.blade.php:39` — `success`
+- `resources/views/admin/cloud-intake/index.blade.php:41` — `error`
+- `resources/views/admin/cloud-intake/index.blade.php:42` — `alert`
+- `resources/views/admin/cloud-intake/index.blade.php:42` — `alert alert-warning`
+- `resources/views/admin/cloud-intake/index.blade.php:42` — `error`
+- `resources/views/admin/cloud-intake/index.blade.php:46` — `material-symbols-outlined`
+- `resources/views/admin/cloud-intake/index.blade.php:46` — `true`
+- `resources/views/admin/cloud-intake/index.blade.php:51` — `card bg-base-100 shadow-sm`
+- `resources/views/admin/cloud-intake/index.blade.php:52` — `card-body gap-3`
+- `resources/views/admin/cloud-intake/index.blade.php:53` — `flex flex-wrap items-center gap-2`
+- `resources/views/admin/cloud-intake/index.blade.php:54` — `card-title text-base`
+- `resources/views/admin/cloud-intake/index.blade.php:57` — `ml-auto flex items-center gap-1.5`
+- `resources/views/admin/cloud-intake/index.blade.php:58` — `admin.cloud-intake.preview`
+- `resources/views/admin/cloud-intake/index.blade.php:58` — `leading-none`
+- `resources/views/admin/cloud-intake/index.blade.php:60` — `preview`
+- `resources/views/admin/cloud-intake/index.blade.php:60` — `ghost`
+- `resources/views/admin/cloud-intake/index.blade.php:60` — `submit`
+- `resources/views/admin/cloud-intake/index.blade.php:63` — `admin.cloud-intake.disconnect`
+- `resources/views/admin/cloud-intake/index.blade.php:67` — `error`
+- `resources/views/admin/cloud-intake/index.blade.php:67` — `submit`
+- `resources/views/admin/cloud-intake/index.blade.php:74` — `alert`
+- `resources/views/admin/cloud-intake/index.blade.php:74` — `alert alert-warning text-sm`
+- `resources/views/admin/cloud-intake/index.blade.php:75` — `warning`
+- `resources/views/admin/cloud-intake/index.blade.php:82` — `admin.cloud-intake.folder`
+- `resources/views/admin/cloud-intake/index.blade.php:82` — `flex flex-wrap items-end gap-2`
+- `resources/views/admin/cloud-intake/index.blade.php:84` — `fieldset`
+- `resources/views/admin/cloud-intake/index.blade.php:85` — `fieldset-label`
+- `resources/views/admin/cloud-intake/index.blade.php:86` — `text`
+- `resources/views/admin/cloud-intake/index.blade.php:88` — `input input-sm input-bordered font-mono w-52`
+- `resources/views/admin/cloud-intake/index.blade.php:90` — `fieldset`
+- `resources/views/admin/cloud-intake/index.blade.php:91` — `fieldset-label`
+- `resources/views/admin/cloud-intake/index.blade.php:92` — `text`
+- `resources/views/admin/cloud-intake/index.blade.php:94` — `input input-sm input-bordered font-mono w-52`
+- `resources/views/admin/cloud-intake/index.blade.php:96` — `fieldset flex-1 min-w-60`
+- `resources/views/admin/cloud-intake/index.blade.php:97` — `fieldset-label`
+- `resources/views/admin/cloud-intake/index.blade.php:98` — `text`
+- `resources/views/admin/cloud-intake/index.blade.php:100` — `input input-sm input-bordered font-mono w-full`
+- `resources/views/admin/cloud-intake/index.blade.php:102` — `save`
+- `resources/views/admin/cloud-intake/index.blade.php:102` — `primary`
+- `resources/views/admin/cloud-intake/index.blade.php:102` — `submit`
+- `resources/views/admin/cloud-intake/index.blade.php:107` — `flex items-center gap-2`
+- `resources/views/admin/cloud-intake/index.blade.php:108` — `font-semibold text-sm`
+- `resources/views/admin/cloud-intake/index.blade.php:110` — `ghost`
+- `resources/views/admin/cloud-intake/index.blade.php:112` — `admin.cloud-intake.routes.create`
+- `resources/views/admin/cloud-intake/index.blade.php:122` — `text-right`
+- `resources/views/admin/cloud-intake/index.blade.php:131` — `text-right tabular-nums`
+- `resources/views/admin/cloud-intake/index.blade.php:132` — `font-mono text-sm`
+- `resources/views/admin/cloud-intake/index.blade.php:135` — `success`
+- `resources/views/admin/cloud-intake/index.blade.php:135` — `ghost'`
+- `resources/views/admin/cloud-intake/index.blade.php:139` — `text-right`
+- `resources/views/admin/cloud-intake/index.blade.php:141` — `edit`
+- `resources/views/admin/cloud-intake/index.blade.php:141` — `ghost`
+- `resources/views/admin/cloud-intake/index.blade.php:143` — `admin.cloud-intake.routes.edit`
+- `resources/views/admin/cloud-intake/index.blade.php:156` — `card bg-base-100 shadow-sm`
+- `resources/views/admin/cloud-intake/index.blade.php:157` — `card-body`
+- `resources/views/admin/cloud-intake/index.blade.php:158` — `card-title text-base`
+- `resources/views/admin/cloud-intake/index.blade.php:177` — `font-mono text-sm`
+- `resources/views/admin/cloud-intake/index.blade.php:178` — `font-mono text-xs`
+- `resources/views/admin/cloud-intake/index.blade.php:181` — `text-sm tabular-nums`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:18` — `primary`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:19` — `admin.cloud-intake.routes.update`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:19` — `admin.cloud-intake.routes.store`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:20` — `POST'`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:21` — `data-entry-form`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:24` — `primary`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:26` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:26` — `cir-pattern`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:27` — `cir-pattern`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:27` — `text`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:29` — `input input-bordered w-full font-mono`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:31` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:34` — `fieldset`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:35` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:35` — `cir-target`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:36` — `cir-target`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:36` — `target`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:36` — `select select-bordered w-full`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:38` — `target`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:38` — `document`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:41` — `target`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:41` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:44` — `fieldset`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:45` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:45` — `cir-doctype`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:46` — `cir-doctype`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:46` — `select select-bordered w-full`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:52` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:55` — `fieldset`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:56` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:56` — `cir-priority`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:57` — `cir-priority`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:57` — `number`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:57` — `priority`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:58` — `priority`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:59` — `input input-bordered w-full tabular-nums`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:60` — `priority`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:60` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:63` — `fieldset`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:64` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:64` — `cir-ext`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:65` — `cir-ext`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:65` — `text`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:67` — `input input-bordered w-full font-mono`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:67` — `pdf, xml`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:69` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:72` — `fieldset`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:73` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:73` — `cir-maxsize`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:74` — `cir-maxsize`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:74` — `number`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:76` — `input input-bordered w-full tabular-nums`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:77` — `mt-1 text-sm text-error`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:80` — `fieldset`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:81` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:82` — `hidden`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:83` — `checkbox`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:83` — `checkbox checkbox-sm`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:90` — `fieldset`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:91` — `fieldset-label`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:92` — `hidden`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:92` — `active`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:93` — `checkbox`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:93` — `active`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:93` — `checkbox checkbox-sm`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:94` — `active`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:102` — `admin.cloud-intake.routes.destroy`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:106` — `delete`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:106` — `error`
+- `resources/views/admin/cloud-intake/_route_dialog.blade.php:106` — `submit`
 - `resources/views/admin/per-diem-rates/index.blade.php:3` — `title`
 - `resources/views/admin/per-diem-rates/index.blade.php:3` — `Verpflegungspauschalen`
 - `resources/views/admin/per-diem-rates/index.blade.php:4` — `nav-title`
@@ -5408,6 +5778,52 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/admin/integration/mappings.blade.php:69` — `Diese Verknüpfung wirklich lösen?`
 - `resources/views/admin/integration/mappings.blade.php:71` — `btn btn-xs btn-ghost text-error`
 - `resources/views/admin/integration/mappings.blade.php:71` — `Lösen`
+- `resources/views/admin/workspaces/index.blade.php:3` — `title`
+- `resources/views/admin/workspaces/index.blade.php:3` — `app.name', 'WorkDiary`
+- `resources/views/admin/workspaces/index.blade.php:4` — `nav-title`
+- `resources/views/admin/workspaces/index.blade.php:12` — `content`
+- `resources/views/admin/workspaces/index.blade.php:17` — `ghost`
+- `resources/views/admin/workspaces/index.blade.php:17` — `tune`
+- `resources/views/admin/workspaces/index.blade.php:22` — `alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/admin/workspaces/index.blade.php:23` — `info`
+- `resources/views/admin/workspaces/index.blade.php:23` — `text-base`
+- `resources/views/admin/workspaces/index.blade.php:27` — `mt-4`
+- `resources/views/admin/workspaces/index.blade.php:30` — `flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3`
+- `resources/views/admin/workspaces/index.blade.php:31` — `text-sm font-semibold uppercase tracking-wider opacity-60`
+- `resources/views/admin/workspaces/index.blade.php:33` — `text-xs opacity-60`
+- `resources/views/admin/workspaces/index.blade.php:33` — `date`
+- `resources/views/admin/workspaces/index.blade.php:36` — `divide-y divide-base-300`
+- `resources/views/admin/workspaces/index.blade.php:40` — `icon`
+- `resources/views/admin/workspaces/index.blade.php:42` — `min-w-0 flex-1`
+- `resources/views/admin/workspaces/index.blade.php:43` — `flex flex-wrap items-center gap-2`
+- `resources/views/admin/workspaces/index.blade.php:44` — `font-semibold`
+- `resources/views/admin/workspaces/index.blade.php:45` — `mandatory`
+- `resources/views/admin/workspaces/index.blade.php:46` — `badge badge-ghost badge-sm`
+- `resources/views/admin/workspaces/index.blade.php:49` — `badge badge-primary badge-sm`
+- `resources/views/admin/workspaces/index.blade.php:52` — `description`
+- `resources/views/admin/workspaces/index.blade.php:53` — `mt-2 flex items-center gap-2`
+- `resources/views/admin/workspaces/index.blade.php:54` — `text-xs opacity-60`
+- `resources/views/admin/workspaces/index.blade.php:55` — `text`
+- `resources/views/admin/workspaces/index.blade.php:60` — `input input-bordered input-sm w-full max-w-xs`
+- `resources/views/admin/workspaces/index.blade.php:64` — `mandatory`
+- `resources/views/admin/workspaces/index.blade.php:64` — `opacity-60`
+- `resources/views/admin/workspaces/index.blade.php:65` — `text-xs`
+- `resources/views/admin/workspaces/index.blade.php:66` — `checkbox`
+- `resources/views/admin/workspaces/index.blade.php:69` — `toggle toggle-primary toggle-sm`
+- `resources/views/admin/workspaces/index.blade.php:70` — `offered`
+- `resources/views/admin/workspaces/index.blade.php:71` — `mandatory`
+- `resources/views/admin/workspaces/index.blade.php:72` — `mandatory`
+- `resources/views/admin/workspaces/index.blade.php:74` — `hidden`
+- `resources/views/admin/workspaces/index.blade.php:77` — `flex cursor-pointer items-center gap-2`
+- `resources/views/admin/workspaces/index.blade.php:78` — `text-xs`
+- `resources/views/admin/workspaces/index.blade.php:79` — `radio`
+- `resources/views/admin/workspaces/index.blade.php:80` — `default`
+- `resources/views/admin/workspaces/index.blade.php:82` — `radio radio-primary radio-sm`
+- `resources/views/admin/workspaces/index.blade.php:91` — `mt-4 flex justify-end`
+- `resources/views/admin/workspaces/index.blade.php:92` — `submit`
+- `resources/views/admin/workspaces/index.blade.php:92` — `primary`
+- `resources/views/admin/workspaces/index.blade.php:92` — `save`
+- `resources/views/admin/workspaces/index.blade.php:92` — `Speichern`
 - `resources/views/admin/components/index.blade.php:16` — `title`
 - `resources/views/admin/components/index.blade.php:16` — `app.name', 'WorkDiary`
 - `resources/views/admin/components/index.blade.php:17` — `nav-title`
@@ -7403,26 +7819,27 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/admin/organizations/_form_body.blade.php:55` — `Plan`
 - `resources/views/admin/organizations/_form_body.blade.php:57` — `plan`
 - `resources/views/admin/organizations/_form_body.blade.php:57` — `free`
-- `resources/views/admin/organizations/_form_body.blade.php:64` — `fieldset`
-- `resources/views/admin/organizations/_form_body.blade.php:65` — `fieldset-label`
-- `resources/views/admin/organizations/_form_body.blade.php:65` — `Aktiv`
-- `resources/views/admin/organizations/_form_body.blade.php:66` — `label cursor-pointer justify-start gap-3`
-- `resources/views/admin/organizations/_form_body.blade.php:67` — `hidden`
-- `resources/views/admin/organizations/_form_body.blade.php:68` — `checkbox`
-- `resources/views/admin/organizations/_form_body.blade.php:68` — `toggle toggle-primary`
-- `resources/views/admin/organizations/_form_body.blade.php:70` — `label-text`
-- `resources/views/admin/organizations/_form_body.blade.php:70` — `Organisation ist aktiv`
-- `resources/views/admin/organizations/_form_body.blade.php:75` — `fieldset`
-- `resources/views/admin/organizations/_form_body.blade.php:76` — `fieldset-label`
-- `resources/views/admin/organizations/_form_body.blade.php:76` — `Sicherheit`
-- `resources/views/admin/organizations/_form_body.blade.php:77` — `label cursor-pointer justify-start gap-3`
-- `resources/views/admin/organizations/_form_body.blade.php:78` — `hidden`
-- `resources/views/admin/organizations/_form_body.blade.php:79` — `checkbox`
-- `resources/views/admin/organizations/_form_body.blade.php:79` — `toggle toggle-primary`
-- `resources/views/admin/organizations/_form_body.blade.php:81` — `label-text`
-- `resources/views/admin/organizations/_form_body.blade.php:81` — `Zwei-Faktor-Authentifizierung für alle Mitglieder verpflichtend`
-- `resources/views/admin/organizations/_form_body.blade.php:87` — `organization`
-- `resources/views/admin/organizations/_form_body.blade.php:88` — `organization`
+- `resources/views/admin/organizations/_form_body.blade.php:70` — `label`
+- `resources/views/admin/organizations/_form_body.blade.php:77` — `fieldset`
+- `resources/views/admin/organizations/_form_body.blade.php:78` — `fieldset-label`
+- `resources/views/admin/organizations/_form_body.blade.php:78` — `Aktiv`
+- `resources/views/admin/organizations/_form_body.blade.php:79` — `label cursor-pointer justify-start gap-3`
+- `resources/views/admin/organizations/_form_body.blade.php:80` — `hidden`
+- `resources/views/admin/organizations/_form_body.blade.php:81` — `checkbox`
+- `resources/views/admin/organizations/_form_body.blade.php:81` — `toggle toggle-primary`
+- `resources/views/admin/organizations/_form_body.blade.php:83` — `label-text`
+- `resources/views/admin/organizations/_form_body.blade.php:83` — `Organisation ist aktiv`
+- `resources/views/admin/organizations/_form_body.blade.php:88` — `fieldset`
+- `resources/views/admin/organizations/_form_body.blade.php:89` — `fieldset-label`
+- `resources/views/admin/organizations/_form_body.blade.php:89` — `Sicherheit`
+- `resources/views/admin/organizations/_form_body.blade.php:90` — `label cursor-pointer justify-start gap-3`
+- `resources/views/admin/organizations/_form_body.blade.php:91` — `hidden`
+- `resources/views/admin/organizations/_form_body.blade.php:92` — `checkbox`
+- `resources/views/admin/organizations/_form_body.blade.php:92` — `toggle toggle-primary`
+- `resources/views/admin/organizations/_form_body.blade.php:94` — `label-text`
+- `resources/views/admin/organizations/_form_body.blade.php:94` — `Zwei-Faktor-Authentifizierung für alle Mitglieder verpflichtend`
+- `resources/views/admin/organizations/_form_body.blade.php:100` — `organization`
+- `resources/views/admin/organizations/_form_body.blade.php:101` — `organization`
 - `resources/views/admin/organizations/_form_dialog.blade.php:6` — `Organisation bearbeiten`
 - `resources/views/admin/organizations/_form_dialog.blade.php:6` — `Organisation anlegen`
 - `resources/views/admin/organizations/_form_dialog.blade.php:8` — `apartment`
@@ -8398,6 +8815,145 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/admin/scheduler/_form_dialog.blade.php:57` — `warning`
 - `resources/views/admin/scheduler/_form_dialog.blade.php:58` — `text-sm`
 - `resources/views/admin/scheduler/_form_dialog.blade.php:58` — `runtime`
+- `resources/views/admin/backup-targets/cleanup.blade.php:11` — `title`
+- `resources/views/admin/backup-targets/cleanup.blade.php:11` — `app.name', 'WorkDiary`
+- `resources/views/admin/backup-targets/cleanup.blade.php:12` — `nav-title`
+- `resources/views/admin/backup-targets/cleanup.blade.php:14` — `content`
+- `resources/views/admin/backup-targets/cleanup.blade.php:17` — `admin.backup-targets.index`
+- `resources/views/admin/backup-targets/cleanup.blade.php:17` — `btn btn-ghost btn-sm`
+- `resources/views/admin/backup-targets/cleanup.blade.php:21` — `alert`
+- `resources/views/admin/backup-targets/cleanup.blade.php:21` — `alert alert-warning`
+- `resources/views/admin/backup-targets/cleanup.blade.php:22` — `warning`
+- `resources/views/admin/backup-targets/cleanup.blade.php:23` — `message`
+- `resources/views/admin/backup-targets/cleanup.blade.php:26` — `material-symbols-outlined`
+- `resources/views/admin/backup-targets/cleanup.blade.php:26` — `true`
+- `resources/views/admin/backup-targets/cleanup.blade.php:29` — `card bg-base-100 shadow-sm`
+- `resources/views/admin/backup-targets/cleanup.blade.php:30` — `card-body gap-3`
+- `resources/views/admin/backup-targets/cleanup.blade.php:31` — `card-title text-base`
+- `resources/views/admin/backup-targets/cleanup.blade.php:32` — `divide-y divide-base-200`
+- `resources/views/admin/backup-targets/cleanup.blade.php:34` — `flex flex-wrap items-center gap-2 py-2 text-sm`
+- `resources/views/admin/backup-targets/cleanup.blade.php:35` — `font-mono`
+- `resources/views/admin/backup-targets/cleanup.blade.php:38` — `badge badge-ghost badge-sm`
+- `resources/views/admin/backup-targets/cleanup.blade.php:40` — `badge badge-warning badge-sm`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:17` — `primary`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:18` — `admin.backup-targets.nextcloud.connect`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:20` — `data-entry-form`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:24` — `hidden`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:24` — `connection`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:27` — `primary`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:28` — `fieldset`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:29` — `fieldset-label`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:29` — `ncb-name`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:30` — `ncb-name`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:30` — `text`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:30` — `name`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:31` — `name`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:31` — `Nextcloud`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:32` — `input input-bordered w-full`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:33` — `name`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:33` — `mt-1 text-sm text-error`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:36` — `fieldset`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:37` — `fieldset-label`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:37` — `ncb-server`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:38` — `ncb-server`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:40` — `input input-bordered w-full font-mono`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:42` — `mt-1 text-sm text-error`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:45` — `fieldset`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:46` — `fieldset-label`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:46` — `ncb-user`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:47` — `ncb-user`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:47` — `text`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:47` — `username`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:48` — `username`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:49` — `input input-bordered w-full`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:50` — `username`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:50` — `mt-1 text-sm text-error`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:53` — `fieldset`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:54` — `fieldset-label`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:54` — `ncb-pass`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:55` — `ncb-pass`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:55` — `password`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:55` — `new-password`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:56` — `input input-bordered w-full font-mono`
+- `resources/views/admin/backup-targets/_nextcloud_connect_dialog.blade.php:58` — `mt-1 text-sm text-error`
+- `resources/views/admin/backup-targets/index.blade.php:11` — `title`
+- `resources/views/admin/backup-targets/index.blade.php:11` — `app.name', 'WorkDiary`
+- `resources/views/admin/backup-targets/index.blade.php:12` — `nav-title`
+- `resources/views/admin/backup-targets/index.blade.php:14` — `content`
+- `resources/views/admin/backup-targets/index.blade.php:17` — `admin.backup-targets.dropbox.oauth.start`
+- `resources/views/admin/backup-targets/index.blade.php:17` — `leading-none`
+- `resources/views/admin/backup-targets/index.blade.php:19` — `primary`
+- `resources/views/admin/backup-targets/index.blade.php:19` — `submit`
+- `resources/views/admin/backup-targets/index.blade.php:21` — `admin.backup-targets.microsoft.oauth.start`
+- `resources/views/admin/backup-targets/index.blade.php:21` — `leading-none`
+- `resources/views/admin/backup-targets/index.blade.php:23` — `primary`
+- `resources/views/admin/backup-targets/index.blade.php:23` — `submit`
+- `resources/views/admin/backup-targets/index.blade.php:25` — `admin.backup-targets.google.oauth.start`
+- `resources/views/admin/backup-targets/index.blade.php:25` — `leading-none`
+- `resources/views/admin/backup-targets/index.blade.php:27` — `primary`
+- `resources/views/admin/backup-targets/index.blade.php:27` — `submit`
+- `resources/views/admin/backup-targets/index.blade.php:30` — `primary`
+- `resources/views/admin/backup-targets/index.blade.php:32` — `admin.backup-targets.nextcloud.connect-form`
+- `resources/views/admin/backup-targets/index.blade.php:36` — `success`
+- `resources/views/admin/backup-targets/index.blade.php:37` — `alert`
+- `resources/views/admin/backup-targets/index.blade.php:37` — `alert alert-success`
+- `resources/views/admin/backup-targets/index.blade.php:37` — `success`
+- `resources/views/admin/backup-targets/index.blade.php:39` — `error`
+- `resources/views/admin/backup-targets/index.blade.php:40` — `alert`
+- `resources/views/admin/backup-targets/index.blade.php:40` — `alert alert-warning`
+- `resources/views/admin/backup-targets/index.blade.php:40` — `error`
+- `resources/views/admin/backup-targets/index.blade.php:44` — `alert`
+- `resources/views/admin/backup-targets/index.blade.php:44` — `alert alert-error`
+- `resources/views/admin/backup-targets/index.blade.php:52` — `alert`
+- `resources/views/admin/backup-targets/index.blade.php:52` — `alert alert-warning`
+- `resources/views/admin/backup-targets/index.blade.php:53` — `warning`
+- `resources/views/admin/backup-targets/index.blade.php:59` — `material-symbols-outlined`
+- `resources/views/admin/backup-targets/index.blade.php:59` — `true`
+- `resources/views/admin/backup-targets/index.blade.php:64` — `card bg-base-100 shadow-sm`
+- `resources/views/admin/backup-targets/index.blade.php:65` — `card-body gap-3`
+- `resources/views/admin/backup-targets/index.blade.php:66` — `flex flex-wrap items-center gap-2`
+- `resources/views/admin/backup-targets/index.blade.php:67` — `card-title text-base`
+- `resources/views/admin/backup-targets/index.blade.php:70` — `ml-auto flex items-center gap-1.5`
+- `resources/views/admin/backup-targets/index.blade.php:73` — `sync`
+- `resources/views/admin/backup-targets/index.blade.php:73` — `ghost`
+- `resources/views/admin/backup-targets/index.blade.php:75` — `admin.backup-targets.nextcloud.connect-form`
+- `resources/views/admin/backup-targets/index.blade.php:75` — `connection`
+- `resources/views/admin/backup-targets/index.blade.php:78` — `admin.backup-targets.`
+- `resources/views/admin/backup-targets/index.blade.php:78` — `microsoft' ? 'microsoft`
+- `resources/views/admin/backup-targets/index.blade.php:78` — `google' ? 'google`
+- `resources/views/admin/backup-targets/index.blade.php:78` — `dropbox`
+- `resources/views/admin/backup-targets/index.blade.php:78` — `connection`
+- `resources/views/admin/backup-targets/index.blade.php:78` — `leading-none`
+- `resources/views/admin/backup-targets/index.blade.php:80` — `sync`
+- `resources/views/admin/backup-targets/index.blade.php:80` — `ghost`
+- `resources/views/admin/backup-targets/index.blade.php:80` — `submit`
+- `resources/views/admin/backup-targets/index.blade.php:83` — `admin.backup-targets.cleanup.preview`
+- `resources/views/admin/backup-targets/index.blade.php:83` — `btn btn-ghost btn-xs`
+- `resources/views/admin/backup-targets/index.blade.php:84` — `admin.backup-targets.disconnect`
+- `resources/views/admin/backup-targets/index.blade.php:88` — `error`
+- `resources/views/admin/backup-targets/index.blade.php:88` — `submit`
+- `resources/views/admin/backup-targets/index.blade.php:94` — `alert`
+- `resources/views/admin/backup-targets/index.blade.php:94` — `alert alert-warning text-sm`
+- `resources/views/admin/backup-targets/index.blade.php:95` — `warning`
+- `resources/views/admin/backup-targets/index.blade.php:101` — `font-medium`
+- `resources/views/admin/backup-targets/index.blade.php:103` — `used`
+- `resources/views/admin/backup-targets/index.blade.php:103` — `total`
+- `resources/views/admin/backup-targets/index.blade.php:115` — `card bg-base-100 shadow-sm`
+- `resources/views/admin/backup-targets/index.blade.php:116` — `card-body gap-3`
+- `resources/views/admin/backup-targets/index.blade.php:117` — `card-title text-base`
+- `resources/views/admin/backup-targets/index.blade.php:122` — `overflow-x-auto`
+- `resources/views/admin/backup-targets/index.blade.php:123` — `table table-sm`
+- `resources/views/admin/backup-targets/index.blade.php:135` — `text-right`
+- `resources/views/admin/backup-targets/index.blade.php:142` — `font-mono text-xs`
+- `resources/views/admin/backup-targets/index.blade.php:157` — `admin.backup-targets.generations.hold`
+- `resources/views/admin/backup-targets/index.blade.php:157` — `leading-none`
+- `resources/views/admin/backup-targets/index.blade.php:159` — `submit`
+- `resources/views/admin/backup-targets/index.blade.php:159` — `text-warning`
+- `resources/views/admin/backup-targets/index.blade.php:164` — `text-right`
+- `resources/views/admin/backup-targets/index.blade.php:165` — `admin.backup-targets.generations.destroy`
+- `resources/views/admin/backup-targets/index.blade.php:169` — `delete`
+- `resources/views/admin/backup-targets/index.blade.php:169` — `error`
+- `resources/views/admin/backup-targets/index.blade.php:169` — `submit`
 - `resources/views/admin/maintenance-windows/index.blade.php:3` — `title`
 - `resources/views/admin/maintenance-windows/index.blade.php:4` — `nav-title`
 - `resources/views/admin/maintenance-windows/index.blade.php:6` — `content`
@@ -11367,71 +11923,125 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/finance/reconciliation/index.blade.php:81` — `text-right`
 - `resources/views/finance/reconciliation/index.blade.php:82` — `visibility`
 - `resources/views/finance/reconciliation/index.blade.php:82` — `ghost`
-- `resources/views/finance/reconciliation/show.blade.php:15` — `title`
-- `resources/views/finance/reconciliation/show.blade.php:16` — `nav-title`
-- `resources/views/finance/reconciliation/show.blade.php:19` — `reconcile`
-- `resources/views/finance/reconciliation/show.blade.php:22` — `content`
-- `resources/views/finance/reconciliation/show.blade.php:25` — `download`
-- `resources/views/finance/reconciliation/show.blade.php:26` — `download`
-- `resources/views/finance/reconciliation/show.blade.php:26` — `ghost`
-- `resources/views/finance/reconciliation/show.blade.php:30` — `ghost`
-- `resources/views/finance/reconciliation/show.blade.php:35` — `mb-4`
-- `resources/views/finance/reconciliation/show.blade.php:56` — `space-y-3`
-- `resources/views/finance/reconciliation/show.blade.php:59` — `flex flex-wrap items-center justify-between gap-2`
-- `resources/views/finance/reconciliation/show.blade.php:61` — `font-medium`
-- `resources/views/finance/reconciliation/show.blade.php:63` — `text-success`
-- `resources/views/finance/reconciliation/show.blade.php:63` — `text-base-content`
-- `resources/views/finance/reconciliation/show.blade.php:74` — `flex items-center gap-2`
-- `resources/views/finance/reconciliation/show.blade.php:77` — `badge badge-error badge-outline badge-sm`
-- `resources/views/finance/reconciliation/show.blade.php:87` — `mt-3 border-t border-base-200 pt-2 space-y-1`
-- `resources/views/finance/reconciliation/show.blade.php:89` — `flex items-center justify-between text-sm`
-- `resources/views/finance/reconciliation/show.blade.php:98` — `error`
-- `resources/views/finance/reconciliation/show.blade.php:98` — `submit`
-- `resources/views/finance/reconciliation/show.blade.php:111` — `mt-3 border-t border-base-200 pt-2`
-- `resources/views/finance/reconciliation/show.blade.php:116` — `space-y-1`
-- `resources/views/finance/reconciliation/show.blade.php:118` — `target`
-- `resources/views/finance/reconciliation/show.blade.php:119` — `flex flex-wrap items-center gap-2 py-1`
-- `resources/views/finance/reconciliation/show.blade.php:120` — `flex items-center gap-2 cursor-pointer`
-- `resources/views/finance/reconciliation/show.blade.php:121` — `checkbox`
-- `resources/views/finance/reconciliation/show.blade.php:121` — `checkbox checkbox-xs`
-- `resources/views/finance/reconciliation/show.blade.php:123` — `text-sm`
-- `resources/views/finance/reconciliation/show.blade.php:124` — `font-medium`
-- `resources/views/finance/reconciliation/show.blade.php:128` — `reasons`
-- `resources/views/finance/reconciliation/show.blade.php:129` — `badge badge-xs badge-ghost`
-- `resources/views/finance/reconciliation/show.blade.php:133` — `hidden`
-- `resources/views/finance/reconciliation/show.blade.php:134` — `invoice`
-- `resources/views/finance/reconciliation/show.blade.php:134` — `expense`
-- `resources/views/finance/reconciliation/show.blade.php:136` — `hidden`
-- `resources/views/finance/reconciliation/show.blade.php:138` — `number`
-- `resources/views/finance/reconciliation/show.blade.php:142` — `input input-bordered input-xs w-28`
-- `resources/views/finance/reconciliation/show.blade.php:147` — `flex justify-end mt-1`
-- `resources/views/finance/reconciliation/show.blade.php:148` — `check`
-- `resources/views/finance/reconciliation/show.blade.php:148` — `success`
-- `resources/views/finance/reconciliation/show.blade.php:148` — `submit`
-- `resources/views/finance/reconciliation/show.blade.php:159` — `mt-3 border-t border-base-200 pt-2`
-- `resources/views/finance/reconciliation/show.blade.php:160` — `text-sm font-medium mb-1`
-- `resources/views/finance/reconciliation/show.blade.php:163` — `space-y-1`
-- `resources/views/finance/reconciliation/show.blade.php:165` — `allocation`
-- `resources/views/finance/reconciliation/show.blade.php:166` — `flex flex-wrap items-center gap-2 text-sm cursor-pointer`
-- `resources/views/finance/reconciliation/show.blade.php:167` — `radio`
-- `resources/views/finance/reconciliation/show.blade.php:167` — `allocation`
-- `resources/views/finance/reconciliation/show.blade.php:168` — `radio radio-xs`
-- `resources/views/finance/reconciliation/show.blade.php:172` — `reasons`
-- `resources/views/finance/reconciliation/show.blade.php:173` — `badge badge-xs badge-ghost`
-- `resources/views/finance/reconciliation/show.blade.php:178` — `flex flex-wrap items-center justify-end gap-2 mt-1`
-- `resources/views/finance/reconciliation/show.blade.php:179` — `text`
-- `resources/views/finance/reconciliation/show.blade.php:179` — `reason`
-- `resources/views/finance/reconciliation/show.blade.php:182` — `input input-bordered input-xs w-48`
-- `resources/views/finance/reconciliation/show.blade.php:183` — `undo`
-- `resources/views/finance/reconciliation/show.blade.php:183` — `error`
-- `resources/views/finance/reconciliation/show.blade.php:183` — `submit`
-- `resources/views/finance/reconciliation/show.blade.php:190` — `flex gap-2 mt-2`
-- `resources/views/finance/reconciliation/show.blade.php:193` — `block`
-- `resources/views/finance/reconciliation/show.blade.php:193` — `ghost`
-- `resources/views/finance/reconciliation/show.blade.php:193` — `submit`
-- `resources/views/finance/reconciliation/show.blade.php:198` — `help`
-- `resources/views/finance/reconciliation/show.blade.php:198` — `ghost`
-- `resources/views/finance/reconciliation/show.blade.php:198` — `submit`
+- `resources/views/finance/reconciliation/show.blade.php:20` — `title`
+- `resources/views/finance/reconciliation/show.blade.php:21` — `nav-title`
+- `resources/views/finance/reconciliation/show.blade.php:24` — `reconcile`
+- `resources/views/finance/reconciliation/show.blade.php:27` — `content`
+- `resources/views/finance/reconciliation/show.blade.php:30` — `download`
+- `resources/views/finance/reconciliation/show.blade.php:31` — `download`
+- `resources/views/finance/reconciliation/show.blade.php:31` — `ghost`
+- `resources/views/finance/reconciliation/show.blade.php:35` — `ghost`
+- `resources/views/finance/reconciliation/show.blade.php:40` — `mb-4`
+- `resources/views/finance/reconciliation/show.blade.php:61` — `space-y-3`
+- `resources/views/finance/reconciliation/show.blade.php:64` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/finance/reconciliation/show.blade.php:66` — `font-medium`
+- `resources/views/finance/reconciliation/show.blade.php:68` — `text-success`
+- `resources/views/finance/reconciliation/show.blade.php:68` — `text-base-content`
+- `resources/views/finance/reconciliation/show.blade.php:79` — `flex items-center gap-2`
+- `resources/views/finance/reconciliation/show.blade.php:82` — `badge badge-error badge-outline badge-sm`
+- `resources/views/finance/reconciliation/show.blade.php:92` — `mt-3 border-t border-base-200 pt-2 space-y-1`
+- `resources/views/finance/reconciliation/show.blade.php:94` — `flex items-center justify-between text-sm`
+- `resources/views/finance/reconciliation/show.blade.php:103` — `error`
+- `resources/views/finance/reconciliation/show.blade.php:103` — `submit`
+- `resources/views/finance/reconciliation/show.blade.php:120` — `mt-3 border-t border-base-200 pt-2`
+- `resources/views/finance/reconciliation/show.blade.php:129` — `suggestion`
+- `resources/views/finance/reconciliation/show.blade.php:129` — `target`
+- `resources/views/finance/reconciliation/show.blade.php:130` — `index`
+- `resources/views/finance/reconciliation/show.blade.php:131` — `picked`
+- `resources/views/finance/reconciliation/show.blade.php:132` — `target`
+- `resources/views/finance/reconciliation/show.blade.php:138` — `text-sm font-medium mb-1`
+- `resources/views/finance/reconciliation/show.blade.php:140` — `badge badge-ghost badge-xs`
+- `resources/views/finance/reconciliation/show.blade.php:145` — `space-y-1`
+- `resources/views/finance/reconciliation/show.blade.php:148` — `index`
+- `resources/views/finance/reconciliation/show.blade.php:149` — `detail`
+- `resources/views/finance/reconciliation/show.blade.php:150` — `amount`
+- `resources/views/finance/reconciliation/show.blade.php:152` — `flex flex-wrap items-center gap-2 py-1`
+- `resources/views/finance/reconciliation/show.blade.php:153` — `flex items-center gap-2 cursor-pointer`
+- `resources/views/finance/reconciliation/show.blade.php:154` — `checkbox`
+- `resources/views/finance/reconciliation/show.blade.php:154` — `checkbox checkbox-xs`
+- `resources/views/finance/reconciliation/show.blade.php:156` — `text-sm`
+- `resources/views/finance/reconciliation/show.blade.php:157` — `text-success`
+- `resources/views/finance/reconciliation/show.blade.php:157` — `text-base-content`
+- `resources/views/finance/reconciliation/show.blade.php:166` — `suggestion`
+- `resources/views/finance/reconciliation/show.blade.php:167` — `suggestion`
+- `resources/views/finance/reconciliation/show.blade.php:167` — `reasons`
+- `resources/views/finance/reconciliation/show.blade.php:168` — `badge badge-xs badge-ghost`
+- `resources/views/finance/reconciliation/show.blade.php:171` — `badge badge-xs badge-warning badge-outline`
+- `resources/views/finance/reconciliation/show.blade.php:175` — `select select-bordered select-xs w-56`
+- `resources/views/finance/reconciliation/show.blade.php:181` — `value`
+- `resources/views/finance/reconciliation/show.blade.php:181` — `label`
+- `resources/views/finance/reconciliation/show.blade.php:184` — `hidden`
+- `resources/views/finance/reconciliation/show.blade.php:187` — `hidden`
+- `resources/views/finance/reconciliation/show.blade.php:190` — `number`
+- `resources/views/finance/reconciliation/show.blade.php:194` — `input input-bordered input-xs w-28`
+- `resources/views/finance/reconciliation/show.blade.php:199` — `flex justify-end mt-1`
+- `resources/views/finance/reconciliation/show.blade.php:200` — `check`
+- `resources/views/finance/reconciliation/show.blade.php:200` — `success`
+- `resources/views/finance/reconciliation/show.blade.php:200` — `submit`
+- `resources/views/finance/reconciliation/show.blade.php:208` — `space-y-1`
+- `resources/views/finance/reconciliation/show.blade.php:210` — `target`
+- `resources/views/finance/reconciliation/show.blade.php:211` — `flex flex-wrap items-center gap-2 py-1`
+- `resources/views/finance/reconciliation/show.blade.php:212` — `flex items-center gap-2 cursor-pointer`
+- `resources/views/finance/reconciliation/show.blade.php:213` — `checkbox`
+- `resources/views/finance/reconciliation/show.blade.php:213` — `checkbox checkbox-xs`
+- `resources/views/finance/reconciliation/show.blade.php:215` — `text-sm`
+- `resources/views/finance/reconciliation/show.blade.php:216` — `font-medium`
+- `resources/views/finance/reconciliation/show.blade.php:220` — `reasons`
+- `resources/views/finance/reconciliation/show.blade.php:221` — `badge badge-xs badge-ghost`
+- `resources/views/finance/reconciliation/show.blade.php:225` — `hidden`
+- `resources/views/finance/reconciliation/show.blade.php:226` — `invoice`
+- `resources/views/finance/reconciliation/show.blade.php:226` — `expense`
+- `resources/views/finance/reconciliation/show.blade.php:228` — `hidden`
+- `resources/views/finance/reconciliation/show.blade.php:230` — `number`
+- `resources/views/finance/reconciliation/show.blade.php:234` — `input input-bordered input-xs w-28`
+- `resources/views/finance/reconciliation/show.blade.php:239` — `flex justify-end mt-1`
+- `resources/views/finance/reconciliation/show.blade.php:240` — `check`
+- `resources/views/finance/reconciliation/show.blade.php:240` — `success`
+- `resources/views/finance/reconciliation/show.blade.php:240` — `submit`
+- `resources/views/finance/reconciliation/show.blade.php:252` — `mt-3 border-t border-base-200 pt-2`
+- `resources/views/finance/reconciliation/show.blade.php:253` — `text-sm font-medium mb-1`
+- `resources/views/finance/reconciliation/show.blade.php:257` — `amount`
+- `resources/views/finance/reconciliation/show.blade.php:259` — `mb-2`
+- `resources/views/finance/reconciliation/show.blade.php:270` — `badge badge-error badge-outline badge-xs`
+- `resources/views/finance/reconciliation/show.blade.php:273` — `space-y-1`
+- `resources/views/finance/reconciliation/show.blade.php:275` — `allocation`
+- `resources/views/finance/reconciliation/show.blade.php:276` — `flex flex-wrap items-center gap-2 text-sm cursor-pointer`
+- `resources/views/finance/reconciliation/show.blade.php:277` — `radio`
+- `resources/views/finance/reconciliation/show.blade.php:277` — `allocation`
+- `resources/views/finance/reconciliation/show.blade.php:278` — `radio radio-xs`
+- `resources/views/finance/reconciliation/show.blade.php:282` — `reasons`
+- `resources/views/finance/reconciliation/show.blade.php:283` — `badge badge-xs badge-ghost`
+- `resources/views/finance/reconciliation/show.blade.php:288` — `flex flex-wrap items-center justify-end gap-2 mt-1`
+- `resources/views/finance/reconciliation/show.blade.php:289` — `text`
+- `resources/views/finance/reconciliation/show.blade.php:289` — `reason`
+- `resources/views/finance/reconciliation/show.blade.php:292` — `input input-bordered input-xs w-48`
+- `resources/views/finance/reconciliation/show.blade.php:293` — `undo`
+- `resources/views/finance/reconciliation/show.blade.php:293` — `error`
+- `resources/views/finance/reconciliation/show.blade.php:293` — `submit`
+- `resources/views/finance/reconciliation/show.blade.php:304` — `mt-3 border-t border-base-200 pt-2`
+- `resources/views/finance/reconciliation/show.blade.php:305` — `text-sm font-medium mb-1`
+- `resources/views/finance/reconciliation/show.blade.php:308` — `space-y-1`
+- `resources/views/finance/reconciliation/show.blade.php:310` — `allocation`
+- `resources/views/finance/reconciliation/show.blade.php:311` — `flex flex-wrap items-center gap-2 text-sm cursor-pointer`
+- `resources/views/finance/reconciliation/show.blade.php:312` — `radio`
+- `resources/views/finance/reconciliation/show.blade.php:312` — `allocation`
+- `resources/views/finance/reconciliation/show.blade.php:313` — `radio radio-xs`
+- `resources/views/finance/reconciliation/show.blade.php:317` — `reasons`
+- `resources/views/finance/reconciliation/show.blade.php:318` — `badge badge-xs badge-ghost`
+- `resources/views/finance/reconciliation/show.blade.php:323` — `flex flex-wrap items-center justify-end gap-2 mt-1`
+- `resources/views/finance/reconciliation/show.blade.php:324` — `text`
+- `resources/views/finance/reconciliation/show.blade.php:324` — `reason`
+- `resources/views/finance/reconciliation/show.blade.php:327` — `input input-bordered input-xs w-48`
+- `resources/views/finance/reconciliation/show.blade.php:328` — `undo`
+- `resources/views/finance/reconciliation/show.blade.php:328` — `error`
+- `resources/views/finance/reconciliation/show.blade.php:328` — `submit`
+- `resources/views/finance/reconciliation/show.blade.php:335` — `flex gap-2 mt-2`
+- `resources/views/finance/reconciliation/show.blade.php:338` — `block`
+- `resources/views/finance/reconciliation/show.blade.php:338` — `ghost`
+- `resources/views/finance/reconciliation/show.blade.php:338` — `submit`
+- `resources/views/finance/reconciliation/show.blade.php:343` — `help`
+- `resources/views/finance/reconciliation/show.blade.php:343` — `ghost`
+- `resources/views/finance/reconciliation/show.blade.php:343` — `submit`
 - `resources/views/finance/datev/config.blade.php:14` — `title`
 - `resources/views/finance/datev/config.blade.php:15` — `nav-title`
 - `resources/views/finance/datev/config.blade.php:17` — `content`
@@ -13583,6 +14193,29 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/teams/show.blade.php:93` — `material-symbols-outlined`
 - `resources/views/teams/show.blade.php:93` — `true`
 - `resources/views/teams/show.blade.php:94` — `Noch keine Mitglieder.`
+- `resources/views/offline/changes.blade.php:3` — `title`
+- `resources/views/offline/changes.blade.php:3` — `app.name', 'WorkDiary`
+- `resources/views/offline/changes.blade.php:4` — `nav-title`
+- `resources/views/offline/changes.blade.php:6` — `content`
+- `resources/views/offline/changes.blade.php:11` — `note`
+- `resources/views/offline/changes.blade.php:23` — `space-y-6`
+- `resources/views/offline/changes.blade.php:25` — `outbox`
+- `resources/views/offline/changes.blade.php:25` — `space-y-2`
+- `resources/views/offline/changes.blade.php:26` — `text-base font-semibold`
+- `resources/views/offline/changes.blade.php:27` — `space-y-2`
+- `resources/views/offline/changes.blade.php:29` — `rejected`
+- `resources/views/offline/changes.blade.php:29` — `space-y-2`
+- `resources/views/offline/changes.blade.php:30` — `text-base font-semibold`
+- `resources/views/offline/changes.blade.php:31` — `space-y-2`
+- `resources/views/offline/changes.blade.php:36` — `flex flex-wrap items-center gap-3 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs`
+- `resources/views/offline/changes.blade.php:37` — `min-w-0 flex-1`
+- `resources/views/offline/changes.blade.php:38` — `font-medium`
+- `resources/views/offline/changes.blade.php:40` — `text-sm text-error`
+- `resources/views/offline/changes.blade.php:42` — `flex items-center gap-1.5`
+- `resources/views/offline/changes.blade.php:43` — `button`
+- `resources/views/offline/changes.blade.php:43` — `btn btn-xs btn-primary`
+- `resources/views/offline/changes.blade.php:44` — `button`
+- `resources/views/offline/changes.blade.php:44` — `btn btn-xs btn-ghost text-error`
 - `resources/views/calendar/index.blade.php:11` — `title`
 - `resources/views/calendar/index.blade.php:11` — `Kalender`
 - `resources/views/calendar/index.blade.php:12` — `nav-title`
@@ -14281,2360 +14914,716 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/layouts/app.blade.php:4` — `utf-8`
 - `resources/views/layouts/app.blade.php:5` — `viewport`
 - `resources/views/layouts/app.blade.php:6` — `csrf-token`
-- `resources/views/layouts/app.blade.php:7` — `geocode-url`
-- `resources/views/layouts/app.blade.php:34` — `file`
+- `resources/views/layouts/app.blade.php:7` — `sync-endpoint`
+- `resources/views/layouts/app.blade.php:8` — `geocode-url`
 - `resources/views/layouts/app.blade.php:35` — `file`
-- `resources/views/layouts/app.blade.php:41` — `preload`
-- `resources/views/layouts/app.blade.php:41` — `font`
-- `resources/views/layouts/app.blade.php:54` — `corporate`
-- `resources/views/layouts/app.blade.php:55` — `IBM Plex Sans`
-- `resources/views/layouts/app.blade.php:55` — `Segoe UI`
-- `resources/views/layouts/app.blade.php:101` — `auto`
-- `resources/views/layouts/app.blade.php:107` — `auto`
-- `resources/views/layouts/app.blade.php:110` — `auto`
-- `resources/views/layouts/app.blade.php:112` — `workDiaryTheme`
-- `resources/views/layouts/app.blade.php:114` — `auto`
-- `resources/views/layouts/app.blade.php:117` — `auto`
-- `resources/views/layouts/app.blade.php:118` — `corporate`
-- `resources/views/layouts/app.blade.php:121` — `dark`
-- `resources/views/layouts/app.blade.php:121` — `business' ? 'dark`
-- `resources/views/layouts/app.blade.php:121` — `light`
-- `resources/views/layouts/app.blade.php:122` — `data-theme`
-- `resources/views/layouts/app.blade.php:127` — `fonts-loaded`
-- `resources/views/layouts/app.blade.php:132` — `fonts-loaded`
-- `resources/views/layouts/app.blade.php:136` — `title`
-- `resources/views/layouts/app.blade.php:136` — `app.name', 'WorkDiary`
-- `resources/views/layouts/app.blade.php:139` — `icon`
+- `resources/views/layouts/app.blade.php:36` — `file`
+- `resources/views/layouts/app.blade.php:42` — `preload`
+- `resources/views/layouts/app.blade.php:42` — `font`
+- `resources/views/layouts/app.blade.php:55` — `corporate`
+- `resources/views/layouts/app.blade.php:56` — `IBM Plex Sans`
+- `resources/views/layouts/app.blade.php:56` — `Segoe UI`
+- `resources/views/layouts/app.blade.php:102` — `auto`
+- `resources/views/layouts/app.blade.php:108` — `auto`
+- `resources/views/layouts/app.blade.php:111` — `auto`
+- `resources/views/layouts/app.blade.php:113` — `workDiaryTheme`
+- `resources/views/layouts/app.blade.php:115` — `auto`
+- `resources/views/layouts/app.blade.php:118` — `auto`
+- `resources/views/layouts/app.blade.php:119` — `corporate`
+- `resources/views/layouts/app.blade.php:122` — `dark`
+- `resources/views/layouts/app.blade.php:122` — `business' ? 'dark`
+- `resources/views/layouts/app.blade.php:122` — `light`
+- `resources/views/layouts/app.blade.php:123` — `data-theme`
+- `resources/views/layouts/app.blade.php:128` — `fonts-loaded`
+- `resources/views/layouts/app.blade.php:133` — `fonts-loaded`
+- `resources/views/layouts/app.blade.php:137` — `title`
+- `resources/views/layouts/app.blade.php:137` — `app.name', 'WorkDiary`
 - `resources/views/layouts/app.blade.php:140` — `icon`
 - `resources/views/layouts/app.blade.php:141` — `icon`
-- `resources/views/layouts/app.blade.php:142` — `apple-touch-icon`
-- `resources/views/layouts/app.blade.php:145` — `manifest`
-- `resources/views/layouts/app.blade.php:146` — `theme-color`
+- `resources/views/layouts/app.blade.php:142` — `icon`
+- `resources/views/layouts/app.blade.php:143` — `apple-touch-icon`
+- `resources/views/layouts/app.blade.php:146` — `manifest`
 - `resources/views/layouts/app.blade.php:147` — `theme-color`
-- `resources/views/layouts/app.blade.php:148` — `mobile-web-app-capable`
-- `resources/views/layouts/app.blade.php:149` — `apple-mobile-web-app-capable`
-- `resources/views/layouts/app.blade.php:150` — `apple-mobile-web-app-status-bar-style`
-- `resources/views/layouts/app.blade.php:150` — `black-translucent`
-- `resources/views/layouts/app.blade.php:151` — `apple-mobile-web-app-title`
-- `resources/views/layouts/app.blade.php:151` — `workDiary`
-- `resources/views/layouts/app.blade.php:152` — `application-name`
+- `resources/views/layouts/app.blade.php:148` — `theme-color`
+- `resources/views/layouts/app.blade.php:149` — `mobile-web-app-capable`
+- `resources/views/layouts/app.blade.php:150` — `apple-mobile-web-app-capable`
+- `resources/views/layouts/app.blade.php:151` — `apple-mobile-web-app-status-bar-style`
+- `resources/views/layouts/app.blade.php:151` — `black-translucent`
+- `resources/views/layouts/app.blade.php:152` — `apple-mobile-web-app-title`
 - `resources/views/layouts/app.blade.php:152` — `workDiary`
-- `resources/views/layouts/app.blade.php:160` — `date`
-- `resources/views/layouts/app.blade.php:160` — `time`
-- `resources/views/layouts/app.blade.php:168` — `IBM Plex Sans`
-- `resources/views/layouts/app.blade.php:192` — `legacy`
-- `resources/views/layouts/app.blade.php:192` — `legacy`
-- `resources/views/layouts/app.blade.php:192` — `legacy`
-- `resources/views/layouts/app.blade.php:206` — `legacy' ? 'bg-base-200`
-- `resources/views/layouts/app.blade.php:206` — `bg-linear-to-b from-base-200 to-base-300`
-- `resources/views/layouts/app.blade.php:209` — `main-content`
-- `resources/views/layouts/app.blade.php:213` — `Zum Inhalt springen`
-- `resources/views/layouts/app.blade.php:216` — `legacy`
-- `resources/views/layouts/app.blade.php:218` — `legacy`
-- `resources/views/layouts/app.blade.php:218` — `legacy`
-- `resources/views/layouts/app.blade.php:219` — `legacy' ? 'legacy.diary.index`
-- `resources/views/layouts/app.blade.php:220` — `legacy' ? 'legacy.diary.create`
-- `resources/views/layouts/app.blade.php:221` — `home`
-- `resources/views/layouts/app.blade.php:222` — `legacy`
-- `resources/views/layouts/app.blade.php:244` — `name`
-- `resources/views/layouts/app.blade.php:244` — `id', 'name`
-- `resources/views/layouts/app.blade.php:246` — `currentOrganization`
-- `resources/views/layouts/app.blade.php:246` — `currentOrganization`
-- `resources/views/layouts/app.blade.php:251` — `app-header`
-- `resources/views/layouts/app.blade.php:251` — `sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs`
-- `resources/views/layouts/app.blade.php:253` — `nav-center`
-- `resources/views/layouts/app.blade.php:258` — `header-left flex items-center`
-- `resources/views/layouts/app.blade.php:259` — `home`
-- `resources/views/layouts/app.blade.php:259` — `flex items-center gap-2 group min-w-0`
-- `resources/views/layouts/app.blade.php:262` — `WorkDiary`
-- `resources/views/layouts/app.blade.php:265` — `h-9 w-auto max-w-40 object-contain shrink-0`
-- `resources/views/layouts/app.blade.php:270` — `nav-title`
-- `resources/views/layouts/app.blade.php:270` — `Auftragsbuch`
-- `resources/views/layouts/app.blade.php:274` — `header-center`
-- `resources/views/layouts/app.blade.php:275` — `nav-center`
+- `resources/views/layouts/app.blade.php:153` — `application-name`
+- `resources/views/layouts/app.blade.php:153` — `workDiary`
+- `resources/views/layouts/app.blade.php:161` — `date`
+- `resources/views/layouts/app.blade.php:161` — `time`
+- `resources/views/layouts/app.blade.php:169` — `IBM Plex Sans`
+- `resources/views/layouts/app.blade.php:193` — `legacy`
+- `resources/views/layouts/app.blade.php:193` — `legacy`
+- `resources/views/layouts/app.blade.php:193` — `legacy`
+- `resources/views/layouts/app.blade.php:207` — `legacy' ? 'bg-base-200`
+- `resources/views/layouts/app.blade.php:207` — `bg-linear-to-b from-base-200 to-base-300`
+- `resources/views/layouts/app.blade.php:210` — `main-content`
+- `resources/views/layouts/app.blade.php:214` — `Zum Inhalt springen`
+- `resources/views/layouts/app.blade.php:217` — `legacy`
+- `resources/views/layouts/app.blade.php:219` — `legacy`
+- `resources/views/layouts/app.blade.php:219` — `legacy`
+- `resources/views/layouts/app.blade.php:220` — `legacy' ? 'legacy.diary.index`
+- `resources/views/layouts/app.blade.php:221` — `legacy' ? 'legacy.diary.create`
+- `resources/views/layouts/app.blade.php:222` — `home`
+- `resources/views/layouts/app.blade.php:223` — `legacy`
+- `resources/views/layouts/app.blade.php:245` — `name`
+- `resources/views/layouts/app.blade.php:245` — `id', 'name`
+- `resources/views/layouts/app.blade.php:247` — `currentOrganization`
+- `resources/views/layouts/app.blade.php:247` — `currentOrganization`
+- `resources/views/layouts/app.blade.php:252` — `app-header`
+- `resources/views/layouts/app.blade.php:252` — `sticky top-0 z-50 bg-base-100 border-b border-base-300 shadow-xs`
+- `resources/views/layouts/app.blade.php:254` — `nav-center`
+- `resources/views/layouts/app.blade.php:259` — `header-left flex items-center`
+- `resources/views/layouts/app.blade.php:260` — `home`
+- `resources/views/layouts/app.blade.php:260` — `flex items-center gap-2 group min-w-0`
+- `resources/views/layouts/app.blade.php:263` — `WorkDiary`
+- `resources/views/layouts/app.blade.php:266` — `h-9 w-auto max-w-40 object-contain shrink-0`
+- `resources/views/layouts/app.blade.php:271` — `nav-title`
+- `resources/views/layouts/app.blade.php:271` — `Auftragsbuch`
+- `resources/views/layouts/app.blade.php:275` — `header-center`
 - `resources/views/layouts/app.blade.php:276` — `nav-center`
-- `resources/views/layouts/app.blade.php:278` — `center`
-- `resources/views/layouts/app.blade.php:282` — `header-right`
-- `resources/views/layouts/app.blade.php:288` — `route`
-- `resources/views/layouts/app.blade.php:288` — `legacy.diary.week',           'label`
-- `resources/views/layouts/app.blade.php:288` — `Wochenansicht`
-- `resources/views/layouts/app.blade.php:288` — `icon`
-- `resources/views/layouts/app.blade.php:288` — `modal`
-- `resources/views/layouts/app.blade.php:288` — `matches`
-- `resources/views/layouts/app.blade.php:289` — `route`
-- `resources/views/layouts/app.blade.php:289` — `label`
-- `resources/views/layouts/app.blade.php:289` — `Arbeitsliste`
-- `resources/views/layouts/app.blade.php:289` — `icon`
-- `resources/views/layouts/app.blade.php:289` — `modal`
-- `resources/views/layouts/app.blade.php:289` — `matches`
-- `resources/views/layouts/app.blade.php:290` — `route`
-- `resources/views/layouts/app.blade.php:290` — `legacy.callcenter.notdienst', 'label`
-- `resources/views/layouts/app.blade.php:290` — `Zentrale`
-- `resources/views/layouts/app.blade.php:290` — `icon`
-- `resources/views/layouts/app.blade.php:290` — `modal`
-- `resources/views/layouts/app.blade.php:290` — `matches`
-- `resources/views/layouts/app.blade.php:293` — `route`
-- `resources/views/layouts/app.blade.php:293` — `label`
-- `resources/views/layouts/app.blade.php:293` — `Arbeitsliste`
-- `resources/views/layouts/app.blade.php:293` — `icon`
-- `resources/views/layouts/app.blade.php:293` — `modal`
-- `resources/views/layouts/app.blade.php:293` — `matches`
-- `resources/views/layouts/app.blade.php:294` — `route`
-- `resources/views/layouts/app.blade.php:294` — `week.index',               'label`
-- `resources/views/layouts/app.blade.php:294` — `Wochenansicht`
-- `resources/views/layouts/app.blade.php:294` — `icon`
-- `resources/views/layouts/app.blade.php:294` — `modal`
-- `resources/views/layouts/app.blade.php:294` — `matches`
-- `resources/views/layouts/app.blade.php:295` — `route`
-- `resources/views/layouts/app.blade.php:295` — `kanban.index',             'label`
-- `resources/views/layouts/app.blade.php:295` — `Kanban`
-- `resources/views/layouts/app.blade.php:295` — `icon`
-- `resources/views/layouts/app.blade.php:295` — `modal`
-- `resources/views/layouts/app.blade.php:295` — `matches`
-- `resources/views/layouts/app.blade.php:296` — `route`
-- `resources/views/layouts/app.blade.php:296` — `chat.index',               'label`
-- `resources/views/layouts/app.blade.php:296` — `Chat`
-- `resources/views/layouts/app.blade.php:296` — `icon`
-- `resources/views/layouts/app.blade.php:296` — `forum',            'modal`
-- `resources/views/layouts/app.blade.php:296` — `matches`
-- `resources/views/layouts/app.blade.php:297` — `route`
-- `resources/views/layouts/app.blade.php:297` — `duty-plans.index',         'label`
-- `resources/views/layouts/app.blade.php:297` — `Dienstpläne`
-- `resources/views/layouts/app.blade.php:297` — `icon`
-- `resources/views/layouts/app.blade.php:297` — `modal`
-- `resources/views/layouts/app.blade.php:297` — `matches`
-- `resources/views/layouts/app.blade.php:298` — `route`
-- `resources/views/layouts/app.blade.php:298` — `schedule.index',           'label`
-- `resources/views/layouts/app.blade.php:298` — `Schichtplan`
-- `resources/views/layouts/app.blade.php:298` — `icon`
-- `resources/views/layouts/app.blade.php:298` — `schedule',         'modal`
-- `resources/views/layouts/app.blade.php:298` — `matches`
-- `resources/views/layouts/app.blade.php:299` — `route`
-- `resources/views/layouts/app.blade.php:299` — `timesheets.index',         'label`
-- `resources/views/layouts/app.blade.php:299` — `Stundenzettel`
-- `resources/views/layouts/app.blade.php:299` — `icon`
-- `resources/views/layouts/app.blade.php:299` — `description',      'modal`
-- `resources/views/layouts/app.blade.php:299` — `matches`
-- `resources/views/layouts/app.blade.php:300` — `route`
-- `resources/views/layouts/app.blade.php:300` — `customers.index',          'label`
-- `resources/views/layouts/app.blade.php:300` — `Kunden`
-- `resources/views/layouts/app.blade.php:300` — `icon`
-- `resources/views/layouts/app.blade.php:300` — `badge',            'modal`
-- `resources/views/layouts/app.blade.php:300` — `matches`
-- `resources/views/layouts/app.blade.php:301` — `route`
-- `resources/views/layouts/app.blade.php:301` — `customer-queries.index',   'label`
-- `resources/views/layouts/app.blade.php:301` — `customer-query.title`
-- `resources/views/layouts/app.blade.php:301` — `icon`
-- `resources/views/layouts/app.blade.php:301` — `modal`
-- `resources/views/layouts/app.blade.php:301` — `matches`
-- `resources/views/layouts/app.blade.php:302` — `route`
-- `resources/views/layouts/app.blade.php:302` — `suppliers.index',          'label`
-- `resources/views/layouts/app.blade.php:302` — `Lieferanten`
-- `resources/views/layouts/app.blade.php:302` — `icon`
-- `resources/views/layouts/app.blade.php:302` — `modal`
-- `resources/views/layouts/app.blade.php:302` — `matches`
-- `resources/views/layouts/app.blade.php:303` — `route`
-- `resources/views/layouts/app.blade.php:303` — `articles.index',           'label`
-- `resources/views/layouts/app.blade.php:303` — `icon`
-- `resources/views/layouts/app.blade.php:303` — `modal`
-- `resources/views/layouts/app.blade.php:303` — `matches`
-- `resources/views/layouts/app.blade.php:304` — `route`
-- `resources/views/layouts/app.blade.php:304` — `warehouses.index',         'label`
-- `resources/views/layouts/app.blade.php:304` — `icon`
-- `resources/views/layouts/app.blade.php:304` — `warehouse',        'modal`
-- `resources/views/layouts/app.blade.php:304` — `matches`
-- `resources/views/layouts/app.blade.php:305` — `route`
-- `resources/views/layouts/app.blade.php:305` — `manufacturing-orders.index','label`
-- `resources/views/layouts/app.blade.php:305` — `icon`
-- `resources/views/layouts/app.blade.php:305` — `modal`
-- `resources/views/layouts/app.blade.php:305` — `matches`
+- `resources/views/layouts/app.blade.php:277` — `nav-center`
+- `resources/views/layouts/app.blade.php:279` — `center`
+- `resources/views/layouts/app.blade.php:283` — `header-right`
+- `resources/views/layouts/app.blade.php:297` — `mainNavItems`
+- `resources/views/layouts/app.blade.php:298` — `manageNavItems`
+- `resources/views/layouts/app.blade.php:299` — `adminNavItems`
+- `resources/views/layouts/app.blade.php:300` — `userNavItems`
+- `resources/views/layouts/app.blade.php:301` — `sidebarSections`
+- `resources/views/layouts/app.blade.php:302` — `createGroups`
+- `resources/views/layouts/app.blade.php:303` — `pluginPanelItems`
+- `resources/views/layouts/app.blade.php:304` — `pluginPanelRoutes`
 - `resources/views/layouts/app.blade.php:306` — `route`
-- `resources/views/layouts/app.blade.php:306` — `serials.index',            'label`
-- `resources/views/layouts/app.blade.php:306` — `icon`
-- `resources/views/layouts/app.blade.php:306` — `tag', 'modal`
-- `resources/views/layouts/app.blade.php:306` — `matches`
 - `resources/views/layouts/app.blade.php:307` — `route`
-- `resources/views/layouts/app.blade.php:307` — `purchase-orders.index',    'label`
-- `resources/views/layouts/app.blade.php:307` — `icon`
-- `resources/views/layouts/app.blade.php:307` — `modal`
-- `resources/views/layouts/app.blade.php:307` — `matches`
 - `resources/views/layouts/app.blade.php:308` — `route`
-- `resources/views/layouts/app.blade.php:308` — `supplier-catalogs.index',  'label`
-- `resources/views/layouts/app.blade.php:308` — `icon`
-- `resources/views/layouts/app.blade.php:308` — `modal`
-- `resources/views/layouts/app.blade.php:308` — `matches`
-- `resources/views/layouts/app.blade.php:309` — `route`
-- `resources/views/layouts/app.blade.php:309` — `pricing-margin-rules.index','label`
-- `resources/views/layouts/app.blade.php:309` — `icon`
-- `resources/views/layouts/app.blade.php:309` — `percent', 'modal`
-- `resources/views/layouts/app.blade.php:309` — `matches`
-- `resources/views/layouts/app.blade.php:310` — `route`
-- `resources/views/layouts/app.blade.php:310` — `bill-of-quantities.index', 'label`
-- `resources/views/layouts/app.blade.php:310` — `icon`
-- `resources/views/layouts/app.blade.php:310` — `modal`
-- `resources/views/layouts/app.blade.php:310` — `matches`
-- `resources/views/layouts/app.blade.php:311` — `route`
-- `resources/views/layouts/app.blade.php:311` — `inventory.scan',           'label`
-- `resources/views/layouts/app.blade.php:311` — `icon`
-- `resources/views/layouts/app.blade.php:311` — `modal`
-- `resources/views/layouts/app.blade.php:311` — `matches`
-- `resources/views/layouts/app.blade.php:312` — `route`
-- `resources/views/layouts/app.blade.php:312` — `work-centers.index',       'label`
-- `resources/views/layouts/app.blade.php:312` — `icon`
-- `resources/views/layouts/app.blade.php:312` — `modal`
-- `resources/views/layouts/app.blade.php:312` — `matches`
-- `resources/views/layouts/app.blade.php:313` — `route`
-- `resources/views/layouts/app.blade.php:313` — `inventory.lots',           'label`
-- `resources/views/layouts/app.blade.php:313` — `icon`
-- `resources/views/layouts/app.blade.php:313` — `modal`
-- `resources/views/layouts/app.blade.php:313` — `matches`
-- `resources/views/layouts/app.blade.php:314` — `route`
-- `resources/views/layouts/app.blade.php:314` — `inventory.label-templates.index', 'label`
-- `resources/views/layouts/app.blade.php:314` — `icon`
-- `resources/views/layouts/app.blade.php:314` — `label', 'modal`
-- `resources/views/layouts/app.blade.php:314` — `matches`
-- `resources/views/layouts/app.blade.php:315` — `route`
-- `resources/views/layouts/app.blade.php:315` — `projects.index',           'label`
-- `resources/views/layouts/app.blade.php:315` — `Projekte`
-- `resources/views/layouts/app.blade.php:315` — `icon`
-- `resources/views/layouts/app.blade.php:315` — `modal`
+- `resources/views/layouts/app.blade.php:313` — `Hauptnavigation`
 - `resources/views/layouts/app.blade.php:315` — `matches`
 - `resources/views/layouts/app.blade.php:316` — `route`
-- `resources/views/layouts/app.blade.php:316` — `invoices.index',           'label`
-- `resources/views/layouts/app.blade.php:316` — `icon`
-- `resources/views/layouts/app.blade.php:316` — `modal`
-- `resources/views/layouts/app.blade.php:316` — `matches`
-- `resources/views/layouts/app.blade.php:317` — `route`
-- `resources/views/layouts/app.blade.php:317` — `finance.transfers.index',  'label`
-- `resources/views/layouts/app.blade.php:317` — `icon`
-- `resources/views/layouts/app.blade.php:317` — `outbox',           'modal`
-- `resources/views/layouts/app.blade.php:317` — `matches`
-- `resources/views/layouts/app.blade.php:318` — `route`
-- `resources/views/layouts/app.blade.php:318` — `finance.reconciliation.index', 'label`
-- `resources/views/layouts/app.blade.php:318` — `icon`
-- `resources/views/layouts/app.blade.php:318` — `modal`
-- `resources/views/layouts/app.blade.php:318` — `matches`
-- `resources/views/layouts/app.blade.php:319` — `route`
-- `resources/views/layouts/app.blade.php:319` — `lexoffice.articles.index', 'label`
-- `resources/views/layouts/app.blade.php:319` — `icon`
-- `resources/views/layouts/app.blade.php:319` — `modal`
-- `resources/views/layouts/app.blade.php:319` — `matches`
-- `resources/views/layouts/app.blade.php:320` — `route`
-- `resources/views/layouts/app.blade.php:320` — `events.index',             'label`
-- `resources/views/layouts/app.blade.php:320` — `Veranstaltungen`
-- `resources/views/layouts/app.blade.php:320` — `icon`
-- `resources/views/layouts/app.blade.php:320` — `event',            'modal`
-- `resources/views/layouts/app.blade.php:320` — `matches`
-- `resources/views/layouts/app.blade.php:321` — `route`
-- `resources/views/layouts/app.blade.php:321` — `flex.index',               'label`
-- `resources/views/layouts/app.blade.php:321` — `Arbeitszeitkonto`
-- `resources/views/layouts/app.blade.php:321` — `icon`
-- `resources/views/layouts/app.blade.php:321` — `modal`
-- `resources/views/layouts/app.blade.php:321` — `matches`
-- `resources/views/layouts/app.blade.php:322` — `route`
-- `resources/views/layouts/app.blade.php:322` — `archive.index',            'label`
-- `resources/views/layouts/app.blade.php:322` — `Archiv`
-- `resources/views/layouts/app.blade.php:322` — `icon`
-- `resources/views/layouts/app.blade.php:322` — `modal`
-- `resources/views/layouts/app.blade.php:322` — `matches`
-- `resources/views/layouts/app.blade.php:336` — `route`
-- `resources/views/layouts/app.blade.php:336` — `legacy.users.index', 'label`
-- `resources/views/layouts/app.blade.php:336` — `Mitarbeiter`
-- `resources/views/layouts/app.blade.php:336` — `icon`
-- `resources/views/layouts/app.blade.php:336` — `group', 'modal`
-- `resources/views/layouts/app.blade.php:339` — `route`
-- `resources/views/layouts/app.blade.php:339` — `holidays.index',     'label`
-- `resources/views/layouts/app.blade.php:339` — `Feiertage`
-- `resources/views/layouts/app.blade.php:339` — `icon`
-- `resources/views/layouts/app.blade.php:339` — `celebration',     'modal`
-- `resources/views/layouts/app.blade.php:340` — `route`
-- `resources/views/layouts/app.blade.php:340` — `qualifications.index',         'label`
-- `resources/views/layouts/app.blade.php:340` — `Qualifikationen`
-- `resources/views/layouts/app.blade.php:340` — `icon`
-- `resources/views/layouts/app.blade.php:340` — `modal`
-- `resources/views/layouts/app.blade.php:341` — `route`
-- `resources/views/layouts/app.blade.php:341` — `event-categories.index',        'label`
-- `resources/views/layouts/app.blade.php:341` — `Veranstaltungs-Kategorien`
-- `resources/views/layouts/app.blade.php:341` — `icon`
-- `resources/views/layouts/app.blade.php:341` — `category', 'modal`
+- `resources/views/layouts/app.blade.php:317` — `modal`
+- `resources/views/layouts/app.blade.php:318` — `btn-primary`
+- `resources/views/layouts/app.blade.php:318` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:319` — `label`
+- `resources/views/layouts/app.blade.php:325` — `btn btn-sm btn-ghost`
+- `resources/views/layouts/app.blade.php:325` — `Navigation`
+- `resources/views/layouts/app.blade.php:328` — `matches`
+- `resources/views/layouts/app.blade.php:330` — `route`
+- `resources/views/layouts/app.blade.php:331` — `modal`
+- `resources/views/layouts/app.blade.php:332` — `active`
+- `resources/views/layouts/app.blade.php:333` — `label`
 - `resources/views/layouts/app.blade.php:342` — `route`
-- `resources/views/layouts/app.blade.php:342` — `shift-types.index',             'label`
-- `resources/views/layouts/app.blade.php:342` — `Schichttypen`
-- `resources/views/layouts/app.blade.php:342` — `icon`
-- `resources/views/layouts/app.blade.php:342` — `modal`
-- `resources/views/layouts/app.blade.php:343` — `route`
-- `resources/views/layouts/app.blade.php:343` — `materials.index',               'label`
-- `resources/views/layouts/app.blade.php:343` — `Materialien`
 - `resources/views/layouts/app.blade.php:343` — `icon`
-- `resources/views/layouts/app.blade.php:343` — `inventory',        'modal`
-- `resources/views/layouts/app.blade.php:344` — `route`
-- `resources/views/layouts/app.blade.php:344` — `tags.index',                    'label`
-- `resources/views/layouts/app.blade.php:344` — `Tags`
-- `resources/views/layouts/app.blade.php:344` — `icon`
-- `resources/views/layouts/app.blade.php:344` — `label',            'modal`
+- `resources/views/layouts/app.blade.php:343` — `tune'`
+- `resources/views/layouts/app.blade.php:344` — `primary`
+- `resources/views/layouts/app.blade.php:344` — `ghost'`
+- `resources/views/layouts/app.blade.php:346` — `label`
 - `resources/views/layouts/app.blade.php:347` — `route`
-- `resources/views/layouts/app.blade.php:347` — `admin.organizations.index',     'label`
-- `resources/views/layouts/app.blade.php:347` — `Organisationen`
-- `resources/views/layouts/app.blade.php:347` — `icon`
-- `resources/views/layouts/app.blade.php:347` — `modal`
-- `resources/views/layouts/app.blade.php:350` — `route`
-- `resources/views/layouts/app.blade.php:350` — `admin.organizations.edit', `
-- `resources/views/layouts/app.blade.php:350` — `label`
-- `resources/views/layouts/app.blade.php:350` — `Organisation`
-- `resources/views/layouts/app.blade.php:350` — `icon`
-- `resources/views/layouts/app.blade.php:350` — `modal`
-- `resources/views/layouts/app.blade.php:352` — `route`
-- `resources/views/layouts/app.blade.php:352` — `admin.branding.edit',           'label`
-- `resources/views/layouts/app.blade.php:352` — `Branding`
-- `resources/views/layouts/app.blade.php:352` — `icon`
-- `resources/views/layouts/app.blade.php:352` — `palette',          'modal`
-- `resources/views/layouts/app.blade.php:355` — `route`
-- `resources/views/layouts/app.blade.php:355` — `admin.themes.index',          'label`
-- `resources/views/layouts/app.blade.php:355` — `Themes`
-- `resources/views/layouts/app.blade.php:355` — `icon`
-- `resources/views/layouts/app.blade.php:355` — `modal`
-- `resources/views/layouts/app.blade.php:355` — `matches`
-- `resources/views/layouts/app.blade.php:357` — `route`
-- `resources/views/layouts/app.blade.php:357` — `admin.entry-types.index',        'label`
-- `resources/views/layouts/app.blade.php:357` — `Eintragstypen`
-- `resources/views/layouts/app.blade.php:357` — `icon`
-- `resources/views/layouts/app.blade.php:357` — `category',         'modal`
-- `resources/views/layouts/app.blade.php:358` — `route`
-- `resources/views/layouts/app.blade.php:358` — `admin.classifications.index',    'label`
-- `resources/views/layouts/app.blade.php:358` — `Klassifikationen`
-- `resources/views/layouts/app.blade.php:358` — `icon`
-- `resources/views/layouts/app.blade.php:358` — `modal`
-- `resources/views/layouts/app.blade.php:359` — `route`
-- `resources/views/layouts/app.blade.php:359` — `admin.classification-requirements.index', 'label`
-- `resources/views/layouts/app.blade.php:359` — `Pflichtregeln`
-- `resources/views/layouts/app.blade.php:359` — `icon`
-- `resources/views/layouts/app.blade.php:359` — `modal`
+- `resources/views/layouts/app.blade.php:353` — `primary`
+- `resources/views/layouts/app.blade.php:353` — `ghost'`
+- `resources/views/layouts/app.blade.php:355` — `Archiv`
 - `resources/views/layouts/app.blade.php:360` — `route`
-- `resources/views/layouts/app.blade.php:360` — `admin.branch-profiles.index',    'label`
-- `resources/views/layouts/app.blade.php:360` — `Branchenprofile`
-- `resources/views/layouts/app.blade.php:360` — `icon`
-- `resources/views/layouts/app.blade.php:360` — `storefront',       'modal`
-- `resources/views/layouts/app.blade.php:361` — `route`
-- `resources/views/layouts/app.blade.php:361` — `admin.expense-categories.index',  'label`
-- `resources/views/layouts/app.blade.php:361` — `Spesenkategorien`
-- `resources/views/layouts/app.blade.php:361` — `icon`
-- `resources/views/layouts/app.blade.php:361` — `modal`
-- `resources/views/layouts/app.blade.php:362` — `route`
-- `resources/views/layouts/app.blade.php:362` — `admin.per-diem-rates.index',      'label`
-- `resources/views/layouts/app.blade.php:362` — `Verpflegungspauschalen`
-- `resources/views/layouts/app.blade.php:362` — `icon`
-- `resources/views/layouts/app.blade.php:362` — `modal`
-- `resources/views/layouts/app.blade.php:363` — `route`
-- `resources/views/layouts/app.blade.php:363` — `admin.automations.index',         'label`
-- `resources/views/layouts/app.blade.php:363` — `Automatisierungen`
-- `resources/views/layouts/app.blade.php:363` — `icon`
-- `resources/views/layouts/app.blade.php:363` — `bolt',             'modal`
-- `resources/views/layouts/app.blade.php:365` — `route`
-- `resources/views/layouts/app.blade.php:365` — `admin.notification-rules.index', 'label`
-- `resources/views/layouts/app.blade.php:365` — `icon`
-- `resources/views/layouts/app.blade.php:365` — `modal`
+- `resources/views/layouts/app.blade.php:361` — `badge`
+- `resources/views/layouts/app.blade.php:362` — `indicator`
+- `resources/views/layouts/app.blade.php:363` — `indicator-item badge badge-xs badge-warning`
+- `resources/views/layouts/app.blade.php:363` — `badge`
+- `resources/views/layouts/app.blade.php:363` — `badge`
+- `resources/views/layouts/app.blade.php:364` — `icon`
+- `resources/views/layouts/app.blade.php:364` — `tune'`
+- `resources/views/layouts/app.blade.php:365` — `primary`
+- `resources/views/layouts/app.blade.php:365` — `ghost'`
+- `resources/views/layouts/app.blade.php:367` — `label`
 - `resources/views/layouts/app.blade.php:368` — `route`
-- `resources/views/layouts/app.blade.php:368` — `admin.webhooks.index', 'label`
-- `resources/views/layouts/app.blade.php:368` — `icon`
-- `resources/views/layouts/app.blade.php:368` — `webhook', 'modal`
-- `resources/views/layouts/app.blade.php:368` — `matches`
-- `resources/views/layouts/app.blade.php:371` — `route`
-- `resources/views/layouts/app.blade.php:371` — `admin.surcharge-rules.index', 'label`
 - `resources/views/layouts/app.blade.php:371` — `icon`
-- `resources/views/layouts/app.blade.php:371` — `percent', 'modal`
-- `resources/views/layouts/app.blade.php:374` — `route`
-- `resources/views/layouts/app.blade.php:374` — `admin.cost-center-rules.index', 'label`
-- `resources/views/layouts/app.blade.php:374` — `icon`
-- `resources/views/layouts/app.blade.php:374` — `modal`
-- `resources/views/layouts/app.blade.php:378` — `route`
-- `resources/views/layouts/app.blade.php:378` — `admin.wage-type-mappings.index', 'label`
-- `resources/views/layouts/app.blade.php:378` — `icon`
-- `resources/views/layouts/app.blade.php:378` — `badge', 'modal`
-- `resources/views/layouts/app.blade.php:382` — `route`
-- `resources/views/layouts/app.blade.php:382` — `admin.report-targets.index', 'label`
-- `resources/views/layouts/app.blade.php:382` — `icon`
-- `resources/views/layouts/app.blade.php:382` — `flag', 'modal`
-- `resources/views/layouts/app.blade.php:390` — `route`
-- `resources/views/layouts/app.blade.php:390` — `finance.bank-accounts.index', 'label`
-- `resources/views/layouts/app.blade.php:390` — `icon`
-- `resources/views/layouts/app.blade.php:390` — `modal`
-- `resources/views/layouts/app.blade.php:398` — `route`
-- `resources/views/layouts/app.blade.php:398` — `form-templates.index', 'label`
-- `resources/views/layouts/app.blade.php:398` — `icon`
-- `resources/views/layouts/app.blade.php:398` — `assignment', 'modal`
-- `resources/views/layouts/app.blade.php:402` — `route`
-- `resources/views/layouts/app.blade.php:402` — `procedures.index', 'label`
-- `resources/views/layouts/app.blade.php:402` — `icon`
-- `resources/views/layouts/app.blade.php:402` — `rule', 'modal`
-- `resources/views/layouts/app.blade.php:402` — `matches`
-- `resources/views/layouts/app.blade.php:404` — `route`
-- `resources/views/layouts/app.blade.php:404` — `admin.data.index',                'label`
-- `resources/views/layouts/app.blade.php:404` — `Datentransfer`
-- `resources/views/layouts/app.blade.php:404` — `icon`
-- `resources/views/layouts/app.blade.php:404` — `modal`
-- `resources/views/layouts/app.blade.php:410` — `status`
-- `resources/views/layouts/app.blade.php:413` — `route`
-- `resources/views/layouts/app.blade.php:413` — `admin.integration.inbox', 'label`
-- `resources/views/layouts/app.blade.php:413` — `Zuordnungs-Inbox`
+- `resources/views/layouts/app.blade.php:371` — `tune'`
+- `resources/views/layouts/app.blade.php:372` — `primary`
+- `resources/views/layouts/app.blade.php:372` — `ghost'`
+- `resources/views/layouts/app.blade.php:374` — `label`
+- `resources/views/layouts/app.blade.php:375` — `route`
+- `resources/views/layouts/app.blade.php:380` — `primary`
+- `resources/views/layouts/app.blade.php:383` — `Neuer Eintrag`
+- `resources/views/layouts/app.blade.php:386` — `button`
+- `resources/views/layouts/app.blade.php:387` — `app-sidebar-toggle`
+- `resources/views/layouts/app.blade.php:389` — `Navigation öffnen`
+- `resources/views/layouts/app.blade.php:390` — `app-sidebar`
+- `resources/views/layouts/app.blade.php:391` — `false`
+- `resources/views/layouts/app.blade.php:392` — `h-5 w-5`
+- `resources/views/layouts/app.blade.php:392` — `none`
+- `resources/views/layouts/app.blade.php:392` — `currentColor`
+- `resources/views/layouts/app.blade.php:393` — `round`
+- `resources/views/layouts/app.blade.php:393` — `round`
+- `resources/views/layouts/app.blade.php:393` — `M4 6h16M4 12h16M4 18h16`
+- `resources/views/layouts/app.blade.php:399` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:401` — `btn-primary`
+- `resources/views/layouts/app.blade.php:401` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:402` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:403` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:407` — `header-menu-list menu w-full p-0`
+- `resources/views/layouts/app.blade.php:411` — `label`
+- `resources/views/layouts/app.blade.php:411` — `Personal`
+- `resources/views/layouts/app.blade.php:411` — `icon`
+- `resources/views/layouts/app.blade.php:411` — `group', 'routes`
+- `resources/views/layouts/app.blade.php:411` — `org.members.index', 'legacy.users.index', 'qualifications.index`
+- `resources/views/layouts/app.blade.php:412` — `label`
+- `resources/views/layouts/app.blade.php:412` — `Planung`
+- `resources/views/layouts/app.blade.php:412` — `icon`
+- `resources/views/layouts/app.blade.php:412` — `event', 'routes`
+- `resources/views/layouts/app.blade.php:412` — `holidays.index', 'shift-types.index', 'event-categories.index`
+- `resources/views/layouts/app.blade.php:413` — `label`
+- `resources/views/layouts/app.blade.php:413` — `Kataloge`
 - `resources/views/layouts/app.blade.php:413` — `icon`
-- `resources/views/layouts/app.blade.php:413` — `rule', 'modal`
-- `resources/views/layouts/app.blade.php:413` — `matches`
-- `resources/views/layouts/app.blade.php:413` — `badge`
-- `resources/views/layouts/app.blade.php:415` — `admin.remote-support.pending.index`
-- `resources/views/layouts/app.blade.php:420` — `status`
+- `resources/views/layouts/app.blade.php:413` — `category', 'routes`
+- `resources/views/layouts/app.blade.php:413` — `materials.index', 'tags.index', 'activity-categories.index`
+- `resources/views/layouts/app.blade.php:415` — `route`
+- `resources/views/layouts/app.blade.php:418` — `routes`
+- `resources/views/layouts/app.blade.php:420` — `label`
+- `resources/views/layouts/app.blade.php:420` — `label`
+- `resources/views/layouts/app.blade.php:420` — `icon`
+- `resources/views/layouts/app.blade.php:420` — `icon`
+- `resources/views/layouts/app.blade.php:420` — `items`
+- `resources/views/layouts/app.blade.php:423` — `items`
 - `resources/views/layouts/app.blade.php:423` — `route`
-- `resources/views/layouts/app.blade.php:423` — `admin.remote-support.pending.index', 'label`
-- `resources/views/layouts/app.blade.php:423` — `icon`
-- `resources/views/layouts/app.blade.php:423` — `inbox', 'modal`
-- `resources/views/layouts/app.blade.php:423` — `badge`
-- `resources/views/layouts/app.blade.php:426` — `manage-access`
+- `resources/views/layouts/app.blade.php:424` — `route`
+- `resources/views/layouts/app.blade.php:427` — `items`
 - `resources/views/layouts/app.blade.php:427` — `route`
-- `resources/views/layouts/app.blade.php:427` — `admin.access.index',             'label`
-- `resources/views/layouts/app.blade.php:427` — `icon`
-- `resources/views/layouts/app.blade.php:427` — `modal`
-- `resources/views/layouts/app.blade.php:430` — `route`
-- `resources/views/layouts/app.blade.php:430` — `audit.index',                       'label`
-- `resources/views/layouts/app.blade.php:430` — `Audit-Log`
-- `resources/views/layouts/app.blade.php:430` — `icon`
-- `resources/views/layouts/app.blade.php:430` — `modal`
-- `resources/views/layouts/app.blade.php:432` — `route`
-- `resources/views/layouts/app.blade.php:432` — `admin.license.index',            'label`
-- `resources/views/layouts/app.blade.php:432` — `Lizenz`
-- `resources/views/layouts/app.blade.php:432` — `icon`
-- `resources/views/layouts/app.blade.php:432` — `key',              'modal`
-- `resources/views/layouts/app.blade.php:435` — `route`
-- `resources/views/layouts/app.blade.php:435` — `admin.metrics.index',            'label`
-- `resources/views/layouts/app.blade.php:435` — `icon`
-- `resources/views/layouts/app.blade.php:435` — `monitoring',    'modal`
-- `resources/views/layouts/app.blade.php:437` — `route`
-- `resources/views/layouts/app.blade.php:437` — `admin.components.index',         'label`
-- `resources/views/layouts/app.blade.php:437` — `icon`
-- `resources/views/layouts/app.blade.php:437` — `modal`
-- `resources/views/layouts/app.blade.php:441` — `route`
-- `resources/views/layouts/app.blade.php:441` — `admin.security.index',           'label`
-- `resources/views/layouts/app.blade.php:441` — `icon`
-- `resources/views/layouts/app.blade.php:441` — `modal`
-- `resources/views/layouts/app.blade.php:445` — `route`
-- `resources/views/layouts/app.blade.php:445` — `admin.backup.status',            'label`
-- `resources/views/layouts/app.blade.php:445` — `icon`
-- `resources/views/layouts/app.blade.php:445` — `backup',        'modal`
+- `resources/views/layouts/app.blade.php:428` — `w-full`
+- `resources/views/layouts/app.blade.php:430` — `menu-active`
+- `resources/views/layouts/app.blade.php:431` — `icon`
+- `resources/views/layouts/app.blade.php:432` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:432` — `label`
+- `resources/views/layouts/app.blade.php:435` — `items`
+- `resources/views/layouts/app.blade.php:436` — `route`
+- `resources/views/layouts/app.blade.php:437` — `w-full`
+- `resources/views/layouts/app.blade.php:438` — `route`
+- `resources/views/layouts/app.blade.php:438` — `menu-active`
+- `resources/views/layouts/app.blade.php:439` — `icon`
+- `resources/views/layouts/app.blade.php:439` — `tune'`
+- `resources/views/layouts/app.blade.php:440` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:440` — `label`
 - `resources/views/layouts/app.blade.php:449` — `route`
-- `resources/views/layouts/app.blade.php:449` — `admin.scheduler.index',          'label`
-- `resources/views/layouts/app.blade.php:449` — `icon`
-- `resources/views/layouts/app.blade.php:449` — `schedule',    'modal`
-- `resources/views/layouts/app.blade.php:453` — `route`
-- `resources/views/layouts/app.blade.php:453` — `admin.settings.index',           'label`
-- `resources/views/layouts/app.blade.php:453` — `icon`
-- `resources/views/layouts/app.blade.php:453` — `tune',      'modal`
-- `resources/views/layouts/app.blade.php:457` — `route`
-- `resources/views/layouts/app.blade.php:457` — `admin.maintenance-windows.index', 'label`
-- `resources/views/layouts/app.blade.php:457` — `icon`
-- `resources/views/layouts/app.blade.php:457` — `engineering', 'modal`
-- `resources/views/layouts/app.blade.php:474` — `route`
-- `resources/views/layouts/app.blade.php:474` — `admin.operations.index',        'label`
-- `resources/views/layouts/app.blade.php:474` — `icon`
-- `resources/views/layouts/app.blade.php:474` — `modal`
-- `resources/views/layouts/app.blade.php:474` — `badge`
-- `resources/views/layouts/app.blade.php:478` — `route`
-- `resources/views/layouts/app.blade.php:478` — `admin.problem-reports.index',    'label`
+- `resources/views/layouts/app.blade.php:450` — `w-full`
+- `resources/views/layouts/app.blade.php:451` — `route`
+- `resources/views/layouts/app.blade.php:451` — `menu-active`
+- `resources/views/layouts/app.blade.php:452` — `icon`
+- `resources/views/layouts/app.blade.php:452` — `tune'`
+- `resources/views/layouts/app.blade.php:453` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:453` — `label`
+- `resources/views/layouts/app.blade.php:463` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:465` — `btn-primary`
+- `resources/views/layouts/app.blade.php:465` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:466` — `System`
+- `resources/views/layouts/app.blade.php:467` — `System`
+- `resources/views/layouts/app.blade.php:468` — `settings`
+- `resources/views/layouts/app.blade.php:471` — `header-menu-list menu w-full p-0`
+- `resources/views/layouts/app.blade.php:475` — `label`
+- `resources/views/layouts/app.blade.php:475` — `Organisation`
+- `resources/views/layouts/app.blade.php:475` — `icon`
+- `resources/views/layouts/app.blade.php:475` — `routes`
+- `resources/views/layouts/app.blade.php:475` — `admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index`
+- `resources/views/layouts/app.blade.php:476` — `label`
+- `resources/views/layouts/app.blade.php:476` — `Stammdaten`
+- `resources/views/layouts/app.blade.php:476` — `icon`
+- `resources/views/layouts/app.blade.php:476` — `routes`
+- `resources/views/layouts/app.blade.php:476` — `admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index`
+- `resources/views/layouts/app.blade.php:477` — `label`
+- `resources/views/layouts/app.blade.php:477` — `icon`
+- `resources/views/layouts/app.blade.php:477` — `routes`
+- `resources/views/layouts/app.blade.php:477` — `admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit`
+- `resources/views/layouts/app.blade.php:478` — `label`
 - `resources/views/layouts/app.blade.php:478` — `icon`
-- `resources/views/layouts/app.blade.php:478` — `flag',    'modal`
+- `resources/views/layouts/app.blade.php:478` — `routes`
+- `resources/views/layouts/app.blade.php:478` — `admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index`
+- `resources/views/layouts/app.blade.php:479` — `label`
+- `resources/views/layouts/app.blade.php:479` — `Systembetrieb`
+- `resources/views/layouts/app.blade.php:479` — `icon`
+- `resources/views/layouts/app.blade.php:479` — `routes`
+- `resources/views/layouts/app.blade.php:479` — `audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index`
+- `resources/views/layouts/app.blade.php:480` — `label`
+- `resources/views/layouts/app.blade.php:480` — `Plugins`
+- `resources/views/layouts/app.blade.php:480` — `icon`
+- `resources/views/layouts/app.blade.php:480` — `extension', 'routes`
+- `resources/views/layouts/app.blade.php:480` — `admin.plugins.index', 'admin.plugin-errors.index`
 - `resources/views/layouts/app.blade.php:482` — `route`
-- `resources/views/layouts/app.blade.php:482` — `admin.support.grants.index',     'label`
-- `resources/views/layouts/app.blade.php:482` — `Supportfreigaben`
-- `resources/views/layouts/app.blade.php:482` — `icon`
-- `resources/views/layouts/app.blade.php:482` — `modal`
-- `resources/views/layouts/app.blade.php:485` — `route`
-- `resources/views/layouts/app.blade.php:485` — `whistleblowing.portal.edit',     'label`
-- `resources/views/layouts/app.blade.php:485` — `Meldeportal`
-- `resources/views/layouts/app.blade.php:485` — `icon`
-- `resources/views/layouts/app.blade.php:485` — `campaign',         'modal`
-- `resources/views/layouts/app.blade.php:487` — `route`
-- `resources/views/layouts/app.blade.php:487` — `admin.plugins.index',                'label`
-- `resources/views/layouts/app.blade.php:487` — `Plugins`
+- `resources/views/layouts/app.blade.php:485` — `routes`
+- `resources/views/layouts/app.blade.php:487` — `label`
+- `resources/views/layouts/app.blade.php:487` — `label`
 - `resources/views/layouts/app.blade.php:487` — `icon`
-- `resources/views/layouts/app.blade.php:487` — `extension',        'modal`
-- `resources/views/layouts/app.blade.php:488` — `route`
-- `resources/views/layouts/app.blade.php:488` — `admin.plugin-errors.index',          'label`
-- `resources/views/layouts/app.blade.php:488` — `Plugin-Fehler`
-- `resources/views/layouts/app.blade.php:488` — `icon`
-- `resources/views/layouts/app.blade.php:488` — `modal`
-- `resources/views/layouts/app.blade.php:494` — `route`
-- `resources/views/layouts/app.blade.php:497` — `route`
-- `resources/views/layouts/app.blade.php:505` — `route`
-- `resources/views/layouts/app.blade.php:505` — `route`
-- `resources/views/layouts/app.blade.php:507` — `label`
-- `resources/views/layouts/app.blade.php:507` — `label`
-- `resources/views/layouts/app.blade.php:508` — `icon`
-- `resources/views/layouts/app.blade.php:508` — `icon`
-- `resources/views/layouts/app.blade.php:508` — `extension`
-- `resources/views/layouts/app.blade.php:510` — `modal`
-- `resources/views/layouts/app.blade.php:510` — `route`
-- `resources/views/layouts/app.blade.php:514` — `route`
-- `resources/views/layouts/app.blade.php:517` — `route`
-- `resources/views/layouts/app.blade.php:517` — `admin.legacy-migration.index',      'label`
-- `resources/views/layouts/app.blade.php:517` — `Legacy-Migration`
-- `resources/views/layouts/app.blade.php:517` — `icon`
-- `resources/views/layouts/app.blade.php:517` — `modal`
-- `resources/views/layouts/app.blade.php:519` — `manage-members`
+- `resources/views/layouts/app.blade.php:487` — `icon`
+- `resources/views/layouts/app.blade.php:487` — `items`
+- `resources/views/layouts/app.blade.php:493` — `label`
+- `resources/views/layouts/app.blade.php:493` — `Plugins`
+- `resources/views/layouts/app.blade.php:496` — `items`
+- `resources/views/layouts/app.blade.php:496` — `items`
+- `resources/views/layouts/app.blade.php:499` — `label`
+- `resources/views/layouts/app.blade.php:499` — `Plugins`
+- `resources/views/layouts/app.blade.php:499` — `icon`
+- `resources/views/layouts/app.blade.php:499` — `extension', 'items`
+- `resources/views/layouts/app.blade.php:502` — `items`
+- `resources/views/layouts/app.blade.php:502` — `route`
+- `resources/views/layouts/app.blade.php:504` — `route`
+- `resources/views/layouts/app.blade.php:508` — `items`
+- `resources/views/layouts/app.blade.php:508` — `route`
+- `resources/views/layouts/app.blade.php:509` — `items`
+- `resources/views/layouts/app.blade.php:509` — `badge`
+- `resources/views/layouts/app.blade.php:511` — `w-full`
+- `resources/views/layouts/app.blade.php:513` — `menu-active`
+- `resources/views/layouts/app.blade.php:514` — `icon`
+- `resources/views/layouts/app.blade.php:515` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:515` — `label`
+- `resources/views/layouts/app.blade.php:517` — `badge badge-sm badge-warning shrink-0`
+- `resources/views/layouts/app.blade.php:521` — `items`
 - `resources/views/layouts/app.blade.php:522` — `route`
-- `resources/views/layouts/app.blade.php:522` — `org.members.index', 'label`
-- `resources/views/layouts/app.blade.php:522` — `Mitarbeiter`
-- `resources/views/layouts/app.blade.php:522` — `icon`
-- `resources/views/layouts/app.blade.php:522` — `group', 'modal`
-- `resources/views/layouts/app.blade.php:527` — `route`
-- `resources/views/layouts/app.blade.php:527` — `admin.organizations.index', 'label`
-- `resources/views/layouts/app.blade.php:527` — `Mitarbeiter`
+- `resources/views/layouts/app.blade.php:523` — `w-full`
+- `resources/views/layouts/app.blade.php:524` — `route`
+- `resources/views/layouts/app.blade.php:525` — `modal`
+- `resources/views/layouts/app.blade.php:526` — `menu-active`
 - `resources/views/layouts/app.blade.php:527` — `icon`
-- `resources/views/layouts/app.blade.php:527` — `group', 'modal`
-- `resources/views/layouts/app.blade.php:530` — `route`
-- `resources/views/layouts/app.blade.php:530` — `teams.index', 'label`
-- `resources/views/layouts/app.blade.php:530` — `Teams`
-- `resources/views/layouts/app.blade.php:530` — `icon`
-- `resources/views/layouts/app.blade.php:530` — `groups', 'modal`
-- `resources/views/layouts/app.blade.php:533` — `route`
-- `resources/views/layouts/app.blade.php:533` — `payroll.index', 'label`
-- `resources/views/layouts/app.blade.php:533` — `icon`
-- `resources/views/layouts/app.blade.php:533` — `payments', 'modal`
-- `resources/views/layouts/app.blade.php:536` — `route`
-- `resources/views/layouts/app.blade.php:536` — `activity-categories.index', 'label`
-- `resources/views/layouts/app.blade.php:536` — `Tätigkeitskategorien`
-- `resources/views/layouts/app.blade.php:536` — `icon`
-- `resources/views/layouts/app.blade.php:536` — `category', 'modal`
-- `resources/views/layouts/app.blade.php:541` — `route`
-- `resources/views/layouts/app.blade.php:541` — `account.profile.edit',  'label`
-- `resources/views/layouts/app.blade.php:541` — `Profil bearbeiten`
-- `resources/views/layouts/app.blade.php:541` — `modal`
+- `resources/views/layouts/app.blade.php:527` — `tune'`
+- `resources/views/layouts/app.blade.php:528` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:528` — `label`
+- `resources/views/layouts/app.blade.php:529` — `badge`
+- `resources/views/layouts/app.blade.php:530` — `badge badge-sm badge-warning shrink-0`
+- `resources/views/layouts/app.blade.php:530` — `badge`
+- `resources/views/layouts/app.blade.php:530` — `badge`
+- `resources/views/layouts/app.blade.php:540` — `route`
+- `resources/views/layouts/app.blade.php:541` — `w-full`
 - `resources/views/layouts/app.blade.php:542` — `route`
-- `resources/views/layouts/app.blade.php:542` — `account.work-schedule', 'label`
-- `resources/views/layouts/app.blade.php:542` — `Arbeitszeit-Modell`
-- `resources/views/layouts/app.blade.php:542` — `modal`
-- `resources/views/layouts/app.blade.php:543` — `route`
-- `resources/views/layouts/app.blade.php:543` — `account.calendar.show', 'label`
-- `resources/views/layouts/app.blade.php:543` — `Kalender-Abo`
 - `resources/views/layouts/app.blade.php:543` — `modal`
-- `resources/views/layouts/app.blade.php:544` — `route`
-- `resources/views/layouts/app.blade.php:544` — `bookmarks.index',       'label`
-- `resources/views/layouts/app.blade.php:544` — `Lesezeichen`
-- `resources/views/layouts/app.blade.php:544` — `modal`
-- `resources/views/layouts/app.blade.php:546` — `route`
-- `resources/views/layouts/app.blade.php:546` — `legacy.account.password.edit', 'label`
-- `resources/views/layouts/app.blade.php:546` — `Passwort ändern`
-- `resources/views/layouts/app.blade.php:546` — `modal`
-- `resources/views/layouts/app.blade.php:548` — `route`
-- `resources/views/layouts/app.blade.php:548` — `account.2fa.show', 'label`
-- `resources/views/layouts/app.blade.php:548` — `Zwei-Faktor-Authentifizierung`
-- `resources/views/layouts/app.blade.php:548` — `modal`
-- `resources/views/layouts/app.blade.php:549` — `route`
-- `resources/views/layouts/app.blade.php:549` — `profile.api-tokens.index', 'label`
-- `resources/views/layouts/app.blade.php:549` — `API-Tokens`
-- `resources/views/layouts/app.blade.php:549` — `modal`
-- `resources/views/layouts/app.blade.php:551` — `route`
-- `resources/views/layouts/app.blade.php:552` — `route`
-- `resources/views/layouts/app.blade.php:553` — `route`
-- `resources/views/layouts/app.blade.php:564` — `work',
-                                    'label`
-- `resources/views/layouts/app.blade.php:565` — `Tagesgeschäft`
-- `resources/views/layouts/app.blade.php:566` — `collapsible`
-- `resources/views/layouts/app.blade.php:567` — `groups`
-- `resources/views/layouts/app.blade.php:569` — `work-capture',
-                                            'label`
-- `resources/views/layouts/app.blade.php:570` — `Erfassung`
-- `resources/views/layouts/app.blade.php:571` — `icon`
-- `resources/views/layouts/app.blade.php:572` — `items`
-- `resources/views/layouts/app.blade.php:576` — `route`
-- `resources/views/layouts/app.blade.php:576` — `today.show',      'label`
-- `resources/views/layouts/app.blade.php:576` — `Heute`
-- `resources/views/layouts/app.blade.php:576` — `icon`
-- `resources/views/layouts/app.blade.php:576` — `today',             'modal`
-- `resources/views/layouts/app.blade.php:576` — `matches`
-- `resources/views/layouts/app.blade.php:576` — `today.show', `
-- `resources/views/layouts/app.blade.php:577` — `route`
-- `resources/views/layouts/app.blade.php:577` — `label`
-- `resources/views/layouts/app.blade.php:577` — `Arbeitsliste`
-- `resources/views/layouts/app.blade.php:577` — `icon`
-- `resources/views/layouts/app.blade.php:577` — `modal`
-- `resources/views/layouts/app.blade.php:577` — `matches`
-- `resources/views/layouts/app.blade.php:578` — `route`
-- `resources/views/layouts/app.blade.php:578` — `week.index',      'label`
-- `resources/views/layouts/app.blade.php:578` — `Wochenansicht`
-- `resources/views/layouts/app.blade.php:578` — `icon`
-- `resources/views/layouts/app.blade.php:578` — `modal`
-- `resources/views/layouts/app.blade.php:578` — `matches`
-- `resources/views/layouts/app.blade.php:579` — `route`
-- `resources/views/layouts/app.blade.php:579` — `kanban.index',    'label`
-- `resources/views/layouts/app.blade.php:579` — `Kanban`
-- `resources/views/layouts/app.blade.php:579` — `icon`
-- `resources/views/layouts/app.blade.php:579` — `modal`
-- `resources/views/layouts/app.blade.php:579` — `matches`
-- `resources/views/layouts/app.blade.php:585` — `route`
-- `resources/views/layouts/app.blade.php:585` — `agile.reports.overview', 'label`
-- `resources/views/layouts/app.blade.php:585` — `Agile Übersicht`
-- `resources/views/layouts/app.blade.php:585` — `icon`
-- `resources/views/layouts/app.blade.php:585` — `sprint', 'modal`
-- `resources/views/layouts/app.blade.php:585` — `matches`
-- `resources/views/layouts/app.blade.php:587` — `route`
-- `resources/views/layouts/app.blade.php:587` — `attendance.index','label`
-- `resources/views/layouts/app.blade.php:587` — `Stempeluhr`
-- `resources/views/layouts/app.blade.php:587` — `icon`
-- `resources/views/layouts/app.blade.php:587` — `modal`
-- `resources/views/layouts/app.blade.php:587` — `matches`
-- `resources/views/layouts/app.blade.php:591` — `work-knowledge',
-                                            'label`
-- `resources/views/layouts/app.blade.php:593` — `icon`
-- `resources/views/layouts/app.blade.php:594` — `items`
-- `resources/views/layouts/app.blade.php:601` — `route`
-- `resources/views/layouts/app.blade.php:601` — `viewAny`
-- `resources/views/layouts/app.blade.php:603` — `form-submissions.index',
-                                                    'label`
-- `resources/views/layouts/app.blade.php:605` — `icon`
-- `resources/views/layouts/app.blade.php:605` — `modal`
-- `resources/views/layouts/app.blade.php:606` — `matches`
-- `resources/views/layouts/app.blade.php:610` — `route`
-- `resources/views/layouts/app.blade.php:610` — `knowledge.index', 'label`
-- `resources/views/layouts/app.blade.php:610` — `icon`
-- `resources/views/layouts/app.blade.php:610` — `school', 'modal`
-- `resources/views/layouts/app.blade.php:610` — `matches`
-- `resources/views/layouts/app.blade.php:613` — `route`
-- `resources/views/layouts/app.blade.php:613` — `ideas.index', 'label`
-- `resources/views/layouts/app.blade.php:613` — `icon`
-- `resources/views/layouts/app.blade.php:613` — `modal`
-- `resources/views/layouts/app.blade.php:613` — `matches`
-- `resources/views/layouts/app.blade.php:616` — `viewAny`
-- `resources/views/layouts/app.blade.php:617` — `create`
-- `resources/views/layouts/app.blade.php:618` — `route`
-- `resources/views/layouts/app.blade.php:618` — `safety-events.index', 'label`
-- `resources/views/layouts/app.blade.php:618` — `icon`
-- `resources/views/layouts/app.blade.php:618` — `modal`
-- `resources/views/layouts/app.blade.php:618` — `matches`
-- `resources/views/layouts/app.blade.php:625` — `plan',
-                                    'label`
-- `resources/views/layouts/app.blade.php:626` — `Planung`
-- `resources/views/layouts/app.blade.php:627` — `collapsible`
-- `resources/views/layouts/app.blade.php:628` — `items`
-- `resources/views/layouts/app.blade.php:631` — `route`
-- `resources/views/layouts/app.blade.php:631` — `duty-plans.index', 'label`
-- `resources/views/layouts/app.blade.php:631` — `Dienstpläne`
-- `resources/views/layouts/app.blade.php:631` — `icon`
-- `resources/views/layouts/app.blade.php:631` — `modal`
-- `resources/views/layouts/app.blade.php:631` — `matches`
-- `resources/views/layouts/app.blade.php:633` — `route`
-- `resources/views/layouts/app.blade.php:633` — `schedule.index',   'label`
-- `resources/views/layouts/app.blade.php:633` — `Schichtplan`
-- `resources/views/layouts/app.blade.php:633` — `icon`
-- `resources/views/layouts/app.blade.php:633` — `schedule',        'modal`
-- `resources/views/layouts/app.blade.php:633` — `matches`
-- `resources/views/layouts/app.blade.php:633` — `schedule.index', `
-- `resources/views/layouts/app.blade.php:633` — `schedule.suggest', `
-- `resources/views/layouts/app.blade.php:634` — `route`
-- `resources/views/layouts/app.blade.php:634` — `timesheets.index', 'label`
-- `resources/views/layouts/app.blade.php:634` — `Stundenzettel`
-- `resources/views/layouts/app.blade.php:634` — `icon`
-- `resources/views/layouts/app.blade.php:634` — `description',     'modal`
-- `resources/views/layouts/app.blade.php:634` — `matches`
-- `resources/views/layouts/app.blade.php:635` — `route`
-- `resources/views/layouts/app.blade.php:635` — `flex.index',       'label`
-- `resources/views/layouts/app.blade.php:635` — `Arbeitszeitkonto`
-- `resources/views/layouts/app.blade.php:635` — `icon`
-- `resources/views/layouts/app.blade.php:635` — `modal`
-- `resources/views/layouts/app.blade.php:635` — `matches`
-- `resources/views/layouts/app.blade.php:636` — `route`
-- `resources/views/layouts/app.blade.php:636` — `tours.index',      'label`
-- `resources/views/layouts/app.blade.php:636` — `Touren`
-- `resources/views/layouts/app.blade.php:636` — `icon`
-- `resources/views/layouts/app.blade.php:636` — `route',           'modal`
-- `resources/views/layouts/app.blade.php:636` — `matches`
-- `resources/views/layouts/app.blade.php:636` — `tours.index', 'tours.map', 'tours.create', 'tours.show', 'tours.edit`
-- `resources/views/layouts/app.blade.php:640` — `route`
-- `resources/views/layouts/app.blade.php:640` — `dispatch.board', 'label`
-- `resources/views/layouts/app.blade.php:640` — `Leitstelle`
-- `resources/views/layouts/app.blade.php:640` — `icon`
-- `resources/views/layouts/app.blade.php:640` — `dashboard', 'modal`
-- `resources/views/layouts/app.blade.php:640` — `matches`
-- `resources/views/layouts/app.blade.php:640` — `dispatch.board', 'dispatch.map`
-- `resources/views/layouts/app.blade.php:644` — `items`
-- `resources/views/layouts/app.blade.php:644` — `items`
-- `resources/views/layouts/app.blade.php:646` — `travel-expenses',
-                                    'label`
-- `resources/views/layouts/app.blade.php:648` — `collapsible`
-- `resources/views/layouts/app.blade.php:649` — `items`
-- `resources/views/layouts/app.blade.php:650` — `route`
-- `resources/views/layouts/app.blade.php:650` — `travel-logs.index',    'label`
-- `resources/views/layouts/app.blade.php:650` — `Fahrtenbuch`
-- `resources/views/layouts/app.blade.php:650` — `icon`
-- `resources/views/layouts/app.blade.php:650` — `modal`
-- `resources/views/layouts/app.blade.php:650` — `matches`
-- `resources/views/layouts/app.blade.php:651` — `route`
-- `resources/views/layouts/app.blade.php:651` — `expenses.index',       'label`
-- `resources/views/layouts/app.blade.php:651` — `Spesen`
-- `resources/views/layouts/app.blade.php:651` — `icon`
-- `resources/views/layouts/app.blade.php:651` — `modal`
-- `resources/views/layouts/app.blade.php:651` — `matches`
-- `resources/views/layouts/app.blade.php:652` — `route`
-- `resources/views/layouts/app.blade.php:652` — `per-diem-trips.index', 'label`
-- `resources/views/layouts/app.blade.php:652` — `Verpflegungspauschalen`
-- `resources/views/layouts/app.blade.php:652` — `icon`
-- `resources/views/layouts/app.blade.php:652` — `modal`
-- `resources/views/layouts/app.blade.php:652` — `matches`
-- `resources/views/layouts/app.blade.php:654` — `route`
-- `resources/views/layouts/app.blade.php:654` — `expense-approvals.inbox', 'label`
-- `resources/views/layouts/app.blade.php:654` — `Spesen-Genehmigung`
-- `resources/views/layouts/app.blade.php:654` — `icon`
-- `resources/views/layouts/app.blade.php:654` — `modal`
-- `resources/views/layouts/app.blade.php:654` — `matches`
-- `resources/views/layouts/app.blade.php:659` — `fleet',
-                                    'label`
-- `resources/views/layouts/app.blade.php:660` — `Fuhrpark`
-- `resources/views/layouts/app.blade.php:661` — `collapsible`
-- `resources/views/layouts/app.blade.php:662` — `items`
-- `resources/views/layouts/app.blade.php:663` — `viewAny`
-- `resources/views/layouts/app.blade.php:664` — `route`
-- `resources/views/layouts/app.blade.php:664` — `assets.index',      'label`
-- `resources/views/layouts/app.blade.php:664` — `icon`
-- `resources/views/layouts/app.blade.php:664` — `modal`
-- `resources/views/layouts/app.blade.php:664` — `matches`
-- `resources/views/layouts/app.blade.php:666` — `route`
-- `resources/views/layouts/app.blade.php:666` — `vehicles.index',    'label`
-- `resources/views/layouts/app.blade.php:666` — `Fahrzeuge`
-- `resources/views/layouts/app.blade.php:666` — `icon`
-- `resources/views/layouts/app.blade.php:666` — `modal`
-- `resources/views/layouts/app.blade.php:666` — `matches`
-- `resources/views/layouts/app.blade.php:667` — `route`
-- `resources/views/layouts/app.blade.php:667` — `energy-logs.index', 'label`
-- `resources/views/layouts/app.blade.php:667` — `icon`
-- `resources/views/layouts/app.blade.php:667` — `modal`
-- `resources/views/layouts/app.blade.php:667` — `matches`
-- `resources/views/layouts/app.blade.php:671` — `facility',
-                                    'label`
-- `resources/views/layouts/app.blade.php:672` — `Liegenschaften`
-- `resources/views/layouts/app.blade.php:673` — `collapsible`
-- `resources/views/layouts/app.blade.php:674` — `items`
-- `resources/views/layouts/app.blade.php:675` — `route`
-- `resources/views/layouts/app.blade.php:675` — `sites.index',     'label`
-- `resources/views/layouts/app.blade.php:675` — `Standorte`
-- `resources/views/layouts/app.blade.php:675` — `icon`
-- `resources/views/layouts/app.blade.php:675` — `modal`
-- `resources/views/layouts/app.blade.php:675` — `matches`
-- `resources/views/layouts/app.blade.php:676` — `route`
-- `resources/views/layouts/app.blade.php:676` — `buildings.index', 'label`
-- `resources/views/layouts/app.blade.php:676` — `Gebäude`
-- `resources/views/layouts/app.blade.php:676` — `icon`
-- `resources/views/layouts/app.blade.php:676` — `apartment',   'modal`
-- `resources/views/layouts/app.blade.php:676` — `matches`
-- `resources/views/layouts/app.blade.php:677` — `route`
-- `resources/views/layouts/app.blade.php:677` — `floors.index',    'label`
-- `resources/views/layouts/app.blade.php:677` — `Geschosse`
-- `resources/views/layouts/app.blade.php:677` — `icon`
-- `resources/views/layouts/app.blade.php:677` — `layers',      'modal`
-- `resources/views/layouts/app.blade.php:677` — `matches`
-- `resources/views/layouts/app.blade.php:678` — `route`
-- `resources/views/layouts/app.blade.php:678` — `rooms.index',     'label`
-- `resources/views/layouts/app.blade.php:678` — `Räume`
-- `resources/views/layouts/app.blade.php:678` — `icon`
-- `resources/views/layouts/app.blade.php:678` — `modal`
-- `resources/views/layouts/app.blade.php:678` — `matches`
-- `resources/views/layouts/app.blade.php:682` — `servicedesk',
-                                    'label`
-- `resources/views/layouts/app.blade.php:683` — `Service Desk`
-- `resources/views/layouts/app.blade.php:684` — `collapsible`
-- `resources/views/layouts/app.blade.php:685` — `items`
-- `resources/views/layouts/app.blade.php:687` — `route`
-- `resources/views/layouts/app.blade.php:687` — `service-tickets.index', 'label`
-- `resources/views/layouts/app.blade.php:687` — `Tickets`
-- `resources/views/layouts/app.blade.php:687` — `icon`
-- `resources/views/layouts/app.blade.php:687` — `modal`
-- `resources/views/layouts/app.blade.php:687` — `matches`
-- `resources/views/layouts/app.blade.php:690` — `route`
-- `resources/views/layouts/app.blade.php:690` — `helpdesk.board.index', 'label`
-- `resources/views/layouts/app.blade.php:690` — `Queue-Board`
-- `resources/views/layouts/app.blade.php:690` — `icon`
-- `resources/views/layouts/app.blade.php:690` — `modal`
-- `resources/views/layouts/app.blade.php:690` — `matches`
-- `resources/views/layouts/app.blade.php:693` — `route`
-- `resources/views/layouts/app.blade.php:693` — `helpdesk.queues.index', 'label`
-- `resources/views/layouts/app.blade.php:693` — `Queues`
-- `resources/views/layouts/app.blade.php:693` — `icon`
-- `resources/views/layouts/app.blade.php:693` — `inbox', 'modal`
-- `resources/views/layouts/app.blade.php:693` — `matches`
-- `resources/views/layouts/app.blade.php:696` — `route`
-- `resources/views/layouts/app.blade.php:696` — `helpdesk.routing.index', 'label`
-- `resources/views/layouts/app.blade.php:696` — `Ticket-Routing`
-- `resources/views/layouts/app.blade.php:696` — `icon`
-- `resources/views/layouts/app.blade.php:696` — `modal`
-- `resources/views/layouts/app.blade.php:696` — `matches`
-- `resources/views/layouts/app.blade.php:698` — `viewAny`
-- `resources/views/layouts/app.blade.php:699` — `route`
-- `resources/views/layouts/app.blade.php:699` — `servicedesk.catalog.index', 'label`
-- `resources/views/layouts/app.blade.php:699` — `Servicekatalog`
-- `resources/views/layouts/app.blade.php:699` — `icon`
-- `resources/views/layouts/app.blade.php:699` — `storefront', 'modal`
-- `resources/views/layouts/app.blade.php:699` — `matches`
-- `resources/views/layouts/app.blade.php:702` — `route`
-- `resources/views/layouts/app.blade.php:702` — `servicedesk.approvals.index', 'label`
-- `resources/views/layouts/app.blade.php:702` — `Genehmigungen`
-- `resources/views/layouts/app.blade.php:702` — `icon`
-- `resources/views/layouts/app.blade.php:702` — `approval', 'modal`
-- `resources/views/layouts/app.blade.php:702` — `matches`
-- `resources/views/layouts/app.blade.php:704` — `viewAny`
-- `resources/views/layouts/app.blade.php:705` — `route`
-- `resources/views/layouts/app.blade.php:705` — `servicedesk.problems.index', 'label`
-- `resources/views/layouts/app.blade.php:705` — `Probleme`
-- `resources/views/layouts/app.blade.php:705` — `icon`
-- `resources/views/layouts/app.blade.php:705` — `troubleshoot', 'modal`
-- `resources/views/layouts/app.blade.php:705` — `matches`
-- `resources/views/layouts/app.blade.php:707` — `viewAny`
-- `resources/views/layouts/app.blade.php:708` — `route`
-- `resources/views/layouts/app.blade.php:708` — `servicedesk.changes.index', 'label`
-- `resources/views/layouts/app.blade.php:708` — `Changes`
-- `resources/views/layouts/app.blade.php:708` — `icon`
-- `resources/views/layouts/app.blade.php:708` — `modal`
-- `resources/views/layouts/app.blade.php:708` — `matches`
-- `resources/views/layouts/app.blade.php:711` — `route`
-- `resources/views/layouts/app.blade.php:711` — `sla-contracts.index', 'label`
-- `resources/views/layouts/app.blade.php:711` — `SLA-Verträge`
-- `resources/views/layouts/app.blade.php:711` — `icon`
-- `resources/views/layouts/app.blade.php:711` — `handshake', 'modal`
-- `resources/views/layouts/app.blade.php:711` — `matches`
-- `resources/views/layouts/app.blade.php:714` — `route`
-- `resources/views/layouts/app.blade.php:714` — `helpdesk.reports.index', 'label`
-- `resources/views/layouts/app.blade.php:714` — `Helpdesk-Bericht`
-- `resources/views/layouts/app.blade.php:714` — `icon`
-- `resources/views/layouts/app.blade.php:714` — `monitoring', 'modal`
-- `resources/views/layouts/app.blade.php:714` — `matches`
-- `resources/views/layouts/app.blade.php:719` — `location',
-                                    'label`
-- `resources/views/layouts/app.blade.php:720` — `Standorterfassung`
-- `resources/views/layouts/app.blade.php:721` — `collapsible`
-- `resources/views/layouts/app.blade.php:722` — `items`
-- `resources/views/layouts/app.blade.php:723` — `route`
-- `resources/views/layouts/app.blade.php:723` — `geofences.index',      'label`
-- `resources/views/layouts/app.blade.php:723` — `Geofences`
-- `resources/views/layouts/app.blade.php:723` — `icon`
-- `resources/views/layouts/app.blade.php:723` — `modal`
-- `resources/views/layouts/app.blade.php:723` — `matches`
-- `resources/views/layouts/app.blade.php:724` — `route`
-- `resources/views/layouts/app.blade.php:724` — `location.review.index', 'label`
-- `resources/views/layouts/app.blade.php:724` — `Standort-Vorschläge`
-- `resources/views/layouts/app.blade.php:724` — `icon`
-- `resources/views/layouts/app.blade.php:724` — `modal`
-- `resources/views/layouts/app.blade.php:724` — `matches`
-- `resources/views/layouts/app.blade.php:725` — `route`
-- `resources/views/layouts/app.blade.php:725` — `location.devices.index', 'label`
-- `resources/views/layouts/app.blade.php:725` — `Meine Geräte`
-- `resources/views/layouts/app.blade.php:725` — `icon`
-- `resources/views/layouts/app.blade.php:725` — `smartphone',    'modal`
-- `resources/views/layouts/app.blade.php:725` — `matches`
-- `resources/views/layouts/app.blade.php:729` — `sales',
-                                    'label`
-- `resources/views/layouts/app.blade.php:731` — `collapsible`
-- `resources/views/layouts/app.blade.php:732` — `groups`
-- `resources/views/layouts/app.blade.php:734` — `sales-crm',
-                                            'label`
-- `resources/views/layouts/app.blade.php:735` — `Vertrieb`
-- `resources/views/layouts/app.blade.php:736` — `icon`
-- `resources/views/layouts/app.blade.php:736` — `badge',
-                                            'items`
-- `resources/views/layouts/app.blade.php:738` — `route`
-- `resources/views/layouts/app.blade.php:738` — `customers.index', 'label`
-- `resources/views/layouts/app.blade.php:738` — `Kunden`
-- `resources/views/layouts/app.blade.php:738` — `icon`
-- `resources/views/layouts/app.blade.php:738` — `badge',          'modal`
-- `resources/views/layouts/app.blade.php:738` — `matches`
-- `resources/views/layouts/app.blade.php:739` — `route`
-- `resources/views/layouts/app.blade.php:739` — `suppliers.index', 'label`
-- `resources/views/layouts/app.blade.php:739` — `Lieferanten`
-- `resources/views/layouts/app.blade.php:739` — `icon`
-- `resources/views/layouts/app.blade.php:739` — `modal`
-- `resources/views/layouts/app.blade.php:739` — `matches`
-- `resources/views/layouts/app.blade.php:740` — `route`
-- `resources/views/layouts/app.blade.php:740` — `projects.index',  'label`
-- `resources/views/layouts/app.blade.php:740` — `Projekte`
-- `resources/views/layouts/app.blade.php:740` — `icon`
-- `resources/views/layouts/app.blade.php:740` — `modal`
-- `resources/views/layouts/app.blade.php:740` — `matches`
-- `resources/views/layouts/app.blade.php:741` — `route`
-- `resources/views/layouts/app.blade.php:741` — `events.index',    'label`
-- `resources/views/layouts/app.blade.php:741` — `Veranstaltungen`
-- `resources/views/layouts/app.blade.php:741` — `icon`
-- `resources/views/layouts/app.blade.php:741` — `event',          'modal`
-- `resources/views/layouts/app.blade.php:741` — `matches`
-- `resources/views/layouts/app.blade.php:744` — `route`
-- `resources/views/layouts/app.blade.php:744` — `tenders.index',   'label`
-- `resources/views/layouts/app.blade.php:744` — `Ausschreibungen`
-- `resources/views/layouts/app.blade.php:744` — `icon`
-- `resources/views/layouts/app.blade.php:744` — `gavel',          'modal`
-- `resources/views/layouts/app.blade.php:744` — `matches`
-- `resources/views/layouts/app.blade.php:748` — `sales-recruiting',
-                                            'label`
-- `resources/views/layouts/app.blade.php:749` — `Personalgewinnung`
-- `resources/views/layouts/app.blade.php:750` — `icon`
-- `resources/views/layouts/app.blade.php:751` — `items`
-- `resources/views/layouts/app.blade.php:753` — `route`
-- `resources/views/layouts/app.blade.php:753` — `recruiting.requisitions.index', 'label`
-- `resources/views/layouts/app.blade.php:753` — `Stellen`
-- `resources/views/layouts/app.blade.php:753` — `icon`
-- `resources/views/layouts/app.blade.php:753` — `work', 'modal`
-- `resources/views/layouts/app.blade.php:753` — `matches`
-- `resources/views/layouts/app.blade.php:754` — `route`
-- `resources/views/layouts/app.blade.php:754` — `recruiting.applications.index', 'label`
-- `resources/views/layouts/app.blade.php:754` — `Bewerbungen`
-- `resources/views/layouts/app.blade.php:754` — `icon`
-- `resources/views/layouts/app.blade.php:754` — `modal`
-- `resources/views/layouts/app.blade.php:754` — `matches`
-- `resources/views/layouts/app.blade.php:758` — `sales-inventory',
-                                            'label`
-- `resources/views/layouts/app.blade.php:760` — `icon`
-- `resources/views/layouts/app.blade.php:760` — `warehouse',
-                                            'items`
-- `resources/views/layouts/app.blade.php:762` — `route`
-- `resources/views/layouts/app.blade.php:762` — `articles.index',  'label`
-- `resources/views/layouts/app.blade.php:762` — `icon`
-- `resources/views/layouts/app.blade.php:762` — `modal`
-- `resources/views/layouts/app.blade.php:762` — `matches`
-- `resources/views/layouts/app.blade.php:763` — `route`
-- `resources/views/layouts/app.blade.php:763` — `warehouses.index','label`
-- `resources/views/layouts/app.blade.php:763` — `icon`
-- `resources/views/layouts/app.blade.php:763` — `warehouse',       'modal`
-- `resources/views/layouts/app.blade.php:763` — `matches`
-- `resources/views/layouts/app.blade.php:764` — `route`
-- `resources/views/layouts/app.blade.php:764` — `manufacturing-orders.index','label`
-- `resources/views/layouts/app.blade.php:764` — `icon`
-- `resources/views/layouts/app.blade.php:764` — `modal`
-- `resources/views/layouts/app.blade.php:764` — `matches`
-- `resources/views/layouts/app.blade.php:765` — `route`
-- `resources/views/layouts/app.blade.php:765` — `serials.index',   'label`
-- `resources/views/layouts/app.blade.php:765` — `icon`
-- `resources/views/layouts/app.blade.php:765` — `tag', 'modal`
-- `resources/views/layouts/app.blade.php:765` — `matches`
-- `resources/views/layouts/app.blade.php:766` — `route`
-- `resources/views/layouts/app.blade.php:766` — `purchase-orders.index','label`
-- `resources/views/layouts/app.blade.php:766` — `icon`
-- `resources/views/layouts/app.blade.php:766` — `modal`
-- `resources/views/layouts/app.blade.php:766` — `matches`
-- `resources/views/layouts/app.blade.php:767` — `route`
-- `resources/views/layouts/app.blade.php:767` — `supplier-catalogs.index','label`
-- `resources/views/layouts/app.blade.php:767` — `icon`
-- `resources/views/layouts/app.blade.php:767` — `modal`
-- `resources/views/layouts/app.blade.php:767` — `matches`
-- `resources/views/layouts/app.blade.php:768` — `route`
-- `resources/views/layouts/app.blade.php:768` — `pricing-margin-rules.index','label`
-- `resources/views/layouts/app.blade.php:768` — `icon`
-- `resources/views/layouts/app.blade.php:768` — `percent', 'modal`
-- `resources/views/layouts/app.blade.php:768` — `matches`
-- `resources/views/layouts/app.blade.php:769` — `route`
-- `resources/views/layouts/app.blade.php:769` — `bill-of-quantities.index','label`
-- `resources/views/layouts/app.blade.php:769` — `icon`
-- `resources/views/layouts/app.blade.php:769` — `modal`
-- `resources/views/layouts/app.blade.php:769` — `matches`
-- `resources/views/layouts/app.blade.php:770` — `route`
-- `resources/views/layouts/app.blade.php:770` — `inventory.scan',  'label`
-- `resources/views/layouts/app.blade.php:770` — `icon`
-- `resources/views/layouts/app.blade.php:770` — `modal`
-- `resources/views/layouts/app.blade.php:770` — `matches`
-- `resources/views/layouts/app.blade.php:771` — `route`
-- `resources/views/layouts/app.blade.php:771` — `work-centers.index','label`
-- `resources/views/layouts/app.blade.php:771` — `icon`
-- `resources/views/layouts/app.blade.php:771` — `modal`
-- `resources/views/layouts/app.blade.php:771` — `matches`
-- `resources/views/layouts/app.blade.php:772` — `route`
-- `resources/views/layouts/app.blade.php:772` — `inventory.lots',  'label`
-- `resources/views/layouts/app.blade.php:772` — `icon`
-- `resources/views/layouts/app.blade.php:772` — `modal`
-- `resources/views/layouts/app.blade.php:772` — `matches`
-- `resources/views/layouts/app.blade.php:773` — `route`
-- `resources/views/layouts/app.blade.php:773` — `inventory.label-templates.index', 'label`
-- `resources/views/layouts/app.blade.php:773` — `icon`
-- `resources/views/layouts/app.blade.php:773` — `label', 'modal`
-- `resources/views/layouts/app.blade.php:773` — `matches`
-- `resources/views/layouts/app.blade.php:777` — `sales-billing',
-                                            'label`
-- `resources/views/layouts/app.blade.php:779` — `icon`
-- `resources/views/layouts/app.blade.php:780` — `items`
-- `resources/views/layouts/app.blade.php:781` — `route`
-- `resources/views/layouts/app.blade.php:781` — `invoices.index',  'label`
-- `resources/views/layouts/app.blade.php:781` — `icon`
-- `resources/views/layouts/app.blade.php:781` — `modal`
-- `resources/views/layouts/app.blade.php:781` — `matches`
-- `resources/views/layouts/app.blade.php:784` — `route`
-- `resources/views/layouts/app.blade.php:784` — `finance.transfers.index', 'label`
-- `resources/views/layouts/app.blade.php:784` — `icon`
-- `resources/views/layouts/app.blade.php:784` — `outbox', 'modal`
-- `resources/views/layouts/app.blade.php:784` — `matches`
-- `resources/views/layouts/app.blade.php:788` — `route`
-- `resources/views/layouts/app.blade.php:788` — `finance.datev.index', 'label`
-- `resources/views/layouts/app.blade.php:788` — `icon`
-- `resources/views/layouts/app.blade.php:788` — `modal`
-- `resources/views/layouts/app.blade.php:788` — `matches`
-- `resources/views/layouts/app.blade.php:792` — `route`
-- `resources/views/layouts/app.blade.php:792` — `finance.gobd.index', 'label`
-- `resources/views/layouts/app.blade.php:792` — `icon`
-- `resources/views/layouts/app.blade.php:792` — `gavel', 'modal`
-- `resources/views/layouts/app.blade.php:792` — `matches`
-- `resources/views/layouts/app.blade.php:793` — `route`
-- `resources/views/layouts/app.blade.php:793` — `lexoffice.articles.index', 'label`
-- `resources/views/layouts/app.blade.php:793` — `icon`
-- `resources/views/layouts/app.blade.php:793` — `modal`
-- `resources/views/layouts/app.blade.php:793` — `matches`
-- `resources/views/layouts/app.blade.php:796` — `route`
-- `resources/views/layouts/app.blade.php:796` — `investments.index', 'label`
-- `resources/views/layouts/app.blade.php:796` — `Investitionen`
-- `resources/views/layouts/app.blade.php:796` — `icon`
-- `resources/views/layouts/app.blade.php:796` — `modal`
-- `resources/views/layouts/app.blade.php:796` — `matches`
-- `resources/views/layouts/app.blade.php:804` — `viewAny`
-- `resources/views/layouts/app.blade.php:806` — `compliance',
-                                        'label`
-- `resources/views/layouts/app.blade.php:807` — `Compliance`
-- `resources/views/layouts/app.blade.php:808` — `collapsible`
-- `resources/views/layouts/app.blade.php:809` — `items`
-- `resources/views/layouts/app.blade.php:810` — `route`
-- `resources/views/layouts/app.blade.php:810` — `whistleblowing.internal.index', 'label`
-- `resources/views/layouts/app.blade.php:810` — `Meldestelle`
-- `resources/views/layouts/app.blade.php:810` — `icon`
-- `resources/views/layouts/app.blade.php:810` — `report', 'modal`
-- `resources/views/layouts/app.blade.php:810` — `matches`
-- `resources/views/layouts/app.blade.php:816` — `viewAny`
-- `resources/views/layouts/app.blade.php:818` — `sustainability',
-                                        'label`
-- `resources/views/layouts/app.blade.php:819` — `Nachhaltigkeit`
-- `resources/views/layouts/app.blade.php:820` — `collapsible`
-- `resources/views/layouts/app.blade.php:821` — `items`
-- `resources/views/layouts/app.blade.php:822` — `route`
-- `resources/views/layouts/app.blade.php:822` — `sustainability.index', 'label`
-- `resources/views/layouts/app.blade.php:822` — `icon`
-- `resources/views/layouts/app.blade.php:822` — `eco', 'modal`
-- `resources/views/layouts/app.blade.php:822` — `matches`
-- `resources/views/layouts/app.blade.php:828` — `viewAny`
-- `resources/views/layouts/app.blade.php:830` — `claims',
-                                        'label`
-- `resources/views/layouts/app.blade.php:831` — `Reklamationen`
-- `resources/views/layouts/app.blade.php:832` — `collapsible`
-- `resources/views/layouts/app.blade.php:833` — `items`
-- `resources/views/layouts/app.blade.php:834` — `route`
-- `resources/views/layouts/app.blade.php:834` — `claims.index', 'label`
-- `resources/views/layouts/app.blade.php:834` — `Reklamationsakten`
-- `resources/views/layouts/app.blade.php:834` — `icon`
-- `resources/views/layouts/app.blade.php:834` — `modal`
-- `resources/views/layouts/app.blade.php:834` — `matches`
-- `resources/views/layouts/app.blade.php:834` — `claims.index', 'claims.show`
-- `resources/views/layouts/app.blade.php:835` — `route`
-- `resources/views/layouts/app.blade.php:835` — `claims.reports.index', 'label`
-- `resources/views/layouts/app.blade.php:835` — `Qualitätsbericht`
-- `resources/views/layouts/app.blade.php:835` — `icon`
-- `resources/views/layouts/app.blade.php:835` — `modal`
-- `resources/views/layouts/app.blade.php:835` — `matches`
-- `resources/views/layouts/app.blade.php:841` — `viewAny`
-- `resources/views/layouts/app.blade.php:843` — `rental',
-                                        'label`
-- `resources/views/layouts/app.blade.php:844` — `Verleih`
-- `resources/views/layouts/app.blade.php:845` — `collapsible`
-- `resources/views/layouts/app.blade.php:846` — `items`
-- `resources/views/layouts/app.blade.php:847` — `route`
-- `resources/views/layouts/app.blade.php:847` — `rental.index', 'label`
-- `resources/views/layouts/app.blade.php:847` — `Verleihakten`
-- `resources/views/layouts/app.blade.php:847` — `icon`
-- `resources/views/layouts/app.blade.php:847` — `forklift', 'modal`
-- `resources/views/layouts/app.blade.php:847` — `matches`
-- `resources/views/layouts/app.blade.php:847` — `rental.index', 'rental.show`
-- `resources/views/layouts/app.blade.php:848` — `route`
-- `resources/views/layouts/app.blade.php:848` — `rental.calendar', 'label`
-- `resources/views/layouts/app.blade.php:848` — `Verfügbarkeitskalender`
-- `resources/views/layouts/app.blade.php:848` — `icon`
-- `resources/views/layouts/app.blade.php:848` — `modal`
-- `resources/views/layouts/app.blade.php:848` — `matches`
-- `resources/views/layouts/app.blade.php:849` — `route`
-- `resources/views/layouts/app.blade.php:849` — `rental.profiles.index', 'label`
-- `resources/views/layouts/app.blade.php:849` — `Gerätepool`
-- `resources/views/layouts/app.blade.php:849` — `icon`
-- `resources/views/layouts/app.blade.php:849` — `modal`
-- `resources/views/layouts/app.blade.php:849` — `matches`
-- `resources/views/layouts/app.blade.php:850` — `route`
-- `resources/views/layouts/app.blade.php:850` — `rental.rates.index', 'label`
-- `resources/views/layouts/app.blade.php:850` — `Preislisten`
-- `resources/views/layouts/app.blade.php:850` — `icon`
-- `resources/views/layouts/app.blade.php:850` — `modal`
-- `resources/views/layouts/app.blade.php:850` — `matches`
-- `resources/views/layouts/app.blade.php:851` — `route`
-- `resources/views/layouts/app.blade.php:851` — `rental.reports.index', 'label`
-- `resources/views/layouts/app.blade.php:851` — `Verleihbericht`
-- `resources/views/layouts/app.blade.php:851` — `icon`
-- `resources/views/layouts/app.blade.php:851` — `modal`
-- `resources/views/layouts/app.blade.php:851` — `matches`
-- `resources/views/layouts/app.blade.php:857` — `viewAny`
-- `resources/views/layouts/app.blade.php:859` — `asset-finance',
-                                        'label`
-- `resources/views/layouts/app.blade.php:861` — `collapsible`
-- `resources/views/layouts/app.blade.php:862` — `items`
-- `resources/views/layouts/app.blade.php:863` — `route`
-- `resources/views/layouts/app.blade.php:863` — `asset-finance.index', 'label`
-- `resources/views/layouts/app.blade.php:863` — `Leasingakten`
-- `resources/views/layouts/app.blade.php:863` — `icon`
-- `resources/views/layouts/app.blade.php:863` — `modal`
-- `resources/views/layouts/app.blade.php:863` — `matches`
-- `resources/views/layouts/app.blade.php:863` — `asset-finance.index', 'asset-finance.show`
-- `resources/views/layouts/app.blade.php:864` — `route`
-- `resources/views/layouts/app.blade.php:864` — `asset-finance.deadlines.index', 'label`
-- `resources/views/layouts/app.blade.php:864` — `Fristenkalender`
-- `resources/views/layouts/app.blade.php:864` — `icon`
-- `resources/views/layouts/app.blade.php:864` — `modal`
-- `resources/views/layouts/app.blade.php:864` — `matches`
-- `resources/views/layouts/app.blade.php:865` — `route`
-- `resources/views/layouts/app.blade.php:865` — `asset-finance.reports.index', 'label`
-- `resources/views/layouts/app.blade.php:865` — `Leasingbericht`
-- `resources/views/layouts/app.blade.php:865` — `icon`
-- `resources/views/layouts/app.blade.php:865` — `modal`
-- `resources/views/layouts/app.blade.php:865` — `matches`
-- `resources/views/layouts/app.blade.php:871` — `viewAny`
-- `resources/views/layouts/app.blade.php:873` — `asset-compliance',
-                                        'label`
-- `resources/views/layouts/app.blade.php:874` — `Prüfmittel`
-- `resources/views/layouts/app.blade.php:875` — `collapsible`
-- `resources/views/layouts/app.blade.php:876` — `items`
-- `resources/views/layouts/app.blade.php:877` — `route`
-- `resources/views/layouts/app.blade.php:877` — `asset-compliance.index', 'label`
-- `resources/views/layouts/app.blade.php:877` — `Prüf-Dashboard`
-- `resources/views/layouts/app.blade.php:877` — `icon`
-- `resources/views/layouts/app.blade.php:877` — `modal`
-- `resources/views/layouts/app.blade.php:877` — `matches`
-- `resources/views/layouts/app.blade.php:877` — `asset-compliance.index`
-- `resources/views/layouts/app.blade.php:878` — `route`
-- `resources/views/layouts/app.blade.php:878` — `asset-compliance.profiles.index', 'label`
-- `resources/views/layouts/app.blade.php:878` — `Prüfprofile`
-- `resources/views/layouts/app.blade.php:878` — `icon`
-- `resources/views/layouts/app.blade.php:878` — `checklist', 'modal`
-- `resources/views/layouts/app.blade.php:878` — `matches`
-- `resources/views/layouts/app.blade.php:879` — `route`
-- `resources/views/layouts/app.blade.php:879` — `asset-compliance.schedules.index', 'label`
-- `resources/views/layouts/app.blade.php:879` — `Prüfkalender`
-- `resources/views/layouts/app.blade.php:879` — `icon`
-- `resources/views/layouts/app.blade.php:879` — `modal`
-- `resources/views/layouts/app.blade.php:879` — `matches`
-- `resources/views/layouts/app.blade.php:880` — `route`
-- `resources/views/layouts/app.blade.php:880` — `asset-compliance.reports.index', 'label`
-- `resources/views/layouts/app.blade.php:880` — `Auditbericht`
-- `resources/views/layouts/app.blade.php:880` — `icon`
-- `resources/views/layouts/app.blade.php:880` — `modal`
-- `resources/views/layouts/app.blade.php:880` — `matches`
-- `resources/views/layouts/app.blade.php:886` — `viewAny`
-- `resources/views/layouts/app.blade.php:888` — `crisis',
-                                        'label`
-- `resources/views/layouts/app.blade.php:889` — `Krisenmanagement`
-- `resources/views/layouts/app.blade.php:890` — `collapsible`
-- `resources/views/layouts/app.blade.php:891` — `items`
-- `resources/views/layouts/app.blade.php:892` — `route`
-- `resources/views/layouts/app.blade.php:892` — `crisis.index', 'label`
-- `resources/views/layouts/app.blade.php:892` — `Krisenakten`
-- `resources/views/layouts/app.blade.php:892` — `icon`
-- `resources/views/layouts/app.blade.php:892` — `modal`
-- `resources/views/layouts/app.blade.php:892` — `matches`
-- `resources/views/layouts/app.blade.php:892` — `crisis.index', 'crisis.show`
-- `resources/views/layouts/app.blade.php:893` — `route`
-- `resources/views/layouts/app.blade.php:893` — `crisis.exercises.index', 'label`
-- `resources/views/layouts/app.blade.php:893` — `Übungen`
-- `resources/views/layouts/app.blade.php:893` — `icon`
-- `resources/views/layouts/app.blade.php:893` — `modal`
-- `resources/views/layouts/app.blade.php:893` — `matches`
-- `resources/views/layouts/app.blade.php:900` — `viewAny`
-- `resources/views/layouts/app.blade.php:901` — `viewAny`
-- `resources/views/layouts/app.blade.php:904` — `datenschutz',
-                                        'label`
-- `resources/views/layouts/app.blade.php:905` — `Datenschutz`
-- `resources/views/layouts/app.blade.php:906` — `collapsible`
-- `resources/views/layouts/app.blade.php:907` — `groups`
-- `resources/views/layouts/app.blade.php:909` — `datenschutz-records',
-                                                'label`
-- `resources/views/layouts/app.blade.php:910` — `Verzeichnisse`
-- `resources/views/layouts/app.blade.php:911` — `icon`
-- `resources/views/layouts/app.blade.php:912` — `items`
-- `resources/views/layouts/app.blade.php:913` — `route`
-- `resources/views/layouts/app.blade.php:913` — `dataprotection.activities.index', 'label`
-- `resources/views/layouts/app.blade.php:913` — `Verarbeitungstätigkeiten`
-- `resources/views/layouts/app.blade.php:913` — `icon`
-- `resources/views/layouts/app.blade.php:913` — `modal`
-- `resources/views/layouts/app.blade.php:913` — `matches`
-- `resources/views/layouts/app.blade.php:914` — `route`
-- `resources/views/layouts/app.blade.php:914` — `dataprotection.processors.index', 'label`
-- `resources/views/layouts/app.blade.php:914` — `icon`
-- `resources/views/layouts/app.blade.php:914` — `handshake', 'modal`
-- `resources/views/layouts/app.blade.php:914` — `matches`
-- `resources/views/layouts/app.blade.php:915` — `route`
-- `resources/views/layouts/app.blade.php:915` — `dataprotection.gvv.index', 'label`
-- `resources/views/layouts/app.blade.php:915` — `Gemeinsame Verantwortlichkeit`
-- `resources/views/layouts/app.blade.php:915` — `icon`
-- `resources/views/layouts/app.blade.php:915` — `modal`
-- `resources/views/layouts/app.blade.php:915` — `matches`
-- `resources/views/layouts/app.blade.php:916` — `route`
-- `resources/views/layouts/app.blade.php:916` — `dataprotection.tom.index', 'label`
-- `resources/views/layouts/app.blade.php:916` — `TOM-Katalog`
-- `resources/views/layouts/app.blade.php:916` — `icon`
-- `resources/views/layouts/app.blade.php:916` — `modal`
-- `resources/views/layouts/app.blade.php:916` — `matches`
-- `resources/views/layouts/app.blade.php:920` — `datenschutz-cases',
-                                                'label`
-- `resources/views/layouts/app.blade.php:922` — `icon`
-- `resources/views/layouts/app.blade.php:923` — `items`
-- `resources/views/layouts/app.blade.php:924` — `route`
-- `resources/views/layouts/app.blade.php:924` — `dataprotection.requests.index', 'label`
-- `resources/views/layouts/app.blade.php:924` — `Betroffenenanfragen`
-- `resources/views/layouts/app.blade.php:924` — `icon`
-- `resources/views/layouts/app.blade.php:924` — `modal`
-- `resources/views/layouts/app.blade.php:924` — `matches`
-- `resources/views/layouts/app.blade.php:925` — `route`
-- `resources/views/layouts/app.blade.php:925` — `dataprotection.incidents.index', 'label`
-- `resources/views/layouts/app.blade.php:925` — `Datenschutzvorfälle`
-- `resources/views/layouts/app.blade.php:925` — `icon`
-- `resources/views/layouts/app.blade.php:925` — `modal`
-- `resources/views/layouts/app.blade.php:925` — `matches`
-- `resources/views/layouts/app.blade.php:926` — `route`
-- `resources/views/layouts/app.blade.php:926` — `dataprotection.compliance.index', 'label`
-- `resources/views/layouts/app.blade.php:926` — `Lückenanalyse`
-- `resources/views/layouts/app.blade.php:926` — `icon`
-- `resources/views/layouts/app.blade.php:926` — `rule', 'modal`
-- `resources/views/layouts/app.blade.php:926` — `matches`
-- `resources/views/layouts/app.blade.php:934` — `viewAny`
-- `resources/views/layouts/app.blade.php:936` — `isms',
-                                        'label`
-- `resources/views/layouts/app.blade.php:938` — `collapsible`
-- `resources/views/layouts/app.blade.php:939` — `groups`
-- `resources/views/layouts/app.blade.php:941` — `isms-governance',
-                                                'label`
-- `resources/views/layouts/app.blade.php:942` — `Steuerung`
-- `resources/views/layouts/app.blade.php:943` — `icon`
-- `resources/views/layouts/app.blade.php:943` — `monitoring',
-                                                'items`
-- `resources/views/layouts/app.blade.php:946` — `route`
-- `resources/views/layouts/app.blade.php:946` — `isms.dashboard', 'label`
-- `resources/views/layouts/app.blade.php:946` — `icon`
-- `resources/views/layouts/app.blade.php:946` — `monitoring', 'modal`
-- `resources/views/layouts/app.blade.php:946` — `matches`
-- `resources/views/layouts/app.blade.php:948` — `route`
-- `resources/views/layouts/app.blade.php:948` — `isms.readiness', 'label`
-- `resources/views/layouts/app.blade.php:948` — `icon`
-- `resources/views/layouts/app.blade.php:948` — `speed', 'modal`
-- `resources/views/layouts/app.blade.php:948` — `matches`
-- `resources/views/layouts/app.blade.php:949` — `route`
-- `resources/views/layouts/app.blade.php:949` — `isms.requirements.index', 'label`
-- `resources/views/layouts/app.blade.php:949` — `icon`
-- `resources/views/layouts/app.blade.php:949` — `checklist', 'modal`
-- `resources/views/layouts/app.blade.php:949` — `matches`
-- `resources/views/layouts/app.blade.php:950` — `route`
-- `resources/views/layouts/app.blade.php:950` — `isms.csf', 'label`
-- `resources/views/layouts/app.blade.php:950` — `icon`
-- `resources/views/layouts/app.blade.php:950` — `radar', 'modal`
-- `resources/views/layouts/app.blade.php:950` — `matches`
-- `resources/views/layouts/app.blade.php:950` — `isms.csf', `
-- `resources/views/layouts/app.blade.php:951` — `route`
-- `resources/views/layouts/app.blade.php:951` — `isms.controls.index', 'label`
-- `resources/views/layouts/app.blade.php:951` — `icon`
-- `resources/views/layouts/app.blade.php:951` — `modal`
-- `resources/views/layouts/app.blade.php:951` — `matches`
-- `resources/views/layouts/app.blade.php:952` — `route`
-- `resources/views/layouts/app.blade.php:952` — `isms.risks.index', 'label`
-- `resources/views/layouts/app.blade.php:952` — `icon`
-- `resources/views/layouts/app.blade.php:952` — `modal`
-- `resources/views/layouts/app.blade.php:952` — `matches`
-- `resources/views/layouts/app.blade.php:956` — `isms-operations',
-                                                'label`
-- `resources/views/layouts/app.blade.php:957` — `Betrieb`
-- `resources/views/layouts/app.blade.php:958` — `icon`
-- `resources/views/layouts/app.blade.php:958` — `report',
-                                                'items`
-- `resources/views/layouts/app.blade.php:961` — `route`
-- `resources/views/layouts/app.blade.php:961` — `isms.incidents.index', 'label`
-- `resources/views/layouts/app.blade.php:961` — `icon`
-- `resources/views/layouts/app.blade.php:961` — `report', 'modal`
-- `resources/views/layouts/app.blade.php:961` — `matches`
-- `resources/views/layouts/app.blade.php:962` — `route`
-- `resources/views/layouts/app.blade.php:962` — `isms.vulnerabilities.index', 'label`
-- `resources/views/layouts/app.blade.php:962` — `icon`
-- `resources/views/layouts/app.blade.php:962` — `modal`
-- `resources/views/layouts/app.blade.php:962` — `matches`
-- `resources/views/layouts/app.blade.php:963` — `route`
-- `resources/views/layouts/app.blade.php:963` — `isms.software.index', 'label`
-- `resources/views/layouts/app.blade.php:963` — `icon`
-- `resources/views/layouts/app.blade.php:963` — `apps', 'modal`
-- `resources/views/layouts/app.blade.php:963` — `matches`
-- `resources/views/layouts/app.blade.php:967` — `isms-audit',
-                                                'label`
-- `resources/views/layouts/app.blade.php:969` — `icon`
-- `resources/views/layouts/app.blade.php:969` — `handshake',
-                                                'items`
-- `resources/views/layouts/app.blade.php:972` — `route`
-- `resources/views/layouts/app.blade.php:972` — `isms.suppliers.index', 'label`
-- `resources/views/layouts/app.blade.php:972` — `icon`
-- `resources/views/layouts/app.blade.php:972` — `handshake', 'modal`
-- `resources/views/layouts/app.blade.php:972` — `matches`
-- `resources/views/layouts/app.blade.php:973` — `route`
-- `resources/views/layouts/app.blade.php:973` — `isms.conformity.index', 'label`
-- `resources/views/layouts/app.blade.php:973` — `icon`
-- `resources/views/layouts/app.blade.php:973` — `modal`
-- `resources/views/layouts/app.blade.php:973` — `matches`
-- `resources/views/layouts/app.blade.php:974` — `route`
-- `resources/views/layouts/app.blade.php:974` — `isms.audits.index', 'label`
-- `resources/views/layouts/app.blade.php:974` — `icon`
-- `resources/views/layouts/app.blade.php:974` — `modal`
-- `resources/views/layouts/app.blade.php:974` — `matches`
-- `resources/views/layouts/app.blade.php:975` — `route`
-- `resources/views/layouts/app.blade.php:975` — `isms.reviews.index', 'label`
-- `resources/views/layouts/app.blade.php:975` — `icon`
-- `resources/views/layouts/app.blade.php:975` — `grading', 'modal`
-- `resources/views/layouts/app.blade.php:975` — `matches`
-- `resources/views/layouts/app.blade.php:976` — `route`
-- `resources/views/layouts/app.blade.php:976` — `isms.packages.index', 'label`
-- `resources/views/layouts/app.blade.php:976` — `icon`
-- `resources/views/layouts/app.blade.php:976` — `modal`
-- `resources/views/layouts/app.blade.php:976` — `matches`
-- `resources/views/layouts/app.blade.php:977` — `route`
-- `resources/views/layouts/app.blade.php:977` — `isms.soa', 'label`
-- `resources/views/layouts/app.blade.php:977` — `icon`
-- `resources/views/layouts/app.blade.php:977` — `modal`
-- `resources/views/layouts/app.blade.php:977` — `matches`
-- `resources/views/layouts/app.blade.php:979` — `viewAny`
-- `resources/views/layouts/app.blade.php:980` — `route`
-- `resources/views/layouts/app.blade.php:980` — `isms.scopes.index', 'label`
-- `resources/views/layouts/app.blade.php:980` — `icon`
-- `resources/views/layouts/app.blade.php:980` — `modal`
-- `resources/views/layouts/app.blade.php:980` — `matches`
-- `resources/views/layouts/app.blade.php:988` — `reports',
-                                    'label`
-- `resources/views/layouts/app.blade.php:989` — `Auswertungen`
-- `resources/views/layouts/app.blade.php:990` — `collapsible`
-- `resources/views/layouts/app.blade.php:991` — `groups`
-- `resources/views/layouts/app.blade.php:993` — `reports-personal',
-                                            'label`
-- `resources/views/layouts/app.blade.php:994` — `Persönlich`
-- `resources/views/layouts/app.blade.php:995` — `icon`
-- `resources/views/layouts/app.blade.php:995` — `person',
-                                            'items`
-- `resources/views/layouts/app.blade.php:997` — `route`
-- `resources/views/layouts/app.blade.php:997` — `reports.my-month',     'label`
-- `resources/views/layouts/app.blade.php:997` — `Mein Monat`
-- `resources/views/layouts/app.blade.php:997` — `icon`
-- `resources/views/layouts/app.blade.php:997` — `modal`
-- `resources/views/layouts/app.blade.php:997` — `matches`
-- `resources/views/layouts/app.blade.php:997` — `reports.my-month`
-- `resources/views/layouts/app.blade.php:998` — `route`
-- `resources/views/layouts/app.blade.php:998` — `reports.my-year',      'label`
-- `resources/views/layouts/app.blade.php:998` — `Mein Jahr`
-- `resources/views/layouts/app.blade.php:998` — `icon`
-- `resources/views/layouts/app.blade.php:998` — `modal`
-- `resources/views/layouts/app.blade.php:998` — `matches`
-- `resources/views/layouts/app.blade.php:998` — `reports.my-year`
-- `resources/views/layouts/app.blade.php:999` — `route`
-- `resources/views/layouts/app.blade.php:999` — `reports.work-balance', 'label`
-- `resources/views/layouts/app.blade.php:999` — `Arbeitsbilanz`
-- `resources/views/layouts/app.blade.php:999` — `icon`
-- `resources/views/layouts/app.blade.php:999` — `balance',             'modal`
-- `resources/views/layouts/app.blade.php:999` — `matches`
-- `resources/views/layouts/app.blade.php:999` — `reports.work-balance`
-- `resources/views/layouts/app.blade.php:1000` — `route`
-- `resources/views/layouts/app.blade.php:1000` — `reports.attendance',   'label`
-- `resources/views/layouts/app.blade.php:1000` — `Anwesenheit`
-- `resources/views/layouts/app.blade.php:1000` — `icon`
-- `resources/views/layouts/app.blade.php:1000` — `modal`
-- `resources/views/layouts/app.blade.php:1000` — `matches`
-- `resources/views/layouts/app.blade.php:1004` — `reports-team',
-                                            'label`
-- `resources/views/layouts/app.blade.php:1005` — `Team`
-- `resources/views/layouts/app.blade.php:1006` — `icon`
-- `resources/views/layouts/app.blade.php:1006` — `groups',
-                                            'items`
-- `resources/views/layouts/app.blade.php:1008` — `route`
-- `resources/views/layouts/app.blade.php:1008` — `reports.week-by-user',   'label`
-- `resources/views/layouts/app.blade.php:1008` — `Woche pro Mitarbeiter`
-- `resources/views/layouts/app.blade.php:1008` — `icon`
-- `resources/views/layouts/app.blade.php:1008` — `modal`
-- `resources/views/layouts/app.blade.php:1008` — `matches`
-- `resources/views/layouts/app.blade.php:1008` — `reports.week-by-user`
-- `resources/views/layouts/app.blade.php:1009` — `route`
-- `resources/views/layouts/app.blade.php:1009` — `reports.month-by-user-team', 'label`
-- `resources/views/layouts/app.blade.php:1009` — `Monat pro Mitarbeiter`
-- `resources/views/layouts/app.blade.php:1009` — `icon`
-- `resources/views/layouts/app.blade.php:1009` — `modal`
-- `resources/views/layouts/app.blade.php:1009` — `matches`
-- `resources/views/layouts/app.blade.php:1009` — `reports.month-by-user-team`
-- `resources/views/layouts/app.blade.php:1010` — `route`
-- `resources/views/layouts/app.blade.php:1010` — `reports.coverage',       'label`
-- `resources/views/layouts/app.blade.php:1010` — `Coverage`
-- `resources/views/layouts/app.blade.php:1010` — `icon`
-- `resources/views/layouts/app.blade.php:1010` — `modal`
-- `resources/views/layouts/app.blade.php:1010` — `matches`
-- `resources/views/layouts/app.blade.php:1011` — `route`
-- `resources/views/layouts/app.blade.php:1011` — `reports.absences',       'label`
-- `resources/views/layouts/app.blade.php:1011` — `icon`
-- `resources/views/layouts/app.blade.php:1011` — `modal`
-- `resources/views/layouts/app.blade.php:1011` — `matches`
-- `resources/views/layouts/app.blade.php:1012` — `route`
-- `resources/views/layouts/app.blade.php:1012` — `reports.sickness',       'label`
-- `resources/views/layouts/app.blade.php:1012` — `Krankheiten`
-- `resources/views/layouts/app.blade.php:1012` — `icon`
-- `resources/views/layouts/app.blade.php:1012` — `sick',        'modal`
-- `resources/views/layouts/app.blade.php:1012` — `matches`
-- `resources/views/layouts/app.blade.php:1013` — `route`
-- `resources/views/layouts/app.blade.php:1013` — `reports.qualifications', 'label`
-- `resources/views/layouts/app.blade.php:1013` — `Qualifikationen`
-- `resources/views/layouts/app.blade.php:1013` — `icon`
-- `resources/views/layouts/app.blade.php:1013` — `verified',    'modal`
-- `resources/views/layouts/app.blade.php:1013` — `matches`
-- `resources/views/layouts/app.blade.php:1016` — `route`
-- `resources/views/layouts/app.blade.php:1016` — `reports.cohort-comparison', 'label`
-- `resources/views/layouts/app.blade.php:1016` — `icon`
-- `resources/views/layouts/app.blade.php:1016` — `modal`
-- `resources/views/layouts/app.blade.php:1016` — `matches`
-- `resources/views/layouts/app.blade.php:1016` — `reports.cohort-comparison`
-- `resources/views/layouts/app.blade.php:1019` — `route`
-- `resources/views/layouts/app.blade.php:1019` — `reports.safety', 'label`
-- `resources/views/layouts/app.blade.php:1019` — `icon`
-- `resources/views/layouts/app.blade.php:1019` — `modal`
-- `resources/views/layouts/app.blade.php:1019` — `matches`
-- `resources/views/layouts/app.blade.php:1024` — `reports-projects',
-                                            'label`
-- `resources/views/layouts/app.blade.php:1026` — `icon`
-- `resources/views/layouts/app.blade.php:1027` — `items`
-- `resources/views/layouts/app.blade.php:1028` — `route`
-- `resources/views/layouts/app.blade.php:1028` — `reports.customers',        'label`
-- `resources/views/layouts/app.blade.php:1028` — `Kundenanalyse`
-- `resources/views/layouts/app.blade.php:1028` — `icon`
-- `resources/views/layouts/app.blade.php:1028` — `modal`
-- `resources/views/layouts/app.blade.php:1028` — `matches`
-- `resources/views/layouts/app.blade.php:1029` — `route`
-- `resources/views/layouts/app.blade.php:1029` — `reports.entry-types',      'label`
-- `resources/views/layouts/app.blade.php:1029` — `Auftragstypanalyse`
-- `resources/views/layouts/app.blade.php:1029` — `icon`
-- `resources/views/layouts/app.blade.php:1029` — `modal`
-- `resources/views/layouts/app.blade.php:1029` — `matches`
-- `resources/views/layouts/app.blade.php:1029` — `reports.entry-types`
-- `resources/views/layouts/app.blade.php:1030` — `route`
-- `resources/views/layouts/app.blade.php:1030` — `reports.assets',           'label`
-- `resources/views/layouts/app.blade.php:1030` — `Produktanalyse`
-- `resources/views/layouts/app.blade.php:1030` — `icon`
-- `resources/views/layouts/app.blade.php:1030` — `modal`
-- `resources/views/layouts/app.blade.php:1030` — `matches`
-- `resources/views/layouts/app.blade.php:1031` — `route`
-- `resources/views/layouts/app.blade.php:1031` — `reports.customer-project', 'label`
-- `resources/views/layouts/app.blade.php:1031` — `icon`
-- `resources/views/layouts/app.blade.php:1031` — `modal`
-- `resources/views/layouts/app.blade.php:1031` — `matches`
-- `resources/views/layouts/app.blade.php:1031` — `reports.customer-project`
-- `resources/views/layouts/app.blade.php:1032` — `route`
-- `resources/views/layouts/app.blade.php:1032` — `reports.project-details',  'label`
-- `resources/views/layouts/app.blade.php:1032` — `Projekt-Details`
-- `resources/views/layouts/app.blade.php:1032` — `icon`
-- `resources/views/layouts/app.blade.php:1032` — `analytics',  'modal`
-- `resources/views/layouts/app.blade.php:1032` — `matches`
-- `resources/views/layouts/app.blade.php:1032` — `reports.project-details`
-- `resources/views/layouts/app.blade.php:1033` — `route`
-- `resources/views/layouts/app.blade.php:1033` — `reports.project-inactive', 'label`
-- `resources/views/layouts/app.blade.php:1033` — `Inaktive Projekte`
-- `resources/views/layouts/app.blade.php:1033` — `icon`
-- `resources/views/layouts/app.blade.php:1033` — `modal`
-- `resources/views/layouts/app.blade.php:1033` — `matches`
-- `resources/views/layouts/app.blade.php:1033` — `reports.project-inactive`
-- `resources/views/layouts/app.blade.php:1034` — `route`
-- `resources/views/layouts/app.blade.php:1034` — `reports.operations',       'label`
-- `resources/views/layouts/app.blade.php:1034` — `Operations`
-- `resources/views/layouts/app.blade.php:1034` — `icon`
-- `resources/views/layouts/app.blade.php:1034` — `assignment', 'modal`
-- `resources/views/layouts/app.blade.php:1034` — `matches`
-- `resources/views/layouts/app.blade.php:1037` — `route`
-- `resources/views/layouts/app.blade.php:1037` — `reports.sla',        'label`
-- `resources/views/layouts/app.blade.php:1037` — `icon`
-- `resources/views/layouts/app.blade.php:1037` — `timer', 'modal`
-- `resources/views/layouts/app.blade.php:1037` — `matches`
-- `resources/views/layouts/app.blade.php:1037` — `reports.sla', `
-- `resources/views/layouts/app.blade.php:1041` — `route`
-- `resources/views/layouts/app.blade.php:1041` — `sla-contracts.index', 'label`
-- `resources/views/layouts/app.blade.php:1041` — `SLA-Verträge`
-- `resources/views/layouts/app.blade.php:1041` — `icon`
-- `resources/views/layouts/app.blade.php:1041` — `gavel', 'modal`
-- `resources/views/layouts/app.blade.php:1041` — `matches`
-- `resources/views/layouts/app.blade.php:1041` — `sla-contracts.index', 'sla-contracts.show`
-- `resources/views/layouts/app.blade.php:1046` — `reports-resources',
-                                            'label`
-- `resources/views/layouts/app.blade.php:1047` — `Ressourcen`
-- `resources/views/layouts/app.blade.php:1048` — `icon`
-- `resources/views/layouts/app.blade.php:1049` — `items`
-- `resources/views/layouts/app.blade.php:1050` — `route`
-- `resources/views/layouts/app.blade.php:1050` — `reports.fleet',     'label`
-- `resources/views/layouts/app.blade.php:1050` — `Fuhrpark`
-- `resources/views/layouts/app.blade.php:1050` — `icon`
-- `resources/views/layouts/app.blade.php:1050` — `modal`
-- `resources/views/layouts/app.blade.php:1050` — `matches`
-- `resources/views/layouts/app.blade.php:1051` — `route`
-- `resources/views/layouts/app.blade.php:1051` — `reports.materials', 'label`
-- `resources/views/layouts/app.blade.php:1051` — `Materialien`
-- `resources/views/layouts/app.blade.php:1051` — `icon`
-- `resources/views/layouts/app.blade.php:1051` — `inventory',            'modal`
-- `resources/views/layouts/app.blade.php:1051` — `matches`
-- `resources/views/layouts/app.blade.php:1052` — `route`
-- `resources/views/layouts/app.blade.php:1052` — `reports.on-call',   'label`
-- `resources/views/layouts/app.blade.php:1052` — `Notdienst`
-- `resources/views/layouts/app.blade.php:1052` — `icon`
-- `resources/views/layouts/app.blade.php:1052` — `modal`
-- `resources/views/layouts/app.blade.php:1052` — `matches`
-- `resources/views/layouts/app.blade.php:1052` — `reports.on-call`
-- `resources/views/layouts/app.blade.php:1056` — `reports-finance',
-                                            'label`
-- `resources/views/layouts/app.blade.php:1058` — `icon`
-- `resources/views/layouts/app.blade.php:1059` — `items`
-- `resources/views/layouts/app.blade.php:1062` — `route`
-- `resources/views/layouts/app.blade.php:1062` — `reports.economics', 'label`
-- `resources/views/layouts/app.blade.php:1062` — `Wirtschaftlichkeit`
-- `resources/views/layouts/app.blade.php:1062` — `icon`
-- `resources/views/layouts/app.blade.php:1062` — `modal`
-- `resources/views/layouts/app.blade.php:1062` — `matches`
-- `resources/views/layouts/app.blade.php:1064` — `route`
-- `resources/views/layouts/app.blade.php:1064` — `reports.billing',        'label`
-- `resources/views/layouts/app.blade.php:1064` — `Abrechnung`
-- `resources/views/layouts/app.blade.php:1064` — `icon`
-- `resources/views/layouts/app.blade.php:1064` — `modal`
-- `resources/views/layouts/app.blade.php:1064` — `matches`
-- `resources/views/layouts/app.blade.php:1065` — `route`
-- `resources/views/layouts/app.blade.php:1065` — `reports.expenses',       'label`
-- `resources/views/layouts/app.blade.php:1065` — `Spesen`
-- `resources/views/layouts/app.blade.php:1065` — `icon`
-- `resources/views/layouts/app.blade.php:1065` — `modal`
-- `resources/views/layouts/app.blade.php:1065` — `matches`
-- `resources/views/layouts/app.blade.php:1068` — `route`
-- `resources/views/layouts/app.blade.php:1068` — `reports.external-payouts', 'label`
-- `resources/views/layouts/app.blade.php:1068` — `Externe Auszahlungen`
-- `resources/views/layouts/app.blade.php:1068` — `icon`
-- `resources/views/layouts/app.blade.php:1068` — `payments', 'modal`
-- `resources/views/layouts/app.blade.php:1068` — `matches`
-- `resources/views/layouts/app.blade.php:1068` — `reports.external-payouts`
-- `resources/views/layouts/app.blade.php:1072` — `route`
-- `resources/views/layouts/app.blade.php:1072` — `reports.arbzg-compliance', 'label`
-- `resources/views/layouts/app.blade.php:1072` — `icon`
-- `resources/views/layouts/app.blade.php:1072` — `gavel', 'modal`
-- `resources/views/layouts/app.blade.php:1072` — `matches`
-- `resources/views/layouts/app.blade.php:1072` — `reports.arbzg-compliance`
-- `resources/views/layouts/app.blade.php:1074` — `route`
-- `resources/views/layouts/app.blade.php:1074` — `reports.audit-activity', 'label`
-- `resources/views/layouts/app.blade.php:1074` — `Audit-Aktivität`
-- `resources/views/layouts/app.blade.php:1074` — `icon`
-- `resources/views/layouts/app.blade.php:1074` — `security',      'modal`
-- `resources/views/layouts/app.blade.php:1074` — `matches`
-- `resources/views/layouts/app.blade.php:1074` — `reports.audit-activity`
-- `resources/views/layouts/app.blade.php:1080` — `archive',
-                                    'label`
-- `resources/views/layouts/app.blade.php:1081` — `Archiv`
-- `resources/views/layouts/app.blade.php:1082` — `collapsible`
-- `resources/views/layouts/app.blade.php:1083` — `items`
-- `resources/views/layouts/app.blade.php:1084` — `route`
-- `resources/views/layouts/app.blade.php:1084` — `archive.index', 'label`
-- `resources/views/layouts/app.blade.php:1084` — `Archiv-Übersicht`
-- `resources/views/layouts/app.blade.php:1084` — `icon`
-- `resources/views/layouts/app.blade.php:1084` — `modal`
-- `resources/views/layouts/app.blade.php:1084` — `matches`
-- `resources/views/layouts/app.blade.php:1093` — `plan`
-- `resources/views/layouts/app.blade.php:1093` — `module.planung',
-                                'travel-expenses`
-- `resources/views/layouts/app.blade.php:1094` — `module.spesen',
-                                'fleet`
-- `resources/views/layouts/app.blade.php:1095` — `module.fuhrpark',
-                                'facility`
-- `resources/views/layouts/app.blade.php:1096` — `module.liegenschaften',
-                                'location`
-- `resources/views/layouts/app.blade.php:1097` — `module.standorterfassung',
-                                'sales`
-- `resources/views/layouts/app.blade.php:1098` — `module.vertrieb',
-                                'compliance`
-- `resources/views/layouts/app.blade.php:1099` — `module.compliance',
-                                'datenschutz`
-- `resources/views/layouts/app.blade.php:1100` — `module.datenschutz',
-                                'isms`
-- `resources/views/layouts/app.blade.php:1114` — `module.kanban',
-                                'agile.reports.overview`
-- `resources/views/layouts/app.blade.php:1116` — `module.applications',
-                                'investments.index`
-- `resources/views/layouts/app.blade.php:1117` — `module.investments',
-                                'crisis.index`
-- `resources/views/layouts/app.blade.php:1119` — `module.sustainability',
-                                'claims.index`
-- `resources/views/layouts/app.blade.php:1120` — `module.claims',
-                                'claims.reports.index`
-- `resources/views/layouts/app.blade.php:1121` — `module.claims',
-                                'rental.index`
-- `resources/views/layouts/app.blade.php:1122` — `module.rental',
-                                'rental.calendar`
-- `resources/views/layouts/app.blade.php:1123` — `module.rental',
-                                'rental.profiles.index`
-- `resources/views/layouts/app.blade.php:1124` — `module.rental',
-                                'rental.rates.index`
-- `resources/views/layouts/app.blade.php:1125` — `module.rental',
-                                'rental.reports.index`
-- `resources/views/layouts/app.blade.php:1126` — `module.rental',
-                                'asset-finance.index`
-- `resources/views/layouts/app.blade.php:1128` — `asset-finance.deadlines.index`
-- `resources/views/layouts/app.blade.php:1129` — `asset-finance.reports.index`
-- `resources/views/layouts/app.blade.php:1130` — `asset-compliance.index`
-- `resources/views/layouts/app.blade.php:1131` — `asset-compliance.profiles.index`
-- `resources/views/layouts/app.blade.php:1132` — `asset-compliance.schedules.index`
-- `resources/views/layouts/app.blade.php:1133` — `asset-compliance.reports.index`
-- `resources/views/layouts/app.blade.php:1135` — `module.applications',
-                                'recruiting.applications.index`
-- `resources/views/layouts/app.blade.php:1136` — `module.applications',
-                                'documents.index`
-- `resources/views/layouts/app.blade.php:1137` — `module.documents',
-                                'knowledge.index`
-- `resources/views/layouts/app.blade.php:1138` — `module.knowledge',
-                                'ideas.index`
-- `resources/views/layouts/app.blade.php:1139` — `module.ideas',
-                                'form-submissions.index`
-- `resources/views/layouts/app.blade.php:1140` — `module.forms',
-                                'finance.transfers.index`
-- `resources/views/layouts/app.blade.php:1141` — `module.finance',
-                                'finance.reconciliation.index`
-- `resources/views/layouts/app.blade.php:1142` — `module.finance',
-                                'finance.bank-accounts.index`
-- `resources/views/layouts/app.blade.php:1143` — `module.finance',
-                                'finance.datev.index`
-- `resources/views/layouts/app.blade.php:1144` — `module.finance',
-                                'finance.gobd.index`
-- `resources/views/layouts/app.blade.php:1148` — `module.lager',
-                                'warehouses.index`
-- `resources/views/layouts/app.blade.php:1149` — `module.lager',
-                                'manufacturing-orders.index`
-- `resources/views/layouts/app.blade.php:1150` — `module.lager',
-                                'serials.index`
-- `resources/views/layouts/app.blade.php:1151` — `module.lager',
-                                'purchase-orders.index`
-- `resources/views/layouts/app.blade.php:1152` — `module.lager',
-                                'supplier-catalogs.index`
-- `resources/views/layouts/app.blade.php:1153` — `module.lager',
-                                'pricing-margin-rules.index`
-- `resources/views/layouts/app.blade.php:1154` — `module.lager',
-                                'inventory.scan`
-- `resources/views/layouts/app.blade.php:1155` — `module.lager',
-                                'work-centers.index`
-- `resources/views/layouts/app.blade.php:1156` — `module.lager',
-                                'inventory.lots`
-- `resources/views/layouts/app.blade.php:1157` — `module.lager',
-                                'inventory.label-templates.index`
-- `resources/views/layouts/app.blade.php:1158` — `module.lager',
-                                'bill-of-quantities.index`
-- `resources/views/layouts/app.blade.php:1162` — `reports-team`
-- `resources/views/layouts/app.blade.php:1163` — `reports-projects`
-- `resources/views/layouts/app.blade.php:1164` — `reports-resources`
-- `resources/views/layouts/app.blade.php:1167` — `items`
-- `resources/views/layouts/app.blade.php:1168` — `items`
-- `resources/views/layouts/app.blade.php:1169` — `items`
-- `resources/views/layouts/app.blade.php:1170` — `route`
-- `resources/views/layouts/app.blade.php:1170` — `route`
-- `resources/views/layouts/app.blade.php:1171` — `route`
-- `resources/views/layouts/app.blade.php:1174` — `groups`
-- `resources/views/layouts/app.blade.php:1176` — `groups`
-- `resources/views/layouts/app.blade.php:1180` — `items`
-- `resources/views/layouts/app.blade.php:1181` — `items`
-- `resources/views/layouts/app.blade.php:1185` — `route`
-- `resources/views/layouts/app.blade.php:1185` — `route`
-- `resources/views/layouts/app.blade.php:1186` — `route`
-- `resources/views/layouts/app.blade.php:1189` — `groups`
-- `resources/views/layouts/app.blade.php:1189` — `items`
-- `resources/views/layouts/app.blade.php:1197` — `items`
-- `resources/views/layouts/app.blade.php:1197` — `groups`
-- `resources/views/layouts/app.blade.php:1203` — `route`
-- `resources/views/layouts/app.blade.php:1207` — `route`
-- `resources/views/layouts/app.blade.php:1213` — `Hauptnavigation`
-- `resources/views/layouts/app.blade.php:1215` — `matches`
-- `resources/views/layouts/app.blade.php:1216` — `route`
-- `resources/views/layouts/app.blade.php:1217` — `modal`
-- `resources/views/layouts/app.blade.php:1218` — `btn-primary`
-- `resources/views/layouts/app.blade.php:1218` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:1219` — `label`
-- `resources/views/layouts/app.blade.php:1225` — `btn btn-sm btn-ghost`
-- `resources/views/layouts/app.blade.php:1225` — `Navigation`
-- `resources/views/layouts/app.blade.php:1228` — `matches`
-- `resources/views/layouts/app.blade.php:1230` — `route`
-- `resources/views/layouts/app.blade.php:1231` — `modal`
-- `resources/views/layouts/app.blade.php:1232` — `active`
-- `resources/views/layouts/app.blade.php:1233` — `label`
-- `resources/views/layouts/app.blade.php:1242` — `route`
-- `resources/views/layouts/app.blade.php:1243` — `icon`
-- `resources/views/layouts/app.blade.php:1243` — `tune'`
-- `resources/views/layouts/app.blade.php:1244` — `primary`
-- `resources/views/layouts/app.blade.php:1244` — `ghost'`
-- `resources/views/layouts/app.blade.php:1246` — `label`
-- `resources/views/layouts/app.blade.php:1247` — `route`
-- `resources/views/layouts/app.blade.php:1253` — `primary`
-- `resources/views/layouts/app.blade.php:1253` — `ghost'`
-- `resources/views/layouts/app.blade.php:1255` — `Archiv`
-- `resources/views/layouts/app.blade.php:1260` — `route`
-- `resources/views/layouts/app.blade.php:1261` — `badge`
-- `resources/views/layouts/app.blade.php:1262` — `indicator`
-- `resources/views/layouts/app.blade.php:1263` — `indicator-item badge badge-xs badge-warning`
-- `resources/views/layouts/app.blade.php:1263` — `badge`
-- `resources/views/layouts/app.blade.php:1263` — `badge`
-- `resources/views/layouts/app.blade.php:1264` — `icon`
-- `resources/views/layouts/app.blade.php:1264` — `tune'`
-- `resources/views/layouts/app.blade.php:1265` — `primary`
-- `resources/views/layouts/app.blade.php:1265` — `ghost'`
-- `resources/views/layouts/app.blade.php:1267` — `label`
-- `resources/views/layouts/app.blade.php:1268` — `route`
-- `resources/views/layouts/app.blade.php:1271` — `icon`
-- `resources/views/layouts/app.blade.php:1271` — `tune'`
-- `resources/views/layouts/app.blade.php:1272` — `primary`
-- `resources/views/layouts/app.blade.php:1272` — `ghost'`
-- `resources/views/layouts/app.blade.php:1274` — `label`
-- `resources/views/layouts/app.blade.php:1275` — `route`
-- `resources/views/layouts/app.blade.php:1280` — `primary`
-- `resources/views/layouts/app.blade.php:1283` — `Neuer Eintrag`
-- `resources/views/layouts/app.blade.php:1286` — `button`
-- `resources/views/layouts/app.blade.php:1287` — `app-sidebar-toggle`
-- `resources/views/layouts/app.blade.php:1289` — `Navigation öffnen`
-- `resources/views/layouts/app.blade.php:1290` — `app-sidebar`
-- `resources/views/layouts/app.blade.php:1291` — `false`
-- `resources/views/layouts/app.blade.php:1292` — `h-5 w-5`
-- `resources/views/layouts/app.blade.php:1292` — `none`
-- `resources/views/layouts/app.blade.php:1292` — `currentColor`
-- `resources/views/layouts/app.blade.php:1293` — `round`
-- `resources/views/layouts/app.blade.php:1293` — `round`
-- `resources/views/layouts/app.blade.php:1293` — `M4 6h16M4 12h16M4 18h16`
-- `resources/views/layouts/app.blade.php:1298` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:1300` — `btn-primary`
-- `resources/views/layouts/app.blade.php:1300` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:1301` — `Verwaltung`
-- `resources/views/layouts/app.blade.php:1302` — `Verwaltung`
-- `resources/views/layouts/app.blade.php:1306` — `header-menu-list menu w-full p-0`
-- `resources/views/layouts/app.blade.php:1310` — `label`
-- `resources/views/layouts/app.blade.php:1310` — `Personal`
-- `resources/views/layouts/app.blade.php:1310` — `icon`
-- `resources/views/layouts/app.blade.php:1310` — `group', 'routes`
-- `resources/views/layouts/app.blade.php:1310` — `org.members.index', 'legacy.users.index', 'qualifications.index`
-- `resources/views/layouts/app.blade.php:1311` — `label`
-- `resources/views/layouts/app.blade.php:1311` — `Planung`
-- `resources/views/layouts/app.blade.php:1311` — `icon`
-- `resources/views/layouts/app.blade.php:1311` — `event', 'routes`
-- `resources/views/layouts/app.blade.php:1311` — `holidays.index', 'shift-types.index', 'event-categories.index`
-- `resources/views/layouts/app.blade.php:1312` — `label`
-- `resources/views/layouts/app.blade.php:1312` — `Kataloge`
-- `resources/views/layouts/app.blade.php:1312` — `icon`
-- `resources/views/layouts/app.blade.php:1312` — `category', 'routes`
-- `resources/views/layouts/app.blade.php:1312` — `materials.index', 'tags.index', 'activity-categories.index`
-- `resources/views/layouts/app.blade.php:1314` — `route`
-- `resources/views/layouts/app.blade.php:1317` — `routes`
-- `resources/views/layouts/app.blade.php:1319` — `label`
-- `resources/views/layouts/app.blade.php:1319` — `label`
-- `resources/views/layouts/app.blade.php:1319` — `icon`
-- `resources/views/layouts/app.blade.php:1319` — `icon`
-- `resources/views/layouts/app.blade.php:1319` — `items`
-- `resources/views/layouts/app.blade.php:1322` — `items`
-- `resources/views/layouts/app.blade.php:1322` — `route`
-- `resources/views/layouts/app.blade.php:1323` — `route`
-- `resources/views/layouts/app.blade.php:1326` — `items`
-- `resources/views/layouts/app.blade.php:1326` — `route`
-- `resources/views/layouts/app.blade.php:1327` — `w-full`
-- `resources/views/layouts/app.blade.php:1329` — `menu-active`
-- `resources/views/layouts/app.blade.php:1330` — `icon`
-- `resources/views/layouts/app.blade.php:1331` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1331` — `label`
-- `resources/views/layouts/app.blade.php:1334` — `items`
-- `resources/views/layouts/app.blade.php:1335` — `route`
-- `resources/views/layouts/app.blade.php:1336` — `w-full`
-- `resources/views/layouts/app.blade.php:1337` — `route`
-- `resources/views/layouts/app.blade.php:1337` — `menu-active`
-- `resources/views/layouts/app.blade.php:1338` — `icon`
-- `resources/views/layouts/app.blade.php:1338` — `tune'`
-- `resources/views/layouts/app.blade.php:1339` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1339` — `label`
-- `resources/views/layouts/app.blade.php:1348` — `route`
-- `resources/views/layouts/app.blade.php:1349` — `w-full`
-- `resources/views/layouts/app.blade.php:1350` — `route`
-- `resources/views/layouts/app.blade.php:1350` — `menu-active`
-- `resources/views/layouts/app.blade.php:1351` — `icon`
-- `resources/views/layouts/app.blade.php:1351` — `tune'`
-- `resources/views/layouts/app.blade.php:1352` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1352` — `label`
-- `resources/views/layouts/app.blade.php:1362` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:1364` — `btn-primary`
-- `resources/views/layouts/app.blade.php:1364` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:1365` — `System`
-- `resources/views/layouts/app.blade.php:1366` — `System`
-- `resources/views/layouts/app.blade.php:1367` — `settings`
-- `resources/views/layouts/app.blade.php:1370` — `header-menu-list menu w-full p-0`
-- `resources/views/layouts/app.blade.php:1374` — `label`
-- `resources/views/layouts/app.blade.php:1374` — `Organisation`
-- `resources/views/layouts/app.blade.php:1374` — `icon`
-- `resources/views/layouts/app.blade.php:1374` — `routes`
-- `resources/views/layouts/app.blade.php:1374` — `admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index`
-- `resources/views/layouts/app.blade.php:1375` — `label`
-- `resources/views/layouts/app.blade.php:1375` — `Stammdaten`
-- `resources/views/layouts/app.blade.php:1375` — `icon`
-- `resources/views/layouts/app.blade.php:1375` — `routes`
-- `resources/views/layouts/app.blade.php:1375` — `admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index`
-- `resources/views/layouts/app.blade.php:1376` — `label`
-- `resources/views/layouts/app.blade.php:1376` — `icon`
-- `resources/views/layouts/app.blade.php:1376` — `routes`
-- `resources/views/layouts/app.blade.php:1376` — `admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit`
-- `resources/views/layouts/app.blade.php:1377` — `label`
-- `resources/views/layouts/app.blade.php:1377` — `icon`
-- `resources/views/layouts/app.blade.php:1377` — `routes`
-- `resources/views/layouts/app.blade.php:1377` — `admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index`
-- `resources/views/layouts/app.blade.php:1378` — `label`
-- `resources/views/layouts/app.blade.php:1378` — `Systembetrieb`
-- `resources/views/layouts/app.blade.php:1378` — `icon`
-- `resources/views/layouts/app.blade.php:1378` — `routes`
-- `resources/views/layouts/app.blade.php:1378` — `audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index`
-- `resources/views/layouts/app.blade.php:1379` — `label`
-- `resources/views/layouts/app.blade.php:1379` — `Plugins`
-- `resources/views/layouts/app.blade.php:1379` — `icon`
-- `resources/views/layouts/app.blade.php:1379` — `extension', 'routes`
-- `resources/views/layouts/app.blade.php:1379` — `admin.plugins.index', 'admin.plugin-errors.index`
-- `resources/views/layouts/app.blade.php:1381` — `route`
-- `resources/views/layouts/app.blade.php:1384` — `routes`
-- `resources/views/layouts/app.blade.php:1386` — `label`
-- `resources/views/layouts/app.blade.php:1386` — `label`
-- `resources/views/layouts/app.blade.php:1386` — `icon`
-- `resources/views/layouts/app.blade.php:1386` — `icon`
-- `resources/views/layouts/app.blade.php:1386` — `items`
-- `resources/views/layouts/app.blade.php:1392` — `label`
-- `resources/views/layouts/app.blade.php:1392` — `Plugins`
-- `resources/views/layouts/app.blade.php:1395` — `items`
-- `resources/views/layouts/app.blade.php:1395` — `items`
-- `resources/views/layouts/app.blade.php:1398` — `label`
-- `resources/views/layouts/app.blade.php:1398` — `Plugins`
-- `resources/views/layouts/app.blade.php:1398` — `icon`
-- `resources/views/layouts/app.blade.php:1398` — `extension', 'items`
-- `resources/views/layouts/app.blade.php:1401` — `items`
-- `resources/views/layouts/app.blade.php:1401` — `route`
-- `resources/views/layouts/app.blade.php:1403` — `route`
-- `resources/views/layouts/app.blade.php:1407` — `items`
-- `resources/views/layouts/app.blade.php:1407` — `route`
-- `resources/views/layouts/app.blade.php:1408` — `items`
-- `resources/views/layouts/app.blade.php:1408` — `badge`
-- `resources/views/layouts/app.blade.php:1410` — `w-full`
-- `resources/views/layouts/app.blade.php:1412` — `menu-active`
-- `resources/views/layouts/app.blade.php:1413` — `icon`
-- `resources/views/layouts/app.blade.php:1414` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1414` — `label`
-- `resources/views/layouts/app.blade.php:1416` — `badge badge-sm badge-warning shrink-0`
-- `resources/views/layouts/app.blade.php:1420` — `items`
-- `resources/views/layouts/app.blade.php:1421` — `route`
-- `resources/views/layouts/app.blade.php:1422` — `w-full`
-- `resources/views/layouts/app.blade.php:1423` — `route`
-- `resources/views/layouts/app.blade.php:1424` — `modal`
-- `resources/views/layouts/app.blade.php:1425` — `menu-active`
-- `resources/views/layouts/app.blade.php:1426` — `icon`
-- `resources/views/layouts/app.blade.php:1426` — `tune'`
-- `resources/views/layouts/app.blade.php:1427` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1427` — `label`
-- `resources/views/layouts/app.blade.php:1428` — `badge`
-- `resources/views/layouts/app.blade.php:1429` — `badge badge-sm badge-warning shrink-0`
-- `resources/views/layouts/app.blade.php:1429` — `badge`
-- `resources/views/layouts/app.blade.php:1429` — `badge`
-- `resources/views/layouts/app.blade.php:1439` — `route`
-- `resources/views/layouts/app.blade.php:1440` — `w-full`
-- `resources/views/layouts/app.blade.php:1441` — `route`
-- `resources/views/layouts/app.blade.php:1442` — `modal`
-- `resources/views/layouts/app.blade.php:1443` — `menu-active`
-- `resources/views/layouts/app.blade.php:1444` — `icon`
-- `resources/views/layouts/app.blade.php:1444` — `tune'`
-- `resources/views/layouts/app.blade.php:1445` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1445` — `label`
-- `resources/views/layouts/app.blade.php:1446` — `badge`
-- `resources/views/layouts/app.blade.php:1447` — `badge badge-sm badge-warning shrink-0`
-- `resources/views/layouts/app.blade.php:1447` — `badge`
-- `resources/views/layouts/app.blade.php:1447` — `badge`
-- `resources/views/layouts/app.blade.php:1463` — `relative flex size-2`
-- `resources/views/layouts/app.blade.php:1464` — `absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75`
-- `resources/views/layouts/app.blade.php:1465` — `relative inline-flex size-2 rounded-full bg-primary`
-- `resources/views/layouts/app.blade.php:1468` — `display`
-- `resources/views/layouts/app.blade.php:1469` — `leading-none`
-- `resources/views/layouts/app.blade.php:1471` — `submit`
-- `resources/views/layouts/app.blade.php:1471` — `btn btn-xs btn-ghost btn-square text-error`
-- `resources/views/layouts/app.blade.php:1471` — `Stoppen`
-- `resources/views/layouts/app.blade.php:1471` — `Stoppen`
-- `resources/views/layouts/app.blade.php:1482` — `time`
-- `resources/views/layouts/app.blade.php:1484` — `badge`
-- `resources/views/layouts/app.blade.php:1486` — `displayShort`
-- `resources/views/layouts/app.blade.php:1487` — `attendance.clock-out`
-- `resources/views/layouts/app.blade.php:1487` — `leading-none`
-- `resources/views/layouts/app.blade.php:1489` — `submit`
-- `resources/views/layouts/app.blade.php:1489` — `btn btn-xs btn-ghost btn-square text-warning`
-- `resources/views/layouts/app.blade.php:1489` — `Ausstempeln`
-- `resources/views/layouts/app.blade.php:1489` — `Ausstempeln`
-- `resources/views/layouts/app.blade.php:1490` — `logout`
-- `resources/views/layouts/app.blade.php:1495` — `attendance.clock-in`
-- `resources/views/layouts/app.blade.php:1495` — `leading-none`
-- `resources/views/layouts/app.blade.php:1497` — `submit`
-- `resources/views/layouts/app.blade.php:1497` — `success`
-- `resources/views/layouts/app.blade.php:1497` — `gap-1`
-- `resources/views/layouts/app.blade.php:1497` — `Einstempeln`
-- `resources/views/layouts/app.blade.php:1498` — `login`
-- `resources/views/layouts/app.blade.php:1499` — `Einstempeln`
-- `resources/views/layouts/app.blade.php:1511` — `button`
-- `resources/views/layouts/app.blade.php:1515` — `Hilfe zu dieser Seite`
-- `resources/views/layouts/app.blade.php:1515` — `Hilfe`
-- `resources/views/layouts/app.blade.php:1516` — `Hilfe zu dieser Seite`
-- `resources/views/layouts/app.blade.php:1516` — `Hilfe`
-- `resources/views/layouts/app.blade.php:1517` — `dialog`
-- `resources/views/layouts/app.blade.php:1518` — `help-drawer`
-- `resources/views/layouts/app.blade.php:1519` — `help`
-- `resources/views/layouts/app.blade.php:1519` — `text-base`
-- `resources/views/layouts/app.blade.php:1523` — `count`
-- `resources/views/layouts/app.blade.php:1524` — `severity`
-- `resources/views/layouts/app.blade.php:1524` — `error`
-- `resources/views/layouts/app.blade.php:1532` — `chat-unread-link`
-- `resources/views/layouts/app.blade.php:1534` — `btn-active`
-- `resources/views/layouts/app.blade.php:1535` — `Chat`
-- `resources/views/layouts/app.blade.php:1535` — `Chat`
-- `resources/views/layouts/app.blade.php:1536` — `forum`
-- `resources/views/layouts/app.blade.php:1536` — `text-base`
-- `resources/views/layouts/app.blade.php:1537` — `chat-unread-badge`
-- `resources/views/layouts/app.blade.php:1538` — `hidden`
-- `resources/views/layouts/app.blade.php:1541` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:1543` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:1544` — `Lesezeichen`
-- `resources/views/layouts/app.blade.php:1545` — `Lesezeichen`
-- `resources/views/layouts/app.blade.php:1546` — `bookmarks`
-- `resources/views/layouts/app.blade.php:1546` — `text-base`
-- `resources/views/layouts/app.blade.php:1549` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
-- `resources/views/layouts/app.blade.php:1550` — `text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:1550` — `Lesezeichen`
-- `resources/views/layouts/app.blade.php:1553` — `ghost`
-- `resources/views/layouts/app.blade.php:1554` — `Diese Seite merken`
-- `resources/views/layouts/app.blade.php:1555` — `text-sm`
-- `resources/views/layouts/app.blade.php:1556` — `Merken`
-- `resources/views/layouts/app.blade.php:1559` — `max-h-96 overflow-y-auto`
-- `resources/views/layouts/app.blade.php:1563` — `material-symbols-outlined text-base`
-- `resources/views/layouts/app.blade.php:1563` — `true`
-- `resources/views/layouts/app.blade.php:1563` — `bookmark`
-- `resources/views/layouts/app.blade.php:1564` — `flex-1 min-w-0 text-sm font-medium truncate`
-- `resources/views/layouts/app.blade.php:1567` — `px-4 py-6 text-center text-sm opacity-60`
-- `resources/views/layouts/app.blade.php:1568` — `text-2xl block mb-1 mx-auto`
-- `resources/views/layouts/app.blade.php:1569` — `Noch keine Lesezeichen.`
-- `resources/views/layouts/app.blade.php:1573` — `px-4 py-2 border-t border-base-200 text-right`
-- `resources/views/layouts/app.blade.php:1574` — `text-xs link link-hover opacity-70`
-- `resources/views/layouts/app.blade.php:1574` — `Verwalten`
-- `resources/views/layouts/app.blade.php:1586` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:1588` — `btn btn-sm btn-ghost btn-square relative`
-- `resources/views/layouts/app.blade.php:1591` — `inbox`
-- `resources/views/layouts/app.blade.php:1591` — `text-base`
-- `resources/views/layouts/app.blade.php:1599` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
-- `resources/views/layouts/app.blade.php:1600` — `text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:1604` — `submit`
-- `resources/views/layouts/app.blade.php:1604` — `ghost`
-- `resources/views/layouts/app.blade.php:1605` — `text-sm`
-- `resources/views/layouts/app.blade.php:1611` — `max-h-96 overflow-y-auto`
-- `resources/views/layouts/app.blade.php:1619` — `text-primary`
-- `resources/views/layouts/app.blade.php:1619` — `opacity-50`
-- `resources/views/layouts/app.blade.php:1619` — `true`
-- `resources/views/layouts/app.blade.php:1619` — `icon`
-- `resources/views/layouts/app.blade.php:1619` — `notifications`
-- `resources/views/layouts/app.blade.php:1620` — `flex-1 min-w-0`
-- `resources/views/layouts/app.blade.php:1621` — `block text-sm font-medium truncate`
-- `resources/views/layouts/app.blade.php:1622` — `message`
-- `resources/views/layouts/app.blade.php:1623` — `block text-xs opacity-60 mt-0.5 truncate`
-- `resources/views/layouts/app.blade.php:1623` — `message`
-- `resources/views/layouts/app.blade.php:1627` — `mt-1 inline-block h-2 w-2 rounded-full bg-primary shrink-0`
-- `resources/views/layouts/app.blade.php:1631` — `px-4 py-6 text-center text-sm opacity-60`
-- `resources/views/layouts/app.blade.php:1632` — `text-2xl block mb-1 mx-auto`
-- `resources/views/layouts/app.blade.php:1637` — `px-4 py-2 border-t border-base-200 text-right`
-- `resources/views/layouts/app.blade.php:1638` — `text-xs link link-hover opacity-70`
-- `resources/views/layouts/app.blade.php:1642` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:1644` — `btn btn-sm btn-ghost btn-square relative`
-- `resources/views/layouts/app.blade.php:1645` — `Erinnerungen`
-- `resources/views/layouts/app.blade.php:1646` — `Erinnerungen`
-- `resources/views/layouts/app.blade.php:1647` — `notifications`
-- `resources/views/layouts/app.blade.php:1647` — `text-base`
-- `resources/views/layouts/app.blade.php:1649` — `badge-error`
-- `resources/views/layouts/app.blade.php:1649` — `badge-warning`
-- `resources/views/layouts/app.blade.php:1655` — `px-4 py-2 border-b border-base-200 flex items-center justify-between`
-- `resources/views/layouts/app.blade.php:1656` — `text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:1656` — `Erinnerungen`
-- `resources/views/layouts/app.blade.php:1658` — `offen`
-- `resources/views/layouts/app.blade.php:1661` — `max-h-96 overflow-y-auto`
-- `resources/views/layouts/app.blade.php:1669` — `severity`
-- `resources/views/layouts/app.blade.php:1670` — `error`
-- `resources/views/layouts/app.blade.php:1670` — `text-error',
+- `resources/views/layouts/app.blade.php:544` — `menu-active`
+- `resources/views/layouts/app.blade.php:545` — `icon`
+- `resources/views/layouts/app.blade.php:545` — `tune'`
+- `resources/views/layouts/app.blade.php:546` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:546` — `label`
+- `resources/views/layouts/app.blade.php:547` — `badge`
+- `resources/views/layouts/app.blade.php:548` — `badge badge-sm badge-warning shrink-0`
+- `resources/views/layouts/app.blade.php:548` — `badge`
+- `resources/views/layouts/app.blade.php:548` — `badge`
+- `resources/views/layouts/app.blade.php:564` — `relative flex size-2`
+- `resources/views/layouts/app.blade.php:565` — `absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75`
+- `resources/views/layouts/app.blade.php:566` — `relative inline-flex size-2 rounded-full bg-primary`
+- `resources/views/layouts/app.blade.php:569` — `display`
+- `resources/views/layouts/app.blade.php:570` — `leading-none`
+- `resources/views/layouts/app.blade.php:572` — `submit`
+- `resources/views/layouts/app.blade.php:572` — `btn btn-xs btn-ghost btn-square text-error`
+- `resources/views/layouts/app.blade.php:572` — `Stoppen`
+- `resources/views/layouts/app.blade.php:572` — `Stoppen`
+- `resources/views/layouts/app.blade.php:584` — `badge badge-warning badge-sm items-center gap-1`
+- `resources/views/layouts/app.blade.php:587` — `tabular-nums`
+- `resources/views/layouts/app.blade.php:593` — `time`
+- `resources/views/layouts/app.blade.php:595` — `badge`
+- `resources/views/layouts/app.blade.php:597` — `displayShort`
+- `resources/views/layouts/app.blade.php:598` — `attendance.clock-out`
+- `resources/views/layouts/app.blade.php:598` — `leading-none`
+- `resources/views/layouts/app.blade.php:598` — `attendance.clock-out`
+- `resources/views/layouts/app.blade.php:600` — `submit`
+- `resources/views/layouts/app.blade.php:600` — `btn btn-xs btn-ghost btn-square text-warning`
+- `resources/views/layouts/app.blade.php:600` — `Ausstempeln`
+- `resources/views/layouts/app.blade.php:600` — `Ausstempeln`
+- `resources/views/layouts/app.blade.php:601` — `logout`
+- `resources/views/layouts/app.blade.php:606` — `attendance.clock-in`
+- `resources/views/layouts/app.blade.php:606` — `leading-none`
+- `resources/views/layouts/app.blade.php:606` — `attendance.clock-in`
+- `resources/views/layouts/app.blade.php:608` — `submit`
+- `resources/views/layouts/app.blade.php:608` — `success`
+- `resources/views/layouts/app.blade.php:608` — `gap-1`
+- `resources/views/layouts/app.blade.php:608` — `Einstempeln`
+- `resources/views/layouts/app.blade.php:609` — `login`
+- `resources/views/layouts/app.blade.php:610` — `Einstempeln`
+- `resources/views/layouts/app.blade.php:622` — `button`
+- `resources/views/layouts/app.blade.php:626` — `Hilfe zu dieser Seite`
+- `resources/views/layouts/app.blade.php:626` — `Hilfe`
+- `resources/views/layouts/app.blade.php:627` — `Hilfe zu dieser Seite`
+- `resources/views/layouts/app.blade.php:627` — `Hilfe`
+- `resources/views/layouts/app.blade.php:628` — `dialog`
+- `resources/views/layouts/app.blade.php:629` — `help-drawer`
+- `resources/views/layouts/app.blade.php:630` — `help`
+- `resources/views/layouts/app.blade.php:630` — `text-base`
+- `resources/views/layouts/app.blade.php:634` — `count`
+- `resources/views/layouts/app.blade.php:635` — `severity`
+- `resources/views/layouts/app.blade.php:635` — `error`
+- `resources/views/layouts/app.blade.php:643` — `chat-unread-link`
+- `resources/views/layouts/app.blade.php:645` — `btn-active`
+- `resources/views/layouts/app.blade.php:646` — `Chat`
+- `resources/views/layouts/app.blade.php:646` — `Chat`
+- `resources/views/layouts/app.blade.php:647` — `forum`
+- `resources/views/layouts/app.blade.php:647` — `text-base`
+- `resources/views/layouts/app.blade.php:648` — `chat-unread-badge`
+- `resources/views/layouts/app.blade.php:649` — `hidden`
+- `resources/views/layouts/app.blade.php:652` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:654` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:655` — `Lesezeichen`
+- `resources/views/layouts/app.blade.php:656` — `Lesezeichen`
+- `resources/views/layouts/app.blade.php:657` — `bookmarks`
+- `resources/views/layouts/app.blade.php:657` — `text-base`
+- `resources/views/layouts/app.blade.php:660` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
+- `resources/views/layouts/app.blade.php:661` — `text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:661` — `Lesezeichen`
+- `resources/views/layouts/app.blade.php:664` — `ghost`
+- `resources/views/layouts/app.blade.php:665` — `Diese Seite merken`
+- `resources/views/layouts/app.blade.php:666` — `text-sm`
+- `resources/views/layouts/app.blade.php:667` — `Merken`
+- `resources/views/layouts/app.blade.php:670` — `max-h-96 overflow-y-auto`
+- `resources/views/layouts/app.blade.php:674` — `material-symbols-outlined text-base`
+- `resources/views/layouts/app.blade.php:674` — `true`
+- `resources/views/layouts/app.blade.php:674` — `bookmark`
+- `resources/views/layouts/app.blade.php:675` — `flex-1 min-w-0 text-sm font-medium truncate`
+- `resources/views/layouts/app.blade.php:678` — `px-4 py-6 text-center text-sm opacity-60`
+- `resources/views/layouts/app.blade.php:679` — `text-2xl block mb-1 mx-auto`
+- `resources/views/layouts/app.blade.php:680` — `Noch keine Lesezeichen.`
+- `resources/views/layouts/app.blade.php:684` — `px-4 py-2 border-t border-base-200 text-right`
+- `resources/views/layouts/app.blade.php:685` — `text-xs link link-hover opacity-70`
+- `resources/views/layouts/app.blade.php:685` — `Verwalten`
+- `resources/views/layouts/app.blade.php:697` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:699` — `btn btn-sm btn-ghost btn-square relative`
+- `resources/views/layouts/app.blade.php:702` — `inbox`
+- `resources/views/layouts/app.blade.php:702` — `text-base`
+- `resources/views/layouts/app.blade.php:710` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
+- `resources/views/layouts/app.blade.php:711` — `text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:715` — `submit`
+- `resources/views/layouts/app.blade.php:715` — `ghost`
+- `resources/views/layouts/app.blade.php:716` — `text-sm`
+- `resources/views/layouts/app.blade.php:722` — `max-h-96 overflow-y-auto`
+- `resources/views/layouts/app.blade.php:730` — `text-primary`
+- `resources/views/layouts/app.blade.php:730` — `opacity-50`
+- `resources/views/layouts/app.blade.php:730` — `true`
+- `resources/views/layouts/app.blade.php:730` — `icon`
+- `resources/views/layouts/app.blade.php:730` — `notifications`
+- `resources/views/layouts/app.blade.php:731` — `flex-1 min-w-0`
+- `resources/views/layouts/app.blade.php:732` — `block text-sm font-medium truncate`
+- `resources/views/layouts/app.blade.php:734` — `block text-xs opacity-60 mt-0.5 truncate`
+- `resources/views/layouts/app.blade.php:738` — `mt-1 inline-block h-2 w-2 rounded-full bg-primary shrink-0`
+- `resources/views/layouts/app.blade.php:742` — `px-4 py-6 text-center text-sm opacity-60`
+- `resources/views/layouts/app.blade.php:743` — `text-2xl block mb-1 mx-auto`
+- `resources/views/layouts/app.blade.php:748` — `px-4 py-2 border-t border-base-200 text-right`
+- `resources/views/layouts/app.blade.php:749` — `text-xs link link-hover opacity-70`
+- `resources/views/layouts/app.blade.php:753` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:755` — `btn btn-sm btn-ghost btn-square relative`
+- `resources/views/layouts/app.blade.php:756` — `Erinnerungen`
+- `resources/views/layouts/app.blade.php:757` — `Erinnerungen`
+- `resources/views/layouts/app.blade.php:758` — `notifications`
+- `resources/views/layouts/app.blade.php:758` — `text-base`
+- `resources/views/layouts/app.blade.php:760` — `badge-error`
+- `resources/views/layouts/app.blade.php:760` — `badge-warning`
+- `resources/views/layouts/app.blade.php:766` — `px-4 py-2 border-b border-base-200 flex items-center justify-between`
+- `resources/views/layouts/app.blade.php:767` — `text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:767` — `Erinnerungen`
+- `resources/views/layouts/app.blade.php:769` — `offen`
+- `resources/views/layouts/app.blade.php:772` — `max-h-96 overflow-y-auto`
+- `resources/views/layouts/app.blade.php:780` — `severity`
+- `resources/views/layouts/app.blade.php:781` — `error`
+- `resources/views/layouts/app.blade.php:781` — `text-error',
                                                         'warning`
-- `resources/views/layouts/app.blade.php:1671` — `text-warning`
-- `resources/views/layouts/app.blade.php:1672` — `text-info`
-- `resources/views/layouts/app.blade.php:1676` — `true`
-- `resources/views/layouts/app.blade.php:1676` — `icon`
-- `resources/views/layouts/app.blade.php:1677` — `flex-1 min-w-0`
-- `resources/views/layouts/app.blade.php:1678` — `block text-sm font-medium`
-- `resources/views/layouts/app.blade.php:1678` — `title`
-- `resources/views/layouts/app.blade.php:1679` — `block text-xs opacity-60 mt-0.5`
-- `resources/views/layouts/app.blade.php:1679` — `description`
-- `resources/views/layouts/app.blade.php:1683` — `px-4 py-6 text-center text-sm opacity-60`
-- `resources/views/layouts/app.blade.php:1684` — `text-success text-2xl block mb-1 mx-auto`
-- `resources/views/layouts/app.blade.php:1685` — `Alles erledigt.`
-- `resources/views/layouts/app.blade.php:1693` — `button`
-- `resources/views/layouts/app.blade.php:1694` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:1696` — `Globale Suche öffnen`
-- `resources/views/layouts/app.blade.php:1697` — `search`
-- `resources/views/layouts/app.blade.php:1697` — `text-base`
-- `resources/views/layouts/app.blade.php:1705` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:1707` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:1708` — `Einstellungen`
-- `resources/views/layouts/app.blade.php:1709` — `Einstellungen`
-- `resources/views/layouts/app.blade.php:1710` — `tune`
-- `resources/views/layouts/app.blade.php:1710` — `text-base`
-- `resources/views/layouts/app.blade.php:1714` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
-- `resources/views/layouts/app.blade.php:1715` — `text-sm font-medium`
-- `resources/views/layouts/app.blade.php:1715` — `Farbschema`
-- `resources/views/layouts/app.blade.php:1716` — `button`
-- `resources/views/layouts/app.blade.php:1718` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:1719` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:1720` — `btn btn-xs btn-ghost gap-2`
-- `resources/views/layouts/app.blade.php:1721` — `material-symbols-outlined text-base leading-none`
-- `resources/views/layouts/app.blade.php:1722` — `text-xs opacity-70`
-- `resources/views/layouts/app.blade.php:1722` — `Wechseln`
-- `resources/views/layouts/app.blade.php:1727` — `px-4 py-3 border-b border-base-200`
-- `resources/views/layouts/app.blade.php:1728` — `mb-2 text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:1728` — `Sprache`
-- `resources/views/layouts/app.blade.php:1729` — `inline`
-- `resources/views/layouts/app.blade.php:1735` — `legacy`
-- `resources/views/layouts/app.blade.php:1736` — `mode-switch-form`
-- `resources/views/layouts/app.blade.php:1737` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
-- `resources/views/layouts/app.blade.php:1739` — `hidden`
-- `resources/views/layouts/app.blade.php:1739` — `origin`
-- `resources/views/layouts/app.blade.php:1740` — `mode-switch-toggle`
-- `resources/views/layouts/app.blade.php:1741` — `text-sm font-medium cursor-pointer select-none`
-- `resources/views/layouts/app.blade.php:1742` — `Modus wechseln`
-- `resources/views/layouts/app.blade.php:1743` — `Legacy-Modus`
-- `resources/views/layouts/app.blade.php:1745` — `submit`
-- `resources/views/layouts/app.blade.php:1745` — `mode-switch-toggle`
-- `resources/views/layouts/app.blade.php:1745` — `switch`
-- `resources/views/layouts/app.blade.php:1746` — `true`
-- `resources/views/layouts/app.blade.php:1746` — `false`
-- `resources/views/layouts/app.blade.php:1747` — `Legacy-Modus`
-- `resources/views/layouts/app.blade.php:1748` — `Modus wechseln`
-- `resources/views/layouts/app.blade.php:1752` — `bg-primary`
-- `resources/views/layouts/app.blade.php:1752` — `bg-base-300`
-- `resources/views/layouts/app.blade.php:1755` — `translate-x-4`
-- `resources/views/layouts/app.blade.php:1755` — `translate-x-0`
-- `resources/views/layouts/app.blade.php:1764` — `org-switch-form`
-- `resources/views/layouts/app.blade.php:1765` — `px-4 py-3`
-- `resources/views/layouts/app.blade.php:1767` — `org-switch-select`
-- `resources/views/layouts/app.blade.php:1768` — `block mb-1 text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:1769` — `Aktive Organisation`
-- `resources/views/layouts/app.blade.php:1770` — `Aktive Organisation`
-- `resources/views/layouts/app.blade.php:1773` — `org-switch-select`
-- `resources/views/layouts/app.blade.php:1774` — `select select-bordered select-sm w-full`
-- `resources/views/layouts/app.blade.php:1776` — `Aktive Organisation waehlen`
-- `resources/views/layouts/app.blade.php:1777` — `Aktive Organisation waehlen`
-- `resources/views/layouts/app.blade.php:1780` — `selected`
-- `resources/views/layouts/app.blade.php:1789` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:1791` — `btn-primary`
-- `resources/views/layouts/app.blade.php:1791` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:1793` — `Benutzermenü`
-- `resources/views/layouts/app.blade.php:1795` — `header-username truncate`
-- `resources/views/layouts/app.blade.php:1799` — `route`
-- `resources/views/layouts/app.blade.php:1801` — `route`
-- `resources/views/layouts/app.blade.php:1802` — `modal`
-- `resources/views/layouts/app.blade.php:1803` — `active`
-- `resources/views/layouts/app.blade.php:1804` — `label`
-- `resources/views/layouts/app.blade.php:1809` — `logout`
-- `resources/views/layouts/app.blade.php:1809` — `w-full`
-- `resources/views/layouts/app.blade.php:1810` — `submit`
-- `resources/views/layouts/app.blade.php:1810` — `flex w-full items-center gap-2 text-error`
-- `resources/views/layouts/app.blade.php:1811` — `Abmelden`
-- `resources/views/layouts/app.blade.php:1820` — `button`
-- `resources/views/layouts/app.blade.php:1820` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:1820` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:1820` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:1821` — `material-symbols-outlined text-base leading-none`
-- `resources/views/layouts/app.blade.php:1824` — `login`
-- `resources/views/layouts/app.blade.php:1824` — `primary`
-- `resources/views/layouts/app.blade.php:1824` — `Anmelden`
-- `resources/views/layouts/app.blade.php:1838` — `partials.global-search`
-- `resources/views/layouts/app.blade.php:1845` — `app-sidebar`
-- `resources/views/layouts/app.blade.php:1847` — `Hauptnavigation`
-- `resources/views/layouts/app.blade.php:1849` — `sidebar-shell`
-- `resources/views/layouts/app.blade.php:1853` — `label`
-- `resources/views/layouts/app.blade.php:1853` — `Tagesgeschäft`
-- `resources/views/layouts/app.blade.php:1854` — `items`
-- `resources/views/layouts/app.blade.php:1855` — `route`
-- `resources/views/layouts/app.blade.php:1855` — `diary.create',              'label`
-- `resources/views/layouts/app.blade.php:1855` — `Auftrag`
-- `resources/views/layouts/app.blade.php:1855` — `icon`
-- `resources/views/layouts/app.blade.php:1855` — `assignment`
-- `resources/views/layouts/app.blade.php:1856` — `route`
-- `resources/views/layouts/app.blade.php:1856` — `time-entries.create',       'label`
-- `resources/views/layouts/app.blade.php:1856` — `Zeiteintrag`
-- `resources/views/layouts/app.blade.php:1856` — `icon`
-- `resources/views/layouts/app.blade.php:1856` — `timer`
-- `resources/views/layouts/app.blade.php:1857` — `route`
-- `resources/views/layouts/app.blade.php:1857` — `timesheets.create',         'label`
-- `resources/views/layouts/app.blade.php:1857` — `Stundenzettel`
-- `resources/views/layouts/app.blade.php:1857` — `icon`
-- `resources/views/layouts/app.blade.php:1857` — `description`
-- `resources/views/layouts/app.blade.php:1858` — `route`
-- `resources/views/layouts/app.blade.php:1858` — `admin-time-entries.create', 'label`
-- `resources/views/layouts/app.blade.php:1858` — `Verwaltungszeit`
-- `resources/views/layouts/app.blade.php:1858` — `icon`
-- `resources/views/layouts/app.blade.php:1858` — `schedule`
-- `resources/views/layouts/app.blade.php:1862` — `label`
-- `resources/views/layouts/app.blade.php:1862` — `Planung`
-- `resources/views/layouts/app.blade.php:1863` — `items`
-- `resources/views/layouts/app.blade.php:1864` — `route`
-- `resources/views/layouts/app.blade.php:1864` — `duty-plans.create',     'label`
-- `resources/views/layouts/app.blade.php:1864` — `Dienstplan`
-- `resources/views/layouts/app.blade.php:1864` — `icon`
-- `resources/views/layouts/app.blade.php:1865` — `route`
-- `resources/views/layouts/app.blade.php:1865` — `vacations.create',      'label`
-- `resources/views/layouts/app.blade.php:1865` — `Urlaub`
-- `resources/views/layouts/app.blade.php:1865` — `icon`
-- `resources/views/layouts/app.blade.php:1866` — `route`
-- `resources/views/layouts/app.blade.php:1866` — `events.create',         'label`
-- `resources/views/layouts/app.blade.php:1866` — `Veranstaltung`
-- `resources/views/layouts/app.blade.php:1866` — `icon`
-- `resources/views/layouts/app.blade.php:1866` — `event`
-- `resources/views/layouts/app.blade.php:1867` — `route`
-- `resources/views/layouts/app.blade.php:1867` — `travel-logs.create',    'label`
-- `resources/views/layouts/app.blade.php:1867` — `Fahrtbuch`
-- `resources/views/layouts/app.blade.php:1867` — `icon`
-- `resources/views/layouts/app.blade.php:1867` — `route`
-- `resources/views/layouts/app.blade.php:1868` — `route`
-- `resources/views/layouts/app.blade.php:1868` — `expenses.create',       'label`
-- `resources/views/layouts/app.blade.php:1868` — `Spese`
-- `resources/views/layouts/app.blade.php:1868` — `icon`
-- `resources/views/layouts/app.blade.php:1869` — `route`
-- `resources/views/layouts/app.blade.php:1869` — `tours.create',          'label`
-- `resources/views/layouts/app.blade.php:1869` — `Tour`
-- `resources/views/layouts/app.blade.php:1869` — `icon`
-- `resources/views/layouts/app.blade.php:1873` — `label`
-- `resources/views/layouts/app.blade.php:1873` — `Fuhrpark`
-- `resources/views/layouts/app.blade.php:1874` — `items`
-- `resources/views/layouts/app.blade.php:1875` — `route`
-- `resources/views/layouts/app.blade.php:1875` — `vehicles.create',    'label`
-- `resources/views/layouts/app.blade.php:1875` — `Fahrzeug`
-- `resources/views/layouts/app.blade.php:1875` — `icon`
-- `resources/views/layouts/app.blade.php:1876` — `route`
-- `resources/views/layouts/app.blade.php:1876` — `energy-logs.create', 'label`
-- `resources/views/layouts/app.blade.php:1876` — `icon`
-- `resources/views/layouts/app.blade.php:1880` — `label`
-- `resources/views/layouts/app.blade.php:1880` — `Stammdaten`
-- `resources/views/layouts/app.blade.php:1881` — `items`
-- `resources/views/layouts/app.blade.php:1882` — `route`
-- `resources/views/layouts/app.blade.php:1882` — `customers.create',      'label`
-- `resources/views/layouts/app.blade.php:1882` — `Kunde`
-- `resources/views/layouts/app.blade.php:1882` — `icon`
-- `resources/views/layouts/app.blade.php:1882` — `badge`
-- `resources/views/layouts/app.blade.php:1883` — `route`
-- `resources/views/layouts/app.blade.php:1883` — `projects.create',       'label`
-- `resources/views/layouts/app.blade.php:1883` — `Projekt`
-- `resources/views/layouts/app.blade.php:1883` — `icon`
-- `resources/views/layouts/app.blade.php:1884` — `route`
-- `resources/views/layouts/app.blade.php:1884` — `shift-types.create',    'label`
-- `resources/views/layouts/app.blade.php:1884` — `Schichttyp`
-- `resources/views/layouts/app.blade.php:1884` — `icon`
-- `resources/views/layouts/app.blade.php:1884` — `label`
-- `resources/views/layouts/app.blade.php:1885` — `route`
-- `resources/views/layouts/app.blade.php:1885` — `qualifications.create', 'label`
-- `resources/views/layouts/app.blade.php:1885` — `Qualifikation`
-- `resources/views/layouts/app.blade.php:1885` — `icon`
-- `resources/views/layouts/app.blade.php:1885` — `verified`
-- `resources/views/layouts/app.blade.php:1894` — `items`
-- `resources/views/layouts/app.blade.php:1894` — `items`
-- `resources/views/layouts/app.blade.php:1894` — `route`
-- `resources/views/layouts/app.blade.php:1894` — `route`
-- `resources/views/layouts/app.blade.php:1897` — `items`
-- `resources/views/layouts/app.blade.php:1902` — `sidebar-header px-3 py-4`
-- `resources/views/layouts/app.blade.php:1903` — `dropdown dropdown-bottom dropdown-start w-full`
-- `resources/views/layouts/app.blade.php:1904` — `button`
-- `resources/views/layouts/app.blade.php:1905` — `sidebar-cta btn btn-sm btn-primary w-full gap-2`
-- `resources/views/layouts/app.blade.php:1907` — `Neuen Eintrag erstellen`
-- `resources/views/layouts/app.blade.php:1909` — `sidebar-cta-text flex-1 text-left`
-- `resources/views/layouts/app.blade.php:1916` — `sidebar-cta-divider`
-- `resources/views/layouts/app.blade.php:1916` — `divider my-1`
-- `resources/views/layouts/app.blade.php:1918` — `menu-title`
-- `resources/views/layouts/app.blade.php:1919` — `label`
-- `resources/views/layouts/app.blade.php:1921` — `items`
-- `resources/views/layouts/app.blade.php:1923` — `route`
-- `resources/views/layouts/app.blade.php:1925` — `flex items-center gap-3`
-- `resources/views/layouts/app.blade.php:1926` — `label`
-- `resources/views/layouts/app.blade.php:1927` — `icon`
-- `resources/views/layouts/app.blade.php:1927` — `add'`
-- `resources/views/layouts/app.blade.php:1928` — `truncate`
-- `resources/views/layouts/app.blade.php:1928` — `label`
-- `resources/views/layouts/app.blade.php:1937` — `sidebar-items flex flex-col gap-4 px-2 py-3`
-- `resources/views/layouts/app.blade.php:1938` — `flex flex-col gap-4`
-- `resources/views/layouts/app.blade.php:1941` — `groups`
-- `resources/views/layouts/app.blade.php:1943` — `items`
-- `resources/views/layouts/app.blade.php:1944` — `items`
-- `resources/views/layouts/app.blade.php:1946` — `matches`
-- `resources/views/layouts/app.blade.php:1946` — `route`
-- `resources/views/layouts/app.blade.php:1949` — `sidebar-section sidebar-section-collapsible`
-- `resources/views/layouts/app.blade.php:1952` — `sidebar-section-summary`
-- `resources/views/layouts/app.blade.php:1953` — `icon`
-- `resources/views/layouts/app.blade.php:1953` — `folder'`
-- `resources/views/layouts/app.blade.php:1953` — `sidebar-section-icon`
-- `resources/views/layouts/app.blade.php:1954` — `flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1954` — `label`
-- `resources/views/layouts/app.blade.php:1955` — `sidebar-section-chevron`
-- `resources/views/layouts/app.blade.php:1958` — `flex flex-col gap-1 pt-1`
-- `resources/views/layouts/app.blade.php:1961` — `items`
-- `resources/views/layouts/app.blade.php:1962` — `matches`
-- `resources/views/layouts/app.blade.php:1962` — `route`
-- `resources/views/layouts/app.blade.php:1965` — `sidebar-subgroup sidebar-subgroup-collapsible`
-- `resources/views/layouts/app.blade.php:1969` — `icon`
-- `resources/views/layouts/app.blade.php:1969` — `label'`
-- `resources/views/layouts/app.blade.php:1970` — `truncate flex-1`
-- `resources/views/layouts/app.blade.php:1970` — `label`
-- `resources/views/layouts/app.blade.php:1971` — `sidebar-subgroup-chevron`
-- `resources/views/layouts/app.blade.php:1973` — `menu menu-sm w-full gap-0.5 p-0`
-- `resources/views/layouts/app.blade.php:1974` — `items`
-- `resources/views/layouts/app.blade.php:1975` — `matches`
-- `resources/views/layouts/app.blade.php:1975` — `route`
-- `resources/views/layouts/app.blade.php:1977` — `route`
-- `resources/views/layouts/app.blade.php:1978` — `modal`
-- `resources/views/layouts/app.blade.php:1979` — `menu-active`
-- `resources/views/layouts/app.blade.php:1980` — `label`
-- `resources/views/layouts/app.blade.php:1981` — `icon`
-- `resources/views/layouts/app.blade.php:1981` — `circle'`
-- `resources/views/layouts/app.blade.php:1982` — `truncate transition-opacity duration-150`
-- `resources/views/layouts/app.blade.php:1982` — `label`
-- `resources/views/layouts/app.blade.php:1991` — `menu menu-sm w-full gap-0.5 p-0 pt-1`
-- `resources/views/layouts/app.blade.php:1992` — `items`
-- `resources/views/layouts/app.blade.php:1993` — `matches`
-- `resources/views/layouts/app.blade.php:1993` — `route`
-- `resources/views/layouts/app.blade.php:1995` — `route`
-- `resources/views/layouts/app.blade.php:1996` — `modal`
-- `resources/views/layouts/app.blade.php:1997` — `menu-active`
-- `resources/views/layouts/app.blade.php:1998` — `label`
-- `resources/views/layouts/app.blade.php:1999` — `icon`
-- `resources/views/layouts/app.blade.php:1999` — `circle'`
-- `resources/views/layouts/app.blade.php:2000` — `truncate transition-opacity duration-150`
-- `resources/views/layouts/app.blade.php:2000` — `label`
-- `resources/views/layouts/app.blade.php:2011` — `sidebar-footer px-3 py-4`
-- `resources/views/layouts/app.blade.php:2012` — `button`
-- `resources/views/layouts/app.blade.php:2013` — `app-sidebar-collapse`
-- `resources/views/layouts/app.blade.php:2014` — `btn btn-sm btn-primary w-full justify-center gap-2`
-- `resources/views/layouts/app.blade.php:2018` — `Einklappen`
-- `resources/views/layouts/app.blade.php:2023` — `app-sidebar-backdrop`
-- `resources/views/layouts/app.blade.php:2033` — `app-header`
-- `resources/views/layouts/app.blade.php:2040` — `function`
-- `resources/views/layouts/app.blade.php:2043` — `resize`
-- `resources/views/layouts/app.blade.php:2045` — `load`
-- `resources/views/layouts/app.blade.php:2055` — `wd-has-scroll`
-- `resources/views/layouts/app.blade.php:2061` — `function`
-- `resources/views/layouts/app.blade.php:2070` — `loading`
-- `resources/views/layouts/app.blade.php:2071` — `DOMContentLoaded`
-- `resources/views/layouts/app.blade.php:2075` — `load`
-- `resources/views/layouts/app.blade.php:2076` — `resize`
-- `resources/views/layouts/app.blade.php:2084` — `dropdown-open`
-- `resources/views/layouts/app.blade.php:2086` — `aria-expanded', 'false`
-- `resources/views/layouts/app.blade.php:2095` — `click`
-- `resources/views/layouts/app.blade.php:2098` — `dropdown-content`
-- `resources/views/layouts/app.blade.php:2107` — `dropdown-open`
-- `resources/views/layouts/app.blade.php:2109` — `dropdown-open`
-- `resources/views/layouts/app.blade.php:2110` — `aria-expanded', open ? 'false`
-- `resources/views/layouts/app.blade.php:2110` — `true`
-- `resources/views/layouts/app.blade.php:2119` — `keydown`
-- `resources/views/layouts/app.blade.php:2120` — `Escape`
-- `resources/views/layouts/app.blade.php:2132` — `dropdown-open`
-- `resources/views/layouts/app.blade.php:2137` — `pageshow`
-- `resources/views/layouts/app.blade.php:2142` — `mode-toast`
-- `resources/views/layouts/app.blade.php:2144` — `polite`
-- `resources/views/layouts/app.blade.php:2146` — `text-base`
-- `resources/views/layouts/app.blade.php:2146` — `legacy' ? `
-- `resources/views/layouts/app.blade.php:2147` — `font-medium`
-- `resources/views/layouts/app.blade.php:2152` — `mode-toast`
-- `resources/views/layouts/app.blade.php:2164` — `max-w-none`
-- `resources/views/layouts/app.blade.php:2164` — `max-w-screen-2xl`
-- `resources/views/layouts/app.blade.php:2172` — `wrapper-height-class', 'wd-page-fill`
-- `resources/views/layouts/app.blade.php:2173` — `success`
-- `resources/views/layouts/app.blade.php:2174` — `alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
-- `resources/views/layouts/app.blade.php:2175` — `success`
-- `resources/views/layouts/app.blade.php:2178` — `error`
-- `resources/views/layouts/app.blade.php:2179` — `alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
-- `resources/views/layouts/app.blade.php:2180` — `error`
-- `resources/views/layouts/app.blade.php:2183` — `info`
-- `resources/views/layouts/app.blade.php:2184` — `alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
-- `resources/views/layouts/app.blade.php:2185` — `info`
-- `resources/views/layouts/app.blade.php:2196` — `currentOrganization`
-- `resources/views/layouts/app.blade.php:2199` — `currentOrganization`
-- `resources/views/layouts/app.blade.php:2208` — `label`
-- `resources/views/layouts/app.blade.php:2209` — `until`
-- `resources/views/layouts/app.blade.php:2217` — `warning`
-- `resources/views/layouts/app.blade.php:2217` — `text-base`
-- `resources/views/layouts/app.blade.php:2218` — `font-semibold`
-- `resources/views/layouts/app.blade.php:2218` — `Geplante Datenlöschung nach Downgrade`
-- `resources/views/layouts/app.blade.php:2219` — `badge badge-warning badge-sm`
-- `resources/views/layouts/app.blade.php:2220` — `ml-auto text-xs font-normal opacity-70`
-- `resources/views/layouts/app.blade.php:2220` — `Stichtag`
-- `resources/views/layouts/app.blade.php:2220` — `until`
-- `resources/views/layouts/app.blade.php:2221` — `grace-chevron text-base transition-transform`
-- `resources/views/layouts/app.blade.php:2223` — `mt-2 pl-7`
-- `resources/views/layouts/app.blade.php:2224` — `text-xs opacity-80`
-- `resources/views/layouts/app.blade.php:2224` — `Der Zugriff auf diese Module ist bereits beendet. Ein Upgrade vor dem Stichtag stellt Zugriff und Daten wieder her.`
-- `resources/views/layouts/app.blade.php:2225` — `mt-1 list-disc pl-5`
-- `resources/views/layouts/app.blade.php:2227` — `label`
-- `resources/views/layouts/app.blade.php:2227` — `Daten werden entfernt am`
-- `resources/views/layouts/app.blade.php:2227` — `until`
-- `resources/views/layouts/app.blade.php:2237` — `page-header`
-- `resources/views/layouts/app.blade.php:2240` — `page-header`
-- `resources/views/layouts/app.blade.php:2243` — `main`
-- `resources/views/layouts/app.blade.php:2244` — `main-content`
-- `resources/views/layouts/app.blade.php:2244` — `main-class', '`
-- `resources/views/layouts/app.blade.php:2245` — `content`
-- `resources/views/layouts/app.blade.php:2249` — `page-footer`
-- `resources/views/layouts/app.blade.php:2254` — `page-footer`
-- `resources/views/layouts/app.blade.php:2257` — `app-footer`
-- `resources/views/layouts/app.blade.php:2257` — `fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs`
-- `resources/views/layouts/app.blade.php:2262` — `max-w-full`
-- `resources/views/layouts/app.blade.php:2264` — `Version`
-- `resources/views/layouts/app.blade.php:2264` — `app.version', '0.1.0-dev`
-- `resources/views/layouts/app.blade.php:2277` — `app-header`
-- `resources/views/layouts/app.blade.php:2278` — `app-footer`
-- `resources/views/layouts/app.blade.php:2282` — `wd-header-hidden`
-- `resources/views/layouts/app.blade.php:2291` — `resize`
-- `resources/views/layouts/app.blade.php:2292` — `orientationchange`
-- `resources/views/layouts/app.blade.php:2293` — `load`
-- `resources/views/layouts/app.blade.php:2297` — `action-confirm-dialog`
-- `resources/views/layouts/app.blade.php:2298` — `false`
-- `resources/views/layouts/app.blade.php:2300` — `warning`
-- `resources/views/layouts/app.blade.php:2301` — `help`
-- `resources/views/layouts/app.blade.php:2302` — `Aktion bestätigen`
-- `resources/views/layouts/app.blade.php:2303` — `action-confirm-header`
-- `resources/views/layouts/app.blade.php:2304` — `action-confirm-icon-wrap`
-- `resources/views/layouts/app.blade.php:2305` — `action-confirm-icon`
-- `resources/views/layouts/app.blade.php:2306` — `action-confirm-title`
-- `resources/views/layouts/app.blade.php:2307` — `action-confirm-message`
-- `resources/views/layouts/app.blade.php:2307` — `Möchtest du diese Aktion wirklich ausführen?`
-- `resources/views/layouts/app.blade.php:2310` — `button`
-- `resources/views/layouts/app.blade.php:2310` — `ghost`
-- `resources/views/layouts/app.blade.php:2310` — `gap-2`
-- `resources/views/layouts/app.blade.php:2310` — `close`
-- `resources/views/layouts/app.blade.php:2310` — `Abbrechen`
-- `resources/views/layouts/app.blade.php:2311` — `action-confirm-submit`
-- `resources/views/layouts/app.blade.php:2311` — `button`
-- `resources/views/layouts/app.blade.php:2311` — `error`
-- `resources/views/layouts/app.blade.php:2311` — `gap-2`
-- `resources/views/layouts/app.blade.php:2311` — `check`
-- `resources/views/layouts/app.blade.php:2311` — `Ausführen`
-- `resources/views/layouts/app.blade.php:2315` — `action-notify-dialog`
-- `resources/views/layouts/app.blade.php:2316` — `false`
-- `resources/views/layouts/app.blade.php:2318` — `info`
-- `resources/views/layouts/app.blade.php:2319` — `info`
-- `resources/views/layouts/app.blade.php:2320` — `Hinweis`
-- `resources/views/layouts/app.blade.php:2321` — `action-notify-header`
-- `resources/views/layouts/app.blade.php:2322` — `action-notify-icon-wrap`
-- `resources/views/layouts/app.blade.php:2323` — `action-notify-icon`
-- `resources/views/layouts/app.blade.php:2324` — `action-notify-title`
-- `resources/views/layouts/app.blade.php:2325` — `action-notify-message`
-- `resources/views/layouts/app.blade.php:2328` — `action-notify-ok`
-- `resources/views/layouts/app.blade.php:2328` — `button`
-- `resources/views/layouts/app.blade.php:2328` — `primary`
-- `resources/views/layouts/app.blade.php:2328` — `gap-2`
-- `resources/views/layouts/app.blade.php:2328` — `check`
-- `resources/views/layouts/app.blade.php:2338` — `Aktion bestätigen`
-- `resources/views/layouts/app.blade.php:2339` — `Möchtest du diese Aktion wirklich ausführen?`
-- `resources/views/layouts/app.blade.php:2340` — `Ausführen`
-- `resources/views/layouts/app.blade.php:2341` — `Hinweis`
-- `resources/views/layouts/app.blade.php:2342` — `Erfolg`
-- `resources/views/layouts/app.blade.php:2343` — `Achtung`
-- `resources/views/layouts/app.blade.php:2344` — `Fehler`
-- `resources/views/layouts/app.blade.php:2348` — `scripts`
-- `resources/views/layouts/app.blade.php:2356` — `chat-unread-link`
-- `resources/views/layouts/app.blade.php:2357` — `chat-unread-badge`
-- `resources/views/layouts/app.blade.php:2361` — `X-Requested-With`
-- `resources/views/layouts/app.blade.php:2361` — `XMLHttpRequest`
-- `resources/views/layouts/app.blade.php:2367` — `hidden`
-- `resources/views/layouts/app.blade.php:2372` — `visibilitychange`
+- `resources/views/layouts/app.blade.php:782` — `text-warning`
+- `resources/views/layouts/app.blade.php:783` — `text-info`
+- `resources/views/layouts/app.blade.php:787` — `true`
+- `resources/views/layouts/app.blade.php:787` — `icon`
+- `resources/views/layouts/app.blade.php:788` — `flex-1 min-w-0`
+- `resources/views/layouts/app.blade.php:789` — `block text-sm font-medium`
+- `resources/views/layouts/app.blade.php:789` — `title`
+- `resources/views/layouts/app.blade.php:790` — `block text-xs opacity-60 mt-0.5`
+- `resources/views/layouts/app.blade.php:790` — `description`
+- `resources/views/layouts/app.blade.php:794` — `px-4 py-6 text-center text-sm opacity-60`
+- `resources/views/layouts/app.blade.php:795` — `text-success text-2xl block mb-1 mx-auto`
+- `resources/views/layouts/app.blade.php:796` — `Alles erledigt.`
+- `resources/views/layouts/app.blade.php:804` — `button`
+- `resources/views/layouts/app.blade.php:805` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:807` — `Globale Suche öffnen`
+- `resources/views/layouts/app.blade.php:808` — `search`
+- `resources/views/layouts/app.blade.php:808` — `text-base`
+- `resources/views/layouts/app.blade.php:816` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:818` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:819` — `Einstellungen`
+- `resources/views/layouts/app.blade.php:820` — `Einstellungen`
+- `resources/views/layouts/app.blade.php:821` — `tune`
+- `resources/views/layouts/app.blade.php:821` — `text-base`
+- `resources/views/layouts/app.blade.php:825` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
+- `resources/views/layouts/app.blade.php:826` — `text-sm font-medium`
+- `resources/views/layouts/app.blade.php:826` — `Farbschema`
+- `resources/views/layouts/app.blade.php:827` — `button`
+- `resources/views/layouts/app.blade.php:829` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:830` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:831` — `btn btn-xs btn-ghost gap-2`
+- `resources/views/layouts/app.blade.php:832` — `material-symbols-outlined text-base leading-none`
+- `resources/views/layouts/app.blade.php:833` — `text-xs opacity-70`
+- `resources/views/layouts/app.blade.php:833` — `Wechseln`
+- `resources/views/layouts/app.blade.php:838` — `px-4 py-3 border-b border-base-200`
+- `resources/views/layouts/app.blade.php:839` — `mb-2 text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:839` — `Sprache`
+- `resources/views/layouts/app.blade.php:840` — `inline`
+- `resources/views/layouts/app.blade.php:846` — `legacy`
+- `resources/views/layouts/app.blade.php:847` — `mode-switch-form`
+- `resources/views/layouts/app.blade.php:848` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
+- `resources/views/layouts/app.blade.php:850` — `hidden`
+- `resources/views/layouts/app.blade.php:850` — `origin`
+- `resources/views/layouts/app.blade.php:851` — `mode-switch-toggle`
+- `resources/views/layouts/app.blade.php:852` — `text-sm font-medium cursor-pointer select-none`
+- `resources/views/layouts/app.blade.php:853` — `Modus wechseln`
+- `resources/views/layouts/app.blade.php:854` — `Legacy-Modus`
+- `resources/views/layouts/app.blade.php:856` — `submit`
+- `resources/views/layouts/app.blade.php:856` — `mode-switch-toggle`
+- `resources/views/layouts/app.blade.php:856` — `switch`
+- `resources/views/layouts/app.blade.php:857` — `true`
+- `resources/views/layouts/app.blade.php:857` — `false`
+- `resources/views/layouts/app.blade.php:858` — `Legacy-Modus`
+- `resources/views/layouts/app.blade.php:859` — `Modus wechseln`
+- `resources/views/layouts/app.blade.php:863` — `bg-primary`
+- `resources/views/layouts/app.blade.php:863` — `bg-base-300`
+- `resources/views/layouts/app.blade.php:866` — `translate-x-4`
+- `resources/views/layouts/app.blade.php:866` — `translate-x-0`
+- `resources/views/layouts/app.blade.php:875` — `org-switch-form`
+- `resources/views/layouts/app.blade.php:876` — `px-4 py-3`
+- `resources/views/layouts/app.blade.php:878` — `org-switch-select`
+- `resources/views/layouts/app.blade.php:879` — `block mb-1 text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:880` — `Aktive Organisation`
+- `resources/views/layouts/app.blade.php:881` — `Aktive Organisation`
+- `resources/views/layouts/app.blade.php:884` — `org-switch-select`
+- `resources/views/layouts/app.blade.php:885` — `select select-bordered select-sm w-full`
+- `resources/views/layouts/app.blade.php:887` — `Aktive Organisation waehlen`
+- `resources/views/layouts/app.blade.php:888` — `Aktive Organisation waehlen`
+- `resources/views/layouts/app.blade.php:891` — `selected`
+- `resources/views/layouts/app.blade.php:900` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:902` — `btn-primary`
+- `resources/views/layouts/app.blade.php:902` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:904` — `Benutzermenü`
+- `resources/views/layouts/app.blade.php:906` — `header-username truncate`
+- `resources/views/layouts/app.blade.php:910` — `route`
+- `resources/views/layouts/app.blade.php:912` — `route`
+- `resources/views/layouts/app.blade.php:913` — `modal`
+- `resources/views/layouts/app.blade.php:914` — `active`
+- `resources/views/layouts/app.blade.php:915` — `label`
+- `resources/views/layouts/app.blade.php:920` — `logout`
+- `resources/views/layouts/app.blade.php:920` — `w-full`
+- `resources/views/layouts/app.blade.php:921` — `submit`
+- `resources/views/layouts/app.blade.php:921` — `flex w-full items-center gap-2 text-error`
+- `resources/views/layouts/app.blade.php:922` — `Abmelden`
+- `resources/views/layouts/app.blade.php:931` — `button`
+- `resources/views/layouts/app.blade.php:931` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:931` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:931` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:932` — `material-symbols-outlined text-base leading-none`
+- `resources/views/layouts/app.blade.php:935` — `login`
+- `resources/views/layouts/app.blade.php:935` — `primary`
+- `resources/views/layouts/app.blade.php:935` — `Anmelden`
+- `resources/views/layouts/app.blade.php:949` — `partials.global-search`
+- `resources/views/layouts/app.blade.php:956` — `app-sidebar`
+- `resources/views/layouts/app.blade.php:958` — `Hauptnavigation`
+- `resources/views/layouts/app.blade.php:960` — `sidebar-shell`
+- `resources/views/layouts/app.blade.php:963` — `sidebar-header px-3 py-4`
+- `resources/views/layouts/app.blade.php:969` — `button`
+- `resources/views/layouts/app.blade.php:971` — `focus-dialog`
+- `resources/views/layouts/app.blade.php:973` — `dialog`
+- `resources/views/layouts/app.blade.php:976` — `icon`
+- `resources/views/layouts/app.blade.php:976` — `apps'`
+- `resources/views/layouts/app.blade.php:978` — `min-w-0 flex-1 leading-tight`
+- `resources/views/layouts/app.blade.php:980` — `block truncate text-sm font-semibold text-base-content`
+- `resources/views/layouts/app.blade.php:980` — `label`
+- `resources/views/layouts/app.blade.php:985` — `dropdown dropdown-bottom dropdown-start w-full`
+- `resources/views/layouts/app.blade.php:986` — `button`
+- `resources/views/layouts/app.blade.php:987` — `sidebar-cta btn btn-sm btn-primary w-full gap-2`
+- `resources/views/layouts/app.blade.php:989` — `Neuen Eintrag erstellen`
+- `resources/views/layouts/app.blade.php:991` — `sidebar-cta-text flex-1 text-left`
+- `resources/views/layouts/app.blade.php:998` — `sidebar-cta-divider`
+- `resources/views/layouts/app.blade.php:998` — `divider my-1`
+- `resources/views/layouts/app.blade.php:1000` — `menu-title`
+- `resources/views/layouts/app.blade.php:1001` — `label`
+- `resources/views/layouts/app.blade.php:1003` — `items`
+- `resources/views/layouts/app.blade.php:1005` — `route`
+- `resources/views/layouts/app.blade.php:1007` — `flex items-center gap-3`
+- `resources/views/layouts/app.blade.php:1008` — `label`
+- `resources/views/layouts/app.blade.php:1009` — `icon`
+- `resources/views/layouts/app.blade.php:1009` — `add'`
+- `resources/views/layouts/app.blade.php:1010` — `truncate`
+- `resources/views/layouts/app.blade.php:1010` — `label`
+- `resources/views/layouts/app.blade.php:1019` — `sidebar-items flex flex-col gap-4 px-2 py-3`
+- `resources/views/layouts/app.blade.php:1020` — `flex flex-col gap-4`
+- `resources/views/layouts/app.blade.php:1023` — `groups`
+- `resources/views/layouts/app.blade.php:1025` — `items`
+- `resources/views/layouts/app.blade.php:1026` — `items`
+- `resources/views/layouts/app.blade.php:1028` — `matches`
+- `resources/views/layouts/app.blade.php:1028` — `route`
+- `resources/views/layouts/app.blade.php:1031` — `sidebar-section sidebar-section-collapsible`
+- `resources/views/layouts/app.blade.php:1034` — `sidebar-section-summary`
+- `resources/views/layouts/app.blade.php:1035` — `icon`
+- `resources/views/layouts/app.blade.php:1035` — `folder'`
+- `resources/views/layouts/app.blade.php:1035` — `sidebar-section-icon`
+- `resources/views/layouts/app.blade.php:1036` — `flex-1 truncate`
+- `resources/views/layouts/app.blade.php:1036` — `label`
+- `resources/views/layouts/app.blade.php:1037` — `sidebar-section-chevron`
+- `resources/views/layouts/app.blade.php:1040` — `flex flex-col gap-1 pt-1`
+- `resources/views/layouts/app.blade.php:1043` — `items`
+- `resources/views/layouts/app.blade.php:1044` — `matches`
+- `resources/views/layouts/app.blade.php:1044` — `route`
+- `resources/views/layouts/app.blade.php:1047` — `sidebar-subgroup sidebar-subgroup-collapsible`
+- `resources/views/layouts/app.blade.php:1051` — `icon`
+- `resources/views/layouts/app.blade.php:1051` — `label'`
+- `resources/views/layouts/app.blade.php:1052` — `truncate flex-1`
+- `resources/views/layouts/app.blade.php:1052` — `label`
+- `resources/views/layouts/app.blade.php:1053` — `sidebar-subgroup-chevron`
+- `resources/views/layouts/app.blade.php:1055` — `menu menu-sm w-full gap-0.5 p-0`
+- `resources/views/layouts/app.blade.php:1056` — `items`
+- `resources/views/layouts/app.blade.php:1057` — `matches`
+- `resources/views/layouts/app.blade.php:1057` — `route`
+- `resources/views/layouts/app.blade.php:1059` — `route`
+- `resources/views/layouts/app.blade.php:1060` — `modal`
+- `resources/views/layouts/app.blade.php:1061` — `menu-active`
+- `resources/views/layouts/app.blade.php:1062` — `label`
+- `resources/views/layouts/app.blade.php:1063` — `icon`
+- `resources/views/layouts/app.blade.php:1063` — `circle'`
+- `resources/views/layouts/app.blade.php:1064` — `truncate transition-opacity duration-150`
+- `resources/views/layouts/app.blade.php:1064` — `label`
+- `resources/views/layouts/app.blade.php:1073` — `menu menu-sm w-full gap-0.5 p-0 pt-1`
+- `resources/views/layouts/app.blade.php:1074` — `items`
+- `resources/views/layouts/app.blade.php:1075` — `matches`
+- `resources/views/layouts/app.blade.php:1075` — `route`
+- `resources/views/layouts/app.blade.php:1077` — `route`
+- `resources/views/layouts/app.blade.php:1078` — `modal`
+- `resources/views/layouts/app.blade.php:1079` — `menu-active`
+- `resources/views/layouts/app.blade.php:1080` — `label`
+- `resources/views/layouts/app.blade.php:1081` — `icon`
+- `resources/views/layouts/app.blade.php:1081` — `circle'`
+- `resources/views/layouts/app.blade.php:1082` — `truncate transition-opacity duration-150`
+- `resources/views/layouts/app.blade.php:1082` — `label`
+- `resources/views/layouts/app.blade.php:1093` — `sidebar-footer flex flex-col gap-2 px-3 py-4`
+- `resources/views/layouts/app.blade.php:1101` — `btn-active`
+- `resources/views/layouts/app.blade.php:1104` — `edit`
+- `resources/views/layouts/app.blade.php:1107` — `button`
+- `resources/views/layouts/app.blade.php:1108` — `app-sidebar-collapse`
+- `resources/views/layouts/app.blade.php:1109` — `btn btn-sm btn-primary w-full justify-center gap-2`
+- `resources/views/layouts/app.blade.php:1113` — `Einklappen`
+- `resources/views/layouts/app.blade.php:1118` — `app-sidebar-backdrop`
+- `resources/views/layouts/app.blade.php:1124` — `partials.focus-dialog`
+- `resources/views/layouts/app.blade.php:1131` — `app-header`
+- `resources/views/layouts/app.blade.php:1138` — `function`
+- `resources/views/layouts/app.blade.php:1141` — `resize`
+- `resources/views/layouts/app.blade.php:1143` — `load`
+- `resources/views/layouts/app.blade.php:1153` — `wd-has-scroll`
+- `resources/views/layouts/app.blade.php:1159` — `function`
+- `resources/views/layouts/app.blade.php:1168` — `loading`
+- `resources/views/layouts/app.blade.php:1169` — `DOMContentLoaded`
+- `resources/views/layouts/app.blade.php:1173` — `load`
+- `resources/views/layouts/app.blade.php:1174` — `resize`
+- `resources/views/layouts/app.blade.php:1182` — `dropdown-open`
+- `resources/views/layouts/app.blade.php:1184` — `aria-expanded', 'false`
+- `resources/views/layouts/app.blade.php:1193` — `click`
+- `resources/views/layouts/app.blade.php:1196` — `dropdown-content`
+- `resources/views/layouts/app.blade.php:1205` — `dropdown-open`
+- `resources/views/layouts/app.blade.php:1207` — `dropdown-open`
+- `resources/views/layouts/app.blade.php:1208` — `aria-expanded', open ? 'false`
+- `resources/views/layouts/app.blade.php:1208` — `true`
+- `resources/views/layouts/app.blade.php:1217` — `keydown`
+- `resources/views/layouts/app.blade.php:1218` — `Escape`
+- `resources/views/layouts/app.blade.php:1230` — `dropdown-open`
+- `resources/views/layouts/app.blade.php:1235` — `pageshow`
+- `resources/views/layouts/app.blade.php:1240` — `mode-toast`
+- `resources/views/layouts/app.blade.php:1242` — `polite`
+- `resources/views/layouts/app.blade.php:1244` — `text-base`
+- `resources/views/layouts/app.blade.php:1244` — `legacy' ? `
+- `resources/views/layouts/app.blade.php:1245` — `font-medium`
+- `resources/views/layouts/app.blade.php:1250` — `mode-toast`
+- `resources/views/layouts/app.blade.php:1262` — `max-w-none`
+- `resources/views/layouts/app.blade.php:1262` — `max-w-screen-2xl`
+- `resources/views/layouts/app.blade.php:1270` — `wrapper-height-class', 'wd-page-fill`
+- `resources/views/layouts/app.blade.php:1271` — `success`
+- `resources/views/layouts/app.blade.php:1272` — `alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:1273` — `success`
+- `resources/views/layouts/app.blade.php:1276` — `error`
+- `resources/views/layouts/app.blade.php:1277` — `alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:1278` — `error`
+- `resources/views/layouts/app.blade.php:1281` — `info`
+- `resources/views/layouts/app.blade.php:1282` — `alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:1283` — `info`
+- `resources/views/layouts/app.blade.php:1294` — `currentOrganization`
+- `resources/views/layouts/app.blade.php:1297` — `currentOrganization`
+- `resources/views/layouts/app.blade.php:1306` — `label`
+- `resources/views/layouts/app.blade.php:1307` — `until`
+- `resources/views/layouts/app.blade.php:1315` — `warning`
+- `resources/views/layouts/app.blade.php:1315` — `text-base`
+- `resources/views/layouts/app.blade.php:1316` — `font-semibold`
+- `resources/views/layouts/app.blade.php:1316` — `Geplante Datenlöschung nach Downgrade`
+- `resources/views/layouts/app.blade.php:1317` — `badge badge-warning badge-sm`
+- `resources/views/layouts/app.blade.php:1318` — `ml-auto text-xs font-normal opacity-70`
+- `resources/views/layouts/app.blade.php:1318` — `Stichtag`
+- `resources/views/layouts/app.blade.php:1318` — `until`
+- `resources/views/layouts/app.blade.php:1319` — `grace-chevron text-base transition-transform`
+- `resources/views/layouts/app.blade.php:1321` — `mt-2 pl-7`
+- `resources/views/layouts/app.blade.php:1322` — `text-xs opacity-80`
+- `resources/views/layouts/app.blade.php:1322` — `Der Zugriff auf diese Module ist bereits beendet. Ein Upgrade vor dem Stichtag stellt Zugriff und Daten wieder her.`
+- `resources/views/layouts/app.blade.php:1323` — `mt-1 list-disc pl-5`
+- `resources/views/layouts/app.blade.php:1325` — `label`
+- `resources/views/layouts/app.blade.php:1325` — `Daten werden entfernt am`
+- `resources/views/layouts/app.blade.php:1325` — `until`
+- `resources/views/layouts/app.blade.php:1335` — `page-header`
+- `resources/views/layouts/app.blade.php:1338` — `page-header`
+- `resources/views/layouts/app.blade.php:1341` — `main`
+- `resources/views/layouts/app.blade.php:1342` — `main-content`
+- `resources/views/layouts/app.blade.php:1342` — `main-class', '`
+- `resources/views/layouts/app.blade.php:1343` — `content`
+- `resources/views/layouts/app.blade.php:1347` — `page-footer`
+- `resources/views/layouts/app.blade.php:1352` — `page-footer`
+- `resources/views/layouts/app.blade.php:1355` — `app-footer`
+- `resources/views/layouts/app.blade.php:1355` — `fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs`
+- `resources/views/layouts/app.blade.php:1360` — `max-w-full`
+- `resources/views/layouts/app.blade.php:1362` — `Version`
+- `resources/views/layouts/app.blade.php:1362` — `app.version', '0.1.0-dev`
+- `resources/views/layouts/app.blade.php:1375` — `app-header`
+- `resources/views/layouts/app.blade.php:1376` — `app-footer`
+- `resources/views/layouts/app.blade.php:1380` — `wd-header-hidden`
+- `resources/views/layouts/app.blade.php:1389` — `resize`
+- `resources/views/layouts/app.blade.php:1390` — `orientationchange`
+- `resources/views/layouts/app.blade.php:1391` — `load`
+- `resources/views/layouts/app.blade.php:1395` — `action-confirm-dialog`
+- `resources/views/layouts/app.blade.php:1396` — `false`
+- `resources/views/layouts/app.blade.php:1398` — `warning`
+- `resources/views/layouts/app.blade.php:1399` — `help`
+- `resources/views/layouts/app.blade.php:1400` — `Aktion bestätigen`
+- `resources/views/layouts/app.blade.php:1401` — `action-confirm-header`
+- `resources/views/layouts/app.blade.php:1402` — `action-confirm-icon-wrap`
+- `resources/views/layouts/app.blade.php:1403` — `action-confirm-icon`
+- `resources/views/layouts/app.blade.php:1404` — `action-confirm-title`
+- `resources/views/layouts/app.blade.php:1405` — `action-confirm-message`
+- `resources/views/layouts/app.blade.php:1405` — `Möchtest du diese Aktion wirklich ausführen?`
+- `resources/views/layouts/app.blade.php:1408` — `button`
+- `resources/views/layouts/app.blade.php:1408` — `ghost`
+- `resources/views/layouts/app.blade.php:1408` — `gap-2`
+- `resources/views/layouts/app.blade.php:1408` — `close`
+- `resources/views/layouts/app.blade.php:1408` — `Abbrechen`
+- `resources/views/layouts/app.blade.php:1409` — `action-confirm-submit`
+- `resources/views/layouts/app.blade.php:1409` — `button`
+- `resources/views/layouts/app.blade.php:1409` — `error`
+- `resources/views/layouts/app.blade.php:1409` — `gap-2`
+- `resources/views/layouts/app.blade.php:1409` — `check`
+- `resources/views/layouts/app.blade.php:1409` — `Ausführen`
+- `resources/views/layouts/app.blade.php:1413` — `action-notify-dialog`
+- `resources/views/layouts/app.blade.php:1414` — `false`
+- `resources/views/layouts/app.blade.php:1416` — `info`
+- `resources/views/layouts/app.blade.php:1417` — `info`
+- `resources/views/layouts/app.blade.php:1418` — `Hinweis`
+- `resources/views/layouts/app.blade.php:1419` — `action-notify-header`
+- `resources/views/layouts/app.blade.php:1420` — `action-notify-icon-wrap`
+- `resources/views/layouts/app.blade.php:1421` — `action-notify-icon`
+- `resources/views/layouts/app.blade.php:1422` — `action-notify-title`
+- `resources/views/layouts/app.blade.php:1423` — `action-notify-message`
+- `resources/views/layouts/app.blade.php:1426` — `action-notify-ok`
+- `resources/views/layouts/app.blade.php:1426` — `button`
+- `resources/views/layouts/app.blade.php:1426` — `primary`
+- `resources/views/layouts/app.blade.php:1426` — `gap-2`
+- `resources/views/layouts/app.blade.php:1426` — `check`
+- `resources/views/layouts/app.blade.php:1436` — `Aktion bestätigen`
+- `resources/views/layouts/app.blade.php:1437` — `Möchtest du diese Aktion wirklich ausführen?`
+- `resources/views/layouts/app.blade.php:1438` — `Ausführen`
+- `resources/views/layouts/app.blade.php:1439` — `Hinweis`
+- `resources/views/layouts/app.blade.php:1440` — `Erfolg`
+- `resources/views/layouts/app.blade.php:1441` — `Achtung`
+- `resources/views/layouts/app.blade.php:1442` — `Fehler`
+- `resources/views/layouts/app.blade.php:1446` — `scripts`
+- `resources/views/layouts/app.blade.php:1454` — `chat-unread-link`
+- `resources/views/layouts/app.blade.php:1455` — `chat-unread-badge`
+- `resources/views/layouts/app.blade.php:1459` — `X-Requested-With`
+- `resources/views/layouts/app.blade.php:1459` — `XMLHttpRequest`
+- `resources/views/layouts/app.blade.php:1465` — `hidden`
+- `resources/views/layouts/app.blade.php:1470` — `visibilitychange`
 - `resources/views/timesheets/_signature_pad.blade.php:15` — `scripts`
 - `resources/views/timesheets/_signature_pad.blade.php:19` — `signaturePad`
 - `resources/views/timesheets/_signature_pad.blade.php:23` — `flex w-full flex-col gap-3`
@@ -17696,23 +16685,23 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/articles/_form_dialog.blade.php:47` — `draft`
 - `resources/views/articles/_form_dialog.blade.php:50` — `gtin`
 - `resources/views/articles/_form_dialog.blade.php:51` — `gtin`
-- `resources/views/articles/_form_dialog.blade.php:54` — `payments`
-- `resources/views/articles/_form_dialog.blade.php:54` — `primary`
-- `resources/views/articles/_form_dialog.blade.php:55` — `number`
-- `resources/views/articles/_form_dialog.blade.php:58` — `number`
-- `resources/views/articles/_form_dialog.blade.php:61` — `currency`
-- `resources/views/articles/_form_dialog.blade.php:62` — `currency`
-- `resources/views/articles/_form_dialog.blade.php:66` — `tune`
-- `resources/views/articles/_form_dialog.blade.php:66` — `primary`
-- `resources/views/articles/_form_dialog.blade.php:68` — `label cursor-pointer justify-start gap-3`
-- `resources/views/articles/_form_dialog.blade.php:69` — `hidden`
-- `resources/views/articles/_form_dialog.blade.php:70` — `checkbox`
-- `resources/views/articles/_form_dialog.blade.php:70` — `checkbox checkbox-sm`
-- `resources/views/articles/_form_dialog.blade.php:71` — `stockable','purchasable','sellable`
-- `resources/views/articles/_form_dialog.blade.php:72` — `label-text`
-- `resources/views/articles/_form_dialog.blade.php:82` — `label`
-- `resources/views/articles/_form_dialog.blade.php:82` — `label-text`
-- `resources/views/articles/_form_dialog.blade.php:82` — `Tags`
+- `resources/views/articles/_form_dialog.blade.php:61` — `payments`
+- `resources/views/articles/_form_dialog.blade.php:61` — `primary`
+- `resources/views/articles/_form_dialog.blade.php:62` — `number`
+- `resources/views/articles/_form_dialog.blade.php:65` — `number`
+- `resources/views/articles/_form_dialog.blade.php:68` — `currency`
+- `resources/views/articles/_form_dialog.blade.php:69` — `currency`
+- `resources/views/articles/_form_dialog.blade.php:73` — `tune`
+- `resources/views/articles/_form_dialog.blade.php:73` — `primary`
+- `resources/views/articles/_form_dialog.blade.php:75` — `label cursor-pointer justify-start gap-3`
+- `resources/views/articles/_form_dialog.blade.php:76` — `hidden`
+- `resources/views/articles/_form_dialog.blade.php:77` — `checkbox`
+- `resources/views/articles/_form_dialog.blade.php:77` — `checkbox checkbox-sm`
+- `resources/views/articles/_form_dialog.blade.php:78` — `stockable','purchasable','sellable`
+- `resources/views/articles/_form_dialog.blade.php:79` — `label-text`
+- `resources/views/articles/_form_dialog.blade.php:89` — `label`
+- `resources/views/articles/_form_dialog.blade.php:89` — `label-text`
+- `resources/views/articles/_form_dialog.blade.php:89` — `Tags`
 - `resources/views/articles/show.blade.php:2` — `title`
 - `resources/views/articles/show.blade.php:2` — `app.name', 'WorkDiary`
 - `resources/views/articles/show.blade.php:3` — `nav-title`
@@ -19533,6 +18522,212 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/profile/api-tokens.blade.php:84` — `material-symbols-outlined`
 - `resources/views/profile/api-tokens.blade.php:84` — `true`
 - `resources/views/profile/api-tokens.blade.php:84` — `Keine API-Token vorhanden`
+- `resources/views/contracts/index.blade.php:3` — `title`
+- `resources/views/contracts/index.blade.php:3` — `Vertragsverwaltung`
+- `resources/views/contracts/index.blade.php:4` — `nav-title`
+- `resources/views/contracts/index.blade.php:4` — `Verträge`
+- `resources/views/contracts/index.blade.php:6` — `content`
+- `resources/views/contracts/index.blade.php:9` — `create`
+- `resources/views/contracts/index.blade.php:10` — `primary`
+- `resources/views/contracts/index.blade.php:13` — `Neuer Vertrag`
+- `resources/views/contracts/index.blade.php:18` — `Laufende Verträge`
+- `resources/views/contracts/index.blade.php:23` — `status`
+- `resources/views/contracts/index.blade.php:23` — `select select-sm select-bordered w-44 shrink-0`
+- `resources/views/contracts/index.blade.php:23` — `Status`
+- `resources/views/contracts/index.blade.php:24` — `Alle Status`
+- `resources/views/contracts/index.blade.php:26` — `status`
+- `resources/views/contracts/index.blade.php:29` — `kind`
+- `resources/views/contracts/index.blade.php:29` — `select select-sm select-bordered w-52 shrink-0`
+- `resources/views/contracts/index.blade.php:29` — `Vertragsart`
+- `resources/views/contracts/index.blade.php:30` — `Alle Vertragsarten`
+- `resources/views/contracts/index.blade.php:32` — `kind`
+- `resources/views/contracts/index.blade.php:37` — `status`
+- `resources/views/contracts/index.blade.php:38` — `alert alert-success`
+- `resources/views/contracts/index.blade.php:38` — `status`
+- `resources/views/contracts/index.blade.php:45` — `Nummer`
+- `resources/views/contracts/index.blade.php:46` — `Titel`
+- `resources/views/contracts/index.blade.php:47` — `Vertragspartner`
+- `resources/views/contracts/index.blade.php:49` — `Laufzeit`
+- `resources/views/contracts/index.blade.php:50` — `Nächste Kündigung zum`
+- `resources/views/contracts/index.blade.php:51` — `Status`
+- `resources/views/contracts/index.blade.php:57` — `link font-mono`
+- `resources/views/contracts/index.blade.php:61` — `unbefristet`
+- `resources/views/contracts/index.blade.php:64` — `visibility`
+- `resources/views/contracts/index.blade.php:64` — `Anzeigen`
+- `resources/views/contracts/index.blade.php:67` — `material-symbols-outlined`
+- `resources/views/contracts/index.blade.php:67` — `true`
+- `resources/views/contracts/_form_dialog.blade.php:3` — `Neuer Vertrag`
+- `resources/views/contracts/_form_dialog.blade.php:4` — `Vertragsverwaltung`
+- `resources/views/contracts/_form_dialog.blade.php:5` — `contract`
+- `resources/views/contracts/_form_dialog.blade.php:6` — `primary`
+- `resources/views/contracts/_form_dialog.blade.php:9` — `data-entry-form`
+- `resources/views/contracts/_form_dialog.blade.php:10` — `Vertrag anlegen`
+- `resources/views/contracts/_form_dialog.blade.php:12` — `Vertrag`
+- `resources/views/contracts/_form_dialog.blade.php:12` — `contract`
+- `resources/views/contracts/_form_dialog.blade.php:12` — `primary`
+- `resources/views/contracts/_form_dialog.blade.php:13` — `title`
+- `resources/views/contracts/_form_dialog.blade.php:13` — `title`
+- `resources/views/contracts/_form_dialog.blade.php:14` — `kind`
+- `resources/views/contracts/_form_dialog.blade.php:14` — `Vertragsart`
+- `resources/views/contracts/_form_dialog.blade.php:16` — `kind`
+- `resources/views/contracts/_form_dialog.blade.php:19` — `Verantwortlich`
+- `resources/views/contracts/_form_dialog.blade.php:27` — `Vertragspartner`
+- `resources/views/contracts/_form_dialog.blade.php:27` — `handshake`
+- `resources/views/contracts/_form_dialog.blade.php:27` — `primary`
+- `resources/views/contracts/_form_dialog.blade.php:28` — `Partnerbezug`
+- `resources/views/contracts/_form_dialog.blade.php:30` — `other`
+- `resources/views/contracts/_form_dialog.blade.php:35` — `kein Kundenbezug`
+- `resources/views/contracts/_form_dialog.blade.php:41` — `kein Lieferantenbezug`
+- `resources/views/contracts/_form_dialog.blade.php:48` — `primary`
+- `resources/views/contracts/_form_dialog.blade.php:49` — `Laufzeitmodell`
+- `resources/views/contracts/_form_dialog.blade.php:51` — `fixed`
+- `resources/views/contracts/_form_dialog.blade.php:54` — `number`
+- `resources/views/contracts/_form_dialog.blade.php:55` — `split`
+- `resources/views/contracts/_form_dialog.blade.php:56` — `date`
+- `resources/views/contracts/_form_dialog.blade.php:56` — `ct-starts-on`
+- `resources/views/contracts/_form_dialog.blade.php:56` — `ct-ends-on`
+- `resources/views/contracts/_form_dialog.blade.php:57` — `Beginn`
+- `resources/views/contracts/_form_dialog.blade.php:59` — `number`
+- `resources/views/contracts/_form_dialog.blade.php:60` — `number`
+- `resources/views/contracts/_form_dialog.blade.php:61` — `Automatische Verlängerung`
+- `resources/views/contracts/_form_dialog.blade.php:64` — `Indexierung`
+- `resources/views/contracts/_form_dialog.blade.php:64` — `primary`
+- `resources/views/contracts/_form_dialog.blade.php:65` — `Anpassungsregel`
+- `resources/views/contracts/_form_dialog.blade.php:67` — `none`
+- `resources/views/contracts/_form_dialog.blade.php:70` — `number`
+- `resources/views/contracts/_form_dialog.blade.php:71` — `date`
+- `resources/views/contracts/_form_dialog.blade.php:71` — `Nächster Anpassungsstichtag`
+- `resources/views/contracts/_form_dialog.blade.php:75` — `payments`
+- `resources/views/contracts/_form_dialog.blade.php:75` — `primary`
+- `resources/views/contracts/_form_dialog.blade.php:76` — `number`
+- `resources/views/contracts/_form_dialog.blade.php:76` — `Vertragswert`
+- `resources/views/contracts/_form_dialog.blade.php:77` — `currency`
+- `resources/views/contracts/_form_dialog.blade.php:77` — `Währung`
+- `resources/views/contracts/_form_dialog.blade.php:78` — `currency', 'EUR`
+- `resources/views/contracts/_form_dialog.blade.php:80` — `Wertbezug`
+- `resources/views/contracts/_form_dialog.blade.php:81` — `once`
+- `resources/views/contracts/_form_dialog.blade.php:81` — `once`
+- `resources/views/contracts/_form_dialog.blade.php:81` — `once`
+- `resources/views/contracts/_form_dialog.blade.php:81` — `einmalig`
+- `resources/views/contracts/_form_dialog.blade.php:82` — `monthly`
+- `resources/views/contracts/_form_dialog.blade.php:82` — `monthly`
+- `resources/views/contracts/_form_dialog.blade.php:82` — `monatlich`
+- `resources/views/contracts/_form_dialog.blade.php:83` — `quarterly`
+- `resources/views/contracts/_form_dialog.blade.php:83` — `quarterly`
+- `resources/views/contracts/_form_dialog.blade.php:83` — `quartalsweise`
+- `resources/views/contracts/_form_dialog.blade.php:84` — `yearly`
+- `resources/views/contracts/_form_dialog.blade.php:84` — `yearly`
+- `resources/views/contracts/_form_dialog.blade.php:84` — `jährlich`
+- `resources/views/contracts/_form_dialog.blade.php:87` — `kein Dokumentbezug`
+- `resources/views/contracts/_form_dialog.blade.php:92` — `notes`
+- `resources/views/contracts/_form_dialog.blade.php:92` — `Notizen`
+- `resources/views/contracts/_form_dialog.blade.php:92` — `notes`
+- `resources/views/contracts/_form_dialog.blade.php:96` — `alert alert-error text-sm`
+- `resources/views/contracts/_form_dialog.blade.php:97` — `list-disc pl-5`
+- `resources/views/contracts/show.blade.php:3` — `title`
+- `resources/views/contracts/show.blade.php:4` — `nav-title`
+- `resources/views/contracts/show.blade.php:4` — `Vertragsakte`
+- `resources/views/contracts/show.blade.php:6` — `content`
+- `resources/views/contracts/show.blade.php:8` — `status`
+- `resources/views/contracts/show.blade.php:9` — `alert alert-success`
+- `resources/views/contracts/show.blade.php:9` — `status`
+- `resources/views/contracts/show.blade.php:12` — `alert alert-error text-sm`
+- `resources/views/contracts/show.blade.php:13` — `list-disc pl-5`
+- `resources/views/contracts/show.blade.php:18` — `flex flex-wrap items-center gap-2 text-sm`
+- `resources/views/contracts/show.blade.php:20` — `badge badge-outline`
+- `resources/views/contracts/show.blade.php:21` — `badge badge-outline`
+- `resources/views/contracts/show.blade.php:22` — `badge badge-outline`
+- `resources/views/contracts/show.blade.php:22` — `unbefristet`
+- `resources/views/contracts/show.blade.php:25` — `update`
+- `resources/views/contracts/show.blade.php:28` — `submit`
+- `resources/views/contracts/show.blade.php:28` — `btn btn-sm btn-primary`
+- `resources/views/contracts/show.blade.php:28` — `Aktivieren`
+- `resources/views/contracts/show.blade.php:33` — `submit`
+- `resources/views/contracts/show.blade.php:33` — `btn btn-sm`
+- `resources/views/contracts/show.blade.php:33` — `Beenden`
+- `resources/views/contracts/show.blade.php:37` — `inline-block text-left`
+- `resources/views/contracts/show.blade.php:38` — `btn btn-sm btn-ghost text-error`
+- `resources/views/contracts/show.blade.php:38` — `Kündigen`
+- `resources/views/contracts/show.blade.php:39` — `mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3`
+- `resources/views/contracts/show.blade.php:41` — `reason`
+- `resources/views/contracts/show.blade.php:42` — `submit`
+- `resources/views/contracts/show.blade.php:42` — `btn btn-sm btn-error`
+- `resources/views/contracts/show.blade.php:42` — `Kündigen`
+- `resources/views/contracts/show.blade.php:47` — `Zur Liste`
+- `resources/views/contracts/show.blade.php:52` — `Vertragsdaten`
+- `resources/views/contracts/show.blade.php:53` — `grid grid-cols-2 gap-x-4 gap-y-1 text-sm`
+- `resources/views/contracts/show.blade.php:54` — `Vertragspartner`
+- `resources/views/contracts/show.blade.php:56` — `Kündigungsfrist`
+- `resources/views/contracts/show.blade.php:57` — `Tage`
+- `resources/views/contracts/show.blade.php:58` — `Mindestlaufzeit`
+- `resources/views/contracts/show.blade.php:59` — `Monate`
+- `resources/views/contracts/show.blade.php:60` — `Automatische Verlängerung`
+- `resources/views/contracts/show.blade.php:61` — `nein`
+- `resources/views/contracts/show.blade.php:62` — `Vertragswert`
+- `resources/views/contracts/show.blade.php:64` — `Verantwortlich`
+- `resources/views/contracts/show.blade.php:66` — `Dokument`
+- `resources/views/contracts/show.blade.php:69` — `mt-3 border-t border-base-300 pt-2 text-sm`
+- `resources/views/contracts/show.blade.php:70` — `font-medium`
+- `resources/views/contracts/show.blade.php:70` — `Indexierung`
+- `resources/views/contracts/show.blade.php:74` — `Stichtag`
+- `resources/views/contracts/show.blade.php:80` — `mt-2 whitespace-pre-line text-sm`
+- `resources/views/contracts/show.blade.php:86` — `rounded-box bg-base-200 p-4`
+- `resources/views/contracts/show.blade.php:87` — `Nächstmöglich kündbar zum`
+- `resources/views/contracts/show.blade.php:88` — `text-2xl font-semibold`
+- `resources/views/contracts/show.blade.php:91` — `date`
+- `resources/views/contracts/show.blade.php:93` — `badge badge-error badge-sm`
+- `resources/views/contracts/show.blade.php:93` — `Frist erreicht`
+- `resources/views/contracts/show.blade.php:95` — `badge badge-warning badge-sm`
+- `resources/views/contracts/show.blade.php:95` — `Frist bald`
+- `resources/views/contracts/show.blade.php:114` — `Titel`
+- `resources/views/contracts/show.blade.php:115` — `Fällig am`
+- `resources/views/contracts/show.blade.php:116` — `Vorwarnung`
+- `resources/views/contracts/show.blade.php:117` — `Status`
+- `resources/views/contracts/show.blade.php:122` — `opacity-60`
+- `resources/views/contracts/show.blade.php:122` — `done`
+- `resources/views/contracts/show.blade.php:124` — `badge badge-ghost badge-sm`
+- `resources/views/contracts/show.blade.php:124` — `wiederkehrend`
+- `resources/views/contracts/show.blade.php:126` — `Tage`
+- `resources/views/contracts/show.blade.php:128` — `missed`
+- `resources/views/contracts/show.blade.php:129` — `badge badge-error badge-sm`
+- `resources/views/contracts/show.blade.php:129` — `versäumt`
+- `resources/views/contracts/show.blade.php:130` — `done`
+- `resources/views/contracts/show.blade.php:131` — `badge badge-success badge-sm`
+- `resources/views/contracts/show.blade.php:131` — `erledigt`
+- `resources/views/contracts/show.blade.php:133` — `badge badge-info badge-outline badge-sm`
+- `resources/views/contracts/show.blade.php:133` — `offen`
+- `resources/views/contracts/show.blade.php:137` — `done`
+- `resources/views/contracts/show.blade.php:138` — `update`
+- `resources/views/contracts/show.blade.php:140` — `submit`
+- `resources/views/contracts/show.blade.php:140` — `btn btn-xs`
+- `resources/views/contracts/show.blade.php:140` — `Erledigt`
+- `resources/views/contracts/show.blade.php:147` — `material-symbols-outlined`
+- `resources/views/contracts/show.blade.php:147` — `true`
+- `resources/views/contracts/show.blade.php:151` — `update`
+- `resources/views/contracts/show.blade.php:154` — `kind`
+- `resources/views/contracts/show.blade.php:159` — `title`
+- `resources/views/contracts/show.blade.php:159` — `Titel`
+- `resources/views/contracts/show.blade.php:160` — `date`
+- `resources/views/contracts/show.blade.php:160` — `Fällig am`
+- `resources/views/contracts/show.blade.php:161` — `number`
+- `resources/views/contracts/show.blade.php:162` — `Verantwortlich`
+- `resources/views/contracts/show.blade.php:168` — `number`
+- `resources/views/contracts/show.blade.php:169` — `recurring`
+- `resources/views/contracts/show.blade.php:169` — `Wiederkehrend`
+- `resources/views/contracts/show.blade.php:169` — `false`
+- `resources/views/contracts/show.blade.php:170` — `flex items-end`
+- `resources/views/contracts/show.blade.php:170` — `submit`
+- `resources/views/contracts/show.blade.php:170` — `btn btn-sm btn-primary`
+- `resources/views/contracts/show.blade.php:170` — `Obligation ergänzen`
+- `resources/views/contracts/show.blade.php:178` — `mt-2 list-disc pl-5 text-sm`
+- `resources/views/contracts/show.blade.php:180` — `font-mono`
+- `resources/views/contracts/show.blade.php:184` — `update`
+- `resources/views/contracts/show.blade.php:185` — `contracts.asset-finance.link`
+- `resources/views/contracts/show.blade.php:185` — `mt-3 flex flex-wrap items-end gap-2`
+- `resources/views/contracts/show.blade.php:187` — `Leasingvertrag`
+- `resources/views/contracts/show.blade.php:193` — `submit`
+- `resources/views/contracts/show.blade.php:193` — `btn btn-sm`
+- `resources/views/contracts/show.blade.php:193` — `Verknüpfen`
 - `resources/views/diary/_show_actions.blade.php:2` — `archive`
 - `resources/views/diary/_show_actions.blade.php:5` — `restore`
 - `resources/views/diary/_show_actions.blade.php:5` — `outline`
@@ -23773,273 +22968,351 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/sustainability/assessment.blade.php:4` — `nav-title`
 - `resources/views/sustainability/assessment.blade.php:4` — `ESG-Bewertung`
 - `resources/views/sustainability/assessment.blade.php:6` — `content`
-- `resources/views/sustainability/assessment.blade.php:8` — `status`
-- `resources/views/sustainability/assessment.blade.php:9` — `alert alert-success`
-- `resources/views/sustainability/assessment.blade.php:9` — `status`
-- `resources/views/sustainability/assessment.blade.php:11` — `error`
-- `resources/views/sustainability/assessment.blade.php:12` — `alert alert-error`
-- `resources/views/sustainability/assessment.blade.php:12` — `error`
-- `resources/views/sustainability/assessment.blade.php:15` — `values.`
-- `resources/views/sustainability/assessment.blade.php:15` — `outline`
-- `resources/views/sustainability/assessment.blade.php:18` — `score`
-- `resources/views/sustainability/assessment.blade.php:19` — `quality`
-- `resources/views/sustainability/assessment.blade.php:24` — `ghost`
-- `resources/views/sustainability/assessment.blade.php:24` — `Übersicht`
-- `resources/views/sustainability/assessment.blade.php:28` — `Bewertung finalisieren? Score, Gewichte und Kontext werden eingefroren.`
-- `resources/views/sustainability/assessment.blade.php:29` — `lock`
-- `resources/views/sustainability/assessment.blade.php:29` — `primary`
-- `resources/views/sustainability/assessment.blade.php:29` — `Finalisieren`
-- `resources/views/sustainability/assessment.blade.php:30` — `lock`
-- `resources/views/sustainability/assessment.blade.php:30` — `primary`
-- `resources/views/sustainability/assessment.blade.php:30` — `submit`
-- `resources/views/sustainability/assessment.blade.php:30` — `Finalisieren`
-- `resources/views/sustainability/assessment.blade.php:33` — `sustainability.assessments.new-version`
-- `resources/views/sustainability/assessment.blade.php:34` — `difference`
-- `resources/views/sustainability/assessment.blade.php:34` — `info`
-- `resources/views/sustainability/assessment.blade.php:34` — `submit`
-- `resources/views/sustainability/assessment.blade.php:34` — `Neue Version`
-- `resources/views/sustainability/assessment.blade.php:42` — `Vergleich`
-- `resources/views/sustainability/assessment.blade.php:43` — `flex flex-wrap items-end gap-2`
-- `resources/views/sustainability/assessment.blade.php:44` — `vergleich`
-- `resources/views/sustainability/assessment.blade.php:44` — `select select-sm select-bordered`
-- `resources/views/sustainability/assessment.blade.php:50` — `submit`
-- `resources/views/sustainability/assessment.blade.php:50` — `btn btn-sm`
-- `resources/views/sustainability/assessment.blade.php:50` — `Vergleichen`
-- `resources/views/sustainability/assessment.blade.php:55` — `rounded-box border border-base-300 p-3`
-- `resources/views/sustainability/assessment.blade.php:56` — `font-medium`
-- `resources/views/sustainability/assessment.blade.php:57` — `mt-1 flex items-center gap-2 text-sm`
-- `resources/views/sustainability/assessment.blade.php:59` — `green' ? 'success`
-- `resources/views/sustainability/assessment.blade.php:59` — `yellow' ? 'warning`
-- `resources/views/sustainability/assessment.blade.php:59` — `error`
-- `resources/views/sustainability/assessment.blade.php:61` — `noch nicht finalisiert`
-- `resources/views/sustainability/assessment.blade.php:63` — `quality`
-- `resources/views/sustainability/assessment.blade.php:73` — `overflow-x-auto`
-- `resources/views/sustainability/assessment.blade.php:74` — `table table-sm`
-- `resources/views/sustainability/assessment.blade.php:77` — `Dimension`
-- `resources/views/sustainability/assessment.blade.php:78` — `Kriterium`
-- `resources/views/sustainability/assessment.blade.php:79` — `Gewicht`
-- `resources/views/sustainability/assessment.blade.php:81` — `Datenqualität`
-- `resources/views/sustainability/assessment.blade.php:93` — `flex flex-wrap items-center gap-1`
-- `resources/views/sustainability/assessment.blade.php:95` — `score`
-- `resources/views/sustainability/assessment.blade.php:95` — `select select-xs select-bordered`
-- `resources/views/sustainability/assessment.blade.php:100` — `select select-xs select-bordered`
-- `resources/views/sustainability/assessment.blade.php:101` — `measured`
-- `resources/views/sustainability/assessment.blade.php:101` — `measured`
-- `resources/views/sustainability/assessment.blade.php:102` — `calculated`
-- `resources/views/sustainability/assessment.blade.php:102` — `calculated`
-- `resources/views/sustainability/assessment.blade.php:103` — `estimated`
-- `resources/views/sustainability/assessment.blade.php:103` — `estimated`
-- `resources/views/sustainability/assessment.blade.php:105` — `input input-xs input-bordered w-40`
-- `resources/views/sustainability/assessment.blade.php:105` — `Quelle`
-- `resources/views/sustainability/assessment.blade.php:106` — `justification`
-- `resources/views/sustainability/assessment.blade.php:106` — `input input-xs input-bordered w-52`
-- `resources/views/sustainability/assessment.blade.php:106` — `Begründung`
-- `resources/views/sustainability/assessment.blade.php:107` — `submit`
-- `resources/views/sustainability/assessment.blade.php:107` — `btn btn-xs`
-- `resources/views/sustainability/assessment.blade.php:112` — `estimated`
-- `resources/views/sustainability/assessment.blade.php:112` — `badge badge-warning badge-xs`
-- `resources/views/sustainability/assessment.blade.php:112` — `Schätzwert`
-- `resources/views/sustainability/assessment.blade.php:123` — `scoring`
-- `resources/views/sustainability/assessment.blade.php:124` — `sets`
+- `resources/views/sustainability/assessment.blade.php:9` — `values.`
+- `resources/views/sustainability/assessment.blade.php:9` — `outline`
+- `resources/views/sustainability/assessment.blade.php:12` — `score`
+- `resources/views/sustainability/assessment.blade.php:13` — `quality`
+- `resources/views/sustainability/assessment.blade.php:18` — `ghost`
+- `resources/views/sustainability/assessment.blade.php:18` — `Übersicht`
+- `resources/views/sustainability/assessment.blade.php:22` — `Bewertung finalisieren? Score, Gewichte und Kontext werden eingefroren.`
+- `resources/views/sustainability/assessment.blade.php:23` — `lock`
+- `resources/views/sustainability/assessment.blade.php:23` — `primary`
+- `resources/views/sustainability/assessment.blade.php:23` — `Finalisieren`
+- `resources/views/sustainability/assessment.blade.php:24` — `lock`
+- `resources/views/sustainability/assessment.blade.php:24` — `primary`
+- `resources/views/sustainability/assessment.blade.php:24` — `submit`
+- `resources/views/sustainability/assessment.blade.php:24` — `Finalisieren`
+- `resources/views/sustainability/assessment.blade.php:27` — `sustainability.assessments.new-version`
+- `resources/views/sustainability/assessment.blade.php:28` — `difference`
+- `resources/views/sustainability/assessment.blade.php:28` — `info`
+- `resources/views/sustainability/assessment.blade.php:28` — `submit`
+- `resources/views/sustainability/assessment.blade.php:28` — `Neue Version`
+- `resources/views/sustainability/assessment.blade.php:36` — `status`
+- `resources/views/sustainability/assessment.blade.php:37` — `alert alert-success rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/sustainability/assessment.blade.php:37` — `status`
+- `resources/views/sustainability/assessment.blade.php:41` — `Vergleich`
+- `resources/views/sustainability/assessment.blade.php:42` — `flex flex-wrap items-end gap-2`
+- `resources/views/sustainability/assessment.blade.php:43` — `vergleich`
+- `resources/views/sustainability/assessment.blade.php:43` — `select select-sm select-bordered`
+- `resources/views/sustainability/assessment.blade.php:49` — `submit`
+- `resources/views/sustainability/assessment.blade.php:49` — `btn btn-sm`
+- `resources/views/sustainability/assessment.blade.php:49` — `Vergleichen`
+- `resources/views/sustainability/assessment.blade.php:54` — `rounded-box border border-base-300 p-3`
+- `resources/views/sustainability/assessment.blade.php:55` — `font-medium`
+- `resources/views/sustainability/assessment.blade.php:56` — `mt-1 flex items-center gap-2 text-sm`
+- `resources/views/sustainability/assessment.blade.php:58` — `green' ? 'success`
+- `resources/views/sustainability/assessment.blade.php:58` — `yellow' ? 'warning`
+- `resources/views/sustainability/assessment.blade.php:58` — `error`
+- `resources/views/sustainability/assessment.blade.php:60` — `noch nicht finalisiert`
+- `resources/views/sustainability/assessment.blade.php:62` — `quality`
+- `resources/views/sustainability/assessment.blade.php:72` — `overflow-x-auto`
+- `resources/views/sustainability/assessment.blade.php:73` — `table table-sm`
+- `resources/views/sustainability/assessment.blade.php:76` — `Dimension`
+- `resources/views/sustainability/assessment.blade.php:77` — `Kriterium`
+- `resources/views/sustainability/assessment.blade.php:78` — `Gewicht`
+- `resources/views/sustainability/assessment.blade.php:80` — `Datenqualität`
+- `resources/views/sustainability/assessment.blade.php:92` — `flex flex-wrap items-center gap-1`
+- `resources/views/sustainability/assessment.blade.php:94` — `score`
+- `resources/views/sustainability/assessment.blade.php:94` — `select select-xs select-bordered`
+- `resources/views/sustainability/assessment.blade.php:99` — `select select-xs select-bordered`
+- `resources/views/sustainability/assessment.blade.php:100` — `measured`
+- `resources/views/sustainability/assessment.blade.php:100` — `measured`
+- `resources/views/sustainability/assessment.blade.php:101` — `calculated`
+- `resources/views/sustainability/assessment.blade.php:101` — `calculated`
+- `resources/views/sustainability/assessment.blade.php:102` — `estimated`
+- `resources/views/sustainability/assessment.blade.php:102` — `estimated`
+- `resources/views/sustainability/assessment.blade.php:104` — `input input-xs input-bordered w-40`
+- `resources/views/sustainability/assessment.blade.php:104` — `Quelle`
+- `resources/views/sustainability/assessment.blade.php:105` — `justification`
+- `resources/views/sustainability/assessment.blade.php:105` — `input input-xs input-bordered w-52`
+- `resources/views/sustainability/assessment.blade.php:105` — `Begründung`
+- `resources/views/sustainability/assessment.blade.php:106` — `submit`
+- `resources/views/sustainability/assessment.blade.php:106` — `btn btn-xs`
+- `resources/views/sustainability/assessment.blade.php:111` — `estimated`
+- `resources/views/sustainability/assessment.blade.php:111` — `badge badge-warning badge-xs`
+- `resources/views/sustainability/assessment.blade.php:111` — `Schätzwert`
+- `resources/views/sustainability/assessment.blade.php:122` — `scoring`
+- `resources/views/sustainability/assessment.blade.php:123` — `sets`
 - `resources/views/sustainability/index.blade.php:3` — `title`
 - `resources/views/sustainability/index.blade.php:4` — `nav-title`
 - `resources/views/sustainability/index.blade.php:4` — `Nachhaltigkeit`
 - `resources/views/sustainability/index.blade.php:6` — `content`
-- `resources/views/sustainability/index.blade.php:8` — `status`
-- `resources/views/sustainability/index.blade.php:9` — `alert alert-success`
-- `resources/views/sustainability/index.blade.php:9` — `status`
-- `resources/views/sustainability/index.blade.php:11` — `error`
-- `resources/views/sustainability/index.blade.php:12` — `alert alert-error`
-- `resources/views/sustainability/index.blade.php:12` — `error`
-- `resources/views/sustainability/index.blade.php:16` — `from`
-- `resources/views/sustainability/index.blade.php:18` — `download`
-- `resources/views/sustainability/index.blade.php:18` — `export`
-- `resources/views/sustainability/index.blade.php:18` — `csv', 'from`
-- `resources/views/sustainability/index.blade.php:21` — `hidden`
-- `resources/views/sustainability/index.blade.php:21` — `from`
-- `resources/views/sustainability/index.blade.php:22` — `hidden`
-- `resources/views/sustainability/index.blade.php:23` — `submit`
-- `resources/views/sustainability/index.blade.php:24` — `Snapshot`
-- `resources/views/sustainability/index.blade.php:33` — `Offene Maßnahmen`
-- `resources/views/sustainability/index.blade.php:34` — `Anteil Schätzwerte`
-- `resources/views/sustainability/index.blade.php:38` — `alert alert-warning text-sm`
-- `resources/views/sustainability/index.blade.php:39` — `material-symbols-outlined`
-- `resources/views/sustainability/index.blade.php:39` — `true`
+- `resources/views/sustainability/index.blade.php:9` — `from`
+- `resources/views/sustainability/index.blade.php:11` — `download`
+- `resources/views/sustainability/index.blade.php:11` — `export`
+- `resources/views/sustainability/index.blade.php:11` — `csv', 'from`
+- `resources/views/sustainability/index.blade.php:14` — `hidden`
+- `resources/views/sustainability/index.blade.php:14` — `from`
+- `resources/views/sustainability/index.blade.php:15` — `hidden`
+- `resources/views/sustainability/index.blade.php:16` — `submit`
+- `resources/views/sustainability/index.blade.php:17` — `Snapshot`
+- `resources/views/sustainability/index.blade.php:24` — `status`
+- `resources/views/sustainability/index.blade.php:25` — `alert alert-success rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/sustainability/index.blade.php:25` — `status`
+- `resources/views/sustainability/index.blade.php:31` — `error`
+- `resources/views/sustainability/index.blade.php:31` — `neutral'`
+- `resources/views/sustainability/index.blade.php:32` — `Offene Maßnahmen`
+- `resources/views/sustainability/index.blade.php:32` — `warning`
+- `resources/views/sustainability/index.blade.php:32` — `neutral'`
+- `resources/views/sustainability/index.blade.php:33` — `Anteil Schätzwerte`
+- `resources/views/sustainability/index.blade.php:33` — `warning`
+- `resources/views/sustainability/index.blade.php:33` — `info'`
+- `resources/views/sustainability/index.blade.php:38` — `alert alert-warning rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/sustainability/index.blade.php:39` — `warning`
+- `resources/views/sustainability/index.blade.php:39` — `text-base`
 - `resources/views/sustainability/index.blade.php:40` — `codes`
-- `resources/views/sustainability/index.blade.php:45` — `Emissionen nach Aktivität`
-- `resources/views/sustainability/index.blade.php:46` — `activities`
-- `resources/views/sustainability/index.blade.php:47` — `Noch keine Aktivitätsdaten im Zeitraum.`
-- `resources/views/sustainability/index.blade.php:49` — `overflow-x-auto`
-- `resources/views/sustainability/index.blade.php:50` — `table table-sm`
-- `resources/views/sustainability/index.blade.php:51` — `Aktivität`
-- `resources/views/sustainability/index.blade.php:51` — `text-right`
-- `resources/views/sustainability/index.blade.php:51` — `Menge`
-- `resources/views/sustainability/index.blade.php:51` — `text-right`
-- `resources/views/sustainability/index.blade.php:51` — `CO₂e kg`
-- `resources/views/sustainability/index.blade.php:51` — `Faktorquelle`
-- `resources/views/sustainability/index.blade.php:53` — `activities`
-- `resources/views/sustainability/index.blade.php:56` — `text-right tabular-nums`
-- `resources/views/sustainability/index.blade.php:56` — `amount`
-- `resources/views/sustainability/index.blade.php:56` — `unit`
-- `resources/views/sustainability/index.blade.php:57` — `text-right tabular-nums`
-- `resources/views/sustainability/index.blade.php:58` — `Faktor fehlt`
-- `resources/views/sustainability/index.blade.php:64` — `text-right`
-- `resources/views/sustainability/index.blade.php:64` — `scope`
-- `resources/views/sustainability/index.blade.php:64` — `text-right tabular-nums`
-- `resources/views/sustainability/index.blade.php:73` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:78` — `amount`
-- `resources/views/sustainability/index.blade.php:78` — `number`
-- `resources/views/sustainability/index.blade.php:78` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:78` — `Menge`
-- `resources/views/sustainability/index.blade.php:79` — `unit`
-- `resources/views/sustainability/index.blade.php:79` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:80` — `join`
-- `resources/views/sustainability/index.blade.php:81` — `date`
-- `resources/views/sustainability/index.blade.php:82` — `Zeitraum`
-- `resources/views/sustainability/index.blade.php:85` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:86` — `measured`
-- `resources/views/sustainability/index.blade.php:87` — `calculated`
-- `resources/views/sustainability/index.blade.php:88` — `estimated`
-- `resources/views/sustainability/index.blade.php:91` — `primary`
-- `resources/views/sustainability/index.blade.php:91` — `submit`
-- `resources/views/sustainability/index.blade.php:91` — `Erfassen`
-- `resources/views/sustainability/index.blade.php:98` — `flag`
-- `resources/views/sustainability/index.blade.php:98` — `Keine Ziele definiert.`
-- `resources/views/sustainability/index.blade.php:100` — `overflow-x-auto`
-- `resources/views/sustainability/index.blade.php:101` — `table table-sm`
-- `resources/views/sustainability/index.blade.php:102` — `Ziel`
-- `resources/views/sustainability/index.blade.php:102` — `text-right`
-- `resources/views/sustainability/index.blade.php:102` — `year`
-- `resources/views/sustainability/index.blade.php:102` — `text-right`
-- `resources/views/sustainability/index.blade.php:105` — `text-error`
-- `resources/views/sustainability/index.blade.php:105` — `actual`
-- `resources/views/sustainability/index.blade.php:105` — `actual`
+- `resources/views/sustainability/index.blade.php:46` — `Emissionen nach Aktivität`
+- `resources/views/sustainability/index.blade.php:49` — `ghost`
+- `resources/views/sustainability/index.blade.php:49` — `activity-create`
+- `resources/views/sustainability/index.blade.php:49` — `Erfassen`
+- `resources/views/sustainability/index.blade.php:52` — `activities`
+- `resources/views/sustainability/index.blade.php:53` — `Noch keine Aktivitätsdaten im Zeitraum.`
+- `resources/views/sustainability/index.blade.php:58` — `Aktivität`
+- `resources/views/sustainability/index.blade.php:59` — `text-right`
+- `resources/views/sustainability/index.blade.php:59` — `Menge`
+- `resources/views/sustainability/index.blade.php:60` — `text-right`
+- `resources/views/sustainability/index.blade.php:60` — `CO₂e kg`
+- `resources/views/sustainability/index.blade.php:61` — `Faktorquelle`
+- `resources/views/sustainability/index.blade.php:67` — `scope`
+- `resources/views/sustainability/index.blade.php:68` — `text-right tabular-nums font-medium`
+- `resources/views/sustainability/index.blade.php:73` — `activities`
+- `resources/views/sustainability/index.blade.php:76` — `text-right tabular-nums`
+- `resources/views/sustainability/index.blade.php:76` — `amount`
+- `resources/views/sustainability/index.blade.php:76` — `unit`
+- `resources/views/sustainability/index.blade.php:77` — `text-right tabular-nums`
+- `resources/views/sustainability/index.blade.php:78` — `Faktor fehlt`
+- `resources/views/sustainability/index.blade.php:85` — `flag`
+- `resources/views/sustainability/index.blade.php:88` — `ghost`
+- `resources/views/sustainability/index.blade.php:88` — `target-create`
+- `resources/views/sustainability/index.blade.php:88` — `Ziel anlegen`
+- `resources/views/sustainability/index.blade.php:92` — `flag`
+- `resources/views/sustainability/index.blade.php:92` — `Keine Ziele definiert.`
+- `resources/views/sustainability/index.blade.php:97` — `Ziel`
+- `resources/views/sustainability/index.blade.php:98` — `text-right`
+- `resources/views/sustainability/index.blade.php:98` — `year`
+- `resources/views/sustainability/index.blade.php:99` — `text-right`
+- `resources/views/sustainability/index.blade.php:103` — `text-error`
+- `resources/views/sustainability/index.blade.php:103` — `actual`
+- `resources/views/sustainability/index.blade.php:103` — `actual`
+- `resources/views/sustainability/index.blade.php:103` — `expected`
+- `resources/views/sustainability/index.blade.php:104` — `target`
+- `resources/views/sustainability/index.blade.php:104` — `target`
+- `resources/views/sustainability/index.blade.php:104` — `target`
+- `resources/views/sustainability/index.blade.php:105` — `text-right tabular-nums`
 - `resources/views/sustainability/index.blade.php:105` — `expected`
+- `resources/views/sustainability/index.blade.php:105` — `target`
+- `resources/views/sustainability/index.blade.php:106` — `text-right tabular-nums`
+- `resources/views/sustainability/index.blade.php:106` — `actual`
+- `resources/views/sustainability/index.blade.php:106` — `actual`
 - `resources/views/sustainability/index.blade.php:106` — `target`
-- `resources/views/sustainability/index.blade.php:106` — `target`
-- `resources/views/sustainability/index.blade.php:106` — `target`
-- `resources/views/sustainability/index.blade.php:107` — `text-right tabular-nums`
-- `resources/views/sustainability/index.blade.php:107` — `expected`
-- `resources/views/sustainability/index.blade.php:107` — `target`
-- `resources/views/sustainability/index.blade.php:108` — `text-right tabular-nums`
-- `resources/views/sustainability/index.blade.php:108` — `actual`
-- `resources/views/sustainability/index.blade.php:108` — `actual`
-- `resources/views/sustainability/index.blade.php:108` — `target`
-- `resources/views/sustainability/index.blade.php:118` — `metric`
-- `resources/views/sustainability/index.blade.php:118` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:119` — `CO₂e gesamt`
-- `resources/views/sustainability/index.blade.php:122` — `Reparaturquote`
-- `resources/views/sustainability/index.blade.php:123` — `Nachhaltige Beschaffung`
-- `resources/views/sustainability/index.blade.php:124` — `custom`
-- `resources/views/sustainability/index.blade.php:124` — `Eigene Kennzahl`
-- `resources/views/sustainability/index.blade.php:126` — `label`
-- `resources/views/sustainability/index.blade.php:126` — `Bezeichnung`
-- `resources/views/sustainability/index.blade.php:127` — `number`
-- `resources/views/sustainability/index.blade.php:127` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:127` — `Basiswert`
-- `resources/views/sustainability/index.blade.php:128` — `number`
-- `resources/views/sustainability/index.blade.php:128` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:129` — `unit`
-- `resources/views/sustainability/index.blade.php:129` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:129` — `Einheit`
-- `resources/views/sustainability/index.blade.php:130` — `number`
-- `resources/views/sustainability/index.blade.php:130` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:130` — `Zielwert`
-- `resources/views/sustainability/index.blade.php:131` — `number`
-- `resources/views/sustainability/index.blade.php:131` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:132` — `flag`
-- `resources/views/sustainability/index.blade.php:132` — `primary`
-- `resources/views/sustainability/index.blade.php:132` — `submit`
-- `resources/views/sustainability/index.blade.php:132` — `Ziel anlegen`
-- `resources/views/sustainability/index.blade.php:141` — `mb-3 flex flex-wrap items-end gap-2`
-- `resources/views/sustainability/index.blade.php:143` — `input input-sm input-bordered flex-1`
-- `resources/views/sustainability/index.blade.php:144` — `primary`
-- `resources/views/sustainability/index.blade.php:144` — `submit`
-- `resources/views/sustainability/index.blade.php:144` — `Bewertung starten`
-- `resources/views/sustainability/index.blade.php:146` — `count`
-- `resources/views/sustainability/index.blade.php:146` — `active`
-- `resources/views/sustainability/index.blade.php:149` — `grade`
-- `resources/views/sustainability/index.blade.php:149` — `Noch keine Bewertungen.`
-- `resources/views/sustainability/index.blade.php:151` — `space-y-1 text-sm`
-- `resources/views/sustainability/index.blade.php:153` — `flex flex-wrap items-center gap-2`
-- `resources/views/sustainability/index.blade.php:154` — `link`
-- `resources/views/sustainability/index.blade.php:157` — `green' ? 'success`
-- `resources/views/sustainability/index.blade.php:157` — `yellow' ? 'warning`
-- `resources/views/sustainability/index.blade.php:157` — `error`
-- `resources/views/sustainability/index.blade.php:165` — `mt-4 text-sm font-semibold`
-- `resources/views/sustainability/index.blade.php:166` — `my-1 flex flex-wrap items-end gap-2`
-- `resources/views/sustainability/index.blade.php:168` — `dimension`
-- `resources/views/sustainability/index.blade.php:168` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:169` — `environment`
-- `resources/views/sustainability/index.blade.php:170` — `social`
-- `resources/views/sustainability/index.blade.php:171` — `governance`
-- `resources/views/sustainability/index.blade.php:173` — `label`
-- `resources/views/sustainability/index.blade.php:173` — `input input-sm input-bordered flex-1`
-- `resources/views/sustainability/index.blade.php:174` — `weight`
-- `resources/views/sustainability/index.blade.php:174` — `number`
-- `resources/views/sustainability/index.blade.php:174` — `input input-sm input-bordered w-20`
-- `resources/views/sustainability/index.blade.php:174` — `Gewicht`
-- `resources/views/sustainability/index.blade.php:175` — `submit`
-- `resources/views/sustainability/index.blade.php:175` — `Anlegen`
-- `resources/views/sustainability/index.blade.php:177` — `flex flex-wrap gap-1 text-xs`
-- `resources/views/sustainability/index.blade.php:179` — `badge badge-outline badge-sm`
-- `resources/views/sustainability/index.blade.php:185` — `Maßnahmenregister`
-- `resources/views/sustainability/index.blade.php:189` — `title`
-- `resources/views/sustainability/index.blade.php:190` — `Erwartete Wirkung`
-- `resources/views/sustainability/index.blade.php:191` — `effort`
-- `resources/views/sustainability/index.blade.php:191` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:193` — `medium`
-- `resources/views/sustainability/index.blade.php:194` — `high`
-- `resources/views/sustainability/index.blade.php:196` — `number`
-- `resources/views/sustainability/index.blade.php:196` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:197` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:203` — `date`
-- `resources/views/sustainability/index.blade.php:203` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:204` — `primary`
-- `resources/views/sustainability/index.blade.php:204` — `submit`
-- `resources/views/sustainability/index.blade.php:204` — `Erfassen`
-- `resources/views/sustainability/index.blade.php:208` — `checklist`
-- `resources/views/sustainability/index.blade.php:208` — `Keine Maßnahmen.`
-- `resources/views/sustainability/index.blade.php:210` — `space-y-2 text-sm`
-- `resources/views/sustainability/index.blade.php:212` — `flex flex-wrap items-center gap-2`
-- `resources/views/sustainability/index.blade.php:218` — `effective' ? 'success`
-- `resources/views/sustainability/index.blade.php:218` — `warning'`
-- `resources/views/sustainability/index.blade.php:221` — `ml-auto flex items-center gap-1`
-- `resources/views/sustainability/index.blade.php:223` — `status`
-- `resources/views/sustainability/index.blade.php:223` — `select select-xs select-bordered`
-- `resources/views/sustainability/index.blade.php:228` — `done`
-- `resources/views/sustainability/index.blade.php:229` — `effectiveness`
-- `resources/views/sustainability/index.blade.php:229` — `select select-xs select-bordered`
-- `resources/views/sustainability/index.blade.php:231` — `effective`
-- `resources/views/sustainability/index.blade.php:232` — `partly`
-- `resources/views/sustainability/index.blade.php:233` — `ineffective`
-- `resources/views/sustainability/index.blade.php:236` — `submit`
-- `resources/views/sustainability/index.blade.php:236` — `btn btn-xs`
-- `resources/views/sustainability/index.blade.php:249` — `mb-2`
-- `resources/views/sustainability/index.blade.php:250` — `font-medium`
-- `resources/views/sustainability/index.blade.php:251` — `Org-Override`
-- `resources/views/sustainability/index.blade.php:252` — `mt-1 flex flex-wrap gap-1 text-xs`
-- `resources/views/sustainability/index.blade.php:254` — `badge badge-outline badge-sm`
-- `resources/views/sustainability/index.blade.php:264` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:269` — `label`
-- `resources/views/sustainability/index.blade.php:269` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:269` — `Bezeichnung`
-- `resources/views/sustainability/index.blade.php:270` — `factor`
-- `resources/views/sustainability/index.blade.php:270` — `number`
-- `resources/views/sustainability/index.blade.php:270` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:271` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:272` — `scope`
-- `resources/views/sustainability/index.blade.php:272` — `select select-sm select-bordered`
-- `resources/views/sustainability/index.blade.php:275` — `date`
-- `resources/views/sustainability/index.blade.php:275` — `input input-sm input-bordered`
-- `resources/views/sustainability/index.blade.php:276` — `Quelle`
-- `resources/views/sustainability/index.blade.php:277` — `submit`
-- `resources/views/sustainability/index.blade.php:277` — `Override anlegen`
-- `resources/views/sustainability/index.blade.php:283` — `max-h-72 overflow-y-auto`
-- `resources/views/sustainability/index.blade.php:284` — `table table-sm`
-- `resources/views/sustainability/index.blade.php:285` — `Abschnitt`
-- `resources/views/sustainability/index.blade.php:285` — `Datenquelle in WorkDiary`
-- `resources/views/sustainability/index.blade.php:289` — `whitespace-nowrap`
+- `resources/views/sustainability/index.blade.php:116` — `grade`
+- `resources/views/sustainability/index.blade.php:119` — `ghost`
+- `resources/views/sustainability/index.blade.php:119` — `assessment-create`
+- `resources/views/sustainability/index.blade.php:120` — `active`
+- `resources/views/sustainability/index.blade.php:120` — `Bewertung starten`
+- `resources/views/sustainability/index.blade.php:123` — `active`
+- `resources/views/sustainability/index.blade.php:124` — `mb-3 text-xs text-warning`
+- `resources/views/sustainability/index.blade.php:127` — `grade`
+- `resources/views/sustainability/index.blade.php:127` — `Noch keine Bewertungen.`
+- `resources/views/sustainability/index.blade.php:129` — `space-y-1.5 text-sm`
+- `resources/views/sustainability/index.blade.php:131` — `flex flex-wrap items-center gap-2`
+- `resources/views/sustainability/index.blade.php:132` — `link link-hover font-medium`
+- `resources/views/sustainability/index.blade.php:135` — `green' ? 'success`
+- `resources/views/sustainability/index.blade.php:135` — `yellow' ? 'warning`
+- `resources/views/sustainability/index.blade.php:135` — `error`
+- `resources/views/sustainability/index.blade.php:143` — `checklist`
+- `resources/views/sustainability/index.blade.php:146` — `ghost`
+- `resources/views/sustainability/index.blade.php:146` — `criterion-create`
+- `resources/views/sustainability/index.blade.php:146` — `Kriterium anlegen`
+- `resources/views/sustainability/index.blade.php:150` — `checklist`
+- `resources/views/sustainability/index.blade.php:150` — `Noch keine Kriterien.`
+- `resources/views/sustainability/index.blade.php:152` — `flex flex-wrap gap-1 text-xs`
+- `resources/views/sustainability/index.blade.php:154` — `badge badge-outline badge-sm`
+- `resources/views/sustainability/index.blade.php:160` — `Maßnahmenregister`
+- `resources/views/sustainability/index.blade.php:163` — `ghost`
+- `resources/views/sustainability/index.blade.php:163` — `measure-create`
+- `resources/views/sustainability/index.blade.php:163` — `Erfassen`
+- `resources/views/sustainability/index.blade.php:167` — `Keine Maßnahmen.`
+- `resources/views/sustainability/index.blade.php:169` — `space-y-2 text-sm`
+- `resources/views/sustainability/index.blade.php:171` — `flex flex-wrap items-center gap-2`
+- `resources/views/sustainability/index.blade.php:173` — `min-w-0 flex-1`
+- `resources/views/sustainability/index.blade.php:177` — `effective' ? 'success`
+- `resources/views/sustainability/index.blade.php:177` — `warning'`
+- `resources/views/sustainability/index.blade.php:180` — `ml-auto flex items-center gap-1`
+- `resources/views/sustainability/index.blade.php:182` — `status`
+- `resources/views/sustainability/index.blade.php:182` — `select select-xs select-bordered`
+- `resources/views/sustainability/index.blade.php:187` — `done`
+- `resources/views/sustainability/index.blade.php:188` — `effectiveness`
+- `resources/views/sustainability/index.blade.php:188` — `select select-xs select-bordered`
+- `resources/views/sustainability/index.blade.php:190` — `effective`
+- `resources/views/sustainability/index.blade.php:191` — `partly`
+- `resources/views/sustainability/index.blade.php:192` — `ineffective`
+- `resources/views/sustainability/index.blade.php:195` — `submit`
+- `resources/views/sustainability/index.blade.php:195` — `btn btn-xs`
+- `resources/views/sustainability/index.blade.php:207` — `functions`
+- `resources/views/sustainability/index.blade.php:210` — `ghost`
+- `resources/views/sustainability/index.blade.php:210` — `factor-create`
+- `resources/views/sustainability/index.blade.php:210` — `Override anlegen`
+- `resources/views/sustainability/index.blade.php:215` — `flex flex-wrap items-baseline gap-2`
+- `resources/views/sustainability/index.blade.php:216` — `font-medium`
+- `resources/views/sustainability/index.blade.php:219` — `badge badge-info badge-xs`
+- `resources/views/sustainability/index.blade.php:219` — `Org-Override`
+- `resources/views/sustainability/index.blade.php:222` — `mt-1 flex flex-wrap gap-1 text-xs`
+- `resources/views/sustainability/index.blade.php:224` — `badge badge-outline badge-sm`
+- `resources/views/sustainability/index.blade.php:231` — `functions`
+- `resources/views/sustainability/index.blade.php:231` — `Keine Faktor-Sets.`
+- `resources/views/sustainability/index.blade.php:235` — `VSME-Referenzmatrix`
+- `resources/views/sustainability/index.blade.php:237` — `none`
+- `resources/views/sustainability/index.blade.php:237` — `max-h-72 overflow-y-auto`
+- `resources/views/sustainability/index.blade.php:239` — `Abschnitt`
+- `resources/views/sustainability/index.blade.php:239` — `Datenquelle in WorkDiary`
+- `resources/views/sustainability/index.blade.php:243` — `whitespace-nowrap`
+- `resources/views/sustainability/index.blade.php:254` — `activity-create`
+- `resources/views/sustainability/index.blade.php:254` — `false`
+- `resources/views/sustainability/index.blade.php:254` — `primary`
+- `resources/views/sustainability/index.blade.php:255` — `Aktivität erfassen`
+- `resources/views/sustainability/index.blade.php:255` — `Erfassen`
+- `resources/views/sustainability/index.blade.php:258` — `Aktivität`
+- `resources/views/sustainability/index.blade.php:259` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:265` — `block`
+- `resources/views/sustainability/index.blade.php:266` — `Menge`
+- `resources/views/sustainability/index.blade.php:267` — `amount`
+- `resources/views/sustainability/index.blade.php:267` — `number`
+- `resources/views/sustainability/index.blade.php:267` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:269` — `block`
+- `resources/views/sustainability/index.blade.php:271` — `unit`
+- `resources/views/sustainability/index.blade.php:271` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:273` — `block`
+- `resources/views/sustainability/index.blade.php:274` — `Datenqualität`
+- `resources/views/sustainability/index.blade.php:275` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:276` — `measured`
+- `resources/views/sustainability/index.blade.php:277` — `calculated`
+- `resources/views/sustainability/index.blade.php:278` — `estimated`
+- `resources/views/sustainability/index.blade.php:282` — `join`
+- `resources/views/sustainability/index.blade.php:282` — `date`
+- `resources/views/sustainability/index.blade.php:283` — `Zeitraum`
+- `resources/views/sustainability/index.blade.php:288` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:293` — `target-create`
+- `resources/views/sustainability/index.blade.php:293` — `false`
+- `resources/views/sustainability/index.blade.php:293` — `primary`
+- `resources/views/sustainability/index.blade.php:293` — `flag`
+- `resources/views/sustainability/index.blade.php:294` — `Ziel anlegen`
+- `resources/views/sustainability/index.blade.php:294` — `Ziel anlegen`
+- `resources/views/sustainability/index.blade.php:296` — `block`
+- `resources/views/sustainability/index.blade.php:297` — `Kennzahl`
+- `resources/views/sustainability/index.blade.php:298` — `metric`
+- `resources/views/sustainability/index.blade.php:298` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:299` — `CO₂e gesamt`
+- `resources/views/sustainability/index.blade.php:302` — `Reparaturquote`
+- `resources/views/sustainability/index.blade.php:303` — `Nachhaltige Beschaffung`
+- `resources/views/sustainability/index.blade.php:304` — `custom`
+- `resources/views/sustainability/index.blade.php:304` — `Eigene Kennzahl`
+- `resources/views/sustainability/index.blade.php:307` — `block`
+- `resources/views/sustainability/index.blade.php:308` — `Einheit`
+- `resources/views/sustainability/index.blade.php:309` — `unit`
+- `resources/views/sustainability/index.blade.php:309` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:312` — `Bezeichnung`
+- `resources/views/sustainability/index.blade.php:313` — `label`
+- `resources/views/sustainability/index.blade.php:313` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:315` — `block`
+- `resources/views/sustainability/index.blade.php:316` — `Basiswert`
+- `resources/views/sustainability/index.blade.php:317` — `number`
+- `resources/views/sustainability/index.blade.php:317` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:319` — `block`
+- `resources/views/sustainability/index.blade.php:320` — `Basisjahr`
+- `resources/views/sustainability/index.blade.php:321` — `number`
+- `resources/views/sustainability/index.blade.php:321` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:323` — `block`
+- `resources/views/sustainability/index.blade.php:324` — `Zielwert`
+- `resources/views/sustainability/index.blade.php:325` — `number`
+- `resources/views/sustainability/index.blade.php:325` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:327` — `block`
+- `resources/views/sustainability/index.blade.php:328` — `Zieljahr`
+- `resources/views/sustainability/index.blade.php:329` — `number`
+- `resources/views/sustainability/index.blade.php:329` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:334` — `assessment-create`
+- `resources/views/sustainability/index.blade.php:334` — `false`
+- `resources/views/sustainability/index.blade.php:334` — `primary`
+- `resources/views/sustainability/index.blade.php:334` — `grade`
+- `resources/views/sustainability/index.blade.php:335` — `Bewertung starten`
+- `resources/views/sustainability/index.blade.php:335` — `Bewertung starten`
+- `resources/views/sustainability/index.blade.php:336` — `block`
+- `resources/views/sustainability/index.blade.php:338` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:340` — `count`
+- `resources/views/sustainability/index.blade.php:340` — `active`
+- `resources/views/sustainability/index.blade.php:343` — `criterion-create`
+- `resources/views/sustainability/index.blade.php:343` — `false`
+- `resources/views/sustainability/index.blade.php:343` — `primary`
+- `resources/views/sustainability/index.blade.php:343` — `checklist`
+- `resources/views/sustainability/index.blade.php:344` — `Kriterium anlegen`
+- `resources/views/sustainability/index.blade.php:344` — `Anlegen`
+- `resources/views/sustainability/index.blade.php:346` — `block`
+- `resources/views/sustainability/index.blade.php:347` — `Dimension`
+- `resources/views/sustainability/index.blade.php:348` — `dimension`
+- `resources/views/sustainability/index.blade.php:348` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:349` — `environment`
+- `resources/views/sustainability/index.blade.php:350` — `social`
+- `resources/views/sustainability/index.blade.php:351` — `governance`
+- `resources/views/sustainability/index.blade.php:354` — `block`
+- `resources/views/sustainability/index.blade.php:355` — `Gewicht`
+- `resources/views/sustainability/index.blade.php:356` — `weight`
+- `resources/views/sustainability/index.blade.php:356` — `number`
+- `resources/views/sustainability/index.blade.php:356` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:360` — `label`
+- `resources/views/sustainability/index.blade.php:360` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:365` — `measure-create`
+- `resources/views/sustainability/index.blade.php:365` — `false`
+- `resources/views/sustainability/index.blade.php:365` — `primary`
+- `resources/views/sustainability/index.blade.php:366` — `Maßnahme erfassen`
+- `resources/views/sustainability/index.blade.php:366` — `Erfassen`
+- `resources/views/sustainability/index.blade.php:370` — `title`
+- `resources/views/sustainability/index.blade.php:370` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:373` — `Erwartete Wirkung`
+- `resources/views/sustainability/index.blade.php:374` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:376` — `block`
+- `resources/views/sustainability/index.blade.php:377` — `Aufwand`
+- `resources/views/sustainability/index.blade.php:378` — `effort`
+- `resources/views/sustainability/index.blade.php:378` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:380` — `medium`
+- `resources/views/sustainability/index.blade.php:381` — `high`
+- `resources/views/sustainability/index.blade.php:384` — `block`
+- `resources/views/sustainability/index.blade.php:386` — `number`
+- `resources/views/sustainability/index.blade.php:386` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:388` — `block`
+- `resources/views/sustainability/index.blade.php:390` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:397` — `block`
+- `resources/views/sustainability/index.blade.php:398` — `Fällig am`
+- `resources/views/sustainability/index.blade.php:399` — `date`
+- `resources/views/sustainability/index.blade.php:399` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:404` — `factor-create`
+- `resources/views/sustainability/index.blade.php:404` — `false`
+- `resources/views/sustainability/index.blade.php:404` — `primary`
+- `resources/views/sustainability/index.blade.php:404` — `functions`
+- `resources/views/sustainability/index.blade.php:405` — `Faktor-Override anlegen`
+- `resources/views/sustainability/index.blade.php:405` — `Override anlegen`
+- `resources/views/sustainability/index.blade.php:407` — `block`
+- `resources/views/sustainability/index.blade.php:408` — `Aktivität`
+- `resources/views/sustainability/index.blade.php:409` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:415` — `block`
+- `resources/views/sustainability/index.blade.php:416` — `Bezeichnung`
+- `resources/views/sustainability/index.blade.php:417` — `label`
+- `resources/views/sustainability/index.blade.php:417` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:419` — `block`
+- `resources/views/sustainability/index.blade.php:421` — `factor`
+- `resources/views/sustainability/index.blade.php:421` — `number`
+- `resources/views/sustainability/index.blade.php:421` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:423` — `block`
+- `resources/views/sustainability/index.blade.php:425` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:427` — `block`
+- `resources/views/sustainability/index.blade.php:428` — `Scope`
+- `resources/views/sustainability/index.blade.php:429` — `scope`
+- `resources/views/sustainability/index.blade.php:429` — `select select-bordered select-sm w-full`
+- `resources/views/sustainability/index.blade.php:435` — `block`
+- `resources/views/sustainability/index.blade.php:436` — `Gültig ab`
+- `resources/views/sustainability/index.blade.php:437` — `date`
+- `resources/views/sustainability/index.blade.php:437` — `input input-bordered input-sm w-full`
+- `resources/views/sustainability/index.blade.php:440` — `Quelle`
+- `resources/views/sustainability/index.blade.php:441` — `input input-bordered input-sm w-full`
 - `resources/views/scheduled-shifts/_form_dialog.blade.php:8` — `scheduled-shifts.update`
 - `resources/views/scheduled-shifts/_form_dialog.blade.php:12` — `Schicht bearbeiten`
 - `resources/views/scheduled-shifts/_form_dialog.blade.php:14` — `event`
@@ -24238,6 +23511,7 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/attendances/_panel.blade.php:27` — `ml-auto flex flex-wrap items-center justify-end gap-1.5`
 - `resources/views/attendances/_panel.blade.php:28` — `attendance.clock-out`
 - `resources/views/attendances/_panel.blade.php:28` — `flex flex-wrap items-center justify-end gap-1.5`
+- `resources/views/attendances/_panel.blade.php:28` — `attendance.clock-out`
 - `resources/views/attendances/_panel.blade.php:30` — `join`
 - `resources/views/attendances/_panel.blade.php:31` — `Pause`
 - `resources/views/attendances/_panel.blade.php:32` — `number`
@@ -24255,6 +23529,7 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/attendances/_panel.blade.php:40` — `delete`
 - `resources/views/attendances/_panel.blade.php:46` — `attendance.clock-in`
 - `resources/views/attendances/_panel.blade.php:46` — `mt-2 flex justify-end leading-none`
+- `resources/views/attendances/_panel.blade.php:46` — `attendance.clock-in`
 - `resources/views/attendances/_panel.blade.php:48` — `submit`
 - `resources/views/attendances/_panel.blade.php:48` — `success`
 - `resources/views/attendances/_panel.blade.php:48` — `h-7 min-h-7 gap-1 px-2`
@@ -27291,6 +26566,7 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/forms/submissions/_form_dialog.blade.php:20` — `form-submissions.store`
 - `resources/views/forms/submissions/_form_dialog.blade.php:22` — `data-entry-form`
 - `resources/views/forms/submissions/_form_dialog.blade.php:22` — `enctype`
+- `resources/views/forms/submissions/_form_dialog.blade.php:22` — `data-offline-sync`
 - `resources/views/forms/submissions/_form_dialog.blade.php:25` — `hidden`
 - `resources/views/forms/submissions/_form_dialog.blade.php:27` — `hidden`
 - `resources/views/forms/submissions/_form_dialog.blade.php:28` — `hidden`
@@ -29959,6 +29235,24 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/partials/global-search.blade.php:31` — `Öffnen`
 - `resources/views/partials/global-search.blade.php:35` — `dialog`
 - `resources/views/partials/global-search.blade.php:35` — `modal-backdrop`
+- `resources/views/partials/focus-dialog.blade.php:5` — `focus-dialog`
+- `resources/views/partials/focus-dialog.blade.php:11` — `focus-dialog`
+- `resources/views/partials/focus-dialog.blade.php:12` — `false`
+- `resources/views/partials/focus-dialog.blade.php:13` — `wide`
+- `resources/views/partials/focus-dialog.blade.php:14` — `primary`
+- `resources/views/partials/focus-dialog.blade.php:26` — `submit`
+- `resources/views/partials/focus-dialog.blade.php:30` — `absolute right-3 top-3 badge badge-primary badge-sm`
+- `resources/views/partials/focus-dialog.blade.php:32` — `bg-primary text-primary-content`
+- `resources/views/partials/focus-dialog.blade.php:32` — `bg-base-200 text-primary`
+- `resources/views/partials/focus-dialog.blade.php:33` — `icon`
+- `resources/views/partials/focus-dialog.blade.php:35` — `font-semibold leading-tight`
+- `resources/views/partials/focus-dialog.blade.php:35` — `label`
+- `resources/views/partials/focus-dialog.blade.php:36` — `description`
+- `resources/views/partials/focus-dialog.blade.php:44` — `info`
+- `resources/views/partials/focus-dialog.blade.php:50` — `button`
+- `resources/views/partials/focus-dialog.blade.php:50` — `ghost`
+- `resources/views/partials/focus-dialog.blade.php:50` — `close`
+- `resources/views/partials/focus-dialog.blade.php:50` — `Schließen`
 - `resources/views/partials/print-script.blade.php:5` — `click`
 - `resources/views/partials/_documents.blade.php:22` — `viewAny`
 - `resources/views/partials/_documents.blade.php:28` — `values.`
@@ -30096,6 +29390,254 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/partials/webauthn-script.blade.php:85` — `hidden`
 - `resources/views/partials/webauthn-script.blade.php:89` — `DOMContentLoaded`
 - `resources/views/partials/webauthn-script.blade.php:93` — `hidden`
+- `resources/views/domain/accounting/index.blade.php:10` — `title`
+- `resources/views/domain/accounting/index.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/domain/accounting/index.blade.php:11` — `nav-title`
+- `resources/views/domain/accounting/index.blade.php:13` — `content`
+- `resources/views/domain/accounting/index.blade.php:14` — `clip`
+- `resources/views/domain/accounting/index.blade.php:20` — `from`
+- `resources/views/domain/accounting/index.blade.php:20` — `from`
+- `resources/views/domain/accounting/index.blade.php:21` — `text`
+- `resources/views/domain/accounting/index.blade.php:21` — `type`
+- `resources/views/domain/accounting/index.blade.php:21` — `type`
+- `resources/views/domain/accounting/index.blade.php:21` — `input input-sm input-bordered w-40 shrink-0`
+- `resources/views/domain/accounting/index.blade.php:25` — `overflow-x-auto`
+- `resources/views/domain/accounting/index.blade.php:26` — `table table-sm`
+- `resources/views/domain/accounting/index.blade.php:33` — `text-right`
+- `resources/views/domain/accounting/index.blade.php:34` — `text-right`
+- `resources/views/domain/accounting/index.blade.php:40` — `tabular-nums`
+- `resources/views/domain/accounting/index.blade.php:44` — `text-right tabular-nums`
+- `resources/views/domain/accounting/index.blade.php:45` — `text-right tabular-nums`
+- `resources/views/domain/reports/index.blade.php:10` — `title`
+- `resources/views/domain/reports/index.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/domain/reports/index.blade.php:11` — `nav-title`
+- `resources/views/domain/reports/index.blade.php:13` — `content`
+- `resources/views/domain/reports/index.blade.php:21` — `days`
+- `resources/views/domain/reports/index.blade.php:26` — `card bg-base-100 shadow-sm`
+- `resources/views/domain/reports/index.blade.php:27` — `card-body`
+- `resources/views/domain/reports/index.blade.php:28` — `card-title text-base`
+- `resources/views/domain/reports/index.blade.php:29` — `overflow-x-auto`
+- `resources/views/domain/reports/index.blade.php:30` — `table table-sm`
+- `resources/views/domain/reports/index.blade.php:31` — `text-right`
+- `resources/views/domain/reports/index.blade.php:31` — `text-right`
+- `resources/views/domain/reports/index.blade.php:34` — `tabular-nums`
+- `resources/views/domain/reports/index.blade.php:35` — `text-right tabular-nums`
+- `resources/views/domain/reports/index.blade.php:35` — `count`
+- `resources/views/domain/reports/index.blade.php:36` — `text-right tabular-nums`
+- `resources/views/domain/reports/index.blade.php:36` — `amount`
+- `resources/views/domain/reports/index.blade.php:36` — `currency`
+- `resources/views/domain/reports/index.blade.php:46` — `card bg-base-100 shadow-sm`
+- `resources/views/domain/reports/index.blade.php:47` — `card-body`
+- `resources/views/domain/reports/index.blade.php:48` — `card-title text-base`
+- `resources/views/domain/reports/index.blade.php:49` — `grid grid-cols-2 gap-2 text-sm`
+- `resources/views/domain/reports/index.blade.php:50` — `tabular-nums`
+- `resources/views/domain/reports/index.blade.php:50` — `accounting`
+- `resources/views/domain/reports/index.blade.php:51` — `tabular-nums`
+- `resources/views/domain/reports/index.blade.php:51` — `invoices`
+- `resources/views/domain/reports/index.blade.php:52` — `tabular-nums`
+- `resources/views/domain/reports/index.blade.php:59` — `card bg-base-100 shadow-sm`
+- `resources/views/domain/reports/index.blade.php:60` — `card-body`
+- `resources/views/domain/reports/index.blade.php:61` — `card-title text-base`
+- `resources/views/domain/reports/index.blade.php:62` — `text-sm space-y-1`
+- `resources/views/domain/reports/index.blade.php:64` — `link link-hover`
+- `resources/views/domain/reports/index.blade.php:72` — `card bg-base-100 shadow-sm`
+- `resources/views/domain/reports/index.blade.php:73` — `card-body`
+- `resources/views/domain/reports/index.blade.php:74` — `card-title text-base`
+- `resources/views/domain/reports/index.blade.php:75` — `text-sm space-y-1`
+- `resources/views/domain/reports/index.blade.php:77` — `link link-hover`
+- `resources/views/domain/reports/index.blade.php:78` — `badge badge-warning badge-sm`
+- `resources/views/domain/index.blade.php:10` — `title`
+- `resources/views/domain/index.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/domain/index.blade.php:11` — `nav-title`
+- `resources/views/domain/index.blade.php:13` — `content`
+- `resources/views/domain/index.blade.php:14` — `clip`
+- `resources/views/domain/index.blade.php:16` — `admin.domain-provider.index`
+- `resources/views/domain/index.blade.php:17` — `domain-reseller.index`
+- `resources/views/domain/index.blade.php:18` — `analytics`
+- `resources/views/domain/index.blade.php:21` — `success`
+- `resources/views/domain/index.blade.php:22` — `alert`
+- `resources/views/domain/index.blade.php:22` — `alert alert-success`
+- `resources/views/domain/index.blade.php:22` — `success`
+- `resources/views/domain/index.blade.php:24` — `error`
+- `resources/views/domain/index.blade.php:25` — `alert`
+- `resources/views/domain/index.blade.php:25` — `alert alert-error`
+- `resources/views/domain/index.blade.php:25` — `error`
+- `resources/views/domain/index.blade.php:30` — `risky`
+- `resources/views/domain/index.blade.php:31` — `unmapped`
+- `resources/views/domain/index.blade.php:36` — `search`
+- `resources/views/domain/index.blade.php:36` — `input input-sm input-bordered w-56 shrink-0`
+- `resources/views/domain/index.blade.php:38` — `text`
+- `resources/views/domain/index.blade.php:38` — `input input-sm input-bordered w-28 shrink-0`
+- `resources/views/domain/index.blade.php:40` — `sync`
+- `resources/views/domain/index.blade.php:40` — `select select-sm select-bordered w-40 shrink-0`
+- `resources/views/domain/index.blade.php:43` — `sync`
+- `resources/views/domain/index.blade.php:46` — `select select-sm select-bordered w-44 shrink-0`
+- `resources/views/domain/index.blade.php:52` — `select select-sm select-bordered w-40 shrink-0`
+- `resources/views/domain/index.blade.php:55` — `days`
+- `resources/views/domain/index.blade.php:60` — `overflow-x-auto`
+- `resources/views/domain/index.blade.php:61` — `table`
+- `resources/views/domain/index.blade.php:75` — `link link-hover font-medium`
+- `resources/views/domain/index.blade.php:79` — `tabular-nums`
+- `resources/views/domain/show.blade.php:10` — `title`
+- `resources/views/domain/show.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/domain/show.blade.php:11` — `nav-title`
+- `resources/views/domain/show.blade.php:13` — `content`
+- `resources/views/domain/show.blade.php:17` — `inline`
+- `resources/views/domain/show.blade.php:19` — `sync`
+- `resources/views/domain/show.blade.php:19` — `submit`
+- `resources/views/domain/show.blade.php:23` — `success`
+- `resources/views/domain/show.blade.php:23` — `alert`
+- `resources/views/domain/show.blade.php:23` — `alert alert-success`
+- `resources/views/domain/show.blade.php:23` — `success`
+- `resources/views/domain/show.blade.php:24` — `error`
+- `resources/views/domain/show.blade.php:24` — `alert`
+- `resources/views/domain/show.blade.php:24` — `alert alert-error`
+- `resources/views/domain/show.blade.php:24` — `error`
+- `resources/views/domain/show.blade.php:29` — `card-body`
+- `resources/views/domain/show.blade.php:30` — `card-title text-base`
+- `resources/views/domain/show.blade.php:31` — `grid grid-cols-2 gap-x-4 gap-y-2 text-sm`
+- `resources/views/domain/show.blade.php:34` — `tabular-nums`
+- `resources/views/domain/show.blade.php:47` — `card bg-base-100 shadow-sm`
+- `resources/views/domain/show.blade.php:48` — `card-body`
+- `resources/views/domain/show.blade.php:49` — `card-title text-base`
+- `resources/views/domain/show.blade.php:50` — `text-sm`
+- `resources/views/domain/show.blade.php:51` — `assign`
+- `resources/views/domain/show.blade.php:52` — `mt-2 flex gap-2`
+- `resources/views/domain/show.blade.php:54` — `text`
+- `resources/views/domain/show.blade.php:54` — `customer`
+- `resources/views/domain/show.blade.php:54` — `input input-sm input-bordered w-full`
+- `resources/views/domain/show.blade.php:56` — `save`
+- `resources/views/domain/show.blade.php:56` — `submit`
+- `resources/views/domain/show.blade.php:64` — `card bg-base-100 shadow-sm mt-4`
+- `resources/views/domain/show.blade.php:65` — `card-body`
+- `resources/views/domain/show.blade.php:66` — `flex items-center justify-between`
+- `resources/views/domain/show.blade.php:67` — `card-title text-base`
+- `resources/views/domain/show.blade.php:71` — `download`
+- `resources/views/domain/show.blade.php:71` — `submit`
+- `resources/views/domain/show.blade.php:77` — `overflow-x-auto`
+- `resources/views/domain/show.blade.php:78` — `table table-xs`
+- `resources/views/domain/show.blade.php:82` — `font-mono`
+- `resources/views/domain/show.blade.php:82` — `tabular-nums`
+- `resources/views/domain/show.blade.php:82` — `font-mono`
+- `resources/views/domain/show.blade.php:94` — `card bg-base-100 shadow-sm mt-4`
+- `resources/views/domain/show.blade.php:95` — `card-body`
+- `resources/views/domain/show.blade.php:96` — `card-title text-base`
+- `resources/views/domain/show.blade.php:98` — `alert`
+- `resources/views/domain/show.blade.php:98` — `alert alert-info`
+- `resources/views/domain/show.blade.php:106` — `card bg-base-100 shadow-sm mt-4`
+- `resources/views/domain/show.blade.php:107` — `card-body`
+- `resources/views/domain/show.blade.php:108` — `card-title text-base`
+- `resources/views/domain/show.blade.php:109` — `overflow-x-auto`
+- `resources/views/domain/show.blade.php:110` — `table table-sm`
+- `resources/views/domain/show.blade.php:115` — `font-mono text-xs`
+- `resources/views/domain/show.blade.php:118` — `text-right`
+- `resources/views/domain/show.blade.php:119` — `dangerous`
+- `resources/views/domain/show.blade.php:120` — `inline`
+- `resources/views/domain/show.blade.php:122` — `warning`
+- `resources/views/domain/show.blade.php:122` — `submit`
+- `resources/views/domain/show.blade.php:124` — `inline`
+- `resources/views/domain/show.blade.php:126` — `cancel`
+- `resources/views/domain/show.blade.php:126` — `error`
+- `resources/views/domain/show.blade.php:126` — `submit`
+- `resources/views/domain/show.blade.php:141` — `renewal`
+- `resources/views/domain/show.blade.php:141` — `transfer`
+- `resources/views/domain/show.blade.php:141` — `dangerous`
+- `resources/views/domain/show.blade.php:142` — `card bg-base-100 shadow-sm mt-4`
+- `resources/views/domain/show.blade.php:143` — `card-body space-y-3`
+- `resources/views/domain/show.blade.php:144` — `card-title text-base`
+- `resources/views/domain/show.blade.php:146` — `renewal`
+- `resources/views/domain/show.blade.php:147` — `domains.renewal-mode`
+- `resources/views/domain/show.blade.php:147` — `flex flex-wrap items-end gap-2`
+- `resources/views/domain/show.blade.php:149` — `select select-sm select-bordered`
+- `resources/views/domain/show.blade.php:154` — `autorenew`
+- `resources/views/domain/show.blade.php:154` — `submit`
+- `resources/views/domain/show.blade.php:158` — `transfer`
+- `resources/views/domain/show.blade.php:159` — `domains.transfer-lock`
+- `resources/views/domain/show.blade.php:159` — `flex items-end gap-2`
+- `resources/views/domain/show.blade.php:161` — `hidden`
+- `resources/views/domain/show.blade.php:161` — `locked`
+- `resources/views/domain/show.blade.php:162` — `lock`
+- `resources/views/domain/show.blade.php:162` — `submit`
+- `resources/views/domain/show.blade.php:168` — `dangerous`
+- `resources/views/domain/show.blade.php:169` — `flex flex-wrap items-end gap-2 border-t border-base-200 pt-3`
+- `resources/views/domain/show.blade.php:172` — `action`
+- `resources/views/domain/show.blade.php:172` — `select select-sm select-bordered`
+- `resources/views/domain/show.blade.php:173` — `delete`
+- `resources/views/domain/show.blade.php:174` — `push`
+- `resources/views/domain/show.blade.php:175` — `trade`
+- `resources/views/domain/show.blade.php:177` — `assign`
+- `resources/views/domain/show.blade.php:179` — `text`
+- `resources/views/domain/show.blade.php:179` — `input input-sm input-bordered w-40`
+- `resources/views/domain/show.blade.php:180` — `text`
+- `resources/views/domain/show.blade.php:180` — `confirmation`
+- `resources/views/domain/show.blade.php:180` — `input input-sm input-bordered w-56`
+- `resources/views/domain/show.blade.php:180` — `domain`
+- `resources/views/domain/show.blade.php:181` — `warning`
+- `resources/views/domain/show.blade.php:181` — `error`
+- `resources/views/domain/show.blade.php:181` — `submit`
+- `resources/views/domain/reseller/index.blade.php:10` — `title`
+- `resources/views/domain/reseller/index.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/domain/reseller/index.blade.php:11` — `nav-title`
+- `resources/views/domain/reseller/index.blade.php:13` — `content`
+- `resources/views/domain/reseller/index.blade.php:19` — `success`
+- `resources/views/domain/reseller/index.blade.php:19` — `alert`
+- `resources/views/domain/reseller/index.blade.php:19` — `alert alert-success`
+- `resources/views/domain/reseller/index.blade.php:19` — `success`
+- `resources/views/domain/reseller/index.blade.php:20` — `error`
+- `resources/views/domain/reseller/index.blade.php:20` — `alert`
+- `resources/views/domain/reseller/index.blade.php:20` — `alert alert-error`
+- `resources/views/domain/reseller/index.blade.php:20` — `error`
+- `resources/views/domain/reseller/index.blade.php:22` — `overflow-x-auto`
+- `resources/views/domain/reseller/index.blade.php:23` — `table`
+- `resources/views/domain/reseller/index.blade.php:29` — `text-right`
+- `resources/views/domain/reseller/index.blade.php:30` — `text-right`
+- `resources/views/domain/reseller/index.blade.php:38` — `domain-reseller.show`
+- `resources/views/domain/reseller/index.blade.php:38` — `link link-hover font-mono`
+- `resources/views/domain/reseller/index.blade.php:39` — `badge badge-ghost badge-sm`
+- `resources/views/domain/reseller/index.blade.php:43` — `text-right tabular-nums`
+- `resources/views/domain/reseller/index.blade.php:44` — `text-right tabular-nums`
+- `resources/views/domain/reseller/index.blade.php:48` — `success`
+- `resources/views/domain/reseller/index.blade.php:48` — `ghost`
+- `resources/views/domain/reseller/show.blade.php:10` — `title`
+- `resources/views/domain/reseller/show.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/domain/reseller/show.blade.php:11` — `nav-title`
+- `resources/views/domain/reseller/show.blade.php:13` — `content`
+- `resources/views/domain/reseller/show.blade.php:16` — `domain-reseller.index`
+- `resources/views/domain/reseller/show.blade.php:19` — `success`
+- `resources/views/domain/reseller/show.blade.php:19` — `alert`
+- `resources/views/domain/reseller/show.blade.php:19` — `alert alert-success`
+- `resources/views/domain/reseller/show.blade.php:19` — `success`
+- `resources/views/domain/reseller/show.blade.php:20` — `error`
+- `resources/views/domain/reseller/show.blade.php:20` — `alert`
+- `resources/views/domain/reseller/show.blade.php:20` — `alert alert-error`
+- `resources/views/domain/reseller/show.blade.php:20` — `error`
+- `resources/views/domain/reseller/show.blade.php:22` — `card bg-base-100 shadow-sm`
+- `resources/views/domain/reseller/show.blade.php:23` — `card-body`
+- `resources/views/domain/reseller/show.blade.php:24` — `card-title text-base`
+- `resources/views/domain/reseller/show.blade.php:26` — `font-mono`
+- `resources/views/domain/reseller/show.blade.php:27` — `tabular-nums`
+- `resources/views/domain/reseller/show.blade.php:30` — `tabular-nums`
+- `resources/views/domain/reseller/show.blade.php:36` — `card bg-base-100 shadow-sm mt-4`
+- `resources/views/domain/reseller/show.blade.php:37` — `card-body`
+- `resources/views/domain/reseller/show.blade.php:38` — `card-title text-base`
+- `resources/views/domain/reseller/show.blade.php:39` — `overflow-x-auto`
+- `resources/views/domain/reseller/show.blade.php:40` — `table table-sm`
+- `resources/views/domain/reseller/show.blade.php:45` — `link link-hover`
+- `resources/views/domain/reseller/show.blade.php:46` — `user`
+- `resources/views/domain/reseller/show.blade.php:48` — `tabular-nums`
+- `resources/views/domain/reseller/show.blade.php:61` — `card bg-base-100 shadow-sm mt-4`
+- `resources/views/domain/reseller/show.blade.php:62` — `card-body`
+- `resources/views/domain/reseller/show.blade.php:63` — `card-title text-base`
+- `resources/views/domain/reseller/show.blade.php:64` — `overflow-x-auto`
+- `resources/views/domain/reseller/show.blade.php:65` — `table table-sm`
+- `resources/views/domain/reseller/show.blade.php:66` — `text-right`
+- `resources/views/domain/reseller/show.blade.php:70` — `tabular-nums`
+- `resources/views/domain/reseller/show.blade.php:73` — `text-right tabular-nums`
+- `resources/views/domain/reseller/show.blade.php:86` — `card bg-base-100 shadow-sm mt-4`
+- `resources/views/domain/reseller/show.blade.php:87` — `card-body`
+- `resources/views/domain/reseller/show.blade.php:88` — `card-title text-base`
+- `resources/views/domain/reseller/show.blade.php:90` — `alert`
+- `resources/views/domain/reseller/show.blade.php:90` — `alert alert-info`
 - `resources/views/vehicles/index.blade.php:3` — `title`
 - `resources/views/vehicles/index.blade.php:3` — `Fuhrpark`
 - `resources/views/vehicles/index.blade.php:4` — `nav-title`
@@ -30690,6 +30232,100 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/suppliers/show.blade.php:124` — `suppliers.lexoffice.sync-vouchers`
 - `resources/views/suppliers/show.blade.php:129` — `Verlauf`
 - `resources/views/suppliers/show.blade.php:129` — `history`
+- `resources/views/products/index.blade.php:11` — `title`
+- `resources/views/products/index.blade.php:11` — `app.name', 'WorkDiary`
+- `resources/views/products/index.blade.php:12` — `nav-title`
+- `resources/views/products/index.blade.php:13` — `wrapper-height-class', 'wd-page-fill`
+- `resources/views/products/index.blade.php:14` — `main-class', `
+- `resources/views/products/index.blade.php:21` — `content`
+- `resources/views/products/index.blade.php:22` — `clip`
+- `resources/views/products/index.blade.php:25` — `primary`
+- `resources/views/products/index.blade.php:32` — `success`
+- `resources/views/products/index.blade.php:33` — `alert`
+- `resources/views/products/index.blade.php:33` — `alert alert-success`
+- `resources/views/products/index.blade.php:33` — `success`
+- `resources/views/products/index.blade.php:37` — `Suche`
+- `resources/views/products/index.blade.php:37` — `prod-q`
+- `resources/views/products/index.blade.php:37` — `flex-1 min-w-60`
+- `resources/views/products/index.blade.php:38` — `prod-q`
+- `resources/views/products/index.blade.php:38` — `text`
+- `resources/views/products/index.blade.php:39` — `input input-sm input-bordered`
+- `resources/views/products/index.blade.php:44` — `material-symbols-outlined`
+- `resources/views/products/index.blade.php:44` — `true`
+- `resources/views/products/index.blade.php:47` — `min-h-0 flex-1 flex flex-col overflow-hidden`
+- `resources/views/products/index.blade.php:48` — `flex`
+- `resources/views/products/index.blade.php:48` — `true`
+- `resources/views/products/index.blade.php:55` — `text-right`
+- `resources/views/products/index.blade.php:56` — `text-right`
+- `resources/views/products/index.blade.php:65` — `font-mono text-sm`
+- `resources/views/products/index.blade.php:68` — `text-right tabular-nums`
+- `resources/views/products/index.blade.php:69` — `text-right tabular-nums`
+- `resources/views/products/index.blade.php:71` — `text-right`
+- `resources/views/products/index.blade.php:73` — `edit`
+- `resources/views/products/index.blade.php:73` — `ghost`
+- `resources/views/products/_form_dialog.blade.php:16` — `category`
+- `resources/views/products/_form_dialog.blade.php:17` — `primary`
+- `resources/views/products/_form_dialog.blade.php:19` — `POST'`
+- `resources/views/products/_form_dialog.blade.php:20` — `data-entry-form`
+- `resources/views/products/_form_dialog.blade.php:23` — `category`
+- `resources/views/products/_form_dialog.blade.php:23` — `primary`
+- `resources/views/products/_form_dialog.blade.php:24` — `fieldset`
+- `resources/views/products/_form_dialog.blade.php:25` — `fieldset-label`
+- `resources/views/products/_form_dialog.blade.php:25` — `prod-manufacturer`
+- `resources/views/products/_form_dialog.blade.php:26` — `prod-manufacturer`
+- `resources/views/products/_form_dialog.blade.php:26` — `text`
+- `resources/views/products/_form_dialog.blade.php:26` — `manufacturer`
+- `resources/views/products/_form_dialog.blade.php:27` — `manufacturer`
+- `resources/views/products/_form_dialog.blade.php:28` — `input input-bordered w-full`
+- `resources/views/products/_form_dialog.blade.php:29` — `manufacturer`
+- `resources/views/products/_form_dialog.blade.php:29` — `mt-1 text-sm text-error`
+- `resources/views/products/_form_dialog.blade.php:32` — `fieldset`
+- `resources/views/products/_form_dialog.blade.php:33` — `fieldset-label`
+- `resources/views/products/_form_dialog.blade.php:33` — `prod-model`
+- `resources/views/products/_form_dialog.blade.php:34` — `prod-model`
+- `resources/views/products/_form_dialog.blade.php:34` — `text`
+- `resources/views/products/_form_dialog.blade.php:34` — `model`
+- `resources/views/products/_form_dialog.blade.php:35` — `model`
+- `resources/views/products/_form_dialog.blade.php:36` — `input input-bordered w-full font-mono`
+- `resources/views/products/_form_dialog.blade.php:37` — `model`
+- `resources/views/products/_form_dialog.blade.php:37` — `mt-1 text-sm text-error`
+- `resources/views/products/_form_dialog.blade.php:40` — `fieldset`
+- `resources/views/products/_form_dialog.blade.php:41` — `fieldset-label`
+- `resources/views/products/_form_dialog.blade.php:41` — `prod-name`
+- `resources/views/products/_form_dialog.blade.php:42` — `prod-name`
+- `resources/views/products/_form_dialog.blade.php:42` — `text`
+- `resources/views/products/_form_dialog.blade.php:42` — `name`
+- `resources/views/products/_form_dialog.blade.php:43` — `name`
+- `resources/views/products/_form_dialog.blade.php:44` — `input input-bordered w-full`
+- `resources/views/products/_form_dialog.blade.php:46` — `name`
+- `resources/views/products/_form_dialog.blade.php:46` — `mt-1 text-sm text-error`
+- `resources/views/products/_form_dialog.blade.php:49` — `fieldset`
+- `resources/views/products/_form_dialog.blade.php:50` — `fieldset-label`
+- `resources/views/products/_form_dialog.blade.php:50` — `prod-group`
+- `resources/views/products/_form_dialog.blade.php:51` — `prod-group`
+- `resources/views/products/_form_dialog.blade.php:51` — `select select-bordered w-full`
+- `resources/views/products/_form_dialog.blade.php:58` — `mt-1 text-sm text-error`
+- `resources/views/products/_form_dialog.blade.php:61` — `fieldset`
+- `resources/views/products/_form_dialog.blade.php:62` — `fieldset-label`
+- `resources/views/products/_form_dialog.blade.php:62` — `prod-status`
+- `resources/views/products/_form_dialog.blade.php:63` — `prod-status`
+- `resources/views/products/_form_dialog.blade.php:63` — `status`
+- `resources/views/products/_form_dialog.blade.php:63` — `select select-bordered w-full`
+- `resources/views/products/_form_dialog.blade.php:65` — `status`
+- `resources/views/products/_form_dialog.blade.php:65` — `active`
+- `resources/views/products/_form_dialog.blade.php:68` — `status`
+- `resources/views/products/_form_dialog.blade.php:68` — `mt-1 text-sm text-error`
+- `resources/views/products/_form_dialog.blade.php:72` — `fieldset-label`
+- `resources/views/products/_form_dialog.blade.php:72` — `prod-notes`
+- `resources/views/products/_form_dialog.blade.php:73` — `prod-notes`
+- `resources/views/products/_form_dialog.blade.php:73` — `notes`
+- `resources/views/products/_form_dialog.blade.php:74` — `textarea textarea-bordered w-full`
+- `resources/views/products/_form_dialog.blade.php:74` — `notes`
+- `resources/views/products/_form_dialog.blade.php:75` — `notes`
+- `resources/views/products/_form_dialog.blade.php:75` — `mt-1 text-sm text-error`
+- `resources/views/products/_form_dialog.blade.php:85` — `delete`
+- `resources/views/products/_form_dialog.blade.php:85` — `error`
+- `resources/views/products/_form_dialog.blade.php:85` — `submit`
 - `resources/views/quotes/index.blade.php:3` — `title`
 - `resources/views/quotes/index.blade.php:3` — `Angebote`
 - `resources/views/quotes/index.blade.php:4` — `nav-title`
@@ -31741,28 +31377,31 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/isms/suppliers/index.blade.php:112` — `success`
 - `resources/views/isms/suppliers/index.blade.php:112` — `ghost'`
 - `resources/views/isms/suppliers/index.blade.php:115` — `font-semibold`
-- `resources/views/isms/suppliers/index.blade.php:118` — `font-semibold`
-- `resources/views/isms/suppliers/index.blade.php:121` — `font-semibold`
-- `resources/views/isms/suppliers/index.blade.php:129` — `text-warning font-semibold`
-- `resources/views/isms/suppliers/index.blade.php:132` — `text-right`
-- `resources/views/isms/suppliers/index.blade.php:133` — `flex justify-end gap-1`
-- `resources/views/isms/suppliers/index.blade.php:134` — `update`
-- `resources/views/isms/suppliers/index.blade.php:135` — `edit`
-- `resources/views/isms/suppliers/index.blade.php:135` — `outline`
-- `resources/views/isms/suppliers/index.blade.php:140` — `transition`
-- `resources/views/isms/suppliers/index.blade.php:142` — `dropdown dropdown-end`
-- `resources/views/isms/suppliers/index.blade.php:143` — `btn btn-outline btn-xs gap-1`
-- `resources/views/isms/suppliers/index.blade.php:146` — `menu dropdown-content z-10 w-56 rounded-box bg-base-100 p-2 shadow`
-- `resources/views/isms/suppliers/index.blade.php:151` — `hidden`
-- `resources/views/isms/suppliers/index.blade.php:151` — `status`
-- `resources/views/isms/suppliers/index.blade.php:152` — `submit`
-- `resources/views/isms/suppliers/index.blade.php:152` — `w-full text-left`
-- `resources/views/isms/suppliers/index.blade.php:160` — `delete`
-- `resources/views/isms/suppliers/index.blade.php:164` — `delete`
-- `resources/views/isms/suppliers/index.blade.php:165` — `error`
-- `resources/views/isms/suppliers/index.blade.php:167` — `delete`
-- `resources/views/isms/suppliers/index.blade.php:167` — `error`
-- `resources/views/isms/suppliers/index.blade.php:167` — `submit`
+- `resources/views/isms/suppliers/index.blade.php:119` — `font-semibold`
+- `resources/views/isms/suppliers/index.blade.php:120` — `view`
+- `resources/views/isms/suppliers/index.blade.php:121` — `link link-primary`
+- `resources/views/isms/suppliers/index.blade.php:128` — `font-semibold`
+- `resources/views/isms/suppliers/index.blade.php:131` — `font-semibold`
+- `resources/views/isms/suppliers/index.blade.php:139` — `text-warning font-semibold`
+- `resources/views/isms/suppliers/index.blade.php:142` — `text-right`
+- `resources/views/isms/suppliers/index.blade.php:143` — `flex justify-end gap-1`
+- `resources/views/isms/suppliers/index.blade.php:144` — `update`
+- `resources/views/isms/suppliers/index.blade.php:145` — `edit`
+- `resources/views/isms/suppliers/index.blade.php:145` — `outline`
+- `resources/views/isms/suppliers/index.blade.php:150` — `transition`
+- `resources/views/isms/suppliers/index.blade.php:152` — `dropdown dropdown-end`
+- `resources/views/isms/suppliers/index.blade.php:153` — `btn btn-outline btn-xs gap-1`
+- `resources/views/isms/suppliers/index.blade.php:156` — `menu dropdown-content z-10 w-56 rounded-box bg-base-100 p-2 shadow`
+- `resources/views/isms/suppliers/index.blade.php:161` — `hidden`
+- `resources/views/isms/suppliers/index.blade.php:161` — `status`
+- `resources/views/isms/suppliers/index.blade.php:162` — `submit`
+- `resources/views/isms/suppliers/index.blade.php:162` — `w-full text-left`
+- `resources/views/isms/suppliers/index.blade.php:170` — `delete`
+- `resources/views/isms/suppliers/index.blade.php:174` — `delete`
+- `resources/views/isms/suppliers/index.blade.php:175` — `error`
+- `resources/views/isms/suppliers/index.blade.php:177` — `delete`
+- `resources/views/isms/suppliers/index.blade.php:177` — `error`
+- `resources/views/isms/suppliers/index.blade.php:177` — `submit`
 - `resources/views/isms/suppliers/_form_dialog.blade.php:21` — `handshake`
 - `resources/views/isms/suppliers/_form_dialog.blade.php:22` — `primary`
 - `resources/views/isms/suppliers/_form_dialog.blade.php:25` — `POST'`
@@ -31787,11 +31426,11 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/isms/suppliers/_form_dialog.blade.php:73` — `checkbox`
 - `resources/views/isms/suppliers/_form_dialog.blade.php:73` — `checkbox`
 - `resources/views/isms/suppliers/_form_dialog.blade.php:74` — `label-text`
-- `resources/views/isms/suppliers/_form_dialog.blade.php:80` — `info`
-- `resources/views/isms/suppliers/_form_dialog.blade.php:81` — `date`
-- `resources/views/isms/suppliers/_form_dialog.blade.php:82` — `date`
-- `resources/views/isms/suppliers/_form_dialog.blade.php:83` — `findings`
-- `resources/views/isms/suppliers/_form_dialog.blade.php:83` — `findings`
+- `resources/views/isms/suppliers/_form_dialog.blade.php:86` — `info`
+- `resources/views/isms/suppliers/_form_dialog.blade.php:87` — `date`
+- `resources/views/isms/suppliers/_form_dialog.blade.php:88` — `date`
+- `resources/views/isms/suppliers/_form_dialog.blade.php:89` — `findings`
+- `resources/views/isms/suppliers/_form_dialog.blade.php:89` — `findings`
 - `resources/views/isms/controls/index.blade.php:16` — `title`
 - `resources/views/isms/controls/index.blade.php:17` — `nav-title`
 - `resources/views/isms/controls/index.blade.php:19` — `content`
@@ -33014,51 +32653,66 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/rental/rates/index.blade.php:13` — `list-disc pl-5`
 - `resources/views/rental/rates/index.blade.php:17` — `create`
 - `resources/views/rental/rates/index.blade.php:19` — `flex flex-wrap items-end gap-2`
-- `resources/views/rental/rates/index.blade.php:21` — `name`
-- `resources/views/rental/rates/index.blade.php:22` — `date`
-- `resources/views/rental/rates/index.blade.php:22` — `Gültig ab`
-- `resources/views/rental/rates/index.blade.php:23` — `note`
-- `resources/views/rental/rates/index.blade.php:23` — `Notiz`
-- `resources/views/rental/rates/index.blade.php:24` — `submit`
-- `resources/views/rental/rates/index.blade.php:24` — `btn btn-sm btn-primary`
-- `resources/views/rental/rates/index.blade.php:24` — `Version anlegen`
-- `resources/views/rental/rates/index.blade.php:31` — `flex flex-wrap items-center justify-between gap-2 border-b border-base-300 p-3`
-- `resources/views/rental/rates/index.blade.php:32` — `flex items-center gap-2`
-- `resources/views/rental/rates/index.blade.php:33` — `font-medium`
-- `resources/views/rental/rates/index.blade.php:34` — `badge badge-outline`
-- `resources/views/rental/rates/index.blade.php:37` — `gültig ab`
-- `resources/views/rental/rates/index.blade.php:40` — `update`
-- `resources/views/rental/rates/index.blade.php:43` — `submit`
-- `resources/views/rental/rates/index.blade.php:43` — `btn btn-xs btn-primary`
-- `resources/views/rental/rates/index.blade.php:43` — `Aktivieren`
-- `resources/views/rental/rates/index.blade.php:52` — `Bezeichnung`
-- `resources/views/rental/rates/index.blade.php:53` — `Gruppe`
-- `resources/views/rental/rates/index.blade.php:54` — `text-right`
-- `resources/views/rental/rates/index.blade.php:54` — `Betrag`
-- `resources/views/rental/rates/index.blade.php:55` — `Mindestdauer`
-- `resources/views/rental/rates/index.blade.php:64` — `text-right font-mono`
-- `resources/views/rental/rates/index.blade.php:65` — `Tage`
-- `resources/views/rental/rates/index.blade.php:66` — `text-right`
-- `resources/views/rental/rates/index.blade.php:67` — `update`
-- `resources/views/rental/rates/index.blade.php:69` — `inline`
-- `resources/views/rental/rates/index.blade.php:71` — `submit`
-- `resources/views/rental/rates/index.blade.php:71` — `btn btn-xs btn-ghost text-error`
-- `resources/views/rental/rates/index.blade.php:71` — `Entfernen`
-- `resources/views/rental/rates/index.blade.php:78` — `Noch keine Konditionen in dieser Version.`
-- `resources/views/rental/rates/index.blade.php:81` — `update`
-- `resources/views/rental/rates/index.blade.php:83` — `flex flex-wrap items-end gap-2 border-t border-base-300 p-3`
-- `resources/views/rental/rates/index.blade.php:85` — `kind`
-- `resources/views/rental/rates/index.blade.php:90` — `label`
-- `resources/views/rental/rates/index.blade.php:90` — `Bezeichnung`
-- `resources/views/rental/rates/index.blade.php:92` — `amount`
-- `resources/views/rental/rates/index.blade.php:92` — `number`
-- `resources/views/rental/rates/index.blade.php:92` — `Betrag`
-- `resources/views/rental/rates/index.blade.php:93` — `unit`
-- `resources/views/rental/rates/index.blade.php:93` — `Einheit`
-- `resources/views/rental/rates/index.blade.php:94` — `number`
-- `resources/views/rental/rates/index.blade.php:95` — `submit`
-- `resources/views/rental/rates/index.blade.php:95` — `btn btn-sm`
-- `resources/views/rental/rates/index.blade.php:95` — `Kondition ergänzen`
+- `resources/views/rental/rates/index.blade.php:21` — `rate-name`
+- `resources/views/rental/rates/index.blade.php:22` — `text`
+- `resources/views/rental/rates/index.blade.php:22` — `rate-name`
+- `resources/views/rental/rates/index.blade.php:22` — `name`
+- `resources/views/rental/rates/index.blade.php:22` — `true`
+- `resources/views/rental/rates/index.blade.php:23` — `name`
+- `resources/views/rental/rates/index.blade.php:24` — `name`
+- `resources/views/rental/rates/index.blade.php:26` — `Gültig ab`
+- `resources/views/rental/rates/index.blade.php:26` — `rate-valid-from`
+- `resources/views/rental/rates/index.blade.php:27` — `date`
+- `resources/views/rental/rates/index.blade.php:27` — `rate-valid-from`
+- `resources/views/rental/rates/index.blade.php:31` — `Notiz`
+- `resources/views/rental/rates/index.blade.php:31` — `rate-note`
+- `resources/views/rental/rates/index.blade.php:32` — `text`
+- `resources/views/rental/rates/index.blade.php:32` — `rate-note`
+- `resources/views/rental/rates/index.blade.php:32` — `note`
+- `resources/views/rental/rates/index.blade.php:33` — `note`
+- `resources/views/rental/rates/index.blade.php:34` — `note`
+- `resources/views/rental/rates/index.blade.php:36` — `primary`
+- `resources/views/rental/rates/index.blade.php:36` — `submit`
+- `resources/views/rental/rates/index.blade.php:36` — `Version anlegen`
+- `resources/views/rental/rates/index.blade.php:38` — `name`
+- `resources/views/rental/rates/index.blade.php:39` — `mt-1 text-error text-sm`
+- `resources/views/rental/rates/index.blade.php:46` — `flex flex-wrap items-center justify-between gap-2 border-b border-base-300 p-3`
+- `resources/views/rental/rates/index.blade.php:47` — `flex items-center gap-2`
+- `resources/views/rental/rates/index.blade.php:48` — `font-medium`
+- `resources/views/rental/rates/index.blade.php:49` — `badge badge-outline`
+- `resources/views/rental/rates/index.blade.php:52` — `gültig ab`
+- `resources/views/rental/rates/index.blade.php:55` — `update`
+- `resources/views/rental/rates/index.blade.php:58` — `submit`
+- `resources/views/rental/rates/index.blade.php:58` — `btn btn-xs btn-primary`
+- `resources/views/rental/rates/index.blade.php:58` — `Aktivieren`
+- `resources/views/rental/rates/index.blade.php:67` — `Bezeichnung`
+- `resources/views/rental/rates/index.blade.php:68` — `Gruppe`
+- `resources/views/rental/rates/index.blade.php:69` — `text-right`
+- `resources/views/rental/rates/index.blade.php:69` — `Betrag`
+- `resources/views/rental/rates/index.blade.php:70` — `Mindestdauer`
+- `resources/views/rental/rates/index.blade.php:79` — `text-right font-mono`
+- `resources/views/rental/rates/index.blade.php:80` — `Tage`
+- `resources/views/rental/rates/index.blade.php:81` — `text-right`
+- `resources/views/rental/rates/index.blade.php:82` — `update`
+- `resources/views/rental/rates/index.blade.php:84` — `inline`
+- `resources/views/rental/rates/index.blade.php:86` — `submit`
+- `resources/views/rental/rates/index.blade.php:86` — `btn btn-xs btn-ghost text-error`
+- `resources/views/rental/rates/index.blade.php:86` — `Entfernen`
+- `resources/views/rental/rates/index.blade.php:93` — `Noch keine Konditionen in dieser Version.`
+- `resources/views/rental/rates/index.blade.php:96` — `update`
+- `resources/views/rental/rates/index.blade.php:98` — `flex flex-wrap items-end gap-2 border-t border-base-300 p-3`
+- `resources/views/rental/rates/index.blade.php:100` — `kind`
+- `resources/views/rental/rates/index.blade.php:105` — `label`
+- `resources/views/rental/rates/index.blade.php:105` — `Bezeichnung`
+- `resources/views/rental/rates/index.blade.php:107` — `amount`
+- `resources/views/rental/rates/index.blade.php:107` — `number`
+- `resources/views/rental/rates/index.blade.php:107` — `Betrag`
+- `resources/views/rental/rates/index.blade.php:108` — `unit`
+- `resources/views/rental/rates/index.blade.php:108` — `Einheit`
+- `resources/views/rental/rates/index.blade.php:109` — `number`
+- `resources/views/rental/rates/index.blade.php:110` — `submit`
+- `resources/views/rental/rates/index.blade.php:110` — `btn btn-sm`
+- `resources/views/rental/rates/index.blade.php:110` — `Kondition ergänzen`
 - `resources/views/rental/profiles.blade.php:3` — `title`
 - `resources/views/rental/profiles.blade.php:3` — `Gerätepool`
 - `resources/views/rental/profiles.blade.php:4` — `nav-title`
@@ -33161,6 +32815,15 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/customer/claims/show.blade.php:44` — `Absenden`
 - `resources/views/customer/claims/show.blade.php:49` — `link`
 - `resources/views/customer/claims/show.blade.php:49` — `Zurück zur Übersicht`
+- `resources/views/customer/documents/index.blade.php:8` — `content`
+- `resources/views/customer/documents/index.blade.php:9` — `text-2xl font-semibold mb-1`
+- `resources/views/customer/documents/index.blade.php:19` — `text-right`
+- `resources/views/customer/documents/index.blade.php:24` — `font-medium`
+- `resources/views/customer/documents/index.blade.php:26` — `tabular-nums`
+- `resources/views/customer/documents/index.blade.php:27` — `tabular-nums text-sm`
+- `resources/views/customer/documents/index.blade.php:28` — `text-right`
+- `resources/views/customer/documents/index.blade.php:30` — `outline`
+- `resources/views/customer/documents/index.blade.php:30` — `download`
 - `resources/views/customer/tickets/index.blade.php:5` — `content`
 - `resources/views/customer/tickets/index.blade.php:6` — `mb-4 flex items-center justify-between`
 - `resources/views/customer/tickets/index.blade.php:7` — `text-2xl font-semibold`
@@ -33527,24 +33190,24 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/customer/layout.blade.php:23` — `Übersicht`
 - `resources/views/customer/layout.blade.php:24` — `Auftragsbuch`
 - `resources/views/customer/layout.blade.php:25` — `Objekte`
-- `resources/views/customer/layout.blade.php:26` — `customer.time-entries.index`
-- `resources/views/customer/layout.blade.php:26` — `Zeiten`
-- `resources/views/customer/layout.blade.php:27` — `Rechnungen`
-- `resources/views/customer/layout.blade.php:28` — `Servicekatalog`
-- `resources/views/customer/layout.blade.php:29` — `customer.known-errors.index`
-- `resources/views/customer/layout.blade.php:29` — `Bekannte Fehler`
-- `resources/views/customer/layout.blade.php:30` — `customer.2fa.show`
-- `resources/views/customer/layout.blade.php:30` — `Zwei-Faktor-Authentifizierung`
-- `resources/views/customer/layout.blade.php:30` — `Sicherheit`
-- `resources/views/customer/layout.blade.php:33` — `submit`
-- `resources/views/customer/layout.blade.php:33` — `ghost`
-- `resources/views/customer/layout.blade.php:33` — `logout`
-- `resources/views/customer/layout.blade.php:33` — `Abmelden`
-- `resources/views/customer/layout.blade.php:39` — `max-w-5xl mx-auto px-4 py-6`
-- `resources/views/customer/layout.blade.php:40` — `status`
-- `resources/views/customer/layout.blade.php:41` — `alert alert-info mb-4`
+- `resources/views/customer/layout.blade.php:27` — `customer.time-entries.index`
+- `resources/views/customer/layout.blade.php:27` — `Zeiten`
+- `resources/views/customer/layout.blade.php:28` — `Rechnungen`
+- `resources/views/customer/layout.blade.php:29` — `Servicekatalog`
+- `resources/views/customer/layout.blade.php:30` — `customer.known-errors.index`
+- `resources/views/customer/layout.blade.php:30` — `Bekannte Fehler`
+- `resources/views/customer/layout.blade.php:31` — `customer.2fa.show`
+- `resources/views/customer/layout.blade.php:31` — `Zwei-Faktor-Authentifizierung`
+- `resources/views/customer/layout.blade.php:31` — `Sicherheit`
+- `resources/views/customer/layout.blade.php:34` — `submit`
+- `resources/views/customer/layout.blade.php:34` — `ghost`
+- `resources/views/customer/layout.blade.php:34` — `logout`
+- `resources/views/customer/layout.blade.php:34` — `Abmelden`
+- `resources/views/customer/layout.blade.php:40` — `max-w-5xl mx-auto px-4 py-6`
 - `resources/views/customer/layout.blade.php:41` — `status`
-- `resources/views/customer/layout.blade.php:44` — `content`
+- `resources/views/customer/layout.blade.php:42` — `alert alert-info mb-4`
+- `resources/views/customer/layout.blade.php:42` — `status`
+- `resources/views/customer/layout.blade.php:45` — `content`
 - `resources/views/customer/login.blade.php:3` — `content`
 - `resources/views/customer/login.blade.php:4` — `max-w-md mx-auto bg-base-100 border border-base-300 rounded p-6 mt-10`
 - `resources/views/customer/login.blade.php:5` — `text-xl font-semibold mb-4 flex items-center gap-2`
@@ -34048,17 +33711,17 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/comments/_thread.blade.php:58` — `submit`
 - `resources/views/comments/_thread.blade.php:58` — `Speichern`
 - `resources/views/comments/_thread.blade.php:67` — `create`
-- `resources/views/comments/_thread.blade.php:68` — `space-y-2`
-- `resources/views/comments/_thread.blade.php:70` — `body`
-- `resources/views/comments/_thread.blade.php:71` — `body`
-- `resources/views/comments/_thread.blade.php:72` — `Kommentar schreiben...`
-- `resources/views/comments/_thread.blade.php:72` — `body`
+- `resources/views/comments/_thread.blade.php:70` — `space-y-2`
 - `resources/views/comments/_thread.blade.php:73` — `body`
-- `resources/views/comments/_thread.blade.php:73` — `text-sm text-error`
-- `resources/views/comments/_thread.blade.php:74` — `send`
-- `resources/views/comments/_thread.blade.php:74` — `primary`
-- `resources/views/comments/_thread.blade.php:74` — `submit`
-- `resources/views/comments/_thread.blade.php:74` — `Kommentieren`
+- `resources/views/comments/_thread.blade.php:74` — `body`
+- `resources/views/comments/_thread.blade.php:75` — `Kommentar schreiben...`
+- `resources/views/comments/_thread.blade.php:75` — `body`
+- `resources/views/comments/_thread.blade.php:76` — `body`
+- `resources/views/comments/_thread.blade.php:76` — `text-sm text-error`
+- `resources/views/comments/_thread.blade.php:77` — `send`
+- `resources/views/comments/_thread.blade.php:77` — `primary`
+- `resources/views/comments/_thread.blade.php:77` — `submit`
+- `resources/views/comments/_thread.blade.php:77` — `Kommentieren`
 - `resources/views/tags/index.blade.php:2` — `title`
 - `resources/views/tags/index.blade.php:2` — `Tags`
 - `resources/views/tags/index.blade.php:2` — `app.name', 'WorkDiary`
@@ -34660,39 +34323,40 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/reports/compliance-dashboard.blade.php:24` — `outline`
 - `resources/views/reports/compliance-dashboard.blade.php:24` — `reports.arbzg-compliance`
 - `resources/views/reports/compliance-dashboard.blade.php:24` — `Einzelreport`
-- `resources/views/reports/compliance-dashboard.blade.php:29` — `Befunde gesamt`
-- `resources/views/reports/compliance-dashboard.blade.php:29` — `total`
-- `resources/views/reports/compliance-dashboard.blade.php:29` — `primary`
-- `resources/views/reports/compliance-dashboard.blade.php:30` — `reports.arbzg-compliance`
-- `resources/views/reports/compliance-dashboard.blade.php:31` — `Betroffene Mitarbeitende`
-- `resources/views/reports/compliance-dashboard.blade.php:31` — `employees`
-- `resources/views/reports/compliance-dashboard.blade.php:31` — `info`
-- `resources/views/reports/compliance-dashboard.blade.php:32` — `error`
-- `resources/views/reports/compliance-dashboard.blade.php:32` — `success'`
-- `resources/views/reports/compliance-dashboard.blade.php:33` — `Mit genehmigter Korrektur`
-- `resources/views/reports/compliance-dashboard.blade.php:33` — `success`
-- `resources/views/reports/compliance-dashboard.blade.php:40` — `warning`
-- `resources/views/reports/compliance-dashboard.blade.php:40` — `neutral'`
-- `resources/views/reports/compliance-dashboard.blade.php:42` — `reports.arbzg-compliance`
-- `resources/views/reports/compliance-dashboard.blade.php:42` — `kind`
-- `resources/views/reports/compliance-dashboard.blade.php:46` — `Verstöße je Regel und Monat`
-- `resources/views/reports/compliance-dashboard.blade.php:50` — `Monat`
-- `resources/views/reports/compliance-dashboard.blade.php:52` — `text-right`
-- `resources/views/reports/compliance-dashboard.blade.php:54` — `text-right`
-- `resources/views/reports/compliance-dashboard.blade.php:54` — `Summe`
-- `resources/views/reports/compliance-dashboard.blade.php:59` — `tabular-nums`
-- `resources/views/reports/compliance-dashboard.blade.php:61` — `text-right tabular-nums`
-- `resources/views/reports/compliance-dashboard.blade.php:63` — `text-right font-semibold tabular-nums`
-- `resources/views/reports/compliance-dashboard.blade.php:66` — `rule`
-- `resources/views/reports/compliance-dashboard.blade.php:66` — `Keine Daten im Zeitraum.`
-- `resources/views/reports/compliance-dashboard.blade.php:71` — `Befunde je Team`
-- `resources/views/reports/compliance-dashboard.blade.php:71` — `groups`
-- `resources/views/reports/compliance-dashboard.blade.php:73` — `verified`
-- `resources/views/reports/compliance-dashboard.blade.php:73` — `Keine Befunde im Zeitraum.`
-- `resources/views/reports/compliance-dashboard.blade.php:78` — `Team`
-- `resources/views/reports/compliance-dashboard.blade.php:79` — `text-right`
-- `resources/views/reports/compliance-dashboard.blade.php:79` — `Befunde`
-- `resources/views/reports/compliance-dashboard.blade.php:85` — `text-right tabular-nums`
+- `resources/views/reports/compliance-dashboard.blade.php:25` — `outline`
+- `resources/views/reports/compliance-dashboard.blade.php:30` — `Befunde gesamt`
+- `resources/views/reports/compliance-dashboard.blade.php:30` — `total`
+- `resources/views/reports/compliance-dashboard.blade.php:30` — `primary`
+- `resources/views/reports/compliance-dashboard.blade.php:31` — `reports.arbzg-compliance`
+- `resources/views/reports/compliance-dashboard.blade.php:32` — `Betroffene Mitarbeitende`
+- `resources/views/reports/compliance-dashboard.blade.php:32` — `employees`
+- `resources/views/reports/compliance-dashboard.blade.php:32` — `info`
+- `resources/views/reports/compliance-dashboard.blade.php:33` — `error`
+- `resources/views/reports/compliance-dashboard.blade.php:33` — `success'`
+- `resources/views/reports/compliance-dashboard.blade.php:34` — `Mit genehmigter Korrektur`
+- `resources/views/reports/compliance-dashboard.blade.php:34` — `success`
+- `resources/views/reports/compliance-dashboard.blade.php:41` — `warning`
+- `resources/views/reports/compliance-dashboard.blade.php:41` — `neutral'`
+- `resources/views/reports/compliance-dashboard.blade.php:43` — `reports.arbzg-compliance`
+- `resources/views/reports/compliance-dashboard.blade.php:43` — `kind`
+- `resources/views/reports/compliance-dashboard.blade.php:47` — `Verstöße je Regel und Monat`
+- `resources/views/reports/compliance-dashboard.blade.php:51` — `Monat`
+- `resources/views/reports/compliance-dashboard.blade.php:53` — `text-right`
+- `resources/views/reports/compliance-dashboard.blade.php:55` — `text-right`
+- `resources/views/reports/compliance-dashboard.blade.php:55` — `Summe`
+- `resources/views/reports/compliance-dashboard.blade.php:60` — `tabular-nums`
+- `resources/views/reports/compliance-dashboard.blade.php:62` — `text-right tabular-nums`
+- `resources/views/reports/compliance-dashboard.blade.php:64` — `text-right font-semibold tabular-nums`
+- `resources/views/reports/compliance-dashboard.blade.php:67` — `rule`
+- `resources/views/reports/compliance-dashboard.blade.php:67` — `Keine Daten im Zeitraum.`
+- `resources/views/reports/compliance-dashboard.blade.php:72` — `Befunde je Team`
+- `resources/views/reports/compliance-dashboard.blade.php:72` — `groups`
+- `resources/views/reports/compliance-dashboard.blade.php:74` — `verified`
+- `resources/views/reports/compliance-dashboard.blade.php:74` — `Keine Befunde im Zeitraum.`
+- `resources/views/reports/compliance-dashboard.blade.php:79` — `Team`
+- `resources/views/reports/compliance-dashboard.blade.php:80` — `text-right`
+- `resources/views/reports/compliance-dashboard.blade.php:80` — `Befunde`
+- `resources/views/reports/compliance-dashboard.blade.php:86` — `text-right tabular-nums`
 - `resources/views/reports/economics.blade.php:11` — `title`
 - `resources/views/reports/economics.blade.php:11` — `Wirtschaftlichkeit`
 - `resources/views/reports/economics.blade.php:12` — `nav-title`
@@ -36224,6 +35888,170 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/reports/qualifications.blade.php:83` — `abgelaufen`
 - `resources/views/reports/qualifications.blade.php:84` — `badge bg-base-200`
 - `resources/views/reports/qualifications.blade.php:84` — `keine Zuweisung`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:15` — `title`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:16` — `nav-title`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:18` — `content`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:26` — `material-symbols-outlined`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:26` — `true`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:30` — `deliveries`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:40` — `hover`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:41` — `tabular-nums`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:41` — `number`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:42` — `tabular-nums`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:43` — `tabular-nums`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:46` — `ghost`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:48` — `success`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:50` — `error`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:55` — `claims`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:65` — `hover`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:66` — `tabular-nums`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:68` — `tabular-nums`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:78` — `text-right`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:82` — `hover`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:83` — `tabular-nums`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:84` — `tabular-nums`
+- `resources/views/reports/supplier-scorecards/drilldown.blade.php:86` — `text-right tabular-nums`
+- `resources/views/reports/supplier-scorecards/index.blade.php:16` — `title`
+- `resources/views/reports/supplier-scorecards/index.blade.php:16` — `app.name', 'WorkDiary`
+- `resources/views/reports/supplier-scorecards/index.blade.php:17` — `nav-title`
+- `resources/views/reports/supplier-scorecards/index.blade.php:18` — `wrapper-height-class', 'wd-page-fill`
+- `resources/views/reports/supplier-scorecards/index.blade.php:19` — `main-class', `
+- `resources/views/reports/supplier-scorecards/index.blade.php:24` — `ghost`
+- `resources/views/reports/supplier-scorecards/index.blade.php:25` — `success`
+- `resources/views/reports/supplier-scorecards/index.blade.php:26` — `warning`
+- `resources/views/reports/supplier-scorecards/index.blade.php:27` — `error`
+- `resources/views/reports/supplier-scorecards/index.blade.php:31` — `ghost`
+- `resources/views/reports/supplier-scorecards/index.blade.php:38` — `content`
+- `resources/views/reports/supplier-scorecards/index.blade.php:39` — `clip`
+- `resources/views/reports/supplier-scorecards/index.blade.php:39` — `version`
+- `resources/views/reports/supplier-scorecards/index.blade.php:44` — `supplier-scorecards.index`
+- `resources/views/reports/supplier-scorecards/index.blade.php:44` — `supplier-scorecards.index`
+- `resources/views/reports/supplier-scorecards/index.blade.php:45` — `from`
+- `resources/views/reports/supplier-scorecards/index.blade.php:46` — `ghost`
+- `resources/views/reports/supplier-scorecards/index.blade.php:46` — `submit`
+- `resources/views/reports/supplier-scorecards/index.blade.php:49` — `alert alert-info text-xs`
+- `resources/views/reports/supplier-scorecards/index.blade.php:50` — `info`
+- `resources/views/reports/supplier-scorecards/index.blade.php:52` — `ontime`
+- `resources/views/reports/supplier-scorecards/index.blade.php:52` — `ontime`
+- `resources/views/reports/supplier-scorecards/index.blade.php:53` — `complaints`
+- `resources/views/reports/supplier-scorecards/index.blade.php:53` — `complaints`
+- `resources/views/reports/supplier-scorecards/index.blade.php:54` — `quality`
+- `resources/views/reports/supplier-scorecards/index.blade.php:54` — `quality`
+- `resources/views/reports/supplier-scorecards/index.blade.php:55` — `price`
+- `resources/views/reports/supplier-scorecards/index.blade.php:55` — `price`
+- `resources/views/reports/supplier-scorecards/index.blade.php:60` — `material-symbols-outlined`
+- `resources/views/reports/supplier-scorecards/index.blade.php:60` — `true`
+- `resources/views/reports/supplier-scorecards/index.blade.php:63` — `min-h-0 flex-1 flex flex-col overflow-hidden`
+- `resources/views/reports/supplier-scorecards/index.blade.php:64` — `flex`
+- `resources/views/reports/supplier-scorecards/index.blade.php:64` — `true`
+- `resources/views/reports/supplier-scorecards/index.blade.php:67` — `w-10 text-right`
+- `resources/views/reports/supplier-scorecards/index.blade.php:69` — `text-right`
+- `resources/views/reports/supplier-scorecards/index.blade.php:70` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:71` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:72` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:73` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:78` — `hover`
+- `resources/views/reports/supplier-scorecards/index.blade.php:81` — `link link-hover font-medium`
+- `resources/views/reports/supplier-scorecards/index.blade.php:81` — `supplier-scorecards.show`
+- `resources/views/reports/supplier-scorecards/index.blade.php:81` — `supplier`
+- `resources/views/reports/supplier-scorecards/index.blade.php:83` — `text-right`
+- `resources/views/reports/supplier-scorecards/index.blade.php:84` — `overall`
+- `resources/views/reports/supplier-scorecards/index.blade.php:87` — `font-semibold tabular-nums`
+- `resources/views/reports/supplier-scorecards/index.blade.php:87` — `overall`
+- `resources/views/reports/supplier-scorecards/index.blade.php:91` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:99` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:107` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:112` — `up' ? 'text-error`
+- `resources/views/reports/supplier-scorecards/index.blade.php:112` — `down' ? 'text-success`
+- `resources/views/reports/supplier-scorecards/index.blade.php:113` — `up' ? `
+- `resources/views/reports/supplier-scorecards/index.blade.php:113` — `down' ? `
+- `resources/views/reports/supplier-scorecards/index.blade.php:113` — `text-sm`
+- `resources/views/reports/supplier-scorecards/index.blade.php:119` — `text-center`
+- `resources/views/reports/supplier-scorecards/index.blade.php:126` — `text-right`
+- `resources/views/reports/supplier-scorecards/index.blade.php:127` — `supplier-scorecards.show`
+- `resources/views/reports/supplier-scorecards/index.blade.php:127` — `supplier`
+- `resources/views/reports/supplier-scorecards/show.blade.php:15` — `title`
+- `resources/views/reports/supplier-scorecards/show.blade.php:16` — `nav-title`
+- `resources/views/reports/supplier-scorecards/show.blade.php:20` — `ontime`
+- `resources/views/reports/supplier-scorecards/show.blade.php:21` — `complaints`
+- `resources/views/reports/supplier-scorecards/show.blade.php:22` — `price`
+- `resources/views/reports/supplier-scorecards/show.blade.php:23` — `quality`
+- `resources/views/reports/supplier-scorecards/show.blade.php:26` — `ghost`
+- `resources/views/reports/supplier-scorecards/show.blade.php:27` — `success`
+- `resources/views/reports/supplier-scorecards/show.blade.php:28` — `warning`
+- `resources/views/reports/supplier-scorecards/show.blade.php:29` — `error`
+- `resources/views/reports/supplier-scorecards/show.blade.php:32` — `supplier-scorecards.drilldown`
+- `resources/views/reports/supplier-scorecards/show.blade.php:34` — `supplier`
+- `resources/views/reports/supplier-scorecards/show.blade.php:34` — `kind`
+- `resources/views/reports/supplier-scorecards/show.blade.php:34` — `from`
+- `resources/views/reports/supplier-scorecards/show.blade.php:38` — `content`
+- `resources/views/reports/supplier-scorecards/show.blade.php:42` — `version`
+- `resources/views/reports/supplier-scorecards/show.blade.php:42` — `label`
+- `resources/views/reports/supplier-scorecards/show.blade.php:44` — `list`
+- `resources/views/reports/supplier-scorecards/show.blade.php:44` — `ghost`
+- `resources/views/reports/supplier-scorecards/show.blade.php:44` — `supplier-scorecards.index`
+- `resources/views/reports/supplier-scorecards/show.blade.php:45` — `ghost`
+- `resources/views/reports/supplier-scorecards/show.blade.php:51` — `flex items-baseline gap-3`
+- `resources/views/reports/supplier-scorecards/show.blade.php:52` — `overall`
+- `resources/views/reports/supplier-scorecards/show.blade.php:55` — `text-4xl font-semibold tabular-nums`
+- `resources/views/reports/supplier-scorecards/show.blade.php:55` — `overall`
+- `resources/views/reports/supplier-scorecards/show.blade.php:66` — `available`
+- `resources/views/reports/supplier-scorecards/show.blade.php:70` — `text-2xl font-semibold tabular-nums`
+- `resources/views/reports/supplier-scorecards/show.blade.php:70` — `rate`
+- `resources/views/reports/supplier-scorecards/show.blade.php:71` — `total`
+- `resources/views/reports/supplier-scorecards/show.blade.php:71` — `evaluated`
+- `resources/views/reports/supplier-scorecards/show.blade.php:72` — `goodness`
+- `resources/views/reports/supplier-scorecards/show.blade.php:72` — `mt-1`
+- `resources/views/reports/supplier-scorecards/show.blade.php:72` — `goodness`
+- `resources/views/reports/supplier-scorecards/show.blade.php:74` — `mt-2 inline-block text-xs link link-hover`
+- `resources/views/reports/supplier-scorecards/show.blade.php:74` — `deliveries`
+- `resources/views/reports/supplier-scorecards/show.blade.php:79` — `available`
+- `resources/views/reports/supplier-scorecards/show.blade.php:83` — `text-2xl font-semibold tabular-nums`
+- `resources/views/reports/supplier-scorecards/show.blade.php:83` — `rate`
+- `resources/views/reports/supplier-scorecards/show.blade.php:84` — `count`
+- `resources/views/reports/supplier-scorecards/show.blade.php:84` — `count`
+- `resources/views/reports/supplier-scorecards/show.blade.php:84` — `base`
+- `resources/views/reports/supplier-scorecards/show.blade.php:84` — `base`
+- `resources/views/reports/supplier-scorecards/show.blade.php:85` — `goodness`
+- `resources/views/reports/supplier-scorecards/show.blade.php:85` — `mt-1`
+- `resources/views/reports/supplier-scorecards/show.blade.php:85` — `goodness`
+- `resources/views/reports/supplier-scorecards/show.blade.php:87` — `mt-2 inline-block text-xs link link-hover`
+- `resources/views/reports/supplier-scorecards/show.blade.php:87` — `claims`
+- `resources/views/reports/supplier-scorecards/show.blade.php:92` — `available`
+- `resources/views/reports/supplier-scorecards/show.blade.php:96` — `direction`
+- `resources/views/reports/supplier-scorecards/show.blade.php:97` — `up' ? 'text-error`
+- `resources/views/reports/supplier-scorecards/show.blade.php:97` — `down' ? 'text-success`
+- `resources/views/reports/supplier-scorecards/show.blade.php:98` — `up' ? `
+- `resources/views/reports/supplier-scorecards/show.blade.php:98` — `down' ? `
+- `resources/views/reports/supplier-scorecards/show.blade.php:102` — `goodness`
+- `resources/views/reports/supplier-scorecards/show.blade.php:102` — `mt-1`
+- `resources/views/reports/supplier-scorecards/show.blade.php:102` — `goodness`
+- `resources/views/reports/supplier-scorecards/show.blade.php:104` — `mt-2 inline-block text-xs link link-hover`
+- `resources/views/reports/supplier-scorecards/show.blade.php:104` — `prices`
+- `resources/views/reports/supplier-scorecards/show.blade.php:109` — `available`
+- `resources/views/reports/supplier-scorecards/show.blade.php:113` — `rating`
+- `resources/views/reports/supplier-scorecards/show.blade.php:113` — `rating`
+- `resources/views/reports/supplier-scorecards/show.blade.php:115` — `assessment`
+- `resources/views/reports/supplier-scorecards/show.blade.php:116` — `mt-2 inline-block text-xs link link-hover`
+- `resources/views/reports/supplier-scorecards/show.blade.php:116` — `assessment`
+- `resources/views/reports/supplier-scorecards/show.blade.php:116` — `assessment`
+- `resources/views/reports/supplier-scorecards/show.blade.php:128` — `series`
+- `resources/views/reports/supplier-scorecards/show.blade.php:134` — `series`
+- `resources/views/reports/supplier-scorecards/show.blade.php:140` — `series`
+- `resources/views/reports/supplier-scorecards/show.blade.php:144` — `articles`
+- `resources/views/reports/supplier-scorecards/show.blade.php:145` — `sell`
+- `resources/views/reports/supplier-scorecards/show.blade.php:151` — `text-right`
+- `resources/views/reports/supplier-scorecards/show.blade.php:152` — `text-right`
+- `resources/views/reports/supplier-scorecards/show.blade.php:153` — `text-right`
+- `resources/views/reports/supplier-scorecards/show.blade.php:156` — `articles`
+- `resources/views/reports/supplier-scorecards/show.blade.php:157` — `hover`
+- `resources/views/reports/supplier-scorecards/show.blade.php:158` — `article`
+- `resources/views/reports/supplier-scorecards/show.blade.php:159` — `text-right tabular-nums`
+- `resources/views/reports/supplier-scorecards/show.blade.php:159` — `first`
+- `resources/views/reports/supplier-scorecards/show.blade.php:160` — `text-right tabular-nums`
+- `resources/views/reports/supplier-scorecards/show.blade.php:160` — `last`
+- `resources/views/reports/supplier-scorecards/show.blade.php:161` — `text-error`
+- `resources/views/reports/supplier-scorecards/show.blade.php:161` — `text-success`
 - `resources/views/reports/customers.blade.php:11` — `title`
 - `resources/views/reports/customers.blade.php:11` — `Kundenanalyse`
 - `resources/views/reports/customers.blade.php:12` — `nav-title`
@@ -36460,6 +36288,40 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/reports/my-month.blade.php:119` — `font-medium`
 - `resources/views/reports/my-month.blade.php:126` — `text-right tabular-nums`
 - `resources/views/reports/my-month.blade.php:127` — `text-right tabular-nums`
+- `resources/views/reports/compliance-history.blade.php:16` — `title`
+- `resources/views/reports/compliance-history.blade.php:17` — `nav-title`
+- `resources/views/reports/compliance-history.blade.php:19` — `content`
+- `resources/views/reports/compliance-history.blade.php:26` — `error`
+- `resources/views/reports/compliance-history.blade.php:26` — `warning`
+- `resources/views/reports/compliance-history.blade.php:35` — `outline`
+- `resources/views/reports/compliance-history.blade.php:36` — `reports.arbzg-compliance`
+- `resources/views/reports/compliance-history.blade.php:37` — `insights`
+- `resources/views/reports/compliance-history.blade.php:37` — `outline`
+- `resources/views/reports/compliance-history.blade.php:44` — `hist-status`
+- `resources/views/reports/compliance-history.blade.php:45` — `hist-status`
+- `resources/views/reports/compliance-history.blade.php:45` — `status`
+- `resources/views/reports/compliance-history.blade.php:45` — `select select-sm select-bordered`
+- `resources/views/reports/compliance-history.blade.php:49` — `enums.compliance.finding-status.`
+- `resources/views/reports/compliance-history.blade.php:60` — `neutral'`
+- `resources/views/reports/compliance-history.blade.php:61` — `status`
+- `resources/views/reports/compliance-history.blade.php:67` — `material-symbols-outlined`
+- `resources/views/reports/compliance-history.blade.php:67` — `true`
+- `resources/views/reports/compliance-history.blade.php:76` — `right`
+- `resources/views/reports/compliance-history.blade.php:77` — `right`
+- `resources/views/reports/compliance-history.blade.php:86` — `tabular-nums`
+- `resources/views/reports/compliance-history.blade.php:88` — `text-right tabular-nums font-semibold`
+- `resources/views/reports/compliance-history.blade.php:97` — `italic`
+- `resources/views/reports/compliance-history.blade.php:103` — `text-right`
+- `resources/views/reports/compliance-history.blade.php:106` — `flex items-center gap-1 justify-end flex-wrap`
+- `resources/views/reports/compliance-history.blade.php:108` — `text`
+- `resources/views/reports/compliance-history.blade.php:108` — `note`
+- `resources/views/reports/compliance-history.blade.php:109` — `input input-xs input-bordered w-40`
+- `resources/views/reports/compliance-history.blade.php:111` — `btn btn-xs`
+- `resources/views/reports/compliance-history.blade.php:111` — `submit`
+- `resources/views/reports/compliance-history.blade.php:111` — `status`
+- `resources/views/reports/compliance-history.blade.php:114` — `btn btn-xs btn-warning`
+- `resources/views/reports/compliance-history.blade.php:114` — `submit`
+- `resources/views/reports/compliance-history.blade.php:114` — `status`
 - `resources/views/reports/pdf/month-by-user-team.blade.php:4` — `utf-8`
 - `resources/views/reports/pdf/month-by-user-team.blade.php:21` — `meta`
 - `resources/views/reports/pdf/month-by-user-team.blade.php:28` — `right`
@@ -37911,56 +37773,57 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/reports/arbzg-compliance.blade.php:5` — `content`
 - `resources/views/reports/arbzg-compliance.blade.php:12` — `error`
 - `resources/views/reports/arbzg-compliance.blade.php:12` — `warning`
-- `resources/views/reports/arbzg-compliance.blade.php:19` — `download`
 - `resources/views/reports/arbzg-compliance.blade.php:19` — `outline`
-- `resources/views/reports/arbzg-compliance.blade.php:20` — `reports.arbzg-compliance`
-- `resources/views/reports/arbzg-compliance.blade.php:20` — `kind`
-- `resources/views/reports/arbzg-compliance.blade.php:20` — `export`
+- `resources/views/reports/arbzg-compliance.blade.php:22` — `download`
 - `resources/views/reports/arbzg-compliance.blade.php:22` — `outline`
 - `resources/views/reports/arbzg-compliance.blade.php:23` — `reports.arbzg-compliance`
 - `resources/views/reports/arbzg-compliance.blade.php:23` — `kind`
 - `resources/views/reports/arbzg-compliance.blade.php:23` — `export`
-- `resources/views/reports/arbzg-compliance.blade.php:29` — `reports.arbzg-compliance`
-- `resources/views/reports/arbzg-compliance.blade.php:29` — `reports.arbzg-compliance`
-- `resources/views/reports/arbzg-compliance.blade.php:30` — `rep-kind`
-- `resources/views/reports/arbzg-compliance.blade.php:31` — `rep-kind`
-- `resources/views/reports/arbzg-compliance.blade.php:31` — `kind`
-- `resources/views/reports/arbzg-compliance.blade.php:31` — `select select-sm select-bordered`
-- `resources/views/reports/arbzg-compliance.blade.php:41` — `total`
-- `resources/views/reports/arbzg-compliance.blade.php:42` — `total`
-- `resources/views/reports/arbzg-compliance.blade.php:42` — `error`
-- `resources/views/reports/arbzg-compliance.blade.php:42` — `success'`
-- `resources/views/reports/arbzg-compliance.blade.php:43` — `employees`
-- `resources/views/reports/arbzg-compliance.blade.php:46` — `warning`
-- `resources/views/reports/arbzg-compliance.blade.php:46` — `neutral'`
-- `resources/views/reports/arbzg-compliance.blade.php:50` — `mt-2`
-- `resources/views/reports/arbzg-compliance.blade.php:53` — `daily`
-- `resources/views/reports/arbzg-compliance.blade.php:54` — `rest`
-- `resources/views/reports/arbzg-compliance.blade.php:55` — `weekly`
-- `resources/views/reports/arbzg-compliance.blade.php:62` — `material-symbols-outlined`
-- `resources/views/reports/arbzg-compliance.blade.php:62` — `true`
-- `resources/views/reports/arbzg-compliance.blade.php:66` — `mb-4`
-- `resources/views/reports/arbzg-compliance.blade.php:67` — `mb-2 text-sm font-semibold`
-- `resources/views/reports/arbzg-compliance.blade.php:67` — `user`
-- `resources/views/reports/arbzg-compliance.blade.php:73` — `right`
-- `resources/views/reports/arbzg-compliance.blade.php:74` — `right`
-- `resources/views/reports/arbzg-compliance.blade.php:79` — `findings`
-- `resources/views/reports/arbzg-compliance.blade.php:81` — `tabular-nums`
-- `resources/views/reports/arbzg-compliance.blade.php:82` — `date`
-- `resources/views/reports/arbzg-compliance.blade.php:83` — `corrected`
-- `resources/views/reports/arbzg-compliance.blade.php:84` — `badge badge-ghost badge-sm ml-1`
-- `resources/views/reports/arbzg-compliance.blade.php:90` — `kind`
-- `resources/views/reports/arbzg-compliance.blade.php:91` — `text-right tabular-nums font-semibold`
-- `resources/views/reports/arbzg-compliance.blade.php:91` — `value`
-- `resources/views/reports/arbzg-compliance.blade.php:92` — `threshold`
-- `resources/views/reports/arbzg-compliance.blade.php:93` — `severity`
-- `resources/views/reports/arbzg-compliance.blade.php:93` — `severity`
-- `resources/views/reports/arbzg-compliance.blade.php:94` — `text-right`
-- `resources/views/reports/arbzg-compliance.blade.php:95` — `link link-hover text-xs`
-- `resources/views/reports/arbzg-compliance.blade.php:96` — `day-close.show`
-- `resources/views/reports/arbzg-compliance.blade.php:96` — `date`
-- `resources/views/reports/arbzg-compliance.blade.php:96` — `date`
-- `resources/views/reports/arbzg-compliance.blade.php:96` — `user`
+- `resources/views/reports/arbzg-compliance.blade.php:25` — `outline`
+- `resources/views/reports/arbzg-compliance.blade.php:26` — `reports.arbzg-compliance`
+- `resources/views/reports/arbzg-compliance.blade.php:26` — `kind`
+- `resources/views/reports/arbzg-compliance.blade.php:26` — `export`
+- `resources/views/reports/arbzg-compliance.blade.php:32` — `reports.arbzg-compliance`
+- `resources/views/reports/arbzg-compliance.blade.php:32` — `reports.arbzg-compliance`
+- `resources/views/reports/arbzg-compliance.blade.php:33` — `rep-kind`
+- `resources/views/reports/arbzg-compliance.blade.php:34` — `rep-kind`
+- `resources/views/reports/arbzg-compliance.blade.php:34` — `kind`
+- `resources/views/reports/arbzg-compliance.blade.php:34` — `select select-sm select-bordered`
+- `resources/views/reports/arbzg-compliance.blade.php:44` — `total`
+- `resources/views/reports/arbzg-compliance.blade.php:45` — `total`
+- `resources/views/reports/arbzg-compliance.blade.php:45` — `error`
+- `resources/views/reports/arbzg-compliance.blade.php:45` — `success'`
+- `resources/views/reports/arbzg-compliance.blade.php:46` — `employees`
+- `resources/views/reports/arbzg-compliance.blade.php:49` — `warning`
+- `resources/views/reports/arbzg-compliance.blade.php:49` — `neutral'`
+- `resources/views/reports/arbzg-compliance.blade.php:53` — `mt-2`
+- `resources/views/reports/arbzg-compliance.blade.php:56` — `daily`
+- `resources/views/reports/arbzg-compliance.blade.php:57` — `rest`
+- `resources/views/reports/arbzg-compliance.blade.php:58` — `weekly`
+- `resources/views/reports/arbzg-compliance.blade.php:65` — `material-symbols-outlined`
+- `resources/views/reports/arbzg-compliance.blade.php:65` — `true`
+- `resources/views/reports/arbzg-compliance.blade.php:69` — `mb-4`
+- `resources/views/reports/arbzg-compliance.blade.php:70` — `mb-2 text-sm font-semibold`
+- `resources/views/reports/arbzg-compliance.blade.php:70` — `user`
+- `resources/views/reports/arbzg-compliance.blade.php:76` — `right`
+- `resources/views/reports/arbzg-compliance.blade.php:77` — `right`
+- `resources/views/reports/arbzg-compliance.blade.php:82` — `findings`
+- `resources/views/reports/arbzg-compliance.blade.php:84` — `tabular-nums`
+- `resources/views/reports/arbzg-compliance.blade.php:85` — `date`
+- `resources/views/reports/arbzg-compliance.blade.php:86` — `corrected`
+- `resources/views/reports/arbzg-compliance.blade.php:87` — `badge badge-ghost badge-sm ml-1`
+- `resources/views/reports/arbzg-compliance.blade.php:93` — `kind`
+- `resources/views/reports/arbzg-compliance.blade.php:94` — `text-right tabular-nums font-semibold`
+- `resources/views/reports/arbzg-compliance.blade.php:94` — `value`
+- `resources/views/reports/arbzg-compliance.blade.php:95` — `threshold`
+- `resources/views/reports/arbzg-compliance.blade.php:96` — `severity`
+- `resources/views/reports/arbzg-compliance.blade.php:96` — `severity`
+- `resources/views/reports/arbzg-compliance.blade.php:97` — `text-right`
+- `resources/views/reports/arbzg-compliance.blade.php:98` — `link link-hover text-xs`
+- `resources/views/reports/arbzg-compliance.blade.php:99` — `day-close.show`
+- `resources/views/reports/arbzg-compliance.blade.php:99` — `date`
+- `resources/views/reports/arbzg-compliance.blade.php:99` — `date`
+- `resources/views/reports/arbzg-compliance.blade.php:99` — `user`
 - `resources/views/reports/expenses.blade.php:2` — `title`
 - `resources/views/reports/expenses.blade.php:2` — `Spesen-Report`
 - `resources/views/reports/expenses.blade.php:3` — `nav-title`
@@ -39690,6 +39553,140 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/qualifications/_form_dialog.blade.php:37` — `error`
 - `resources/views/qualifications/_form_dialog.blade.php:37` — `submit`
 - `resources/views/qualifications/_form_dialog.blade.php:37` — `Qualifikation löschen`
+- `resources/views/me/functions.blade.php:3` — `title`
+- `resources/views/me/functions.blade.php:4` — `nav-title`
+- `resources/views/me/functions.blade.php:13` — `content`
+- `resources/views/me/functions.blade.php:18` — `ghost`
+- `resources/views/me/functions.blade.php:18` — `edit`
+- `resources/views/me/functions.blade.php:20` — `ghost`
+- `resources/views/me/functions.blade.php:20` — `tune`
+- `resources/views/me/functions.blade.php:26` — `status`
+- `resources/views/me/functions.blade.php:27` — `alert alert-success`
+- `resources/views/me/functions.blade.php:27` — `status`
+- `resources/views/me/functions.blade.php:34` — `alert alert-info mb-4 flex-wrap gap-2 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/me/functions.blade.php:35` — `text-base`
+- `resources/views/me/functions.blade.php:36` — `flex-1`
+- `resources/views/me/functions.blade.php:36` — `name`
+- `resources/views/me/functions.blade.php:37` — `me.focus.switch', 'all`
+- `resources/views/me/functions.blade.php:39` — `submit`
+- `resources/views/me/functions.blade.php:39` — `ghost`
+- `resources/views/me/functions.blade.php:39` — `apps`
+- `resources/views/me/functions.blade.php:45` — `mt-4`
+- `resources/views/me/functions.blade.php:46` — `flex items-center gap-2 border-b border-base-300 px-4 py-3`
+- `resources/views/me/functions.blade.php:47` — `text-sm font-semibold uppercase tracking-wider opacity-60`
+- `resources/views/me/functions.blade.php:47` — `label`
+- `resources/views/me/functions.blade.php:48` — `hidden`
+- `resources/views/me/functions.blade.php:49` — `badge badge-neutral badge-sm`
+- `resources/views/me/functions.blade.php:50` — `ml-auto`
+- `resources/views/me/functions.blade.php:52` — `hidden`
+- `resources/views/me/functions.blade.php:53` — `submit`
+- `resources/views/me/functions.blade.php:53` — `ghost`
+- `resources/views/me/functions.blade.php:53` — `visibility`
+- `resources/views/me/functions.blade.php:57` — `divide-y divide-base-300`
+- `resources/views/me/functions.blade.php:58` — `entries`
+- `resources/views/me/functions.blade.php:59` — `flex items-center gap-3 p-3`
+- `resources/views/me/functions.blade.php:60` — `icon`
+- `resources/views/me/functions.blade.php:61` — `min-w-0 flex-1`
+- `resources/views/me/functions.blade.php:62` — `flex flex-wrap items-center gap-2`
+- `resources/views/me/functions.blade.php:63` — `visible`
+- `resources/views/me/functions.blade.php:64` — `route`
+- `resources/views/me/functions.blade.php:64` — `link link-hover font-medium`
+- `resources/views/me/functions.blade.php:64` — `label`
+- `resources/views/me/functions.blade.php:66` — `label`
+- `resources/views/me/functions.blade.php:68` — `status`
+- `resources/views/me/functions.blade.php:69` — `badge badge-ghost badge-sm`
+- `resources/views/me/functions.blade.php:69` — `Nicht lizenziert`
+- `resources/views/me/functions.blade.php:70` — `status`
+- `resources/views/me/functions.blade.php:71` — `badge badge-neutral badge-sm`
+- `resources/views/me/functions.blade.php:72` — `status`
+- `resources/views/me/functions.blade.php:73` — `badge badge-warning badge-sm`
+- `resources/views/me/functions.blade.php:73` — `Gesperrt`
+- `resources/views/me/functions.blade.php:74` — `hidden`
+- `resources/views/me/functions.blade.php:75` — `badge badge-neutral badge-sm`
+- `resources/views/me/functions.blade.php:77` — `badge badge-info badge-sm`
+- `resources/views/me/functions.blade.php:80` — `status`
+- `resources/views/me/functions.blade.php:84` — `status`
+- `resources/views/me/functions.blade.php:85` — `ghost`
+- `resources/views/me/functions.blade.php:85` — `tune`
+- `resources/views/me/functions.blade.php:86` — `hidden`
+- `resources/views/me/functions.blade.php:86` — `status`
+- `resources/views/me/functions.blade.php:86` — `status`
+- `resources/views/me/functions.blade.php:89` — `hidden`
+- `resources/views/me/functions.blade.php:90` — `submit`
+- `resources/views/me/functions.blade.php:90` — `ghost`
+- `resources/views/me/functions.blade.php:90` — `visibility`
+- `resources/views/me/navigation-customize.blade.php:3` — `title`
+- `resources/views/me/navigation-customize.blade.php:4` — `nav-title`
+- `resources/views/me/navigation-customize.blade.php:19` — `content`
+- `resources/views/me/navigation-customize.blade.php:24` — `ghost`
+- `resources/views/me/navigation-customize.blade.php:24` — `apps`
+- `resources/views/me/navigation-customize.blade.php:29` — `status`
+- `resources/views/me/navigation-customize.blade.php:30` — `alert alert-success`
+- `resources/views/me/navigation-customize.blade.php:30` — `status`
+- `resources/views/me/navigation-customize.blade.php:33` — `alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/me/navigation-customize.blade.php:34` — `info`
+- `resources/views/me/navigation-customize.blade.php:34` — `text-base`
+- `resources/views/me/navigation-customize.blade.php:38` — `nav-customize-form`
+- `resources/views/me/navigation-customize.blade.php:38` — `mt-4`
+- `resources/views/me/navigation-customize.blade.php:43` — `border-b border-base-300 px-4 py-3`
+- `resources/views/me/navigation-customize.blade.php:44` — `text-sm font-semibold uppercase tracking-wider opacity-60`
+- `resources/views/me/navigation-customize.blade.php:47` — `divide-y divide-base-300`
+- `resources/views/me/navigation-customize.blade.php:51` — `flex cursor-pointer items-center gap-3`
+- `resources/views/me/navigation-customize.blade.php:52` — `checkbox`
+- `resources/views/me/navigation-customize.blade.php:53` — `toggle toggle-sm toggle-primary`
+- `resources/views/me/navigation-customize.blade.php:54` — `font-semibold`
+- `resources/views/me/navigation-customize.blade.php:54` — `label`
+- `resources/views/me/navigation-customize.blade.php:55` — `text-xs opacity-60`
+- `resources/views/me/navigation-customize.blade.php:55` — `items`
+- `resources/views/me/navigation-customize.blade.php:55` — `label`
+- `resources/views/me/navigation-customize.blade.php:62` — `mt-4`
+- `resources/views/me/navigation-customize.blade.php:63` — `border-b border-base-300 px-4 py-3`
+- `resources/views/me/navigation-customize.blade.php:64` — `text-sm font-semibold uppercase tracking-wider opacity-60`
+- `resources/views/me/navigation-customize.blade.php:66` — `divide-y divide-base-300`
+- `resources/views/me/navigation-customize.blade.php:70` — `flex cursor-pointer items-center gap-3`
+- `resources/views/me/navigation-customize.blade.php:71` — `checkbox`
+- `resources/views/me/navigation-customize.blade.php:72` — `toggle toggle-sm toggle-primary`
+- `resources/views/me/navigation-customize.blade.php:73` — `font-semibold`
+- `resources/views/me/navigation-customize.blade.php:73` — `label`
+- `resources/views/me/navigation-customize.blade.php:75` — `mt-2 space-y-1 pl-8`
+- `resources/views/me/navigation-customize.blade.php:76` — `items`
+- `resources/views/me/navigation-customize.blade.php:77` — `route`
+- `resources/views/me/navigation-customize.blade.php:79` — `flex cursor-pointer items-center gap-3`
+- `resources/views/me/navigation-customize.blade.php:80` — `checkbox`
+- `resources/views/me/navigation-customize.blade.php:81` — `toggle toggle-xs toggle-primary`
+- `resources/views/me/navigation-customize.blade.php:82` — `icon`
+- `resources/views/me/navigation-customize.blade.php:82` — `circle'`
+- `resources/views/me/navigation-customize.blade.php:83` — `text-sm`
+- `resources/views/me/navigation-customize.blade.php:83` — `label`
+- `resources/views/me/navigation-customize.blade.php:87` — `groups`
+- `resources/views/me/navigation-customize.blade.php:90` — `flex cursor-pointer items-center gap-3`
+- `resources/views/me/navigation-customize.blade.php:91` — `checkbox`
+- `resources/views/me/navigation-customize.blade.php:92` — `toggle toggle-xs toggle-primary`
+- `resources/views/me/navigation-customize.blade.php:93` — `icon`
+- `resources/views/me/navigation-customize.blade.php:93` — `label'`
+- `resources/views/me/navigation-customize.blade.php:94` — `text-sm font-medium`
+- `resources/views/me/navigation-customize.blade.php:94` — `label`
+- `resources/views/me/navigation-customize.blade.php:96` — `mt-1 space-y-1 pl-8`
+- `resources/views/me/navigation-customize.blade.php:97` — `items`
+- `resources/views/me/navigation-customize.blade.php:98` — `route`
+- `resources/views/me/navigation-customize.blade.php:100` — `flex cursor-pointer items-center gap-3`
+- `resources/views/me/navigation-customize.blade.php:101` — `checkbox`
+- `resources/views/me/navigation-customize.blade.php:102` — `toggle toggle-xs toggle-primary`
+- `resources/views/me/navigation-customize.blade.php:103` — `icon`
+- `resources/views/me/navigation-customize.blade.php:103` — `circle'`
+- `resources/views/me/navigation-customize.blade.php:104` — `text-sm`
+- `resources/views/me/navigation-customize.blade.php:104` — `label`
+- `resources/views/me/navigation-customize.blade.php:122` — `page-footer`
+- `resources/views/me/navigation-customize.blade.php:126` — `submit`
+- `resources/views/me/navigation-customize.blade.php:126` — `nav-customize-form`
+- `resources/views/me/navigation-customize.blade.php:126` — `primary`
+- `resources/views/me/navigation-customize.blade.php:126` — `save`
+- `resources/views/me/navigation-customize.blade.php:126` — `Speichern`
+- `resources/views/me/navigation-customize.blade.php:134` — `scripts`
+- `resources/views/me/navigation-customize.blade.php:143` — `checkbox`
+- `resources/views/me/navigation-customize.blade.php:146` — `change`
+- `resources/views/me/navigation-customize.blade.php:148` — `checkbox`
+- `resources/views/me/navigation-customize.blade.php:154` — `checkbox`
 - `resources/views/emails/problem-report-forward.blade.php:2` — `reference`
 - `resources/views/emails/problem-report-forward.blade.php:11` — `name`
 - `resources/views/emails/two-factor-code.blade.php:2` — `Bestätigungscode`
@@ -43332,35 +43329,41 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/notifications/index.blade.php:12` — `inline`
 - `resources/views/notifications/index.blade.php:14` — `primary`
 - `resources/views/notifications/index.blade.php:14` — `submit`
-- `resources/views/notifications/index.blade.php:21` — `flex-1 min-h-0 overflow-y-auto`
-- `resources/views/notifications/index.blade.php:22` — `divide-y divide-base-200 rounded-box border border-base-300 bg-base-100`
-- `resources/views/notifications/index.blade.php:29` — `icon`
-- `resources/views/notifications/index.blade.php:29` — `notifications'`
-- `resources/views/notifications/index.blade.php:29` — `text-primary`
-- `resources/views/notifications/index.blade.php:30` — `flex-1 min-w-0`
-- `resources/views/notifications/index.blade.php:31` — `flex items-center gap-2`
-- `resources/views/notifications/index.blade.php:32` — `opacity-70`
-- `resources/views/notifications/index.blade.php:33` — `stage`
-- `resources/views/notifications/index.blade.php:33` — `escalation`
-- `resources/views/notifications/index.blade.php:34` — `error`
-- `resources/views/notifications/index.blade.php:37` — `badge badge-primary badge-xs`
-- `resources/views/notifications/index.blade.php:40` — `message`
-- `resources/views/notifications/index.blade.php:41` — `text-sm opacity-70 mt-0.5`
-- `resources/views/notifications/index.blade.php:41` — `message`
-- `resources/views/notifications/index.blade.php:43` — `text-xs opacity-50 mt-1`
-- `resources/views/notifications/index.blade.php:45` — `event`
-- `resources/views/notifications/index.blade.php:46` — `event`
-- `resources/views/notifications/index.blade.php:46` — `event`
-- `resources/views/notifications/index.blade.php:50` — `flex items-center gap-1 shrink-0`
-- `resources/views/notifications/index.blade.php:52` — `inline`
-- `resources/views/notifications/index.blade.php:54` — `hidden`
-- `resources/views/notifications/index.blade.php:54` — `follow`
-- `resources/views/notifications/index.blade.php:55` — `submit`
-- `resources/views/notifications/index.blade.php:59` — `inline`
-- `resources/views/notifications/index.blade.php:61` — `done`
-- `resources/views/notifications/index.blade.php:61` — `submit`
-- `resources/views/notifications/index.blade.php:68` — `material-symbols-outlined`
-- `resources/views/notifications/index.blade.php:68` — `true`
+- `resources/views/notifications/index.blade.php:20` — `inline`
+- `resources/views/notifications/index.blade.php:23` — `error`
+- `resources/views/notifications/index.blade.php:27` — `error`
+- `resources/views/notifications/index.blade.php:27` — `submit`
+- `resources/views/notifications/index.blade.php:34` — `flex-1 min-h-0 overflow-y-auto`
+- `resources/views/notifications/index.blade.php:35` — `divide-y divide-base-200 rounded-box border border-base-300 bg-base-100`
+- `resources/views/notifications/index.blade.php:42` — `icon`
+- `resources/views/notifications/index.blade.php:42` — `notifications'`
+- `resources/views/notifications/index.blade.php:42` — `text-primary`
+- `resources/views/notifications/index.blade.php:43` — `flex-1 min-w-0`
+- `resources/views/notifications/index.blade.php:44` — `flex items-center gap-2`
+- `resources/views/notifications/index.blade.php:45` — `opacity-70`
+- `resources/views/notifications/index.blade.php:46` — `stage`
+- `resources/views/notifications/index.blade.php:46` — `escalation`
+- `resources/views/notifications/index.blade.php:47` — `error`
+- `resources/views/notifications/index.blade.php:50` — `badge badge-primary badge-xs`
+- `resources/views/notifications/index.blade.php:54` — `text-sm opacity-70 mt-0.5`
+- `resources/views/notifications/index.blade.php:56` — `text-xs opacity-50 mt-1`
+- `resources/views/notifications/index.blade.php:58` — `event`
+- `resources/views/notifications/index.blade.php:59` — `event`
+- `resources/views/notifications/index.blade.php:59` — `event`
+- `resources/views/notifications/index.blade.php:63` — `flex items-center gap-1 shrink-0`
+- `resources/views/notifications/index.blade.php:65` — `inline`
+- `resources/views/notifications/index.blade.php:67` — `hidden`
+- `resources/views/notifications/index.blade.php:67` — `follow`
+- `resources/views/notifications/index.blade.php:68` — `submit`
+- `resources/views/notifications/index.blade.php:72` — `inline`
+- `resources/views/notifications/index.blade.php:74` — `done`
+- `resources/views/notifications/index.blade.php:74` — `submit`
+- `resources/views/notifications/index.blade.php:77` — `inline`
+- `resources/views/notifications/index.blade.php:80` — `delete`
+- `resources/views/notifications/index.blade.php:80` — `error`
+- `resources/views/notifications/index.blade.php:80` — `submit`
+- `resources/views/notifications/index.blade.php:86` — `material-symbols-outlined`
+- `resources/views/notifications/index.blade.php:86` — `true`
 - `resources/views/onboarding/index.blade.php:3` — `title`
 - `resources/views/onboarding/index.blade.php:3` — `app.name', 'WorkDiary`
 - `resources/views/onboarding/index.blade.php:4` — `nav-title`
@@ -46074,23 +46077,23 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/views/assets/_form_body.blade.php:29` — `name`
 - `resources/views/assets/_form_body.blade.php:31` — `Kategorie`
 - `resources/views/assets/_form_body.blade.php:38` — `Inventarnummer`
-- `resources/views/assets/_form_body.blade.php:40` — `manufacturer`
-- `resources/views/assets/_form_body.blade.php:40` — `Hersteller`
-- `resources/views/assets/_form_body.blade.php:40` — `manufacturer`
-- `resources/views/assets/_form_body.blade.php:42` — `model`
-- `resources/views/assets/_form_body.blade.php:42` — `Modell`
-- `resources/views/assets/_form_body.blade.php:42` — `model`
-- `resources/views/assets/_form_body.blade.php:44` — `Seriennummer`
-- `resources/views/assets/_form_body.blade.php:49` — `Verortung`
-- `resources/views/assets/_form_body.blade.php:49` — `info`
-- `resources/views/assets/_form_body.blade.php:62` — `Notizen`
-- `resources/views/assets/_form_body.blade.php:63` — `notes`
-- `resources/views/assets/_form_body.blade.php:63` — `notes`
-- `resources/views/assets/_form_body.blade.php:70` — `Tags`
-- `resources/views/assets/_form_body.blade.php:70` — `sell`
-- `resources/views/assets/_form_body.blade.php:70` — `ghost`
-- `resources/views/assets/_form_body.blade.php:77` — `alert alert-error text-sm`
-- `resources/views/assets/_form_body.blade.php:78` — `list-disc pl-5`
+- `resources/views/assets/_form_body.blade.php:47` — `manufacturer`
+- `resources/views/assets/_form_body.blade.php:47` — `Hersteller`
+- `resources/views/assets/_form_body.blade.php:47` — `manufacturer`
+- `resources/views/assets/_form_body.blade.php:49` — `model`
+- `resources/views/assets/_form_body.blade.php:49` — `Modell`
+- `resources/views/assets/_form_body.blade.php:49` — `model`
+- `resources/views/assets/_form_body.blade.php:51` — `Seriennummer`
+- `resources/views/assets/_form_body.blade.php:56` — `Verortung`
+- `resources/views/assets/_form_body.blade.php:56` — `info`
+- `resources/views/assets/_form_body.blade.php:69` — `Notizen`
+- `resources/views/assets/_form_body.blade.php:70` — `notes`
+- `resources/views/assets/_form_body.blade.php:70` — `notes`
+- `resources/views/assets/_form_body.blade.php:77` — `Tags`
+- `resources/views/assets/_form_body.blade.php:77` — `sell`
+- `resources/views/assets/_form_body.blade.php:77` — `ghost`
+- `resources/views/assets/_form_body.blade.php:84` — `alert alert-error text-sm`
+- `resources/views/assets/_form_body.blade.php:85` — `list-disc pl-5`
 - `resources/views/assets/_checkout_form_dialog.blade.php:15` — `Asset ausgeben`
 - `resources/views/assets/_checkout_form_dialog.blade.php:17` — `logout`
 - `resources/views/assets/_checkout_form_dialog.blade.php:18` — `primary`
@@ -47676,124 +47679,124 @@ Generated: 2026-07-13T15:40:29+00:00
 
 - `resources/js/app.js:8` — `alpinejs`
 - `resources/js/app.js:13` — `flatpickr`
-- `resources/js/app.js:32` — `undefined`
-- `resources/js/app.js:48` — `default`
-- `resources/js/app.js:58` — `undefined`
-- `resources/js/app.js:62` — `Y-m-d`
-- `resources/js/app.js:123` — `input`
-- `resources/js/app.js:124` — `change`
+- `resources/js/app.js:33` — `undefined`
+- `resources/js/app.js:52` — `default`
+- `resources/js/app.js:62` — `undefined`
+- `resources/js/app.js:66` — `Y-m-d`
 - `resources/js/app.js:127` — `input`
 - `resources/js/app.js:128` — `change`
-- `resources/js/app.js:142` — `input`
-- `resources/js/app.js:149` — `change`
-- `resources/js/app.js:150` — `keydown`
-- `resources/js/app.js:151` — `Enter`
-- `resources/js/app.js:158` — `Y-m-d`
-- `resources/js/app.js:166` — `datetime-local`
-- `resources/js/app.js:188` — `numeric`
-- `resources/js/app.js:213` — `dialog`
-- `resources/js/app.js:228` — `Y-m-d`
-- `resources/js/app.js:236` — `datetime-local`
-- `resources/js/app.js:269` — `value`
-- `resources/js/app.js:315` — `weekTableFit`
-- `resources/js/app.js:323` — `change`
-- `resources/js/app.js:337` — `undefined`
-- `resources/js/app.js:338` — `loading`
-- `resources/js/app.js:339` — `DOMContentLoaded`
-- `resources/js/app.js:347` — `change`
-- `resources/js/app.js:354` — `data-recurrence-show`
-- `resources/js/app.js:363` — `click`
-- `resources/js/app.js:366` — `dialog`
-- `resources/js/app.js:369` — `function`
-- `resources/js/app.js:376` — `undefined`
-- `resources/js/app.js:384` — `dialog`
-- `resources/js/app.js:385` — `entry-modal`
-- `resources/js/app.js:386` — `modal`
-- `resources/js/app.js:388` — `modal-box wd-modal-box wd-modal-box--standard p-0`
-- `resources/js/app.js:389` — `entry-modal-body`
-- `resources/js/app.js:391` — `dialog`
-- `resources/js/app.js:391` — `modal-backdrop`
-- `resources/js/app.js:392` — `Close`
-- `resources/js/app.js:398` — `click`
-- `resources/js/app.js:411` — `dialog`
-- `resources/js/app.js:420` — `data-recurrence-show`
-- `resources/js/app.js:441` — `minDate`
-- `resources/js/app.js:456` — `maxDate`
-- `resources/js/app.js:462` — `change`
-- `resources/js/app.js:463` — `input`
-- `resources/js/app.js:464` — `change`
-- `resources/js/app.js:465` — `input`
-- `resources/js/app.js:475` — `loading`
-- `resources/js/app.js:476` — `DOMContentLoaded`
-- `resources/js/app.js:505` — `option`
-- `resources/js/app.js:531` — `change`
-- `resources/js/app.js:533` — `change`
-- `resources/js/app.js:539` — `change`
-- `resources/js/app.js:547` — `loading`
-- `resources/js/app.js:548` — `DOMContentLoaded`
-- `resources/js/app.js:557` — `function`
-- `resources/js/app.js:559` — `datetime-local`
-- `resources/js/app.js:598` — `input, select`
-- `resources/js/app.js:605` — `change`
-- `resources/js/app.js:610` — `duration`
-- `resources/js/app.js:612` — `input`
-- `resources/js/app.js:617` — `submit`
-- `resources/js/app.js:677` — `opacity-60`
-- `resources/js/app.js:698` — `hidden`
-- `resources/js/app.js:700` — `input`
-- `resources/js/app.js:701` — `change`
-- `resources/js/app.js:714` — `checkbox`
-- `resources/js/app.js:720` — `inert`
-- `resources/js/app.js:726` — `change`
-- `resources/js/app.js:730` — `submit`
-- `resources/js/app.js:734` — `action`
-- `resources/js/app.js:736` — `method`
-- `resources/js/app.js:741` — `submit`
-- `resources/js/app.js:750` — `X-Entry-Dialog`
-- `resources/js/app.js:751` — `X-Requested-With`
-- `resources/js/app.js:751` — `XMLHttpRequest`
-- `resources/js/app.js:758` — `content-type`
-- `resources/js/app.js:777` — `function`
-- `resources/js/app.js:779` — `warning`
-- `resources/js/app.js:795` — `function`
-- `resources/js/app.js:797` — `error`
-- `resources/js/app.js:816` — `loading loading-spinner loading-lg text-primary`
-- `resources/js/app.js:817` — `text-sm`
-- `resources/js/app.js:820` — `function`
-- `resources/js/app.js:826` — `p-6 space-y-3`
-- `resources/js/app.js:827` — `text-sm text-error`
-- `resources/js/app.js:828` — `noopener`
-- `resources/js/app.js:828` — `btn btn-sm btn-ghost`
-- `resources/js/app.js:841` — `legacy`
-- `resources/js/app.js:841` — `legacy`
-- `resources/js/app.js:843` — `legacy`
-- `resources/js/app.js:847` — `p-6 space-y-3`
-- `resources/js/app.js:848` — `text-sm text-warning`
-- `resources/js/app.js:849` — `button`
-- `resources/js/app.js:849` — `btn btn-sm btn-primary`
-- `resources/js/app.js:854` — `click`
-- `resources/js/app.js:858` — `csrf-token`
-- `resources/js/app.js:859` — `content`
-- `resources/js/app.js:864` — `X-CSRF-TOKEN`
-- `resources/js/app.js:865` — `X-Requested-With`
-- `resources/js/app.js:865` — `XMLHttpRequest`
-- `resources/js/app.js:868` — `same-origin`
-- `resources/js/app.js:886` — `X-Requested-With`
-- `resources/js/app.js:886` — `XMLHttpRequest`
-- `resources/js/app.js:924` — `function`
-- `resources/js/app.js:940` — `click`
-- `resources/js/app.js:968` — `geocode-url`
-- `resources/js/app.js:969` — `content`
-- `resources/js/app.js:973` — `csrf-token`
-- `resources/js/app.js:974` — `content`
-- `resources/js/app.js:977` — `opacity-70`
-- `resources/js/app.js:982` — `Content-Type`
-- `resources/js/app.js:984` — `X-CSRF-TOKEN`
-- `resources/js/app.js:985` — `X-Requested-With`
-- `resources/js/app.js:985` — `XMLHttpRequest`
-- `resources/js/app.js:987` — `same-origin`
-- `resources/js/app.js:1000` — `error`
-- `resources/js/app.js:1002` — `opacity-70`
+- `resources/js/app.js:131` — `input`
+- `resources/js/app.js:132` — `change`
+- `resources/js/app.js:146` — `input`
+- `resources/js/app.js:153` — `change`
+- `resources/js/app.js:154` — `keydown`
+- `resources/js/app.js:155` — `Enter`
+- `resources/js/app.js:162` — `Y-m-d`
+- `resources/js/app.js:170` — `datetime-local`
+- `resources/js/app.js:192` — `numeric`
+- `resources/js/app.js:217` — `dialog`
+- `resources/js/app.js:232` — `Y-m-d`
+- `resources/js/app.js:240` — `datetime-local`
+- `resources/js/app.js:273` — `value`
+- `resources/js/app.js:319` — `weekTableFit`
+- `resources/js/app.js:327` — `change`
+- `resources/js/app.js:341` — `undefined`
+- `resources/js/app.js:342` — `loading`
+- `resources/js/app.js:343` — `DOMContentLoaded`
+- `resources/js/app.js:351` — `change`
+- `resources/js/app.js:358` — `data-recurrence-show`
+- `resources/js/app.js:367` — `click`
+- `resources/js/app.js:370` — `dialog`
+- `resources/js/app.js:373` — `function`
+- `resources/js/app.js:380` — `undefined`
+- `resources/js/app.js:388` — `dialog`
+- `resources/js/app.js:389` — `entry-modal`
+- `resources/js/app.js:390` — `modal`
+- `resources/js/app.js:392` — `modal-box wd-modal-box wd-modal-box--standard p-0`
+- `resources/js/app.js:393` — `entry-modal-body`
+- `resources/js/app.js:395` — `dialog`
+- `resources/js/app.js:395` — `modal-backdrop`
+- `resources/js/app.js:396` — `Close`
+- `resources/js/app.js:402` — `click`
+- `resources/js/app.js:415` — `dialog`
+- `resources/js/app.js:424` — `data-recurrence-show`
+- `resources/js/app.js:445` — `minDate`
+- `resources/js/app.js:460` — `maxDate`
+- `resources/js/app.js:466` — `change`
+- `resources/js/app.js:467` — `input`
+- `resources/js/app.js:468` — `change`
+- `resources/js/app.js:469` — `input`
+- `resources/js/app.js:479` — `loading`
+- `resources/js/app.js:480` — `DOMContentLoaded`
+- `resources/js/app.js:509` — `option`
+- `resources/js/app.js:535` — `change`
+- `resources/js/app.js:537` — `change`
+- `resources/js/app.js:543` — `change`
+- `resources/js/app.js:551` — `loading`
+- `resources/js/app.js:552` — `DOMContentLoaded`
+- `resources/js/app.js:561` — `function`
+- `resources/js/app.js:563` — `datetime-local`
+- `resources/js/app.js:602` — `input, select`
+- `resources/js/app.js:609` — `change`
+- `resources/js/app.js:614` — `duration`
+- `resources/js/app.js:616` — `input`
+- `resources/js/app.js:621` — `submit`
+- `resources/js/app.js:681` — `opacity-60`
+- `resources/js/app.js:702` — `hidden`
+- `resources/js/app.js:704` — `input`
+- `resources/js/app.js:705` — `change`
+- `resources/js/app.js:718` — `checkbox`
+- `resources/js/app.js:724` — `inert`
+- `resources/js/app.js:730` — `change`
+- `resources/js/app.js:734` — `submit`
+- `resources/js/app.js:738` — `action`
+- `resources/js/app.js:740` — `method`
+- `resources/js/app.js:745` — `submit`
+- `resources/js/app.js:754` — `X-Entry-Dialog`
+- `resources/js/app.js:755` — `X-Requested-With`
+- `resources/js/app.js:755` — `XMLHttpRequest`
+- `resources/js/app.js:762` — `content-type`
+- `resources/js/app.js:781` — `function`
+- `resources/js/app.js:783` — `warning`
+- `resources/js/app.js:799` — `function`
+- `resources/js/app.js:801` — `error`
+- `resources/js/app.js:820` — `loading loading-spinner loading-lg text-primary`
+- `resources/js/app.js:821` — `text-sm`
+- `resources/js/app.js:824` — `function`
+- `resources/js/app.js:830` — `p-6 space-y-3`
+- `resources/js/app.js:831` — `text-sm text-error`
+- `resources/js/app.js:832` — `noopener`
+- `resources/js/app.js:832` — `btn btn-sm btn-ghost`
+- `resources/js/app.js:845` — `legacy`
+- `resources/js/app.js:845` — `legacy`
+- `resources/js/app.js:847` — `legacy`
+- `resources/js/app.js:851` — `p-6 space-y-3`
+- `resources/js/app.js:852` — `text-sm text-warning`
+- `resources/js/app.js:853` — `button`
+- `resources/js/app.js:853` — `btn btn-sm btn-primary`
+- `resources/js/app.js:858` — `click`
+- `resources/js/app.js:862` — `csrf-token`
+- `resources/js/app.js:863` — `content`
+- `resources/js/app.js:868` — `X-CSRF-TOKEN`
+- `resources/js/app.js:869` — `X-Requested-With`
+- `resources/js/app.js:869` — `XMLHttpRequest`
+- `resources/js/app.js:872` — `same-origin`
+- `resources/js/app.js:890` — `X-Requested-With`
+- `resources/js/app.js:890` — `XMLHttpRequest`
+- `resources/js/app.js:928` — `function`
+- `resources/js/app.js:944` — `click`
+- `resources/js/app.js:972` — `geocode-url`
+- `resources/js/app.js:973` — `content`
+- `resources/js/app.js:977` — `csrf-token`
+- `resources/js/app.js:978` — `content`
+- `resources/js/app.js:981` — `opacity-70`
+- `resources/js/app.js:986` — `Content-Type`
+- `resources/js/app.js:988` — `X-CSRF-TOKEN`
+- `resources/js/app.js:989` — `X-Requested-With`
+- `resources/js/app.js:989` — `XMLHttpRequest`
+- `resources/js/app.js:991` — `same-origin`
+- `resources/js/app.js:1004` — `error`
+- `resources/js/app.js:1006` — `opacity-70`
 - `resources/js/pwa.js:12` — `app-version`
 - `resources/js/pwa.js:15` — `serviceWorker`
 - `resources/js/pwa.js:36` — `beforeinstallprompt`
@@ -48499,6 +48502,41 @@ Generated: 2026-07-13T15:40:29+00:00
 - `resources/js/i18n.js:25` — `string`
 - `resources/js/i18n.js:37` — `undefined`
 - `resources/js/i18n.js:37` — `function`
+- `resources/js/offline-sync.js:23` — `workdiary-sync`
+- `resources/js/offline-sync.js:25` — `outbox`
+- `resources/js/offline-sync.js:26` — `rejected`
+- `resources/js/offline-sync.js:58` — `readonly`
+- `resources/js/offline-sync.js:68` — `readwrite`
+- `resources/js/offline-sync.js:73` — `readwrite`
+- `resources/js/offline-sync.js:78` — `readwrite`
+- `resources/js/offline-sync.js:85` — `readonly`
+- `resources/js/offline-sync.js:96` — `readwrite`
+- `resources/js/offline-sync.js:97` — `readwrite`
+- `resources/js/offline-sync.js:138` — `csrf-token`
+- `resources/js/offline-sync.js:139` — `content`
+- `resources/js/offline-sync.js:141` — `sync-endpoint`
+- `resources/js/offline-sync.js:142` — `content`
+- `resources/js/offline-sync.js:151` — `Content-Type`
+- `resources/js/offline-sync.js:152` — `X-CSRF-TOKEN`
+- `resources/js/offline-sync.js:155` — `same-origin`
+- `resources/js/offline-sync.js:164` — `applied`
+- `resources/js/offline-sync.js:164` — `duplicate`
+- `resources/js/offline-sync.js:196` — `attendance.clock-in`
+- `resources/js/offline-sync.js:200` — `attendance.clock-out`
+- `resources/js/offline-sync.js:231` — `string`
+- `resources/js/offline-sync.js:248` — `submit`
+- `resources/js/offline-sync.js:281` — `submit`
+- `resources/js/offline-sync.js:299` — `readonly`
+- `resources/js/offline-sync.js:309` — `readwrite`
+- `resources/js/offline-sync.js:317` — `labelType`
+- `resources/js/offline-sync.js:348` — `click`
+- `resources/js/offline-sync.js:361` — `click`
+- `resources/js/offline-sync.js:362` — `outbox`
+- `resources/js/offline-sync.js:376` — `undefined`
+- `resources/js/offline-sync.js:379` — `online`
+- `resources/js/offline-sync.js:380` — `offline`
+- `resources/js/offline-sync.js:381` — `visibilitychange`
+- `resources/js/offline-sync.js:382` — `visible`
 - `resources/js/inline-actions.js:10` — `request`
 - `resources/js/inline-actions.js:19` — `hidden`
 - `resources/js/inline-actions.js:28` — `change`

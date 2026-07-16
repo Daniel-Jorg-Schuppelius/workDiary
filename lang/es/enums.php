@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'domain' => [
+        'environment' => ['ote' => 'OT&E (prueba/piloto)', 'production' => 'Producción'],
+        'connection_status' => ['draft' => 'Borrador', 'active' => 'Activo', 'blocked' => 'Bloqueado'],
+        'sync_status' => ['current' => 'Actual', 'stale' => 'Obsoleto', 'pending' => 'Pendiente', 'conflict' => 'Conflicto', 'unknown' => 'Incierto'],
+        'renewal_mode' => ['autorenew' => 'Renovación automática', 'autoexpire' => 'Expiración automática', 'autodelete' => 'Eliminación automática', 'renewonce' => 'Renovar una vez'],
+        'command_status' => ['draft' => 'Borrador', 'approved' => 'Aprobado', 'pending' => 'Pendiente', 'confirmed' => 'Confirmado', 'failed' => 'Fallido', 'unknown' => 'Incierto', 'conflict' => 'Conflicto'],
+        'capability_area' => ['authentication' => 'Autenticación', 'subuser' => 'Subusuario', 'domains' => 'Dominios', 'contacts' => 'Contactos', 'nameservers' => 'Servidores de nombres', 'dns' => 'Zonas DNS', 'events' => 'Eventos', 'renewal' => 'Renovación', 'transfer' => 'Transferencia', 'accounting' => 'Contabilidad', 'invoices' => 'Facturas'],
+    ],
     'asset' => [
         'defect-severity' => [
             'low' => 'Baja',

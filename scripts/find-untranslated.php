@@ -43,6 +43,7 @@ $whitelist = [
     '/^#[0-9a-f]{3,8}$/i',            // colour codes
     '/^@[a-z][\w-]*$/i',              // blade directives leaking into strings
     '/^\s*[<>{}();,.?:!=+\-*\/]+\s*$/', // operator-only
+    '/^Google Drive$/',               // Markenname (wie Geschwister-Buttons Dropbox/Microsoft/Nextcloud)
 ];
 
 /**

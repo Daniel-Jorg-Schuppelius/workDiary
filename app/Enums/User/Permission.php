@@ -618,6 +618,25 @@ enum Permission: string implements HasLabel {
     case ContractView = 'contract.view';
     case ContractManage = 'contract.manage';
 
+        // ── Domainverwaltung / DomainReselling (Feature 083, MVP-384–396) ──
+        // Getrennte Rechte je Risikoklasse; register/contact/dns/renewal/
+        // transfer sind eigene Aktionen, dangerous.approve ist Vier-Augen.
+        // invoice.* bleiben inaktiv, bis ein realer Vertrag die Capability belegt.
+    case DomainProviderView = 'domain.provider.view';
+    case DomainProviderManage = 'domain.provider.manage';
+    case DomainViewAny = 'domain.viewAny';
+    case DomainView = 'domain.view';
+    case DomainCustomerAssign = 'domain.customer.assign';
+    case DomainRegister = 'domain.register';
+    case DomainContactManage = 'domain.contact.manage';
+    case DomainDnsManage = 'domain.dns.manage';
+    case DomainRenewalManage = 'domain.renewal.manage';
+    case DomainTransferManage = 'domain.transfer.manage';
+    case DomainDangerousApprove = 'domain.dangerous.approve';
+    case DomainAccountingView = 'domain.accounting.view';
+    case DomainInvoiceView = 'domain.invoice.view';
+    case DomainInvoiceDownload = 'domain.invoice.download';
+
     public function label(): string {
         // Slugs enthalten Punkte — __()/trans() würde sie als verschachtelten
         // Pfad lesen; die Übersetzungen liegen flach unter `access.permission`.
@@ -699,6 +718,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'crisis.') => PermissionGroup::Crisis,
             str_starts_with($this->value, 'sustainability.') => PermissionGroup::Sustainability,
             str_starts_with($this->value, 'claim.') => PermissionGroup::Claims,
+            str_starts_with($this->value, 'domain.') => PermissionGroup::Domains,
             str_starts_with($this->value, 'rental.') => PermissionGroup::Rental,
             str_starts_with($this->value, 'assetFinance.') => PermissionGroup::AssetFinance,
             str_starts_with($this->value, 'assetCompliance.') => PermissionGroup::AssetCompliance,

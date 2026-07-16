@@ -58,6 +58,7 @@ return [
             'module.rental',
             'module.asset_compliance',
             'module.contracts',
+            'module.domain',
         ],
         'enterprise' => [
             'module.kanban',
@@ -95,6 +96,7 @@ return [
             'module.asset_finance',
             'module.asset_compliance',
             'module.contracts',
+            'module.domain',
             'protocols.signed',
             'module.sso',
         ],
@@ -113,6 +115,7 @@ return [
         'module.asset_finance' => 'Leasing & Asset-Verträge',
         'module.asset_compliance' => 'Prüfmittel & Kalibrierung',
         'module.contracts' => 'Vertragsverwaltung & Fristen',
+        'module.domain' => 'Domainverwaltung & DomainReselling',
         'module.agile_projects' => 'Agiles Projektmanagement',
         'module.helpdesk' => 'Helpdesk',
         'module.service_desk' => 'Service Desk (ITSM)',
@@ -289,6 +292,9 @@ return [
         'asset-finance.*' => 'module.asset_finance', // Feature 074 Leasing/Finanzierung/Asset-Verträge
         'asset-compliance.*' => 'module.asset_compliance', // Feature 075 Prüfmittel/Eichung/Kalibrierung
         'contracts.*' => 'module.contracts', // Welle D — Allgemeines Contract-Lifecycle-Management
+        'admin.domain-provider.*' => 'module.domain', // Feature 083 Domainverwaltung/DomainReselling
+        'domains.*' => 'module.domain',
+        'domain-reseller.*' => 'module.domain',
         'customers.*' => 'module.vertrieb',
         'suppliers.*' => 'module.vertrieb',
         'projects.*' => 'module.vertrieb',

@@ -203,6 +203,10 @@ class NavigationRegistry {
             'sustainability.index' => 'module.sustainability',
             'claims.index' => 'module.claims',
             'claims.reports.index' => 'module.claims',
+            'domains.index' => 'module.domain',
+            'domain-reseller.index' => 'module.domain',
+            'domains.reports' => 'module.domain',
+            'admin.domain-provider.index' => 'module.domain',
             'rental.index' => 'module.rental',
             'rental.calendar' => 'module.rental',
             'rental.profiles.index' => 'module.rental',
@@ -509,6 +513,18 @@ class NavigationRegistry {
                 'items' => [
                     ['route' => 'claims.index', 'label' => __('Reklamationsakten'), 'icon' => 'assignment_return', 'modal' => false, 'matches' => ['claims.index', 'claims.show']],
                     ['route' => 'claims.reports.index', 'label' => __('Qualitätsbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['claims.reports.*']],
+                ],
+            ];
+        }
+        if (Gate::allows('viewAny', \App\Models\Domain\DomainProjection::class)) {
+            $sidebarSections[] = [
+                'key' => 'domains',
+                'label' => __('domain.title.index'),
+                'collapsible' => true,
+                'items' => [
+                    ['route' => 'domains.index', 'label' => __('domain.title.index'), 'icon' => 'dns', 'modal' => false, 'matches' => ['domains.index', 'domains.show']],
+                    ['route' => 'domain-reseller.index', 'label' => __('domain.title.reseller'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['domain-reseller.*']],
+                    ['route' => 'domains.reports', 'label' => __('domain.title.reports'), 'icon' => 'analytics', 'modal' => false, 'matches' => ['domains.reports']],
                 ],
             ];
         }
@@ -1100,6 +1116,10 @@ class NavigationRegistry {
                 }
                 if (Gate::allows('viewAny', \App\Models\CloudIntake\CloudDocumentConnection::class)) {
                     $adminNavItems[] = ['route' => 'admin.cloud-intake.index', 'label' => __('cloud_intake.title.index'), 'icon' => 'cloud_download', 'modal' => false, 'matches' => ['admin.cloud-intake.*']];
+                }
+                // DomainReselling-Verbindungen (Feature 083): gegated via module.domain.
+                if (Gate::allows('viewAny', \App\Models\Domain\DomainProviderConnection::class)) {
+                    $adminNavItems[] = ['route' => 'admin.domain-provider.index', 'label' => __('domain.title.connections'), 'icon' => 'dns', 'modal' => false, 'matches' => ['admin.domain-provider.*']];
                 }
                 // Cloud-Backupziele (Feature 017 Phase 32): nur Plattform-Admin.
                 if (Gate::allows('viewAny', \App\Models\Backup\BackupTargetConnection::class)) {

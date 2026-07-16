@@ -131,6 +131,7 @@ return [
     ],
 
     'group' => [
+        'domains' => 'Domainverwaltung',
         'access' => 'Zugriff & Audit',
         'organization' => 'Organisation',
         'members' => 'Mitglieder',
@@ -171,6 +172,20 @@ return [
     ],
 
     'permission' => [
+        'domain.provider.view' => 'DomainReselling-Verbindung und Health sehen',
+        'domain.provider.manage' => 'DomainReselling-Verbindung konfigurieren/rotieren',
+        'domain.viewAny' => 'Domain-Portfolio sehen',
+        'domain.view' => 'Domain-Detail sehen',
+        'domain.customer.assign' => 'Domains Kunden/Reseller zuordnen',
+        'domain.register' => 'Domains prüfen und registrieren',
+        'domain.contact.manage' => 'Registry-Kontakte ändern',
+        'domain.dns.manage' => 'Nameserver und DNS-Zonen ändern',
+        'domain.renewal.manage' => 'Renewal-Modus und Renewal ändern',
+        'domain.transfer.manage' => 'Transfers und Transfersperre verwalten',
+        'domain.dangerous.approve' => 'Hochrisikoaktionen im Vier-Augen-Prinzip freigeben',
+        'domain.accounting.view' => 'Domain-Accounting und Salden sehen',
+        'domain.invoice.view' => 'Domain-Rechnungen sehen (capability-gegatet)',
+        'domain.invoice.download' => 'Domain-Rechnungsdokumente laden (capability-gegatet)',
         'access.manage' => 'Rechteverwaltung öffnen',
         'access.roles.assign' => 'Rollen zuweisen',
         'access.groups.assign' => 'Gruppen zuweisen',

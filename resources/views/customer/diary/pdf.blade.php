@@ -3,7 +3,7 @@
   identische Datenquelle wie das Portal-Detail (DiaryDetailController).
 --}}
 <!DOCTYPE html>
-<html lang="de">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <title>{{ $diary->title }}</title>
@@ -20,12 +20,12 @@
     <h1>{{ $diary->title }}</h1>
     <p class="muted">{{ optional($diary->start_at)->fdate() }} · {{ $diary->status }}</p>
 
-    <h2>Fotos</h2>
+    <h2>{{ __('Fotos') }}</h2>
     @if ($photos->isEmpty())
-        <p class="muted">Keine freigegebenen Fotos.</p>
+        <p class="muted">{{ __('Keine freigegebenen Fotos.') }}</p>
     @else
         <table>
-            <tr><th>Datei</th><th>Bestätigt</th></tr>
+            <tr><th>{{ __('Datei') }}</th><th>{{ __('Bestätigt') }}</th></tr>
             @foreach ($photos as $photo)
                 <tr>
                     <td>{{ $photo->original_name }}</td>
@@ -38,12 +38,12 @@
         </table>
     @endif
 
-    <h2>Material</h2>
+    <h2>{{ __('Material') }}</h2>
     @if ($materials->isEmpty())
-        <p class="muted">Kein Material erfasst.</p>
+        <p class="muted">{{ __('Kein Material erfasst.') }}</p>
     @else
         <table>
-            <tr><th>Bezeichnung</th><th>Menge</th></tr>
+            <tr><th>{{ __('Bezeichnung') }}</th><th>{{ __('Menge') }}</th></tr>
             @foreach ($materials as $usage)
                 <tr>
                     <td>{{ $usage->description }}</td>
@@ -53,12 +53,12 @@
         </table>
     @endif
 
-    <h2>Protokolle</h2>
+    <h2>{{ __('Protokolle') }}</h2>
     @if ($protocols->isEmpty())
-        <p class="muted">Keine freigegebenen Protokolle.</p>
+        <p class="muted">{{ __('Keine freigegebenen Protokolle.') }}</p>
     @else
         <table>
-            <tr><th>Titel</th><th>Status</th><th>Datum</th></tr>
+            <tr><th>{{ __('Titel') }}</th><th>{{ __('Status') }}</th><th>{{ __('Datum') }}</th></tr>
             @foreach ($protocols as $protocol)
                 <tr>
                     <td>{{ $protocol->title }}</td>

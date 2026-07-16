@@ -1422,6 +1422,49 @@ Route::middleware('auth')->group(function () {
             Route::put('regress/{recourse}', [\App\Http\Controllers\Claims\ClaimRecourseController::class, 'update'])->name('recourses.update');
         });
 
+        // ── Domainverwaltung / DomainReselling (Feature 083, module.domain) ──
+        // Gating via config/plans.routes: admin.domain-provider.*/domains.*/domain-reseller.* → module.domain.
+        Route::prefix('admin/domainreselling')->name('admin.domain-provider.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'index'])->name('index');
+            Route::get('verbinden', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'store'])->name('store');
+            Route::post('{connection}/pruefen', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'test'])->name('test');
+            Route::post('{connection}/zugangsdaten', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'rotate'])->name('rotate');
+            Route::post('{connection}/abgleich', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'sync'])->name('sync');
+            Route::post('{connection}/pilot', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'confirmPilot'])->name('pilot');
+            Route::delete('{connection}', [\App\Http\Controllers\Admin\Domain\DomainProviderConnectionController::class, 'destroy'])->name('destroy');
+        });
+
+        Route::prefix('domains')->name('domains.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Domain\DomainController::class, 'index'])->name('index');
+            // Statische Segmente VOR dem {domain}-Wildcard.
+            Route::post('verfuegbarkeit', [\App\Http\Controllers\Domain\DomainRegistrationController::class, 'check'])->name('availability');
+            Route::post('registrieren', [\App\Http\Controllers\Domain\DomainRegistrationController::class, 'store'])->name('register');
+            Route::get('accounting', [\App\Http\Controllers\Domain\DomainAccountingController::class, 'index'])
+                ->middleware('can:domain.accounting.view')->name('accounting');
+            Route::get('berichte', [\App\Http\Controllers\Reporting\DomainReportController::class, 'index'])
+                ->middleware('can:domain.viewAny')->name('reports');
+            Route::post('befehle/{command}/freigeben', [\App\Http\Controllers\Domain\DomainDangerousActionController::class, 'approve'])->name('commands.approve');
+            Route::post('befehle/{command}/ablehnen', [\App\Http\Controllers\Domain\DomainDangerousActionController::class, 'reject'])->name('commands.reject');
+            Route::get('{domain}', [\App\Http\Controllers\Domain\DomainController::class, 'show'])->name('show');
+            Route::post('{domain}/abgleich', [\App\Http\Controllers\Domain\DomainController::class, 'refresh'])->name('refresh');
+            Route::post('{domain}/kunde', [\App\Http\Controllers\Domain\DomainController::class, 'assignCustomer'])->name('customer');
+            Route::post('{domain}/dns/lesen', [\App\Http\Controllers\Domain\DomainDnsController::class, 'read'])->name('dns.read');
+            Route::post('{domain}/dns/ersetzen', [\App\Http\Controllers\Domain\DomainDnsController::class, 'replace'])->name('dns.replace');
+            Route::post('{domain}/dns/aendern', [\App\Http\Controllers\Domain\DomainDnsController::class, 'modify'])->name('dns.modify');
+            Route::post('{domain}/renewal-modus', [\App\Http\Controllers\Domain\DomainLifecycleController::class, 'renewalMode'])->name('renewal-mode');
+            Route::post('{domain}/verlaengern', [\App\Http\Controllers\Domain\DomainLifecycleController::class, 'renew'])->name('renew');
+            Route::post('{domain}/transfer-sperre', [\App\Http\Controllers\Domain\DomainLifecycleController::class, 'transferLock'])->name('transfer-lock');
+            Route::post('{domain}/transfer-in', [\App\Http\Controllers\Domain\DomainLifecycleController::class, 'transferIn'])->name('transfer-in');
+            Route::post('{domain}/hochrisiko', [\App\Http\Controllers\Domain\DomainDangerousActionController::class, 'requestAction'])->name('dangerous');
+        });
+
+        Route::prefix('domain-reseller')->name('domain-reseller.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Domain\DomainResellerController::class, 'index'])->name('index');
+            Route::get('{reseller}', [\App\Http\Controllers\Domain\DomainResellerController::class, 'show'])->name('show');
+            Route::post('{reseller}/kunde', [\App\Http\Controllers\Domain\DomainResellerController::class, 'assignCustomer'])->name('customer');
+        });
+
         // ── Geräte-/Maschinenverleih (Feature 073, module.rental) ───────
         Route::prefix('verleih')->name('rental.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Rental\RentalCaseController::class, 'index'])->name('index');
