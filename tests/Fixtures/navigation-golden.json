@@ -196,6 +196,7 @@
             "/admin/entry-types",
             "/admin/expense-categories",
             "/admin/integration/inbox",
+            "/admin/ki",
             "/admin/legacy-migration",
             "/admin/license",
             "/admin/maintenance-windows",

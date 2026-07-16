@@ -18,7 +18,7 @@ use App\Models\Organization;
 use App\Services\Ai\Contracts\AiResultHandlerInterface;
 use App\Services\Ai\Dto\{AiInvocationResult, FormulateRequest};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{RegistersAiCapabilities, WithOrganization};
 use Tests\Support\FakeAiProviderFactory;
 use Tests\TestCase;
 
@@ -28,6 +28,7 @@ use Tests\TestCase;
  */
 class AiInvocationJobTest extends TestCase {
     use RefreshDatabase;
+    use RegistersAiCapabilities;
     use WithOrganization;
 
     private const CAPABILITY = 'test.formulate';
@@ -38,13 +39,7 @@ class AiInvocationJobTest extends TestCase {
         FakeAiProviderFactory::install();
         RecordingAiHandler::reset();
 
-        config()->set('ai.capabilities.' . self::CAPABILITY, [
-            'verb' => 'formulate',
-            'sensitivity' => 'medium',
-            'data_classes' => ['text'],
-            'memory_scopes' => [],
-            'prompt_version' => 1,
-        ]);
+        $this->registerAiCapability(self::CAPABILITY);
     }
 
     public function test_job_delivers_result_to_handler(): void {

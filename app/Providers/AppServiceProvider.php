@@ -456,6 +456,8 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);
         Gate::policy(\App\Models\GobdExport::class, \App\Policies\GobdExportPolicy::class);
         // Feature 068: Bewerbungs-/Ausschreibungsmodul (getrennte Rechtebereiche).
+        Gate::policy(\App\Models\Ai\AiProviderConnection::class, \App\Policies\Ai\AiProviderConnectionPolicy::class);
+        Gate::policy(\App\Models\Ai\AiMemoryEntry::class, \App\Policies\Ai\AiMemoryEntryPolicy::class);
         Gate::policy(\App\Models\Applications\ApplicationOpportunity::class, \App\Policies\Applications\ApplicationOpportunityPolicy::class);
         Gate::policy(\App\Models\Applications\JobRequisition::class, \App\Policies\Applications\JobRequisitionPolicy::class);
         Gate::policy(\App\Models\Applications\JobApplication::class, \App\Policies\Applications\JobApplicationPolicy::class);

@@ -17,7 +17,7 @@ use App\Models\Organization;
 use App\Services\Ai\AiRoutingResolver;
 use App\Services\Ai\Exceptions\AiUnavailableException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{RegistersAiCapabilities, WithOrganization};
 use Tests\TestCase;
 
 /**
@@ -27,6 +27,7 @@ use Tests\TestCase;
  */
 class AiRoutingResolverTest extends TestCase {
     use RefreshDatabase;
+    use RegistersAiCapabilities;
     use WithOrganization;
 
     private const CAPABILITY = 'test.formulate';
@@ -35,13 +36,7 @@ class AiRoutingResolverTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
 
-        config()->set('ai.capabilities.' . self::CAPABILITY, [
-            'verb' => 'formulate',
-            'sensitivity' => 'medium',
-            'data_classes' => ['text'],
-            'memory_scopes' => [],
-            'prompt_version' => 1,
-        ]);
+        $this->registerAiCapability(self::CAPABILITY);
     }
 
     private function resolver(): AiRoutingResolver {
@@ -155,7 +150,7 @@ class AiRoutingResolverTest extends TestCase {
     }
 
     public function test_high_sensitivity_filters_cloud_connections(): void {
-        config()->set('ai.capabilities.' . self::CAPABILITY . '.sensitivity', 'high');
+        $this->registerAiCapability(self::CAPABILITY, ['sensitivity' => 'high']);
         $cloud = $this->connection(['is_local' => false]);
         $local = $this->connection(['is_local' => true]);
         $this->enableCapability([
@@ -241,13 +236,7 @@ class AiRoutingResolverTest extends TestCase {
     }
 
     public function test_translate_verb_accepts_both_families(): void {
-        config()->set('ai.capabilities.test.translate', [
-            'verb' => 'translate',
-            'sensitivity' => 'medium',
-            'data_classes' => ['text'],
-            'memory_scopes' => [],
-            'prompt_version' => 1,
-        ]);
+        $this->registerAiCapability('test.translate', ['verb' => 'translate']);
 
         $llm = $this->connection();
         $translation = AiProviderConnection::factory()->translation()->create([

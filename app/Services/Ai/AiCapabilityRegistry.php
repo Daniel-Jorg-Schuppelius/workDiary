@@ -24,16 +24,44 @@ use App\Services\Ai\Exceptions\UnknownAiCapabilityException;
  */
 class AiCapabilityRegistry {
     public function has(string $key): bool {
-        return is_array(config('ai.capabilities.' . $key));
+        return is_array($this->entries()[$key] ?? null);
     }
 
     public function get(string $key): AiCapability {
-        $entry = config('ai.capabilities.' . $key);
+        $entry = $this->entries()[$key] ?? null;
 
         if (! is_array($entry)) {
             throw UnknownAiCapabilityException::forKey($key);
         }
 
+        return $this->fromEntry($key, $entry);
+    }
+
+    /** @return list<AiCapability> */
+    public function all(): array {
+        $capabilities = [];
+        foreach ($this->entries() as $key => $entry) {
+            if (is_array($entry)) {
+                $capabilities[] = $this->fromEntry((string) $key, $entry);
+            }
+        }
+
+        return $capabilities;
+    }
+
+    /**
+     * Capability-Keys enthalten Punkte (z. B. `invoicing.item_text`) —
+     * daher IMMER literaler Array-Zugriff, nie Dot-Notation über
+     * config('ai.capabilities.<key>').
+     *
+     * @return array<string, mixed>
+     */
+    private function entries(): array {
+        return (array) config('ai.capabilities', []);
+    }
+
+    /** @param array<string, mixed> $entry */
+    private function fromEntry(string $key, array $entry): AiCapability {
         return new AiCapability(
             key: $key,
             verb: AiVerb::from((string) ($entry['verb'] ?? '')),
@@ -42,12 +70,5 @@ class AiCapabilityRegistry {
             memoryScopes: array_values((array) ($entry['memory_scopes'] ?? [])),
             promptVersion: max(1, (int) ($entry['prompt_version'] ?? 1)),
         );
-    }
-
-    /** @return list<AiCapability> */
-    public function all(): array {
-        $keys = array_keys((array) config('ai.capabilities', []));
-
-        return array_map(fn (string $key): AiCapability => $this->get($key), $keys);
     }
 }
