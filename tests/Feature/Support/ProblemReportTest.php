@@ -41,6 +41,31 @@ class ProblemReportTest extends TestCase {
         ], $overrides);
     }
 
+    public function test_create_returns_standalone_page_on_full_navigation(): void {
+        // Klick auf „Problem melden" auf einer standalone Fehlerseite löst eine
+        // volle Seitennavigation aus (kein Dialog-Host): die Antwort muss eine
+        // eigenständige, gestylte HTML-Seite sein — nicht das nackte Fragment.
+        $user = User::factory()->user()->create();
+
+        $response = $this->actingAs($user)->get(route('problem-reports.create', ['code' => 500]));
+
+        $response->assertOk();
+        $response->assertViewIs('problem-reports.create');
+        $response->assertSee('<!DOCTYPE html>', false);
+    }
+
+    public function test_create_returns_bare_fragment_for_dialog_host(): void {
+        // Der Dialog-Host lädt dieselbe Route per AJAX mit ?dialog=1 — dann nur
+        // das eingebettete Modal-Fragment ohne eigenes HTML-Gerüst.
+        $user = User::factory()->user()->create();
+
+        $response = $this->actingAs($user)->get(route('problem-reports.create', ['dialog' => 1]));
+
+        $response->assertOk();
+        $response->assertViewIs('problem-reports._form_dialog');
+        $response->assertDontSee('<!DOCTYPE html>', false);
+    }
+
     public function test_user_can_file_report_with_reference_and_context(): void {
         $user = User::factory()->user()->create();
 

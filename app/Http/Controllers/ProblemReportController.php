@@ -40,7 +40,14 @@ class ProblemReportController extends Controller {
     public function create(Request $request): View {
         $mode = $this->service->diagnosticsMode();
 
-        return view('problem-reports._form_dialog', [
+        // Der Dialog-Host lädt das Modal per AJAX und hängt `?dialog=1` an
+        // (app.js: withDialogParam). Fehlt dieser Kontext — etwa beim Klick
+        // auf „Problem melden" auf einer standalone Fehlerseite, die eine
+        // volle Seitennavigation auslöst — muss eine eigenständige, gestylte
+        // Seite kommen statt des nackten Modal-Fragments (sonst: Text ohne CSS).
+        $embedded = $request->boolean('dialog') || $request->ajax();
+
+        return view($embedded ? 'problem-reports._form_dialog' : 'problem-reports.create', [
             'context' => [
                 'route' => substr((string) $request->query('route', ''), 0, 150),
                 'url' => substr((string) $request->query('url', ''), 0, 500),
@@ -86,8 +93,12 @@ class ProblemReportController extends Controller {
             array_values($request->file('screenshots', [])),
         );
 
+        // context_url kann leer sein (z. B. Meldung von einer Fehlerseite ohne
+        // Ursprungs-URL) — dann zurück zur eigenen Meldungsliste statt auf "".
+        $back = filled($validated['context_url'] ?? null) ? $validated['context_url'] : route('problem-reports.index');
+
         return redirect()
-            ->to($validated['context_url'] ?? route('problem-reports.index'))
+            ->to($back)
             ->with('status', __('problemreport.flash.created', ['reference' => $report->reference_no]));
     }
 }
