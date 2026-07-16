@@ -305,7 +305,12 @@
 
                             $isAdminActive  = collect($adminNavItems)->contains(fn ($i) => request()->routeIs($i['route'])) || request()->routeIs('admin.access.*') || request()->routeIs('admin.imports.*') || request()->routeIs('admin.data.*') || request()->routeIs('admin.remote-support.*');
                             $isManageActive = collect($manageNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
-                            $isUserActive = collect($userNavItems)->contains(fn ($i) => request()->routeIs($i['route']));
+                            $isUserActive = collect($userNavItems)->contains(function ($i) {
+                                if (! empty($i['children'])) {
+                                    return collect($i['children'])->contains(fn ($c) => request()->routeIs($c['route']));
+                                }
+                                return isset($i['route']) && request()->routeIs($i['route']);
+                            });
                         @endphp
 
                         @if ($isLegacyMode)
@@ -907,14 +912,34 @@
                                 </label>
                                 <ul tabindex="0" class="dropdown-content header-dropdown-panel header-menu-list menu z-50 w-[min(14rem,calc(100vw-1rem))] rounded-box border border-base-300 bg-base-100 p-2 shadow">
                                     @foreach ($userNavItems as $item)
-                                        @php $active = request()->routeIs($item['route']); @endphp
-                                        <li>
-                                            <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
-                                               @if ($item['modal']) data-entry-modal-trigger @endif
-                                               class="{{ $active ? 'active' : '' }}">
-                                                {{ $item['label'] }}
-                                            </a>
-                                        </li>
+                                        @if (! empty($item['children']))
+                                            @php $childActive = collect($item['children'])->contains(fn ($c) => request()->routeIs($c['route'])); @endphp
+                                            <li>
+                                                <details @if ($childActive) open @endif>
+                                                    <summary class="{{ $childActive ? 'active' : '' }}">{{ $item['label'] }}</summary>
+                                                    <ul>
+                                                        @foreach ($item['children'] as $child)
+                                                            <li>
+                                                                <a href="{{ route($child['route'], $child['route_params'] ?? []) }}"
+                                                                   @if ($child['modal']) data-entry-modal-trigger @endif
+                                                                   class="{{ request()->routeIs($child['route']) ? 'active' : '' }}">
+                                                                    {{ $child['label'] }}
+                                                                </a>
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </details>
+                                            </li>
+                                        @else
+                                            @php $active = request()->routeIs($item['route']); @endphp
+                                            <li>
+                                                <a href="{{ route($item['route'], $item['route_params'] ?? []) }}"
+                                                   @if ($item['modal']) data-entry-modal-trigger @endif
+                                                   class="{{ $active ? 'active' : '' }}">
+                                                    {{ $item['label'] }}
+                                                </a>
+                                            </li>
+                                        @endif
                                     @endforeach
                                     <li>
                                         <x-action-form :action="route('logout')" class="w-full">

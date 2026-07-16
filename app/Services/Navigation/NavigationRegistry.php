@@ -1283,14 +1283,17 @@ class NavigationRegistry {
             $userNavItems[] = ['route' => 'account.profile.edit', 'label' => __('Profil bearbeiten'), 'modal' => true];
             $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => true];
             $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
-            $userNavItems[] = ['route' => 'bookmarks.index', 'label' => __('Lesezeichen'), 'modal' => false];
-            $userNavItems[] = ['route' => 'me.navigation.customize', 'label' => __('scope.nav.customize'), 'modal' => false];
-            $userNavItems[] = ['route' => 'me.functions', 'label' => __('scope.nav.functions'), 'modal' => false];
         } else {
             $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
         }
-        $userNavItems[] = ['route' => 'account.2fa.show', 'label' => __('Zwei-Faktor-Authentifizierung'), 'modal' => false];
-        $userNavItems[] = ['route' => 'profile.api-tokens.index', 'label' => __('API-Tokens'), 'modal' => false];
+        // Authentifizierungsbezogene Punkte in einem Untermenü bündeln.
+        $userNavItems[] = [
+            'label' => __('Authentifizierungen'),
+            'children' => [
+                ['route' => 'account.2fa.show', 'label' => __('Zwei-Faktor-Authentifizierung'), 'modal' => false],
+                ['route' => 'profile.api-tokens.index', 'label' => __('API-Tokens'), 'modal' => false],
+            ],
+        ];
 
         return $userNavItems;
     }
