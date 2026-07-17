@@ -1,0 +1,25 @@
+#!/usr/bin/env sh
+#
+# Created on   : Sat Jul 18 2026
+# Author       : Daniel Jörg Schuppelius
+# Author Uri   : https://schuppelius.org
+# Filename     : pre-commit
+# License      : AGPL-3.0-or-later
+# License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+#
+# Blockiert Commits, deren GESTAGTE composer.lock das private optionale Paket
+# php-financial-formats enthält (AGENTS.md §9.1): Die Zahler-Lock ist lokal
+# legitim, darf aber nie committet werden — sonst bricht composer install für
+# alle Installationen ohne Repo-Zugriff. Installation: composer hooks:install
+
+if git diff --cached --name-only | grep -qx 'composer\.lock'; then
+    if git show :composer.lock 2>/dev/null | grep -q '"name": "daniel-jorg-schuppelius/php-financial-formats"'; then
+        echo 'ABBRUCH: Die gestagte composer.lock enthält das private Paket php-financial-formats (AGENTS.md §9.1).' >&2
+        echo 'Bereinigten Stand erzeugen:' >&2
+        echo '  mv composer.local.json /tmp/ && composer update --no-install daniel-jorg-schuppelius/php-financial-formats && mv /tmp/composer.local.json .' >&2
+        echo 'Danach composer.lock erneut stagen. Die Zahler-Lock danach lokal wiederherstellen (composer update daniel-jorg-schuppelius/php-financial-formats) und NICHT committen.' >&2
+        exit 1
+    fi
+fi
+
+exit 0

@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Dispatch;
 
-use App\Exceptions\VehicleReservationConflictException;
+use App\Exceptions\{DriverLicenseCheckOverdueException, VehicleReservationConflictException};
 use App\Models\{DiaryEntry, Vehicle, VehicleReservation};
+use App\Services\Fleet\DriverLicenseCheckService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -31,6 +32,10 @@ final class VehicleReservationService {
      * gebunden.
      *
      * @throws VehicleReservationConflictException
+     * @throws DriverLicenseCheckOverdueException MVP-417: überfällige Führerscheinkontrolle
+     *                                            des Reservierenden sperrt (nutzerbezogener
+     *                                            Guard — bewusst KEIN asset_block, der das
+     *                                            Fahrzeug für alle sperren würde).
      */
     public function reserve(
         Vehicle $vehicle,
@@ -42,6 +47,10 @@ final class VehicleReservationService {
     ): VehicleReservation {
         $fromTs = Carbon::parse($from instanceof \DateTimeInterface ? $from->format('Y-m-d H:i:s') : $from);
         $toTs = Carbon::parse($to instanceof \DateTimeInterface ? $to->format('Y-m-d H:i:s') : $to);
+
+        if (app(DriverLicenseCheckService::class)->isOverdue($reservedByUserId)) {
+            throw new DriverLicenseCheckOverdueException();
+        }
 
         return DB::transaction(function () use ($vehicle, $fromTs, $toTs, $reservedByUserId, $diaryEntry, $note): VehicleReservation {
             $conflict = $this->findConflict($vehicle, $fromTs, $toTs);

@@ -295,9 +295,19 @@ Freischaltbarkeit (`finance.datev.error.unavailable`, `bank.import.error.unavail
 wird das Modul zusätzlich aufgelöst (`composer update … --with-all-dependencies`);
 sonst läuft ein reproduzierbarer `composer install` aus der (paketfreien) Lock.
 
-**Absicherung:** `tests/Unit/Architecture/ComposerLockHygieneTest` schlägt fehl,
-falls das private Paket je in die committete `composer.lock` gerät (in
-Zahler-Umgebungen mit aktiver `composer.local.json` wird der Test übersprungen).
+**Absicherung (dreistufig):**
+
+1. **Pre-commit-Hook** (`scripts/git-hooks/pre-commit`, Installation via
+   `composer hooks:install`): blockiert jeden Commit, dessen gestagte
+   `composer.lock` das Paket enthält — der Verstoß entsteht gar nicht erst.
+2. **`tests/Unit/Architecture/ComposerLockHygieneTest`** prüft die COMMITTETE
+   Lock (git HEAD) bei jedem Testlauf — auch wenn die Arbeits-Lock bereits
+   bereinigt wurde. Der Test bleibt rot, bis der bereinigte Stand committet
+   ist. Ohne Git (Deploy-Tarball) wird übersprungen bzw. die Arbeits-Lock
+   geprüft.
+3. **CI** bricht bei einem gepushten Verstoß doppelt: `composer install`
+   scheitert an dem nicht auflösbaren privaten Paket (HTTP 404), und der
+   Hygiene-Test schlägt fehl.
 
 ---
 

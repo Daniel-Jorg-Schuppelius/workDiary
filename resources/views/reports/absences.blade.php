@@ -58,6 +58,8 @@
                         <x-table.th sort type="number" align="right">{{ __('Sonder') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Unbezahlt') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Ausstehend') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Anspruch :year', ['year' => $balanceYear]) }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Rest :year', ['year' => $balanceYear]) }}</x-table.th>
                         <x-table.th sort type="duration" align="right">{{ __('Flex Δ') }}</x-table.th>
                         <x-table.th sort type="duration" align="right">{{ __('Flex-Saldo') }}</x-table.th>
                     </tr>
@@ -70,6 +72,8 @@
                         <td class="text-right tabular-nums">{{ $totals['special_days'] }}</td>
                         <td class="text-right tabular-nums">{{ $totals['unpaid_days'] }}</td>
                         <td class="text-right tabular-nums">{{ $totals['pending_days'] }}</td>
+                        <td class="text-right tabular-nums">—</td>
+                        <td class="text-right tabular-nums">—</td>
                         <td class="text-right tabular-nums">{{ $fmtMin($totals['flex_change_minutes']) }}</td>
                         <td class="text-right tabular-nums">{{ $fmtMin($totals['flex_balance_minutes']) }}</td>
                     </tr>
@@ -82,6 +86,10 @@
                         <td class="text-right tabular-nums">{{ $r['special_days'] }}</td>
                         <td class="text-right tabular-nums">{{ $r['unpaid_days'] }}</td>
                         <td class="text-right tabular-nums {{ $r['pending_days'] > 0 ? 'text-warning' : '' }}">{{ $r['pending_days'] }}</td>
+                        <td class="text-right tabular-nums">{{ ($r['entitled_total_days'] ?? null) !== null ? number_format($r['entitled_total_days'], 1, ',', '.') : '–' }}</td>
+                        <td class="text-right tabular-nums {{ ($r['remaining_days'] ?? null) !== null && $r['remaining_days'] < 0 ? 'text-error font-semibold' : '' }}" data-sort-value="{{ $r['remaining_days'] ?? 0 }}">
+                            {{ ($r['remaining_days'] ?? null) !== null ? number_format($r['remaining_days'], 1, ',', '.') : '–' }}
+                        </td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $r['flex_change_minutes'] }}">
                             <span class="{{ $r['flex_change_minutes'] < 0 ? 'text-error' : ($r['flex_change_minutes'] > 0 ? 'text-success' : '') }}">{{ $fmtMin($r['flex_change_minutes']) }}</span>
                         </td>

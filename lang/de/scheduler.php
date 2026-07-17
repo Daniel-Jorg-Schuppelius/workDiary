@@ -90,6 +90,7 @@ return [
             'materialize_recurrences' => 'Wiederkehrende Events anlegen',
         ],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
+        'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
         'lexoffice' => [
             'sync_articles' => 'Lexoffice-Artikel synchronisieren',

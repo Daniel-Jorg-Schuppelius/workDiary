@@ -124,7 +124,15 @@
         $fmtRate = fn($rate) => rtrim(rtrim(number_format((float) $rate, 2, '.', ''), '0'), '.');
     @endphp
     <tfoot>
-        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+        @php $docDiscount = $invoice->documentDiscountTotal(); @endphp
+        @if ($docDiscount != 0.0)
+            {{-- MVP-416: Positionssumme, Belegrabatt, Netto getrennt ausweisen. --}}
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format($invoice->lineSubtotal(), 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ $fmtRate($invoice->discount_percent) }}%)@endif</td><td class="num">−{{ number_format(abs($docDiscount), 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Netto') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+        @else
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+        @endif
         @if ($taxRows->count() > 1)
             @foreach ($taxRows as $row)
                 <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ number_format((float) $row['net'], 2, ',', '.') }} {{ $invoice->currency->value }})</td><td class="num">{{ number_format((float) $row['tax'], 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
@@ -148,6 +156,12 @@
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).') }}</td></tr>
         @endif
         <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+        @if ($invoice->hasSkonto())
+            {{-- MVP-416: Skonto-Kondition mit Frist und Zahlbetrag. --}}
+            <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">
+                {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => $fmtRate($invoice->skonto_percent), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) — {{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }}: {{ number_format((float) $invoice->total - $invoice->skontoAmount(), 2, ',', '.') }} {{ $invoice->currency->value }}@endif
+            </td></tr>
+        @endif
     </tfoot>
 </table>
 

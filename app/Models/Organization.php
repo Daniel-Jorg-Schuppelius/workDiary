@@ -248,6 +248,16 @@ class Organization extends Model {
     }
 
     /**
+     * Standard-Jahresurlaubsanspruch in Arbeitstagen (MVP-413) aus
+     * settings['vacation']['default_days']; Vorbelegung der Bulk-Anlage.
+     */
+    public function vacationDefaultDays(): float {
+        $stored = $this->settings['vacation']['default_days'] ?? null;
+
+        return is_numeric($stored) ? (float) $stored : 30.0;
+    }
+
+    /**
      * Wartungsmodus-Einstellungen (Rang 65) aus `settings.maintenance`.
      * `until` wird — falls gesetzt — als Carbon geparst; ungültige Werte
      * fallen auf null zurück (Wartung dann ohne Endzeitpunkt).

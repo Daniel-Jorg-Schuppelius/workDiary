@@ -435,6 +435,9 @@ class InvoiceGenerator {
                 'currency' => $original->currency,
                 'tax_rate' => (string) $original->tax_rate,
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
+                // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert) — sonst negiert die Summe nicht exakt.
+                'discount_percent' => $original->discount_percent,
+                'discount_amount' => $original->discount_amount !== null ? (string) (-1 * (float) $original->discount_amount) : null,
                 'notes' => __('Stornorechnung zu Rechnung :nr vom :date', [
                     'nr' => $original->number,
                     'date' => optional($original->issued_on ?? $original->created_at)->format('d.m.Y'),
@@ -451,6 +454,9 @@ class InvoiceGenerator {
                     'quantity' => (string) (-1 * (float) $item->quantity),
                     'unit' => $item->unit,
                     'unit_price' => (string) $item->unit_price,
+                    // MVP-416: Positionsrabatt spiegeln (Prozent skaliert, Betrag negiert).
+                    'discount_percent' => $item->discount_percent,
+                    'discount_amount' => $item->discount_amount !== null ? (string) (-1 * (float) $item->discount_amount) : null,
                     'tax_rate' => $item->tax_rate,
                     'position' => ++$position,
                 ]);
@@ -661,6 +667,9 @@ class InvoiceGenerator {
                 // MVP-162/172: Steuerkontext des ORIGINALS übernehmen — sonst
                 // droht unrichtiger Steuerausweis in der Korrektur (§ 14c).
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
+                // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert).
+                'discount_percent' => $original->discount_percent,
+                'discount_amount' => $original->discount_amount !== null ? (string) (-1 * (float) $original->discount_amount) : null,
                 'notes' => __('Korrekturrechnung zu Rechnung :nr vom :date', [
                     'nr' => $original->number,
                     'date' => optional($original->issued_on ?? $original->created_at)->format('d.m.Y'),
@@ -677,6 +686,9 @@ class InvoiceGenerator {
                     'quantity' => (string) (-1 * (float) $item->quantity),
                     'unit' => $item->unit,
                     'unit_price' => (string) $item->unit_price,
+                    // MVP-416: Positionsrabatt spiegeln (Prozent skaliert, Betrag negiert).
+                    'discount_percent' => $item->discount_percent,
+                    'discount_amount' => $item->discount_amount !== null ? (string) (-1 * (float) $item->discount_amount) : null,
                     'tax_rate' => $item->tax_rate,
                     'position' => ++$position,
                     // bewusst KEINE time_entry_id / expense_id — Zeit/Spese bleibt am Original

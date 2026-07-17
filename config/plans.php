@@ -58,6 +58,7 @@ return [
             'module.rental',
             'module.asset_compliance',
             'module.contracts',
+            'module.kasse',
             'module.domain',
         ],
         'enterprise' => [
@@ -96,6 +97,7 @@ return [
             'module.asset_finance',
             'module.asset_compliance',
             'module.contracts',
+            'module.kasse',
             'module.domain',
             'module.ai',
             'protocols.signed',
@@ -124,6 +126,7 @@ return [
         'module.planung' => 'Planung',
         'module.spesen' => 'Reisen & Spesen',
         'module.vertrieb' => 'Vertrieb & Abrechnung',
+        'module.kasse' => 'Kassenbuch',
         'module.fuhrpark' => 'Fuhrpark',
         'module.liegenschaften' => 'Liegenschaften',
         'module.auswertungen_team' => 'Team-Auswertungen',
@@ -166,6 +169,7 @@ return [
         'module.planung' => 'Dienst-/Schichtplanung, Stundenzettel, Touren und Disposition.',
         'module.spesen' => 'Reisekosten, Spesen und Belegerfassung.',
         'module.vertrieb' => 'Kunden, Projekte, Rechnungen und Abrechnung.',
+        'module.kasse' => 'GoBD-konformes Kassenbuch: Bareinnahmen/-ausgaben, Storno statt Löschen, Tagesabschluss mit Kassensturz (kein POS/TSE).',
         'module.fuhrpark' => 'Fahrzeuge, Assets, Reservierungen und Energiedaten.',
         'module.liegenschaften' => 'Standorte, Gebäude, Etagen und Räume.',
         'module.auswertungen_team' => 'Team- und Auswertungs-Reports.',
@@ -305,6 +309,8 @@ return [
         'suppliers.*' => 'module.vertrieb',
         'projects.*' => 'module.vertrieb',
         'invoices.*' => 'module.vertrieb',
+        'invoice-schedules.*' => 'module.vertrieb', // MVP-415 wiederkehrende Rechnungen
+        'cash-registers.*' => 'module.kasse', // MVP-414 Kassenbuch
         'quotes.*' => 'module.vertrieb', // Angebote (Feature 066, MVP-170) — Portal-Annahme läuft token-basiert außerhalb
         'lexoffice.*' => 'module.vertrieb',
         'events.*' => 'module.vertrieb',
@@ -314,6 +320,7 @@ return [
 
         'assets.*' => 'module.fuhrpark',
         'vehicles.*' => 'module.fuhrpark',
+        'driver-license-checks.*' => 'module.fuhrpark', // MVP-417 Führerscheinkontrolle
         'vehicle-reservations.*' => 'module.fuhrpark',
         'energy-logs.*' => 'module.fuhrpark',
 

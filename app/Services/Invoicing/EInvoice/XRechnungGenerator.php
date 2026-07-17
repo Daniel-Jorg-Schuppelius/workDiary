@@ -157,41 +157,28 @@ class XRechnungGenerator {
             $errors[] = (string) __('invoicing.einvoice.error.missing_tax_rate');
         }
 
-        // Summen-Konsistenz aus den echten Feldern. Betragstreue: das Toolkit
-        // berechnet die Summen selbst aus den Lines (round(qty*price, 2) je
-        // Position, Steuer = round(Basis*Satz/100, 2)) — beide Sichten müssen
-        // mit den Invoice-Feldern übereinstimmen (Toleranz 0,5 ct).
+        // Summen-Konsistenz aus den echten Feldern. Betragstreue über den
+        // zentralen Kalkulator (MVP-416): Zeilennetto inkl. Positionsrabatt,
+        // Belegrabatt-Zuordnung je Satz, Steuer PRO SATZ gerundet — dieselbe
+        // Rechenstelle wie Invoice::recalculate() und der XML-Aufbau
+        // (Toleranz 0,5 ct).
         if ($invoice->items->isNotEmpty()) {
-            $lineSum = round($invoice->items->sum(fn(InvoiceItem $i): float => (float) $i->amount), 2);
-            $builderSum = round($invoice->items->sum(
-                fn(InvoiceItem $i): float => round((float) $i->quantity * (float) $i->unit_price, 2),
+            $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($invoice);
+            $builderLineSum = round($invoice->items->sum(
+                fn(InvoiceItem $i): float => \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
+                    (float) $i->quantity,
+                    (float) $i->unit_price,
+                    $i->discount_percent !== null ? (float) $i->discount_percent : null,
+                    $i->discount_amount !== null ? (float) $i->discount_amount : null,
+                ),
             ), 2);
             $subtotal = round((float) $invoice->subtotal, 2);
             $total = round((float) $invoice->total, 2);
             $taxAmount = round((float) $invoice->tax_amount, 2);
-            // Steuer wie Toolkit/Invoice::recalculate: je Satz gruppiert und
-            // PRO SATZ gerundet — Positionssätze (MVP-162) zählen, nicht nur
-            // der Kopfsatz; sonst blockiert jede Mischsatz-Rechnung mit
-            // einem irreführenden totals_mismatch.
-            $builderTax = $invoice->is_reverse_charge ? 0.0 : round(
-                $invoice->items
-                    ->groupBy(fn(InvoiceItem $i): string => number_format(
-                        $i->tax_rate !== null ? (float) $i->tax_rate : (float) $invoice->tax_rate,
-                        2,
-                        '.',
-                        '',
-                    ))
-                    ->map(fn($group, string $rate): float => round(
-                        $group->sum(fn(InvoiceItem $i): float => (float) $i->amount) * ((float) $rate) / 100,
-                        2,
-                    ))
-                    ->sum(),
-                2,
-            );
             if (
-                abs($lineSum - $subtotal) > 0.005
-                || abs($builderSum - $subtotal) > 0.005
-                || abs($builderTax - $taxAmount) > 0.005
+                abs($totals['subtotal'] - $subtotal) > 0.005
+                || abs($builderLineSum - $totals['line_net_sum']) > 0.005
+                || abs($totals['tax_amount'] - $taxAmount) > 0.005
                 || abs(($subtotal + $taxAmount) - $total) > 0.005
             ) {
                 $errors[] = (string) __('invoicing.einvoice.error.totals_mismatch');
@@ -309,10 +296,7 @@ class XRechnungGenerator {
                 strtoupper(trim((string) $customer->country) ?: 'DE'),
             )
             ->withPaymentMeans(PaymentMeansCode::SEPA_CREDIT_TRANSFER)
-            ->withPaymentTerms(new PaymentTerms(
-                note: (string) __('invoicing.einvoice.payment_terms', ['days' => $seller['payment_terms_days']]),
-                netPaymentDays: $seller['payment_terms_days'],
-            ));
+            ->withPaymentTerms($this->paymentTerms($invoice, $seller['payment_terms_days']));
 
         // 381 = Gutschrift (Korrekturrechnung); BT-25 verweist aufs Original.
         if ($invoice->isCreditNote()) {
@@ -355,25 +339,67 @@ class XRechnungGenerator {
             $builder->withBuyerReference($buyerReference);
         }
 
+        $lineNo = 0;
         foreach ($invoice->items as $item) {
             // BT-153 (Name) ist Pflicht; lange Beschreibungen wandern
             // zusätzlich in BT-154 (Description).
             $description = trim((string) $item->description);
             $name = Str::limit($description !== '' ? $description : (string) __('invoicing.service'), 100, '…');
-            $builder->addLine(
-                $name,
-                (float) $item->quantity,
-                (float) $item->unit_price,
-                // Positionssatz (MVP-162) vor Kopfsatz — das Toolkit gruppiert
-                // die TaxSubtotals selbst je Satz.
-                $item->tax_rate !== null ? (float) $item->tax_rate : $taxRate,
-                $this->unitCode((string) $item->unit),
-                $this->itemTaxCategory($item, $category),
-                mb_strlen($description) > 100 ? $description : null,
+            $itemRate = $item->tax_rate !== null ? (float) $item->tax_rate : $taxRate;
+            $itemCategory = $this->itemTaxCategory($item, $category);
+
+            // MVP-416: Zeilen mit Rabatt als InvoiceLine mit Line-Allowance (BG-27):
+            // BT-131 = rabattiertes Zeilennetto, die Allowance erklärt die Differenz
+            // zu Menge × Preis (BR-24-konform). Zeilen ohne Rabatt identisch zum
+            // bisherigen addLine-Pfad.
+            $lineNo++;
+            $line = new \ERechnungToolkit\Entities\InvoiceLine(
+                id: (string) $lineNo,
+                quantity: (float) $item->quantity,
+                unitCode: $this->unitCode((string) $item->unit),
+                netAmount: (float) $item->amount,
+                itemName: $name,
+                unitPrice: (float) $item->unit_price,
+                taxCategory: $itemCategory,
+                taxPercent: $itemRate,
+                itemDescription: mb_strlen($description) > 100 ? $description : null,
             );
+            $lineDiscount = round(round((float) $item->quantity * (float) $item->unit_price, 2) - (float) $item->amount, 2);
+            if ($lineDiscount > 0) {
+                $line->addAllowanceCharge(\ERechnungToolkit\Entities\AllowanceCharge::discount(
+                    $lineDiscount,
+                    (string) __('Rabatt'),
+                    taxCategory: $itemCategory,
+                    taxPercent: $itemRate,
+                ));
+            }
+            $builder->addInvoiceLine($line);
         }
 
         $document = $builder->build();
+
+        // MVP-416: Belegrabatt als Document-Allowance (BG-20) — je Steuersatz
+        // anteilig (derselbe Kalkulator wie Invoice::recalculate/Preflight);
+        // addAllowanceCharge() rechnet TaxTotal/MonetaryTotal selbst neu.
+        $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($invoice);
+        if ($totals['document_discount'] > 0) {
+            $categoriesByRate = [];
+            foreach ($invoice->items as $item) {
+                $rateKey = number_format($item->tax_rate !== null ? (float) $item->tax_rate : $taxRate, 2, '.', '');
+                $categoriesByRate[$rateKey] ??= $this->itemTaxCategory($item, $category);
+            }
+            foreach ($totals['by_rate'] as $rateKey => $group) {
+                if ($group['allowance'] <= 0) {
+                    continue;
+                }
+                $document->addAllowanceCharge(\ERechnungToolkit\Entities\AllowanceCharge::discount(
+                    $group['allowance'],
+                    (string) __('Rabatt'),
+                    taxCategory: $categoriesByRate[$rateKey] ?? $category,
+                    taxPercent: $group['rate'],
+                ));
+            }
+        }
 
         // Kategorie E (§ 19 UStG): der Builder kennt keinen Exemption-Text,
         // das Entity-Modell schon — TaxSubtotals mit Befreiungsgrund neu setzen.
@@ -469,5 +495,30 @@ class XRechnungGenerator {
 
     private function unitCode(string $unit): UnitCode {
         return self::UNIT_CODES[mb_strtolower(trim($unit))] ?? UnitCode::PIECE;
+    }
+
+    /**
+     * Zahlungsbedingungen (BT-20): mit Skonto-Kondition (MVP-416) im
+     * strukturierten XRechnung-CIUS-Format (BR-DE-18) — jede Angabe als
+     * eigene, mit `#` terminierte Zeile; sonst der bisherige Freitext.
+     */
+    private function paymentTerms(Invoice $invoice, int $netDays): PaymentTerms {
+        if ($invoice->hasSkonto()) {
+            return new PaymentTerms(
+                note: sprintf(
+                    '#SKONTO#TAGE=%d#PROZENT=%s#',
+                    (int) $invoice->skonto_days,
+                    number_format((float) $invoice->skonto_percent, 2, '.', ''),
+                ),
+                netPaymentDays: $netDays,
+                discountPercent: (float) $invoice->skonto_percent,
+                discountDays: (int) $invoice->skonto_days,
+            );
+        }
+
+        return new PaymentTerms(
+            note: (string) __('invoicing.einvoice.payment_terms', ['days' => $netDays]),
+            netPaymentDays: $netDays,
+        );
     }
 }

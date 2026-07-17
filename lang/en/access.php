@@ -199,6 +199,8 @@ return [
         'branding.update' => 'Edit branding',
         'documentDesign.manage' => 'Manage document design',
         'documentDesign.assign' => 'Assign document design & preview',
+        'finance.cash.view' => 'View cash book',
+        'finance.cash.manage' => 'Manage cash book (record, reverse, daily closing)',
         'finance.orgamax.convert' => 'orgaMAX: convert order to invoice',
         'finance.orgamax.lock' => 'orgaMAX: finalise/lock invoice',
         'finance.orgamax.send' => 'orgaMAX: send invoice',
@@ -404,6 +406,7 @@ return [
         'vacation.request' => 'Request vacation',
         'vacation.approve' => 'Approve vacation',
         'vacation.cancel' => 'Cancel vacation',
+        'vacation.entitlements.manage' => 'Manage vacation entitlements',
         'sick-leave.viewAny' => 'View sick leaves',
         'sick-leave.manage' => 'Manage sick leaves',
 

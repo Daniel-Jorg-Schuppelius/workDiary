@@ -131,6 +131,8 @@ class Invoice extends Model {
         'sent_count',
         'currency',
         'subtotal',
+        'discount_percent',
+        'discount_amount',
         'tax_rate',
         'is_reverse_charge',
         'tax_amount',
@@ -141,6 +143,8 @@ class Invoice extends Model {
         'party_snapshot',
         'tax_breakdown',
         'payment_terms_days',
+        'skonto_percent',
+        'skonto_days',
         'approved_at',
         'approved_by',
         'dunning_level',
@@ -166,10 +170,14 @@ class Invoice extends Model {
         'sent_at' => 'datetime',
         'sent_count' => 'integer',
         'subtotal' => 'decimal:2',
+        'discount_percent' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'tax_rate' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'total' => 'decimal:2',
         'tax_context' => 'array',
+        'skonto_percent' => 'decimal:2',
+        'skonto_days' => 'integer',
     ];
 
     /** @return BelongsTo<Customer, $this> */
@@ -209,35 +217,57 @@ class Invoice extends Model {
     }
 
     /**
-     * Summen inkl. Steueraufriss (MVP-162): Positionen MIT eigenem
-     * tax_rate werden je Satz gruppiert (mehrere Steuersätze je Rechnung);
-     * Positionen ohne Satz fallen auf den Kopfsatz zurück (Alt-Verhalten).
-     * Rundung PRO SATZ (§ 14 UStG-üblich), Kopf trägt die Summe.
+     * Summen inkl. Steueraufriss (MVP-162) und Rabatten (MVP-416): Positionen
+     * MIT eigenem tax_rate werden je Satz gruppiert; ein Belegrabatt wird
+     * anteilig je Satz zugeordnet (größter Rest), Steuer auf die rabattierte
+     * Basis, Rundung PRO SATZ (§ 14 UStG-üblich). `subtotal` ist das Netto
+     * NACH allen Rabatten (total = subtotal + tax bleibt für alle Konsumenten
+     * gültig); die Positionssumme davor liefert {@see lineSubtotal()}.
      */
     public function recalculate(): void {
-        $byRate = [];
-        foreach ($this->items as $item) {
-            $rate = $item->tax_rate !== null ? (float) $item->tax_rate : (float) $this->tax_rate;
-            $key = number_format($rate, 2, '.', '');
-            $byRate[$key] = ($byRate[$key] ?? 0.0) + (float) $item->amount;
-        }
+        $totals = app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->compute($this);
 
-        $sub = 0.0;
-        $tax = 0.0;
         $breakdown = [];
-        ksort($byRate);
-        foreach ($byRate as $key => $net) {
-            $net = round($net, 2);
-            $rateTax = $this->is_reverse_charge ? 0.0 : round($net * ((float) $key) / 100, 2);
-            $breakdown[] = ['rate' => (float) $key, 'net' => $net, 'tax' => $rateTax];
-            $sub += $net;
-            $tax += $rateTax;
+        foreach ($totals['by_rate'] as $group) {
+            $breakdown[] = ['rate' => $group['rate'], 'net' => $group['taxable'], 'tax' => $group['tax']];
         }
 
-        $this->subtotal = (string) round($sub, 2);
-        $this->tax_amount = (string) round($tax, 2);
-        $this->total = (string) round($sub + $tax, 2);
+        $this->subtotal = (string) $totals['subtotal'];
+        $this->tax_amount = (string) $totals['tax_amount'];
+        $this->total = (string) $totals['total'];
         $this->tax_breakdown = $breakdown;
+    }
+
+    /** Positionssumme vor Belegrabatt (MVP-416). */
+    public function lineSubtotal(): float {
+        return round((float) $this->subtotal + $this->documentDiscountTotal(), 2);
+    }
+
+    /** Belegrabatt in EUR (Prozent XOR Betrag), 0 ohne Rabatt. */
+    public function documentDiscountTotal(): float {
+        $lineNetSum = round($this->items->sum(fn(InvoiceItem $i): float => (float) $i->amount), 2);
+
+        return app(\App\Services\Invoicing\InvoiceTotalsCalculator::class)->documentDiscount($this, $lineNetSum);
+    }
+
+    /** Skonto-Kondition vollständig hinterlegt? */
+    public function hasSkonto(): bool {
+        return $this->skonto_percent !== null && (float) $this->skonto_percent > 0
+            && $this->skonto_days !== null && (int) $this->skonto_days > 0;
+    }
+
+    /** Skontobetrag auf den Bruttobetrag (2 NK). */
+    public function skontoAmount(): float {
+        return $this->hasSkonto() ? round((float) $this->total * ((float) $this->skonto_percent) / 100, 2) : 0.0;
+    }
+
+    /** Skonto-Frist ab Rechnungsdatum; null ohne Kondition oder vor Ausstellung. */
+    public function skontoDeadline(): ?\Carbon\CarbonInterface {
+        if (! $this->hasSkonto() || $this->issued_on === null) {
+            return null;
+        }
+
+        return $this->issued_on->copy()->addDays((int) $this->skonto_days);
     }
 
     protected static function booted(): void {

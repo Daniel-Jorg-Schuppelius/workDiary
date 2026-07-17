@@ -496,6 +496,8 @@ class InvoiceController extends Controller {
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? (string) __('invoicing.unit_hour'),
             'unit_price' => (string) $data['unit_price'],
+            'discount_percent' => $data['discount_percent'] ?? null,
+            'discount_amount' => $data['discount_amount'] ?? null,
             'tax_rate' => $data['tax_rate'] ?? null,
             'tax_category' => $data['tax_category'] ?? null,
             'position' => $data['position'] ?? ((int) $invoice->items()->max('position') + 1),
@@ -517,6 +519,8 @@ class InvoiceController extends Controller {
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? $item->unit,
             'unit_price' => (string) $data['unit_price'],
+            'discount_percent' => $data['discount_percent'] ?? null,
+            'discount_amount' => $data['discount_amount'] ?? null,
             'tax_rate' => array_key_exists('tax_rate', $data) ? $data['tax_rate'] : $item->tax_rate,
             'tax_category' => array_key_exists('tax_category', $data) ? $data['tax_category'] : $item->tax_category,
             'position' => $data['position'] ?? $item->position,
@@ -541,6 +545,38 @@ class InvoiceController extends Controller {
         $invoice->load('items');
         $invoice->recalculate();
         $invoice->save();
+    }
+
+    /** MVP-416: Rabatt-/Skonto-Konditionen des Entwurfs (Dialog). */
+    public function conditionsForm(Invoice $invoice): View {
+        Gate::authorize('update', $invoice);
+
+        return view('invoices._conditions_dialog', ['invoice' => $invoice]);
+    }
+
+    /** MVP-416: Belegrabatt (Prozent XOR Betrag) + Skonto-Kondition — nur vor Ausstellung. */
+    public function updateConditions(Request $request, Invoice $invoice): RedirectResponse {
+        Gate::authorize('update', $invoice);
+        abort_if($invoice->party_snapshot !== null, 403, (string) __('Ausgestellte Belege sind unveränderlich.'));
+
+        $data = $request->validate([
+            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100', 'prohibits:discount_amount'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'skonto_percent' => ['nullable', 'numeric', 'min:0.01', 'max:100', 'required_with:skonto_days'],
+            'skonto_days' => ['nullable', 'integer', 'min:1', 'max:365', 'required_with:skonto_percent'],
+        ]);
+
+        $invoice->fill([
+            'discount_percent' => $data['discount_percent'] ?? null,
+            'discount_amount' => $data['discount_amount'] ?? null,
+            'skonto_percent' => $data['skonto_percent'] ?? null,
+            'skonto_days' => $data['skonto_days'] ?? null,
+        ]);
+        $invoice->load('items');
+        $invoice->recalculate();
+        $invoice->save();
+
+        return redirect()->route('invoices.show', $invoice)->with('status', __('Konditionen gespeichert.'));
     }
 
     public function expensesForm(Invoice $invoice, ExpenseInvoicingService $service): View {

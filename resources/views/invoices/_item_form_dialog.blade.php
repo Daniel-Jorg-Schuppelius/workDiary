@@ -24,6 +24,9 @@
         <x-input-field name="unit" :label="__('Einheit')" maxlength="32" :value="old('unit', $item->unit ?? __('invoicing.unit_hour'))" />
         <x-input-field name="unit_price" :label="__('Einzelpreis') . ' (' . $invoice->currency->value . ')'" type="number" required min="0" step="0.01" :value="old('unit_price', (string) ($item->unit_price ?? '0.00'))" />
         <x-input-field name="position" type="number" :label="__('Position')" min="0" step="1" :value="old('position', (string) ($item->position ?? ''))" />
+        {{-- MVP-416: Positionsrabatt — Prozent ODER Betrag, nie beides. --}}
+        <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />
+        <x-input-field name="discount_amount" type="number" :label="__('Rabatt (Betrag)')" min="0" step="0.01" :value="old('discount_amount', $item->discount_amount ?? '')" />
         <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Kopfsatz)')" min="0" max="99.99" step="0.01" :value="old('tax_rate', $item->tax_rate ?? '')" />
         <x-select-field name="tax_category" :label="__('Steuerkategorie (EN 16931)')" :hint="__('Leer = aus Beleg abgeleitet (S/AE/Z/E/G).')">
             <option value="">{{ __('— automatisch —') }}</option>

@@ -220,6 +220,8 @@ return [
         'expenses.*' => 'travel-expenses.manage',
         'expense-approvals.*' => 'travel-expenses.manage',
         'per-diem-trips.*' => 'travel-expenses.manage',
+        // Urlaubskonto (Phase 38, MVP-413)
+        'vacation-entitlements.*' => 'absences.entitlements',
         'vacations.*' => 'absences.manage',
         'sick-leaves.*' => 'absences.manage',
 
@@ -293,6 +295,10 @@ return [
         'customers.*' => 'contacts.manage',
         'suppliers.*' => 'contacts.manage',
         'projects.*' => 'projects.manage',
+        // Wiederkehrende Rechnungen (Phase 38, MVP-415)
+        'invoice-schedules.*' => 'invoices.schedules',
+        // Kassenbuch (Phase 38, MVP-414)
+        'cash-registers.*' => 'finance.cashbook',
         'invoices.*' => 'invoices.manage',
         'invoice-templates.*' => 'invoices.manage',
         'lexoffice.vouchers.*' => 'invoices.manage',
@@ -303,6 +309,8 @@ return [
         'service-tickets.*' => 'sla.overview',
         'reports.sla' => 'sla.overview',
         'reports.sla.*' => 'sla.overview',
+        // Führerscheinkontrolle (Phase 38, MVP-417)
+        'driver-license-checks.*' => 'fleet.license-checks',
         'vehicles.*' => 'assets.fleet',
         'energy-logs.*' => 'assets.fleet',
         'sites.*' => 'facilities.manage',

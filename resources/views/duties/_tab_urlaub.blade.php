@@ -46,6 +46,17 @@
                                 <x-icon name="info" class="text-error" />
                             </span>
                         @endif
+                        @php $vBalance = ($vacationBalances ?? [])[$v->user_id . '-' . $v->start_date->year] ?? null; @endphp
+                        @if ($vBalance !== null && $vBalance->hasEntitlement)
+                            {{-- MVP-413: Genehmiger sieht den Rest des Antragstellers; Warnung bei Überbuchung. --}}
+                            @if ($vBalance->remainingAfterPendingDays() < 0)
+                                <span class="tooltip tooltip-right" data-tip="{{ __('Offene Anträge übersteigen den Restanspruch.') }}">
+                                    <x-status-badge size="sm" tone="error">{{ __('Rest :days', ['days' => number_format($vBalance->remainingDays(), 1, ',', '.')]) }}</x-status-badge>
+                                </span>
+                            @else
+                                <x-status-badge size="sm" tone="ghost">{{ __('Rest :days', ['days' => number_format($vBalance->remainingDays(), 1, ',', '.')]) }}</x-status-badge>
+                            @endif
+                        @endif
                     </td>
                     <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $v->note }}</td>
                     <td>

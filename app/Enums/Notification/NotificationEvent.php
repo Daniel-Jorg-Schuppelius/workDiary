@@ -112,6 +112,12 @@ enum NotificationEvent: string implements HasLabel {
     // Welle D (CLM): allgemeine Vertragsfrist/-obligation wird fällig.
     case ContractDeadlineDue = 'contract.deadlineDue';
 
+    // MVP-415: Rechnungsentwurf aus Abrechnungsplan erzeugt (nie Auto-Versand).
+    case InvoiceRecurringDraft = 'invoice.recurringDraft';
+
+    // MVP-417: Führerscheinkontrolle fällig/überfällig (Halterhaftung).
+    case DriverLicenseCheckDue = 'fleet.licenseCheckDue';
+
     // Feature 075: Prüfung fällig/überfällig (MVP-285/288).
     case AssetInspectionDue = 'assetCompliance.inspectionDue';
 
@@ -228,6 +234,11 @@ enum NotificationEvent: string implements HasLabel {
             // Allgemeine Vertragsfristen (Welle D, CLM): Vertragssteuerung ist
             // Leitungsaufgabe; der Verantwortliche der Obligation via Service.
             self::ContractDeadlineDue => [UserRole::Teamleitung->value],
+            // Wiederkehrende Rechnungsentwürfe (MVP-415): kaufmännische Prüfung.
+            self::InvoiceRecurringDraft => [UserRole::Buchhaltung->value],
+            // Führerscheinkontrolle (MVP-417): Fahrer selbst (notify_affected)
+            // plus Teamleitung (Fuhrparkverantwortung).
+            self::DriverLicenseCheckDue => [UserRole::Teamleitung->value],
             // Prüffälligkeit (Feature 075): betrifft keine Einzelperson —
             // an die Teamleitung (Prüfmittelverantwortung).
             self::AssetInspectionDue => [UserRole::Teamleitung->value],
@@ -269,6 +280,8 @@ enum NotificationEvent: string implements HasLabel {
             self::RentalReturnOverdue => 'forklift',
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
+            self::InvoiceRecurringDraft => 'receipt_long',
+            self::DriverLicenseCheckDue => 'badge',
             self::AssetInspectionDue => 'rule_settings',
             self::QualificationExpiring => 'workspace_premium',
             self::ShiftExchangeRequested,

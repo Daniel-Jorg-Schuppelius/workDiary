@@ -52,6 +52,7 @@ class GobdLockGuardRuleTest extends TestCase {
         'StockMovement' => ['file' => 'app/Models/StockMovement.php', 'table' => 'stock_movements'],
         'DiaryEntryEvent' => ['file' => 'app/Models/DiaryEntryEvent.php', 'table' => 'diary_entry_events'],
         // HashChained-Ereignisketten (append-only, Hash-Kette)
+        'CashEntry' => ['file' => 'app/Models/CashEntry.php', 'table' => 'cash_entries'], // MVP-414 Kassenbuch
         'AuditLog' => ['file' => 'app/Models/AuditLog.php', 'table' => 'audit_logs'],
         'OrganizationAuditLog' => ['file' => 'app/Models/OrganizationAuditLog.php', 'table' => 'organization_audit_logs'],
         'BillingTransferEvent' => ['file' => 'app/Models/Finance/BillingTransferEvent.php', 'table' => 'billing_transfer_events'],

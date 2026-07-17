@@ -27,33 +27,36 @@ class ComposerLockHygieneTest extends TestCase {
 
     public function test_committed_lock_excludes_private_optional_package(): void {
         $root = dirname(__DIR__, 3);
+        $workingLockDirty = $this->lockContainsPackage((string) file_get_contents($root . '/composer.lock'));
 
-        if (! $this->lockContainsPackage((string) file_get_contents($root . '/composer.lock'))) {
-            $this->assertTrue(true); // Arbeits-Lock sauber — nichts zu beanstanden.
-
-            return;
-        }
-
-        // Arbeits-Lock enthält das Paket. In der Zahler-Umgebung (composer.local.json)
-        // ist das lokal legitim — der Verstoß liegt erst vor, wenn auch die
-        // COMMITTETE Lock das Paket führt.
-        if (! file_exists($root . '/composer.local.json')) {
+        // Arbeits-Lock enthält das Paket: in der Zahler-Umgebung
+        // (composer.local.json) lokal legitim, sonst sofort ein Verstoß.
+        if ($workingLockDirty && ! file_exists($root . '/composer.local.json')) {
             $this->fail(
                 'composer.lock enthält das private optionale Paket "' . self::PRIVATE_PACKAGE . '" '
                     . '(siehe AGENTS.md §9.1) — sonst bricht der Deploy für Installationen ohne Repo-Zugriff.'
             );
         }
 
+        // Die COMMITTETE Lock wird IMMER geprüft, sobald Git verfügbar ist —
+        // auch bei sauberer Arbeits-Lock. Sonst bliebe ein schmutziger
+        // HEAD-Stand unsichtbar, sobald die Arbeits-Lock (noch uncommittet)
+        // bereinigt wurde.
         $committed = @shell_exec('git -C ' . escapeshellarg($root) . ' show HEAD:composer.lock 2>/dev/null');
 
         if (! is_string($committed) || trim($committed) === '') {
-            $this->markTestSkipped('Lokale Lock enthält das Paket (Zahler-Umgebung, legitim) — committete Lock ohne Git nicht prüfbar.');
+            if ($workingLockDirty) {
+                $this->markTestSkipped('Lokale Lock enthält das Paket (Zahler-Umgebung, legitim) — committete Lock ohne Git nicht prüfbar.');
+            }
+            $this->assertTrue(true); // ohne Git und mit sauberer Arbeits-Lock nichts zu beanstanden
+
+            return;
         }
 
         $this->assertFalse(
             $this->lockContainsPackage($committed),
             'Die COMMITTETE composer.lock (git HEAD) enthält das private optionale Paket "' . self::PRIVATE_PACKAGE . '" '
-                . '(siehe AGENTS.md §9.1) — die Lock-Änderung aus der Zahler-Umgebung darf nicht committet werden.'
+                . '(siehe AGENTS.md §9.1) — den bereinigten Lock-Stand committen; die Zahler-Lock-Änderung selbst nie.'
         );
     }
 

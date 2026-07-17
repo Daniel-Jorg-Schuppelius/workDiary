@@ -277,6 +277,12 @@ return [
             'contract' => [
                 'deadlineDue' => 'Plazo contractual vencido',
             ],
+            'invoice' => [
+                'recurringDraft' => 'Borrador de factura desde plan de facturación',
+            ],
+            'fleet' => [
+                'licenseCheckDue' => 'Control del permiso de conducir pendiente',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Inspección pendiente/vencida',
             ],

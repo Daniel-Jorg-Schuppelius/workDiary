@@ -37,6 +37,11 @@
                                 :href="route('assignments.create')"
                                 show-label>{{ __('Neuer Notdienst') }}</x-icon-btn>
                 @elseif ($tab === 'urlaub')
+                    @can(\App\Enums\User\Permission::VacationEntitlementsManage->value)
+                        <x-icon-btn icon="event_available" size="sm"
+                                    :href="route('vacation-entitlements.index')"
+                                    show-label>{{ __('Urlaubskonto') }}</x-icon-btn>
+                    @endcan
                     @can('create', \App\Models\Vacation::class)
                         <x-icon-btn icon="add" tone="primary" size="sm"
                                     data-entry-modal-trigger

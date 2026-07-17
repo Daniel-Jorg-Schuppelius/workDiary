@@ -294,6 +294,9 @@ class QuoteController extends Controller {
             'quantity' => ['required', 'numeric', 'min:0.001', 'max:9999999'],
             'unit' => ['nullable', 'string', 'max:20'],
             'unit_price' => ['required', 'numeric', 'min:-9999999', 'max:9999999'],
+            // MVP-416: Positionsrabatt — Prozent XOR fester Betrag.
+            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100', 'prohibits:discount_amount'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:99'],
             'optional' => ['nullable', 'boolean'],
         ]);

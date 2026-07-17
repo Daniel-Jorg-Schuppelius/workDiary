@@ -277,6 +277,12 @@ return [
             'contract' => [
                 'deadlineDue' => 'Contract deadline due',
             ],
+            'invoice' => [
+                'recurringDraft' => 'Invoice draft from billing schedule',
+            ],
+            'fleet' => [
+                'licenseCheckDue' => 'Driver licence check due',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Inspection due/overdue',
             ],

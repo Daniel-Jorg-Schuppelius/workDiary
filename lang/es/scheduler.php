@@ -90,6 +90,7 @@ return [
             'materialize_recurrences' => 'Materializar eventos recurrentes',
         ],
         'integration' => ['purge_inbox' => 'Depurar la bandeja de integraciones'],
+        'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes'],
         'jtl' => ['sync' => 'Sincronización JTL Wawi'],
         'lexoffice' => [
             'sync_articles' => 'Sincronizar artículos de Lexoffice',

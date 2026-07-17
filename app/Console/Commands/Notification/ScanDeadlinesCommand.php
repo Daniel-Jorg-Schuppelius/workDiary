@@ -63,6 +63,7 @@ class ScanDeadlinesCommand extends Command {
         $sent += $this->scanAssetFinanceDeadlines();
         $sent += $this->scanContractObligations();
         $sent += $this->scanAssetInspections();
+        $sent += $this->scanDriverLicenseChecks($dispatcher, $expiringDays);
 
         $this->info(sprintf('%d Benachrichtigung(en) versendet.', $sent));
 
@@ -602,6 +603,62 @@ class ScanDeadlinesCommand extends Command {
                 $sent += $service->scanAssignments($organization);
             }
         }
+
+        return $sent;
+    }
+
+    /**
+     * Führerscheinkontrolle (MVP-417): jüngste Kontrolle je Fahrer mit
+     * Fälligkeit innerhalb des Vorlaufs (--expiring-days) oder überfällig.
+     * Empfänger: der Fahrer selbst (notify_affected) plus Teamleitung
+     * (Fuhrparkverantwortung). Dedup pro Kontrolle über das
+     * notification_dispatch_log; überfällige Kontrollen sperren zusätzlich
+     * die Fahrzeugreservierung (VehicleReservationService-Guard).
+     */
+    private function scanDriverLicenseChecks(NotificationDispatcher $dispatcher, int $expiringDays): int {
+        $today = Carbon::today();
+        $horizon = $today->copy()->addDays($expiringDays);
+        $sent = 0;
+
+        // Jüngste Kontrolle je Fahrer (ältere Zeilen sind Historie).
+        $latestIds = \App\Models\DriverLicenseCheck::query()
+            ->withoutGlobalScopes()
+            ->selectRaw('MAX(id) as id')
+            ->groupBy('user_id')
+            ->pluck('id');
+
+        \App\Models\DriverLicenseCheck::query()
+            ->withoutGlobalScopes()
+            ->whereIn('id', $latestIds)
+            ->whereDate('next_due_on', '<=', $horizon->toDateString())
+            ->with('user:id,name,organization_id')
+            ->orderBy('id')
+            ->chunkById(200, function ($checks) use ($dispatcher, $today, &$sent): void {
+                foreach ($checks as $check) {
+                    $user = $check->user;
+                    if ($user === null) {
+                        continue;
+                    }
+                    $overdue = $today->greaterThan($check->next_due_on);
+                    $sent += $dispatcher->notify(
+                        NotificationEvent::DriverLicenseCheckDue,
+                        $check,
+                        $user,
+                        [
+                            'title' => $overdue
+                                ? (string) __('Führerscheinkontrolle überfällig: :name', ['name' => $user->name])
+                                : (string) __('Führerscheinkontrolle fällig: :name', ['name' => $user->name]),
+                            'title_key' => $overdue
+                                ? 'Führerscheinkontrolle überfällig: :name'
+                                : 'Führerscheinkontrolle fällig: :name',
+                            'title_params' => ['name' => $user->name],
+                            'url' => route('driver-license-checks.index'),
+                            'due_at' => $check->next_due_on,
+                        ],
+                        dedup: true,
+                    );
+                }
+            });
 
         return $sent;
     }

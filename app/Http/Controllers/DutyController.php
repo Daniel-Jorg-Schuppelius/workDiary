@@ -14,6 +14,7 @@ use App\Enums\Vacation\VacationStatus;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Models\Contracts\HasTimeWindow;
 use App\Models\{DiaryEntry, EmergencyAssignment, EntryType, OnCallShift, SickLeave, Tag, User, Vacation};
+use App\Services\Absence\VacationBalanceService;
 use App\Services\HolidayService;
 use App\Services\UI\DateRangeContext;
 use App\Support\{SortableQuery, Sqid};
@@ -109,6 +110,21 @@ class DutyController extends Controller {
 
         [$sort, $dir] = $this->applyTabSort($tab, $request, $diaryQuery, $shiftQuery, $assignmentQuery, $vacationQuery, $sickQuery);
 
+        $vacations = $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString();
+
+        // MVP-413: Salden der Antragsteller offener Anträge (Genehmiger-Sicht, Schlüssel "userId-Jahr").
+        $vacationBalances = [];
+        if ($tab === 'urlaub' && $isAdmin) {
+            $balanceService = app(VacationBalanceService::class);
+            foreach ($vacations as $vacationRow) {
+                if ($vacationRow->status !== VacationStatus::Pending || ! $vacationRow->type->countsAgainstEntitlement()) {
+                    continue;
+                }
+                $balanceKey = $vacationRow->user_id . '-' . $vacationRow->start_date->year;
+                $vacationBalances[$balanceKey] ??= $balanceService->balanceFor((int) $vacationRow->user_id, (int) $vacationRow->start_date->year);
+            }
+        }
+
         return view('duties.index', [
             'tab' => $tab,
             'filters' => $filters,
@@ -121,7 +137,8 @@ class DutyController extends Controller {
             'entries' => $diaryQuery->paginate(20, ['*'], 'dpage')->withQueryString(),
             'shifts' => $shiftQuery->paginate(15, ['*'], 'spage')->withQueryString(),
             'assignments' => $assignmentQuery->paginate(15, ['*'], 'apage')->withQueryString(),
-            'vacations' => $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString(),
+            'vacations' => $vacations,
+            'vacationBalances' => $vacationBalances,
             'vacationKpis' => $vacationKpis,
             'sickLeaves' => $sickQuery->paginate(15, ['*'], 'kpage')->withQueryString(),
             'sickKpis' => $sickKpis,

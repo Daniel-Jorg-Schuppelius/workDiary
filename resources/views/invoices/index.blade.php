@@ -8,6 +8,16 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Rechnungen erstellen, versenden und nachverfolgen.')">
     <x-slot:actions>
+        {{-- MVP-414: Kassenbuch (nur mit Recht sichtbar) --}}
+        @can(\App\Enums\User\Permission::CashView->value)
+            <x-icon-btn icon="point_of_sale" size="sm"
+                        :href="route('cash-registers.index')"
+                        show-label>{{ __('Kassenbuch') }}</x-icon-btn>
+        @endcan
+        {{-- MVP-415: Abrechnungspläne für wiederkehrende Rechnungen --}}
+        <x-icon-btn icon="event_repeat" size="sm"
+                    :href="route('invoice-schedules.index')"
+                    show-label>{{ __('Abrechnungspläne') }}</x-icon-btn>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     data-entry-modal-trigger
                     :href="route('invoices.create')"

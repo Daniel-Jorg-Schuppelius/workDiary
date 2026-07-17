@@ -8,6 +8,10 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Fahrzeuge des Fuhrparks verwalten.')">
         <x-slot:actions>
+            {{-- MVP-417: Führerscheinkontrolle (Halterhaftung) --}}
+            <x-icon-btn icon="badge" size="sm"
+                        :href="route('driver-license-checks.index')"
+                        show-label>{{ __('Führerscheinkontrolle') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('vehicles.create')"

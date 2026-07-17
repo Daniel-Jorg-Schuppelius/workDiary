@@ -31,8 +31,19 @@ class QuoteItem extends Model {
 
     protected $fillable = [
         'organization_id', 'quote_id', 'position', 'description',
-        'quantity', 'unit', 'unit_price', 'tax_rate', 'tax_category', 'optional', 'accepted',
+        'quantity', 'unit', 'unit_price', 'discount_percent', 'discount_amount',
+        'tax_rate', 'tax_category', 'optional', 'accepted',
     ];
+
+    /** Zeilennetto inkl. Positionsrabatt (MVP-416) — Quelle für Quote::recalculate(). */
+    public function netAmount(): float {
+        return \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
+            (float) $this->quantity,
+            (float) $this->unit_price,
+            $this->discount_percent !== null ? (float) $this->discount_percent : null,
+            $this->discount_amount !== null ? (float) $this->discount_amount : null,
+        );
+    }
 
     /** @var array<string, string> */
     protected $casts = ['optional' => 'boolean', 'accepted' => 'boolean'];

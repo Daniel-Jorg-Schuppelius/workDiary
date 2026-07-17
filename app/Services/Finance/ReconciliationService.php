@@ -262,9 +262,9 @@ class ReconciliationService {
      * paid_on=Buchungsdatum. Teilzahlung lässt den Status offen.
      */
     private function applyInvoiceEffect(Invoice $invoice, BankTransaction $transaction): void {
-        $total = (float) $invoice->total;
         $allocated = $this->allocatedSum($invoice);
-        $minWithSkonto = $total * (1 - MatchingService::SKONTO_PERCENT / 100);
+        // MVP-416: beleggenaue Skonto-Kondition (Frist gegen Buchungsdatum) statt Pauschale.
+        $minWithSkonto = $this->matching->minAcceptableFor($invoice, $transaction->booking_date);
 
         if ($invoice->status !== Invoice::STATUS_PAID
             && $allocated + MatchingService::CENT_TOLERANCE >= $minWithSkonto
@@ -300,9 +300,9 @@ class ReconciliationService {
             return;
         }
         // Nur zurücknehmen, wenn nach Wegfall dieser Zuordnung die Deckung fehlt.
-        $total = (float) $invoice->total;
         $allocated = $this->allocatedSum($invoice); // Allocation ist bereits soft-deleted.
-        $minWithSkonto = $total * (1 - MatchingService::SKONTO_PERCENT / 100);
+        // MVP-416: beleggenaue Kondition (ohne Zahldatum: Kondition zählt) statt Pauschale.
+        $minWithSkonto = $this->matching->minAcceptableFor($invoice);
 
         if ($allocated + MatchingService::CENT_TOLERANCE >= $minWithSkonto) {
             return; // weiterhin gedeckt — Status bleibt bestehen.

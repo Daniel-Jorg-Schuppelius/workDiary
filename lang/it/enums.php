@@ -277,6 +277,12 @@ return [
             'contract' => [
                 'deadlineDue' => 'Scadenza contrattuale',
             ],
+            'invoice' => [
+                'recurringDraft' => 'Bozza di fattura da piano di fatturazione',
+            ],
+            'fleet' => [
+                'licenseCheckDue' => 'Controllo della patente in scadenza',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Verifica in scadenza/scaduta',
             ],

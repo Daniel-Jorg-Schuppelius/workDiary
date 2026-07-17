@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProductController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, SyncCommandController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
+use App\Http\Controllers\{AccountPasswordController, ActivityCategoryController, AdminTimeEntryController, ApiTokenController, ArchiveController, AssetController, AttachmentController, AttendanceController, AuditLogController, AvailabilityController, BrandingController, CalendarFeedController, CashRegisterController, CommentController, CommunicationNoteController, CoverageRequirementController, CustomerController, CustomerMergeController, CustomerQueryController, DashboardController, DiaryCaseFileController, DiaryController, DiaryExportController, DiaryLifecycleController, DispatchBoardController, DispatchController, DutyController, DutyPlanController, EmergencyAssignmentController, EnergyLogController, EventCategoryController, EventController, EventParticipantController, ExpenseApprovalController, ExpenseController, ExternalParticipantController, FlexController, FlexEligibilityController, ForeignCustomerController, GeocodeController, GlobalSearchController, HelpController, HolidayController, HomeController, IcsFeedController, InvoiceController, InvoiceScheduleController, KanbanController, LicenseController, LocaleController, MaterialController, MilestoneController, OnCallShiftController, OnboardingController, OpenIssueController, OrgMemberController, OrganizationController, OrganizationSwitchController, PayrollController, PerDiemTripController, PrintController, ProductController, ProfileController, ProjectBillingRuleController, ProjectController, ProjectMergeController, ProjectRecurrenceRuleController, ProtocolController, PublicAuditPackageController, PublicExternalParticipantController, PublicProtocolSignatureController, PublicSignatureController, PushSubscriptionController, QualificationController, QuickBookController, RoomController, SafetyEventController, ScheduleController, ScheduleImportController, ScheduledShiftController, ShiftExchangeController, ShiftTypeController, SickLeaveController, SoftwareController, SoftwareInstallationController, StopwatchController, SupplierController, SyncCommandController, TagController, TaskController, TeamController, TimeEntryCommentController, TimeEntryController, TimesheetController, TimesheetEntryController, TimesheetMaterialController, TimesheetSignatureController, TodayController, TourController, TravelLogController, UserBookmarkController, VacationController, VacationEntitlementController, VehicleController, VehicleReservationController, WeekController, WorkScheduleController};
 use App\Http\Controllers\Admin\Access\{AccessHubController, MemberController as AccessMemberController, PermissionController as AccessPermissionController, RoleController as AccessRoleController, UserGroupController as AccessUserGroupController};
 use App\Http\Controllers\Admin\{AutomationRuleController, BackupHeartbeatController, BackupStatusController, BranchProfileController, ClassificationController, ClassificationRequirementController, ComponentsController, DemoTenantController, DiagnosticsController, EntryTypeController, ExpenseCategoryController, ImportController, InvoiceMailTemplateController, LicenseAdminController, MaintenanceWindowController, MetricsController, OperationsTaskController, PerDiemRateController, PluginController as AdminPluginController, PluginErrorController as AdminPluginErrorController, PrivacyController, ProblemReportInboxController, SchedulerController, SecurityController, SessionController, SettingsController, SupportAccessAuditController, SupportAccessGrantController, SupportImpersonationController, SupportReportController};
 use App\Http\Controllers\Asset\{AssetCheckoutController, AssetDefectController, MaintenancePlanController};
@@ -962,6 +962,11 @@ Route::middleware('auth')->group(function () {
         Route::get('vacations/{vacation}/reject-form', [VacationController::class, 'rejectForm'])->name('vacations.reject-form');
         Route::patch('vacations/{vacation}/cancel', [VacationController::class, 'cancel'])->name('vacations.cancel');
 
+        // Urlaubskonto (MVP-413): Jahresansprüche, nur mit vacation.entitlements.manage
+        Route::resource('vacation-entitlements', VacationEntitlementController::class)->except(['show'])
+            ->parameters(['vacation-entitlements' => 'vacation_entitlement']);
+        Route::post('vacation-entitlements-bulk', [VacationEntitlementController::class, 'bulk'])->name('vacation-entitlements.bulk');
+
         Route::get('sick-leaves', fn() => redirect()->route('duties.index', ['tab' => 'krank']))->name('sick-leaves.index');
         Route::resource('sick-leaves', SickLeaveController::class)->except(['show', 'index'])
             ->parameters(['sick-leaves' => 'sick_leave']);
@@ -1345,6 +1350,31 @@ Route::middleware('auth')->group(function () {
         Route::get('invoices/{invoice}/zugferd', [InvoiceController::class, 'zugferdDownload'])->name('invoices.zugferd');
         Route::get('invoices/{invoice}/expenses', [InvoiceController::class, 'expensesForm'])->name('invoices.expenses.form');
         Route::post('invoices/{invoice}/expenses', [InvoiceController::class, 'attachExpenses'])->name('invoices.expenses.attach');
+        // MVP-416: Rabatt-/Skonto-Konditionen am Entwurf
+        Route::get('invoices/{invoice}/conditions', [InvoiceController::class, 'conditionsForm'])->name('invoices.conditions.form');
+        Route::patch('invoices/{invoice}/conditions', [InvoiceController::class, 'updateConditions'])->name('invoices.conditions.update');
+
+        // MVP-415: Abrechnungspläne für wiederkehrende Rechnungen (Scheduler erzeugt nur Entwürfe)
+        Route::resource('invoice-schedules', InvoiceScheduleController::class)
+            ->parameters(['invoice-schedules' => 'invoice_schedule']);
+        Route::patch('invoice-schedules/{invoice_schedule}/status', [InvoiceScheduleController::class, 'setStatus'])->name('invoice-schedules.status');
+        Route::get('invoice-schedules/{invoice_schedule}/items/create', [InvoiceScheduleController::class, 'itemForm'])->name('invoice-schedules.items.create');
+        Route::post('invoice-schedules/{invoice_schedule}/items', [InvoiceScheduleController::class, 'addItem'])->name('invoice-schedules.items.store');
+        Route::get('invoice-schedules/{invoice_schedule}/items/{item}/edit', [InvoiceScheduleController::class, 'itemForm'])->name('invoice-schedules.items.edit');
+        Route::put('invoice-schedules/{invoice_schedule}/items/{item}', [InvoiceScheduleController::class, 'updateItem'])->name('invoice-schedules.items.update');
+        Route::delete('invoice-schedules/{invoice_schedule}/items/{item}', [InvoiceScheduleController::class, 'removeItem'])->name('invoice-schedules.items.destroy');
+
+        // MVP-414: Kassenbuch — append-only, Storno statt Löschen, Tagesabschluss
+        Route::get('cash-registers', [CashRegisterController::class, 'index'])->name('cash-registers.index');
+        Route::get('cash-registers/create', [CashRegisterController::class, 'create'])->name('cash-registers.create');
+        Route::post('cash-registers', [CashRegisterController::class, 'store'])->name('cash-registers.store');
+        Route::get('cash-registers/{cash_register}', [CashRegisterController::class, 'show'])->name('cash-registers.show');
+        Route::get('cash-registers/{cash_register}/entries/create', [CashRegisterController::class, 'entryForm'])->name('cash-registers.entries.create');
+        Route::post('cash-registers/{cash_register}/entries', [CashRegisterController::class, 'storeEntry'])->name('cash-registers.entries.store');
+        Route::get('cash-registers/{cash_register}/entries/{entry}/reverse', [CashRegisterController::class, 'reverseForm'])->name('cash-registers.entries.reverse-form');
+        Route::post('cash-registers/{cash_register}/entries/{entry}/reverse', [CashRegisterController::class, 'reverseEntry'])->name('cash-registers.entries.reverse');
+        Route::get('cash-registers/{cash_register}/close', [CashRegisterController::class, 'closeForm'])->name('cash-registers.close-form');
+        Route::post('cash-registers/{cash_register}/close', [CashRegisterController::class, 'closeDay'])->name('cash-registers.close');
         Route::get('invoices/{invoice}/items/create', [InvoiceController::class, 'itemForm'])->name('invoices.items.create');
         Route::post('invoices/{invoice}/items', [InvoiceController::class, 'addItem'])->name('invoices.items.store');
         Route::get('invoices/{invoice}/items/{item}/edit', [InvoiceController::class, 'itemForm'])->name('invoices.items.edit');
@@ -2247,6 +2277,12 @@ Route::middleware('auth')->group(function () {
         Route::put('vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
         Route::delete('vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
         Route::post('vehicles/{vehicle}/restore', [VehicleController::class, 'restore'])->name('vehicles.restore');
+
+        // Führerscheinkontrolle (MVP-417): Fälligkeiten + dokumentierte Sichtprüfung.
+        Route::get('driver-license-checks', [\App\Http\Controllers\DriverLicenseCheckController::class, 'index'])->name('driver-license-checks.index');
+        Route::get('driver-license-checks/create', [\App\Http\Controllers\DriverLicenseCheckController::class, 'create'])->name('driver-license-checks.create');
+        Route::post('driver-license-checks', [\App\Http\Controllers\DriverLicenseCheckController::class, 'store'])->name('driver-license-checks.store');
+        Route::get('driver-license-checks/{user}', [\App\Http\Controllers\DriverLicenseCheckController::class, 'show'])->name('driver-license-checks.show');
 
         // Fahrzeug-Reservierungen (Feature 028 — Disposition).
         Route::get('vehicle-reservations', [VehicleReservationController::class, 'index'])->name('vehicle-reservations.index');

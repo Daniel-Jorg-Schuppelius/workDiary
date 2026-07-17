@@ -39,6 +39,23 @@
             </x-form-group>
         @endif
 
+    {{-- MVP-413: Saldo des Antragstellers (Konto des vorbelegten Nutzers) --}}
+    @if (($balance ?? null) !== null && $balance->hasEntitlement)
+        <div @class(['alert text-sm', 'alert-info' => $balance->remainingAfterPendingDays() >= 0, 'alert-warning' => $balance->remainingAfterPendingDays() < 0])>
+            <span>
+                {{ __('Urlaubskonto :year: :remaining von :total Tagen übrig (:pending Tage beantragt).', [
+                    'year' => $balance->year,
+                    'remaining' => number_format($balance->remainingDays(), 1, ',', '.'),
+                    'total' => number_format($balance->totalDays(), 1, ',', '.'),
+                    'pending' => number_format($balance->pendingDays, 1, ',', '.'),
+                ]) }}
+                @if ($balance->remainingAfterPendingDays() < 0)
+                    {{ __('Offene Anträge übersteigen den Restanspruch.') }}
+                @endif
+            </span>
+        </div>
+    @endif
+
     <x-form-group :legend="__('Antrag')" icon="beach_access" tone="success">
             <div class="fieldset">
                 <label class="fieldset-label" for="vac-type">{{ __('Typ') }}</label>

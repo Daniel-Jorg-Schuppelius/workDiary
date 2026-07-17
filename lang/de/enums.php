@@ -277,6 +277,12 @@ return [
             'contract' => [
                 'deadlineDue' => 'Vertragsfrist fällig',
             ],
+            'invoice' => [
+                'recurringDraft' => 'Rechnungsentwurf aus Abrechnungsplan',
+            ],
+            'fleet' => [
+                'licenseCheckDue' => 'Führerscheinkontrolle fällig',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Prüfung fällig/überfällig',
             ],

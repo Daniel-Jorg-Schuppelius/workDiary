@@ -89,7 +89,8 @@ class MatchingService {
             }
 
             $total = (float) $invoice->total;
-            [$amountScore, $amountReason] = $this->scoreAmount($amount, $total);
+            $minAcceptable = $this->minAcceptableFor($invoice, $transaction->booking_date);
+            [$amountScore, $amountReason] = $this->scoreAmount($amount, $total, $minAcceptable);
             if ($amountScore > 0) {
                 $score += $amountScore;
                 $reasons[] = $amountReason;
@@ -118,7 +119,7 @@ class MatchingService {
 
             $results[] = [
                 'target' => $invoice,
-                'kind' => $this->kindForInvoice($amount, $total, $foreignCurrency),
+                'kind' => $this->kindForInvoice($amount, $total, $foreignCurrency, $minAcceptable),
                 'score' => $foreignCurrency ? min($score, self::SCORE_REFERENCE) : $score,
                 'reasons' => array_values(array_unique($reasons)),
                 'open_amount' => round($total, 2),
@@ -345,12 +346,32 @@ class MatchingService {
     }
 
     /**
+     * Beleggenaue Skonto-Untergrenze (MVP-416): Mit hinterlegter Kondition
+     * gilt total − Skontobetrag als Vollzahlung, sofern das Zahlungsdatum
+     * innerhalb der Frist liegt (ohne bekanntes Datum: Kondition zählt).
+     * Nach Fristablauf zählt der volle Betrag. Ohne Kondition bleibt die
+     * pauschale SKONTO_PERCENT-Toleranz als Fallback.
+     */
+    public function minAcceptableFor(Invoice $invoice, ?\Carbon\CarbonInterface $paymentDate = null): float {
+        $total = (float) $invoice->total;
+        if ($invoice->hasSkonto()) {
+            $deadline = $invoice->skontoDeadline();
+            $withinDeadline = $deadline === null || $paymentDate === null || $paymentDate->lessThanOrEqualTo($deadline);
+
+            return $withinDeadline ? round($total - $invoice->skontoAmount(), 2) : $total;
+        }
+
+        return $total * (1 - self::SKONTO_PERCENT / 100);
+    }
+
+    /**
      * Bewertet die Betragsnähe: exakt (±Cent-Toleranz) oder mit zulässigem
-     * Skonto (Unterzahlung bis SKONTO_PERCENT %).
+     * Skonto — beleggenau, wenn `$minAcceptable` übergeben wird (MVP-416),
+     * sonst pauschal bis SKONTO_PERCENT % Unterzahlung.
      *
      * @return array{0: int, 1: string}
      */
-    private function scoreAmount(float $paid, float $due): array {
+    private function scoreAmount(float $paid, float $due, ?float $minAcceptable = null): array {
         if ($due <= 0.0) {
             return [0, ''];
         }
@@ -358,7 +379,7 @@ class MatchingService {
             return [self::SCORE_AMOUNT_EXACT, 'amount'];
         }
 
-        $minWithSkonto = $due * (1 - self::SKONTO_PERCENT / 100);
+        $minWithSkonto = $minAcceptable ?? $due * (1 - self::SKONTO_PERCENT / 100);
         if ($paid < $due && $paid >= $minWithSkonto - self::CENT_TOLERANCE) {
             return [self::SCORE_AMOUNT_SKONTO, 'skonto'];
         }
@@ -366,12 +387,12 @@ class MatchingService {
         return [0, ''];
     }
 
-    /** Voll/Über/Teil anhand des gezahlten gegen den offenen Betrag. */
-    public function kindForInvoice(float $paid, float $due, bool $foreignCurrency = false): AllocationKind {
+    /** Voll/Über/Teil anhand des gezahlten gegen den offenen Betrag (beleggenaues Skonto via `$minAcceptable`). */
+    public function kindForInvoice(float $paid, float $due, bool $foreignCurrency = false, ?float $minAcceptable = null): AllocationKind {
         if ($foreignCurrency) {
             return AllocationKind::Partial;
         }
-        $minWithSkonto = $due * (1 - self::SKONTO_PERCENT / 100);
+        $minWithSkonto = $minAcceptable ?? $due * (1 - self::SKONTO_PERCENT / 100);
         if ($paid + self::CENT_TOLERANCE >= $due) {
             return $paid - $due > self::CENT_TOLERANCE ? AllocationKind::Overpayment : AllocationKind::Payment;
         }

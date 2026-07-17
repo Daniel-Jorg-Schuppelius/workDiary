@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{FlexBalance, SickLeave, User, Vacation};
+use App\Services\Absence\VacationBalanceService;
 use App\Services\HolidayService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -33,7 +34,10 @@ class AbsencesReportController extends Controller {
     use ResolvesReportScope;
     use WritesReportCsv;
 
-    public function __construct(private readonly HolidayService $holidayService) {}
+    public function __construct(
+        private readonly HolidayService $holidayService,
+        private readonly VacationBalanceService $balanceService,
+    ) {}
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
@@ -50,11 +54,19 @@ class AbsencesReportController extends Controller {
         $rows = $this->aggregate($fromDate, $toDate, $scope, $userId);
         $totals = $this->totals($rows);
 
+        // MVP-413: Urlaubskonto-Spalten (Anspruch+Übertrag/Rest) für das Jahr des Bereichsendes.
+        $balanceYear = (int) $toDate->year;
+        foreach ($rows as $i => $r) {
+            $balance = $this->balanceService->balanceFor((int) $r['user']->id, $balanceYear);
+            $rows[$i]['entitled_total_days'] = $balance->hasEntitlement ? $balance->totalDays() : null;
+            $rows[$i]['remaining_days'] = $balance->hasEntitlement ? $balance->remainingDays() : null;
+        }
+
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to, $scope);
+            return $this->exportCsv($rows, $totals, $from, $to, $scope, $balanceYear);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope);
+            return $this->exportPdf($rows, $totals, $from, $to, $scope, $balanceYear);
         }
 
         return view('reports.absences', [
@@ -64,6 +76,7 @@ class AbsencesReportController extends Controller {
             'isAdmin' => $isAdmin,
             'rows' => $rows,
             'totals' => $totals,
+            'balanceYear' => $balanceYear,
         ]);
     }
     /**
@@ -254,10 +267,10 @@ class AbsencesReportController extends Controller {
     }
 
     /**
-     * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
+     * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null, entitled_total_days?:float|null, remaining_days?:float|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear): Response {
         $filename = sprintf('abwesenheiten_%s_%s.csv', $from, $to);
         $fmt = static function (int $m): string {
             $sign = $m < 0 ? '-' : '';
@@ -265,7 +278,8 @@ class AbsencesReportController extends Controller {
 
             return sprintf('%s%d:%02d', $sign, intdiv($abs, 60), $abs % 60);
         };
-        $out = [['Mitarbeiter', 'Urlaub (Werktage)', 'Krank', 'Sonderurlaub', 'Unbezahlt', 'Ausstehend', 'Flex-Änderung', 'Flex-Saldo']];
+        $fmtDays = static fn(?float $d): string => $d !== null ? number_format($d, 1, ',', '') : '';
+        $out = [['Mitarbeiter', 'Urlaub (Werktage)', 'Krank', 'Sonderurlaub', 'Unbezahlt', 'Ausstehend', sprintf('Anspruch %d', $balanceYear), sprintf('Rest %d', $balanceYear), 'Flex-Änderung', 'Flex-Saldo']];
         foreach ($rows as $r) {
             $out[] = [
                 (string) $r['user']->name,
@@ -274,6 +288,8 @@ class AbsencesReportController extends Controller {
                 $r['special_days'],
                 $r['unpaid_days'],
                 $r['pending_days'],
+                $fmtDays($r['entitled_total_days'] ?? null),
+                $fmtDays($r['remaining_days'] ?? null),
                 $fmt($r['flex_change_minutes']),
                 $r['flex_balance_minutes'] !== null ? $fmt($r['flex_balance_minutes']) : '',
             ];
@@ -285,6 +301,8 @@ class AbsencesReportController extends Controller {
             $totals['special_days'],
             $totals['unpaid_days'],
             $totals['pending_days'],
+            '',
+            '',
             $fmt($totals['flex_change_minutes']),
             $fmt($totals['flex_balance_minutes']),
         ];
@@ -293,10 +311,10 @@ class AbsencesReportController extends Controller {
     }
 
     /**
-     * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null}>  $rows
+     * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null, entitled_total_days?:float|null, remaining_days?:float|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear): SymfonyResponse {
         $filename = sprintf('abwesenheiten_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.absences', [
             'rows' => $rows,
@@ -304,6 +322,7 @@ class AbsencesReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
+            'balanceYear' => $balanceYear,
         ], $filename, 'landscape');
     }
 }

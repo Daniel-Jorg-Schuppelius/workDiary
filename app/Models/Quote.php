@@ -87,7 +87,8 @@ class Quote extends Model {
             if (! $counts) {
                 continue;
             }
-            $net = round((float) $item->quantity * (float) $item->unit_price, 2);
+            // MVP-416: Zeilennetto inkl. Positionsrabatt.
+            $net = $item->netAmount();
             $sub += $net;
             // Positionen ohne eigenen Satz: Satz aus dem TaxResolver
             // (§ 19 UStG → 0, Org-Override, Länderkatalog) statt hart 19 % —

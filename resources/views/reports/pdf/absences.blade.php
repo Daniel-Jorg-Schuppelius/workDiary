@@ -58,6 +58,8 @@
             <th class="right">Sonder</th>
             <th class="right">Unbezahlt</th>
             <th class="right">Ausstehend</th>
+            <th class="right">{{ __('Anspruch :year', ['year' => $balanceYear]) }}</th>
+            <th class="right">{{ __('Rest :year', ['year' => $balanceYear]) }}</th>
             <th class="right">Flex Δ</th>
             <th class="right">{{ __('Flex-Saldo') }}</th>
         </tr>
@@ -71,6 +73,8 @@
                 <td class="right">{{ $r['special_days'] }}</td>
                 <td class="right">{{ $r['unpaid_days'] }}</td>
                 <td class="right">{{ $r['pending_days'] }}</td>
+                <td class="right">{{ ($r['entitled_total_days'] ?? null) !== null ? number_format($r['entitled_total_days'], 1, ',', '.') : '–' }}</td>
+                <td class="right {{ ($r['remaining_days'] ?? null) !== null && $r['remaining_days'] < 0 ? 'neg' : '' }}">{{ ($r['remaining_days'] ?? null) !== null ? number_format($r['remaining_days'], 1, ',', '.') : '–' }}</td>
                 <td class="right {{ $r['flex_change_minutes'] < 0 ? 'neg' : ($r['flex_change_minutes'] > 0 ? 'pos' : '') }}">{{ $fmtMin($r['flex_change_minutes']) }}</td>
                 <td class="right">{{ $r['flex_balance_minutes'] !== null ? $fmtMin($r['flex_balance_minutes']) : '–' }}</td>
             </tr>
@@ -82,6 +86,8 @@
             <td class="right">{{ $totals['special_days'] }}</td>
             <td class="right">{{ $totals['unpaid_days'] }}</td>
             <td class="right">{{ $totals['pending_days'] }}</td>
+            <td class="right">–</td>
+            <td class="right">–</td>
             <td class="right">{{ $fmtMin($totals['flex_change_minutes']) }}</td>
             <td class="right">{{ $fmtMin($totals['flex_balance_minutes']) }}</td>
         </tr>

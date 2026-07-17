@@ -19,6 +19,9 @@ class SaveInvoiceItemRequest extends BaseFormRequest {
             'quantity' => ['required', 'numeric', 'min:0'],
             'unit' => ['nullable', 'string', 'max:32'],
             'unit_price' => ['required', 'numeric', 'min:0'],
+            // MVP-416: Positionsrabatt — Prozent XOR fester Betrag.
+            'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100', 'prohibits:discount_amount'],
+            'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'position' => ['nullable', 'integer', 'min:0'],
             // Phase 23 (MVP-240): Positions-Steuersatz + EN-16931-Kategorie.
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:99.99'],

@@ -90,6 +90,7 @@
         "audit": "@composer audit",
         "sbom": "@php scripts/generate-sbom.php",
         "security:gate": "bash scripts/security-gate.sh",
+        "hooks:install": "cp scripts/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit && echo 'pre-commit-Hook installiert.'",
         "i18n:check": "@php scripts/find-untranslated.php",
         "lang:check": "@php scripts/translations-diff.php",
         "lang:coverage": "@php scripts/translations-coverage.php",

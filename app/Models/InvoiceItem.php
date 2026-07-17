@@ -55,6 +55,8 @@ class InvoiceItem extends Model {
         'quantity',
         'unit',
         'unit_price',
+        'discount_percent',
+        'discount_amount',
         'amount',
         'position',
     ];
@@ -65,12 +67,20 @@ class InvoiceItem extends Model {
         // Mengen-/Preispräzision der Quellposten erhalten (Material 3 NK, km-Satz 4 NK); Zeilenbetrag 2 NK.
         'quantity' => 'decimal:3',
         'unit_price' => 'decimal:4',
+        'discount_percent' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'amount' => 'decimal:2',
     ];
 
     protected static function booted(): void {
         static::saving(function (InvoiceItem $i): void {
-            $i->amount = (string) round(((float) $i->quantity) * ((float) $i->unit_price), 2);
+            // MVP-416: Zeilennetto inkl. Positionsrabatt (Prozent XOR Betrag).
+            $i->amount = (string) \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
+                (float) $i->quantity,
+                (float) $i->unit_price,
+                $i->discount_percent !== null ? (float) $i->discount_percent : null,
+                $i->discount_amount !== null ? (float) $i->discount_amount : null,
+            );
         });
 
         // Beim Löschen alle Quellposten wieder freigeben (Spese→Approved, Zeiten→exported=false,

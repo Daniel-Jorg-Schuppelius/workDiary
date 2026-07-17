@@ -187,6 +187,25 @@ class GdpduExportService {
                     ['name' => 'Grund', 'type' => 'alpha'],
                 ],
             ],
+            'cash_entries' => [
+                'file' => 'kassenbuch.csv',
+                'name' => 'Kassenbuch',
+                'description' => 'Kassenbuch-Einträge des Prüfungszeitraums (MVP-414): append-only mit Hash-Kette, Korrekturen ausschließlich als Storno-Gegenbuchungen, Tagesabschlüsse mit Kassensturz.',
+                'columns' => [
+                    ['name' => 'Kasse', 'type' => 'alpha'],
+                    ['name' => 'Belegnummer', 'type' => 'numeric', 'accuracy' => 0],
+                    ['name' => 'Datum', 'type' => 'date'],
+                    ['name' => 'Richtung', 'type' => 'alpha'],
+                    ['name' => 'Betrag', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'USt_Satz', 'type' => 'numeric', 'accuracy' => 2],
+                    ['name' => 'Zweck', 'type' => 'alpha'],
+                    ['name' => 'Gegenpartei', 'type' => 'alpha'],
+                    ['name' => 'Rechnungsnummer', 'type' => 'alpha'],
+                    ['name' => 'Storno_zu', 'type' => 'alpha'],
+                    ['name' => 'Erfasst_am', 'type' => 'alpha'],
+                    ['name' => 'Hash', 'type' => 'alpha'],
+                ],
+            ],
             'expenses' => [
                 'file' => 'spesen.csv',
                 'name' => 'Spesen',
@@ -443,8 +462,44 @@ class GdpduExportService {
             'booking_batches' => $batchRows,
             'booking_batch_items' => $batchItemRows,
             'payment_allocations' => $this->collectPaymentAllocationRows($organization, $from, $to),
+            'cash_entries' => $this->collectCashEntryRows($organization, $from, $to),
             'expenses' => $this->collectExpenseRows($organization, $from, $to),
         ];
+    }
+
+    /**
+     * Kassenbuch-Einträge (MVP-414) des Prüfungszeitraums nach Buchungsdatum —
+     * inkl. Hash (Kettenglied, prüfbar via audit:verify) und Storno-Verweis.
+     *
+     * @return list<list<string>>
+     */
+    private function collectCashEntryRows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+        $rows = [];
+        \App\Models\CashEntry::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereBetween('booked_on', [$from->toDateString(), $to->toDateString()])
+            ->with(['register:id,name', 'invoice:id,number', 'reversalOf:id,seq_no'])
+            ->orderBy('cash_register_id')->orderBy('seq_no')
+            ->get()
+            ->each(function (\App\Models\CashEntry $entry) use (&$rows): void {
+                $rows[] = [
+                    $this->str($entry->register?->name),
+                    $this->num($entry->seq_no, 0),
+                    $this->date($entry->booked_on),
+                    $entry->direction === \App\Models\CashEntry::DIRECTION_IN ? 'Einnahme' : 'Ausgabe',
+                    $this->num($entry->amount, 2),
+                    $this->num($entry->tax_rate, 2),
+                    $this->str($entry->purpose),
+                    $this->str($entry->counterparty),
+                    $this->str($entry->invoice?->number),
+                    $this->str($entry->reversalOf?->seq_no),
+                    $this->dateTime($entry->created_at),
+                    $this->str($entry->hash),
+                ];
+            });
+
+        return $rows;
     }
 
     /**

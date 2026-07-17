@@ -90,6 +90,7 @@ return [
             'materialize_recurrences' => 'Materialize recurring events',
         ],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
+        'invoicing' => ['recurring' => 'Generate recurring invoice drafts'],
         'jtl' => ['sync' => 'JTL Wawi sync'],
         'lexoffice' => [
             'sync_articles' => 'Sync Lexoffice articles',

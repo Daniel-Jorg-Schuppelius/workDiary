@@ -12,13 +12,17 @@ namespace App\Http\Controllers;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
 use App\Models\{User, Vacation};
+use App\Services\Absence\VacationBalanceService;
 use App\Support\LookupCache;
+use Carbon\Carbon;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class VacationController extends Controller {
+    public function __construct(private readonly VacationBalanceService $balanceService) {}
+
     // ── Create / Store ──────────────────────────────────────────────────────
 
     public function create(Request $request): View {
@@ -26,14 +30,19 @@ class VacationController extends Controller {
         $auth = Auth::user();
         Gate::authorize('create', Vacation::class);
 
+        $prefillStart = (string) ($request->query('start_date') ?? '');
+        $balanceYear = $this->yearOf($prefillStart);
+
         return view('vacations._form_dialog', [
             'vacation' => null,
             'isEdit' => false,
             'isDialog' => true,
             'canAssignOthers' => $auth->isAdmin(),
             'assignableUsers' => $auth->isAdmin() ? LookupCache::userDropdown() : collect(),
-            'prefillStart' => $request->query('start_date') ?? '',
+            'prefillStart' => $prefillStart,
             'prefillEnd' => $request->query('end_date') ?? '',
+            // MVP-413: Saldo des vorbelegten Antragstellers (Dropdown-Wechsel ändert die Anzeige nicht).
+            'balance' => $this->balanceService->balanceFor((int) $auth->id, $balanceYear),
         ]);
     }
 
@@ -69,6 +78,7 @@ class VacationController extends Controller {
             'assignableUsers' => $auth->isAdmin() ? LookupCache::userDropdown() : collect(),
             'prefillStart' => '',
             'prefillEnd' => '',
+            'balance' => $this->balanceService->balanceFor((int) $vacation->user_id, (int) $vacation->start_date->year),
         ]);
     }
 
@@ -122,6 +132,17 @@ class VacationController extends Controller {
             'reject_reason' => null,
         ]);
 
+        // MVP-413: Überbuchung warnen, nie blockieren — die Entscheidung bleibt beim Genehmiger.
+        if ($vacation->type->countsAgainstEntitlement()) {
+            $balance = $this->balanceService->balanceFor((int) $vacation->user_id, (int) $vacation->start_date->year);
+            if ($balance->hasEntitlement && $balance->remainingDays() < 0) {
+                return redirect()->route('duties.index', ['tab' => 'urlaub'])
+                    ->with('warning', __('Urlaubsantrag genehmigt — der Jahresanspruch ist damit um :days Tage überschritten.', [
+                        'days' => number_format(abs($balance->remainingDays()), 1, ',', '.'),
+                    ]));
+            }
+        }
+
         return redirect()->route('duties.index', ['tab' => 'urlaub'])->with('success', __('Urlaubsantrag genehmigt.'));
     }
 
@@ -158,6 +179,19 @@ class VacationController extends Controller {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Jahr eines Datums-Strings, Fallback: aktuelles Jahr. */
+    private function yearOf(string $date): int {
+        if ($date === '') {
+            return (int) now()->year;
+        }
+
+        try {
+            return (int) Carbon::parse($date)->year;
+        } catch (\Throwable) {
+            return (int) now()->year;
+        }
+    }
 
     /** @return array<string, mixed> */
     private function validateVacation(Request $request): array {

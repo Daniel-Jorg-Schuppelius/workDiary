@@ -277,6 +277,12 @@ return [
             'contract' => [
                 'deadlineDue' => 'Échéance contractuelle',
             ],
+            'invoice' => [
+                'recurringDraft' => 'Brouillon de facture depuis un plan de facturation',
+            ],
+            'fleet' => [
+                'licenseCheckDue' => 'Contrôle du permis de conduire à échéance',
+            ],
             'assetCompliance' => [
                 'inspectionDue' => 'Contrôle à échéance/en retard',
             ],

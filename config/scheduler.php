@@ -36,6 +36,17 @@ return [
             'expected_runtime_minutes' => 2,
         ],
 
+        // --- Wiederkehrende Rechnungen (Phase 38, MVP-415) ---
+        // Erzeugt ausschließlich ENTWÜRFE aus fälligen Abrechnungsplänen;
+        // Ausstellung und Versand bleiben manuelle, auditierte Schritte.
+        'invoicing.recurring' => [
+            'command' => 'invoices:generate-recurring',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:15'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+
         // --- KI-Betriebslauf (Feature 025/084, MVP-411) ---
         'ai.maintenance' => [
             'command' => 'ai:maintenance',

@@ -27,4 +27,9 @@ enum VacationType: string implements HasLabel {
     public function label(): string {
         return (string) __('enums.vacation.type.' . $this->value);
     }
+
+    /** Zählt dieser Typ gegen den Jahresanspruch (MVP-413)? Sonderurlaub/unbezahlt sind anspruchsneutral. */
+    public function countsAgainstEntitlement(): bool {
+        return $this === self::Vacation;
+    }
 }

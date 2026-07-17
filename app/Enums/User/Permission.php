@@ -41,6 +41,9 @@ enum Permission: string implements HasLabel {
     case DocumentDesignManage = 'documentDesign.manage';
     case DocumentDesignAssign = 'documentDesign.assign';
         // ── orgaMAX-Faktura-Aktionen (Feature 077, MVP-310) ─────────
+    // ── Kassenbuch (Phase 38, MVP-414) ──────────────────────────
+    case CashView = 'finance.cash.view';
+    case CashManage = 'finance.cash.manage';
     case OrgamaxInvoiceConvert = 'finance.orgamax.convert';
     case OrgamaxInvoiceLock = 'finance.orgamax.lock';
     case OrgamaxInvoiceSend = 'finance.orgamax.send';
@@ -309,6 +312,8 @@ enum Permission: string implements HasLabel {
     case VacationRequest = 'vacation.request';
     case VacationApprove = 'vacation.approve';
     case VacationCancel = 'vacation.cancel';
+    // Urlaubskonto (MVP-413): Jahresansprüche + Übertrag pflegen
+    case VacationEntitlementsManage = 'vacation.entitlements.manage';
     case SickLeaveViewAny = 'sick-leave.viewAny';
     case SickLeaveManage = 'sick-leave.manage';
 

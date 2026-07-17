@@ -199,6 +199,8 @@ return [
         'branding.update' => 'Branding bearbeiten',
         'documentDesign.manage' => 'Dokumentdesign verwalten',
         'documentDesign.assign' => 'Dokumentdesign zuweisen & Vorschau',
+        'finance.cash.view' => 'Kassenbuch einsehen',
+        'finance.cash.manage' => 'Kassenbuch führen (buchen, stornieren, Tagesabschluss)',
         'finance.orgamax.convert' => 'orgaMAX: Auftrag in Rechnung umwandeln',
         'finance.orgamax.lock' => 'orgaMAX: Rechnung finalisieren/sperren',
         'finance.orgamax.send' => 'orgaMAX: Rechnung versenden',
@@ -404,6 +406,7 @@ return [
         'vacation.request' => 'Urlaub beantragen',
         'vacation.approve' => 'Urlaub genehmigen',
         'vacation.cancel' => 'Urlaub stornieren',
+        'vacation.entitlements.manage' => 'Urlaubsansprüche verwalten',
         'sick-leave.viewAny' => 'Krankmeldungen einsehen',
         'sick-leave.manage' => 'Krankmeldungen verwalten',
 

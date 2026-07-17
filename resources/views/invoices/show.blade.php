@@ -119,6 +119,11 @@
                                 data-entry-modal-trigger
                                 :href="route('invoices.expenses.form', $invoice)"
                                 show-label>{{ __('Spesen hinzufügen') }}</x-icon-btn>
+                    {{-- MVP-416: Belegrabatt + Skonto am Entwurf --}}
+                    <x-icon-btn icon="percent" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('invoices.conditions.form', $invoice)"
+                                show-label>{{ __('Konditionen') }}</x-icon-btn>
                 @endif
             @endcan
             @if (! $invoice->isProforma() && ! app(\App\Services\Finance\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal())
@@ -242,12 +247,25 @@
             </tr>
         </x-slot:head>
         <x-slot:foot>
-            <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+            @php $docDiscount = $invoice->documentDiscountTotal(); @endphp
+            @if ($docDiscount != 0.0)
+                {{-- MVP-416: Positionssumme, Belegrabatt, Netto getrennt ausweisen. --}}
+                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ number_format($invoice->lineSubtotal(), 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ rtrim(rtrim((string) $invoice->discount_percent, '0'), '.') }}%)@endif</td><td class="text-right">−{{ number_format(abs($docDiscount), 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Netto') }}</td><td class="text-right">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+            @else
+                <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right">{{ number_format((float) $invoice->subtotal, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+            @endif
             <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim((string) $invoice->tax_rate, '0'), '.') }}%</td><td class="text-right">{{ number_format((float) $invoice->tax_amount, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
             @if ($invoice->is_reverse_charge)
                 <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-base-content/60">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
             @endif
             <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ number_format((float) $invoice->total, 2, ',', '.') }} {{ $invoice->currency->value }}</td></tr>
+            @if ($invoice->hasSkonto())
+                <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-base-content/60">
+                    {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => rtrim(rtrim((string) $invoice->skonto_percent, '0'), '.'), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) ({{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }} = {{ number_format((float) $invoice->total - $invoice->skontoAmount(), 2, ',', '.') }} {{ $invoice->currency->value }})@endif
+                </td></tr>
+            @endif
         </x-slot:foot>
         @forelse ($invoice->items as $item)
             <tr>
