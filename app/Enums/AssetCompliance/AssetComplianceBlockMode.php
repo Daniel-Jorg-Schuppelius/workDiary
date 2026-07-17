@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetCompliance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Sperrwirkung einer Prüfpflicht (MVP-284): von reiner Warnung bis zur
  * sofortigen Einsatzsperre bei Fälligkeit — Sperren entstehen im
  * gemeinsamen Sperrmodell (D12).
  */
-enum AssetComplianceBlockMode: string {
+enum AssetComplianceBlockMode: string implements HasLabel {
+    use HasOptions;
+
     case None = 'none';
     case Warn = 'warn';
     case BlockAfterGrace = 'block_after_grace';

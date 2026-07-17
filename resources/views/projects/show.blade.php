@@ -37,7 +37,9 @@
     </x-page-toolbar>
 
     {{-- Tabs --}}
-    <div x-data="projectTabs({{ Js::from(request('tab', 'overview')) }})" class="flex min-h-0 flex-col gap-4">
+    <div x-data="tabs({{ Js::from(request('tab', 'overview')) }})" data-tab-url-sync
+         data-tab-allowed="overview,tasks,time,timesheets,diary,recurrence,billing"
+         class="flex min-h-0 flex-col gap-4">
         <div role="tablist" class="tabs tabs-box w-full sm:w-auto">
             <button role="tab" @click="setTab('overview')" :class="tabClass('overview')" class="tab">
                 {{ __('Übersicht') }}

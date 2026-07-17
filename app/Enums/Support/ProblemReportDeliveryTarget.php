@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Support;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Versandweg einer Fehlermeldung je Betriebsmodell (Feature 041,
  * MVP-053): SaaS-Inbox (Betreiber-UI), konfigurierte Support-Mail,
  * Webhook oder lokaler Export für On-Premise ohne Außenanbindung.
  */
-enum ProblemReportDeliveryTarget: string {
+enum ProblemReportDeliveryTarget: string implements HasLabel {
+    use HasOptions;
+
     case SaasInbox = 'saas_inbox';
     case Mail = 'mail';
     case Webhook = 'webhook';

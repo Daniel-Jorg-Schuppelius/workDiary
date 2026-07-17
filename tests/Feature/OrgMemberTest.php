@@ -25,14 +25,6 @@ class OrgMemberTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function regularUser(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     private function management(): User {
         return User::factory()->geschaeftsfuehrung()->create(['organization_id' => $this->organization->id]);
     }
@@ -44,7 +36,7 @@ class OrgMemberTest extends TestCase {
     }
 
     public function test_non_admin_cannot_view_members(): void {
-        $this->actingAs($this->regularUser())
+        $this->actingAs($this->orgUser())
             ->get(route('org.members.index'))
             ->assertForbidden();
     }
@@ -58,8 +50,8 @@ class OrgMemberTest extends TestCase {
     }
 
     public function test_org_admin_can_view_member_list(): void {
-        $admin = $this->admin();
-        $this->regularUser(); // Mitglied anlegen
+        $admin = $this->orgAdmin();
+        $this->orgUser(); // Mitglied anlegen
 
         $this->actingAs($admin)
             ->get(route('org.members.index'))
@@ -69,7 +61,7 @@ class OrgMemberTest extends TestCase {
 
     public function test_management_can_view_member_list_for_hourly_wage_maintenance(): void {
         $management = $this->management();
-        $this->regularUser();
+        $this->orgUser();
 
         $this->actingAs($management)
             ->get(route('org.members.index'))
@@ -80,7 +72,7 @@ class OrgMemberTest extends TestCase {
     // ── Mitglied anlegen ─────────────────────────────────────────────────────
 
     public function test_admin_can_create_member(): void {
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('org.members.store'), [
                 'name' => 'Neue Person',
                 'personnel_number' => 'P-1001',
@@ -121,7 +113,7 @@ class OrgMemberTest extends TestCase {
     public function test_store_validates_unique_email(): void {
         User::factory()->create(['email' => 'used@test.de']);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('org.members.store'), [
                 'name' => 'Jemand',
                 'email' => 'used@test.de',
@@ -138,7 +130,7 @@ class OrgMemberTest extends TestCase {
             'personnel_number' => 'P-1001',
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('org.members.store'), [
                 'name' => 'Jemand',
                 'personnel_number' => 'P-1001',
@@ -157,7 +149,7 @@ class OrgMemberTest extends TestCase {
             'personnel_number' => 'P-1001',
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('org.members.store'), [
                 'name' => 'Jemand',
                 'personnel_number' => 'P-1001',
@@ -178,8 +170,8 @@ class OrgMemberTest extends TestCase {
     // ── Mitglied bearbeiten ───────────────────────────────────────────────────
 
     public function test_admin_can_update_member(): void {
-        $admin = $this->admin();
-        $member = $this->regularUser();
+        $admin = $this->orgAdmin();
+        $member = $this->orgUser();
 
         $this->actingAs($admin)
             ->put(route('org.members.update', $member), [
@@ -207,7 +199,7 @@ class OrgMemberTest extends TestCase {
 
     public function test_management_can_update_payroll_block_but_not_identity(): void {
         $management = $this->management();
-        $member = $this->regularUser();
+        $member = $this->orgUser();
         $originalName = $member->name;
 
         $this->actingAs($management)
@@ -237,7 +229,7 @@ class OrgMemberTest extends TestCase {
 
     public function test_compensation_rate_is_required_for_time_based_compensation(): void {
         $management = $this->management();
-        $member = $this->regularUser();
+        $member = $this->orgUser();
 
         $this->actingAs($management)
             ->put(route('org.members.update', $member), [
@@ -261,7 +253,7 @@ class OrgMemberTest extends TestCase {
 
     public function test_personnel_admin_can_view_and_maintain_payroll(): void {
         $hr = $this->personnelAdmin();
-        $member = $this->regularUser();
+        $member = $this->orgUser();
         $originalName = $member->name;
 
         $this->actingAs($hr)->get(route('org.members.index'))->assertOk();
@@ -284,7 +276,7 @@ class OrgMemberTest extends TestCase {
 
     public function test_personnel_admin_cannot_create_or_delete_members(): void {
         $hr = $this->personnelAdmin();
-        $member = $this->regularUser();
+        $member = $this->orgUser();
 
         $this->actingAs($hr)
             ->post(route('org.members.store'), [
@@ -306,8 +298,8 @@ class OrgMemberTest extends TestCase {
     // ── Mitglied entfernen ────────────────────────────────────────────────────
 
     public function test_admin_can_delete_member(): void {
-        $admin = $this->admin();
-        $member = $this->regularUser();
+        $admin = $this->orgAdmin();
+        $member = $this->orgUser();
 
         $this->actingAs($admin)
             ->delete(route('org.members.destroy', $member))
@@ -317,7 +309,7 @@ class OrgMemberTest extends TestCase {
     }
 
     public function test_admin_cannot_delete_themselves(): void {
-        $admin = $this->admin();
+        $admin = $this->orgAdmin();
 
         $this->actingAs($admin)
             ->delete(route('org.members.destroy', $admin))
@@ -333,7 +325,7 @@ class OrgMemberTest extends TestCase {
         $otherOrg = Organization::factory()->create();
         $otherMember = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('org.members.edit', $otherMember))
             ->assertForbidden();
     }
@@ -342,7 +334,7 @@ class OrgMemberTest extends TestCase {
         $otherOrg = Organization::factory()->create();
         $otherMember = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->delete(route('org.members.destroy', $otherMember))
             ->assertForbidden();
     }

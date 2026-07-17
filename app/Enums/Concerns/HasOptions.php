@@ -25,7 +25,7 @@ use BackedEnum;
  */
 trait HasOptions {
     /**
-     * @return list<string|int>
+     * @return list<value-of<static>>
      */
     public static function values(): array {
         return array_map(static fn(BackedEnum $case) => $case->value, self::cases());

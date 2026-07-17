@@ -16,6 +16,10 @@ use App\Enums\DocumentDesign\{RenderDocumentKind, TableStylePreset};
 use App\Models\DocumentDesign\{DocumentRenderProfileVersion, DocumentRenderSnapshot};
 use App\Models\{Organization, User};
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Gemeinsame Renderpipeline (MVP-301): komponiert Firmenbogen (erste Seite /
@@ -79,6 +83,26 @@ class DocumentDesignRenderer {
         }
 
         return $this->compose($html, $this->payloadFor($organization, $kind));
+    }
+
+    /**
+     * Kompletter View→Design→PDF-Dreischritt der Fachmodule (C15): rendert die
+     * Blade-View, komponiert das aktive Dokumentdesign (ohne Profil No-Op) und
+     * erzeugt das PDF über die pdf-toolkit Registry. Organisation wahlweise als
+     * Instanz oder per ID (Lookup ohne globale Scopes).
+     *
+     * @param array<string, mixed> $data
+     */
+    public function renderPdf(RenderDocumentKind $kind, string $view, array $data, int|Organization|null $organization): string {
+        if (is_int($organization)) {
+            $organization = Organization::query()->withoutGlobalScopes()->find($organization);
+        }
+
+        $html = View::make($view, $data)->render();
+        $html = $this->composeFor($organization, $kind, $html);
+
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (' . $view . ').');
     }
 
     /**

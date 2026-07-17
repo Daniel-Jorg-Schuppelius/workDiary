@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status eines Beschaffungsbedarfs/offenen Punkts (Feature 048,
  * Fehlmaterialprozess). Vollständige Bestellungen sind Folgeausbau.
  */
-enum ProcurementStatus: string {
+enum ProcurementStatus: string implements HasLabel {
+    use HasOptions;
+
     case Open = 'open';
     case Ordered = 'ordered';
     case Closed = 'closed';

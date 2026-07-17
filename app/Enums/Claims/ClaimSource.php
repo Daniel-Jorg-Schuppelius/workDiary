@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Eingangskanal einer Reklamation (MVP-248). */
-enum ClaimSource: string {
+enum ClaimSource: string implements HasLabel {
+    use HasOptions;
+
     case Portal = 'portal';
     case Email = 'email';
     case Phone = 'phone';

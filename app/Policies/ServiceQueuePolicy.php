@@ -14,6 +14,7 @@ namespace App\Policies;
 
 use App\Enums\User\Permission;
 use App\Models\{ServiceQueue, User};
+use App\Policies\Concerns\ChecksOwnership;
 
 /**
  * Queue-Verwaltung (Feature 065, MVP-150): Pflege nur mit
@@ -22,12 +23,14 @@ use App\Models\{ServiceQueue, User};
  * (Defense in Depth, Whitebox-Leitplanke).
  */
 class ServiceQueuePolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return $user->can(Permission::ServiceTicketView->value);
     }
 
     public function view(User $user, ServiceQueue $queue): bool {
-        return $this->sameOrg($user, $queue) && $user->can(Permission::ServiceTicketView->value);
+        return $this->sharesOrganization($user, $queue) && $user->can(Permission::ServiceTicketView->value);
     }
 
     public function create(User $user): bool {
@@ -35,14 +38,11 @@ class ServiceQueuePolicy {
     }
 
     public function update(User $user, ServiceQueue $queue): bool {
-        return $this->sameOrg($user, $queue) && $user->can(Permission::HelpdeskQueueManage->value);
+        return $this->sharesOrganization($user, $queue) && $user->can(Permission::HelpdeskQueueManage->value);
     }
 
     public function delete(User $user, ServiceQueue $queue): bool {
-        return $this->sameOrg($user, $queue) && $user->can(Permission::HelpdeskQueueManage->value);
+        return $this->sharesOrganization($user, $queue) && $user->can(Permission::HelpdeskQueueManage->value);
     }
 
-    private function sameOrg(User $user, ServiceQueue $queue): bool {
-        return (int) $user->organization_id === (int) $queue->organization_id;
-    }
 }

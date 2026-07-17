@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Beschaffungsart eines Erzeugnisses (Feature 047/048, E7): Eigenfertigung,
  * Zukauf oder Fremdfertigung (Lohnauftrag mit Beistellmaterial).
  */
-enum ProcurementMode: string {
+enum ProcurementMode: string implements HasLabel {
+    use HasOptions;
+
     case InHouse = 'in_house';
     case Purchase = 'purchase';
     case Subcontract = 'subcontract';

@@ -26,9 +26,5 @@
         <x-textarea-field name="affected_summary" :label="__('Betroffen (Standorte/Services/Kunden/Assets)')" rows="2" span="2">{{ old('affected_summary') }}</x-textarea-field>
     </x-form-group>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 </x-modal>

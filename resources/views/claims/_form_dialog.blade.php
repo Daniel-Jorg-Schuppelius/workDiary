@@ -54,9 +54,5 @@
         <x-input-field name="serial_no" :label="__('Seriennummer (optional)')" :value="old('serial_no')" span="2" />
     </x-form-group>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 </x-modal>

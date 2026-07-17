@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsSecurityIncident};
 use App\Models\User;
 use App\Services\Isms\SecurityIncidentService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -138,6 +139,20 @@ class SecurityIncidentController extends Controller {
      * @return array<string, mixed>
      */
     private function validateIncident(Request $request, User $actor): array {
+        // Sqid-Inputs vor der Validierung dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('owner_user_id')) {
+            $request->merge(['owner_user_id' => Sqid::decodeOrNumeric(User::class, $request->input('owner_user_id'))]);
+        }
+        foreach (['risk_ids' => IsmsRisk::class, 'control_ids' => IsmsControl::class] as $field => $model) {
+            $values = $request->input($field);
+            if (is_array($values)) {
+                $request->merge([$field => array_map(
+                    static fn($v) => $v === null || $v === '' ? null : Sqid::decodeOrNumeric($model, $v),
+                    $values,
+                )]);
+            }
+        }
+
         return $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],

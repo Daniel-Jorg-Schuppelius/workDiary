@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Http\Requests\SaveActivityCategoryRequest;
 use App\Models\ActivityCategory;
 use App\Support\Setting;
@@ -18,23 +19,18 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class ActivityCategoryController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['sort_order', 'key', 'label', 'activity_type', 'counts_as_work', 'billable_default', 'active'];
 
     public function index(\Illuminate\Http\Request $request): View {
         Gate::authorize('viewAny', ActivityCategory::class);
 
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'sort_order';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'sort_order');
 
         $categories = ActivityCategory::query()
-            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->whereLikeEscaped('key', $search)
-                    ->orWhereLikeEscaped('label', $search)
-                    ->orWhereLikeEscaped('description', $search);
-            }))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->orderBy($sort, $dir)
             ->paginate((int) Setting::get('pagination.activity_categories', 50))
             ->withQueryString();

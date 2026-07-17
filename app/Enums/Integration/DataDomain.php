@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Integration;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Datenbereiche mit konfigurierbarer Datenführerschaft (Restpunkt 69):
  * je Organisation und Bereich führt genau EIN System (native oder eine
  * Plugin-ID) — der {@see \App\Services\Integration\DataOwnershipResolver}
  * gate't Plugin-Schreiboperationen dagegen.
  */
-enum DataDomain: string {
+enum DataDomain: string implements HasLabel {
+    use HasOptions;
+
     case Tasks = 'tasks';
     case Tickets = 'tickets';
     case Inventory = 'inventory';

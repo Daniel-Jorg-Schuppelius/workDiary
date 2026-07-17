@@ -8,11 +8,7 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <x-page-toolbar :title="$claim->number . ' — ' . $claim->title">
         <div class="flex flex-wrap items-center gap-2 text-sm">
@@ -53,50 +49,36 @@
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Fallakte')">
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <dt class="text-base-content/60">{{ __('Kunde') }}</dt>
-                <dd>{{ $claim->customer->name ?? __('interner Mangel') }}</dd>
-                <dt class="text-base-content/60">{{ __('Gemeldet am') }}</dt>
-                <dd>{{ $claim->reported_at->fdatetime() }}</dd>
-                <dt class="text-base-content/60">{{ __('Rügedatum (B2B)') }}</dt>
-                <dd>{{ optional($claim->complaint_notice_at)->fdate() ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Frist') }}</dt>
-                <dd>{{ optional($claim->due_at)->fdatetime() ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Verantwortlich') }}</dt>
-                <dd>{{ $claim->responsible->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Melder') }}</dt>
-                <dd>{{ $claim->reporter_name ?? '—' }} {{ $claim->reporter_email !== null ? '(' . $claim->reporter_email . ')' : '' }}</dd>
-                <dt class="text-base-content/60">{{ __('Seriennummer') }}</dt>
-                <dd class="font-mono">{{ $claim->serial_no ?? '—' }}</dd>
-            </dl>
+            <x-detail-grid class="grid-cols-2">
+                <x-detail-grid.row :label="__('Kunde')">{{ $claim->customer->name ?? __('interner Mangel') }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Gemeldet am')">{{ $claim->reported_at->fdatetime() }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Rügedatum (B2B)')">{{ optional($claim->complaint_notice_at)->fdate() ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Frist')">{{ optional($claim->due_at)->fdatetime() ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Verantwortlich')">{{ $claim->responsible->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Melder')">{{ $claim->reporter_name ?? '—' }} {{ $claim->reporter_email !== null ? '(' . $claim->reporter_email . ')' : '' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Seriennummer')" class="font-mono">{{ $claim->serial_no ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
             @if ($claim->description !== null)
                 <p class="mt-2 whitespace-pre-line text-sm">{{ $claim->description }}</p>
             @endif
         </x-card>
 
         <x-card :title="__('Betroffene Objekte & Ursache')">
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <dt class="text-base-content/60">{{ __('Auftrag') }}</dt>
-                <dd>
+            <x-detail-grid class="grid-cols-2">
+                <x-detail-grid.row :label="__('Auftrag')">
                     @if ($claim->diaryEntry !== null)
                         <a class="link" href="{{ route('diary.show', $claim->diaryEntry) }}">{{ $claim->diaryEntry->title ?? ('#' . $claim->diaryEntry->id) }}</a>
                     @else
                         —
                     @endif
-                </dd>
-                <dt class="text-base-content/60">{{ __('Projekt') }}</dt>
-                <dd>{{ $claim->project->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Service-Ticket') }}</dt>
-                <dd>{{ $claim->serviceTicket->ticket_no ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Asset') }}</dt>
-                <dd>{{ $claim->asset->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Artikel') }}</dt>
-                <dd>{{ $claim->article->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Rechnung') }}</dt>
-                <dd>{{ $claim->invoice->number ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Lieferant') }}</dt>
-                <dd>{{ $claim->supplier->name ?? '—' }}</dd>
-            </dl>
+                </x-detail-grid.row>
+                <x-detail-grid.row :label="__('Projekt')">{{ $claim->project->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Service-Ticket')">{{ $claim->serviceTicket->ticket_no ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Asset')">{{ $claim->asset->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Artikel')">{{ $claim->article->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Rechnung')">{{ $claim->invoice->number ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Lieferant')">{{ $claim->supplier->name ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
             @can('update', $claim)
                 <form method="POST" action="{{ route('claims.update', $claim) }}" class="mt-3 grid grid-cols-2 gap-2 text-sm">
                     @csrf

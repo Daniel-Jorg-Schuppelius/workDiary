@@ -13,6 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AssessmentKind, AssessmentStatus, RiskStatus};
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\User;
+use App\Services\Isms\Concerns\AssignsSequentialNo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -52,6 +53,8 @@ use Illuminate\Validation\ValidationException;
  * gibt es bewusst nicht (Lebenszyklus trivial, analog Wissensbasis).
  */
 class RiskService {
+    use AssignsSequentialNo;
+
     public function __construct(
         private readonly ScopeService $scopes,
     ) {}
@@ -69,7 +72,7 @@ class RiskService {
             $risk = IsmsRisk::query()->create([
                 'organization_id' => $creator->organization_id,
                 'isms_scope_id' => $this->scopes->ensureDefaultScope((int) $creator->organization_id)->id,
-                'risk_no' => $this->nextRiskNo((int) $creator->organization_id),
+                'risk_no' => $this->nextNo(IsmsRisk::class, 'risk_no', 'organization_id', (int) $creator->organization_id),
                 'title' => $attributes['title'],
                 'description' => $attributes['description'] ?? null,
                 'category' => $attributes['category'],
@@ -200,7 +203,7 @@ class RiskService {
     /**
      * Erfasst einen neuen Bewertungsstand — IMMER als neuer Entwurf,
      * bestehende Stände werden nie überschrieben. assessment_no läuft
-     * je Risiko (Vergabe in der Transaktion, Muster nextRiskNo()).
+     * je Risiko (Vergabe in der Transaktion via nextNo()).
      *
      * @param  array<string, mixed>  $attributes  likelihood, impact, rationale?, valid_until?
      */
@@ -212,7 +215,7 @@ class RiskService {
             return IsmsRiskAssessment::query()->create([
                 'organization_id' => $risk->organization_id,
                 'isms_risk_id' => $risk->id,
-                'assessment_no' => $this->nextAssessmentNo((int) $risk->id),
+                'assessment_no' => $this->nextNo(IsmsRiskAssessment::class, 'assessment_no', 'isms_risk_id', (int) $risk->id),
                 'kind' => $kind->value,
                 'likelihood' => $likelihood,
                 'impact' => $impact,
@@ -302,17 +305,6 @@ class RiskService {
         $this->approveAssessment($assessment, $actor);
     }
 
-    /** Nächste laufende Bewertungs-Nummer innerhalb eines Risikos. */
-    private function nextAssessmentNo(int $riskId): int {
-        $max = IsmsRiskAssessment::query()
-            ->withTrashed()
-            ->where('isms_risk_id', $riskId)
-            ->lockForUpdate()
-            ->max('assessment_no');
-
-        return ((int) $max) + 1;
-    }
-
     /**
      * Synchronisiert die Maßnahmen-Zuordnung. Die IDs werden über die
      * org-gescopte Control-Query aufgelöst — fremde Organisationen können
@@ -363,14 +355,4 @@ class RiskService {
         return $cells;
     }
 
-    /** Nächste laufende Risiko-Nummer der Organisation (innerhalb der Transaktion). */
-    private function nextRiskNo(int $organizationId): int {
-        $max = IsmsRisk::query()
-            ->withTrashed()
-            ->where('organization_id', $organizationId)
-            ->lockForUpdate()
-            ->max('risk_no');
-
-        return ((int) $max) + 1;
-    }
 }

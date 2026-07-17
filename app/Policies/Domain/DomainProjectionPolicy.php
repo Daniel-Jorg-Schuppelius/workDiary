@@ -16,6 +16,7 @@ use App\Enums\User\Permission as P;
 use App\Models\Domain\DomainProjection;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Domain-Portfolio (Feature 083): getrennte Rechte je Aktion. Registrierung,
@@ -23,45 +24,49 @@ use App\Policies\Concerns\HasAdminBypass;
  * `approveDangerous` (Löschen/Push/Trade/Assign/Transfer-Out) ist die
  * Vier-Augen-Freigabe.
  */
-class DomainProjectionPolicy {
+class DomainProjectionPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::DomainViewAny->value);
-    }
-
-    public function view(User $user, DomainProjection $domain): bool {
-        return $user->can(P::DomainView->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::DomainViewAny,
+        'view' => P::DomainView,
+        'assignCustomer' => P::DomainCustomerAssign,
+        'register' => P::DomainRegister,
+        'manageContacts' => P::DomainContactManage,
+        'manageDns' => P::DomainDnsManage,
+        'manageRenewal' => P::DomainRenewalManage,
+        'manageTransfer' => P::DomainTransferManage,
+        'approveDangerous' => P::DomainDangerousApprove,
+    ];
 
     /** Kunden-/Reseller-Zuordnung pflegen. */
     public function assignCustomer(User $user, DomainProjection $domain): bool {
-        return $user->can(P::DomainCustomerAssign->value);
+        return $this->allows($user, 'assignCustomer');
     }
 
     /** Verfügbarkeit prüfen und registrieren. */
     public function register(User $user): bool {
-        return $user->can(P::DomainRegister->value);
+        return $this->allows($user, 'register');
     }
 
     public function manageContacts(User $user, DomainProjection $domain): bool {
-        return $user->can(P::DomainContactManage->value);
+        return $this->allows($user, 'manageContacts');
     }
 
     public function manageDns(User $user, DomainProjection $domain): bool {
-        return $user->can(P::DomainDnsManage->value);
+        return $this->allows($user, 'manageDns');
     }
 
     public function manageRenewal(User $user, DomainProjection $domain): bool {
-        return $user->can(P::DomainRenewalManage->value);
+        return $this->allows($user, 'manageRenewal');
     }
 
     public function manageTransfer(User $user, DomainProjection $domain): bool {
-        return $user->can(P::DomainTransferManage->value);
+        return $this->allows($user, 'manageTransfer');
     }
 
     /** Vier-Augen-Freigabe für Hochrisikoaktionen. */
     public function approveDangerous(User $user, DomainProjection $domain): bool {
-        return $user->can(P::DomainDangerousApprove->value);
+        return $this->allows($user, 'approveDangerous');
     }
 }

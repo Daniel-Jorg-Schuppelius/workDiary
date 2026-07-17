@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetCompliance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status eines Prüftermins (MVP-285).
  */
-enum AssetInspectionScheduleStatus: string {
+enum AssetInspectionScheduleStatus: string implements HasLabel {
+    use HasOptions;
+
     case Planned = 'planned';
     case Announced = 'announced';
     case InProgress = 'in_progress';

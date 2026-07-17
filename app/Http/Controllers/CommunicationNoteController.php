@@ -188,6 +188,11 @@ class CommunicationNoteController extends Controller {
      * @return array<string, mixed>
      */
     private function validateNote(Request $request, bool $includeNotable): array {
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('next_action_user_id')) {
+            $request->merge(['next_action_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('next_action_user_id'))]);
+        }
+
         $rules = [
             'type' => ['required', 'string', 'in:' . implode(',', array_column(CommunicationNoteType::cases(), 'value'))],
             'direction' => ['required', 'string', 'in:' . implode(',', array_column(CommunicationDirection::cases(), 'value'))],

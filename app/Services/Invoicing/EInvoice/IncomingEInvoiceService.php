@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\EInvoice;
 
+use CommonToolkit\Helper\Data\{CryptoHelper, XmlHelper};
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
 use ERechnungToolkit\Parsers\{ERechnungParser, ZugferdPdfParser};
+use SimpleXMLElement;
 use Throwable;
 
 /**
@@ -85,14 +87,9 @@ class IncomingEInvoiceService {
         ];
 
         $schema = new \ERechnungToolkit\Validators\UblSchemaValidator;
-        $root = null;
-        try {
-            $dom = new \DOMDocument;
-            if (@$dom->loadXML($xml)) {
-                $root = $dom->documentElement?->localName;
-            }
-        } catch (Throwable) {
-        }
+        // XXE-gehärteter Root-Sniff für die XSD-Auswahl (null = kein parsebares XML).
+        $parsed = XmlHelper::safeLoadString($xml);
+        $root = $parsed instanceof SimpleXMLElement ? $parsed->getName() : null;
         if ($schema->isAvailable() && $root !== null && $schema->supports($root)) {
             $result['schema_checked'] = true;
             $result['schema_errors'] = $schema->validate($xml);
@@ -152,7 +149,7 @@ class IncomingEInvoiceService {
         ?string $originalName = null,
     ): array {
         $organizationId = (int) $actor->organization_id;
-        $sha256 = hash('sha256', $contents);
+        $sha256 = CryptoHelper::hash($contents);
 
         // Inhaltsbasierter Dedup (MVP-165): identische Datei je Org genau einmal —
         // auch kanalübergreifend (Upload nach Mail bleibt Dublette).

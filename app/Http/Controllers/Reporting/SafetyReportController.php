@@ -14,7 +14,6 @@ use App\Enums\Safety\{SafetyEventKind, SafetyEventSeverity, SafetyEventStatus};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\SafetyEvent;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -30,9 +29,7 @@ class SafetyReportController extends Controller {
         Gate::authorize('viewAny', SafetyEvent::class);
         unset($request);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
 
         $events = SafetyEvent::query()
             ->whereBetween('occurred_at', [$fromDate, $toDate])

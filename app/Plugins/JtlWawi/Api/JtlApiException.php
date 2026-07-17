@@ -12,24 +12,16 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Api;
 
-use RuntimeException;
+use App\Plugins\Support\PluginApiException;
 
 /**
  * Fehlerantwort der JTL-Wawi-API (Feature 078). Trägt HTTP-Status und den
  * JTL-eigenen `errorCode` (kein RFC 7807). Die Message enthält nie Secrets
  * oder vollständige Payloads — nur Status, Code und Endpunkt-Kurzform.
  */
-class JtlApiException extends RuntimeException {
-    public function __construct(
-        string $message,
-        public readonly int $status,
-        public readonly ?string $errorCode = null,
-    ) {
-        parent::__construct($message);
-    }
-
-    public function isAuthError(): bool {
-        return in_array($this->status, [401, 403], true);
+class JtlApiException extends PluginApiException {
+    public function __construct(string $message, int $status, ?string $errorCode = null) {
+        parent::__construct($message, $status, errorCode: $errorCode);
     }
 
     public function isMissingEndpoint(): bool {

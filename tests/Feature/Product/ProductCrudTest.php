@@ -111,7 +111,7 @@ class ProductCrudTest extends TestCase {
             'asset_class' => 'machine',
             'name' => 'Kehrmaschine Halle 1',
             'status' => 'active',
-            'product_id' => $product->id,
+            'product_id' => $product->sqid,
         ])->assertRedirect(route('assets.index'));
 
         $this->assertDatabaseHas('assets', [

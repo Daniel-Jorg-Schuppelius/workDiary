@@ -39,7 +39,7 @@ class AuditRecordService {
             return IsmsAudit::query()->create([
                 'organization_id' => $creator->organization_id,
                 'isms_scope_id' => $scope->id,
-                'audit_no' => $this->nextNo(IsmsAudit::class, 'audit_no', (int) $creator->organization_id),
+                'audit_no' => $this->nextNo(IsmsAudit::class, 'audit_no', 'organization_id', (int) $creator->organization_id),
                 'title' => $attributes['title'],
                 'norm' => $attributes['norm'] ?? null,
                 'edition' => $attributes['edition'] ?? null,

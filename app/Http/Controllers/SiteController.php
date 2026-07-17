@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Models\{Customer, Floor, Room, Site};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class SiteController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['name', 'address_city', 'is_active'];
 
     public function index(Request $request): View {
@@ -24,10 +27,7 @@ class SiteController extends Controller {
 
         $rawCustomer = (string) $request->query('customer', '');
         $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomer);
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['sort' => $sort, 'dir' => $dir] = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
         $query = Site::query()
             ->with('customer')
             ->withCount('buildings')

@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Folgeentscheidung der Rücknahmeprüfung (MVP-265): Reinigung/Reparatur
  * erzeugen Belegungsfenster bzw. Sperren im gemeinsamen Modell (D12),
  * claim übergibt kontrolliert an die Reklamation (MVP-267).
  */
-enum RentalReturnFollowUp: string {
+enum RentalReturnFollowUp: string implements HasLabel {
+    use HasOptions;
+
     case None = 'none';
     case Cleaning = 'cleaning';
     case Repair = 'repair';

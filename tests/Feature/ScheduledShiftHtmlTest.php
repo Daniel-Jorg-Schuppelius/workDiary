@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ScheduledShift, User};
+use App\Models\ScheduledShift;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -24,20 +24,12 @@ class ScheduledShiftHtmlTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function user(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     public function test_admin_can_view_show(): void {
         $shift = ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('scheduled-shifts.show', $shift))
             ->assertOk()
             ->assertViewIs('scheduled-shifts._form_dialog');
@@ -48,7 +40,7 @@ class ScheduledShiftHtmlTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('scheduled-shifts.edit', $shift))
             ->assertOk()
             ->assertViewIs('scheduled-shifts._form_dialog');
@@ -60,7 +52,7 @@ class ScheduledShiftHtmlTest extends TestCase {
             'note' => 'old',
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->put(route('scheduled-shifts.update', $shift), [
                 'note' => 'updated note',
             ])
@@ -74,7 +66,7 @@ class ScheduledShiftHtmlTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->delete(route('scheduled-shifts.destroy', $shift))
             ->assertRedirect(route('schedule.index'));
 
@@ -86,7 +78,7 @@ class ScheduledShiftHtmlTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('scheduled-shifts.edit', $shift))
             ->assertForbidden();
     }

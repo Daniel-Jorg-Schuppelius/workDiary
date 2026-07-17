@@ -10,11 +10,9 @@
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
 use App\Models\{Asset, DiaryEntry, OpenIssue, Protocol, User};
 use App\Services\Asset\RecurringDefectService;
 use Illuminate\Http\{Request, Response};
@@ -29,6 +27,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Defektprotokolle für eine Kennzahl der Produktanalyse.
  */
 class AssetDrilldownReportController extends Controller {
+    use BuildsOpenIssueDrilldown;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
@@ -45,16 +44,14 @@ class AssetDrilldownReportController extends Controller {
         }
 
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $rows = $service->pareto((int) $user->organization_id, $from, $to);
 
         if ($request->query('export') === 'csv') {
             $exportFilters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
-            $this->auditExport($request, 'assets-drilldown-recurring-defects', 'csv', $exportFilters);
 
-            return $this->exportRecurringDefectsCsv($rows, $exportFilters, $from->toDateString(), $to->toDateString());
+            return $this->exportRecurringDefectsCsv($rows, $exportFilters, $from->toDateString(), $to->toDateString(), $request);
         }
 
         return view('reports.drilldown.asset-recurring-defects', [
@@ -69,44 +66,39 @@ class AssetDrilldownReportController extends Controller {
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $filters = $this->collectFilters($request);
         $escalatedOnly = $request->boolean('escalated');
 
         $assetIds = $this->assetIds($filters);
 
-        $openStatuses = [
-            OpenIssueStatus::Open->value,
-            OpenIssueStatus::InProgress->value,
-            OpenIssueStatus::Blocked->value,
-            OpenIssueStatus::Reopened->value,
-        ];
-
-        $issuesQuery = OpenIssue::query()
-            ->with(['assignee:id,name'])
-            ->where('subject_type', Asset::class)
-            ->whereIn('status', $openStatuses)
-            ->when($escalatedOnly, fn($q) => $q->where('status', OpenIssueStatus::Blocked->value))
-            ->when($assetIds !== [], fn($q) => $q->whereIn('subject_id', $assetIds), fn($q) => $q->whereRaw('1=0'))
-            ->orderByDesc('updated_at');
+        $issuesQuery = $this->openIssueDrilldownQuery($escalatedOnly, function ($query) use ($assetIds): void {
+            $query->where('subject_type', Asset::class)
+                ->when($assetIds !== [], fn($q) => $q->whereIn('subject_id', $assetIds), fn($q) => $q->whereRaw('1=0'));
+        });
 
         if ($request->query('export') === 'csv') {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
             $exportFilters = $filters + ['escalated' => $escalatedOnly, 'from' => $from->toDateString(), 'to' => $to->toDateString()];
-            $this->auditExport($request, 'assets-drilldown-open-issues', 'csv', $exportFilters);
 
-            return $this->exportOpenIssuesCsv($issues, $exportFilters, $from->toDateString(), $to->toDateString(), $escalatedOnly);
+            return $this->exportOpenIssuesCsv($issues, $exportFilters, $from->toDateString(), $to->toDateString(), $escalatedOnly, $request);
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
-            $this->auditExport($request, 'assets-drilldown-open-issues', 'pdf', $filters + ['escalated' => $escalatedOnly, 'from' => $from->toDateString(), 'to' => $to->toDateString()]);
-
-            return $this->exportOpenIssuesPdf($issues, $filters, $range['label'], $from->toDateString(), $to->toDateString(), $escalatedOnly);
+            return $this->exportOpenIssuesPdf(
+                $issues,
+                $filters,
+                $range['label'],
+                $from->toDateString(),
+                $to->toDateString(),
+                $escalatedOnly,
+                $filters + ['escalated' => $escalatedOnly, 'from' => $from->toDateString(), 'to' => $to->toDateString()],
+                $request,
+            );
         }
 
         $issues = $issuesQuery->paginate(50)->withQueryString();
@@ -122,8 +114,7 @@ class AssetDrilldownReportController extends Controller {
 
     public function protocols(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $filters = $this->collectFilters($request);
 
@@ -138,29 +129,28 @@ class AssetDrilldownReportController extends Controller {
             ->values()
             ->all();
 
-        $protocolsQuery = Protocol::query()
-            ->with(['creator:id,name'])
-            ->where('type', ProtocolType::Defect->value)
-            ->where('subject_type', DiaryEntry::class)
-            ->whereBetween('occurred_at', [$from, $to])
-            ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
-            ->orderByDesc('occurred_at');
+        $protocolsQuery = $this->defectProtocolDrilldownQuery($entryIds, $from, $to);
 
         if ($request->query('export') === 'csv') {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
             $exportFilters = $filters + ['from' => $from->toDateString(), 'to' => $to->toDateString()];
-            $this->auditExport($request, 'assets-drilldown-protocols', 'csv', $exportFilters);
 
-            return $this->exportProtocolsCsv($protocols, $exportFilters, $from->toDateString(), $to->toDateString());
+            return $this->exportProtocolsCsv($protocols, $exportFilters, $from->toDateString(), $to->toDateString(), $request);
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
-            $this->auditExport($request, 'assets-drilldown-protocols', 'pdf', $filters + ['from' => $from->toDateString(), 'to' => $to->toDateString()]);
-
-            return $this->exportProtocolsPdf($protocols, $filters, $range['label'], $from->toDateString(), $to->toDateString());
+            return $this->exportProtocolsPdf(
+                $protocols,
+                $filters,
+                $range['label'],
+                $from->toDateString(),
+                $to->toDateString(),
+                $filters + ['from' => $from->toDateString(), 'to' => $to->toDateString()],
+                $request,
+            );
         }
 
         $protocols = $protocolsQuery->paginate(50)->withQueryString();
@@ -238,35 +228,21 @@ class AssetDrilldownReportController extends Controller {
      * @param  list<OpenIssue>  $issues
      * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      */
-    private function exportOpenIssuesCsv(array $issues, array $filters, string $from, string $to, bool $escalatedOnly): Response {
+    private function exportOpenIssuesCsv(array $issues, array $filters, string $from, string $to, bool $escalatedOnly, Request $request): Response {
         $filename = sprintf(
             'produktanalyse-drilldown-open-issues_%s_%s%s.csv',
             $from,
             $to,
             $escalatedOnly ? '-escalated' : ''
         );
-        $rows = [];
-        $rows[] = ['ID', 'AssetID', 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen'];
-        foreach ($issues as $issue) {
-            $rows[] = [
-                $issue->id,
-                $issue->subject_id,
-                $issue->title,
-                $issue->status->label(),
-                $issue->severity->label(),
-                $issue->due_at?->format('Y-m-d') ?? '',
-                $issue->assignee?->name,
-            ];
-        }
-
-        return $this->csvWithMetadata($rows, $filename, 'assets-drilldown-open-issues', $filters);
+        return $this->csvWithMetadata($this->openIssueCsvRows($issues, 'AssetID'), $filename, 'assets-drilldown-open-issues', $filters, $request);
     }
 
     /**
      * @param  list<array{asset_id:int, asset_name:string, asset_no:string|null, total:int, by_severity:array<string,int>, recent_total:int, is_recurring:bool}>  $rows
      * @param  array{from:string, to:string}  $filters
      */
-    private function exportRecurringDefectsCsv(array $rows, array $filters, string $from, string $to): Response {
+    private function exportRecurringDefectsCsv(array $rows, array $filters, string $from, string $to, Request $request): Response {
         $filename = sprintf('produktanalyse-drilldown-wiederholdefekte_%s_%s.csv', $from, $to);
         $csv = [];
         $csv[] = ['AssetID', 'Asset', 'Inventarnr', 'Defekte_Zeitraum', 'Defekte_12Monate', 'Wiederholdefekt'];
@@ -281,14 +257,15 @@ class AssetDrilldownReportController extends Controller {
             ];
         }
 
-        return $this->csvWithMetadata($csv, $filename, 'assets-drilldown-recurring-defects', $filters);
+        return $this->csvWithMetadata($csv, $filename, 'assets-drilldown-recurring-defects', $filters, $request);
     }
 
     /**
      * @param  list<OpenIssue>  $issues
      * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
+     * @param  array<string, mixed>  $auditFilters
      */
-    private function exportOpenIssuesPdf(array $issues, array $filters, string $label, string $from, string $to, bool $escalatedOnly): SymfonyResponse {
+    private function exportOpenIssuesPdf(array $issues, array $filters, string $label, string $from, string $to, bool $escalatedOnly, array $auditFilters, Request $request): SymfonyResponse {
         $filename = sprintf('produktanalyse-drilldown-open-issues_%s_%s%s.pdf', $from, $to, $escalatedOnly ? '-escalated' : '');
 
         return $this->pdfDownload('reports.drilldown.pdf.asset-open-issues', [
@@ -296,43 +273,30 @@ class AssetDrilldownReportController extends Controller {
             'scopeLabel' => $this->scopeLabel($filters),
             'label' => $label,
             'escalatedOnly' => $escalatedOnly,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'assets-drilldown-open-issues', filters: $auditFilters);
     }
 
     /**
      * @param  list<Protocol>  $protocols
      * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
      */
-    private function exportProtocolsCsv(array $protocols, array $filters, string $from, string $to): Response {
+    private function exportProtocolsCsv(array $protocols, array $filters, string $from, string $to, Request $request): Response {
         $filename = sprintf('produktanalyse-drilldown-defektprotokolle_%s_%s.csv', $from, $to);
-        $rows = [];
-        $rows[] = ['ID', 'Titel', 'Status', 'Typ', 'Zeitpunkt', 'ErstelltVon', 'AuftragID'];
-        foreach ($protocols as $protocol) {
-            $rows[] = [
-                $protocol->id,
-                $protocol->title,
-                $protocol->status->label(),
-                $protocol->type->label(),
-                $protocol->occurred_at->format('Y-m-d H:i'),
-                $protocol->creator?->name,
-                $protocol->subject_id,
-            ];
-        }
-
-        return $this->csvWithMetadata($rows, $filename, 'assets-drilldown-protocols', $filters);
+        return $this->csvWithMetadata($this->protocolCsvRows($protocols), $filename, 'assets-drilldown-protocols', $filters, $request);
     }
 
     /**
      * @param  list<Protocol>  $protocols
      * @param  array{customer_id:?int, category_code:?string, manufacturer:?string, model:?string, asset_id:?int, product_id:?int}  $filters
+     * @param  array<string, mixed>  $auditFilters
      */
-    private function exportProtocolsPdf(array $protocols, array $filters, string $label, string $from, string $to): SymfonyResponse {
+    private function exportProtocolsPdf(array $protocols, array $filters, string $label, string $from, string $to, array $auditFilters, Request $request): SymfonyResponse {
         $filename = sprintf('produktanalyse-drilldown-defektprotokolle_%s_%s.pdf', $from, $to);
 
         return $this->pdfDownload('reports.drilldown.pdf.asset-protocols', [
             'protocols' => $protocols,
             'scopeLabel' => $this->scopeLabel($filters),
             'label' => $label,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'assets-drilldown-protocols', filters: $auditFilters);
     }
 }

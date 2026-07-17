@@ -14,6 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Models\Isms\IsmsAuditPackage;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln Auditpakete (Feature 046, Inkrement E):
@@ -27,46 +28,38 @@ use App\Policies\Concerns\HasAdminBypass;
  * - Der öffentliche Prüfer-Download läuft NICHT über diese Policy,
  *   sondern token-basiert (Hash + Ablauf + Widerruf) ohne Login.
  */
-class IsmsAuditPackagePolicy {
+class IsmsAuditPackagePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsAuditPackage $package): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsAuditPackage $package): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsAuditPackage $package): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+        'finalize' => P::IsmsManage,
+        'verify' => P::IsmsView,
+        'download' => P::IsmsViewAny,
+        'manageTokens' => P::IsmsManage,
+    ];
 
     /** Entwurf finalisieren (Snapshot + Hash, friert ein). */
     public function finalize(User $user, IsmsAuditPackage $package): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'finalize');
     }
 
     /** Integrität prüfen (file_hash gegen Datei). */
     public function verify(User $user, IsmsAuditPackage $package): bool {
-        return $user->can(P::IsmsView->value);
+        return $this->allows($user, 'verify');
     }
 
     /** Interner Download der Paketdatei (Gate isms.viewAny). */
     public function download(User $user, IsmsAuditPackage $package): bool {
-        return $user->can(P::IsmsViewAny->value);
+        return $this->allows($user, 'download');
     }
 
     /** Prüfer-Tokens erstellen/widerrufen. */
     public function manageTokens(User $user, IsmsAuditPackage $package): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'manageTokens');
     }
 }

@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Customer, ExternalReference, Project, User};
+use App\Models\{AuditLog, Customer, ExternalReference, Project, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Database\Eloquent\Relations\{MorphMany, MorphToMany};
@@ -340,11 +340,8 @@ class CustomerControllerTest extends TestCase {
             ->assertRedirect();
 
         $customer = Customer::where('name', 'Audit Co.')->firstOrFail();
-        $this->assertDatabaseHas('audit_logs', [
-            'event' => 'created',
-            'auditable_type' => Customer::class,
-            'auditable_id' => $customer->id,
-        ]);
+        // Genau EINE Zeile pro Event: Trait ist der einzige Schreibpfad (A1, kein Observer-Doppel).
+        $this->assertSame(1, $this->auditCount($customer, 'created'));
 
         $this->putAsAdmin('customers.update', $customer, [
             'name' => 'Audit Co. (geändert)',
@@ -352,11 +349,30 @@ class CustomerControllerTest extends TestCase {
         ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('audit_logs', [
-            'event' => 'updated',
-            'auditable_type' => Customer::class,
-            'auditable_id' => $customer->id,
+        $this->assertSame(1, $this->auditCount($customer, 'updated'));
+    }
+
+    public function test_archive_and_restore_write_exactly_one_audit_row_each(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'created_by' => $this->admin->id,
         ]);
+
+        $this->postAsAdmin('customers.archive', [], $customer)->assertRedirect();
+        $this->postAsAdmin('customers.restore', [], $customer)->assertRedirect();
+
+        // archived_at-Wechsel wird als eigenes Event geloggt (GoBD), nicht als `updated`.
+        $this->assertSame(1, $this->auditCount($customer, 'archived'));
+        $this->assertSame(1, $this->auditCount($customer, 'restored'));
+        $this->assertSame(0, $this->auditCount($customer, 'updated'));
+    }
+
+    private function auditCount(Customer $customer, string $event): int {
+        return AuditLog::query()
+            ->where('auditable_type', Customer::class)
+            ->where('auditable_id', $customer->id)
+            ->where('event', $event)
+            ->count();
     }
 
     public function test_csv_import_creates_and_updates_customers(): void {

@@ -12,14 +12,17 @@ namespace App\Policies;
 
 use App\Enums\User\Permission;
 use App\Models\{InvoiceTemplate, User};
+use App\Policies\Concerns\ChecksOwnership;
 
 class InvoiceTemplatePolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return $user->isAdmin() || $user->hasEffectivePermission(Permission::InvoiceViewAny->value);
     }
 
     public function view(User $user, InvoiceTemplate $template): bool {
-        return $template->organization_id === $user->organization_id
+        return $this->sharesOrganization($user, $template)
             && $this->viewAny($user);
     }
 
@@ -28,12 +31,12 @@ class InvoiceTemplatePolicy {
     }
 
     public function update(User $user, InvoiceTemplate $template): bool {
-        return $template->organization_id === $user->organization_id
+        return $this->sharesOrganization($user, $template)
             && ($user->isAdmin() || $user->hasEffectivePermission(Permission::InvoiceUpdate->value));
     }
 
     public function delete(User $user, InvoiceTemplate $template): bool {
-        return $template->organization_id === $user->organization_id
+        return $this->sharesOrganization($user, $template)
             && ($user->isAdmin() || $user->hasEffectivePermission(Permission::InvoiceDelete->value));
     }
 }

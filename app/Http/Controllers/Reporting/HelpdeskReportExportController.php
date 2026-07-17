@@ -102,13 +102,14 @@ class HelpdeskReportExportController extends Controller {
             ...$this->csvRows($metric, $from, $to),
         ];
 
-        $this->auditExport($request, 'helpdesk_' . $metric, 'csv', $filters);
-
+        // A9: Audit läuft in csvWithMetadata; Audit-Code bleibt ohne Versions-Suffix.
         return $this->csvWithMetadata(
             $rows,
             sprintf('helpdesk_%s_%s.csv', $metric, now()->format('Ymd')),
             'helpdesk_' . $metric . '_v' . HelpdeskMetricsService::METRIC_VERSION,
             $filters,
+            $request,
+            'helpdesk_' . $metric,
         );
     }
 
@@ -119,8 +120,6 @@ class HelpdeskReportExportController extends Controller {
         [$from, $to] = $this->period($request);
         $filters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
 
-        $this->auditExport($request, 'helpdesk_report', 'pdf', $filters);
-
         return $this->pdfDownload('helpdesk.reports.pdf', [
             'from' => $from,
             'to' => $to,
@@ -130,7 +129,7 @@ class HelpdeskReportExportController extends Controller {
             'fcr' => $this->metrics->fcrAndReopens($from, $to),
             'aging' => $this->metrics->agingHistogram(),
             'satisfaction' => $this->metrics->satisfaction($from, $to),
-        ], sprintf('helpdesk_bericht_%s.pdf', now()->format('Ymd')));
+        ], sprintf('helpdesk_bericht_%s.pdf', now()->format('Ymd')), request: $request, reportCode: 'helpdesk_report', filters: $filters);
     }
 
     /**

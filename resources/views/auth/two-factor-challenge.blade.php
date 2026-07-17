@@ -37,9 +37,7 @@
                 </div>
 
                 <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
-                    @if ($errors->any())
-                        <div class="mb-4 alert alert-error text-sm">{{ $errors->first() }}</div>
-                    @endif
+                    <x-validation-errors first class="mb-4" />
                     @if (session('success'))
                         <div class="mb-4 alert alert-success text-sm">{{ session('success') }}</div>
                     @endif

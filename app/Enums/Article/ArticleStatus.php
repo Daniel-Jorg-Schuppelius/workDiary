@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Article;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Lebenszyklus von Artikeln und Varianten (Feature 048, MVP-060).
  * Referenzierte Artikel werden STILLGELEGT (retired), nicht gelöscht; nur
  * referenzlose Entwürfe dürfen entfernt werden.
  */
-enum ArticleStatus: string {
+enum ArticleStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Active = 'active';
     case Retired = 'retired';

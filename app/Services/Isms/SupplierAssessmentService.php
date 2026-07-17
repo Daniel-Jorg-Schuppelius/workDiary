@@ -14,6 +14,7 @@ use App\Enums\Isms\{IncidentSeverity, SupplierAssessmentStatus};
 use App\Models\Isms\{IsmsScope, IsmsSupplierAssessment};
 use App\Models\Privacy\ProcessingAgreement;
 use App\Models\{Supplier, User};
+use App\Services\Isms\Concerns\AssignsSequentialNo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -37,6 +38,8 @@ use Illuminate\Validation\ValidationException;
  * Statusübergänge.
  */
 class SupplierAssessmentService {
+    use AssignsSequentialNo;
+
     /**
      * Legt eine Lieferantenbewertung an (Status default draft).
      *
@@ -49,7 +52,7 @@ class SupplierAssessmentService {
 
             return IsmsSupplierAssessment::query()->create([
                 'organization_id' => $creator->organization_id,
-                'assessment_no' => $this->nextAssessmentNo((int) $creator->organization_id),
+                'assessment_no' => $this->nextNo(IsmsSupplierAssessment::class, 'assessment_no', 'organization_id', (int) $creator->organization_id),
                 'supplier_id' => $supplierId,
                 'supplier_name' => $supplierName,
                 'criticality' => $this->severity($attributes['criticality'] ?? null)->value,
@@ -242,14 +245,4 @@ class SupplierAssessmentService {
         return $exists ? (int) $scopeId : null;
     }
 
-    /** Nächste laufende Bewertungs-Nummer der Organisation. */
-    private function nextAssessmentNo(int $organizationId): int {
-        $max = IsmsSupplierAssessment::query()
-            ->withTrashed()
-            ->where('organization_id', $organizationId)
-            ->lockForUpdate()
-            ->max('assessment_no');
-
-        return ((int) $max) + 1;
-    }
 }

@@ -12,12 +12,12 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{Customer, Invoice, InvoiceItem, TimeEntry, User};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Models\{Customer, Invoice, InvoiceItem, TimeEntry};
 use Carbon\Carbon;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -28,16 +28,18 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class BillingReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        abort_unless($isAdmin, 403);
+        abort_unless($this->viewerIsAdmin(), 403);
 
-        $range = $this->globalDateRange();
-        $from = $range['from']->toDateString();
-        $to = $range['to']->toDateString();
+        // Bewusst Datumsstrings: die Queries filtern teils DATETIME-Spalten
+        // (created_at/issued_on) über Datumsgrenzen — Timestamps wären eine
+        // Verhaltensänderung.
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        $from = $fromDate->toDateString();
+        $to = $toDate->toDateString();
         $today = Carbon::today();
 
         $status = $this->aggregateByStatus($from, $to);
@@ -47,10 +49,10 @@ class BillingReportController extends Controller {
         $einvoicing = $this->aggregateEInvoicing($from, $to);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $from, $to);
+            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $from, $to, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($status, $aging, $perCustomer, $unbilled, $from, $to);
+            return $this->exportPdf($status, $aging, $perCustomer, $unbilled, $from, $to, $request);
         }
 
         return view('reports.billing', [
@@ -291,25 +293,25 @@ class BillingReportController extends Controller {
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      * @param  array{incoming: array<string, array{count:int, gross:float}>, incoming_transferred: int, validation: array{checked:int, passed:int, failed:int}, dunning: array<int, int>}  $einvoicing
      */
-    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, string $from, string $to): Response {
+    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, string $from, string $to, Request $request): Response {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl', 'Wert €'];
         foreach ($status as $st => $s) {
-            $rows[] = ['Status', $st, $s['count'], number_format($s['total'], 2, '.', '')];
+            $rows[] = ['Status', $st, $s['count'], NumberHelper::toUSFormat($s['total'], 2)];
         }
         foreach ($aging['buckets'] as $k => $b) {
-            $rows[] = ['Aging', $k, $b['count'], number_format($b['total'], 2, '.', '')];
+            $rows[] = ['Aging', $k, $b['count'], NumberHelper::toUSFormat($b['total'], 2)];
         }
-        $rows[] = ['Aging', 'OFFEN_SUMME', '', number_format($aging['open_total'], 2, '.', '')];
+        $rows[] = ['Aging', 'OFFEN_SUMME', '', NumberHelper::toUSFormat($aging['open_total'], 2)];
         foreach ($perCustomer as $r) {
-            $rows[] = ['Kunde', $r['customer']->name, $r['count'], number_format($r['total'], 2, '.', '')];
+            $rows[] = ['Kunde', $r['customer']->name, $r['count'], NumberHelper::toUSFormat($r['total'], 2)];
         }
         $rows[] = ['Unbillte Zeit', 'Einträge', $unbilled['count'], ''];
         $rows[] = ['Unbillte Zeit', 'Minuten', $unbilled['minutes'], ''];
-        $rows[] = ['Unbillte Zeit', 'Projiziert', '', number_format($unbilled['projected_revenue'], 2, '.', '')];
+        $rows[] = ['Unbillte Zeit', 'Projiziert', '', NumberHelper::toUSFormat($unbilled['projected_revenue'], 2)];
         foreach ($einvoicing['incoming'] as $st => $s) {
-            $rows[] = ['Eingang', $st, $s['count'], number_format($s['gross'], 2, '.', '')];
+            $rows[] = ['Eingang', $st, $s['count'], NumberHelper::toUSFormat($s['gross'], 2)];
         }
         $rows[] = ['Eingang', 'UEBERGEBEN', $einvoicing['incoming_transferred'], ''];
         $rows[] = ['Eingangs-Validierung', 'geprüft', $einvoicing['validation']['checked'], ''];
@@ -319,7 +321,7 @@ class BillingReportController extends Controller {
             $rows[] = ['Mahnstufe', (string) $level, $count, ''];
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'billing', ['from' => $from, 'to' => $to]);
+        return $this->csvWithMetadata($rows, $filename, 'billing', ['from' => $from, 'to' => $to], $request);
     }
 
     /**
@@ -328,7 +330,7 @@ class BillingReportController extends Controller {
      * @param  array<int, array{customer: Customer, count:int, total:float}>  $perCustomer
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      */
-    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to, Request $request): SymfonyResponse {
         $filename = sprintf('billing_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.billing', [
             'status' => $status,
@@ -337,6 +339,6 @@ class BillingReportController extends Controller {
             'unbilled' => $unbilled,
             'from' => $from,
             'to' => $to,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'billing', filters: ['from' => $from, 'to' => $to]);
     }
 }

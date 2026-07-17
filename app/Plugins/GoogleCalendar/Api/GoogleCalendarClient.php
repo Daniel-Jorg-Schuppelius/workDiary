@@ -13,15 +13,17 @@ namespace App\Plugins\GoogleCalendar\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\{GoogleCalendarConfig, GoogleCalendarPlugin};
-use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway};
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use RuntimeException;
 use Throwable;
 
 /**
  * Google-Calendar-Gateway (API v3, MVP-328, Bauturbo A8) auf dem
  * `php-api-toolkit`-Fundament: OAuth2-Bearer über den org-gebundenen
- * {@see GoogleCalendarTokenStore} inkl. transparentem Refresh. Fehlersemantik
+ * {@see ConnectionTokenStore} inkl. transparentem Refresh. Fehlersemantik
  * wie CalDAV-Gateway: Transport-/HTTP-Fehler ⇒ null/false.
  */
 class GoogleCalendarClient implements RemoteCalendarGateway {
@@ -36,7 +38,7 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
         // Grant nur bei vorhandener Installation-Konfiguration — ohne ihn
         // bleibt das Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit.
         $grant = GoogleCalendarConfig::isConfigured() ? app(GoogleCalendarOAuth::class)->grant() : null;
-        $this->api->setAuthentication(new OAuth2BearerAuthentication(new GoogleCalendarTokenStore($this->connection), $grant));
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 
     /**
@@ -45,10 +47,13 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
      * Länge 40 (erlaubt 5–1024).
      */
     public static function eventId(string $uid): string {
-        return sha1($uid);
+        return CryptoHelper::hash($uid, HashAlgorithm::SHA1);
     }
 
-    public function createEvent(RemoteCalendarEvent $event): ?string {
+    public function createEvent(RemoteCalendarItem $event): ?string {
+        if (! $event instanceof RemoteCalendarEvent) {
+            return null; // dieses Gateway publiziert nur strukturierte Events
+        }
         $id = self::eventId($event->uid);
 
         try {
@@ -66,7 +71,11 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
         return $response->successful() ? $id : null;
     }
 
-    public function updateEvent(string $remoteId, RemoteCalendarEvent $event): bool {
+    public function updateEvent(string $remoteId, RemoteCalendarItem $event): bool {
+        if (! $event instanceof RemoteCalendarEvent) {
+            return false;
+        }
+
         try {
             $response = $this->api->putJson($this->eventsUrl() . '/' . rawurlencode($remoteId), $this->payload($event));
         } catch (Throwable) {

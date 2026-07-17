@@ -13,11 +13,9 @@
     <div class="card bg-base-100 shadow">
         <div class="card-body">
             <p><span class="badge badge-outline">{{ $claim->status->label() }}</span></p>
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <dt class="text-base-content/60">{{ __('Gemeldet am') }}</dt>
-                <dd>{{ $claim->reported_at->fdate() }}</dd>
-                <dt class="text-base-content/60">{{ __('Rücksendungen') }}</dt>
-                <dd>
+            <x-detail-grid class="grid-cols-2">
+                <x-detail-grid.row :label="__('Gemeldet am')">{{ $claim->reported_at->fdate() }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Rücksendungen')">
                     @if ($claim->rmaReturns->isEmpty())
                         —
                     @else
@@ -25,8 +23,8 @@
                             <span class="font-mono">{{ $rma->rma_number }}</span> ({{ $rma->status->label() }})
                         @endforeach
                     @endif
-                </dd>
-            </dl>
+                </x-detail-grid.row>
+            </x-detail-grid>
             @if ($claim->description !== null)
                 <p class="whitespace-pre-line text-sm">{{ $claim->description }}</p>
             @endif

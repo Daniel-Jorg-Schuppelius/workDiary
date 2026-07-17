@@ -10,23 +10,19 @@
 
 namespace App\Plugins\Lexoffice\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherSync};
 use Illuminate\Console\Command;
 
 class LexofficeSyncVouchersCommand extends Command {
-    protected $signature = 'lexoffice:sync-vouchers {--organization= : ID einer einzelnen Organisation, sonst alle}';
+    use IteratesOrganizations;
+
+    protected $signature = 'lexoffice:sync-vouchers ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Synchronisiert Lexoffice-Belege (voucherlist) pro verknüpftem Kontakt in die lokale Tabelle `lexoffice_vouchers`.';
 
     public function handle(): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

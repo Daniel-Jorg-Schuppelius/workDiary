@@ -12,74 +12,18 @@ declare(strict_types=1);
 
 namespace App\Plugins\Toggl;
 
-use App\Models\Organization;
-use App\Services\Integration\Concerns\ResolvesInboxTargets;
-use App\Services\Integration\InboxGroupBooker;
-use Illuminate\Support\Collection;
+use App\Plugins\Support\MatchingTimeGroupBooker;
 
 /**
  * Bindet die gruppierten Toggl-Zeit-Import-Einträge an die universelle
- * Zuordnungs-Inbox: liefert die offenen Gruppen samt Fuzzy-Vorschlägen, löst
- * Kunde + Projekt (existierend-oder-neu) auf und delegiert Buchung/Verwerfen an
- * den {@see TogglImportService}.
+ * Zuordnungs-Inbox (gemeinsame Mechanik: {@see MatchingTimeGroupBooker}).
  */
-class TogglGroupBooker implements InboxGroupBooker {
-    use ResolvesInboxTargets;
-
-    public function __construct(private readonly TogglImportService $service) {}
-
-    public function groups(Organization $organization): Collection {
-        /** @var Collection<int, array<string, mixed>> $groups */
-        $groups = $this->service->openInboxGroups($organization)->map(function (array $group) use ($organization): array {
-            $customer = $this->service->suggestCustomer($organization, $group['client_name']);
-            $project = $this->service->suggestProject($organization, $customer, $group['project_name']);
-
-            return [
-                'plugin_id' => TogglPlugin::ID,
-                'form' => 'customer_project',
-                'group_key' => $group['group_key'],
-                'client_name' => $group['client_name'],
-                'project_name' => $group['project_name'],
-                'count' => $group['count'],
-                'minutes' => $group['minutes'],
-                'first_seen' => $group['first_seen'],
-                'last_seen' => $group['last_seen'],
-                'suggested_customer_sqid' => $customer?->sqid,
-                'suggested_project_sqid' => $project?->sqid,
-            ];
-        })->values();
-
-        return $groups;
+class TogglGroupBooker extends MatchingTimeGroupBooker {
+    public function __construct(TogglImportService $service) {
+        parent::__construct($service);
     }
 
-    public function rules(): array {
-        return [
-            // 'internal' bucht auf ein kundenloses (unternehmenseigenes) Projekt —
-            // typisch für Toggl-Einträge ganz ohne Client.
-            'customer_mode' => ['required', 'in:existing,new,internal'],
-            'customer' => ['nullable', 'string', 'required_if:customer_mode,existing'],
-            'new_customer_name' => ['nullable', 'string', 'max:191', 'required_if:customer_mode,new'],
-            'project_mode' => ['required', 'in:existing,new'],
-            'project' => ['nullable', 'string', 'required_if:project_mode,existing'],
-            'new_project_name' => ['nullable', 'string', 'max:191', 'required_if:project_mode,new'],
-        ];
-    }
-
-    public function book(Organization $organization, string $groupKey, array $input): array {
-        // Intern: kein Kunde — kundenloses Projekt auflösen (existierend oder neu).
-        if (($input['customer_mode'] ?? null) === 'internal') {
-            $project = $this->resolveStandaloneProject($organization, $input);
-
-            return $this->service->bookInboxGroup($organization, $groupKey, null, $project);
-        }
-
-        $customer = $this->resolveCustomerTarget($organization, $input);
-        $project = $this->resolveProjectUnderCustomer($organization, $customer, $input);
-
-        return $this->service->bookInboxGroup($organization, $groupKey, $customer, $project);
-    }
-
-    public function dismiss(Organization $organization, string $groupKey): int {
-        return $this->service->dismissInboxGroup($organization, $groupKey);
+    protected function bookerPluginId(): string {
+        return TogglPlugin::ID;
     }
 }

@@ -11,9 +11,8 @@
 namespace App\Policies\Isms;
 
 use App\Enums\User\Permission as P;
-use App\Models\Isms\IsmsSoftwareProduct;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln Softwareinventar (Feature 044): wiederverwendet die
@@ -21,26 +20,14 @@ use App\Policies\Concerns\HasAdminBypass;
  * Pflege nur mit isms.manage (Standard: nur admin). KEINE eigenen
  * Software-Permissions.
  */
-class IsmsSoftwareProductPolicy {
+class IsmsSoftwareProductPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsSoftwareProduct $product): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsSoftwareProduct $product): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsSoftwareProduct $product): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+    ];
 }

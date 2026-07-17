@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Bearbeitungsstand eines Datenschutzvorfalls. */
-enum IncidentStatus: string {
+enum IncidentStatus: string implements HasLabel {
+    use HasOptions;
+
     case Detected = 'detected';       // entdeckt, Erstaufnahme
     case Assessing = 'assessing';     // Risikobewertung läuft
     case Contained = 'contained';     // eingedämmt

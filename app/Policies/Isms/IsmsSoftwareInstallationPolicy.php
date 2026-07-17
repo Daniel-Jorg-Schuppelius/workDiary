@@ -11,34 +11,21 @@
 namespace App\Policies\Isms;
 
 use App\Enums\User\Permission as P;
-use App\Models\Isms\IsmsSoftwareInstallation;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln Software-Installationen (Feature 044): identisch zum
  * Produkt — Lesen mit isms.viewAny/isms.view, Pflege nur mit isms.manage.
  */
-class IsmsSoftwareInstallationPolicy {
+class IsmsSoftwareInstallationPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsSoftwareInstallation $installation): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsSoftwareInstallation $installation): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsSoftwareInstallation $installation): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+    ];
 }

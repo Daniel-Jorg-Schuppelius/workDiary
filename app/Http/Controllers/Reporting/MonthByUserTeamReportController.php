@@ -103,13 +103,13 @@ class MonthByUserTeamReportController extends Controller {
         }
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year);
+            return $this->exportCsv($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year, $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year);
+            return $this->exportPdf($byUser, $users, $monthLabels, $monthTotals, $yearTotal, $yearRate, $year, $request);
         }
 
         return view('reports.month-by-user-team', [
@@ -159,14 +159,14 @@ class MonthByUserTeamReportController extends Controller {
      * @param  array<int, string>  $monthLabels
      * @param  array<int, int>  $monthTotals
      */
-    private function exportCsv(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year): Response {
+    private function exportCsv(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, Request $request): Response {
         $filename = sprintf('monat-team-%04d.csv', $year);
         $rows = [array_merge(['Mitarbeiter'], array_values($monthLabels), ['Jahressumme', 'Erloes'])];
         foreach ($this->buildRows($byUser, $users, $monthTotals, $yearTotal, $yearRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'month-by-user-team', ['year' => $year]);
+        return $this->csvWithMetadata($rows, $filename, 'month-by-user-team', ['year' => $year], $request);
     }
 
     /**
@@ -188,7 +188,7 @@ class MonthByUserTeamReportController extends Controller {
      * @param  array<int, string>  $monthLabels
      * @param  array<int, int>  $monthTotals
      */
-    private function exportPdf(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year): SymfonyResponse {
+    private function exportPdf(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, Request $request): SymfonyResponse {
         $filename = sprintf('monat-team-%04d.pdf', $year);
         return $this->pdfDownload('reports.pdf.month-by-user-team', [
             'byUser' => $byUser,
@@ -198,6 +198,6 @@ class MonthByUserTeamReportController extends Controller {
             'yearTotal' => $yearTotal,
             'yearRate' => $yearRate,
             'year' => $year,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'month-by-user-team', ['year' => $year]);
     }
 }

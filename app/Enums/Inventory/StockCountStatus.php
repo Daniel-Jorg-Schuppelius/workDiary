@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status einer stichtagsbezogenen Inventur (Feature 048, MVP-069).
  */
-enum StockCountStatus: string {
+enum StockCountStatus: string implements HasLabel {
+    use HasOptions;
+
     case Counting = 'counting';   // Sollbestand eingefroren, Zählung läuft
     case Review = 'review';       // Differenzen werden geprüft
     case Completed = 'completed'; // Differenzen freigegeben & gebucht

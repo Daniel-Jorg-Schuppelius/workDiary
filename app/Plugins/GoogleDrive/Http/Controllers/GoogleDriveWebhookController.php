@@ -13,6 +13,7 @@ namespace App\Plugins\GoogleDrive\Http\Controllers;
 use App\Enums\CloudIntake\CloudIntakeProvider;
 use App\Http\Controllers\Controller;
 use App\Models\CloudIntake\CloudDocumentConnection;
+use App\Plugins\Support\WebhookSignature;
 use App\Services\CloudIntake\IntakeWakeSignal;
 use Illuminate\Http\{Request, Response};
 
@@ -38,8 +39,7 @@ class GoogleDriveWebhookController extends Controller {
             ->where('subscription_id', $channelId)
             ->first();
 
-        $secret = (string) ($connection->webhook_secret ?? '');
-        if ($connection === null || $secret === '' || ! hash_equals($secret, $channelToken)) {
+        if ($connection === null || ! WebhookSignature::tokenValid((string) ($connection->webhook_secret ?? ''), $channelToken)) {
             abort(403);
         }
 

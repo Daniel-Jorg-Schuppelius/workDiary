@@ -21,6 +21,8 @@ class SaveTimeEntryRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'task_id' => \App\Models\Task::class,
         'diary_entry_id' => \App\Models\DiaryEntry::class,
+        'rework_reason_classification_id' => \App\Models\Classification::class,
+        'goodwill_reason_classification_id' => \App\Models\Classification::class,
     ];
 
     /** @return array<string, mixed> */

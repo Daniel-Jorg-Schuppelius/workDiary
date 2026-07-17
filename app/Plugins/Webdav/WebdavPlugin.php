@@ -13,6 +13,7 @@ namespace App\Plugins\Webdav;
 use App\Models\{Organization, PluginSetting, WebdavConnection};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use Throwable;
 
@@ -56,13 +57,11 @@ class WebdavPlugin implements Plugin {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -97,7 +96,7 @@ class WebdavPlugin implements Plugin {
 
     /** Health-Check je Organisation: aktive Ablage suchen und die Collection anpingen. */
     public function healthCheck(): PluginHealth {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

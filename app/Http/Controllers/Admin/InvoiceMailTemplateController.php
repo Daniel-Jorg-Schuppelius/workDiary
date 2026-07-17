@@ -21,10 +21,7 @@ class InvoiceMailTemplateController extends Controller {
         $this->authorizeBilling();
         $search = $request->string('q')->toString();
         $templates = InvoiceMailTemplate::query()
-            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->whereLikeEscaped('name', $search)
-                    ->orWhereLikeEscaped('subject', $search);
-            }))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();

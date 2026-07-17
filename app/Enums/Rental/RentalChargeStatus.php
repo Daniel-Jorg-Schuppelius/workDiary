@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Lebenszyklus einer Mietposition bis zur Faktura-Übergabe (MVP-266).
  * invoiced = lokaler Beleg erzeugt; transferred = externe Beleghoheit
  * (Lexoffice/DATEV), Belegnummer in external_reference.
  */
-enum RentalChargeStatus: string {
+enum RentalChargeStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Released = 'released';
     case Invoiced = 'invoiced';

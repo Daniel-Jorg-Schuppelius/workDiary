@@ -15,10 +15,10 @@ use App\Models\{ExternalReference, Organization, Project, Task, User};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectStructureSync};
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -27,6 +27,8 @@ use Illuminate\View\View;
  * zurückbuchen und die Struktur-Zuordnungen verwalten.
  */
 class OpenProjectController extends Controller {
+    use ResolvesPluginOrgContext;
+
     public function __construct(
         private readonly OpenProjectImportService $import,
         private readonly OpenProjectExportService $export,
@@ -231,21 +233,5 @@ class OpenProjectController extends Controller {
                 'name' => trim((string) $u->name) !== '' ? $u->name . ' (' . $u->email . ')' : (string) $u->email,
             ])
             ->all();
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
     }
 }

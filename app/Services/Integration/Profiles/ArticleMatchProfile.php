@@ -20,6 +20,8 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * Abgleich-Profil für Artikel: ausschließlich exakte Schlüssel (Artikelnummer,
  * GTIN) — beide je Mandant eindeutig. Bewusst KEIN unscharfer Namensabgleich
  * (zu fehleranfällig für Stammartikel).
+ *
+ * @extends AbstractMatchProfile<Article>
  */
 class ArticleMatchProfile extends AbstractMatchProfile {
     public function targetType(): string {
@@ -33,14 +35,9 @@ class ArticleMatchProfile extends AbstractMatchProfile {
         ];
     }
 
-    public function candidates(Organization $organization): Builder {
-        // Article kennt kein archived_at — eigene Basis-Query ohne Archiv-Filter.
-        /** @var Builder<Model> $query */
-        $query = Article::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id);
-
-        return $query;
+    // Article kennt kein archived_at — die Basis lässt den Archiv-Filter dann weg.
+    protected function newCandidateQuery(): Builder {
+        return Article::query();
     }
 
     public function display(array $mapped): array {

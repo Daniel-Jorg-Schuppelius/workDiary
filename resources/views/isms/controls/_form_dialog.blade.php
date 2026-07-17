@@ -15,7 +15,8 @@
 --}}
 @php
     $isEdit = $control !== null;
-    $linkedRequirementIds = $isEdit ? $control->requirements->pluck('id')->all() : [];
+    $linkedRequirementIds = $isEdit ? $control->requirements->pluck('sqid')->all() : [];
+    $ownerSqid = \App\Support\Sqid::encode(\App\Models\User::class, $control?->owner_user_id);
 @endphp
 
 <x-modal
@@ -44,7 +45,7 @@
         <x-select-field name="owner_user_id" :label="__('isms.field.owner')">
             <option value="">—</option>
             @foreach ($owners as $owner)
-                <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $control?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+                <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', $ownerSqid) === $owner->sqid)>{{ $owner->name }}</option>
             @endforeach
         </x-select-field>
         <x-input-field name="evidence_note" :label="__('isms.field.evidence_note')" maxlength="10000"
@@ -61,8 +62,8 @@
             <span class="label-text">{{ __('isms.hint.requirements') }}</span>
             <select name="requirement_ids[]" multiple size="8" class="select select-bordered w-full h-auto">
                 @foreach ($requirements as $requirement)
-                    <option value="{{ $requirement->id }}"
-                            @selected(in_array($requirement->id, old('requirement_ids', $linkedRequirementIds)))>
+                    <option value="{{ $requirement->sqid }}"
+                            @selected(in_array($requirement->sqid, old('requirement_ids', $linkedRequirementIds)))>
                         {{ $requirement->normLabel() }} {{ $requirement->ref_no }} — {{ $requirement->title }}
                     </option>
                 @endforeach

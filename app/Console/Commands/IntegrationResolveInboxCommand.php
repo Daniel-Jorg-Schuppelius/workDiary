@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization};
 use App\Services\Integration\{InboxActionService, MatchProfileRegistry};
 use App\Services\Integration\Match\{EntityMatcher, MatchResult};
@@ -30,8 +31,9 @@ use Illuminate\Database\Eloquent\Model;
  * das Kapern eines bereits fremd gebundenen Kandidaten.
  */
 class IntegrationResolveInboxCommand extends Command {
-    protected $signature = 'integration:resolve-inbox
-        {--organization= : ID einer einzelnen Organisation, sonst alle}
+    use IteratesOrganizations;
+
+    protected $signature = 'integration:resolve-inbox ' . self::ORGANIZATION_OPTION . '
         {--plugin= : nur Items dieser Quelle (z. B. lexoffice)}
         {--case=unmatched : Fall-Typ (unmatched|ambiguous)}
         {--auto-link : eindeutige Exact-Treffer automatisch zuordnen (mergen)}
@@ -41,16 +43,13 @@ class IntegrationResolveInboxCommand extends Command {
     protected $description = 'Löst offene Zuordnungs-Inbox-Items per generischer Match-Engine auf: eindeutige automatisch mergen, unsichere mit Kandidaten anreichern, fehlende optional anlegen.';
 
     public function handle(MatchProfileRegistry $registry, EntityMatcher $matcher, InboxActionService $actions): int {
-        $orgId = $this->option('organization');
         $plugin = (string) ($this->option('plugin') ?: '');
         $case = (string) ($this->option('case') ?: IntegrationInboxItem::CASE_UNMATCHED);
         $autoLink = (bool) $this->option('auto-link');
         $create = (bool) $this->option('create');
         $dry = (bool) $this->option('dry-run');
 
-        $organizations = Organization::query()
-            ->when($orgId !== null && $orgId !== '', fn($q) => $q->whereKey((int) $orgId))
-            ->get();
+        $organizations = $this->organizationsToProcess();
 
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');

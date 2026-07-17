@@ -13,8 +13,9 @@ namespace App\Http\Controllers\Reporting;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
-use App\Models\{EnergyLog, TravelLog, User, Vehicle};
-use Carbon\Carbon;
+use App\Models\{EnergyLog, TravelLog, Vehicle};
+use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -33,13 +34,9 @@ class FleetReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $this->resolveScope($request, $isAdmin);
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
@@ -47,10 +44,10 @@ class FleetReportController extends Controller {
         $totals = $this->totals($rows);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to, $scope);
+            return $this->exportCsv($rows, $totals, $from, $to, $scope, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope);
+            return $this->exportPdf($rows, $totals, $from, $to, $scope, $request);
         }
 
         return view('reports.fleet', [
@@ -76,7 +73,7 @@ class FleetReportController extends Controller {
      *   last_odometer: int|null
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         $travelQuery = TravelLog::query()
             ->whereNotNull('vehicle_id')
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
@@ -197,7 +194,7 @@ class FleetReportController extends Controller {
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @param  array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, Request $request): Response {
         $filename = sprintf('fuhrpark_%s_%s.csv', $from, $to);
         $out = [['Kennzeichen', 'Bezeichnung', 'Antrieb', 'Fahrten', 'km', 'Erstattung', 'Tankungen', 'Liter', 'kWh', 'Energiekosten', '€/km', 'Tachostand']];
         foreach ($rows as $r) {
@@ -207,13 +204,13 @@ class FleetReportController extends Controller {
                 (string) ($v->label ?? ''),
                 $v->propulsion->value,
                 $r['trip_count'],
-                number_format($r['km'], 2, '.', ''),
-                number_format($r['reimbursement'], 2, '.', ''),
+                NumberHelper::toUSFormat($r['km'], 2),
+                NumberHelper::toUSFormat($r['reimbursement'], 2),
                 $r['fuel_count'],
-                number_format($r['liters'], 2, '.', ''),
-                number_format($r['kwh'], 2, '.', ''),
-                number_format($r['energy_cost'], 2, '.', ''),
-                $r['cost_per_km'] !== null ? number_format($r['cost_per_km'], 3, '.', '') : '',
+                NumberHelper::toUSFormat($r['liters'], 2),
+                NumberHelper::toUSFormat($r['kwh'], 2),
+                NumberHelper::toUSFormat($r['energy_cost'], 2),
+                $r['cost_per_km'] !== null ? NumberHelper::toUSFormat($r['cost_per_km'], 3) : '',
                 $r['last_odometer'] !== null ? (string) $r['last_odometer'] : '',
             ];
         }
@@ -222,24 +219,24 @@ class FleetReportController extends Controller {
             '',
             '',
             $totals['trip_count'],
-            number_format($totals['km'], 2, '.', ''),
-            number_format($totals['reimbursement'], 2, '.', ''),
+            NumberHelper::toUSFormat($totals['km'], 2),
+            NumberHelper::toUSFormat($totals['reimbursement'], 2),
             $totals['fuel_count'],
-            number_format($totals['liters'], 2, '.', ''),
-            number_format($totals['kwh'], 2, '.', ''),
-            number_format($totals['energy_cost'], 2, '.', ''),
-            $totals['avg_cost_per_km'] !== null ? number_format($totals['avg_cost_per_km'], 3, '.', '') : '',
+            NumberHelper::toUSFormat($totals['liters'], 2),
+            NumberHelper::toUSFormat($totals['kwh'], 2),
+            NumberHelper::toUSFormat($totals['energy_cost'], 2),
+            $totals['avg_cost_per_km'] !== null ? NumberHelper::toUSFormat($totals['avg_cost_per_km'], 3) : '',
             '',
         ];
 
-        return $this->csvWithMetadata($out, $filename, 'fleet', ['from' => $from, 'to' => $to, 'scope' => $scope]);
+        return $this->csvWithMetadata($out, $filename, 'fleet', ['from' => $from, 'to' => $to, 'scope' => $scope], $request);
     }
 
     /**
      * @param  array<int, array{vehicle: Vehicle, trip_count:int, km:float, reimbursement:float, fuel_count:int, liters:float, kwh:float, energy_cost:float, cost_per_km:float|null, last_odometer:int|null}>  $rows
      * @param  array{km:float, trip_count:int, fuel_count:int, liters:float, kwh:float, energy_cost:float, reimbursement:float, vehicles:int, avg_cost_per_km:float|null}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, Request $request): SymfonyResponse {
         $filename = sprintf('fuhrpark_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.fleet', [
             'rows' => $rows,
@@ -247,6 +244,6 @@ class FleetReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'fleet', ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 }

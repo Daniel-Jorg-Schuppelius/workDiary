@@ -12,9 +12,10 @@ namespace App\Policies;
 
 use App\Enums\User\Permission as P;
 use App\Models\{ProcedureTemplate, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ProcedureTemplatePolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -22,7 +23,7 @@ class ProcedureTemplatePolicy {
     }
 
     public function view(User $user, ProcedureTemplate $template): bool {
-        return $user->organization_id === $template->organization_id
+        return $this->sharesOrganization($user, $template)
             && $user->can(P::ProcedureTemplateView->value);
     }
 
@@ -31,12 +32,12 @@ class ProcedureTemplatePolicy {
     }
 
     public function update(User $user, ProcedureTemplate $template): bool {
-        return $user->organization_id === $template->organization_id
+        return $this->sharesOrganization($user, $template)
             && $user->can(P::ProcedureTemplateUpdate->value);
     }
 
     public function publish(User $user, ProcedureTemplate $template): bool {
-        return $user->organization_id === $template->organization_id
+        return $this->sharesOrganization($user, $template)
             && $user->can(P::ProcedureTemplatePublish->value);
     }
 }

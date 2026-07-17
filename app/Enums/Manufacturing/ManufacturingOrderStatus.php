@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Statusmodell eines Fertigungs-/Montageauftrags (Feature 047):
  *
@@ -21,7 +24,9 @@ namespace App\Enums\Manufacturing;
  *
  * Ein abgeschlossener Auftrag ist fachlich unveränderlich.
  */
-enum ManufacturingOrderStatus: string {
+enum ManufacturingOrderStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Released = 'released';
     case InProgress = 'in_progress';

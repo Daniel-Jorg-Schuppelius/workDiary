@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Ticketart (Feature 065, MVP-151): steuert Prozess und Katalogbezug. */
-enum ServiceTicketKind: string {
+enum ServiceTicketKind: string implements HasLabel {
+    use HasOptions;
+
     case Incident = 'incident';
     case ServiceRequest = 'service_request';
     case Question = 'question';

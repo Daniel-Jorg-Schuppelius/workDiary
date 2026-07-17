@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Isms;
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsAudit, IsmsAuditProgram, IsmsScope};
 use App\Models\User;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -51,6 +52,11 @@ class AuditProgramController extends Controller {
         /** @var User $actor */
         $actor = Auth::user();
 
+        // Sqid-Input vor der Validierung dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('isms_scope_id')) {
+            $request->merge(['isms_scope_id' => Sqid::decodeOrNumeric(IsmsScope::class, $request->input('isms_scope_id'))]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'min:3', 'max:180'],
             'isms_scope_id' => [
@@ -81,6 +87,10 @@ class AuditProgramController extends Controller {
 
         /** @var User $actor */
         $actor = Auth::user();
+
+        if ($request->filled('attach_audit_id')) {
+            $request->merge(['attach_audit_id' => Sqid::decodeOrNumeric(IsmsAudit::class, $request->input('attach_audit_id'))]);
+        }
 
         $data = $request->validate([
             'status' => ['nullable', 'in:active,completed,cancelled'],

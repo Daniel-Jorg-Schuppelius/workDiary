@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetCompliance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Prüfergebnis (MVP-286): keine automatische Freigabe ohne fachliche
  * Prüferentscheidung. Nicht bestanden sperrt über das gemeinsame Modell.
  */
-enum AssetInspectionResult: string {
+enum AssetInspectionResult: string implements HasLabel {
+    use HasOptions;
+
     case Passed = 'passed';
     case PassedWithRestrictions = 'passed_with_restrictions';
     case Failed = 'failed';

@@ -20,12 +20,7 @@ class AssetStatusVisibilityService {
      * @return array<string, mixed>
      */
     public function summarize(Asset $asset): array {
-        $openStatuses = [
-            OpenIssueStatus::Open->value,
-            OpenIssueStatus::InProgress->value,
-            OpenIssueStatus::Blocked->value,
-            OpenIssueStatus::Reopened->value,
-        ];
+        $openStatuses = OpenIssueStatus::openValues();
 
         $openIssues = $asset->openIssues()->whereIn('status', $openStatuses);
         $openIssueCount = (clone $openIssues)->count();

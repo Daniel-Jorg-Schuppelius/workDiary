@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Umsetzungsstatus einer technischen/organisatorischen Maßnahme. */
-enum ImplementationStatus: string {
+enum ImplementationStatus: string implements HasLabel {
+    use HasOptions;
+
     case Planned = 'planned';
     case Partial = 'partial';
     case Implemented = 'implemented';

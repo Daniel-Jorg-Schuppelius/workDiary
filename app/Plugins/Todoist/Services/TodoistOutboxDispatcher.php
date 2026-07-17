@@ -17,6 +17,7 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry, Task, TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\TodoistPlugin;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use RuntimeException;
 
 /**
@@ -81,7 +82,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
         // Idempotenz gegen Queue-Retry: stabiler X-Request-Id je Outbox-Eintrag — Todoist dedupliziert den zweiten Create.
         $created = (new TodoistApiClient($connection))->createTask(
             $this->buildCreatePayload($task, $link),
-            substr(hash('sha256', 'todoist-task-create-' . $entry->id), 0, 36),
+            substr(CryptoHelper::hash('todoist-task-create-' . $entry->id), 0, 36),
         );
         $externalId = isset($created['id']) && is_scalar($created['id']) ? (string) $created['id'] : '';
         if ($externalId === '') {

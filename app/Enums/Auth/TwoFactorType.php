@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Auth;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Zweiter-Faktor-Methode (RFC 6238 TOTP, E-Mail-Einmalcode, FIDO2/WebAuthn). */
-enum TwoFactorType: string {
+enum TwoFactorType: string implements HasLabel {
+    use HasOptions;
+
     case Totp = 'totp';
     case Email = 'email';
     case Webauthn = 'webauthn';

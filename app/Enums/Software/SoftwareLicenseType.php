@@ -10,7 +10,12 @@
 
 namespace App\Enums\Software;
 
-enum SoftwareLicenseType: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum SoftwareLicenseType: string implements HasLabel {
+    use HasOptions;
+
     case Perpetual = 'perpetual';
     case Subscription = 'subscription';
     case Oem = 'oem';

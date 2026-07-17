@@ -17,7 +17,8 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('Speichern') : __('reporting.target.create')"
 >
-    <div class="space-y-4" x-data="{ scope: @js($currentScope) }">
+    {{-- Scope-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
+    <div class="space-y-4" x-data="reveal(@js($currentScope))">
         <div class="grid gap-4 sm:grid-cols-2">
             <x-filter-field show-label :label="__('reporting.target.metric_label')" for="rt-metric">
                 <select id="rt-metric" name="metric" class="select select-bordered select-sm w-full" required>
@@ -36,7 +37,7 @@
 
         <div class="grid gap-4 sm:grid-cols-2">
             <x-filter-field show-label :label="__('reporting.target.scope_label')" for="rt-scope">
-                <select id="rt-scope" name="scope" class="select select-bordered select-sm w-full" x-model="scope" required>
+                <select id="rt-scope" name="scope" class="select select-bordered select-sm w-full" x-model="value" required>
                     @foreach($scopeOptions as $s)
                         <option value="{{ $s->value }}">{{ $s->label() }}</option>
                     @endforeach
@@ -44,7 +45,7 @@
             </x-filter-field>
 
             <x-filter-field show-label :label="__('reporting.target.scope_ref')" for="rt-scope-id">
-                <template x-if="scope === 'customer'">
+                <template x-if="is('customer')">
                     <select name="scope_id" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('reporting.target.none') }}</option>
                         @foreach($customers as $c)
@@ -52,7 +53,7 @@
                         @endforeach
                     </select>
                 </template>
-                <template x-if="scope === 'project'">
+                <template x-if="is('project')">
                     <select name="scope_id" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('reporting.target.none') }}</option>
                         @foreach($projects as $p)
@@ -60,7 +61,7 @@
                         @endforeach
                     </select>
                 </template>
-                <template x-if="scope === 'user'">
+                <template x-if="is('user')">
                     <select name="scope_id" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('reporting.target.none') }}</option>
                         @foreach($users as $u)
@@ -68,8 +69,8 @@
                         @endforeach
                     </select>
                 </template>
-                <div x-show="scope === 'org'" class="text-sm text-base-content/50 py-2">{{ __('reporting.target.scope.org') }}</div>
-                <p class="text-xs text-base-content/50" x-show="scope !== 'org'">{{ __('reporting.target.scope_ref_hint') }}</p>
+                <div x-show="is('org')" class="text-sm text-base-content/50 py-2">{{ __('reporting.target.scope.org') }}</div>
+                <p class="text-xs text-base-content/50" x-show="isNot('org')">{{ __('reporting.target.scope_ref_hint') }}</p>
             </x-filter-field>
         </div>
 
@@ -82,16 +83,13 @@
                     @endforeach
                 </select>
             </x-filter-field>
-            <x-filter-field show-label :label="__('reporting.target.valid_from')" for="rt-from">
-                <input id="rt-from" name="valid_from" type="date"
-                       value="{{ old('valid_from', $target->valid_from?->format('Y-m-d')) }}"
-                       class="input input-bordered input-sm w-full" />
-            </x-filter-field>
-            <x-filter-field show-label :label="__('reporting.target.valid_until')" for="rt-until">
-                <input id="rt-until" name="valid_until" type="date"
-                       value="{{ old('valid_until', $target->valid_until?->format('Y-m-d')) }}"
-                       class="input input-bordered input-sm w-full" />
-            </x-filter-field>
+            <x-date-range class="sm:col-span-2" layout="split" form-control
+                          from-name="valid_from" to-name="valid_until"
+                          from-id="rt-from" to-id="rt-until"
+                          :from="old('valid_from', $target->valid_from?->format('Y-m-d'))"
+                          :to="old('valid_until', $target->valid_until?->format('Y-m-d'))"
+                          :from-label="__('reporting.target.valid_from')"
+                          :to-label="__('reporting.target.valid_until')" />
         </div>
 
         <x-filter-field show-label :label="__('reporting.target.note_label')" for="rt-note">

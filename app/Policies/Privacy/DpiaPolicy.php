@@ -14,19 +14,18 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\Dpia;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /** Datenschutz-Folgenabschaetzung. Ohne Admin-Bypass, organisationsgebunden. */
 class DpiaPolicy {
-    private function sameOrg(User $user, Dpia $dpia): bool {
-        return (int) $user->organization_id === (int) $dpia->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.view');
     }
 
     public function view(User $user, Dpia $dpia): bool {
-        return $this->sameOrg($user, $dpia) && $user->can('dataprotection.view');
+        return $this->sharesOrganization($user, $dpia) && $user->can('dataprotection.view');
     }
 
     public function create(User $user): bool {
@@ -34,6 +33,6 @@ class DpiaPolicy {
     }
 
     public function update(User $user, Dpia $dpia): bool {
-        return $this->sameOrg($user, $dpia) && $user->can('dataprotection.dpia.manage');
+        return $this->sharesOrganization($user, $dpia) && $user->can('dataprotection.dpia.manage');
     }
 }

@@ -72,10 +72,10 @@ class ArbZgComplianceReportController extends Controller {
         $summary = $this->summarize($rows);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $fromStr, $toStr, $kindFilter);
+            return $this->exportCsv($rows, $fromStr, $toStr, $kindFilter, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $summary, $fromStr, $toStr);
+            return $this->exportPdf($rows, $summary, $fromStr, $toStr, $kindFilter, $request);
         }
 
         return view('reports.arbzg-compliance', [
@@ -352,7 +352,7 @@ class ArbZgComplianceReportController extends Controller {
     /**
      * @param  array<int, array{user: User, findings: list<array<string, mixed>>, counts: array<string,int>}>  $rows
      */
-    private function exportCsv(array $rows, string $from, string $to, string $kindFilter): Response {
+    private function exportCsv(array $rows, string $from, string $to, string $kindFilter, Request $request): Response {
         $filename = sprintf('arbzg_compliance_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
@@ -382,14 +382,14 @@ class ArbZgComplianceReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'kind' => $kindFilter,
-        ]);
+        ], $request);
     }
 
     /**
      * @param  array<int, array{user: User, findings: list<array<string, mixed>>, counts: array<string,int>}>  $rows
      * @param  array{total:int, by_kind: array<string,int>, employees:int}  $summary
      */
-    private function exportPdf(array $rows, array $summary, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $rows, array $summary, string $from, string $to, string $kindFilter, Request $request): SymfonyResponse {
         $filename = sprintf('arbzg_compliance_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.arbzg-compliance', [
             'rows' => $rows,
@@ -397,7 +397,7 @@ class ArbZgComplianceReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'kinds' => $this->kinds(),
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'arbzg_compliance', filters: ['from' => $from, 'to' => $to, 'kind' => $kindFilter]);
     }
 
     private function fmtMinutes(int $minutes): string {

@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Faktura-Status einer Auslieferung (Feature 047, MVP-074). BEWUSST getrennt
  * vom Lagerstatus: eine fehlgeschlagene Fakturaübertragung darf die bereits
  * erfolgte Lagerbuchung nicht verbergen.
  */
-enum DeliveryFacturationStatus: string {
+enum DeliveryFacturationStatus: string implements HasLabel {
+    use HasOptions;
+
     case Pending = 'pending';
     case HandedOver = 'handed_over';
     case Invoiced = 'invoiced';

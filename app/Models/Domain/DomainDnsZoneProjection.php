@@ -11,6 +11,7 @@
 namespace App\Models\Domain;
 
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -60,7 +61,7 @@ class DomainDnsZoneProjection extends Model {
     ];
 
     public static function hashFor(string $zone): string {
-        return hash('sha256', mb_strtolower(trim($zone)));
+        return CryptoHelper::hash(mb_strtolower(trim($zone)));
     }
 
     /** @return BelongsTo<DomainProviderConnection, $this> */

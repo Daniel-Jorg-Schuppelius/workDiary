@@ -29,25 +29,26 @@
         </div>
     </div>
 
+    {{-- Entscheidungs-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
     <div class="mt-3 space-y-2"
-         x-data="{ decision: '{{ old('decision', 'approved') }}' }">
+         x-data="reveal(@js(old('decision', 'approved')))">
         <div class="fieldset">
             <span class="fieldset-label">{{ __('Entscheidung') }}</span>
             <div class="grid grid-cols-2 gap-2">
                 <label class="flex cursor-pointer items-center gap-2 rounded-box border border-base-300 p-2">
-                    <input type="radio" name="decision" value="approved" class="radio radio-sm radio-success" x-model="decision">
+                    <input type="radio" name="decision" value="approved" class="radio radio-sm radio-success" x-model="value">
                     <span>{{ __('Genehmigen') }}</span>
                 </label>
                 <label class="flex cursor-pointer items-center gap-2 rounded-box border border-base-300 p-2">
-                    <input type="radio" name="decision" value="rejected" class="radio radio-sm radio-error" x-model="decision">
+                    <input type="radio" name="decision" value="rejected" class="radio radio-sm radio-error" x-model="value">
                     <span>{{ __('Ablehnen') }}</span>
                 </label>
                 <label class="flex cursor-pointer items-center gap-2 rounded-box border border-base-300 p-2">
-                    <input type="radio" name="decision" value="question" class="radio radio-sm radio-warning" x-model="decision">
+                    <input type="radio" name="decision" value="question" class="radio radio-sm radio-warning" x-model="value">
                     <span>{{ __('Rückfrage') }}</span>
                 </label>
                 <label class="flex cursor-pointer items-center gap-2 rounded-box border border-base-300 p-2">
-                    <input type="radio" name="decision" value="delegated" class="radio radio-sm radio-info" x-model="decision">
+                    <input type="radio" name="decision" value="delegated" class="radio radio-sm radio-info" x-model="value">
                     <span>{{ __('Delegieren') }}</span>
                 </label>
             </div>
@@ -56,7 +57,7 @@
             @enderror
         </div>
 
-        <div class="fieldset" x-show="decision === 'delegated'" x-cloak>
+        <div class="fieldset" x-show="is('delegated')" x-cloak>
             <label class="fieldset-label" for="delegate">{{ __('Delegieren an') }}</label>
             <x-user-select name="delegate" :users="$orgUsers" value-key="sqid"
                            :placeholder="__('Benutzer auswählen…')" />
@@ -66,11 +67,11 @@
         <div class="fieldset">
             <label class="fieldset-label" for="reason">
                 {{ __('Begründung') }}
-                <span class="text-base-content/60" x-show="decision === 'rejected' || decision === 'delegated'">({{ __('Pflicht') }})</span>
+                <span class="text-base-content/60" x-show="isAny('rejected', 'delegated')">({{ __('Pflicht') }})</span>
             </label>
             <textarea id="reason" name="reason" rows="3" maxlength="500"
                       class="textarea textarea-bordered w-full @error('reason') textarea-error @enderror"
-                      :required="decision === 'rejected' || decision === 'delegated'"
+                      :required="isAny('rejected', 'delegated')"
                       placeholder="{{ __('z. B. Budget fehlt, andere Zuständigkeit, Rückfrage zum Umfang …') }}">{{ old('reason') }}</textarea>
             @error('reason')
                 <p class="mt-1 text-xs text-error">{{ $message }}</p>

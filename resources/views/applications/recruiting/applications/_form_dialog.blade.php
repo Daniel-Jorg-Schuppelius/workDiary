@@ -35,9 +35,5 @@
 
     <p class="text-xs text-base-content/60">{{ __('Keine Gesundheits- oder sonstigen Art.-9-Daten erfassen (Feature 068, Rechtsrahmen).') }}</p>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 </x-modal>

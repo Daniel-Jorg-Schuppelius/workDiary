@@ -22,19 +22,21 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('wage_types.action.save')"
 >
-    <div x-data="{ mail: @js($mailEnabled), sftp: @js($sftpEnabled) }" class="space-y-4">
-        <x-form-group :legend="__('wage_types.field.mail')" icon="mail" tone="primary" cols="1">
+    {{-- Toggle-Umschaltung je Gruppe via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
+    <div class="space-y-4">
+        <x-form-group :legend="__('wage_types.field.mail')" icon="mail" tone="primary" cols="1"
+                      x-data="reveal(@js($mailEnabled))">
             <div class="fieldset">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input type="hidden" name="mail_enabled" value="0">
                     <input type="checkbox" name="mail_enabled" value="1" class="toggle toggle-primary"
-                           x-model="mail" @checked($mailEnabled)>
+                           x-model="value" @checked($mailEnabled)>
                     <span class="label-text">{{ __('wage_types.field.mail_toggle') }}</span>
                 </label>
                 @error('mail_enabled')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset" x-show="mail" x-cloak>
+            <div class="fieldset" x-show="value" x-cloak>
                 <label class="fieldset-label" for="tedc-recipients">{{ __('wage_types.field.mail_recipients') }}</label>
                 <textarea id="tedc-recipients" name="mail_recipients_raw" rows="3"
                           class="textarea textarea-bordered w-full font-mono text-sm"
@@ -45,18 +47,19 @@
             </div>
         </x-form-group>
 
-        <x-form-group :legend="__('wage_types.field.sftp')" icon="cloud_upload" tone="primary" cols="2">
+        <x-form-group :legend="__('wage_types.field.sftp')" icon="cloud_upload" tone="primary" cols="2"
+                      x-data="reveal(@js($sftpEnabled))">
             <div class="fieldset md:col-span-2">
                 <label class="label cursor-pointer justify-start gap-3">
                     <input type="hidden" name="sftp_enabled" value="0">
                     <input type="checkbox" name="sftp_enabled" value="1" class="toggle toggle-primary"
-                           x-model="sftp" @checked($sftpEnabled)>
+                           x-model="value" @checked($sftpEnabled)>
                     <span class="label-text">{{ __('wage_types.field.sftp_toggle') }}</span>
                 </label>
                 @error('sftp_enabled')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset" x-show="sftp" x-cloak>
+            <div class="fieldset" x-show="value" x-cloak>
                 <label class="fieldset-label" for="tedc-host">{{ __('wage_types.field.sftp_host') }}</label>
                 <input id="tedc-host" type="text" name="sftp_host" maxlength="190"
                        value="{{ old('sftp_host', $config->sftp_host) }}"
@@ -64,7 +67,7 @@
                 @error('sftp_host')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset" x-show="sftp" x-cloak>
+            <div class="fieldset" x-show="value" x-cloak>
                 <label class="fieldset-label" for="tedc-port">{{ __('wage_types.field.sftp_port') }}</label>
                 <input id="tedc-port" type="number" name="sftp_port" min="1" max="65535"
                        value="{{ old('sftp_port', $config->sftp_port ?? 22) }}"
@@ -72,7 +75,7 @@
                 @error('sftp_port')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset" x-show="sftp" x-cloak>
+            <div class="fieldset" x-show="value" x-cloak>
                 <label class="fieldset-label" for="tedc-username">{{ __('wage_types.field.sftp_username') }}</label>
                 <input id="tedc-username" type="text" name="sftp_username" maxlength="190"
                        value="{{ old('sftp_username', $config->sftp_username) }}"
@@ -80,7 +83,7 @@
                 @error('sftp_username')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset" x-show="sftp" x-cloak>
+            <div class="fieldset" x-show="value" x-cloak>
                 <label class="fieldset-label" for="tedc-password">{{ __('wage_types.field.sftp_password') }}</label>
                 <input id="tedc-password" type="password" name="sftp_password" maxlength="255"
                        class="input input-bordered w-full" autocomplete="new-password">
@@ -90,7 +93,7 @@
                 @error('sftp_password')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
 
-            <div class="fieldset md:col-span-2" x-show="sftp" x-cloak>
+            <div class="fieldset md:col-span-2" x-show="value" x-cloak>
                 <label class="fieldset-label" for="tedc-root">{{ __('wage_types.field.sftp_root') }}</label>
                 <input id="tedc-root" type="text" name="sftp_root" maxlength="190"
                        value="{{ old('sftp_root', $config->sftp_root) }}"

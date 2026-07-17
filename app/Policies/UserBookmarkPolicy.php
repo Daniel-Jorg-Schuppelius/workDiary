@@ -11,14 +11,17 @@
 namespace App\Policies;
 
 use App\Models\{User, UserBookmark};
+use App\Policies\Concerns\ChecksOwnership;
 
 class UserBookmarkPolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return true;
     }
 
     public function view(User $user, UserBookmark $bookmark): bool {
-        return $bookmark->user_id === $user->id;
+        return $this->owns($user, $bookmark);
     }
 
     public function create(User $user): bool {
@@ -26,10 +29,10 @@ class UserBookmarkPolicy {
     }
 
     public function update(User $user, UserBookmark $bookmark): bool {
-        return $bookmark->user_id === $user->id;
+        return $this->owns($user, $bookmark);
     }
 
     public function delete(User $user, UserBookmark $bookmark): bool {
-        return $bookmark->user_id === $user->id;
+        return $this->owns($user, $bookmark);
     }
 }

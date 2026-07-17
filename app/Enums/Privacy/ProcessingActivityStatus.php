@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Freigabe-/Lebenszyklus-Status einer Verarbeitungstätigkeit im VVT. */
-enum ProcessingActivityStatus: string {
+enum ProcessingActivityStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';         // Entwurf
     case InReview = 'in_review';  // zur Prüfung eingereicht
     case Approved = 'approved';   // freigegeben (gültige Version)

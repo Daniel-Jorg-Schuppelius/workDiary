@@ -14,19 +14,18 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\Processor;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /** Dienstleisterstammdaten. Ohne Admin-Bypass, organisationsgebunden. */
 class ProcessorPolicy {
-    private function sameOrg(User $user, Processor $processor): bool {
-        return (int) $user->organization_id === (int) $processor->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.view');
     }
 
     public function view(User $user, Processor $processor): bool {
-        return $this->sameOrg($user, $processor) && $user->can('dataprotection.view');
+        return $this->sharesOrganization($user, $processor) && $user->can('dataprotection.view');
     }
 
     public function create(User $user): bool {
@@ -34,7 +33,7 @@ class ProcessorPolicy {
     }
 
     public function update(User $user, Processor $processor): bool {
-        return $this->sameOrg($user, $processor) && $user->can('dataprotection.avv.manage');
+        return $this->sharesOrganization($user, $processor) && $user->can('dataprotection.avv.manage');
     }
 
     public function delete(User $user, Processor $processor): bool {

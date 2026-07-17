@@ -43,8 +43,9 @@
                 <x-form-group :legend="__('Auftragsverarbeitungsvertrag')" icon="handshake" tone="primary" cols="2">
                     <x-input-field name="title" :label="__('Titel')" required />
                     <x-input-field name="version" :label="__('Version')" value="1.0" />
-                    <x-input-field type="date" name="valid_from" :label="__('Gültig ab')" />
-                    <x-input-field type="date" name="valid_until" :label="__('Gültig bis')" />
+                    <x-date-range class="md:col-span-2" layout="split" form-control
+                                  from-name="valid_from" to-name="valid_until"
+                                  :from-label="__('Gültig ab')" :to-label="__('Gültig bis')" />
                     <x-input-field name="data_categories" :label="__('Betroffene Datenkategorien')" span="2">
                         <textarea id="data_categories" name="data_categories" rows="2" class="textarea textarea-bordered w-full"></textarea>
                     </x-input-field>

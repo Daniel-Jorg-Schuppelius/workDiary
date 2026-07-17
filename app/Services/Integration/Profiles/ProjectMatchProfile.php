@@ -14,13 +14,15 @@ namespace App\Services\Integration\Profiles;
 
 use App\Models\{Organization, Project};
 use App\Services\Integration\Match\{AbstractMatchProfile, ExactField, FuzzyField, MatchStrategy};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * Abgleich-Profil für Projekte. Gedacht für den Dubletten-Finder, der die
  * Vergleiche zusätzlich auf denselben Kunden einschränkt — daher genügen hier
  * Namens-/Nummern-Strategien: gleiche Projektnummer (exact) → identischer Name
  * (likely) → ähnlicher Name (fuzzy).
+ *
+ * @extends AbstractMatchProfile<Project>
  */
 class ProjectMatchProfile extends AbstractMatchProfile {
     /** Schwelle für die Namens-Ähnlichkeit. */
@@ -28,6 +30,10 @@ class ProjectMatchProfile extends AbstractMatchProfile {
 
     public function targetType(): string {
         return Project::class;
+    }
+
+    protected function newCandidateQuery(): Builder {
+        return Project::query();
     }
 
     public function strategies(): array {

@@ -13,12 +13,13 @@ namespace App\Policies;
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission as P;
 use App\Models\{TimeCorrectionRequest, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Berechtigungen für Zeit-Korrekturanträge (MVP-017, ../WorkDiary-Architecture/zeit-korrekturen.md §7).
  */
 class TimeCorrectionRequestPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -28,10 +29,10 @@ class TimeCorrectionRequestPolicy {
     }
 
     public function view(User $user, TimeCorrectionRequest $request): bool {
-        if ($user->organization_id !== $request->organization_id) {
+        if (! $this->sharesOrganization($user, $request)) {
             return false;
         }
-        if ($user->id === $request->user_id || $user->id === $request->requested_by_user_id) {
+        if ($this->owns($user, $request) || $this->owns($user, $request, 'requested_by_user_id')) {
             return true;
         }
 
@@ -44,33 +45,33 @@ class TimeCorrectionRequestPolicy {
     }
 
     public function submit(User $user, TimeCorrectionRequest $request): bool {
-        return $user->organization_id === $request->organization_id
-            && $user->id === $request->requested_by_user_id
+        return $this->sharesOrganization($user, $request)
+            && $this->owns($user, $request, 'requested_by_user_id')
             && $user->can(P::CorrectionSubmitOwn->value)
             && $request->status === TimeCorrectionStatus::Draft;
     }
 
     public function withdraw(User $user, TimeCorrectionRequest $request): bool {
-        return $user->organization_id === $request->organization_id
-            && $user->id === $request->requested_by_user_id
+        return $this->sharesOrganization($user, $request)
+            && $this->owns($user, $request, 'requested_by_user_id')
             && $user->can(P::CorrectionWithdrawOwn->value)
             && in_array($request->status, [TimeCorrectionStatus::Draft, TimeCorrectionStatus::Submitted], true);
     }
 
     public function approve(User $user, TimeCorrectionRequest $request): bool {
-        return $user->organization_id === $request->organization_id
+        return $this->sharesOrganization($user, $request)
             && $user->can(P::CorrectionApprove->value)
             && $request->status === TimeCorrectionStatus::Submitted;
     }
 
     public function reject(User $user, TimeCorrectionRequest $request): bool {
-        return $user->organization_id === $request->organization_id
+        return $this->sharesOrganization($user, $request)
             && $user->can(P::CorrectionReject->value)
             && $request->status === TimeCorrectionStatus::Submitted;
     }
 
     public function apply(User $user, TimeCorrectionRequest $request): bool {
-        return $user->organization_id === $request->organization_id
+        return $this->sharesOrganization($user, $request)
             && $user->can(P::CorrectionApplySystem->value)
             && $request->status === TimeCorrectionStatus::Approved;
     }

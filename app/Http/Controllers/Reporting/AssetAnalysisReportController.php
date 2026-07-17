@@ -16,6 +16,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Asset, Customer};
 use App\Services\Reporting\AssetAnalysisReportBuilder;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -36,8 +37,7 @@ class AssetAnalysisReportController extends Controller {
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $rawCustomerId = $request->query('customer_id');
         $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
@@ -60,15 +60,11 @@ class AssetAnalysisReportController extends Controller {
         ];
 
         if ($request->query('export') === 'csv') {
-            $this->auditExport($request, 'assets-analysis', 'csv', $exportContext);
-
-            return $this->exportCsv($rows, $groupBy, $from->toDateString(), $to->toDateString(), $exportContext);
+            return $this->exportCsv($rows, $groupBy, $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         if ($request->query('export') === 'pdf') {
-            $this->auditExport($request, 'assets-analysis', 'pdf', $exportContext);
-
-            return $this->exportPdf($rows, $groupBy, $range['label'], $from->toDateString(), $to->toDateString());
+            return $this->exportPdf($rows, $groupBy, $range['label'], $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         return view('reports.assets', [
@@ -106,7 +102,7 @@ class AssetAnalysisReportController extends Controller {
      * }>  $rows
      * @param  array<string, mixed>  $filters
      */
-    private function exportCsv(array $rows, string $groupBy, string $from, string $to, array $filters): Response {
+    private function exportCsv(array $rows, string $groupBy, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('produktanalyse_%s_%s_%s.csv', $groupBy, $from, $to);
 
         $out = [];
@@ -133,7 +129,7 @@ class AssetAnalysisReportController extends Controller {
                 $row['openIssueCount'],
                 $row['escalationCount'],
                 $row['defectCount'],
-                number_format((float) $row['defectRate'], 2, '.', ''),
+                NumberHelper::toUSFormat((float) $row['defectRate'], 2),
                 $row['lastIncidentAt'] ?? '',
             ];
         }
@@ -143,6 +139,7 @@ class AssetAnalysisReportController extends Controller {
             $filename,
             'assets-analysis',
             $filters,
+            $request,
         );
     }
 
@@ -152,14 +149,15 @@ class AssetAnalysisReportController extends Controller {
      *   escalationCount:int,defectCount:int,defectRate:float,lastIncidentAt:?string,
      *   drilldown:array<string,mixed>
      * }>  $rows
+     * @param  array<string, mixed>  $filters
      */
-    private function exportPdf(array $rows, string $groupBy, string $label, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $rows, string $groupBy, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {
         $filename = sprintf('produktanalyse_%s_%s_%s.pdf', $groupBy, $from, $to);
 
         return $this->pdfDownload('reports.pdf.assets', [
             'rows' => $rows,
             'label' => $label,
             'groupBy' => $groupBy,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'assets-analysis', $filters);
     }
 }

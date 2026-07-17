@@ -17,9 +17,7 @@
     @if (session('status'))
         <div class="alert alert-success mb-3 text-sm">{{ session('status') }}</div>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
-    @endif
+    <x-validation-errors first class="mb-3" />
 
     <div class="space-y-6">
         <section class="rounded-box border border-base-300 bg-base-100 p-4">

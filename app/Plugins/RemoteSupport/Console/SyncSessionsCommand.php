@@ -10,7 +10,7 @@
 
 namespace App\Plugins\RemoteSupport\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportService};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -21,20 +21,15 @@ use Illuminate\Console\Command;
  * Läuft sowohl stündlich im Scheduler als auch manuell aus der Admin-UI.
  */
 class SyncSessionsCommand extends Command {
-    protected $signature = 'remote:sync-sessions
-        {--organization= : ID einer einzelnen Organisation, sonst alle}
+    use IteratesOrganizations;
+
+    protected $signature = 'remote:sync-sessions ' . self::ORGANIZATION_OPTION . '
         {--days= : Zeitfenster rückwirkend in Tagen (überschreibt die Einstellung)}';
 
     protected $description = 'Importiert AnyDesk-/TeamViewer-Verbindungen als Zeiteinträge (Standardprojekt des Kunden).';
 
     public function handle(RemoteSupportService $service): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

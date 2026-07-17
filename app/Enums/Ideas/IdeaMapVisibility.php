@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Ideas;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Sichtbarkeit einer Ideenlandkarte (Feature 054, MVP-104). `private` ist
  * Default; `shared` ist ABGELEITET: gesetzt, solange mindestens eine aktive
  * Freigabe existiert (MVP-107). Org-Zugehörigkeit allein gewährt nie
  * Inhaltszugriff.
  */
-enum IdeaMapVisibility: string {
+enum IdeaMapVisibility: string implements HasLabel {
+    use HasOptions;
+
     case Private = 'private';
     case Shared = 'shared';
 

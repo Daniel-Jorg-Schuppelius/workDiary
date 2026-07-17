@@ -90,9 +90,7 @@ trait FiltersDiaryEntries {
 
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $query->where(function ($w) use ($q): void {
-                $w->whereLikeEscaped('content', $q)->orWhereLikeEscaped('response', $q);
-            });
+            $query->search($q);
         }
 
         $filters = $request->only('status', 'mine', 'archived', 'tag', 'project', 'q', 'entry_type', 'mode', 'location', 'customer');

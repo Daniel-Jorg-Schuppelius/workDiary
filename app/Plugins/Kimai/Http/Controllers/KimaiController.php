@@ -11,12 +11,12 @@
 namespace App\Plugins\Kimai\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{IntegrationInboxItem, Organization, User};
+use App\Models\{IntegrationInboxItem, Organization};
 use App\Plugins\Kimai\{KimaiConfig, KimaiExportService, KimaiImportService, KimaiPlugin};
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -27,6 +27,8 @@ use Illuminate\View\View;
  * Gruppen als Deep-Link-Hinweis.
  */
 class KimaiController extends Controller {
+    use ResolvesPluginOrgContext;
+
     public function __construct(private readonly KimaiImportService $service) {}
 
     public function index(): View {
@@ -132,21 +134,5 @@ class KimaiController extends Controller {
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
         ]));
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
     }
 }

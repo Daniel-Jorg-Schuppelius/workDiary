@@ -12,26 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\Gitlab\Api;
 
-use RuntimeException;
+use App\Plugins\Support\PluginApiException;
 
 /**
  * Fehler der GitLab-REST-API (MVP-129). Die Message trägt nur Status und
  * gekürzten Body-Auszug — nie den API-Token.
  */
-class GitlabApiException extends RuntimeException {
-    public function __construct(
-        public readonly int $status,
-        string $message,
-        public readonly ?string $endpoint = null,
-    ) {
-        parent::__construct($message);
-    }
-
-    public function isAuthError(): bool {
-        return in_array($this->status, [401, 403], true);
-    }
-
-    public function isRateLimited(): bool {
-        return $this->status === 429;
+class GitlabApiException extends PluginApiException {
+    public function __construct(int $status, string $message, ?string $endpoint = null) {
+        parent::__construct($message, $status, $endpoint);
     }
 }

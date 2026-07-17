@@ -11,11 +11,12 @@
 namespace App\Plugins\Zammad\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, Project, User, ZammadConnection};
+use App\Models\{Organization, Project, ZammadConnection};
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Artisan, Auth};
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -27,6 +28,8 @@ use Throwable;
  * das bestehende Token unangetastet.
  */
 class ZammadAdminController extends Controller {
+    use ResolvesPluginOrgContext;
+
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -187,21 +190,5 @@ class ZammadAdminController extends Controller {
         } catch (Throwable) {
             return ['ok' => false];
         }
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
     }
 }

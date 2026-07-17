@@ -11,9 +11,7 @@
         @if (session('error'))
             <div class="alert alert-error text-sm">{{ session('error') }}</div>
         @endif
-        @if ($errors->any())
-            <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
-        @endif
+        <x-validation-errors first />
 
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <h1 class="mb-1 font-['Space_Grotesk'] text-lg font-semibold">{{ __('cti.title') }}</h1>

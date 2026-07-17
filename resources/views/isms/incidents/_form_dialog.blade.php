@@ -11,8 +11,9 @@
 --}}
 @php
     $isEdit = $incident !== null;
-    $linkedRiskIds = $isEdit ? $incident->risks->pluck('id')->all() : [];
-    $linkedControlIds = $isEdit ? $incident->controls->pluck('id')->all() : [];
+    $linkedRiskIds = $isEdit ? $incident->risks->pluck('sqid')->all() : [];
+    $linkedControlIds = $isEdit ? $incident->controls->pluck('sqid')->all() : [];
+    $ownerSqid = \App\Support\Sqid::encode(\App\Models\User::class, $incident?->owner_user_id);
 @endphp
 
 <x-modal
@@ -50,7 +51,7 @@
         <x-select-field name="owner_user_id" :label="__('isms.field.owner')" span="2">
             <option value="">—</option>
             @foreach ($owners as $owner)
-                <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $incident?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+                <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', $ownerSqid) === $owner->sqid)>{{ $owner->name }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>
@@ -88,7 +89,7 @@
             <input type="hidden" name="risk_ids[]" value="">
             <select name="risk_ids[]" multiple size="6" class="select select-bordered w-full h-auto">
                 @foreach ($risks as $risk)
-                    <option value="{{ $risk->id }}" @selected(in_array($risk->id, old('risk_ids', $linkedRiskIds)))>{{ $risk->title }}</option>
+                    <option value="{{ $risk->sqid }}" @selected(in_array($risk->sqid, old('risk_ids', $linkedRiskIds)))>{{ $risk->title }}</option>
                 @endforeach
             </select>
         </label>
@@ -97,7 +98,7 @@
             <input type="hidden" name="control_ids[]" value="">
             <select name="control_ids[]" multiple size="6" class="select select-bordered w-full h-auto">
                 @foreach ($controls as $control)
-                    <option value="{{ $control->id }}" @selected(in_array($control->id, old('control_ids', $linkedControlIds)))>{{ $control->title }}</option>
+                    <option value="{{ $control->sqid }}" @selected(in_array($control->sqid, old('control_ids', $linkedControlIds)))>{{ $control->title }}</option>
                 @endforeach
             </select>
         </label>

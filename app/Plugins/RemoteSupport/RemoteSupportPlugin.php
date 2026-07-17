@@ -14,6 +14,7 @@ use App\Models\{Asset, Organization, PluginSetting};
 use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer, TimeImporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
+use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -51,13 +52,11 @@ class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 

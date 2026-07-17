@@ -19,6 +19,7 @@ use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\PluginOrgContext;
 use Closure;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
@@ -65,13 +66,11 @@ class MsgraphPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSo
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -206,7 +205,7 @@ class MsgraphPlugin implements BackupTarget, CalendarPublisher, DocumentIntakeSo
             return PluginHealth::degraded(__('msgraph.health.not_configured'));
         }
 
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('msgraph.health.no_org_context'));
         }

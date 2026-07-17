@@ -10,7 +10,8 @@
 
 namespace App\Plugins\RemoteSupport;
 
-use App\Models\{Organization, PluginSetting};
+use App\Models\PluginSetting;
+use App\Plugins\Support\PluginOrgContext;
 
 /**
  * Liefert die effektive Fernwartungs-Konfiguration für den aktuellen Request /
@@ -43,7 +44,7 @@ class RemoteSupportConfig {
             'base_url' => (string) config('plugins.remote-support.teamviewer.base_url', 'https://webapi.teamviewer.com/api/v1'),
         ];
 
-        $organizationId ??= self::boundOrganizationId();
+        $organizationId ??= PluginOrgContext::currentId();
 
         if ($organizationId !== null) {
             $row = PluginSetting::query()
@@ -97,14 +98,5 @@ class RemoteSupportConfig {
 
     private static function intOrNull(mixed $value): ?int {
         return is_numeric($value) ? (int) $value : null;
-    }
-
-    private static function boundOrganizationId(): ?int {
-        if (! app()->bound('currentOrganization')) {
-            return null;
-        }
-        $org = app('currentOrganization');
-
-        return $org instanceof Organization ? (int) $org->id : null;
     }
 }

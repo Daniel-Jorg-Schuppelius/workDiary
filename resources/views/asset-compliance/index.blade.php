@@ -14,11 +14,7 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Prüfpflichten aktiv')" :value="$assignments->count()" />

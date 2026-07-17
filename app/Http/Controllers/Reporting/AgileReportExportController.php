@@ -90,13 +90,14 @@ class AgileReportExportController extends Controller {
             ...$this->csvRows($metric, $result->data),
         ];
 
-        $this->auditExport($request, 'agile_' . $metric, 'csv', $filters);
-
+        // A9: Audit läuft in csvWithMetadata; Audit-Code bleibt ohne Versions-Suffix.
         return $this->csvWithMetadata(
             array_map(fn(array $row): array => array_values($row), $rows),
             sprintf('agile_%s_%s.csv', $metric, now()->format('Ymd')),
             'agile_' . $metric . '_v' . $result->metricVersion,
             $filters,
+            $request,
+            'agile_' . $metric,
         );
     }
 
@@ -112,8 +113,6 @@ class AgileReportExportController extends Controller {
             ->orderByDesc('id')
             ->first();
 
-        $this->auditExport($request, 'agile_sprint_cockpit', 'pdf', ['project_id' => $project->id, 'sprint_id' => $sprint?->id]);
-
         return $this->pdfDownload('agile.reports.pdf', [
             'project' => $project,
             'board' => $board,
@@ -121,7 +120,7 @@ class AgileReportExportController extends Controller {
             'burndown' => $sprint?->started_at !== null ? $this->metrics->burndown($sprint) : null,
             'velocity' => $this->metrics->velocity($board),
             'quality' => $this->metrics->qualitySeries($board),
-        ], sprintf('agile_sprint_cockpit_%s.pdf', now()->format('Ymd')));
+        ], sprintf('agile_sprint_cockpit_%s.pdf', now()->format('Ymd')), request: $request, reportCode: 'agile_sprint_cockpit', filters: ['project_id' => $project->id, 'sprint_id' => $sprint?->id]);
     }
 
     private function metricResult(AgileBoard $board, string $metric, Request $request): \App\Services\Agile\Metrics\MetricResult {

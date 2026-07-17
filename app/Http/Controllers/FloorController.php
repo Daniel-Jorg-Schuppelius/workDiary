@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Models\{Building, Floor};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -18,6 +19,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class FloorController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['level', 'label', 'gross_area_m2'];
 
     public function index(Request $request): View {
@@ -25,11 +28,8 @@ class FloorController extends Controller {
 
         $rawBuilding = (string) $request->query('building', '');
         $buildingId = Sqid::decodeOrNumeric(Building::class, $rawBuilding);
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'level';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'level');
 
         $query = Floor::query()
             ->with('building.site')

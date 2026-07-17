@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Permit\PermitStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, Searchable};
 use Database\Factories\PermitFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -47,6 +47,7 @@ class Permit extends Model {
     /** @use HasFactory<PermitFactory> */
     use HasFactory;
     use HasSqid;
+    use Searchable;
 
     /** meta_type für das Nachweis-Dokument am Anhang. */
     public const EVIDENCE_META = 'evidence';
@@ -88,5 +89,10 @@ class Permit extends Model {
 
     public function evidence(): ?Attachment {
         return $this->attachmentByMeta(self::EVIDENCE_META);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['title', 'authority', 'reference_no'];
     }
 }

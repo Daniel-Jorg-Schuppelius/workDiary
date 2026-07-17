@@ -11,9 +11,10 @@
 namespace App\Policies;
 
 use App\Models\{Qualification, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class QualificationPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -21,7 +22,7 @@ class QualificationPolicy {
     }
 
     public function view(User $user, Qualification $qualification): bool {
-        return $user->organization_id === $qualification->organization_id;
+        return $this->sharesOrganization($user, $qualification);
     }
 
     public function create(User $user): bool {
@@ -29,10 +30,10 @@ class QualificationPolicy {
     }
 
     public function update(User $user, Qualification $qualification): bool {
-        return $user->isAdmin() && $user->organization_id === $qualification->organization_id;
+        return $user->isAdmin() && $this->sharesOrganization($user, $qualification);
     }
 
     public function delete(User $user, Qualification $qualification): bool {
-        return $user->isAdmin() && $user->organization_id === $qualification->organization_id;
+        return $user->isAdmin() && $this->sharesOrganization($user, $qualification);
     }
 }

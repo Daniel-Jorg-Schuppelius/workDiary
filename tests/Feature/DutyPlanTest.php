@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Shift\{DutyPlanPeriodType, DutyPlanStatus};
-use App\Models\{DutyPlan, Organization, User};
+use App\Models\{DutyPlan, Organization};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -25,16 +25,6 @@ class DutyPlanTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        $u = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-
-        return $u;
-    }
-
-    private function user(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     // ── Zugriffskontrolle ────────────────────────────────────────────────────
 
     public function test_guest_cannot_access_duty_plans(): void {
@@ -42,14 +32,14 @@ class DutyPlanTest extends TestCase {
     }
 
     public function test_user_can_view_index(): void {
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('duty-plans.index'))
             ->assertOk()
             ->assertViewIs('duty-plans.index');
     }
 
     public function test_non_admin_cannot_create(): void {
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('duty-plans.create'))
             ->assertForbidden();
     }
@@ -57,7 +47,7 @@ class DutyPlanTest extends TestCase {
     // ── CRUD ─────────────────────────────────────────────────────────────────
 
     public function test_admin_can_create_duty_plan(): void {
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('duty-plans.store'), [
                 'title' => 'KW 21',
                 'period_type' => DutyPlanPeriodType::Weekly->value,
@@ -79,7 +69,7 @@ class DutyPlanTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->put(route('duty-plans.update', $plan), [
                 'title' => 'KW 22 updated',
                 'period_type' => DutyPlanPeriodType::Weekly->value,
@@ -98,7 +88,7 @@ class DutyPlanTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->delete(route('duty-plans.destroy', $plan))
             ->assertRedirect(route('duty-plans.index'));
 
@@ -110,7 +100,7 @@ class DutyPlanTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->delete(route('duty-plans.destroy', $plan))
             ->assertForbidden();
     }
@@ -122,7 +112,7 @@ class DutyPlanTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->patch(route('duty-plans.publish', $plan))
             ->assertRedirect();
 
@@ -134,7 +124,7 @@ class DutyPlanTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->patch(route('duty-plans.retract', $plan))
             ->assertRedirect();
 
@@ -146,7 +136,7 @@ class DutyPlanTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->patch(route('duty-plans.publish', $plan))
             ->assertForbidden();
     }
@@ -158,7 +148,7 @@ class DutyPlanTest extends TestCase {
         $otherPlan = DutyPlan::factory()->create(['organization_id' => $otherOrg->id]);
 
         // OrganizationScope filtert fremde Pläne heraus → 404, nicht 403
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('duty-plans.show', $otherPlan))
             ->assertNotFound();
     }
@@ -177,7 +167,7 @@ class DutyPlanTest extends TestCase {
             'title' => 'Monthly Plan',
         ]);
 
-        $response = $this->actingAs($this->user())
+        $response = $this->actingAs($this->orgUser())
             ->get(route('duty-plans.index', ['period' => DutyPlanPeriodType::Weekly->value]));
 
         $response->assertOk();

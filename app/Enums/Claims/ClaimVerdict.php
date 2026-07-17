@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Bewertungsergebnis (MVP-249): berechtigt / unklar / abgelehnt. */
-enum ClaimVerdict: string {
+enum ClaimVerdict: string implements HasLabel {
+    use HasOptions;
+
     case Justified = 'justified';
     case Unclear = 'unclear';
     case Rejected = 'rejected';

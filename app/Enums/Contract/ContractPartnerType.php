@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Contract;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Vertragspartner-Bezug (Welle D, CLM): verknüpfter Kunde/Lieferant der
  * Organisation oder reiner Freitext-Partner.
  */
-enum ContractPartnerType: string {
+enum ContractPartnerType: string implements HasLabel {
+    use HasOptions;
+
     case Customer = 'customer';
     case Supplier = 'supplier';
     case Other = 'other';

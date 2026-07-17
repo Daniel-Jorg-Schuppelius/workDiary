@@ -10,14 +10,13 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use RuntimeException;
 
 /**
  * Unveränderlicher Wetter-Messwert eines Ortes an einem Tag (Feature 062,
- * MVP-131). Einmal angelegt, nie geändert — der `updating`-Guard erzwingt die
+ * MVP-131). Einmal angelegt, nie geändert — `AppendOnly` erzwingt die
  * Beweisfestigkeit auf Modell-Ebene (Messwert ≠ nachträgliche Beobachtung).
  *
  * @property int $id
@@ -36,6 +35,8 @@ use RuntimeException;
  * @property int|null $created_by
  */
 class WeatherSnapshot extends Model {
+    use AppendOnly;
+
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -67,10 +68,4 @@ class WeatherSnapshot extends Model {
         'weather_code' => 'integer',
         'raw' => 'array',
     ];
-
-    protected static function booted(): void {
-        static::updating(function (): void {
-            throw new RuntimeException('Weather snapshots are immutable.');
-        });
-    }
 }

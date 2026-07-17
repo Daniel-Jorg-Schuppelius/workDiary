@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Kaufmännische Folge (MVP-252, Entscheidung D1): KEIN neuer Belegtyp —
  * die Art lebt hier; auf Faktura-Seite bleibt es bei Gutschrift/Storno,
  * ergänzt um das strukturierte reason_kind-Feld am Beleg.
  */
-enum ClaimFinancialKind: string {
+enum ClaimFinancialKind: string implements HasLabel {
+    use HasOptions;
+
     case PriceReduction = 'price_reduction';
     case CreditNote = 'credit_note';
     case Cancellation = 'cancellation';

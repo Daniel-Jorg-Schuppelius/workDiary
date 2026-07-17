@@ -10,7 +10,12 @@
 
 namespace App\Enums\Facility;
 
-enum RoomUsageType: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum RoomUsageType: string implements HasLabel {
+    use HasOptions;
+
     case Office = 'office';
     case ServerRoom = 'server_room';
     case Cleanroom = 'cleanroom';

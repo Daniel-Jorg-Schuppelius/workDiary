@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\Kimai\Exceptions;
 
-use RuntimeException;
+use App\Plugins\Support\PluginApiException;
 
 /**
  * Fehlgeschlagener Kimai-API-Aufruf (Nicht-2xx nach ausgeschöpften Retries).
  * Trägt den HTTP-Status für die Fehlerausgabe im Admin-UI.
  */
-class KimaiApiException extends RuntimeException {
-    public function __construct(string $message, public readonly int $status = 0) {
-        parent::__construct($message);
+class KimaiApiException extends PluginApiException {
+    public function __construct(string $message, int $status = 0) {
+        parent::__construct($message, $status);
     }
 }

@@ -14,7 +14,6 @@ use App\Enums\Asset\{AssetClass, AssetStatus};
 use App\Enums\User\UserRole;
 use App\Models\{Asset, Customer, Room, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -149,23 +148,5 @@ class AssetUpdateControllerTest extends TestCase {
             ->get(route('assets.create', ['room' => (string) $room->id]))
             ->assertOk()
             ->assertSee('Serverraum 99');
-    }
-
-    private function userWithRole(string $role): User {
-        $user = User::factory()->create(['organization_id' => $this->organization->id]);
-        $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($this->organization->id);
-
-        $orgRole = Role::query()
-            ->where('name', $role)
-            ->where('team_id', $this->organization->id)
-            ->firstOrFail();
-
-        $user->syncRoles([$orgRole]);
-        $registrar->forgetCachedPermissions();
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user;
     }
 }

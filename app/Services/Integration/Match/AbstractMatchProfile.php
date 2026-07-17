@@ -19,17 +19,27 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * Basis für {@see MatchProfile}-Implementierungen: liefert Standard-Kandidaten-
  * Query (org-gescopt, archivierte ausgeschlossen sofern Spalte vorhanden) und
  * generisches Feld-Extrahieren aus Modellen anhand der Strategie-Felder.
+ *
+ * @template TModel of Model
  */
 abstract class AbstractMatchProfile implements MatchProfile {
-    public function candidates(Organization $organization): Builder {
-        $modelClass = $this->targetType();
-        /** @var Builder<Model> $query */
-        $query = $modelClass::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id);
+    /** @return class-string<TModel> */
+    abstract public function targetType(): string;
 
-        $model = new $modelClass;
-        if (in_array('archived_at', $model->getFillable(), true)) {
+    /**
+     * Frische Basis-Query des Zielmodells — konkret je Profil, weil eine
+     * Query über class-string den Modell-Generic zu Model kollabieren lässt.
+     *
+     * @return Builder<TModel>
+     */
+    abstract protected function newCandidateQuery(): Builder;
+
+    /** @return Builder<TModel> */
+    public function candidates(Organization $organization): Builder {
+        $query = $this->newCandidateQuery();
+        $query->withoutGlobalScopes()->where('organization_id', $organization->id);
+
+        if (in_array('archived_at', $query->getModel()->getFillable(), true)) {
             $query->whereNull('archived_at');
         }
 

@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Ideas;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Semantische Farbpalette der Knoten (Feature 054, MVP-105/106). Bewusst
  * begrenzt; Farbe ist nie einziger Informationsträger (038) — der Editor
  * zeigt Status zusätzlich als Text/Icon.
  */
-enum IdeaNodeColor: string {
+enum IdeaNodeColor: string implements HasLabel {
+    use HasOptions;
+
     case Default = 'default';
     case Primary = 'primary';
     case Success = 'success';

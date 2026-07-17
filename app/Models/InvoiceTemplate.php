@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasSqid, Searchable};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -28,6 +28,7 @@ class InvoiceTemplate extends Model {
     use BelongsToOrganization;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -47,5 +48,10 @@ class InvoiceTemplate extends Model {
     /** @return HasMany<Customer, $this> */
     public function customers(): HasMany {
         return $this->hasMany(Customer::class);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'slug'];
     }
 }

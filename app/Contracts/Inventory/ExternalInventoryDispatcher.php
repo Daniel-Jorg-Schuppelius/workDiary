@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Inventory;
 
+use App\Contracts\PluginDispatcher;
 use App\Models\InventoryOutboxEntry;
 
 /**
@@ -19,10 +20,7 @@ use App\Models\InventoryOutboxEntry;
  * MVP-072/073). Ein Plugin (z. B. JTL-Wawi) registriert seinen Dispatcher beim
  * {@see \App\Services\Inventory\ExternalInventoryDispatcherResolver}.
  */
-interface ExternalInventoryDispatcher {
-    /** Plugin-Kennung, für die dieser Dispatcher zuständig ist. */
-    public function pluginId(): string;
-
+interface ExternalInventoryDispatcher extends PluginDispatcher {
     /**
      * Wendet die Bewegung extern an. Muss idempotent gegenüber dem
      * `idempotency_key` des Eintrags sein.

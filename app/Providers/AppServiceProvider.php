@@ -15,8 +15,8 @@ use App\Automation\Actions\ApproveExpenseAction;
 use App\Automation\{ConditionEvaluator, RuleEngine};
 use App\Legacy\LegacyBridge;
 use App\Listeners\AuthEventSubscriber;
-use App\Models\{ActivityCategory, Asset, Attachment, Building, Classification, ClassificationRequirement, Comment, CommunicationNote, CoverageRequirement, Customer, DiaryEntry, DutyPlan, EmergencyAssignment, Event, EventCategory, Expense, ExpenseCategory, FlexEligibility, Floor, ForeignCustomer, KeyHandover, MaintenancePlan, Material, MaterialUsage, MeterReading, Milestone, MonthClosure, NumberFormat, OpenIssue, Organization, PerDiemRate, PerDiemTrip, ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate, Project, Protocol, Qualification, Room, ScheduledShift, ServiceTicket, ShiftType, Site, Software, Supplier, Tag, Task, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, TravelLog, User, UserGroup, WorkSchedule};
-use App\Observers\{AttachmentObserver, CommentObserver, CustomerObserver, DiaryEntryObserver, EmergencyAssignmentObserver, ForeignCustomerObserver, MaterialUsageObserver, OrganizationObserver, ProjectObserver, ProtocolObserver, SupplierObserver, TagObserver, TimeEntryObserver, TimesheetObserver, UserObserver};
+use App\Models\{ActivityCategory, Asset, Attachment, Building, Classification, ClassificationRequirement, Comment, CommunicationNote, CoverageRequirement, Customer, DiaryEntry, DutyPlan, EmergencyAssignment, Event, EventCategory, Expense, ExpenseCategory, FlexEligibility, Floor, KeyHandover, MaintenancePlan, Material, MaterialUsage, MeterReading, Milestone, MonthClosure, NumberFormat, OpenIssue, Organization, PerDiemRate, PerDiemTrip, ProcedureBackupProof, ProcedureDeviation, ProcedureRun, ProcedureTemplate, Project, Protocol, Qualification, Room, ScheduledShift, ServiceTicket, ShiftType, Site, Software, Supplier, Tag, Task, TimeCorrectionRequest, TimeEntry, TimeExport, Timesheet, TravelLog, User, UserGroup, WorkSchedule};
+use App\Observers\{AttachmentObserver, CommentObserver, CustomerObserver, DiaryEntryObserver, EmergencyAssignmentObserver, MaterialUsageObserver, OrganizationObserver, ProjectObserver, ProtocolObserver, TagObserver, TimeEntryObserver, TimesheetObserver, UserObserver};
 use App\Policies\{ActivityCategoryPolicy, AssetPolicy, BuildingPolicy, ClassificationPolicy, ClassificationRequirementPolicy, CommunicationNotePolicy, CoverageRequirementPolicy, DutyPlanPolicy, EventCategoryPolicy, EventPolicy, ExpenseCategoryPolicy, ExpensePolicy, FlexEligibilityPolicy, FloorPolicy, KeyHandoverPolicy, MaintenancePlanPolicy, MaterialPolicy, MaterialUsagePolicy, MeterReadingPolicy, MilestonePolicy, MonthClosurePolicy, NumberFormatPolicy, OpenIssuePolicy, OrganizationPolicy, PerDiemRatePolicy, PerDiemTripPolicy, ProcedureBackupProofPolicy, ProcedureDeviationPolicy, ProcedureRunPolicy, ProcedureTemplatePolicy, ProtocolPolicy, QualificationPolicy, RoomPolicy, ScheduledShiftPolicy, ServiceTicketPolicy, ShiftTypePolicy, SitePolicy, SoftwarePolicy, TaskPolicy, TimeCorrectionRequestPolicy, TimeEntryPolicy, TimeExportPolicy, TimesheetPolicy, TravelLogPolicy, UserGroupPolicy, WorkSchedulePolicy};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\BrandingService;
@@ -313,6 +313,21 @@ class AppServiceProvider extends ServiceProvider {
             return $this->whereLikeEscaped($column, $term, $side, 'or');
         });
 
+        // organization_id-FK für NEUE Migrationen (konsolidierungs-audit-2026-07,
+        // D9), Mehrheitssemantik des Bestands: Pflicht-FK kaskadiert beim
+        // Org-Löschen, optionaler FK wird genullt. Bestand bleibt unangetastet.
+        // Achtung MySQL: Index-/FK-Namen max. 64 Zeichen und DB-weit eindeutig —
+        // bei langen Tabellennamen weiterhin kurze Namen explizit vergeben
+        // (dann foreignId()->constrained(indexName: ...) statt Macro).
+        \Illuminate\Database\Schema\Blueprint::macro('organizationFk', function () {
+            /** @var \Illuminate\Database\Schema\Blueprint $this */
+            return $this->foreignId('organization_id')->constrained('organizations')->cascadeOnDelete();
+        });
+        \Illuminate\Database\Schema\Blueprint::macro('organizationFkNullable', function () {
+            /** @var \Illuminate\Database\Schema\Blueprint $this */
+            return $this->foreignId('organization_id')->nullable()->constrained('organizations')->nullOnDelete();
+        });
+
         // Mandanten-Hygiene im langlebigen Queue-Worker (Whitebox 2026-07-10,
         // J1/J2): Jeder Job startet mit sauberem Container, sonst verschleppt
         // ein gebundenes 'currentOrganization' in den nächsten Job (org-gescopte
@@ -437,8 +452,7 @@ class AppServiceProvider extends ServiceProvider {
         Comment::observe(CommentObserver::class);
         Attachment::observe(AttachmentObserver::class);
         Customer::observe(CustomerObserver::class);
-        ForeignCustomer::observe(ForeignCustomerObserver::class);
-        Supplier::observe(SupplierObserver::class);
+        // Supplier/ForeignCustomer: Audit-Logging via Auditable-Trait, kein Observer mehr (A1).
         EmergencyAssignment::observe(EmergencyAssignmentObserver::class);
         DiaryEntry::observe(DiaryEntryObserver::class);
         Tag::observe(TagObserver::class);

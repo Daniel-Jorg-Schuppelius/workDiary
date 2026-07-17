@@ -14,18 +14,24 @@ namespace App\Services\Integration\Profiles;
 
 use App\Models\{Organization, Supplier};
 use App\Services\Integration\Match\{AbstractMatchProfile, CompositeField, ExactField, FuzzyField, MatchStrategy};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * Abgleich-Profil für Lieferanten: USt-IdNr. → Lieferantennummer (exact) →
  * E-Mail → Firma+PLZ (likely) → Name/Firma-Ähnlichkeit (fuzzy). Spiegelbild des
  * {@see CustomerMatchProfile} für die Supplier-Entität.
+ *
+ * @extends AbstractMatchProfile<Supplier>
  */
 class SupplierMatchProfile extends AbstractMatchProfile {
     public const FUZZY_THRESHOLD = 0.86;
 
     public function targetType(): string {
         return Supplier::class;
+    }
+
+    protected function newCandidateQuery(): Builder {
+        return Supplier::query();
     }
 
     public function strategies(): array {

@@ -10,11 +10,10 @@
 
 namespace App\Services\Timesheet;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Timesheet;
-use Illuminate\Support\Facades\{Storage, View};
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
+use Illuminate\Support\Facades\Storage;
 
 class PdfRenderer {
     public function render(Timesheet $timesheet): string {
@@ -30,20 +29,16 @@ class PdfRenderer {
             }
         }
 
-        $html = View::make('pdf.timesheet', [
-            'timesheet' => $timesheet,
-            'signaturePng' => $signaturePng,
-        ])->render();
-
-        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
-        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->composeFor(
-            \App\Models\Organization::query()->withoutGlobalScopes()->find($timesheet->organization_id),
-            \App\Enums\DocumentDesign\RenderDocumentKind::Timesheet,
-            $html,
+        // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
+        return app(DocumentDesignRenderer::class)->renderPdf(
+            RenderDocumentKind::Timesheet,
+            'pdf.timesheet',
+            [
+                'timesheet' => $timesheet,
+                'signaturePng' => $signaturePng,
+            ],
+            (int) $timesheet->organization_id,
         );
-
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.timesheet).');
     }
 
     public function store(Timesheet $timesheet): string {

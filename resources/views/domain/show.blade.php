@@ -129,7 +129,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="text-center text-base-content/60 py-6">{{ __('domain.command.empty') }}</td></tr>
+                            <x-table.empty :colspan="4" :title="__('domain.command.empty')" compact />
                         @endforelse
                     </tbody>
                 </table>
@@ -167,7 +167,7 @@
 
                 @if ($can['dangerous'])
                     <form method="POST" action="{{ route('domains.dangerous', $domain) }}" class="flex flex-wrap items-end gap-2 border-t border-base-200 pt-3"
-                          onsubmit="return confirm('{{ __('domain.action.dangerous_confirm') }}')">
+                          data-confirm-dialog data-confirm-message="{{ __('domain.action.dangerous_confirm') }}" data-confirm-tone="error">
                         @csrf
                         <select name="action" class="select select-sm select-bordered">
                             <option value="delete">{{ __('domain.dangerous.delete') }}</option>

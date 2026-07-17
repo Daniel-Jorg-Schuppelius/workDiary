@@ -14,12 +14,14 @@ namespace App\Services\Integration\Profiles;
 
 use App\Models\{Customer, Organization};
 use App\Services\Integration\Match\{AbstractMatchProfile, CompositeField, ExactField, FuzzyField, MatchStrategy};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * Abgleich-Profil für Kunden. Bildet die Match-Reihenfolge des bisherigen
  * Lexoffice-/Toggl-Abgleichs ab: USt-IdNr. → Lexoffice-Nr. (exact) → E-Mail →
  * Firma+PLZ (likely) → Name/Firma-Ähnlichkeit (fuzzy).
+ *
+ * @extends AbstractMatchProfile<Customer>
  */
 class CustomerMatchProfile extends AbstractMatchProfile {
     /** Schwelle für die Namens-/Firmen-Ähnlichkeit. */
@@ -27,6 +29,10 @@ class CustomerMatchProfile extends AbstractMatchProfile {
 
     public function targetType(): string {
         return Customer::class;
+    }
+
+    protected function newCandidateQuery(): Builder {
+        return Customer::query();
     }
 
     public function strategies(): array {

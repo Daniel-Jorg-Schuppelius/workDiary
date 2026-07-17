@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Abschlusscode (Feature 065, MVP-151): WIE wurde das Ticket beendet. */
-enum TicketCloseCode: string {
+enum TicketCloseCode: string implements HasLabel {
+    use HasOptions;
+
     case Solved = 'solved';
     case Workaround = 'workaround';
     case Duplicate = 'duplicate';

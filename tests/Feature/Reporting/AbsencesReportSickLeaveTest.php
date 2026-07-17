@@ -11,7 +11,7 @@
 namespace Tests\Feature\Reporting;
 
 use App\Enums\Sickness\SickLeaveKind;
-use App\Models\{SickLeave, User};
+use App\Models\{AuditLog, SickLeave, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -75,6 +75,13 @@ class AbsencesReportSickLeaveTest extends TestCase {
         $body = $response->getContent() ?: '';
         $this->assertStringContainsString('#report:absences', $body);
         $this->assertStringContainsString('Mitarbeiter', $body);
+
+        // A9: Audit läuft jetzt zentral in csvWithMetadata — vorher audit-los.
+        $audit = AuditLog::query()->where('event', 'report.exported')->latest('id')->firstOrFail();
+        $changes = $audit->getAttribute('changes') ?? [];
+        $this->assertSame('absences', $changes['report_code']);
+        $this->assertSame('csv', $changes['format']);
+        $this->assertTrue(is_string($changes['filter_hash'] ?? null));
     }
 
     public function test_sickness_report_route_renders(): void {

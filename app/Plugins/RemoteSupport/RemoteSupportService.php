@@ -11,8 +11,9 @@
 namespace App\Plugins\RemoteSupport;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Asset, Customer, ExternalReference, Organization, Project, RemotePendingSession, TimeEntry, User};
+use App\Models\{Asset, Customer, ExternalReference, Organization, Project, RemotePendingSession, TimeEntry};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteProvider, RemoteSession, TeamViewerClient};
+use App\Plugins\Support\PersistsTimeImportInbox;
 use Carbon\CarbonImmutable;
 
 /**
@@ -24,6 +25,10 @@ use Carbon\CarbonImmutable;
  *    ({@see import()}). Idempotenz über eine session-ExternalReference.
  */
 class RemoteSupportService {
+    use PersistsTimeImportInbox {
+        resolveBookingUserId as public;
+    }
+
     /** Provider-Kennung → external_type des Geräte-Links. */
     public const DEVICE_TYPES = [
         AnyDeskClient::ID => 'anydesk_id',
@@ -40,6 +45,15 @@ class RemoteSupportService {
      * @var list<string>
      */
     public const REMOTE_CATEGORY_CODES = ['workstation', 'server', 'notebook'];
+
+    protected function pluginId(): string {
+        return RemoteSupportPlugin::ID;
+    }
+
+    /** Idempotenz-Anker ist hier die anbieterseitige Session. */
+    protected function entryExternalType(): string {
+        return self::EXT_TYPE_SESSION;
+    }
 
     /**
      * Hinterlegt die Geräte-ID eines Anbieters am Asset (Upsert).
@@ -216,42 +230,7 @@ class RemoteSupportService {
     }
 
     private function sessionAlreadyImported(Organization $organization, RemoteSession $session): bool {
-        return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', RemoteSupportPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_SESSION)
-            ->where('external_id', $this->sessionKey($session))
-            ->exists();
-    }
-
-    /**
-     * Bestimmt den Benutzer, dem importierte Zeiten zugeordnet werden:
-     * konfigurierte default_user_id (in der Org) → Org-Owner → erster Org-Benutzer.
-     */
-    public function resolveBookingUserId(Organization $organization, ?int $defaultUserId): ?int {
-        if ($defaultUserId !== null) {
-            $user = User::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->whereKey($defaultUserId)
-                ->first();
-            if ($user !== null) {
-                return (int) $user->id;
-            }
-        }
-
-        if ($organization->owner_id !== null) {
-            return (int) $organization->owner_id;
-        }
-
-        $first = User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->orderBy('id')
-            ->first();
-
-        return $first !== null ? (int) $first->id : null;
+        return $this->alreadyImported($organization, $this->sessionKey($session));
     }
 
     private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): ?TimeEntry {

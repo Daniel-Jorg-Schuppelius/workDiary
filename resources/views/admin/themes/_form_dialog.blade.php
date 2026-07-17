@@ -132,9 +132,5 @@
         </div>
     </div>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm mt-3">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors class="mt-3" />
 </x-modal>

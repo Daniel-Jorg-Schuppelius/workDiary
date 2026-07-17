@@ -98,9 +98,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="18" class="text-center opacity-70 py-6">{{ __('Keine aktiven Räume') }}</td>
-                                    </tr>
+                                    <x-table.empty :colspan="18" :title="__('Keine aktiven Räume')" compact />
                                 @endforelse
                             </tbody>
                         </table>

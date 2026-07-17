@@ -38,7 +38,7 @@ class ManagementReviewService {
             return IsmsManagementReview::query()->create([
                 'organization_id' => $creator->organization_id,
                 'isms_scope_id' => $scope->id,
-                'review_no' => $this->nextNo(IsmsManagementReview::class, 'review_no', (int) $creator->organization_id),
+                'review_no' => $this->nextNo(IsmsManagementReview::class, 'review_no', 'organization_id', (int) $creator->organization_id),
                 'held_on' => $attributes['held_on'],
                 'participants' => $attributes['participants'],
                 'inputs' => $attributes['inputs'],

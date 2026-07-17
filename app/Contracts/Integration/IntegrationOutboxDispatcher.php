@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Contracts\Integration;
 
+use App\Contracts\PluginDispatcher;
 use App\Models\IntegrationOutboxEntry;
 
 /**
@@ -21,10 +22,7 @@ use App\Models\IntegrationOutboxEntry;
  * — Gegenstück zum Bestands-Vertrag
  * {@see \App\Contracts\Inventory\ExternalInventoryDispatcher}.
  */
-interface IntegrationOutboxDispatcher {
-    /** Plugin-Kennung, für die dieser Dispatcher zuständig ist. */
-    public function pluginId(): string;
-
+interface IntegrationOutboxDispatcher extends PluginDispatcher {
     /**
      * Wendet die Operation extern an. Muss idempotent gegenüber dem
      * `idempotency_key` des Eintrags sein.

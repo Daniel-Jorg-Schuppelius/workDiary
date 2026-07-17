@@ -18,7 +18,6 @@ use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard, RentalReservat
 use App\Services\Asset\{AssetBlockService, AssetUsageGuard};
 use App\Services\Rental\{RentalAvailabilityService, RentalBillingService, RentalCaseService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -54,19 +53,6 @@ final class RentalLifecycleTest extends TestCase {
             'group_code' => 'bagger',
             'buffer_after_hours' => 4,
         ]);
-    }
-
-    private function userWithRole(string $role): User {
-        $user = User::factory()->create(['organization_id' => $this->organization->id]);
-        $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($this->organization->id);
-        $orgRole = Role::query()->where('name', $role)->where('team_id', $this->organization->id)->firstOrFail();
-        $user->syncRoles([$orgRole]);
-        $registrar->forgetCachedPermissions();
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user;
     }
 
     private function rateCard(): RentalRateCard {

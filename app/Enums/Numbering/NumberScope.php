@@ -10,7 +10,12 @@
 
 namespace App\Enums\Numbering;
 
-enum NumberScope: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum NumberScope: string implements HasLabel {
+    use HasOptions;
+
     case ServiceTicket = 'service_ticket';
     case ProblemReport = 'problem_report';
     case Asset = 'asset';

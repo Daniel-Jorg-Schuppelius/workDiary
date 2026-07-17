@@ -10,7 +10,12 @@
 
 namespace App\Enums\ServiceTicket;
 
-enum ServiceTicketPriority: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ServiceTicketPriority: string implements HasLabel {
+    use HasOptions;
+
     case Low = 'low';
     case Normal = 'normal';
     case High = 'high';

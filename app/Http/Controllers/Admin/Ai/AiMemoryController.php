@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Ai\AiMemoryEntry;
 use App\Models\Customer;
 use App\Services\Ai\AiCapabilityRegistry;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -58,6 +59,11 @@ class AiMemoryController extends Controller {
 
     public function store(Request $request, AiCapabilityRegistry $registry): RedirectResponse {
         Gate::authorize('create', AiMemoryEntry::class);
+
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('customer_id')) {
+            $request->merge(['customer_id' => Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id'))]);
+        }
 
         $data = $request->validate([
             'entry_type' => ['required', 'string', 'in:' . implode(',', array_column(AiMemoryEntryType::cases(), 'value'))],

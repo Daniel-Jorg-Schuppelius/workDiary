@@ -10,13 +10,12 @@
 
 namespace App\Services\Protocol;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Protocol;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
 
 /**
  * Rendert ein signiertes Protokoll als PDF auf Storage und liefert den
@@ -42,21 +41,17 @@ class ProtocolPdfRenderer {
             return $relativePath;
         }
 
-        $html = view('protocols.pdf', [
-            'protocol' => $protocol,
-            'hash' => $hash,
-            'generatedAt' => Carbon::now(),
-        ])->render();
-
-        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
-        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->composeFor(
-            \App\Models\Organization::query()->withoutGlobalScopes()->find($protocol->organization_id),
-            \App\Enums\DocumentDesign\RenderDocumentKind::Protocol,
-            $html,
+        // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
+        $bytes = app(DocumentDesignRenderer::class)->renderPdf(
+            RenderDocumentKind::Protocol,
+            'protocols.pdf',
+            [
+                'protocol' => $protocol,
+                'hash' => $hash,
+                'generatedAt' => Carbon::now(),
+            ],
+            (int) $protocol->organization_id,
         );
-
-        $bytes = PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (protocols.pdf).');
 
         $disk->put($relativePath, $bytes);
 

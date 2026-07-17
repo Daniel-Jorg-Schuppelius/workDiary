@@ -20,7 +20,8 @@ use InvalidArgumentException;
  * Führt zwei lokale Kunden-Datensätze zusammen (Dubletten-Bereinigung, z. B.
  * nach dem Toggl-Import). Alle abhängigen Datensätze werden vom Quell- auf den
  * Ziel-Kunden umgehängt, leere Ziel-Felder aus der Quelle aufgefüllt, der
- * Quell-Kunde anschließend hart gelöscht.
+ * Quell-Kunde anschließend hart gelöscht. Umhäng-Kern siehe
+ * {@see AbstractEntityMergeService}.
  *
  * Mandanten-/Sicherheits-Garantie: Quelle und Ziel müssen zur selben
  * Organisation gehören und dürfen nicht identisch sein.
@@ -35,7 +36,7 @@ use InvalidArgumentException;
  *  - taggables hat den Primärschlüssel (tag_id, taggable_id, taggable_type);
  *    Tags, die das Ziel bereits trägt, werden nicht doppelt umgehängt.
  */
-class CustomerMergeService {
+class CustomerMergeService extends AbstractEntityMergeService {
     /**
      * Tabellen mit direkter `customer_id`-Spalte. Werden bei Bedarf
      * (Schema-Check) per Bulk-UPDATE umgehängt. projects und sites werden
@@ -100,6 +101,22 @@ class CustomerMergeService {
         'buyer_reference', 'debtor_no',
     ];
 
+    protected function foreignKeyColumn(): string {
+        return 'customer_id';
+    }
+
+    protected function scalarTables(): array {
+        return self::CUSTOMER_ID_TABLES;
+    }
+
+    protected function morphTables(): array {
+        return self::MORPH_TABLES;
+    }
+
+    protected function fillableFromSource(): array {
+        return self::FILLABLE_FROM_SOURCE;
+    }
+
     /**
      * Hängt alle Daten von $source auf $target um und löscht $source.
      *
@@ -139,32 +156,13 @@ class CustomerMergeService {
             return;
         }
 
-        $hasSlug = Schema::hasColumn('projects', 'slug');
-        $hasDefault = Schema::hasColumn('projects', 'is_default');
-
-        // Slug-Kollisionen auflösen: Ziel-Slugs einsammeln, kollidierende Quell-Projekte vor dem Umhängen umbenennen.
-        if ($hasSlug) {
-            $targetSlugs = DB::table('projects')->where('customer_id', $targetId)->pluck('slug')->all();
-            $taken = array_flip(array_map('strval', $targetSlugs));
-
-            $sourceProjects = DB::table('projects')->where('customer_id', $sourceId)->get(['id', 'slug']);
-            foreach ($sourceProjects as $row) {
-                $slug = (string) $row->slug;
-                if ($slug === '' || ! isset($taken[$slug])) {
-                    $taken[$slug] = true;
-                    continue;
-                }
-                $i = 2;
-                do {
-                    $candidate = $slug . '-' . $i++;
-                } while (isset($taken[$candidate]));
-                $taken[$candidate] = true;
-                DB::table('projects')->where('id', $row->id)->update(['slug' => $candidate]);
-            }
+        // Slug-Kollisionen auflösen (zusammengesetzter Unique-Index customer_id+slug).
+        if (Schema::hasColumn('projects', 'slug')) {
+            $this->uniquifyChildColumn('projects', 'slug', $sourceId, $targetId);
         }
 
         // Hat das Ziel bereits ein Standardprojekt, verlieren die Quell-Defaults ihren Default-Status (nur eines erlaubt).
-        if ($hasDefault) {
+        if (Schema::hasColumn('projects', 'is_default')) {
             $targetHasDefault = DB::table('projects')
                 ->where('customer_id', $targetId)->where('is_default', true)->exists();
             if ($targetHasDefault) {
@@ -182,204 +180,11 @@ class CustomerMergeService {
             return;
         }
 
+        // Code-Kollisionen auflösen (zusammengesetzter Unique-Index customer_id+code).
         if (Schema::hasColumn('sites', 'code')) {
-            $targetCodes = DB::table('sites')->where('customer_id', $targetId)->pluck('code')->all();
-            $taken = array_flip(array_map('strval', $targetCodes));
-
-            $sourceSites = DB::table('sites')->where('customer_id', $sourceId)->get(['id', 'code']);
-            foreach ($sourceSites as $row) {
-                $code = (string) $row->code;
-                if ($code === '' || ! isset($taken[$code])) {
-                    $taken[$code] = true;
-                    continue;
-                }
-                $i = 2;
-                do {
-                    $candidate = $code . '-' . $i++;
-                } while (isset($taken[$candidate]));
-                $taken[$candidate] = true;
-                DB::table('sites')->where('id', $row->id)->update(['code' => $candidate]);
-            }
+            $this->uniquifyChildColumn('sites', 'code', $sourceId, $targetId);
         }
 
         DB::table('sites')->where('customer_id', $sourceId)->update(['customer_id' => $targetId]);
-    }
-
-    private function repointScalarTables(int $sourceId, int $targetId): void {
-        foreach (self::CUSTOMER_ID_TABLES as $table) {
-            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, 'customer_id')) {
-                continue;
-            }
-            DB::table($table)->where('customer_id', $sourceId)->update(['customer_id' => $targetId]);
-        }
-    }
-
-    private function repointExternalReferences(string $morph, int $sourceId, int $targetId): void {
-        if (! Schema::hasTable('external_references')) {
-            return;
-        }
-
-        $sourceRefs = DB::table('external_references')
-            ->where('referenceable_type', $morph)
-            ->where('referenceable_id', $sourceId)
-            ->get(['id', 'organization_id', 'plugin_id', 'external_type', 'external_id']);
-
-        foreach ($sourceRefs as $ref) {
-            $collision = DB::table('external_references')
-                ->where('referenceable_type', $morph)
-                ->where('referenceable_id', $targetId)
-                ->where('plugin_id', $ref->plugin_id)
-                ->where('external_type', $ref->external_type)
-                ->exists();
-
-            if ($collision) {
-                // Ziel hat bereits eine Primär-Referenz für dieses Plugin/diesen Typ
-                // (Unique-Index). Die abweichende Quell-Fremd-ID als Alias aufs Ziel
-                // sichern, damit künftige Importe mit dem alten Schlüssel ohne
-                // Inbox-Umweg direkt landen.
-                $this->writeAlias($morph, $targetId, $ref);
-                DB::table('external_references')->where('id', $ref->id)->delete();
-                continue;
-            }
-
-            DB::table('external_references')->where('id', $ref->id)->update(['referenceable_id' => $targetId]);
-        }
-    }
-
-    /**
-     * Bestehende Aliase des Quell-Kunden (aus früheren Merges) auf das Ziel
-     * umhängen, damit Alias-Ketten über mehrere Zusammenführungen gültig bleiben.
-     * Kollidierende Quell-Aliase (gleiche Fremd-ID) werden verworfen (Ziel gewinnt).
-     */
-    private function repointAliases(string $morph, int $sourceId, int $targetId): void {
-        if (! Schema::hasTable('external_reference_aliases')) {
-            return;
-        }
-
-        $targetKeys = DB::table('external_reference_aliases')
-            ->where('referenceable_type', $morph)
-            ->where('referenceable_id', $targetId)
-            ->get(['plugin_id', 'external_type', 'external_id'])
-            ->map(fn($a): string => $a->plugin_id . '|' . $a->external_type . '|' . $a->external_id)
-            ->all();
-
-        $sourceAliases = DB::table('external_reference_aliases')
-            ->where('referenceable_type', $morph)
-            ->where('referenceable_id', $sourceId)
-            ->get(['id', 'plugin_id', 'external_type', 'external_id']);
-
-        foreach ($sourceAliases as $alias) {
-            $key = $alias->plugin_id . '|' . $alias->external_type . '|' . $alias->external_id;
-            if (in_array($key, $targetKeys, true)) {
-                DB::table('external_reference_aliases')->where('id', $alias->id)->delete();
-                continue;
-            }
-            DB::table('external_reference_aliases')->where('id', $alias->id)->update(['referenceable_id' => $targetId]);
-        }
-    }
-
-    /**
-     * Schreibt/aktualisiert einen Alias (Fremd-ID → Ziel). Idempotent über den
-     * Unique-Schlüssel (organization_id, plugin_id, external_type, external_id).
-     */
-    private function writeAlias(string $morph, int $targetId, \stdClass $ref): void {
-        if (! Schema::hasTable('external_reference_aliases')) {
-            return;
-        }
-
-        $now = now();
-        $exists = DB::table('external_reference_aliases')
-            ->where('organization_id', $ref->organization_id)
-            ->where('plugin_id', $ref->plugin_id)
-            ->where('external_type', $ref->external_type)
-            ->where('external_id', $ref->external_id)
-            ->first(['id']);
-
-        if ($exists !== null) {
-            DB::table('external_reference_aliases')->where('id', $exists->id)->update([
-                'referenceable_type' => $morph,
-                'referenceable_id' => $targetId,
-                'updated_at' => $now,
-            ]);
-
-            return;
-        }
-
-        DB::table('external_reference_aliases')->insert([
-            'organization_id' => $ref->organization_id,
-            'plugin_id' => $ref->plugin_id,
-            'external_type' => $ref->external_type,
-            'external_id' => $ref->external_id,
-            'referenceable_type' => $morph,
-            'referenceable_id' => $targetId,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]);
-    }
-
-    private function repointMorphTables(string $morph, int $sourceId, int $targetId): void {
-        foreach (self::MORPH_TABLES as $table => [$typeCol, $idCol]) {
-            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $typeCol)) {
-                continue;
-            }
-            DB::table($table)
-                ->where($typeCol, $morph)
-                ->where($idCol, $sourceId)
-                ->update([$idCol => $targetId]);
-        }
-    }
-
-    private function repointTaggables(string $morph, int $sourceId, int $targetId): void {
-        if (! Schema::hasTable('taggables')) {
-            return;
-        }
-
-        // Tags, die das Ziel bereits trägt, dürfen nicht doppelt umgehängt
-        // werden (Primärschlüssel tag_id+taggable_id+taggable_type).
-        $targetTagIds = DB::table('taggables')
-            ->where('taggable_type', $morph)
-            ->where('taggable_id', $targetId)
-            ->pluck('tag_id')->all();
-
-        if ($targetTagIds !== []) {
-            DB::table('taggables')
-                ->where('taggable_type', $morph)
-                ->where('taggable_id', $sourceId)
-                ->whereIn('tag_id', $targetTagIds)
-                ->delete();
-        }
-
-        DB::table('taggables')
-            ->where('taggable_type', $morph)
-            ->where('taggable_id', $sourceId)
-            ->update(['taggable_id' => $targetId]);
-    }
-
-    /**
-     * Füllt leere Ziel-Felder aus der Quelle und wendet explizite Overrides an.
-     *
-     * @param  array<string, mixed>  $fieldOverrides
-     */
-    private function mergeFields(Customer $source, Customer $target, array $fieldOverrides): void {
-        foreach (self::FILLABLE_FROM_SOURCE as $field) {
-            $current = $target->getAttribute($field);
-            $isEmpty = $current === null || $current === '' || $current === [];
-            if ($isEmpty) {
-                $sourceValue = $source->getAttribute($field);
-                if ($sourceValue !== null && $sourceValue !== '' && $sourceValue !== []) {
-                    $target->setAttribute($field, $sourceValue);
-                }
-            }
-        }
-
-        foreach ($fieldOverrides as $field => $value) {
-            if (in_array($field, self::FILLABLE_FROM_SOURCE, true)) {
-                $target->setAttribute($field, $value);
-            }
-        }
-
-        if ($target->isDirty()) {
-            $target->save();
-        }
     }
 }

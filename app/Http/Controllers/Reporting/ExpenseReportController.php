@@ -13,8 +13,8 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Expense\ExpenseStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Models\{Expense, User};
-use Carbon\Carbon;
+use App\Http\Controllers\Reporting\Concerns\ResolvesReportScope;
+use App\Models\Expense;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,18 +28,13 @@ use Illuminate\View\View;
  */
 class ExpenseReportController extends Controller {
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
 
     public function index(Request $request): View {
         $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $from = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $to = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $statusFilter = $request->string('status')->toString();
         $statusEnum = $statusFilter !== '' ? ExpenseStatus::tryFrom($statusFilter) : null;
@@ -50,7 +45,7 @@ class ExpenseReportController extends Controller {
 
         if ($scope === 'mine') {
             $query->where('user_id', Auth::id());
-        } elseif ($authUser->organization_id !== null) {
+        } elseif ($authUser?->organization_id !== null) {
             $query->where('organization_id', $authUser->organization_id);
         }
 

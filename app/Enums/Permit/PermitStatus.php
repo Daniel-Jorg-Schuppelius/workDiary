@@ -10,7 +10,12 @@
 
 namespace App\Enums\Permit;
 
-enum PermitStatus: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum PermitStatus: string implements HasLabel {
+    use HasOptions;
+
     case Required = 'required';
     case Applied = 'applied';
     case Granted = 'granted';

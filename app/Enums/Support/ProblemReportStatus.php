@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Support;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status einer Fehlermeldung (Feature 041, MVP-053). Bewusst schlank —
  * Rückfragen-Threads laufen bei aktivem Helpdesk im übernommenen
  * Ticket, nicht hier (kein zweites Konversationsmodell).
  */
-enum ProblemReportStatus: string {
+enum ProblemReportStatus: string implements HasLabel {
+    use HasOptions;
+
     case New_ = 'new';
     case InReview = 'in_review';
     case Answered = 'answered';

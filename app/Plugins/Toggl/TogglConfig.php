@@ -10,13 +10,12 @@
 
 namespace App\Plugins\Toggl;
 
-use App\Models\{Organization, PluginSetting};
+use App\Plugins\Support\PluginSettingsResolver;
 
 /**
  * Liefert die effektive Toggl-Konfiguration für den aktuellen Request /
- * Konsolen-Lauf. Reihenfolge analog {@see \App\Plugins\RemoteSupport\RemoteSupportConfig}:
- *   1. plugin_settings (verschlüsselt) der gebundenen Organisation
- *   2. config('plugins.toggl.*') als Fallback (ENV / config-only)
+ * Konsolen-Lauf: plugin_settings der gebundenen Organisation vor
+ * config('plugins.toggl.*') — Lookup/Cast im {@see PluginSettingsResolver} (C10).
  */
 class TogglConfig {
     public const DEFAULT_BASE_URL = 'https://api.track.toggl.com/api/v9';
@@ -25,71 +24,16 @@ class TogglConfig {
      * @return array{enabled: bool, api_token: ?string, base_url: string, workspace_id: ?int, sync_window_days: int, default_billable: bool, default_user_id: ?int}
      */
     public static function resolve(?int $organizationId = null): array {
-        $enabled = (bool) config('plugins.toggl.enabled', false);
-        $apiToken = self::stringOrNull(config('plugins.toggl.api_token'));
-        $baseUrl = (string) config('plugins.toggl.base_url', self::DEFAULT_BASE_URL);
-        $workspaceId = self::intOrNull(config('plugins.toggl.workspace_id'));
-        $syncWindowDays = (int) config('plugins.toggl.sync_window_days', 30);
-        $defaultBillable = (bool) config('plugins.toggl.default_billable', true);
-        $defaultUserId = self::intOrNull(config('plugins.toggl.default_user_id'));
-
-        $organizationId ??= self::boundOrganizationId();
-
-        if ($organizationId !== null) {
-            $row = PluginSetting::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('plugin_id', TogglPlugin::ID)
-                ->first();
-
-            if ($row !== null) {
-                $enabled = (bool) $row->enabled;
-                $s = $row->settings ?? [];
-
-                $apiToken = self::stringOrNull($s['api_token'] ?? null) ?? $apiToken;
-                if (! empty($s['base_url'])) {
-                    $baseUrl = (string) $s['base_url'];
-                }
-                if (self::intOrNull($s['workspace_id'] ?? null) !== null) {
-                    $workspaceId = self::intOrNull($s['workspace_id']);
-                }
-                if (isset($s['sync_window_days'])) {
-                    $syncWindowDays = (int) $s['sync_window_days'];
-                }
-                if (isset($s['default_billable'])) {
-                    $defaultBillable = (bool) $s['default_billable'];
-                }
-                if (self::intOrNull($s['default_user_id'] ?? null) !== null) {
-                    $defaultUserId = self::intOrNull($s['default_user_id']);
-                }
-            }
-        }
+        $r = PluginSettingsResolver::for(TogglPlugin::ID, $organizationId);
 
         return [
-            'enabled' => $enabled,
-            'api_token' => $apiToken,
-            'base_url' => $baseUrl !== '' ? $baseUrl : self::DEFAULT_BASE_URL,
-            'workspace_id' => $workspaceId,
-            'sync_window_days' => max(1, $syncWindowDays),
-            'default_billable' => $defaultBillable,
-            'default_user_id' => $defaultUserId,
+            'enabled' => $r->enabled(),
+            'api_token' => $r->string('api_token'),
+            'base_url' => $r->string('base_url') ?? self::DEFAULT_BASE_URL,
+            'workspace_id' => $r->intOrNull('workspace_id'),
+            'sync_window_days' => max(1, $r->int('sync_window_days', 30)),
+            'default_billable' => $r->bool('default_billable', true),
+            'default_user_id' => $r->intOrNull('default_user_id'),
         ];
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        return \is_string($value) && $value !== '' ? $value : null;
-    }
-
-    private static function intOrNull(mixed $value): ?int {
-        return is_numeric($value) ? (int) $value : null;
-    }
-
-    private static function boundOrganizationId(): ?int {
-        if (! app()->bound('currentOrganization')) {
-            return null;
-        }
-        $org = app('currentOrganization');
-
-        return $org instanceof Organization ? (int) $org->id : null;
     }
 }

@@ -10,10 +10,9 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use LogicException;
 
 /**
  * @property int $id
@@ -29,6 +28,9 @@ use LogicException;
  * @property \Illuminate\Support\Carbon $occurred_at
  */
 class DiaryEntryEvent extends Model {
+    // Lebenszyklusereignisse: nie ändern, nie löschen.
+    use AppendOnly;
+
     use BelongsToOrganization;
 
     public const UPDATED_AT = null;
@@ -50,15 +52,6 @@ class DiaryEntryEvent extends Model {
         'payload' => 'array',
         'occurred_at' => 'immutable_datetime',
     ];
-
-    protected static function booted(): void {
-        static::updating(static function (): never {
-            throw new LogicException('Lebenszyklusereignisse dürfen nicht geändert werden.');
-        });
-        static::deleting(static function (): never {
-            throw new LogicException('Lebenszyklusereignisse dürfen nicht gelöscht werden.');
-        });
-    }
 
     /** @return BelongsTo<DiaryEntry, $this> */
     public function diaryEntry(): BelongsTo {

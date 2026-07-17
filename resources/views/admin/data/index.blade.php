@@ -44,9 +44,9 @@
                 <x-input-field name="q" :label="__('Suche')" class="input-sm"
                                placeholder="{{ __('Name, Nummer …') }}" />
 
-                <x-input-field type="date" name="from" :label="__('Von (Datum)')" class="input-sm" />
-
-                <x-input-field type="date" name="to" :label="__('Bis (Datum)')" class="input-sm" />
+                <x-date-range class="sm:col-span-2" layout="split" form-control
+                              from-name="from" to-name="to"
+                              :from-label="__('Von (Datum)')" :to-label="__('Bis (Datum)')" />
             </div>
 
             <div class="text-sm text-base-content/70">

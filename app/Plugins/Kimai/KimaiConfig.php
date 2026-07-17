@@ -10,12 +10,12 @@
 
 namespace App\Plugins\Kimai;
 
-use App\Models\{Organization, PluginSetting};
+use App\Plugins\Support\PluginSettingsResolver;
 
 /**
  * Effektive Kimai-Konfiguration (CSV + API): plugin_settings der gebundenen
- * Organisation, sonst `config('plugins.kimai.*')` als Fallback. Analog
- * {@see \App\Plugins\Toggl\TogglConfig}.
+ * Organisation vor `config('plugins.kimai.*')` — Lookup/Cast im
+ * {@see PluginSettingsResolver} (C10). Analog {@see \App\Plugins\Toggl\TogglConfig}.
  *
  * @phpstan-type KimaiSettings array{enabled: bool, default_billable: bool, default_user_id: ?int, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool}
  */
@@ -24,76 +24,18 @@ class KimaiConfig {
      * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, base_url: ?string, api_token: ?string, api_all_users: bool, sync_window_days: int, default_activity_id: ?int, export_enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
-        $enabled = (bool) config('plugins.kimai.enabled', false);
-        $defaultBillable = (bool) config('plugins.kimai.default_billable', true);
-        $defaultUserId = self::intOrNull(config('plugins.kimai.default_user_id'));
-        $baseUrl = self::stringOrNull(config('plugins.kimai.base_url'));
-        $apiToken = self::stringOrNull(config('plugins.kimai.api_token'));
-        $apiAllUsers = (bool) config('plugins.kimai.api_all_users', true);
-        $syncWindowDays = (int) config('plugins.kimai.sync_window_days', 30);
-        $defaultActivityId = self::intOrNull(config('plugins.kimai.default_activity_id'));
-        $exportEnabled = (bool) config('plugins.kimai.export_enabled', false);
-
-        $organizationId ??= self::boundOrganizationId();
-
-        if ($organizationId !== null) {
-            $row = PluginSetting::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('plugin_id', KimaiPlugin::ID)
-                ->first();
-
-            if ($row !== null) {
-                $enabled = (bool) $row->enabled;
-                $s = $row->settings ?? [];
-                if (isset($s['default_billable'])) {
-                    $defaultBillable = (bool) $s['default_billable'];
-                }
-                if (self::intOrNull($s['default_user_id'] ?? null) !== null) {
-                    $defaultUserId = self::intOrNull($s['default_user_id']);
-                }
-                $baseUrl = self::stringOrNull($s['base_url'] ?? null) ?? $baseUrl;
-                $apiToken = self::stringOrNull($s['api_token'] ?? null) ?? $apiToken;
-                if (isset($s['api_all_users'])) {
-                    $apiAllUsers = (bool) $s['api_all_users'];
-                }
-                if (self::intOrNull($s['sync_window_days'] ?? null) !== null) {
-                    $syncWindowDays = (int) $s['sync_window_days'];
-                }
-                $defaultActivityId = self::intOrNull($s['default_activity_id'] ?? null) ?? $defaultActivityId;
-                if (isset($s['export_enabled'])) {
-                    $exportEnabled = (bool) $s['export_enabled'];
-                }
-            }
-        }
+        $r = PluginSettingsResolver::for(KimaiPlugin::ID, $organizationId);
 
         return [
-            'enabled' => $enabled,
-            'default_billable' => $defaultBillable,
-            'default_user_id' => $defaultUserId,
-            'base_url' => $baseUrl,
-            'api_token' => $apiToken,
-            'api_all_users' => $apiAllUsers,
-            'sync_window_days' => max(1, $syncWindowDays),
-            'default_activity_id' => $defaultActivityId,
-            'export_enabled' => $exportEnabled,
+            'enabled' => $r->enabled(),
+            'default_billable' => $r->bool('default_billable', true),
+            'default_user_id' => $r->intOrNull('default_user_id'),
+            'base_url' => $r->string('base_url', trim: true),
+            'api_token' => $r->string('api_token', trim: true),
+            'api_all_users' => $r->bool('api_all_users', true),
+            'sync_window_days' => max(1, $r->int('sync_window_days', 30)),
+            'default_activity_id' => $r->intOrNull('default_activity_id'),
+            'export_enabled' => $r->bool('export_enabled', false),
         ];
-    }
-
-    private static function intOrNull(mixed $value): ?int {
-        return is_numeric($value) ? (int) $value : null;
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        return is_string($value) && trim($value) !== '' ? trim($value) : null;
-    }
-
-    private static function boundOrganizationId(): ?int {
-        if (! app()->bound('currentOrganization')) {
-            return null;
-        }
-        $org = app('currentOrganization');
-
-        return $org instanceof Organization ? (int) $org->id : null;
     }
 }

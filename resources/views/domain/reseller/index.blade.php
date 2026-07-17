@@ -51,7 +51,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center text-base-content/60 py-8">{{ __('domain.empty.reseller') }}</td></tr>
+                    <x-table.empty :colspan="6" :title="__('domain.empty.reseller')" compact />
                 @endforelse
             </tbody>
         </table>

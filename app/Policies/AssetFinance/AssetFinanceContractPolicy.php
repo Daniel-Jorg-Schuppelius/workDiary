@@ -16,35 +16,28 @@ use App\Enums\User\Permission as P;
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Policy der Leasing-/Finanzierungsakte (Feature 074). Konditionen, Raten,
  * Restwerte und Fristen sind vertrauliche Finanzdaten: view zeigt die Akte
  * ohne Beträge, finance schaltet die Konditionssicht und -pflege frei.
  */
-class AssetFinanceContractPolicy {
+class AssetFinanceContractPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::AssetFinanceViewAny->value);
-    }
-
-    public function view(User $user, AssetFinanceContract $contract): bool {
-        return $user->can(P::AssetFinanceView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::AssetFinanceManage->value);
-    }
-
-    public function update(User $user, AssetFinanceContract $contract): bool {
-        return $user->can(P::AssetFinanceManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::AssetFinanceViewAny,
+        'view' => P::AssetFinanceView,
+        'create' => P::AssetFinanceManage,
+        'update' => P::AssetFinanceManage,
+        'finance' => P::AssetFinanceFinance,
+    ];
 
     /**
      * Vertrauliche Konditionen (Rate/Restwert/Optionen) sehen und pflegen.
      */
     public function finance(User $user, AssetFinanceContract $contract): bool {
-        return $user->can(P::AssetFinanceFinance->value);
+        return $this->allows($user, 'finance');
     }
 }

@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Bewertungsverfahren der Bestandsführung (Feature 048, E3). Gleitender
  * Durchschnitt (MVP-070) oder FIFO über Zugangsschichten. Je Organisation
  * konfigurierbar; das gewählte Verfahren bestimmt, welche Bewertungsstrategie
  * Zu- und Abgänge fortschreibt.
  */
-enum ValuationMethod: string {
+enum ValuationMethod: string implements HasLabel {
+    use HasOptions;
+
     case MovingAverage = 'moving_average';
     case Fifo = 'fifo';
     case Fefo = 'fefo';

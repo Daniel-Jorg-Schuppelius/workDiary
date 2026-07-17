@@ -11,28 +11,27 @@
 namespace App\Notifications\Expense;
 
 use App\Models\Expense;
-use Illuminate\Bus\Queueable;
+use App\Notifications\DirectNotification;
+use App\Support\NotificationText;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class ExpenseSubmittedNotification extends Notification {
-    use Queueable;
+class ExpenseSubmittedNotification extends DirectNotification {
+    private const TITLE_KEY = 'Neue Spese zur Genehmigung: :amount';
+
+    private const MESSAGE_KEY = ':owner hat eine neue Spese eingereicht.';
 
     /**
      * @param  list<string>  $channels
      */
     public function __construct(
         public readonly Expense $expense,
-        public readonly array $channels = ['mail', 'database'],
-    ) {}
-
-    /** @return list<string> */
-    public function via(object $notifiable): array {
-        return array_values(array_filter($this->channels, fn(string $c): bool => in_array($c, ['mail', 'database'], true)));
+        array $channels = ['mail', 'database'],
+    ) {
+        parent::__construct($channels);
     }
 
     public function toMail(object $notifiable): MailMessage {
-        $amount = number_format((float) $this->expense->amount_gross, 2, ',', '.') . ' ' . $this->expense->currency->value;
+        $amount = $this->formattedAmount();
         $owner = $this->expense->user !== null ? $this->expense->user->name : '';
 
         return (new MailMessage)
@@ -46,14 +45,27 @@ class ExpenseSubmittedNotification extends Notification {
 
     /** @return array<string, mixed> */
     public function toArray(object $notifiable): array {
+        $titleParams = ['amount' => $this->formattedAmount()];
+        $messageParams = ['owner' => (string) ($this->expense->user->name ?? '')];
+
         return [
             'expense_id' => $this->expense->getKey(),
             'owner' => $this->expense->user?->name,
             'amount_gross' => $this->expense->amount_gross,
             'currency' => $this->expense->currency->value,
             'description' => $this->expense->description,
+            'title' => NotificationText::render(self::TITLE_KEY, $titleParams),
+            'title_key' => self::TITLE_KEY,
+            'title_params' => $titleParams,
+            'message' => NotificationText::render(self::MESSAGE_KEY, $messageParams),
+            'message_key' => self::MESSAGE_KEY,
+            'message_params' => $messageParams,
             'url' => route('expense-approvals.inbox'),
             'icon' => 'receipt_long',
         ];
+    }
+
+    private function formattedAmount(): string {
+        return number_format((float) $this->expense->amount_gross, 2, ',', '.') . ' ' . $this->expense->currency->value;
     }
 }

@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands\Compliance;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Organization;
 use App\Services\Compliance\{ComplianceFindingRecorder, ComplianceScanService};
 use Carbon\CarbonImmutable;
@@ -25,6 +26,8 @@ use Illuminate\Console\Command;
  * von „ausgefiltert" unterscheidbar wäre.
  */
 class ScanComplianceFindingsCommand extends Command {
+    use IteratesOrganizations;
+
     protected $signature = 'compliance:scan-findings
         {--days=90 : Rückblick-Fenster in Tagen}';
 
@@ -37,31 +40,21 @@ class ScanComplianceFindingsCommand extends Command {
 
         $totals = ['created' => 0, 'updated' => 0, 'reopened' => 0, 'resolved' => 0];
 
-        // Vorherige Org-Bindung sichern/wiederherstellen (Test/Queue-Kontext); je
-        // Iteration neu binden, damit Zeitzone/Tagesgrenzen der Report-Ansicht entsprechen.
-        $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        $previous = $bound instanceof Organization ? $bound : null;
-
-        try {
-            $organizationIds = Organization::query()->orderBy('id')->pluck('id');
-            foreach ($organizationIds as $organizationId) {
-                $organization = Organization::query()->whereKey($organizationId)->first();
-                if ($organization === null) {
-                    continue;
-                }
-                app()->instance('currentOrganization', $organization);
+        // Je Iteration frisch binden (Restore übernimmt das Trait), damit
+        // Zeitzone/Tagesgrenzen der Report-Ansicht entsprechen.
+        $organizationIds = Organization::query()->orderBy('id')->pluck('id');
+        foreach ($organizationIds as $organizationId) {
+            $organization = Organization::query()->whereKey($organizationId)->first();
+            if ($organization === null) {
+                continue;
+            }
+            $this->withOrganizationContext($organization, function (Organization $organization) use ($scanner, $recorder, $from, $to, &$totals): void {
                 $findingsByUser = $scanner->findingsForRange($organization, $from, $to);
                 $stats = $recorder->record($organization, $from, $to, $findingsByUser);
                 foreach ($stats as $k => $v) {
                     $totals[$k] += $v;
                 }
-            }
-        } finally {
-            if ($previous !== null) {
-                app()->instance('currentOrganization', $previous);
-            } else {
-                app()->forgetInstance('currentOrganization');
-            }
+            });
         }
 
         $this->info(sprintf(

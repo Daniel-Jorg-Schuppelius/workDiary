@@ -14,6 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Models\Isms\IsmsSecurityIncident;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln ISMS-Sicherheitsvorfälle (Feature 044, MVP 2):
@@ -22,31 +23,20 @@ use App\Policies\Concerns\HasAdminBypass;
  * - Pflege (create/update/delete/transition) nur mit isms.manage —
  *   es werden bewusst KEINE neuen Permissions eingeführt (isms.* wiederverwendet).
  */
-class IsmsSecurityIncidentPolicy {
+class IsmsSecurityIncidentPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsSecurityIncident $incident): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsSecurityIncident $incident): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsSecurityIncident $incident): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+        'transition' => P::IsmsManage,
+    ];
 
     /** Statusübergang (State-Machine im SecurityIncidentService). */
     public function transition(User $user, IsmsSecurityIncident $incident): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'transition');
     }
 }

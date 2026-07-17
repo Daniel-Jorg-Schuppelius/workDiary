@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Bewegungsart im append-only Lagerjournal (Feature 048, MVP-067). Bestätigte
  * Bewegungen sind unveränderlich; Fehler werden ausschließlich durch eine
  * referenzierte Gegenbuchung (Correction) berichtigt.
  */
-enum StockMovementType: string {
+enum StockMovementType: string implements HasLabel {
+    use HasOptions;
+
     case Receipt = 'receipt';                       // Wareneingang (+physical)
     case Issue = 'issue';                           // Entnahme/Verbrauch (−physical)
     case Return = 'return';                         // Rückgabe (+physical)

@@ -16,17 +16,20 @@ use App\Models\ExternalReference;
 use Illuminate\Support\Carbon;
 
 /**
- * Idempotenter Abgleich der Kalenderelemente gegen einen REST-Kalender-
- * Provider (MVP-328, Bauturbo A8) — dasselbe Muster wie das CalDAV-Publish
- * ({@see \App\Plugins\CalDav\Services\CalendarPublishService}), nur mit
- * Remote-IDs statt client-seitiger Objektnamen. Der Publish-Zustand liegt in
- * {@see ExternalReference} (Plugin-ID des Providers, Typ `calendar_event`,
- * `external_id` = Remote-Event-ID, Payload = Fingerprint + stabile UID):
+ * Idempotenter Abgleich der Kalenderelemente gegen einen Kalender-Provider
+ * (MVP-328, Bauturbo A8; seit C9 auch der CalDAV-Weg). Der Publish-Zustand
+ * liegt in {@see ExternalReference} (Plugin-ID des Providers, `external_id`
+ * = Remote-ID, Payload = Fingerprint + stabile UID):
  *
  * - neu → create (Remote-ID merken), geändert (Hash abweichend) → update;
  * - unverändert (Hash gleich) → übersprungen (kein Request);
  * - abgesagt (`cancelled`) → delete, Referenz entfernt;
  * - Gateway-Fehler → `failed`, Referenz **unverändert** (Wiederanlauf im nächsten Lauf).
+ *
+ * Bestandsreferenzen des alten CalDAV-Publishs führen die Remote-ID
+ * (= Objektname) im Payload-Key `object` und die UID in `external_id` —
+ * beide Formate werden tolerant gelesen; Schreibvorgänge normalisieren aufs
+ * Support-Format (external_id = Remote-ID, Payload hash+uid).
  *
  * WorkDiary bleibt führend; es werden nie externe Termine gelesen oder
  * überschrieben. Fehlgeschlagene Läufe zählen über
@@ -37,26 +40,26 @@ class RemoteCalendarPublishService {
     public const EXTERNAL_TYPE = 'calendar_event';
 
     /**
-     * @param  list<RemoteCalendarEvent>  $items
+     * @param  list<RemoteCalendarItem>  $items
      * @return array{published: int, deleted: int, unchanged: int, failed: int}
      */
-    public function publish(string $pluginId, RemoteCalendarConnection $connection, RemoteCalendarGateway $gateway, array $items): array {
+    public function publish(string $pluginId, RemoteCalendarConnection $connection, RemoteCalendarGateway $gateway, array $items, string $externalType = self::EXTERNAL_TYPE): array {
         $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
 
         foreach ($items as $item) {
             $ref = ExternalReference::query()
                 ->where('organization_id', $connection->organizationId())
                 ->where('plugin_id', $pluginId)
-                ->where('external_type', self::EXTERNAL_TYPE)
-                ->where('referenceable_type', $item->referenceableType)
-                ->where('referenceable_id', $item->referenceableId)
+                ->where('external_type', $externalType)
+                ->where('referenceable_type', $item->referenceableType())
+                ->where('referenceable_id', $item->referenceableId())
                 ->first();
 
-            if ($item->cancelled) {
+            if ($item->cancelled()) {
                 if (! $ref instanceof ExternalReference) {
                     continue; // nie publiziert → nichts zu entfernen
                 }
-                if ($gateway->deleteEvent((string) $ref->external_id)) {
+                if ($gateway->deleteEvent($this->remoteId($ref))) {
                     $ref->delete();
                     $counters['deleted']++;
                 } else {
@@ -72,12 +75,15 @@ class RemoteCalendarPublishService {
             }
 
             if ($ref instanceof ExternalReference) {
-                if (! $gateway->updateEvent((string) $ref->external_id, $item)) {
+                $remoteId = $this->remoteId($ref);
+                if (! $gateway->updateEvent($remoteId, $item)) {
                     $counters['failed']++;
                     continue;
                 }
                 $ref->forceFill([
-                    'payload' => ['hash' => $hash, 'uid' => $item->uid],
+                    // normalisiert Alt-Referenzen (CalDAV: Objektname statt UID)
+                    'external_id' => $remoteId,
+                    'payload' => ['hash' => $hash, 'uid' => $item->uid()],
                     'synced_at' => Carbon::now(),
                 ])->save();
                 $counters['published']++;
@@ -93,11 +99,11 @@ class RemoteCalendarPublishService {
             ExternalReference::query()->create([
                 'organization_id' => $connection->organizationId(),
                 'plugin_id' => $pluginId,
-                'external_type' => self::EXTERNAL_TYPE,
-                'referenceable_type' => $item->referenceableType,
-                'referenceable_id' => $item->referenceableId,
+                'external_type' => $externalType,
+                'referenceable_type' => $item->referenceableType(),
+                'referenceable_id' => $item->referenceableId(),
                 'external_id' => $remoteId,
-                'payload' => ['hash' => $hash, 'uid' => $item->uid],
+                'payload' => ['hash' => $hash, 'uid' => $item->uid()],
                 'synced_at' => Carbon::now(),
             ]);
             $counters['published']++;
@@ -117,5 +123,13 @@ class RemoteCalendarPublishService {
         }
 
         return $counters;
+    }
+
+    /**
+     * Remote-ID tolerant lesen: Alt-CalDAV-Referenzen führen den Objektnamen
+     * im Payload (`object`), Support-Referenzen in `external_id`.
+     */
+    private function remoteId(ExternalReference $ref): string {
+        return (string) (($ref->payload['object'] ?? null) ?: $ref->external_id);
     }
 }

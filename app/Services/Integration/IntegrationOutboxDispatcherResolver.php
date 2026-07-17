@@ -13,26 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
+use App\Services\AbstractPluginDispatcherResolver;
 
 /**
- * Registry der generischen Outbox-Dispatcher (Feature 055, MVP-114). Plugins
- * registrieren ihren Dispatcher beim Booten; der Outbox-Job löst über die
- * Plugin-Kennung auf. Muss als Singleton gebunden sein, damit Registrierung
- * und Auflösung dieselbe Instanz teilen.
+ * Registry der generischen Outbox-Dispatcher (Feature 055, MVP-114). Muss als
+ * Singleton gebunden sein (siehe Basis).
+ *
+ * @extends AbstractPluginDispatcherResolver<IntegrationOutboxDispatcher>
  */
-class IntegrationOutboxDispatcherResolver {
-    /** @var array<string, IntegrationOutboxDispatcher> */
-    private array $dispatchers = [];
-
-    public function register(IntegrationOutboxDispatcher $dispatcher): void {
-        $this->dispatchers[$dispatcher->pluginId()] = $dispatcher;
-    }
-
-    public function for(?string $pluginId): ?IntegrationOutboxDispatcher {
-        if ($pluginId === null || $pluginId === '') {
-            return null;
-        }
-
-        return $this->dispatchers[$pluginId] ?? null;
-    }
-}
+class IntegrationOutboxDispatcherResolver extends AbstractPluginDispatcherResolver {}

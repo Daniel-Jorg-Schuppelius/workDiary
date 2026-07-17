@@ -94,7 +94,7 @@
                                         </form>
                                     @endif
                                     <form method="POST" action="{{ route('admin.ai.destroy', $connection) }}" class="inline"
-                                          onsubmit="return confirm('{{ __('ai.action.delete_confirm') }}')">
+                                          data-confirm-dialog data-confirm-message="{{ __('ai.action.delete_confirm') }}">
                                         @csrf @method('DELETE')
                                         <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" :title="__('ai.action.delete')" />
                                     </form>
@@ -102,7 +102,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center text-base-content/60 py-8">{{ __('ai.empty.connections') }}</td></tr>
+                        <x-table.empty :colspan="6" :title="__('ai.empty.connections')" compact />
                     @endforelse
                 </tbody>
             </table>
@@ -155,7 +155,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center text-base-content/60 py-8">{{ __('ai.empty.capabilities') }}</td></tr>
+                        <x-table.empty :colspan="7" :title="__('ai.empty.capabilities')" compact />
                     @endforelse
                 </tbody>
             </table>

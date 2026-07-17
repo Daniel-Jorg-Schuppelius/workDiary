@@ -24,10 +24,7 @@ class InvoiceTemplateController extends Controller {
 
         return view('invoice_templates.index', [
             'templates' => InvoiceTemplate::query()
-                ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                    $w->whereLikeEscaped('name', $search)
-                        ->orWhereLikeEscaped('slug', $search);
-                }))
+                ->when($search !== '', fn($q) => $q->search($search))
                 ->orderByDesc('is_default')
                 ->orderBy('name')
                 ->get(),

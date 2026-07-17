@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Lebenszyklus einer Bestandsreservierung (Feature 048, MVP-068).
  */
-enum ReservationStatus: string {
+enum ReservationStatus: string implements HasLabel {
+    use HasOptions;
+
     case Active = 'active';         // hält verfügbare Menge
     case Fulfilled = 'fulfilled';   // vollständig in Verbrauch überführt
     case Released = 'released';     // (teilweise) wieder freigegeben

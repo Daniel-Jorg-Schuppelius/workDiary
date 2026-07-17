@@ -72,7 +72,7 @@ class IsmsSupplierAssessmentTest extends TestCase {
 
         $this->actingAs($admin)
             ->post(route('isms.suppliers.store'), [
-                'supplier_id' => $supplier->id,
+                'supplier_id' => $supplier->sqid,
                 // supplier_name leer — soll aus dem Lieferantennamen befüllt werden.
                 'supplier_name' => '',
             ])

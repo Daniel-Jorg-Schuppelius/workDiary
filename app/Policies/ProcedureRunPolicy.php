@@ -12,9 +12,10 @@ namespace App\Policies;
 
 use App\Enums\User\Permission as P;
 use App\Models\{ProcedureRun, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class ProcedureRunPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -22,7 +23,7 @@ class ProcedureRunPolicy {
     }
 
     public function view(User $user, ProcedureRun $run): bool {
-        return $user->organization_id === $run->organization_id
+        return $this->sharesOrganization($user, $run)
             && $user->can(P::ProcedureRunView->value);
     }
 
@@ -31,18 +32,18 @@ class ProcedureRunPolicy {
     }
 
     public function execute(User $user, ProcedureRun $run): bool {
-        return $user->organization_id === $run->organization_id
+        return $this->sharesOrganization($user, $run)
             && $user->can(P::ProcedureRunExecute->value);
     }
 
     public function abort(User $user, ProcedureRun $run): bool {
-        if ($user->organization_id !== $run->organization_id) {
+        if (! $this->sharesOrganization($user, $run)) {
             return false;
         }
         if ($user->can(P::ProcedureRunAbort->value)) {
             return true;
         }
 
-        return $run->created_by_user_id === $user->id && $user->can(P::ProcedureRunStart->value);
+        return $this->owns($user, $run, 'created_by_user_id') && $user->can(P::ProcedureRunStart->value);
     }
 }

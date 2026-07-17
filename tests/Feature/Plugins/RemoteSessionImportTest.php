@@ -48,10 +48,6 @@ class RemoteSessionImportTest extends TestCase {
         ]) . "\n";
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
     private function preflight(User $admin): ImportRun {
         $file = UploadedFile::fake()->createWithContent('sessions.csv', $this->anydeskCsv());
 
@@ -65,7 +61,7 @@ class RemoteSessionImportTest extends TestCase {
     }
 
     public function test_preflight_strips_sep_line_and_maps_anydesk_headers(): void {
-        $run = $this->preflight($this->admin());
+        $run = $this->preflight($this->orgAdmin());
 
         $this->assertSame(ImportRunState::AwaitingApproval, $run->state);
         $this->assertSame(ImportEntity::RemoteSessions, $run->entity);
@@ -88,7 +84,7 @@ class RemoteSessionImportTest extends TestCase {
         ]);
         (new RemoteSupportService)->setRemoteId($asset, AnyDeskClient::ID, '362798056');
 
-        $run = $this->preflight($this->admin());
+        $run = $this->preflight($this->orgAdmin());
         (new ProcessCsvImportJob($run->id))->handle(app(EntitySpecRegistry::class));
         $run->refresh();
 
@@ -119,7 +115,7 @@ class RemoteSessionImportTest extends TestCase {
         ]);
         (new RemoteSupportService)->setRemoteId($asset, AnyDeskClient::ID, '362798056');
 
-        $admin = $this->admin();
+        $admin = $this->orgAdmin();
         foreach ([0, 1] as $_) {
             $run = $this->preflight($admin);
             (new ProcessCsvImportJob($run->id))->handle(app(EntitySpecRegistry::class));
@@ -133,7 +129,7 @@ class RemoteSessionImportTest extends TestCase {
         $csv = "Sitzungs-ID,Beginn,Ende\n\"1\",\"28.05.2026, 09:42:09\",\"28.05.2026, 10:00:00\"\n";
         $file = UploadedFile::fake()->createWithContent('bad.csv', $csv);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('admin.imports.preflight'), [
                 'entity' => ImportEntity::RemoteSessions->value,
                 'file' => $file,

@@ -60,7 +60,7 @@
                             <x-input-field name="user_id" :label="__('Zuweisen an')">
                                 <select id="user_id" name="user_id" class="select select-bordered w-full">
                                     @foreach ($members ?? [] as $m)
-                                        <option value="{{ $m->id }}" @selected($request->assigned_user_id === $m->id)>{{ $m->name }}</option>
+                                        <option value="{{ $m->sqid }}" @selected($request->assigned_user_id === $m->id)>{{ $m->name }}</option>
                                     @endforeach
                                 </select>
                             </x-input-field>

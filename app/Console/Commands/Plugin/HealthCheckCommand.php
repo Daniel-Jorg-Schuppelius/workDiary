@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands\Plugin;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Events\{PluginHealthChanged, PluginRecovered};
 use App\Models\{Organization, PluginState};
 use App\Plugins\Contracts\Plugin;
@@ -23,6 +24,8 @@ use Throwable;
  * {@see PluginErrorRecorder} (Phase: healthcheck).
  */
 class HealthCheckCommand extends Command {
+    use IteratesOrganizations;
+
     protected $signature = 'plugin:healthcheck
         {plugin? : Plugin-ID. Ohne Argument: alle aktiven Plugins.}
         {--no-fail : Auch bei ungesunden Plugins mit Exit 0 beenden (für geplante Läufe — Ergebnis wird trotzdem aufgezeichnet).}';
@@ -47,15 +50,15 @@ class HealthCheckCommand extends Command {
             if ($plugin->isPerOrganization()) {
                 // Per-Org-Plugin: je Organisation mit gebundenem Kontext prüfen (jeweils gespeicherter Schlüssel).
                 foreach (Organization::query()->get() as $org) {
-                    app()->instance('currentOrganization', $org);
-                    if (! $plugin->isEnabled()) {
-                        continue; // in dieser Org nicht aktiv → kein Check
-                    }
-                    if ($this->checkOne($plugin, (int) $org->id, (string) $org->name, $recorder) === self::FAILURE) {
-                        $exitCode = self::FAILURE;
-                    }
+                    $this->withOrganizationContext($org, function (Organization $org) use ($plugin, $recorder, &$exitCode): void {
+                        if (! $plugin->isEnabled()) {
+                            return; // in dieser Org nicht aktiv → kein Check
+                        }
+                        if ($this->checkOne($plugin, (int) $org->id, (string) $org->name, $recorder) === self::FAILURE) {
+                            $exitCode = self::FAILURE;
+                        }
+                    });
                 }
-                app()->forgetInstance('currentOrganization');
             } else {
                 // Globales Plugin: einmalig ohne Org-Kontext.
                 app()->forgetInstance('currentOrganization');

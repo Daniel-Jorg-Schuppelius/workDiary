@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Maßnahmenart (MVP-251) — Nacherfüllung (§ 439 BGB) zuerst. */
-enum ClaimActionKind: string {
+enum ClaimActionKind: string implements HasLabel {
+    use HasOptions;
+
     case Rework = 'rework';
     case Repair = 'repair';
     case Replacement = 'replacement';

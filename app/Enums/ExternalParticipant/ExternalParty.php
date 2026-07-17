@@ -10,12 +10,17 @@
 
 namespace App\Enums\ExternalParticipant;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Art des externen Beteiligten (Feature 033): Subunternehmer, Prüfer,
  * Sachverständiger oder Sonstiges. Steuert nur die Darstellung/Filterung,
  * nicht die Rechte (diese stecken in den {@see ExternalAbility}-Flags).
  */
-enum ExternalParty: string {
+enum ExternalParty: string implements HasLabel {
+    use HasOptions;
+
     case Subcontractor = 'subcontractor';
     case Inspector = 'inspector';
     case Expert = 'expert';

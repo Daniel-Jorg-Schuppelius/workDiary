@@ -14,38 +14,33 @@ use App\Enums\User\Permission as P;
 use App\Models\{Asset, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class AssetPolicy {
+class AssetPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::AssetView->value);
-    }
-
-    public function view(User $user, Asset $asset): bool {
-        return $user->can(P::AssetView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::AssetCreate->value);
-    }
-
-    public function update(User $user, Asset $asset): bool {
-        return $user->can(P::AssetUpdate->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::AssetView,
+        'view' => P::AssetView,
+        'create' => P::AssetCreate,
+        'update' => P::AssetUpdate,
+        'decommission' => P::AssetDecommission,
+        'transferOwnership' => P::AssetTransferOwnership,
+        'checkout' => P::AssetCheckout,
+        'manageDefects' => P::AssetDefectManage,
+    ];
 
     public function decommission(User $user, Asset $asset): bool {
-        return $user->can(P::AssetDecommission->value);
+        return $this->allows($user, 'decommission');
     }
 
     public function transferOwnership(User $user, Asset $asset): bool {
-        return $user->can(P::AssetTransferOwnership->value);
+        return $this->allows($user, 'transferOwnership');
     }
 
     public function checkout(User $user, Asset $asset): bool {
-        return $user->can(P::AssetCheckout->value);
+        return $this->allows($user, 'checkout');
     }
 
     public function manageDefects(User $user, Asset $asset): bool {
-        return $user->can(P::AssetDefectManage->value);
+        return $this->allows($user, 'manageDefects');
     }
 }

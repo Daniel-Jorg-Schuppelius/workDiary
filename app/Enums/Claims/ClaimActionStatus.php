@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Maßnahmenstatus (MVP-251). */
-enum ClaimActionStatus: string {
+enum ClaimActionStatus: string implements HasLabel {
+    use HasOptions;
+
     case Planned = 'planned';
     case InProgress = 'in_progress';
     case Done = 'done';

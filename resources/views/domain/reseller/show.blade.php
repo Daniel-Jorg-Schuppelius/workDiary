@@ -48,7 +48,7 @@
                                 <td class="tabular-nums">{{ $domain->expiration_at?->format('d.m.Y') ?? '—' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="text-center text-base-content/60 py-6">{{ __('domain.empty.domains') }}</td></tr>
+                            <x-table.empty :colspan="3" :title="__('domain.empty.domains')" compact />
                         @endforelse
                     </tbody>
                 </table>
@@ -73,7 +73,7 @@
                                     <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? number_format((float) $entry->net_amount, 2, ',', '.') . ' ' . ($entry->currency?->value ?? '') : '—' }}</td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center text-base-content/60 py-6">{{ __('domain.accounting.empty') }}</td></tr>
+                                <x-table.empty :colspan="4" :title="__('domain.accounting.empty')" compact />
                             @endforelse
                         </tbody>
                     </table>

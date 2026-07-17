@@ -12,26 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk\Api;
 
-use RuntimeException;
+use App\Plugins\Support\PluginApiException;
 
 /**
  * Fehler der sevDesk-REST-API (MVP-125). Die Message trägt nur Status und
  * gekürzten Body-Auszug — nie den API-Token.
  */
-class SevDeskApiException extends RuntimeException {
-    public function __construct(
-        public readonly int $status,
-        string $message,
-        public readonly ?string $endpoint = null,
-    ) {
-        parent::__construct($message);
-    }
-
-    public function isAuthError(): bool {
-        return in_array($this->status, [401, 403], true);
-    }
-
-    public function isRateLimited(): bool {
-        return $this->status === 429;
+class SevDeskApiException extends PluginApiException {
+    public function __construct(int $status, string $message, ?string $endpoint = null) {
+        parent::__construct($message, $status, $endpoint);
     }
 }

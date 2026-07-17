@@ -11,7 +11,7 @@
 namespace App\Models\Isms;
 
 use App\Enums\Isms\{SoftwareCategory, SupportStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use App\Models\User;
 use Database\Factories\Isms\IsmsSoftwareProductFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,6 +46,7 @@ class IsmsSoftwareProduct extends Model {
     /** @use HasFactory<IsmsSoftwareProductFactory> */
     use HasFactory;
     use HasSqid;
+    use Searchable;
 
     use SoftDeletes;
 
@@ -99,5 +100,10 @@ class IsmsSoftwareProduct extends Model {
         return $this->eol_on !== null
             && ! $this->eolReached()
             && $this->eol_on->startOfDay()->lt(now()->startOfDay()->addDays(90));
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'vendor'];
     }
 }

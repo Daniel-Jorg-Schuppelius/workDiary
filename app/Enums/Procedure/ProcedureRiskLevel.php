@@ -10,7 +10,12 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureRiskLevel: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureRiskLevel: string implements HasLabel {
+    use HasOptions;
+
     case Low = 'low';
     case Normal = 'normal';
     case High = 'high';

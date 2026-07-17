@@ -15,7 +15,7 @@ namespace App\Services\Inventory;
 use App\Enums\Inventory\OutboxStatus;
 use App\Jobs\Integration\InventoryOutboxDeliveryJob;
 use App\Models\{InventoryOutboxEntry, StockMovement};
-use Illuminate\Support\Carbon;
+use App\Services\Concerns\ManagesOutboxTransitions;
 
 /**
  * Persistierte Outbox für die externe Bestandsführung (Feature 048, MVP-072).
@@ -24,6 +24,9 @@ use Illuminate\Support\Carbon;
  * Statusübergänge bis zur Bestätigung bzw. Kompensationspflicht durch.
  */
 class InventoryOutboxService {
+    /** @use ManagesOutboxTransitions<InventoryOutboxEntry> */
+    use ManagesOutboxTransitions;
+
     /**
      * Reiht eine Operation idempotent ein. Existiert bereits ein Eintrag mit
      * demselben Schlüssel, wird dieser zurückgegeben (keine Doppelzustellung).
@@ -31,25 +34,18 @@ class InventoryOutboxService {
      * @param array<string, mixed> $payload
      */
     public function enqueue(int $organizationId, ?string $pluginId, string $operation, array $payload, string $idempotencyKey, ?int $stockMovementId = null): InventoryOutboxEntry {
-        $entry = InventoryOutboxEntry::withoutGlobalScopes()->firstOrCreate(
-            ['organization_id' => $organizationId, 'idempotency_key' => $idempotencyKey],
+        return $this->enqueueOutboxEntry(
+            InventoryOutboxEntry::class,
+            InventoryOutboxDeliveryJob::class,
+            $organizationId,
+            $idempotencyKey,
             [
                 'plugin_id' => $pluginId,
                 'operation' => $operation,
                 'payload' => $payload,
-                'status' => OutboxStatus::Pending->value,
-                'attempts' => 0,
                 'stock_movement_id' => $stockMovementId,
             ],
         );
-
-        if ($entry->wasRecentlyCreated) {
-            // afterCommit: s. IntegrationOutboxService — Enqueue passiert in
-            // Business-Transaktionen, der Job erst nach dem Commit.
-            InventoryOutboxDeliveryJob::dispatch($entry->id)->afterCommit();
-        }
-
-        return $entry;
     }
 
     /** Reiht eine bereits gebuchte Bewegung zur externen Spiegelung ein. */
@@ -96,32 +92,7 @@ class InventoryOutboxService {
         return true;
     }
 
-    public function markProcessing(InventoryOutboxEntry $entry): void {
-        $entry->forceFill([
-            'status' => OutboxStatus::Processing,
-            'attempts' => $entry->attempts + 1,
-        ])->save();
-    }
-
-    public function markConfirmed(InventoryOutboxEntry $entry): void {
-        $entry->forceFill([
-            'status' => OutboxStatus::Confirmed,
-            'last_error' => null,
-            'confirmed_at' => Carbon::now(),
-        ])->save();
-    }
-
-    public function markFailed(InventoryOutboxEntry $entry, string $error): void {
-        $entry->forceFill([
-            'status' => OutboxStatus::Failed,
-            'last_error' => $error,
-        ])->save();
-    }
-
-    public function markCompensationRequired(InventoryOutboxEntry $entry, string $error): void {
-        $entry->forceFill([
-            'status' => OutboxStatus::CompensationRequired,
-            'last_error' => $error,
-        ])->save();
+    protected function outboxStatusEnum(): string {
+        return OutboxStatus::class;
     }
 }

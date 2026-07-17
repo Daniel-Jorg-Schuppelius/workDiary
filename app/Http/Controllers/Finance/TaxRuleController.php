@@ -16,6 +16,7 @@ use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\{TaxRule, User};
 use App\Services\Invoicing\TaxResolver;
+use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -115,14 +116,22 @@ class TaxRuleController extends Controller {
         $this->authorizeConfig();
         $request->validate(['file' => ['required', 'file', 'max:1024', 'mimes:csv,txt']]);
 
-        $lines = preg_split('/\r\n|\r|\n/', trim((string) file_get_contents((string) $request->file('file')->getRealPath()))) ?: [];
+        $csv = trim((string) file_get_contents((string) $request->file('file')->getRealPath()));
+        // Toolkit-Parser statt zeilenweisem str_getcsv (B15): hält gequotete
+        // Mehrzeilenfelder zusammen; Toleranz-Semantik bleibt unverändert.
+        try {
+            $rows = $csv !== '' ? CSVDocumentParser::fromString($csv, ';', '"', false)->getRows() : [];
+        } catch (\RuntimeException $e) {
+            return back()->with('error', (string) __('CSV nicht lesbar: :error', ['error' => $e->getMessage()]));
+        }
+
         $imported = 0;
         $errors = [];
-        foreach ($lines as $index => $line) {
-            if ($index === 0 && str_contains(strtolower($line), 'country')) {
+        foreach ($rows as $index => $row) {
+            $parts = array_map(static fn($field): string => trim($field->getValue()), array_values($row->getFields()));
+            if ($index === 0 && str_contains(strtolower(implode(';', $parts)), 'country')) {
                 continue; // Kopfzeile
             }
-            $parts = array_map(static fn(?string $part): string => trim((string) $part), str_getcsv($line, ';'));
             if (count($parts) < 5) {
                 continue;
             }

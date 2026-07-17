@@ -15,7 +15,6 @@ use App\Models\{Asset, IncomingEInvoice, User};
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Services\AssetFinance\AssetFinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -41,19 +40,6 @@ final class AssetFinanceLifecycleTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->asset = Asset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Radlader']);
-    }
-
-    private function userWithRole(string $role): User {
-        $user = User::factory()->create(['organization_id' => $this->organization->id]);
-        $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($this->organization->id);
-        $orgRole = Role::query()->where('name', $role)->where('team_id', $this->organization->id)->firstOrFail();
-        $user->syncRoles([$orgRole]);
-        $registrar->forgetCachedPermissions();
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user;
     }
 
     /** @param array<string, mixed> $overrides */

@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Privacy;
 use App\Enums\Privacy\AgreementStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{JointControllerAgreement, ProcessingActivity, Processor};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\View\View;
@@ -40,6 +41,9 @@ class JointControllerAgreementController extends Controller {
         $user = $request->user();
         $org = $user?->organization;
         abort_unless($org !== null, 403);
+
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        $request->merge(['partner_id' => Sqid::decodeOrNumeric(Processor::class, $request->input('partner_id'))]);
 
         $data = $request->validate([
             'partner_id' => ['required', 'integer'],

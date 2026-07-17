@@ -13,12 +13,13 @@ namespace App\Policies;
 use App\Enums\TimeExport\TimeExportStatus;
 use App\Enums\User\Permission as P;
 use App\Models\{TimeExport, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Berechtigungen für ApprovedTimeExporter (MVP-019, ../WorkDiary-Architecture/zeit-export.md §7).
  */
 class TimeExportPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -27,7 +28,7 @@ class TimeExportPolicy {
     }
 
     public function view(User $user, TimeExport $export): bool {
-        return $user->organization_id === $export->organization_id
+        return $this->sharesOrganization($user, $export)
             && ($user->can(P::ExportTimeCreate->value)
                 || $user->can(P::ExportTimeDeliver->value));
     }
@@ -37,26 +38,26 @@ class TimeExportPolicy {
     }
 
     public function download(User $user, TimeExport $export): bool {
-        return $user->organization_id === $export->organization_id
+        return $this->sharesOrganization($user, $export)
             && $export->status->isDownloadable()
             && ($user->can(P::ExportTimeCreate->value)
                 || $user->can(P::ExportTimeDeliver->value));
     }
 
     public function deliver(User $user, TimeExport $export): bool {
-        return $user->organization_id === $export->organization_id
+        return $this->sharesOrganization($user, $export)
             && $user->can(P::ExportTimeDeliver->value)
             && $export->status === TimeExportStatus::Ready;
     }
 
     public function reject(User $user, TimeExport $export): bool {
-        return $user->organization_id === $export->organization_id
+        return $this->sharesOrganization($user, $export)
             && $user->can(P::ExportTimeDeliver->value)
             && in_array($export->status, [TimeExportStatus::Ready, TimeExportStatus::Delivered], true);
     }
 
     public function delete(User $user, TimeExport $export): bool {
-        return $user->organization_id === $export->organization_id
+        return $this->sharesOrganization($user, $export)
             && $user->can(P::ExportTimeDelete->value)
             && $export->status !== TimeExportStatus::Delivered;
     }

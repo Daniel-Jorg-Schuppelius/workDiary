@@ -14,7 +14,7 @@ namespace App\Models\AssetCompliance;
 
 use App\Enums\AssetCompliance\AssetInspectionResult;
 use App\Models\{Asset, User};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{AppendOnly, Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
 
@@ -33,6 +33,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
  * @property \Illuminate\Support\Carbon|null $valid_until
  */
 class AssetInspectionEvent extends Model {
+    // Unveränderbarer Nachweis: nur versionierte Korrekturen (neues Event mit supersedes_id).
+    use AppendOnly;
+
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
@@ -54,13 +57,6 @@ class AssetInspectionEvent extends Model {
         'checklist' => 'array',
         'signed_at' => 'datetime',
     ];
-
-    protected static function booted(): void {
-        // Unveränderbarer Nachweis: nur versionierte Korrekturen (neues Event mit supersedes_id).
-        static::updating(function (): bool {
-            return false;
-        });
-    }
 
     /** @return BelongsTo<AssetInspectionSchedule, $this> */
     public function schedule(): BelongsTo {

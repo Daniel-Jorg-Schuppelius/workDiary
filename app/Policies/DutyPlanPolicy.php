@@ -11,9 +11,10 @@
 namespace App\Policies;
 
 use App\Models\{DutyPlan, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class DutyPlanPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     /**
@@ -33,7 +34,7 @@ class DutyPlanPolicy {
     }
 
     public function view(User $user, DutyPlan $dutyPlan): bool {
-        return $user->organization_id === $dutyPlan->organization_id;
+        return $this->sharesOrganization($user, $dutyPlan);
     }
 
     public function create(User $user): bool {
@@ -41,12 +42,12 @@ class DutyPlanPolicy {
     }
 
     public function update(User $user, DutyPlan $dutyPlan): bool {
-        return $user->isAdmin() && $user->organization_id === $dutyPlan->organization_id;
+        return $user->isAdmin() && $this->sharesOrganization($user, $dutyPlan);
     }
 
     public function delete(User $user, DutyPlan $dutyPlan): bool {
         return $user->isAdmin()
-            && $user->organization_id === $dutyPlan->organization_id
+            && $this->sharesOrganization($user, $dutyPlan)
             && $dutyPlan->isDraft();
     }
 }

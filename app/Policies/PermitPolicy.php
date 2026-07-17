@@ -11,33 +11,20 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Permit, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
  * Genehmigungs-Register. Org-Isolation übernimmt der globale
  * OrganizationScope (Route-Binding findet nur Datensätze der aktiven Org).
  */
-class PermitPolicy {
+class PermitPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::PermitViewAny->value);
-    }
-
-    public function view(User $user, Permit $permit): bool {
-        return $user->can(P::PermitView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::PermitCreate->value);
-    }
-
-    public function update(User $user, Permit $permit): bool {
-        return $user->can(P::PermitUpdate->value);
-    }
-
-    public function delete(User $user, Permit $permit): bool {
-        return $user->can(P::PermitDelete->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::PermitViewAny,
+        'view' => P::PermitView,
+        'create' => P::PermitCreate,
+        'update' => P::PermitUpdate,
+        'delete' => P::PermitDelete,
+    ];
 }

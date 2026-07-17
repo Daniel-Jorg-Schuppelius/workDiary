@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Toggl\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
@@ -21,20 +21,15 @@ use Illuminate\Console\Command;
  * Toggl-Inbox. Läuft im Scheduler sowie manuell aus der Admin-UI.
  */
 class TogglImportCommand extends Command {
-    protected $signature = 'toggl:import
-        {--organization= : ID einer einzelnen Organisation, sonst alle}
+    use IteratesOrganizations;
+
+    protected $signature = 'toggl:import ' . self::ORGANIZATION_OPTION . '
         {--days= : Zeitfenster rückwirkend in Tagen (überschreibt die Einstellung)}';
 
     protected $description = 'Importiert Toggl-Zeiteinträge als Zeiteinträge (gematchtes Kundenprojekt) bzw. in die Inbox.';
 
     public function handle(TogglImportService $service): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

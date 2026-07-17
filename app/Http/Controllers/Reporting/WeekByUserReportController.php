@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{TimeEntry, User};
 use App\Support\XlsxExport;
 use Carbon\{Carbon, CarbonImmutable};
@@ -33,6 +33,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class WeekByUserReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     /** Maximalanzahl gleichzeitig gerenderter Wochen-Tabs. */
@@ -40,12 +41,7 @@ class WeekByUserReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
         // Aus dem globalen Header-Zeitraum alle überlappenden ISO-Wochen sammeln
         // und als Tab-Liste an die View liefern – Pattern analog zu WeekController.
@@ -138,13 +134,13 @@ class WeekByUserReportController extends Controller {
         $weekLabel = sprintf('KW %02d / %d', $week, $year);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week, $scope);
+            return $this->exportCsv($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week, $scope, $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $weekLabel, $year, $week);
+            return $this->exportPdf($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $weekLabel, $year, $week, $scope, $request);
         }
 
         return view('reports.week-by-user', [
@@ -202,14 +198,14 @@ class WeekByUserReportController extends Controller {
      * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
      */
-    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week, string $scope): Response {
+    private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week, string $scope, Request $request): Response {
         $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
         $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
         foreach ($this->buildRows($byUser, $users, $dayTotals, $weekTotal, $weekRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'week-by-user', ['year' => $year, 'week' => $week, 'scope' => $scope]);
+        return $this->csvWithMetadata($rows, $filename, 'week-by-user', ['year' => $year, 'week' => $week, 'scope' => $scope], $request);
     }
 
     /**
@@ -231,7 +227,7 @@ class WeekByUserReportController extends Controller {
      * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
      */
-    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, int $year, int $week): SymfonyResponse {
+    private function exportPdf(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, string $weekLabel, int $year, int $week, string $scope, Request $request): SymfonyResponse {
         $filename = sprintf('woche_%04d-W%02d.pdf', $year, $week);
         return $this->pdfDownload('reports.pdf.week-by-user', [
             'byUser' => $byUser,
@@ -241,7 +237,7 @@ class WeekByUserReportController extends Controller {
             'weekTotal' => $weekTotal,
             'weekRate' => $weekRate,
             'weekLabel' => $weekLabel,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'week-by-user', ['year' => $year, 'week' => $week, 'scope' => $scope]);
     }
 
     /**

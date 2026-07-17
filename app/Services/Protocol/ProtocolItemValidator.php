@@ -12,6 +12,7 @@ namespace App\Services\Protocol;
 
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType};
 use App\Models\{Protocol, ProtocolItem};
+use CommonToolkit\Helper\Data\DateHelper;
 
 /**
  * Validiert ein {@see ProtocolItem} gemäß seinem `item_type` (MVP-021 §4).
@@ -273,9 +274,10 @@ class ProtocolItemValidator {
      * @return list<string>
      */
     private function validateDate(array $value): array {
+        // isDateTime statt strtotime: lehnt Relativausdrücke (tomorrow) ab,
+        // akzeptiert ISO-Timestamps mit Offset (DateTime-Items).
         $raw = (string) ($value['value'] ?? '');
-        $ts = strtotime($raw);
-        return $ts === false ? [(string) __('protocol.validation.date.invalid')] : [];
+        return DateHelper::isDateTime($raw) ? [] : [(string) __('protocol.validation.date.invalid')];
     }
 
     /**

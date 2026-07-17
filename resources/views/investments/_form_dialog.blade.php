@@ -45,9 +45,5 @@
         <x-textarea-field name="risk_note" :label="__('Risiko')" rows="2" span="2">{{ old('risk_note', $case->risk_note ?? '') }}</x-textarea-field>
     </x-form-group>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 </x-modal>

@@ -14,19 +14,18 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\ProcessingAgreement;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /** AVV-/Dienstleisterregister. Ohne Admin-Bypass, organisationsgebunden. */
 class ProcessingAgreementPolicy {
-    private function sameOrg(User $user, ProcessingAgreement $agreement): bool {
-        return (int) $user->organization_id === (int) $agreement->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.view');
     }
 
     public function view(User $user, ProcessingAgreement $agreement): bool {
-        return $this->sameOrg($user, $agreement) && $user->can('dataprotection.view');
+        return $this->sharesOrganization($user, $agreement) && $user->can('dataprotection.view');
     }
 
     public function create(User $user): bool {
@@ -34,7 +33,7 @@ class ProcessingAgreementPolicy {
     }
 
     public function update(User $user, ProcessingAgreement $agreement): bool {
-        return $this->sameOrg($user, $agreement) && $user->can('dataprotection.avv.manage');
+        return $this->sharesOrganization($user, $agreement) && $user->can('dataprotection.avv.manage');
     }
 
     public function delete(User $user, ProcessingAgreement $agreement): bool {

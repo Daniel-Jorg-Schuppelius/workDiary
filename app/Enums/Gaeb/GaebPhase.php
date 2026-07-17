@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Gaeb;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * GAEB-DA-XML-Austauschphase (Feature 049, MVP-081). Der numerische Code
  * entspricht dem DA-Kürzel der Datei (z. B. X81 = Leistungsverzeichnis ohne
  * Preise). Die Ziellinie ist GAEB DA XML 3.3; höhere Phasen wie X94/X96
  * (REB/Zahlungen) sind bewusst „Später" und hier nicht gelistet.
  */
-enum GaebPhase: string {
+enum GaebPhase: string implements HasLabel {
+    use HasOptions;
+
     case Lv = '81';            // Leistungsverzeichnis (ohne Preise)
     case Estimate = '82';      // Kostenanschlag
     case RequestForBid = '83'; // Angebotsaufforderung

@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Art einer Miet- oder Zusatzposition (MVP-262/266). Kaution ist bewusst
  * KEINE Charge-Art — sie läuft als eigener Finanzvorgang (D10).
  */
-enum RentalChargeKind: string {
+enum RentalChargeKind: string implements HasLabel {
+    use HasOptions;
+
     case DailyRate = 'daily_rate';
     case HourlyRate = 'hourly_rate';
     case FlatRate = 'flat_rate';

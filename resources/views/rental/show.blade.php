@@ -8,11 +8,7 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <x-page-toolbar :title="$case->number . ' — ' . ($case->customer->name ?? '')">
         <div class="flex flex-wrap items-center gap-2 text-sm">
@@ -49,24 +45,16 @@
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Akte')">
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <dt class="text-base-content/60">{{ __('Kunde') }}</dt>
-                <dd>{{ $case->customer->name ?? '—' }} {{ $case->contact_name !== null ? '(' . $case->contact_name . ')' : '' }}</dd>
-                <dt class="text-base-content/60">{{ __('Projekt') }}</dt>
-                <dd>{{ $case->project->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Übergabeort') }}</dt>
-                <dd>{{ $case->handover_location ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Rückgabeort') }}</dt>
-                <dd>{{ $case->return_location ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Verantwortlich') }}</dt>
-                <dd>{{ $case->responsible->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Kaution (vereinbart)') }}</dt>
-                <dd>{{ $case->deposit_amount !== null ? number_format((float) $case->deposit_amount, 2, ',', '.') . ' €' : '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Versicherung') }}</dt>
-                <dd>{{ $case->insurance_note ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Tatsächliche Rückgabe') }}</dt>
-                <dd>{{ optional($case->actual_return_at)->fdatetime() ?? '—' }}</dd>
-            </dl>
+            <x-detail-grid class="grid-cols-2">
+                <x-detail-grid.row :label="__('Kunde')">{{ $case->customer->name ?? '—' }} {{ $case->contact_name !== null ? '(' . $case->contact_name . ')' : '' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Projekt')">{{ $case->project->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Übergabeort')">{{ $case->handover_location ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Rückgabeort')">{{ $case->return_location ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Verantwortlich')">{{ $case->responsible->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Kaution (vereinbart)')">{{ $case->deposit_amount !== null ? number_format((float) $case->deposit_amount, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Versicherung')">{{ $case->insurance_note ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Tatsächliche Rückgabe')">{{ optional($case->actual_return_at)->fdatetime() ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
             @if ($case->notes !== null)
                 <p class="mt-2 whitespace-pre-line text-sm">{{ $case->notes }}</p>
             @endif

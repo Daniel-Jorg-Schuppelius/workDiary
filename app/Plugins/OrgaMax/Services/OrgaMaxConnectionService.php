@@ -14,6 +14,7 @@ namespace App\Plugins\OrgaMax\Services;
 
 use App\Models\{OrgaMaxConnection, Organization, User};
 use App\Plugins\OrgaMax\Api\{OrgaMaxClientFactory, OrgaMaxTokenService};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -60,7 +61,7 @@ class OrgaMaxConnectionService {
             'mode' => $mode,
             'status' => OrgaMaxConnection::STATUS_PENDING_CALLBACK,
             'blocked_reason' => null,
-            'intent_token_hash' => hash('sha256', $intent),
+            'intent_token_hash' => CryptoHelper::hash($intent),
             'intent_expires_at' => now()->addMinutes((int) config('plugins.orgamax.intent_ttl_minutes', 30)),
             'connected_by' => $admin->id,
             'confirmed_at' => null,
@@ -91,7 +92,7 @@ class OrgaMaxConnectionService {
 
         $intentValid = $connection->status === OrgaMaxConnection::STATUS_PENDING_CALLBACK
             && $connection->intent_token_hash !== null
-            && hash_equals($connection->intent_token_hash, hash('sha256', $state))
+            && hash_equals($connection->intent_token_hash, CryptoHelper::hash($state))
             && $connection->intent_expires_at !== null
             && $connection->intent_expires_at->isFuture();
         if (! $intentValid) {

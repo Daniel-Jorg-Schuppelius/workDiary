@@ -10,13 +10,14 @@
 
 namespace App\Plugins\Lexoffice\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeContactSync, LexofficeMatchPolicy, LexofficeNumberAuthority};
 use Illuminate\Console\Command;
 
 class LexofficeSyncContactsCommand extends Command {
-    protected $signature = 'lexoffice:sync-contacts
-        {--organization= : ID einer einzelnen Organisation, sonst alle}
+    use IteratesOrganizations;
+
+    protected $signature = 'lexoffice:sync-contacts ' . self::ORGANIZATION_OPTION . '
         {--policy= : Override für die Match-Policy (lexoffice_wins|local_wins|manual_review)}
         {--only=both : Welche Rollen synchronisiert werden (both|customers|suppliers)}
         {--create-missing : Lokale Kunden/Lieferanten für Remote-Kontakte ohne Match neu anlegen}
@@ -25,13 +26,7 @@ class LexofficeSyncContactsCommand extends Command {
     protected $description = 'Pull-Sync der Lexoffice-Kontakte: matcht remote Kontakte rollen-bewusst auf lokale Kunden (customer) bzw. Lieferanten (vendor) und führt je nach Policy Updates oder Konflikt-Einträge durch.';
 
     public function handle(LexofficeContactSync $sync, LexofficeNumberAuthority $numberAuthority): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

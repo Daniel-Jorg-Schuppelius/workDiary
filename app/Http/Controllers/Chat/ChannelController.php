@@ -90,6 +90,15 @@ class ChannelController extends Controller {
         /** @var User $user */
         $user = Auth::user();
 
+        // Sqid-Inputs der Mitglieder-Checkliste dekodieren (numerischer Fallback für Alt-Clients).
+        $members = $request->input('members');
+        if (is_array($members)) {
+            $request->merge(['members' => array_values(array_filter(array_map(
+                static fn($v) => \App\Support\Sqid::decodeOrNumeric(User::class, $v),
+                $members,
+            )))]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:1000'],
@@ -124,6 +133,8 @@ class ChannelController extends Controller {
     public function direct(Request $request): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        $request->merge(['user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         $data = $request->validate(['user_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization()]]);
         $other = (int) $data['user_id'];
         abort_if($other === $user->id, 422);
@@ -190,6 +201,14 @@ class ChannelController extends Controller {
 
     public function invite(Request $request, Channel $channel): RedirectResponse {
         Gate::authorize('manageMembers', $channel);
+        // Sqid-Inputs der Mitglieder-Checkliste dekodieren (numerischer Fallback für Alt-Clients).
+        $members = $request->input('members');
+        if (is_array($members)) {
+            $request->merge(['members' => array_values(array_filter(array_map(
+                static fn($v) => \App\Support\Sqid::decodeOrNumeric(User::class, $v),
+                $members,
+            )))]);
+        }
         $data = $request->validate([
             'members' => ['required', 'array', 'min:1'],
             'members.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization()],

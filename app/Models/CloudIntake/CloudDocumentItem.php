@@ -12,6 +12,7 @@ namespace App\Models\CloudIntake;
 
 use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeProvider, CloudIntakeRouteTarget};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
@@ -87,7 +88,7 @@ class CloudDocumentItem extends Model {
 
     /** Kanonischer Unique-Schlüssel je Item-Revision. */
     public static function itemRevisionHash(string $externalItemId, string $revision): string {
-        return hash('sha256', $externalItemId . '|' . $revision);
+        return CryptoHelper::hash($externalItemId . '|' . $revision);
     }
 
     /** @return BelongsTo<CloudDocumentConnection, $this> */

@@ -31,18 +31,19 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Anlegen')">
 
-    <div class="contents" x-data="{ changeType: '{{ old('change_type', 'normal') }}' }">
+    {{-- Typ-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
+    <div class="contents" x-data="reveal(@js(old('change_type', 'normal')))">
         <x-form-group :legend="__('Change')" icon="published_with_changes" tone="primary" cols="2">
             <x-input-field name="title" :label="__('Titel')" required minlength="3" maxlength="200" span="2" :value="old('title')" />
 
-            <x-select-field name="change_type" :label="__('Typ')" required x-model="changeType"
+            <x-select-field name="change_type" :label="__('Typ')" required x-model="value"
                             :hint="__('Standard-Changes entstehen nur aus einer freigegebenen Vorlage; normal/emergency brauchen einen Rollback-Plan.')">
                 <option value="standard">{{ __('Standard') }}</option>
                 <option value="normal">{{ __('Normal') }}</option>
                 <option value="emergency">{{ __('Emergency') }}</option>
             </x-select-field>
 
-            <div class="fieldset" x-show="changeType === 'standard'" x-cloak>
+            <div class="fieldset" x-show="is('standard')" x-cloak>
                 <label class="fieldset-label" for="change_template_id">{{ __('Freigegebene Vorlage') }}</label>
                 <select id="change_template_id" name="change_template_id" class="select select-bordered w-full">
                     <option value="">—</option>
@@ -95,17 +96,17 @@
             <div class="fieldset">
                 <label class="fieldset-label" for="rollback_plan">
                     {{ __('Rollback-Plan') }}
-                    <span class="text-base-content/60" x-show="changeType !== 'standard'">({{ __('Pflicht') }})</span>
+                    <span class="text-base-content/60" x-show="isNot('standard')">({{ __('Pflicht') }})</span>
                 </label>
                 <textarea id="rollback_plan" name="rollback_plan" rows="2" maxlength="20000"
                           class="textarea textarea-bordered w-full @error('rollback_plan') textarea-error @enderror"
-                          :required="changeType !== 'standard'">{{ old('rollback_plan') }}</textarea>
+                          :required="isNot('standard')">{{ old('rollback_plan') }}</textarea>
                 @error('rollback_plan')<p class="mt-1 text-xs text-error">{{ $message }}</p>@enderror
             </div>
         </x-form-group>
 
         <x-form-group :legend="__('Genehmigungskette')" icon="approval" tone="info">
-            <div x-show="changeType !== 'standard'"
+            <div x-show="isNot('standard')"
                  x-data="repeater"
                  data-prefix="approval_steps"
                  data-items="[]"
@@ -155,7 +156,7 @@
                 </x-icon-btn>
                 <p class="text-xs text-base-content/60">{{ __('Ohne Schritte gilt der Change sofort als genehmigt. Emergency kürzt auf EINEN Schritt; Selbstfreigabe ist immer gesperrt.') }}</p>
             </div>
-            <p class="text-xs text-base-content/60 sm:col-span-2" x-show="changeType === 'standard'" x-cloak>
+            <p class="text-xs text-base-content/60 sm:col-span-2" x-show="is('standard')" x-cloak>
                 {{ __('Standard-Changes sind über die freigegebene Vorlage vorab genehmigt — keine Kette nötig.') }}
             </p>
         </x-form-group>

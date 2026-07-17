@@ -11,163 +11,47 @@
 namespace App\Plugins\GoogleDrive\Http\Controllers;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
-use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
-use App\Http\Controllers\Controller;
+use App\Enums\CloudIntake\CloudIntakeProvider;
 use App\Models\CloudIntake\CloudDocumentConnection;
-use App\Models\{Organization, User};
 use App\Plugins\GoogleDrive\Api\{GoogleDriveClient, GoogleDriveOAuth};
 use App\Plugins\GoogleDrive\GoogleDriveConfig;
-use App\Support\Sqid;
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Cache, Gate};
-use Illuminate\Support\Str;
-use Throwable;
+use App\Plugins\Support\Intake\{IntakeAccount, IntakeOAuthController};
 
 /**
- * OAuth-Anbindung einer Google-Drive-Quelle (Feature 080, MVP-355):
- * State/PKCE-Muster wie Dropbox/Graph; `access_type=offline` +
- * `prompt=consent` sichern das Refresh-Token.
+ * OAuth-Anbindung einer Google-Drive-Quelle (Feature 080, MVP-355). Flow in
+ * der Basis (C7); `access_type=offline` + `prompt=consent` sichern das
+ * Refresh-Token.
  */
-class GoogleDriveIntakeController extends Controller {
-    private const STATE_TTL_SECONDS = 600;
-
-    /** Startet den OAuth-Flow (optional `?connection=<sqid>` für Re-Auth). */
-    public function startOAuth(Request $request, GoogleDriveOAuth $oauth): RedirectResponse {
-        Gate::authorize('create', CloudDocumentConnection::class);
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        if (! GoogleDriveConfig::isConfigured()) {
-            return back()->with('error', __('cloud_intake.flash.not_configured'));
-        }
-
-        $connectionId = null;
-        $rawConnection = (string) $request->query('connection', '');
-        if ($rawConnection !== '') {
-            $connectionId = Sqid::decode(CloudDocumentConnection::class, $rawConnection);
-        }
-
-        $state = Str::random(40);
-        $verifier = OAuth2AuthorizationCodeGrant::generatePkceVerifier();
-        Cache::put($this->stateKey($state), [
-            'organization_id' => (int) $organization->id,
-            'user_id' => (int) $admin->id,
-            'connection_id' => $connectionId,
-            'pkce_verifier' => $verifier,
-        ], self::STATE_TTL_SECONDS);
-
-        $url = $oauth->grant()->getAuthorizationUrl($state, $oauth->scopes(), [
-            'access_type' => 'offline',
-            'prompt' => 'consent',
-        ], $verifier);
-
-        return redirect()->away($url);
+class GoogleDriveIntakeController extends IntakeOAuthController {
+    protected function provider(): CloudIntakeProvider {
+        return CloudIntakeProvider::Google;
     }
 
-    /** Callback: state einmalig einlösen, Code+PKCE tauschen, Konto bestätigen. */
-    public function oauthCallback(Request $request, GoogleDriveOAuth $oauth): RedirectResponse {
-        Gate::authorize('create', CloudDocumentConnection::class);
-        $admin = $this->admin();
-        $organization = $this->organization($admin);
-
-        $state = (string) $request->query('state', '');
-        $code = (string) $request->query('code', '');
-
-        $payload = $state !== '' ? Cache::pull($this->stateKey($state)) : null;
-        if (! is_array($payload)
-            || (int) ($payload['organization_id'] ?? 0) !== (int) $organization->id
-            || (int) ($payload['user_id'] ?? 0) !== (int) $admin->id) {
-            return $this->backToOverview()->with('error', __('cloud_intake.flash.state_invalid'));
-        }
-
-        if ($code === '') {
-            return $this->backToOverview()->with('error', __('cloud_intake.flash.oauth_denied'));
-        }
-
-        try {
-            $token = $oauth->grant()->exchangeAuthorizationCode($code, (string) ($payload['pkce_verifier'] ?? '') ?: null);
-        } catch (Throwable $e) {
-            return $this->backToOverview()->with('error', __('cloud_intake.flash.oauth_failed', ['class' => class_basename($e)]));
-        }
-
-        $connection = $this->resolveConnection($organization, $payload['connection_id'] ?? null, $admin);
-        $scope = $token->getScope();
-        $connection->forceFill([
-            'access_token' => $token->getAccessToken(),
-            'refresh_token' => $token->getRefreshToken() ?? $connection->refresh_token,
-            'token_expires_at' => $token->getExpiresAt(),
-            'granted_scopes' => $scope !== null && $scope !== ''
-                ? array_values(array_filter(explode(' ', $scope)))
-                : $oauth->scopes(),
-            'last_error' => null,
-            'last_error_at' => null,
-            'consecutive_failures' => 0,
-            'disabled_at' => null,
-        ])->save();
-
-        try {
-            $account = (new GoogleDriveClient($connection))->account();
-            $connection->forceFill([
-                'external_account_id' => $account->externalId,
-                'external_account_label' => $account->label,
-            ])->save();
-        } catch (Throwable $e) {
-            $connection->recordConnectionFailure(class_basename($e));
-
-            return $this->backToOverview()->with('error', __('cloud_intake.flash.account_failed', ['class' => class_basename($e)]));
-        }
-
-        $connection->forceFill([
-            'status' => $connection->root_folder_id !== null && $connection->routes()->where('active', true)->exists()
-                ? CloudIntakeConnectionStatus::Active
-                : CloudIntakeConnectionStatus::Draft,
-        ])->save();
-
-        $connection->audit('cloudIntake.connected', ['by_user_id' => (int) $admin->id, 'provider' => CloudIntakeProvider::Google->value]);
-
-        return $this->backToOverview()->with('success', __('cloud_intake.flash.connected'));
+    protected function connectionName(): string {
+        return 'Google Drive';
     }
 
-    private function resolveConnection(Organization $organization, mixed $connectionId, User $admin): CloudDocumentConnection {
-        if (is_int($connectionId) && $connectionId > 0) {
-            $existing = CloudDocumentConnection::query()
-                ->where('organization_id', $organization->id)
-                ->where('provider', CloudIntakeProvider::Google->value)
-                ->find($connectionId);
-            if ($existing !== null) {
-                return $existing;
-            }
-        }
-
-        return CloudDocumentConnection::query()->create([
-            'organization_id' => $organization->id,
-            'provider' => CloudIntakeProvider::Google,
-            'name' => 'Google Drive',
-            'status' => CloudIntakeConnectionStatus::Draft,
-            'created_by_user_id' => $admin->id,
-        ]);
+    protected function isConfigured(): bool {
+        return GoogleDriveConfig::isConfigured();
     }
 
-    private function backToOverview(): RedirectResponse {
-        return redirect()->route('admin.cloud-intake.index');
+    protected function grant(): OAuth2AuthorizationCodeGrant {
+        return app(GoogleDriveOAuth::class)->grant();
     }
 
-    private function stateKey(string $state): string {
-        return 'cloud-intake-google-oauth-state:' . $state;
+    protected function scopes(): array {
+        return app(GoogleDriveOAuth::class)->scopes();
     }
 
-    private function admin(): User {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 403);
-
-        return $user;
+    protected function account(CloudDocumentConnection $connection): IntakeAccount {
+        return (new GoogleDriveClient($connection))->account();
     }
 
-    private function organization(User $admin): Organization {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        abort_unless($organization instanceof Organization, 403);
-        abort_unless((int) $organization->id === (int) $admin->organization_id, 403);
+    protected function stateCachePrefix(): string {
+        return 'cloud-intake-google-oauth-state';
+    }
 
-        return $organization;
+    protected function extraAuthorizeParams(): array {
+        return ['access_type' => 'offline', 'prompt' => 'consent'];
     }
 }

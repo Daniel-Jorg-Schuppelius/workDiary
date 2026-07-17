@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetCompliance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Prüfart (MVP-283): welche Pflicht im Einzelfall gilt, entscheidet der
  * Betrieb — WorkDiary macht keine Rechtsberatung (W12).
  */
-enum AssetInspectionKind: string {
+enum AssetInspectionKind: string implements HasLabel {
+    use HasOptions;
+
     case Verification = 'verification';
     case Calibration = 'calibration';
     case DguvUvv = 'dguv_uvv';

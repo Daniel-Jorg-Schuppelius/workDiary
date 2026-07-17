@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Support;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Vom Melder eingeschätzter Schweregrad (Feature 041, MVP-053). */
-enum ProblemReportSeverity: string {
+enum ProblemReportSeverity: string implements HasLabel {
+    use HasOptions;
+
     case Low = 'low';
     case Normal = 'normal';
     case High = 'high';

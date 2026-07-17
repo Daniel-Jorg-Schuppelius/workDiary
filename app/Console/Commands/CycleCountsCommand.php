@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Organization, Warehouse};
 use App\Services\Inventory\{CycleCountPlanner, StocktakeService};
 use Illuminate\Console\Command;
@@ -22,22 +23,18 @@ use Illuminate\Console\Command;
  * gedacht – z. B. A wöchentlich, B monatlich, C quartalsweise.
  */
 class CycleCountsCommand extends Command {
+    use IteratesOrganizations;
+
     protected $signature = 'inventory:cycle-counts {--class=A : ABC-Klasse (A/B/C)} {--org= : Organisations-ID (sonst alle)}';
 
     protected $description = 'Eröffnet zyklische Inventuren je Lager für die fällige ABC-Klasse';
 
     public function handle(CycleCountPlanner $planner, StocktakeService $stocktake): int {
         $class = strtoupper((string) $this->option('class'));
-        $orgId = $this->option('org');
-
-        $organizations = $orgId !== null
-            ? Organization::query()->whereKey((int) $orgId)->get()
-            : Organization::query()->get();
 
         $opened = 0;
-        foreach ($organizations as $organization) {
-            app()->instance('currentOrganization', $organization);
-            try {
+        foreach ($this->organizationsToProcess('org') as $organization) {
+            $this->withOrganizationContext($organization, function (Organization $organization) use ($planner, $stocktake, $class, &$opened): void {
                 foreach (Warehouse::query()->where('organization_id', $organization->id)->get() as $warehouse) {
                     $variantIds = $planner->dueVariants($warehouse, [$class]);
                     if ($variantIds === []) {
@@ -47,9 +44,7 @@ class CycleCountsCommand extends Command {
                     $opened++;
                     $this->line(sprintf('Org #%d / %s: Zyklus %s (%d Varianten).', $organization->id, $warehouse->name, $class, count($variantIds)));
                 }
-            } finally {
-                app()->forgetInstance('currentOrganization');
-            }
+            });
         }
 
         $this->info(sprintf('Fertig – %d Zählung(en) eröffnet.', $opened));

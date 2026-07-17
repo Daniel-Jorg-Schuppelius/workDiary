@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\RendersReportPdf;
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\User;
 use App\Services\Reporting\WorkBalanceCalculator;
 use App\Support\Sqid;
@@ -33,6 +33,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 class WorkBalanceReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    // A9: liefert auditExport für den PDF-Export.
+    use WritesReportCsv;
 
     public function __construct(protected WorkBalanceCalculator $calc) {}
 
@@ -58,7 +60,11 @@ class WorkBalanceReportController extends Controller {
                 'user' => $user,
                 'period' => $period,
                 'label' => $label,
-            ], $filename);
+            ], $filename, request: $request, reportCode: 'work-balance', filters: [
+                'user_id' => $user->id,
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+            ]);
         }
 
         /** @var View $view */
@@ -157,8 +163,7 @@ class WorkBalanceReportController extends Controller {
         }
 
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
         $label = $range['label'] !== '' ? $range['label'] : $this->formatLabel($from, $to);
 
         return [$from, $to, $label];

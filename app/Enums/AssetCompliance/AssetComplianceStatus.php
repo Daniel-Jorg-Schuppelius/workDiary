@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetCompliance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Abgeleiteter Prüfstatus eines Assets (MVP-288): Einsatz-, Dispositions-
  * und Verleihprüfung lesen dieselbe Bewertung.
  */
-enum AssetComplianceStatus: string {
+enum AssetComplianceStatus: string implements HasLabel {
+    use HasOptions;
+
     case Valid = 'valid';
     case DueSoon = 'due_soon';
     case Overdue = 'overdue';

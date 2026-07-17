@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Asset\{AssetOwnership, AssetStatus};
 use App\Exceptions\AssetValidationException;
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Http\Requests\SaveAssetRequest;
 use App\Models\{Asset, Product, Tag, User};
 use App\Services\Asset\{AssetDetailAssembler, AssetFormOptions, AssetService};
@@ -26,6 +27,8 @@ use Illuminate\View\View;
  * (Refactoring Welle 2, B6b).
  */
 class AssetController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['asset_no', 'asset_class', 'name', 'serial_no', 'location_text', 'status'];
 
     public function __construct(private readonly AssetFormOptions $options) {}
@@ -101,10 +104,7 @@ class AssetController extends Controller {
         $query = trim($request->string('q')->toString());
         $classFilter = $this->normalizeAssetClass($request->string('class')->toString());
         $statusFilter = $this->normalizeAssetStatus($request->string('status')->toString());
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['sort' => $sort, 'dir' => $dir] = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $assetsQuery = Asset::query()
             ->with(['customer:id,name', 'tags:id,name,color,slug'])
@@ -116,13 +116,7 @@ class AssetController extends Controller {
             ->orderBy($sort, $dir);
 
         if ($query !== '') {
-            $assetsQuery->where(function ($builder) use ($query): void {
-                $builder
-                    ->whereLikeEscaped('asset_no', $query)
-                    ->orWhereLikeEscaped('name', $query)
-                    ->orWhereLikeEscaped('serial_no', $query)
-                    ->orWhereLikeEscaped('location_text', $query);
-            });
+            $assetsQuery->search($query);
         }
 
         if ($classFilter !== null) {

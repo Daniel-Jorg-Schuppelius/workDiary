@@ -14,30 +14,19 @@ use App\Enums\User\Permission as P;
 use App\Models\{MaintenancePlan, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class MaintenancePlanPolicy {
+class MaintenancePlanPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::AssetView->value);
-    }
-
-    public function view(User $user, MaintenancePlan $plan): bool {
-        return $user->can(P::AssetView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::AssetUpdate->value);
-    }
-
-    public function update(User $user, MaintenancePlan $plan): bool {
-        return $user->can(P::AssetUpdate->value);
-    }
-
-    public function delete(User $user, MaintenancePlan $plan): bool {
-        return $user->can(P::AssetUpdate->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::AssetView,
+        'view' => P::AssetView,
+        'create' => P::AssetUpdate,
+        'update' => P::AssetUpdate,
+        'delete' => P::AssetUpdate,
+        'complete' => P::AssetUpdate,
+    ];
 
     public function complete(User $user, MaintenancePlan $plan): bool {
-        return $user->can(P::AssetUpdate->value);
+        return $this->allows($user, 'complete');
     }
 }

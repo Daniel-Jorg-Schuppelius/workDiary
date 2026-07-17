@@ -10,7 +10,12 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureRunStatus: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureRunStatus: string implements HasLabel {
+    use HasOptions;
+
     case Open = 'open';
     case InProgress = 'inProgress';
     case Blocked = 'blocked';

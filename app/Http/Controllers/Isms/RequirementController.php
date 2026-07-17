@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Isms;
 
 use App\Enums\Isms\{ControlImplementationStatus, RequirementSource};
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\StreamsRegisterExport;
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
 use App\Models\User;
 use App\Services\Isms\{NormProfileRegistry, RegisterExportService, RequirementService};
@@ -33,6 +34,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Autorisierung über IsmsRequirementPolicy (isms.viewAny/view/manage).
  */
 class RequirementController extends Controller {
+    use StreamsRegisterExport;
+
     /** Trennzeichen des kombinierten Norm-Filterwerts "norm|edition". */
     private const NORM_FILTER_SEPARATOR = '|';
 
@@ -138,25 +141,16 @@ class RequirementController extends Controller {
     public function export(Request $request): StreamedResponse {
         Gate::authorize('viewAny', IsmsRequirement::class);
 
-        $format = (string) $request->query('format', 'json');
-        abort_unless(in_array($format, RegisterExportService::FORMATS, true), 404);
-
         $scope = $this->resolveScope($request->query('scope'), null);
         abort_if($scope === null, 404);
 
-        /** @var User $actor */
-        $actor = Auth::user();
-        $register = $this->exports->soaRegister($scope);
-
-        $content = $format === 'csv'
-            ? $this->exports->toCsv(RegisterExportService::REGISTER_SOA, $actor, $scope, $register)
-            : $this->exports->toJson(RegisterExportService::REGISTER_SOA, $actor, $scope, $register);
-
-        return response()->streamDownload(static function () use ($content): void {
-            echo $content;
-        }, $this->exports->filename(RegisterExportService::REGISTER_SOA, $format), [
-            'Content-Type' => $format === 'csv' ? 'text/csv; charset=UTF-8' : 'application/json; charset=UTF-8',
-        ]);
+        return $this->streamRegisterExport(
+            $request,
+            IsmsRequirement::class,
+            RegisterExportService::REGISTER_SOA,
+            fn(): array => $this->exports->soaRegister($scope),
+            $scope,
+        );
     }
 
     public function store(Request $request): RedirectResponse {

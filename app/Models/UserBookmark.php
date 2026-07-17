@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\HasSqid;
+use App\Models\Concerns\{HasSqid, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,6 +28,7 @@ class UserBookmark extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'user_id',
@@ -45,5 +46,10 @@ class UserBookmark extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['label', 'url'];
     }
 }

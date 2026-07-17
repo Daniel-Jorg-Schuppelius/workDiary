@@ -11,25 +11,20 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{MeterReading, User};
+use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
-class MeterReadingPolicy {
+class MeterReadingPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::MeterReadingView->value);
-    }
-
-    public function view(User $user, MeterReading $reading): bool {
-        return $user->can(P::MeterReadingView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::MeterReadingRecord->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::MeterReadingView,
+        'view' => P::MeterReadingView,
+        'create' => P::MeterReadingRecord,
+        'record' => P::MeterReadingRecord,
+    ];
 
     public function record(User $user): bool {
-        return $user->can(P::MeterReadingRecord->value);
+        return $this->allows($user, 'record');
     }
 }

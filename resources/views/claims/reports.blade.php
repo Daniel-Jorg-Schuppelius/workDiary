@@ -12,7 +12,7 @@
     <x-page-toolbar :title="__('Ursachen- und Qualitätsauswertung')">
         <div class="text-sm text-base-content/70">{{ __('Quote, Ursachen, Produkte, Lieferanten, Kosten, Dauer und Wiederholfehler — Zeitraum nach Meldedatum.') }}</div>
         <x-slot:actions>
-            <x-icon-btn icon="download" size="sm" :href="route('claims.reports.index', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'format' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
+            <x-icon-btn icon="download" size="sm" :href="route('claims.reports.index', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
             <form method="POST" action="{{ route('claims.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
                 @csrf
                 <x-icon-btn icon="ac_unit" size="sm" type="submit" show-label>{{ __('Stand einfrieren') }}</x-icon-btn>

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Dto\Concerns;
 
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+
 /**
  * Deterministischer Inhalts-Hash für Request-Fingerprints (MVP-398):
  * JSON mit stabiler Schlüsselreihenfolge, damit identische Inhalte
@@ -22,7 +24,7 @@ trait HashesPayload {
     protected function hashPayload(array $payload): string {
         $normalized = $this->normalize($payload);
 
-        return hash('sha256', (string) json_encode(
+        return CryptoHelper::hash(JsonHelper::encode(
             $normalized,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         ));

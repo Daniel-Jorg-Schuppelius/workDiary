@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Agile;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Spaltenkategorie eines Projektboards (Feature 064) — mappt auf den
  * Task-Status (open/in_progress/done) für den beidseitigen Status-Sync.
  */
-enum AgileColumnCategory: string {
+enum AgileColumnCategory: string implements HasLabel {
+    use HasOptions;
+
     case Open = 'open';
     case InProgress = 'in_progress';
     case Done = 'done';

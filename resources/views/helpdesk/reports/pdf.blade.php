@@ -9,31 +9,27 @@
 
 {{-- Helpdesk-Bericht als PDF (Feature 065, MVP-159): Kennzahlen-Tabellen
      mit Exportkopf (Reportcode, metric_version, Berechnungsstand,
-     Zeitraum) — Muster 064 (agile/reports/pdf). --}}
+     Zeitraum) — Muster 064 (agile/reports/pdf); Branding via
+     reports.pdf.layout (D3). --}}
 
-<!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
-<head>
-    <meta charset="utf-8">
-    <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111; }
-        h1 { font-size: 16px; margin-bottom: 2px; }
-        h2 { font-size: 13px; margin: 14px 0 4px; }
-        .meta { color: #555; font-size: 9px; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        th, td { border: 1px solid #bbb; padding: 3px 6px; text-align: left; }
-        th { background: #eee; }
-        td.num, th.num { text-align: right; }
-    </style>
-</head>
-<body>
-    <h1>{{ __('Helpdesk-Bericht') }}</h1>
-    <p class="meta">
-        {{ __('Reportcode:') }} helpdesk_report_v{{ $metricVersion }} ·
-        {{ __('Berechnungsstand:') }} {{ now()->isoFormat('L LT') }} ·
-        {{ __('Zeitraum:') }} {{ $from->isoFormat('L') }} – {{ $to->isoFormat('L') }}
-    </p>
+@extends('reports.pdf.layout')
 
+@section('pdf-title', __('Helpdesk-Bericht'))
+@section('pdf-heading', __('Helpdesk-Bericht'))
+
+@push('pdf-styles')
+<style>
+    table { margin-bottom: 8px; }
+</style>
+@endpush
+
+@section('pdf-meta')
+    {{ __('Reportcode:') }} helpdesk_report_v{{ $metricVersion }} ·
+    {{ __('Berechnungsstand:') }} {{ now()->isoFormat('L LT') }} ·
+    {{ __('Zeitraum:') }} {{ $from->isoFormat('L') }} – {{ $to->isoFormat('L') }}
+@endsection
+
+@section('pdf-table')
     <h2>{{ __('SLA-Erfüllung') }} <small>({{ __('Prozent') }})</small></h2>
     <table>
         <thead><tr><th class="num">{{ __('Reaktion') }}</th><th class="num">{{ __('Lösung') }}</th><th class="num">{{ __('Tickets im Zeitraum') }}</th></tr></thead>
@@ -88,5 +84,4 @@
         </tbody>
     </table>
     <p class="meta">{{ __('Ø:') }} {{ $satisfaction['average'] }} · {{ __('Rücklaufquote:') }} {{ $satisfaction['response_rate'] }} % ({{ $satisfaction['responses'] }} / {{ $satisfaction['closed_total'] }})</p>
-</body>
-</html>
+@endsection

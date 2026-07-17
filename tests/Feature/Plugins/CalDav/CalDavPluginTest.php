@@ -13,7 +13,6 @@ namespace Tests\Feature\Plugins\CalDav;
 use App\Models\{CalDavConnection, Event, ExternalReference};
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
-use App\Plugins\CalDav\Services\CalendarPublishService;
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -88,7 +87,7 @@ final class CalDavPluginTest extends TestCase {
         $this->assertSame(1, $first['published']);
         $this->assertSame(['event-' . $event->id . '.ics'], $gateway->puts);
         $this->assertSame(1, ExternalReference::query()
-            ->where('plugin_id', CalendarPublishService::PLUGIN_ID)
+            ->where('plugin_id', CalDavPlugin::ID)
             ->count());
 
         // Replay ohne Änderung → unverändert, kein erneutes PUT.

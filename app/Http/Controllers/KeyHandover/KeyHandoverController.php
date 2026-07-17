@@ -42,10 +42,7 @@ class KeyHandoverController extends Controller {
             ->orderBy($sort, $dir);
 
         if ($q !== '') {
-            $query->where(function ($builder) use ($q): void {
-                $builder->whereLikeEscaped('person_name', $q)
-                    ->orWhereLikeEscaped('person_reference', $q);
-            });
+            $query->search($q);
         }
         if ($assetFilter > 0) {
             $query->where('asset_id', $assetFilter);

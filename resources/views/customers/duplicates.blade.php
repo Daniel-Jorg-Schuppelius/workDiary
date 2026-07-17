@@ -81,14 +81,15 @@
     @if ($candidates->isEmpty())
         <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">difference</span>' :title="__('Keine Dubletten-Kandidaten im gewählten Filter.')" tone="success" framed />
     @else
-        <div x-data="{ selected: [] }">
-            <div x-cloak x-show="selected.length > 0"
+        {{-- Logik in Alpine.data("pairSelection") (components.js) — CSP-Build-konform. --}}
+        <div x-data="pairSelection">
+            <div x-cloak x-show="hasSelection()"
                  class="sticky top-2 z-10 mb-3 flex items-center justify-between gap-2 rounded-box border border-primary/40 bg-base-100 px-4 py-2 shadow-md">
                 <span class="text-sm text-base-content/70">
                     <span class="font-semibold text-base-content" x-text="selected.length"></span> {{ __('Paar(e) ausgewählt') }}
                 </span>
                 <div class="flex items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-ghost" @click="selected = []">{{ __('Auswahl leeren') }}</button>
+                    <button type="button" class="btn btn-sm btn-ghost" @click="clear()">{{ __('Auswahl leeren') }}</button>
                     <form method="POST" action="{{ route('customers.duplicates.bulk-merge') }}"
                           data-confirm-dialog
                           data-confirm-message="{{ __('Alle ausgewählten Paare zusammenführen? Die jeweils markierten Quell-Kunden werden gelöscht — das kann nicht rückgängig gemacht werden.') }}"

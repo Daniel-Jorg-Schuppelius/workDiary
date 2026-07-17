@@ -15,6 +15,7 @@ use App\Plugins\Clockify\Exceptions\ClockifyApiException;
 use App\Plugins\Clockify\Sources\ClockifyApiClient;
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 
 /**
  * Clockify-Import-Plugin (Migrationsimport, MVP-134).
@@ -54,13 +55,11 @@ class ClockifyPlugin implements Plugin, TimeImporter {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 

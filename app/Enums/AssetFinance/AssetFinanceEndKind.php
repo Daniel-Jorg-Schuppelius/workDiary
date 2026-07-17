@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetFinance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Art des Rückgabe-/Ende-Prozesses (MVP-276): jede Entscheidung ist ein
  * nachvollziehbarer Vorgang mit Protokoll und Kostenfolge.
  */
-enum AssetFinanceEndKind: string {
+enum AssetFinanceEndKind: string implements HasLabel {
+    use HasOptions;
+
     case Return = 'return';
     case Purchase = 'purchase';
     case Extension = 'extension';

@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{Project, TimeEntry, User};
 use App\Support\{Sqid, XlsxExport};
 use Carbon\Carbon;
@@ -33,13 +33,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class ProjectDetailsReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        /** @var User|null $authUser */
-        $authUser = Auth::user();
-        $isAdmin = $authUser?->isAdmin() ?? false;
+        $isAdmin = $this->viewerIsAdmin();
 
         $year = (int) $this->globalDateRange()['from']->year;
         $year = max(2000, min(2100, $year));
@@ -67,13 +66,13 @@ class ProjectDetailsReportController extends Controller {
         $monthLabels = $this->buildMonthLabels($year);
 
         if ($request->query('export') === 'csv' && $project instanceof Project) {
-            return $this->exportCsv($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate);
+            return $this->exportCsv($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate, $request);
         }
         if ($request->query('export') === 'xlsx' && $project instanceof Project) {
             return $this->exportXlsx($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate);
         }
         if ($request->query('export') === 'pdf' && $project instanceof Project) {
-            return $this->exportPdf($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate);
+            return $this->exportPdf($project, $year, $monthMatrix, $monthLabels, $byUser, $users, $yearMinutes, $yearRate, $request);
         }
 
         return view('reports.project-details', [
@@ -194,7 +193,7 @@ class ProjectDetailsReportController extends Controller {
      * @param  array<int, array{minutes: int, rate: float}>  $byUser
      * @param  Collection<int, User>  $users
      */
-    private function exportCsv(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): Response {
+    private function exportCsv(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate, Request $request): Response {
         $filename = sprintf('projekt-%d-%d.csv', $project->id, $year);
         $rows = [['Monat', 'Minuten', 'Erloes']];
         foreach ($monthMatrix as $idx => $row) {
@@ -212,7 +211,7 @@ class ProjectDetailsReportController extends Controller {
         return $this->csvWithMetadata($rows, $filename, 'project-details', [
             'project_id' => (int) $project->id,
             'year' => $year,
-        ]);
+        ], $request);
     }
 
     /**
@@ -246,7 +245,7 @@ class ProjectDetailsReportController extends Controller {
      * @param  array<int, array{minutes: int, rate: float}>  $byUser
      * @param  Collection<int, User>  $users
      */
-    private function exportPdf(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate): SymfonyResponse {
+    private function exportPdf(Project $project, int $year, array $monthMatrix, array $monthLabels, array $byUser, $users, int $yearMinutes, float $yearRate, Request $request): SymfonyResponse {
         $filename = sprintf('projekt-%d-%d.pdf', $project->id, $year);
         return $this->pdfDownload('reports.pdf.project-details', [
             'project' => $project,
@@ -257,6 +256,6 @@ class ProjectDetailsReportController extends Controller {
             'users' => $users,
             'yearMinutes' => $yearMinutes,
             'yearRate' => $yearRate,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'project-details', filters: ['project_id' => (int) $project->id, 'year' => $year]);
     }
 }

@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Privacy;
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{ProcessingActivity, ProcessingAgreement, Processor, Subprocessor};
 use App\Services\Privacy\AgreementService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\View\View;
@@ -163,6 +164,8 @@ class ProcessingAgreementController extends Controller {
 
     public function assignMeasure(Request $request, ProcessingAgreement $agreement): RedirectResponse {
         Gate::authorize('update', $agreement);
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        $request->merge(['measure_id' => Sqid::decodeOrNumeric(\App\Models\Privacy\TechnicalMeasure::class, $request->input('measure_id'))]);
         $data = $request->validate(['measure_id' => ['required', 'integer']]);
         $measure = \App\Models\Privacy\TechnicalMeasure::query()
             ->where('organization_id', $agreement->organization_id)

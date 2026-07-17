@@ -11,9 +11,8 @@
 namespace App\Policies\Isms;
 
 use App\Enums\User\Permission as P;
-use App\Models\Isms\IsmsAdvisory;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln ISMS-Advisories (Feature 044, MVP 2): Lesen mit
@@ -21,18 +20,12 @@ use App\Policies\Concerns\HasAdminBypass;
  * Nachweis-Ablagen ohne Bearbeitung/Löschung über die UI
  * (isms.* wiederverwendet, keine neuen Permissions).
  */
-class IsmsAdvisoryPolicy {
+class IsmsAdvisoryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsAdvisory $advisory): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+    ];
 }

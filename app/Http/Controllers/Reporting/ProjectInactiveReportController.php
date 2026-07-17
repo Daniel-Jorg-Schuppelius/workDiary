@@ -47,7 +47,7 @@ class ProjectInactiveReportController extends Controller {
         $lastByProject = $this->lastActivityByProject($projects->pluck('id')->all());
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($projects, $lastByProject, $from, $to);
+            return $this->exportCsv($projects, $lastByProject, $from, $to, $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($projects, $lastByProject, $from, $to);
@@ -164,7 +164,7 @@ class ProjectInactiveReportController extends Controller {
      * @param  Collection<int, Project>  $projects
      * @param  array<int, string|null>  $lastByProject
      */
-    private function exportCsv(Collection $projects, array $lastByProject, CarbonImmutable $from, CarbonImmutable $to): Response {
+    private function exportCsv(Collection $projects, array $lastByProject, CarbonImmutable $from, CarbonImmutable $to, Request $request): Response {
         $filename = sprintf('projekte-inaktiv_%s_%s.csv', $from->toDateString(), $to->toDateString());
         $rows = [['Projekt', 'Kunde', 'Status', 'Letzte Aktivität']];
         foreach ($projects as $project) {
@@ -183,7 +183,7 @@ class ProjectInactiveReportController extends Controller {
         return $this->csvWithMetadata($rows, $filename, 'project-inactive', [
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
-        ]);
+        ], $request);
     }
 
     /**

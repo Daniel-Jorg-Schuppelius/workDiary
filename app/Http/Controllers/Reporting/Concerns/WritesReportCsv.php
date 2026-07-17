@@ -28,6 +28,11 @@ trait WritesReportCsv {
     /**
      * Liefert eine CSV-Antwort mit optionalen Meta-Kommentarzeilen.
      *
+     * A9: Mit übergebenem $request wird der Audit-Eintrag `report.exported`
+     * direkt hier geschrieben — Aufrufer brauchen kein eigenes auditExport mehr.
+     * $auditReportCode für Reports, deren Metazeile ein Versions-Suffix trägt,
+     * der Audit-Code aber stabil bleiben soll (Agile/Helpdesk).
+     *
      * @param  list<list<string|int|float|null>>  $rows
      * @param  array<string, mixed>               $filters
      */
@@ -36,7 +41,13 @@ trait WritesReportCsv {
         string $filename,
         string $reportCode,
         array $filters,
+        ?Request $request = null,
+        ?string $auditReportCode = null,
     ): Response {
+        if ($request !== null) {
+            $this->auditExport($request, $auditReportCode ?? $reportCode, 'csv', $filters);
+        }
+
         $delimiter = (string) config('reports.csv_delimiter', ';');
         $delimiter = $delimiter === '' ? ';' : $delimiter[0];
 

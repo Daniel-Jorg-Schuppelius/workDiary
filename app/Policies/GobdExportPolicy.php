@@ -21,12 +21,13 @@ use App\Models\User;
  * Modul-Gating `module.finance` läuft über die `finance.*`-Routen. `viewAny`
  * dient dem Menü (NavGate) und der Seite, `export` dem Download.
  */
-class GobdExportPolicy {
-    public function viewAny(User $user): bool {
-        return $user->can(Permission::FinanceGobdExport->value);
-    }
+class GobdExportPolicy extends PermissionPolicy {
+    protected const ABILITIES = [
+        'viewAny' => Permission::FinanceGobdExport,
+        'export' => Permission::FinanceGobdExport,
+    ];
 
     public function export(User $user): bool {
-        return $user->can(Permission::FinanceGobdExport->value);
+        return $this->allows($user, 'export');
     }
 }

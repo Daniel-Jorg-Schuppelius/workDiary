@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Verwendungsentscheidung eines Rückläufers (MVP-250). */
-enum ClaimRmaDisposition: string {
+enum ClaimRmaDisposition: string implements HasLabel {
+    use HasOptions;
+
     case Restock = 'restock';
     case Repair = 'repair';
     case ReturnToSupplier = 'return_to_supplier';

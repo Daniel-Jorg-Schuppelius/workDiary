@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{Qualification, User};
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -25,14 +25,14 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class QualificationReportController extends Controller {
     use RendersReportPdf;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     private const EXPIRY_WARN_DAYS = 30;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
+        $isAdmin = $this->viewerIsAdmin();
 
         $today = Carbon::today();
         $warnDate = $today->copy()->addDays(self::EXPIRY_WARN_DAYS);
@@ -84,14 +84,14 @@ class QualificationReportController extends Controller {
         }
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($users, $qualifications, $matrix);
+            return $this->exportCsv($users, $qualifications, $matrix, $request);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($users, $qualifications, $matrix, [
                 'total_assignments' => $totalAssignments,
                 'expiring' => $expiring,
                 'expired' => $expired,
-            ]);
+            ], $request);
         }
 
         return view('reports.qualifications', [
@@ -114,7 +114,7 @@ class QualificationReportController extends Controller {
      * @param  Collection<int, Qualification>  $qualifications
      * @param  array<int, array<int, array{valid_from: ?string, valid_until: ?string, state: string}>>  $matrix
      */
-    private function exportCsv($users, $qualifications, array $matrix): Response {
+    private function exportCsv($users, $qualifications, array $matrix, Request $request): Response {
         $filename = 'qualifikationen_' . Carbon::today()->toDateString() . '.csv';
         $rows = [];
         $header = ['Mitarbeiter'];
@@ -143,7 +143,7 @@ class QualificationReportController extends Controller {
 
         return $this->csvWithMetadata($rows, $filename, 'qualifications', [
             'date' => Carbon::today()->toDateString(),
-        ]);
+        ], $request);
     }
 
     /**
@@ -152,13 +152,13 @@ class QualificationReportController extends Controller {
      * @param  array<int, array<int, array{valid_from: ?string, valid_until: ?string, state: string}>>  $matrix
      * @param  array{total_assignments:int, expiring:int, expired:int}  $totals
      */
-    private function exportPdf($users, $qualifications, array $matrix, array $totals): SymfonyResponse {
+    private function exportPdf($users, $qualifications, array $matrix, array $totals, Request $request): SymfonyResponse {
         $filename = 'qualifikationen_' . Carbon::today()->toDateString() . '.pdf';
         return $this->pdfDownload('reports.pdf.qualifications', [
             'users' => $users,
             'qualifications' => $qualifications,
             'matrix' => $matrix,
             'totals' => $totals,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'qualifications', ['date' => Carbon::today()->toDateString()]);
     }
 }

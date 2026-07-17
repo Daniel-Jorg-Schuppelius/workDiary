@@ -177,7 +177,7 @@ class IsmsExpansionTest extends TestCase {
 
         $this->actingAs($admin)->post(route('isms.audit-programs.store'), [
             'name' => 'ISO-27001-Zyklus 2026–2028',
-            'isms_scope_id' => app(\App\Services\Isms\ScopeService::class)->ensureDefaultScope((int) $admin->organization_id)->id,
+            'isms_scope_id' => app(\App\Services\Isms\ScopeService::class)->ensureDefaultScope((int) $admin->organization_id)->sqid,
             'norm' => 'ISO/IEC 27001',
             'edition' => '2022',
             'cycle_years' => 3,
@@ -197,7 +197,7 @@ class IsmsExpansionTest extends TestCase {
             'planned_on' => '2027-03-01',
         ]);
         $this->actingAs($admin)->put(route('isms.audit-programs.update', $program), [
-            'attach_audit_id' => $audit->id,
+            'attach_audit_id' => $audit->sqid,
         ])->assertRedirect();
 
         $byYear = $program->refresh()->auditsByCycleYear();

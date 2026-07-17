@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, Searchable};
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -58,6 +58,7 @@ class Event extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -187,5 +188,10 @@ class Event extends Model {
 
     public function isCancelled(): bool {
         return $this->cancelled_at !== null;
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['title', 'topic'];
     }
 }

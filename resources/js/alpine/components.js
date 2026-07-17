@@ -37,59 +37,53 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
-    // Generische Tab-Umschaltung (CSP-konform via Methoden/Getter statt Inline-Ausdrücken).
+    // Generische Tab-Umschaltung (CSP-konform via Methoden/Getter statt
+    // Inline-Ausdrücken). Optionen per data-Attribut am x-data-Element:
+    //   data-tab-persist="<key>"  → localStorage-Persistenz (z. B. Dashboard)
+    //   data-tab-url-sync         → ?tab=-Query/Hash-Sync via history.replaceState
+    //   data-tab-allowed="a,b,c"  → erlaubte Werte; Fallback = erster Eintrag
     Alpine.data("tabs", (initial) => ({
         tab: initial,
-        setTab(name) {
-            this.tab = name;
-        },
-        isTab(name) {
-            return this.tab === name;
-        },
-        tabClass(name) {
-            return this.tab === name ? "tab-active" : "";
-        },
-    }));
-
-    // Tabs mit Persistenz in localStorage (z. B. Dashboard).
-    Alpine.data("persistedTabs", (storageKey, fallback) => ({
-        tab: fallback,
+        persistKey: null,
+        urlSync: false,
+        allowed: null,
         init() {
-            this.tab = localStorage.getItem(storageKey) || fallback;
+            const d = this.$el.dataset;
+            this.persistKey = d.tabPersist || null;
+            this.urlSync = d.tabUrlSync !== undefined;
+            this.allowed = d.tabAllowed ? d.tabAllowed.split(",") : null;
+            const ok = (v) => Boolean(v) && (!this.allowed || this.allowed.includes(v));
+            if (this.persistKey) {
+                const stored = localStorage.getItem(this.persistKey);
+                if (ok(stored)) {
+                    this.tab = stored;
+                }
+            }
+            if (this.urlSync) {
+                const fromQuery = new URLSearchParams(window.location.search).get("tab");
+                const fromHash = window.location.hash.replace("#", "");
+                this.tab = ok(fromQuery)
+                    ? fromQuery
+                    : ok(this.tab)
+                      ? this.tab
+                      : ok(fromHash)
+                        ? fromHash
+                        : this.allowed
+                          ? this.allowed[0]
+                          : this.tab;
+            }
         },
         setTab(name) {
             this.tab = name;
-            localStorage.setItem(storageKey, name);
-        },
-        isTab(name) {
-            return this.tab === name;
-        },
-        tabClass(name) {
-            return this.tab === name ? "tab-active" : "";
-        },
-    }));
-
-    // Projekt-Detail-Tabs mit URL-/Hash-Synchronisation (history.replaceState).
-    Alpine.data("projectTabs", (initial) => ({
-        tab: "overview",
-        init() {
-            const allowed = ["overview", "tasks", "time", "timesheets", "diary", "recurrence", "billing"];
-            const fromQuery = new URLSearchParams(window.location.search).get("tab");
-            const fromHash = window.location.hash.replace("#", "");
-            this.tab = allowed.includes(fromQuery)
-                ? fromQuery
-                : allowed.includes(initial)
-                  ? initial
-                  : allowed.includes(fromHash)
-                    ? fromHash
-                    : "overview";
-        },
-        setTab(name) {
-            this.tab = name;
-            const url = new URL(window.location.href);
-            url.searchParams.set("tab", name);
-            url.hash = "";
-            history.replaceState(null, "", url.toString());
+            if (this.persistKey) {
+                localStorage.setItem(this.persistKey, name);
+            }
+            if (this.urlSync) {
+                const url = new URL(window.location.href);
+                url.searchParams.set("tab", name);
+                url.hash = "";
+                history.replaceState(null, "", url.toString());
+            }
         },
         isTab(name) {
             return this.tab === name;
@@ -104,6 +98,9 @@ export function registerAlpineComponents(Alpine) {
         value: initial,
         is(v) {
             return this.value === v;
+        },
+        isNot(v) {
+            return this.value !== v;
         },
         isAny(...vals) {
             return vals.includes(this.value);
@@ -945,7 +942,9 @@ export function registerAlpineComponents(Alpine) {
         };
     });
 
-    // Signatur-Pad (Stundenzettel-Unterschrift).
+    // Signatur-Pad (Stundenzettel-Unterschrift + Unterschriften-Feld in
+    // ausfüllbaren Formularen). Existiert $refs.sigInput, wird der Base64-PNG-
+    // Wert bei jedem Strich mitgeschrieben (Capture-Modus ohne Submit-Hook).
     Alpine.data("signaturePad", () => ({
         pad: null,
         isEmpty: true,
@@ -971,6 +970,9 @@ export function registerAlpineComponents(Alpine) {
             this.pad = new SignaturePadClass(c, { penColor: "#111", backgroundColor: "rgba(255,255,255,0)" });
             this.pad.addEventListener("endStroke", () => {
                 this.isEmpty = this.pad.isEmpty();
+                if (this.$refs.sigInput) {
+                    this.$refs.sigInput.value = this.pad.toDataURL("image/png");
+                }
             });
             this.resizeHandler = () => this.resizeCanvas();
             window.addEventListener("resize", this.resizeHandler);
@@ -1003,6 +1005,9 @@ export function registerAlpineComponents(Alpine) {
         clear() {
             this.pad?.clear();
             this.isEmpty = true;
+            if (this.$refs.sigInput) {
+                this.$refs.sigInput.value = "";
+            }
         },
         prepare(e) {
             if (!this.pad || this.pad.isEmpty()) {
@@ -1189,22 +1194,6 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
-    // Unterschriften-Feld in ausfüllbaren Formularen (forms/submissions):
-    // SignaturePad-Anbindung, Base64-PNG ins Hidden-Feld (ehemals Inline-x-data).
-    Alpine.data("signatureCapture", () => ({
-        pad: null,
-        init() {
-            this.pad = new window.SignaturePad(this.$refs.canvas);
-            this.pad.addEventListener("endStroke", () => {
-                this.$refs.sig.value = this.pad.toDataURL("image/png");
-            });
-        },
-        clear() {
-            if (this.pad) this.pad.clear();
-            this.$refs.sig.value = "";
-        },
-    }));
-
     // Rechnungs-Assistent: blendet Feldgruppen nach gewähltem Inhaltstyp um
     // (ehemals Inline-x-data + if-Statement in x-on:change — der CSP-Parser
     // kennt nur Ausdrücke, keine Statements). Initialwert via data-content.
@@ -1242,6 +1231,51 @@ export function registerAlpineComponents(Alpine) {
         resetProjects() {
             this.target = "";
             this.source = "";
+        },
+    }));
+
+    // Zahlungsabgleich (finance/reconciliation): Sammelbuchungs-Aufteilung —
+    // je Detailzeile Auswahl + Ziel "typ:sqid"; Hidden-Felder leiten Typ/Id
+    // daraus ab (ehemals Inline-x-data mit Split-Ausdrücken). Startzeilen
+    // via data-rows (JSON): { index: { picked, target } }.
+    Alpine.data("reconciliationSplit", () => ({
+        rows: {},
+        init() {
+            this.rows = JSON.parse(this.$el.dataset.rows || "{}");
+        },
+        unpicked(i) {
+            return !this.rows[i]?.picked;
+        },
+        // Abgewählt oder ohne Ziel → Allocation-Felder deaktivieren.
+        idle(i) {
+            return !this.rows[i]?.picked || !this.rows[i]?.target;
+        },
+        allocType(i) {
+            return (this.rows[i]?.target || ":").split(":")[0];
+        },
+        allocId(i) {
+            return (this.rows[i]?.target || ":").split(":")[1];
+        },
+    }));
+
+    // Zahlungsabgleich: Vorschlagsliste — Checkbox je Vorschlag schaltet die
+    // zugehörigen Allocation-Felder frei; erster Vorschlag vorausgewählt.
+    Alpine.data("reconciliationPick", () => ({
+        picked: { 0: true },
+        unpicked(i) {
+            return !this.picked[i];
+        },
+    }));
+
+    // Dubletten-Listen (customers/projects duplicates): Sammel-Auswahl von
+    // Paaren für die Bulk-Zusammenführung (ehemals Inline-x-data).
+    Alpine.data("pairSelection", () => ({
+        selected: [],
+        hasSelection() {
+            return this.selected.length > 0;
+        },
+        clear() {
+            this.selected = [];
         },
     }));
 }

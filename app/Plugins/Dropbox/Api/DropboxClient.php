@@ -13,15 +13,15 @@ namespace App\Plugins\Dropbox\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\Dropbox\{DropboxConfig, DropboxPlugin};
+use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
-use App\Plugins\Support\PluginHttpFactory;
-use App\Services\CloudIntake\{CloudIntakeTokenStore, StaleCheckpointException};
+use App\Services\CloudIntake\StaleCheckpointException;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
 /**
  * Dropbox-Gateway (Feature 080, MVP-353) auf dem php-api-toolkit-Fundament:
- * OAuth2-Bearer über den verbindungsgebundenen {@see CloudIntakeTokenStore}
+ * OAuth2-Bearer über den verbindungsgebundenen {@see ConnectionTokenStore}
  * (transparenter Refresh). Delta über `files/list_folder` (+ `/continue`);
  * `include_deleted` liefert Tombstones — Dropbox meldet Löschungen NUR über
  * den Pfad (kein Item-ID im deleted-Eintrag), deshalb sind Tombstones hier
@@ -51,7 +51,7 @@ class DropboxClient {
         $this->content = $factory->client(DropboxPlugin::ID, $this->contentBase);
 
         $grant = DropboxConfig::isConfigured() ? app(DropboxOAuth::class)->grant() : null;
-        $store = new CloudIntakeTokenStore($connection);
+        $store = new ConnectionTokenStore($connection, 'granted_scopes', scopeAsArray: true);
         $this->api->setAuthentication(new OAuth2BearerAuthentication($store, $grant));
         $this->content->setAuthentication(new OAuth2BearerAuthentication($store, $grant));
     }

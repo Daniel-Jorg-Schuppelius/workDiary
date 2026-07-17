@@ -15,9 +15,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveExpenseRequest;
 use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
 use App\Services\Expense\ExpenseService;
-use App\Support\SortableQuery;
+use App\Support\{CsvExport, SortableQuery};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -197,35 +196,9 @@ class ExpenseController extends Controller {
             ->orderBy('date')
             ->get();
 
-        return response()->streamDownload(function () use ($expenses): void {
-            $out = fopen('php://output', 'w');
-            if ($out === false) {
-                return;
-            }
-            // UTF-8 BOM für Excel-Kompatibilität
-            fwrite($out, \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8);
-            fwrite($out, StringHelper::encodeLine([
-                'Datum',
-                'Mitarbeiter',
-                'Kategorie',
-                'Händler',
-                'Projekt',
-                'Kunde',
-                'Brutto',
-                'Netto',
-                'Steuer',
-                'Steuersatz %',
-                'Währung',
-                'Zahlungsweise',
-                'Status',
-                'Abrechenbar',
-                'Genehmigt am',
-                'Erstattet am',
-                'Erstattungsreferenz',
-                'Beschreibung',
-            ], ';') . "\r\n");
+        $rows = (static function () use ($expenses): \Generator {
             foreach ($expenses as $expense) {
-                fwrite($out, StringHelper::encodeLine([
+                yield [
                     $expense->date->format('Y-m-d'),
                     $expense->user->name ?? '',
                     $expense->category->label ?? '',
@@ -244,12 +217,30 @@ class ExpenseController extends Controller {
                     $expense->reimbursed_at?->format('Y-m-d'),
                     (string) $expense->reimbursement_reference,
                     (string) $expense->description,
-                ], ';') . "\r\n");
+                ];
             }
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        })();
+
+        return CsvExport::streamFromRows($filename, [
+            'Datum',
+            'Mitarbeiter',
+            'Kategorie',
+            'Händler',
+            'Projekt',
+            'Kunde',
+            'Brutto',
+            'Netto',
+            'Steuer',
+            'Steuersatz %',
+            'Währung',
+            'Zahlungsweise',
+            'Status',
+            'Abrechenbar',
+            'Genehmigt am',
+            'Erstattet am',
+            'Erstattungsreferenz',
+            'Beschreibung',
+        ], $rows);
     }
 
     /** @return array<string, mixed> */

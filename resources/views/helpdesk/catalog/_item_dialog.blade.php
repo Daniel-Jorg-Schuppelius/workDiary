@@ -120,15 +120,16 @@
     </x-form-group>
 
     <x-form-group :legend="__('Fulfillment')" icon="task_alt" tone="primary" cols="2">
-        <div class="contents" x-data="{ fulfillment: '{{ old('fulfillment', $item->fulfillment ?? 'task') }}' }">
-            <x-select-field name="fulfillment" :label="__('Erfüllung durch')" required x-model="fulfillment">
+        {{-- Fulfillment-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
+        <div class="contents" x-data="reveal(@js(old('fulfillment', $item->fulfillment ?? 'task')))">
+            <x-select-field name="fulfillment" :label="__('Erfüllung durch')" required x-model="value">
                 <option value="task">{{ __('Aufgabe') }}</option>
                 <option value="project">{{ __('Projekt') }}</option>
                 <option value="diary">{{ __('Auftragsbuch-Eintrag') }}</option>
                 <option value="procedure">{{ __('Verfahrenslauf') }}</option>
             </x-select-field>
 
-            <div class="fieldset" x-show="fulfillment === 'procedure'" x-cloak>
+            <div class="fieldset" x-show="is('procedure')" x-cloak>
                 <label class="fieldset-label" for="procedure_template_id">{{ __('Verfahrensvorlage') }}</label>
                 <select id="procedure_template_id" name="procedure_template_id" class="select select-bordered w-full">
                     <option value="">—</option>

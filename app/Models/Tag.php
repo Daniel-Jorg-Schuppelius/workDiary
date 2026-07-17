@@ -10,15 +10,15 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, GeneratesUniqueSlug, HasSqid};
 use Database\Factories\TagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphToMany};
-use Illuminate\Support\Str;
 
 class Tag extends Model {
     use BelongsToOrganization;
+    use GeneratesUniqueSlug;
 
     /** @use HasFactory<TagFactory> */
     use HasFactory;
@@ -36,21 +36,13 @@ class Tag extends Model {
     }
 
     public static function uniqueSlug(string $name, ?int $ignoreId = null): string {
-        $base = Str::slug($name) ?: 'tag';
-        $slug = $base;
-        $i = 2;
-        // Der slug-Unique gilt DB-weit (tags.slug unique) — die Prüfung muss
-        // daher am OrganizationScope vorbei, sonst kollidiert die zweite Org
-        // mit gleichnamigen Tags (z. B. Branchenprofil auf Demo-Mandant).
-        while (static::query()->withoutGlobalScopes()
+        // TENANT-BYPASS: Der slug-Unique gilt DB-weit (tags.slug unique) — die
+        // Prüfung muss daher am OrganizationScope vorbei, sonst kollidiert die
+        // zweite Org mit gleichnamigen Tags (z. B. Branchenprofil auf Demo-Mandant).
+        return self::resolveUniqueSlug($name, 'tag', fn(string $slug): bool => static::query()->withoutGlobalScopes()
             ->where('slug', $slug)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()
-        ) {
-            $slug = $base . '-' . $i++;
-        }
-
-        return $slug;
+            ->exists());
     }
 
     public static function findOrCreateByName(string $name, ?int $userId = null): self {

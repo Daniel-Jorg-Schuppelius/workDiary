@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Integration;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Steuert, was der {@see \App\Services\Integration\IntegrationResolver} tut, wenn
  * ein Remote-Datensatz keinem bestehenden lokalen Datensatz eindeutig zugeordnet
  * werden kann. Verallgemeinert die bisherige Lexoffice-spezifische
  * {@see \App\Plugins\Lexoffice\LexofficeMatchPolicy}.
  */
-enum ImportMatchPolicy: string {
+enum ImportMatchPolicy: string implements HasLabel {
+    use HasOptions;
+
     /**
      * Default (Inbox-First): nur eindeutige Treffer werden automatisch verlinkt,
      * alles andere landet in der Zuordnungs-Inbox. NIE blind anlegen.

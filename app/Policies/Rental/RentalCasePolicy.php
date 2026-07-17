@@ -16,42 +16,36 @@ use App\Enums\User\Permission as P;
 use App\Models\Rental\RentalCase;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Policy des Verleih-Aggregats (Feature 073). Kind-Objekte (Reservierungen,
  * Protokolle, Positionen, Kautionen) werden gegen die Akte autorisiert.
  * Org-Scoping läuft global über BelongsToOrganization + Sqid-Binding.
  */
-class RentalCasePolicy {
+class RentalCasePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::RentalViewAny->value);
-    }
-
-    public function view(User $user, RentalCase $case): bool {
-        return $user->can(P::RentalView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::RentalManage->value);
-    }
-
-    public function update(User $user, RentalCase $case): bool {
-        return $user->can(P::RentalManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::RentalViewAny,
+        'view' => P::RentalView,
+        'create' => P::RentalManage,
+        'update' => P::RentalManage,
+        'handover' => P::RentalHandover,
+        'finance' => P::RentalFinance,
+    ];
 
     /**
      * Übergabe- und Rücknahmeprotokolle (operative Ausgabe).
      */
     public function handover(User $user, RentalCase $case): bool {
-        return $user->can(P::RentalHandover->value);
+        return $this->allows($user, 'handover');
     }
 
     /**
      * Kaufmännische Folge: Positionen freigeben/abrechnen, Kaution führen.
      */
     public function finance(User $user, RentalCase $case): bool {
-        return $user->can(P::RentalFinance->value);
+        return $this->allows($user, 'finance');
     }
 }

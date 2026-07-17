@@ -72,12 +72,7 @@ class CustomerAnalysisReportBuilder {
                     ? round(($nonBillableMinutes / $totalMinutes) * 100, 2)
                     : 0.0;
 
-                $openStatuses = [
-                    OpenIssueStatus::Open->value,
-                    OpenIssueStatus::InProgress->value,
-                    OpenIssueStatus::Blocked->value,
-                    OpenIssueStatus::Reopened->value,
-                ];
+                $openStatuses = OpenIssueStatus::openValues();
 
                 $openIssuesQuery = OpenIssue::query()
                     ->whereIn('status', $openStatuses)

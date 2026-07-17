@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Ai;
 
 use App\Enums\User\Permission as P;
-use App\Models\Ai\AiProviderConnection;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * KI-Provider-Verbindungen (Feature 025, MVP-400): Verwaltung —
@@ -23,26 +22,14 @@ use App\Policies\Concerns\HasAdminBypass;
  * ist durchgängig `ai.manage`; das Anfordern von Vorschlägen läuft
  * separat über `ai.use` in den Capability-Consumern.
  */
-class AiProviderConnectionPolicy {
+class AiProviderConnectionPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function view(User $user, AiProviderConnection $connection): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function update(User $user, AiProviderConnection $connection): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function delete(User $user, AiProviderConnection $connection): bool {
-        return $user->can(P::AiManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::AiManage,
+        'view' => P::AiManage,
+        'create' => P::AiManage,
+        'update' => P::AiManage,
+        'delete' => P::AiManage,
+    ];
 }

@@ -11,9 +11,9 @@
 namespace App\Policies\Isms;
 
 use App\Enums\User\Permission as P;
-use App\Models\Isms\IsmsControl;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln ISMS-Maßnahmenkatalog/SoA (Feature 044):
@@ -21,31 +21,20 @@ use App\Policies\Concerns\HasAdminBypass;
  * - geschaeftsfuehrung: viewAny/view (SoA einsehen).
  * - Pflege inkl. Annex-A-Katalog-Import nur mit isms.manage.
  */
-class IsmsControlPolicy {
+class IsmsControlPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsControl $control): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsControl $control): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsControl $control): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+        'import' => P::IsmsManage,
+    ];
 
     /** Annex-A-Katalog laden (idempotenter Import, ControlService). */
     public function import(User $user): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'import');
     }
 }

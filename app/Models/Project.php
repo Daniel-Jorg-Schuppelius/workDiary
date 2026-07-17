@@ -12,11 +12,11 @@ namespace App\Models;
 
 use App\Enums\Diary\LocationMode;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, ResolvesEffectiveProjectSettings};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasSqid, ResolvesEffectiveProjectSettings};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
-use Illuminate\Support\{Carbon, Collection, Str};
+use Illuminate\Support\{Carbon, Collection};
 
 /**
  * @property int $id
@@ -56,6 +56,7 @@ use Illuminate\Support\{Carbon, Collection, Str};
 class Project extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use GeneratesUniqueSlug;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -197,19 +198,12 @@ class Project extends Model {
     }
 
     public static function uniqueSlug(string $name, ?int $customerId = null, ?int $ignoreId = null): string {
-        $base = Str::slug($name) ?: 'project';
-        $slug = $base;
-        $i = 2;
-        while (static::query()
+        // Eindeutig je Kunde (innerhalb des BelongsToOrganization-Scopes).
+        return self::resolveUniqueSlug($name, 'project', fn(string $slug): bool => static::query()
             ->where('customer_id', $customerId)
             ->where('slug', $slug)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()
-        ) {
-            $slug = $base . '-' . $i++;
-        }
-
-        return $slug;
+            ->exists());
     }
 
     /** @return BelongsTo<User, $this> */

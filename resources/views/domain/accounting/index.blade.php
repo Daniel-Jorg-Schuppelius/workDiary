@@ -45,7 +45,7 @@
                         <td class="text-right tabular-nums">{{ $entry->tax_amount !== null ? number_format((float) $entry->tax_amount, 2, ',', '.') : '—' }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center text-base-content/60 py-8">{{ __('domain.accounting.empty') }}</td></tr>
+                    <x-table.empty :colspan="6" :title="__('domain.accounting.empty')" compact />
                 @endforelse
             </tbody>
         </table>

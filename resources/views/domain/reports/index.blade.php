@@ -35,7 +35,7 @@
                                     <td class="text-right tabular-nums">{{ $row['count'] }}</td>
                                     <td class="text-right tabular-nums">{{ number_format($row['amount'], 2, ',', '.') }} {{ $row['currency'] }}</td></tr>
                             @empty
-                                <tr><td colspan="3" class="text-center text-base-content/60 py-4">{{ __('domain.reports.no_forecast') }}</td></tr>
+                                <x-table.empty :colspan="3" :title="__('domain.reports.no_forecast')" compact />
                             @endforelse
                         </tbody>
                     </table>

@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Status eines Auftragsverarbeitungsvertrags (AVV/DPA). */
-enum AgreementStatus: string {
+enum AgreementStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Active = 'active';
     case Terminated = 'terminated';

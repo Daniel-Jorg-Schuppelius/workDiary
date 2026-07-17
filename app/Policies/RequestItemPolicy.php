@@ -14,6 +14,7 @@ namespace App\Policies;
 
 use App\Enums\User\Permission;
 use App\Models\{RequestItem, User};
+use App\Policies\Concerns\ChecksOwnership;
 
 /**
  * Servicekatalog-Pflege (Feature 065, MVP-154): Sicht folgt dem
@@ -22,12 +23,14 @@ use App\Models\{RequestItem, User};
  * (Defense in Depth, Muster ServiceQueuePolicy).
  */
 class RequestItemPolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return $user->can(Permission::ServiceTicketView->value);
     }
 
     public function view(User $user, RequestItem $item): bool {
-        return $this->sameOrg($user, $item) && $user->can(Permission::ServiceTicketView->value);
+        return $this->sharesOrganization($user, $item) && $user->can(Permission::ServiceTicketView->value);
     }
 
     public function create(User $user): bool {
@@ -35,14 +38,11 @@ class RequestItemPolicy {
     }
 
     public function update(User $user, RequestItem $item): bool {
-        return $this->sameOrg($user, $item) && $user->can(Permission::ServiceCatalogManage->value);
+        return $this->sharesOrganization($user, $item) && $user->can(Permission::ServiceCatalogManage->value);
     }
 
     public function delete(User $user, RequestItem $item): bool {
-        return $this->sameOrg($user, $item) && $user->can(Permission::ServiceCatalogManage->value);
+        return $this->sharesOrganization($user, $item) && $user->can(Permission::ServiceCatalogManage->value);
     }
 
-    private function sameOrg(User $user, RequestItem $item): bool {
-        return (int) $user->organization_id === (int) $item->organization_id;
-    }
 }

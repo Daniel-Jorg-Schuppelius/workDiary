@@ -13,26 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
+use App\Services\AbstractPluginDispatcherResolver;
 
 /**
- * Registry der externen Bestands-Dispatcher (Feature 048, MVP-072). Plugins
- * registrieren ihren Dispatcher beim Booten; der Outbox-Job löst über die
- * Plugin-Kennung auf. Muss als Singleton gebunden sein, damit Registrierung und
- * Auflösung dieselbe Instanz teilen.
+ * Registry der externen Bestands-Dispatcher (Feature 048, MVP-072). Muss als
+ * Singleton gebunden sein (siehe Basis).
+ *
+ * @extends AbstractPluginDispatcherResolver<ExternalInventoryDispatcher>
  */
-class ExternalInventoryDispatcherResolver {
-    /** @var array<string, ExternalInventoryDispatcher> */
-    private array $dispatchers = [];
-
-    public function register(ExternalInventoryDispatcher $dispatcher): void {
-        $this->dispatchers[$dispatcher->pluginId()] = $dispatcher;
-    }
-
-    public function for(?string $pluginId): ?ExternalInventoryDispatcher {
-        if ($pluginId === null || $pluginId === '') {
-            return null;
-        }
-
-        return $this->dispatchers[$pluginId] ?? null;
-    }
-}
+class ExternalInventoryDispatcherResolver extends AbstractPluginDispatcherResolver {}

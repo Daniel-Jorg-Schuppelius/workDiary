@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Operations;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Dringlichkeit einer Betriebsaufgabe (Feature 041, MVP-058).
  * Default-Routing: critical → Aufgabe + Benachrichtigung,
  * warning → Aufgabe (+ Benachrichtigung gemäß Regel), info → nur Meldung.
  */
-enum OperationsTaskSeverity: string {
+enum OperationsTaskSeverity: string implements HasLabel {
+    use HasOptions;
+
     case Info = 'info';
     case Warning = 'warning';
     case Critical = 'critical';

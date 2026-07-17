@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Knowledge\{ArticleStatus, ArticleVisibility};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasSqid, HasTags, Searchable};
 use Database\Factories\KnowledgeArticleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -43,11 +43,13 @@ class KnowledgeArticle extends Model {
     use Auditable;
 
     use BelongsToOrganization;
+    use GeneratesUniqueSlug;
     use HasAttachments;
     /** @use HasFactory<KnowledgeArticleFactory> */
     use HasFactory;
     use HasSqid;
     use HasTags;
+    use Searchable;
 
     use SoftDeletes;
 
@@ -100,20 +102,13 @@ class KnowledgeArticle extends Model {
     }
 
     /**
-     * Einfache LIKE-Suche über Titel, Problem und Lösung (bewusst keine
+     * Einfache LIKE-Suche via Searchable-Trait (bewusst keine
      * Volltext-Engine, siehe Feature 011 Out-of-Scope).
      *
-     * @param  Builder<self>  $query
-     * @return Builder<self>
+     * @return list<string>
      */
-    public function scopeSearch(Builder $query, string $term): Builder {
-        $term = trim($term);
-
-        return $query->where(function (Builder $q) use ($term): void {
-            $q->whereLikeEscaped('title', $term)
-                ->orWhereLikeEscaped('problem', $term)
-                ->orWhereLikeEscaped('solution', $term);
-        });
+    protected function searchableColumns(): array {
+        return ['title', 'problem', 'solution'];
     }
 
     /**
@@ -122,18 +117,10 @@ class KnowledgeArticle extends Model {
      * trifft also genau die Artikel der aktuellen Organisation.
      */
     public static function uniqueSlug(string $title, ?int $ignoreId = null): string {
-        $base = Str::slug(Str::limit($title, 180, '')) ?: 'artikel';
-        $slug = $base;
-        $i = 2;
-        while (static::query()
+        return self::resolveUniqueSlug(Str::limit($title, 180, ''), 'artikel', fn(string $slug): bool => static::query()
             ->withTrashed()
             ->where('slug', $slug)
             ->when($ignoreId !== null, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()
-        ) {
-            $slug = $base . '-' . $i++;
-        }
-
-        return $slug;
+            ->exists());
     }
 }

@@ -8,11 +8,7 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <x-page-toolbar :title="$contract->number . ' — ' . $contract->partner_name">
         <div class="flex flex-wrap items-center gap-2 text-sm">
@@ -52,24 +48,16 @@
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Akte')">
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <dt class="text-base-content/60">{{ __('Vertragsnummer (extern)') }}</dt>
-                <dd class="font-mono">{{ $contract->contract_no ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Lieferant') }}</dt>
-                <dd>{{ $contract->supplier->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Kostenstelle') }}</dt>
-                <dd>{{ $contract->costCenter !== null ? $contract->costCenter->code . ' — ' . $contract->costCenter->label : ($contract->cost_center_label ?? '—') }}</dd>
-                <dt class="text-base-content/60">{{ __('Projekt') }}</dt>
-                <dd>{{ $contract->project->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Bestellung') }}</dt>
-                <dd>{{ $contract->purchaseOrder->number ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Verantwortlich') }}</dt>
-                <dd>{{ $contract->responsible->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Kündigungsfrist') }}</dt>
-                <dd>{{ $contract->notice_period_days !== null ? $contract->notice_period_days . ' ' . __('Tage') : '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Versicherung') }}</dt>
-                <dd>{{ $contract->insurance_note ?? '—' }}</dd>
-            </dl>
+            <x-detail-grid class="grid-cols-2">
+                <x-detail-grid.row :label="__('Vertragsnummer (extern)')" class="font-mono">{{ $contract->contract_no ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Lieferant')">{{ $contract->supplier->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Kostenstelle')">{{ $contract->costCenter !== null ? $contract->costCenter->code . ' — ' . $contract->costCenter->label : ($contract->cost_center_label ?? '—') }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Projekt')">{{ $contract->project->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Bestellung')">{{ $contract->purchaseOrder->number ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Verantwortlich')">{{ $contract->responsible->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Kündigungsfrist')">{{ $contract->notice_period_days !== null ? $contract->notice_period_days . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Versicherung')">{{ $contract->insurance_note ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
             @if ($contract->notes !== null)
                 <p class="mt-2 whitespace-pre-line text-sm">{{ $contract->notes }}</p>
             @endif
@@ -80,16 +68,12 @@
 
         @if ($canFinance)
             <x-card :title="__('Konditionen (vertraulich)')">
-                <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                    <dt class="text-base-content/60">{{ __('Rate') }}</dt>
-                    <dd class="font-mono">{{ $contract->rate_amount !== null ? number_format((float) $contract->rate_amount, 2, ',', '.') . ' € / ' . __("values.{$contract->payment_rhythm}") : '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('Sonderzahlung') }}</dt>
-                    <dd class="font-mono">{{ $contract->special_payment !== null ? number_format((float) $contract->special_payment, 2, ',', '.') . ' €' : '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('Restwertannahme') }}</dt>
-                    <dd class="font-mono">{{ $contract->residual_value !== null ? number_format((float) $contract->residual_value, 2, ',', '.') . ' €' : '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('Kaufoption') }}</dt>
-                    <dd class="font-mono">{{ $contract->purchase_option_amount !== null ? number_format((float) $contract->purchase_option_amount, 2, ',', '.') . ' €' : '—' }}</dd>
-                </dl>
+                <x-detail-grid class="grid-cols-2">
+                    <x-detail-grid.row :label="__('Rate')" class="font-mono">{{ $contract->rate_amount !== null ? number_format((float) $contract->rate_amount, 2, ',', '.') . ' € / ' . __("values.{$contract->payment_rhythm}") : '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Sonderzahlung')" class="font-mono">{{ $contract->special_payment !== null ? number_format((float) $contract->special_payment, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Restwertannahme')" class="font-mono">{{ $contract->residual_value !== null ? number_format((float) $contract->residual_value, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Kaufoption')" class="font-mono">{{ $contract->purchase_option_amount !== null ? number_format((float) $contract->purchase_option_amount, 2, ',', '.') . ' €' : '—' }}</x-detail-grid.row>
+                </x-detail-grid>
 
                 @if ($contract->terms->isNotEmpty())
                     <x-table bare class="mt-2">

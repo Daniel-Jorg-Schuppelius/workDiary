@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Impact/Urgency-Stufe (Feature 065, MVP-151) — gemeinsamer int-Wrapper
  * für beide Dimensionen (1 = niedrig … 3 = hoch); die Prioritätsableitung
  * (Impact × Urgency) kommt mit den Routing-Regeln in P3.
  */
-enum TicketSeverity: int {
+enum TicketSeverity: int implements HasLabel {
+    use HasOptions;
+
     case Low = 1;
     case Medium = 2;
     case High = 3;

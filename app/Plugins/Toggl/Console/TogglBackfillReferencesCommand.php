@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Toggl\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService};
 use Illuminate\Console\Command;
 
@@ -20,19 +20,14 @@ use Illuminate\Console\Command;
  * Danach matchen Folgeimporte ID-first und überstehen Umbenennungen in Toggl.
  */
 class TogglBackfillReferencesCommand extends Command {
-    protected $signature = 'toggl:backfill-references
-        {--organization= : ID einer einzelnen Organisation, sonst alle}';
+    use IteratesOrganizations;
+
+    protected $signature = 'toggl:backfill-references ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Trägt stabile Toggl-ID-Referenzen (project_id/client_id) für bestehende, namensbasiert verknüpfte Projekte/Kunden nach.';
 
     public function handle(TogglImportService $service): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

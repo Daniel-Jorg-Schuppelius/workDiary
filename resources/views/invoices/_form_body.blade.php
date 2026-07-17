@@ -31,8 +31,10 @@
         <option value="down_payment" @selected(old('content') === 'down_payment')>{{ __('Abschlag — Teilentgelt vor Leistung (Anrechnung in der Schlussrechnung)') }}</option>
     </x-select-field>
     <div x-show="content !== 'down_payment'" class="contents">
-        <x-input-field name="from" type="date" :label="__('Von')" :value="old('from', $defaultFrom ?? '')" />
-        <x-input-field name="to" type="date" :label="__('Bis')" :value="old('to', $defaultTo ?? '')" />
+        <x-date-range class="md:col-span-2" layout="split" form-control
+                      from-name="from" to-name="to"
+                      :from="old('from', $defaultFrom ?? '')" :to="old('to', $defaultTo ?? '')"
+                      :from-label="__('Von')" :to-label="__('Bis')" />
     </div>
     <div x-show="content === 'down_payment'" x-cloak class="contents">
         <x-input-field name="dp_description" span="2"
@@ -54,8 +56,4 @@
 </x-form-group>
 </div>
 
-@if ($errors->any())
-    <div class="alert alert-error text-sm">
-        <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-    </div>
-@endif
+<x-validation-errors />

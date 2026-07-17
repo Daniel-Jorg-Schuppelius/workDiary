@@ -13,7 +13,7 @@ namespace App\Models;
 use App\Enums\User\{CompensationModel, UserRole};
 use App\Legacy\LegacyBridge;
 use App\Legacy\Models\LegacyUser;
-use App\Models\Concerns\{Auditable, HasAttachments, HasEffectivePermissions, HasPreferences, HasSqid, InteractsWithTwoFactor, InteractsWithWorkSchedule};
+use App\Models\Concerns\{Auditable, HasAttachments, HasEffectivePermissions, HasPreferences, HasSqid, InteractsWithTwoFactor, InteractsWithWorkSchedule, Searchable};
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, PhoneNumberHelper};
 use Database\Factories\UserFactory;
@@ -87,6 +87,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     use HasPreferences;
     use InteractsWithTwoFactor;
     use InteractsWithWorkSchedule;
+    use Searchable;
 
     public function isAdmin(): bool {
         // Plattform-Betreiber ist in jedem Org-Kontext Admin (behält seinen
@@ -540,5 +541,10 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     public function isExternal(): bool {
         return $this->compensation_model instanceof CompensationModel
             && $this->compensation_model->isExternal();
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'email'];
     }
 }

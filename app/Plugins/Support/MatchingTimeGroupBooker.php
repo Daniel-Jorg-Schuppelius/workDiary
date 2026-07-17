@@ -22,7 +22,7 @@ use Illuminate\Support\Collection;
  * gruppierten Import-Einträge einer {@see MatchingTimeImportService}-Pipeline
  * an die universelle Zuordnungs-Inbox — offene Gruppen samt Fuzzy-Vorschlägen,
  * Kunde + Projekt (existierend-oder-neu) auflösen, Buchung/Verwerfen an den
- * Service delegieren. Analog {@see \App\Plugins\Toggl\TogglGroupBooker}.
+ * Service delegieren.
  */
 abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
     use ResolvesInboxTargets;

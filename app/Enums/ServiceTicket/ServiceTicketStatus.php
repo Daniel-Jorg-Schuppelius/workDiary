@@ -10,7 +10,12 @@
 
 namespace App\Enums\ServiceTicket;
 
-enum ServiceTicketStatus: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ServiceTicketStatus: string implements HasLabel {
+    use HasOptions;
+
     case Reported = 'reported';
     case Triaged = 'triaged';
     case Scheduled = 'scheduled';

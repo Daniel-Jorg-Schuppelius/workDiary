@@ -45,7 +45,7 @@
             <select id="aim-customer" name="customer_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($customers as $customer)
-                    <option value="{{ $customer->id }}" @selected((int) old('customer_id', 0) === (int) $customer->id)>{{ $customer->name }}</option>
+                    <option value="{{ $customer->sqid }}" @selected((string) old('customer_id') === $customer->sqid)>{{ $customer->name }}</option>
                 @endforeach
             </select>
         </div>

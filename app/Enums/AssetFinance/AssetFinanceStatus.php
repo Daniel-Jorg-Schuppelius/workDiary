@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetFinance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Statusmodell der Leasing-/Finanzierungsakte (MVP-270). Ending markiert
  * die Endphase (Rückgabe-/Kauf-/Verlängerungsentscheidung offen).
  */
-enum AssetFinanceStatus: string {
+enum AssetFinanceStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Active = 'active';
     case Ending = 'ending';

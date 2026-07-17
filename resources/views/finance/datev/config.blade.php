@@ -155,11 +155,7 @@
                 </div>
             </x-form-group>
 
-            @if ($errors->any())
-                <div class="alert alert-error text-sm">
-                    <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-                </div>
-            @endif
+            <x-validation-errors />
 
             <div class="flex justify-end gap-2">
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.datev.index')" show-label>{{ __('Zurück') }}</x-icon-btn>

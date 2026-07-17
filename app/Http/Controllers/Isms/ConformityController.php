@@ -16,6 +16,7 @@ use App\Models\{Document, User};
 use App\Models\Isms\{IsmsNormStatus, IsmsRequirement, IsmsScope};
 use App\Services\Isms\{ConformityService, ScopeService};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -73,11 +74,13 @@ class ConformityController extends Controller {
 
         // Stichtags-Rekonstruktion (Nachtrag 046b): ?as_of=YYYY-MM-DD zeigt
         // den Bewertungsstand zu Datum T aus den append-only Snapshots.
+        // parseDateTime statt strtotime: lehnt Relativausdrücke (tomorrow) ab.
         $reconstruction = null;
         $asOf = trim((string) $request->query('as_of', ''));
-        if ($asOf !== '' && $scope !== null && strtotime($asOf) !== false) {
+        $asOfDate = $asOf !== '' && $scope !== null ? DateHelper::parseDateTime($asOf) : null;
+        if ($asOfDate !== null) {
             $reconstruction = app(\App\Services\Isms\AssessmentSnapshotService::class)
-                ->stateAt($scope, \Carbon\CarbonImmutable::parse($asOf)->endOfDay());
+                ->stateAt($scope, \Carbon\CarbonImmutable::instance($asOfDate)->endOfDay());
         }
 
         return view('isms.conformity.index', [

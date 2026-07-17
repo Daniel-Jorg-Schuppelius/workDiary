@@ -12,9 +12,11 @@ namespace App\Http\Controllers\Isms;
 
 use App\Enums\Isms\{AssessmentKind, RiskCategory, RiskStatus, RiskTreatment};
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\StreamsRegisterExport;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsRiskAssessment};
 use App\Models\User;
 use App\Services\Isms\{RegisterExportService, RiskService};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -32,6 +34,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * (Pflege-Berechtigung = update am Risiko, Regeln im RiskService).
  */
 class RiskController extends Controller {
+    use StreamsRegisterExport;
+
     public function __construct(
         private readonly RiskService $service,
         private readonly RegisterExportService $exports,
@@ -94,24 +98,12 @@ class RiskController extends Controller {
      * (generated_at), „versioniert" leistet das Auditpaket.
      */
     public function export(Request $request): StreamedResponse {
-        Gate::authorize('viewAny', IsmsRisk::class);
-
-        $format = (string) $request->query('format', 'json');
-        abort_unless(in_array($format, RegisterExportService::FORMATS, true), 404);
-
-        /** @var User $actor */
-        $actor = Auth::user();
-        $register = $this->exports->riskRegister();
-
-        $content = $format === 'csv'
-            ? $this->exports->toCsv(RegisterExportService::REGISTER_RISKS, $actor, null, $register)
-            : $this->exports->toJson(RegisterExportService::REGISTER_RISKS, $actor, null, $register);
-
-        return response()->streamDownload(static function () use ($content): void {
-            echo $content;
-        }, $this->exports->filename(RegisterExportService::REGISTER_RISKS, $format), [
-            'Content-Type' => $format === 'csv' ? 'text/csv; charset=UTF-8' : 'application/json; charset=UTF-8',
-        ]);
+        return $this->streamRegisterExport(
+            $request,
+            IsmsRisk::class,
+            RegisterExportService::REGISTER_RISKS,
+            fn(): array => $this->exports->riskRegister(),
+        );
     }
 
     public function create(): View {
@@ -252,6 +244,18 @@ class RiskController extends Controller {
      * @return array<string, mixed>
      */
     private function validateRisk(Request $request, User $actor): array {
+        // Sqid-Inputs vor der Validierung dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('owner_user_id')) {
+            $request->merge(['owner_user_id' => Sqid::decodeOrNumeric(User::class, $request->input('owner_user_id'))]);
+        }
+        $controlIds = $request->input('control_ids');
+        if (is_array($controlIds)) {
+            $request->merge(['control_ids' => array_map(
+                static fn($v) => $v === null || $v === '' ? null : Sqid::decodeOrNumeric(IsmsControl::class, $v),
+                $controlIds,
+            )]);
+        }
+
         return $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],

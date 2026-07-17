@@ -62,8 +62,4 @@
     <p class="text-xs text-base-content/60 mt-1">{{ __('permit.evidence.hint') }}</p>
 </x-form-group>
 
-@if ($errors->any())
-    <div class="alert alert-error text-sm">
-        <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-    </div>
-@endif
+<x-validation-errors />

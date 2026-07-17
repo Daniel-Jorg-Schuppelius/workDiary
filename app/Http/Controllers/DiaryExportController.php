@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DiaryEntry;
 use App\Services\UI\DateRangeContext;
-use CommonToolkit\Helper\Data\CSV\StringHelper;
+use App\Support\CsvExport;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -25,46 +25,36 @@ class DiaryExportController extends Controller {
 
         $filename = 'tagebuch_' . now()->format('Ymd_His') . '.csv';
 
-        return response()->streamDownload(function () use ($query) {
-            $out = fopen('php://output', 'wb');
-            assert($out !== false);
-            // BOM für Excel-UTF8
-            fwrite($out, \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8);
-            fwrite($out, StringHelper::encodeLine([
-                __('ID'),
-                __('Status'),
-                __('Mitarbeiter'),
-                __('Von'),
-                __('Bis'),
-                __('Inhalt'),
-                __('Antwort'),
-                __('Tags'),
-                __('Archiviert'),
-                __('Erstellt'),
-            ], ';') . "\r\n");
+        $rows = (function () use ($query): \Generator {
+            /** @var DiaryEntry $entry */
+            foreach ($query->lazy(500) as $entry) {
+                yield [
+                    $entry->id,
+                    $this->oneLine($entry->statusLabel()),
+                    $this->oneLine(optional($entry->user)->name ?? ''),
+                    optional($entry->start_at)->format('Y-m-d H:i') ?? '',
+                    optional($entry->end_at)->format('Y-m-d H:i') ?? '',
+                    $this->oneLine($entry->content ?? ''),
+                    $this->oneLine($entry->response ?? ''),
+                    $this->oneLine($entry->tags->pluck('name')->implode(', ')),
+                    $entry->is_archived ? '1' : '0',
+                    optional($entry->created_at)->format('Y-m-d H:i') ?? '',
+                ];
+            }
+        })();
 
-            $query->chunk(500, function ($rows) use ($out) {
-                foreach ($rows as $entry) {
-                    /** @var DiaryEntry $entry */
-                    fwrite($out, StringHelper::encodeLine([
-                        $entry->id,
-                        $this->csvSafe($entry->statusLabel()),
-                        $this->csvSafe(optional($entry->user)->name ?? ''),
-                        optional($entry->start_at)->format('Y-m-d H:i') ?? '',
-                        optional($entry->end_at)->format('Y-m-d H:i') ?? '',
-                        $this->csvSafe($entry->content ?? ''),
-                        $this->csvSafe($entry->response ?? ''),
-                        $this->csvSafe($entry->tags->pluck('name')->implode(', ')),
-                        $entry->is_archived ? '1' : '0',
-                        optional($entry->created_at)->format('Y-m-d H:i') ?? '',
-                    ], ';') . "\r\n");
-                }
-            });
-
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return CsvExport::streamFromRows($filename, [
+            __('ID'),
+            __('Status'),
+            __('Mitarbeiter'),
+            __('Von'),
+            __('Bis'),
+            __('Inhalt'),
+            __('Antwort'),
+            __('Tags'),
+            __('Archiviert'),
+            __('Erstellt'),
+        ], $rows);
     }
 
     public function pdf(Request $request): View {
@@ -110,26 +100,14 @@ class DiaryExportController extends Controller {
         }
         $q = trim((string) $request->query('q', ''));
         if ($q !== '') {
-            $query->where(function ($w) use ($q) {
-                $w->whereLikeEscaped('content', $q)->orWhereLikeEscaped('response', $q);
-            });
+            $query->search($q);
         }
 
         return $query;
     }
 
+    // Mehrzeiler flachziehen; Formel-Guard übernimmt CsvExport zentral.
     private function oneLine(string $value): string {
         return trim(preg_replace('/\s+/', ' ', $value) ?? '');
-    }
-
-    private function csvSafe(string $value): string {
-        $normalized = $this->oneLine($value);
-        $trimmed = ltrim($normalized);
-
-        if ($trimmed !== '' && in_array($trimmed[0], ['=', '+', '-', '@'], true)) {
-            return "'" . $normalized;
-        }
-
-        return $normalized;
     }
 }

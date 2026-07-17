@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\{ManufacturingOrder, Organization, User};
-use Illuminate\Support\Facades\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**
  * Rendert den Fertigungsnachweis eines Auftrags als PDF (Feature 047,
@@ -37,21 +35,20 @@ class ManufacturingRecordPdfRenderer {
             ? collect()
             : User::query()->withoutGlobalScopes()->whereIn('id', $reporterIds)->pluck('name', 'id');
 
-        $html = View::make('pdf.manufacturing-record', [
-            'order' => $order,
-            'organization' => $organization,
-            'number' => $this->number($order),
-            'quality' => $this->quality->metricsFor($order),
-            'reporters' => $reporters,
-            'generatedAt' => now(),
-        ])->render();
-
-        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
-        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)
-            ->composeFor($organization, \App\Enums\DocumentDesign\RenderDocumentKind::ManufacturingRecord, $html);
-
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.manufacturing-record).');
+        // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
+        return app(DocumentDesignRenderer::class)->renderPdf(
+            RenderDocumentKind::ManufacturingRecord,
+            'pdf.manufacturing-record',
+            [
+                'order' => $order,
+                'organization' => $organization,
+                'number' => $this->number($order),
+                'quality' => $this->quality->metricsFor($order),
+                'reporters' => $reporters,
+                'generatedAt' => now(),
+            ],
+            $organization,
+        );
     }
 
     /** Nachweis-Nummer (stabil aus der Auftrags-ID abgeleitet). */

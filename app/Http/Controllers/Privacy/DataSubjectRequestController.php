@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Models\Privacy\DataSubjectRequest;
 use App\Services\Privacy\{DataSubjectRequestService, PrivacyExportService};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -95,6 +96,8 @@ class DataSubjectRequestController extends Controller {
 
     public function assign(Request $request, DataSubjectRequest $dsr): RedirectResponse {
         Gate::authorize('assign', $dsr);
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        $request->merge(['user_id' => Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
         $data = $request->validate(['user_id' => ['required', 'integer']]);
 
         $assignee = User::query()

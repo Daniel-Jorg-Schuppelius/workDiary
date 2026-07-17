@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Event\{EventStatus, EventType, EventVisibility, ParticipantRole, ParticipantStatus};
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Models\{Customer, Event, EventCategory, Room, User};
 use App\Services\Event\EventService;
 use App\Support\{LookupCache, Sqid};
@@ -23,6 +23,7 @@ use Illuminate\View\View;
 use RuntimeException;
 
 class EventController extends Controller {
+    use ParsesIndexQuery;
     use ResolvesGlobalDateRange;
 
     private const ALLOWED_SORTS = ['title', 'event_type', 'started_at', 'status'];
@@ -38,10 +39,7 @@ class EventController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
 
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'started_at';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['sort' => $sort, 'dir' => $dir] = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'started_at');
 
         $rawCategoryId = $request->query('category_id');
         $categoryId = Sqid::decodeOrNumeric(EventCategory::class, $rawCategoryId);
@@ -60,10 +58,7 @@ class EventController extends Controller {
 
         $query = Event::query()
             ->with(['category', 'responsibleUser', 'customer', 'rooms'])
-            ->when($filters['q'] !== '', fn($q) => $q->where(function ($w) use ($filters): void {
-                $w->whereLikeEscaped('title', $filters['q'])
-                    ->orWhereLikeEscaped('topic', $filters['q']);
-            }))
+            ->when($filters['q'] !== '', fn($q) => $q->search($filters['q']))
             ->when($filters['event_type'], fn($q) => $q->where('event_type', $filters['event_type']))
             ->when($filters['status'], fn($q) => $q->where('status', $filters['status']))
             ->when($filters['visibility'], fn($q) => $q->where('visibility', $filters['visibility']))

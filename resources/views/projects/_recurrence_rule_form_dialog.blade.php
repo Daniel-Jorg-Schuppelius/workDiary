@@ -154,19 +154,13 @@
                    class="checkbox checkbox-primary">
             <label for="rule_is_active" class="text-sm">{{ __('Aktiv') }}</label>
         </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Beginnt am') }} *</label>
-            <input type="date" name="starts_on" required
-                   value="{{ old('starts_on', $rule->starts_on?->format('Y-m-d') ?? now()->format('Y-m-d')) }}"
-                   class="input input-bordered w-full">
-            @error('starts_on')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Endet am (optional, für befristete Generierung)') }}</label>
-            <input type="date" name="ends_on"
-                   value="{{ old('ends_on', $rule->ends_on?->format('Y-m-d')) }}"
-                   class="input input-bordered w-full">
-            @error('ends_on')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-date-range class="md:col-span-2" layout="split" form-control size="md"
+                      from-name="starts_on" to-name="ends_on" from-required
+                      :from="old('starts_on', $rule->starts_on?->format('Y-m-d') ?? now()->format('Y-m-d'))"
+                      :to="old('ends_on', $rule->ends_on?->format('Y-m-d'))"
+                      :from-label="__('Beginnt am') . ' *'"
+                      :to-label="__('Endet am (optional, für befristete Generierung)')"
+                      :from-error="$errors->first('starts_on')"
+                      :to-error="$errors->first('ends_on')" />
     </x-form-group>
 </x-modal>

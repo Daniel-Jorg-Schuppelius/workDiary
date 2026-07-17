@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetFinance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Vertragsart (MVP-270). Klassifikationshinweise ohne bilanzielle oder
  * steuerliche Zusage — Zurechnung bleibt beim Rechnungswesen (W11).
  */
-enum AssetFinanceKind: string {
+enum AssetFinanceKind: string implements HasLabel {
+    use HasOptions;
+
     case OperatingLease = 'operating_lease';
     case FinanceLease = 'finance_lease';
     case HirePurchase = 'hire_purchase';

@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Contract;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Preis-/Wertanpassungsregel (Welle D, CLM). Rein deskriptiv als Datenfeld +
  * Berechnungshinweis — WorkDiary bindet KEINE externe Index-API an und
  * berechnet keine amtlichen Indexstände.
  */
-enum IndexationMethod: string {
+enum IndexationMethod: string implements HasLabel {
+    use HasOptions;
+
     case None = 'none';
     case ConsumerPriceIndex = 'cpi';
     case FixedPercent = 'fixed_percent';

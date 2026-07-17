@@ -42,7 +42,7 @@
             <x-select-field name="user_id" span="2" :label="__('Für Mitarbeiter:in')">
                 <option value="">{{ __('— mich selbst —') }}</option>
                 @foreach ($members as $m)
-                    <option value="{{ $m->id }}" @selected((string) old('user_id') === (string) $m->id)>{{ $m->name }}</option>
+                    <option value="{{ $m->sqid }}" @selected((string) old('user_id') === $m->sqid)>{{ $m->name }}</option>
                 @endforeach
             </x-select-field>
         @endif

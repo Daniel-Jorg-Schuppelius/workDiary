@@ -18,7 +18,9 @@ use App\Models\{ExternalReference, IntegrationInboxItem, OrgaMaxConnection, Orga
 use App\Plugins\OrgaMax\Api\{OrgaMaxApiException, OrgaMaxClientFactory};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService};
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Integration\IntegrationOutboxService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -33,6 +35,8 @@ use Throwable;
  * eigenen Berechtigungen und Audit.
  */
 class OrgaMaxAdminController extends Controller {
+    use ResolvesPluginOrgContext;
+
     public function __construct(
         private readonly OrgaMaxConnectionService $connections,
         private readonly OrgaMaxClientFactory $clients,
@@ -293,7 +297,7 @@ class OrgaMaxAdminController extends Controller {
         } catch (OrgaMaxApiException) {
             abort(502, (string) __('orgamax.invoice.pdf_failed'));
         }
-        $connection->audit('orgamax_invoice_pdf_fetched', ['invoice_id' => $externalId, 'sha256' => hash('sha256', $pdf)]);
+        $connection->audit('orgamax_invoice_pdf_fetched', ['invoice_id' => $externalId, 'sha256' => CryptoHelper::hash($pdf)]);
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
@@ -303,15 +307,6 @@ class OrgaMaxAdminController extends Controller {
 
     // ── Guards ──────────────────────────────────────────────────────────
 
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
     private function permitted(Permission $permission): User {
         /** @var User $user */
         $user = Auth::user();
@@ -319,13 +314,6 @@ class OrgaMaxAdminController extends Controller {
         abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
 
         return $user;
-    }
-
-    private function organization(User $user): Organization {
-        $org = $user->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
     }
 
     private function connection(Organization $organization): OrgaMaxConnection {

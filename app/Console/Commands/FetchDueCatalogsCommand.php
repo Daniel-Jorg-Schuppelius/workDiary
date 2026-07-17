@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{SupplierCatalogImport, SupplierCatalogSource};
 use App\Services\Procurement\{CatalogFetchService, CatalogImportDispatcher};
 use Illuminate\Console\Command;
@@ -25,6 +26,8 @@ use Throwable;
  * Quelle brechen den Gesamtlauf nicht ab.
  */
 class FetchDueCatalogsCommand extends Command {
+    use IteratesOrganizations;
+
     protected $signature = 'catalog:fetch-due';
 
     protected $description = 'Ruft fällige Remote-Katalogquellen ab und importiert sie (Feature 050).';
@@ -38,10 +41,13 @@ class FetchDueCatalogsCommand extends Command {
             ->get();
 
         foreach ($due as $source) {
-            app()->instance('currentOrganization', $source->organization);
-            $this->process($source, $fetch, $dispatcher);
+            $organization = $source->organization;
+            if ($organization !== null) {
+                $this->withOrganizationContext($organization, fn () => $this->process($source, $fetch, $dispatcher));
+            } else {
+                $this->process($source, $fetch, $dispatcher);
+            }
         }
-        app()->forgetInstance('currentOrganization');
 
         $this->info(sprintf('%d Quelle(n) verarbeitet.', $due->count()));
 

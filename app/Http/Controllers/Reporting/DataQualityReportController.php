@@ -38,8 +38,7 @@ class DataQualityReportController extends Controller {
         abort_unless($user instanceof User && $user->can(Permission::ReportView->value), 403);
 
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $entries = DiaryEntry::query()
             ->with('entryType')

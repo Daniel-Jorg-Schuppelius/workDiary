@@ -15,6 +15,7 @@ namespace App\Plugins\Support\Mirror;
 use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationInboxItem, User};
 use App\Services\Document\DocumentService;
 use App\Services\Integration\InboxActionService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\Auth;
 use RuntimeException;
 
@@ -74,7 +75,7 @@ class DocumentConflictResolver {
                 'organization_id' => $item->organization_id,
                 'external_id' => $path,
                 'payload' => [
-                    'sha256' => hash('sha256', $content),
+                    'sha256' => CryptoHelper::hash($content),
                     'remote_path' => $path,
                     'remote_sig' => $gateway->remoteSignature($path),
                     'version_id' => (int) $version->getKey(),

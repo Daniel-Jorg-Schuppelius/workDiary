@@ -110,8 +110,8 @@ class IsmsSecurityIncidentTest extends TestCase {
                 'title' => 'Unbefugter Zugriff',
                 'category' => 'unauthorizedAccess',
                 'severity' => 'high',
-                'risk_ids' => [$risk->id],
-                'control_ids' => [$control->id],
+                'risk_ids' => [$risk->sqid],
+                'control_ids' => [$control->sqid],
             ])
             ->assertRedirect();
 

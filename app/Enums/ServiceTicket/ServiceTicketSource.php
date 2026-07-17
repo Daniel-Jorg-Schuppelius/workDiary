@@ -10,7 +10,12 @@
 
 namespace App\Enums\ServiceTicket;
 
-enum ServiceTicketSource: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ServiceTicketSource: string implements HasLabel {
+    use HasOptions;
+
     case Manual = 'manual';
     case MaintenancePlan = 'maintenance_plan';
     case OpenIssue = 'open_issue';

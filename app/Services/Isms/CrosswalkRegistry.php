@@ -10,6 +10,7 @@
 
 namespace App\Services\Isms;
 
+use CommonToolkit\Helper\Data\DateHelper;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -214,7 +215,7 @@ class CrosswalkRegistry {
 
         $version = isset($data['version']) ? trim((string) $data['version']) : '1.0';
         $asOf = isset($data['as_of']) ? trim((string) $data['as_of']) : null;
-        if ($asOf !== null && $asOf !== '' && strtotime($asOf) === false) {
+        if ($asOf !== null && $asOf !== '' && ! DateHelper::isDate($asOf)) {
             $fail("'as_of' ('{$asOf}') ist kein gültiges Datum.");
         }
 

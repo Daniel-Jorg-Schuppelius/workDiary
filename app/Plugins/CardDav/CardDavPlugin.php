@@ -14,6 +14,7 @@ use App\Models\{CardDavConnection, Organization, PluginSetting};
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -54,13 +55,11 @@ class CardDavPlugin implements Plugin {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -94,7 +93,7 @@ class CardDavPlugin implements Plugin {
 
     /** Health-Check je Organisation: Anbindung suchen und den Server anpingen. */
     public function healthCheck(): PluginHealth {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

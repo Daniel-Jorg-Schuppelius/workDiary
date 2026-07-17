@@ -10,11 +10,9 @@
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, User};
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
@@ -22,14 +20,14 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerDrilldownReportController extends Controller {
+    use BuildsOpenIssueDrilldown;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $rawCustomerId = $request->query('customer_id');
         $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
@@ -63,18 +61,9 @@ class CustomerDrilldownReportController extends Controller {
             ->map(static fn($v): int => (int) $v)
             ->all();
 
-        $openStatuses = [
-            OpenIssueStatus::Open->value,
-            OpenIssueStatus::InProgress->value,
-            OpenIssueStatus::Blocked->value,
-            OpenIssueStatus::Reopened->value,
-        ];
-
-        $issuesQuery = OpenIssue::query()
-            ->with(['assignee:id,name'])
-            ->whereIn('status', $openStatuses)
-            ->when($escalatedOnly, fn($q) => $q->where('status', OpenIssueStatus::Blocked->value))
-            ->where(function ($q) use ($customerId, $entryIds, $projectIds): void {
+        // Kunden-Spezifikum: OR-Zweige über Kunde selbst, Aufträge und Projekte.
+        $issuesQuery = $this->openIssueDrilldownQuery($escalatedOnly, function ($query) use ($customerId, $entryIds, $projectIds): void {
+            $query->where(function ($q) use ($customerId, $entryIds, $projectIds): void {
                 $q->where(function ($sub) use ($customerId): void {
                     $sub->where('subject_type', Customer::class)
                         ->where('subject_id', $customerId);
@@ -93,21 +82,12 @@ class CustomerDrilldownReportController extends Controller {
                             ->whereIn('subject_id', $projectIds);
                     });
                 }
-            })
-            ->orderByDesc('updated_at');
+            });
+        });
 
         if ($request->query('export') === 'csv') {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
-
-            $this->auditExport($request, 'customer-drilldown-open-issues', 'csv', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'customer_id' => $customerId,
-                'project_id' => $projectId,
-                'user_id' => $userId,
-                'escalated' => $escalatedOnly,
-            ]);
 
             return $this->exportOpenIssuesCsv($issues, $customerId, $from->toDateString(), $to->toDateString(), $escalatedOnly, [
                 'from' => $from->toDateString(),
@@ -116,27 +96,27 @@ class CustomerDrilldownReportController extends Controller {
                 'project_id' => $projectId,
                 'user_id' => $userId,
                 'escalated' => $escalatedOnly,
-            ]);
+            ], $request);
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
 
-            $this->auditExport($request, 'customer-drilldown-open-issues', 'pdf', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'customer_id' => $customerId,
-                'project_id' => $projectId,
-                'user_id' => $userId,
-                'escalated' => $escalatedOnly,
-            ]);
-
             return $this->exportOpenIssuesPdf(
                 $issues,
                 ($customer !== null ? $customer->name : null) ?? ('#' . $customerId),
                 $range['label'],
                 $customerId,
+                [
+                    'from' => $from->toDateString(),
+                    'to' => $to->toDateString(),
+                    'customer_id' => $customerId,
+                    'project_id' => $projectId,
+                    'user_id' => $userId,
+                    'escalated' => $escalatedOnly,
+                ],
+                $request,
                 $from->toDateString(),
                 $to->toDateString(),
                 $escalatedOnly
@@ -161,8 +141,7 @@ class CustomerDrilldownReportController extends Controller {
 
     public function protocols(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $rawCustomerId = $request->query('customer_id');
         $customerId = Sqid::decodeOrNumeric(Customer::class, $rawCustomerId);
@@ -187,25 +166,11 @@ class CustomerDrilldownReportController extends Controller {
             ->map(static fn($v): int => (int) $v)
             ->all();
 
-        $protocolsQuery = Protocol::query()
-            ->with(['creator:id,name'])
-            ->where('type', ProtocolType::Defect->value)
-            ->where('subject_type', DiaryEntry::class)
-            ->whereBetween('occurred_at', [$from, $to])
-            ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
-            ->orderByDesc('occurred_at');
+        $protocolsQuery = $this->defectProtocolDrilldownQuery($entryIds, $from, $to);
 
         if ($request->query('export') === 'csv') {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
-
-            $this->auditExport($request, 'customer-drilldown-protocols', 'csv', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'customer_id' => $customerId,
-                'project_id' => $projectId,
-                'user_id' => $userId,
-            ]);
 
             return $this->exportProtocolsCsv($protocols, $customerId, $from->toDateString(), $to->toDateString(), [
                 'from' => $from->toDateString(),
@@ -213,26 +178,26 @@ class CustomerDrilldownReportController extends Controller {
                 'customer_id' => $customerId,
                 'project_id' => $projectId,
                 'user_id' => $userId,
-            ]);
+            ], $request);
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
 
-            $this->auditExport($request, 'customer-drilldown-protocols', 'pdf', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'customer_id' => $customerId,
-                'project_id' => $projectId,
-                'user_id' => $userId,
-            ]);
-
             return $this->exportProtocolsPdf(
                 $protocols,
                 ($customer !== null ? $customer->name : null) ?? ('#' . $customerId),
                 $range['label'],
                 $customerId,
+                [
+                    'from' => $from->toDateString(),
+                    'to' => $to->toDateString(),
+                    'customer_id' => $customerId,
+                    'project_id' => $projectId,
+                    'user_id' => $userId,
+                ],
+                $request,
                 $from->toDateString(),
                 $to->toDateString()
             );
@@ -254,8 +219,8 @@ class CustomerDrilldownReportController extends Controller {
     }
 
     /**
-     * @param  array<int, OpenIssue>    $issues
-     * @param  array<string, mixed>      $filters
+     * @param  list<OpenIssue>       $issues
+     * @param  array<string, mixed>  $filters
      */
     private function exportOpenIssuesCsv(
         array $issues,
@@ -264,6 +229,7 @@ class CustomerDrilldownReportController extends Controller {
         string $to,
         bool $escalatedOnly,
         array $filters,
+        Request $request,
     ): Response {
         $filename = sprintf(
             'kunden-drilldown-open-issues-%d-%s-%s%s.csv',
@@ -273,31 +239,20 @@ class CustomerDrilldownReportController extends Controller {
             $escalatedOnly ? '-escalated' : ''
         );
 
-        $out = [];
-        $out[] = ['ID', 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen'];
-        foreach ($issues as $issue) {
-            /** @var OpenIssue $issue */
-            $out[] = [
-                $issue->id,
-                $issue->title,
-                $issue->status->label(),
-                $issue->severity->label(),
-                $issue->due_at?->format('Y-m-d') ?? '',
-                $issue->assignee ? $issue->assignee->name : '',
-            ];
-        }
-
-        return $this->csvWithMetadata($out, $filename, 'customer-drilldown-open-issues', $filters);
+        return $this->csvWithMetadata($this->openIssueCsvRows($issues), $filename, 'customer-drilldown-open-issues', $filters, $request);
     }
 
     /**
-     * @param  array<int, OpenIssue>  $issues
+     * @param  list<OpenIssue>       $issues
+     * @param  array<string, mixed>  $filters
      */
     private function exportOpenIssuesPdf(
         array $issues,
         string $customerName,
         string $label,
         int $customerId,
+        array $filters,
+        Request $request,
         string $from,
         string $to,
         bool $escalatedOnly,
@@ -315,12 +270,12 @@ class CustomerDrilldownReportController extends Controller {
             'customerName' => $customerName,
             'label' => $label,
             'escalatedOnly' => $escalatedOnly,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'customer-drilldown-open-issues', filters: $filters);
     }
 
     /**
-     * @param  array<int, Protocol>    $protocols
-     * @param  array<string, mixed>    $filters
+     * @param  list<Protocol>        $protocols
+     * @param  array<string, mixed>  $filters
      */
     private function exportProtocolsCsv(
         array $protocols,
@@ -328,35 +283,24 @@ class CustomerDrilldownReportController extends Controller {
         string $from,
         string $to,
         array $filters,
+        Request $request,
     ): Response {
         $filename = sprintf('kunden-drilldown-defektprotokolle-%d-%s-%s.csv', $customerId, $from, $to);
 
-        $out = [];
-        $out[] = ['ID', 'Titel', 'Status', 'Typ', 'Zeitpunkt', 'ErstelltVon', 'AuftragID'];
-        foreach ($protocols as $protocol) {
-            /** @var Protocol $protocol */
-            $out[] = [
-                $protocol->id,
-                $protocol->title,
-                $protocol->status->label(),
-                $protocol->type->label(),
-                $protocol->occurred_at->format('Y-m-d H:i'),
-                $protocol->creator ? $protocol->creator->name : '',
-                $protocol->subject_id,
-            ];
-        }
-
-        return $this->csvWithMetadata($out, $filename, 'customer-drilldown-protocols', $filters);
+        return $this->csvWithMetadata($this->protocolCsvRows($protocols), $filename, 'customer-drilldown-protocols', $filters, $request);
     }
 
     /**
-     * @param  array<int, Protocol>  $protocols
+     * @param  list<Protocol>        $protocols
+     * @param  array<string, mixed>  $filters
      */
     private function exportProtocolsPdf(
         array $protocols,
         string $customerName,
         string $label,
         int $customerId,
+        array $filters,
+        Request $request,
         string $from,
         string $to,
     ): SymfonyResponse {
@@ -366,6 +310,6 @@ class CustomerDrilldownReportController extends Controller {
             'protocols' => $protocols,
             'customerName' => $customerName,
             'label' => $label,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'customer-drilldown-protocols', filters: $filters);
     }
 }

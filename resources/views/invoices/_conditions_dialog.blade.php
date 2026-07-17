@@ -33,9 +33,5 @@
                        :hint="__('Wird auf PDF und E-Rechnung ausgewiesen und beim Zahlungsabgleich berücksichtigt.')" />
     </x-form-group>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 </x-modal>

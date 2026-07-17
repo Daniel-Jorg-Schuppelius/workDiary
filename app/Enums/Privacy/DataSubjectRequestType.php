@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Art der Betroffenenanfrage (DSGVO Art. 15–21). */
-enum DataSubjectRequestType: string {
+enum DataSubjectRequestType: string implements HasLabel {
+    use HasOptions;
+
     case Access = 'access';              // Art. 15 Auskunft
     case Rectification = 'rectification'; // Art. 16 Berichtigung
     case Erasure = 'erasure';            // Art. 17 Löschung

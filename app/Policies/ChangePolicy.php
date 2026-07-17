@@ -14,6 +14,7 @@ namespace App\Policies;
 
 use App\Enums\User\Permission;
 use App\Models\{Change, User};
+use App\Policies\Concerns\ChecksOwnership;
 
 /**
  * Change-Management (Feature 065, MVP-157): Sicht folgt dem Ticket-
@@ -25,12 +26,14 @@ use App\Models\{Change, User};
  * Depth, Muster ProblemPolicy).
  */
 class ChangePolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return $user->can(Permission::ServiceTicketView->value);
     }
 
     public function view(User $user, Change $change): bool {
-        return $this->sameOrg($user, $change) && $user->can(Permission::ServiceTicketView->value);
+        return $this->sharesOrganization($user, $change) && $user->can(Permission::ServiceTicketView->value);
     }
 
     public function create(User $user): bool {
@@ -38,10 +41,6 @@ class ChangePolicy {
     }
 
     public function update(User $user, Change $change): bool {
-        return $this->sameOrg($user, $change) && $user->can(Permission::ServiceDeskChangeManage->value);
-    }
-
-    private function sameOrg(User $user, Change $change): bool {
-        return (int) $user->organization_id === (int) $change->organization_id;
+        return $this->sharesOrganization($user, $change) && $user->can(Permission::ServiceDeskChangeManage->value);
     }
 }

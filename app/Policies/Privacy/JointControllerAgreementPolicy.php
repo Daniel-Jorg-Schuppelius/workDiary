@@ -14,19 +14,18 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\JointControllerAgreement;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /** GVV-Register (Art. 26). Nutzt das Vertragsregister-Recht; ohne Admin-Bypass. */
 class JointControllerAgreementPolicy {
-    private function sameOrg(User $user, JointControllerAgreement $gvv): bool {
-        return (int) $user->organization_id === (int) $gvv->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.view');
     }
 
     public function view(User $user, JointControllerAgreement $gvv): bool {
-        return $this->sameOrg($user, $gvv) && $user->can('dataprotection.view');
+        return $this->sharesOrganization($user, $gvv) && $user->can('dataprotection.view');
     }
 
     public function create(User $user): bool {
@@ -34,6 +33,6 @@ class JointControllerAgreementPolicy {
     }
 
     public function update(User $user, JointControllerAgreement $gvv): bool {
-        return $this->sameOrg($user, $gvv) && $user->can('dataprotection.avv.manage');
+        return $this->sharesOrganization($user, $gvv) && $user->can('dataprotection.avv.manage');
     }
 }

@@ -16,6 +16,7 @@ use App\Models\{Organization, PluginSetting};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\SevDesk\Api\{SevDeskApiException, SevDeskClient, SevDeskClientFactory};
+use App\Plugins\Support\PluginOrgContext;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 
@@ -59,7 +60,7 @@ class SevDeskPlugin implements Plugin {
     }
 
     public function isEnabled(): bool {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $organization = PluginOrgContext::currentOrNull();
         if ($organization instanceof Organization) {
             $setting = PluginSetting::forOrganization($organization->id, self::ID);
             if ($setting->exists) {
@@ -107,7 +108,7 @@ class SevDeskPlugin implements Plugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $organization = PluginOrgContext::currentOrNull();
         if (! $organization instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

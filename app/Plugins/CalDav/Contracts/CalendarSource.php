@@ -17,9 +17,9 @@ use App\Plugins\CalDav\Services\CalendarPublishItem;
 
 /**
  * Eine Quelle zu publizierender Kalenderelemente einer Organisation (Feature 058).
- * Der {@see \App\Plugins\CalDav\Services\CalendarPublishService} ist quellenneutral;
- * jede Source (Termine, Dienstpläne/Urlaube …) liefert nur die Item-Liste. Die
- * Scope-Auswahl je Anbindung steuert {@see \App\Plugins\CalDav\CalDavPlugin::publishCalendar}.
+ * Das Publish ({@see \App\Plugins\Support\Calendar\RemoteCalendarPublishService}) ist
+ * quellenneutral; jede Source (Termine, Dienstpläne/Urlaube …) liefert nur die Item-Liste.
+ * Die Scope-Auswahl je Anbindung steuert {@see \App\Plugins\CalDav\CalDavPlugin::publishCalendar}.
  */
 interface CalendarSource {
     /**

@@ -12,7 +12,12 @@ declare(strict_types=1);
 
 namespace App\Enums\DocumentDesign;
 
-enum LetterheadAssetStatus: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum LetterheadAssetStatus: string implements HasLabel {
+    use HasOptions;
+
     case ReviewRequired = 'review_required';
     case Ready = 'ready';
     case Archived = 'archived';

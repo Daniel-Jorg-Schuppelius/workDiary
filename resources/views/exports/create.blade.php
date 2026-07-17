@@ -14,15 +14,7 @@
             <form method="POST" action="{{ route('exports.store') }}" class="space-y-4">
                 @csrf
 
-                @if ($errors->any())
-                    <div role="alert" class="alert alert-error">
-                        <ul class="list-disc list-inside text-sm">
-                            @foreach ($errors->all() as $err)
-                                <li>{{ $err }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                <x-validation-errors />
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <x-input-field name="year" type="number" :label="__('Jahr')" min="2000" max="2999" class="input-sm" :value="old('year', $defaultYear)" required />

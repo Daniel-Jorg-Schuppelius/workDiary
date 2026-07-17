@@ -13,7 +13,7 @@ namespace App\Policies;
 use App\Enums\TimeApproval\DayClosureStatus;
 use App\Enums\User\Permission as P;
 use App\Models\{DayClosure, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Berechtigungen für Tagesabschlüsse (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §7).
@@ -23,6 +23,7 @@ use App\Policies\Concerns\HasAdminBypass;
  * die Policy deckt Eigentum, Organisation, Permission und Status ab.
  */
 class DayClosurePolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -32,10 +33,10 @@ class DayClosurePolicy {
     }
 
     public function view(User $user, DayClosure $closure): bool {
-        if ($user->organization_id !== $closure->organization_id) {
+        if (! $this->sharesOrganization($user, $closure)) {
             return false;
         }
-        if ($user->id === $closure->user_id) {
+        if ($this->owns($user, $closure)) {
             return $user->can(P::DayCloseViewOwn->value);
         }
 
@@ -45,35 +46,35 @@ class DayClosurePolicy {
 
     /** day.save — Audit-Speichern des eigenen, offenen Tages. */
     public function save(User $user, DayClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
-            && $user->id === $closure->user_id
+        return $this->sharesOrganization($user, $closure)
+            && $this->owns($user, $closure)
             && $user->can(P::DayCloseViewOwn->value);
     }
 
     public function close(User $user, DayClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
-            && $user->id === $closure->user_id
+        return $this->sharesOrganization($user, $closure)
+            && $this->owns($user, $closure)
             && $user->can(P::DayCloseCloseOwn->value)
             && $closure->status === DayClosureStatus::Open;
     }
 
     public function requestCorrection(User $user, DayClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
-            && $user->id === $closure->user_id
+        return $this->sharesOrganization($user, $closure)
+            && $this->owns($user, $closure)
             && $user->can(P::DayCloseRequestCorrectionOwn->value)
             && $closure->status === DayClosureStatus::Closed;
     }
 
     /** Korrektur-Entscheidung (§5): Admin/Teamleitung, nie der Antragsteller-Status egal. */
     public function approveCorrection(User $user, DayClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
+        return $this->sharesOrganization($user, $closure)
             && $user->can(P::DayCloseApproveCorrection->value)
             && $closure->status === DayClosureStatus::Correction;
     }
 
     /** Admin-Reopen ohne Antrag (§2.6, Pflicht-Begründung im Service). */
     public function reopen(User $user, DayClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
+        return $this->sharesOrganization($user, $closure)
             && $user->can(P::DayCloseReopen->value)
             && $closure->status === DayClosureStatus::Closed;
     }

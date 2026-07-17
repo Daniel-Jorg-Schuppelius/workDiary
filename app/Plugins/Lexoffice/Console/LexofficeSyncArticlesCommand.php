@@ -10,23 +10,19 @@
 
 namespace App\Plugins\Lexoffice\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeArticleSync, LexofficeConfig};
 use Illuminate\Console\Command;
 
 class LexofficeSyncArticlesCommand extends Command {
-    protected $signature = 'lexoffice:sync-articles {--organization= : ID einer einzelnen Organisation, sonst alle}';
+    use IteratesOrganizations;
+
+    protected $signature = 'lexoffice:sync-articles ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Synchronisiert Lexoffice-Artikel (Services/Produkte) in die lokale Tabelle `lexoffice_articles`.';
 
     public function handle(): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

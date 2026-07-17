@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\DocumentDesign;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Kuratierte Tabellenstil-Presets (MVP-299). Kein freies CSS: anpassbar sind
  * nur die hier definierten Schlüssel innerhalb der Grenzen aus bounds().
  * Fachliche Formatierung (Währung, Menge, Datum, Steuer) bleibt bei den
  * Formatierern der Module und wird vom Preset nicht überschrieben.
  */
-enum TableStylePreset: string {
+enum TableStylePreset: string implements HasLabel {
+    use HasOptions;
+
     case Clear = 'clear';
     case Compact = 'compact';
     case LowLine = 'low_line';

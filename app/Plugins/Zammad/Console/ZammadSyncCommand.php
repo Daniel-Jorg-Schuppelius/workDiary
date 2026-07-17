@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Zammad\Console;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Organization, ZammadConnection};
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
@@ -26,41 +27,36 @@ use Throwable;
  * fortgeschrieben.
  */
 class ZammadSyncCommand extends Command {
-    protected $signature = 'zammad:sync
-        {--organization= : ID einer einzelnen Organisation, sonst alle}';
+    use IteratesOrganizations;
+
+    protected $signature = 'zammad:sync ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Importiert Zammad-Tickets je Organisation als Aufgaben (idempotent, Queue→Projekt).';
 
     public function handle(ZammadGatewayFactory $factory, ZammadTicketImporter $importer): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
+        foreach ($this->organizationsToProcess() as $org) {
+            // Fehler je Anbindung werden unten gefangen — Org-Fehler sollen weiter durchschlagen.
+            $this->withOrganizationContext($org, function (Organization $org) use ($factory, $importer): void {
+                $connections = ZammadConnection::query()->withoutGlobalScopes()
+                    ->where('organization_id', $org->id)
+                    ->get();
 
-        foreach ($query->get() as $org) {
-            // Org-Kontext für nachgelagerte (scoped) Operationen binden.
-            app()->instance('currentOrganization', $org);
+                foreach ($connections as $connection) {
+                    if (! $connection->isActive()) {
+                        continue;
+                    }
 
-            $connections = ZammadConnection::query()->withoutGlobalScopes()
-                ->where('organization_id', $org->id)
-                ->get();
-
-            foreach ($connections as $connection) {
-                if (! $connection->isActive()) {
-                    continue;
+                    try {
+                        $result = $importer->import($connection, $factory->for($connection));
+                        $this->info(sprintf(
+                            'Organisation #%d (%s) / %s: created %d, skipped %d',
+                            $org->id, $org->name, $connection->name, $result['created'], $result['skipped'],
+                        ));
+                    } catch (Throwable $e) {
+                        $this->error(sprintf('Organisation #%d / %s: Abbruch — %s', $org->id, $connection->name, $e->getMessage()));
+                    }
                 }
-
-                try {
-                    $result = $importer->import($connection, $factory->for($connection));
-                    $this->info(sprintf(
-                        'Organisation #%d (%s) / %s: created %d, skipped %d',
-                        $org->id, $org->name, $connection->name, $result['created'], $result['skipped'],
-                    ));
-                } catch (Throwable $e) {
-                    $this->error(sprintf('Organisation #%d / %s: Abbruch — %s', $org->id, $connection->name, $e->getMessage()));
-                }
-            }
+            });
         }
 
         return self::SUCCESS;

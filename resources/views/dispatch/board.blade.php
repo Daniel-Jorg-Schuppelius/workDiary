@@ -16,26 +16,13 @@
 
         {{-- Ansicht-Umschaltung: Status <-> Mitarbeiter --}}
         @php $baseQuery = request()->only(['from', 'to', 'user', 'status']); @endphp
-        <div role="tablist" class="tabs tabs-box w-full">
-            <a role="tab"
-               href="{{ route('dispatch.board', array_merge($baseQuery, ['group' => 'status'])) }}"
-               @class(['tab gap-1', 'tab-active' => $groupBy === 'status'])>
-                <span class="material-symbols-outlined text-base" aria-hidden="true">view_column</span>
-                {{ __('Nach Status') }}
-            </a>
-            <a role="tab"
-               href="{{ route('dispatch.board', array_merge($baseQuery, ['group' => 'employee'])) }}"
-               @class(['tab gap-1', 'tab-active' => $groupBy === 'employee'])>
-                <span class="material-symbols-outlined text-base" aria-hidden="true">groups</span>
-                {{ __('Nach Mitarbeiter') }}
-            </a>
-            <a role="tab"
-               href="{{ route('dispatch.calendar', $baseQuery) }}"
-               class="tab gap-1">
-                <span class="material-symbols-outlined text-base" aria-hidden="true">calendar_month</span>
-                {{ __('Kalender') }}
-            </a>
-        </div>
+        <x-tab-nav :items="[
+            ['route' => 'dispatch.board', 'params' => array_merge($baseQuery, ['group' => 'status']),
+             'active' => $groupBy === 'status', 'icon' => 'view_column', 'label' => __('Nach Status')],
+            ['route' => 'dispatch.board', 'params' => array_merge($baseQuery, ['group' => 'employee']),
+             'active' => $groupBy === 'employee', 'icon' => 'groups', 'label' => __('Nach Mitarbeiter')],
+            ['route' => 'dispatch.calendar', 'params' => $baseQuery, 'icon' => 'calendar_month', 'label' => __('Kalender')],
+        ]" />
 
         <x-filter-bar :action="route('dispatch.board')" :reset="route('dispatch.board')">
             <input type="hidden" name="group" value="{{ $groupBy }}" />

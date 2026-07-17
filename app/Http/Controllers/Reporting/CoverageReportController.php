@@ -13,12 +13,12 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{CoverageRequirement, ScheduledShift, ShiftType, User};
-use Carbon\{Carbon, CarbonPeriod};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Models\{CoverageRequirement, ScheduledShift, ShiftType};
+use Carbon\{CarbonImmutable, CarbonPeriod};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -29,16 +29,13 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class CoverageReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        abort_unless($isAdmin, 403);
+        abort_unless($this->viewerIsAdmin(), 403);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->startOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
@@ -53,10 +50,10 @@ class CoverageReportController extends Controller {
         [$perShiftType, $underfilledDays, $totals] = $this->aggregate($fromDate, $toDate);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($perShiftType, $totals, $from, $to);
+            return $this->exportCsv($perShiftType, $totals, $from, $to, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($perShiftType, $underfilledDays, $totals, $from, $to);
+            return $this->exportPdf($perShiftType, $underfilledDays, $totals, $from, $to, $request);
         }
 
         return view('reports.coverage', [
@@ -76,7 +73,7 @@ class CoverageReportController extends Controller {
      *   2: array{shift_types:int, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}
      * }
      */
-    private function aggregate(Carbon $from, Carbon $to): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to): array {
         /** @var Collection<int, ShiftType> $shiftTypes */
         $shiftTypes = ShiftType::query()->orderBy('name')->get();
         if ($shiftTypes->isEmpty()) {
@@ -125,7 +122,7 @@ class CoverageReportController extends Controller {
 
         $period = CarbonPeriod::create($from, $to);
         foreach ($period as $day) {
-            /** @var Carbon $day */
+            /** @var CarbonImmutable $day */
             $dateStr = $day->toDateString();
             $iso = (int) $day->dayOfWeekIso;       // 1=Mon … 7=Sun
             $weekday = $iso === 7 ? 0 : $iso;      // Modell: 0=So..6=Sa
@@ -198,7 +195,7 @@ class CoverageReportController extends Controller {
      * @param  array<int, array{shiftType: ShiftType, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}>  $rows
      * @param  array{shift_types:int, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, Request $request): Response {
         $filename = sprintf('coverage_%s_%s.csv', $from, $to);
         $out = [['Schichttyp', 'Soll (Personentage)', 'Ist (Personentage)', 'Differenz', 'Erfüllung %', 'Tage mit Unterdeckung']];
         foreach ($rows as $r) {
@@ -207,7 +204,7 @@ class CoverageReportController extends Controller {
                 $r['required'],
                 $r['scheduled'],
                 $r['gap'],
-                $r['fill_rate'] !== null ? number_format($r['fill_rate'] * 100, 1, '.', '') : '',
+                $r['fill_rate'] !== null ? NumberHelper::toUSFormat($r['fill_rate'] * 100, 1) : '',
                 $r['days_under'],
             ];
         }
@@ -216,11 +213,11 @@ class CoverageReportController extends Controller {
             $totals['required'],
             $totals['scheduled'],
             $totals['gap'],
-            $totals['fill_rate'] !== null ? number_format($totals['fill_rate'] * 100, 1, '.', '') : '',
+            $totals['fill_rate'] !== null ? NumberHelper::toUSFormat($totals['fill_rate'] * 100, 1) : '',
             $totals['days_under'],
         ];
 
-        return $this->csvWithMetadata($out, $filename, 'coverage', ['from' => $from, 'to' => $to]);
+        return $this->csvWithMetadata($out, $filename, 'coverage', ['from' => $from, 'to' => $to], $request);
     }
 
     /**
@@ -228,7 +225,7 @@ class CoverageReportController extends Controller {
      * @param  array<int, array{date:string, shiftType: ShiftType, required:int, scheduled:int, gap:int}>  $underfilled
      * @param  array{shift_types:int, required:int, scheduled:int, gap:int, fill_rate:float|null, days_under:int}  $totals
      */
-    private function exportPdf(array $rows, array $underfilled, array $totals, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $rows, array $underfilled, array $totals, string $from, string $to, Request $request): SymfonyResponse {
         $filename = sprintf('coverage_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.coverage', [
             'rows' => $rows,
@@ -236,6 +233,6 @@ class CoverageReportController extends Controller {
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'coverage', filters: ['from' => $from, 'to' => $to]);
     }
 }

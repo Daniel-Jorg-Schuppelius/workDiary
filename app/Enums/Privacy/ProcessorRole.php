@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Rolle eines Vertragspartners im Datenschutz-Verhältnis. */
-enum ProcessorRole: string {
+enum ProcessorRole: string implements HasLabel {
+    use HasOptions;
+
     case Controller = 'controller';
     case JointController = 'joint_controller';
     case Processor = 'processor';

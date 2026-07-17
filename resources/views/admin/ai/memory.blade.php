@@ -93,7 +93,7 @@
                                                 :title="$entry->active ? __('ai.action.deactivate') : __('ai.action.activate')" />
                                 </form>
                                 <form method="POST" action="{{ route('admin.ai.memory.destroy', $entry) }}" class="inline"
-                                      onsubmit="return confirm('{{ __('ai.memory.delete_confirm') }}')">
+                                      data-confirm-dialog data-confirm-message="{{ __('ai.memory.delete_confirm') }}">
                                     @csrf @method('DELETE')
                                     <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :title="__('ai.action.delete')" />
                                 </form>
@@ -101,7 +101,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="text-center text-base-content/60 py-8">{{ __('ai.empty.memory') }}</td></tr>
+                    <x-table.empty :colspan="7" :title="__('ai.empty.memory')" compact />
                 @endforelse
             </tbody>
         </table>

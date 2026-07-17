@@ -14,7 +14,6 @@ use App\Enums\User\{CompensationModel, FlatInterval, Permission};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{TimeEntry, User};
-use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -38,9 +37,7 @@ class ExternalPayoutReportController extends Controller {
         $auth = Auth::user();
         abort_unless($auth->organization_id !== null && $auth->can(Permission::UserPayrollManage->value), 403);
 
-        $range = $this->globalDateRange();
-        $from = CarbonImmutable::instance($range['from'])->startOfDay();
-        $to = CarbonImmutable::instance($range['to'])->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
         $monthCount = max(1, count($this->buildMonthsInRange($from, $to)));
 
         // Mandantengrenze: User hat KEINEN globalen OrganizationScope — ohne

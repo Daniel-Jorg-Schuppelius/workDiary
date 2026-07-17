@@ -14,19 +14,18 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\TechnicalMeasure;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /** TOM-Katalog. Ohne Admin-Bypass, organisationsgebunden. */
 class TechnicalMeasurePolicy {
-    private function sameOrg(User $user, TechnicalMeasure $measure): bool {
-        return (int) $user->organization_id === (int) $measure->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.view');
     }
 
     public function view(User $user, TechnicalMeasure $measure): bool {
-        return $this->sameOrg($user, $measure) && $user->can('dataprotection.view');
+        return $this->sharesOrganization($user, $measure) && $user->can('dataprotection.view');
     }
 
     public function create(User $user): bool {
@@ -34,6 +33,6 @@ class TechnicalMeasurePolicy {
     }
 
     public function update(User $user, TechnicalMeasure $measure): bool {
-        return $this->sameOrg($user, $measure) && $user->can('dataprotection.tom.manage');
+        return $this->sharesOrganization($user, $measure) && $user->can('dataprotection.tom.manage');
     }
 }

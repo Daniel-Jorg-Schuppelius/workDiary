@@ -23,9 +23,7 @@
         @if (session('error'))
             <div class="alert alert-error text-sm">{{ session('error') }}</div>
         @endif
-        @if ($errors->any())
-            <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
-        @endif
+        <x-validation-errors first />
 
         {{-- Renderprofile --}}
         <x-card :title="__('document_design.profiles_heading')">

@@ -18,9 +18,7 @@
     @if(session('success'))
         <div class="alert alert-success mb-4">{{ session('success') }}</div>
     @endif
-    @if($errors->any())
-        <div class="alert alert-error mb-4"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
-    @endif
+    <x-validation-errors class="mb-4" />
 
     @if($protocol->description)
         <div class="mb-4 rounded-box bg-base-100 p-4 shadow">

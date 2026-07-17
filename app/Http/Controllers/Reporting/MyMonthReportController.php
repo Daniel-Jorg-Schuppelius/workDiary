@@ -79,13 +79,13 @@ class MyMonthReportController extends Controller {
         $monthLabel = $start->isoFormat('MMMM YYYY');
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($entries, $year, $month);
+            return $this->exportCsv($entries, $year, $month, $request);
         }
         if ($request->query('export') === 'xlsx') {
             return $this->exportXlsx($entries, $year, $month);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($byDay, $monthLabel, $monthMinutes, $monthRate, $year, $month);
+            return $this->exportPdf($byDay, $monthLabel, $monthMinutes, $monthRate, $year, $month, $request);
         }
 
         return view('reports.my-month', [
@@ -139,7 +139,7 @@ class MyMonthReportController extends Controller {
     /**
      * @param  \Illuminate\Database\Eloquent\Collection<int, TimeEntry>  $entries
      */
-    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month): Response {
+    private function exportCsv(\Illuminate\Database\Eloquent\Collection $entries, int $year, int $month, Request $request): Response {
         $filename = sprintf('mein-monat-%04d-%02d.csv', $year, $month);
         $rows = [$this->exportHeaders()];
         foreach ($this->exportRows($entries) as $row) {
@@ -151,7 +151,7 @@ class MyMonthReportController extends Controller {
         return $this->csvWithMetadata($rows, $filename, 'my-month', [
             'year' => $year,
             'month' => $month,
-        ]);
+        ], $request);
     }
 
     /**
@@ -166,13 +166,13 @@ class MyMonthReportController extends Controller {
     /**
      * @param  array<string, array{entries: Collection<int, TimeEntry>, minutes: int, rate: float}>  $byDay
      */
-    private function exportPdf(array $byDay, string $monthLabel, int $monthMinutes, float $monthRate, int $year, int $month): SymfonyResponse {
+    private function exportPdf(array $byDay, string $monthLabel, int $monthMinutes, float $monthRate, int $year, int $month, Request $request): SymfonyResponse {
         $filename = sprintf('mein-monat-%04d-%02d.pdf', $year, $month);
         return $this->pdfDownload('reports.pdf.my-month', [
             'byDay' => $byDay,
             'monthLabel' => $monthLabel,
             'monthMinutes' => $monthMinutes,
             'monthRate' => $monthRate,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'my-month', filters: ['year' => $year, 'month' => $month]);
     }
 }

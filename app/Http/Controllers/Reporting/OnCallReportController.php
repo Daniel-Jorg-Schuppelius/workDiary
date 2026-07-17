@@ -14,7 +14,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{EmergencyAssignment, OnCallShift, User};
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -33,13 +34,9 @@ class OnCallReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $this->resolveScope($request, $isAdmin);
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
@@ -47,10 +44,10 @@ class OnCallReportController extends Controller {
         $totals = $this->totals($rows);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to, $scope);
+            return $this->exportCsv($rows, $totals, $from, $to, $scope, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope);
+            return $this->exportPdf($rows, $totals, $from, $to, $scope, $request);
         }
 
         return view('reports.on-call', [
@@ -72,7 +69,7 @@ class OnCallReportController extends Controller {
      *   ratio: float|null
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         $shiftsQ = OnCallShift::query()
             ->where('is_archived', false)
             ->where('start_at', '<', $to)
@@ -175,7 +172,7 @@ class OnCallReportController extends Controller {
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @param  array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, Request $request): Response {
         $filename = sprintf('notdienst_%s_%s.csv', $from, $to);
         $fmt = static function (int $minutes): string {
             $h = intdiv($minutes, 60);
@@ -192,7 +189,7 @@ class OnCallReportController extends Controller {
                 $fmt($r['shift_minutes']),
                 $r['assignment_count'],
                 $fmt($r['assignment_minutes']),
-                $r['ratio'] !== null ? number_format($r['ratio'] * 100, 1, '.', '') : '',
+                $r['ratio'] !== null ? NumberHelper::toUSFormat($r['ratio'] * 100, 1) : '',
             ];
         }
         $out[] = [
@@ -201,21 +198,21 @@ class OnCallReportController extends Controller {
             $fmt($totals['shift_minutes']),
             $totals['assignment_count'],
             $fmt($totals['assignment_minutes']),
-            $totals['ratio'] !== null ? number_format($totals['ratio'] * 100, 1, '.', '') : '',
+            $totals['ratio'] !== null ? NumberHelper::toUSFormat($totals['ratio'] * 100, 1) : '',
         ];
 
         return $this->csvWithMetadata($out, $filename, 'on-call', [
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ]);
+        ], $request);
     }
 
     /**
      * @param  array<int, array{user: User, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}>  $rows
      * @param  array{users:int, shift_count:int, shift_minutes:int, assignment_count:int, assignment_minutes:int, ratio:float|null}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, Request $request): SymfonyResponse {
         $filename = sprintf('notdienst_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.on-call', [
             'rows' => $rows,
@@ -223,6 +220,6 @@ class OnCallReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'on-call', filters: ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 }

@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Auth\Sso;
 
 use App\Models\SsoConnection;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use DOMDocument;
 use DOMXPath;
 use Illuminate\Support\Facades\{Cache, Log};
@@ -181,7 +183,7 @@ class SamlClient {
             throw new SsoLoginException(__('sso.error.saml_invalid'));
         }
 
-        $key = 'sso.saml.assertion.' . $connection->id . '.' . sha1($assertionId);
+        $key = 'sso.saml.assertion.' . $connection->id . '.' . CryptoHelper::hash($assertionId, HashAlgorithm::SHA1);
         if (! Cache::add($key, true, self::REPLAY_TTL_SECONDS)) {
             Log::warning('SSO/SAML: Assertion-Replay abgelehnt.', ['connection_id' => $connection->id]);
 

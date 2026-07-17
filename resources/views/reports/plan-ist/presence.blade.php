@@ -31,16 +31,10 @@
             @if (isset($reportUser) && (int) $reportUser->id !== (int) auth()->id())
                 <input type="hidden" name="user" value="{{ $reportUser->sqid }}">
             @endif
-            <label class="flex items-center gap-1 text-xs">
-                <span>{{ __('Von') }}</span>
-                <input type="date" name="from" value="{{ $from->format('Y-m-d') }}"
-                       class="input input-sm input-bordered w-36 shrink-0" />
-            </label>
-            <label class="flex items-center gap-1 text-xs">
-                <span>{{ __('Bis') }}</span>
-                <input type="date" name="to" value="{{ $to->format('Y-m-d') }}"
-                       class="input input-sm input-bordered w-36 shrink-0" />
-            </label>
+            <x-date-range class="w-80 shrink-0" :label="false"
+                          from-name="from" to-name="to"
+                          :from="$from->format('Y-m-d')" :to="$to->format('Y-m-d')"
+                          :from-label="__('Von')" :to-label="__('Bis')" />
         </x-filter-bar>
 
         <div class="stats bg-base-200 shadow-sm mb-3">

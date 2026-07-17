@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Art eines Belegungsfensters im Verfügbarkeitskalender (MVP-260).
  * Weiche Reservierungen warnen bei Konflikt, harte blockieren.
  */
-enum RentalReservationKind: string {
+enum RentalReservationKind: string implements HasLabel {
+    use HasOptions;
+
     case Soft = 'soft';
     case Hard = 'hard';
     case Rental = 'rental';

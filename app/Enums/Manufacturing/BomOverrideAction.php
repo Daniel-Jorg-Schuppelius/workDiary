@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Wirkung eines Varianten-Stücklisten-Overrides (Feature 047, MVP-061). Die
  * Variante darf Basis-Positionen über ihren stabilen `position_code`
  * deaktivieren, Mengen überschreiben oder neue Positionen hinzufügen.
  */
-enum BomOverrideAction: string {
+enum BomOverrideAction: string implements HasLabel {
+    use HasOptions;
+
     case Disable = 'disable';
     case OverrideQty = 'override_qty';
     case Add = 'add';

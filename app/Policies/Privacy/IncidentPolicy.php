@@ -14,19 +14,18 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\Incident;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /** Datenschutzvorfaelle. Ohne Admin-Bypass, organisationsgebunden. */
 class IncidentPolicy {
-    private function sameOrg(User $user, Incident $incident): bool {
-        return (int) $user->organization_id === (int) $incident->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.incident.manage');
     }
 
     public function view(User $user, Incident $incident): bool {
-        return $this->sameOrg($user, $incident) && $user->can('dataprotection.incident.manage');
+        return $this->sharesOrganization($user, $incident) && $user->can('dataprotection.incident.manage');
     }
 
     public function create(User $user): bool {
@@ -34,6 +33,6 @@ class IncidentPolicy {
     }
 
     public function update(User $user, Incident $incident): bool {
-        return $this->sameOrg($user, $incident) && $user->can('dataprotection.incident.manage');
+        return $this->sharesOrganization($user, $incident) && $user->can('dataprotection.incident.manage');
     }
 }

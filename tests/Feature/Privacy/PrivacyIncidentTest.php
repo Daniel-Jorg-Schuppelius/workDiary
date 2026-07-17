@@ -58,7 +58,7 @@ class PrivacyIncidentTest extends TestCase {
             'summary' => 'Ransomware in der Kundeninfrastruktur',
             'controller_role' => 'processor',
             'controller_name' => 'Muster GmbH',
-            'controller_customer_id' => $customer->id,
+            'controller_customer_id' => $customer->sqid,
             'own_infrastructure_affected' => '1',
         ])->assertRedirect();
 

@@ -10,6 +10,9 @@
 
 namespace App\Enums\Facility;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Raumbezogene fachliche Anforderung je Gewerk (Feature 027).
  *
@@ -17,7 +20,9 @@ namespace App\Enums\Facility;
  * Anforderungen, die ein Raum gleichzeitig tragen kann, ohne ihn doppelt
  * anzulegen (1:n über `room_requirements`).
  */
-enum RoomRequirementKind: string {
+enum RoomRequirementKind: string implements HasLabel {
+    use HasOptions;
+
     case HygieneLevel = 'hygieneLevel';
     case SpecialCleaning = 'specialCleaning';
     case AccessRestriction = 'accessRestriction';
@@ -48,15 +53,5 @@ enum RoomRequirementKind: string {
             self::OperatorDuty => 'gavel',
             self::Other => 'label',
         };
-    }
-
-    /** @return array<string, string> */
-    public static function options(): array {
-        $options = [];
-        foreach (self::cases() as $case) {
-            $options[$case->value] = $case->label();
-        }
-
-        return $options;
     }
 }

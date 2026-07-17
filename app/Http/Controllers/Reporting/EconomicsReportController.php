@@ -19,6 +19,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Expense, MaterialUsage, Project, TimeEntry, Timesheet, User};
 use App\Services\Reporting\{EconomicsReportBuilder, ReportTargetEvaluator};
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -47,8 +48,7 @@ class EconomicsReportController extends Controller {
         abort_unless($allowed, 403);
 
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $rawProjectId = $request->query('project_id');
         $projectId = Sqid::decodeOrNumeric(Project::class, $rawProjectId);
@@ -67,15 +67,11 @@ class EconomicsReportController extends Controller {
         ];
 
         if ($request->query('export') === 'csv') {
-            $this->auditExport($request, 'economics', 'csv', $exportContext);
-
-            return $this->exportCsv($byCustomer, $byProject, $from->toDateString(), $to->toDateString(), $exportContext, $boqDimension);
+            return $this->exportCsv($byCustomer, $byProject, $from->toDateString(), $to->toDateString(), $exportContext, $request, $boqDimension);
         }
 
         if ($request->query('export') === 'pdf') {
-            $this->auditExport($request, 'economics', 'pdf', $exportContext);
-
-            return $this->exportPdf($byCustomer, $byProject, $range['label'], $from->toDateString(), $to->toDateString(), $boqDimension);
+            return $this->exportPdf($byCustomer, $byProject, $range['label'], $from->toDateString(), $to->toDateString(), $exportContext, $request, $boqDimension);
         }
 
         $rankProjects = collect($byProject)->filter(static fn(array $r): bool => $r['revenue'] > 0.0 || $r['cost'] > 0.0);
@@ -141,7 +137,7 @@ class EconomicsReportController extends Controller {
      * @param  array<string, mixed>        $filters
      * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>}|null  $byBoq
      */
-    private function exportCsv(array $byCustomer, array $byProject, string $from, string $to, array $filters, ?array $byBoq = null): Response {
+    private function exportCsv(array $byCustomer, array $byProject, string $from, string $to, array $filters, Request $request, ?array $byBoq = null): Response {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
@@ -159,7 +155,7 @@ class EconomicsReportController extends Controller {
 
         // MVP-332: LV-Dimension als eigene Sektion (nur mit Projektfilter + LV).
         if ($byBoq !== null && $byBoq['hasBoq']) {
-            $num = static fn($v): string => $v === null ? '' : number_format((float) $v, 2, '.', '');
+            $num = static fn($v): string => $v === null ? '' : NumberHelper::toUSFormat((float) $v, 2);
             $out[] = [''];
             $out[] = [
                 'LVPosition', 'Nachtrag', 'Kurztext', 'MengeAufmass', 'Einheit',
@@ -170,7 +166,7 @@ class EconomicsReportController extends Controller {
                     (string) $p['referenceNo'],
                     $p['isAddendum'] ? 'ja' : 'nein',
                     (string) ($p['shortText'] ?? ''),
-                    number_format((float) $p['measuredQuantity'], 4, '.', ''),
+                    NumberHelper::toUSFormat((float) $p['measuredQuantity'], 4),
                     (string) ($p['unit'] ?? ''),
                     $num($p['revenue']),
                     (string) $p['timeMinutes'],
@@ -187,7 +183,7 @@ class EconomicsReportController extends Controller {
             ];
         }
 
-        return $this->csvWithMetadata($out, $filename, 'economics', $filters);
+        return $this->csvWithMetadata($out, $filename, 'economics', $filters, $request);
     }
 
     /**
@@ -195,7 +191,7 @@ class EconomicsReportController extends Controller {
      * @return list<string>
      */
     private function csvRow(string $level, string $name, string $customer, array $r): array {
-        $num = static fn($v): string => $v === null ? '' : number_format((float) $v, 2, '.', '');
+        $num = static fn($v): string => $v === null ? '' : NumberHelper::toUSFormat((float) $v, 2);
 
         return [
             $level,
@@ -221,9 +217,10 @@ class EconomicsReportController extends Controller {
     /**
      * @param  list<array<string, mixed>>  $byCustomer
      * @param  list<array<string, mixed>>  $byProject
+     * @param  array<string, mixed>        $filters
      * @param  array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>}|null  $byBoq
      */
-    private function exportPdf(array $byCustomer, array $byProject, string $label, string $from, string $to, ?array $byBoq = null): SymfonyResponse {
+    private function exportPdf(array $byCustomer, array $byProject, string $label, string $from, string $to, array $filters, Request $request, ?array $byBoq = null): SymfonyResponse {
         $filename = sprintf('wirtschaftlichkeit_%s_%s.pdf', $from, $to);
 
         return $this->pdfDownload('reports.pdf.economics', [
@@ -231,7 +228,7 @@ class EconomicsReportController extends Controller {
             'byProject' => $byProject,
             'byBoq' => $byBoq,
             'label' => $label,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'economics', $filters);
     }
 
     /**

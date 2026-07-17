@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetFinance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Fristart im Fristenkalender (MVP-273). HU/UVV/Eichung bleiben in der
  * Prüfpflichtenverwaltung führend und werden dort terminiert (Feature 075).
  */
-enum AssetFinanceDeadlineKind: string {
+enum AssetFinanceDeadlineKind: string implements HasLabel {
+    use HasOptions;
+
     case Termination = 'termination';
     case Extension = 'extension';
     case PurchaseOption = 'purchase_option';

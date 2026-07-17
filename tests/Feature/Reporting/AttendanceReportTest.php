@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\User;
+use App\Models\{AuditLog, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
@@ -43,6 +43,12 @@ class AttendanceReportTest extends TestCase {
         $body = $response->getContent() ?: '';
         $this->assertStringContainsString('#report:attendance', $body);
         $this->assertStringContainsString('Mitarbeiter', $body);
+
+        // A9: Audit läuft jetzt zentral in csvWithMetadata — vorher audit-los.
+        $audit = AuditLog::query()->where('event', 'report.exported')->latest('id')->firstOrFail();
+        $changes = $audit->getAttribute('changes') ?? [];
+        $this->assertSame('attendance', $changes['report_code']);
+        $this->assertSame('csv', $changes['format']);
     }
 
     /**

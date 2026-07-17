@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\{Organization, PurchaseOrder};
-use Illuminate\Support\Facades\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**
  * Rendert eine Bestellung als menschenlesbares PDF (Feature 048, E4) — für
@@ -35,18 +33,17 @@ class PurchaseOrderPdfRenderer {
             $total = bcadd($total, bcmul((string) $line->ordered_qty, (string) ($line->unit_price ?? '0'), self::SCALE), self::SCALE);
         }
 
-        $html = View::make('pdf.purchase-order', [
-            'order' => $order,
-            'organization' => $organization,
-            'total' => $total,
-        ])->render();
-
-        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
-        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)
-            ->composeFor($organization, \App\Enums\DocumentDesign\RenderDocumentKind::PurchaseOrder, $html);
-
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.purchase-order).');
+        // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
+        return app(DocumentDesignRenderer::class)->renderPdf(
+            RenderDocumentKind::PurchaseOrder,
+            'pdf.purchase-order',
+            [
+                'order' => $order,
+                'organization' => $organization,
+                'total' => $total,
+            ],
+            $organization,
+        );
     }
 
     /** Dateiname-tauglicher Bezeichner aus der Bestellnummer. */

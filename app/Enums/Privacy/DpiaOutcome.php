@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Ergebnis einer Datenschutz-Folgenabschätzung (Art. 35/36). */
-enum DpiaOutcome: string {
+enum DpiaOutcome: string implements HasLabel {
+    use HasOptions;
+
     case Open = 'open';                       // noch offen
     case Proceed = 'proceed';                 // Restrisiko vertretbar
     case ConsultAuthority = 'consult';        // vorherige Konsultation (Art. 36)

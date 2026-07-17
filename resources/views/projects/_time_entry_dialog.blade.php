@@ -153,7 +153,7 @@
                     <select name="rework_reason_classification_id" class="select select-bordered w-full">
                         <option value="">{{ __('— keiner —') }}</option>
                         @foreach ($reworkOptions as $option)
-                            <option value="{{ $option->id }}" @selected((string) old('rework_reason_classification_id', $entry?->rework_reason_classification_id) === (string) $option->id)>{{ $option->label }}</option>
+                            <option value="{{ $option->sqid }}" @selected((string) old('rework_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->rework_reason_classification_id)) === $option->sqid)>{{ $option->label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -164,7 +164,7 @@
                     <select name="goodwill_reason_classification_id" class="select select-bordered w-full">
                         <option value="">{{ __('— keiner —') }}</option>
                         @foreach ($goodwillOptions as $option)
-                            <option value="{{ $option->id }}" @selected((string) old('goodwill_reason_classification_id', $entry?->goodwill_reason_classification_id) === (string) $option->id)>{{ $option->label }}</option>
+                            <option value="{{ $option->sqid }}" @selected((string) old('goodwill_reason_classification_id', \App\Support\Sqid::encode(\App\Models\Classification::class, $entry?->goodwill_reason_classification_id)) === $option->sqid)>{{ $option->label }}</option>
                         @endforeach
                     </select>
                 </div>

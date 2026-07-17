@@ -48,7 +48,7 @@ class PrivacyGvvTest extends TestCase {
         $partner = $this->partner($org);
 
         $this->actingAs($officer)->post(route('dataprotection.gvv.store'), [
-            'partner_id' => $partner->id,
+            'partner_id' => $partner->sqid,
             'title' => 'Gemeinsames Portal',
             'contact_point' => 'datenschutz@example.com',
             'essence_provided' => '1',

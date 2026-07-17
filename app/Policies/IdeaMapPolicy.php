@@ -13,6 +13,7 @@ namespace App\Policies;
 use App\Enums\Ideas\IdeaShareRole;
 use App\Enums\User\Permission as P;
 use App\Models\{IdeaMap, User};
+use App\Policies\Concerns\ChecksOwnership;
 
 /**
  * Zugriffsregeln Ideenlandkarten (Feature 054, MVP-104/107) — die zentrale
@@ -30,6 +31,8 @@ use App\Models\{IdeaMap, User};
  * - Knoten-Zugriffe delegieren immer hierher (keine eigene Sichtbarkeit).
  */
 class IdeaMapPolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return $user->can(P::IdeasViewAny->value);
     }
@@ -39,13 +42,13 @@ class IdeaMapPolicy {
     }
 
     public function view(User $user, IdeaMap $map): bool {
-        return $this->sameOrganization($user, $map)
+        return $this->sharesOrganization($user, $map)
             && ($map->isOwnedBy($user) || $this->shareRole($user, $map) !== null);
     }
 
     /** Bearbeiten: Eigentümer oder Freigabe mit Editor-Rolle; nie auf archivierten Karten. */
     public function update(User $user, IdeaMap $map): bool {
-        if (! $this->sameOrganization($user, $map) || $map->isArchived()) {
+        if (! $this->sharesOrganization($user, $map) || $map->isArchived()) {
             return false;
         }
 
@@ -54,21 +57,21 @@ class IdeaMapPolicy {
 
     /** Freigaben verwaltet ausschließlich der Eigentümer. */
     public function share(User $user, IdeaMap $map): bool {
-        return $this->sameOrganization($user, $map) && $map->isOwnedBy($user);
+        return $this->sharesOrganization($user, $map) && $map->isOwnedBy($user);
     }
 
     /** Archivieren/Löschen/Wiederherstellen: nur der Eigentümer. */
     public function delete(User $user, IdeaMap $map): bool {
-        return $this->sameOrganization($user, $map) && $map->isOwnedBy($user);
+        return $this->sharesOrganization($user, $map) && $map->isOwnedBy($user);
     }
 
     public function restore(User $user, IdeaMap $map): bool {
-        return $this->sameOrganization($user, $map) && $map->isOwnedBy($user);
+        return $this->sharesOrganization($user, $map) && $map->isOwnedBy($user);
     }
 
     /** Export (PDF/JSON, P6): nur der Eigentümer. */
     public function export(User $user, IdeaMap $map): bool {
-        return $this->sameOrganization($user, $map) && $map->isOwnedBy($user);
+        return $this->sharesOrganization($user, $map) && $map->isOwnedBy($user);
     }
 
     /**
@@ -76,16 +79,12 @@ class IdeaMapPolicy {
      * Aufbewahrung und Nutzer-Austritt. KEIN Knoteninhalt.
      */
     public function viewMeta(User $user, IdeaMap $map): bool {
-        return $this->sameOrganization($user, $map) && $user->can(P::IdeasManageLifecycle->value);
+        return $this->sharesOrganization($user, $map) && $user->can(P::IdeasManageLifecycle->value);
     }
 
     /** Eigentum auditierbar übertragen / fremde Karte archivieren (Austritt/Deaktivierung). */
     public function manageLifecycle(User $user, IdeaMap $map): bool {
-        return $this->sameOrganization($user, $map) && $user->can(P::IdeasManageLifecycle->value);
-    }
-
-    private function sameOrganization(User $user, IdeaMap $map): bool {
-        return (int) $user->organization_id === (int) $map->organization_id;
+        return $this->sharesOrganization($user, $map) && $user->can(P::IdeasManageLifecycle->value);
     }
 
     /** Aktive Freigabe-Rolle des Nutzers (direkte Personen- oder Team-Freigabe), sonst null. */

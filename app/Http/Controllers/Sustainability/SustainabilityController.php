@@ -18,6 +18,7 @@ use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityAssessment, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityFrameMapping, SustainabilityMeasure, SustainabilityReportSnapshot, SustainabilityTarget};
 use App\Models\User;
 use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -70,7 +71,7 @@ class SustainabilityController extends Controller {
         });
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($aggregate, $from, $to);
+            return $this->exportCsv($aggregate, $from, $to, $request);
         }
 
         return view('sustainability.index', [
@@ -345,21 +346,21 @@ class SustainabilityController extends Controller {
     }
 
     /** @param array<string, mixed> $aggregate */
-    private function exportCsv(array $aggregate, string $from, string $to): Response {
+    private function exportCsv(array $aggregate, string $from, string $to, Request $request): Response {
         $rows = [['Bereich', 'Schlüssel', 'Menge', 'Einheit', 'CO2e kg', 'Faktorquelle']];
         foreach ($aggregate['activities'] as $code => $activity) {
-            $rows[] = ['Aktivität', $code, number_format($activity['amount'], 3, '.', ''), $activity['unit'], $activity['co2e_kg'] !== null ? number_format($activity['co2e_kg'], 3, '.', '') : 'FAKTOR FEHLT', $activity['factor_source'] ?? ''];
+            $rows[] = ['Aktivität', $code, NumberHelper::toUSFormat((float) $activity['amount'], 3), $activity['unit'], $activity['co2e_kg'] !== null ? NumberHelper::toUSFormat((float) $activity['co2e_kg'], 3) : 'FAKTOR FEHLT', $activity['factor_source'] ?? ''];
         }
         foreach ($aggregate['co2e_by_scope'] as $scope => $value) {
-            $rows[] = ['Scope', (string) $scope, '', '', number_format($value, 3, '.', ''), ''];
+            $rows[] = ['Scope', (string) $scope, '', '', NumberHelper::toUSFormat((float) $value, 3), ''];
         }
-        $rows[] = ['Gesamt', 'co2e_total', '', '', number_format($aggregate['co2e_total_kg'], 3, '.', ''), ''];
+        $rows[] = ['Gesamt', 'co2e_total', '', '', NumberHelper::toUSFormat((float) $aggregate['co2e_total_kg'], 3), ''];
         foreach ($aggregate['quality_share'] as $quality => $count) {
             $rows[] = ['Datenqualität', $quality, (string) $count, 'Datensätze', '', ''];
         }
         $rows[] = ['Methodik', 'Hinweis', '', '', '', 'Schätzwerte gekennzeichnet; keine Konformitätszusage (VSME-Vorbereitung).'];
 
-        return $this->csvWithMetadata($rows, sprintf('sustainability_%s_%s.csv', $from, $to), 'sustainability', ['from' => $from, 'to' => $to]);
+        return $this->csvWithMetadata($rows, sprintf('sustainability_%s_%s.csv', $from, $to), 'sustainability', ['from' => $from, 'to' => $to], $request);
     }
 
     private function actor(): User {

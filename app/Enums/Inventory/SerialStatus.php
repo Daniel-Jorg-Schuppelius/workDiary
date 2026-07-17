@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Lebenslauf einer Einzelseriennummer (Feature 047/048, E2). Lückenlos auditiert,
  * eine Seriennummer existiert genau einmal je Organisation + Artikel.
  */
-enum SerialStatus: string {
+enum SerialStatus: string implements HasLabel {
+    use HasOptions;
+
     case Created = 'created';     // erzeugt, noch nicht eingelagert
     case InStock = 'in_stock';    // auf Lager, verfügbar
     case Reserved = 'reserved';   // einem Auftrag zugeordnet

@@ -17,7 +17,7 @@ use App\Http\Controllers\Reporting\Concerns\ResolvesReportScope;
 use App\Models\{SickLeave, User};
 use App\Services\HolidayService;
 use App\Services\Sickness\ContinuedPaymentService;
-use Carbon\Carbon;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,13 +41,9 @@ class SicknessReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $this->resolveScope($request, $isAdmin);
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
 
         $rows = $this->aggregate($fromDate, $toDate, $scope, $userId);
         $totals = $this->totals($rows);
@@ -77,7 +73,7 @@ class SicknessReportController extends Controller {
      *   exhaustion_date:?string
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         $q = SickLeave::query()
             ->whereNull('cancelled_at')
             ->where('end_date', '>=', $from->toDateString())
@@ -170,7 +166,7 @@ class SicknessReportController extends Controller {
         return $t;
     }
 
-    private function countWorkdays(Carbon $start, Carbon $end): int {
+    private function countWorkdays(CarbonInterface $start, CarbonInterface $end): int {
         if ($start->greaterThan($end)) {
             return 0;
         }
@@ -181,7 +177,8 @@ class SicknessReportController extends Controller {
             if ($cursor->isWeekday() && ! $this->holidayService->isHoliday($cursor)) {
                 $count++;
             }
-            $cursor->addDay();
+            // Zuweisung statt In-Place-Mutation: funktioniert für Carbon UND CarbonImmutable.
+            $cursor = $cursor->addDay();
         }
 
         return $count;

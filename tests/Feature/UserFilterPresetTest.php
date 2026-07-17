@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{User, UserFilterPreset};
+use App\Models\UserFilterPreset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Concerns\WithOrganization;
@@ -25,14 +25,10 @@ class UserFilterPresetTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function makeUser(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     #[Test]
     public function index_lists_only_own_presets(): void {
-        $user = $this->makeUser();
-        $other = $this->makeUser();
+        $user = $this->orgUser();
+        $other = $this->orgUser();
 
         UserFilterPreset::create([
             'user_id' => $user->id,
@@ -56,7 +52,7 @@ class UserFilterPresetTest extends TestCase {
 
     #[Test]
     public function store_creates_preset_and_unmarks_other_defaults_in_scope(): void {
-        $user = $this->makeUser();
+        $user = $this->orgUser();
         $existing = UserFilterPreset::create([
             'user_id' => $user->id,
             'scope' => 'diary',
@@ -87,8 +83,8 @@ class UserFilterPresetTest extends TestCase {
 
     #[Test]
     public function destroy_forbidden_for_foreign_preset(): void {
-        $owner = $this->makeUser();
-        $intruder = $this->makeUser();
+        $owner = $this->orgUser();
+        $intruder = $this->orgUser();
         $preset = UserFilterPreset::create([
             'user_id' => $owner->id,
             'scope' => 'diary',

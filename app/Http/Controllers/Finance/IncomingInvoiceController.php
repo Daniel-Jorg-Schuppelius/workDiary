@@ -16,6 +16,7 @@ use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\{Document, User};
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -106,7 +107,7 @@ class IncomingInvoiceController extends Controller {
         $filename = 'e-rechnung-' . $document->getKey() . '.xml';
         $document->audit('document.einvoice_xml_exported', [
             'filename' => $filename,
-            'sha256' => hash('sha256', $xml),
+            'sha256' => CryptoHelper::hash($xml),
         ]);
 
         return response($xml, 200, [

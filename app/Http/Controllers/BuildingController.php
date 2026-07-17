@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Models\{Building, Site};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class BuildingController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['name', 'code', 'year_built', 'gross_area_m2'];
 
     public function index(Request $request): View {
@@ -24,11 +27,8 @@ class BuildingController extends Controller {
 
         $rawSite = (string) $request->query('site', '');
         $siteId = Sqid::decodeOrNumeric(Site::class, $rawSite);
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $query = Building::query()
             ->with('site.customer')

@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Bearbeitungsstand einer Betroffenenanfrage. */
-enum DataSubjectRequestStatus: string {
+enum DataSubjectRequestStatus: string implements HasLabel {
+    use HasOptions;
+
     case Intake = 'intake';                 // eingegangen, noch nicht geprüft
     case IdentityCheck = 'identity_check';  // Identitätsprüfung läuft
     case InProgress = 'in_progress';        // in Bearbeitung

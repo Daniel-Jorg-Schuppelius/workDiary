@@ -13,6 +13,7 @@ namespace App\Plugins\Todoist;
 use App\Models\{Organization, PluginSetting, TodoistConnection};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use Throwable;
 
@@ -57,13 +58,11 @@ class TodoistPlugin implements Plugin, TaskSyncer {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -127,7 +126,7 @@ class TodoistPlugin implements Plugin, TaskSyncer {
             return PluginHealth::degraded(__('Todoist ist nicht konfiguriert (TODOIST_CLIENT_ID/SECRET fehlen).'));
         }
 
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('Konfiguriert (keine Organisation im Kontext).'));
         }

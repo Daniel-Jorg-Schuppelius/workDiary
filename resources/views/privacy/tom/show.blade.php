@@ -89,7 +89,7 @@
                 <form method="post" action="{{ route('dataprotection.tom.assign', $measure) }}" class="flex gap-2 pt-2">
                     @csrf
                     <select name="activity_id" class="select select-sm select-bordered flex-1">
-                        @foreach ($activities as $a)<option value="{{ $a->id }}">{{ $a->name }}</option>@endforeach
+                        @foreach ($activities as $a)<option value="{{ $a->sqid }}">{{ $a->name }}</option>@endforeach
                     </select>
                     <button class="btn btn-sm">{{ __('Zuordnen') }}</button>
                 </form>

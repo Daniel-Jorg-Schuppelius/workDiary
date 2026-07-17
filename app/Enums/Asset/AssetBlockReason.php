@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Asset;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Sperrgrund im gemeinsamen Asset-Sperrmodell (Entscheidung D12).
  * Neue Sperrquellen ergänzen einen Grund, kein zweites Sperrmodell.
  */
-enum AssetBlockReason: string {
+enum AssetBlockReason: string implements HasLabel {
+    use HasOptions;
+
     case Defect = 'defect';
     case Safety = 'safety';
     case Recall = 'recall';

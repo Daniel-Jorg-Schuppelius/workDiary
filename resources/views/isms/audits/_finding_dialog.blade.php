@@ -39,7 +39,7 @@
         <x-select-field name="isms_requirement_id" :label="__('isms.field.requirement')">
             <option value="">—</option>
             @foreach ($requirements as $requirement)
-                <option value="{{ $requirement->id }}" @selected((string) old('isms_requirement_id', $finding?->isms_requirement_id) === (string) $requirement->id)>
+                <option value="{{ $requirement->sqid }}" @selected((string) old('isms_requirement_id', \App\Support\Sqid::encode(\App\Models\Isms\IsmsRequirement::class, $finding?->isms_requirement_id)) === $requirement->sqid)>
                     {{ $requirement->normLabel() }} · {{ $requirement->ref_no }} — {{ $requirement->title }}
                 </option>
             @endforeach

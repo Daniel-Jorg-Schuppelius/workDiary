@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Freigabe-/Übergabestatus der kaufmännischen Folge (MVP-252). */
-enum ClaimFinancialStatus: string {
+enum ClaimFinancialStatus: string implements HasLabel {
+    use HasOptions;
+
     case Proposed = 'proposed';
     case Approved = 'approved';
     case Executed = 'executed';

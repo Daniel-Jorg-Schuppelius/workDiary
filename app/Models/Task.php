@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, Searchable};
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -53,6 +53,7 @@ class Task extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -183,5 +184,10 @@ class Task extends Model {
      */
     public function agileWorkItem(): \Illuminate\Database\Eloquent\Relations\HasOne {
         return $this->hasOne(\App\Models\Agile\AgileWorkItem::class, 'task_id');
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['title', 'description'];
     }
 }

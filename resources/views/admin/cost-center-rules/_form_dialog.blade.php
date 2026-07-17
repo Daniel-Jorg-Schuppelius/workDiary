@@ -13,11 +13,12 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('costcenter.action.save') : __('costcenter.action.create')"
 >
+    {{-- Quell-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
     <x-form-group :legend="__('costcenter.field.basics')" icon="account_balance" tone="primary" cols="2"
-                  x-data="{ source: @js($sourceValue) }">
+                  x-data="reveal(@js($sourceValue))">
         <div class="fieldset">
             <label class="fieldset-label" for="ccr-source">{{ __('costcenter.field.source') }}</label>
-            <select id="ccr-source" name="source" class="select select-bordered w-full" required x-model="source">
+            <select id="ccr-source" name="source" class="select select-bordered w-full" required x-model="value">
                 <option value="default">{{ __('costcenter.field.source_default') }}</option>
                 <option value="user">{{ __('costcenter.field.source_user') }}</option>
                 <option value="team">{{ __('costcenter.field.source_team') }}</option>
@@ -31,7 +32,7 @@
                        class="font-mono"
                        placeholder="4711" />
 
-        <div class="fieldset" x-show="source === 'user'" x-cloak>
+        <div class="fieldset" x-show="is('user')" x-cloak>
             <label class="fieldset-label" for="ccr-user">{{ __('costcenter.field.user') }}</label>
             <select id="ccr-user" name="user_id" class="select select-bordered w-full">
                 <option value="">{{ __('costcenter.field.choose') }}</option>
@@ -42,7 +43,7 @@
             @error('user_id')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <div class="fieldset" x-show="source === 'team'" x-cloak>
+        <div class="fieldset" x-show="is('team')" x-cloak>
             <label class="fieldset-label" for="ccr-team">{{ __('costcenter.field.team') }}</label>
             <select id="ccr-team" name="team_id" class="select select-bordered w-full">
                 <option value="">{{ __('costcenter.field.choose') }}</option>

@@ -12,6 +12,8 @@
     'toId' => null,
     'size' => 'sm',             // sm | md | lg | '' to disable
     'required' => false,
+    'fromRequired' => null,     // Überschreibt required nur für „Von" (gemischte Pflichtfelder)
+    'toRequired' => null,       // Überschreibt required nur für „Bis"
     'fromError' => null,
     'toError' => null,
     'min' => null,
@@ -24,6 +26,8 @@
 ])
 
 @php
+    $fromRequired ??= $required;
+    $toRequired ??= $required;
     $fromLabel ??= __('Von');
     $toLabel ??= __('Bis');
     $label ??= $fromLabel.' – '.$toLabel;
@@ -53,7 +57,7 @@
                     name="{{ $fromName }}"
                     type="{{ $type }}"
                     value="{{ $from }}"
-                    @if($required) required @endif
+                    @if($fromRequired) required @endif
                     @if($min !== null) min="{{ $min }}" @endif
                     @if($fromMax !== null) max="{{ $fromMax }}" @endif
                     @if($linked) data-range-from @endif
@@ -68,7 +72,7 @@
                     name="{{ $toName }}"
                     type="{{ $type }}"
                     value="{{ $to }}"
-                    @if($required) required @endif
+                    @if($toRequired) required @endif
                     @if($toMin !== null) min="{{ $toMin }}" @endif
                     @if($max !== null) max="{{ $max }}" @endif
                     @if($linked) data-range-to @endif
@@ -84,7 +88,7 @@
                     name="{{ $fromName }}"
                     type="{{ $type }}"
                     value="{{ $from }}"
-                    @if($required) required @endif
+                    @if($fromRequired) required @endif
                     @if($min !== null) min="{{ $min }}" @endif
                     @if($fromMax !== null) max="{{ $fromMax }}" @endif
                     @if($linked) data-range-from @endif
@@ -99,7 +103,7 @@
                     name="{{ $toName }}"
                     type="{{ $type }}"
                     value="{{ $to }}"
-                    @if($required) required @endif
+                    @if($toRequired) required @endif
                     @if($toMin !== null) min="{{ $toMin }}" @endif
                     @if($max !== null) max="{{ $max }}" @endif
                     @if($linked) data-range-to @endif
@@ -124,7 +128,7 @@
                 type="{{ $type }}"
                 name="{{ $fromName }}"
                 value="{{ $from }}"
-                @if($required) required @endif
+                @if($fromRequired) required @endif
                 @if($min !== null) min="{{ $min }}" @endif
                 @if($fromMax !== null) max="{{ $fromMax }}" @endif
                 @if($linked) data-range-from @endif
@@ -137,7 +141,7 @@
                 type="{{ $type }}"
                 name="{{ $toName }}"
                 value="{{ $to }}"
-                @if($required) required @endif
+                @if($toRequired) required @endif
                 @if($toMin !== null) min="{{ $toMin }}" @endif
                 @if($max !== null) max="{{ $max }}" @endif
                 @if($linked) data-range-to @endif

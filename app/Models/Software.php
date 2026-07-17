@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use Database\Factories\SoftwareFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -41,6 +41,7 @@ class Software extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $table = 'software';
 
@@ -70,5 +71,10 @@ class Software extends Model {
 
     public function displayName(): string {
         return $this->vendor ? "{$this->vendor} — {$this->name}" : $this->name;
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'vendor'];
     }
 }

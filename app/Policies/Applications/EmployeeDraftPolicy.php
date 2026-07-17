@@ -16,25 +16,21 @@ use App\Enums\User\Permission as P;
 use App\Models\Applications\EmployeeDraft;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /** Mitarbeiter-Entwürfe (Feature 068, MVP-193): HR-Bereich (recruiting.*). */
-class EmployeeDraftPolicy {
+class EmployeeDraftPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::RecruitingViewAny->value);
-    }
-
-    public function view(User $user, EmployeeDraft $draft): bool {
-        return $user->can(P::RecruitingView->value);
-    }
-
-    public function update(User $user, EmployeeDraft $draft): bool {
-        return $user->can(P::RecruitingManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::RecruitingViewAny,
+        'view' => P::RecruitingView,
+        'update' => P::RecruitingManage,
+        'invite' => P::RecruitingDecide,
+    ];
 
     /** Bewusste Übernahme in den Invite-Pfad — Entscheidungsrecht nötig. */
     public function invite(User $user, EmployeeDraft $draft): bool {
-        return $user->can(P::RecruitingDecide->value);
+        return $this->allows($user, 'invite');
     }
 }

@@ -74,8 +74,4 @@
     <x-textarea-field name="notes" :label="__('Notizen')" rows="3" :value="old('notes', $log?->notes)" :span="2" />
 </x-form-group>
 
-@if ($errors->any())
-    <div class="alert alert-error text-sm">
-        <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-    </div>
-@endif
+<x-validation-errors />

@@ -14,6 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Models\Isms\IsmsAudit;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln Audits inkl. Feststellungen und Korrekturmaßnahmen
@@ -25,36 +26,26 @@ use App\Policies\Concerns\HasAdminBypass;
  *   KEINE eigene Policy — sie werden über manageFindings() am Audit
  *   autorisiert (analog Zertifikate in der IsmsNormStatusPolicy).
  */
-class IsmsAuditPolicy {
+class IsmsAuditPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsAudit $audit): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsAudit $audit): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsAudit $audit): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+        'transition' => P::IsmsManage,
+        'manageFindings' => P::IsmsManage,
+    ];
 
     /** Statuswechsel entlang der State-Machine (AuditService). */
     public function transition(User $user, IsmsAudit $audit): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'transition');
     }
 
     /** Feststellungen + Korrekturmaßnahmen dieses Audits verwalten. */
     public function manageFindings(User $user, IsmsAudit $audit): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'manageFindings');
     }
 }

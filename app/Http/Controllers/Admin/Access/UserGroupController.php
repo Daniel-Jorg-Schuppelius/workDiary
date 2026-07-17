@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
-use App\Http\Controllers\Concerns\{AuditsAccessChanges, ResolvesCurrentOrganization};
+use App\Http\Controllers\Concerns\{AuditsAccessChanges, ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{User, UserGroup};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -26,6 +26,7 @@ use Spatie\Permission\Models\{Permission, Role};
  */
 class UserGroupController extends Controller {
     use AuditsAccessChanges;
+    use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
     private const ALLOWED_SORTS = ['name', 'slug', 'members_count', 'description'];
@@ -33,19 +34,12 @@ class UserGroupController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', UserGroup::class);
 
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $groups = UserGroup::query()
             ->withCount('members')
-            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->whereLikeEscaped('name', $search)
-                    ->orWhereLikeEscaped('slug', $search)
-                    ->orWhereLikeEscaped('description', $search);
-            }))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->orderBy($sort, $dir)
             ->paginate(25)
             ->withQueryString();

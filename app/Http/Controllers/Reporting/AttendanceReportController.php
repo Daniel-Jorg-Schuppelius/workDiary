@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{Attendance, TimeEntry, User, WorkSchedule};
 use Carbon\{CarbonImmutable, CarbonInterface, CarbonPeriod};
 use Illuminate\Database\Eloquent\Collection;
@@ -29,16 +29,12 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class AttendanceReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
         $range = $this->globalDateRange();
         $from = $range['from'];
@@ -49,10 +45,10 @@ class AttendanceReportController extends Controller {
         $rows = $this->aggregate($from, $to, $scope, $userId);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $fromStr, $toStr, $scope);
+            return $this->exportCsv($rows, $fromStr, $toStr, $scope, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $fromStr, $toStr, $scope);
+            return $this->exportPdf($rows, $fromStr, $toStr, $scope, $request);
         }
 
         return view('reports.attendance', [
@@ -220,7 +216,7 @@ class AttendanceReportController extends Controller {
     /**
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      */
-    private function exportCsv(array $rows, string $from, string $to, string $scope): Response {
+    private function exportCsv(array $rows, string $from, string $to, string $scope, Request $request): Response {
         $filename = sprintf('anwesenheit_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = ['Mitarbeiter', 'Arbeitstage', 'Soll (min)', 'Anwesend (min)', 'Gebucht (min)', 'Saldo (min)'];
@@ -230,13 +226,13 @@ class AttendanceReportController extends Controller {
         $totals = $this->totals($rows);
         $out[] = ['GESAMT', '', $totals['target'], $totals['attendance'], $totals['time_entry'], $totals['variance']];
 
-        return $this->csvWithMetadata($out, $filename, 'attendance', ['from' => $from, 'to' => $to, 'scope' => $scope]);
+        return $this->csvWithMetadata($out, $filename, 'attendance', ['from' => $from, 'to' => $to, 'scope' => $scope], $request);
     }
 
     /**
      * @param  array<int, array{user: User, attendance_minutes:int, time_entry_minutes:int, target_minutes:int, workdays:int, variance:int}>  $rows
      */
-    private function exportPdf(array $rows, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $rows, string $from, string $to, string $scope, Request $request): SymfonyResponse {
         $filename = sprintf('anwesenheit_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.attendance', [
             'rows' => $rows,
@@ -244,6 +240,6 @@ class AttendanceReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'attendance', filters: ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 }

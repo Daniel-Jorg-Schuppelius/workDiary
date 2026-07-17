@@ -30,16 +30,8 @@ class DispatchTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
     private function teamleitung(): User {
         return User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function worker(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
     private function setComplianceMode(string $mode): void {
@@ -50,7 +42,7 @@ class DispatchTest extends TestCase {
     private function entry(array $overrides = []): DiaryEntry {
         return DiaryEntry::factory()->create(array_replace([
             'organization_id' => $this->organization->id,
-            'user_id' => $this->worker()->id,
+            'user_id' => $this->orgUser()->id,
             'mode' => Mode::Fixed->value,
             'status' => Status::Open->value,
             'start_at' => Carbon::parse('2026-07-01 09:00'),
@@ -67,7 +59,7 @@ class DispatchTest extends TestCase {
     }
 
     public function test_dispatch_status_is_planned_when_assigned(): void {
-        $entry = $this->entry(['assigned_user_id' => $this->worker()->id]);
+        $entry = $this->entry(['assigned_user_id' => $this->orgUser()->id]);
 
         $this->assertSame(DispatchStatus::Planned, app(DispatchStatusResolver::class)->resolve($entry));
     }
@@ -83,7 +75,7 @@ class DispatchTest extends TestCase {
 
     public function test_transition_writes_override_audit_trail(): void {
         $entry = $this->entry();
-        $actor = $this->admin();
+        $actor = $this->orgAdmin();
 
         app(DispatchStatusResolver::class)->transition($entry, DispatchStatus::Confirmed, $actor->id, 'Kunde wartet dringend');
 
@@ -96,7 +88,7 @@ class DispatchTest extends TestCase {
 
     public function test_no_conflicts_for_clean_assignment(): void {
         $this->setComplianceMode('warn');
-        $u = $this->worker();
+        $u = $this->orgUser();
         $entry = $this->entry(['assigned_user_id' => $u->id]);
 
         $report = app(DispatchConflictChecker::class)->check($entry);
@@ -106,7 +98,7 @@ class DispatchTest extends TestCase {
 
     public function test_overlap_with_scheduled_shift_is_detected(): void {
         $this->setComplianceMode('warn');
-        $u = $this->worker();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -125,7 +117,7 @@ class DispatchTest extends TestCase {
 
     public function test_vacation_conflict_is_detected(): void {
         $this->setComplianceMode('warn');
-        $u = $this->worker();
+        $u = $this->orgUser();
         Vacation::create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -142,7 +134,7 @@ class DispatchTest extends TestCase {
 
     public function test_overlap_with_other_assignment_is_detected(): void {
         $this->setComplianceMode('warn');
-        $u = $this->worker();
+        $u = $this->orgUser();
         $this->entry([
             'assigned_user_id' => $u->id,
             'start_at' => Carbon::parse('2026-07-01 10:00'),
@@ -160,7 +152,7 @@ class DispatchTest extends TestCase {
 
     public function test_hard_conflict_blocks_confirmation_without_override(): void {
         $this->setComplianceMode('warn');
-        $u = $this->worker();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -189,7 +181,7 @@ class DispatchTest extends TestCase {
 
     public function test_hard_conflict_can_be_overridden_with_reason(): void {
         $this->setComplianceMode('warn');
-        $u = $this->worker();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -215,8 +207,8 @@ class DispatchTest extends TestCase {
     }
 
     public function test_worker_without_dispatch_permission_cannot_transition_others_entry(): void {
-        $entry = $this->entry(['user_id' => $this->worker()->id]);
-        $stranger = $this->worker();
+        $entry = $this->entry(['user_id' => $this->orgUser()->id]);
+        $stranger = $this->orgUser();
 
         $this->actingAs($stranger)
             ->post(route('dispatch.transition', $entry), ['dispatch_status' => DispatchStatus::Planned->value])
@@ -286,7 +278,7 @@ class DispatchTest extends TestCase {
     public function test_worker_without_reserve_permission_cannot_reserve(): void {
         $vehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
 
-        $this->actingAs($this->worker())
+        $this->actingAs($this->orgUser())
             ->post(route('vehicle-reservations.store'), [
                 'vehicle_id' => $vehicle->sqid,
                 'reserved_from' => '2026-07-01 09:00',

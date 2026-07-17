@@ -37,7 +37,7 @@
             <select id="controller_customer_id" name="controller_customer_id" class="select select-bordered w-full">
                 <option value="">{{ __('Kein Kunde verknüpft') }}</option>
                 @foreach ($customers as $customer)
-                    <option value="{{ $customer->id }}" @selected((string) old('controller_customer_id') === (string) $customer->id)>
+                    <option value="{{ $customer->sqid }}" @selected((string) old('controller_customer_id') === $customer->sqid)>
                         {{ $customer->company ?: $customer->name }}
                     </option>
                 @endforeach

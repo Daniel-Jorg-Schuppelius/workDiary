@@ -17,7 +17,7 @@ use App\Models\{DiaryEntry, DiaryEntryEvent, Project, Protocol, TimeEntry, User}
 use App\Services\Diary\OrderService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use LogicException;
+use RuntimeException;
 use Tests\TestCase;
 
 class DiaryLifecycleTest extends TestCase {
@@ -98,7 +98,7 @@ class DiaryLifecycleTest extends TestCase {
         app(OrderService::class)->accept($entry, $user);
         $event = DiaryEntryEvent::query()->firstOrFail();
 
-        $this->expectException(LogicException::class);
+        $this->expectException(RuntimeException::class);
         $event->update(['note' => 'Manipuliert']);
     }
 

@@ -10,37 +10,18 @@
 
 namespace App\Policies;
 
-use App\Models\{ExpenseCategory, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class ExpenseCategoryPolicy {
+class ExpenseCategoryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    /** Alle eingeloggten Nutzer dürfen die Kategorienliste lesen (z. B. Select). */
-    public function viewAny(User $user): bool {
-        return true;
-    }
-
-    public function view(User $user, ExpenseCategory $category): bool {
-        return true;
-    }
-
-    /** Verwaltung ausschließlich durch Admin (HasAdminBypass). */
-    public function create(User $user): bool {
-        return false;
-    }
-
-    public function update(User $user, ExpenseCategory $category): bool {
-        return false;
-    }
-
-    /**
-     * Löschen ebenfalls nur durch Admin (before-Hook) — vorher erlaubte die
-     * Policy JEDEM eingeloggten Nutzer das Löschen unbenutzter Kategorien
-     * (Sicherheitsbefund B7/MVP-348). Der Nutzungs-Guard (keine Löschung
-     * verwendeter Kategorien) bleibt im Controller-destroy() erhalten.
-     */
-    public function delete(User $user, ExpenseCategory $category): bool {
-        return false;
-    }
+    protected const ABILITIES = [
+        'viewAny' => true, // Kategorienliste lesen dürfen alle (z. B. Select)
+        'view' => true,
+        'create' => false, // Verwaltung nur Admin (before-Hook)
+        'update' => false,
+        // Löschen nur Admin (Sicherheitsbefund B7/MVP-348); Nutzungs-Guard
+        // (keine Löschung verwendeter Kategorien) bleibt im Controller-destroy().
+        'delete' => false,
+    ];
 }

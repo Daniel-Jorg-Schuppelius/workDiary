@@ -16,6 +16,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Project, User};
 use App\Services\Reporting\CustomerAnalysisReportBuilder;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -30,8 +31,7 @@ class CustomerAnalysisReportController extends Controller {
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $minMinutes = max(0, (int) $request->integer('min_minutes', 0));
         $rawProjectId = $request->query('project_id');
@@ -52,19 +52,17 @@ class CustomerAnalysisReportController extends Controller {
         ];
 
         if ($request->query('export') === 'csv') {
-            $this->auditExport($request, 'customers-analysis', 'csv', $exportContext);
-
-            return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString(), $exportContext);
+            return $this->exportCsv(array_values($rows->all()), $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         if ($request->query('export') === 'pdf') {
-            $this->auditExport($request, 'customers-analysis', 'pdf', $exportContext);
-
             return $this->exportPdf(
                 array_values($rows->all()),
                 $range['label'],
                 $from->toDateString(),
-                $to->toDateString()
+                $to->toDateString(),
+                $exportContext,
+                $request,
             );
         }
 
@@ -110,7 +108,7 @@ class CustomerAnalysisReportController extends Controller {
      * }>             $rows
      * @param  array<string, mixed>  $filters
      */
-    private function exportCsv(array $rows, string $from, string $to, array $filters): Response {
+    private function exportCsv(array $rows, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('kundenanalyse_%s_%s.csv', $from, $to);
         $out = [];
         $out[] = [
@@ -134,7 +132,7 @@ class CustomerAnalysisReportController extends Controller {
                 $row['totalMinutes'],
                 $row['billableMinutes'],
                 $row['nonBillableMinutes'],
-                number_format((float) $row['nonBillableShare'], 2, '.', ''),
+                NumberHelper::toUSFormat((float) $row['nonBillableShare'], 2),
                 $row['reworkEntryCount'],
                 $row['openIssueCount'],
                 $row['escalationCount'],
@@ -143,7 +141,7 @@ class CustomerAnalysisReportController extends Controller {
             ];
         }
 
-        return $this->csvWithMetadata($out, $filename, 'customers-analysis', $filters);
+        return $this->csvWithMetadata($out, $filename, 'customers-analysis', $filters, $request);
     }
 
     /**
@@ -161,13 +159,14 @@ class CustomerAnalysisReportController extends Controller {
      *   avgEntryMinutes:int,
      *   trend30d:int
      * }>  $rows
+     * @param  array<string, mixed>  $filters
      */
-    private function exportPdf(array $rows, string $label, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $rows, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {
         $filename = sprintf('kundenanalyse_%s_%s.pdf', $from, $to);
 
         return $this->pdfDownload('reports.pdf.customers', [
             'rows' => $rows,
             'label' => $label,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'customers-analysis', $filters);
     }
 }

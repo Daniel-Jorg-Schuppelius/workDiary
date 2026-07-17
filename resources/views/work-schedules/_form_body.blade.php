@@ -136,12 +136,11 @@
         <input type="hidden" name="break_minutes" :value="toMin(d.breakMin)">
         <input type="number" min="0" :step="step" x-model="d.breakMin" class="input input-bordered w-full">
     </div>
-    <x-input-field name="valid_from" type="date" :label="__('Gültig ab')" required :value="old('valid_from', optional($schedule->valid_from)->format('Y-m-d'))" />
-    <x-input-field name="valid_to" type="date" :label="__('Gültig bis')" :value="old('valid_to', optional($schedule->valid_to)->format('Y-m-d'))" />
+    <x-date-range class="md:col-span-2" layout="split" form-control
+                  from-name="valid_from" to-name="valid_to" from-required
+                  :from="old('valid_from', optional($schedule->valid_from)->format('Y-m-d'))"
+                  :to="old('valid_to', optional($schedule->valid_to)->format('Y-m-d'))"
+                  :from-label="__('Gültig ab')" :to-label="__('Gültig bis')" />
 </x-form-group>
 
-@if ($errors->any())
-    <div class="alert alert-error text-sm">
-        <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-    </div>
-@endif
+<x-validation-errors />

@@ -11,25 +11,20 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{KeyHandover, User};
+use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
-class KeyHandoverPolicy {
+class KeyHandoverPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::KeyHandoverView->value);
-    }
-
-    public function view(User $user, KeyHandover $handover): bool {
-        return $user->can(P::KeyHandoverView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::KeyHandoverRecord->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::KeyHandoverView,
+        'view' => P::KeyHandoverView,
+        'create' => P::KeyHandoverRecord,
+        'record' => P::KeyHandoverRecord,
+    ];
 
     public function record(User $user): bool {
-        return $user->can(P::KeyHandoverRecord->value);
+        return $this->allows($user, 'record');
     }
 }

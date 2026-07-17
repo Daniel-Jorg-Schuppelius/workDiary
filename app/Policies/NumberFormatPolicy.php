@@ -11,25 +11,20 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{NumberFormat, User};
+use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
 
-class NumberFormatPolicy {
+class NumberFormatPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::NumberFormatManage->value);
-    }
-
-    public function view(User $user, NumberFormat $format): bool {
-        return $user->can(P::NumberFormatManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::NumberFormatManage,
+        'view' => P::NumberFormatManage,
+        'manage' => P::NumberFormatManage,
+        'update' => P::NumberFormatManage,
+    ];
 
     public function manage(User $user): bool {
-        return $user->can(P::NumberFormatManage->value);
-    }
-
-    public function update(User $user, NumberFormat $format): bool {
-        return $user->can(P::NumberFormatManage->value);
+        return $this->allows($user, 'manage');
     }
 }

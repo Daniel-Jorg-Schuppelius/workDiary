@@ -12,10 +12,13 @@ namespace App\Plugins\CalDav;
 
 use App\Models\{CalDavConnection, Organization, PluginSetting};
 use App\Plugins\CalDav\Contracts\{CalDavGatewayFactory, CalendarSource};
-use App\Plugins\CalDav\Services\{CalendarPublishItem, CalendarPublishService, EventCalendarSource, ScheduleCalendarSource};
+use App\Plugins\CalDav\Services\{CalDavRemoteCalendarGateway, CalendarPublishItem, EventCalendarSource, ScheduleCalendarSource};
 use App\Plugins\Contracts\{CalendarPublisher, Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth};
-use App\Plugins\Support\Calendar\RemoteCalendarEvent;
+use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarPublishService};
+use App\Plugins\Support\PluginOrgContext;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Spatie\IcalendarGenerator\Components\{Calendar as IcsCalendar, Event as IcsEvent};
 use Throwable;
 
@@ -38,6 +41,9 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
 
     public const ID = 'caldav';
 
+    /** ExternalReference-Typ des CalDAV-Publishs (Bestandsdaten — nie ändern). */
+    public const EXT_TYPE_CALENDAR_OBJECT = 'calendar_object';
+
     public const SERVICE_PROVIDER = CalDavServiceProvider::class;
 
     public function id(): string {
@@ -57,13 +63,11 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -86,7 +90,7 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
         $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
 
         $factory = app(CalDavGatewayFactory::class);
-        $publisher = app(CalendarPublishService::class);
+        $publisher = app(RemoteCalendarPublishService::class);
 
         /** @var array<string, CalendarSource> $sources */
         $sources = [
@@ -105,13 +109,13 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
                 continue;
             }
             try {
-                $gateway = $factory->for($connection);
+                $gateway = new CalDavRemoteCalendarGateway($factory->for($connection));
                 foreach ($sources as $scope => $source) {
                     if (! $connection->publishesScope($scope)) {
                         continue;
                     }
                     $itemsByScope[$scope] ??= $source->itemsFor($organization);
-                    $result = $publisher->publish($connection, $gateway, $itemsByScope[$scope]);
+                    $result = $publisher->publish(self::ID, $connection, $gateway, $itemsByScope[$scope], self::EXT_TYPE_CALENDAR_OBJECT);
                     foreach ($counters as $key => $value) {
                         $counters[$key] = $value + $result[$key];
                     }
@@ -128,13 +132,13 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
      * Einzelnes terminartiges Element (MVP-331, Bauturbo A11 — Kalender-Kanal
      * der Benachrichtigungen): idempotent über die stabile UID in alle aktiven
      * Termin-Anbindungen (Scope `events`) der Organisation publiziert —
-     * derselbe {@see CalendarPublishService}-Weg wie die Org-Termine.
+     * derselbe {@see RemoteCalendarPublishService}-Weg wie die Org-Termine.
      */
     public function publishCalendarItem(Organization $organization, RemoteCalendarEvent $item): array {
         $counters = ['published' => 0, 'deleted' => 0, 'unchanged' => 0, 'failed' => 0];
 
         $factory = app(CalDavGatewayFactory::class);
-        $publisher = app(CalendarPublishService::class);
+        $publisher = app(RemoteCalendarPublishService::class);
         $publishItem = $this->toPublishItem($item);
 
         $connections = CalDavConnection::query()
@@ -146,7 +150,7 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
                 continue;
             }
             try {
-                $result = $publisher->publish($connection, $factory->for($connection), [$publishItem]);
+                $result = $publisher->publish(self::ID, $connection, new CalDavRemoteCalendarGateway($factory->for($connection)), [$publishItem], self::EXT_TYPE_CALENDAR_OBJECT);
                 foreach ($counters as $key => $value) {
                     $counters[$key] = $value + $result[$key];
                 }
@@ -187,7 +191,7 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
 
         return new CalendarPublishItem(
             uid: $item->uid,
-            objectName: 'notify-' . sha1($item->uid) . '.ics',
+            objectName: 'notify-' . CryptoHelper::hash($item->uid, HashAlgorithm::SHA1) . '.ics',
             ics: $ics,
             referenceableType: $item->referenceableType,
             referenceableId: $item->referenceableId,
@@ -218,7 +222,7 @@ class CalDavPlugin implements CalendarPublisher, Plugin {
 
     /** Health-Check je Organisation: aktive Anbindung suchen und die Collection anpingen. */
     public function healthCheck(): PluginHealth {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

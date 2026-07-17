@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Verantwortungsrolle bei einer Verarbeitung (DSGVO Art. 4/26/28). */
-enum ControllerRole: string {
+enum ControllerRole: string implements HasLabel {
+    use HasOptions;
+
     case Controller = 'controller';            // Verantwortlicher
     case JointController = 'joint_controller'; // gemeinsam Verantwortlicher (Art. 26)
     case Processor = 'processor';              // Auftragsverarbeiter (Art. 28)

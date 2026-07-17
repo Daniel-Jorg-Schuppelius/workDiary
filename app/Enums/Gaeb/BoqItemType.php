@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Gaeb;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Positionsart einer LV-Position (Feature 049, MVP-082). Abgeleitet aus den
  * GAEB-Itemkennzeichen (Provis/Alternative/Lump-Sum etc.).
@@ -23,7 +26,9 @@ namespace App\Enums\Gaeb;
  * - Markup:      Zuschlagsposition (prozentual auf Bezugspositionen)
  * - Note:        reine Hinweis-/Textposition ohne Menge
  */
-enum BoqItemType: string {
+enum BoqItemType: string implements HasLabel {
+    use HasOptions;
+
     case Standard = 'standard';
     case Alternative = 'alternative';
     case Optional = 'optional';

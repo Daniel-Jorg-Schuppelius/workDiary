@@ -16,6 +16,7 @@ use App\Models\{OrgaMaxConnection, Organization, PluginSetting};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\OrgaMax\Api\{OrgaMaxApiException, OrgaMaxClientFactory};
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -55,7 +56,7 @@ class OrgaMaxPlugin implements Plugin {
     }
 
     public function isEnabled(): bool {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $organization = PluginOrgContext::currentOrNull();
         if ($organization instanceof Organization) {
             $setting = PluginSetting::forOrganization($organization->id, self::ID);
             if ($setting->exists) {
@@ -94,7 +95,7 @@ class OrgaMaxPlugin implements Plugin {
     }
 
     public function healthCheck(): PluginHealth {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $organization = PluginOrgContext::currentOrNull();
         if (! $organization instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

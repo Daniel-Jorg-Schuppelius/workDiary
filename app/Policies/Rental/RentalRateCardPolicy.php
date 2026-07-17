@@ -13,30 +13,20 @@ declare(strict_types=1);
 namespace App\Policies\Rental;
 
 use App\Enums\User\Permission as P;
-use App\Models\Rental\RentalRateCard;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Versionierte Verleih-Preislisten (D10): Pflege ist ein eigenes Recht,
  * Lesen genügt mit Verleih-Sicht (Konditionen stehen in der Akte).
  */
-class RentalRateCardPolicy {
+class RentalRateCardPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::RentalViewAny->value);
-    }
-
-    public function view(User $user, RentalRateCard $card): bool {
-        return $user->can(P::RentalView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::RentalRates->value);
-    }
-
-    public function update(User $user, RentalRateCard $card): bool {
-        return $user->can(P::RentalRates->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::RentalViewAny,
+        'view' => P::RentalView,
+        'create' => P::RentalRates,
+        'update' => P::RentalRates,
+    ];
 }

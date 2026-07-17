@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Statusmodell der Reklamationsakte (Feature 072, MVP-246): Eingang →
  * Bewertung → Entscheidung → Umsetzung → Abschluss; Ablehnung/Rückzug
  * sind terminale Seitenausgänge. Übergänge prüft ClaimCaseService.
  */
-enum ClaimStatus: string {
+enum ClaimStatus: string implements HasLabel {
+    use HasOptions;
+
     case Received = 'received';
     case Assessing = 'assessing';
     case Decided = 'decided';

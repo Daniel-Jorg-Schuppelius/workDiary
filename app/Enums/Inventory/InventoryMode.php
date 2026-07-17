@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Bestandsführerschaft je Organisation (Feature 048, MVP-066). Pro Organisation
  * ist für den Datenbereich `inventory` genau ein Modus aktiv; paralleles
  * Schreiben in zwei führende Bestände ist unzulässig.
  */
-enum InventoryMode: string {
+enum InventoryMode: string implements HasLabel {
+    use HasOptions;
+
     case Local = 'local';         // WorkDiary führt den Bestand
     case External = 'external';   // externes System führt; WorkDiary liest+bucht über Plugin
     case ReadOnly = 'read_only';  // externes System führt; Buchungen gesperrt

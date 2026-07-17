@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Manufacturing;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\{Organization, StockDelivery};
-use Illuminate\Support\Facades\View;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**
  * Rendert eine Auslieferung als Lieferschein-PDF (Feature 047, MVP-074).
@@ -28,18 +26,17 @@ class DeliveryNotePdfRenderer {
         $delivery->loadMissing(['customer', 'variant.article', 'order', 'warehouse']);
         $organization = Organization::query()->withoutGlobalScopes()->find($delivery->organization_id);
 
-        $html = View::make('pdf.delivery-note', [
-            'delivery' => $delivery,
-            'organization' => $organization,
-            'number' => $this->number($delivery),
-        ])->render();
-
-        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
-        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)
-            ->composeFor($organization, \App\Enums\DocumentDesign\RenderDocumentKind::DeliveryNote, $html);
-
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (pdf.delivery-note).');
+        // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
+        return app(DocumentDesignRenderer::class)->renderPdf(
+            RenderDocumentKind::DeliveryNote,
+            'pdf.delivery-note',
+            [
+                'delivery' => $delivery,
+                'organization' => $organization,
+                'number' => $this->number($delivery),
+            ],
+            $organization,
+        );
     }
 
     /** Lieferschein-Nummer (stabil aus der Auslieferungs-ID abgeleitet). */

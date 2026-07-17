@@ -11,11 +11,10 @@
 namespace App\Models;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
-use RuntimeException;
 
 /**
  * Eine Zeile im append-only Lagerjournal (Feature 048, MVP-067). Bestätigte
@@ -33,6 +32,9 @@ use RuntimeException;
  * @property string $qty_base
  */
 class StockMovement extends Model {
+    // Korrekturen nur über referenzierte Gegenbuchung (StockMovementType::Correction).
+    use AppendOnly;
+
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -72,15 +74,6 @@ class StockMovement extends Model {
         'cost_total' => 'decimal:4',
         'occurred_at' => 'datetime',
     ];
-
-    protected static function booted(): void {
-        static::updating(static function (): void {
-            throw new RuntimeException('Lagerbewegungen sind append-only und dürfen nicht geändert werden (nur Gegenbuchung).');
-        });
-        static::deleting(static function (): void {
-            throw new RuntimeException('Lagerbewegungen sind append-only und dürfen nicht gelöscht werden (nur Gegenbuchung).');
-        });
-    }
 
     /** @return BelongsTo<ArticleVariant, $this> */
     public function variant(): BelongsTo {

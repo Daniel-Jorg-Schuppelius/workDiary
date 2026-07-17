@@ -17,6 +17,7 @@ use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Gitlab\Api\{GitlabApiException, GitlabClientFactory};
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -131,7 +132,7 @@ class GitlabPlugin implements Plugin, TaskSyncer {
      * hinterlegten Token (Token gültig + API erreichbar).
      */
     public function healthCheck(): PluginHealth {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $organization = PluginOrgContext::currentOrNull();
         if (! $organization instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

@@ -16,6 +16,7 @@ use App\Enums\Privacy\{MeasureCategory, ReviewResult};
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{ProcessingActivity, TechnicalMeasure, TechnicalMeasureVersion};
 use App\Services\Privacy\TechnicalMeasureService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -101,6 +102,8 @@ class TechnicalMeasureController extends Controller {
 
     public function assignActivity(Request $request, TechnicalMeasure $measure): RedirectResponse {
         Gate::authorize('update', $measure);
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        $request->merge(['activity_id' => Sqid::decodeOrNumeric(ProcessingActivity::class, $request->input('activity_id'))]);
         $data = $request->validate(['activity_id' => ['required', 'integer']]);
         $activity = ProcessingActivity::query()
             ->where('organization_id', $measure->organization_id)

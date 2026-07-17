@@ -18,7 +18,8 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{ServiceTicket, SlaContractQuota, SlaViolation, User};
 use App\Services\Reporting\ReportTargetEvaluator;
 use App\Services\ServiceTicket\{SlaQuotaService, SlaViolationService};
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
@@ -46,9 +47,7 @@ class SlaReportController extends Controller {
     public function index(Request $request): View|SymfonyResponse {
         Gate::authorize('viewAny', SlaViolation::class);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
@@ -66,10 +65,10 @@ class SlaReportController extends Controller {
         $metrics['compliance_target'] = $complianceTarget;
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($metrics, $from, $to);
+            return $this->exportCsv($metrics, $from, $to, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($metrics, $from, $to);
+            return $this->exportPdf($metrics, $from, $to, $request);
         }
 
         return view('reports.sla', array_merge($metrics, [
@@ -87,7 +86,7 @@ class SlaReportController extends Controller {
      *
      * @return list<array{contract: string, period: string, period_key: string, included: int, consumed: int, remaining: int, over: int, percentage: int, threshold_reached: bool}>
      */
-    private function quotaUsage(Carbon $reference): array {
+    private function quotaUsage(CarbonImmutable $reference): array {
         $out = [];
         foreach (SlaContractQuota::query()->with('slaContract')->get() as $quota) {
             $contract = $quota->slaContract;
@@ -144,7 +143,7 @@ class SlaReportController extends Controller {
      *   violations: \Illuminate\Database\Eloquent\Collection<int, SlaViolation>
      * }
      */
-    private function aggregate(Carbon $from, Carbon $to): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to): array {
         // Tickets mit Lösungsfrist im Zeitraum (gemeldet im Zeitraum) bilden die
         // Bezugsmenge für die Einhaltungsquote.
         $relevant = ServiceTicket::query()
@@ -196,7 +195,7 @@ class SlaReportController extends Controller {
             'total_tickets' => $relevant,
             'violation_count' => $violationCount,
             'met_count' => $met,
-            'compliance_rate' => $relevant > 0 ? $met / $relevant : null,
+            'compliance_rate' => $relevant > 0 ? fdiv($met, $relevant) : null,
             'by_kind' => $byKind,
             'by_priority' => $byPriority,
             'by_customer' => array_values($byCustomer),
@@ -208,7 +207,7 @@ class SlaReportController extends Controller {
     /**
      * @param  array<string, mixed>  $metrics
      */
-    private function exportCsv(array $metrics, string $from, string $to): Response {
+    private function exportCsv(array $metrics, string $from, string $to, Request $request): Response {
         /** @var array<string, int> $byKind */
         $byKind = $metrics['by_kind'];
         /** @var array<string, int> $byPriority */
@@ -227,7 +226,7 @@ class SlaReportController extends Controller {
         $rows[] = [
             (string) __('sla.report.overview'),
             (string) __('sla.report.compliance_rate'),
-            $rate !== null ? number_format($rate * 100, 1, '.', '') : '',
+            $rate !== null ? NumberHelper::toUSFormat($rate * 100, 1) : '',
         ];
         foreach ($byKind as $kind => $count) {
             $rows[] = [(string) __('sla.report.by_kind'), $kind, (string) $count];
@@ -247,16 +246,17 @@ class SlaReportController extends Controller {
             sprintf('sla_%s_%s.csv', $from, $to),
             'sla',
             ['from' => $from, 'to' => $to],
+            $request,
         );
     }
 
     /**
      * @param  array<string, mixed>  $metrics
      */
-    private function exportPdf(array $metrics, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $metrics, string $from, string $to, Request $request): SymfonyResponse {
         return $this->pdfDownload('reports.pdf.sla', array_merge($metrics, [
             'from' => $from,
             'to' => $to,
-        ]), sprintf('sla_%s_%s.pdf', $from, $to));
+        ]), sprintf('sla_%s_%s.pdf', $from, $to), request: $request, reportCode: 'sla', filters: ['from' => $from, 'to' => $to]);
     }
 }

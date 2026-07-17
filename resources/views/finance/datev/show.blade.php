@@ -149,7 +149,7 @@
                     <td class="text-right">{{ number_format((float) $source->amount, 2, ',', '.') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="{{ $canReshape ? 8 : 7 }}" class="text-center text-base-content/60 py-6">{{ __('finance.datev.empty_sources') }}</td></tr>
+                <x-table.empty :colspan="$canReshape ? 8 : 7" :title="__('finance.datev.empty_sources')" compact />
             @endforelse
         </x-table>
         @if ($canReshape)

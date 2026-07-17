@@ -33,10 +33,7 @@ class TeamController extends Controller {
         $teams = Team::query()
             ->withCount('members')
             ->with('lead:id,name')
-            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->whereLikeEscaped('name', $search)
-                    ->orWhereLikeEscaped('description', $search);
-            }))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->orderBy('name')
             ->paginate(25)
             ->withQueryString();

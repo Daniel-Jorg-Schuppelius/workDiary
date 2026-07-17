@@ -11,33 +11,20 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission;
-use App\Models\{ReportTarget, User};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
  * Zielwert-Pflege ist Geschäftsführungs-/Admin-Sache (report.target.manage).
  * Org-Scoping erfolgt über den globalen OrganizationScope des Modells.
  */
-class ReportTargetPolicy {
+class ReportTargetPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(Permission::ReportTargetManage->value);
-    }
-
-    public function view(User $user, ReportTarget $target): bool {
-        return $user->can(Permission::ReportTargetManage->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(Permission::ReportTargetManage->value);
-    }
-
-    public function update(User $user, ReportTarget $target): bool {
-        return $user->can(Permission::ReportTargetManage->value);
-    }
-
-    public function delete(User $user, ReportTarget $target): bool {
-        return $user->can(Permission::ReportTargetManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => Permission::ReportTargetManage,
+        'view' => Permission::ReportTargetManage,
+        'create' => Permission::ReportTargetManage,
+        'update' => Permission::ReportTargetManage,
+        'delete' => Permission::ReportTargetManage,
+    ];
 }

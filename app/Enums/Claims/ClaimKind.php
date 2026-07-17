@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Anspruchsart (MVP-249): Garantie ist freiwillig (§ 443 BGB) und
  * schränkt die gesetzliche Gewährleistung (§§ 434 ff. BGB) nie ein.
  */
-enum ClaimKind: string {
+enum ClaimKind: string implements HasLabel {
+    use HasOptions;
+
     case Guarantee = 'guarantee';
     case WarrantyLegal = 'warranty_legal';
     case WarrantyContractual = 'warranty_contractual';

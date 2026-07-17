@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Http\Requests\SaveTaskRequest;
 use App\Models\Task;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -19,25 +20,21 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class GlobalTaskController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['title', 'status', 'priority', 'hourly_rate', 'time_budget', 'billable'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Task::class);
 
         $user = $request->user();
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'title';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'title');
 
         $tasks = Task::query()
             ->where('is_global', true)
             ->when($user?->organization_id, fn($q, $orgId) => $q->where('organization_id', $orgId))
-            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->whereLikeEscaped('title', $search)
-                    ->orWhereLikeEscaped('description', $search);
-            }))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->orderBy($sort, $dir)
             ->paginate(50)
             ->withQueryString();

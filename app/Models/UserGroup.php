@@ -10,12 +10,12 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, HasSqid};
+use App\Models\Concerns\{Auditable, GeneratesUniqueSlug, HasSqid, Searchable};
 use App\Models\Scopes\OrganizationScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
-use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Carbon;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -44,8 +44,10 @@ use Spatie\Permission\Traits\HasRoles;
 #[ScopedBy([OrganizationScope::class])]
 class UserGroup extends Model {
     use Auditable;
+    use GeneratesUniqueSlug;
     use HasRoles;
     use HasSqid;
+    use Searchable;
 
     /**
      * Spatie's HasRoles ermittelt den Guard üblicherweise über den auth.providers-
@@ -72,21 +74,14 @@ class UserGroup extends Model {
     protected static function booted(): void {
         static::creating(function (UserGroup $group): void {
             if (! $group->slug) {
-                $base = Str::slug($group->name) ?: 'gruppe';
-                $slug = $base;
-                $i = 2;
-                while (
+                $group->slug = self::resolveUniqueSlug((string) $group->name, 'gruppe', fn(string $slug): bool =>
                     // TENANT-BYPASS: Slug-Eindeutigkeit in der Org explizit via where('organization_id', ...).
                     // Global Scope umgangen, weil booted() im Admin-Kontext ohne gebundene currentOrganization läuft.
                     static::query()
                     ->withoutGlobalScopes()
                     ->where('organization_id', $group->organization_id)
                     ->where('slug', $slug)
-                    ->exists()
-                ) {
-                    $slug = $base . '-' . $i++;
-                }
-                $group->slug = $slug;
+                    ->exists());
             }
         });
     }
@@ -101,5 +96,10 @@ class UserGroup extends Model {
         return $this->belongsToMany(User::class, 'user_user_group')
             ->withPivot('joined_at')
             ->withTimestamps();
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'slug', 'description'];
     }
 }

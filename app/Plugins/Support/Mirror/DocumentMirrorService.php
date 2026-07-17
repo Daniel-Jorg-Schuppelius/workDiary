@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support\Mirror;
 
 use App\Models\{Document, DocumentVersion, ExternalReference, IntegrationInboxItem};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -103,7 +104,7 @@ class DocumentMirrorService {
      * @param  array<string, mixed>  $extraPayload
      */
     private function deliverAndRecord(string $pluginId, Model $morph, string $externalType, string $relativePath, string $contents, string $mime, string $displayTitle, MirrorConnection $connection, RemoteFileGateway $gateway, bool $force, array $extraPayload): string {
-        $sha = hash('sha256', $contents);
+        $sha = CryptoHelper::hash($contents);
 
         $ref = ExternalReference::query()->withoutGlobalScopes()
             ->where('organization_id', $connection->organizationId())

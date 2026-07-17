@@ -42,7 +42,7 @@ class TimeCorrectionOnBehalfTest extends TestCase {
     /** @return array<int, array<string, mixed>> */
     private function payload(int $targetUserId, Organization $org): array {
         return [
-            'user_id' => $targetUserId,
+            'user_id' => \App\Support\Sqid::encode(User::class, $targetUserId),
             'scope_date' => '2026-06-01',
             'reason' => 'Stempelung am 01.06. vergessen – im Namen nachgetragen.',
             'items' => [[

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permit\PermitStatus;
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Http\Requests\SavePermitRequest;
 use App\Models\{Event, Permit, User};
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -19,6 +20,8 @@ use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PermitController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['title', 'authority', 'status', 'valid_until'];
 
     /** Nachweis-Dokument: erlaubte Endungen/MIME (Teilmenge des AttachmentControllers). */
@@ -38,22 +41,14 @@ class PermitController extends Controller {
 
         $query = trim($request->string('q')->toString());
         $statusFilter = $this->normalizeStatus($request->string('status')->toString());
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'valid_until';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['sort' => $sort, 'dir' => $dir] = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'valid_until');
 
         $permitsQuery = Permit::query()
             ->with('event')
             ->orderBy($sort, $dir);
 
         if ($query !== '') {
-            $permitsQuery->where(function ($builder) use ($query): void {
-                $builder
-                    ->whereLikeEscaped('title', $query)
-                    ->orWhereLikeEscaped('authority', $query)
-                    ->orWhereLikeEscaped('reference_no', $query);
-            });
+            $permitsQuery->search($query);
         }
 
         if ($statusFilter !== null) {

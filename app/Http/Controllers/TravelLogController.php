@@ -15,9 +15,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTravelLogRequest;
 use App\Models\{Customer, Project, TravelLog, User};
 use App\Services\Travel\TravelLogService;
-use App\Support\SortableQuery;
+use App\Support\{CsvExport, SortableQuery};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -158,27 +157,10 @@ class TravelLogController extends Controller {
             ->orderBy('date')
             ->get();
 
-        return response()->streamDownload(function () use ($logs): void {
-            $out = fopen('php://output', 'w');
-            if ($out === false) {
-                return;
-            }
-            fwrite($out, StringHelper::encodeLine([
-                'Datum',
-                'Von',
-                'Nach',
-                'KM',
-                'Hin/Rück',
-                'Fahrzeug',
-                'Satz €/km',
-                'Erstattung €',
-                'Projekt',
-                'Kunde',
-                'Zweck',
-                'Dauer min',
-            ], ';') . "\r\n");
+        // Abweichung zum Alt-Export: jetzt mit UTF-8-BOM (Mehrheits-Semantik der CSV-Exporte).
+        $rows = (static function () use ($logs): \Generator {
             foreach ($logs as $log) {
-                fwrite($out, StringHelper::encodeLine([
+                yield [
                     $log->date?->format('Y-m-d'),
                     (string) $log->from_address,
                     (string) $log->to_address,
@@ -191,11 +173,23 @@ class TravelLogController extends Controller {
                     $log->customer->name ?? '',
                     (string) $log->purpose,
                     (int) $log->duration_minutes,
-                ], ';') . "\r\n");
+                ];
             }
-            fclose($out);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        })();
+
+        return CsvExport::streamFromRows($filename, [
+            'Datum',
+            'Von',
+            'Nach',
+            'KM',
+            'Hin/Rück',
+            'Fahrzeug',
+            'Satz €/km',
+            'Erstattung €',
+            'Projekt',
+            'Kunde',
+            'Zweck',
+            'Dauer min',
+        ], $rows);
     }
 }

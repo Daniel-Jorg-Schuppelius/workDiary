@@ -10,29 +10,16 @@
 
 namespace App\Policies;
 
-use App\Models\{Material, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class MaterialPolicy {
+class MaterialPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return true;
-    }
-
-    public function view(User $user, Material $material): bool {
-        return true;
-    }
-
-    public function create(User $user): bool {
-        return false;
-    }
-
-    public function update(User $user, Material $material): bool {
-        return false;
-    }
-
-    public function delete(User $user, Material $material): bool {
-        return false;
-    }
+    protected const ABILITIES = [
+        'viewAny' => true,
+        'view' => true,
+        'create' => false,
+        'update' => false,
+        'delete' => false,
+    ];
 }

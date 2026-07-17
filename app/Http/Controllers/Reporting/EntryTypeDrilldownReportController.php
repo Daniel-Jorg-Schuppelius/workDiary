@@ -10,25 +10,23 @@
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\OpenIssue\OpenIssueStatus;
-use App\Enums\Protocol\ProtocolType;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
 use App\Models\{DiaryEntry, EntryType, OpenIssue, Protocol};
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeDrilldownReportController extends Controller {
+    use BuildsOpenIssueDrilldown;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $entryTypeId = (int) $request->integer('entry_type_id');
         $customerId = $request->filled('customer_id') ? (int) $request->integer('customer_id') : null;
@@ -42,20 +40,10 @@ class EntryTypeDrilldownReportController extends Controller {
 
         $entryIds = $this->entryIds($from->toDateTimeString(), $to->toDateTimeString(), $entryTypeId, $customerId, $userId, $statusFilter);
 
-        $openStatuses = [
-            OpenIssueStatus::Open->value,
-            OpenIssueStatus::InProgress->value,
-            OpenIssueStatus::Blocked->value,
-            OpenIssueStatus::Reopened->value,
-        ];
-
-        $issuesQuery = OpenIssue::query()
-            ->with(['assignee:id,name'])
-            ->whereIn('status', $openStatuses)
-            ->where('subject_type', DiaryEntry::class)
-            ->when($escalatedOnly, fn($q) => $q->where('status', OpenIssueStatus::Blocked->value))
-            ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
-            ->orderByDesc('updated_at');
+        $issuesQuery = $this->openIssueDrilldownQuery($escalatedOnly, function ($query) use ($entryIds): void {
+            $query->where('subject_type', DiaryEntry::class)
+                ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'));
+        });
 
         if ($request->query('export') === 'csv') {
             /** @var list<OpenIssue> $issues */
@@ -70,30 +58,29 @@ class EntryTypeDrilldownReportController extends Controller {
                 'status' => $statusFilter,
                 'escalated' => $escalatedOnly,
             ];
-            $this->auditExport($request, 'entry-type-drilldown-open-issues', 'csv', $exportFilters);
 
-            return $this->exportOpenIssuesCsv($issues, $entryTypeId, $from->toDateString(), $to->toDateString(), $escalatedOnly, $exportFilters);
+            return $this->exportOpenIssuesCsv($issues, $entryTypeId, $from->toDateString(), $to->toDateString(), $escalatedOnly, $exportFilters, $request);
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<OpenIssue> $issues */
             $issues = $issuesQuery->clone()->get()->all();
 
-            $this->auditExport($request, 'entry-type-drilldown-open-issues', 'pdf', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'entry_type_id' => $entryTypeId,
-                'customer_id' => $customerId,
-                'user_id' => $userId,
-                'status' => $statusFilter,
-                'escalated' => $escalatedOnly,
-            ]);
-
             return $this->exportOpenIssuesPdf(
                 $issues,
                 ($entryType !== null ? $entryType->label : null) ?? ('#' . $entryTypeId),
                 $range['label'],
                 $entryTypeId,
+                [
+                    'from' => $from->toDateString(),
+                    'to' => $to->toDateString(),
+                    'entry_type_id' => $entryTypeId,
+                    'customer_id' => $customerId,
+                    'user_id' => $userId,
+                    'status' => $statusFilter,
+                    'escalated' => $escalatedOnly,
+                ],
+                $request,
                 $from->toDateString(),
                 $to->toDateString(),
                 $escalatedOnly
@@ -116,8 +103,7 @@ class EntryTypeDrilldownReportController extends Controller {
 
     public function protocols(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $entryTypeId = (int) $request->integer('entry_type_id');
         $customerId = $request->filled('customer_id') ? (int) $request->integer('customer_id') : null;
@@ -130,13 +116,7 @@ class EntryTypeDrilldownReportController extends Controller {
 
         $entryIds = $this->entryIds($from->toDateTimeString(), $to->toDateTimeString(), $entryTypeId, $customerId, $userId, $statusFilter);
 
-        $protocolsQuery = Protocol::query()
-            ->with(['creator:id,name'])
-            ->where('type', ProtocolType::Defect->value)
-            ->where('subject_type', DiaryEntry::class)
-            ->whereBetween('occurred_at', [$from, $to])
-            ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
-            ->orderByDesc('occurred_at');
+        $protocolsQuery = $this->defectProtocolDrilldownQuery($entryIds, $from, $to);
 
         if ($request->query('export') === 'csv') {
             /** @var list<Protocol> $protocols */
@@ -150,29 +130,28 @@ class EntryTypeDrilldownReportController extends Controller {
                 'user_id' => $userId,
                 'status' => $statusFilter,
             ];
-            $this->auditExport($request, 'entry-type-drilldown-protocols', 'csv', $exportFilters);
 
-            return $this->exportProtocolsCsv($protocols, $entryTypeId, $from->toDateString(), $to->toDateString(), $exportFilters);
+            return $this->exportProtocolsCsv($protocols, $entryTypeId, $from->toDateString(), $to->toDateString(), $exportFilters, $request);
         }
 
         if ($request->query('export') === 'pdf') {
             /** @var list<Protocol> $protocols */
             $protocols = $protocolsQuery->clone()->get()->all();
 
-            $this->auditExport($request, 'entry-type-drilldown-protocols', 'pdf', [
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'entry_type_id' => $entryTypeId,
-                'customer_id' => $customerId,
-                'user_id' => $userId,
-                'status' => $statusFilter,
-            ]);
-
             return $this->exportProtocolsPdf(
                 $protocols,
                 ($entryType !== null ? $entryType->label : null) ?? ('#' . $entryTypeId),
                 $range['label'],
                 $entryTypeId,
+                [
+                    'from' => $from->toDateString(),
+                    'to' => $to->toDateString(),
+                    'entry_type_id' => $entryTypeId,
+                    'customer_id' => $customerId,
+                    'user_id' => $userId,
+                    'status' => $statusFilter,
+                ],
+                $request,
                 $from->toDateString(),
                 $to->toDateString()
             );
@@ -211,7 +190,7 @@ class EntryTypeDrilldownReportController extends Controller {
      * @param  list<OpenIssue>          $issues
      * @param  array<string, mixed>     $filters
      */
-    private function exportOpenIssuesCsv(array $issues, int $entryTypeId, string $from, string $to, bool $escalatedOnly, array $filters): Response {
+    private function exportOpenIssuesCsv(array $issues, int $entryTypeId, string $from, string $to, bool $escalatedOnly, array $filters, Request $request): Response {
         $filename = sprintf(
             'auftragstyp-drilldown-open-issues-%d-%s-%s%s.csv',
             $entryTypeId,
@@ -220,26 +199,14 @@ class EntryTypeDrilldownReportController extends Controller {
             $escalatedOnly ? '-escalated' : ''
         );
 
-        $rows = [];
-        $rows[] = ['ID', 'Titel', 'Status', 'Severity', 'Fällig', 'Zugewiesen'];
-        foreach ($issues as $issue) {
-            $rows[] = [
-                $issue->id,
-                $issue->title,
-                $issue->status->label(),
-                $issue->severity->label(),
-                $issue->due_at?->format('Y-m-d') ?? '',
-                $issue->assignee ? $issue->assignee->name : '',
-            ];
-        }
-
-        return $this->csvWithMetadata($rows, $filename, 'entry-type-drilldown-open-issues', $filters);
+        return $this->csvWithMetadata($this->openIssueCsvRows($issues), $filename, 'entry-type-drilldown-open-issues', $filters, $request);
     }
 
     /**
-     * @param  list<OpenIssue>  $issues
+     * @param  list<OpenIssue>       $issues
+     * @param  array<string, mixed>  $filters
      */
-    private function exportOpenIssuesPdf(array $issues, string $entryTypeLabel, string $label, int $entryTypeId, string $from, string $to, bool $escalatedOnly): SymfonyResponse {
+    private function exportOpenIssuesPdf(array $issues, string $entryTypeLabel, string $label, int $entryTypeId, array $filters, Request $request, string $from, string $to, bool $escalatedOnly): SymfonyResponse {
         $filename = sprintf(
             'auftragstyp-drilldown-open-issues-%d-%s-%s%s.pdf',
             $entryTypeId,
@@ -253,43 +220,30 @@ class EntryTypeDrilldownReportController extends Controller {
             'entryTypeLabel' => $entryTypeLabel,
             'label' => $label,
             'escalatedOnly' => $escalatedOnly,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'entry-type-drilldown-open-issues', filters: $filters);
     }
 
     /**
      * @param  list<Protocol>           $protocols
      * @param  array<string, mixed>     $filters
      */
-    private function exportProtocolsCsv(array $protocols, int $entryTypeId, string $from, string $to, array $filters): Response {
+    private function exportProtocolsCsv(array $protocols, int $entryTypeId, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('auftragstyp-drilldown-defektprotokolle-%d-%s-%s.csv', $entryTypeId, $from, $to);
 
-        $rows = [];
-        $rows[] = ['ID', 'Titel', 'Status', 'Typ', 'Zeitpunkt', 'ErstelltVon', 'AuftragID'];
-        foreach ($protocols as $protocol) {
-            $rows[] = [
-                $protocol->id,
-                $protocol->title,
-                $protocol->status->label(),
-                $protocol->type->label(),
-                $protocol->occurred_at->format('Y-m-d H:i'),
-                $protocol->creator ? $protocol->creator->name : '',
-                $protocol->subject_id,
-            ];
-        }
-
-        return $this->csvWithMetadata($rows, $filename, 'entry-type-drilldown-protocols', $filters);
+        return $this->csvWithMetadata($this->protocolCsvRows($protocols), $filename, 'entry-type-drilldown-protocols', $filters, $request);
     }
 
     /**
-     * @param  list<Protocol>  $protocols
+     * @param  list<Protocol>        $protocols
+     * @param  array<string, mixed>  $filters
      */
-    private function exportProtocolsPdf(array $protocols, string $entryTypeLabel, string $label, int $entryTypeId, string $from, string $to): SymfonyResponse {
+    private function exportProtocolsPdf(array $protocols, string $entryTypeLabel, string $label, int $entryTypeId, array $filters, Request $request, string $from, string $to): SymfonyResponse {
         $filename = sprintf('auftragstyp-drilldown-defektprotokolle-%d-%s-%s.pdf', $entryTypeId, $from, $to);
 
         return $this->pdfDownload('reports.drilldown.pdf.entry-type-protocols', [
             'protocols' => $protocols,
             'entryTypeLabel' => $entryTypeLabel,
             'label' => $label,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'entry-type-drilldown-protocols', filters: $filters);
     }
 }

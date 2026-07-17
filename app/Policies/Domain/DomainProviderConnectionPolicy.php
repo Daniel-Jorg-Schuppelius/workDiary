@@ -13,34 +13,21 @@ declare(strict_types=1);
 namespace App\Policies\Domain;
 
 use App\Enums\User\Permission as P;
-use App\Models\Domain\DomainProviderConnection;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * DomainReselling-Verbindung (Feature 083): view = Verbindung/Health sehen,
  * manage = konfigurieren/Zugangsdaten rotieren/Pilot bestätigen.
  */
-class DomainProviderConnectionPolicy {
+class DomainProviderConnectionPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::DomainProviderView->value);
-    }
-
-    public function view(User $user, DomainProviderConnection $connection): bool {
-        return $user->can(P::DomainProviderView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::DomainProviderManage->value);
-    }
-
-    public function update(User $user, DomainProviderConnection $connection): bool {
-        return $user->can(P::DomainProviderManage->value);
-    }
-
-    public function delete(User $user, DomainProviderConnection $connection): bool {
-        return $user->can(P::DomainProviderManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::DomainProviderView,
+        'view' => P::DomainProviderView,
+        'create' => P::DomainProviderManage,
+        'update' => P::DomainProviderManage,
+        'delete' => P::DomainProviderManage,
+    ];
 }

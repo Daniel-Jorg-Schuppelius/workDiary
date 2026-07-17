@@ -10,7 +10,12 @@
 
 namespace App\Enums\KeyHandover;
 
-enum KeyHandoverDirection: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum KeyHandoverDirection: string implements HasLabel {
+    use HasOptions;
+
     case Out = 'out';
     case In = 'in';
 

@@ -10,12 +10,12 @@
 
 namespace App\Plugins\Clockify;
 
-use App\Models\{Organization, PluginSetting};
+use App\Plugins\Support\PluginSettingsResolver;
 
 /**
  * Effektive Clockify-Konfiguration (CSV + API): plugin_settings der gebundenen
- * Organisation, sonst `config('plugins.clockify.*')` als Fallback. Analog
- * {@see \App\Plugins\Kimai\KimaiConfig}.
+ * Organisation vor `config('plugins.clockify.*')` — Lookup/Cast im
+ * {@see PluginSettingsResolver} (C10). Analog {@see \App\Plugins\Kimai\KimaiConfig}.
  *
  * @phpstan-type ClockifySettings array{enabled: bool, default_billable: bool, default_user_id: ?int, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int}
  */
@@ -28,69 +28,17 @@ class ClockifyConfig {
      * @return array{enabled: bool, default_billable: bool, default_user_id: ?int, api_key: ?string, workspace_id: ?string, base_url: string, reports_base_url: string, sync_window_days: int}
      */
     public static function resolve(?int $organizationId = null): array {
-        $enabled = (bool) config('plugins.clockify.enabled', false);
-        $defaultBillable = (bool) config('plugins.clockify.default_billable', true);
-        $defaultUserId = self::intOrNull(config('plugins.clockify.default_user_id'));
-        $apiKey = self::stringOrNull(config('plugins.clockify.api_key'));
-        $workspaceId = self::stringOrNull(config('plugins.clockify.workspace_id'));
-        $baseUrl = self::stringOrNull(config('plugins.clockify.base_url')) ?? self::DEFAULT_BASE_URL;
-        $reportsBaseUrl = self::stringOrNull(config('plugins.clockify.reports_base_url')) ?? self::DEFAULT_REPORTS_BASE_URL;
-        $syncWindowDays = (int) config('plugins.clockify.sync_window_days', 30);
-
-        $organizationId ??= self::boundOrganizationId();
-
-        if ($organizationId !== null) {
-            $row = PluginSetting::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('plugin_id', ClockifyPlugin::ID)
-                ->first();
-
-            if ($row !== null) {
-                $enabled = (bool) $row->enabled;
-                $s = $row->settings ?? [];
-                if (isset($s['default_billable'])) {
-                    $defaultBillable = (bool) $s['default_billable'];
-                }
-                if (self::intOrNull($s['default_user_id'] ?? null) !== null) {
-                    $defaultUserId = self::intOrNull($s['default_user_id']);
-                }
-                $apiKey = self::stringOrNull($s['api_key'] ?? null) ?? $apiKey;
-                $workspaceId = self::stringOrNull($s['workspace_id'] ?? null) ?? $workspaceId;
-                $baseUrl = self::stringOrNull($s['base_url'] ?? null) ?? $baseUrl;
-                $reportsBaseUrl = self::stringOrNull($s['reports_base_url'] ?? null) ?? $reportsBaseUrl;
-                if (self::intOrNull($s['sync_window_days'] ?? null) !== null) {
-                    $syncWindowDays = (int) $s['sync_window_days'];
-                }
-            }
-        }
+        $r = PluginSettingsResolver::for(ClockifyPlugin::ID, $organizationId);
 
         return [
-            'enabled' => $enabled,
-            'default_billable' => $defaultBillable,
-            'default_user_id' => $defaultUserId,
-            'api_key' => $apiKey,
-            'workspace_id' => $workspaceId,
-            'base_url' => $baseUrl,
-            'reports_base_url' => $reportsBaseUrl,
-            'sync_window_days' => max(1, $syncWindowDays),
+            'enabled' => $r->enabled(),
+            'default_billable' => $r->bool('default_billable', true),
+            'default_user_id' => $r->intOrNull('default_user_id'),
+            'api_key' => $r->string('api_key', trim: true),
+            'workspace_id' => $r->string('workspace_id', trim: true),
+            'base_url' => $r->string('base_url', trim: true) ?? self::DEFAULT_BASE_URL,
+            'reports_base_url' => $r->string('reports_base_url', trim: true) ?? self::DEFAULT_REPORTS_BASE_URL,
+            'sync_window_days' => max(1, $r->int('sync_window_days', 30)),
         ];
-    }
-
-    private static function intOrNull(mixed $value): ?int {
-        return is_numeric($value) ? (int) $value : null;
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        return is_string($value) && trim($value) !== '' ? trim($value) : null;
-    }
-
-    private static function boundOrganizationId(): ?int {
-        if (! app()->bound('currentOrganization')) {
-            return null;
-        }
-        $org = app('currentOrganization');
-
-        return $org instanceof Organization ? (int) $org->id : null;
     }
 }

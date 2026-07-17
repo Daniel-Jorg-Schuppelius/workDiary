@@ -12,7 +12,7 @@ namespace App\Policies;
 
 use App\Enums\User\Permission;
 use App\Models\{Team, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Zugriffsregeln für operative Arbeits-Teams. Verwaltung (Anlegen/Bearbeiten/
@@ -21,6 +21,7 @@ use App\Policies\Concerns\HasAdminBypass;
  * Admin überspringt via {@see HasAdminBypass}.
  */
 class TeamPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -28,7 +29,7 @@ class TeamPolicy {
     }
 
     public function view(User $user, Team $team): bool {
-        return $user->organization_id === $team->organization_id
+        return $this->sharesOrganization($user, $team)
             && $user->hasEffectivePermission(Permission::TeamView->value);
     }
 
@@ -38,17 +39,17 @@ class TeamPolicy {
     }
 
     public function update(User $user, Team $team): bool {
-        return $user->organization_id === $team->organization_id
+        return $this->sharesOrganization($user, $team)
             && $user->hasEffectivePermission(Permission::TeamUpdate->value);
     }
 
     public function delete(User $user, Team $team): bool {
-        return $user->organization_id === $team->organization_id
+        return $this->sharesOrganization($user, $team)
             && $user->hasEffectivePermission(Permission::TeamDelete->value);
     }
 
     public function manageMembers(User $user, Team $team): bool {
-        return $user->organization_id === $team->organization_id
+        return $this->sharesOrganization($user, $team)
             && $user->hasEffectivePermission(Permission::TeamManageMembers->value);
     }
 }

@@ -1,4 +1,4 @@
-@extends('reports.drilldown.pdf.layout')
+@extends('reports.pdf.layout')
 
 @section('pdf-title', 'Produktanalyse Drilldown - Defektprotokolle')
 @section('pdf-heading', 'Produktanalyse Drilldown: Defektprotokolle')

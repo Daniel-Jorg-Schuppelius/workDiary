@@ -11,7 +11,7 @@
 namespace App\Policies;
 
 use App\Models\{User, UserGroup};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Zugriffsregeln für Benutzergruppen einer Organisation. Verwaltung darf
@@ -19,6 +19,7 @@ use App\Policies\Concerns\HasAdminBypass;
  * grundsätzlich nur Mitglieder derselben Organisation einsehen.
  */
 class UserGroupPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -26,7 +27,7 @@ class UserGroupPolicy {
     }
 
     public function view(User $user, UserGroup $group): bool {
-        return $user->organization_id === $group->organization_id
+        return $this->sharesOrganization($user, $group)
             && $user->hasEffectivePermission('access.manage');
     }
 
@@ -36,7 +37,7 @@ class UserGroupPolicy {
     }
 
     public function update(User $user, UserGroup $group): bool {
-        return $user->organization_id === $group->organization_id
+        return $this->sharesOrganization($user, $group)
             && $user->hasEffectivePermission('access.manage');
     }
 
@@ -45,7 +46,7 @@ class UserGroupPolicy {
             return false;
         }
 
-        return $user->organization_id === $group->organization_id
+        return $this->sharesOrganization($user, $group)
             && $user->hasEffectivePermission('access.manage');
     }
 }

@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Procurement;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Rundungsstrategie für Verkaufspreisvorschläge (Feature 050, MVP-095). Immer
  * aufrundend, damit die Zielmarge nicht unterschritten wird.
  */
-enum PriceRounding: string {
+enum PriceRounding: string implements HasLabel {
+    use HasOptions;
+
     case None = 'none';
     case Up05 = 'up_0_05';
     case Up10 = 'up_0_10';

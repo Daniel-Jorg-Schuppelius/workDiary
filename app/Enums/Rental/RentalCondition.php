@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Zustandsstufe in Übergabe-/Rücknahmeprotokollen (MVP-263/265).
  */
-enum RentalCondition: string {
+enum RentalCondition: string implements HasLabel {
+    use HasOptions;
+
     case New = 'new';
     case Good = 'good';
     case Used = 'used';

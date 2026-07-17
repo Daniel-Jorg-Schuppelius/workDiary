@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\KeyHandover\KeyHandoverDirection;
-use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, Searchable};
 use Database\Factories\KeyHandoverFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -38,6 +38,7 @@ use Illuminate\Support\Carbon;
 class KeyHandover extends Model {
     /** @use HasFactory<KeyHandoverFactory> */
     use Auditable, BelongsToOrganization, HasFactory;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -78,5 +79,10 @@ class KeyHandover extends Model {
     /** @return BelongsTo<User, $this> */
     public function returnedTo(): BelongsTo {
         return $this->belongsTo(User::class, 'returned_to_user_id');
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['person_name', 'person_reference'];
     }
 }

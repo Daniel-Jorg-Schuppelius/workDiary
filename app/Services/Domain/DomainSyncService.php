@@ -16,6 +16,7 @@ use App\Plugins\Contracts\Domain\DomainProviderAdapter;
 use App\Plugins\DomainReselling\DomainResellingConfig;
 use App\Plugins\Support\Domain\DomainResponse;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
 
 /**
@@ -65,7 +66,7 @@ class DomainSyncService {
                     'currency' => $this->currency($this->field($row, ['currency'])),
                     'balance_snapshot' => $this->decimal($this->field($row, ['balance', 'accountbalance'])),
                     'balance_at' => Carbon::now(),
-                    'raw_hash' => hash('sha256', json_encode($row) ?: ''),
+                    'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
                 ],
             );
@@ -148,7 +149,7 @@ class DomainSyncService {
                         'country' => $this->field($row, ['country']),
                         'type' => $this->field($row, ['type']),
                     ],
-                    'raw_hash' => hash('sha256', json_encode($row) ?: ''),
+                    'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
                 ],
             );
@@ -201,7 +202,7 @@ class DomainSyncService {
                 'accounting_at' => $this->date($this->field($row, ['paiddate', 'accountingdate'])),
                 'failure_at' => $this->date($this->field($row, ['failuredate'])),
                 'finalization_at' => $this->date($this->field($row, ['finalizationdate'])),
-                'raw_hash' => hash('sha256', json_encode($row) ?: ''),
+                'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                 'synced_at' => Carbon::now(),
             ],
         );

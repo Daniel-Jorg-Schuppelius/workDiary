@@ -20,8 +20,9 @@ use RecursiveIteratorIterator;
  *
  * Die Unveränderbarkeit festgeschriebener Belege ist als Model-Guard
  * implementiert (`static::updating`/`static::deleting` werfen nach der
- * Festschreibung, bzw. `HashChained` für append-only Ereignisketten). Solche
- * Guards laufen über Eloquent-Model-Events — sie sind daher wirkungslos bei:
+ * Festschreibung, bzw. `AppendOnly`/`HashChained` für append-only
+ * Nachweise und Ereignisketten). Solche Guards laufen über
+ * Eloquent-Model-Events — sie sind daher wirkungslos bei:
  *
  *  - Bulk-Query-Writes (`Invoice::where(…)->update(…)`, `…->delete()`),
  *  - Quiet-Writes (`$invoice->saveQuietly()`, `updateQuietly`, `deleteQuietly`),
@@ -39,7 +40,7 @@ use RecursiveIteratorIterator;
 class GobdLockGuardRuleTest extends TestCase {
     /**
      * Festschreibungspflichtige Modelle: Kurzname → [Modell-Datei, Tabelle].
-     * Freeze-Guards (booted) bzw. HashChained (append-only Ketten).
+     * Freeze-Guards (booted), AppendOnly-Trait bzw. HashChained (Ketten).
      *
      * @var array<string, array{file: string, table: string}>
      */
@@ -48,9 +49,14 @@ class GobdLockGuardRuleTest extends TestCase {
         'Invoice' => ['file' => 'app/Models/Invoice.php', 'table' => 'invoices'],
         'DatevBookingBatch' => ['file' => 'app/Models/Finance/DatevBookingBatch.php', 'table' => 'datev_booking_batches'],
         'BillingTransfer' => ['file' => 'app/Models/Finance/BillingTransfer.php', 'table' => 'billing_transfers'],
-        // Append-only Nachweise (Lagerbewegung / Auftrags-Timeline)
+        // Append-only Nachweise (AppendOnly-Trait)
         'StockMovement' => ['file' => 'app/Models/StockMovement.php', 'table' => 'stock_movements'],
         'DiaryEntryEvent' => ['file' => 'app/Models/DiaryEntryEvent.php', 'table' => 'diary_entry_events'],
+        'WeatherSnapshot' => ['file' => 'app/Models/WeatherSnapshot.php', 'table' => 'weather_snapshots'],
+        'DocumentRenderSnapshot' => ['file' => 'app/Models/DocumentDesign/DocumentRenderSnapshot.php', 'table' => 'document_render_snapshots'],
+        'AgileEvent' => ['file' => 'app/Models/Agile/AgileEvent.php', 'table' => 'agile_events'],
+        'AssetInspectionEvent' => ['file' => 'app/Models/AssetCompliance/AssetInspectionEvent.php', 'table' => 'asset_inspection_events'],
+        'AssetCalibrationCertificate' => ['file' => 'app/Models/AssetCompliance/AssetCalibrationCertificate.php', 'table' => 'asset_calibration_certificates'],
         // HashChained-Ereignisketten (append-only, Hash-Kette)
         'CashEntry' => ['file' => 'app/Models/CashEntry.php', 'table' => 'cash_entries'], // MVP-414 Kassenbuch
         'AuditLog' => ['file' => 'app/Models/AuditLog.php', 'table' => 'audit_logs'],
@@ -113,17 +119,17 @@ class GobdLockGuardRuleTest extends TestCase {
         foreach (self::GUARDED_MODELS as $name => $model) {
             $source = (string) file_get_contents($root . '/' . $model['file']);
 
-            $hashChained = str_contains($source, 'use HashChained;');
+            $appendOnly = str_contains($source, 'use AppendOnly;') || str_contains($source, 'use HashChained;');
             $freezeGuard = str_contains($source, 'static::updating(') && str_contains($source, 'static::deleting(');
 
-            if (! $hashChained && ! $freezeGuard) {
+            if (! $appendOnly && ! $freezeGuard) {
                 $missing[] = $name . ' (' . $model['file'] . ')';
             }
         }
 
         $this->assertSame([], $missing, sprintf(
-            "Festschreibungspflichtiges Modell ohne Lock-Guard (weder HashChained noch static::updating+deleting):\n%s\n"
-                . 'Guard nachrüsten (Muster: Invoice/DatevBookingBatch) oder Registry-Eintrag begründet entfernen.',
+            "Festschreibungspflichtiges Modell ohne Lock-Guard (weder AppendOnly/HashChained noch static::updating+deleting):\n%s\n"
+                . 'Guard nachrüsten (Muster: AppendOnly-Trait bzw. Invoice/DatevBookingBatch) oder Registry-Eintrag begründet entfernen.',
             implode("\n", $missing),
         ));
     }

@@ -14,19 +14,17 @@ use App\Enums\User\Permission as P;
 use App\Models\{SlaViolation, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class SlaViolationPolicy {
+class SlaViolationPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::SlaViewAny->value);
-    }
-
-    public function view(User $user, SlaViolation $violation): bool {
-        return $user->can(P::SlaViewAny->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::SlaViewAny,
+        'view' => P::SlaViewAny,
+        'acknowledge' => P::SlaManage,
+    ];
 
     /** Verletzung quittieren (Sichtung dokumentieren). */
     public function acknowledge(User $user, SlaViolation $violation): bool {
-        return $user->can(P::SlaManage->value);
+        return $this->allows($user, 'acknowledge');
     }
 }

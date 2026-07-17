@@ -14,6 +14,7 @@ namespace App\Policies;
 
 use App\Enums\User\Permission;
 use App\Models\{Problem, User};
+use App\Policies\Concerns\ChecksOwnership;
 
 /**
  * Problem-Management (Feature 065, MVP-156): Sicht folgt dem Ticket-
@@ -23,12 +24,14 @@ use App\Models\{Problem, User};
  * hart (Defense in Depth, Muster RequestItemPolicy).
  */
 class ProblemPolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return $user->can(Permission::ServiceTicketView->value);
     }
 
     public function view(User $user, Problem $problem): bool {
-        return $this->sameOrg($user, $problem) && $user->can(Permission::ServiceTicketView->value);
+        return $this->sharesOrganization($user, $problem) && $user->can(Permission::ServiceTicketView->value);
     }
 
     public function create(User $user): bool {
@@ -36,10 +39,7 @@ class ProblemPolicy {
     }
 
     public function update(User $user, Problem $problem): bool {
-        return $this->sameOrg($user, $problem) && $user->can(Permission::ServiceDeskProblemManage->value);
+        return $this->sharesOrganization($user, $problem) && $user->can(Permission::ServiceDeskProblemManage->value);
     }
 
-    private function sameOrg(User $user, Problem $problem): bool {
-        return (int) $user->organization_id === (int) $problem->organization_id;
-    }
 }

@@ -13,6 +13,7 @@ namespace App\Plugins\Msgraph\Http\Controllers;
 use App\Enums\CloudIntake\CloudIntakeProvider;
 use App\Http\Controllers\Controller;
 use App\Models\CloudIntake\CloudDocumentConnection;
+use App\Plugins\Support\WebhookSignature;
 use App\Services\CloudIntake\IntakeWakeSignal;
 use Illuminate\Http\{Request, Response};
 
@@ -55,8 +56,7 @@ class MsgraphIntakeWebhookController extends Controller {
                 continue;
             }
 
-            $secret = (string) ($connection->webhook_secret ?? '');
-            if ($secret === '' || ! hash_equals($secret, $clientState)) {
+            if (! WebhookSignature::tokenValid((string) ($connection->webhook_secret ?? ''), $clientState)) {
                 continue; // falsches clientState ⇒ still ignorieren, kein Oracle
             }
 

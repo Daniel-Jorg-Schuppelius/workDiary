@@ -44,9 +44,7 @@ class ArticleController extends Controller {
 
         $articles = Article::query()
             ->withCount('variants')
-            ->when($search !== '', fn($q) => $q->where(fn($w) => $w
-                ->whereLikeEscaped('name', $search)
-                ->orWhereLikeEscaped('number', $search)))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->when($status !== 'all', fn($q) => $q->where('status', $status))
             ->orderBy($sort, $dir)
             ->paginate(25)

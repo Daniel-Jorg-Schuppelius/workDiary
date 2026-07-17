@@ -12,9 +12,11 @@ namespace App\Http\Controllers\Isms;
 
 use App\Enums\Isms\ControlImplementationStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\StreamsRegisterExport;
 use App\Models\Isms\{IsmsControl, IsmsRequirement};
 use App\Models\User;
 use App\Services\Isms\{ControlService, RegisterExportService};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -29,6 +31,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Autorisierung über IsmsControlPolicy (isms.viewAny/view/manage).
  */
 class ControlController extends Controller {
+    use StreamsRegisterExport;
+
     public function __construct(
         private readonly ControlService $service,
         private readonly RegisterExportService $exports,
@@ -64,24 +68,12 @@ class ControlController extends Controller {
      * Gate wie die Listenseite; meta-Block/Kopf trägt den Datenstand.
      */
     public function export(Request $request): StreamedResponse {
-        Gate::authorize('viewAny', IsmsControl::class);
-
-        $format = (string) $request->query('format', 'json');
-        abort_unless(in_array($format, RegisterExportService::FORMATS, true), 404);
-
-        /** @var User $actor */
-        $actor = Auth::user();
-        $register = $this->exports->controlRegister();
-
-        $content = $format === 'csv'
-            ? $this->exports->toCsv(RegisterExportService::REGISTER_CONTROLS, $actor, null, $register)
-            : $this->exports->toJson(RegisterExportService::REGISTER_CONTROLS, $actor, null, $register);
-
-        return response()->streamDownload(static function () use ($content): void {
-            echo $content;
-        }, $this->exports->filename(RegisterExportService::REGISTER_CONTROLS, $format), [
-            'Content-Type' => $format === 'csv' ? 'text/csv; charset=UTF-8' : 'application/json; charset=UTF-8',
-        ]);
+        return $this->streamRegisterExport(
+            $request,
+            IsmsControl::class,
+            RegisterExportService::REGISTER_CONTROLS,
+            fn(): array => $this->exports->controlRegister(),
+        );
     }
 
     public function create(): View {
@@ -148,6 +140,18 @@ class ControlController extends Controller {
      * @return array<string, mixed>
      */
     private function validateControl(Request $request, User $actor): array {
+        // Sqid-Inputs vor der Validierung dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('owner_user_id')) {
+            $request->merge(['owner_user_id' => Sqid::decodeOrNumeric(User::class, $request->input('owner_user_id'))]);
+        }
+        $requirementIds = $request->input('requirement_ids');
+        if (is_array($requirementIds)) {
+            $request->merge(['requirement_ids' => array_map(
+                static fn($v) => $v === null || $v === '' ? null : Sqid::decodeOrNumeric(IsmsRequirement::class, $v),
+                $requirementIds,
+            )]);
+        }
+
         return $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:180'],
             'description' => ['nullable', 'string', 'max:10000'],

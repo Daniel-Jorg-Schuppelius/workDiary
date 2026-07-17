@@ -33,7 +33,7 @@
         </x-slot:actions>
 
         @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
-        @if ($errors->any())<div class="alert alert-error"><ul class="list-disc ml-4">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
+        <x-validation-errors />
 
         {{-- Ampel --}}
         <x-card>

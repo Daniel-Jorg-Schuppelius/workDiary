@@ -10,18 +10,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Import\ImportEntity;
 use App\Http\Controllers\Concerns\{ArchivesModels, ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveCustomerRequest;
-use App\Models\{AuditLog, Customer, ExternalReference, Invoice, LexofficeVoucher, Tag, TimeEntry, User};
+use App\Models\{AuditLog, Customer, ExternalReference, Invoice, LexofficeVoucher, Organization, Tag, TimeEntry, User};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
-use App\Services\{CustomerCsvImporter, CustomerStatsService};
-use App\Support\Setting;
-use CommonToolkit\Helper\Data\CSV\StringHelper;
+use App\Services\CustomerStatsService;
+use App\Services\Import\DirectCsvImportService;
+use App\Support\{CsvExport, Setting};
 // HINWEIS: Lexoffice-Push liegt im Plugin (LexofficeCustomerController); Imports oben nur noch für die Show-View.
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -272,59 +272,46 @@ class CustomerController extends Controller {
 
         $filename = 'kunden-' . now()->format('Y-m-d-His') . '.csv';
 
-        return new StreamedResponse(function () use ($query): void {
-            $out = fopen('php://output', 'w');
-            if ($out === false) {
-                return;
+        $rows = (static function () use ($query): \Generator {
+            /** @var Customer $c */
+            foreach ($query->lazy(500) as $c) {
+                yield [
+                    $c->number,
+                    $c->name,
+                    $c->company,
+                    $c->vat_id,
+                    $c->email,
+                    $c->phone ?: $c->mobile,
+                    $c->address_street,
+                    $c->address_zip,
+                    $c->address_city,
+                    $c->country,
+                    $c->currency->value,
+                    $c->hourly_rate,
+                    $c->billable ? 'ja' : 'nein',
+                    $c->archived_at?->format('Y-m-d') ?? '',
+                    $c->created_at?->format('Y-m-d') ?? '',
+                ];
             }
-            // UTF-8 BOM für Excel
-            fwrite($out, \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8);
-            fwrite($out, StringHelper::encodeLine([
-                'Nummer',
-                'Name',
-                'Firma',
-                'USt-IdNr.',
-                'E-Mail',
-                'Telefon',
-                'Straße',
-                'PLZ',
-                'Ort',
-                'Land',
-                'Währung',
-                'Stundensatz',
-                'Abrechenbar',
-                'Archiviert',
-                'Angelegt',
-            ], ';') . "\r\n");
+        })();
 
-            $query->chunk(500, function ($chunk) use ($out): void {
-                /** @var Collection<int, Customer> $chunk */
-                foreach ($chunk as $c) {
-                    fwrite($out, StringHelper::encodeLine([
-                        $c->number,
-                        $c->name,
-                        $c->company,
-                        $c->vat_id,
-                        $c->email,
-                        $c->phone ?: $c->mobile,
-                        $c->address_street,
-                        $c->address_zip,
-                        $c->address_city,
-                        $c->country,
-                        $c->currency->value,
-                        $c->hourly_rate,
-                        $c->billable ? 'ja' : 'nein',
-                        $c->archived_at?->format('Y-m-d') ?? '',
-                        $c->created_at?->format('Y-m-d') ?? '',
-                    ], ';') . "\r\n");
-                }
-            });
-
-            fclose($out);
-        }, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return CsvExport::streamFromRows($filename, [
+            'Nummer',
+            'Name',
+            'Firma',
+            'USt-IdNr.',
+            'E-Mail',
+            'Telefon',
+            'Straße',
+            'PLZ',
+            'Ort',
+            'Land',
+            'Währung',
+            'Stundensatz',
+            'Abrechenbar',
+            'Archiviert',
+            'Angelegt',
+        ], $rows);
     }
 
     /**
@@ -342,9 +329,10 @@ class CustomerController extends Controller {
     }
 
     /**
-     * Verarbeitet einen CSV-Upload und legt/aktualisiert Kunden.
+     * Verarbeitet einen CSV-Upload und legt/aktualisiert Kunden — synchron
+     * über die EntitySpec-Pipeline (CustomerSpec, Direkt-Upsert ohne Inbox).
      */
-    public function import(Request $request, CustomerCsvImporter $importer): RedirectResponse {
+    public function import(Request $request, DirectCsvImportService $importer): RedirectResponse {
         Gate::authorize('viewAny', Customer::class);
         /** @var User|null $authUser */
         $authUser = Auth::user();
@@ -361,11 +349,12 @@ class CustomerController extends Controller {
             return back()->with('error', __('Keine Datei hochgeladen.'));
         }
 
-        $orgId = app()->bound('currentOrganization')
-            ? (int) app('currentOrganization')->id
-            : (int) (Auth::user()->organization_id ?? 0);
+        $organization = app()->bound('currentOrganization') && app('currentOrganization') instanceof Organization
+            ? app('currentOrganization')
+            : $authUser->organization;
+        abort_unless($organization instanceof Organization, 403);
 
-        $result = $importer->import($file, $orgId ?: null);
+        $result = $importer->import($file, ImportEntity::Customers, $organization);
 
         $message = __('CSV-Import: :c angelegt, :u aktualisiert, :s übersprungen.', [
             'c' => $result['created'],

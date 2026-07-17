@@ -10,6 +10,9 @@
 
 namespace App\Enums\TimeExport;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Lebenszyklus einer Zeit-Export-Datei (MVP-019).
  *
@@ -19,7 +22,9 @@ namespace App\Enums\TimeExport;
  * - rejected: zurückgewiesen (z. B. Lohnbüro meldet Mängel)
  * - superseded: durch späteren Re-Export desselben Zeitraums ersetzt
  */
-enum TimeExportStatus: string {
+enum TimeExportStatus: string implements HasLabel {
+    use HasOptions;
+
     case Preparing = 'preparing';
     case Ready = 'ready';
     case Delivered = 'delivered';

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Http\Requests\SaveSoftwareRequest;
 use App\Models\{Software, User};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class SoftwareController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['name', 'vendor', 'kind', 'license_type', 'installations_count'];
 
     public function index(Request $request): View {
@@ -25,21 +28,14 @@ class SoftwareController extends Controller {
 
         $query = trim($request->string('q')->toString());
         $kindFilter = $this->normalizeKind($request->string('kind')->toString());
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['sort' => $sort, 'dir' => $dir] = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $softwareQuery = Software::query()
             ->withCount('installations')
             ->orderBy($sort, $dir);
 
         if ($query !== '') {
-            $softwareQuery->where(function ($builder) use ($query): void {
-                $builder
-                    ->whereLikeEscaped('name', $query)
-                    ->orWhereLikeEscaped('vendor', $query);
-            });
+            $softwareQuery->search($query);
         }
 
         if ($kindFilter !== null) {

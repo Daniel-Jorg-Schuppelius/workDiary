@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Calendar;
 
+use CommonToolkit\Helper\Data\CryptoHelper;
 use DateTimeImmutable;
 
 /**
@@ -23,7 +24,7 @@ use DateTimeImmutable;
  * Kalender-Kanäle denselben Termin meinen. `cancelled` markiert ein
  * extern zu entfernendes Element (abgesagter Termin).
  */
-final class RemoteCalendarEvent {
+final class RemoteCalendarEvent implements RemoteCalendarItem {
     public function __construct(
         public readonly string $uid,
         public readonly string $title,
@@ -37,12 +38,28 @@ final class RemoteCalendarEvent {
         public readonly bool $cancelled = false,
     ) {}
 
+    public function uid(): string {
+        return $this->uid;
+    }
+
+    public function referenceableType(): string {
+        return $this->referenceableType;
+    }
+
+    public function referenceableId(): int {
+        return $this->referenceableId;
+    }
+
+    public function cancelled(): bool {
+        return $this->cancelled;
+    }
+
     /**
      * Änderungs-Fingerprint für das idempotente Publish (Hash-Vergleich in
      * der {@see \App\Models\ExternalReference}-Payload — CalDAV-Muster).
      */
     public function fingerprint(): string {
-        return hash('sha256', (string) json_encode([
+        return CryptoHelper::hash((string) json_encode([
             $this->title,
             $this->description,
             $this->location,

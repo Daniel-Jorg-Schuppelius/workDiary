@@ -12,7 +12,12 @@ declare(strict_types=1);
 
 namespace App\Enums\DocumentDesign;
 
-enum RenderProfileStatus: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum RenderProfileStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Active = 'active';
     case Archived = 'archived';

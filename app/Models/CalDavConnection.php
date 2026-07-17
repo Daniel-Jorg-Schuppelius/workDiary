@@ -11,8 +11,10 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Support\Calendar\RemoteCalendarConnection;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * CalDAV-Anbindung einer Organisation (Feature 058, MVP-126). Das App-Passwort
@@ -32,7 +34,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int|null $created_by
  * @property \Illuminate\Support\Carbon|null $last_published_at
  */
-class CalDavConnection extends Model {
+class CalDavConnection extends Model implements RemoteCalendarConnection {
     use Auditable;
 
     use BelongsToOrganization;
@@ -93,5 +95,13 @@ class CalDavConnection extends Model {
     /** Vollständige URL des Kalenderobjekts (Collection + Objektname). */
     public function objectUrl(string $objectName): string {
         return rtrim($this->base_url, '/') . '/' . trim($this->calendar_path, '/') . '/' . ltrim($objectName, '/');
+    }
+
+    public function organizationId(): int {
+        return (int) $this->organization_id;
+    }
+
+    public function markPublished(): void {
+        $this->forceFill(['last_published_at' => Carbon::now()])->save();
     }
 }

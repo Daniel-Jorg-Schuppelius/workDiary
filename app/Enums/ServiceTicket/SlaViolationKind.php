@@ -10,12 +10,17 @@
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Art einer SLA-Verletzung: Reaktionszeit (erste Reaktion zu spät) oder
  * Lösungszeit (Lösung zu spät). Spiegelt die beiden SLA-Fristen am Ticket
  * (reaction_due_at / resolution_due_at).
  */
-enum SlaViolationKind: string {
+enum SlaViolationKind: string implements HasLabel {
+    use HasOptions;
+
     case ResponseTime = 'responseTime';
     case ResolutionTime = 'resolutionTime';
 
@@ -24,10 +29,5 @@ enum SlaViolationKind: string {
             self::ResponseTime => __('enums.sla.violationKind.responseTime'),
             self::ResolutionTime => __('enums.sla.violationKind.resolutionTime'),
         };
-    }
-
-    /** @return list<string> */
-    public static function values(): array {
-        return array_map(static fn(self $c): string => $c->value, self::cases());
     }
 }

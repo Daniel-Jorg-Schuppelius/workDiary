@@ -12,57 +12,32 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github;
 
-use App\Models\{Organization, PluginSetting};
+use App\Plugins\Support\PluginSettingsResolver;
 
 /**
- * Effektive GitHub-Konfiguration je Organisation (Muster SevDeskConfig):
- *
- *   1. plugin_settings (verschlüsselt) der Organisation
- *   2. config('plugins.github.*') als Fallback (ENV / Tests / Konsole)
- *
- * Leere Strings zählen als „nicht gesetzt" (leere encrypted-Strings ⇒ null,
- * daher konsequent `!empty()`/`?:` statt `??`). Die API-Basis-URL ist bewusst
- * NICHT org-konfigurierbar (kein SSRF-Vektor; GitHub Enterprise wäre ein
- * eigener Ausbaupunkt).
+ * Effektive GitHub-Konfiguration je Organisation: plugin_settings vor
+ * config('plugins.github.*') — Lookup/Cast im {@see PluginSettingsResolver}
+ * (C10). Leere Strings zählen als „nicht gesetzt" (leere encrypted-Strings
+ * ⇒ null). Die API-Basis-URL ist bewusst NICHT org-konfigurierbar (kein
+ * SSRF-Vektor; GitHub Enterprise wäre ein eigener Ausbaupunkt);
+ * webhook_secret/default_project kommen nur aus den Org-Settings.
  */
 class GithubConfig {
     /**
      * @return array{api_token: ?string, repo_owner: ?string, repo_name: ?string, webhook_secret: ?string, default_project: ?string, base_url: string, enabled: bool}
      */
     public static function resolve(?int $organizationId = null): array {
-        $out = [
-            'api_token' => self::stringOrNull(config('plugins.github.api_token')),
-            'repo_owner' => self::stringOrNull(config('plugins.github.repo_owner')),
-            'repo_name' => self::stringOrNull(config('plugins.github.repo_name')),
-            'webhook_secret' => null,
-            'default_project' => null,
+        $r = PluginSettingsResolver::for(GithubPlugin::ID, $organizationId);
+
+        return [
+            'api_token' => $r->string('api_token', trim: true),
+            'repo_owner' => $r->string('repo_owner', trim: true),
+            'repo_name' => $r->string('repo_name', trim: true),
+            'webhook_secret' => $r->settingString('webhook_secret', trim: true),
+            'default_project' => $r->settingString('default_project', trim: true),
             'base_url' => rtrim((string) config('plugins.github.base_url', 'https://api.github.com'), '/'),
-            'enabled' => (bool) config('plugins.github.enabled', false),
+            'enabled' => $r->enabled(),
         ];
-
-        $organizationId ??= self::boundOrganizationId();
-        if ($organizationId === null) {
-            return $out;
-        }
-
-        $row = PluginSetting::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->where('plugin_id', GithubPlugin::ID)
-            ->first();
-        if ($row === null) {
-            return $out;
-        }
-
-        $out['enabled'] = (bool) $row->enabled;
-        $settings = $row->settings ?? [];
-        foreach (['api_token', 'repo_owner', 'repo_name', 'webhook_secret', 'default_project'] as $key) {
-            if (! empty($settings[$key])) {
-                $out[$key] = trim((string) $settings[$key]);
-            }
-        }
-
-        return $out;
     }
 
     /** Vollständig genug für Import/Healthcheck (Token + Repo-Koordinaten)? */
@@ -70,21 +45,5 @@ class GithubConfig {
         $config = self::resolve($organizationId);
 
         return $config['api_token'] !== null && $config['repo_owner'] !== null && $config['repo_name'] !== null;
-    }
-
-    private static function stringOrNull(mixed $value): ?string {
-        $value = is_string($value) ? trim($value) : '';
-
-        return $value !== '' ? $value : null;
-    }
-
-    private static function boundOrganizationId(): ?int {
-        if (! app()->bound('currentOrganization')) {
-            return null;
-        }
-
-        $organization = app('currentOrganization');
-
-        return $organization instanceof Organization ? (int) $organization->id : null;
     }
 }

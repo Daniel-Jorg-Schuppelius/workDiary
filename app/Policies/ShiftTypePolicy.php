@@ -10,29 +10,16 @@
 
 namespace App\Policies;
 
-use App\Models\{ShiftType, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class ShiftTypePolicy {
+class ShiftTypePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return false;
-    }
-
-    public function view(User $user, ShiftType $shiftType): bool {
-        return false;
-    }
-
-    public function create(User $user): bool {
-        return false;
-    }
-
-    public function update(User $user, ShiftType $shiftType): bool {
-        return false;
-    }
-
-    public function delete(User $user, ShiftType $shiftType): bool {
-        return false;
-    }
+    protected const ABILITIES = [
+        'viewAny' => false,
+        'view' => false,
+        'create' => false,
+        'update' => false,
+        'delete' => false,
+    ];
 }

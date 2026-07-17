@@ -21,6 +21,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Builders\CSVDocumentBuilder;
 use CommonToolkit\Entities\CSV\DataLine;
 use CommonToolkit\Generators\CSV\CSVGenerator;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -55,9 +56,9 @@ class MonthClosureBundleService {
         // name:hash-Zeilen, nicht über die ZIP-Bytes — mtime-unabhängig).
         $manifestLines = [];
         foreach ($files as $name => $content) {
-            $manifestLines[] = $name . ':' . hash('sha256', $content);
+            $manifestLines[] = $name . ':' . CryptoHelper::hash($content);
         }
-        $packageSha256 = hash('sha256', implode("\n", $manifestLines));
+        $packageSha256 = CryptoHelper::hash(implode("\n", $manifestLines));
         $files['manifest.txt'] = implode("\n", array_merge($manifestLines, ['package:' . $packageSha256])) . "\n";
 
         $filename = sprintf('pruefpaket-%s-%s.zip', $closure->periodLabel(), substr($packageSha256, 0, 8));

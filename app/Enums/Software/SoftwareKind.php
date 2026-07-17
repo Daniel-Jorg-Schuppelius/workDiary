@@ -10,7 +10,12 @@
 
 namespace App\Enums\Software;
 
-enum SoftwareKind: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum SoftwareKind: string implements HasLabel {
+    use HasOptions;
+
     case OperatingSystem = 'operating_system';
     case Application = 'application';
     case Firmware = 'firmware';

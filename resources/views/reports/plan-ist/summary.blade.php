@@ -39,14 +39,10 @@
                     </select>
                 </label>
             @endif
-            <label class="form-control">
-                <span class="label-text text-xs">{{ __('Von') }}</span>
-                <input type="date" name="from" value="{{ $from->toDateString() }}" class="input input-sm input-bordered">
-            </label>
-            <label class="form-control">
-                <span class="label-text text-xs">{{ __('Bis') }}</span>
-                <input type="date" name="to" value="{{ $to->toDateString() }}" class="input input-sm input-bordered">
-            </label>
+            <x-date-range class="w-80" :label="false"
+                          from-name="from" to-name="to"
+                          :from="$from->toDateString()" :to="$to->toDateString()"
+                          :from-label="__('Von')" :to-label="__('Bis')" />
             <x-icon-btn icon="filter_alt" tone="primary" size="sm" type="submit" show-label>{{ __('Anwenden') }}</x-icon-btn>
         </form>
     </x-card>

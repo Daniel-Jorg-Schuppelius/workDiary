@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use Carbon\Carbon;
 use Database\Factories\ShiftTypeFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -38,6 +38,7 @@ class ShiftType extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -89,5 +90,10 @@ class ShiftType extends Model {
      */
     public function scopeActive(Builder $query): Builder {
         return $query->where('is_active', true);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'abbreviation'];
     }
 }

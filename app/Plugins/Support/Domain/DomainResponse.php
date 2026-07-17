@@ -10,6 +10,8 @@
 
 namespace App\Plugins\Support\Domain;
 
+use CommonToolkit\Helper\Data\CryptoHelper;
+
 /**
  * Geparste DomainReselling-Antwort (Feature 083). Das Protokoll ist
  * UTF-8-Plaintext im INI-ähnlichen Format mit `PROPERTY[NAME][INDEX]=VALUE`.
@@ -98,6 +100,6 @@ final class DomainResponse {
 
     /** Deterministischer Revisions-Hash über den Rohtext. */
     public function rawHash(): string {
-        return hash('sha256', $this->raw);
+        return CryptoHelper::hash($this->raw);
     }
 }

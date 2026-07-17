@@ -17,7 +17,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportSco
 use App\Models\{FlexBalance, SickLeave, User, Vacation};
 use App\Services\Absence\VacationBalanceService;
 use App\Services\HolidayService;
-use Carbon\Carbon;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -41,13 +41,9 @@ class AbsencesReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $this->resolveScope($request, $isAdmin);
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
@@ -63,10 +59,10 @@ class AbsencesReportController extends Controller {
         }
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($rows, $totals, $from, $to, $scope, $balanceYear);
+            return $this->exportCsv($rows, $totals, $from, $to, $scope, $balanceYear, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($rows, $totals, $from, $to, $scope, $balanceYear);
+            return $this->exportPdf($rows, $totals, $from, $to, $scope, $balanceYear, $request);
         }
 
         return view('reports.absences', [
@@ -91,7 +87,7 @@ class AbsencesReportController extends Controller {
      *   flex_balance_minutes:int|null
      * }>
      */
-    private function aggregate(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         $vacQ = Vacation::query()->scopes(['overlapping' => [$from, $to]]);
         if ($scope === 'mine') {
             $vacQ->where('user_id', $userId);
@@ -221,7 +217,7 @@ class AbsencesReportController extends Controller {
         return $rows;
     }
 
-    private function countWorkdays(Carbon $start, Carbon $end): int {
+    private function countWorkdays(CarbonInterface $start, CarbonInterface $end): int {
         if ($start->greaterThan($end)) {
             return 0;
         }
@@ -232,7 +228,8 @@ class AbsencesReportController extends Controller {
             if ($cursor->isWeekday() && ! $this->holidayService->isHoliday($cursor)) {
                 $count++;
             }
-            $cursor->addDay();
+            // Zuweisung statt In-Place-Mutation: funktioniert für Carbon UND CarbonImmutable.
+            $cursor = $cursor->addDay();
         }
 
         return $count;
@@ -270,7 +267,7 @@ class AbsencesReportController extends Controller {
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null, entitled_total_days?:float|null, remaining_days?:float|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear): Response {
+    private function exportCsv(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear, Request $request): Response {
         $filename = sprintf('abwesenheiten_%s_%s.csv', $from, $to);
         $fmt = static function (int $m): string {
             $sign = $m < 0 ? '-' : '';
@@ -307,14 +304,14 @@ class AbsencesReportController extends Controller {
             $fmt($totals['flex_balance_minutes']),
         ];
 
-        return $this->csvWithMetadata($out, $filename, 'absences', ['from' => $from, 'to' => $to, 'scope' => $scope]);
+        return $this->csvWithMetadata($out, $filename, 'absences', ['from' => $from, 'to' => $to, 'scope' => $scope], $request);
     }
 
     /**
      * @param  array<int, array{user: User, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int|null, entitled_total_days?:float|null, remaining_days?:float|null}>  $rows
      * @param  array{users:int, vacation_days:int, sick_days:int, special_days:int, unpaid_days:int, pending_days:int, flex_change_minutes:int, flex_balance_minutes:int}  $totals
      */
-    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear): SymfonyResponse {
+    private function exportPdf(array $rows, array $totals, string $from, string $to, string $scope, int $balanceYear, Request $request): SymfonyResponse {
         $filename = sprintf('abwesenheiten_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.absences', [
             'rows' => $rows,
@@ -323,6 +320,6 @@ class AbsencesReportController extends Controller {
             'to' => $to,
             'scope' => $scope,
             'balanceYear' => $balanceYear,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'absences', ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 }

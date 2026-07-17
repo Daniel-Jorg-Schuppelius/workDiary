@@ -16,6 +16,7 @@ use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\{Organization, User};
 use App\Plugins\Nextcloud\Api\NextcloudIntakeClient;
 use App\Plugins\Nextcloud\NextcloudConfig;
+use App\Plugins\Support\PluginOrgContext;
 use App\Support\{Sqid, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -154,7 +155,7 @@ class NextcloudIntakeController extends Controller {
     }
 
     private function organization(User $admin): Organization {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $organization = PluginOrgContext::currentOrNull();
         abort_unless($organization instanceof Organization, 403);
         abort_unless((int) $organization->id === (int) $admin->organization_id, 403);
 

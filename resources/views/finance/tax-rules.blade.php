@@ -38,8 +38,9 @@
                 @endforeach
             </select>
             <input name="rate" type="number" step="0.01" min="0" max="99.99" required class="input input-sm input-bordered" placeholder="%">
-            <input name="valid_from" type="date" required class="input input-sm input-bordered">
-            <input name="valid_to" type="date" class="input input-sm input-bordered" aria-label="{{ __('gültig bis') }}">
+            <x-date-range :label="false"
+                          from-name="valid_from" to-name="valid_to" from-required
+                          :from-label="__('gültig ab')" :to-label="__('gültig bis')" />
             <input name="source" maxlength="300" class="input input-sm input-bordered" placeholder="{{ __('Quelle/Fundstelle') }}">
             <input name="note" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Beleg-Hinweistext') }}">
             <div class="sm:col-span-4"><x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Regel anlegen (mit Überschneidungsprüfung)') }}</x-icon-btn></div>

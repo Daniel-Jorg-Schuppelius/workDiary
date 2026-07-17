@@ -10,7 +10,12 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureStepRunStatus: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureStepRunStatus: string implements HasLabel {
+    use HasOptions;
+
     case Pending = 'pending';
     case Done = 'done';
     case NA = 'n_a';

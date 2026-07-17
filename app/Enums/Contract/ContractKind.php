@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Contract;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Vertragsart des allgemeinen Vertragslebenszyklus (Welle D, CLM). Bewusst
  * breit für Verträge beliebiger Art — Leasing/Finanzierung bleibt im
  * spezialisierten AssetFinance-Modell (Feature 074) und verweist optional
  * additiv hierher.
  */
-enum ContractKind: string {
+enum ContractKind: string implements HasLabel {
+    use HasOptions;
+
     case Rent = 'rent';
     case Maintenance = 'maintenance';
     case License = 'license';

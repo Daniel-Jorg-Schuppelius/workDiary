@@ -12,6 +12,7 @@ namespace App\Plugins;
 
 use App\Models\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer};
+use App\Plugins\Support\PluginOrgContext;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
@@ -102,10 +103,7 @@ class PluginManager {
             return $fn();
         } catch (\Throwable $e) {
             try {
-                $orgId = app()->bound('currentOrganization')
-                    && app('currentOrganization') instanceof \App\Models\Organization
-                    ? (int) app('currentOrganization')->id
-                    : null;
+                $orgId = PluginOrgContext::currentId();
                 app(PluginErrorRecorder::class)->record($id, $phase, $e, [], $orgId);
             } catch (\Throwable) {
                 // Aufzeichnung darf selbst nie werfen.
@@ -147,10 +145,7 @@ class PluginManager {
      */
     private function autoDisabledIds(): array {
         try {
-            $orgId = app()->bound('currentOrganization')
-                && app('currentOrganization') instanceof \App\Models\Organization
-                ? (int) app('currentOrganization')->id
-                : null;
+            $orgId = PluginOrgContext::currentId();
 
             return PluginState::query()
                 ->whereNotNull('disabled_reason')

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{ShiftType, User};
+use App\Models\ShiftType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -24,33 +24,25 @@ class ShiftTypeHtmlTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function user(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     public function test_guest_redirected(): void {
         $this->get(route('shift-types.index'))->assertRedirect(route('login'));
     }
 
     public function test_non_admin_forbidden(): void {
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('shift-types.index'))
             ->assertForbidden();
     }
 
     public function test_admin_can_view_index(): void {
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('shift-types.index'))
             ->assertOk()
             ->assertViewIs('shift-types.index');
     }
 
     public function test_admin_can_create_shift_type(): void {
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('shift-types.store'), [
                 'name' => 'Frühschicht',
                 'abbreviation' => 'F',
@@ -67,7 +59,7 @@ class ShiftTypeHtmlTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->put(route('shift-types.update', $type), [
                 'name' => 'Spätschicht',
                 'abbreviation' => 'S',
@@ -84,7 +76,7 @@ class ShiftTypeHtmlTest extends TestCase {
             'organization_id' => $this->organization->id,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->delete(route('shift-types.destroy', $type))
             ->assertRedirect(route('shift-types.index'));
 

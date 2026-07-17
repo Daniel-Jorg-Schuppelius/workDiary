@@ -10,44 +10,36 @@
 
 namespace App\Plugins\Toggl;
 
-use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Models\{Customer, ExternalReference, Organization, Project};
+use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser, TogglEntry};
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
 /**
- * Kernlogik des Toggl-Imports:
- *  - Zeiteinträge aus der Toggl-API ({@see importFromApi()}) oder einem
- *    Detailed-Report-CSV ({@see importFromCsv()}) einlesen.
- *  - Toggl-Client → Kunde und Toggl-Projekt → Projekt ausschließlich über
- *    bestehende {@see ExternalReference} bzw. Namensgleichheit matchen
- *    (kein Auto-Anlegen). Treffer → TimeEntry (idempotent über die
- *    `entry`-Reference); kein Treffer → universelle Zuordnungs-Inbox
- *    ({@see \App\Models\IntegrationInboxItem}, gruppiert nach Client + Projekt).
- *  - Die Inbox bucht Gruppen gegen einen Kunden + Projekt ({@see bookInboxGroup()}),
- *    persistiert dabei die `client`/`project`-Reference (→ Folgeimporte matchen
- *    automatisch) und materialisiert die Einträge.
+ * Toggl-Zeitimport auf der gemeinsamen {@see MatchingTimeImportService}-
+ * Pipeline (API oder Detailed-Report-CSV). Toggl-Spezifika der Ableitung:
+ *  - {@see TogglEntry} wird an der Quelle auf {@see ImportedTimeEntry} gemappt;
+ *    {@see matchProject()} akzeptiert das Toggl-DTO weiterhin direkt.
+ *  - Die Kunden-Auflösung kennt die stabile Toggl-Client-ID
+ *    ({@see matchCustomer()} / {@see matchCustomerForEntry()}).
+ *  - {@see mappings()} speist die Mapping-Verwaltung,
+ *    {@see backfillIdReferences()} den einmaligen Workspace-Sync.
  */
-class TogglImportService {
-    public const EXT_TYPE_CLIENT = 'client';
-
-    public const EXT_TYPE_PROJECT = 'project';
-
-    public const EXT_TYPE_ENTRY = 'entry';
-
-    /** Stabile Toggl-IDs (nur API) — bevorzugt vor den namensbasierten Schlüsseln. */
-    public const EXT_TYPE_CLIENT_ID = 'client_id';
-
-    public const EXT_TYPE_PROJECT_ID = 'project_id';
-
-    /**
-     * Ähnlichkeitsschwelle (0..1), ab der ein Toggl-Name in der Inbox als
-     * Vorschlag für einen bestehenden Kunden/Projekt vorausgewählt wird.
-     * Bewusst hoch: Vorschläge dürfen nie automatisch buchen, nur vorbelegen.
-     */
-    public const SUGGEST_THRESHOLD = 0.82;
-
+class TogglImportService extends MatchingTimeImportService {
     public function __construct(private readonly TogglCsvParser $csvParser = new TogglCsvParser) {}
+
+    protected function pluginId(): string {
+        return TogglPlugin::ID;
+    }
+
+    protected function resolveConfig(int $organizationId): array {
+        return TogglConfig::resolve($organizationId);
+    }
+
+    protected function fallbackDescription(): string {
+        return (string) __('Toggl-Zeiteintrag');
+    }
 
     /**
      * Holt die Zeiteinträge der Toggl-API im Fenster [$from, $to] und verarbeitet sie.
@@ -61,7 +53,7 @@ class TogglImportService {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0];
         }
 
-        return $this->ingest($organization, $client->fetchEntries($from, $to), $config);
+        return $this->ingest($organization, $this->mapEntries($client->fetchEntries($from, $to)), $config);
     }
 
     /**
@@ -71,58 +63,42 @@ class TogglImportService {
      * @return array{created: int, skipped: int, unmatched: int}
      */
     public function importFromCsv(Organization $organization, string $csvContent, array $config): array {
-        return $this->ingest($organization, $this->csvParser->parse($csvContent), $config);
+        return $this->ingest($organization, $this->mapEntries($this->csvParser->parse($csvContent)), $config);
     }
 
     /**
      * @param  array<int, TogglEntry>  $entries
-     * @param  array<string, mixed>  $config
-     * @return array{created: int, skipped: int, unmatched: int}
+     * @return array<int, ImportedTimeEntry>
      */
-    private function ingest(Organization $organization, array $entries, array $config): array {
-        $created = 0;
-        $skipped = 0;
-        $unmatched = 0;
+    private function mapEntries(array $entries): array {
+        return array_map(fn(TogglEntry $entry): ImportedTimeEntry => $this->toImported($entry), $entries);
+    }
 
-        $userId = $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
-        if ($userId === null) {
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0];
-        }
-
-        foreach ($entries as $entry) {
-            if ($this->alreadyImported($organization, $entry->entryKey)) {
-                $skipped++;
-
-                continue;
-            }
-
-            $project = $this->matchProject($organization, $entry);
-            if ($project === null) {
-                $this->recordPending($organization, $entry);
-                $unmatched++;
-
-                continue;
-            }
-
-            // Self-Upgrade: liegt eine stabile Toggl-ID vor (API), sie als bevorzugte
-            // Referenz nachtragen — auch wenn der Treffer über den Namen kam.
-            $this->rememberIdReferences($organization, $project, $entry);
-
-            $this->createTimeEntry($organization, $project, $entry, $userId, (bool) $config['default_billable']);
-            $created++;
-        }
-
-        return ['created' => $created, 'skipped' => $skipped, 'unmatched' => $unmatched];
+    /** Mappt das Toggl-DTO (keine Tätigkeit/Tags) auf das gemeinsame Import-DTO. */
+    private function toImported(TogglEntry $entry): ImportedTimeEntry {
+        return new ImportedTimeEntry(
+            entryKey: $entry->entryKey,
+            clientName: $entry->clientName,
+            projectName: $entry->projectName,
+            activity: null,
+            description: $entry->description,
+            startedAt: $entry->startedAt,
+            endedAt: $entry->endedAt,
+            billable: $entry->billable,
+            userEmail: $entry->userEmail,
+            tags: [],
+            source: $entry->source,
+            clientId: $entry->clientId,
+            projectId: $entry->projectId,
+        );
     }
 
     /**
-     * Matcht den Toggl-Client eines Eintrags auf einen Kunden — zuerst über die
-     * gespeicherte `client`-Reference, sonst über Name/Firma (case-insensitiv).
+     * Toggl-Delta: die stabile Client-ID (nur API) schlägt den Namen — robust
+     * gegen Umbenennungen in Toggl. Danach greift die Basis (Namens-Reference
+     * inkl. Merge-Alias, dann Name-/Firmen-Fallback).
      */
     public function matchCustomer(Organization $organization, ?string $clientName, ?int $clientId = null): ?Customer {
-        $clientName = $clientName !== null ? trim($clientName) : '';
-
-        // 1. Stabile Toggl-Client-ID (nur API) — robust gegen Umbenennungen.
         if ($clientId !== null) {
             $byId = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId);
             if ($byId instanceof Customer) {
@@ -130,167 +106,47 @@ class TogglImportService {
             }
         }
 
-        if ($clientName === '') {
-            return null;
-        }
+        return parent::matchCustomer($organization, $clientName);
+    }
 
-        // 2. Namens-Referenz (CSV/Bestand) inkl. Merge-Alias.
-        $byName = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT, $clientName);
-        if ($byName instanceof Customer) {
-            return $byName;
-        }
+    protected function matchCustomerForEntry(Organization $organization, ImportedTimeEntry $entry): ?Customer {
+        return $this->matchCustomer($organization, $entry->clientName, $entry->clientId);
+    }
 
-        // 3. Name-/Firmen-Fallback.
-        return Customer::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where(function ($q) use ($clientName): void {
-                $q->whereRaw('LOWER(name) = ?', [mb_strtolower($clientName)])
-                    ->orWhereRaw('LOWER(company) = ?', [mb_strtolower($clientName)]);
-            })
-            ->first();
+    /** Akzeptiert das Toggl-DTO direkt (Aufrufer/Tests) und delegiert an die Basis. */
+    public function matchProject(Organization $organization, ImportedTimeEntry|TogglEntry $entry): ?Project {
+        return parent::matchProject($organization, $entry instanceof TogglEntry ? $this->toImported($entry) : $entry);
     }
 
     /**
-     * Matcht den Toggl-Eintrag auf ein Projekt. Reihenfolge: stabile Toggl-Projekt-ID
-     * (nur API) → Namens-Reference (inkl. Merge-Alias) → Projektname im gematchten
-     * Kunden. Die ID gewinnt, weil sie Umbenennungen in Toggl übersteht.
+     * Toggl-Delta: stabile ID-Referenzen aus dem ersten Snapshot schon vor der
+     * Buchung merken — bleibt auch dann erhalten, wenn alle Einträge bereits
+     * importiert waren (die Basis schreibt sie nur je angelegtem TimeEntry).
+     *
+     * @return array{created: int, skipped: int}
      */
-    public function matchProject(Organization $organization, TogglEntry $entry): ?Project {
-        $projectName = $entry->projectName !== null ? trim($entry->projectName) : '';
+    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null): array {
+        $firstSnap = (array) ($this->openInboxItems($organization)->where('group_key', $groupKey)->first()->remote_snapshot ?? []);
+        $clientId = is_numeric($firstSnap['client_id'] ?? null) ? (int) $firstSnap['client_id'] : null;
+        $projectId = is_numeric($firstSnap['project_id'] ?? null) ? (int) $firstSnap['project_id'] : null;
 
-        // 1. Stabile Toggl-Projekt-ID (nur API).
-        if ($entry->projectId !== null) {
-            $byId = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $entry->projectId);
-            if ($byId instanceof Project) {
-                return $byId;
-            }
+        if ($customer !== null && $clientId !== null) {
+            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $customer);
+        }
+        if ($projectId !== null) {
+            $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $projectId, $project);
         }
 
-        if ($projectName === '') {
-            return null;
-        }
-
-        // 2. Namens-Referenz (CSV/Bestand) inkl. Merge-Alias.
-        $byName = $this->resolveByReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($entry->clientName, $projectName));
-        if ($byName instanceof Project) {
-            return $byName;
-        }
-
-        // 3. Name-Fallback innerhalb des gematchten Kunden.
-        $customer = $this->matchCustomer($organization, $entry->clientName, $entry->clientId);
-
-        $query = Project::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereRaw('LOWER(name) = ?', [mb_strtolower($projectName)]);
-
-        if ($customer !== null) {
-            $query->where('customer_id', $customer->id);
-        }
-
-        return $query->first();
-    }
-
-    /**
-     * Löst eine Toggl-Fremd-ID auf ihr lokales Modell auf: erst die Primär-Reference,
-     * dann (per Merge umgeleitet) der Alias. Bewusst ohne Global Scopes — der Import
-     * läuft auch ohne gebundenen Org-Kontext.
-     */
-    private function resolveByReference(Organization $organization, string $externalType, string $externalId): ?\Illuminate\Database\Eloquent\Model {
-        if ($externalId === '') {
-            return null;
-        }
-
-        $ref = ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('external_type', $externalType)
-            ->where('external_id', $externalId)
-            ->first();
-
-        if ($ref?->referenceable instanceof \Illuminate\Database\Eloquent\Model) {
-            return $ref->referenceable;
-        }
-
-        return ExternalReferenceAlias::resolveModel($organization->id, TogglPlugin::ID, $externalType, $externalId);
-    }
-
-    /**
-     * Fuzzy-Vorschlag: bester bestehender Kunde zum Toggl-Client-Namen (über
-     * Name/Firma, normalisiert) — nur für die Inbox-Vorauswahl. Liefert null,
-     * wenn kein Kandidat die {@see SUGGEST_THRESHOLD} erreicht.
-     */
-    public function suggestCustomer(Organization $organization, ?string $clientName): ?Customer {
-        $needle = $this->normalize($clientName);
-        if ($needle === '') {
-            return null;
-        }
-
-        $best = null;
-        $bestScore = 0.0;
-
-        $customers = Customer::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereNull('archived_at')
-            ->get();
-
-        foreach ($customers as $customer) {
-            $score = max(
-                $this->similarity($needle, $this->normalize($customer->name)),
-                $this->similarity($needle, $this->normalize($customer->company)),
-            );
-            if ($score > $bestScore) {
-                $bestScore = $score;
-                $best = $customer;
-            }
-        }
-
-        return $bestScore >= self::SUGGEST_THRESHOLD ? $best : null;
-    }
-
-    /**
-     * Fuzzy-Vorschlag: bestes bestehendes Projekt zum Toggl-Projektnamen,
-     * optional auf den (vorgeschlagenen) Kunden eingeschränkt. Nur Vorauswahl.
-     */
-    public function suggestProject(Organization $organization, ?Customer $customer, ?string $projectName): ?Project {
-        $needle = $this->normalize($projectName);
-        if ($needle === '') {
-            return null;
-        }
-
-        $query = Project::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereNull('archived_at');
-
-        if ($customer !== null) {
-            $query->where('customer_id', $customer->id);
-        }
-
-        $best = null;
-        $bestScore = 0.0;
-
-        foreach ($query->get() as $project) {
-            $score = $this->similarity($needle, $this->normalize($project->name));
-            if ($score > $bestScore) {
-                $bestScore = $score;
-                $best = $project;
-            }
-        }
-
-        return $bestScore >= self::SUGGEST_THRESHOLD ? $best : null;
+        return parent::bookInboxGroup($organization, $groupKey, $customer, $project, $userId);
     }
 
     /**
      * Alle gemerkten Client-/Projekt-Zuordnungen der Organisation (für die
      * Mapping-Verwaltung), inkl. aufgelöstem Ziel.
      *
-     * @return \Illuminate\Support\Collection<int, ExternalReference>
+     * @return Collection<int, ExternalReference>
      */
-    public function mappings(Organization $organization): \Illuminate\Support\Collection {
+    public function mappings(Organization $organization): Collection {
         return ExternalReference::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -300,294 +156,6 @@ class TogglImportService {
             ->orderBy('external_type')
             ->orderBy('external_id')
             ->get();
-    }
-
-    private function alreadyImported(Organization $organization, string $entryKey): bool {
-        return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_ENTRY)
-            ->where('external_id', $entryKey)
-            ->exists();
-    }
-
-    private function createTimeEntry(Organization $organization, Project $project, TogglEntry $entry, int $userId, bool $defaultBillable): TimeEntry {
-        $description = trim(implode(' — ', array_filter([
-            $entry->projectName,
-            $entry->description,
-        ]))) ?: (string) __('Toggl-Zeiteintrag');
-
-        $timeEntry = TimeEntry::query()->create([
-            'organization_id' => $organization->id,
-            'project_id' => $project->id,
-            'user_id' => $userId,
-            'date' => $entry->startedAt->toDateString(),
-            'started_at' => $entry->startedAt,
-            'ended_at' => $entry->endedAt,
-            'kind' => TimeEntryKind::Work,
-            'description' => $description,
-            'billable' => $defaultBillable && $entry->billable,
-        ]);
-
-        // Idempotenz-Anker: verknüpft den Toggl-Eintrag mit dem TimeEntry.
-        ExternalReference::query()->create([
-            'organization_id' => $organization->id,
-            'plugin_id' => TogglPlugin::ID,
-            'external_type' => self::EXT_TYPE_ENTRY,
-            'referenceable_type' => $timeEntry->getMorphClass(),
-            'referenceable_id' => $timeEntry->getKey(),
-            'external_id' => $entry->entryKey,
-            'payload' => [
-                'source' => $entry->source,
-                'client' => $entry->clientName,
-                'project' => $entry->projectName,
-            ],
-            'synced_at' => now(),
-        ]);
-
-        return $timeEntry;
-    }
-
-    /**
-     * Legt einen unmatchbaren Eintrag als offenen Eintrag in der universellen
-     * Zuordnungs-Inbox ab (gruppiert nach Client + Projekt). Idempotent über den
-     * entry_key (dedupe_key).
-     */
-    private function recordPending(Organization $organization, TogglEntry $entry): void {
-        $dedupeKey = self::EXT_TYPE_ENTRY . ':' . $entry->entryKey;
-
-        $exists = IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('dedupe_key', $dedupeKey)
-            ->exists();
-        if ($exists) {
-            return;
-        }
-
-        $client = trim((string) $entry->clientName);
-        $project = trim((string) $entry->projectName);
-
-        IntegrationInboxItem::query()->create([
-            'organization_id' => $organization->id,
-            'plugin_id' => TogglPlugin::ID,
-            'source' => $entry->source,
-            'target_type' => (new TimeEntry)->getMorphClass(),
-            'external_type' => self::EXT_TYPE_ENTRY,
-            'external_id' => $entry->entryKey,
-            'dedupe_key' => $dedupeKey,
-            'group_key' => $this->projectKey($client, $project),
-            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
-            'remote_snapshot' => [
-                'source' => $entry->source,
-                'entry_key' => $entry->entryKey,
-                'client_name' => $entry->clientName,
-                'project_name' => $entry->projectName,
-                'client_id' => $entry->clientId,
-                'project_id' => $entry->projectId,
-                'description' => $entry->description,
-                'started_at' => $entry->startedAt->toIso8601String(),
-                'ended_at' => $entry->endedAt->toIso8601String(),
-                'billable' => $entry->billable,
-                'user_email' => $entry->userEmail,
-            ],
-            'display_title' => $project !== '' ? $project : (string) __('(ohne Projekt)'),
-            'display_subtitle' => $client !== '' ? $client : null,
-            'occurred_at' => $entry->startedAt,
-        ]);
-    }
-
-    /**
-     * Offene Toggl-Inbox-Einträge der Organisation, gruppiert nach Client +
-     * Projekt (group_key), für die Gruppen-Auflösung in der universellen Inbox.
-     *
-     * @return \Illuminate\Support\Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon}>
-     */
-    public function openInboxGroups(Organization $organization): \Illuminate\Support\Collection {
-        return $this->openInboxItems($organization)
-            ->groupBy('group_key')
-            ->map(function ($group, $groupKey): array {
-                /** @var \Illuminate\Support\Collection<int, IntegrationInboxItem> $group */
-                $first = $group->first();
-                $snap = $first !== null ? $first->remote_snapshot : [];
-                /** @var \Illuminate\Support\Carbon|null $firstSeen */
-                $firstSeen = $group->min('occurred_at');
-                /** @var \Illuminate\Support\Carbon|null $lastSeen */
-                $lastSeen = $group->max('occurred_at');
-
-                return [
-                    'group_key' => (string) $groupKey,
-                    'client_name' => isset($snap['client_name']) ? (string) $snap['client_name'] : null,
-                    'project_name' => isset($snap['project_name']) ? (string) $snap['project_name'] : null,
-                    'count' => $group->count(),
-                    'minutes' => (int) $group->sum(fn(IntegrationInboxItem $i): int => $this->snapshotMinutes($i->remote_snapshot ?? [])),
-                    'first_seen' => $firstSeen,
-                    'last_seen' => $lastSeen,
-                ];
-            })
-            ->values();
-    }
-
-    /**
-     * Bucht alle offenen Inbox-Einträge einer Gruppe gegen Kunde + Projekt:
-     * merkt die client-/project-Referenzen und materialisiert die Einträge als
-     * TimeEntries (idempotent). Markiert die Items als aufgelöst.
-     *
-     * @return array{created: int, skipped: int}
-     */
-    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null): array {
-        $config = TogglConfig::resolve($organization->id);
-        $userId ??= $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
-        if ($userId === null) {
-            return ['created' => 0, 'skipped' => 0];
-        }
-
-        $items = $this->openInboxItems($organization)->where('group_key', $groupKey)->values();
-        if ($items->isEmpty()) {
-            return ['created' => 0, 'skipped' => 0];
-        }
-
-        $firstSnap = $items->first()->remote_snapshot;
-        $clientName = trim((string) ($firstSnap['client_name'] ?? ''));
-        $projectName = trim((string) ($firstSnap['project_name'] ?? ''));
-        $clientId = isset($firstSnap['client_id']) ? (int) $firstSnap['client_id'] : null;
-        $projectId = isset($firstSnap['project_id']) ? (int) $firstSnap['project_id'] : null;
-
-        // Referenzen merken, damit künftige Imports automatisch matchen. Ohne Kunde
-        // (interne Projekte) entfällt die Client-Referenz — nur das Projekt wird gemerkt.
-        if ($customer !== null && $clientName !== '') {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $customer);
-        }
-        $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($clientName, $projectName), $project);
-
-        // Bevorzugte stabile ID-Referenzen (nur API) zusätzlich vermerken.
-        if ($customer !== null && $clientId !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $customer);
-        }
-        if ($projectId !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $projectId, $project);
-        }
-
-        $created = 0;
-        $skipped = 0;
-
-        foreach ($items as $item) {
-            $entry = $this->entryFromSnapshot((array) $item->remote_snapshot);
-
-            if ($this->alreadyImported($organization, $entry->entryKey)) {
-                $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_LINKED, null);
-                $skipped++;
-
-                continue;
-            }
-
-            $timeEntry = $this->createTimeEntry($organization, $project, $entry, $userId, (bool) $config['default_billable']);
-            $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
-            $created++;
-        }
-
-        return ['created' => $created, 'skipped' => $skipped];
-    }
-
-    /** Verwirft alle offenen Inbox-Einträge einer Gruppe. */
-    public function dismissInboxGroup(Organization $organization, string $groupKey): int {
-        $items = $this->openInboxItems($organization)->where('group_key', $groupKey);
-        foreach ($items as $item) {
-            $this->resolveItem($item, IntegrationInboxItem::STATUS_DISMISSED, null);
-        }
-
-        return $items->count();
-    }
-
-    /**
-     * @return \Illuminate\Support\Collection<int, IntegrationInboxItem>
-     */
-    private function openInboxItems(Organization $organization): \Illuminate\Support\Collection {
-        return IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->whereNotNull('group_key')
-            ->orderByDesc('occurred_at')
-            ->get();
-    }
-
-    private function resolveItem(IntegrationInboxItem $item, string $status, ?TimeEntry $timeEntry): void {
-        $item->update([
-            'status' => $status,
-            'resolved_to_type' => $timeEntry?->getMorphClass(),
-            'resolved_to_id' => $timeEntry?->getKey(),
-            'resolved_by' => \Illuminate\Support\Facades\Auth::id(),
-            'resolved_at' => now(),
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $snap
-     */
-    private function entryFromSnapshot(array $snap): TogglEntry {
-        return new TogglEntry(
-            source: (string) ($snap['source'] ?? 'api'),
-            entryKey: (string) ($snap['entry_key'] ?? ''),
-            clientName: $snap['client_name'] ?? null,
-            projectName: $snap['project_name'] ?? null,
-            description: $snap['description'] ?? null,
-            startedAt: CarbonImmutable::parse((string) $snap['started_at']),
-            endedAt: CarbonImmutable::parse((string) $snap['ended_at']),
-            billable: (bool) ($snap['billable'] ?? false),
-            userEmail: $snap['user_email'] ?? null,
-            clientId: isset($snap['client_id']) ? (int) $snap['client_id'] : null,
-            projectId: isset($snap['project_id']) ? (int) $snap['project_id'] : null,
-        );
-    }
-
-    /**
-     * Dauer eines Snapshot-Eintrags in Minuten (aus started_at/ended_at).
-     *
-     * @param  array<string, mixed>  $snap
-     */
-    private function snapshotMinutes(array $snap): int {
-        $start = $snap['started_at'] ?? null;
-        $end = $snap['ended_at'] ?? null;
-        if (! is_string($start) || ! is_string($end) || $start === '' || $end === '') {
-            return 0;
-        }
-
-        return (int) round(CarbonImmutable::parse($start)->diffInSeconds(CarbonImmutable::parse($end)) / 60);
-    }
-
-    private function rememberReference(Organization $organization, string $type, string $externalId, \Illuminate\Database\Eloquent\Model $referenceable): void {
-        ExternalReference::query()->updateOrCreate(
-            [
-                'organization_id' => $organization->id,
-                'plugin_id' => TogglPlugin::ID,
-                'external_type' => $type,
-                'external_id' => $externalId,
-            ],
-            [
-                'referenceable_type' => $referenceable->getMorphClass(),
-                'referenceable_id' => $referenceable->getKey(),
-                'synced_at' => now(),
-            ],
-        );
-    }
-
-    /**
-     * Trägt die stabilen Toggl-ID-Referenzen (project_id/client_id) nach, sofern der
-     * Eintrag sie trägt (API). Der Kunde wird über das gematchte Projekt aufgelöst.
-     */
-    private function rememberIdReferences(Organization $organization, Project $project, TogglEntry $entry): void {
-        if ($entry->projectId !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $entry->projectId, $project);
-        }
-        if ($entry->clientId !== null) {
-            $customer = $project->customer;
-            if ($customer instanceof Customer) {
-                $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $entry->clientId, $customer);
-            }
-        }
     }
 
     /**
@@ -631,60 +199,5 @@ class TogglImportService {
         }
 
         return ['projects' => $projects, 'clients' => $clients];
-    }
-
-    /**
-     * Bestimmt den Buchungs-Benutzer: konfigurierte default_user_id (in der Org)
-     * → Org-Owner → erster Org-Benutzer. (Identisch zu RemoteSupport.)
-     */
-    private function resolveBookingUserId(Organization $organization, ?int $defaultUserId): ?int {
-        if ($defaultUserId !== null) {
-            $user = User::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->whereKey($defaultUserId)
-                ->first();
-            if ($user !== null) {
-                return (int) $user->id;
-            }
-        }
-
-        if ($organization->owner_id !== null) {
-            return (int) $organization->owner_id;
-        }
-
-        $first = User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->orderBy('id')
-            ->first();
-
-        return $first !== null ? (int) $first->id : null;
-    }
-
-    /** Stabiler Schlüssel für die Projekt-Reference (Client + Projektname, case-insensitiv). */
-    private function projectKey(?string $clientName, ?string $projectName): string {
-        return mb_strtolower(trim((string) $clientName) . '|' . trim((string) $projectName));
-    }
-
-    /** Normalisiert einen Namen für den Vergleich (lowercase, getrimmt, kollabierte Leerzeichen). */
-    private function normalize(?string $value): string {
-        $value = mb_strtolower(trim((string) $value));
-
-        return (string) preg_replace('/\s+/', ' ', $value);
-    }
-
-    /** Ähnlichkeit zweier (bereits normalisierter) Strings als 0..1-Score. */
-    private function similarity(string $a, string $b): float {
-        if ($a === '' || $b === '') {
-            return 0.0;
-        }
-        if ($a === $b) {
-            return 1.0;
-        }
-
-        similar_text($a, $b, $percent);
-
-        return $percent / 100;
     }
 }

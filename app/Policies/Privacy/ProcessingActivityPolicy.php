@@ -14,6 +14,7 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\ProcessingActivity;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /**
  * Zugriff auf das Verzeichnis von Verarbeitungstaetigkeiten. Ohne Admin-Bypass;
@@ -21,16 +22,14 @@ use App\Models\User;
  * (Vier-Augen moeglich).
  */
 class ProcessingActivityPolicy {
-    private function sameOrg(User $user, ProcessingActivity $activity): bool {
-        return (int) $user->organization_id === (int) $activity->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.view');
     }
 
     public function view(User $user, ProcessingActivity $activity): bool {
-        return $this->sameOrg($user, $activity) && $user->can('dataprotection.view');
+        return $this->sharesOrganization($user, $activity) && $user->can('dataprotection.view');
     }
 
     public function create(User $user): bool {
@@ -38,11 +37,11 @@ class ProcessingActivityPolicy {
     }
 
     public function update(User $user, ProcessingActivity $activity): bool {
-        return $this->sameOrg($user, $activity) && $user->can('dataprotection.ropa.manage');
+        return $this->sharesOrganization($user, $activity) && $user->can('dataprotection.ropa.manage');
     }
 
     public function approve(User $user, ProcessingActivity $activity): bool {
-        return $this->sameOrg($user, $activity) && $user->can('dataprotection.ropa.approve');
+        return $this->sharesOrganization($user, $activity) && $user->can('dataprotection.ropa.approve');
     }
 
     public function export(User $user): bool {

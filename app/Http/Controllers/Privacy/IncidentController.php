@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Privacy\{Incident, Measure};
 use App\Services\Privacy\{IncidentService, SupervisoryAuthorityDirectory};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -54,6 +55,11 @@ class IncidentController extends Controller {
         Gate::authorize('create', Incident::class);
         $org = $request->user()?->organization;
         abort_unless($org !== null, 403);
+
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('controller_customer_id')) {
+            $request->merge(['controller_customer_id' => Sqid::decodeOrNumeric(Customer::class, $request->input('controller_customer_id'))]);
+        }
 
         $data = $request->validate([
             'type' => ['required', Rule::enum(IncidentType::class)],

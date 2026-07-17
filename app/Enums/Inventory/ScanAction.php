@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Mobile Buchungsaktion per Scan (Feature 048, E5).
  */
-enum ScanAction: string {
+enum ScanAction: string implements HasLabel {
+    use HasOptions;
+
     case Receipt = 'receipt';   // Wareneingang
     case Issue = 'issue';       // Entnahme
     case Transfer = 'transfer'; // Umlagerung

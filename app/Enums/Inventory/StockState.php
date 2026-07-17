@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Bestandszustand einer Lagerbewegung/-menge (Feature 048, MVP-067).
  *
@@ -20,7 +23,9 @@ namespace App\Enums\Inventory;
  * Beschädigt, gesperrt und in QS bleiben physisch vorhanden, sind aber nicht
  * frei verwendbar; Ausschuss ist kein verwendbarer Bestand.
  */
-enum StockState: string {
+enum StockState: string implements HasLabel {
+    use HasOptions;
+
     case Physical = 'physical';
     case Reserved = 'reserved';
     case Blocked = 'blocked';

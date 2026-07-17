@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github\Console;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Organization;
 use App\Plugins\Github\Api\GithubClientFactory;
 use App\Plugins\Github\GithubConfig;
@@ -26,38 +27,26 @@ use Throwable;
  * Abbruch in einer Organisation lässt die übrigen unberührt.
  */
 class GithubSyncCommand extends Command {
-    protected $signature = 'github:sync
-        {--organization= : ID einer einzelnen Organisation, sonst alle}';
+    use IteratesOrganizations;
+
+    protected $signature = 'github:sync ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Importiert GitHub-Issues je Organisation als Aufgaben (idempotent, since-Aufholpunkt).';
 
     public function handle(GithubClientFactory $factory, GithubIssueImporter $importer): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        foreach ($query->get() as $org) {
-            // Org-Kontext für nachgelagerte (scoped) Operationen binden.
-            app()->instance('currentOrganization', $org);
-
+        $this->forEachOrganization(function (Organization $org) use ($factory, $importer): void {
             $config = GithubConfig::resolve((int) $org->id);
             if (! $config['enabled'] || ! GithubConfig::isConfigured((int) $org->id)) {
-                continue;
+                return;
             }
 
-            try {
-                $result = $importer->import($org, $factory->for((int) $org->id), $config);
-                $this->info(sprintf(
-                    'Organisation #%d (%s) / %s/%s: created %d, updated %d, skipped %d',
-                    $org->id, $org->name, (string) $config['repo_owner'], (string) $config['repo_name'],
-                    $result['created'], $result['updated'], $result['skipped'],
-                ));
-            } catch (Throwable $e) {
-                $this->error(sprintf('Organisation #%d: Abbruch — %s', $org->id, $e->getMessage()));
-            }
-        }
+            $result = $importer->import($org, $factory->for((int) $org->id), $config);
+            $this->info(sprintf(
+                'Organisation #%d (%s) / %s/%s: created %d, updated %d, skipped %d',
+                $org->id, $org->name, (string) $config['repo_owner'], (string) $config['repo_name'],
+                $result['created'], $result['updated'], $result['skipped'],
+            ));
+        }, onError: fn (Organization $org, Throwable $e) => $this->error(sprintf('Organisation #%d: Abbruch — %s', $org->id, $e->getMessage())));
 
         return self::SUCCESS;
     }

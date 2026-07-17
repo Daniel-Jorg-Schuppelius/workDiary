@@ -25,12 +25,10 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Audit-Spur aller Supportzugriffe (support.*) für :org.', ['org' => $organization->name])">
     <x-filter-bar :action="route('admin.support.access-audit.index')" :reset="route('admin.support.access-audit.index')">
-        <input type="date" name="from" value="{{ $filters['from'] ?? '' }}"
-               class="input input-sm input-bordered w-40 shrink-0"
-               aria-label="{{ __('von') }}" />
-        <input type="date" name="to" value="{{ $filters['to'] ?? '' }}"
-               class="input input-sm input-bordered w-40 shrink-0"
-               aria-label="{{ __('bis') }}" />
+        <x-date-range class="w-80 shrink-0" :label="false"
+                      from-name="from" to-name="to"
+                      :from="$filters['from'] ?? ''" :to="$filters['to'] ?? ''"
+                      :from-label="__('von')" :to-label="__('bis')" />
         <select name="event" class="select select-sm select-bordered w-56 shrink-0" aria-label="{{ __('Ereignis') }}">
             <option value="">{{ __('Alle Ereignisse') }}</option>
             @foreach ($eventOptions as $opt)

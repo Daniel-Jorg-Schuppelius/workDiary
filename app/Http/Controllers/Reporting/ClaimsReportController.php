@@ -12,29 +12,36 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\Claims\{ClaimCase, ClaimFinancialOutcome, ClaimReportSnapshot};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Ursachen- und Qualitätsauswertung (Feature 072, MVP-254): Quote,
  * Ursachen, betroffene Produkte, Kosten, Bearbeitungsdauer, Frist-
- * überschreitungen und Wiederholfehler — mit CSV-Export und
- * eingefrorenem Berichtsstand (Snapshot als Nachweis).
+ * überschreitungen und Wiederholfehler — mit CSV-Export (MVP-043:
+ * BOM + Metazeilen + Audit) und eingefrorenem Berichtsstand
+ * (Snapshot als Nachweis).
  */
 class ClaimsReportController extends Controller {
-    public function index(Request $request): View|StreamedResponse {
+    use ResolvesGlobalDateRange;
+    use WritesReportCsv;
+
+    public function index(Request $request): View|Response {
         Gate::authorize('viewAny', ClaimCase::class);
 
-        [$from, $to] = $this->range($request);
+        [$from, $to] = $this->resolveRange($request);
         $data = $this->aggregate($from, $to);
 
-        if ($request->string('format')->toString() === 'csv') {
-            return $this->csv($data, $from, $to);
+        if ($request->query('export') === 'csv') {
+            $filters = ['from' => $from->toDateString(), 'to' => $to->toDateString()];
+
+            return $this->csv($data, $from, $to, $filters, $request);
         }
 
         return view('claims.reports', [
@@ -50,7 +57,7 @@ class ClaimsReportController extends Controller {
         Gate::authorize('viewAny', ClaimCase::class);
 
         $actor = $request->user() ?? abort(401);
-        [$from, $to] = $this->range($request);
+        [$from, $to] = $this->resolveRange($request);
         ClaimReportSnapshot::query()->create([
             'organization_id' => (int) $actor->organization_id,
             'period_start' => $from->toDateString(),
@@ -60,14 +67,6 @@ class ClaimsReportController extends Controller {
         ]);
 
         return back()->with('status', __('Berichtsstand eingefroren.'));
-    }
-
-    /** @return array{0: CarbonImmutable, 1: CarbonImmutable} */
-    private function range(Request $request): array {
-        $from = CarbonImmutable::parse($request->string('from')->toString() ?: now()->subMonths(3)->toDateString())->startOfDay();
-        $to = CarbonImmutable::parse($request->string('to')->toString() ?: now()->toDateString())->endOfDay();
-
-        return [$from, $to];
     }
 
     /** @return array<string, mixed> */
@@ -123,27 +122,26 @@ class ClaimsReportController extends Controller {
         ];
     }
 
-    /** @param array<string, mixed> $data */
-    private function csv(array $data, CarbonImmutable $from, CarbonImmutable $to): StreamedResponse {
-        return response()->streamDownload(function () use ($data, $from, $to): void {
-            $out = fopen('php://output', 'w');
-            if ($out === false) {
-                return;
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $filters
+     */
+    private function csv(array $data, CarbonImmutable $from, CarbonImmutable $to, array $filters, Request $request): Response {
+        $rows = [];
+        $rows[] = ['Kennzahl', 'Wert'];
+        $rows[] = ['Zeitraum', $from->toDateString() . ' – ' . $to->toDateString()];
+        foreach (['total', 'open', 'closed', 'overdue', 'avg_duration_days', 'cost_total'] as $key) {
+            $rows[] = [$key, (string) ($data[$key] ?? '')];
+        }
+        foreach (['by_cause' => 'Ursache', 'by_defect' => 'Mangelart', 'by_article' => 'Artikel', 'by_supplier' => 'Lieferant'] as $key => $label) {
+            foreach ((array) $data[$key] as $name => $count) {
+                $rows[] = [$label . ': ' . $name, (string) $count];
             }
-            fputcsv($out, ['Kennzahl', 'Wert'], ';');
-            fputcsv($out, ['Zeitraum', $from->toDateString() . ' – ' . $to->toDateString()], ';');
-            foreach (['total', 'open', 'closed', 'overdue', 'avg_duration_days', 'cost_total'] as $key) {
-                fputcsv($out, [$key, (string) ($data[$key] ?? '')], ';');
-            }
-            foreach (['by_cause' => 'Ursache', 'by_defect' => 'Mangelart', 'by_article' => 'Artikel', 'by_supplier' => 'Lieferant'] as $key => $label) {
-                foreach ((array) $data[$key] as $name => $count) {
-                    fputcsv($out, [$label . ': ' . $name, (string) $count], ';');
-                }
-            }
-            foreach ((array) $data['repeats'] as $repeat) {
-                fputcsv($out, ['Wiederholfehler: ' . $repeat['article'] . ' / ' . $repeat['cause'], (string) $repeat['count']], ';');
-            }
-            fclose($out);
-        }, 'reklamationsbericht.csv', ['Content-Type' => 'text/csv']);
+        }
+        foreach ((array) $data['repeats'] as $repeat) {
+            $rows[] = ['Wiederholfehler: ' . $repeat['article'] . ' / ' . $repeat['cause'], (string) $repeat['count']];
+        }
+
+        return $this->csvWithMetadata($rows, 'reklamationsbericht.csv', 'claims-quality', $filters, $request);
     }
 }

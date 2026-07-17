@@ -17,6 +17,7 @@ use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
 use App\Models\Organization;
 use App\Services\Ai\{AiCapabilityRegistry, AiMemoryService, AiRoutingResolver};
 use App\Services\Ai\Exceptions\AiUnavailableException;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -50,6 +51,18 @@ class AiCapabilityController extends Controller {
         Gate::authorize('create', AiProviderConnection::class);
 
         $definition = $registry->get($capability); // wirft bei unbekanntem Key
+
+        // Sqid-Inputs dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('default_connection_id')) {
+            $request->merge(['default_connection_id' => Sqid::decodeOrNumeric(AiProviderConnection::class, $request->input('default_connection_id'))]);
+        }
+        $allowedIds = $request->input('allowed_connection_ids');
+        if (is_array($allowedIds)) {
+            $request->merge(['allowed_connection_ids' => array_values(array_filter(array_map(
+                static fn($v) => Sqid::decodeOrNumeric(AiProviderConnection::class, $v),
+                $allowedIds,
+            )))]);
+        }
 
         $data = $request->validate([
             'enabled' => ['nullable', 'boolean'],

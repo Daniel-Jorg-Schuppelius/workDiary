@@ -13,9 +13,8 @@ declare(strict_types=1);
 namespace App\Policies\Ai;
 
 use App\Enums\User\Permission as P;
-use App\Models\Ai\AiMemoryEntry;
-use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * KI-Gedächtnis (Feature 025, MVP-401): Pflege der Glossare/Regeln/
@@ -23,26 +22,14 @@ use App\Policies\Concerns\HasAdminBypass;
  * bestätigte „Merken?"-Dialog in Capability-Consumern (Feature 084)
  * erzeugt gelernte Einträge über `ai.use` + Fachrecht — dort geprüft.
  */
-class AiMemoryEntryPolicy {
+class AiMemoryEntryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function view(User $user, AiMemoryEntry $entry): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function update(User $user, AiMemoryEntry $entry): bool {
-        return $user->can(P::AiManage->value);
-    }
-
-    public function delete(User $user, AiMemoryEntry $entry): bool {
-        return $user->can(P::AiManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::AiManage,
+        'view' => P::AiManage,
+        'create' => P::AiManage,
+        'update' => P::AiManage,
+        'delete' => P::AiManage,
+    ];
 }

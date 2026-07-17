@@ -13,9 +13,9 @@ namespace App\Plugins\Msgraph\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
+use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
-use App\Plugins\Support\PluginHttpFactory;
-use App\Services\CloudIntake\{CloudIntakeTokenStore, StaleCheckpointException};
+use App\Services\CloudIntake\StaleCheckpointException;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -41,7 +41,7 @@ class MsgraphIntakeClient {
         $this->api = app(PluginHttpFactory::class)->client(MsgraphPlugin::ID, $this->base);
 
         $grant = MsgraphConfig::isConfigured() ? app(MsgraphIntakeOAuth::class)->grant() : null;
-        $this->api->setAuthentication(new OAuth2BearerAuthentication(new CloudIntakeTokenStore($connection), $grant));
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($connection, 'granted_scopes', scopeAsArray: true), $grant));
     }
 
     public function account(): IntakeAccount {

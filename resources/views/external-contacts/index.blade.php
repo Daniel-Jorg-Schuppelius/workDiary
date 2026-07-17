@@ -51,7 +51,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="text-center text-sm text-base-content/60 py-6">{{ __('external.contact.empty') }}</td></tr>
+                <x-table.empty :colspan="5" :title="__('external.contact.empty')" compact />
             @endforelse
         </x-table>
     </x-card>

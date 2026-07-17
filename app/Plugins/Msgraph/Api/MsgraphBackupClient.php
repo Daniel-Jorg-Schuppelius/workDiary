@@ -14,8 +14,7 @@ use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
-use App\Plugins\Support\PluginHttpFactory;
-use App\Services\Backup\BackupTokenStore;
+use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -46,7 +45,7 @@ class MsgraphBackupClient {
         $this->uploadApi = $factory->client(MsgraphPlugin::ID, $this->base);
 
         $grant = MsgraphConfig::isConfigured() ? app(MsgraphBackupOAuth::class)->grant() : null;
-        $this->api->setAuthentication(new OAuth2BearerAuthentication(new BackupTokenStore($connection), $grant));
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($connection, 'granted_scopes', scopeAsArray: true), $grant));
     }
 
     public function account(): BackupAccount {

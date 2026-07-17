@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Asset;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Was der Fälligkeits-Scanner (`maintenance:scan-due`) bei einem fälligen
  * Wartungsplan erzeugt (Feature 010 → Rang 43). `None` = nur Audit-Trail (das
@@ -19,7 +22,9 @@ namespace App\Enums\Asset;
  * (idempotent). Ein DiaryEntry-Entwurf ist als Folgeausbau vorgesehen (braucht
  * eine klare Eigentümer-/Owner-Semantik für den systemgenerierten Entwurf).
  */
-enum MaintenanceDueAction: string {
+enum MaintenanceDueAction: string implements HasLabel {
+    use HasOptions;
+
     case None = 'none';
     case Ticket = 'ticket';
 

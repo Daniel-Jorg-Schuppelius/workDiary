@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Api;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Fein granulierte Fähigkeiten (Scopes) eines API-Tokens (Feature 008 → Rang 60).
  * Konvention `ressource:aktion`. Der Katalog enthält bewusst NUR Abilities, die
@@ -22,7 +25,9 @@ namespace App\Enums\Api;
  * Vollzugriff; die Token-UI weist darauf hin, dass ein neu ausgestellter Token
  * gezielt eingeschränkt werden kann.
  */
-enum ApiAbility: string {
+enum ApiAbility: string implements HasLabel {
+    use HasOptions;
+
     case DiaryRead = 'diary:read';
     case DiaryWrite = 'diary:write';
     case TasksRead = 'tasks:read';
@@ -87,14 +92,5 @@ enum ApiAbility: string {
             self::ProjectsRead => (string) __('Projekte lesen'),
             self::ProjectsWrite => (string) __('Projekte anlegen/ändern'),
         };
-    }
-
-    /**
-     * Alle gültigen Ability-Werte (für Validierung/UI).
-     *
-     * @return list<string>
-     */
-    public static function values(): array {
-        return array_map(static fn (self $a): string => $a->value, self::cases());
     }
 }

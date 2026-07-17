@@ -13,16 +13,15 @@ namespace App\Plugins\Msgraph\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\MsgraphConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
-use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway};
-use App\Plugins\Support\Msgraph\GraphTokenStore;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 use Throwable;
 
 /**
  * Microsoft-Graph-Kalender-Gateway (MVP-328, Bauturbo A8) auf dem
  * `php-api-toolkit`-Fundament: OAuth2-Bearer über den org-gebundenen
- * {@see GraphTokenStore} inkl. transparentem Refresh (abgelaufenes Token
+ * {@see ConnectionTokenStore} inkl. transparentem Refresh (abgelaufenes Token
  * vor dem Request; 401 ⇒ Refresh ⇒ genau ein Retry im ClientAbstract).
  *
  * - Anlegen: POST `/me/events` bzw. `/me/calendars/{id}/events` mit
@@ -43,10 +42,13 @@ class MsgraphCalendarClient implements RemoteCalendarGateway {
         // Grant nur bei vorhandener Installation-Konfiguration — ohne ihn
         // bleibt das Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit.
         $grant = MsgraphConfig::isConfigured() ? app(MsgraphOAuth::class)->grant() : null;
-        $this->api->setAuthentication(new OAuth2BearerAuthentication(new GraphTokenStore($this->connection), $grant));
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 
-    public function createEvent(RemoteCalendarEvent $event): ?string {
+    public function createEvent(RemoteCalendarItem $event): ?string {
+        if (! $event instanceof RemoteCalendarEvent) {
+            return null; // dieses Gateway publiziert nur strukturierte Events
+        }
         $calendarId = trim((string) $this->connection->calendar_id);
         $url = $calendarId !== ''
             ? $this->base . '/me/calendars/' . rawurlencode($calendarId) . '/events'
@@ -70,7 +72,11 @@ class MsgraphCalendarClient implements RemoteCalendarGateway {
         return is_string($id) && $id !== '' ? $id : null;
     }
 
-    public function updateEvent(string $remoteId, RemoteCalendarEvent $event): bool {
+    public function updateEvent(string $remoteId, RemoteCalendarItem $event): bool {
+        if (! $event instanceof RemoteCalendarEvent) {
+            return false;
+        }
+
         try {
             $response = $this->api->requestResponse('patch', $this->eventUrl($remoteId), ['json' => $this->payload($event)]);
         } catch (Throwable) {

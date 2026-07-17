@@ -17,6 +17,7 @@ use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\UI\DateRangeContext;
 use App\Support\SortableQuery;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
@@ -413,9 +414,9 @@ class InvoiceController extends Controller {
         $invoice->audit('invoice.einvoice_exported', [
             'format' => 'xrechnung_ubl',
             'filename' => $filename,
-            'sha256' => hash('sha256', $xml),
+            'sha256' => CryptoHelper::hash($xml),
         ]);
-        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'xrechnung_ubl', null, hash('sha256', $xml), ['filename' => $filename]);
+        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'xrechnung_ubl', null, CryptoHelper::hash($xml), ['filename' => $filename]);
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
@@ -465,9 +466,9 @@ class InvoiceController extends Controller {
         $invoice->audit('invoice.einvoice_exported', [
             'format' => 'zugferd_pdf',
             'filename' => $filename,
-            'sha256' => hash('sha256', $pdf),
+            'sha256' => CryptoHelper::hash($pdf),
         ]);
-        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'zugferd_pdf', null, hash('sha256', $pdf), ['filename' => $filename]);
+        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'zugferd_pdf', null, CryptoHelper::hash($pdf), ['filename' => $filename]);
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',

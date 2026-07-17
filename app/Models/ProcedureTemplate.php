@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use Database\Factories\ProcedureTemplateFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +36,7 @@ class ProcedureTemplate extends Model {
     /** @use HasFactory<ProcedureTemplateFactory> */
     use HasFactory;
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -53,5 +54,10 @@ class ProcedureTemplate extends Model {
     /** @return HasMany<ProcedureTemplateVersion, $this> */
     public function versions(): HasMany {
         return $this->hasMany(ProcedureTemplateVersion::class)->orderBy('version');
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'code'];
     }
 }

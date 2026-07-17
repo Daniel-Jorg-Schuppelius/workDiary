@@ -15,7 +15,6 @@ use App\Models\Investments\InvestmentCase;
 use App\Models\{Organization, User};
 use App\Services\Investments\InvestmentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -40,19 +39,6 @@ final class InvestmentLifecycleTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->second = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function userWithRole(string $role): User {
-        $user = User::factory()->create(['organization_id' => $this->organization->id]);
-        $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($this->organization->id);
-        $orgRole = Role::query()->where('name', $role)->where('team_id', $this->organization->id)->firstOrFail();
-        $user->syncRoles([$orgRole]);
-        $registrar->forgetCachedPermissions();
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user;
     }
 
     private function makeCase(): InvestmentCase {

@@ -77,7 +77,7 @@
                                     </form>
                                 @endunless
                                 <form method="POST" action="{{ route('admin.domain-provider.destroy', $connection) }}" class="inline"
-                                      onsubmit="return confirm('{{ __('domain.action.disconnect_confirm') }}')">
+                                      data-confirm-dialog data-confirm-message="{{ __('domain.action.disconnect_confirm') }}">
                                     @csrf @method('DELETE')
                                     <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" :title="__('domain.action.disconnect')" />
                                 </form>
@@ -85,7 +85,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="text-center text-base-content/60 py-8">{{ __('domain.empty.connections') }}</td></tr>
+                    <x-table.empty :colspan="6" :title="__('domain.empty.connections')" compact />
                 @endforelse
             </tbody>
         </table>

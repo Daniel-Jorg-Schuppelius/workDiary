@@ -11,6 +11,7 @@
 namespace App\Services\Backup;
 
 use App\Services\Backup\Support\SecretStreamFile;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use SensitiveParameter;
 
 /**
@@ -74,7 +75,7 @@ class BackupCrypter {
             'document' => $document,
             'key_envelope' => $envelopes['key_envelope'],
             'recovery_envelope' => $envelopes['recovery_envelope'],
-            'manifest_sha256' => hash('sha256', $cipher),
+            'manifest_sha256' => CryptoHelper::hash($cipher),
         ];
     }
 

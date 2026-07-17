@@ -40,7 +40,7 @@
                         <label class="fieldset-label">{{ __('Geltungsbereich') }}</label>
                         <select name="isms_scope_id" class="select select-bordered w-full" required>
                             @foreach ($scopes as $scopeOption)
-                                <option value="{{ $scopeOption->id }}">{{ $scopeOption->name }}</option>
+                                <option value="{{ $scopeOption->sqid }}">{{ $scopeOption->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -139,7 +139,7 @@
                         @csrf @method('PUT')
                         <select name="attach_audit_id" class="select select-sm select-bordered flex-1">
                             @foreach ($unassignedAudits as $audit)
-                                <option value="{{ $audit->id }}">{{ $audit->audit_no }} — {{ $audit->title }}</option>
+                                <option value="{{ $audit->sqid }}">{{ $audit->audit_no }} — {{ $audit->title }}</option>
                             @endforeach
                         </select>
                         <x-icon-btn icon="link" tone="outline" size="sm" type="submit" show-label>{{ __('Audit zuordnen') }}</x-icon-btn>

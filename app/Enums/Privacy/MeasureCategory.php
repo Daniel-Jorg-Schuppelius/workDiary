@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Maßnahmenbereich/Schutzziel einer TOM (Art. 32, klassische Kontrollbereiche). */
-enum MeasureCategory: string {
+enum MeasureCategory: string implements HasLabel {
+    use HasOptions;
+
     case PhysicalAccess = 'physical_access'; // Zutrittskontrolle
     case SystemAccess = 'system_access';     // Zugangskontrolle
     case DataAccess = 'data_access';         // Zugriffskontrolle

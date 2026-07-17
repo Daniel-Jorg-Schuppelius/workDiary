@@ -14,9 +14,12 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\ComplianceFinding;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /** Lueckenanalyse: lesen mit dataprotection.view, entscheiden mit compliance.manage. */
 class ComplianceFindingPolicy {
+    use ChecksOwnership;
+
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.view');
     }
@@ -26,7 +29,7 @@ class ComplianceFindingPolicy {
     }
 
     public function update(User $user, ComplianceFinding $finding): bool {
-        return (int) $user->organization_id === (int) $finding->organization_id
+        return $this->sharesOrganization($user, $finding)
             && $user->can('dataprotection.compliance.manage');
     }
 }

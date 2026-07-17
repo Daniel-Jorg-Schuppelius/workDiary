@@ -12,10 +12,9 @@ namespace Tests\Feature\Classification;
 
 use App\Enums\Classification\{ClassificationDomain, ClassificationRequirementPhase, ClassificationRequirementSeverity};
 use App\Enums\User\UserRole;
-use App\Models\{Classification, ClassificationRequirement, User};
+use App\Models\{Classification, ClassificationRequirement};
 use Database\Seeders\ClassificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -541,23 +540,5 @@ class ClassificationRequirementAdminControllerTest extends TestCase {
             'severity' => ClassificationRequirementSeverity::Soft->value,
             'min_count' => 1,
         ]);
-    }
-
-    private function userWithRole(string $role): User {
-        $user = User::factory()->create(['organization_id' => $this->organization->id]);
-        $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($this->organization->id);
-
-        $orgRole = Role::query()
-            ->where('name', $role)
-            ->where('team_id', $this->organization->id)
-            ->firstOrFail();
-
-        $user->syncRoles([$orgRole]);
-        $registrar->forgetCachedPermissions();
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user;
     }
 }

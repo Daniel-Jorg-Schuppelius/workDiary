@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Asset\{AssetClass, AssetHealth, AssetOwnership, AssetStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags, Searchable};
 use Database\Factories\AssetFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -53,6 +53,7 @@ use Illuminate\Support\Carbon;
 class Asset extends Model {
     /** @use HasFactory<AssetFactory> */
     use Auditable, BelongsToOrganization, HasAttachments, HasFactory, HasSqid, HasTags;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -221,5 +222,10 @@ class Asset extends Model {
     /** @return HasOne<SoftwareInstallation, $this> */
     public function operatingSystem(): HasOne {
         return $this->hasOne(SoftwareInstallation::class)->where('is_operating_system', true);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['asset_no', 'name', 'serial_no', 'location_text'];
     }
 }

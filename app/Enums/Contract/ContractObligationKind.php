@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Contract;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Obligationsart im Vertragskalender (Welle D, CLM): speist die bestehende
  * Fristen-/Eskalationsmechanik (contract.deadlineDue) — Kündigungsfrist,
  * Verlängerungswarnung, Zahlungs-/Prüf-/Indexierungstermine.
  */
-enum ContractObligationKind: string {
+enum ContractObligationKind: string implements HasLabel {
+    use HasOptions;
+
     case NoticeDeadline = 'notice_deadline';
     case RenewalWarning = 'renewal_warning';
     case Payment = 'payment';

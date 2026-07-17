@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetFinance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Nutzungslimit-Art (MVP-275): Ist-Werte werden nur referenziert
  * (Zählerstände/manuelle Erfassung), nie gebucht (D11).
  */
-enum AssetFinanceUsageLimitKind: string {
+enum AssetFinanceUsageLimitKind: string implements HasLabel {
+    use HasOptions;
+
     case Kilometers = 'kilometers';
     case OperatingHours = 'operating_hours';
     case UsageDays = 'usage_days';

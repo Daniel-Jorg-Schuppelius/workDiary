@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Activity\ActivityCategoryType;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{BelongsToOrganization, HasSqid, Searchable};
 use Database\Factories\ActivityCategoryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,6 +41,7 @@ class ActivityCategory extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -76,5 +77,10 @@ class ActivityCategory extends Model {
      */
     public function scopeActive(Builder $q): Builder {
         return $q->where('active', true);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['key', 'label', 'description'];
     }
 }

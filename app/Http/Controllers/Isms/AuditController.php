@@ -16,6 +16,7 @@ use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsCorrectiveAction, IsmsRequ
 use App\Models\User;
 use App\Services\Isms\AuditService;
 use App\Services\SqidEncoder;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -350,6 +351,11 @@ class AuditController extends Controller {
         /** @var User $actor */
         $actor = Auth::user();
 
+        // Sqid-Inputs vor der Validierung dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('lead_auditor_user_id')) {
+            $request->merge(['lead_auditor_user_id' => Sqid::decodeOrNumeric(User::class, $request->input('lead_auditor_user_id'))]);
+        }
+
         return $request->validate([
             ...($withScope ? ['scope' => ['required', 'string', 'max:64']] : []),
             'title' => ['required', 'string', 'min:3', 'max:180'],
@@ -378,6 +384,10 @@ class AuditController extends Controller {
      * @return array<string, mixed>
      */
     private function validateFinding(Request $request): array {
+        if ($request->filled('isms_requirement_id')) {
+            $request->merge(['isms_requirement_id' => Sqid::decodeOrNumeric(IsmsRequirement::class, $request->input('isms_requirement_id'))]);
+        }
+
         return $request->validate([
             'kind' => ['required', 'string', Rule::enum(FindingKind::class)],
             'title' => ['required', 'string', 'min:3', 'max:180'],
@@ -393,6 +403,10 @@ class AuditController extends Controller {
     private function validateAction(Request $request): array {
         /** @var User $actor */
         $actor = Auth::user();
+
+        if ($request->filled('owner_user_id')) {
+            $request->merge(['owner_user_id' => Sqid::decodeOrNumeric(User::class, $request->input('owner_user_id'))]);
+        }
 
         return $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:180'],

@@ -10,20 +10,8 @@
     $showForms = $ff->isEnabled('module.forms') && \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\FormSubmission::class);
 @endphp
 @if ($showDocs && $showForms)
-    <div role="tablist" class="tabs tabs-box w-full">
-        <a role="tab"
-           href="{{ route('documents.index') }}"
-           @class(['tab gap-1', 'tab-active' => request()->routeIs('documents.*')])
-           @if (request()->routeIs('documents.*')) aria-current="page" @endif>
-            <span class="material-symbols-outlined text-base" aria-hidden="true">folder_open</span>
-            {{ __('document.title.index') }}
-        </a>
-        <a role="tab"
-           href="{{ route('form-submissions.index') }}"
-           @class(['tab gap-1', 'tab-active' => request()->routeIs('form-submissions.*')])
-           @if (request()->routeIs('form-submissions.*')) aria-current="page" @endif>
-            <span class="material-symbols-outlined text-base" aria-hidden="true">edit_note</span>
-            {{ __('form.title.submissions') }}
-        </a>
-    </div>
+    <x-tab-nav :items="[
+        ['route' => 'documents.index', 'routeIs' => 'documents.*', 'icon' => 'folder_open', 'label' => __('document.title.index')],
+        ['route' => 'form-submissions.index', 'routeIs' => 'form-submissions.*', 'icon' => 'edit_note', 'label' => __('form.title.submissions')],
+    ]" />
 @endif

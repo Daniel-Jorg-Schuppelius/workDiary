@@ -40,7 +40,7 @@
         <x-select-field name="isms_software_product_id" :label="__('isms.field.product')">
                 <option value="">—</option>
                 @foreach ($products as $product)
-                    <option value="{{ $product->id }}" @selected((string) old('isms_software_product_id', $vulnerability?->isms_software_product_id) === (string) $product->id)>{{ $product->name }} {{ $product->product_version }}</option>
+                    <option value="{{ $product->sqid }}" @selected((string) old('isms_software_product_id', \App\Support\Sqid::encode(\App\Models\Isms\IsmsSoftwareProduct::class, $vulnerability?->isms_software_product_id)) === $product->sqid)>{{ $product->name }} {{ $product->product_version }}</option>
                 @endforeach
         </x-select-field>
     </x-form-group>
@@ -49,7 +49,7 @@
         <x-select-field name="owner_user_id" :label="__('isms.field.owner')">
                 <option value="">—</option>
                 @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $vulnerability?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+                    <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $vulnerability?->owner_user_id)) === $owner->sqid)>{{ $owner->name }}</option>
                 @endforeach
         </x-select-field>
         <x-input-field name="due_on" type="date" :label="__('isms.field.due_on')" :value="old('due_on', $vulnerability?->due_on?->toDateString())" />

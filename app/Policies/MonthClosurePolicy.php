@@ -13,12 +13,13 @@ namespace App\Policies;
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Enums\User\Permission as P;
 use App\Models\{MonthClosure, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Berechtigungen für Monatsfreigaben (MVP-016, ../WorkDiary-Architecture/monatsfreigabe.md §6).
  */
 class MonthClosurePolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -28,10 +29,10 @@ class MonthClosurePolicy {
     }
 
     public function view(User $user, MonthClosure $closure): bool {
-        if ($user->organization_id !== $closure->organization_id) {
+        if (! $this->sharesOrganization($user, $closure)) {
             return false;
         }
-        if ($user->id === $closure->user_id) {
+        if ($this->owns($user, $closure)) {
             return $user->can(P::MonthViewOwn->value);
         }
 
@@ -40,8 +41,8 @@ class MonthClosurePolicy {
     }
 
     public function submit(User $user, MonthClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
-            && $user->id === $closure->user_id
+        return $this->sharesOrganization($user, $closure)
+            && $this->owns($user, $closure)
             && $user->can(P::MonthSubmitOwn->value)
             && in_array($closure->status, [
                 MonthClosureStatus::Draft,
@@ -51,26 +52,26 @@ class MonthClosurePolicy {
     }
 
     public function approve(User $user, MonthClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
+        return $this->sharesOrganization($user, $closure)
             && $user->can(P::MonthApprove->value)
             && $closure->status === MonthClosureStatus::Submitted;
     }
 
     public function reject(User $user, MonthClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
+        return $this->sharesOrganization($user, $closure)
             && $user->can(P::MonthReject->value)
             && $closure->status === MonthClosureStatus::Submitted;
     }
 
     public function reopen(User $user, MonthClosure $closure): bool {
-        if ($user->organization_id !== $closure->organization_id) {
+        if (! $this->sharesOrganization($user, $closure)) {
             return false;
         }
 
         // Self-Reopen aus 'rejected' durch den Betroffenen
         if (
             $closure->status === MonthClosureStatus::Rejected
-            && $user->id === $closure->user_id
+            && $this->owns($user, $closure)
             && $user->can(P::MonthSubmitOwn->value)
         ) {
             return true;
@@ -85,14 +86,14 @@ class MonthClosurePolicy {
     }
 
     public function lock(User $user, MonthClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
+        return $this->sharesOrganization($user, $closure)
             && $user->can(P::MonthLock->value)
             && $closure->status === MonthClosureStatus::Approved;
     }
 
     /** Prüfpaket (Rang 40): nur freigegebene/gesperrte Monate, Sperr-Recht. */
     public function bundle(User $user, MonthClosure $closure): bool {
-        return $user->organization_id === $closure->organization_id
+        return $this->sharesOrganization($user, $closure)
             && $user->can(P::MonthLock->value)
             && in_array($closure->status, [MonthClosureStatus::Approved, MonthClosureStatus::Locked], true);
     }

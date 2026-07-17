@@ -17,26 +17,26 @@ use App\Policies\Concerns\HasAdminBypass;
 /**
  * Steuerung der Backup-Nachweise (MVP-027).
  */
-class ProcedureBackupProofPolicy {
+class ProcedureBackupProofPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::ProcedureRunView->value);
-    }
-
-    public function view(User $user, ProcedureBackupProof $proof): bool {
-        return $user->can(P::ProcedureRunView->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::ProcedureRunView,
+        'view' => P::ProcedureRunView,
+        'register' => P::ProcedureBackupRegister,
+        'verify' => P::ProcedureBackupVerify,
+        'viewExternal' => P::ProcedureBackupViewExternal,
+    ];
 
     public function register(User $user, ProcedureStepRun $stepRun): bool {
-        return $user->can(P::ProcedureBackupRegister->value);
+        return $this->allows($user, 'register');
     }
 
     public function verify(User $user, ProcedureBackupProof $proof): bool {
-        return $user->can(P::ProcedureBackupVerify->value);
+        return $this->allows($user, 'verify');
     }
 
     public function viewExternal(User $user, ProcedureBackupProof $proof): bool {
-        return $user->can(P::ProcedureBackupViewExternal->value);
+        return $this->allows($user, 'viewExternal');
     }
 }

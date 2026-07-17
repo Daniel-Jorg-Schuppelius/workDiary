@@ -74,7 +74,7 @@
         <x-select-field name="lead_auditor_user_id" :label="__('isms.field.lead_auditor')">
             <option value="">—</option>
             @foreach ($auditorOptions as $auditor)
-                <option value="{{ $auditor->id }}" @selected((string) old('lead_auditor_user_id', $audit?->lead_auditor_user_id) === (string) $auditor->id)>{{ $auditor->name }}</option>
+                <option value="{{ $auditor->sqid }}" @selected((string) old('lead_auditor_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $audit?->lead_auditor_user_id)) === $auditor->sqid)>{{ $auditor->name }}</option>
             @endforeach
         </x-select-field>
         <x-input-field name="auditors" :label="__('isms.field.auditors')" maxlength="5000"

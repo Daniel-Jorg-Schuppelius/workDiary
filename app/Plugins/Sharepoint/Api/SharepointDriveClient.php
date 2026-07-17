@@ -15,16 +15,15 @@ namespace App\Plugins\Sharepoint\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\SharepointConnection;
 use App\Plugins\Sharepoint\{SharepointConfig, SharepointPlugin};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use App\Plugins\Support\Mirror\RemoteFileGateway;
-use App\Plugins\Support\Msgraph\GraphTokenStore;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 use Throwable;
 
 /**
  * Microsoft-Graph-Drive-Gateway der SharePoint-Ablage (MVP-330, Bauturbo A10)
  * auf dem `php-api-toolkit`-Fundament: OAuth2-Bearer über den org-gebundenen
- * {@see GraphTokenStore} inkl. transparentem Refresh (401 ⇒ Refresh ⇒ genau
+ * {@see ConnectionTokenStore} inkl. transparentem Refresh (401 ⇒ Refresh ⇒ genau
  * ein Retry im ClientAbstract).
  *
  * - Kleine Dateien (< 4 MB): `PUT /drives/{id}/root:/{pfad}:/content`.
@@ -62,7 +61,7 @@ class SharepointDriveClient implements RemoteFileGateway {
         // Grant nur bei vorhandener Installation-Konfiguration — ohne ihn
         // bleibt das Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit.
         $grant = SharepointConfig::isConfigured() ? app(SharepointOAuth::class)->grant() : null;
-        $this->api->setAuthentication(new OAuth2BearerAuthentication(new GraphTokenStore($this->connection), $grant));
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 
     /** Stellt den Zielordner segmentweise sicher (POST children; 409 = existiert). */

@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Zustellstatus eines Outbox-Eintrags zur externen Bestandsführung
  * (Feature 048, MVP-072). „compensation_required" = die externe Anwendung der
  * lokal bereits gebuchten Bewegung ist endgültig fehlgeschlagen und muss
  * fachlich ausgeglichen werden (Gegenbuchung), niemals per DB-Rollback.
  */
-enum OutboxStatus: string {
+enum OutboxStatus: string implements HasLabel {
+    use HasOptions;
+
     case Pending = 'pending';
     case Processing = 'processing';
     case Confirmed = 'confirmed';

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\OpenProject\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\OpenProject\OpenProjectConfig;
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
 use Carbon\CarbonImmutable;
@@ -23,20 +23,15 @@ use Illuminate\Console\Command;
  * manuell aus der Admin-UI.
  */
 class OpenProjectSyncCommand extends Command {
-    protected $signature = 'openproject:import
-        {--organization= : ID einer einzelnen Organisation, sonst alle}
+    use IteratesOrganizations;
+
+    protected $signature = 'openproject:import ' . self::ORGANIZATION_OPTION . '
         {--days= : Zeitfenster rückwirkend in Tagen (überschreibt die Einstellung)}';
 
     protected $description = 'Synchronisiert OpenProject-Struktur und importiert Zeiteinträge (gemapptes Projekt) bzw. in die Inbox.';
 
     public function handle(OpenProjectImportService $service): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

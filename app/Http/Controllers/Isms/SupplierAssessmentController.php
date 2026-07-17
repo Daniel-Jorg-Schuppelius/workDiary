@@ -17,6 +17,7 @@ use App\Models\Privacy\ProcessingAgreement;
 use App\Models\{Supplier, User};
 use App\Services\Isms\SupplierAssessmentService;
 use App\Services\SqidEncoder;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -159,6 +160,13 @@ class SupplierAssessmentController extends Controller {
         $request->merge([
             'processing_agreement_id' => $this->decodeAgreementId($request->input('processing_agreement_id')),
         ]);
+
+        // Sqid-Inputs der Selects dekodieren (numerischer Fallback für Alt-Clients).
+        foreach (['supplier_id' => Supplier::class, 'isms_scope_id' => IsmsScope::class, 'owner_user_id' => User::class] as $field => $model) {
+            if ($request->filled($field)) {
+                $request->merge([$field => Sqid::decodeOrNumeric($model, $request->input($field))]);
+            }
+        }
 
         $data = $request->validate([
             'supplier_id' => [

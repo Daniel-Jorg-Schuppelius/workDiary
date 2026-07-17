@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Ergebnis einer TOM-Wirksamkeitspruefung (Art. 32 Abs. 1 lit. d). */
-enum ReviewResult: string {
+enum ReviewResult: string implements HasLabel {
+    use HasOptions;
+
     case Effective = 'effective';      // wirksam
     case Deviation = 'deviation';      // Abweichung – Folgemaßnahme nötig
     case Ineffective = 'ineffective';  // unwirksam

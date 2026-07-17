@@ -11,12 +11,12 @@
 namespace App\Plugins\OpenProject\Services;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, Task, TimeEntry, User};
+use App\Models\{ExternalReference, IntegrationInboxItem, Organization, Project, Task, TimeEntry};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
+use App\Plugins\Support\PersistsTimeImportInbox;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * Kernlogik des OpenProject-Imports:
@@ -33,9 +33,15 @@ use Illuminate\Support\Facades\Auth;
  * Scheduler/Command bzw. die Admin-Aktion.
  */
 class OpenProjectImportService {
+    use PersistsTimeImportInbox;
+
     public const EXT_TYPE_ENTRY = 'entry';
 
     public function __construct(private readonly OpenProjectStructureSync $structure) {}
+
+    protected function pluginId(): string {
+        return OpenProjectPlugin::ID;
+    }
 
     /**
      * Vollständiger API-Lauf: Struktur-Sync, anschließend Zeit-Import.
@@ -118,16 +124,6 @@ class OpenProjectImportService {
         return ['created' => $created, 'skipped' => $skipped, 'unmatched' => $unmatched];
     }
 
-    private function alreadyImported(Organization $organization, string $entryKey): bool {
-        return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_ENTRY)
-            ->where('external_id', $entryKey)
-            ->exists();
-    }
-
     private function createTimeEntry(Organization $organization, Project $project, ?Task $task, OpenProjectEntry $entry, int $userId, bool $defaultBillable): TimeEntry {
         $description = trim(implode(' — ', array_filter([
             $entry->workPackageSubject,
@@ -170,31 +166,12 @@ class OpenProjectImportService {
      * den entry_key (dedupe_key).
      */
     private function recordPending(Organization $organization, OpenProjectEntry $entry): void {
-        $dedupeKey = self::EXT_TYPE_ENTRY . ':' . $entry->entryKey;
-
-        $exists = IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
-            ->where('dedupe_key', $dedupeKey)
-            ->exists();
-        if ($exists) {
-            return;
-        }
-
         $projectExternalId = $entry->projectExternalId !== null ? trim($entry->projectExternalId) : '';
         $project = trim((string) $entry->projectName);
 
-        IntegrationInboxItem::query()->create([
-            'organization_id' => $organization->id,
-            'plugin_id' => OpenProjectPlugin::ID,
+        $this->recordPendingItem($organization, $entry->entryKey, [
             'source' => 'api',
-            'target_type' => (new TimeEntry)->getMorphClass(),
-            'external_type' => self::EXT_TYPE_ENTRY,
-            'external_id' => $entry->entryKey,
-            'dedupe_key' => $dedupeKey,
             'group_key' => $projectExternalId !== '' ? 'project:' . $projectExternalId : 'op:none',
-            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
             'remote_snapshot' => [
                 'entry_key' => $entry->entryKey,
                 'project_external_id' => $entry->projectExternalId,
@@ -304,29 +281,6 @@ class OpenProjectImportService {
     }
 
     /**
-     * @return Collection<int, IntegrationInboxItem>
-     */
-    private function openInboxItems(Organization $organization): Collection {
-        return IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->whereNotNull('group_key')
-            ->orderByDesc('occurred_at')
-            ->get();
-    }
-
-    private function resolveItem(IntegrationInboxItem $item, string $status, ?TimeEntry $timeEntry): void {
-        $item->update([
-            'status' => $status,
-            'resolved_to_type' => $timeEntry?->getMorphClass(),
-            'resolved_to_id' => $timeEntry?->getKey(),
-            'resolved_by' => Auth::id(),
-            'resolved_at' => now(),
-        ]);
-    }
-
-    /**
      * @param  array<string, mixed>  $snap
      */
     private function entryFromSnapshot(array $snap): OpenProjectEntry {
@@ -342,35 +296,6 @@ class OpenProjectImportService {
             userExternalId: $snap['user_external_id'] ?? null,
             userName: $snap['user_name'] ?? null,
         );
-    }
-
-    /**
-     * Bestimmt den Buchungs-Benutzer: konfigurierte default_user_id (in der Org)
-     * → Org-Owner → erster Org-Benutzer. (Identisch zu Toggl/RemoteSupport.)
-     */
-    private function resolveBookingUserId(Organization $organization, ?int $defaultUserId): ?int {
-        if ($defaultUserId !== null) {
-            $user = User::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->whereKey($defaultUserId)
-                ->first();
-            if ($user !== null) {
-                return (int) $user->id;
-            }
-        }
-
-        if ($organization->owner_id !== null) {
-            return (int) $organization->owner_id;
-        }
-
-        $first = User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->orderBy('id')
-            ->first();
-
-        return $first !== null ? (int) $first->id : null;
     }
 
     /** @param array<string, mixed> $config */

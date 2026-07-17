@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Herkunft einer Seriennummer: selbst erzeugt (Eigenfertigung) oder beim
  * Wareneingang erfasst (Zukauf).
  */
-enum SerialSource: string {
+enum SerialSource: string implements HasLabel {
+    use HasOptions;
+
     case Manufactured = 'manufactured';
     case Purchased = 'purchased';
 

@@ -47,7 +47,7 @@
         <x-select-field name="owner_user_id" :label="__('isms.field.owner')" span="2">
                 <option value="">—</option>
                 @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $product?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+                    <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $product?->owner_user_id)) === $owner->sqid)>{{ $owner->name }}</option>
                 @endforeach
         </x-select-field>
     </x-form-group>

@@ -94,7 +94,7 @@ class PrivacyExtrasTest extends TestCase {
         $agreement = ProcessingAgreement::create(['organization_id' => $org->id, 'processor_id' => $processor->id, 'title' => 'AVV', 'version' => '1.0', 'status' => 'active']);
         $measure = app(TechnicalMeasureService::class)->createDraft($org, 'Backup', MeasureCategory::Recovery, []);
 
-        $this->actingAs($officer)->post(route('dataprotection.agreements.tom', $agreement), ['measure_id' => $measure->id])->assertRedirect();
+        $this->actingAs($officer)->post(route('dataprotection.agreements.tom', $agreement), ['measure_id' => $measure->sqid])->assertRedirect();
 
         $this->assertSame(1, MeasureAssignment::where('agreement_id', $agreement->id)->where('measure_id', $measure->id)->count());
     }

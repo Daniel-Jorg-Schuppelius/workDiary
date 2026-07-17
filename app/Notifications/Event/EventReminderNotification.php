@@ -11,26 +11,23 @@
 namespace App\Notifications\Event;
 
 use App\Models\Event;
-use Illuminate\Bus\Queueable;
+use App\Notifications\DirectNotification;
+use App\Support\NotificationText;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class EventReminderNotification extends Notification {
-    use Queueable;
+class EventReminderNotification extends DirectNotification {
+    private const TITLE_KEY = 'Erinnerung: :title';
+
+    private const MESSAGE_KEY = 'Beginn: :when';
 
     /**
      * @param  list<string>  $channels  e.g. ['mail', 'database']
      */
     public function __construct(
         public readonly Event $event,
-        public readonly array $channels = ['mail', 'database'],
-    ) {}
-
-    /** @return list<string> */
-    public function via(object $notifiable): array {
-        return array_values(array_filter($this->channels, function (string $c): bool {
-            return in_array($c, ['mail', 'database'], true);
-        }));
+        array $channels = ['mail', 'database'],
+    ) {
+        parent::__construct($channels);
     }
 
     public function toMail(object $notifiable): MailMessage {
@@ -47,12 +44,27 @@ class EventReminderNotification extends Notification {
 
     /** @return array<string, mixed> */
     public function toArray(object $notifiable): array {
-        return [
+        $titleParams = ['title' => (string) $this->event->title];
+        $startedAt = optional($this->event->started_at)->toIso8601String();
+
+        $data = [
             'event_id' => $this->event->getKey(),
-            'title' => $this->event->title,
-            'started_at' => optional($this->event->started_at)->toIso8601String(),
+            'title' => NotificationText::render(self::TITLE_KEY, $titleParams),
+            'title_key' => self::TITLE_KEY,
+            'title_params' => $titleParams,
+            'started_at' => $startedAt,
             'url' => route('events.show', $this->event),
             'icon' => 'event',
         ];
+
+        if ($startedAt !== null) {
+            // ISO-Zeitpunkt → NotificationText rendert in Anzeige-TZ/-Locale.
+            $messageParams = ['when' => $startedAt];
+            $data['message'] = NotificationText::render(self::MESSAGE_KEY, $messageParams);
+            $data['message_key'] = self::MESSAGE_KEY;
+            $data['message_params'] = $messageParams;
+        }
+
+        return $data;
     }
 }

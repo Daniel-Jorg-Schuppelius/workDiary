@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Article\{ArticleStatus, ArticleType};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -39,6 +39,7 @@ class Article extends Model {
     use HasFactory;
     use HasSqid;
     use HasTags;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -130,5 +131,10 @@ class Article extends Model {
     /** Der Artikel führt nur dann selbst Bestand, wenn er keine Varianten hat. */
     public function isStockBearingItself(): bool {
         return $this->variants()->count() === 0;
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'number'];
     }
 }

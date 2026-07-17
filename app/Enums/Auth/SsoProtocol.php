@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Auth;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** SSO-Protokoll einer Organisations-Anbindung (Feature 057, MVP-120/121). */
-enum SsoProtocol: string {
+enum SsoProtocol: string implements HasLabel {
+    use HasOptions;
+
     case Oidc = 'oidc';
     case Saml = 'saml';
 

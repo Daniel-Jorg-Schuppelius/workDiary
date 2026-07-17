@@ -14,6 +14,7 @@ use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\DomainProviderConnection;
 use App\Plugins\DomainReselling\DomainResellingConfig;
 use App\Plugins\Support\Domain\DomainRateBudgetException;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -138,6 +139,6 @@ class DomainAvailabilityService {
     }
 
     private function cacheKey(DomainProviderConnection $connection, string $domain): string {
-        return sprintf('domain:check:%d:%s', $connection->id, hash('sha256', $domain));
+        return sprintf('domain:check:%d:%s', $connection->id, CryptoHelper::hash($domain));
     }
 }

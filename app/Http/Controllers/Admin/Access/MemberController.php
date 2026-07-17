@@ -47,10 +47,7 @@ class MemberController extends Controller {
             ->with(['roles', 'userGroups']);
 
         if ($search = trim((string) $request->query('q', ''))) {
-            $query->where(function ($q) use ($search): void {
-                $q->whereLikeEscaped('name', $search)
-                    ->orWhereLikeEscaped('email', $search);
-            });
+            $query->search($search);
         }
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [

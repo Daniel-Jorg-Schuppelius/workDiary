@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\AssetFinance;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Konditionsart (MVP-272): strukturierte Vertragsbestandteile neben der
  * Grundrate — alles wird als Snapshot an der Akte eingefroren (P2).
  */
-enum AssetFinanceTermKind: string {
+enum AssetFinanceTermKind: string implements HasLabel {
+    use HasOptions;
+
     case Rate = 'rate';
     case SpecialPayment = 'special_payment';
     case ResidualValue = 'residual_value';

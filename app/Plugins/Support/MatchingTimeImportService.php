@@ -13,11 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Project, TimeEntry, User};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Project, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * Gemeinsame Import-Pipeline der Zeit-Migrations-Plugins (Kimai, Clockify, …)
@@ -32,6 +31,8 @@ use Illuminate\Support\Facades\Auth;
  * umbenennungsfestes Matching und ggf. Export-Mapping des Plugins.
  */
 abstract class MatchingTimeImportService {
+    use PersistsTimeImportInbox;
+
     public const EXT_TYPE_CLIENT = 'client';
 
     public const EXT_TYPE_PROJECT = 'project';
@@ -44,9 +45,6 @@ abstract class MatchingTimeImportService {
     public const EXT_TYPE_PROJECT_ID = 'project_id';
 
     public const SUGGEST_THRESHOLD = 0.82;
-
-    /** Plugin-Id, unter der References/Inbox-Items abgelegt werden. */
-    abstract protected function pluginId(): string;
 
     /**
      * Effektive Plugin-Konfiguration der Organisation (für Inbox-Buchungen).
@@ -136,7 +134,7 @@ abstract class MatchingTimeImportService {
             return $byName;
         }
 
-        $customer = $this->matchCustomer($organization, $entry->clientName);
+        $customer = $this->matchCustomerForEntry($organization, $entry);
 
         $query = Project::query()
             ->withoutGlobalScopes()
@@ -148,6 +146,14 @@ abstract class MatchingTimeImportService {
         }
 
         return $query->first();
+    }
+
+    /**
+     * Kunden-Auflösung im Projekt-Name-Fallback — Hook für Plugins mit
+     * zusätzlichen Schlüsseln (Toggl: stabile client_id).
+     */
+    protected function matchCustomerForEntry(Organization $organization, ImportedTimeEntry $entry): ?Customer {
+        return $this->matchCustomer($organization, $entry->clientName);
     }
 
     protected function resolveByReference(Organization $organization, string $externalType, string $externalId): ?Model {
@@ -213,16 +219,6 @@ abstract class MatchingTimeImportService {
         return $bestScore >= self::SUGGEST_THRESHOLD ? $best : null;
     }
 
-    protected function alreadyImported(Organization $organization, string $entryKey): bool {
-        return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('external_type', self::EXT_TYPE_ENTRY)
-            ->where('external_id', $entryKey)
-            ->exists();
-    }
-
     protected function createTimeEntry(Organization $organization, Project $project, ImportedTimeEntry $entry, int $userId, bool $defaultBillable): TimeEntry {
         $description = trim(implode(' — ', array_filter([
             $entry->projectName,
@@ -271,31 +267,12 @@ abstract class MatchingTimeImportService {
     }
 
     protected function recordPending(Organization $organization, ImportedTimeEntry $entry): void {
-        $dedupeKey = self::EXT_TYPE_ENTRY . ':' . $entry->entryKey;
-
-        $exists = IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('dedupe_key', $dedupeKey)
-            ->exists();
-        if ($exists) {
-            return;
-        }
-
         $client = trim((string) $entry->clientName);
         $project = trim((string) $entry->projectName);
 
-        IntegrationInboxItem::query()->create([
-            'organization_id' => $organization->id,
-            'plugin_id' => $this->pluginId(),
+        $this->recordPendingItem($organization, $entry->entryKey, [
             'source' => $entry->source,
-            'target_type' => (new TimeEntry)->getMorphClass(),
-            'external_type' => self::EXT_TYPE_ENTRY,
-            'external_id' => $entry->entryKey,
-            'dedupe_key' => $dedupeKey,
             'group_key' => $this->projectKey($client, $project, $entry->activity),
-            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
             'remote_snapshot' => [
                 'source' => $entry->source,
                 'entry_key' => $entry->entryKey,
@@ -400,29 +377,6 @@ abstract class MatchingTimeImportService {
     }
 
     /**
-     * @return Collection<int, IntegrationInboxItem>
-     */
-    protected function openInboxItems(Organization $organization): Collection {
-        return IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->whereNotNull('group_key')
-            ->orderByDesc('occurred_at')
-            ->get();
-    }
-
-    protected function resolveItem(IntegrationInboxItem $item, string $status, ?TimeEntry $timeEntry): void {
-        $item->update([
-            'status' => $status,
-            'resolved_to_type' => $timeEntry?->getMorphClass(),
-            'resolved_to_id' => $timeEntry?->getKey(),
-            'resolved_by' => Auth::id(),
-            'resolved_at' => now(),
-        ]);
-    }
-
-    /**
      * @param  array<string, mixed>  $snap
      */
     protected function entryFromSnapshot(array $snap): ImportedTimeEntry {
@@ -474,23 +428,6 @@ abstract class MatchingTimeImportService {
                 'synced_at' => now(),
             ],
         );
-    }
-
-    protected function resolveBookingUserId(Organization $organization, ?int $defaultUserId): ?int {
-        if ($defaultUserId !== null) {
-            $user = User::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereKey($defaultUserId)->first();
-            if ($user !== null) {
-                return (int) $user->id;
-            }
-        }
-
-        if ($organization->owner_id !== null) {
-            return (int) $organization->owner_id;
-        }
-
-        $first = User::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->orderBy('id')->first();
-
-        return $first !== null ? (int) $first->id : null;
     }
 
     /** Stabiler Gruppen-/Referenz-Schlüssel (Kunde|Projekt[|Tätigkeit], case-insensitiv). */

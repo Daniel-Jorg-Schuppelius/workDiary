@@ -14,6 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Models\Isms\IsmsManagementReview;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln Managementbewertung (Feature 046, Inkrement C):
@@ -23,31 +24,20 @@ use App\Policies\Concerns\HasAdminBypass;
  *   UNVERÄNDERLICHKEIT freigegebener Bewertungen erzwingt der
  *   AuditService (ValidationException), nicht die Policy.
  */
-class IsmsManagementReviewPolicy {
+class IsmsManagementReviewPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsManagementReview $review): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsManagementReview $review): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsManagementReview $review): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+        'approve' => P::IsmsManage,
+    ];
 
     /** Freigabe (draft → approved, setzt Person + Zeitpunkt). */
     public function approve(User $user, IsmsManagementReview $review): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'approve');
     }
 }

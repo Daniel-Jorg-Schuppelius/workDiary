@@ -80,9 +80,5 @@
         {{ __('Hinweis: WorkDiary führt die operative Leasingakte (B2B). Bilanzierung (HGB/IFRS 16), steuerliche Zurechnung und Verbraucherschutzpflichten (CCD II, ab 20.11.2026 für Verbraucherverträge mit Kaufoption) bleiben Sache des Rechnungswesens bzw. der Rechtsberatung.') }}
     </p>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 </x-modal>

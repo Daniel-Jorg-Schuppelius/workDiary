@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Integration;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status eines generischen Outbox-Eintrags (Feature 055, MVP-114) — analog
  * {@see \App\Enums\Inventory\OutboxStatus}: terminale Fehlschläge werden
  * fachlich kompensiert (Inbox-Fall), nie per DB-Rollback.
  */
-enum IntegrationOutboxStatus: string {
+enum IntegrationOutboxStatus: string implements HasLabel {
+    use HasOptions;
+
     case Pending = 'pending';
     case Processing = 'processing';
     case Confirmed = 'confirmed';

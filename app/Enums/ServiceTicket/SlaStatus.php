@@ -10,6 +10,9 @@
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Abgeleiteter SLA-Lebenszustand eines Tickets (reine Anzeige):
  *  - none:     keine SLA-Frist hinterlegt
@@ -18,7 +21,9 @@ namespace App\Enums\ServiceTicket;
  *  - atRisk:   offen, Restzeit unter dem Schwellwert
  *  - breached: Frist überschritten (oder als verletzt markiert)
  */
-enum SlaStatus: string {
+enum SlaStatus: string implements HasLabel {
+    use HasOptions;
+
     case None = 'none';
     case Met = 'met';
     case OnTrack = 'onTrack';

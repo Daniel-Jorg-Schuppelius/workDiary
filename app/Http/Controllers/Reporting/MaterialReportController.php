@@ -12,8 +12,9 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{MaterialUsage, User};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
+use App\Models\MaterialUsage;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -26,28 +27,24 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class MaterialReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $request->string('scope', 'mine')->toString();
-        if ($scope !== 'team' || ! $isAdmin) {
-            $scope = 'mine';
-        }
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $from = $range['from']->toDateString();
-        $to = $range['to']->toDateString();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        $from = $fromDate->toDateString();
+        $to = $toDate->toDateString();
 
         $aggregation = $this->aggregate($from, $to, $scope, $userId);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($aggregation, $from, $to, $scope);
+            return $this->exportCsv($aggregation, $from, $to, $scope, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($aggregation, $from, $to, $scope);
+            return $this->exportPdf($aggregation, $from, $to, $scope, $request);
         }
 
         return view('reports.materials', [
@@ -133,7 +130,7 @@ class MaterialReportController extends Controller {
     /**
      * @param  array{rows: array<int, array{material_id:int|null, sku:string|null, name:string, unit:string, quantity:float, line_total_net:float, usage_count:int}>, totals: array{materials:int, usage_count:int, line_total_net:float}}  $agg
      */
-    private function exportCsv(array $agg, string $from, string $to, string $scope): Response {
+    private function exportCsv(array $agg, string $from, string $to, string $scope, Request $request): Response {
         $filename = sprintf('materialien_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['SKU', 'Material', 'Einheit', 'Menge', 'Verwendungen', 'Netto €'];
@@ -142,24 +139,24 @@ class MaterialReportController extends Controller {
                 $r['sku'] ?? '',
                 $r['name'],
                 $r['unit'],
-                number_format($r['quantity'], 3, '.', ''),
+                NumberHelper::toUSFormat($r['quantity'], 3),
                 $r['usage_count'],
-                number_format($r['line_total_net'], 2, '.', ''),
+                NumberHelper::toUSFormat($r['line_total_net'], 2),
             ];
         }
-        $rows[] = ['', 'GESAMT', '', '', $agg['totals']['usage_count'], number_format($agg['totals']['line_total_net'], 2, '.', '')];
+        $rows[] = ['', 'GESAMT', '', '', $agg['totals']['usage_count'], NumberHelper::toUSFormat($agg['totals']['line_total_net'], 2)];
 
         return $this->csvWithMetadata($rows, $filename, 'materials', [
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ]);
+        ], $request);
     }
 
     /**
      * @param  array{rows: array<int, array{material_id:int|null, sku:string|null, name:string, unit:string, quantity:float, line_total_net:float, usage_count:int}>, totals: array{materials:int, usage_count:int, line_total_net:float}}  $agg
      */
-    private function exportPdf(array $agg, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $agg, string $from, string $to, string $scope, Request $request): SymfonyResponse {
         $filename = sprintf('materialien_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.materials', [
             'rows' => $agg['rows'],
@@ -167,6 +164,6 @@ class MaterialReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'materials', filters: ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 }

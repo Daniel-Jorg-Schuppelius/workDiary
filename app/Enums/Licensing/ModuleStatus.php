@@ -10,6 +10,9 @@
 
 namespace App\Enums\Licensing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Fachlicher Zustand eines Moduls für eine Organisation (MVP-052 §2).
  *
@@ -17,7 +20,9 @@ namespace App\Enums\Licensing;
  * Oberfläche und die serverseitigen Sperrmeldungen unterscheidbar bleiben.
  * Ein einzelnes boolesches „enabled" reicht dafür nicht.
  */
-enum ModuleStatus: string {
+enum ModuleStatus: string implements HasLabel {
+    use HasOptions;
+
     /** Nicht von Plan, Lizenz oder Add-on umfasst; nicht aktivierbar. */
     case NotLicensed = 'notLicensed';
 

@@ -11,14 +11,15 @@
 namespace App\Plugins\Todoist\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ExternalReference, Organization, Project, TodoistConnection, TodoistProjectLink, User};
+use App\Models\{ExternalReference, Project, TodoistConnection, TodoistProjectLink, User};
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\OAuthStateHandshake;
 use App\Plugins\Todoist\Api\{TodoistApiClient, TodoistOAuth};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Artisan, Auth, Cache};
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -30,7 +31,7 @@ use Throwable;
  * Lösch-Scopes (keine Löschweitergabe, DoD 055).
  */
 class TodoistAdminController extends Controller {
-    private const STATE_TTL_SECONDS = 600;
+    use ResolvesPluginOrgContext;
 
     public function index(): View {
         $admin = $this->admin();
@@ -259,11 +260,8 @@ class TodoistAdminController extends Controller {
             return back()->with('error', __('todoist.flash.not_configured'));
         }
 
-        $state = Str::random(40);
-        Cache::put($this->stateKey($state), [
-            'organization_id' => (int) $organization->id,
-            'user_id' => (int) $admin->id,
-        ], self::STATE_TTL_SECONDS);
+        // Ohne PKCE (Todoist unterstützt es nicht); state bleibt Einmal-Token.
+        ['state' => $state] = $this->handshake()->start((int) $organization->id, (int) $admin->id, withPkce: false);
 
         $url = $oauth->grant()->getAuthorizationUrl($state, [$oauth->scopes()]);
 
@@ -275,16 +273,13 @@ class TodoistAdminController extends Controller {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
-        $state = (string) $request->query('state', '');
         $code = (string) $request->query('code', '');
 
-        // Einmalig einlösen: pull() entfernt den state sofort (Replay-Schutz).
-        // Bindung an Organisation UND startenden Benutzer — nur der Admin, der
-        // den Flow begonnen hat, kann ihn in seiner Sitzung abschließen.
-        $payload = $state !== '' ? Cache::pull($this->stateKey($state)) : null;
-        if (! is_array($payload)
-            || (int) ($payload['organization_id'] ?? 0) !== (int) $organization->id
-            || (int) ($payload['user_id'] ?? 0) !== (int) $admin->id) {
+        // Einmalig einlösen (Replay-Schutz); Bindung an Organisation UND
+        // startenden Benutzer — nur der Admin, der den Flow begonnen hat,
+        // kann ihn in seiner Sitzung abschließen.
+        $payload = $this->handshake()->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
+        if ($payload === null) {
             return redirect()->route('admin.todoist.index')->with('error', __('todoist.flash.state_invalid'));
         }
 
@@ -352,23 +347,7 @@ class TodoistAdminController extends Controller {
         return redirect()->route('admin.todoist.index')->with('success', __('todoist.flash.disconnected'));
     }
 
-    private function stateKey(string $state): string {
-        return 'todoist-oauth-state:' . $state;
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
+    private function handshake(): OAuthStateHandshake {
+        return new OAuthStateHandshake('todoist-oauth-state');
     }
 }

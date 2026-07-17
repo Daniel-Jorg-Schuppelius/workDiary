@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Typ eines Auftragsparameters einer Arbeitsplan-Version (Feature 047, MVP-061).
  *
@@ -22,7 +25,9 @@ namespace App\Enums\Manufacturing;
  * - Date:    Datum (Y-m-d)
  * - Bool:    Ja/Nein
  */
-enum ParameterType: string {
+enum ParameterType: string implements HasLabel {
+    use HasOptions;
+
     case Number = 'number';
     case Measure = 'measure';
     case Choice = 'choice';

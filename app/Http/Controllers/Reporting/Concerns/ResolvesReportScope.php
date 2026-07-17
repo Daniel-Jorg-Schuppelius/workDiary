@@ -10,7 +10,9 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Mine/Team-Sichtweite der Report-Controller: `team` nur für Admins,
@@ -24,5 +26,23 @@ trait ResolvesReportScope {
         }
 
         return $scope;
+    }
+
+    /**
+     * Scope + Admin-Status in einem Schritt.
+     *
+     * @return array{string, bool} [$scope, $isAdmin]
+     */
+    protected function resolveScopeWithAdmin(Request $request): array {
+        $isAdmin = $this->viewerIsAdmin();
+
+        return [$this->resolveScope($request, $isAdmin), $isAdmin];
+    }
+
+    /** Admin-Status des angemeldeten Nutzers. */
+    protected function viewerIsAdmin(): bool {
+        $user = Auth::user();
+
+        return $user instanceof User && $user->isAdmin();
     }
 }

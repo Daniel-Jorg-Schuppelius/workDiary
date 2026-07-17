@@ -205,7 +205,7 @@
         </div>
         <div class="fieldset md:col-span-2">
             <label class="fieldset-label">{{ __('Mitglieder') }}</label>
-            <x-user-checklist name="members" :users="$orgUsers" value-key="id"
+            <x-user-checklist name="members" :users="$orgUsers"
                               :placeholder="__('Mitarbeiter suchen…')"
                               :empty-text="__('Keine weiteren Mitarbeiter in dieser Organisation.')" />
         </div>
@@ -219,7 +219,7 @@
         <label class="fieldset-label">{{ __('Person') }}</label>
         <select name="user_id" required class="select select-bordered w-full">
             <option value="">{{ __('— Person wählen —') }}</option>
-            @foreach ($orgUsers as $u)<option value="{{ $u->id }}">{{ $u->name }}</option>@endforeach
+            @foreach ($orgUsers as $u)<option value="{{ $u->sqid }}">{{ $u->name }}</option>@endforeach
         </select>
         @if ($orgUsers->isEmpty())
             <p class="mt-1 text-xs text-base-content/60">{{ __('Keine weiteren Mitarbeiter in dieser Organisation.') }}</p>
@@ -346,7 +346,7 @@
                  :action="route('chat.channels.invite', $activeChannel)" method="POST" :submit-label="__('Einladen')">
             <div class="fieldset">
                 <label class="fieldset-label">{{ __('Mitglieder') }}</label>
-                <x-user-checklist name="members" :users="$orgUsers" value-key="id"
+                <x-user-checklist name="members" :users="$orgUsers"
                                   :placeholder="__('Mitarbeiter suchen…')"
                                   :empty-text="__('Keine weiteren Mitarbeiter in dieser Organisation.')" />
             </div>

@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Product\ProductStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -43,6 +43,7 @@ class Product extends Model {
 
     use HasSqid;
     use HasTags;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -141,5 +142,10 @@ class Product extends Model {
         }
 
         return $created;
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['manufacturer', 'model', 'name'];
     }
 }

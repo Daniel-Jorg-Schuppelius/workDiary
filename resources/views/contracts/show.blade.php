@@ -8,11 +8,7 @@
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>
     @endif
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <x-page-toolbar :title="$contract->number . ' — ' . $contract->title">
         <div class="flex flex-wrap items-center gap-2 text-sm">
@@ -50,22 +46,15 @@
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Vertragsdaten')">
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <dt class="text-base-content/60">{{ __('Vertragspartner') }}</dt>
-                <dd>{{ $contract->partnerLabel() ?: '—' }} <span class="text-base-content/50">({{ $contract->partner_type->label() }})</span></dd>
-                <dt class="text-base-content/60">{{ __('Kündigungsfrist') }}</dt>
-                <dd>{{ $contract->notice_period_days !== null ? $contract->notice_period_days . ' ' . __('Tage') : '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Mindestlaufzeit') }}</dt>
-                <dd>{{ $contract->min_term_months !== null ? $contract->min_term_months . ' ' . __('Monate') : '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Automatische Verlängerung') }}</dt>
-                <dd>{{ $contract->auto_renew ? __('ja, um :n Monate', ['n' => $contract->renew_period_months ?? '—']) : __('nein') }}</dd>
-                <dt class="text-base-content/60">{{ __('Vertragswert') }}</dt>
-                <dd>{{ $contract->value_amount !== null ? number_format((float) $contract->value_amount, 2, ',', '.') . ' ' . $contract->currency->value : '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Verantwortlich') }}</dt>
-                <dd>{{ $contract->responsible->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('Dokument') }}</dt>
-                <dd>{{ $contract->document->title ?? '—' }}</dd>
-            </dl>
+            <x-detail-grid class="grid-cols-2">
+                <x-detail-grid.row :label="__('Vertragspartner')">{{ $contract->partnerLabel() ?: '—' }} <span class="text-base-content/50">({{ $contract->partner_type->label() }})</span></x-detail-grid.row>
+                <x-detail-grid.row :label="__('Kündigungsfrist')">{{ $contract->notice_period_days !== null ? $contract->notice_period_days . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Mindestlaufzeit')">{{ $contract->min_term_months !== null ? $contract->min_term_months . ' ' . __('Monate') : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Automatische Verlängerung')">{{ $contract->auto_renew ? __('ja, um :n Monate', ['n' => $contract->renew_period_months ?? '—']) : __('nein') }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Vertragswert')">{{ $contract->value_amount !== null ? number_format((float) $contract->value_amount, 2, ',', '.') . ' ' . $contract->currency->value : '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Verantwortlich')">{{ $contract->responsible->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Dokument')">{{ $contract->document->title ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
             <div class="mt-3 border-t border-base-300 pt-2 text-sm">
                 <div class="font-medium">{{ __('Indexierung') }}: {{ $contract->indexation_method->label() }}</div>
                 @if ($contract->indexation_method !== \App\Enums\Contract\IndexationMethod::None)

@@ -14,6 +14,7 @@ use App\Enums\User\Permission as P;
 use App\Models\Isms\IsmsNormStatus;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Zugriffsregeln Konformitätsstatus + Zertifikatsregister (Feature 046,
@@ -25,36 +26,26 @@ use App\Policies\Concerns\HasAdminBypass;
  *   sie werden über addCertificate() hier autorisiert (analog
  *   ApplicabilityStatements in der IsmsRequirementPolicy).
  */
-class IsmsNormStatusPolicy {
+class IsmsNormStatusPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::IsmsViewAny->value);
-    }
-
-    public function view(User $user, IsmsNormStatus $status): bool {
-        return $user->can(P::IsmsView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function update(User $user, IsmsNormStatus $status): bool {
-        return $user->can(P::IsmsManage->value);
-    }
-
-    public function delete(User $user, IsmsNormStatus $status): bool {
-        return $user->can(P::IsmsManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::IsmsViewAny,
+        'view' => P::IsmsView,
+        'create' => P::IsmsManage,
+        'update' => P::IsmsManage,
+        'delete' => P::IsmsManage,
+        'transition' => P::IsmsManage,
+        'addCertificate' => P::IsmsManage,
+    ];
 
     /** Statuswechsel entlang der State-Machine (ConformityService). */
     public function transition(User $user, IsmsNormStatus $status): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'transition');
     }
 
     /** Zertifikat zu einem Konformitätsstatus hinterlegen. */
     public function addCertificate(User $user, IsmsNormStatus $status): bool {
-        return $user->can(P::IsmsManage->value);
+        return $this->allows($user, 'addCertificate');
     }
 }

@@ -14,38 +14,29 @@ use App\Enums\User\Permission as P;
 use App\Models\{ServiceTicket, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class ServiceTicketPolicy {
+class ServiceTicketPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::ServiceTicketView->value);
-    }
-
-    public function view(User $user, ServiceTicket $ticket): bool {
-        return $user->can(P::ServiceTicketView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::ServiceTicketCreate->value);
-    }
-
-    public function update(User $user, ServiceTicket $ticket): bool {
-        return $user->can(P::ServiceTicketUpdate->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::ServiceTicketView,
+        'view' => P::ServiceTicketView,
+        'create' => P::ServiceTicketCreate,
+        'update' => P::ServiceTicketUpdate,
+        'transition' => P::ServiceTicketUpdate,
+        'assign' => P::ServiceTicketAssign,
+        'close' => P::ServiceTicketClose,
+        'delete' => P::ServiceTicketClose,
+    ];
 
     public function transition(User $user, ServiceTicket $ticket): bool {
-        return $user->can(P::ServiceTicketUpdate->value);
+        return $this->allows($user, 'transition');
     }
 
     public function assign(User $user, ServiceTicket $ticket): bool {
-        return $user->can(P::ServiceTicketAssign->value);
+        return $this->allows($user, 'assign');
     }
 
     public function close(User $user, ServiceTicket $ticket): bool {
-        return $user->can(P::ServiceTicketClose->value);
-    }
-
-    public function delete(User $user, ServiceTicket $ticket): bool {
-        return $user->can(P::ServiceTicketClose->value);
+        return $this->allows($user, 'close');
     }
 }

@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Procurement;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Statusmaschine einer Bestellung (Feature 048, E4):
  * draft → ordered → partially_received → received, jederzeit cancelled.
  */
-enum PurchaseOrderStatus: string {
+enum PurchaseOrderStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Ordered = 'ordered';
     case PartiallyReceived = 'partially_received';

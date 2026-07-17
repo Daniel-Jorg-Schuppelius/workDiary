@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{CorrectiveActionStatus, FindingKind, FindingStatus};
 use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsCorrectiveAction};
 use App\Models\User;
-use App\Services\Isms\Concerns\ResolvesAuditReferences;
+use App\Services\Isms\Concerns\{AssignsSequentialNo, ResolvesAuditReferences};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -26,6 +26,7 @@ use Illuminate\Validation\ValidationException;
  * zusätzlich mindestens EINE wirksame Maßnahme.
  */
 class FindingService {
+    use AssignsSequentialNo;
     use ResolvesAuditReferences;
 
     /**
@@ -49,7 +50,7 @@ class FindingService {
             return IsmsAuditFinding::query()->create([
                 'organization_id' => $audit->organization_id,
                 'isms_audit_id' => $audit->id,
-                'finding_no' => $this->nextFindingNo((int) $audit->id),
+                'finding_no' => $this->nextNo(IsmsAuditFinding::class, 'finding_no', 'isms_audit_id', (int) $audit->id),
                 'kind' => $attributes['kind'],
                 'title' => $attributes['title'],
                 'description' => $attributes['description'] ?? null,
@@ -161,14 +162,4 @@ class FindingService {
         }
     }
 
-    /** Nächste laufende Feststellungs-Nummer innerhalb eines Audits. */
-    private function nextFindingNo(int $auditId): int {
-        $max = IsmsAuditFinding::query()
-            ->withTrashed()
-            ->where('isms_audit_id', $auditId)
-            ->lockForUpdate()
-            ->max('finding_no');
-
-        return ((int) $max) + 1;
-    }
 }

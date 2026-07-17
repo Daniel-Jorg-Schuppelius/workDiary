@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Integration;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Verhalten bei Feld-Abweichungen, wenn ein Remote-Datensatz BEREITS einem
  * lokalen Datensatz zugeordnet ist (Update-Fall). Verallgemeinert die
  * Lexoffice-Konflikt-Semantik plugin-übergreifend.
  */
-enum ConflictFieldPolicy: string {
+enum ConflictFieldPolicy: string implements HasLabel {
+    use HasOptions;
+
     /** Remote überschreibt abweichende lokale Felder. */
     case RemoteWins = 'remote_wins';
 

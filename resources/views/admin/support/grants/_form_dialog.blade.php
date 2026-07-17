@@ -46,7 +46,7 @@
                 <select id="sag-granted-to" name="granted_to_user_id" class="select select-bordered w-full">
                     <option value="">{{ __('Alle Support-Konten') }}</option>
                     @foreach ($supportUsers as $supportUser)
-                        <option value="{{ $supportUser->id }}" @selected((string) old('granted_to_user_id') === (string) $supportUser->id)>{{ $supportUser->name }}</option>
+                        <option value="{{ $supportUser->sqid }}" @selected((string) old('granted_to_user_id') === $supportUser->sqid)>{{ $supportUser->name }}</option>
                     @endforeach
                 </select>
                 @error('granted_to_user_id')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror

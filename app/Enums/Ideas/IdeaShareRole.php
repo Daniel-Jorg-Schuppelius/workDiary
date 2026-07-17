@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Ideas;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Rolle einer Karten-Freigabe (Feature 054, MVP-107): Lesen oder Bearbeiten.
  */
-enum IdeaShareRole: string {
+enum IdeaShareRole: string implements HasLabel {
+    use HasOptions;
+
     case Viewer = 'viewer';
     case Editor = 'editor';
 

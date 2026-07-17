@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\OrgaMax\Console;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{OrgaMaxConnection, Organization, PluginSetting};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\OrgaMaxSyncService;
@@ -24,6 +25,8 @@ use Throwable;
  * Organisation stoppen die anderen nicht.
  */
 class OrgaMaxSyncCommand extends Command {
+    use IteratesOrganizations;
+
     protected $signature = 'orgamax:sync {--org= : Nur diese Organisations-ID abgleichen}';
 
     protected $description = 'Gleicht orgaMAX-Buchhaltung ab (Projektionen, Checkpoints, Laufbudget).';
@@ -47,18 +50,17 @@ class OrgaMaxSyncCommand extends Command {
             if ($organization === null) {
                 continue;
             }
-            app()->instance('currentOrganization', $organization);
 
-            try {
-                $counters = $sync->run($connection);
-                $this->info(sprintf('Org %d: %s', $connection->organization_id, json_encode($counters)));
-            } catch (Throwable $e) {
-                $failures++;
-                $connection->forceFill(['last_error' => mb_substr($e::class, 0, 200)])->save();
-                $this->error(sprintf('Org %d: Abgleich fehlgeschlagen (%s).', $connection->organization_id, $e::class));
-            } finally {
-                app()->forgetInstance('currentOrganization');
-            }
+            $this->withOrganizationContext($organization, function () use ($sync, $connection, &$failures): void {
+                try {
+                    $counters = $sync->run($connection);
+                    $this->info(sprintf('Org %d: %s', $connection->organization_id, json_encode($counters)));
+                } catch (Throwable $e) {
+                    $failures++;
+                    $connection->forceFill(['last_error' => mb_substr($e::class, 0, 200)])->save();
+                    $this->error(sprintf('Org %d: Abgleich fehlgeschlagen (%s).', $connection->organization_id, $e::class));
+                }
+            });
         }
 
         return $failures === 0 ? self::SUCCESS : self::FAILURE;

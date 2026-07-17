@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\CardDav\Console;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Organization;
 use App\Plugins\CardDav\Services\CardDavContactImporter;
 use Illuminate\Console\Command;
-use Throwable;
 
 /**
  * Liest CardDAV-Kontakte je Organisation und speist sie als
@@ -24,32 +24,20 @@ use Throwable;
  * wiederholte Läufe erzeugen keine Duplikate.
  */
 class CardDavSyncCommand extends Command {
-    protected $signature = 'carddav:sync
-        {--organization= : ID einer einzelnen Organisation, sonst alle}';
+    use IteratesOrganizations;
+
+    protected $signature = 'carddav:sync ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Liest CardDAV-Kontakte und speist sie als Zuordnungsvorschläge in die Integrations-Inbox ein.';
 
     public function handle(CardDavContactImporter $importer): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        foreach ($query->get() as $org) {
-            // Org-Kontext für nachgelagerte (scoped) Operationen binden.
-            app()->instance('currentOrganization', $org);
-
-            try {
-                $r = $importer->sync($org);
-                $this->info(sprintf(
-                    'Organisation #%d (%s): connections %d, changed %d, linked %d, staged %d, skipped %d, deleted %d, failed %d',
-                    $org->id, $org->name, $r['connections'], $r['changed'], $r['linked'], $r['staged'], $r['skipped'], $r['deleted'], $r['failed'],
-                ));
-            } catch (Throwable $e) {
-                $this->error(sprintf('Organisation #%d (%s): Abbruch — %s', $org->id, $org->name, $e->getMessage()));
-            }
-        }
+        $this->forEachOrganization(function (Organization $org) use ($importer): void {
+            $r = $importer->sync($org);
+            $this->info(sprintf(
+                'Organisation #%d (%s): connections %d, changed %d, linked %d, staged %d, skipped %d, deleted %d, failed %d',
+                $org->id, $org->name, $r['connections'], $r['changed'], $r['linked'], $r['staged'], $r['skipped'], $r['deleted'], $r['failed'],
+            ));
+        });
 
         return self::SUCCESS;
     }

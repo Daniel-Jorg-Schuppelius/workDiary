@@ -15,6 +15,7 @@ namespace App\Services\Invoicing;
 use App\Enums\Numbering\NumberScope;
 use App\Models\{Invoice, Quote, User};
 use App\Services\Numbering\NumberSequenceService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -106,7 +107,7 @@ class QuoteService {
         $token = Str::random(48);
         $quote->update([
             'status' => 'sent',
-            'acceptance_token_hash' => hash('sha256', $token),
+            'acceptance_token_hash' => CryptoHelper::hash($token),
         ]);
         $quote->audit('quote.sent', ['by' => $actor->id]);
 
@@ -127,7 +128,7 @@ class QuoteService {
         if ($quote->status !== 'sent') {
             throw new \RuntimeException((string) __('Nur versendete Angebote können angenommen werden.'));
         }
-        if ($token !== null && hash('sha256', $token) !== $quote->acceptance_token_hash) {
+        if ($token !== null && CryptoHelper::hash($token) !== $quote->acceptance_token_hash) {
             throw new \RuntimeException((string) __('Ungültiges Annahme-Token.'));
         }
 

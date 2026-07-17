@@ -12,66 +12,50 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
 use App\Plugins\Github\Api\GithubClientFactory;
 use App\Plugins\Github\{GithubConfig, GithubPlugin};
 use App\Plugins\Github\Services\GithubIssueImporter;
-use Illuminate\Http\{JsonResponse, Request};
-use Throwable;
+use App\Plugins\Support\GitIssueImport\AbstractGitWebhookController;
+use App\Plugins\Support\WebhookSignature;
+use Illuminate\Http\Request;
 
 /**
  * GitHub-Webhook (Feature 060, MVP-129): stößt einen idempotenten Issue-Import
- * an (Zammad-Muster). Sessionlos und ohne CSRF — Autorisierung ausschließlich
- * über die HMAC-Signatur (`X-Hub-Signature-256: sha256=…`) des Raw-Bodys gegen
- * das je Organisation verschlüsselt hinterlegte Shared-Secret. Der Webhook ist
- * nur ein Anstoß: GitHub liefert nicht automatisch nach (kein Auto-Redelivery),
- * das `since`-Polling ({@see \App\Plugins\Github\Console\GithubSyncCommand})
- * schließt Lücken. Es werden nie Aufgaben gelöscht.
+ * an (Zammad-Muster). Autorisierung ausschließlich über die HMAC-Signatur
+ * (`X-Hub-Signature-256: sha256=…`) des Raw-Bodys gegen das je Organisation
+ * verschlüsselt hinterlegte Shared-Secret. GitHub liefert nicht automatisch
+ * nach (kein Auto-Redelivery), das `since`-Polling
+ * ({@see \App\Plugins\Github\Console\GithubSyncCommand}) schließt Lücken.
  */
-class GithubWebhookController extends Controller {
-    public function __invoke(Request $request, int $setting, GithubClientFactory $factory, GithubIssueImporter $importer): JsonResponse {
-        $row = PluginSetting::query()
-            ->withoutGlobalScopes()
-            ->whereKey($setting)
-            ->where('plugin_id', GithubPlugin::ID)
-            ->first();
+class GithubWebhookController extends AbstractGitWebhookController {
+    public function __construct(
+        private readonly GithubClientFactory $factory,
+        private readonly GithubIssueImporter $importer,
+    ) {}
 
-        $secret = is_string($row?->get('webhook_secret')) ? trim((string) $row->get('webhook_secret')) : '';
-        if ($row === null || ! $row->enabled || $secret === '' || ! GithubConfig::isConfigured((int) $row->organization_id)) {
-            // 404 statt 401: keine Auskunft über Existenz/Zustand der Anbindung.
-            return response()->json(['status' => 'ignored'], 404);
-        }
-
-        if (! $this->signatureValid($request, $secret)) {
-            return response()->json(['status' => 'invalid_signature'], 403);
-        }
-
-        // Org-Kontext für nachgelagerte (scoped) Operationen binden.
-        $org = Organization::query()->whereKey($row->organization_id)->first();
-        if (! $org instanceof Organization) {
-            return response()->json(['status' => 'ignored'], 404);
-        }
-        app()->instance('currentOrganization', $org);
-
-        try {
-            $result = $importer->import($org, $factory->for((int) $org->id));
-        } catch (Throwable) {
-            // Kein Datenverlust: Polling holt nach. 202 = angenommen, aber nicht abgeschlossen.
-            return response()->json(['status' => 'deferred'], 202);
-        }
-
-        return response()->json(['status' => 'ok'] + $result);
+    protected function pluginId(): string {
+        return GithubPlugin::ID;
     }
 
-    /** Konstantzeit-Vergleich der GitHub-Signatur (sha256=HMAC-SHA256(body, secret)). */
-    private function signatureValid(Request $request, string $secret): bool {
-        $header = (string) $request->header('X-Hub-Signature-256', '');
-        if (! str_starts_with($header, 'sha256=')) {
-            return false;
-        }
-        $expected = 'sha256=' . hash_hmac('sha256', $request->getContent(), $secret);
+    protected function credentialKey(): string {
+        return 'webhook_secret';
+    }
 
-        return hash_equals($expected, $header);
+    protected function isConfigured(int $organizationId): bool {
+        return GithubConfig::isConfigured($organizationId);
+    }
+
+    /** GitHub-Signatur: sha256=HMAC-SHA256(body, secret), Konstantzeit-Vergleich. */
+    protected function credentialValid(Request $request, string $credential): bool {
+        return WebhookSignature::hmacValid((string) $request->getContent(), $credential, (string) $request->header('X-Hub-Signature-256', ''), 'sha256', 'sha256=');
+    }
+
+    protected function rejectionStatus(): string {
+        return 'invalid_signature';
+    }
+
+    protected function import(Organization $organization): array {
+        return $this->importer->import($organization, $this->factory->for((int) $organization->id));
     }
 }

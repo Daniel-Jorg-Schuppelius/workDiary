@@ -16,13 +16,12 @@ use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 /**
  * Macht ein Audit-Modell revisionssicher (GoBD): jede Zeile ist über eine
  * SHA-256-Hash-Kette mit ihrer Vorgängerzeile verbunden
  *   hash = SHA-256( prev_hash | kanonische Nutzdaten )
- * und das Modell ist append-only (UPDATE/DELETE werfen).
+ * und das Modell ist append-only ({@see AppendOnly}: UPDATE/DELETE werfen).
  *
  * Nebenläufigkeit: Der Kettenkopf liegt in `audit_chain_heads` (eine Zeile pro
  * Kette). Beim Insert wird diese Zeile per `lockForUpdate` gesperrt, der Hash
@@ -35,19 +34,10 @@ use RuntimeException;
  *
  * @phpstan-consistent-constructor
  *
- * @method static void updating(\Closure $callback)
- * @method static void deleting(\Closure $callback)
  * @method static newFromBuilder(array<string, mixed> $attributes = [], string|null $connection = null)
  */
 trait HashChained {
-    public static function bootHashChained(): void {
-        static::updating(function (): void {
-            throw new RuntimeException(static::class . ' ist append-only und darf nicht geändert werden.');
-        });
-        static::deleting(function (): void {
-            throw new RuntimeException(static::class . ' ist append-only und darf nicht gelöscht werden.');
-        });
-    }
+    use AppendOnly;
 
     /**
      * @return array<string, mixed> Nutzdaten dieser Zeile in fester Reihenfolge.

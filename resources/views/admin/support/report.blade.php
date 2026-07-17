@@ -43,15 +43,7 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Bericht generieren') }}</h2>
 
-            @if ($errors->any())
-                <div class="alert alert-error">
-                    <ul class="text-sm">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            <x-validation-errors />
 
             <form method="POST" action="{{ route('admin.support.report.generate') }}" class="space-y-3">
                 @csrf

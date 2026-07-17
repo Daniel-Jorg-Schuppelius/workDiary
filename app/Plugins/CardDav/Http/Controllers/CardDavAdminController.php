@@ -11,12 +11,13 @@
 namespace App\Plugins\CardDav\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{CardDavCard, CardDavConnection, Organization, User};
+use App\Models\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
 use App\Plugins\CardDav\Services\CardDavAddressbook;
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Support\UrlSafety;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Artisan, Auth};
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -34,6 +35,8 @@ use Throwable;
  * sich keine beliebige URL als Sync-Ziel unterschieben.
  */
 class CardDavAdminController extends Controller {
+    use ResolvesPluginOrgContext;
+
     /** Session-Key der zuletzt entdeckten Adressbücher (Discovery-Ergebnis). */
     private const SESSION_BOOKS = 'carddav_addressbooks';
 
@@ -222,21 +225,5 @@ class CardDavAdminController extends Controller {
         } catch (Throwable) {
             return ['ok' => false];
         }
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
     }
 }

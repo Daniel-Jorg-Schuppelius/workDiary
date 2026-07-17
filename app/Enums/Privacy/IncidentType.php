@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Privacy;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Art eines Datenschutzvorfalls (Verletzung des Schutzes personenbezogener Daten). */
-enum IncidentType: string {
+enum IncidentType: string implements HasLabel {
+    use HasOptions;
+
     case Loss = 'loss';                       // Verlust
     case Misdelivery = 'misdelivery';         // Fehlversand
     case UnauthorizedAccess = 'unauthorized'; // unberechtigter Zugriff

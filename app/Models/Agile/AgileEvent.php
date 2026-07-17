@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Agile;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{AppendOnly, BelongsToOrganization};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property array<string, mixed>|null $payload
  */
 class AgileEvent extends Model {
+    use AppendOnly;
+
     use BelongsToOrganization;
 
     public const UPDATED_AT = null;
@@ -97,15 +99,5 @@ class AgileEvent extends Model {
         }
 
         return self::query()->create($attributes);
-    }
-
-    protected static function booted(): void {
-        // Append-only (Muster weather_snapshots): nie ändern, nie löschen.
-        static::updating(function (): void {
-            throw new \RuntimeException('Agile-Ereignisse sind unveränderlich (append-only).');
-        });
-        static::deleting(function (): void {
-            throw new \RuntimeException('Agile-Ereignisse sind unveränderlich (append-only).');
-        });
     }
 }

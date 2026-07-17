@@ -16,28 +16,28 @@ use App\Enums\User\Permission as P;
 use App\Models\Domain\DomainResellerAccount;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Subuser/Subreseller-Sicht (Feature 083): Portfolio/Salden sehen, Kunden
  * zuordnen und Accounting einsehen. Ein Kundenmapping darf NIE einen
  * Providerbenutzer anlegen/umbenennen/verschieben/löschen.
  */
-class DomainResellerAccountPolicy {
+class DomainResellerAccountPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::DomainViewAny->value);
-    }
-
-    public function view(User $user, DomainResellerAccount $account): bool {
-        return $user->can(P::DomainView->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::DomainViewAny,
+        'view' => P::DomainView,
+        'assignCustomer' => P::DomainCustomerAssign,
+        'viewAccounting' => P::DomainAccountingView,
+    ];
 
     public function assignCustomer(User $user, DomainResellerAccount $account): bool {
-        return $user->can(P::DomainCustomerAssign->value);
+        return $this->allows($user, 'assignCustomer');
     }
 
     public function viewAccounting(User $user, DomainResellerAccount $account): bool {
-        return $user->can(P::DomainAccountingView->value);
+        return $this->allows($user, 'viewAccounting');
     }
 }

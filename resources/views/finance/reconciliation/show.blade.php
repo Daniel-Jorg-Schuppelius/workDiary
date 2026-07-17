@@ -139,8 +139,10 @@
                                     {{ __('bank.split.title') }}
                                     <span class="badge badge-ghost badge-xs">{{ count($txSplit) }}</span>
                                 </div>
+                                {{-- Logik in Alpine.data("reconciliationSplit") (components.js) — CSP-Build-konform. --}}
                                 <form method="POST" action="{{ route('finance.reconciliation.confirm', $transaction->sqid) }}"
-                                      x-data="{ rows: {{ \Illuminate\Support\Js::from($splitRows) }} }">
+                                      x-data="reconciliationSplit"
+                                      data-rows="{{ json_encode($splitRows) }}">
                                     @csrf
                                     <div class="space-y-1">
                                         @foreach ($txSplit as $splitRow)
@@ -174,7 +176,7 @@
                                                 </label>
                                                 <select class="select select-bordered select-xs w-56"
                                                         x-model="rows[{{ $index }}].target"
-                                                        :disabled="!rows[{{ $index }}].picked"
+                                                        :disabled="unpicked({{ $index }})"
                                                         aria-label="{{ __('bank.split.target') }}">
                                                     <option value="">{{ __('bank.split.target_placeholder') }}</option>
                                                     @foreach ($splitTargets as $option)
@@ -182,15 +184,15 @@
                                                     @endforeach
                                                 </select>
                                                 <input type="hidden" name="allocations[{{ $index }}][type]"
-                                                       :value="(rows[{{ $index }}].target || ':').split(':')[0]"
-                                                       :disabled="!rows[{{ $index }}].picked || !rows[{{ $index }}].target">
+                                                       :value="allocType({{ $index }})"
+                                                       :disabled="idle({{ $index }})">
                                                 <input type="hidden" name="allocations[{{ $index }}][id]"
-                                                       :value="(rows[{{ $index }}].target || ':').split(':')[1]"
-                                                       :disabled="!rows[{{ $index }}].picked || !rows[{{ $index }}].target">
+                                                       :value="allocId({{ $index }})"
+                                                       :disabled="idle({{ $index }})">
                                                 <input type="number" step="0.01" min="0.01"
                                                        name="allocations[{{ $index }}][amount]"
                                                        value="{{ number_format(abs($detailSigned), 2, '.', '') }}"
-                                                       :disabled="!rows[{{ $index }}].picked || !rows[{{ $index }}].target"
+                                                       :disabled="idle({{ $index }})"
                                                        class="input input-bordered input-xs w-28"
                                                        aria-label="{{ __('bank.field.amount') }}">
                                             </div>
@@ -202,8 +204,9 @@
                                     </div>
                                 </form>
                             @elseif ($txSuggestions !== [])
+                                {{-- Logik in Alpine.data("reconciliationPick") (components.js) — CSP-Build-konform. --}}
                                 <form method="POST" action="{{ route('finance.reconciliation.confirm', $transaction->sqid) }}"
-                                      x-data="{ picked: { '0': true } }">
+                                      x-data="reconciliationPick">
                                     @csrf
                                     <div class="space-y-1">
                                         @foreach ($txSuggestions as $index => $suggestion)
@@ -224,13 +227,13 @@
                                                 </label>
                                                 <input type="hidden" name="allocations[{{ $index }}][type]"
                                                        value="{{ $target instanceof \App\Models\Invoice ? 'invoice' : 'expense' }}"
-                                                       :disabled="!picked[{{ $index }}]">
+                                                       :disabled="unpicked({{ $index }})">
                                                 <input type="hidden" name="allocations[{{ $index }}][id]" value="{{ $target->sqid }}"
-                                                       :disabled="!picked[{{ $index }}]">
+                                                       :disabled="unpicked({{ $index }})">
                                                 <input type="number" step="0.01" min="0.01"
                                                        name="allocations[{{ $index }}][amount]"
                                                        value="{{ number_format(min((float) $transaction->amount, $suggestion['open_amount']), 2, '.', '') }}"
-                                                       :disabled="!picked[{{ $index }}]"
+                                                       :disabled="unpicked({{ $index }})"
                                                        class="input input-bordered input-xs w-28"
                                                        aria-label="{{ __('bank.field.amount') }}">
                                             </div>

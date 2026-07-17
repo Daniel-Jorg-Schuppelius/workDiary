@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Mengenart einer Stücklisten-/Rezepturposition (Feature 047, MVP-061).
  *
@@ -20,7 +23,9 @@ namespace App\Enums\Manufacturing;
  * - Ratio:   Anteil im Rezept (die Sollmenge wird über alle Ratio-Positionen
  *            gemäß ihrer Anteile aufgeteilt; z. B. Wasser 1 : Pulver 3)
  */
-enum QuantityKind: string {
+enum QuantityKind: string implements HasLabel {
+    use HasOptions;
+
     case Fixed = 'fixed';
     case PerUnit = 'per_unit';
     case Ratio = 'ratio';

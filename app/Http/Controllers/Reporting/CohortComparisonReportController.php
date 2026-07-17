@@ -17,6 +17,7 @@ use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\{Qualification, User};
 use App\Services\Reporting\CohortComparisonBuilder;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -62,7 +63,7 @@ class CohortComparisonReportController extends Controller {
                 $result = $this->builder->build($qualification, $metric, $window);
 
                 if ($request->query('export') === 'csv') {
-                    return $this->exportCsv($result, (string) $qualification->name, $metricOptions[$metric]);
+                    return $this->exportCsv($result, (string) $qualification->name, $metricOptions[$metric], $request);
                 }
             }
         }
@@ -82,7 +83,7 @@ class CohortComparisonReportController extends Controller {
     /**
      * @param  array<string, mixed>  $result
      */
-    private function exportCsv(array $result, string $qualName, string $metricLabelKey): Response {
+    private function exportCsv(array $result, string $qualName, string $metricLabelKey, Request $request): Response {
         /** @var list<array<string, mixed>> $members */
         $members = $result['members'];
 
@@ -95,7 +96,7 @@ class CohortComparisonReportController extends Controller {
             (string) __('reporting.cohort.delta'),
             (string) __('reporting.cohort.improved'),
         ];
-        $num = static fn($v): string => $v === null ? '' : number_format((float) $v, 2, '.', '');
+        $num = static fn($v): string => $v === null ? '' : NumberHelper::toUSFormat((float) $v, 2);
         foreach ($members as $m) {
             $rows[] = [
                 (string) $m['userName'],
@@ -112,6 +113,7 @@ class CohortComparisonReportController extends Controller {
             sprintf('kohorte_%s.csv', preg_replace('/[^a-z0-9]+/i', '_', $qualName)),
             'cohort-comparison',
             ['qualification' => $qualName, 'metric' => (string) __($metricLabelKey)],
+            $request,
         );
     }
 }

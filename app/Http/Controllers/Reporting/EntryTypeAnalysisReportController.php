@@ -17,6 +17,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\{Customer, EntryType, User};
 use App\Services\Reporting\EntryTypeAnalysisReportBuilder;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -31,8 +32,7 @@ class EntryTypeAnalysisReportController extends Controller {
 
     public function index(Request $request): View|Response|SymfonyResponse {
         $range = $this->globalDateRange();
-        $from = $range['from']->startOfDay();
-        $to = $range['to']->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $rawCustomerId = $request->query('customer_id');
         $rawUserId = $request->query('user_id');
@@ -57,15 +57,11 @@ class EntryTypeAnalysisReportController extends Controller {
         ];
 
         if ($request->query('export') === 'csv') {
-            $this->auditExport($request, 'entry-types-analysis', 'csv', $exportContext);
-
-            return $this->exportCsv($rows, $from->toDateString(), $to->toDateString(), $exportContext);
+            return $this->exportCsv($rows, $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         if ($request->query('export') === 'pdf') {
-            $this->auditExport($request, 'entry-types-analysis', 'pdf', $exportContext);
-
-            return $this->exportPdf($rows, $range['label'], $from->toDateString(), $to->toDateString());
+            return $this->exportPdf($rows, $range['label'], $from->toDateString(), $to->toDateString(), $exportContext, $request);
         }
 
         return view('reports.entry-types', [
@@ -109,7 +105,7 @@ class EntryTypeAnalysisReportController extends Controller {
      * }>             $rows
      * @param  array<string, mixed>  $filters
      */
-    private function exportCsv(array $rows, string $from, string $to, array $filters): Response {
+    private function exportCsv(array $rows, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('auftragstypanalyse_%s_%s.csv', $from, $to);
 
         $out = [];
@@ -134,22 +130,22 @@ class EntryTypeAnalysisReportController extends Controller {
             $out[] = [
                 $row['entryTypeName'],
                 $row['entryCount'],
-                number_format((float) $row['avgPlannedMinutes'], 2, '.', ''),
-                number_format((float) $row['avgActualMinutes'], 2, '.', ''),
-                $row['planActualRatio'] === null ? '' : number_format((float) $row['planActualRatio'], 3, '.', ''),
+                NumberHelper::toUSFormat((float) $row['avgPlannedMinutes'], 2),
+                NumberHelper::toUSFormat((float) $row['avgActualMinutes'], 2),
+                $row['planActualRatio'] === null ? '' : NumberHelper::toUSFormat((float) $row['planActualRatio'], 3),
                 $row['overrunCount'],
-                number_format((float) $row['overrunShare'], 2, '.', ''),
+                NumberHelper::toUSFormat((float) $row['overrunShare'], 2),
                 $row['reworkCount'],
-                number_format((float) $row['reworkShare'], 2, '.', ''),
+                NumberHelper::toUSFormat((float) $row['reworkShare'], 2),
                 $row['escalationCount'],
-                number_format((float) $row['escalationShare'], 2, '.', ''),
-                number_format((float) $row['firstTimeRightShare'], 2, '.', ''),
-                number_format((float) $row['medianActualMinutes'], 2, '.', ''),
-                number_format((float) $row['p90ActualMinutes'], 2, '.', ''),
+                NumberHelper::toUSFormat((float) $row['escalationShare'], 2),
+                NumberHelper::toUSFormat((float) $row['firstTimeRightShare'], 2),
+                NumberHelper::toUSFormat((float) $row['medianActualMinutes'], 2),
+                NumberHelper::toUSFormat((float) $row['p90ActualMinutes'], 2),
             ];
         }
 
-        return $this->csvWithMetadata($out, $filename, 'entry-types-analysis', $filters);
+        return $this->csvWithMetadata($out, $filename, 'entry-types-analysis', $filters, $request);
     }
 
     /**
@@ -170,14 +166,15 @@ class EntryTypeAnalysisReportController extends Controller {
      *   medianActualMinutes:float,
      *   p90ActualMinutes:float
      * }>  $rows
+     * @param  array<string, mixed>  $filters
      */
-    private function exportPdf(array $rows, string $label, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $rows, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {
         $filename = sprintf('auftragstypanalyse_%s_%s.pdf', $from, $to);
 
         return $this->pdfDownload('reports.pdf.entry-types', [
             'rows' => $rows,
             'label' => $label,
-        ], $filename, 'landscape');
+        ], $filename, 'landscape', $request, 'entry-types-analysis', $filters);
     }
 
     /**

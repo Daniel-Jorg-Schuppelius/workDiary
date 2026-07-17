@@ -44,9 +44,7 @@ class ProblemController extends Controller {
             $query->where('status', $status);
         }
         if ($q !== '') {
-            $query->where(fn($builder) => $builder
-                ->whereLikeEscaped('title', $q)
-                ->orWhereLikeEscaped('description', $q));
+            $query->search($q);
         }
 
         return view('helpdesk.problems.index', [

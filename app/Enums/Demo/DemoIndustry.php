@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Demo;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Musterbranchen für Demo-Mandanten (Feature 040).
  *
@@ -22,7 +25,9 @@ namespace App\Enums\Demo;
  *
  * Bewusst generisch gehalten (keine echten Personen/Firmen).
  */
-enum DemoIndustry: string {
+enum DemoIndustry: string implements HasLabel {
+    use HasOptions;
+
     case ItService = 'it-service';
     case Elektro = 'elektro';
     case Facility = 'facility';

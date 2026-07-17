@@ -14,6 +14,7 @@ use App\Enums\Domain\{DomainRenewalMode, DomainSyncStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -102,7 +103,7 @@ class DomainProjection extends Model {
 
     /** Deterministischer Hash für Unique/Lookup (lower-case Domainname). */
     public static function hashFor(string $domain): string {
-        return hash('sha256', mb_strtolower(trim($domain)));
+        return CryptoHelper::hash(mb_strtolower(trim($domain)));
     }
 
     /** @return BelongsTo<DomainProviderConnection, $this> */

@@ -12,9 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Whistleblowing;
 
-use App\Models\Organization;
-use Spatie\Permission\Models\{Permission, Role};
-use Spatie\Permission\PermissionRegistrar;
+use App\Services\Concerns\SeedsIsolatedPermissionSet;
 
 /**
  * Single Source of Truth fuer die Hinweisgeber-Permissions. BEWUSST getrennt
@@ -25,7 +23,12 @@ use Spatie\Permission\PermissionRegistrar;
  * Personen.
  */
 final class WhistleblowingPermissions {
+    use SeedsIsolatedPermissionSet;
+
     public const ROLE_MELDESTELLE = 'meldestelle';
+
+    /** Trait-Vertrag ({@see SeedsIsolatedPermissionSet}). */
+    public const ROLE = self::ROLE_MELDESTELLE;
 
     /** @var list<string> */
     public const ALL = [
@@ -42,31 +45,4 @@ final class WhistleblowingPermissions {
         'whistleblowing.case.retention',
         'whistleblowing.audit.view',
     ];
-
-    /** Legt die Permissions global (team-unabhaengig, guard web) an. Idempotent. */
-    public static function ensurePermissionsExist(): void {
-        foreach (self::ALL as $name) {
-            Permission::findOrCreate($name, 'web');
-        }
-    }
-
-    /**
-     * Legt fuer eine Organisation die Rolle `meldestelle` mit allen Fall-
-     * Permissions an (team_id = organization.id). Idempotent.
-     */
-    public static function seedOrganization(Organization $organization, ?PermissionRegistrar $registrar = null): void {
-        $registrar ??= app(PermissionRegistrar::class);
-        self::ensurePermissionsExist();
-
-        $registrar->setPermissionsTeamId($organization->id);
-        $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
-
-        /** @var Role $role */
-        $role = Role::query()->firstOrCreate([
-            $teamForeign => $organization->id,
-            'name' => self::ROLE_MELDESTELLE,
-            'guard_name' => 'web',
-        ]);
-        $role->syncPermissions(self::ALL);
-    }
 }

@@ -37,7 +37,7 @@
             <span class="fieldset-label">{{ __('ai.capability.allowed') }}</span>
             @forelse ($connections as $connection)
                 <label class="label cursor-pointer justify-start gap-3">
-                    <input type="checkbox" name="allowed_connection_ids[]" value="{{ $connection->id }}"
+                    <input type="checkbox" name="allowed_connection_ids[]" value="{{ $connection->sqid }}"
                            class="checkbox checkbox-sm"
                            @checked(in_array((int) $connection->id, array_map('intval', (array) ($setting?->allowed_connection_ids ?? [])), true))>
                     <span class="label-text">
@@ -58,8 +58,8 @@
             <select id="ai-cap-default" name="default_connection_id" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($connections as $connection)
-                    <option value="{{ $connection->id }}"
-                            @selected((int) old('default_connection_id', $setting?->default_connection_id ?? 0) === (int) $connection->id)>
+                    <option value="{{ $connection->sqid }}"
+                            @selected((string) old('default_connection_id', \App\Support\Sqid::encode(\App\Models\Ai\AiProviderConnection::class, $setting?->default_connection_id)) === $connection->sqid)>
                         {{ $connection->name }}
                     </option>
                 @endforeach

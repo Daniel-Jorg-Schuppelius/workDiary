@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Services\Inventory\ValuationBackfillService;
 use Illuminate\Console\Command;
 
@@ -22,16 +22,14 @@ use Illuminate\Console\Command;
  * Bewertung. Idempotent.
  */
 class InitValuationLayersCommand extends Command {
+    use IteratesOrganizations;
+
     protected $signature = 'inventory:init-valuation-layers {--org= : Organisations-ID (sonst alle)}';
 
     protected $description = 'Erzeugt initiale Bewertungsschichten aus dem gleitenden Durchschnitt (FIFO/FEFO-Umstellung)';
 
     public function handle(ValuationBackfillService $backfill): int {
-        $orgId = $this->option('org');
-
-        $organizations = $orgId !== null
-            ? Organization::query()->withoutGlobalScopes()->whereKey((int) $orgId)->get()
-            : Organization::query()->withoutGlobalScopes()->get();
+        $organizations = $this->organizationsToProcess('org', fn ($q) => $q->withoutGlobalScopes());
 
         $total = 0;
         foreach ($organizations as $organization) {

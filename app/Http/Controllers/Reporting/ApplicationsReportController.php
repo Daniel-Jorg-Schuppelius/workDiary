@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationOpportunity, JobApplication};
 use App\Models\User;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -40,16 +41,16 @@ class ApplicationsReportController extends Controller {
         $canRecruiting = $user->can(P::RecruitingViewAny->value);
         abort_unless($canTender || $canRecruiting, 403);
 
-        $range = $this->globalDateRange();
-        $from = $range['from']->toDateString();
-        $to = $range['to']->toDateString();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
+        $from = $fromDate->toDateString();
+        $to = $toDate->toDateString();
 
         $tenders = $canTender ? $this->aggregateTenders($from, $to) : null;
         $recruiting = $canRecruiting ? $this->aggregateRecruiting($from, $to) : null;
         $contracts = $this->aggregateContracts(); // Guard oben: mindestens ein Bereich sichtbar
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($tenders, $recruiting, $contracts, $from, $to);
+            return $this->exportCsv($tenders, $recruiting, $contracts, $from, $to, $request);
         }
 
         return view('reports.applications', [
@@ -144,10 +145,10 @@ class ApplicationsReportController extends Controller {
      * @param array{pipeline: array<string, int>, sources: array<string, int>, avg_days_to_accept: float|null}|null $recruiting
      * @param array{open: int, open_blockers: int, due_soon: int}|null $contracts
      */
-    private function exportCsv(?array $tenders, ?array $recruiting, ?array $contracts, string $from, string $to): Response {
+    private function exportCsv(?array $tenders, ?array $recruiting, ?array $contracts, string $from, string $to, Request $request): Response {
         $rows = [['Bereich', 'Schlüssel', 'Anzahl', 'Wert €']];
         foreach (($tenders['pipeline'] ?? []) as $status => $row) {
-            $rows[] = ['Ausschreibungen', $status, $row['count'], number_format($row['value'], 2, '.', '')];
+            $rows[] = ['Ausschreibungen', $status, $row['count'], NumberHelper::toUSFormat((float) $row['value'], 2)];
         }
         if ($tenders !== null) {
             $rows[] = ['Ausschreibungen', 'TREFFERQUOTE_%', $tenders['win_rate'] ?? '', ''];
@@ -167,6 +168,6 @@ class ApplicationsReportController extends Controller {
             $rows[] = ['Verträge', 'fällig ≤ 14 Tage', $contracts['due_soon'], ''];
         }
 
-        return $this->csvWithMetadata($rows, sprintf('applications_%s_%s.csv', $from, $to), 'applications', ['from' => $from, 'to' => $to]);
+        return $this->csvWithMetadata($rows, sprintf('applications_%s_%s.csv', $from, $to), 'applications', ['from' => $from, 'to' => $to], $request);
     }
 }

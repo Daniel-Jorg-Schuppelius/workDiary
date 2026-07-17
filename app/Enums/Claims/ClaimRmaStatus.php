@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** RMA-/Rückläuferstatus (MVP-250). */
-enum ClaimRmaStatus: string {
+enum ClaimRmaStatus: string implements HasLabel {
+    use HasOptions;
+
     case Announced = 'announced';
     case Received = 'received';
     case Inspecting = 'inspecting';

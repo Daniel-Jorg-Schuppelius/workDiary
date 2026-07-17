@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Manufacturing;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status einer Ersatzmaterial-Abweichung (Feature 048, Fehlmaterialprozess).
  */
-enum SubstituteStatus: string {
+enum SubstituteStatus: string implements HasLabel {
+    use HasOptions;
+
     case Requested = 'requested';
     case Approved = 'approved';
     case Rejected = 'rejected';

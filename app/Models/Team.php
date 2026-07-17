@@ -10,12 +10,12 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasSqid, Searchable};
 use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
-use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Carbon;
 
 /**
  * Operatives Arbeits-Team innerhalb einer Organisation. Bündelt Mitarbeiter
@@ -37,11 +37,13 @@ use Illuminate\Support\{Carbon, Str};
 class Team extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use GeneratesUniqueSlug;
 
     /** @use HasFactory<TeamFactory> */
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -67,21 +69,15 @@ class Team extends Model {
     }
 
     public static function uniqueSlug(string $name, int $organizationId, ?int $ignoreId = null): string {
-        $base = Str::slug($name) ?: 'team';
-        $slug = $base;
-        $i = 2;
-        while (
+        return self::resolveUniqueSlug($name, 'team', fn(string $slug): bool =>
+            // TENANT-BYPASS: ohne Global Scope, weil $organizationId explizit übergeben wird;
+            // der explizite where('organization_id', ...) erhält die Mandantengrenze.
             static::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('slug', $slug)
-                ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-                ->exists()
-        ) {
-            $slug = $base . '-' . $i++;
-        }
-
-        return $slug;
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->where('slug', $slug)
+            ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
+            ->exists());
     }
 
     /**
@@ -107,5 +103,10 @@ class Team extends Model {
     /** @return BelongsToMany<Project, $this> */
     public function projects(): BelongsToMany {
         return $this->belongsToMany(Project::class, 'project_team')->withTimestamps();
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'description'];
     }
 }

@@ -45,14 +45,11 @@
             <form method="POST" action="{{ route('users.flex-eligibility.store', $member) }}"
                   class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mt-2">
                 @csrf
-                <x-form-group :label="__('flex.eligibility.form.valid_from')" name="valid_from" required>
-                    <input type="date" name="valid_from" value="{{ old('valid_from', now()->toDateString()) }}"
-                           class="input input-bordered w-full" required />
-                </x-form-group>
-                <x-form-group :label="__('flex.eligibility.form.valid_to')" name="valid_to">
-                    <input type="date" name="valid_to" value="{{ old('valid_to') }}"
-                           class="input input-bordered w-full" />
-                </x-form-group>
+                <x-date-range class="md:col-span-2" layout="split" form-control size="md"
+                              from-name="valid_from" to-name="valid_to" from-required
+                              :from="old('valid_from', now()->toDateString())" :to="old('valid_to')"
+                              :from-label="__('flex.eligibility.form.valid_from')"
+                              :to-label="__('flex.eligibility.form.valid_to')" />
                 <x-form-group :label="__('flex.eligibility.form.note')" name="note" class="md:col-span-2">
                     <input type="text" name="note" value="{{ old('note') }}" maxlength="500"
                            class="input input-bordered w-full" />

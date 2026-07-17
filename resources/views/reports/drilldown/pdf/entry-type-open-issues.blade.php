@@ -1,4 +1,4 @@
-@extends('reports.drilldown.pdf.layout')
+@extends('reports.pdf.layout')
 
 @section('pdf-title', 'Auftragstyp Drilldown - Offene Punkte')
 @section('pdf-heading', 'Auftragstyp Drilldown: Offene Punkte')

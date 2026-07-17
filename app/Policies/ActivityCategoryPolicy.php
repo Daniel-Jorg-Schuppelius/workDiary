@@ -10,29 +10,16 @@
 
 namespace App\Policies;
 
-use App\Models\{ActivityCategory, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class ActivityCategoryPolicy {
+class ActivityCategoryPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return true;
-    }
-
-    public function view(User $user, ActivityCategory $c): bool {
-        return true;
-    }
-
-    public function create(User $user): bool {
-        return false; // only admin via before-hook
-    }
-
-    public function update(User $user, ActivityCategory $c): bool {
-        return false;
-    }
-
-    public function delete(User $user, ActivityCategory $c): bool {
-        return false;
-    }
+    protected const ABILITIES = [
+        'viewAny' => true,
+        'view' => true,
+        'create' => false, // Pflege nur Admin (before-Hook)
+        'update' => false,
+        'delete' => false,
+    ];
 }

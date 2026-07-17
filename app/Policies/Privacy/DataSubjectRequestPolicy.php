@@ -14,6 +14,7 @@ namespace App\Policies\Privacy;
 
 use App\Models\Privacy\DataSubjectRequest;
 use App\Models\User;
+use App\Policies\Concerns\ChecksOwnership;
 
 /**
  * Zugriff auf Betroffenenanfragen. BEWUSST OHNE Admin-Bypass: die Rechte
@@ -22,16 +23,14 @@ use App\Models\User;
  * organisationsgebunden.
  */
 class DataSubjectRequestPolicy {
-    private function sameOrg(User $user, DataSubjectRequest $request): bool {
-        return (int) $user->organization_id === (int) $request->organization_id;
-    }
+    use ChecksOwnership;
 
     public function viewAny(User $user): bool {
         return $user->can('dataprotection.dsr.manage');
     }
 
     public function view(User $user, DataSubjectRequest $request): bool {
-        return $this->sameOrg($user, $request) && $user->can('dataprotection.dsr.manage');
+        return $this->sharesOrganization($user, $request) && $user->can('dataprotection.dsr.manage');
     }
 
     public function create(User $user): bool {
@@ -39,14 +38,14 @@ class DataSubjectRequestPolicy {
     }
 
     public function update(User $user, DataSubjectRequest $request): bool {
-        return $this->sameOrg($user, $request) && $user->can('dataprotection.dsr.manage');
+        return $this->sharesOrganization($user, $request) && $user->can('dataprotection.dsr.manage');
     }
 
     public function assign(User $user, DataSubjectRequest $request): bool {
-        return $this->sameOrg($user, $request) && $user->can('dataprotection.dsr.assign');
+        return $this->sharesOrganization($user, $request) && $user->can('dataprotection.dsr.assign');
     }
 
     public function export(User $user, DataSubjectRequest $request): bool {
-        return $this->sameOrg($user, $request) && $user->can('dataprotection.export');
+        return $this->sharesOrganization($user, $request) && $user->can('dataprotection.export');
     }
 }

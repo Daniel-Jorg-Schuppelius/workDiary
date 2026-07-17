@@ -12,55 +12,49 @@ declare(strict_types=1);
 
 namespace App\Plugins\Gitlab\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\{Organization, PluginSetting};
+use App\Models\Organization;
 use App\Plugins\Gitlab\Api\GitlabClientFactory;
 use App\Plugins\Gitlab\{GitlabConfig, GitlabPlugin};
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
-use Illuminate\Http\{JsonResponse, Request};
-use Throwable;
+use App\Plugins\Support\GitIssueImport\AbstractGitWebhookController;
+use App\Plugins\Support\WebhookSignature;
+use Illuminate\Http\Request;
 
 /**
  * GitLab-Webhook (Feature 060, MVP-129): stößt einen idempotenten Issue-Import
- * an (Zammad-Muster). Sessionlos und ohne CSRF — Autorisierung ausschließlich
- * über den statischen `X-Gitlab-Token`-Header (Konstantzeit-Vergleich) gegen
- * das je Organisation verschlüsselt hinterlegte Secret. Der Webhook ist nur
- * ein Anstoß: GitLab deaktiviert Hooks nach wiederholten Fehlern selbst — das
- * `updated_after`-Polling ({@see \App\Plugins\Gitlab\Console\GitlabSyncCommand})
- * schließt jede Lücke. Es werden nie Aufgaben gelöscht.
+ * an (Zammad-Muster). Autorisierung ausschließlich über den statischen
+ * `X-Gitlab-Token`-Header (Konstantzeit-Vergleich) gegen das je Organisation
+ * verschlüsselt hinterlegte Secret. GitLab deaktiviert Hooks nach wiederholten
+ * Fehlern selbst — das `updated_after`-Polling
+ * ({@see \App\Plugins\Gitlab\Console\GitlabSyncCommand}) schließt jede Lücke.
  */
-class GitlabWebhookController extends Controller {
-    public function __invoke(Request $request, int $setting, GitlabClientFactory $factory, GitlabIssueImporter $importer): JsonResponse {
-        $row = PluginSetting::query()
-            ->withoutGlobalScopes()
-            ->whereKey($setting)
-            ->where('plugin_id', GitlabPlugin::ID)
-            ->first();
+class GitlabWebhookController extends AbstractGitWebhookController {
+    public function __construct(
+        private readonly GitlabClientFactory $factory,
+        private readonly GitlabIssueImporter $importer,
+    ) {}
 
-        $token = is_string($row?->get('webhook_token')) ? trim((string) $row->get('webhook_token')) : '';
-        if ($row === null || ! $row->enabled || $token === '' || ! GitlabConfig::isConfigured((int) $row->organization_id)) {
-            // 404 statt 401: keine Auskunft über Existenz/Zustand der Anbindung.
-            return response()->json(['status' => 'ignored'], 404);
-        }
+    protected function pluginId(): string {
+        return GitlabPlugin::ID;
+    }
 
-        if (! hash_equals($token, (string) $request->header('X-Gitlab-Token', ''))) {
-            return response()->json(['status' => 'invalid_token'], 403);
-        }
+    protected function credentialKey(): string {
+        return 'webhook_token';
+    }
 
-        // Org-Kontext für nachgelagerte (scoped) Operationen binden.
-        $org = Organization::query()->whereKey($row->organization_id)->first();
-        if (! $org instanceof Organization) {
-            return response()->json(['status' => 'ignored'], 404);
-        }
-        app()->instance('currentOrganization', $org);
+    protected function isConfigured(int $organizationId): bool {
+        return GitlabConfig::isConfigured($organizationId);
+    }
 
-        try {
-            $result = $importer->import($org, $factory->for((int) $org->id));
-        } catch (Throwable) {
-            // Kein Datenverlust: Polling holt nach. 202 = angenommen, aber nicht abgeschlossen.
-            return response()->json(['status' => 'deferred'], 202);
-        }
+    protected function credentialValid(Request $request, string $credential): bool {
+        return WebhookSignature::tokenValid($credential, (string) $request->header('X-Gitlab-Token', ''));
+    }
 
-        return response()->json(['status' => 'ok'] + $result);
+    protected function rejectionStatus(): string {
+        return 'invalid_token';
+    }
+
+    protected function import(Organization $organization): array {
+        return $this->importer->import($organization, $this->factory->for((int) $organization->id));
     }
 }

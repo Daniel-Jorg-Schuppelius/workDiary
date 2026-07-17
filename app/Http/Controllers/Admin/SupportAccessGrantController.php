@@ -78,6 +78,11 @@ class SupportAccessGrantController extends Controller {
 
         $organization = $this->currentOrganization();
 
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('granted_to_user_id')) {
+            $request->merge(['granted_to_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('granted_to_user_id'))]);
+        }
+
         $data = $request->validate([
             'scope' => ['required', 'in:' . SupportAccessGrant::SCOPE_READ_ONLY . ',' . SupportAccessGrant::SCOPE_FULL],
             'purpose' => ['required', 'string', 'max:300'],

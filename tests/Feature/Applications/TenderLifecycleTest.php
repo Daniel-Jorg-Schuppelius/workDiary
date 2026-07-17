@@ -15,7 +15,6 @@ use App\Models\Applications\ApplicationOpportunity;
 use App\Models\{Customer, Project, User};
 use App\Services\Applications\TenderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -34,19 +33,6 @@ final class TenderLifecycleTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
-    }
-
-    private function userWithRole(string $role): User {
-        $user = User::factory()->create(['organization_id' => $this->organization->id]);
-        $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($this->organization->id);
-        $orgRole = Role::query()->where('name', $role)->where('team_id', $this->organization->id)->firstOrFail();
-        $user->syncRoles([$orgRole]);
-        $registrar->forgetCachedPermissions();
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user;
     }
 
     public function test_full_lifecycle_from_capture_to_project_transfer(): void {

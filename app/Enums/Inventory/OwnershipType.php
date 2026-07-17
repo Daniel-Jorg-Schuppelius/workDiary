@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Inventory;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Eigentums-/Verwendungsbindung von Bestand (Feature 048, MVP-067). Bestände
  * unterschiedlicher Eigentumsarten dürfen nicht still zusammengefasst oder
  * gegeneinander verbraucht werden.
  */
-enum OwnershipType: string {
+enum OwnershipType: string implements HasLabel {
+    use HasOptions;
+
     case Own = 'own';
     case Customer = 'customer';
     case Consignment = 'consignment';

@@ -12,7 +12,12 @@ declare(strict_types=1);
 
 namespace App\Enums\DocumentDesign;
 
-enum InformationBlockState: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum InformationBlockState: string implements HasLabel {
+    use HasOptions;
+
     case Dynamic = 'dynamic';
     case ProvidedByLetterhead = 'provided_by_letterhead';
     case NotApplicable = 'not_applicable';

@@ -15,6 +15,7 @@ namespace App\Services\Applications;
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationContractVersion, ApplicationOpportunity, JobApplication};
 use App\Models\User;
 use App\Services\ServiceTicket\ApprovalService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -81,7 +82,7 @@ class ContractNegotiationService {
                 'summary' => $summary,
                 'conditions' => $payload,
                 'document_id' => $documentId,
-                'sha256' => $payload !== null ? hash('sha256', $payload) : null,
+                'sha256' => CryptoHelper::hash($payload), // null-sicher: null → null
                 'created_by' => $actor->id,
             ]);
 

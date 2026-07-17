@@ -10,7 +10,12 @@
 
 namespace App\Enums\Protocol;
 
-enum ProtocolItemPhotoPhase: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ProtocolItemPhotoPhase: string implements HasLabel {
+    use HasOptions;
+
     case Before = 'before';
     case After = 'after';
     case Detail = 'detail';

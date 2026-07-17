@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\Todoist\Console;
 
+use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Organization, TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistSyncService};
 use App\Plugins\Todoist\TodoistConfig;
 use Illuminate\Console\Command;
-use Throwable;
 
 /**
  * Polling-Abgleich als verlässliche Quelle (Feature 055, MVP-115): läuft
@@ -29,8 +29,9 @@ use Throwable;
  * bleibt der Cursor unverändert — der nächste Lauf setzt dort wieder auf.
  */
 class TodoistSyncCommand extends Command {
-    protected $signature = 'todoist:sync
-        {--organization= : ID einer einzelnen Organisation, sonst alle}
+    use IteratesOrganizations;
+
+    protected $signature = 'todoist:sync ' . self::ORGANIZATION_OPTION . '
         {--full : Vollabgleich erzwingen (ignoriert den Sync-Cursor)}';
 
     protected $description = 'Gleicht Todoist-Aufgaben je Organisation ab (cursor-basiertes Delta, --full erzwingt Vollabgleich).';
@@ -42,36 +43,23 @@ class TodoistSyncCommand extends Command {
             return self::SUCCESS;
         }
 
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        foreach ($query->get() as $org) {
+        // Bei Abbruch bleibt der Cursor unverändert — Wiederanlauf am selben Stand.
+        $this->forEachOrganization(function (Organization $org) use ($imports, $sync): void {
             $connection = TodoistConnection::query()->withoutGlobalScopes()
                 ->where('organization_id', $org->id)
                 ->first();
             if (! $connection instanceof TodoistConnection || ! $connection->isActive()) {
-                continue;
+                return;
             }
 
-            // Org-Kontext für nachgelagerte (scoped) Operationen binden.
-            app()->instance('currentOrganization', $org);
-
-            try {
-                $counters = $this->syncOrganization($org, $connection, $imports, $sync);
-                $this->info(sprintf(
-                    'Organisation #%d (%s): created %d, updated %d, unchanged %d, conflicts %d, inbox %d, failed %d',
-                    $org->id, $org->name,
-                    $counters['created'], $counters['updated'], $counters['unchanged'],
-                    $counters['conflicts'], $counters['inbox'], $counters['failed'],
-                ));
-            } catch (Throwable $e) {
-                // Cursor bleibt unverändert — Wiederanlauf am selben Stand.
-                $this->error(sprintf('Organisation #%d (%s): Abbruch — %s', $org->id, $org->name, $e->getMessage()));
-            }
-        }
+            $counters = $this->syncOrganization($org, $connection, $imports, $sync);
+            $this->info(sprintf(
+                'Organisation #%d (%s): created %d, updated %d, unchanged %d, conflicts %d, inbox %d, failed %d',
+                $org->id, $org->name,
+                $counters['created'], $counters['updated'], $counters['unchanged'],
+                $counters['conflicts'], $counters['inbox'], $counters['failed'],
+            ));
+        });
 
         return self::SUCCESS;
     }

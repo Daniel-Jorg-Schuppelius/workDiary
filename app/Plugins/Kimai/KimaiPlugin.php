@@ -15,6 +15,7 @@ use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
 use App\Plugins\Kimai\Sources\KimaiApiClient;
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 
 /**
  * Kimai-Plugin (Migrationsimport MVP-134 + API-Rückkanal).
@@ -54,13 +55,11 @@ class KimaiPlugin implements Plugin, TimeImporter {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 

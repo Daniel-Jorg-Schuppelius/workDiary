@@ -10,15 +10,15 @@
 
 namespace App\Plugins\Sharepoint\Http\Controllers;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
-use App\Models\{Organization, SharepointConnection, User};
+use App\Models\SharepointConnection;
 use App\Plugins\Sharepoint\Api\{SharepointDriveClient, SharepointOAuth};
 use App\Plugins\Sharepoint\SharepointConfig;
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\OAuthStateHandshake;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Artisan, Auth, Cache};
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -31,7 +31,7 @@ use Throwable;
  * (kein Unterschieben fremder IDs); Ordnerregeln wie die WebDAV-Ablage.
  */
 class SharepointAdminController extends Controller {
-    private const STATE_TTL_SECONDS = 600;
+    use ResolvesPluginOrgContext;
 
     public function index(Request $request): View {
         $admin = $this->admin();
@@ -92,13 +92,7 @@ class SharepointAdminController extends Controller {
             return back()->with('error', __('sharepoint.flash.not_configured'));
         }
 
-        $state = Str::random(40);
-        $verifier = OAuth2AuthorizationCodeGrant::generatePkceVerifier();
-        Cache::put($this->stateKey($state), [
-            'organization_id' => (int) $organization->id,
-            'user_id' => (int) $admin->id,
-            'pkce_verifier' => $verifier,
-        ], self::STATE_TTL_SECONDS);
+        ['state' => $state, 'verifier' => $verifier] = $this->handshake()->start((int) $organization->id, (int) $admin->id);
 
         $url = $oauth->grant()->getAuthorizationUrl($state, $oauth->scopes(), pkceVerifier: $verifier);
 
@@ -110,14 +104,11 @@ class SharepointAdminController extends Controller {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
-        $state = (string) $request->query('state', '');
         $code = (string) $request->query('code', '');
 
-        // Einmalig einlösen: pull() entfernt den state sofort (Replay-Schutz).
-        $payload = $state !== '' ? Cache::pull($this->stateKey($state)) : null;
-        if (! is_array($payload)
-            || (int) ($payload['organization_id'] ?? 0) !== (int) $organization->id
-            || (int) ($payload['user_id'] ?? 0) !== (int) $admin->id) {
+        // Einmalig einlösen (Replay-Schutz), org- und sitzungsgebunden.
+        $payload = $this->handshake()->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
+        if ($payload === null) {
             return redirect()->route('admin.sharepoint.index')->with('error', __('sharepoint.flash.state_invalid'));
         }
 
@@ -126,7 +117,7 @@ class SharepointAdminController extends Controller {
         }
 
         try {
-            $token = $oauth->grant()->exchangeAuthorizationCode($code, (string) ($payload['pkce_verifier'] ?? '') ?: null);
+            $token = $oauth->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
         } catch (Throwable $e) {
             // Nur die Fehlerklasse — nie Payload/Token.
             return redirect()->route('admin.sharepoint.index')
@@ -289,23 +280,7 @@ class SharepointAdminController extends Controller {
         return $map;
     }
 
-    private function stateKey(string $state): string {
-        return 'sharepoint-oauth-state:' . $state;
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
+    private function handshake(): OAuthStateHandshake {
+        return new OAuthStateHandshake('sharepoint-oauth-state');
     }
 }

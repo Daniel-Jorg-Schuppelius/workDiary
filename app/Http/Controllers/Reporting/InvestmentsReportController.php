@@ -18,6 +18,7 @@ use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
 use App\Models\User;
 use App\Services\Investments\InvestmentService;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -59,14 +60,14 @@ class InvestmentsReportController extends Controller {
                     $row['case']->title,
                     $row['case']->status,
                     $row['case']->costCenterDisplay() ?? '',
-                    number_format($row['projection']['approved'], 2, '.', ''),
-                    number_format($row['projection']['committed'], 2, '.', ''),
-                    number_format($row['projection']['actual'], 2, '.', ''),
-                    $row['projection']['remaining'] !== null ? number_format($row['projection']['remaining'], 2, '.', '') : '',
+                    NumberHelper::toUSFormat((float) $row['projection']['approved'], 2),
+                    NumberHelper::toUSFormat((float) $row['projection']['committed'], 2),
+                    NumberHelper::toUSFormat((float) $row['projection']['actual'], 2),
+                    $row['projection']['remaining'] !== null ? NumberHelper::toUSFormat((float) $row['projection']['remaining'], 2) : '',
                 ];
             }
 
-            return $this->csvWithMetadata($csv, 'investments.csv', 'investments', []);
+            return $this->csvWithMetadata($csv, 'investments.csv', 'investments', [], $request);
         }
 
         return view('reports.investments', [

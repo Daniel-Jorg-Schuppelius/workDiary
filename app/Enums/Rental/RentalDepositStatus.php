@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Enums\Rental;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Kautions-Lebenszyklus (D10: eigener Finanzvorgang, kein Mietumsatz).
  */
-enum RentalDepositStatus: string {
+enum RentalDepositStatus: string implements HasLabel {
+    use HasOptions;
+
     case Requested = 'requested';
     case Received = 'received';
     case Refunded = 'refunded';

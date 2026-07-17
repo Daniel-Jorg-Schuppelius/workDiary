@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Nachrichtentyp (Feature 065, MVP-152) — Typfrage, keine Flagfrage:
  * öffentlich vs. intern ist technisch unverwechselbar; NUR public_reply
  * darf die Versand-Pipeline betreten.
  */
-enum TicketMessageKind: string {
+enum TicketMessageKind: string implements HasLabel {
+    use HasOptions;
+
     case PublicReply = 'public_reply';
     case InternalNote = 'internal_note';
     case SystemEvent = 'system_event';

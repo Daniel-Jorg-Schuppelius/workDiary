@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Organization, Qualification, User};
+use App\Models\{Organization, Qualification};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -24,14 +24,6 @@ class QualificationTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function regularUser(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     // ── Zugriffskontrolle ────────────────────────────────────────────────────
 
     public function test_guest_cannot_access_qualifications(): void {
@@ -39,14 +31,14 @@ class QualificationTest extends TestCase {
     }
 
     public function test_org_member_can_view_index(): void {
-        $this->actingAs($this->regularUser())
+        $this->actingAs($this->orgUser())
             ->get(route('qualifications.index'))
             ->assertOk()
             ->assertViewIs('qualifications.index');
     }
 
     public function test_non_admin_cannot_open_create_form(): void {
-        $this->actingAs($this->regularUser())
+        $this->actingAs($this->orgUser())
             ->get(route('qualifications.create'))
             ->assertForbidden();
     }
@@ -54,7 +46,7 @@ class QualificationTest extends TestCase {
     // ── CRUD ─────────────────────────────────────────────────────────────────
 
     public function test_admin_can_create_qualification(): void {
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('qualifications.store'), [
                 'name' => 'Erste Hilfe',
                 'abbreviation' => 'EH',
@@ -75,7 +67,7 @@ class QualificationTest extends TestCase {
             'name' => 'Doppelt',
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->post(route('qualifications.store'), [
                 'name' => 'Doppelt',
                 'is_active' => '1',
@@ -86,7 +78,7 @@ class QualificationTest extends TestCase {
     public function test_admin_can_update_qualification(): void {
         $qual = Qualification::factory()->create(['organization_id' => $this->organization->id]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->put(route('qualifications.update', $qual), [
                 'name' => 'Aktualisiert',
                 'is_active' => '1',
@@ -99,7 +91,7 @@ class QualificationTest extends TestCase {
     public function test_admin_can_delete_qualification(): void {
         $qual = Qualification::factory()->create(['organization_id' => $this->organization->id]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->delete(route('qualifications.destroy', $qual))
             ->assertRedirect(route('qualifications.index'));
 
@@ -109,7 +101,7 @@ class QualificationTest extends TestCase {
     public function test_non_admin_cannot_delete(): void {
         $qual = Qualification::factory()->create(['organization_id' => $this->organization->id]);
 
-        $this->actingAs($this->regularUser())
+        $this->actingAs($this->orgUser())
             ->delete(route('qualifications.destroy', $qual))
             ->assertForbidden();
     }
@@ -127,7 +119,7 @@ class QualificationTest extends TestCase {
             'name' => 'Eigene Qualifikation',
         ]);
 
-        $response = $this->actingAs($this->regularUser())
+        $response = $this->actingAs($this->orgUser())
             ->get(route('qualifications.index'));
 
         $response->assertOk();

@@ -14,6 +14,7 @@ use App\Enums\Isms\{IncidentSeverity, SecurityIncidentStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Isms\{IsmsControl, IsmsRisk, IsmsSecurityIncident};
 use App\Models\User;
+use App\Services\Isms\Concerns\AssignsSequentialNo;
 use App\Services\Notification\NotificationDispatcher;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,8 @@ use Illuminate\Validation\ValidationException;
  * audit()-Events für Statusübergänge.
  */
 class SecurityIncidentService {
+    use AssignsSequentialNo;
+
     public function __construct(
         private readonly NotificationDispatcher $dispatcher,
     ) {}
@@ -57,7 +60,7 @@ class SecurityIncidentService {
             $incident = IsmsSecurityIncident::query()->create([
                 'organization_id' => $creator->organization_id,
                 'isms_scope_id' => $attributes['isms_scope_id'] ?? null,
-                'incident_no' => $this->nextIncidentNo((int) $creator->organization_id),
+                'incident_no' => $this->nextNo(IsmsSecurityIncident::class, 'incident_no', 'organization_id', (int) $creator->organization_id),
                 'title' => $attributes['title'],
                 'description' => $attributes['description'] ?? null,
                 'category' => $attributes['category'],
@@ -243,14 +246,4 @@ class SecurityIncidentService {
         ));
     }
 
-    /** Nächste laufende Vorfall-Nummer der Organisation (innerhalb der Transaktion). */
-    private function nextIncidentNo(int $organizationId): int {
-        $max = IsmsSecurityIncident::query()
-            ->withTrashed()
-            ->where('organization_id', $organizationId)
-            ->lockForUpdate()
-            ->max('incident_no');
-
-        return ((int) $max) + 1;
-    }
 }

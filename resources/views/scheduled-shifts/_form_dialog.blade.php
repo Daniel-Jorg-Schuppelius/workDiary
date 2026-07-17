@@ -18,11 +18,7 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Speichern')">
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">
-            <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary" cols="2">
         <x-select-field name="user_id" :label="__('Mitarbeiter')" required>

@@ -72,9 +72,7 @@
         @if (session('status'))
             <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
         @endif
-        @if ($errors->any())
-            <div role="alert" class="alert alert-warning"><span>{{ $errors->first() }}</span></div>
-        @endif
+        <x-validation-errors first tone="warning" />
         @if ($monthLocked)
             <div role="alert" class="alert alert-info">
                 <span class="material-symbols-outlined" aria-hidden="true">lock</span>

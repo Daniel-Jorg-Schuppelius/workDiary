@@ -15,17 +15,18 @@
 
 <x-card>
     <h3 class="font-semibold mb-3">{{ __('Status ändern') }}</h3>
+    {{-- Ziel-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
     <form method="POST" action="{{ route('servicedesk.problems.transition', $problem) }}"
           class="flex flex-wrap items-end gap-2"
-          x-data="{ target: @js(old('status', $transitions[0] ?? '')) }">
+          x-data="reveal(@js(old('status', $transitions[0] ?? '')))">
         @csrf
-        <select name="status" class="select select-sm select-bordered" x-model="target" aria-label="{{ __('Status') }}">
+        <select name="status" class="select select-sm select-bordered" x-model="value" aria-label="{{ __('Status') }}">
             @foreach ($transitions as $target)
                 <option value="{{ $target }}">{{ $statusLabels[$target] ?? $target }}</option>
             @endforeach
         </select>
 
-        <template x-if="target === 'resolved'">
+        <template x-if="is('resolved')">
             <div class="flex flex-col">
                 <label class="fieldset-label" for="effectiveness-due">{{ __('Frist Wirksamkeitsprüfung') }}</label>
                 <input id="effectiveness-due" type="datetime-local" name="effectiveness_check_due_at"

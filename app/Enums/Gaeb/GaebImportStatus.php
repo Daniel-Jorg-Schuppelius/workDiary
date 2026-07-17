@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Gaeb;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status eines GAEB-Importlaufs (Feature 049, MVP-081).
  *
@@ -20,7 +23,9 @@ namespace App\Enums\Gaeb;
  * - Imported:       LV wurde erzeugt/aktualisiert
  * - Conflict:       Reimport würde Positionen mit Ausführungsbezug berühren
  */
-enum GaebImportStatus: string {
+enum GaebImportStatus: string implements HasLabel {
+    use HasOptions;
+
     case Pending = 'pending';
     case PreflightFailed = 'preflight_failed';
     case Imported = 'imported';

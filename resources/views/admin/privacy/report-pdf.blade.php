@@ -2,8 +2,11 @@
     §3.9 Datenschutzbericht (MVP-327): stichtagsbezogener PDF-Bericht der
     Datenschutzseite. Enthält BEWUSST keine personenbezogenen Detaildaten —
     nur aggregierte Zählungen, Konfigurations- und Audit-Statistiken
-    (Konzept datenschutzseite-konzept.md §3.9/§5).
+    (Konzept datenschutzseite-konzept.md §3.9/§5). Branding via
+    reports.pdf.layout (D3).
 --}}
+@extends('reports.pdf.layout')
+
 @php
     /** @var \Carbon\CarbonInterface $generated_at */
     /** @var \App\Models\Organization $organization */
@@ -32,30 +35,26 @@
     $exportLast = $export_last_at ? \Carbon\CarbonImmutable::parse($export_last_at) : null;
     $supportLast = $support_last_at ? \Carbon\CarbonImmutable::parse($support_last_at) : null;
 @endphp
-<!doctype html>
-<html lang="de">
-<head>
-    <meta charset="utf-8">
-    <title>{{ __('Datenschutzbericht') }} — {{ $organization->name }}</title>
-    <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 10pt; color: #111827; line-height: 1.45; }
-        h1 { font-size: 16pt; margin: 0 0 6px; }
-        h2 { font-size: 12pt; margin: 18px 0 6px; border-bottom: 1px solid #d1d5db; padding-bottom: 3px; }
-        .meta { color: #6b7280; margin-bottom: 14px; }
-        .note { padding: 8px 10px; margin: 10px 0; border: 1px solid #d1d5db; background: #f9fafb; font-size: 9pt; }
-        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        th, td { border: 1px solid #d1d5db; padding: 4px 6px; text-align: left; font-size: 9pt; vertical-align: top; }
-        th { background: #f3f4f6; }
-        .footer { margin-top: 24px; padding-top: 8px; border-top: 1px solid #d1d5db; color: #6b7280; font-size: 8pt; }
-    </style>
-</head>
-<body>
-    <h1>{{ __('Datenschutzbericht') }}</h1>
-    <div class="meta">
-        {{ __('Organisation') }}: {{ $organization->name }} ·
-        {{ __('Betriebsmodus') }}: {{ $modeLabel }} ·
-        {{ __('Stichtag') }}: {{ $generated_at->format('d.m.Y H:i') }}
-    </div>
+
+@section('pdf-title', __('Datenschutzbericht') . ' — ' . $organization->name)
+@section('pdf-heading', __('Datenschutzbericht'))
+
+@push('pdf-styles')
+<style>
+    body { line-height: 1.45; }
+    h2 { margin: 18px 0 6px; border-bottom: 1px solid #d1d5db; padding-bottom: 3px; }
+    table { margin-top: 8px; }
+    .note { padding: 8px 10px; margin: 10px 0; border: 1px solid #d1d5db; background: #f9fafb; font-size: 10px; }
+</style>
+@endpush
+
+@section('pdf-meta')
+    {{ __('Organisation') }}: {{ $organization->name }} ·
+    {{ __('Betriebsmodus') }}: {{ $modeLabel }} ·
+    {{ __('Stichtag') }}: {{ $generated_at->format('d.m.Y H:i') }}
+@endsection
+
+@section('pdf-table')
     <div class="note">
         {{ __('Dieser Bericht enthält keine personenbezogenen Detaildaten — nur aggregierte Zählungen, Konfigurations- und Audit-Statistiken.') }}
     </div>
@@ -140,8 +139,7 @@
         <tr><th>{{ __('Widerspruch (Art. 21)') }}</th><td>{{ __('Über den Org-Admin, dokumentiert im Audit-Protokoll') }}</td></tr>
     </table>
 
-    <div class="footer">
+    <p class="footer">
         {{ config('app.name') }} · {{ $organization->name }} · {{ $generated_at->format('d.m.Y H:i') }}
-    </div>
-</body>
-</html>
+    </p>
+@endsection

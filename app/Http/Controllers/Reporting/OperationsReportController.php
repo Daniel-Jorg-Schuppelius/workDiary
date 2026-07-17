@@ -17,7 +17,8 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{DiaryEntry, EntryType, Task, Tour, User};
-use Carbon\Carbon;
+use Carbon\{Carbon, CarbonImmutable};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -36,13 +37,9 @@ class OperationsReportController extends Controller {
 
     public function index(Request $request): View|SymfonyResponse {
         $userId = (int) Auth::id();
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        $scope = $this->resolveScope($request, $isAdmin);
+        [$scope, $isAdmin] = $this->resolveScopeWithAdmin($request);
 
-        $range = $this->globalDateRange();
-        $fromDate = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $toDate = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$fromDate, $toDate] = $this->globalDateRangeBounds();
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
@@ -51,10 +48,10 @@ class OperationsReportController extends Controller {
         $tours = $this->aggregateTours($fromDate, $toDate, $scope, $userId);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($orders, $tasks, $tours, $from, $to, $scope);
+            return $this->exportCsv($orders, $tasks, $tours, $from, $to, $scope, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($orders, $tasks, $tours, $from, $to, $scope);
+            return $this->exportPdf($orders, $tasks, $tours, $from, $to, $scope, $request);
         }
 
         return view('reports.operations', [
@@ -76,7 +73,7 @@ class OperationsReportController extends Controller {
      *   completion_rate: float|null
      * }
      */
-    private function aggregateOrders(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregateOrders(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         $q = DiaryEntry::query()
             ->whereHas('entryType', fn($t) => $t->where('slug', EntryType::SLUG_SERVICE))
             ->whereBetween('scheduled_for', [$from, $to]);
@@ -136,7 +133,7 @@ class OperationsReportController extends Controller {
      *   completion_rate: float|null
      * }
      */
-    private function aggregateTasks(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregateTasks(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         // Tasks: aufgenommen werden Tasks, die im Zeitraum erstellt
         // oder fällig sind oder zuletzt aktualisiert wurden.
         $q = Task::query()
@@ -194,7 +191,7 @@ class OperationsReportController extends Controller {
      *   per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>
      * }
      */
-    private function aggregateTours(Carbon $from, Carbon $to, string $scope, int $userId): array {
+    private function aggregateTours(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId): array {
         $q = Tour::query()->whereBetween('tour_date', [$from->toDateString(), $to->toDateString()]);
         if ($scope === 'mine') {
             $q->where('user_id', $userId);
@@ -252,7 +249,7 @@ class OperationsReportController extends Controller {
      * @param  array{total:int, by_status: array<string,int>, by_priority: array<string,int>, overdue:int, completion_rate: float|null}  $tasks
      * @param  array{total:int, completed:int, planned_distance_km:float, planned_minutes:int, per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>}  $tours
      */
-    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to, string $scope): Response {
+    private function exportCsv(array $orders, array $tasks, array $tours, string $from, string $to, string $scope, Request $request): Response {
         $filename = sprintf('operations_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Kennzahl', 'Wert'];
@@ -264,7 +261,7 @@ class OperationsReportController extends Controller {
         foreach ($orders['by_priority'] as $p => $c) {
             $rows[] = ['Service-Aufträge', 'Priorität: ' . $p, $c];
         }
-        $rows[] = ['Service-Aufträge', 'Abschlussquote %', $orders['completion_rate'] !== null ? number_format($orders['completion_rate'] * 100, 1, '.', '') : ''];
+        $rows[] = ['Service-Aufträge', 'Abschlussquote %', $orders['completion_rate'] !== null ? NumberHelper::toUSFormat($orders['completion_rate'] * 100, 1) : ''];
 
         $rows[] = ['Tasks', 'Gesamt', $tasks['total']];
         $rows[] = ['Tasks', 'Überfällig', $tasks['overdue']];
@@ -274,17 +271,17 @@ class OperationsReportController extends Controller {
         foreach ($tasks['by_priority'] as $p => $c) {
             $rows[] = ['Tasks', 'Priorität: ' . $p, $c];
         }
-        $rows[] = ['Tasks', 'Abschlussquote %', $tasks['completion_rate'] !== null ? number_format($tasks['completion_rate'] * 100, 1, '.', '') : ''];
+        $rows[] = ['Tasks', 'Abschlussquote %', $tasks['completion_rate'] !== null ? NumberHelper::toUSFormat($tasks['completion_rate'] * 100, 1) : ''];
 
         $rows[] = ['Touren', 'Gesamt', $tours['total']];
         $rows[] = ['Touren', 'Abgeschlossen', $tours['completed']];
-        $rows[] = ['Touren', 'Plan-km Σ', number_format($tours['planned_distance_km'], 2, '.', '')];
+        $rows[] = ['Touren', 'Plan-km Σ', NumberHelper::toUSFormat($tours['planned_distance_km'], 2)];
         $rows[] = ['Touren', 'Plan-Minuten Σ', $tours['planned_minutes']];
         foreach ($tours['per_user'] as $u) {
             $rows[] = [
                 'Touren',
                 'User: ' . $u['user']->name . ' (km / Min / Anz)',
-                sprintf('%s / %d / %d', number_format($u['distance_km'], 2, '.', ''), $u['minutes'], $u['count']),
+                sprintf('%s / %d / %d', NumberHelper::toUSFormat($u['distance_km'], 2), $u['minutes'], $u['count']),
             ];
         }
 
@@ -292,7 +289,7 @@ class OperationsReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ]);
+        ], $request);
     }
 
     /**
@@ -300,7 +297,7 @@ class OperationsReportController extends Controller {
      * @param  array{total:int, by_status: array<string,int>, by_priority: array<string,int>, overdue:int, completion_rate: float|null}  $tasks
      * @param  array{total:int, completed:int, planned_distance_km:float, planned_minutes:int, per_user: array<int, array{user: User, count:int, distance_km:float, minutes:int}>}  $tours
      */
-    private function exportPdf(array $orders, array $tasks, array $tours, string $from, string $to, string $scope): SymfonyResponse {
+    private function exportPdf(array $orders, array $tasks, array $tours, string $from, string $to, string $scope, Request $request): SymfonyResponse {
         $filename = sprintf('operations_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.operations', [
             'orders' => $orders,
@@ -309,6 +306,6 @@ class OperationsReportController extends Controller {
             'from' => $from,
             'to' => $to,
             'scope' => $scope,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'operations', filters: ['from' => $from, 'to' => $to, 'scope' => $scope]);
     }
 }

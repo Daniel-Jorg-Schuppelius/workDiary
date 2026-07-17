@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\Gaeb;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Lebenszyklus einer LV-Position (Feature 049, MVP-082).
  *
  * Eine Position mit Ausführungs-/Abrechnungsbezug (ab InProgress) darf bei
  * einem Reimport nicht still überschrieben werden — siehe BillOfQuantityImporter.
  */
-enum BoqItemStatus: string {
+enum BoqItemStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Imported = 'imported';
     case Quoted = 'quoted';

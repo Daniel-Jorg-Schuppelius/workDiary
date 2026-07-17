@@ -81,7 +81,7 @@
         </div>
 
         {{-- Tabs --}}
-        <div x-data="persistedTabs('wd-dash-tab', 'overview')"
+        <div x-data="tabs('overview')" data-tab-persist="wd-dash-tab"
              class="space-y-4">
             <div role="tablist" class="tabs tabs-box flex-nowrap w-full overflow-x-auto">
                 <button type="button" role="tab" class="tab gap-1.5 whitespace-nowrap" :class="tabClass('overview')" @click="setTab('overview')">

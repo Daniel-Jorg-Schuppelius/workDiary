@@ -11,13 +11,13 @@
 namespace App\Plugins\Toggl\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project, User};
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project};
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
 use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglImportService, TogglOptionBuilder, TogglPlugin};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -27,6 +27,8 @@ use Illuminate\View\View;
  * Import ({@see importExport()} / {@see runImportExport()}).
  */
 class TogglController extends Controller {
+    use ResolvesPluginOrgContext;
+
     public function __construct(
         private readonly TogglImportService $service,
         private readonly TogglOptionBuilder $options,
@@ -376,21 +378,5 @@ class TogglController extends Controller {
             ->whereIn('external_type', [TogglImportService::EXT_TYPE_CLIENT, TogglImportService::EXT_TYPE_PROJECT])
             ->whereKey($id)
             ->firstOrFail();
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
     }
 }

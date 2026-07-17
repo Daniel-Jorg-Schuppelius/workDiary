@@ -144,7 +144,7 @@
                 <form method="post" action="{{ route('dataprotection.agreements.tom', $agreement) }}" class="flex gap-2 pt-2">
                     @csrf
                     <select name="measure_id" class="select select-sm select-bordered flex-1">
-                        @foreach ($allMeasures as $m)<option value="{{ $m->id }}">{{ $m->name }}</option>@endforeach
+                        @foreach ($allMeasures as $m)<option value="{{ $m->sqid }}">{{ $m->name }}</option>@endforeach
                     </select>
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('TOM zuordnen') }}</x-icon-btn>
                 </form>

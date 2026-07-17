@@ -19,6 +19,7 @@ use App\Plugins\Nextcloud\Api\{NextcloudBackupClient, NextcloudIntakeClient};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\PluginOrgContext;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -60,13 +61,11 @@ class NextcloudPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -151,7 +150,7 @@ class NextcloudPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
 
     /** Health je Organisation: Zustand der Dokumenteingang-Verbindungen. */
     public function healthCheck(): PluginHealth {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('cloud_intake.nextcloud.health.no_org_context'));
         }

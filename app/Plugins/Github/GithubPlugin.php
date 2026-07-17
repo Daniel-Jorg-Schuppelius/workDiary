@@ -17,6 +17,7 @@ use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Github\Api\{GithubApiException, GithubClientFactory};
 use App\Plugins\Github\Services\GithubIssueImporter;
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -128,7 +129,7 @@ class GithubPlugin implements Plugin, TaskSyncer {
      * hinterlegten Token (Token gültig + API erreichbar).
      */
     public function healthCheck(): PluginHealth {
-        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $organization = PluginOrgContext::currentOrNull();
         if (! $organization instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

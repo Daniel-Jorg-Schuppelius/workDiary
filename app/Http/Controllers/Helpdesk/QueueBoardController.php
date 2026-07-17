@@ -55,10 +55,7 @@ class QueueBoardController extends Controller {
             ->orderBy('id');
 
         if ($q !== '') {
-            $query->where(function ($builder) use ($q): void {
-                $builder->whereLikeEscaped('ticket_no', $q)
-                    ->orWhereLikeEscaped('title', $q);
-            });
+            $query->search($q);
         }
         if ($queueId !== null) {
             $query->where('queue_id', $queueId);

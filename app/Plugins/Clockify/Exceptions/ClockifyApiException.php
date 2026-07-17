@@ -12,15 +12,15 @@ declare(strict_types=1);
 
 namespace App\Plugins\Clockify\Exceptions;
 
-use RuntimeException;
+use App\Plugins\Support\PluginApiException;
 
 /**
  * Fehlgeschlagener Clockify-API-Aufruf (Nicht-2xx nach ausgeschöpften Retries).
  * Trägt den HTTP-Status für die Fehlerausgabe im Admin-UI; 429 auf dem
  * Free-Plan (30 Requests/h) wird mit CSV-Hinweis gemeldet.
  */
-class ClockifyApiException extends RuntimeException {
-    public function __construct(string $message, public readonly int $status = 0) {
-        parent::__construct($message);
+class ClockifyApiException extends PluginApiException {
+    public function __construct(string $message, int $status = 0) {
+        parent::__construct($message, $status);
     }
 }

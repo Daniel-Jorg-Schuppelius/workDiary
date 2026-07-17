@@ -13,6 +13,7 @@ namespace App\Services\Domain;
 use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 
 /**
@@ -31,7 +32,7 @@ class DomainAccountingService {
 
         $count = 0;
         foreach ($response->rows() as $row) {
-            $rawHash = hash('sha256', json_encode($row) ?: '');
+            $rawHash = CryptoHelper::hash(json_encode($row) ?: '');
             $user = $row['user'] ?? $row['subuser'] ?? '';
             $reseller = $user !== '' ? DomainResellerAccount::query()
                 ->where('connection_id', $connection->id)

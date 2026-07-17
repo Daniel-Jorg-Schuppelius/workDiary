@@ -31,13 +31,7 @@ class ProductController extends Controller {
 
         $products = Product::query()
             ->withCount(['articles', 'assets'])
-            ->when($search !== '', function ($query) use ($search): void {
-                $query->where(function ($q) use ($search): void {
-                    $q->whereLikeEscaped('manufacturer', $search)
-                        ->orWhereLikeEscaped('model', $search)
-                        ->orWhereLikeEscaped('name', $search);
-                });
-            })
+            ->when($search !== '', fn($q) => $q->search($search))
             ->orderBy('manufacturer')
             ->orderBy('model')
             ->paginate(25)

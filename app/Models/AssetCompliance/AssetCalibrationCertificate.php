@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\AssetCompliance;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{AppendOnly, Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Document;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,6 +31,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $valid_until
  */
 class AssetCalibrationCertificate extends Model {
+    // Nachweise sind unveränderbar — Korrektur nur über ein neues,
+    // versioniertes Prüfereignis.
+    use AppendOnly;
+
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
@@ -46,14 +50,6 @@ class AssetCalibrationCertificate extends Model {
         'issued_on' => 'date',
         'valid_until' => 'date',
     ];
-
-    protected static function booted(): void {
-        // Nachweise sind unveränderbar — Korrektur nur über ein neues,
-        // versioniertes Prüfereignis.
-        static::updating(function (): bool {
-            return false;
-        });
-    }
 
     /** @return BelongsTo<AssetInspectionEvent, $this> */
     public function event(): BelongsTo {

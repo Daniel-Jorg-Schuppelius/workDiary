@@ -38,7 +38,7 @@ class GitlabClient {
      * GET /api/v4/projects/{id}/issues — nach `updated_at` aufsteigend, damit
      * der `updated_after`-Aufholpunkt monoton fortgeschrieben werden kann.
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function issues(string $projectId, ?string $updatedAfter, int $page = 1, int $perPage = 100): array {
         $query = [

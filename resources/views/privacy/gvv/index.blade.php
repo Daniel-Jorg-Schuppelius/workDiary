@@ -24,7 +24,7 @@
         </x-slot:actions>
 
         @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
-        @if ($errors->any())<div class="alert alert-error"><ul class="list-disc ml-4">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
+        <x-validation-errors />
 
         <x-card padding="p-0">
             <x-table>
@@ -60,7 +60,7 @@
                     <x-input-field name="partner_id" :label="__('Partner (Dienstleister)')" required>
                         <select id="partner_id" name="partner_id" class="select select-bordered w-full" required>
                             <option value="">{{ __('Partner (Dienstleister) …') }}</option>
-                            @foreach ($partners as $p)<option value="{{ $p->id }}">{{ $p->name }}</option>@endforeach
+                            @foreach ($partners as $p)<option value="{{ $p->sqid }}">{{ $p->name }}</option>@endforeach
                         </select>
                     </x-input-field>
                     <x-input-field name="title" :label="__('Titel')" required />

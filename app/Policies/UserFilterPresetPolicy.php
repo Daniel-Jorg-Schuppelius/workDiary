@@ -11,17 +11,20 @@
 namespace App\Policies;
 
 use App\Models\{User, UserFilterPreset};
+use App\Policies\Concerns\ChecksOwnership;
 
 class UserFilterPresetPolicy {
+    use ChecksOwnership;
+
     public function view(User $user, UserFilterPreset $preset): bool {
-        return $preset->user_id === $user->id;
+        return $this->owns($user, $preset);
     }
 
     public function update(User $user, UserFilterPreset $preset): bool {
-        return $preset->user_id === $user->id;
+        return $this->owns($user, $preset);
     }
 
     public function delete(User $user, UserFilterPreset $preset): bool {
-        return $preset->user_id === $user->id;
+        return $this->owns($user, $preset);
     }
 }

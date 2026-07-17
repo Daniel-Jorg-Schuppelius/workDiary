@@ -13,6 +13,7 @@ namespace App\Plugins\Zammad;
 use App\Models\{Organization, PluginSetting, ZammadConnection};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use Throwable;
@@ -61,13 +62,11 @@ class ZammadPlugin implements Plugin, TaskSyncer {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -139,7 +138,7 @@ class ZammadPlugin implements Plugin, TaskSyncer {
      * mit dem hinterlegten Token anpingen.
      */
     public function healthCheck(): PluginHealth {
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('Keine Organisation im Kontext.'));
         }

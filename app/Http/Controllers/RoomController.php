@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Facility\{RoomRequirementKind, RoomUsageType};
+use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Models\{Building, CleaningProfile, Customer, Floor, Room, Site};
 use App\Services\Event\RoomBookingService;
 use App\Support\Sqid;
@@ -20,6 +21,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class RoomController extends Controller {
+    use ParsesIndexQuery;
+
     private const ALLOWED_SORTS = ['name', 'code', 'capacity', 'is_active'];
 
     public function index(Request $request, RoomBookingService $bookings): View {
@@ -28,20 +31,12 @@ class RoomController extends Controller {
         $view = $request->query('view', 'list');
         $day = $request->query('day') ? Carbon::parse((string) $request->query('day')) : Carbon::today();
 
-        $search = $request->string('q')->toString();
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        ['search' => $search, 'sort' => $sort, 'dir' => $dir]
+            = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
         $rooms = Room::query()
             ->with(['requirements' => fn($q) => $q->where('is_active', true)])
-            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->whereLikeEscaped('name', $search)
-                    ->orWhereLikeEscaped('code', $search)
-                    ->orWhereLikeEscaped('building', $search)
-                    ->orWhereLikeEscaped('floor', $search);
-            }))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->orderBy($sort, $dir)
             ->paginate(50)
             ->withQueryString();

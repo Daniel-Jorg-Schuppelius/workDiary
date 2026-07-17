@@ -14,158 +14,117 @@ use App\Models\{ExternalReference, Organization, Project, Task, TimeEntry, User}
 use App\Plugins\OpenProject\Exceptions\{OpenProjectApiException, OpenProjectRateLimitException};
 use App\Plugins\OpenProject\OpenProjectPlugin;
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
+use App\Plugins\Support\AbstractTimeEntryPushService;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Bucht in workDiary erfasste Zeiten als OpenProject-time_entries zurück.
+ * Bucht in workDiary erfasste Zeiten als OpenProject-time_entries zurück
+ * ({@see AbstractTimeEntryPushService}-Skelett).
  *
  * Kandidaten sind nicht-exportierte Projekt-Zeiteinträge, deren Projekt einem
  * OpenProject-Projekt zugeordnet ist ({@see OpenProjectStructureSync}). Pro
  * Eintrag wird ein OpenProject-Zeiteintrag angelegt (Aufgabe → Work Package und
- * Benutzer → OpenProject-Benutzer, sofern gemappt). Idempotent über die
- * `pushed_entry`-Reference; erfolgreich gebuchte Einträge werden als exportiert
- * markiert.
+ * Benutzer → OpenProject-Benutzer, sofern gemappt). Rate-Limits brechen den
+ * Lauf ab — der Rest bleibt offen für den nächsten Durchgang.
  */
-class OpenProjectExportService {
-    public const EXT_TYPE_PUSHED = 'pushed_entry';
-
+class OpenProjectExportService extends AbstractTimeEntryPushService {
     public function __construct(private readonly OpenProjectStructureSync $structure) {}
 
-    /**
-     * Bucht offene Projekt-Zeiten der Organisation nach OpenProject zurück.
-     *
-     * @param  array<string, mixed>  $config
-     * @return array{pushed: int, skipped: int, failed: int, errors: array<int, string>}
-     */
-    public function exportPending(Organization $organization, array $config, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
-        $errors = [];
+    private ?OpenProjectApiClient $client = null;
 
-        $client = new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null);
-        if (! $client->isConfigured()) {
-            return ['pushed' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => [(string) __('OpenProject ist nicht konfiguriert.')]];
-        }
+    private ?string $activityId = null;
 
-        $activityId = $this->stringOrNull($config['default_activity_id'] ?? null);
-        if ($activityId === null) {
-            return ['pushed' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => [(string) __('Keine OpenProject-Activity-ID hinterlegt — Rückbuchung nicht möglich.')]];
-        }
+    /** @var array<int, string|null> Cache Projekt-ID → externe OpenProject-ID (je Lauf) */
+    private array $projectExternalIds = [];
 
-        $pushed = 0;
-        $skipped = 0;
-        $failed = 0;
-
-        foreach ($this->candidates($organization, $from, $to) as $entry) {
-            if ($this->alreadyPushed($organization, $entry)) {
-                $skipped++;
-
-                continue;
-            }
-
-            $projectExternalId = $entry->project instanceof Project
-                ? $this->structure->externalIdFor($organization, $entry->project, OpenProjectStructureSync::EXT_TYPE_PROJECT)
-                : null;
-            if ($projectExternalId === null) {
-                $skipped++;
-
-                continue;
-            }
-
-            $workPackageExternalId = $entry->task instanceof Task
-                ? $this->structure->externalIdFor($organization, $entry->task, OpenProjectStructureSync::EXT_TYPE_WORK_PACKAGE)
-                : null;
-            $userExternalId = $entry->user instanceof User
-                ? $this->structure->externalIdFor($organization, $entry->user, OpenProjectStructureSync::EXT_TYPE_USER)
-                : null;
-
-            try {
-                $externalId = $client->createTimeEntry(
-                    projectExternalId: $projectExternalId,
-                    workPackageExternalId: $workPackageExternalId,
-                    userExternalId: $userExternalId,
-                    activityId: $activityId,
-                    spentOn: CarbonImmutable::parse($entry->date ?? $entry->started_at ?? now()),
-                    minutes: (int) $entry->minutes,
-                    comment: $entry->description,
-                );
-
-                $this->recordPushed($organization, $entry, $externalId);
-                $entry->forceFill(['exported' => true])->save();
-                $pushed++;
-            } catch (OpenProjectRateLimitException $e) {
-                // Drosselung: Lauf abbrechen, der Rest bleibt offen für den nächsten Durchgang.
-                $errors[] = $e->getMessage();
-                break;
-            } catch (OpenProjectApiException $e) {
-                $errors[] = (string) __('Zeiteintrag #:id: :message', ['id' => $entry->id, 'message' => $e->getMessage()]);
-                $failed++;
-            }
-        }
-
-        return ['pushed' => $pushed, 'skipped' => $skipped, 'failed' => $failed, 'errors' => $errors];
+    protected function pluginId(): string {
+        return OpenProjectPlugin::ID;
     }
 
-    /**
-     * Nicht-exportierte Projekt-Zeiteinträge, deren Projekt einem OpenProject-
-     * Projekt zugeordnet ist, optional im Datumsfenster.
-     *
-     * @return Collection<int, TimeEntry>
-     */
-    private function candidates(Organization $organization, ?CarbonImmutable $from, ?CarbonImmutable $to): Collection {
-        $mappedProjectIds = ExternalReference::query()
+    protected function prepareExport(Organization $organization, array $config): ?string {
+        $this->projectExternalIds = [];
+
+        $this->client = new OpenProjectApiClient($config['api_token'] ?? null, $config['base_url'] ?? null);
+        if (! $this->client->isConfigured()) {
+            return (string) __('OpenProject ist nicht konfiguriert.');
+        }
+
+        $this->activityId = $this->stringOrNull($config['default_activity_id'] ?? null);
+        if ($this->activityId === null) {
+            return (string) __('Keine OpenProject-Activity-ID hinterlegt — Rückbuchung nicht möglich.');
+        }
+
+        return null;
+    }
+
+    protected function exportableProjectIds(Organization $organization): array {
+        return array_values(ExternalReference::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', OpenProjectPlugin::ID)
             ->where('external_type', OpenProjectStructureSync::EXT_TYPE_PROJECT)
             ->where('referenceable_type', (new Project)->getMorphClass())
-            ->pluck('referenceable_id');
+            ->pluck('referenceable_id')
+            ->map(fn ($id): int => (int) $id)
+            ->all());
+    }
 
-        if ($mappedProjectIds->isEmpty()) {
-            return collect();
+    protected function scopeCandidates(Builder $query): Builder {
+        return $query->with(['project', 'task', 'user']);
+    }
+
+    /** Ohne Projekt-Mapping keine Rückbuchung. */
+    protected function shouldSkip(Organization $organization, TimeEntry $entry): bool {
+        return $this->projectExternalId($organization, $entry) === null;
+    }
+
+    protected function createRemoteEntry(Organization $organization, TimeEntry $entry): string {
+        assert($this->client instanceof OpenProjectApiClient && $this->activityId !== null);
+
+        $workPackageExternalId = $entry->task instanceof Task
+            ? $this->structure->externalIdFor($organization, $entry->task, OpenProjectStructureSync::EXT_TYPE_WORK_PACKAGE)
+            : null;
+        $userExternalId = $entry->user instanceof User
+            ? $this->structure->externalIdFor($organization, $entry->user, OpenProjectStructureSync::EXT_TYPE_USER)
+            : null;
+
+        return $this->client->createTimeEntry(
+            projectExternalId: (string) $this->projectExternalId($organization, $entry),
+            workPackageExternalId: $workPackageExternalId,
+            userExternalId: $userExternalId,
+            activityId: $this->activityId,
+            spentOn: CarbonImmutable::parse($entry->date ?? $entry->started_at ?? now()),
+            minutes: (int) $entry->minutes,
+            comment: $entry->description,
+        );
+    }
+
+    protected function shouldAbort(\Throwable $e): bool {
+        return $e instanceof OpenProjectRateLimitException;
+    }
+
+    protected function isExpectedFailure(\Throwable $e): bool {
+        return $e instanceof OpenProjectApiException;
+    }
+
+    protected function pushedPayload(TimeEntry $entry): ?array {
+        return ['minutes' => (int) $entry->minutes];
+    }
+
+    /** Externe Projekt-ID des Eintrags, je Lauf gecacht (Skip + Remote-Anlage). */
+    private function projectExternalId(Organization $organization, TimeEntry $entry): ?string {
+        $project = $entry->project;
+        if (! $project instanceof Project) {
+            return null;
         }
 
-        $fromDate = $from?->toDateString();
-        $toDate = $to?->toDateString();
+        $key = (int) $project->id;
+        if (! array_key_exists($key, $this->projectExternalIds)) {
+            $this->projectExternalIds[$key] = $this->structure->externalIdFor($organization, $project, OpenProjectStructureSync::EXT_TYPE_PROJECT);
+        }
 
-        return TimeEntry::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereIn('project_id', $mappedProjectIds)
-            ->where('exported', false)
-            ->where('minutes', '>', 0)
-            ->when($fromDate !== null, fn($q) => $q->whereDate('date', '>=', $fromDate))
-            ->when($toDate !== null, fn($q) => $q->whereDate('date', '<=', $toDate))
-            ->with(['project', 'task', 'user'])
-            ->orderBy('date')
-            ->get();
-    }
-
-    private function alreadyPushed(Organization $organization, TimeEntry $entry): bool {
-        return ExternalReference::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', OpenProjectPlugin::ID)
-            ->where('external_type', self::EXT_TYPE_PUSHED)
-            ->where('referenceable_type', $entry->getMorphClass())
-            ->where('referenceable_id', $entry->getKey())
-            ->exists();
-    }
-
-    private function recordPushed(Organization $organization, TimeEntry $entry, string $externalId): void {
-        ExternalReference::query()->updateOrCreate(
-            [
-                'organization_id' => $organization->id,
-                'plugin_id' => OpenProjectPlugin::ID,
-                'external_type' => self::EXT_TYPE_PUSHED,
-                'referenceable_type' => $entry->getMorphClass(),
-                'referenceable_id' => $entry->getKey(),
-            ],
-            [
-                'external_id' => $externalId,
-                'payload' => ['minutes' => (int) $entry->minutes],
-                'synced_at' => now(),
-            ],
-        );
+        return $this->projectExternalIds[$key];
     }
 
     private function stringOrNull(mixed $value): ?string {

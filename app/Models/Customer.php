@@ -12,12 +12,11 @@ namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
 use App\Enums\Project\ProjectStatus;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasAttachments, HasClassifications, HasContactAndBankDetails, HasSqid, HasTags, Searchable};
-use App\Services\Numbering\NumberAuthority;
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasClassifications, HasContactAndBankDetails, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
-use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -63,6 +62,7 @@ class Customer extends Model {
     use Archivable;
     use Auditable;
     use BelongsToOrganization;
+    use GeneratesUniqueSlug;
     use HasAttachments;
     use HasClassifications;
 
@@ -70,6 +70,7 @@ class Customer extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasSequentialNumber;
     use HasSqid;
     use HasTags;
     use Searchable;
@@ -138,15 +139,7 @@ class Customer extends Model {
     ];
 
     protected static function booted(): void {
-        static::creating(function (self $customer): void {
-            if ($customer->number === null || $customer->number === '') {
-                $external = app(NumberAuthority::class)->isExternal($customer->organization_id, NumberScope::Customer);
-                $customer->number = self::nextNumberFor($customer->organization_id);
-                if ((string) $customer->number_source === '') {
-                    $customer->number_source = $external ? 'lexoffice' : 'local';
-                }
-            }
-        });
+        self::registerSequentialNumberHook();
 
         static::saving(function (self $customer): void {
             if ($customer->slug === null || $customer->slug === '') {
@@ -160,14 +153,20 @@ class Customer extends Model {
     }
 
     /**
+     * Archivieren/Entarchivieren als eigene Audit-Events loggen (GoBD).
+     *
+     * @param  array<string, mixed>  $changes
+     */
+    protected function resolveAuditEvent(string $event, array $changes): string {
+        return $this->mapArchivedAtAuditEvent($event, $changes);
+    }
+
+    /**
      * Liefert einen Slug, der innerhalb der angegebenen Organisation
      * eindeutig ist (Sentinel "kunde" falls Name keinen Slug ergibt).
      */
     public static function uniqueSlug(string $name, ?int $organizationId, ?int $ignoreId = null): string {
-        $base = Str::slug($name) ?: 'kunde';
-        $slug = $base;
-        $i = 2;
-        while (
+        return self::resolveUniqueSlug($name, 'kunde', fn(string $slug): bool =>
             // TENANT-BYPASS: ohne Global Scope, weil $organizationId explizit übergeben wird;
             // der explizite where('organization_id', ...) erhält die Mandantengrenze.
             static::query()
@@ -175,45 +174,15 @@ class Customer extends Model {
             ->where('organization_id', $organizationId)
             ->where('slug', $slug)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()
-        ) {
-            $slug = $base . '-' . $i++;
-        }
-
-        return $slug;
+            ->exists());
     }
 
-    /**
-     * Berechnet die nächste freie Kundennummer für die Organisation
-     * über den zentralen {@see \App\Services\Numbering\NumberSequenceService}.
-     */
-    public static function nextNumberFor(?int $organizationId): string {
-        if ($organizationId === null) {
-            // Greenfield-Fallback ohne Org-Kontext (nur Test-Setup): deterministische Dummy-Nummer.
-            return 'K-0001';
-        }
+    protected static function numberScope(): NumberScope {
+        return NumberScope::Customer;
+    }
 
-        /** @var \App\Services\Numbering\NumberSequenceService $service */
-        $service = app(\App\Services\Numbering\NumberSequenceService::class);
-
-        $maxAttempts = static::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->count() + 1;
-
-        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
-            $number = $service->next($organizationId, NumberScope::Customer);
-
-            if (! static::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('number', $number)
-                ->exists()) {
-                return $number;
-            }
-        }
-
-        throw new \RuntimeException('No free customer number could be generated.');
+    protected static function numberFallback(): string {
+        return 'K-0001';
     }
 
     /** @return BelongsTo<User, $this> */

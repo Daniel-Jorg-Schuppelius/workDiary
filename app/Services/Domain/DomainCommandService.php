@@ -14,6 +14,7 @@ use App\Enums\Domain\{DomainCapabilityArea, DomainProviderCommandStatus};
 use App\Models\Domain\{DomainProviderCommand, DomainProviderConnection};
 use App\Models\User;
 use App\Plugins\Support\Domain\{DomainCapabilityBlockedException, DomainProviderException};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};
 use RuntimeException;
@@ -58,7 +59,7 @@ class DomainCommandService {
             'customer_id' => $customerId,
             'payload' => $this->redactPayload($payload),
             'preflight_snapshot' => $preflightSnapshot,
-            'payload_hash' => hash('sha256', json_encode($payload) ?: ''),
+            'payload_hash' => CryptoHelper::hash(json_encode($payload) ?: ''),
             'status' => $requiresSecondApproval ? DomainProviderCommandStatus::Draft : DomainProviderCommandStatus::Approved,
             'requires_second_approval' => $requiresSecondApproval,
             'requested_by_user_id' => $requestedBy?->id,

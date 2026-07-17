@@ -15,6 +15,7 @@ namespace App\Services\DocumentDesign;
 use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole};
 use App\Models\DocumentDesign\LetterheadAsset;
 use App\Models\{Organization, User};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -70,7 +71,7 @@ class LetterheadAssetService {
             'original_name' => $file->getClientOriginalName(),
             'mime' => (string) $file->getMimeType(),
             'size' => strlen($raw),
-            'original_sha256' => hash('sha256', $raw),
+            'original_sha256' => CryptoHelper::hash($raw),
             'status' => LetterheadAssetStatus::ReviewRequired,
             'uploaded_by' => $uploader?->id,
         ]);
@@ -84,7 +85,7 @@ class LetterheadAssetService {
             $normalizedPath = sprintf('%s/normalized/%s.png', $base, $token);
             Storage::disk($disk)->put($normalizedPath, $png);
             $asset->normalized_path = $normalizedPath;
-            $asset->normalized_sha256 = hash('sha256', $png);
+            $asset->normalized_sha256 = CryptoHelper::hash($png);
             $asset->width_mm = sprintf('%.2f', self::A4_WIDTH_MM);
             $asset->height_mm = sprintf('%.2f', self::A4_HEIGHT_MM);
         }

@@ -10,6 +10,9 @@
 
 namespace App\Enums\ExternalParticipant;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Begrenzte Rechte eines externen Beteiligten (Feature 033). Die Flags werden
  * je Einladung als abilities-JSON gespeichert und serverseitig STRIKT
@@ -19,7 +22,9 @@ namespace App\Enums\ExternalParticipant;
  * `View` ist implizit für jeden gültigen Token (Read-Only-Seite); die übrigen
  * Flags sind additive Aktionsrechte.
  */
-enum ExternalAbility: string {
+enum ExternalAbility: string implements HasLabel {
+    use HasOptions;
+
     case View = 'view';
     case Comment = 'comment';
     case Upload = 'upload';
@@ -33,10 +38,5 @@ enum ExternalAbility: string {
     /** @return list<self> */
     public static function selectable(): array {
         return [self::Comment, self::Upload, self::Confirm];
-    }
-
-    /** @return list<string> */
-    public static function values(): array {
-        return array_map(static fn(self $a): string => $a->value, self::cases());
     }
 }

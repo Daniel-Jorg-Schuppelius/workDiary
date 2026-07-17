@@ -30,7 +30,7 @@
         <x-select-field name="supplier_id" :label="__('isms.field.supplier_link')">
                 <option value="">{{ __('isms.hint.supplier_freetext') }}</option>
                 @foreach ($suppliers as $supplier)
-                    <option value="{{ $supplier->id }}" @selected((string) old('supplier_id', $assessment?->supplier_id) === (string) $supplier->id)>{{ $supplier->name }}{{ $supplier->number ? ' (' . $supplier->number . ')' : '' }}</option>
+                    <option value="{{ $supplier->sqid }}" @selected((string) old('supplier_id', \App\Support\Sqid::encode(\App\Models\Supplier::class, $assessment?->supplier_id)) === $supplier->sqid)>{{ $supplier->name }}{{ $supplier->number ? ' (' . $supplier->number . ')' : '' }}</option>
                 @endforeach
         </x-select-field>
         <x-input-field name="supplier_name" :label="__('isms.field.supplier_name')" maxlength="250" :value="old('supplier_name', $assessment?->supplier_name)" placeholder="{{ __('isms.hint.supplier_name') }}" />
@@ -48,13 +48,13 @@
         <x-select-field name="isms_scope_id" :label="__('isms.field.scope')">
                 <option value="">—</option>
                 @foreach ($scopes as $scopeOption)
-                    <option value="{{ $scopeOption->id }}" @selected((string) old('isms_scope_id', $assessment?->isms_scope_id) === (string) $scopeOption->id)>{{ $scopeOption->name }}</option>
+                    <option value="{{ $scopeOption->sqid }}" @selected((string) old('isms_scope_id', \App\Support\Sqid::encode(\App\Models\Isms\IsmsScope::class, $assessment?->isms_scope_id)) === $scopeOption->sqid)>{{ $scopeOption->name }}</option>
                 @endforeach
         </x-select-field>
         <x-select-field name="owner_user_id" :label="__('isms.field.owner')">
                 <option value="">—</option>
                 @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $assessment?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+                    <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $assessment?->owner_user_id)) === $owner->sqid)>{{ $owner->name }}</option>
                 @endforeach
         </x-select-field>
     </x-form-group>

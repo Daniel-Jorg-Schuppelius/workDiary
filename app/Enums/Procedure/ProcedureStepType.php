@@ -10,11 +10,16 @@
 
 namespace App\Enums\Procedure;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Definiert die in MVP-025 unterstuetzten Schritt-Typen einer
  * Prozedurvorlage (siehe ../WorkDiary-Architecture/prozedurvorlagen.md §5).
  */
-enum ProcedureStepType: string {
+enum ProcedureStepType: string implements HasLabel {
+    use HasOptions;
+
     case Confirm = 'confirm';
     case Text = 'text';
     case Number = 'number';

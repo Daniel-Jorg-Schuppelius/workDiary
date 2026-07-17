@@ -12,7 +12,8 @@
 --}}
 @php
     $isEdit = $risk !== null;
-    $linkedControlIds = $isEdit ? $risk->controls->pluck('id')->all() : [];
+    $linkedControlIds = $isEdit ? $risk->controls->pluck('sqid')->all() : [];
+    $ownerSqid = \App\Support\Sqid::encode(\App\Models\User::class, $risk?->owner_user_id);
 @endphp
 
 <x-modal
@@ -64,7 +65,7 @@
         <x-select-field name="owner_user_id" :label="__('isms.field.owner')" span="2">
                 <option value="">—</option>
                 @foreach ($owners as $owner)
-                    <option value="{{ $owner->id }}" @selected((string) old('owner_user_id', $risk?->owner_user_id) === (string) $owner->id)>{{ $owner->name }}</option>
+                    <option value="{{ $owner->sqid }}" @selected((string) old('owner_user_id', $ownerSqid) === $owner->sqid)>{{ $owner->name }}</option>
                 @endforeach
         </x-select-field>
     </x-form-group>
@@ -77,8 +78,8 @@
             <span class="label-text">{{ __('isms.hint.controls') }}</span>
             <select name="control_ids[]" multiple size="8" class="select select-bordered w-full h-auto">
                 @foreach ($controls as $control)
-                    <option value="{{ $control->id }}"
-                            @selected(in_array($control->id, old('control_ids', $linkedControlIds)))>
+                    <option value="{{ $control->sqid }}"
+                            @selected(in_array($control->sqid, old('control_ids', $linkedControlIds)))>
                         {{ $control->title }}
                     </option>
                 @endforeach

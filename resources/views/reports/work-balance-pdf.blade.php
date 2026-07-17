@@ -1,28 +1,23 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8" />
-    <title>{{ __('Arbeitsbilanz') }} — {{ $label }}</title>
-    <style>
-        @page { margin: 18mm 14mm 18mm 14mm; }
-        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 9.5pt; color: #1f2937; }
-        h1 { font-size: 14pt; margin: 0 0 4px; }
-        .meta { color: #6b7280; font-size: 9pt; margin-bottom: 12px; }
-        .summary { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
-        .summary td { padding: 6px 8px; border: 1px solid #d1d5db; }
-        .summary .label { color: #6b7280; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.05em; }
-        .summary .value { font-size: 12pt; font-weight: bold; }
-        .pos { color: #166534; }
-        .neg { color: #991b1b; }
-        table.days { width: 100%; border-collapse: collapse; margin-top: 6px; }
-        table.days th, table.days td { padding: 4px 6px; border: 1px solid #d1d5db; font-size: 9pt; }
-        table.days th { background: #f3f4f6; text-align: left; }
-        table.days td.num { text-align: right; font-variant-numeric: tabular-nums; }
-        table.days tfoot td { font-weight: bold; background: #f9fafb; }
-        .footer { margin-top: 16px; font-size: 8pt; color: #6b7280; text-align: center; }
-    </style>
-</head>
-<body>
+@extends('reports.pdf.layout')
+
+@section('pdf-title', __('Arbeitsbilanz') . ' — ' . $label)
+@section('pdf-heading', __('Arbeitsbilanz') . ' — ' . $label)
+
+@push('pdf-styles')
+<style>
+    .summary { margin-bottom: 12px; }
+    .summary .label { color: #6b7280; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary .value { font-size: 14px; font-weight: bold; }
+    table.days { margin-top: 6px; }
+    table.days tfoot td { font-weight: bold; background: #f9fafb; border-top: 1px solid #d1d5db; }
+</style>
+@endpush
+
+@section('pdf-meta')
+    {{ $user->name }} ({{ $user->email }}) — {{ __('Erstellt') }}: {{ now()->fdatetime() }}
+@endsection
+
+@section('pdf-table')
     @php
         $fmt = function (int $minutes): string {
             $sign = $minutes < 0 ? '-' : '';
@@ -30,11 +25,6 @@
             return $sign . sprintf('%d:%02d', intdiv($m, 60), $m % 60);
         };
     @endphp
-
-    <h1>{{ __('Arbeitsbilanz') }} — {{ $label }}</h1>
-    <div class="meta">
-        {{ $user->name }} ({{ $user->email }}) — {{ __('Erstellt') }}: {{ now()->fdatetime() }}
-    </div>
 
     <table class="summary">
         <tr>
@@ -103,8 +93,7 @@
         </tfoot>
     </table>
 
-    <div class="footer">
-        workDiary — {{ __('Arbeitsbilanz') }} — {{ $period->from }} – {{ $period->to }}
-    </div>
-</body>
-</html>
+    <p class="small" style="text-align:center; margin-top: 16px;">
+        {{ __('Arbeitsbilanz') }} — {{ $period->from }} – {{ $period->to }}
+    </p>
+@endsection

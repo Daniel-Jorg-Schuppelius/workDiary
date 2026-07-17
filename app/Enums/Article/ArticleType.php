@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Article;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Artikelarten des kanonischen Artikelstamms (Feature 048, MVP-060).
  * Steuert fachliches Standardverhalten (z. B. herstellbar/lagerfähig), das
  * über die Flags am Artikel aber explizit übersteuerbar bleibt.
  */
-enum ArticleType: string {
+enum ArticleType: string implements HasLabel {
+    use HasOptions;
+
     case Raw = 'raw';                 // Rohstoff
     case Consumable = 'consumable';   // Verbrauchsmaterial
     case Merchandise = 'merchandise'; // Handelsware

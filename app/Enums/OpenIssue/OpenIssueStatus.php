@@ -43,6 +43,18 @@ enum OpenIssueStatus: string implements HasLabel {
         return in_array($this, [self::Open, self::InProgress, self::Blocked, self::Reopened], true);
     }
 
+    /**
+     * Werte aller offenen Status — aus isOpen() abgeleitet, kann nie divergieren.
+     *
+     * @return list<string>
+     */
+    public static function openValues(): array {
+        return array_map(
+            static fn(self $s): string => $s->value,
+            array_values(array_filter(self::cases(), static fn(self $s): bool => $s->isOpen())),
+        );
+    }
+
     public function isClosed(): bool {
         return in_array($this, [self::Done, self::WontDo], true);
     }

@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags, Searchable};
 use Database\Factories\DiaryEntryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -84,6 +84,7 @@ class DiaryEntry extends Model {
 
     use HasSqid;
     use HasTags;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -397,5 +398,10 @@ class DiaryEntry extends Model {
             });
             $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
         });
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['content', 'response'];
     }
 }

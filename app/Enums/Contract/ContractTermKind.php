@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Enums\Contract;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Laufzeitmodell (Welle D, CLM): befristet mit Enddatum oder unbefristet
  * (nur mit Kündigungsfrist beendbar).
  */
-enum ContractTermKind: string {
+enum ContractTermKind: string implements HasLabel {
+    use HasOptions;
+
     case Fixed = 'fixed';
     case OpenEnded = 'open_ended';
 

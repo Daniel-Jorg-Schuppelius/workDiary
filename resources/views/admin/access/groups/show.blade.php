@@ -99,7 +99,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="text-center text-base-content/60 py-4">{{ __('access.empty.members') }}</td></tr>
+                    <x-table.empty :colspan="4" :title="__('access.empty.members')" compact />
                 @endforelse
             </x-table>
         </div>

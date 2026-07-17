@@ -13,13 +13,13 @@ namespace App\Plugins\RemoteSupport\Http\Controllers;
 use App\Enums\Asset\{AssetClass, AssetOwnership};
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
-use App\Models\{Asset, Customer, Organization, Project, RemotePendingSession, User};
+use App\Models\{Asset, Customer, Organization, Project, RemotePendingSession};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Plugins\RemoteSupport\RemoteSupportService;
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Asset\AssetService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 /**
@@ -31,6 +31,8 @@ use Illuminate\View\View;
  * Beim Zuweisen werden die gespeicherten Sessions sofort als Zeiteinträge gebucht.
  */
 class RemoteSupportPendingController extends Controller {
+    use ResolvesPluginOrgContext;
+
     private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
 
     public function __construct(private readonly RemoteSupportService $service) {}
@@ -255,21 +257,5 @@ class RemoteSupportPendingController extends Controller {
             'created' => $result['created'],
             'skipped' => $result['skipped'],
         ]);
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
     }
 }

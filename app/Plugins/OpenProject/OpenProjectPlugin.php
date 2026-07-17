@@ -15,6 +15,7 @@ use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
 use App\Plugins\{PluginDefaults, PluginHealth};
+use App\Plugins\Support\PluginOrgContext;
 use Carbon\CarbonImmutable;
 use Throwable;
 
@@ -55,13 +56,11 @@ class OpenProjectPlugin implements Plugin, TimeImporter {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 

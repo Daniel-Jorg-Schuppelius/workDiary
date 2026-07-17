@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\{Organization, Project, ProjectMergeDismissal};
-use App\Services\Integration\Match\{EntityMatcher, MatchStrategy};
+use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use App\Services\Integration\Profiles\ProjectMatchProfile;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\{Collection as EloquentCollection, Model};
 
 /**
  * Findet Dubletten-Kandidaten unter den Projekten einer Organisation (z. B.
@@ -23,115 +23,56 @@ use Illuminate\Support\Collection;
  * laufen ausschließlich innerhalb desselben Kunden (inkl. „ohne Kunde"), damit
  * gleichnamige Projekte verschiedener Kunden nicht fälschlich als Dublette
  * erscheinen — und das Zusammenführen kundenkonsistent bleibt.
+ * Paar-Schleife/Dismissal-Filter siehe {@see AbstractDuplicateFinder}.
+ *
+ * @extends AbstractDuplicateFinder<Project>
  */
-class ProjectDuplicateFinder {
-    public const CONF_EXACT = MatchStrategy::EXACT;
-    public const CONF_LIKELY = MatchStrategy::LIKELY;
-    public const CONF_FUZZY = MatchStrategy::FUZZY;
-
-    /** @var array<string, int> */
-    private const RANK = [
-        MatchStrategy::FUZZY => 1,
-        MatchStrategy::LIKELY => 2,
-        MatchStrategy::EXACT => 3,
-    ];
-
+class ProjectDuplicateFinder extends AbstractDuplicateFinder {
     public function __construct(
-        private readonly EntityMatcher $matcher,
+        EntityMatcher $matcher,
         private readonly ProjectMatchProfile $profile,
-    ) {}
+    ) {
+        parent::__construct($matcher);
+    }
 
-    /**
-     * @param  string|null  $onlyConfidence  Auf eine Stufe einschränken (z. B. nur 'exact').
-     * @return Collection<int, array{source: Project, target: Project, confidence: string, reasons: list<string>}>
-     */
-    public function candidates(Organization $organization, ?string $onlyConfidence = null): Collection {
-        /** @var Collection<int, Project> $projects */
-        $projects = $this->profile->candidates($organization)
+    protected function profile(): MatchProfile {
+        return $this->profile;
+    }
+
+    protected function fetchCandidates(Organization $organization): EloquentCollection {
+        return $this->profile->candidates($organization)
             ->withCount(['diaryEntries', 'timeEntries'])
             ->get();
+    }
 
-        $dismissed = $this->dismissedKeys($organization);
-
-        /** @var array<string, array{source: Project, target: Project, confidence: string, reasons: list<string>}> $pairs */
-        $pairs = [];
-
-        // Nur innerhalb desselben Kunden vergleichen (null => Gruppe "0").
-        foreach ($projects->groupBy(fn(Project $p): int => (int) ($p->customer_id ?? 0)) as $group) {
-            $list = $group->values()->all();
-            $count = count($list);
-
-            $fields = [];
-            foreach ($list as $i => $project) {
-                $fields[$i] = $this->profile->extract($project);
-            }
-
-            for ($i = 0; $i < $count; $i++) {
-                for ($j = $i + 1; $j < $count; $j++) {
-                    $a = $list[$i];
-                    $b = $list[$j];
-
-                    // Direkt verwandte Projekte (Eltern/Kind) sind nicht
-                    // zusammenführbar — gar nicht erst vorschlagen.
-                    if ((int) $a->parent_id === (int) $b->id || (int) $b->parent_id === (int) $a->id) {
-                        continue;
-                    }
-
-                    $cmp = $this->matcher->compare($this->profile, $fields[$i], $fields[$j]);
-                    if ($cmp['confidence'] === null) {
-                        continue;
-                    }
-
-                    $key = min((int) $a->id, (int) $b->id) . '-' . max((int) $a->id, (int) $b->id);
-                    if (isset($dismissed[$key])) {
-                        continue;
-                    }
-                    if ($onlyConfidence !== null && $cmp['confidence'] !== $onlyConfidence) {
-                        continue;
-                    }
-
-                    [$target, $source] = $this->orderTargetSource($a, $b);
-                    $pairs[$key] = [
-                        'source' => $source,
-                        'target' => $target,
-                        'confidence' => $cmp['confidence'],
-                        'reasons' => $cmp['reasons'],
-                    ];
-                }
-            }
-        }
-
-        return Collection::make($pairs)
-            ->sortByDesc(fn(array $p): int => self::RANK[$p['confidence']])
-            ->values();
+    /** Nur innerhalb desselben Kunden vergleichen (null => Gruppe "0"). */
+    protected function groupKey(Model $model): int|string {
+        return (int) ($model->customer_id ?? 0);
     }
 
     /**
-     * Bestimmt Ziel (bleibt) und Quelle (geht auf): Standardprojekt > mehr
-     * verknüpfte Einträge (Zeiten + Aufträge) > kleinere (ältere) ID.
-     *
-     * @return array{0: Project, 1: Project}  [Ziel, Quelle]
+     * Direkt verwandte Projekte (Eltern/Kind) sind nicht zusammenführbar —
+     * gar nicht erst vorschlagen.
      */
-    private function orderTargetSource(Project $a, Project $b): array {
-        $score = static function (Project $c): array {
-            $entries = (int) ($c->diary_entries_count ?? 0) + (int) ($c->time_entries_count ?? 0);
-
-            return [$c->is_default ? 1 : 0, $entries, -((int) $c->id)];
-        };
-
-        return $score($a) >= $score($b) ? [$a, $b] : [$b, $a];
+    protected function skipPair(Model $a, Model $b): bool {
+        return (int) $a->parent_id === (int) $b->id || (int) $b->parent_id === (int) $a->id;
     }
 
     /**
-     * @return array<string, true>
+     * Ziel-Heuristik: Standardprojekt > mehr verknüpfte Einträge
+     * (Zeiten + Aufträge) > kleinere (ältere) ID.
      */
-    private function dismissedKeys(Organization $organization): array {
-        return ProjectMergeDismissal::query()
-            ->where('organization_id', $organization->id)
-            ->get(['project_low_id', 'project_high_id'])
-            ->mapWithKeys(fn(ProjectMergeDismissal $d): array => [
-                $d->project_low_id . '-' . $d->project_high_id => true,
-            ])
-            ->all();
+    protected function score(Model $model): array {
+        $entries = (int) ($model->diary_entries_count ?? 0) + (int) ($model->time_entries_count ?? 0);
+
+        return [$model->is_default ? 1 : 0, $entries, -((int) $model->id)];
+    }
+
+    protected function dismissalModel(): string {
+        return ProjectMergeDismissal::class;
+    }
+
+    protected function dismissalKeyColumns(): array {
+        return ['project_low_id', 'project_high_id'];
     }
 }

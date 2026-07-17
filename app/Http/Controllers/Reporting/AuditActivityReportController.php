@@ -12,12 +12,10 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{AuditLog, User};
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -28,18 +26,15 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class AuditActivityReportController extends Controller {
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
+    use ResolvesReportScope;
     use WritesReportCsv;
 
     private const RECENT_LIMIT = 100;
 
     public function index(Request $request): View|SymfonyResponse {
-        $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
-        abort_unless($isAdmin, 403);
+        abort_unless($this->viewerIsAdmin(), 403);
 
-        $range = $this->globalDateRange();
-        $from = Carbon::parse($range['from']->toDateString())->startOfDay();
-        $to = Carbon::parse($range['to']->toDateString())->endOfDay();
+        [$from, $to] = $this->globalDateRangeBounds();
 
         $base = AuditLog::query()->whereBetween('created_at', [$from, $to]);
 
@@ -105,14 +100,14 @@ class AuditActivityReportController extends Controller {
             ->get(['id', 'user_id', 'event', 'auditable_type', 'auditable_id', 'ip', 'created_at']);
 
         if ($request->query('export') === 'csv') {
-            return $this->exportCsv($byEvent, $byType, $byUser, $recent, $from->toDateString(), $to->toDateString());
+            return $this->exportCsv($byEvent, $byType, $byUser, $recent, $from->toDateString(), $to->toDateString(), $request);
         }
         if ($request->query('export') === 'pdf') {
             return $this->exportPdf($byEvent, $byType, $byUser, $recent, [
                 'total' => $total,
                 'users' => $distinctUsers,
                 'types' => $distinctTypes,
-            ], $from->toDateString(), $to->toDateString());
+            ], $from->toDateString(), $to->toDateString(), $request);
         }
 
         return view('reports.audit-activity', [
@@ -136,7 +131,7 @@ class AuditActivityReportController extends Controller {
      * @param  array<int, array{user: ?User, count:int}>  $byUser
      * @param  Collection<int, AuditLog>  $recent
      */
-    private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to): Response {
+    private function exportCsv(array $byEvent, array $byType, array $byUser, $recent, string $from, string $to, Request $request): Response {
         $filename = sprintf('audit_%s_%s.csv', $from, $to);
         $rows = [];
         $rows[] = ['Bereich', 'Schlüssel', 'Anzahl'];
@@ -162,7 +157,7 @@ class AuditActivityReportController extends Controller {
             ];
         }
 
-        return $this->csvWithMetadata($rows, $filename, 'audit-activity', ['from' => $from, 'to' => $to]);
+        return $this->csvWithMetadata($rows, $filename, 'audit-activity', ['from' => $from, 'to' => $to], $request);
     }
 
     /**
@@ -172,7 +167,7 @@ class AuditActivityReportController extends Controller {
      * @param  Collection<int, AuditLog>  $recent
      * @param  array{total:int, users:int, types:int}  $totals
      */
-    private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to): SymfonyResponse {
+    private function exportPdf(array $byEvent, array $byType, array $byUser, $recent, array $totals, string $from, string $to, Request $request): SymfonyResponse {
         $filename = sprintf('audit_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.audit-activity', [
             'byEvent' => $byEvent,
@@ -182,7 +177,7 @@ class AuditActivityReportController extends Controller {
             'totals' => $totals,
             'from' => $from,
             'to' => $to,
-        ], $filename);
+        ], $filename, request: $request, reportCode: 'audit-activity', filters: ['from' => $from, 'to' => $to]);
     }
 
     private function shortType(string $fqcn): string {

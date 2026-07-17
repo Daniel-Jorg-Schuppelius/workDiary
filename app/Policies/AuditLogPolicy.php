@@ -10,17 +10,13 @@
 
 namespace App\Policies;
 
-use App\Models\{AuditLog, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class AuditLogPolicy {
+class AuditLogPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return false;
-    }
-
-    public function view(User $user, AuditLog $log): bool {
-        return false;
-    }
+    protected const ABILITIES = [
+        'viewAny' => false,
+        'view' => false,
+    ];
 }

@@ -54,7 +54,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="3" class="text-sm text-base-content/60">{{ __('Noch keine Übergabe.') }}</td></tr>
+                    <x-table.empty :colspan="3" :title="__('Noch keine Übergabe.')" compact />
                 @endforelse
             </tbody>
         </table>

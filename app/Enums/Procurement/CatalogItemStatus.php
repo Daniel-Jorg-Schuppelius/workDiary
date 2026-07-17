@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Procurement;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Mappingstatus eines externen Katalogartikels (Feature 050, MVP-092/093).
  *
@@ -22,7 +25,9 @@ namespace App\Enums\Procurement;
  * - Ignored:      bewusst nicht übernommen
  * - Discontinued: im letzten Import nicht mehr enthalten (abgekündigt)
  */
-enum CatalogItemStatus: string {
+enum CatalogItemStatus: string implements HasLabel {
+    use HasOptions;
+
     case New = 'new';
     case Proposed = 'proposed';
     case Linked = 'linked';

@@ -11,9 +11,10 @@
 namespace App\Policies;
 
 use App\Models\{CoverageRequirement, User};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 class CoverageRequirementPolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -21,7 +22,7 @@ class CoverageRequirementPolicy {
     }
 
     public function view(User $user, CoverageRequirement $requirement): bool {
-        return $user->organization_id === $requirement->organization_id;
+        return $this->sharesOrganization($user, $requirement);
     }
 
     public function create(User $user): bool {

@@ -10,10 +10,10 @@
 
 namespace App\Plugins\OpenProject\Exceptions;
 
-use RuntimeException;
+use App\Plugins\Support\PluginApiException;
 
 /**
  * Harter Fehler der OpenProject-API (Auth, 4xx/5xx, ungültige Antwort).
  * Signalisiert dem Aufrufer einen nicht-transienten Zustand.
  */
-class OpenProjectApiException extends RuntimeException {}
+class OpenProjectApiException extends PluginApiException {}

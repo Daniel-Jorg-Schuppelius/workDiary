@@ -53,11 +53,10 @@
                 <x-detail-grid.row :label="__('Mobil')" :value="$supplier->mobile" />
                 <x-detail-grid.row :label="__('Homepage')">@if ($supplier->homepage)<a class="link" href="{{ $supplier->homepage }}" target="_blank" rel="noopener">{{ $supplier->homepage }}</a>@endif</x-detail-grid.row>
                 @if ($supplier->address_street || $supplier->address_zip || $supplier->address_city)
-                    <dt class="text-base-content/60">{{ __('Adresse') }}</dt>
-                    <dd class="whitespace-pre-line">{!! e($supplier->address_street) !!}@if($supplier->address_street)
-@endif{{ trim(($supplier->address_zip ?? '').' '.($supplier->address_city ?? '')) }}</dd>
+                    <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{!! e($supplier->address_street) !!}@if($supplier->address_street)
+@endif{{ trim(($supplier->address_zip ?? '').' '.($supplier->address_city ?? '')) }}</x-detail-grid.row>
                 @elseif ($supplier->address)
-                    <dt class="text-base-content/60">{{ __('Adresse') }}</dt><dd class="whitespace-pre-line">{{ $supplier->address }}</dd>
+                    <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{{ $supplier->address }}</x-detail-grid.row>
                 @endif
                 <x-detail-grid.row :label="__('Land')" :value="$supplier->country" />
             </x-detail-grid>

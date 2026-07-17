@@ -11,29 +11,16 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{ClassificationRequirement, User};
 use App\Policies\Concerns\HasAdminBypass;
 
-class ClassificationRequirementPolicy {
+class ClassificationRequirementPolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::ClassificationRequirementView->value);
-    }
-
-    public function view(User $user, ClassificationRequirement $requirement): bool {
-        return $user->can(P::ClassificationRequirementView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::ClassificationRequirementManage->value);
-    }
-
-    public function update(User $user, ClassificationRequirement $requirement): bool {
-        return $user->can(P::ClassificationRequirementManage->value);
-    }
-
-    public function delete(User $user, ClassificationRequirement $requirement): bool {
-        return $user->can(P::ClassificationRequirementManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::ClassificationRequirementView,
+        'view' => P::ClassificationRequirementView,
+        'create' => P::ClassificationRequirementManage,
+        'update' => P::ClassificationRequirementManage,
+        'delete' => P::ClassificationRequirementManage,
+    ];
 }

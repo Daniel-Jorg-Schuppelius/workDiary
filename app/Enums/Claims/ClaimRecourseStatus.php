@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Claims;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Status des Lieferanten-/Herstellerregresses (MVP-253). */
-enum ClaimRecourseStatus: string {
+enum ClaimRecourseStatus: string implements HasLabel {
+    use HasOptions;
+
     case Draft = 'draft';
     case Submitted = 'submitted';
     case Accepted = 'accepted';

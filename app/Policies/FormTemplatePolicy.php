@@ -21,35 +21,25 @@ use App\Policies\Concerns\HasAdminBypass;
  * - user/aussendienst: KEINE Vorlagenpflege; sie sehen aktive Vorlagen
  *   nur indirekt über den Ausfüll-Dialog (FormSubmissionPolicy::create).
  */
-class FormTemplatePolicy {
+class FormTemplatePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::FormTemplateViewAny->value);
-    }
-
-    public function view(User $user, FormTemplate $template): bool {
-        return $user->can(P::FormTemplateViewAny->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::FormTemplateManage->value);
-    }
-
-    public function update(User $user, FormTemplate $template): bool {
-        return $user->can(P::FormTemplateManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::FormTemplateViewAny,
+        'view' => P::FormTemplateViewAny,
+        'create' => P::FormTemplateManage,
+        'update' => P::FormTemplateManage,
+        'activate' => P::FormTemplateManage,
+        'archive' => P::FormTemplateManage,
+        'delete' => P::FormTemplateManage,
+    ];
 
     /** Aktivieren/Archivieren folgt dem Pflege-Recht. */
     public function activate(User $user, FormTemplate $template): bool {
-        return $user->can(P::FormTemplateManage->value);
+        return $this->allows($user, 'activate');
     }
 
     public function archive(User $user, FormTemplate $template): bool {
-        return $user->can(P::FormTemplateManage->value);
-    }
-
-    public function delete(User $user, FormTemplate $template): bool {
-        return $user->can(P::FormTemplateManage->value);
+        return $this->allows($user, 'archive');
     }
 }

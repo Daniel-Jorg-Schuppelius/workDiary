@@ -748,6 +748,7 @@
     "Bucket": "Bucket",
     "CSV": "CSV",
     "CSV oder Excel-Datei hochladen": "Upload CSV or Excel file",
+    "CSV nicht lesbar: :error": "CSV not readable: :error",
     "CSV-Datei": "CSV file",
     "CSV-Export": "CSV export",
     "CSV-Import": "CSV import",

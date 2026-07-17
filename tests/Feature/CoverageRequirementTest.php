@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Shift\ScheduledShiftStatus;
-use App\Models\{CoverageRequirement, DutyPlan, Organization, ScheduledShift, ShiftType, User};
+use App\Models\{CoverageRequirement, DutyPlan, Organization, ScheduledShift, ShiftType};
 use App\Services\CoverageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -24,14 +24,6 @@ class CoverageRequirementTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-    }
-
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function user(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
     /**
@@ -65,7 +57,7 @@ class CoverageRequirementTest extends TestCase {
     public function test_admin_sees_index_page(): void {
         $ctx = $this->planWithTypes();
 
-        $res = $this->actingAs($this->admin())
+        $res = $this->actingAs($this->orgAdmin())
             ->get(route('duty-plans.coverage.index', $ctx['plan']));
 
         $res->assertOk()->assertSee('Soll-Besetzung');
@@ -74,7 +66,7 @@ class CoverageRequirementTest extends TestCase {
     public function test_non_admin_cannot_create(): void {
         $ctx = $this->planWithTypes();
 
-        $res = $this->actingAs($this->user())
+        $res = $this->actingAs($this->orgUser())
             ->post(route('duty-plans.coverage.store', $ctx['plan']), [
                 'shift_type_id' => $ctx['fruh']->id,
                 'weekday' => 1,
@@ -88,7 +80,7 @@ class CoverageRequirementTest extends TestCase {
     public function test_admin_can_create_requirement(): void {
         $ctx = $this->planWithTypes();
 
-        $res = $this->actingAs($this->admin())
+        $res = $this->actingAs($this->orgAdmin())
             ->post(route('duty-plans.coverage.store', $ctx['plan']), [
                 'shift_type_id' => $ctx['fruh']->id,
                 'weekday' => 1,
@@ -118,7 +110,7 @@ class CoverageRequirementTest extends TestCase {
                 'min_staff' => 1,
             ]);
 
-        $admin = $this->admin();
+        $admin = $this->orgAdmin();
 
         $this->actingAs($admin)
             ->put(route('duty-plans.coverage.update', [$ctx['plan'], $req]), [
@@ -165,7 +157,7 @@ class CoverageRequirementTest extends TestCase {
             ]);
 
         // Fremde Anforderung darf das Soll der eigenen Org nicht beeinflussen.
-        $this->actingAs($this->admin());
+        $this->actingAs($this->orgAdmin());
         $svc = app(CoverageService::class);
         $req = $svc->requirementsFor($ctx['plan']);
 
@@ -182,7 +174,7 @@ class CoverageRequirementTest extends TestCase {
         ScheduledShift::factory()->published()->create([
             'organization_id' => $this->organization->id,
             'duty_plan_id' => $ctx['plan']->id,
-            'user_id' => $this->user()->id,
+            'user_id' => $this->orgUser()->id,
             'shift_type_id' => $ctx['fruh']->id,
             'date' => '2026-05-18',
         ]);
@@ -202,7 +194,7 @@ class CoverageRequirementTest extends TestCase {
         ScheduledShift::factory()->published()->create([
             'organization_id' => $this->organization->id,
             'duty_plan_id' => $ctx['plan']->id,
-            'user_id' => $this->user()->id,
+            'user_id' => $this->orgUser()->id,
             'shift_type_id' => $ctx['fruh']->id,
             'date' => '2026-05-18',
         ]);
@@ -246,7 +238,7 @@ class CoverageRequirementTest extends TestCase {
 
     public function test_actual_staffing_counts_only_published_or_confirmed(): void {
         $ctx = $this->planWithTypes();
-        $u = $this->user();
+        $u = $this->orgUser();
 
         ScheduledShift::factory()->published()->create([
             'organization_id' => $this->organization->id,
@@ -295,7 +287,7 @@ class CoverageRequirementTest extends TestCase {
         ScheduledShift::factory()->published()->create([
             'organization_id' => $this->organization->id,
             'duty_plan_id' => $ctx['plan']->id,
-            'user_id' => $this->user()->id,
+            'user_id' => $this->orgUser()->id,
             'shift_type_id' => $ctx['fruh']->id,
             'date' => '2026-05-18',
         ]);
@@ -316,8 +308,8 @@ class CoverageRequirementTest extends TestCase {
 
     public function test_gaps_lists_überbesetzte_tage_when_max_set(): void {
         $ctx = $this->planWithTypes();
-        $u = $this->user();
-        $u2 = $this->user();
+        $u = $this->orgUser();
+        $u2 = $this->orgUser();
 
         CoverageRequirement::factory()->forDate('2026-05-18')->create([
             'organization_id' => $this->organization->id,

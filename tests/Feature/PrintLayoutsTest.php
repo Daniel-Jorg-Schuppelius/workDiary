@@ -26,16 +26,8 @@ class PrintLayoutsTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function user(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     private function planWithShift(?User $assignee = null): array {
-        $assignee = $assignee ?? $this->user();
+        $assignee = $assignee ?? $this->orgUser();
         $plan = DutyPlan::factory()->draft()->weekly()->create([
             'organization_id' => $this->organization->id,
             'from_date' => '2026-05-18',
@@ -65,7 +57,7 @@ class PrintLayoutsTest extends TestCase {
     public function test_admin_can_print_duty_plan_roster_a3(): void {
         $ctx = $this->planWithShift();
 
-        $res = $this->actingAs($this->admin())
+        $res = $this->actingAs($this->orgAdmin())
             ->get(route('print.duty-plan.roster', $ctx['plan']));
 
         $res->assertOk()
@@ -77,7 +69,7 @@ class PrintLayoutsTest extends TestCase {
     public function test_print_duty_plan_roster_anonymises_when_requested(): void {
         $ctx = $this->planWithShift();
 
-        $res = $this->actingAs($this->admin())
+        $res = $this->actingAs($this->orgAdmin())
             ->get(route('print.duty-plan.roster', [$ctx['plan'], 'anonymous' => 1]));
 
         $res->assertOk()
@@ -88,7 +80,7 @@ class PrintLayoutsTest extends TestCase {
     public function test_admin_can_print_week_layout_a4(): void {
         $ctx = $this->planWithShift();
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('print.duty-plan.week', [$ctx['plan'], 'date' => '2026-05-19']))
             ->assertOk()
             ->assertSee('A4 landscape', false)
@@ -99,7 +91,7 @@ class PrintLayoutsTest extends TestCase {
     public function test_admin_can_print_day_briefing_a4(): void {
         $ctx = $this->planWithShift();
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('print.duty-plan.day', [$ctx['plan'], 'date' => '2026-05-19']))
             ->assertOk()
             ->assertSee('A4 portrait', false)
@@ -130,7 +122,7 @@ class PrintLayoutsTest extends TestCase {
     // ── User month ───────────────────────────────────────────────────────────
 
     public function test_user_can_print_own_month(): void {
-        $u = $this->user();
+        $u = $this->orgUser();
 
         $this->actingAs($u)
             ->get(route('print.user.month', [$u, 'month' => '2026-05-01']))
@@ -139,8 +131,8 @@ class PrintLayoutsTest extends TestCase {
     }
 
     public function test_user_cannot_print_other_user_month(): void {
-        $other = $this->user();
-        $intruder = $this->user();
+        $other = $this->orgUser();
+        $intruder = $this->orgUser();
 
         $this->actingAs($intruder)
             ->get(route('print.user.month', [$other]))
@@ -148,9 +140,9 @@ class PrintLayoutsTest extends TestCase {
     }
 
     public function test_admin_can_print_any_user_month(): void {
-        $other = $this->user();
+        $other = $this->orgUser();
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('print.user.month', [$other, 'month' => '2026-05-01']))
             ->assertOk()
             ->assertSee('Monatsplan');
@@ -159,7 +151,7 @@ class PrintLayoutsTest extends TestCase {
     // ── On-call ──────────────────────────────────────────────────────────────
 
     public function test_admin_can_print_on_call_layout(): void {
-        $u = $this->user();
+        $u = $this->orgUser();
         OnCallShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -173,7 +165,7 @@ class PrintLayoutsTest extends TestCase {
             'end_at' => '2026-05-20 03:30:00',
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('print.on-call', ['from' => '2026-05-01', 'to' => '2026-05-31']))
             ->assertOk()
             ->assertSee('Bereitschaft')
@@ -182,7 +174,7 @@ class PrintLayoutsTest extends TestCase {
     }
 
     public function test_non_admin_cannot_print_on_call(): void {
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('print.on-call'))
             ->assertForbidden();
     }
@@ -190,7 +182,7 @@ class PrintLayoutsTest extends TestCase {
     // ── Schichtplan ──────────────────────────────────────────────────────────
 
     public function test_admin_can_print_schedule_layout(): void {
-        $u = $this->user();
+        $u = $this->orgUser();
         $type = ShiftType::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Frühdienst',
@@ -203,7 +195,7 @@ class PrintLayoutsTest extends TestCase {
             'date' => '2026-05-15',
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('print.schedule', ['from' => '2026-05-01', 'to' => '2026-05-31']))
             ->assertOk()
             ->assertSee(__('Schichtplan'))
@@ -212,7 +204,7 @@ class PrintLayoutsTest extends TestCase {
     }
 
     public function test_non_admin_cannot_print_schedule(): void {
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('print.schedule'))
             ->assertForbidden();
     }
@@ -220,7 +212,7 @@ class PrintLayoutsTest extends TestCase {
     // ── Vacation year ────────────────────────────────────────────────────────
 
     public function test_admin_can_print_vacation_year(): void {
-        $u = $this->user();
+        $u = $this->orgUser();
         Vacation::create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -230,7 +222,7 @@ class PrintLayoutsTest extends TestCase {
             'status' => VacationStatus::Approved->value,
         ]);
 
-        $this->actingAs($this->admin())
+        $this->actingAs($this->orgAdmin())
             ->get(route('print.vacations', ['year' => 2026]))
             ->assertOk()
             ->assertSee('Urlaubsübersicht')
@@ -239,7 +231,7 @@ class PrintLayoutsTest extends TestCase {
     }
 
     public function test_non_admin_cannot_print_vacation_year(): void {
-        $this->actingAs($this->user())
+        $this->actingAs($this->orgUser())
             ->get(route('print.vacations'))
             ->assertForbidden();
     }

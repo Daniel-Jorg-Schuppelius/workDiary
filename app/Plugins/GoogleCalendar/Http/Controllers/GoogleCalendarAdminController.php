@@ -10,14 +10,14 @@
 
 namespace App\Plugins\GoogleCalendar\Http\Controllers;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Http\Controllers\Controller;
-use App\Models\{GoogleCalendarConnection, Organization, User};
+use App\Models\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\GoogleCalendarConfig;
+use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Support\OAuthStateHandshake;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Artisan, Auth, Cache};
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 use Throwable;
 
@@ -30,7 +30,7 @@ use Throwable;
  * Audit-Payloads.
  */
 class GoogleCalendarAdminController extends Controller {
-    private const STATE_TTL_SECONDS = 600;
+    use ResolvesPluginOrgContext;
 
     public function index(): View {
         $admin = $this->admin();
@@ -68,13 +68,7 @@ class GoogleCalendarAdminController extends Controller {
             return back()->with('error', __('google_calendar.flash.not_configured'));
         }
 
-        $state = Str::random(40);
-        $verifier = OAuth2AuthorizationCodeGrant::generatePkceVerifier();
-        Cache::put($this->stateKey($state), [
-            'organization_id' => (int) $organization->id,
-            'user_id' => (int) $admin->id,
-            'pkce_verifier' => $verifier,
-        ], self::STATE_TTL_SECONDS);
+        ['state' => $state, 'verifier' => $verifier] = $this->handshake()->start((int) $organization->id, (int) $admin->id);
 
         // access_type=offline + prompt=consent: nur so liefert Google
         // zuverlässig ein Refresh-Token (auch bei erneuter Verbindung).
@@ -91,14 +85,11 @@ class GoogleCalendarAdminController extends Controller {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
-        $state = (string) $request->query('state', '');
         $code = (string) $request->query('code', '');
 
-        // Einmalig einlösen: pull() entfernt den state sofort (Replay-Schutz).
-        $payload = $state !== '' ? Cache::pull($this->stateKey($state)) : null;
-        if (! is_array($payload)
-            || (int) ($payload['organization_id'] ?? 0) !== (int) $organization->id
-            || (int) ($payload['user_id'] ?? 0) !== (int) $admin->id) {
+        // Einmalig einlösen (Replay-Schutz), org- und sitzungsgebunden.
+        $payload = $this->handshake()->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
+        if ($payload === null) {
             return redirect()->route('admin.google-calendar.index')->with('error', __('google_calendar.flash.state_invalid'));
         }
 
@@ -107,7 +98,7 @@ class GoogleCalendarAdminController extends Controller {
         }
 
         try {
-            $token = $oauth->grant()->exchangeAuthorizationCode($code, (string) ($payload['pkce_verifier'] ?? '') ?: null);
+            $token = $oauth->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
         } catch (Throwable $e) {
             // Nur die Fehlerklasse — nie Payload/Token.
             return redirect()->route('admin.google-calendar.index')
@@ -212,23 +203,7 @@ class GoogleCalendarAdminController extends Controller {
         return redirect()->route('admin.google-calendar.index')->with('success', __('google_calendar.flash.disconnected'));
     }
 
-    private function stateKey(string $state): string {
-        return 'google-calendar-oauth-state:' . $state;
-    }
-
-    private function admin(): User {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->isAdmin(), 403);
-        abort_unless($user->organization_id !== null, 422, 'Kein Organisationskontext.');
-
-        return $user;
-    }
-
-    private function organization(User $admin): Organization {
-        $org = $admin->organization;
-        abort_unless($org instanceof Organization, 422, 'Kein Organisationskontext.');
-
-        return $org;
+    private function handshake(): OAuthStateHandshake {
+        return new OAuthStateHandshake('google-calendar-oauth-state');
     }
 }

@@ -12,14 +12,14 @@ namespace App\Plugins\Todoist\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\TodoistConnection;
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
 use App\Plugins\Todoist\TodoistConfig;
 use RuntimeException;
 
 /**
  * Todoist-API-Client (einheitliche API v1, Feature 055) auf dem
  * `php-api-toolkit`-Fundament: OAuth2-Bearer über den org-gebundenen
- * {@see TodoistTokenStore}, cursor-basierte Pagination, Retry/Backoff inkl.
+ * {@see ConnectionTokenStore}, cursor-basierte Pagination, Retry/Backoff inkl.
  * `Retry-After` (429) aus dem Toolkit. Der Transport kommt aus der
  * {@see PluginHttpFactory} — Tests ersetzen sie durch
  * {@see \Tests\Support\FakePluginHttp} (Guzzle-MockHandler-Muster).
@@ -32,7 +32,7 @@ class TodoistApiClient {
     public function __construct(TodoistConnection $connection) {
         $this->base = TodoistConfig::resolve()['api_base'];
         $this->api = app(PluginHttpFactory::class)->client('todoist', $this->base);
-        $this->api->setAuthentication(new OAuth2BearerAuthentication(new TodoistTokenStore($connection)));
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($connection)));
     }
 
     /**

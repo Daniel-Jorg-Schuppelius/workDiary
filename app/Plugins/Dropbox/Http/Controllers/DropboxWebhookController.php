@@ -14,6 +14,7 @@ use App\Enums\CloudIntake\CloudIntakeProvider;
 use App\Http\Controllers\Controller;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\Dropbox\DropboxConfig;
+use App\Plugins\Support\WebhookSignature;
 use App\Services\CloudIntake\IntakeWakeSignal;
 use Illuminate\Http\{Request, Response};
 
@@ -37,11 +38,9 @@ class DropboxWebhookController extends Controller {
     }
 
     public function __invoke(Request $request, IntakeWakeSignal $wake): Response {
+        // Dropbox-Signatur: Hex-HMAC-SHA256(body, App-Secret) ohne Prefix.
         $secret = DropboxConfig::resolve()['client_secret'];
-        $signature = (string) $request->header('X-Dropbox-Signature', '');
-        $expected = hash_hmac('sha256', (string) $request->getContent(), $secret);
-
-        if ($secret === '' || $signature === '' || ! hash_equals($expected, $signature)) {
+        if (! WebhookSignature::hmacValid((string) $request->getContent(), $secret, (string) $request->header('X-Dropbox-Signature', ''), 'sha256')) {
             abort(403);
         }
 

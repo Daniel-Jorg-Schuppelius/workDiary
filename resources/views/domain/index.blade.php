@@ -81,7 +81,7 @@
                         <td><span class="badge badge-{{ $domain->sync_status->badge() }} badge-sm">{{ $domain->sync_status->label() }}</span></td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-base-content/60 py-8">{{ __('domain.empty.domains') }}</td></tr>
+                    <x-table.empty :colspan="5" :title="__('domain.empty.domains')" compact />
                 @endforelse
             </tbody>
         </table>

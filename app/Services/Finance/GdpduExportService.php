@@ -21,6 +21,8 @@ use CommonToolkit\Builders\{CSVDocumentBuilder, XmlDocumentBuilder};
 use CommonToolkit\Entities\CSV\DataLine;
 use CommonToolkit\Entities\XML\Element;
 use CommonToolkit\Generators\CSV\CSVGenerator;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\Carbon;
 
@@ -315,10 +317,10 @@ class GdpduExportService {
         // Reproduzierbare Hashes über die DATEIINHALTE (nicht das ZIP-Binär).
         $fileHashes = [];
         foreach ($files as $name => $content) {
-            $fileHashes[$name] = hash('sha256', $content);
+            $fileHashes[$name] = CryptoHelper::hash($content);
         }
         ksort($fileHashes);
-        $packageHash = hash('sha256', implode("\n", array_map(
+        $packageHash = CryptoHelper::hash(implode("\n", array_map(
             static fn (string $name, string $hash): string => $name . ':' . $hash,
             array_keys($fileHashes),
             array_values($fileHashes),
@@ -754,19 +756,17 @@ class GdpduExportService {
      */
     private function zip(array $files): string {
         $dir = storage_path('app/gobd-tmp/' . bin2hex(random_bytes(8)));
-        if (! is_dir($dir)) {
-            mkdir($dir, 0700, true);
-        }
+        Folder::create($dir, 0700, true);
         $paths = [];
         try {
             foreach ($files as $name => $content) {
                 $path = $dir . '/' . $name;
-                file_put_contents($path, $content);
+                File::write($path, $content);
                 $paths[] = $path;
             }
             $zipPath = $dir . '/package.zip';
             ZipFile::create($paths, $zipPath);
-            $binary = (string) file_get_contents($zipPath);
+            $binary = File::read($zipPath);
         } finally {
             foreach (glob($dir . '/*') ?: [] as $f) {
                 @unlink($f);
@@ -786,7 +786,8 @@ class GdpduExportService {
             return '';
         }
 
-        return number_format((float) $value, $accuracy, ',', '');
+        // Byte-identisch zu number_format(…, ',', '') — GoBD-Hash bleibt stabil.
+        return NumberHelper::toGermanFormat((float) $value, $accuracy);
     }
 
     /** Zeitpunkt (Datum + Uhrzeit) als Alpha-Spalte — GDPdU-`Date` kennt nur Datum. */

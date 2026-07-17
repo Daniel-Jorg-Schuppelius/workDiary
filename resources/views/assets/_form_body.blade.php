@@ -40,7 +40,7 @@
     <x-select-field name="product_id" :label="__('products.field.product')" span="2" :hint="__('products.field.product_help')">
         <option value="">{{ __('products.field.no_product') }}</option>
         @foreach ($products ?? [] as $productOption)
-            <option value="{{ $productOption->id }}" @selected((int) old('product_id', $asset->product_id ?? 0) === $productOption->id)>{{ $productOption->name }}</option>
+            <option value="{{ $productOption->sqid }}" @selected((string) old('product_id', \App\Support\Sqid::encode(\App\Models\Product::class, $asset->product_id ?? null)) === $productOption->sqid)>{{ $productOption->name }}</option>
         @endforeach
     </x-select-field>
 
@@ -80,8 +80,4 @@
     </div>
 </x-form-group>
 
-@if ($errors->any())
-    <div class="alert alert-error text-sm">
-        <ul class="list-disc pl-5">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-    </div>
-@endif
+<x-validation-errors />

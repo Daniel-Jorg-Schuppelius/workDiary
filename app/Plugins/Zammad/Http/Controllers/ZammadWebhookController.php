@@ -14,6 +14,7 @@ namespace App\Plugins\Zammad\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\{Organization, ZammadConnection};
+use App\Plugins\Support\WebhookSignature;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use Illuminate\Http\{JsonResponse, Request};
@@ -35,7 +36,8 @@ class ZammadWebhookController extends Controller {
             return response()->json(['status' => 'ignored'], 404);
         }
 
-        if (! $this->signatureValid($request, (string) $conn->webhook_secret)) {
+        // Zammad-Signatur: sha1=HMAC-SHA1(body, secret), Konstantzeit-Vergleich.
+        if (! WebhookSignature::hmacValid((string) $request->getContent(), (string) $conn->webhook_secret, (string) $request->header('X-Hub-Signature', ''), 'sha1', 'sha1=')) {
             return response()->json(['status' => 'invalid_signature'], 403);
         }
 
@@ -53,16 +55,5 @@ class ZammadWebhookController extends Controller {
         }
 
         return response()->json(['status' => 'ok'] + $result);
-    }
-
-    /** Konstantzeit-Vergleich der Zammad-Signatur (sha1=HMAC-SHA1(body, secret)). */
-    private function signatureValid(Request $request, string $secret): bool {
-        $header = (string) $request->header('X-Hub-Signature', '');
-        if (! str_starts_with($header, 'sha1=')) {
-            return false;
-        }
-        $expected = 'sha1=' . hash_hmac('sha1', $request->getContent(), $secret);
-
-        return hash_equals($expected, $header);
     }
 }

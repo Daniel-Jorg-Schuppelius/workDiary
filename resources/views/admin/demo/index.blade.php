@@ -19,15 +19,7 @@
 >
     <x-slot:note>{{ __('Beispieldaten zum Vorführen, Testen und Onboarden. Erzeugt Kunden, Projekte, einen vollständigen Beispielauftrag und Hintergrund-Aufträge der letzten 60 Tage.') }}</x-slot:note>
 
-    @if ($errors->any())
-        <div class="alert alert-error">
-            <ul class="text-sm">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">

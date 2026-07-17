@@ -15,8 +15,8 @@ namespace App\Services\Integration;
 use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
 use App\Models\IntegrationOutboxEntry;
+use App\Services\Concerns\ManagesOutboxTransitions;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 /**
  * Persistierte, generische Integrations-Outbox (Feature 055, MVP-114).
@@ -25,6 +25,9 @@ use Illuminate\Support\Carbon;
  * Bestätigung bzw. Kompensationspflicht (fachlicher Ausgleich, kein Rollback).
  */
 class IntegrationOutboxService {
+    /** @use ManagesOutboxTransitions<IntegrationOutboxEntry> */
+    use ManagesOutboxTransitions;
+
     /**
      * Reiht eine Operation idempotent ein. Existiert bereits ein Eintrag mit
      * demselben Schlüssel, wird dieser zurückgegeben (keine Doppelzustellung).
@@ -32,54 +35,27 @@ class IntegrationOutboxService {
      * @param array<string, mixed> $payload
      */
     public function enqueue(int $organizationId, string $pluginId, string $operation, array $payload, string $idempotencyKey, ?Model $subject = null): IntegrationOutboxEntry {
-        $entry = IntegrationOutboxEntry::withoutGlobalScopes()->firstOrCreate(
-            ['organization_id' => $organizationId, 'idempotency_key' => $idempotencyKey],
+        return $this->enqueueOutboxEntry(
+            IntegrationOutboxEntry::class,
+            IntegrationOutboxDeliveryJob::class,
+            $organizationId,
+            $idempotencyKey,
             [
                 'plugin_id' => $pluginId,
                 'operation' => $operation,
                 'payload' => $payload,
-                'status' => IntegrationOutboxStatus::Pending->value,
-                'attempts' => 0,
                 'subject_type' => $subject?->getMorphClass(),
                 'subject_id' => $subject?->getKey(),
             ],
         );
-
-        if ($entry->wasRecentlyCreated) {
-            // afterCommit: enqueue() wird aus Observern in Business-Transaktionen aufgerufen — der Job darf erst
-            // nach dem Commit laufen, sonst sieht er den Outbox-Eintrag (Nicht-DB-Driver) noch nicht.
-            IntegrationOutboxDeliveryJob::dispatch($entry->id)->afterCommit();
-        }
-
-        return $entry;
     }
 
-    public function markProcessing(IntegrationOutboxEntry $entry): void {
-        $entry->forceFill([
-            'status' => IntegrationOutboxStatus::Processing,
-            'attempts' => $entry->attempts + 1,
-        ])->save();
+    protected function outboxStatusEnum(): string {
+        return IntegrationOutboxStatus::class;
     }
 
-    public function markConfirmed(IntegrationOutboxEntry $entry): void {
-        $entry->forceFill([
-            'status' => IntegrationOutboxStatus::Confirmed,
-            'last_error' => null,
-            'confirmed_at' => Carbon::now(),
-        ])->save();
-    }
-
-    public function markFailed(IntegrationOutboxEntry $entry, string $error): void {
-        $entry->forceFill([
-            'status' => IntegrationOutboxStatus::Failed,
-            'last_error' => mb_substr($error, 0, 190),
-        ])->save();
-    }
-
-    public function markCompensationRequired(IntegrationOutboxEntry $entry, string $error): void {
-        $entry->forceFill([
-            'status' => IntegrationOutboxStatus::CompensationRequired,
-            'last_error' => mb_substr($error, 0, 190),
-        ])->save();
+    /** Spaltenbreite last_error: 190 Zeichen. */
+    protected function normalizeOutboxError(string $error): string {
+        return mb_substr($error, 0, 190);
     }
 }

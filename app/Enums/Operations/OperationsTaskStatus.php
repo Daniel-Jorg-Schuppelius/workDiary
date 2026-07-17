@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Operations;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Status einer Betriebsaufgabe (Feature 041, MVP-058).
  * done = manuell erledigt; resolved = Ursache weggefallen (Auto-Resolve
  * durch den Scanner); ignored = bewusst verworfen (mit Grund).
  */
-enum OperationsTaskStatus: string {
+enum OperationsTaskStatus: string implements HasLabel {
+    use HasOptions;
+
     case Open = 'open';
     case Snoozed = 'snoozed';
     case Delegated = 'delegated';

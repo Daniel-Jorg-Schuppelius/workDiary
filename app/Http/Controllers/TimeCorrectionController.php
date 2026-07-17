@@ -14,6 +14,7 @@ use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission;
 use App\Models\{Attendance, TimeCorrectionRequest, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -107,6 +108,11 @@ class TimeCorrectionController extends Controller {
         Gate::authorize('create', TimeCorrectionRequest::class);
         /** @var User $user */
         $user = Auth::user();
+
+        // Sqid-Input dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('user_id')) {
+            $request->merge(['user_id' => Sqid::decodeOrNumeric(User::class, $request->input('user_id'))]);
+        }
 
         $data = $request->validate([
             'user_id' => ['nullable', 'integer'],

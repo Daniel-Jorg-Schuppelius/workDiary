@@ -26,14 +26,6 @@ class ComplianceTest extends TestCase {
         $this->setUpOrganization();
     }
 
-    private function admin(): User {
-        return User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function user(): User {
-        return User::factory()->user()->create(['organization_id' => $this->organization->id]);
-    }
-
     /** Setze den Compliance-Mode auf der Organisation. */
     private function setMode(string $mode, array $extra = []): void {
         $this->organization->settings = [
@@ -56,8 +48,8 @@ class ComplianceTest extends TestCase {
 
     public function test_mode_off_skips_all_checks(): void {
         $this->setMode('off');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -74,8 +66,8 @@ class ComplianceTest extends TestCase {
 
     public function test_mode_warn_returns_warnings_but_creates(): void {
         $this->setMode('warn');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -93,8 +85,8 @@ class ComplianceTest extends TestCase {
 
     public function test_mode_block_rejects_violations(): void {
         $this->setMode('block');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -111,8 +103,8 @@ class ComplianceTest extends TestCase {
 
     public function test_block_can_be_overridden(): void {
         $this->setMode('block');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -130,8 +122,8 @@ class ComplianceTest extends TestCase {
 
     public function test_overlap_rule_detects_conflict(): void {
         $this->setMode('block');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -150,8 +142,8 @@ class ComplianceTest extends TestCase {
 
     public function test_overlap_rule_passes_for_disjoint_shifts(): void {
         $this->setMode('block');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -170,8 +162,8 @@ class ComplianceTest extends TestCase {
 
     public function test_rest_period_rule_detects_short_break(): void {
         $this->setMode('block');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         // Vortag 18:00-23:00 → 9h Pause bis 08:00 nächster Tag.
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
@@ -188,8 +180,8 @@ class ComplianceTest extends TestCase {
 
     public function test_max_daily_hours_rule_detects_overload(): void {
         $this->setMode('block', ['max_hours_day' => 8]);
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         ScheduledShift::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -211,8 +203,8 @@ class ComplianceTest extends TestCase {
         // Wochenstunden ist severity=warning → block triggert nur bei Errors.
         // Daher muss der Endpoint mit 201 antworten und compliance_warnings setzen.
         $this->setMode('block', ['max_hours_week' => 4]);
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
 
         $res = $this->actingAs($admin)
             ->postJson(route('schedule.shifts.store'), $this->payload($u, [
@@ -227,8 +219,8 @@ class ComplianceTest extends TestCase {
 
     public function test_consecutive_days_rule_warns(): void {
         $this->setMode('warn', ['max_consecutive_days' => 2]);
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         // Drei Tage davor je eine Schicht
         foreach (['2026-05-29', '2026-05-30', '2026-05-31'] as $d) {
             ScheduledShift::factory()->create([
@@ -250,8 +242,8 @@ class ComplianceTest extends TestCase {
 
     public function test_vacation_conflict_rule_blocks_approved_vacation(): void {
         $this->setMode('block');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         Vacation::create([
             'organization_id' => $this->organization->id,
             'user_id' => $u->id,
@@ -267,8 +259,8 @@ class ComplianceTest extends TestCase {
 
     public function test_qualification_match_rule_warns_when_user_lacks_qualification(): void {
         $this->setMode('warn');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
 
         $type = ShiftType::factory()->create([
             'organization_id' => $this->organization->id,
@@ -312,8 +304,8 @@ class ComplianceTest extends TestCase {
 
     public function test_holiday_double_book_rule_warns(): void {
         $this->setMode('warn');
-        $admin = $this->admin();
-        $u = $this->user();
+        $admin = $this->orgAdmin();
+        $u = $this->orgUser();
         Holiday::create([
             'organization_id' => $this->organization->id,
             'name' => 'Test-Feiertag',

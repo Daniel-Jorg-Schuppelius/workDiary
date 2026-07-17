@@ -12,9 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
-use App\Models\Organization;
-use Spatie\Permission\Models\{Permission, Role};
-use Spatie\Permission\PermissionRegistrar;
+use App\Services\Concerns\SeedsIsolatedPermissionSet;
 
 /**
  * Single Source of Truth fuer die Datenschutz-Permissions. BEWUSST getrennt von
@@ -27,7 +25,12 @@ use Spatie\Permission\PermissionRegistrar;
  * Prefix `dataprotection.*`.
  */
 final class DataProtectionPermissions {
+    use SeedsIsolatedPermissionSet;
+
     public const ROLE_DATENSCHUTZ = 'datenschutz';
+
+    /** Trait-Vertrag ({@see SeedsIsolatedPermissionSet}). */
+    public const ROLE = self::ROLE_DATENSCHUTZ;
 
     /** @var list<string> */
     public const ALL = [
@@ -44,31 +47,4 @@ final class DataProtectionPermissions {
         'dataprotection.export',        // VVT-/Fall-Exporte
         'dataprotection.audit.view',    // Ereignisprotokoll einsehen
     ];
-
-    /** Legt die Permissions global (team-unabhaengig, guard web) an. Idempotent. */
-    public static function ensurePermissionsExist(): void {
-        foreach (self::ALL as $name) {
-            Permission::findOrCreate($name, 'web');
-        }
-    }
-
-    /**
-     * Legt fuer eine Organisation die Rolle `datenschutz` mit allen Permissions
-     * an (team_id = organization.id). Idempotent.
-     */
-    public static function seedOrganization(Organization $organization, ?PermissionRegistrar $registrar = null): void {
-        $registrar ??= app(PermissionRegistrar::class);
-        self::ensurePermissionsExist();
-
-        $registrar->setPermissionsTeamId($organization->id);
-        $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
-
-        /** @var Role $role */
-        $role = Role::query()->firstOrCreate([
-            $teamForeign => $organization->id,
-            'name' => self::ROLE_DATENSCHUTZ,
-            'guard_name' => 'web',
-        ]);
-        $role->syncPermissions(self::ALL);
-    }
 }

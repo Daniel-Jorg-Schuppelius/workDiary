@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus, SlaStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use App\Services\ServiceTicket\SlaTimer;
 use Database\Factories\ServiceTicketFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -57,6 +57,7 @@ class ServiceTicket extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -256,5 +257,10 @@ class ServiceTicket extends Model {
     /** Verbleibende Minuten bis zur Lösungsfrist (negativ = überfällig). */
     public function slaMinutesRemaining(): ?int {
         return app(SlaTimer::class)->minutesRemaining($this->resolution_due_at);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['ticket_no', 'title'];
     }
 }

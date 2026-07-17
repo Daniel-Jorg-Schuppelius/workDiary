@@ -40,9 +40,7 @@
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-    @if($errors->any())
-        <div class="alert alert-error"><ul>@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
-    @endif
+    <x-validation-errors />
 
     @if($context['summary'])
         <div class="rounded-box bg-base-100 p-4 shadow">

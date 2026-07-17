@@ -28,6 +28,18 @@ trait ResolvesGlobalDateRange {
     }
 
     /**
+     * Normalisierte [von, bis]-Grenzen des global gewählten Zeitraums:
+     * Von am Tagesanfang, Bis am Tagesende — ohne from/to-Query-Override.
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    protected function globalDateRangeBounds(): array {
+        $range = $this->globalDateRange();
+
+        return [$range['from']->startOfDay(), $range['to']->endOfDay()];
+    }
+
+    /**
      * Effektiver [von, bis]-Zeitraum eines Listen-Requests: explizite
      * from/to-Query-Parameter haben Vorrang (Bookmarks), sonst der global
      * gewählte Zeitraum aus dem Header-Widget. Von startet am Tagesanfang,
@@ -43,9 +55,7 @@ trait ResolvesGlobalDateRange {
             return [$from, $to];
         }
 
-        $range = $this->globalDateRange();
-
-        return [$range['from']->startOfDay(), $range['to']->endOfDay()];
+        return $this->globalDateRangeBounds();
     }
 
     /**

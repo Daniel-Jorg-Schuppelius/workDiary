@@ -39,7 +39,7 @@ class GithubClient {
      * der `since`-Aufholpunkt monoton fortgeschrieben werden kann.
      * `per_page` ist API-seitig auf 100 begrenzt.
      *
-     * @return array<int, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     public function issues(string $owner, string $repo, ?string $since, int $page = 1, int $perPage = 100): array {
         $query = [

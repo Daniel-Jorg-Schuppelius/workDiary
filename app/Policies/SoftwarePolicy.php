@@ -11,32 +11,20 @@
 namespace App\Policies;
 
 use App\Enums\User\Permission as P;
-use App\Models\{Software, User};
+use App\Models\Software;
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
  * Software gehört zur IT-Asset-Domäne und teilt die Asset-Berechtigungen.
  */
-class SoftwarePolicy {
+class SoftwarePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::AssetView->value);
-    }
-
-    public function view(User $user, Software $software): bool {
-        return $user->can(P::AssetView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::AssetCreate->value);
-    }
-
-    public function update(User $user, Software $software): bool {
-        return $user->can(P::AssetUpdate->value);
-    }
-
-    public function delete(User $user, Software $software): bool {
-        return $user->can(P::AssetUpdate->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::AssetView,
+        'view' => P::AssetView,
+        'create' => P::AssetCreate,
+        'update' => P::AssetUpdate,
+        'delete' => P::AssetUpdate,
+    ];
 }

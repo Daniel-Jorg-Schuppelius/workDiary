@@ -14,7 +14,8 @@ namespace App\Console\Commands;
 
 use App\Models\Organization;
 use App\Services\{ProjectDuplicateFinder, ProjectMergeService};
-use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 /**
  * Listet Projekt-Dubletten und führt Treffer auf Wunsch automatisch zusammen
@@ -22,71 +23,25 @@ use Illuminate\Console\Command;
  * ist ein Dry-Run; erst `--apply` schreibt. Default-Stufe ist „likely" (gleicher
  * Kunde + identischer Name); unscharfe Treffer (fuzzy) bleiben dem manuellen
  * Abgleich vorbehalten, sofern nicht ausdrücklich gewählt.
+ *
+ * @extends MergeDuplicatesCommand<\App\Models\Project>
  */
-class ProjectMergeDuplicatesCommand extends Command {
-    protected $signature = 'project:merge-duplicates
-        {--organization= : ID einer einzelnen Organisation, sonst alle}
+class ProjectMergeDuplicatesCommand extends MergeDuplicatesCommand {
+    protected $signature = 'project:merge-duplicates ' . self::ORGANIZATION_OPTION . '
         {--confidence=likely : Welche Stufe automatisch gemergt wird (exact|likely|fuzzy)}
         {--apply : Tatsächlich zusammenführen (sonst nur Vorschau)}';
 
     protected $description = 'Findet doppelte Projekte (gleicher Kunde + Name) und führt sie zusammen. Ohne --apply nur Vorschau.';
 
-    public function handle(ProjectDuplicateFinder $finder, ProjectMergeService $merger): int {
-        $orgId = $this->option('organization');
-        $confidence = (string) $this->option('confidence');
-        $apply = (bool) $this->option('apply');
+    protected function candidates(Organization $organization, string $confidence): Collection {
+        return app(ProjectDuplicateFinder::class)->candidates($organization, $confidence);
+    }
 
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
+    protected function mergePair(Model $source, Model $target): void {
+        app(ProjectMergeService::class)->merge($source, $target);
+    }
 
-        $organizations = $query->get();
-        if ($organizations->isEmpty()) {
-            $this->warn('Keine Organisationen gefunden.');
-
-            return self::SUCCESS;
-        }
-
-        $merged = 0;
-        foreach ($organizations as $org) {
-            $candidates = $finder->candidates($org, $confidence);
-            if ($candidates->isEmpty()) {
-                continue;
-            }
-
-            $this->line("Organisation #{$org->id} ({$org->name}): {$candidates->count()} Kandidat(en) [{$confidence}]");
-            foreach ($candidates as $pair) {
-                /** @var \App\Models\Project $source */
-                $source = $pair['source'];
-                /** @var \App\Models\Project $target */
-                $target = $pair['target'];
-                $reasons = implode(', ', $pair['reasons']);
-
-                $arrow = $apply ? '→ zusammengeführt' : '→ würde zusammenführen';
-                $this->line(sprintf(
-                    '  #%d %s  %s  #%d %s  (%s)',
-                    $source->id,
-                    $source->name,
-                    $arrow,
-                    $target->id,
-                    $target->name,
-                    $reasons,
-                ));
-
-                if ($apply) {
-                    $merger->merge($source, $target);
-                    $merged++;
-                }
-            }
-        }
-
-        if (! $apply) {
-            $this->info('Dry-Run — nichts geändert. Mit --apply ausführen.');
-        } else {
-            $this->info("{$merged} Projekt(e) zusammengeführt.");
-        }
-
-        return self::SUCCESS;
+    protected function appliedSummary(int $merged): string {
+        return "{$merged} Projekt(e) zusammengeführt.";
     }
 }

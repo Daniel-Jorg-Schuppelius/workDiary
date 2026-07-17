@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Policies\AssetCompliance;
 
 use App\Enums\User\Permission as P;
-use App\Models\AssetCompliance\AssetComplianceProfile;
 use App\Models\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\PermissionPolicy;
 
 /**
  * Policy des Prüfmittel-Moduls (Feature 075). Kind-Objekte (Pflichten,
@@ -23,36 +23,29 @@ use App\Policies\Concerns\HasAdminBypass;
  * autorisiert: manage = Katalog/Pflichten, inspect = Protokolle/Nachweise,
  * release = Ausnahmefreigaben (D12).
  */
-class AssetComplianceProfilePolicy {
+class AssetComplianceProfilePolicy extends PermissionPolicy {
     use HasAdminBypass;
 
-    public function viewAny(User $user): bool {
-        return $user->can(P::AssetComplianceViewAny->value);
-    }
-
-    public function view(User $user, AssetComplianceProfile $profile): bool {
-        return $user->can(P::AssetComplianceView->value);
-    }
-
-    public function create(User $user): bool {
-        return $user->can(P::AssetComplianceManage->value);
-    }
-
-    public function update(User $user, AssetComplianceProfile $profile): bool {
-        return $user->can(P::AssetComplianceManage->value);
-    }
+    protected const ABILITIES = [
+        'viewAny' => P::AssetComplianceViewAny,
+        'view' => P::AssetComplianceView,
+        'create' => P::AssetComplianceManage,
+        'update' => P::AssetComplianceManage,
+        'inspect' => P::AssetComplianceInspect,
+        'release' => P::AssetComplianceRelease,
+    ];
 
     /**
      * Prüfungen durchführen und Nachweise erfassen (klassenweite Ability).
      */
     public function inspect(User $user): bool {
-        return $user->can(P::AssetComplianceInspect->value);
+        return $this->allows($user, 'inspect');
     }
 
     /**
      * Befristete Ausnahmefreigaben für Prüfsperren (D12, klassenweit).
      */
     public function release(User $user): bool {
-        return $user->can(P::AssetComplianceRelease->value);
+        return $this->allows($user, 'release');
     }
 }

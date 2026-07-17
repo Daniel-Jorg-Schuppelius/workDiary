@@ -14,6 +14,7 @@ namespace App\Services\Applications;
 
 use App\Models\Applications\{ApplicationOpportunity, ApplicationSubmission};
 use App\Models\{Project, User};
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -89,7 +90,7 @@ class TenderService {
                 'version' => $version,
                 'channel' => $channel,
                 'snapshot' => $snapshot,
-                'sha256' => hash('sha256', (string) json_encode($snapshot)),
+                'sha256' => CryptoHelper::hash(JsonHelper::encode($snapshot)),
                 'note' => $note,
                 'submitted_by' => $actor->id,
             ]);

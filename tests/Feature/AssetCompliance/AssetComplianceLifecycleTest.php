@@ -129,9 +129,13 @@ final class AssetComplianceLifecycleTest extends TestCase {
         );
         $this->assertDatabaseHas('asset_calibration_certificates', ['certificate_no' => 'KAL-0815']);
 
-        // Nachweise sind unveränderbar (Korrektur nur versioniert).
+        // Nachweise sind append-only (Korrektur nur versioniert).
         $event->note = 'Manipulation';
-        $event->save();
+        try {
+            $event->save();
+            $this->fail('Update eines Prüfereignisses muss blockiert sein.');
+        } catch (\RuntimeException) {
+        }
         $this->assertNotSame('Manipulation', (string) $event->fresh()->note);
     }
 

@@ -38,7 +38,7 @@ trait Auditable {
                 return;
             }
             $original = collect($changes)->mapWithKeys(fn($v, $k) => [$k => $model->getOriginal($k)])->all();
-            $model->audit('updated', [
+            $model->audit($model->resolveAuditEvent('updated', $changes), [
                 'before' => $model->getAuditAttributes($original),
                 'after' => $model->getAuditAttributes($changes),
             ]);
@@ -48,6 +48,31 @@ trait Auditable {
             assert($model instanceof self);
             $model->audit('deleted', $model->getAuditAttributes($model->getAttributes()));
         });
+    }
+
+    /**
+     * Hook: Event-Name vor dem Schreiben anpassen. Default: unverändert —
+     * Modelle mit archived/restored-Semantik überschreiben auf
+     * {@see mapArchivedAtAuditEvent} (opt-in, sonst bleibt `updated`).
+     *
+     * @param  array<string, mixed>  $changes  rohe getChanges() des Updates
+     */
+    protected function resolveAuditEvent(string $event, array $changes): string {
+        return $event;
+    }
+
+    /**
+     * Mappt `updated` → `archived`/`restored` bei archived_at-Wechsel
+     * (Event-Namen revisionsrelevant/GoBD; Logik wie im früheren Observer-Trio).
+     *
+     * @param  array<string, mixed>  $changes
+     */
+    protected function mapArchivedAtAuditEvent(string $event, array $changes): string {
+        if ($event === 'updated' && array_key_exists('archived_at', $changes)) {
+            return $changes['archived_at'] === null ? 'restored' : 'archived';
+        }
+
+        return $event;
     }
 
     /** @return MorphMany<AuditLog, Model> */

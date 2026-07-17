@@ -21,10 +21,7 @@ class UserBookmarkController extends Controller {
         Gate::authorize('viewAny', UserBookmark::class);
         $search = $request->string('q')->toString();
         $bookmarks = Auth::user()?->bookmarks()
-            ->when($search !== '', fn($q) => $q->where(function ($w) use ($search): void {
-                $w->whereLikeEscaped('label', $search)
-                    ->orWhereLikeEscaped('url', $search);
-            }))
+            ->when($search !== '', fn($q) => $q->search($search))
             ->get() ?? collect();
 
         return view('bookmarks.index', compact('bookmarks', 'search'));

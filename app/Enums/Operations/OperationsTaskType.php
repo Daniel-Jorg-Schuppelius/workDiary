@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Enums\Operations;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
 use App\Enums\Notification\NotificationEvent;
 
 /**
@@ -20,7 +22,9 @@ use App\Enums\Notification\NotificationEvent;
  * Eskalation) pflegt der Admin weiterhin zentral in den
  * Benachrichtigungsregeln, keine zweite Regel-Engine.
  */
-enum OperationsTaskType: string {
+enum OperationsTaskType: string implements HasLabel {
+    use HasOptions;
+
     case BackupOverdue = 'backup_overdue';
     case BackupFailed = 'backup_failed';
     case RestoreTestOverdue = 'restore_test_overdue';

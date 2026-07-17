@@ -15,10 +15,11 @@
                placeholder="{{ __('z. B. New York, Paris, London – leer = Standardtarif des Landes') }}">
         <p class="fieldset-label text-base-content/60">{{ __('Sondertarif für eine Stadt/Region nach BMF-Auslandstabelle. Leer lassen für den Standardtarif des Landes.') }}</p>
     </div>
-    <x-input-field type="date" name="valid_from" :label="__('Gültig ab')" required
-                   :value="old('valid_from', optional($rate->valid_from)->format('Y-m-d'))" />
-    <x-input-field type="date" name="valid_to" :label="__('Gültig bis')"
-                   :value="old('valid_to', optional($rate->valid_to)->format('Y-m-d'))" />
+    <x-date-range class="md:col-span-2" layout="split" form-control size="md"
+                  from-name="valid_from" to-name="valid_to" from-required
+                  :from="old('valid_from', optional($rate->valid_from)->format('Y-m-d'))"
+                  :to="old('valid_to', optional($rate->valid_to)->format('Y-m-d'))"
+                  :from-label="__('Gültig ab')" :to-label="__('Gültig bis')" />
     <x-input-field type="number" step="0.01" min="0" name="full_day_amount" :label="__('Vollständiger Tag (Pauschale)')" required
                    :value="old('full_day_amount', $rate->full_day_amount ?? '28.00')" />
     <x-input-field type="number" step="0.01" min="0" name="partial_day_amount" :label="__('Teilweiser Tag (An-/Abreise)')" required

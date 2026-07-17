@@ -1,10 +1,4 @@
-@if ($errors->any())
-    <div class="alert alert-error">
-        <ul class="list-disc pl-5">
-            @foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-        </ul>
-    </div>
-@endif
+<x-validation-errors />
 
 @php $skipStatusControls = $skipStatusControls ?? false; @endphp
 

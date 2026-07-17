@@ -13,6 +13,7 @@ namespace App\Services\Domain;
 use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\{DomainEvent, DomainProviderConnection};
 use App\Plugins\Support\Domain\DomainProviderException;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 
 /**
@@ -52,7 +53,7 @@ class DomainEventPollingService {
                 'event_class' => $row['class'] ?? $row['eventclass'] ?? null,
                 'event_action' => $row['action'] ?? $row['eventaction'] ?? null,
                 'object' => $row['object'] ?? null,
-                'raw_hash' => hash('sha256', json_encode($row) ?: ''),
+                'raw_hash' => CryptoHelper::hash(json_encode($row) ?: ''),
                 'occurred_at' => isset($row['eventdate']) ? Carbon::parse($row['eventdate'], 'UTC') : null,
             ]);
             if ($isNew) {

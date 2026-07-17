@@ -8,32 +8,28 @@
 --}}
 
 {{-- Sprint-Cockpit als PDF (Feature 064, P11): Kennzahlen-Tabellen mit
-     Exportkopf (Reportcode, metric_version, Berechnungsstand, Einheiten). --}}
+     Exportkopf (Reportcode, metric_version, Berechnungsstand, Einheiten);
+     Branding/Grundgerüst via reports.pdf.layout (D3). --}}
 
-<!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}">
-<head>
-    <meta charset="utf-8">
-    <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111; }
-        h1 { font-size: 16px; margin-bottom: 2px; }
-        h2 { font-size: 13px; margin: 14px 0 4px; }
-        .meta { color: #555; font-size: 9px; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        th, td { border: 1px solid #bbb; padding: 3px 6px; text-align: left; }
-        th { background: #eee; }
-        td.num, th.num { text-align: right; }
-    </style>
-</head>
-<body>
-    <h1>{{ __('Sprint-Cockpit') }} — {{ $project->name }}</h1>
-    <p class="meta">
-        {{ __('Reportcode:') }} agile_sprint_cockpit_v{{ $velocity->metricVersion }} ·
-        {{ __('Berechnungsstand:') }} {{ $velocity->computedAt->isoFormat('L LT') }} ·
-        {{ __('Board:') }} {{ $board->name }} ({{ $board->method }})
-        @if ($sprint) · {{ __('Sprint:') }} {{ $sprint->name }} @endif
-    </p>
+@extends('reports.pdf.layout')
 
+@section('pdf-title', __('Sprint-Cockpit') . ' — ' . $project->name)
+@section('pdf-heading', __('Sprint-Cockpit') . ' — ' . $project->name)
+
+@push('pdf-styles')
+<style>
+    table { margin-bottom: 8px; }
+</style>
+@endpush
+
+@section('pdf-meta')
+    {{ __('Reportcode:') }} agile_sprint_cockpit_v{{ $velocity->metricVersion }} ·
+    {{ __('Berechnungsstand:') }} {{ $velocity->computedAt->isoFormat('L LT') }} ·
+    {{ __('Board:') }} {{ $board->name }} ({{ $board->method }})
+    @if ($sprint) · {{ __('Sprint:') }} {{ $sprint->name }} @endif
+@endsection
+
+@section('pdf-table')
     @if ($burndown !== null)
         <h2>{{ __('Burndown') }} <small>({{ __('Story Points') }})</small></h2>
         <table>
@@ -70,5 +66,4 @@
             @endforelse
         </tbody>
     </table>
-</body>
-</html>
+@endsection

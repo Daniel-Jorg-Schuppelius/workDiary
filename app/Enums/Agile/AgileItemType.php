@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Enums\Agile;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /** Typ eines Arbeitselements im Produkt-Backlog (Feature 064). */
-enum AgileItemType: string {
+enum AgileItemType: string implements HasLabel {
+    use HasOptions;
+
     case Epic = 'epic';
     case Story = 'story';
     case Task = 'task';

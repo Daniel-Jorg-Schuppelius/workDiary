@@ -11,12 +11,11 @@
 namespace App\Models;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Concerns\{Archivable, BelongsToOrganization, HasAttachments, HasContactAndBankDetails, HasSqid, HasTags, Searchable};
-use App\Services\Numbering\NumberAuthority;
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasContactAndBankDetails, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
-use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Carbon;
 
 /**
  * Lieferant: Geschäftspartner, von dem wir Waren/Leistungen beziehen.
@@ -59,13 +58,16 @@ use Illuminate\Support\{Carbon, Str};
  */
 class Supplier extends Model {
     use Archivable;
+    use Auditable;
     use BelongsToOrganization;
+    use GeneratesUniqueSlug;
     use HasAttachments;
 
     use HasContactAndBankDetails;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasSequentialNumber;
     use HasSqid;
     use HasTags;
     use Searchable;
@@ -118,15 +120,7 @@ class Supplier extends Model {
     ];
 
     protected static function booted(): void {
-        static::creating(function (self $supplier): void {
-            if ($supplier->number === null || $supplier->number === '') {
-                $external = app(NumberAuthority::class)->isExternal($supplier->organization_id, NumberScope::Supplier);
-                $supplier->number = self::nextNumberFor($supplier->organization_id);
-                if ((string) $supplier->number_source === '') {
-                    $supplier->number_source = $external ? 'lexoffice' : 'local';
-                }
-            }
-        });
+        self::registerSequentialNumberHook();
 
         static::saving(function (self $supplier): void {
             if ($supplier->slug === null || $supplier->slug === '') {
@@ -140,14 +134,20 @@ class Supplier extends Model {
     }
 
     /**
+     * Archivieren/Entarchivieren als eigene Audit-Events loggen (GoBD).
+     *
+     * @param  array<string, mixed>  $changes
+     */
+    protected function resolveAuditEvent(string $event, array $changes): string {
+        return $this->mapArchivedAtAuditEvent($event, $changes);
+    }
+
+    /**
      * Liefert einen Slug, der innerhalb der angegebenen Organisation
      * eindeutig ist (Sentinel "lieferant" falls Name keinen Slug ergibt).
      */
     public static function uniqueSlug(string $name, ?int $organizationId, ?int $ignoreId = null): string {
-        $base = Str::slug($name) ?: 'lieferant';
-        $slug = $base;
-        $i = 2;
-        while (
+        return self::resolveUniqueSlug($name, 'lieferant', fn(string $slug): bool =>
             // TENANT-BYPASS: Slug-Eindeutigkeit ohne Global Scope prüfen, weil
             // $organizationId explizit übergeben wird. Der explizite
             // where('organization_id', ...) erhält die Mandantengrenze.
@@ -156,44 +156,15 @@ class Supplier extends Model {
             ->where('organization_id', $organizationId)
             ->where('slug', $slug)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
-            ->exists()
-        ) {
-            $slug = $base . '-' . $i++;
-        }
-
-        return $slug;
+            ->exists());
     }
 
-    /**
-     * Berechnet die nächste freie Lieferantennummer für die Organisation
-     * über den zentralen {@see \App\Services\Numbering\NumberSequenceService}.
-     */
-    public static function nextNumberFor(?int $organizationId): string {
-        if ($organizationId === null) {
-            return 'L-0001';
-        }
+    protected static function numberScope(): NumberScope {
+        return NumberScope::Supplier;
+    }
 
-        /** @var \App\Services\Numbering\NumberSequenceService $service */
-        $service = app(\App\Services\Numbering\NumberSequenceService::class);
-
-        $maxAttempts = static::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organizationId)
-            ->count() + 1;
-
-        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
-            $number = $service->next($organizationId, NumberScope::Supplier);
-
-            if (! static::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('number', $number)
-                ->exists()) {
-                return $number;
-            }
-        }
-
-        throw new \RuntimeException('No free supplier number could be generated.');
+    protected static function numberFallback(): string {
+        return 'L-0001';
     }
 
     /** @return BelongsTo<User, $this> */

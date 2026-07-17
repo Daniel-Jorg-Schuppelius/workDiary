@@ -126,13 +126,14 @@
                 @case(\App\Enums\Form\FormFieldType::Signature->value)
                     {{-- Unterschrift (Rang 32): Signatur-Pad → Base64-PNG in signatures[<key>]. --}}
                     @once @push('scripts') @vite('resources/js/signature.js') @endpush @endonce
-                    {{-- Logik in Alpine.data("signatureCapture") (components.js) — CSP-Build-konform. --}}
-                    <div class="form-control sm:col-span-2" x-data="signatureCapture">
+                    {{-- Logik in Alpine.data("signaturePad") (components.js) — CSP-Build-konform;
+                         $refs.sigInput aktiviert den Capture-Modus (Wert je Strich, kein Submit-Hook). --}}
+                    <div class="form-control sm:col-span-2" x-data="signaturePad">
                         <span class="label-text">{{ $field['label'] }} @if($required)*@endif</span>
                         <div class="rounded-box border border-base-300 bg-white p-2">
                             <canvas x-ref="canvas" class="block h-32 w-full touch-none"></canvas>
                         </div>
-                        <input type="hidden" name="signatures[{{ $key }}]" x-ref="sig">
+                        <input type="hidden" name="signatures[{{ $key }}]" x-ref="sigInput">
                         <button type="button" class="btn btn-ghost btn-xs mt-1 self-start" @click="clear()">{{ __('form.action.clear_signature') }}</button>
                     </div>
                     @break

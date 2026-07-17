@@ -14,8 +14,10 @@ namespace App\Plugins\Todoist\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\{TodoistConnection, TodoistWebhookDelivery};
+use App\Plugins\Support\WebhookSignature;
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
 use App\Plugins\Todoist\TodoistConfig;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\{JsonResponse, Request};
 
@@ -34,11 +36,10 @@ use Illuminate\Http\{JsonResponse, Request};
 class TodoistWebhookController extends Controller {
     public function __invoke(Request $request): JsonResponse {
         $secret = TodoistConfig::resolve()['client_secret'];
-        $signature = (string) $request->header('X-Todoist-Hmac-SHA256', '');
         $raw = (string) $request->getContent();
 
-        if ($secret === '' || $signature === ''
-            || ! hash_equals(base64_encode(hash_hmac('sha256', $raw, $secret, true)), $signature)) {
+        // Todoist-Signatur: base64(HMAC-SHA256(body, client_secret)).
+        if (! WebhookSignature::hmacValid($raw, $secret, (string) $request->header('X-Todoist-Hmac-SHA256', ''), 'sha256', encoding: 'base64')) {
             return response()->json(['message' => 'invalid signature'], 401);
         }
 
@@ -46,7 +47,7 @@ class TodoistWebhookController extends Controller {
         $payload = (array) json_decode($raw, true);
         $deliveryId = (string) $request->header('X-Todoist-Delivery-ID', '');
         if ($deliveryId === '') {
-            $deliveryId = hash('sha256', $raw); // Fallback: inhaltsbasierte Dedup
+            $deliveryId = CryptoHelper::hash($raw); // Fallback: inhaltsbasierte Dedup
         }
 
         try {

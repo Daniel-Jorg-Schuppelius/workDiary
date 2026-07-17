@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\DocumentDesign;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Fachlich benannte Informationsblöcke (MVP-298). Admins wählen keine
  * Datenbankfelder, sondern deklarieren je Block genau einen Zustand
@@ -19,7 +22,9 @@ namespace App\Enums\DocumentDesign;
  * Empfänger, Nummern, Beträge oder Seitenbezug dürfen nie als statischer
  * Firmenbogen-Inhalt deklariert werden.
  */
-enum InformationBlock: string {
+enum InformationBlock: string implements HasLabel {
+    use HasOptions;
+
     case SenderLine = 'sender_line';
     case RecipientAddress = 'recipient_address';
     case DocumentMeta = 'document_meta';

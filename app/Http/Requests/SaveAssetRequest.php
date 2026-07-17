@@ -11,10 +11,18 @@
 namespace App\Http\Requests;
 
 use App\Enums\Asset\{AssetClass, AssetStatus};
+use App\Http\Requests\Concerns\DecodesSqidOrNumericInputs;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class SaveAssetRequest extends BaseFormRequest {
+    use DecodesSqidOrNumericInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'product_id' => \App\Models\Product::class,
+    ];
+
     /** @return array<string, mixed> */
     public function rules(): array {
         $orgId = $this->user()?->organization_id;

@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Facility\RoomUsageType;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use Database\Factories\RoomFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,6 +48,7 @@ class Room extends Model {
     use HasFactory;
 
     use HasSqid;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -111,5 +112,10 @@ class Room extends Model {
     /** @param Builder<Room> $query */
     public function scopeActive(Builder $query): void {
         $query->where('is_active', true);
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'code', 'building', 'floor'];
     }
 }

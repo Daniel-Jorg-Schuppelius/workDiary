@@ -73,12 +73,7 @@ class AssetAnalysisReportBuilder {
             $allEntryIds[] = (int) $entry->id;
         }
 
-        $openStatuses = [
-            OpenIssueStatus::Open->value,
-            OpenIssueStatus::InProgress->value,
-            OpenIssueStatus::Blocked->value,
-            OpenIssueStatus::Reopened->value,
-        ];
+        $openStatuses = OpenIssueStatus::openValues();
 
         /** @var array<int, int> $openByAsset */
         $openByAsset = OpenIssue::query()

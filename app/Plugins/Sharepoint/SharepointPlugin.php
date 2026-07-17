@@ -14,6 +14,7 @@ use App\Models\{Organization, PluginSetting, SharepointConnection};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
+use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
 /**
@@ -60,13 +61,11 @@ class SharepointPlugin implements Plugin {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -105,7 +104,7 @@ class SharepointPlugin implements Plugin {
             return PluginHealth::degraded(__('sharepoint.health.not_configured'));
         }
 
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('sharepoint.health.no_org_context'));
         }

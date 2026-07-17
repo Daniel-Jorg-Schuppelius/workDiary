@@ -59,8 +59,4 @@
     <x-textarea-field name="reason" :label="__('Grund')" rows="3" :value="$reason" class="w-full" />
 </x-form-group>
 
-@if ($errors->any())
-    <div class="alert alert-error">
-        <ul class="list-disc pl-5">@foreach ($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
-    </div>
-@endif
+<x-validation-errors />

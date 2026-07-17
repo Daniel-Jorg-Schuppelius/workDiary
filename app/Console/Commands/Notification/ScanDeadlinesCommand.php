@@ -20,8 +20,9 @@ use App\Models\Isms\{IsmsCertificate, IsmsCorrectiveAction, IsmsRisk, IsmsRiskAs
 use App\Services\Isms\ConformityService;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\ServiceTicket\{SlaQuotaService, SlaTimer};
+use Closure;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\{Collection, Model};
 use Illuminate\Support\Carbon;
 
 /**
@@ -30,6 +31,14 @@ use Illuminate\Support\Carbon;
  * Dispatcher. Idempotent über das notification_dispatch_log. Payloads tragen
  * `due_at` (MVP-331) für den Kalender-Kanal. Läuft ohne Mandantenkontext →
  * sieht alle Organisationen; Regel-Auflösung pro Datensatz über organization_id.
+ *
+ * C18: die strukturgleichen Scans laufen deskriptor-getrieben über
+ * {@see self::runScan()} (Phase 'due' → notify(dedup), Phase 'overdue' →
+ * notify(dedup)+escalateIfDue); delegierende Scans über
+ * {@see self::sumPerOrganization()}. Nur SLA-Tickets (Statusweiche je Zeile)
+ * und SLA-Kontingente (Perioden-Dedup + Statefortschreibung) bleiben explizit.
+ *
+ * @phpstan-type TNotifyPayload array{title: string, message?: string|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}
  */
 class ScanDeadlinesCommand extends Command {
     protected $signature = 'notifications:scan-deadlines
@@ -70,130 +79,138 @@ class ScanDeadlinesCommand extends Command {
         return self::SUCCESS;
     }
 
-    private function scanOpenIssues(NotificationDispatcher $dispatcher, int $dueDays): int {
-        $openStates = array_map(
-            static fn(OpenIssueStatus $s): string => $s->value,
-            array_filter(OpenIssueStatus::cases(), static fn(OpenIssueStatus $s): bool => $s->isOpen()),
-        );
-        $now = Carbon::now();
+    // ── Generische Skelette (C18) ──────────────────────────────────────────
+
+    /**
+     * Generische Fristen-Schleife: je Phase lazyById(200) über die Query;
+     * Phase 'due' → notify(dedup: true), Phase 'overdue' → notify(dedup: true)
+     * + escalateIfDue. `require_affected` überspringt Zeilen ohne auflösbaren
+     * Empfänger (heutiges continue-Verhalten einzelner Scans).
+     *
+     * @template TModel of Model
+     *
+     * @param array{
+     *     affected?: Closure(TModel): ?User,
+     *     require_affected?: bool,
+     *     due?: array{query: Closure(): \Illuminate\Database\Eloquent\Builder<TModel>, event: NotificationEvent, payload: Closure(TModel): TNotifyPayload},
+     *     overdue?: array{query: Closure(): \Illuminate\Database\Eloquent\Builder<TModel>, event: NotificationEvent, payload: Closure(TModel): TNotifyPayload},
+     * } $scan
+     */
+    private function runScan(NotificationDispatcher $dispatcher, array $scan): int {
+        $affected = $scan['affected'] ?? static fn(Model $row): ?User => null;
+        $requireAffected = (bool) ($scan['require_affected'] ?? false);
         $sent = 0;
 
-        // Fällig innerhalb des Vorlaufs.
-        OpenIssue::query()
-            ->whereIn('status', $openStates)
-            ->whereNotNull('due_at')
-            ->where('due_at', '>', $now)
-            ->where('due_at', '<=', $now->copy()->addDays($dueDays))
-            ->chunkById(200, function (Collection $issues) use ($dispatcher, &$sent): void {
-                foreach ($issues as $issue) {
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::OpenIssueDueSoon,
-                        $issue,
-                        $this->issueAffected($issue),
-                        $this->issuePayload($issue, 'due_soon'),
-                        dedup: true,
-                    );
-                }
-            });
+        foreach (['due' => false, 'overdue' => true] as $phase => $escalate) {
+            if (! isset($scan[$phase])) {
+                continue;
+            }
 
-        // Überfällig + Eskalation.
-        OpenIssue::query()
-            ->whereIn('status', $openStates)
-            ->whereNotNull('due_at')
-            ->where('due_at', '<=', $now)
-            ->chunkById(200, function (Collection $issues) use ($dispatcher, &$sent): void {
-                foreach ($issues as $issue) {
-                    $payload = $this->issuePayload($issue, 'overdue');
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::OpenIssueOverdue,
-                        $issue,
-                        $this->issueAffected($issue),
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::OpenIssueOverdue, $issue, $payload);
+            ['query' => $query, 'event' => $event, 'payload' => $payload] = $scan[$phase];
+
+            foreach ($query()->lazyById(200) as $row) {
+                $user = $affected($row);
+                if ($requireAffected && $user === null) {
+                    continue;
                 }
-            });
+
+                $data = $payload($row);
+                $sent += $dispatcher->notify($event, $row, $user, $data, dedup: true);
+                if ($escalate) {
+                    $sent += $dispatcher->escalateIfDue($event, $row, $data);
+                }
+            }
+        }
 
         return $sent;
+    }
+
+    /**
+     * Org-Refetch-Skelett der delegierenden Scans: distinct organization_id aus
+     * der (ungescopten) Query, Organisation laden, Handler je Organisation —
+     * Nummernkreis-/Audit-Kontext liegt im jeweiligen Fach-Service.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder<covariant Model> $query
+     * @param Closure(\App\Models\Organization): int $handler
+     */
+    private function sumPerOrganization(\Illuminate\Database\Eloquent\Builder $query, Closure $handler): int {
+        $sent = 0;
+
+        foreach ($query->distinct()->pluck('organization_id') as $organizationId) {
+            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
+            if ($organization !== null) {
+                $sent += $handler($organization);
+            }
+        }
+
+        return $sent;
+    }
+
+    // ── Deskriptor-getriebene Scans ────────────────────────────────────────
+
+    private function scanOpenIssues(NotificationDispatcher $dispatcher, int $dueDays): int {
+        $openStates = OpenIssueStatus::openValues();
+        $now = Carbon::now();
+
+        return $this->runScan($dispatcher, [
+            'affected' => fn(OpenIssue $issue): ?User => $this->issueAffected($issue),
+            'due' => [
+                'query' => fn() => OpenIssue::query()
+                    ->whereIn('status', $openStates)
+                    ->whereNotNull('due_at')
+                    ->where('due_at', '>', $now)
+                    ->where('due_at', '<=', $now->copy()->addDays($dueDays)),
+                'event' => NotificationEvent::OpenIssueDueSoon,
+                'payload' => fn(OpenIssue $issue): array => $this->issuePayload($issue, 'due_soon'),
+            ],
+            'overdue' => [
+                'query' => fn() => OpenIssue::query()
+                    ->whereIn('status', $openStates)
+                    ->whereNotNull('due_at')
+                    ->where('due_at', '<=', $now),
+                'event' => NotificationEvent::OpenIssueOverdue,
+                'payload' => fn(OpenIssue $issue): array => $this->issuePayload($issue, 'overdue'),
+            ],
+        ]);
     }
 
     private function scanCommunicationFollowups(NotificationDispatcher $dispatcher, int $dueDays): int {
         $now = Carbon::now();
-        $sent = 0;
-
         $pending = static fn() => CommunicationNote::query()
             ->whereNotNull('next_action_due_at')
             ->whereNull('next_action_completed_at');
 
-        $pending()
-            ->where('next_action_due_at', '>', $now)
-            ->where('next_action_due_at', '<=', $now->copy()->addDays($dueDays))
-            ->chunkById(200, function (Collection $notes) use ($dispatcher, &$sent): void {
-                foreach ($notes as $note) {
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::CommunicationFollowupDueSoon,
-                        $note,
-                        $this->noteAffected($note),
-                        $this->notePayload($note, 'followup_due_soon'),
-                        dedup: true,
-                    );
-                }
-            });
-
-        $pending()
-            ->where('next_action_due_at', '<=', $now)
-            ->chunkById(200, function (Collection $notes) use ($dispatcher, &$sent): void {
-                foreach ($notes as $note) {
-                    $payload = $this->notePayload($note, 'followup_overdue');
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::CommunicationFollowupOverdue,
-                        $note,
-                        $this->noteAffected($note),
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::CommunicationFollowupOverdue, $note, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(CommunicationNote $note): ?User => $this->noteAffected($note),
+            'due' => [
+                'query' => fn() => $pending()
+                    ->where('next_action_due_at', '>', $now)
+                    ->where('next_action_due_at', '<=', $now->copy()->addDays($dueDays)),
+                'event' => NotificationEvent::CommunicationFollowupDueSoon,
+                'payload' => fn(CommunicationNote $note): array => $this->notePayload($note, 'followup_due_soon'),
+            ],
+            'overdue' => [
+                'query' => fn() => $pending()->where('next_action_due_at', '<=', $now),
+                'event' => NotificationEvent::CommunicationFollowupOverdue,
+                'payload' => fn(CommunicationNote $note): array => $this->notePayload($note, 'followup_overdue'),
+            ],
+        ]);
     }
 
     private function scanDocuments(NotificationDispatcher $dispatcher, int $expiringDays): int {
-        $sent = 0;
-
-        Document::query()
-            ->expiringWithin($expiringDays)
-            ->chunkById(200, function (Collection $documents) use ($dispatcher, &$sent): void {
-                foreach ($documents as $document) {
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::DocumentExpiringSoon,
-                        $document,
-                        $this->documentAffected($document),
-                        $this->documentPayload($document, 'expiring_soon'),
-                        dedup: true,
-                    );
-                }
-            });
-
-        Document::query()
-            ->expired()
-            ->chunkById(200, function (Collection $documents) use ($dispatcher, &$sent): void {
-                foreach ($documents as $document) {
-                    $payload = $this->documentPayload($document, 'expired');
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::DocumentExpired,
-                        $document,
-                        $this->documentAffected($document),
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::DocumentExpired, $document, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(Document $document): ?User => $this->documentAffected($document),
+            'due' => [
+                'query' => fn() => Document::query()->expiringWithin($expiringDays),
+                'event' => NotificationEvent::DocumentExpiringSoon,
+                'payload' => fn(Document $document): array => $this->documentPayload($document, 'expiring_soon'),
+            ],
+            'overdue' => [
+                'query' => fn() => Document::query()->expired(),
+                'event' => NotificationEvent::DocumentExpired,
+                'payload' => fn(Document $document): array => $this->documentPayload($document, 'expired'),
+            ],
+        ]);
     }
 
     /**
@@ -208,25 +225,17 @@ class ScanDeadlinesCommand extends Command {
         }
 
         $today = Carbon::today();
-        $sent = 0;
 
-        IsmsCertificate::query()
-            ->whereDate('valid_from', '<=', $today)
-            ->whereDate('valid_until', '>=', $today)
-            ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
-            ->chunkById(200, function (Collection $certificates) use ($dispatcher, &$sent): void {
-                foreach ($certificates as $certificate) {
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::IsmsCertificateExpiring,
-                        $certificate,
-                        null,
-                        $this->certificatePayload($certificate),
-                        dedup: true,
-                    );
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'due' => [
+                'query' => fn() => IsmsCertificate::query()
+                    ->whereDate('valid_from', '<=', $today)
+                    ->whereDate('valid_until', '>=', $today)
+                    ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays)),
+                'event' => NotificationEvent::IsmsCertificateExpiring,
+                'payload' => fn(IsmsCertificate $certificate): array => $this->certificatePayload($certificate),
+            ],
+        ]);
     }
 
     /**
@@ -234,25 +243,14 @@ class ScanDeadlinesCommand extends Command {
      * melden (Empfänger Verantwortlicher, Fallback teamleitung) + Eskalation.
      */
     private function scanIsmsCorrectiveActions(NotificationDispatcher $dispatcher): int {
-        $sent = 0;
-
-        IsmsCorrectiveAction::query()
-            ->overdue()
-            ->chunkById(200, function (Collection $actions) use ($dispatcher, &$sent): void {
-                foreach ($actions as $action) {
-                    $payload = $this->correctiveActionPayload($action);
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::IsmsCorrectiveActionOverdue,
-                        $action,
-                        $action->owner()->first(),
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::IsmsCorrectiveActionOverdue, $action, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(IsmsCorrectiveAction $action): ?User => $action->owner()->first(),
+            'overdue' => [
+                'query' => fn() => IsmsCorrectiveAction::query()->overdue(),
+                'event' => NotificationEvent::IsmsCorrectiveActionOverdue,
+                'payload' => fn(IsmsCorrectiveAction $action): array => $this->correctiveActionPayload($action),
+            ],
+        ]);
     }
 
     /**
@@ -263,7 +261,6 @@ class ScanDeadlinesCommand extends Command {
      */
     private function scanIsmsRiskAssessments(NotificationDispatcher $dispatcher, int $expiringDays): int {
         $today = Carbon::today();
-        $sent = 0;
 
         // Nur der jüngste freigegebene Netto-Stand je Risiko — ältere (abgelöste) dürfen kein Review anstoßen.
         $latestApprovedNetIds = IsmsRiskAssessment::query()
@@ -271,24 +268,18 @@ class ScanDeadlinesCommand extends Command {
             ->selectRaw('max(id)')
             ->groupBy('isms_risk_id');
 
-        IsmsRiskAssessment::query()
-            ->whereIn('id', $latestApprovedNetIds)
-            ->whereNotNull('valid_until')
-            ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
-            ->whereHas('risk', fn($query) => $query->where('status', '!=', RiskStatus::Closed->value))
-            ->chunkById(200, function (Collection $assessments) use ($dispatcher, &$sent): void {
-                foreach ($assessments as $assessment) {
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::IsmsRiskReviewDue,
-                        $assessment,
-                        $this->riskAssessmentAffected($assessment),
-                        $this->riskAssessmentPayload($assessment),
-                        dedup: true,
-                    );
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(IsmsRiskAssessment $assessment): ?User => $this->riskAssessmentAffected($assessment),
+            'due' => [
+                'query' => fn() => IsmsRiskAssessment::query()
+                    ->whereIn('id', $latestApprovedNetIds)
+                    ->whereNotNull('valid_until')
+                    ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
+                    ->whereHas('risk', fn($query) => $query->where('status', '!=', RiskStatus::Closed->value)),
+                'event' => NotificationEvent::IsmsRiskReviewDue,
+                'payload' => fn(IsmsRiskAssessment $assessment): array => $this->riskAssessmentPayload($assessment),
+            ],
+        ]);
     }
 
     /**
@@ -296,25 +287,14 @@ class ScanDeadlinesCommand extends Command {
      * melden (Empfänger Verantwortlicher, Fallback teamleitung) + Eskalation.
      */
     private function scanIsmsVulnerabilities(NotificationDispatcher $dispatcher): int {
-        $sent = 0;
-
-        IsmsVulnerability::query()
-            ->overdue()
-            ->chunkById(200, function (Collection $vulnerabilities) use ($dispatcher, &$sent): void {
-                foreach ($vulnerabilities as $vulnerability) {
-                    $payload = $this->vulnerabilityPayload($vulnerability);
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::IsmsVulnerabilityOverdue,
-                        $vulnerability,
-                        $vulnerability->owner()->first(),
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::IsmsVulnerabilityOverdue, $vulnerability, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(IsmsVulnerability $vulnerability): ?User => $vulnerability->owner()->first(),
+            'overdue' => [
+                'query' => fn() => IsmsVulnerability::query()->overdue(),
+                'event' => NotificationEvent::IsmsVulnerabilityOverdue,
+                'payload' => fn(IsmsVulnerability $vulnerability): array => $this->vulnerabilityPayload($vulnerability),
+            ],
+        ]);
     }
 
     /**
@@ -322,70 +302,45 @@ class ScanDeadlinesCommand extends Command {
      * (Empfänger Verantwortlicher, Fallback teamleitung) + Eskalation.
      */
     private function scanIsmsSupplierReviews(NotificationDispatcher $dispatcher): int {
-        $sent = 0;
-
-        IsmsSupplierAssessment::query()
-            ->reviewOverdue()
-            ->chunkById(200, function (Collection $assessments) use ($dispatcher, &$sent): void {
-                foreach ($assessments as $assessment) {
-                    $payload = $this->supplierReviewPayload($assessment);
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::IsmsSupplierReviewOverdue,
-                        $assessment,
-                        $assessment->owner()->first(),
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::IsmsSupplierReviewOverdue, $assessment, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(IsmsSupplierAssessment $assessment): ?User => $assessment->owner()->first(),
+            'overdue' => [
+                'query' => fn() => IsmsSupplierAssessment::query()->reviewOverdue(),
+                'event' => NotificationEvent::IsmsSupplierReviewOverdue,
+                'payload' => fn(IsmsSupplierAssessment $assessment): array => $this->supplierReviewPayload($assessment),
+            ],
+        ]);
     }
 
-    /**
-     * SLA-Eskalation (Feature 010): offene Tickets mit gefährdeter/überschrittener
-     * Lösungsfrist (resolution_due_at) melden; verletzte eskalieren zusätzlich.
-     */
     /**
      * Wiedervorlagen (Feature 065, P3): wartende Tickets mit überschrittener
      * wait_until → Notification an wait_owner (Fallback Bearbeiter).
      */
     private function scanWaitingTickets(NotificationDispatcher $dispatcher): int {
-        $sent = 0;
-
-        ServiceTicket::query()
-            ->whereIn('status', [
-                \App\Enums\ServiceTicket\ServiceTicketStatus::WaitingCustomer->value,
-                \App\Enums\ServiceTicket\ServiceTicketStatus::WaitingExternal->value,
-                \App\Enums\ServiceTicket\ServiceTicketStatus::Paused->value,
-            ])
-            ->whereNotNull('wait_until')
-            ->where('wait_until', '<=', Carbon::now())
-            ->chunkById(200, function (Collection $tickets) use ($dispatcher, &$sent): void {
-                /** @var Collection<int, ServiceTicket> $tickets */
-                foreach ($tickets as $ticket) {
-                    $owner = $ticket->wait_owner_id !== null
-                        ? \App\Models\User::query()->find($ticket->wait_owner_id)
-                        : $ticket->assignedTo;
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::TicketWaitingExpired,
-                        $ticket,
-                        $owner,
-                        [
-                            'title' => (string) __('Wiedervorlage fällig: Ticket :no', ['no' => $ticket->ticket_no]),
-                            'title_key' => 'Wiedervorlage fällig: Ticket :no',
-                            'title_params' => ['no' => $ticket->ticket_no],
-                            'body' => (string) ($ticket->wait_reason ?? $ticket->title),
-                            'url' => route('service-tickets.show', $ticket),
-                            'due_at' => $ticket->wait_until,
-                        ],
-                        dedup: true,
-                    );
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(ServiceTicket $ticket): ?User => $ticket->wait_owner_id !== null
+                ? User::query()->find($ticket->wait_owner_id)
+                : $ticket->assignedTo,
+            'due' => [
+                'query' => fn() => ServiceTicket::query()
+                    ->whereIn('status', [
+                        ServiceTicketStatus::WaitingCustomer->value,
+                        ServiceTicketStatus::WaitingExternal->value,
+                        ServiceTicketStatus::Paused->value,
+                    ])
+                    ->whereNotNull('wait_until')
+                    ->where('wait_until', '<=', Carbon::now()),
+                'event' => NotificationEvent::TicketWaitingExpired,
+                'payload' => fn(ServiceTicket $ticket): array => [
+                    'title' => (string) __('Wiedervorlage fällig: Ticket :no', ['no' => $ticket->ticket_no]),
+                    'title_key' => 'Wiedervorlage fällig: Ticket :no',
+                    'title_params' => ['no' => $ticket->ticket_no],
+                    'body' => (string) ($ticket->wait_reason ?? $ticket->title),
+                    'url' => route('service-tickets.show', $ticket),
+                    'due_at' => $ticket->wait_until,
+                ],
+            ],
+        ]);
     }
 
     /**
@@ -394,29 +349,18 @@ class ScanDeadlinesCommand extends Command {
      * Owner, Fallback teamleitung) + Eskalation.
      */
     private function scanProblemEffectiveness(NotificationDispatcher $dispatcher): int {
-        $sent = 0;
-
-        Problem::query()
-            ->whereIn('status', ['resolved', 'known_error'])
-            ->whereNotNull('effectiveness_check_due_at')
-            ->where('effectiveness_check_due_at', '<=', Carbon::now())
-            ->whereNull('effectiveness_checked_at')
-            ->chunkById(200, function (Collection $problems) use ($dispatcher, &$sent): void {
-                /** @var Collection<int, Problem> $problems */
-                foreach ($problems as $problem) {
-                    $payload = $this->problemEffectivenessPayload($problem);
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::ProblemEffectivenessDue,
-                        $problem,
-                        $problem->owner()->first(),
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::ProblemEffectivenessDue, $problem, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(Problem $problem): ?User => $problem->owner()->first(),
+            'overdue' => [
+                'query' => fn() => Problem::query()
+                    ->whereIn('status', ['resolved', 'known_error'])
+                    ->whereNotNull('effectiveness_check_due_at')
+                    ->where('effectiveness_check_due_at', '<=', Carbon::now())
+                    ->whereNull('effectiveness_checked_at'),
+                'event' => NotificationEvent::ProblemEffectivenessDue,
+                'payload' => fn(Problem $problem): array => $this->problemEffectivenessPayload($problem),
+            ],
+        ]);
     }
 
     /** @return array{title: string, message: string, url: string|null, due_at: \Illuminate\Support\Carbon|null} */
@@ -433,6 +377,12 @@ class ScanDeadlinesCommand extends Command {
         ];
     }
 
+    /**
+     * SLA-Eskalation (Feature 010): offene Tickets mit gefährdeter/überschrittener
+     * Lösungsfrist (resolution_due_at) melden; verletzte eskalieren zusätzlich.
+     * Bleibt explizit (C18): die Statusweiche AtRisk/Breached läuft je Zeile über
+     * den SlaTimer und passt nicht ins Zwei-Phasen-Skelett.
+     */
     private function scanSlaTickets(NotificationDispatcher $dispatcher, SlaTimer $timer): int {
         $now = Carbon::now();
         $sent = 0;
@@ -479,29 +429,19 @@ class ScanDeadlinesCommand extends Command {
      */
     private function scanAssetReturns(NotificationDispatcher $dispatcher): int {
         $now = Carbon::now();
-        $sent = 0;
 
-        AssetAssignment::query()
-            ->whereNull('returned_at')
-            ->whereNotNull('expected_return_at')
-            ->where('expected_return_at', '<=', $now)
-            ->with(['asset:id,name,asset_no', 'assignedToUser'])
-            ->chunkById(200, function (Collection $assignments) use ($dispatcher, &$sent): void {
-                /** @var Collection<int, AssetAssignment> $assignments */
-                foreach ($assignments as $assignment) {
-                    $payload = $this->assetReturnPayload($assignment);
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::AssetReturnOverdue,
-                        $assignment,
-                        $assignment->assignedToUser,
-                        $payload,
-                        dedup: true,
-                    );
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::AssetReturnOverdue, $assignment, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(AssetAssignment $assignment): ?User => $assignment->assignedToUser,
+            'overdue' => [
+                'query' => fn() => AssetAssignment::query()
+                    ->whereNull('returned_at')
+                    ->whereNotNull('expected_return_at')
+                    ->where('expected_return_at', '<=', $now)
+                    ->with(['asset:id,name,asset_no', 'assignedToUser']),
+                'event' => NotificationEvent::AssetReturnOverdue,
+                'payload' => fn(AssetAssignment $assignment): array => $this->assetReturnPayload($assignment),
+            ],
+        ]);
     }
 
     /**
@@ -511,25 +451,16 @@ class ScanDeadlinesCommand extends Command {
      */
     private function scanRentalReturns(): int {
         $service = app(\App\Services\Rental\RentalCaseService::class);
-        $sent = 0;
 
-        $organizationIds = \App\Models\Rental\RentalCase::query()
-            ->withoutGlobalScopes()
-            ->whereIn('status', [
-                \App\Enums\Rental\RentalCaseStatus::HandedOver->value,
-                \App\Enums\Rental\RentalCaseStatus::Overdue->value,
-            ])
-            ->distinct()
-            ->pluck('organization_id');
-
-        foreach ($organizationIds as $organizationId) {
-            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
-            if ($organization !== null) {
-                $sent += $service->escalateOverdue($organization);
-            }
-        }
-
-        return $sent;
+        return $this->sumPerOrganization(
+            \App\Models\Rental\RentalCase::query()
+                ->withoutGlobalScopes()
+                ->whereIn('status', [
+                    \App\Enums\Rental\RentalCaseStatus::HandedOver->value,
+                    \App\Enums\Rental\RentalCaseStatus::Overdue->value,
+                ]),
+            fn(\App\Models\Organization $organization): int => $service->escalateOverdue($organization),
+        );
     }
 
     /**
@@ -538,22 +469,13 @@ class ScanDeadlinesCommand extends Command {
      */
     private function scanAssetFinanceDeadlines(): int {
         $service = app(\App\Services\AssetFinance\AssetFinanceService::class);
-        $sent = 0;
 
-        $organizationIds = \App\Models\AssetFinance\AssetFinanceDeadline::query()
-            ->withoutGlobalScopes()
-            ->where('status', 'open')
-            ->distinct()
-            ->pluck('organization_id');
-
-        foreach ($organizationIds as $organizationId) {
-            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
-            if ($organization !== null) {
-                $sent += $service->scanDeadlines($organization);
-            }
-        }
-
-        return $sent;
+        return $this->sumPerOrganization(
+            \App\Models\AssetFinance\AssetFinanceDeadline::query()
+                ->withoutGlobalScopes()
+                ->where('status', 'open'),
+            fn(\App\Models\Organization $organization): int => $service->scanDeadlines($organization),
+        );
     }
 
     /**
@@ -564,22 +486,13 @@ class ScanDeadlinesCommand extends Command {
      */
     private function scanContractObligations(): int {
         $service = app(\App\Services\Contract\ContractService::class);
-        $sent = 0;
 
-        $organizationIds = \App\Models\Contract\ContractObligation::query()
-            ->withoutGlobalScopes()
-            ->where('status', 'open')
-            ->distinct()
-            ->pluck('organization_id');
-
-        foreach ($organizationIds as $organizationId) {
-            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
-            if ($organization !== null) {
-                $sent += $service->scanObligations($organization);
-            }
-        }
-
-        return $sent;
+        return $this->sumPerOrganization(
+            \App\Models\Contract\ContractObligation::query()
+                ->withoutGlobalScopes()
+                ->where('status', 'open'),
+            fn(\App\Models\Organization $organization): int => $service->scanObligations($organization),
+        );
     }
 
     /**
@@ -589,22 +502,13 @@ class ScanDeadlinesCommand extends Command {
      */
     private function scanAssetInspections(): int {
         $service = app(\App\Services\AssetCompliance\AssetComplianceService::class);
-        $sent = 0;
 
-        $organizationIds = \App\Models\AssetCompliance\AssetComplianceAssignment::query()
-            ->withoutGlobalScopes()
-            ->where('is_active', true)
-            ->distinct()
-            ->pluck('organization_id');
-
-        foreach ($organizationIds as $organizationId) {
-            $organization = \App\Models\Organization::query()->whereKey($organizationId)->first();
-            if ($organization !== null) {
-                $sent += $service->scanAssignments($organization);
-            }
-        }
-
-        return $sent;
+        return $this->sumPerOrganization(
+            \App\Models\AssetCompliance\AssetComplianceAssignment::query()
+                ->withoutGlobalScopes()
+                ->where('is_active', true),
+            fn(\App\Models\Organization $organization): int => $service->scanAssignments($organization),
+        );
     }
 
     /**
@@ -618,7 +522,6 @@ class ScanDeadlinesCommand extends Command {
     private function scanDriverLicenseChecks(NotificationDispatcher $dispatcher, int $expiringDays): int {
         $today = Carbon::today();
         $horizon = $today->copy()->addDays($expiringDays);
-        $sent = 0;
 
         // Jüngste Kontrolle je Fahrer (ältere Zeilen sind Historie).
         $latestIds = \App\Models\DriverLicenseCheck::query()
@@ -627,40 +530,35 @@ class ScanDeadlinesCommand extends Command {
             ->groupBy('user_id')
             ->pluck('id');
 
-        \App\Models\DriverLicenseCheck::query()
-            ->withoutGlobalScopes()
-            ->whereIn('id', $latestIds)
-            ->whereDate('next_due_on', '<=', $horizon->toDateString())
-            ->with('user:id,name,organization_id')
-            ->orderBy('id')
-            ->chunkById(200, function ($checks) use ($dispatcher, $today, &$sent): void {
-                foreach ($checks as $check) {
-                    $user = $check->user;
-                    if ($user === null) {
-                        continue;
-                    }
+        return $this->runScan($dispatcher, [
+            'affected' => fn(\App\Models\DriverLicenseCheck $check): ?User => $check->user,
+            'require_affected' => true,
+            'due' => [
+                'query' => fn() => \App\Models\DriverLicenseCheck::query()
+                    ->withoutGlobalScopes()
+                    ->whereIn('id', $latestIds)
+                    ->whereDate('next_due_on', '<=', $horizon->toDateString())
+                    ->with('user:id,name,organization_id')
+                    ->orderBy('id'),
+                'event' => NotificationEvent::DriverLicenseCheckDue,
+                'payload' => function (\App\Models\DriverLicenseCheck $check) use ($today): array {
+                    $name = (string) $check->user?->name;
                     $overdue = $today->greaterThan($check->next_due_on);
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::DriverLicenseCheckDue,
-                        $check,
-                        $user,
-                        [
-                            'title' => $overdue
-                                ? (string) __('Führerscheinkontrolle überfällig: :name', ['name' => $user->name])
-                                : (string) __('Führerscheinkontrolle fällig: :name', ['name' => $user->name]),
-                            'title_key' => $overdue
-                                ? 'Führerscheinkontrolle überfällig: :name'
-                                : 'Führerscheinkontrolle fällig: :name',
-                            'title_params' => ['name' => $user->name],
-                            'url' => route('driver-license-checks.index'),
-                            'due_at' => $check->next_due_on,
-                        ],
-                        dedup: true,
-                    );
-                }
-            });
 
-        return $sent;
+                    return [
+                        'title' => $overdue
+                            ? (string) __('Führerscheinkontrolle überfällig: :name', ['name' => $name])
+                            : (string) __('Führerscheinkontrolle fällig: :name', ['name' => $name]),
+                        'title_key' => $overdue
+                            ? 'Führerscheinkontrolle überfällig: :name'
+                            : 'Führerscheinkontrolle fällig: :name',
+                        'title_params' => ['name' => $name],
+                        'url' => route('driver-license-checks.index'),
+                        'due_at' => $check->next_due_on,
+                    ];
+                },
+            ],
+        ]);
     }
 
     /**
@@ -673,31 +571,20 @@ class ScanDeadlinesCommand extends Command {
      */
     private function scanQualificationExpiry(NotificationDispatcher $dispatcher, int $expiringDays): int {
         $today = Carbon::today();
-        $sent = 0;
 
-        UserQualification::query()
-            ->whereNotNull('valid_until')
-            ->whereDate('valid_until', '>=', $today)
-            ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
-            ->with(['user', 'qualification'])
-            ->chunkById(200, function (Collection $assignments) use ($dispatcher, &$sent): void {
-                /** @var Collection<int, UserQualification> $assignments */
-                foreach ($assignments as $assignment) {
-                    $user = $assignment->user;
-                    if ($user === null) {
-                        continue;
-                    }
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::QualificationExpiring,
-                        $assignment,
-                        $user,
-                        $this->qualificationPayload($assignment),
-                        dedup: true,
-                    );
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(UserQualification $assignment): ?User => $assignment->user,
+            'require_affected' => true,
+            'due' => [
+                'query' => fn() => UserQualification::query()
+                    ->whereNotNull('valid_until')
+                    ->whereDate('valid_until', '>=', $today)
+                    ->whereDate('valid_until', '<=', $today->copy()->addDays($expiringDays))
+                    ->with(['user', 'qualification']),
+                'event' => NotificationEvent::QualificationExpiring,
+                'payload' => fn(UserQualification $assignment): array => $this->qualificationPayload($assignment),
+            ],
+        ]);
     }
 
     /**
@@ -707,28 +594,19 @@ class ScanDeadlinesCommand extends Command {
      * greift erst, wenn der Antrag entschieden und ein neuer angelegt wird).
      */
     private function scanPendingShiftExchanges(NotificationDispatcher $dispatcher): int {
-        $sent = 0;
-
-        ShiftExchange::query()
-            ->whereIn('status', [
-                ShiftExchangeStatus::Requested->value,
-                ShiftExchangeStatus::Accepted->value,
-            ])
-            ->with(['scheduledShift', 'targetUser'])
-            ->chunkById(200, function (Collection $exchanges) use ($dispatcher, &$sent): void {
-                /** @var Collection<int, ShiftExchange> $exchanges */
-                foreach ($exchanges as $exchange) {
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::ShiftExchangeRequested,
-                        $exchange,
-                        $exchange->targetUser,
-                        $this->shiftExchangePayload($exchange),
-                        dedup: true,
-                    );
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(ShiftExchange $exchange): ?User => $exchange->targetUser,
+            'due' => [
+                'query' => fn() => ShiftExchange::query()
+                    ->whereIn('status', [
+                        ShiftExchangeStatus::Requested->value,
+                        ShiftExchangeStatus::Accepted->value,
+                    ])
+                    ->with(['scheduledShift', 'targetUser']),
+                'event' => NotificationEvent::ShiftExchangeRequested,
+                'payload' => fn(ShiftExchange $exchange): array => $this->shiftExchangePayload($exchange),
+            ],
+        ]);
     }
 
     /** @return array{title: string, message: string, url: string|null} */
@@ -857,41 +735,30 @@ class ScanDeadlinesCommand extends Command {
      * Dedup über das notification_dispatch_log pro Plan und Stufe.
      */
     private function scanMaintenance(NotificationDispatcher $dispatcher, int $expiringDays): int {
-        $sent = 0;
         $today = Carbon::now()->toDateString();
         $soon = Carbon::now()->addDays($expiringDays)->toDateString();
 
-        MaintenancePlan::query()
-            ->where('is_active', true)
-            ->whereNotNull('next_due_on')
-            ->whereBetween('next_due_on', [$today, $soon])
-            ->with('asset.currentAssignment.assignedToUser')
-            ->chunkById(200, function (Collection $plans) use ($dispatcher, &$sent): void {
-                foreach ($plans as $plan) {
-                    $sent += $dispatcher->notify(
-                        NotificationEvent::MaintenanceDueSoon,
-                        $plan,
-                        $this->maintenanceAffected($plan),
-                        $this->maintenancePayload($plan, 'maintenance_due_soon'),
-                        dedup: true,
-                    );
-                }
-            });
-
-        MaintenancePlan::query()
-            ->where('is_active', true)
-            ->whereNotNull('next_due_on')
-            ->where('next_due_on', '<', $today)
-            ->with('asset.currentAssignment.assignedToUser')
-            ->chunkById(200, function (Collection $plans) use ($dispatcher, &$sent): void {
-                foreach ($plans as $plan) {
-                    $payload = $this->maintenancePayload($plan, 'maintenance_overdue');
-                    $sent += $dispatcher->notify(NotificationEvent::MaintenanceOverdue, $plan, $this->maintenanceAffected($plan), $payload, dedup: true);
-                    $sent += $dispatcher->escalateIfDue(NotificationEvent::MaintenanceOverdue, $plan, $payload);
-                }
-            });
-
-        return $sent;
+        return $this->runScan($dispatcher, [
+            'affected' => fn(MaintenancePlan $plan): ?User => $this->maintenanceAffected($plan),
+            'due' => [
+                'query' => fn() => MaintenancePlan::query()
+                    ->where('is_active', true)
+                    ->whereNotNull('next_due_on')
+                    ->whereBetween('next_due_on', [$today, $soon])
+                    ->with('asset.currentAssignment.assignedToUser'),
+                'event' => NotificationEvent::MaintenanceDueSoon,
+                'payload' => fn(MaintenancePlan $plan): array => $this->maintenancePayload($plan, 'maintenance_due_soon'),
+            ],
+            'overdue' => [
+                'query' => fn() => MaintenancePlan::query()
+                    ->where('is_active', true)
+                    ->whereNotNull('next_due_on')
+                    ->where('next_due_on', '<', $today)
+                    ->with('asset.currentAssignment.assignedToUser'),
+                'event' => NotificationEvent::MaintenanceOverdue,
+                'payload' => fn(MaintenancePlan $plan): array => $this->maintenancePayload($plan, 'maintenance_overdue'),
+            ],
+        ]);
     }
 
     /**
@@ -991,7 +858,8 @@ class ScanDeadlinesCommand extends Command {
      * Verbrauch im aktuellen Zeitraum die Warnschwelle, geht einmal je Periode
      * eine Benachrichtigung an die Teamleitung. Dedup pro Periode über
      * `last_warned_period` am Kontingent (die Dispatcher-Dedup ist subjektbasiert
-     * und würde eine neue Periode sonst nicht erneut melden).
+     * und würde eine neue Periode sonst nicht erneut melden). Bleibt explizit
+     * (C18): kein dedup-Flag, dafür Statefortschreibung je Zeile.
      */
     private function scanSlaQuotas(NotificationDispatcher $dispatcher, SlaQuotaService $quotas): int {
         $now = Carbon::now();

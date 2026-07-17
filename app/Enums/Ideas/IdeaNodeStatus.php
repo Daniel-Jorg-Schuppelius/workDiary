@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Enums\Ideas;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Bearbeitungsstatus eines Knotens (Feature 054, MVP-135): kleiner,
  * semantischer Workflow von der Idee zur Entscheidung. Bewusst als Dropdown
@@ -19,7 +22,9 @@ namespace App\Enums\Ideas;
  * Spalte `idea_nodes.node_status` bleibt ein String (Rückwärtskompatibilität
  * für Altbestände); die Enum-Werte sind ≤ 24 Zeichen.
  */
-enum IdeaNodeStatus: string {
+enum IdeaNodeStatus: string implements HasLabel {
+    use HasOptions;
+
     case Open = 'open';
     case InReview = 'in_review';
     case Decided = 'decided';

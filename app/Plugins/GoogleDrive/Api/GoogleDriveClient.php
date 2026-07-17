@@ -13,9 +13,9 @@ namespace App\Plugins\GoogleDrive\Api;
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\GoogleDrive\{GoogleDriveConfig, GoogleDrivePlugin};
+use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
-use App\Plugins\Support\PluginHttpFactory;
-use App\Services\CloudIntake\{CloudIntakeTokenStore, StaleCheckpointException};
+use App\Services\CloudIntake\StaleCheckpointException;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -50,7 +50,7 @@ class GoogleDriveClient {
         $this->api = app(PluginHttpFactory::class)->client(GoogleDrivePlugin::ID, $this->base);
 
         $grant = GoogleDriveConfig::isConfigured() ? app(GoogleDriveOAuth::class)->grant() : null;
-        $this->api->setAuthentication(new OAuth2BearerAuthentication(new CloudIntakeTokenStore($connection), $grant));
+        $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($connection, 'granted_scopes', scopeAsArray: true), $grant));
     }
 
     public function account(): IntakeAccount {

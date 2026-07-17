@@ -20,7 +20,6 @@ use App\Services\Contract\ContractService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -43,20 +42,6 @@ final class ContractLifecycleTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-    }
-
-    private function userWithRole(string $role, ?Organization $org = null): User {
-        $org ??= $this->organization;
-        $user = User::factory()->create(['organization_id' => $org->id]);
-        $registrar = app(PermissionRegistrar::class);
-        $registrar->setPermissionsTeamId($org->id);
-        $orgRole = Role::query()->where('name', $role)->where('team_id', $org->id)->firstOrFail();
-        $user->syncRoles([$orgRole]);
-        $registrar->forgetCachedPermissions();
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user;
     }
 
     /** @param array<string, mixed> $overrides */

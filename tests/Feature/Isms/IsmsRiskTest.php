@@ -124,7 +124,7 @@ class IsmsRiskTest extends TestCase {
                 'likelihood' => $risk->likelihood,
                 'impact' => $risk->impact,
                 'treatment' => $risk->treatment->value,
-                'control_ids' => ['', (string) $controlA->id, (string) $controlB->id],
+                'control_ids' => ['', $controlA->sqid, $controlB->sqid],
             ])
             ->assertRedirect();
 

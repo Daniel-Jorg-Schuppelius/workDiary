@@ -12,13 +12,18 @@ declare(strict_types=1);
 
 namespace App\Enums\DocumentDesign;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Dokumentarten des Rendervertrags (MVP-295). Jede Art entspricht einem
  * bestehenden PDF-Generator; das Designprofil wird pro Art zugewiesen.
  * Fachinhalt und Pflichtangaben bleiben im jeweiligen Modul — hier wird nur
  * definiert, welche Informationsblöcke eine Art mindestens benötigt.
  */
-enum RenderDocumentKind: string {
+enum RenderDocumentKind: string implements HasLabel {
+    use HasOptions;
+
     case Invoice = 'invoice';
     case PurchaseOrder = 'purchase_order';
     case Protocol = 'protocol';

@@ -58,7 +58,7 @@ class IsmsControlTest extends TestCase {
             ->post(route('isms.controls.store'), [
                 'title' => 'Berechtigungskonzept pflegen',
                 'implementation_status' => 'open',
-                'requirement_ids' => ['', (string) $catalogA->id, (string) $catalogB->id, (string) $custom->id],
+                'requirement_ids' => ['', $catalogA->sqid, $catalogB->sqid, $custom->sqid],
             ])
             ->assertRedirect();
 

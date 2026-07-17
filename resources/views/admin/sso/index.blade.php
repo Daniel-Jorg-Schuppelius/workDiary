@@ -8,9 +8,7 @@
         @if (session('success'))
             <div class="alert alert-success text-sm">{{ session('success') }}</div>
         @endif
-        @if ($errors->any())
-            <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
-        @endif
+        <x-validation-errors first />
 
         {{-- Einführung + Endpunkt --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">

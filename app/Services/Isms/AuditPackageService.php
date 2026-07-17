@@ -13,6 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AssessmentStatus, AuditPackageStatus, ReviewStatus};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsAudit, IsmsAuditFinding, IsmsAuditPackage, IsmsAuditPackageToken, IsmsCertificate, IsmsControl, IsmsCorrectiveAction, IsmsManagementReview, IsmsNormStatus, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope, IsmsSoftwareProduct};
 use App\Models\User;
+use App\Services\Isms\Concerns\AssignsSequentialNo;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -42,6 +43,8 @@ use RuntimeException;
  *   ProtocolSignatureTokenService).
  */
 class AuditPackageService {
+    use AssignsSequentialNo;
+
     public const DISK = \App\Services\Export\ExportRunner::DISK;
 
     public const BASE_PATH = 'isms/audit-packages';
@@ -61,7 +64,7 @@ class AuditPackageService {
             $package = IsmsAuditPackage::query()->create([
                 'organization_id' => $creator->organization_id,
                 'isms_scope_id' => $scope->id,
-                'package_no' => $this->nextPackageNo((int) $creator->organization_id),
+                'package_no' => $this->nextNo(IsmsAuditPackage::class, 'package_no', 'organization_id', (int) $creator->organization_id),
                 'title' => trim((string) ($attributes['title'] ?? '')),
                 'as_of_date' => $attributes['as_of_date'],
                 'norm' => $this->trimmedOrNull($attributes['norm'] ?? null),
@@ -523,20 +526,6 @@ class AuditPackageService {
         }
 
         return is_string($edition) && strcasecmp($edition, $package->edition) === 0;
-    }
-
-    /**
-     * Nächste laufende Paketnummer je Organisation (innerhalb der
-     * Transaktion, Muster AuditService::nextNo()).
-     */
-    private function nextPackageNo(int $organizationId): int {
-        $max = IsmsAuditPackage::query()
-            ->withTrashed()
-            ->where('organization_id', $organizationId)
-            ->lockForUpdate()
-            ->max('package_no');
-
-        return ((int) $max) + 1;
     }
 
     private function trimmedOrNull(mixed $value): ?string {

@@ -10,7 +10,12 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureProofType: string {
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureProofType: string implements HasLabel {
+    use HasOptions;
+
     case Backup = 'backup';
     case File = 'file';
     case Photo = 'photo';

@@ -119,8 +119,8 @@ class AiAdminHttpTest extends TestCase {
             [
                 'enabled' => 1,
                 'allow_user_choice' => 1,
-                'allowed_connection_ids' => [$own->id, $foreign->id],
-                'default_connection_id' => $own->id,
+                'allowed_connection_ids' => [$own->sqid, $foreign->sqid],
+                'default_connection_id' => $own->sqid,
             ]
         )->assertRedirect(route('admin.ai.index'));
 

@@ -10,24 +10,23 @@
 
 namespace App\Services\Isms\Concerns;
 
-use App\Models\Isms\{IsmsAudit, IsmsManagementReview};
+use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsAuditPackage, IsmsManagementReview, IsmsRisk, IsmsRiskAssessment, IsmsSecurityIncident, IsmsSupplierAssessment, IsmsVulnerability};
 
 /**
- * Laufende Nummern je Organisation (audit_no/review_no) — Vergabe innerhalb
- * der Transaktion, Muster RiskService::nextRiskNo(). Aus dem AuditService
- * extrahiert (Refactoring Welle 2, B6b).
+ * Laufende Nummern für ISMS-Register (Vergabe innerhalb der Transaktion).
+ * Scope-Spalte je nach Register organization_id oder Parent-FK
+ * (isms_risk_id/isms_audit_id) — generalisiert im Refactoring Welle 3, B3.
  */
 trait AssignsSequentialNo {
     /**
-     * Nächste laufende Nummer je Organisation (innerhalb der Transaktion,
-     * Muster RiskService::nextRiskNo()).
+     * Nächste laufende Nummer je Scope (withTrashed + lockForUpdate, Start bei 1).
      *
-     * @param  class-string<IsmsAudit|IsmsManagementReview>  $model
+     * @param  class-string<IsmsAudit|IsmsAuditFinding|IsmsAuditPackage|IsmsManagementReview|IsmsRisk|IsmsRiskAssessment|IsmsSecurityIncident|IsmsSupplierAssessment|IsmsVulnerability>  $model
      */
-    private function nextNo(string $model, string $column, int $organizationId): int {
+    private function nextNo(string $model, string $column, string $scopeColumn, int $scopeId): int {
         $max = $model::query()
             ->withTrashed()
-            ->where('organization_id', $organizationId)
+            ->where($scopeColumn, $scopeId)
             ->lockForUpdate()
             ->max($column);
 

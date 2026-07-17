@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ForeignCustomer, Project, TimeEntry, User};
+use App\Models\{AuditLog, Customer, ForeignCustomer, Project, TimeEntry, User};
 use App\Services\Invoicing\InvoiceGenerator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,6 +79,15 @@ class ForeignCustomerTest extends TestCase {
 
         $this->actingAs($this->admin)->post(route('foreign-customers.restore', $fc))->assertRedirect();
         $this->assertNull($fc->fresh()->archived_at);
+
+        // Audit via Auditable-Trait (A1): genau eine Zeile je Event, archived_at-Wechsel als eigenes Event.
+        foreach (['archived' => 1, 'restored' => 1, 'updated' => 0] as $event => $expected) {
+            $this->assertSame($expected, AuditLog::query()
+                ->where('auditable_type', ForeignCustomer::class)
+                ->where('auditable_id', $fc->id)
+                ->where('event', $event)
+                ->count(), "audit_logs für Event '{$event}'");
+        }
     }
 
     public function test_promote_creates_customer_and_reparents_projects(): void {

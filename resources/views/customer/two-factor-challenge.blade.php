@@ -9,9 +9,7 @@
         <p class="text-sm text-base-content/70 mb-4" x-show="authMode">{{ __('Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.') }}</p>
         <p class="text-sm text-base-content/70 mb-4" x-show="recovery" x-cloak>{{ __('Geben Sie einen Ihrer Recovery-Codes ein.') }}</p>
 
-        @if ($errors->any())
-            <div class="alert alert-error text-sm mb-4">{{ $errors->first() }}</div>
-        @endif
+        <x-validation-errors first class="mb-4" />
         @if (session('success'))
             <div class="alert alert-success text-sm mb-4">{{ session('success') }}</div>
         @endif

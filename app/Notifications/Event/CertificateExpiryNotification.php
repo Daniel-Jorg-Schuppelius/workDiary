@@ -10,24 +10,23 @@
 
 namespace App\Notifications\Event;
 
+use App\Notifications\DirectNotification;
+use App\Support\NotificationText;
 use Carbon\CarbonInterface;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class CertificateExpiryNotification extends Notification {
-    use Queueable;
+class CertificateExpiryNotification extends DirectNotification {
+    private const TITLE_KEY = 'Zertifikat läuft in :days Tagen ab';
+
+    private const MESSAGE_KEY = 'Dein Zertifikat für „:title" läuft am :date ab.';
 
     public function __construct(
         public readonly int $eventId,
         public readonly string $eventTitle,
         public readonly CarbonInterface $expiresAt,
         public readonly int $daysRemaining,
-    ) {}
-
-    /** @return list<string> */
-    public function via(object $notifiable): array {
-        return ['mail', 'database'];
+    ) {
+        parent::__construct(['mail', 'database']);
     }
 
     public function toMail(object $notifiable): MailMessage {
@@ -43,9 +42,19 @@ class CertificateExpiryNotification extends Notification {
 
     /** @return array<string, mixed> */
     public function toArray(object $notifiable): array {
+        $titleParams = ['days' => $this->daysRemaining];
+        // Datum als ISO-Date (ohne Zeit) → NotificationText formatiert in der
+        // Anzeige-Locale ohne Zeitzonenverschiebung.
+        $messageParams = ['title' => $this->eventTitle, 'date' => $this->expiresAt->toDateString()];
+
         return [
             'event_id' => $this->eventId,
-            'title' => $this->eventTitle,
+            'title' => NotificationText::render(self::TITLE_KEY, $titleParams),
+            'title_key' => self::TITLE_KEY,
+            'title_params' => $titleParams,
+            'message' => NotificationText::render(self::MESSAGE_KEY, $messageParams),
+            'message_key' => self::MESSAGE_KEY,
+            'message_params' => $messageParams,
             'expires_at' => $this->expiresAt->toIso8601String(),
             'days_remaining' => $this->daysRemaining,
             'icon' => 'workspace_premium',

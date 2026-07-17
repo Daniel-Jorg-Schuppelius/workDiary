@@ -12,7 +12,7 @@ namespace App\Policies;
 
 use App\Enums\User\Permission;
 use App\Models\{User, WorkSchedule};
-use App\Policies\Concerns\HasAdminBypass;
+use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
 
 /**
  * Das Arbeitszeit-Modell darf nur von Personen mit `work-schedule.manage`
@@ -21,6 +21,7 @@ use App\Policies\Concerns\HasAdminBypass;
  * sie sehen lediglich ihr eigenes Modell.
  */
 class WorkSchedulePolicy {
+    use ChecksOwnership;
     use HasAdminBypass;
 
     public function viewAny(User $user): bool {
@@ -28,7 +29,7 @@ class WorkSchedulePolicy {
     }
 
     public function view(User $user, WorkSchedule $schedule): bool {
-        return $this->canManage($user) || (int) $user->id === (int) $schedule->user_id;
+        return $this->canManage($user) || $this->owns($user, $schedule);
     }
 
     public function create(User $user): bool {

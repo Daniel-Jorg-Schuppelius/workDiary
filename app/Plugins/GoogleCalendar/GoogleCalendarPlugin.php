@@ -15,6 +15,7 @@ use App\Plugins\Contracts\{CalendarPublisher, Plugin, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
+use App\Plugins\Support\PluginOrgContext;
 use Closure;
 use Throwable;
 
@@ -58,13 +59,11 @@ class GoogleCalendarPlugin implements CalendarPublisher, Plugin {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -149,7 +148,7 @@ class GoogleCalendarPlugin implements CalendarPublisher, Plugin {
             return PluginHealth::degraded(__('google_calendar.health.not_configured'));
         }
 
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('google_calendar.health.no_org_context'));
         }

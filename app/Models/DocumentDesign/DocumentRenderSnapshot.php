@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\DocumentDesign;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{AppendOnly, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -37,6 +37,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int|null $created_by
  */
 class DocumentRenderSnapshot extends Model {
+    // Snapshots sind Nachweise: nachträgliche Änderungen sind verboten.
+    use AppendOnly;
+
     use BelongsToOrganization;
 
     use HasSqid;
@@ -60,13 +63,6 @@ class DocumentRenderSnapshot extends Model {
         'document_kind' => RenderDocumentKind::class,
         'payload' => 'array',
     ];
-
-    protected static function booted(): void {
-        // Snapshots sind Nachweise: nachträgliche Änderungen sind verboten.
-        static::updating(function (): void {
-            throw new \RuntimeException('Render-Snapshots sind unveränderlich.');
-        });
-    }
 
     /** @return MorphTo<Model, $this> */
     public function documentable(): MorphTo {

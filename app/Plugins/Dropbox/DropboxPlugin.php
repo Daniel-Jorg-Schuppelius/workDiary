@@ -18,6 +18,7 @@ use App\Plugins\Dropbox\Api\{DropboxBackupClient, DropboxClient};
 use App\Plugins\{PluginDefaults, PluginHealth};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
+use App\Plugins\Support\PluginOrgContext;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -55,13 +56,11 @@ class DropboxPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
     }
 
     public function isEnabled(): bool {
-        if (app()->bound('currentOrganization')) {
-            $org = app('currentOrganization');
-            if ($org instanceof Organization) {
-                $row = PluginSetting::forOrganization($org->id, self::ID);
-                if ($row->exists) {
-                    return $row->enabled;
-                }
+        $org = PluginOrgContext::currentOrNull();
+        if ($org instanceof Organization) {
+            $row = PluginSetting::forOrganization($org->id, self::ID);
+            if ($row->exists) {
+                return $row->enabled;
             }
         }
 
@@ -149,7 +148,7 @@ class DropboxPlugin implements BackupTarget, DocumentIntakeSource, Plugin {
             return PluginHealth::degraded(__('cloud_intake.dropbox.health.not_configured'));
         }
 
-        $org = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
             return PluginHealth::ok(__('cloud_intake.dropbox.health.no_org_context'));
         }

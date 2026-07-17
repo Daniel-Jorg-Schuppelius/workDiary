@@ -42,10 +42,7 @@ class ServiceTicketController extends Controller {
             ->orderBy($sort, $dir);
 
         if ($q !== '') {
-            $query->where(function ($builder) use ($q): void {
-                $builder->whereLikeEscaped('ticket_no', $q)
-                    ->orWhereLikeEscaped('title', $q);
-            });
+            $query->search($q);
         }
         if ($statusFilter !== '' && ServiceTicketStatus::tryFrom($statusFilter) !== null) {
             $query->where('status', $statusFilter);

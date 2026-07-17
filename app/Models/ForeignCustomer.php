@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\{Archivable, BelongsToOrganization, HasSqid, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, HasSqid, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
@@ -47,6 +47,7 @@ use Illuminate\Support\Carbon;
  */
 class ForeignCustomer extends Model {
     use Archivable;
+    use Auditable;
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */
@@ -78,6 +79,15 @@ class ForeignCustomer extends Model {
     protected $casts = [
         'archived_at' => 'datetime',
     ];
+
+    /**
+     * Archivieren/Entarchivieren als eigene Audit-Events loggen (GoBD).
+     *
+     * @param  array<string, mixed>  $changes
+     */
+    protected function resolveAuditEvent(string $event, array $changes): string {
+        return $this->mapArchivedAtAuditEvent($event, $changes);
+    }
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {

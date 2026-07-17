@@ -15,6 +15,7 @@ namespace App\Services\DocumentDesign;
 use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\{Organization, User};
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
@@ -150,7 +151,7 @@ class RenderProfileService {
                 'status' => DocumentRenderProfileVersion::STATUS_ACTIVE,
                 'activated_at' => now(),
                 'activated_by' => $user?->id,
-                'checksum' => hash('sha256', (string) json_encode([
+                'checksum' => CryptoHelper::hash(JsonHelper::encode([
                     $version->layout, $version->block_rules, $version->table_style,
                     $version->first_asset_id, $version->following_asset_id,
                 ])),

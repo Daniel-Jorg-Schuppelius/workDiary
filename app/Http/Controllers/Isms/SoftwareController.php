@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsSoftwareInstallation, IsmsSoftwareProduct};
 use App\Models\User;
 use App\Services\Isms\SoftwareInventoryService;
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -54,10 +55,7 @@ class SoftwareController extends Controller {
             $query->where('support_status', $filters['support_status']);
         }
         if ($filters['q'] !== '') {
-            $query->where(function ($q) use ($filters): void {
-                $q->whereLikeEscaped('name', $filters['q'])
-                    ->orWhereLikeEscaped('vendor', $filters['q']);
-            });
+            $query->search($filters['q']);
         }
 
         $hasActiveFilters = $filters['category'] !== 'all'
@@ -187,6 +185,11 @@ class SoftwareController extends Controller {
      * @return array<string, mixed>
      */
     private function validateProduct(Request $request): array {
+        // Sqid-Input vor der Validierung dekodieren (numerischer Fallback für Alt-Clients).
+        if ($request->filled('owner_user_id')) {
+            $request->merge(['owner_user_id' => Sqid::decodeOrNumeric(User::class, $request->input('owner_user_id'))]);
+        }
+
         return $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:180'],
             'vendor' => ['nullable', 'string', 'max:120'],

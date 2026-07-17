@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, Searchable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -45,6 +45,7 @@ class InvoiceMailTemplate extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use Searchable;
 
     protected $fillable = [
         'organization_id',
@@ -168,5 +169,10 @@ class InvoiceMailTemplate extends Model {
             'document_label' => __('Dokumenttyp (Rechnung/Gutschrift)'),
             'custom_text' => __('Individueller Begleittext'),
         ];
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['name', 'subject'];
     }
 }

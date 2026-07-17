@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, Searchable};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
 
@@ -33,6 +33,7 @@ class Problem extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
+    use Searchable;
 
     public const STATUSES = ['open', 'analyzing', 'known_error', 'resolved', 'closed'];
 
@@ -69,5 +70,10 @@ class Problem extends Model {
      */
     public function changes(): \Illuminate\Database\Eloquent\Relations\HasMany {
         return $this->hasMany(Change::class, 'problem_id');
+    }
+
+    /** @return list<string> */
+    protected function searchableColumns(): array {
+        return ['title', 'description'];
     }
 }

@@ -12,12 +12,17 @@ declare(strict_types=1);
 
 namespace App\Enums\Article;
 
+use App\Enums\Concerns\HasOptions;
+use App\Enums\Contracts\HasLabel;
+
 /**
  * Rolle einer artikelbezogenen Einheit (Feature 048, MVP-060). Bestände und
  * Bewegungen werden intern in der Basiseinheit geführt; weitere Einheiten
  * tragen einen exakten Faktor zur Basiseinheit.
  */
-enum ArticleUnitKind: string {
+enum ArticleUnitKind: string implements HasLabel {
+    use HasOptions;
+
     case Base = 'base';
     case Purchase = 'purchase';
     case Sale = 'sale';

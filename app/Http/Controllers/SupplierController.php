@@ -16,10 +16,8 @@ use App\Models\{AuditLog, ExternalReference, LexofficeVoucher, Supplier, Tag};
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
-use App\Support\Setting;
-use CommonToolkit\Helper\Data\CSV\StringHelper;
+use App\Support\{CsvExport, Setting};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -188,58 +186,45 @@ class SupplierController extends Controller {
 
         $filename = 'lieferanten-' . now()->format('Y-m-d-His') . '.csv';
 
-        return new StreamedResponse(function () use ($query): void {
-            $out = fopen('php://output', 'w');
-            if ($out === false) {
-                return;
+        $rows = (static function () use ($query): \Generator {
+            /** @var Supplier $s */
+            foreach ($query->lazy(500) as $s) {
+                yield [
+                    $s->number,
+                    $s->vendor_number,
+                    $s->name,
+                    $s->company,
+                    $s->vat_id,
+                    $s->email,
+                    $s->phone ?: $s->mobile,
+                    $s->address_street,
+                    $s->address_zip,
+                    $s->address_city,
+                    $s->country,
+                    $s->currency->value,
+                    $s->active ? 'ja' : 'nein',
+                    $s->archived_at?->format('Y-m-d') ?? '',
+                    $s->created_at?->format('Y-m-d') ?? '',
+                ];
             }
-            // UTF-8 BOM für Excel
-            fwrite($out, \CommonToolkit\Helper\Data\StringHelper::BOM_UTF8);
-            fwrite($out, StringHelper::encodeLine([
-                'Nummer',
-                'Lieferantennummer',
-                'Name',
-                'Firma',
-                'USt-IdNr.',
-                'E-Mail',
-                'Telefon',
-                'Straße',
-                'PLZ',
-                'Ort',
-                'Land',
-                'Währung',
-                'Aktiv',
-                'Archiviert',
-                'Angelegt',
-            ], ';') . "\r\n");
+        })();
 
-            $query->chunk(500, function ($chunk) use ($out): void {
-                /** @var Collection<int, Supplier> $chunk */
-                foreach ($chunk as $s) {
-                    fwrite($out, StringHelper::encodeLine([
-                        $s->number,
-                        $s->vendor_number,
-                        $s->name,
-                        $s->company,
-                        $s->vat_id,
-                        $s->email,
-                        $s->phone ?: $s->mobile,
-                        $s->address_street,
-                        $s->address_zip,
-                        $s->address_city,
-                        $s->country,
-                        $s->currency->value,
-                        $s->active ? 'ja' : 'nein',
-                        $s->archived_at?->format('Y-m-d') ?? '',
-                        $s->created_at?->format('Y-m-d') ?? '',
-                    ], ';') . "\r\n");
-                }
-            });
-
-            fclose($out);
-        }, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
+        return CsvExport::streamFromRows($filename, [
+            'Nummer',
+            'Lieferantennummer',
+            'Name',
+            'Firma',
+            'USt-IdNr.',
+            'E-Mail',
+            'Telefon',
+            'Straße',
+            'PLZ',
+            'Ort',
+            'Land',
+            'Währung',
+            'Aktiv',
+            'Archiviert',
+            'Angelegt',
+        ], $rows);
     }
 }

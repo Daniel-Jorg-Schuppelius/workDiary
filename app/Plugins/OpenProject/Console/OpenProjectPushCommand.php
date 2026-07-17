@@ -10,7 +10,7 @@
 
 namespace App\Plugins\OpenProject\Console;
 
-use App\Models\Organization;
+use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\OpenProject\OpenProjectConfig;
 use App\Plugins\OpenProject\Services\OpenProjectExportService;
 use Illuminate\Console\Command;
@@ -21,19 +21,14 @@ use Illuminate\Console\Command;
  * Aufgabe → Work Package). Idempotent über die `pushed_entry`-Reference.
  */
 class OpenProjectPushCommand extends Command {
-    protected $signature = 'openproject:push
-        {--organization= : ID einer einzelnen Organisation, sonst alle}';
+    use IteratesOrganizations;
+
+    protected $signature = 'openproject:push ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Bucht erfasste workDiary-Zeiten als OpenProject-Zeiteinträge zurück.';
 
     public function handle(OpenProjectExportService $service): int {
-        $orgId = $this->option('organization');
-        $query = Organization::query();
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
-        }
-
-        $organizations = $query->get();
+        $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');
 

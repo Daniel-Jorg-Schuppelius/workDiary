@@ -12,10 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Form;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\FormSubmission;
-use PDFToolkit\Entities\PDFContent;
-use PDFToolkit\Registries\PDFWriterRegistry;
-use RuntimeException;
+use App\Services\DocumentDesign\DocumentDesignRenderer;
 
 /**
  * Rendert ein ausgefülltes Formular als PDF (Feature 032, Rang 31) über die
@@ -27,19 +26,15 @@ class FormSubmissionPdfRenderer {
     public function output(FormSubmission $submission, ?string $subjectLabel = null): string {
         $submission->loadMissing(['template', 'submitter', 'subject', 'attachments']);
 
-        $html = view('forms.submissions.pdf', [
-            'submission' => $submission,
-            'subjectLabel' => $subjectLabel,
-        ])->render();
-
-        // Feature 076: aktives Dokumentdesign anwenden (ohne Profil No-Op).
-        $html = app(\App\Services\DocumentDesign\DocumentDesignRenderer::class)->composeFor(
-            \App\Models\Organization::query()->withoutGlobalScopes()->find($submission->organization_id),
-            \App\Enums\DocumentDesign\RenderDocumentKind::Form,
-            $html,
+        // C15: gemeinsamer View→Design→PDF-Dreischritt (Dokumentdesign ohne Profil No-Op).
+        return app(DocumentDesignRenderer::class)->renderPdf(
+            RenderDocumentKind::Form,
+            'forms.submissions.pdf',
+            [
+                'submission' => $submission,
+                'subjectLabel' => $subjectLabel,
+            ],
+            (int) $submission->organization_id,
         );
-
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
-            ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (forms.submissions.pdf).');
     }
 }

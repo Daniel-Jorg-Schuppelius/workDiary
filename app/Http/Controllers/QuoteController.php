@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 use App\Models\{Customer, Quote, QuoteItem, User};
 use App\Services\Invoicing\QuoteService;
 use App\Support\SortableQuery;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -284,7 +285,7 @@ class QuoteController extends Controller {
     /** Token gegen den gespeicherten Hash prüfen (kein Login, kein Sqid-Raten). */
     private function assertPortalToken(Quote $quote, string $token): void {
         abort_if($quote->acceptance_token_hash === null || $token === '', 404);
-        abort_unless(hash_equals((string) $quote->acceptance_token_hash, hash('sha256', $token)), 404);
+        abort_unless(hash_equals((string) $quote->acceptance_token_hash, CryptoHelper::hash($token)), 404);
     }
 
     /** @return array<string, mixed> */
