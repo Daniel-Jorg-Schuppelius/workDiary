@@ -66,6 +66,7 @@ return [
     // Readable job names (registry keys, nested because of dot notation);
     // add new registry jobs here in all locales — otherwise fallback = key.
     'job' => [
+        'ai' => ['maintenance' => 'AI maintenance run (provider health, suggestion cleanup)'],
         'archive' => ['run' => 'Archiving run'],
         'attendance' => ['close_open' => 'Close forgotten clock-ins'],
         'audit' => ['verify' => 'Verify audit chain'],

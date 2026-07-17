@@ -98,6 +98,18 @@
         </div>
     @endif
 
+    {{-- KI-Leistungstexte (Feature 084, MVP-405): Vorschläge nur im Entwurf. --}}
+    @php
+        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiDraft = $quote->status === 'draft' && auth()->user()?->can('update', $quote);
+        $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM);
+        $aiSuggestions = $aiSuggestEnabled
+            ? $aiViewData->openSuggestionsFor((new \App\Models\QuoteItem)->getMorphClass(), $quote->items)
+            : collect();
+        $aiColspan = 7 + ($quote->decided_at !== null ? 1 : 0);
+    @endphp
+    @include('ai._learn_prompt')
+
     <x-table>
         <x-slot:head>
             <tr>
@@ -129,6 +141,11 @@
                 @endif
                 @can('update', $quote)
                     <td class="text-right whitespace-nowrap">
+                        @if ($aiSuggestEnabled)
+                            <x-action-form :action="route('ai.suggestions.quote-item', [$quote, $item])">
+                                <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest')" />
+                            </x-action-form>
+                        @endif
                         <x-icon-btn icon="edit" size="xs" tone="ghost"
                                     data-entry-modal-trigger
                                     :href="route('quotes.items.edit', [$quote, $item])"
@@ -143,6 +160,22 @@
                     </td>
                 @endcan
             </tr>
+            @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
+                <tr data-ai-suggestion-row>
+                    <td colspan="{{ $aiColspan }}">
+                        <x-ai-suggestion
+                            :original="$aiSuggestions[$item->id]->original"
+                            :suggestion="$aiSuggestions[$item->id]->suggestion"
+                            :provider="$aiSuggestions[$item->id]->provider"
+                            :fallback="$aiSuggestions[$item->id]->fallback_used"
+                            :cached="$aiSuggestions[$item->id]->from_cache"
+                            :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
+                            :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
+                            field-name="text"
+                        />
+                    </td>
+                </tr>
+            @endif
         @empty
             <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">request_quote</span>' :colspan="6" :title="__('Keine Positionen.')" compact />
         @endforelse

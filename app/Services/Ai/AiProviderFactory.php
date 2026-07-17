@@ -12,25 +12,33 @@ declare(strict_types=1);
 
 namespace App\Services\Ai;
 
+use App\Enums\Ai\AiProviderType;
 use App\Models\Ai\AiProviderConnection;
 use App\Services\Ai\Contracts\AiProviderInterface;
 use App\Services\Ai\Exceptions\AiProviderNotImplementedException;
+use App\Services\Ai\Providers\{AnthropicProvider, AzureOpenAiProvider, AzureTranslatorProvider, DeepLProvider, GeminiProvider, LibreTranslateProvider, OllamaProvider, OpenAiCompatibleProvider, OpenAiProvider};
 
 /**
- * Auflösung Verbindung → Provider-Adapter (Feature 025, MVP-399).
+ * Auflösung Verbindung → Provider-Adapter (Feature 025, MVP-399/407-410).
  * Austauschpunkt nach dem Muster von PluginHttpFactory: Tests ersetzen
  * die Factory im Container ({@see \Tests\Support\FakeAiProviderFactory}).
- * Die konkreten Adapter folgen in MVP-407–410 und werden hier im
- * `match` verdrahtet; bis dahin wirft jeder Typ
- * {@see AiProviderNotImplementedException} — der Invocation-Service
- * behandelt das wie einen Verbindungsfehler (Health + Fallback-Kette).
+ * `Fake` und `GoogleTranslate` haben bewusst keinen produktiven Adapter
+ * (Tests bzw. spätere Ausbaustufe).
  */
 class AiProviderFactory {
     public function make(AiProviderConnection $connection): AiProviderInterface {
-        // MVP-407/408: anthropic, ollama, openai_compatible, openai,
-        //              gemini, azure_openai
-        // MVP-409/410: deepl, libretranslate, azure_translator,
-        //              google_translate
-        throw AiProviderNotImplementedException::forType($connection->provider);
+        return match ($connection->provider) {
+            AiProviderType::Anthropic => new AnthropicProvider($connection),
+            AiProviderType::Ollama => new OllamaProvider($connection),
+            AiProviderType::OpenAiCompatible => new OpenAiCompatibleProvider($connection),
+            AiProviderType::OpenAi => new OpenAiProvider($connection),
+            AiProviderType::Gemini => new GeminiProvider($connection),
+            AiProviderType::AzureOpenAi => new AzureOpenAiProvider($connection),
+            AiProviderType::DeepL => new DeepLProvider($connection),
+            AiProviderType::LibreTranslate => new LibreTranslateProvider($connection),
+            AiProviderType::AzureTranslator => new AzureTranslatorProvider($connection),
+            AiProviderType::GoogleTranslate,
+            AiProviderType::Fake => throw AiProviderNotImplementedException::forType($connection->provider),
+        };
     }
 }

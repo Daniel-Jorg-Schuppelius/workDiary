@@ -66,6 +66,7 @@ return [
     // Lesbare Job-Namen (Registry-Keys, geschachtelt wegen Punkt-Notation);
     // neue Registry-Jobs hier in allen Locales ergänzen — sonst Fallback = Key.
     'job' => [
+        'ai' => ['maintenance' => 'KI-Wartungslauf (Provider-Health, Vorschlags-Bereinigung)'],
         'archive' => ['run' => 'Archivierungslauf'],
         'attendance' => ['close_open' => 'Offene Stempelungen schließen'],
         'audit' => ['verify' => 'Audit-Kette prüfen'],

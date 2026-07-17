@@ -146,6 +146,7 @@ return [
         // Admin: Betrieb (Betriebsaufgaben, Scheduler, Wartungsfenster)
         'admin.operations.*' => 'admin.operations',
         'admin.scheduler.*' => 'admin.scheduler',
+        'admin.ai.*' => 'ai.services', // Feature 025 KI-Dienste + Gedächtnis
         'admin.maintenance-windows.*' => 'admin.operations',
         // Admin: Systemeinstellungen, Datenhoheit, Kostenstellenregeln
         'admin.settings.*' => 'admin.settings',
@@ -388,6 +389,7 @@ return [
         'license.show' => 'admin.license',
         'admin.imports.*' => 'admin.import',
         'admin.security.*' => 'admin.security',
+        'admin.sessions.*' => 'admin.security', // Sitzungs-/Token-Verwaltung = Sicherheitsseite
         'admin.components.*' => 'admin.security',
         'admin.support.report.*' => 'admin.support',
         'admin.support.access-audit.*' => 'admin.support',

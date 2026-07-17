@@ -1472,6 +1472,20 @@ Route::middleware('auth')->group(function () {
             Route::delete('{connection}', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'destroy'])->name('destroy');
         });
 
+        // ── KI-Leistungstexte an Belegen (Feature 084, module.ai) ──
+        // Gating via config/plans.routes: ai.suggestions.* → module.ai.
+        Route::prefix('ki/vorschlaege')->name('ai.suggestions.')->group(function (): void {
+            // Statische Segmente VOR dem {suggestion}-Wildcard.
+            Route::post('rechnungen/{invoice}', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceAll'])->name('invoice-all');
+            Route::post('rechnungen/{invoice}/positionen/{item}', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceItem'])->name('invoice-item');
+            Route::get('rechnungen/{invoice}/positionen/{item}/uebersetzen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceItemTranslateForm'])->name('invoice-item-translate-form');
+            Route::post('rechnungen/{invoice}/positionen/{item}/uebersetzen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'invoiceItemTranslate'])->name('invoice-item-translate');
+            Route::post('angebote/{quote}/positionen/{item}', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'quoteItem'])->name('quote-item');
+            Route::post('merken', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'learn'])->name('learn');
+            Route::post('{suggestion}/uebernehmen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'accept'])->name('accept');
+            Route::post('{suggestion}/verwerfen', [\App\Http\Controllers\Ai\AiSuggestionController::class, 'reject'])->name('reject');
+        });
+
         Route::prefix('domains')->name('domains.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Domain\DomainController::class, 'index'])->name('index');
             // Statische Segmente VOR dem {domain}-Wildcard.

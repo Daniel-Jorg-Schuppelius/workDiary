@@ -204,6 +204,27 @@
     </x-page-toolbar>
 
     @php $showServiceDates = $invoice->hasServicePeriod(); $footColspan = $showServiceDates ? 5 : 4; @endphp
+
+    {{-- KI-Leistungstexte (Feature 084): Vorschläge nur im Entwurf, nie stille Änderungen. --}}
+    @php
+        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiDraft = $invoice->status === \App\Models\Invoice::STATUS_DRAFT && auth()->user()?->can('update', $invoice);
+        $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_ITEM);
+        $aiTranslateEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_TRANSLATE);
+        $aiSuggestions = ($aiSuggestEnabled || $aiTranslateEnabled)
+            ? $aiViewData->openSuggestionsFor((new \App\Models\InvoiceItem)->getMorphClass(), $invoice->items)
+            : collect();
+    @endphp
+    @include('ai._learn_prompt')
+    @if ($aiSuggestEnabled && $invoice->items->isNotEmpty())
+        <div class="flex justify-end">
+            <x-action-form :action="route('ai.suggestions.invoice-all', $invoice)">
+                <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
+                            :title="__('ai.suggestion.suggest_all_title')">{{ __('ai.suggestion.suggest_all') }}</x-icon-btn>
+            </x-action-form>
+        </div>
+    @endif
+
     <x-table table-sort="client">
         <x-slot:head>
             <tr>
@@ -239,6 +260,17 @@
                 @can('update', $invoice)
                     @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)
                         <td class="text-right whitespace-nowrap">
+                            @if ($aiSuggestEnabled)
+                                <x-action-form :action="route('ai.suggestions.invoice-item', [$invoice, $item])">
+                                    <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest')" />
+                                </x-action-form>
+                            @endif
+                            @if ($aiTranslateEnabled)
+                                <x-icon-btn icon="translate" size="xs" tone="ghost"
+                                            data-entry-modal-trigger
+                                            :href="route('ai.suggestions.invoice-item-translate-form', [$invoice, $item])"
+                                            :title="__('ai.suggestion.translate')" />
+                            @endif
                             <x-icon-btn icon="edit" size="xs" tone="ghost"
                                         data-entry-modal-trigger
                                         :href="route('invoices.items.edit', [$invoice, $item])"
@@ -254,6 +286,22 @@
                     @endif
                 @endcan
             </tr>
+            @if ($aiDraft && ($aiSuggestions[$item->id] ?? null) !== null)
+                <tr data-ai-suggestion-row>
+                    <td colspan="{{ $footColspan + 2 }}">
+                        <x-ai-suggestion
+                            :original="$aiSuggestions[$item->id]->original"
+                            :suggestion="$aiSuggestions[$item->id]->suggestion"
+                            :provider="$aiSuggestions[$item->id]->provider"
+                            :fallback="$aiSuggestions[$item->id]->fallback_used"
+                            :cached="$aiSuggestions[$item->id]->from_cache"
+                            :accept-action="route('ai.suggestions.accept', $aiSuggestions[$item->id])"
+                            :reject-action="route('ai.suggestions.reject', $aiSuggestions[$item->id])"
+                            field-name="text"
+                        />
+                    </td>
+                </tr>
+            @endif
         @empty
             <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="5" :title="__('Keine Positionen.')" compact />
         @endforelse

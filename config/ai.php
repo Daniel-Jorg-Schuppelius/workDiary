@@ -26,16 +26,42 @@ return [
      *                     (organization|customer|capability; MVP-401)
      *  - prompt_version:  ganzzahlig; Erhöhung invalidiert den Ergebnis-Cache
      *
-     * Beispiel (Feature 084, MVP-402 — erst mit der Umsetzung aktivieren):
-     * 'invoicing.item_text' => [
-     *     'verb' => 'formulate',
-     *     'sensitivity' => 'medium',
-     *     'data_classes' => ['leistungstext', 'zeitraum', 'taetigkeitsart'],
-     *     'memory_scopes' => ['organization', 'customer', 'capability'],
-     *     'prompt_version' => 1,
-     * ],
+     * Capability-Keys enthalten Punkte — Zugriff IMMER über die Registry
+     * (literal), nie über config()-Dot-Notation.
      */
     'capabilities' => [
+        // Feature 084, MVP-402: Einzelposition Rechnungsentwurf.
+        'invoicing.item_text' => [
+            'verb' => 'formulate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['leistungstext', 'leistungsdatum'],
+            'memory_scopes' => ['organization', 'customer', 'capability'],
+            'prompt_version' => 1,
+        ],
+        // Feature 084, MVP-403: Blocktext aus gebündelten Zeiten.
+        'invoicing.block_text' => [
+            'verb' => 'summarize',
+            'sensitivity' => 'medium',
+            'data_classes' => ['zeiteintrags-texte', 'leistungszeitraum'],
+            'memory_scopes' => ['organization', 'customer', 'capability'],
+            'prompt_version' => 1,
+        ],
+        // Feature 025, MVP-409: Positionstext in Empfängersprache.
+        'invoicing.item_translate' => [
+            'verb' => 'translate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['leistungstext', 'zielsprache'],
+            'memory_scopes' => ['organization', 'customer'],
+            'prompt_version' => 1,
+        ],
+        // Feature 084, MVP-405: Angebotspositionen.
+        'quotes.item_text' => [
+            'verb' => 'formulate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['positionstext'],
+            'memory_scopes' => ['organization', 'customer', 'capability'],
+            'prompt_version' => 1,
+        ],
     ],
 
     /*
@@ -73,4 +99,10 @@ return [
      * Capability-Default), Nutzungshäufigkeit und Aktualität priorisiert.
      */
     'memory_budget_characters' => 4000,
+
+    /*
+     * Aufbewahrung entschiedener Textvorschläge in Tagen (Feature 084 —
+     * Betriebsdaten, kein Beleg; Bereinigung über ai:maintenance).
+     */
+    'suggestion_retention_days' => 30,
 ];

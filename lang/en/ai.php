@@ -109,6 +109,11 @@ return [
         'preflight_open' => 'Preflight pending',
     ],
     'flash' => [
+        'suggestion_created' => 'AI suggestion created — please review and apply or discard.',
+        'suggestions_queued' => ':count suggestions are being created in the background and will appear here when done.',
+        'suggestion_accepted' => 'Suggestion applied.',
+        'suggestion_rejected' => 'Suggestion discarded.',
+        'learned' => 'Saved to AI memory — future suggestions will use the correction.',
         'connected' => 'Connection created and preflight passed.',
         'preflight_ok' => 'Preflight passed — connection active.',
         'preflight_failed' => 'Preflight failed: :error',
@@ -153,7 +158,21 @@ return [
     'security' => [
         'active_connections' => 'Active AI connections',
     ],
+    'learn' => [
+        'title' => 'Should I remember this?',
+        'question' => 'You adjusted the suggestion before applying it. Stored as an example pair in the AI memory, the correction improves future suggestions for this customer. Nothing is saved without your confirmation.',
+        'corrected' => 'Your version',
+        'confirm' => 'Yes, remember',
+        'dismiss' => 'No, discard',
+    ],
     'suggestion' => [
+        'suggest' => 'AI suggestion for this item',
+        'suggest_all' => 'AI suggestions for all items',
+        'suggest_all_title' => 'Creates a text suggestion per item in the background — nothing is applied until you click.',
+        'translate' => 'Translate item',
+        'translate_submit' => 'Suggest translation',
+        'translate_help' => 'The translation appears as a suggestion below the item — applied only on click. Glossary terms from the AI memory are enforced where the provider supports it deterministically.',
+        'target_language' => 'Target language',
         'title' => 'AI suggestion',
         'original' => 'Current',
         'proposal' => 'Suggestion',

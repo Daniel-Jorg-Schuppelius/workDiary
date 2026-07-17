@@ -109,6 +109,11 @@ return [
         'preflight_open' => 'Preflight en attente',
     ],
     'flash' => [
+        'suggestion_created' => 'Suggestion IA créée — veuillez la vérifier puis l\'appliquer ou la rejeter.',
+        'suggestions_queued' => ':count suggestions sont créées en arrière-plan et apparaîtront ici une fois prêtes.',
+        'suggestion_accepted' => 'Suggestion appliquée.',
+        'suggestion_rejected' => 'Suggestion rejetée.',
+        'learned' => 'Enregistré dans la mémoire IA — les prochaines suggestions utiliseront la correction.',
         'connected' => 'Connexion créée et preflight réussi.',
         'preflight_ok' => 'Preflight réussi — connexion active.',
         'preflight_failed' => 'Preflight échoué : :error',
@@ -153,7 +158,21 @@ return [
     'security' => [
         'active_connections' => 'Connexions IA actives',
     ],
+    'learn' => [
+        'title' => 'Dois-je m\'en souvenir ?',
+        'question' => 'Vous avez ajusté la suggestion avant de l\'appliquer. Enregistrée comme paire d\'exemples dans la mémoire IA, la correction améliore les futures suggestions pour ce client. Rien n\'est enregistré sans votre confirmation.',
+        'corrected' => 'Votre version',
+        'confirm' => 'Oui, mémoriser',
+        'dismiss' => 'Non, rejeter',
+    ],
     'suggestion' => [
+        'suggest' => 'Suggestion IA pour cette position',
+        'suggest_all' => 'Suggestions IA pour toutes les positions',
+        'suggest_all_title' => 'Crée une suggestion de texte par position en arrière-plan — rien n\'est appliqué avant le clic.',
+        'translate' => 'Traduire la position',
+        'translate_submit' => 'Proposer une traduction',
+        'translate_help' => 'La traduction apparaît comme suggestion sous la position — appliquée uniquement au clic. Les termes du glossaire de la mémoire IA sont imposés lorsque le fournisseur le permet de façon déterministe.',
+        'target_language' => 'Langue cible',
         'title' => 'Suggestion IA',
         'original' => 'Actuel',
         'proposal' => 'Suggestion',

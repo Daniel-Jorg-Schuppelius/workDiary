@@ -109,6 +109,11 @@ return [
         'preflight_open' => 'Preflight pendiente',
     ],
     'flash' => [
+        'suggestion_created' => 'Sugerencia de IA creada — revísala y aplícala o descártala.',
+        'suggestions_queued' => ':count sugerencias se están creando en segundo plano y aparecerán aquí al terminar.',
+        'suggestion_accepted' => 'Sugerencia aplicada.',
+        'suggestion_rejected' => 'Sugerencia descartada.',
+        'learned' => 'Guardado en la memoria de IA — las próximas sugerencias usarán la corrección.',
         'connected' => 'Conexión creada y preflight superado.',
         'preflight_ok' => 'Preflight superado — conexión activa.',
         'preflight_failed' => 'Preflight fallido: :error',
@@ -153,7 +158,21 @@ return [
     'security' => [
         'active_connections' => 'Conexiones de IA activas',
     ],
+    'learn' => [
+        'title' => '¿Debo recordarlo?',
+        'question' => 'Ajustaste la sugerencia antes de aplicarla. Guardada como par de ejemplo en la memoria de IA, la corrección mejora futuras sugerencias para este cliente. No se guarda nada sin tu confirmación.',
+        'corrected' => 'Tu versión',
+        'confirm' => 'Sí, recordar',
+        'dismiss' => 'No, descartar',
+    ],
     'suggestion' => [
+        'suggest' => 'Sugerencia de IA para esta posición',
+        'suggest_all' => 'Sugerencias de IA para todas las posiciones',
+        'suggest_all_title' => 'Crea una sugerencia de texto por posición en segundo plano — nada se aplica hasta hacer clic.',
+        'translate' => 'Traducir posición',
+        'translate_submit' => 'Proponer traducción',
+        'translate_help' => 'La traducción aparece como sugerencia bajo la posición — se aplica solo al hacer clic. Los términos del glosario de la memoria de IA se imponen cuando el proveedor lo permite de forma determinista.',
+        'target_language' => 'Idioma de destino',
         'title' => 'Sugerencia de IA',
         'original' => 'Actual',
         'proposal' => 'Sugerencia',

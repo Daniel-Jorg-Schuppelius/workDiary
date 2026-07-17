@@ -66,6 +66,7 @@ return [
     // Nomi leggibili dei job (chiavi registry, annidate per via della notazione a punti);
     // aggiungere i nuovi job qui in tutte le lingue — altrimenti fallback = chiave.
     'job' => [
+        'ai' => ['maintenance' => 'Manutenzione IA (stato dei provider, pulizia dei suggerimenti)'],
         'archive' => ['run' => 'Esecuzione archiviazione'],
         'attendance' => ['close_open' => 'Chiudere le timbrature dimenticate'],
         'audit' => ['verify' => 'Verificare la catena di audit'],

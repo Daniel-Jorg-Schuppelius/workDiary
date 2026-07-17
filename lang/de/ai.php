@@ -109,6 +109,11 @@ return [
         'preflight_open' => 'Preflight offen',
     ],
     'flash' => [
+        'suggestion_created' => 'KI-Vorschlag erstellt — bitte prüfen und übernehmen oder verwerfen.',
+        'suggestions_queued' => ':count Vorschläge werden im Hintergrund erstellt und erscheinen hier nach Abschluss.',
+        'suggestion_accepted' => 'Vorschlag übernommen.',
+        'suggestion_rejected' => 'Vorschlag verworfen.',
+        'learned' => 'Im KI-Gedächtnis gespeichert — künftige Vorschläge nutzen die Korrektur.',
         'connected' => 'Verbindung angelegt und Preflight bestanden.',
         'preflight_ok' => 'Preflight bestanden — Verbindung aktiv.',
         'preflight_failed' => 'Preflight fehlgeschlagen: :error',
@@ -153,7 +158,21 @@ return [
     'security' => [
         'active_connections' => 'Aktive KI-Verbindungen',
     ],
+    'learn' => [
+        'title' => 'Soll ich mir das merken?',
+        'question' => 'Du hast den Vorschlag vor der Übernahme angepasst. Als Beispielpaar im KI-Gedächtnis verbessert die Korrektur künftige Vorschläge für diesen Kunden. Gespeichert wird nur mit deiner Bestätigung.',
+        'corrected' => 'Deine Fassung',
+        'confirm' => 'Ja, merken',
+        'dismiss' => 'Nein, verwerfen',
+    ],
     'suggestion' => [
+        'suggest' => 'KI-Vorschlag für diese Position',
+        'suggest_all' => 'KI-Vorschläge für alle Positionen',
+        'suggest_all_title' => 'Erstellt je Position einen Textvorschlag im Hintergrund — übernommen wird erst per Klick.',
+        'translate' => 'Position übersetzen',
+        'translate_submit' => 'Übersetzung vorschlagen',
+        'translate_help' => 'Die Übersetzung erscheint als Vorschlag unter der Position — übernommen wird erst per Klick. Glossarbegriffe aus dem KI-Gedächtnis werden erzwungen, sofern der Provider das deterministisch kann.',
+        'target_language' => 'Zielsprache',
         'title' => 'KI-Vorschlag',
         'original' => 'Bisher',
         'proposal' => 'Vorschlag',

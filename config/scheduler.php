@@ -36,6 +36,15 @@ return [
             'expected_runtime_minutes' => 2,
         ],
 
+        // --- KI-Betriebslauf (Feature 025/084, MVP-411) ---
+        'ai.maintenance' => [
+            'command' => 'ai:maintenance',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:40'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+
         // --- Betriebsaufgaben-Sync (Feature 041, MVP-058) ---
         'operations.scan' => [
             'command' => 'operations:scan',

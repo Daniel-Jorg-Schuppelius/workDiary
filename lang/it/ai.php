@@ -109,6 +109,11 @@ return [
         'preflight_open' => 'Preflight in sospeso',
     ],
     'flash' => [
+        'suggestion_created' => 'Suggerimento IA creato — verifica e applica o scarta.',
+        'suggestions_queued' => ':count suggerimenti vengono creati in background e appariranno qui al termine.',
+        'suggestion_accepted' => 'Suggerimento applicato.',
+        'suggestion_rejected' => 'Suggerimento scartato.',
+        'learned' => 'Salvato nella memoria IA — i prossimi suggerimenti useranno la correzione.',
         'connected' => 'Connessione creata e preflight superato.',
         'preflight_ok' => 'Preflight superato — connessione attiva.',
         'preflight_failed' => 'Preflight fallito: :error',
@@ -153,7 +158,21 @@ return [
     'security' => [
         'active_connections' => 'Connessioni IA attive',
     ],
+    'learn' => [
+        'title' => 'Devo ricordarlo?',
+        'question' => 'Hai modificato il suggerimento prima di applicarlo. Salvata come coppia di esempio nella memoria IA, la correzione migliora i futuri suggerimenti per questo cliente. Nulla viene salvato senza la tua conferma.',
+        'corrected' => 'La tua versione',
+        'confirm' => 'Sì, ricorda',
+        'dismiss' => 'No, scarta',
+    ],
     'suggestion' => [
+        'suggest' => 'Suggerimento IA per questa posizione',
+        'suggest_all' => 'Suggerimenti IA per tutte le posizioni',
+        'suggest_all_title' => 'Crea un suggerimento di testo per posizione in background — nulla viene applicato finché non fai clic.',
+        'translate' => 'Traduci posizione',
+        'translate_submit' => 'Proponi traduzione',
+        'translate_help' => 'La traduzione appare come suggerimento sotto la posizione — applicata solo al clic. I termini del glossario della memoria IA vengono imposti dove il provider lo consente in modo deterministico.',
+        'target_language' => 'Lingua di destinazione',
         'title' => 'Suggerimento IA',
         'original' => 'Attuale',
         'proposal' => 'Suggerimento',

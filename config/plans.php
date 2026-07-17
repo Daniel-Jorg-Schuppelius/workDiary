@@ -296,7 +296,8 @@ return [
         'asset-finance.*' => 'module.asset_finance', // Feature 074 Leasing/Finanzierung/Asset-Verträge
         'asset-compliance.*' => 'module.asset_compliance', // Feature 075 Prüfmittel/Eichung/Kalibrierung
         'contracts.*' => 'module.contracts', // Welle D — Allgemeines Contract-Lifecycle-Management
-        'admin.ai.*' => 'module.ai', // Feature 025 KI-Assistenz (Admin-UI folgt in MVP-400)
+        'admin.ai.*' => 'module.ai', // Feature 025 KI-Assistenz
+        'ai.suggestions.*' => 'module.ai', // Feature 084 KI-Leistungstexte an Belegen
         'admin.domain-provider.*' => 'module.domain', // Feature 083 Domainverwaltung/DomainReselling
         'domains.*' => 'module.domain',
         'domain-reseller.*' => 'module.domain',
