@@ -23,6 +23,6 @@ enum SettingSource: string {
     case Default = 'default';
 
     public function label(): string {
-        return __('settings.sources.' . $this->value);
+        return __('settingsregistry.sources.' . $this->value);
     }
 }

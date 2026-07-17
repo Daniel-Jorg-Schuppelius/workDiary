@@ -25,6 +25,6 @@ enum SettingScope: string {
     case User = 'user';
 
     public function label(): string {
-        return __('settings.scopes.' . $this->value);
+        return __('settingsregistry.scopes.' . $this->value);
     }
 }

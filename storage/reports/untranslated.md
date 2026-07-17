@@ -1,8 +1,8 @@
 # Untranslated strings report
 
-Generated: 2026-07-16T15:06:00+00:00
+Generated: 2026-07-17T06:03:47+00:00
 
-- Blade hits: 47432
+- Blade hits: 48039
 - JS hits:    979
 
 ## BLADE
@@ -634,6 +634,40 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/exports/show.blade.php:277` — `System`
 - `resources/views/exports/show.blade.php:279` — `font-medium`
 - `resources/views/exports/show.blade.php:281` — `text-sm`
+- `resources/views/ai/_learn_prompt.blade.php:16` — `flex items-center gap-2 text-sm font-semibold`
+- `resources/views/ai/_learn_prompt.blade.php:17` — `psychology`
+- `resources/views/ai/_learn_prompt.blade.php:17` — `text-warning`
+- `resources/views/ai/_learn_prompt.blade.php:28` — `rounded bg-base-100 border border-base-200 p-2 whitespace-pre-wrap`
+- `resources/views/ai/_learn_prompt.blade.php:28` — `content`
+- `resources/views/ai/_learn_prompt.blade.php:31` — `flex flex-wrap items-center justify-end gap-2`
+- `resources/views/ai/_learn_prompt.blade.php:32` — `ghost`
+- `resources/views/ai/_learn_prompt.blade.php:33` — `inline`
+- `resources/views/ai/_learn_prompt.blade.php:35` — `hidden`
+- `resources/views/ai/_learn_prompt.blade.php:35` — `example`
+- `resources/views/ai/_learn_prompt.blade.php:36` — `hidden`
+- `resources/views/ai/_learn_prompt.blade.php:37` — `hidden`
+- `resources/views/ai/_learn_prompt.blade.php:37` — `content`
+- `resources/views/ai/_learn_prompt.blade.php:37` — `content`
+- `resources/views/ai/_learn_prompt.blade.php:38` — `hidden`
+- `resources/views/ai/_learn_prompt.blade.php:39` — `hidden`
+- `resources/views/ai/_learn_prompt.blade.php:39` — `capability`
+- `resources/views/ai/_learn_prompt.blade.php:39` — `capability`
+- `resources/views/ai/_learn_prompt.blade.php:40` — `submit`
+- `resources/views/ai/_learn_prompt.blade.php:40` — `warning`
+- `resources/views/ai/_learn_prompt.blade.php:40` — `psychology`
+- `resources/views/ai/_translate_dialog.blade.php:13` — `translate`
+- `resources/views/ai/_translate_dialog.blade.php:14` — `info`
+- `resources/views/ai/_translate_dialog.blade.php:17` — `data-entry-form`
+- `resources/views/ai/_translate_dialog.blade.php:20` — `fieldset`
+- `resources/views/ai/_translate_dialog.blade.php:21` — `fieldset-label`
+- `resources/views/ai/_translate_dialog.blade.php:21` — `ai-target-lang`
+- `resources/views/ai/_translate_dialog.blade.php:22` — `ai-target-lang`
+- `resources/views/ai/_translate_dialog.blade.php:22` — `select select-bordered w-full`
+- `resources/views/ai/_translate_dialog.blade.php:23` — `English', 'fr`
+- `resources/views/ai/_translate_dialog.blade.php:23` — `Français', 'it`
+- `resources/views/ai/_translate_dialog.blade.php:23` — `Italiano', 'es`
+- `resources/views/ai/_translate_dialog.blade.php:23` — `Español', 'de`
+- `resources/views/ai/_translate_dialog.blade.php:23` — `Deutsch`
 - `resources/views/duties/_tab_urlaub.blade.php:5` — `urlaub`
 - `resources/views/duties/_tab_urlaub.blade.php:7` — `flex`
 - `resources/views/duties/_tab_urlaub.blade.php:7` — `true`
@@ -4066,6 +4100,270 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/admin/domain-provider/index.blade.php:79` — `inline`
 - `resources/views/admin/domain-provider/index.blade.php:82` — `error`
 - `resources/views/admin/domain-provider/index.blade.php:82` — `submit`
+- `resources/views/admin/ai/_memory_dialog.blade.php:15` — `psychology`
+- `resources/views/admin/ai/_memory_dialog.blade.php:16` — `primary`
+- `resources/views/admin/ai/_memory_dialog.blade.php:19` — `data-entry-form`
+- `resources/views/admin/ai/_memory_dialog.blade.php:22` — `psychology`
+- `resources/views/admin/ai/_memory_dialog.blade.php:22` — `primary`
+- `resources/views/admin/ai/_memory_dialog.blade.php:23` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:24` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:24` — `aim-type`
+- `resources/views/admin/ai/_memory_dialog.blade.php:25` — `aim-type`
+- `resources/views/admin/ai/_memory_dialog.blade.php:25` — `select select-bordered w-full`
+- `resources/views/admin/ai/_memory_dialog.blade.php:27` — `glossary`
+- `resources/views/admin/ai/_memory_dialog.blade.php:33` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:34` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:34` — `aim-scope`
+- `resources/views/admin/ai/_memory_dialog.blade.php:35` — `aim-scope`
+- `resources/views/admin/ai/_memory_dialog.blade.php:35` — `scope`
+- `resources/views/admin/ai/_memory_dialog.blade.php:35` — `select select-bordered w-full`
+- `resources/views/admin/ai/_memory_dialog.blade.php:36` — `organization`
+- `resources/views/admin/ai/_memory_dialog.blade.php:36` — `scope', 'organization`
+- `resources/views/admin/ai/_memory_dialog.blade.php:36` — `organization`
+- `resources/views/admin/ai/_memory_dialog.blade.php:37` — `customer`
+- `resources/views/admin/ai/_memory_dialog.blade.php:37` — `scope`
+- `resources/views/admin/ai/_memory_dialog.blade.php:37` — `customer`
+- `resources/views/admin/ai/_memory_dialog.blade.php:38` — `capability`
+- `resources/views/admin/ai/_memory_dialog.blade.php:38` — `scope`
+- `resources/views/admin/ai/_memory_dialog.blade.php:38` — `capability`
+- `resources/views/admin/ai/_memory_dialog.blade.php:43` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:44` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:44` — `aim-customer`
+- `resources/views/admin/ai/_memory_dialog.blade.php:45` — `aim-customer`
+- `resources/views/admin/ai/_memory_dialog.blade.php:45` — `select select-bordered w-full`
+- `resources/views/admin/ai/_memory_dialog.blade.php:53` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:54` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:54` — `aim-capability`
+- `resources/views/admin/ai/_memory_dialog.blade.php:55` — `aim-capability`
+- `resources/views/admin/ai/_memory_dialog.blade.php:55` — `capability`
+- `resources/views/admin/ai/_memory_dialog.blade.php:55` — `select select-bordered w-full`
+- `resources/views/admin/ai/_memory_dialog.blade.php:58` — `capability`
+- `resources/views/admin/ai/_memory_dialog.blade.php:63` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:64` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:64` — `aim-term`
+- `resources/views/admin/ai/_memory_dialog.blade.php:65` — `aim-term`
+- `resources/views/admin/ai/_memory_dialog.blade.php:65` — `text`
+- `resources/views/admin/ai/_memory_dialog.blade.php:65` — `term`
+- `resources/views/admin/ai/_memory_dialog.blade.php:66` — `term`
+- `resources/views/admin/ai/_memory_dialog.blade.php:66` — `input input-bordered w-full font-mono`
+- `resources/views/admin/ai/_memory_dialog.blade.php:68` — `term`
+- `resources/views/admin/ai/_memory_dialog.blade.php:68` — `mt-1 text-sm text-error`
+- `resources/views/admin/ai/_memory_dialog.blade.php:71` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:72` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:72` — `aim-source`
+- `resources/views/admin/ai/_memory_dialog.blade.php:73` — `aim-source`
+- `resources/views/admin/ai/_memory_dialog.blade.php:74` — `textarea textarea-bordered w-full`
+- `resources/views/admin/ai/_memory_dialog.blade.php:78` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:79` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:79` — `aim-content`
+- `resources/views/admin/ai/_memory_dialog.blade.php:80` — `aim-content`
+- `resources/views/admin/ai/_memory_dialog.blade.php:80` — `content`
+- `resources/views/admin/ai/_memory_dialog.blade.php:81` — `textarea textarea-bordered w-full`
+- `resources/views/admin/ai/_memory_dialog.blade.php:82` — `content`
+- `resources/views/admin/ai/_memory_dialog.blade.php:83` — `content`
+- `resources/views/admin/ai/_memory_dialog.blade.php:83` — `mt-1 text-sm text-error`
+- `resources/views/admin/ai/_memory_dialog.blade.php:86` — `fieldset`
+- `resources/views/admin/ai/_memory_dialog.blade.php:87` — `fieldset-label`
+- `resources/views/admin/ai/_memory_dialog.blade.php:89` — `grid grid-cols-2 gap-2`
+- `resources/views/admin/ai/_memory_dialog.blade.php:90` — `en', 'es', 'fr', 'it`
+- `resources/views/admin/ai/_memory_dialog.blade.php:91` — `text`
+- `resources/views/admin/ai/_memory_dialog.blade.php:93` — `input input-bordered input-sm w-full`
+- `resources/views/admin/ai/memory.blade.php:10` — `title`
+- `resources/views/admin/ai/memory.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/admin/ai/memory.blade.php:11` — `nav-title`
+- `resources/views/admin/ai/memory.blade.php:13` — `content`
+- `resources/views/admin/ai/memory.blade.php:17` — `primary`
+- `resources/views/admin/ai/memory.blade.php:25` — `success`
+- `resources/views/admin/ai/memory.blade.php:26` — `alert`
+- `resources/views/admin/ai/memory.blade.php:26` — `alert alert-success`
+- `resources/views/admin/ai/memory.blade.php:26` — `success`
+- `resources/views/admin/ai/memory.blade.php:28` — `error`
+- `resources/views/admin/ai/memory.blade.php:29` — `alert`
+- `resources/views/admin/ai/memory.blade.php:29` — `alert alert-error`
+- `resources/views/admin/ai/memory.blade.php:29` — `error`
+- `resources/views/admin/ai/memory.blade.php:33` — `note`
+- `resources/views/admin/ai/memory.blade.php:34` — `psychology`
+- `resources/views/admin/ai/memory.blade.php:38` — `overflow-x-auto`
+- `resources/views/admin/ai/memory.blade.php:39` — `table`
+- `resources/views/admin/ai/memory.blade.php:53` — `opacity-50`
+- `resources/views/admin/ai/memory.blade.php:56` — `badge badge-info badge-sm`
+- `resources/views/admin/ai/memory.blade.php:59` — `badge badge-ghost badge-sm`
+- `resources/views/admin/ai/memory.blade.php:62` — `badge badge-neutral badge-sm`
+- `resources/views/admin/ai/memory.blade.php:66` — `font-mono text-xs`
+- `resources/views/admin/ai/memory.blade.php:67` — `max-w-md`
+- `resources/views/admin/ai/memory.blade.php:70` — `text-xs`
+- `resources/views/admin/ai/memory.blade.php:72` — `text-xs`
+- `resources/views/admin/ai/memory.blade.php:75` — `mt-1 flex flex-wrap gap-1`
+- `resources/views/admin/ai/memory.blade.php:77` — `badge badge-outline badge-xs font-mono`
+- `resources/views/admin/ai/memory.blade.php:83` — `warning`
+- `resources/views/admin/ai/memory.blade.php:83` — `ghost`
+- `resources/views/admin/ai/memory.blade.php:88` — `text-right whitespace-nowrap`
+- `resources/views/admin/ai/memory.blade.php:90` — `inline`
+- `resources/views/admin/ai/memory.blade.php:92` — `submit`
+- `resources/views/admin/ai/memory.blade.php:95` — `inline`
+- `resources/views/admin/ai/memory.blade.php:98` — `delete`
+- `resources/views/admin/ai/memory.blade.php:98` — `error`
+- `resources/views/admin/ai/memory.blade.php:98` — `submit`
+- `resources/views/admin/ai/_connect_dialog.blade.php:13` — `primary`
+- `resources/views/admin/ai/_connect_dialog.blade.php:16` — `data-entry-form`
+- `resources/views/admin/ai/_connect_dialog.blade.php:19` — `primary`
+- `resources/views/admin/ai/_connect_dialog.blade.php:20` — `fieldset`
+- `resources/views/admin/ai/_connect_dialog.blade.php:21` — `fieldset-label`
+- `resources/views/admin/ai/_connect_dialog.blade.php:21` — `ai-name`
+- `resources/views/admin/ai/_connect_dialog.blade.php:22` — `ai-name`
+- `resources/views/admin/ai/_connect_dialog.blade.php:22` — `text`
+- `resources/views/admin/ai/_connect_dialog.blade.php:22` — `name`
+- `resources/views/admin/ai/_connect_dialog.blade.php:23` — `name`
+- `resources/views/admin/ai/_connect_dialog.blade.php:23` — `input input-bordered w-full`
+- `resources/views/admin/ai/_connect_dialog.blade.php:24` — `name`
+- `resources/views/admin/ai/_connect_dialog.blade.php:24` — `mt-1 text-sm text-error`
+- `resources/views/admin/ai/_connect_dialog.blade.php:27` — `fieldset`
+- `resources/views/admin/ai/_connect_dialog.blade.php:28` — `fieldset-label`
+- `resources/views/admin/ai/_connect_dialog.blade.php:28` — `ai-family`
+- `resources/views/admin/ai/_connect_dialog.blade.php:29` — `ai-family`
+- `resources/views/admin/ai/_connect_dialog.blade.php:29` — `family`
+- `resources/views/admin/ai/_connect_dialog.blade.php:29` — `select select-bordered w-full`
+- `resources/views/admin/ai/_connect_dialog.blade.php:31` — `family', 'llm`
+- `resources/views/admin/ai/_connect_dialog.blade.php:36` — `fieldset`
+- `resources/views/admin/ai/_connect_dialog.blade.php:37` — `fieldset-label`
+- `resources/views/admin/ai/_connect_dialog.blade.php:37` — `ai-provider`
+- `resources/views/admin/ai/_connect_dialog.blade.php:38` — `ai-provider`
+- `resources/views/admin/ai/_connect_dialog.blade.php:38` — `provider`
+- `resources/views/admin/ai/_connect_dialog.blade.php:38` — `select select-bordered w-full`
+- `resources/views/admin/ai/_connect_dialog.blade.php:40` — `testing', 'local`
+- `resources/views/admin/ai/_connect_dialog.blade.php:41` — `provider`
+- `resources/views/admin/ai/_connect_dialog.blade.php:47` — `fieldset`
+- `resources/views/admin/ai/_connect_dialog.blade.php:48` — `fieldset-label`
+- `resources/views/admin/ai/_connect_dialog.blade.php:48` — `ai-base-url`
+- `resources/views/admin/ai/_connect_dialog.blade.php:49` — `ai-base-url`
+- `resources/views/admin/ai/_connect_dialog.blade.php:50` — `input input-bordered w-full font-mono`
+- `resources/views/admin/ai/_connect_dialog.blade.php:53` — `mt-1 text-sm text-error`
+- `resources/views/admin/ai/_connect_dialog.blade.php:56` — `fieldset`
+- `resources/views/admin/ai/_connect_dialog.blade.php:57` — `fieldset-label`
+- `resources/views/admin/ai/_connect_dialog.blade.php:57` — `ai-key`
+- `resources/views/admin/ai/_connect_dialog.blade.php:58` — `ai-key`
+- `resources/views/admin/ai/_connect_dialog.blade.php:58` — `password`
+- `resources/views/admin/ai/_connect_dialog.blade.php:58` — `new-password`
+- `resources/views/admin/ai/_connect_dialog.blade.php:59` — `input input-bordered w-full font-mono`
+- `resources/views/admin/ai/_connect_dialog.blade.php:63` — `fieldset`
+- `resources/views/admin/ai/_connect_dialog.blade.php:64` — `fieldset-label`
+- `resources/views/admin/ai/_connect_dialog.blade.php:64` — `ai-model`
+- `resources/views/admin/ai/_connect_dialog.blade.php:65` — `ai-model`
+- `resources/views/admin/ai/_connect_dialog.blade.php:65` — `text`
+- `resources/views/admin/ai/_connect_dialog.blade.php:65` — `model`
+- `resources/views/admin/ai/_connect_dialog.blade.php:66` — `model`
+- `resources/views/admin/ai/_connect_dialog.blade.php:66` — `input input-bordered w-full font-mono`
+- `resources/views/admin/ai/_connect_dialog.blade.php:70` — `fieldset`
+- `resources/views/admin/ai/_connect_dialog.blade.php:71` — `label cursor-pointer justify-start gap-3`
+- `resources/views/admin/ai/_connect_dialog.blade.php:72` — `checkbox`
+- `resources/views/admin/ai/_connect_dialog.blade.php:72` — `checkbox checkbox-sm`
+- `resources/views/admin/ai/_connect_dialog.blade.php:74` — `label-text`
+- `resources/views/admin/ai/_preview_dialog.blade.php:13` — `capability`
+- `resources/views/admin/ai/_preview_dialog.blade.php:14` — `visibility`
+- `resources/views/admin/ai/_preview_dialog.blade.php:15` — `info`
+- `resources/views/admin/ai/_preview_dialog.blade.php:17` — `space-y-4 text-sm`
+- `resources/views/admin/ai/_preview_dialog.blade.php:19` — `font-semibold`
+- `resources/views/admin/ai/_preview_dialog.blade.php:21` — `mt-1 flex flex-wrap gap-1`
+- `resources/views/admin/ai/_preview_dialog.blade.php:23` — `badge badge-outline badge-sm font-mono`
+- `resources/views/admin/ai/_preview_dialog.blade.php:31` — `font-semibold`
+- `resources/views/admin/ai/_preview_dialog.blade.php:32` — `mt-1 flex flex-wrap gap-1`
+- `resources/views/admin/ai/_preview_dialog.blade.php:34` — `badge badge-outline badge-sm`
+- `resources/views/admin/ai/_preview_dialog.blade.php:41` — `glossary`
+- `resources/views/admin/ai/_preview_dialog.blade.php:41` — `glossary`
+- `resources/views/admin/ai/_preview_dialog.blade.php:42` — `rules`
+- `resources/views/admin/ai/_preview_dialog.blade.php:43` — `examples`
+- `resources/views/admin/ai/_preview_dialog.blade.php:43` — `examples`
+- `resources/views/admin/ai/_preview_dialog.blade.php:49` — `font-semibold`
+- `resources/views/admin/ai/_preview_dialog.blade.php:50` — `text-warning`
+- `resources/views/admin/ai/_preview_dialog.blade.php:54` — `alert alert-warning mt-2 text-xs`
+- `resources/views/admin/ai/_preview_dialog.blade.php:58` — `mt-1 list-decimal pl-5`
+- `resources/views/admin/ai/_preview_dialog.blade.php:62` — `success`
+- `resources/views/admin/ai/_preview_dialog.blade.php:62` — `warning`
+- `resources/views/admin/ai/_preview_dialog.blade.php:66` — `badge badge-info badge-xs`
+- `resources/views/admin/ai/_preview_dialog.blade.php:68` — `badge badge-ghost badge-xs`
+- `resources/views/admin/ai/_capability_dialog.blade.php:12` — `capability`
+- `resources/views/admin/ai/_capability_dialog.blade.php:13` — `tune`
+- `resources/views/admin/ai/_capability_dialog.blade.php:14` — `primary`
+- `resources/views/admin/ai/_capability_dialog.blade.php:15` — `capability`
+- `resources/views/admin/ai/_capability_dialog.blade.php:17` — `data-entry-form`
+- `resources/views/admin/ai/_capability_dialog.blade.php:20` — `tune`
+- `resources/views/admin/ai/_capability_dialog.blade.php:20` — `primary`
+- `resources/views/admin/ai/_capability_dialog.blade.php:27` — `fieldset`
+- `resources/views/admin/ai/_capability_dialog.blade.php:28` — `label cursor-pointer justify-start gap-3`
+- `resources/views/admin/ai/_capability_dialog.blade.php:29` — `checkbox`
+- `resources/views/admin/ai/_capability_dialog.blade.php:29` — `enabled`
+- `resources/views/admin/ai/_capability_dialog.blade.php:29` — `checkbox checkbox-sm`
+- `resources/views/admin/ai/_capability_dialog.blade.php:30` — `enabled`
+- `resources/views/admin/ai/_capability_dialog.blade.php:31` — `label-text`
+- `resources/views/admin/ai/_capability_dialog.blade.php:36` — `fieldset`
+- `resources/views/admin/ai/_capability_dialog.blade.php:37` — `fieldset-label`
+- `resources/views/admin/ai/_capability_dialog.blade.php:39` — `label cursor-pointer justify-start gap-3`
+- `resources/views/admin/ai/_capability_dialog.blade.php:40` — `checkbox`
+- `resources/views/admin/ai/_capability_dialog.blade.php:41` — `checkbox checkbox-sm`
+- `resources/views/admin/ai/_capability_dialog.blade.php:42` — `intval`
+- `resources/views/admin/ai/_capability_dialog.blade.php:43` — `label-text`
+- `resources/views/admin/ai/_capability_dialog.blade.php:45` — `success`
+- `resources/views/admin/ai/_capability_dialog.blade.php:45` — `warning`
+- `resources/views/admin/ai/_capability_dialog.blade.php:56` — `fieldset`
+- `resources/views/admin/ai/_capability_dialog.blade.php:57` — `fieldset-label`
+- `resources/views/admin/ai/_capability_dialog.blade.php:57` — `ai-cap-default`
+- `resources/views/admin/ai/_capability_dialog.blade.php:58` — `ai-cap-default`
+- `resources/views/admin/ai/_capability_dialog.blade.php:58` — `select select-bordered w-full`
+- `resources/views/admin/ai/_capability_dialog.blade.php:69` — `fieldset`
+- `resources/views/admin/ai/_capability_dialog.blade.php:70` — `label cursor-pointer justify-start gap-3`
+- `resources/views/admin/ai/_capability_dialog.blade.php:71` — `checkbox`
+- `resources/views/admin/ai/_capability_dialog.blade.php:71` — `checkbox checkbox-sm`
+- `resources/views/admin/ai/_capability_dialog.blade.php:73` — `label-text`
+- `resources/views/admin/ai/index.blade.php:10` — `title`
+- `resources/views/admin/ai/index.blade.php:10` — `app.name', 'WorkDiary`
+- `resources/views/admin/ai/index.blade.php:11` — `nav-title`
+- `resources/views/admin/ai/index.blade.php:13` — `content`
+- `resources/views/admin/ai/index.blade.php:17` — `primary`
+- `resources/views/admin/ai/index.blade.php:22` — `psychology`
+- `resources/views/admin/ai/index.blade.php:25` — `success`
+- `resources/views/admin/ai/index.blade.php:26` — `alert`
+- `resources/views/admin/ai/index.blade.php:26` — `alert alert-success`
+- `resources/views/admin/ai/index.blade.php:26` — `success`
+- `resources/views/admin/ai/index.blade.php:28` — `error`
+- `resources/views/admin/ai/index.blade.php:29` — `alert`
+- `resources/views/admin/ai/index.blade.php:29` — `alert alert-error`
+- `resources/views/admin/ai/index.blade.php:29` — `error`
+- `resources/views/admin/ai/index.blade.php:36` — `info`
+- `resources/views/admin/ai/index.blade.php:36` — `period`
+- `resources/views/admin/ai/index.blade.php:38` — `translation`
+- `resources/views/admin/ai/index.blade.php:39` — `info`
+- `resources/views/admin/ai/index.blade.php:39` — `period`
+- `resources/views/admin/ai/index.blade.php:44` — `overflow-x-auto`
+- `resources/views/admin/ai/index.blade.php:45` — `table`
+- `resources/views/admin/ai/index.blade.php:60` — `font-medium`
+- `resources/views/admin/ai/index.blade.php:65` — `success`
+- `resources/views/admin/ai/index.blade.php:65` — `warning`
+- `resources/views/admin/ai/index.blade.php:72` — `badge badge-error badge-sm`
+- `resources/views/admin/ai/index.blade.php:75` — `badge badge-warning badge-sm`
+- `resources/views/admin/ai/index.blade.php:78` — `font-mono text-xs`
+- `resources/views/admin/ai/index.blade.php:79` — `text-right whitespace-nowrap`
+- `resources/views/admin/ai/index.blade.php:81` — `inline`
+- `resources/views/admin/ai/index.blade.php:83` — `submit`
+- `resources/views/admin/ai/index.blade.php:86` — `inline`
+- `resources/views/admin/ai/index.blade.php:88` — `submit`
+- `resources/views/admin/ai/index.blade.php:91` — `inline`
+- `resources/views/admin/ai/index.blade.php:93` — `lock`
+- `resources/views/admin/ai/index.blade.php:93` — `submit`
+- `resources/views/admin/ai/index.blade.php:96` — `inline`
+- `resources/views/admin/ai/index.blade.php:99` — `error`
+- `resources/views/admin/ai/index.blade.php:99` — `submit`
+- `resources/views/admin/ai/index.blade.php:114` — `overflow-x-auto`
+- `resources/views/admin/ai/index.blade.php:115` — `table`
+- `resources/views/admin/ai/index.blade.php:136` — `font-mono text-xs`
+- `resources/views/admin/ai/index.blade.php:138` — `badge badge-outline badge-sm`
+- `resources/views/admin/ai/index.blade.php:140` — `success`
+- `resources/views/admin/ai/index.blade.php:140` — `neutral`
+- `resources/views/admin/ai/index.blade.php:144` — `text-xs`
+- `resources/views/admin/ai/index.blade.php:146` — `text-right whitespace-nowrap`
+- `resources/views/admin/ai/index.blade.php:147` — `visibility`
+- `resources/views/admin/ai/index.blade.php:148` — `capability`
+- `resources/views/admin/ai/index.blade.php:151` — `tune`
+- `resources/views/admin/ai/index.blade.php:152` — `capability`
 - `resources/views/admin/wage-type-mappings/index.blade.php:12` — `title`
 - `resources/views/admin/wage-type-mappings/index.blade.php:13` — `nav-title`
 - `resources/views/admin/wage-type-mappings/index.blade.php:14` — `wrapper-height-class', 'wd-page-fill`
@@ -10278,6 +10576,172 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/admin/shipments/index.blade.php:115` — `connection`
 - `resources/views/admin/shipments/index.blade.php:116` — `submit`
 - `resources/views/admin/shipments/index.blade.php:116` — `btn btn-ghost btn-xs text-error`
+- `resources/views/admin/sessions/index.blade.php:3` — `title`
+- `resources/views/admin/sessions/index.blade.php:3` — `app.name', 'WorkDiary`
+- `resources/views/admin/sessions/index.blade.php:4` — `nav-title`
+- `resources/views/admin/sessions/index.blade.php:8` — `users`
+- `resources/views/admin/sessions/index.blade.php:9` — `totals`
+- `resources/views/admin/sessions/index.blade.php:9` — `users`
+- `resources/views/admin/sessions/index.blade.php:9` — `sessions`
+- `resources/views/admin/sessions/index.blade.php:9` — `online`
+- `resources/views/admin/sessions/index.blade.php:9` — `tokens`
+- `resources/views/admin/sessions/index.blade.php:10` — `available`
+- `resources/views/admin/sessions/index.blade.php:16` — `content`
+- `resources/views/admin/sessions/index.blade.php:19` — `online`
+- `resources/views/admin/sessions/index.blade.php:20` — `success`
+- `resources/views/admin/sessions/index.blade.php:23` — `note`
+- `resources/views/admin/sessions/index.blade.php:24` — `lock`
+- `resources/views/admin/sessions/index.blade.php:30` — `note`
+- `resources/views/admin/sessions/index.blade.php:31` — `warning`
+- `resources/views/admin/sessions/index.blade.php:32` — `driver`
+- `resources/views/admin/sessions/index.blade.php:32` — `driver`
+- `resources/views/admin/sessions/index.blade.php:39` — `users', 'icon`
+- `resources/views/admin/sessions/index.blade.php:39` — `group', 'label`
+- `resources/views/admin/sessions/index.blade.php:39` — `value`
+- `resources/views/admin/sessions/index.blade.php:39` — `users`
+- `resources/views/admin/sessions/index.blade.php:40` — `online', 'icon`
+- `resources/views/admin/sessions/index.blade.php:40` — `bolt', 'label`
+- `resources/views/admin/sessions/index.blade.php:40` — `value`
+- `resources/views/admin/sessions/index.blade.php:40` — `online`
+- `resources/views/admin/sessions/index.blade.php:41` — `sessions', 'icon`
+- `resources/views/admin/sessions/index.blade.php:41` — `devices', 'label`
+- `resources/views/admin/sessions/index.blade.php:41` — `value`
+- `resources/views/admin/sessions/index.blade.php:41` — `sessions`
+- `resources/views/admin/sessions/index.blade.php:42` — `tokens', 'icon`
+- `resources/views/admin/sessions/index.blade.php:42` — `key', 'label`
+- `resources/views/admin/sessions/index.blade.php:42` — `value`
+- `resources/views/admin/sessions/index.blade.php:42` — `tokens`
+- `resources/views/admin/sessions/index.blade.php:44` — `card border border-base-300 bg-base-100 shadow-sm`
+- `resources/views/admin/sessions/index.blade.php:45` — `card-body gap-1 p-4`
+- `resources/views/admin/sessions/index.blade.php:47` — `icon`
+- `resources/views/admin/sessions/index.blade.php:48` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:48` — `label`
+- `resources/views/admin/sessions/index.blade.php:50` — `value`
+- `resources/views/admin/sessions/index.blade.php:57` — `sessions-stale-banner`
+- `resources/views/admin/sessions/index.blade.php:57` — `status`
+- `resources/views/admin/sessions/index.blade.php:58` — `sync`
+- `resources/views/admin/sessions/index.blade.php:60` — `button`
+- `resources/views/admin/sessions/index.blade.php:60` — `sessions-reload-btn`
+- `resources/views/admin/sessions/index.blade.php:60` — `btn btn-xs btn-ghost`
+- `resources/views/admin/sessions/index.blade.php:65` — `card border border-base-300 bg-base-100 shadow-sm`
+- `resources/views/admin/sessions/index.blade.php:66` — `card-body gap-3`
+- `resources/views/admin/sessions/index.blade.php:67` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/admin/sessions/index.blade.php:68` — `flex items-center gap-2`
+- `resources/views/admin/sessions/index.blade.php:69` — `name`
+- `resources/views/admin/sessions/index.blade.php:71` — `badge badge-success badge-sm gap-1`
+- `resources/views/admin/sessions/index.blade.php:71` — `bolt`
+- `resources/views/admin/sessions/index.blade.php:71` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:73` — `email`
+- `resources/views/admin/sessions/index.blade.php:77` — `login`
+- `resources/views/admin/sessions/index.blade.php:77` — `text-sm`
+- `resources/views/admin/sessions/index.blade.php:81` — `userSqid`
+- `resources/views/admin/sessions/index.blade.php:81` — `sqid`
+- `resources/views/admin/sessions/index.blade.php:83` — `name`
+- `resources/views/admin/sessions/index.blade.php:83` — `name`
+- `resources/views/admin/sessions/index.blade.php:84` — `logout`
+- `resources/views/admin/sessions/index.blade.php:85` — `error`
+- `resources/views/admin/sessions/index.blade.php:87` — `submit`
+- `resources/views/admin/sessions/index.blade.php:87` — `ghost`
+- `resources/views/admin/sessions/index.blade.php:87` — `text-error`
+- `resources/views/admin/sessions/index.blade.php:88` — `logout`
+- `resources/views/admin/sessions/index.blade.php:88` — `text-sm`
+- `resources/views/admin/sessions/index.blade.php:96` — `sessions`
+- `resources/views/admin/sessions/index.blade.php:99` — `overflow-x-auto`
+- `resources/views/admin/sessions/index.blade.php:100` — `table table-sm`
+- `resources/views/admin/sessions/index.blade.php:107` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:112` — `sessions`
+- `resources/views/admin/sessions/index.blade.php:114` — `max-w-xs`
+- `resources/views/admin/sessions/index.blade.php:115` — `flex items-center gap-1 text-sm`
+- `resources/views/admin/sessions/index.blade.php:116` — `mobile`
+- `resources/views/admin/sessions/index.blade.php:116` — `smartphone', 'tablet`
+- `resources/views/admin/sessions/index.blade.php:116` — `tablet', 'bot`
+- `resources/views/admin/sessions/index.blade.php:116` — `computer`
+- `resources/views/admin/sessions/index.blade.php:120` — `badge badge-outline badge-xs mt-1`
+- `resources/views/admin/sessions/index.blade.php:122` — `badge badge-success badge-xs mt-1`
+- `resources/views/admin/sessions/index.blade.php:125` — `font-mono text-xs`
+- `resources/views/admin/sessions/index.blade.php:127` — `location`
+- `resources/views/admin/sessions/index.blade.php:128` — `location`
+- `resources/views/admin/sessions/index.blade.php:131` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:133` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:140` — `logout`
+- `resources/views/admin/sessions/index.blade.php:141` — `error`
+- `resources/views/admin/sessions/index.blade.php:143` — `submit`
+- `resources/views/admin/sessions/index.blade.php:143` — `ghost`
+- `resources/views/admin/sessions/index.blade.php:143` — `text-error`
+- `resources/views/admin/sessions/index.blade.php:157` — `tokens`
+- `resources/views/admin/sessions/index.blade.php:160` — `overflow-x-auto`
+- `resources/views/admin/sessions/index.blade.php:161` — `table table-sm`
+- `resources/views/admin/sessions/index.blade.php:168` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:173` — `tokens`
+- `resources/views/admin/sessions/index.blade.php:175` — `font-medium`
+- `resources/views/admin/sessions/index.blade.php:175` — `name`
+- `resources/views/admin/sessions/index.blade.php:177` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:179` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:180` — `tokenSqid`
+- `resources/views/admin/sessions/index.blade.php:180` — `sqid`
+- `resources/views/admin/sessions/index.blade.php:184` — `error`
+- `resources/views/admin/sessions/index.blade.php:186` — `submit`
+- `resources/views/admin/sessions/index.blade.php:186` — `ghost`
+- `resources/views/admin/sessions/index.blade.php:186` — `text-error`
+- `resources/views/admin/sessions/index.blade.php:202` — `overflow-x-auto`
+- `resources/views/admin/sessions/index.blade.php:203` — `table table-sm`
+- `resources/views/admin/sessions/index.blade.php:209` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:216` — `font-medium`
+- `resources/views/admin/sessions/index.blade.php:216` — `label`
+- `resources/views/admin/sessions/index.blade.php:217` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:219` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:220` — `deviceSqid`
+- `resources/views/admin/sessions/index.blade.php:220` — `sqid`
+- `resources/views/admin/sessions/index.blade.php:224` — `error`
+- `resources/views/admin/sessions/index.blade.php:226` — `submit`
+- `resources/views/admin/sessions/index.blade.php:226` — `ghost`
+- `resources/views/admin/sessions/index.blade.php:226` — `text-error`
+- `resources/views/admin/sessions/index.blade.php:241` — `material-symbols-outlined`
+- `resources/views/admin/sessions/index.blade.php:241` — `true`
+- `resources/views/admin/sessions/index.blade.php:247` — `terminals`
+- `resources/views/admin/sessions/index.blade.php:248` — `card border border-base-300 bg-base-100 shadow-sm`
+- `resources/views/admin/sessions/index.blade.php:249` — `card-body gap-3`
+- `resources/views/admin/sessions/index.blade.php:250` — `flex items-center gap-2`
+- `resources/views/admin/sessions/index.blade.php:255` — `overflow-x-auto`
+- `resources/views/admin/sessions/index.blade.php:256` — `table table-sm`
+- `resources/views/admin/sessions/index.blade.php:263` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:268` — `terminals`
+- `resources/views/admin/sessions/index.blade.php:270` — `font-medium`
+- `resources/views/admin/sessions/index.blade.php:270` — `name`
+- `resources/views/admin/sessions/index.blade.php:272` — `active`
+- `resources/views/admin/sessions/index.blade.php:273` — `badge badge-ghost badge-sm`
+- `resources/views/admin/sessions/index.blade.php:275` — `badge badge-success badge-sm`
+- `resources/views/admin/sessions/index.blade.php:277` — `badge badge-warning badge-sm`
+- `resources/views/admin/sessions/index.blade.php:280` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:282` — `text-right`
+- `resources/views/admin/sessions/index.blade.php:283` — `active`
+- `resources/views/admin/sessions/index.blade.php:284` — `terminalSqid`
+- `resources/views/admin/sessions/index.blade.php:284` — `sqid`
+- `resources/views/admin/sessions/index.blade.php:286` — `name`
+- `resources/views/admin/sessions/index.blade.php:286` — `name`
+- `resources/views/admin/sessions/index.blade.php:288` — `error`
+- `resources/views/admin/sessions/index.blade.php:290` — `submit`
+- `resources/views/admin/sessions/index.blade.php:290` — `ghost`
+- `resources/views/admin/sessions/index.blade.php:290` — `text-error`
+- `resources/views/admin/sessions/index.blade.php:308` — `card border border-base-300 bg-base-100 shadow-sm`
+- `resources/views/admin/sessions/index.blade.php:309` — `card-body gap-3`
+- `resources/views/admin/sessions/index.blade.php:310` — `flex items-center gap-2`
+- `resources/views/admin/sessions/index.blade.php:315` — `overflow-x-auto`
+- `resources/views/admin/sessions/index.blade.php:316` — `table table-sm`
+- `resources/views/admin/sessions/index.blade.php:328` — `font-medium capitalize`
+- `resources/views/admin/sessions/index.blade.php:328` — `provider`
+- `resources/views/admin/sessions/index.blade.php:329` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:329` — `label`
+- `resources/views/admin/sessions/index.blade.php:330` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:331` — `text-xs`
+- `resources/views/admin/sessions/index.blade.php:349` — `sessions-stale-banner`
+- `resources/views/admin/sessions/index.blade.php:350` — `sessions-reload-btn`
+- `resources/views/admin/sessions/index.blade.php:353` — `click`
+- `resources/views/admin/sessions/index.blade.php:358` — `users', 'online', 'sessions', 'tokens`
+- `resources/views/admin/sessions/index.blade.php:360` — `undefined`
+- `resources/views/admin/sessions/index.blade.php:368` — `hidden`
+- `resources/views/admin/sessions/index.blade.php:373` — `Accept`
+- `resources/views/admin/sessions/index.blade.php:373` — `same-origin`
 - `resources/views/admin/webhooks/index.blade.php:3` — `title`
 - `resources/views/admin/webhooks/index.blade.php:4` — `nav-title`
 - `resources/views/admin/webhooks/index.blade.php:5` — `wrapper-height-class', 'wd-page-fill`
@@ -10931,106 +11395,113 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/admin/security/index.blade.php:107` — `flex flex-wrap gap-1`
 - `resources/views/admin/security/index.blade.php:108` — `plugins`
 - `resources/views/admin/security/index.blade.php:109` — `badge badge-outline badge-sm font-mono`
-- `resources/views/admin/security/index.blade.php:122` — `recent`
-- `resources/views/admin/security/index.blade.php:123` — `overflow-x-auto`
-- `resources/views/admin/security/index.blade.php:124` — `table table-sm`
-- `resources/views/admin/security/index.blade.php:136` — `recent`
-- `resources/views/admin/security/index.blade.php:138` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:138` — `name`
-- `resources/views/admin/security/index.blade.php:139` — `text-xs`
-- `resources/views/admin/security/index.blade.php:139` — `user`
-- `resources/views/admin/security/index.blade.php:140` — `text-xs`
-- `resources/views/admin/security/index.blade.php:141` — `abilities`
-- `resources/views/admin/security/index.blade.php:142` — `flex flex-wrap gap-1`
-- `resources/views/admin/security/index.blade.php:143` — `abilities`
-- `resources/views/admin/security/index.blade.php:144` — `badge badge-ghost badge-xs font-mono`
-- `resources/views/admin/security/index.blade.php:151` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:152` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:116` — `grid grid-cols-1 gap-1 text-sm`
+- `resources/views/admin/security/index.blade.php:119` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:123` — `flex flex-wrap gap-1`
+- `resources/views/admin/security/index.blade.php:125` — `badge badge-outline badge-sm font-mono`
+- `resources/views/admin/security/index.blade.php:126` — `name`
+- `resources/views/admin/security/index.blade.php:126` — `provider`
+- `resources/views/admin/security/index.blade.php:126` — `local`
+- `resources/views/admin/security/index.blade.php:137` — `recent`
+- `resources/views/admin/security/index.blade.php:138` — `overflow-x-auto`
+- `resources/views/admin/security/index.blade.php:139` — `table table-sm`
+- `resources/views/admin/security/index.blade.php:151` — `recent`
 - `resources/views/admin/security/index.blade.php:153` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:165` — `available`
-- `resources/views/admin/security/index.blade.php:167` — `recent`
-- `resources/views/admin/security/index.blade.php:168` — `overflow-x-auto`
-- `resources/views/admin/security/index.blade.php:169` — `table table-sm`
-- `resources/views/admin/security/index.blade.php:179` — `recent`
-- `resources/views/admin/security/index.blade.php:181` — `text-xs`
-- `resources/views/admin/security/index.blade.php:183` — `badge badge-success badge-xs mr-1`
-- `resources/views/admin/security/index.blade.php:185` — `user`
-- `resources/views/admin/security/index.blade.php:187` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:189` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:203` — `recent`
-- `resources/views/admin/security/index.blade.php:204` — `overflow-x-auto`
-- `resources/views/admin/security/index.blade.php:205` — `table table-sm`
-- `resources/views/admin/security/index.blade.php:212` — `text-right`
+- `resources/views/admin/security/index.blade.php:153` — `name`
+- `resources/views/admin/security/index.blade.php:154` — `text-xs`
+- `resources/views/admin/security/index.blade.php:154` — `user`
+- `resources/views/admin/security/index.blade.php:155` — `text-xs`
+- `resources/views/admin/security/index.blade.php:156` — `abilities`
+- `resources/views/admin/security/index.blade.php:157` — `flex flex-wrap gap-1`
+- `resources/views/admin/security/index.blade.php:158` — `abilities`
+- `resources/views/admin/security/index.blade.php:159` — `badge badge-ghost badge-xs font-mono`
+- `resources/views/admin/security/index.blade.php:166` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:167` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:168` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:180` — `available`
+- `resources/views/admin/security/index.blade.php:182` — `recent`
+- `resources/views/admin/security/index.blade.php:183` — `overflow-x-auto`
+- `resources/views/admin/security/index.blade.php:184` — `table table-sm`
+- `resources/views/admin/security/index.blade.php:194` — `recent`
+- `resources/views/admin/security/index.blade.php:196` — `text-xs`
+- `resources/views/admin/security/index.blade.php:198` — `badge badge-success badge-xs mr-1`
+- `resources/views/admin/security/index.blade.php:200` — `user`
+- `resources/views/admin/security/index.blade.php:202` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:204` — `font-mono text-xs`
 - `resources/views/admin/security/index.blade.php:218` — `recent`
-- `resources/views/admin/security/index.blade.php:220` — `text-xs`
-- `resources/views/admin/security/index.blade.php:220` — `kind`
-- `resources/views/admin/security/index.blade.php:221` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:221` — `subject`
-- `resources/views/admin/security/index.blade.php:222` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:222` — `format`
-- `resources/views/admin/security/index.blade.php:223` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:223` — `status`
-- `resources/views/admin/security/index.blade.php:224` — `text-right font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:224` — `rows`
-- `resources/views/admin/security/index.blade.php:225` — `text-xs`
-- `resources/views/admin/security/index.blade.php:225` — `user`
-- `resources/views/admin/security/index.blade.php:226` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:240` — `recent`
-- `resources/views/admin/security/index.blade.php:241` — `overflow-x-auto`
-- `resources/views/admin/security/index.blade.php:242` — `table table-sm`
-- `resources/views/admin/security/index.blade.php:253` — `recent`
-- `resources/views/admin/security/index.blade.php:255` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:255` — `event`
-- `resources/views/admin/security/index.blade.php:256` — `text-xs`
-- `resources/views/admin/security/index.blade.php:256` — `user`
-- `resources/views/admin/security/index.blade.php:257` — `subject`
-- `resources/views/admin/security/index.blade.php:258` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:259` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:272` — `mb-3 flex flex-wrap items-center justify-between gap-2`
-- `resources/views/admin/security/index.blade.php:281` — `submit`
-- `resources/views/admin/security/index.blade.php:281` — `btn btn-primary btn-xs`
-- `resources/views/admin/security/index.blade.php:282` — `refresh`
-- `resources/views/admin/security/index.blade.php:282` — `text-sm`
-- `resources/views/admin/security/index.blade.php:288` — `overflow-x-auto`
-- `resources/views/admin/security/index.blade.php:289` — `table table-sm`
-- `resources/views/admin/security/index.blade.php:305` — `critical`
-- `resources/views/admin/security/index.blade.php:305` — `badge-error',
+- `resources/views/admin/security/index.blade.php:219` — `overflow-x-auto`
+- `resources/views/admin/security/index.blade.php:220` — `table table-sm`
+- `resources/views/admin/security/index.blade.php:227` — `text-right`
+- `resources/views/admin/security/index.blade.php:233` — `recent`
+- `resources/views/admin/security/index.blade.php:235` — `text-xs`
+- `resources/views/admin/security/index.blade.php:235` — `kind`
+- `resources/views/admin/security/index.blade.php:236` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:236` — `subject`
+- `resources/views/admin/security/index.blade.php:237` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:237` — `format`
+- `resources/views/admin/security/index.blade.php:238` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:238` — `status`
+- `resources/views/admin/security/index.blade.php:239` — `text-right font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:239` — `rows`
+- `resources/views/admin/security/index.blade.php:240` — `text-xs`
+- `resources/views/admin/security/index.blade.php:240` — `user`
+- `resources/views/admin/security/index.blade.php:241` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:255` — `recent`
+- `resources/views/admin/security/index.blade.php:256` — `overflow-x-auto`
+- `resources/views/admin/security/index.blade.php:257` — `table table-sm`
+- `resources/views/admin/security/index.blade.php:268` — `recent`
+- `resources/views/admin/security/index.blade.php:270` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:270` — `event`
+- `resources/views/admin/security/index.blade.php:271` — `text-xs`
+- `resources/views/admin/security/index.blade.php:271` — `user`
+- `resources/views/admin/security/index.blade.php:272` — `subject`
+- `resources/views/admin/security/index.blade.php:273` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:274` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:287` — `mb-3 flex flex-wrap items-center justify-between gap-2`
+- `resources/views/admin/security/index.blade.php:296` — `submit`
+- `resources/views/admin/security/index.blade.php:296` — `btn btn-primary btn-xs`
+- `resources/views/admin/security/index.blade.php:297` — `refresh`
+- `resources/views/admin/security/index.blade.php:297` — `text-sm`
+- `resources/views/admin/security/index.blade.php:303` — `overflow-x-auto`
+- `resources/views/admin/security/index.blade.php:304` — `table table-sm`
+- `resources/views/admin/security/index.blade.php:320` — `critical`
+- `resources/views/admin/security/index.blade.php:320` — `badge-error',
                                             'high`
-- `resources/views/admin/security/index.blade.php:306` — `badge-error badge-outline',
+- `resources/views/admin/security/index.blade.php:321` — `badge-error badge-outline',
                                             'medium`
-- `resources/views/admin/security/index.blade.php:307` — `badge-warning',
+- `resources/views/admin/security/index.blade.php:322` — `badge-warning',
                                             'low`
-- `resources/views/admin/security/index.blade.php:308` — `badge-info`
-- `resources/views/admin/security/index.blade.php:309` — `badge-ghost`
-- `resources/views/admin/security/index.blade.php:314` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:315` — `text-xs`
-- `resources/views/admin/security/index.blade.php:316` — `noopener noreferrer`
-- `resources/views/admin/security/index.blade.php:316` — `link font-mono`
-- `resources/views/admin/security/index.blade.php:321` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:323` — `flex items-center gap-1`
-- `resources/views/admin/security/index.blade.php:326` — `text`
-- `resources/views/admin/security/index.blade.php:326` — `statement`
-- `resources/views/admin/security/index.blade.php:327` — `input input-bordered input-xs w-56`
-- `resources/views/admin/security/index.blade.php:330` — `submit`
-- `resources/views/admin/security/index.blade.php:330` — `btn btn-ghost btn-xs`
-- `resources/views/admin/security/index.blade.php:330` — `Speichern`
-- `resources/views/admin/security/index.blade.php:331` — `save`
-- `resources/views/admin/security/index.blade.php:331` — `text-sm`
-- `resources/views/admin/security/index.blade.php:347` — `mb-3 flex flex-wrap items-center gap-2`
-- `resources/views/admin/security/index.blade.php:349` — `badge badge-success badge-sm`
-- `resources/views/admin/security/index.blade.php:351` — `badge badge-error badge-sm`
-- `resources/views/admin/security/index.blade.php:353` — `text-xs`
-- `resources/views/admin/security/index.blade.php:353` — `command`
-- `resources/views/admin/security/index.blade.php:356` — `command`
-- `resources/views/admin/security/index.blade.php:356` — `command`
-- `resources/views/admin/security/index.blade.php:358` — `fields`
-- `resources/views/admin/security/index.blade.php:359` — `overflow-x-auto`
-- `resources/views/admin/security/index.blade.php:360` — `table table-sm`
-- `resources/views/admin/security/index.blade.php:368` — `fields`
-- `resources/views/admin/security/index.blade.php:370` — `font-mono text-xs`
-- `resources/views/admin/security/index.blade.php:371` — `text-xs`
-- `resources/views/admin/security/index.blade.php:372` — `flex flex-wrap gap-1`
-- `resources/views/admin/security/index.blade.php:374` — `badge badge-ghost badge-xs font-mono`
+- `resources/views/admin/security/index.blade.php:323` — `badge-info`
+- `resources/views/admin/security/index.blade.php:324` — `badge-ghost`
+- `resources/views/admin/security/index.blade.php:329` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:330` — `text-xs`
+- `resources/views/admin/security/index.blade.php:331` — `noopener noreferrer`
+- `resources/views/admin/security/index.blade.php:331` — `link font-mono`
+- `resources/views/admin/security/index.blade.php:336` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:338` — `flex items-center gap-1`
+- `resources/views/admin/security/index.blade.php:341` — `text`
+- `resources/views/admin/security/index.blade.php:341` — `statement`
+- `resources/views/admin/security/index.blade.php:342` — `input input-bordered input-xs w-56`
+- `resources/views/admin/security/index.blade.php:345` — `submit`
+- `resources/views/admin/security/index.blade.php:345` — `btn btn-ghost btn-xs`
+- `resources/views/admin/security/index.blade.php:345` — `Speichern`
+- `resources/views/admin/security/index.blade.php:346` — `save`
+- `resources/views/admin/security/index.blade.php:346` — `text-sm`
+- `resources/views/admin/security/index.blade.php:362` — `mb-3 flex flex-wrap items-center gap-2`
+- `resources/views/admin/security/index.blade.php:364` — `badge badge-success badge-sm`
+- `resources/views/admin/security/index.blade.php:366` — `badge badge-error badge-sm`
+- `resources/views/admin/security/index.blade.php:368` — `text-xs`
+- `resources/views/admin/security/index.blade.php:368` — `command`
+- `resources/views/admin/security/index.blade.php:371` — `command`
+- `resources/views/admin/security/index.blade.php:371` — `command`
+- `resources/views/admin/security/index.blade.php:373` — `fields`
+- `resources/views/admin/security/index.blade.php:374` — `overflow-x-auto`
+- `resources/views/admin/security/index.blade.php:375` — `table table-sm`
+- `resources/views/admin/security/index.blade.php:383` — `fields`
+- `resources/views/admin/security/index.blade.php:385` — `font-mono text-xs`
+- `resources/views/admin/security/index.blade.php:386` — `text-xs`
+- `resources/views/admin/security/index.blade.php:387` — `flex flex-wrap gap-1`
+- `resources/views/admin/security/index.blade.php:389` — `badge badge-ghost badge-xs font-mono`
 - `resources/views/admin/branch-profiles/index.blade.php:3` — `title`
 - `resources/views/admin/branch-profiles/index.blade.php:3` — `Branchenprofile`
 - `resources/views/admin/branch-profiles/index.blade.php:4` — `nav-title`
@@ -13446,6 +13917,38 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/coverage-requirements/_form_dialog.blade.php:26` — `error`
 - `resources/views/coverage-requirements/_form_dialog.blade.php:26` — `submit`
 - `resources/views/coverage-requirements/_form_dialog.blade.php:26` — `Soll-Besetzung löschen`
+- `resources/views/problem-reports/create.blade.php:13` — `UTF-8`
+- `resources/views/problem-reports/create.blade.php:14` — `viewport`
+- `resources/views/problem-reports/create.blade.php:18` — `workDiaryTheme`
+- `resources/views/problem-reports/create.blade.php:20` — `corporate`
+- `resources/views/problem-reports/create.blade.php:21` — `data-theme`
+- `resources/views/problem-reports/create.blade.php:22` — `corporate' ? 'light`
+- `resources/views/problem-reports/create.blade.php:22` — `dark`
+- `resources/views/problem-reports/create.blade.php:24` — `data-theme', 'corporate`
+- `resources/views/problem-reports/create.blade.php:28` — `app.name', 'WorkDiary`
+- `resources/views/problem-reports/create.blade.php:31` — `Material Symbols Outlined`
+- `resources/views/problem-reports/create.blade.php:41` — `liga`
+- `resources/views/problem-reports/create.blade.php:43` — `FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz`
+- `resources/views/problem-reports/create.blade.php:51` — `min-h-screen bg-linear-to-b from-base-200 to-base-300 text-base-content`
+- `resources/views/problem-reports/create.blade.php:52` — `IBM Plex Sans`
+- `resources/views/problem-reports/create.blade.php:53` — `flex min-h-screen items-start justify-center px-4 py-8`
+- `resources/views/problem-reports/create.blade.php:54` — `w-full max-w-2xl overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-lg`
+- `resources/views/problem-reports/create.blade.php:57` — `material-symbols-outlined`
+- `resources/views/problem-reports/create.blade.php:57` — `FILL' 1, 'wght`
+- `resources/views/problem-reports/create.blade.php:59` — `min-w-0 flex-1`
+- `resources/views/problem-reports/create.blade.php:61` — `mt-1 text-xl font-bold text-base-content`
+- `resources/views/problem-reports/create.blade.php:61` — `Space Grotesk`
+- `resources/views/problem-reports/create.blade.php:67` — `problem-reports.store`
+- `resources/views/problem-reports/create.blade.php:70` — `space-y-4 px-6 py-5`
+- `resources/views/problem-reports/create.blade.php:78` — `context`
+- `resources/views/problem-reports/create.blade.php:79` — `diagnosticsMode`
+- `resources/views/problem-reports/create.blade.php:80` — `diagnosticsPreview`
+- `resources/views/problem-reports/create.blade.php:85` — `ghost`
+- `resources/views/problem-reports/create.blade.php:85` — `close`
+- `resources/views/problem-reports/create.blade.php:85` — `Abbrechen`
+- `resources/views/problem-reports/create.blade.php:86` — `submit`
+- `resources/views/problem-reports/create.blade.php:86` — `warning`
+- `resources/views/problem-reports/create.blade.php:86` — `check`
 - `resources/views/problem-reports/index.blade.php:3` — `title`
 - `resources/views/problem-reports/index.blade.php:4` — `nav-title`
 - `resources/views/problem-reports/index.blade.php:6` — `content`
@@ -13458,64 +13961,68 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/problem-reports/index.blade.php:17` — `flag`
 - `resources/views/problem-reports/index.blade.php:31` — `font-mono text-sm`
 - `resources/views/problem-reports/index.blade.php:35` — `text-sm`
-- `resources/views/problem-reports/_form_dialog.blade.php:12` — `flag`
-- `resources/views/problem-reports/_form_dialog.blade.php:13` — `warning`
-- `resources/views/problem-reports/_form_dialog.blade.php:14` — `problem-reports.store`
-- `resources/views/problem-reports/_form_dialog.blade.php:16` — `data-entry-form`
-- `resources/views/problem-reports/_form_dialog.blade.php:16` — `enctype`
-- `resources/views/problem-reports/_form_dialog.blade.php:19` — `description`
-- `resources/views/problem-reports/_form_dialog.blade.php:19` — `warning`
-- `resources/views/problem-reports/_form_dialog.blade.php:20` — `fieldset`
-- `resources/views/problem-reports/_form_dialog.blade.php:21` — `fieldset-label`
-- `resources/views/problem-reports/_form_dialog.blade.php:22` — `text`
-- `resources/views/problem-reports/_form_dialog.blade.php:22` — `summary`
-- `resources/views/problem-reports/_form_dialog.blade.php:22` — `input input-bordered w-full`
-- `resources/views/problem-reports/_form_dialog.blade.php:23` — `summary`
-- `resources/views/problem-reports/_form_dialog.blade.php:24` — `summary`
-- `resources/views/problem-reports/_form_dialog.blade.php:24` — `mt-1 text-sm text-error`
-- `resources/views/problem-reports/_form_dialog.blade.php:26` — `fieldset`
-- `resources/views/problem-reports/_form_dialog.blade.php:27` — `fieldset-label`
-- `resources/views/problem-reports/_form_dialog.blade.php:28` — `description`
-- `resources/views/problem-reports/_form_dialog.blade.php:29` — `textarea textarea-bordered w-full`
-- `resources/views/problem-reports/_form_dialog.blade.php:29` — `description`
-- `resources/views/problem-reports/_form_dialog.blade.php:30` — `description`
-- `resources/views/problem-reports/_form_dialog.blade.php:30` — `mt-1 text-sm text-error`
-- `resources/views/problem-reports/_form_dialog.blade.php:33` — `fieldset`
-- `resources/views/problem-reports/_form_dialog.blade.php:34` — `fieldset-label`
-- `resources/views/problem-reports/_form_dialog.blade.php:36` — `textarea textarea-bordered w-full`
-- `resources/views/problem-reports/_form_dialog.blade.php:38` — `fieldset`
-- `resources/views/problem-reports/_form_dialog.blade.php:39` — `fieldset-label`
-- `resources/views/problem-reports/_form_dialog.blade.php:41` — `textarea textarea-bordered w-full`
-- `resources/views/problem-reports/_form_dialog.blade.php:45` — `fieldset`
-- `resources/views/problem-reports/_form_dialog.blade.php:46` — `fieldset-label`
-- `resources/views/problem-reports/_form_dialog.blade.php:47` — `severity`
-- `resources/views/problem-reports/_form_dialog.blade.php:47` — `select select-bordered w-full`
-- `resources/views/problem-reports/_form_dialog.blade.php:49` — `severity', 'normal`
-- `resources/views/problem-reports/_form_dialog.blade.php:53` — `fieldset`
-- `resources/views/problem-reports/_form_dialog.blade.php:54` — `fieldset-label`
-- `resources/views/problem-reports/_form_dialog.blade.php:55` — `file`
-- `resources/views/problem-reports/_form_dialog.blade.php:56` — `file-input file-input-bordered w-full`
-- `resources/views/problem-reports/_form_dialog.blade.php:57` — `mt-1 text-sm text-error`
-- `resources/views/problem-reports/_form_dialog.blade.php:60` — `label cursor-pointer justify-start gap-3`
-- `resources/views/problem-reports/_form_dialog.blade.php:61` — `hidden`
-- `resources/views/problem-reports/_form_dialog.blade.php:62` — `checkbox`
-- `resources/views/problem-reports/_form_dialog.blade.php:62` — `checkbox checkbox-sm`
-- `resources/views/problem-reports/_form_dialog.blade.php:63` — `label-text text-sm`
-- `resources/views/problem-reports/_form_dialog.blade.php:67` — `visibility`
-- `resources/views/problem-reports/_form_dialog.blade.php:67` — `info`
-- `resources/views/problem-reports/_form_dialog.blade.php:68` — `hidden`
-- `resources/views/problem-reports/_form_dialog.blade.php:68` — `route`
-- `resources/views/problem-reports/_form_dialog.blade.php:69` — `hidden`
-- `resources/views/problem-reports/_form_dialog.blade.php:70` — `hidden`
-- `resources/views/problem-reports/_form_dialog.blade.php:72` — `hidden`
-- `resources/views/problem-reports/_form_dialog.blade.php:76` — `route`
-- `resources/views/problem-reports/_form_dialog.blade.php:76` — `route`
-- `resources/views/problem-reports/_form_dialog.blade.php:84` — `label cursor-pointer justify-start gap-3`
-- `resources/views/problem-reports/_form_dialog.blade.php:85` — `hidden`
-- `resources/views/problem-reports/_form_dialog.blade.php:86` — `checkbox`
-- `resources/views/problem-reports/_form_dialog.blade.php:86` — `checkbox checkbox-sm`
-- `resources/views/problem-reports/_form_dialog.blade.php:87` — `label-text text-sm`
-- `resources/views/problem-reports/_form_dialog.blade.php:93` — `cursor-pointer text-xs font-medium`
+- `resources/views/problem-reports/_fields.blade.php:9` — `description`
+- `resources/views/problem-reports/_fields.blade.php:9` — `warning`
+- `resources/views/problem-reports/_fields.blade.php:10` — `fieldset`
+- `resources/views/problem-reports/_fields.blade.php:11` — `fieldset-label`
+- `resources/views/problem-reports/_fields.blade.php:12` — `text`
+- `resources/views/problem-reports/_fields.blade.php:12` — `summary`
+- `resources/views/problem-reports/_fields.blade.php:12` — `input input-bordered w-full`
+- `resources/views/problem-reports/_fields.blade.php:13` — `summary`
+- `resources/views/problem-reports/_fields.blade.php:14` — `summary`
+- `resources/views/problem-reports/_fields.blade.php:14` — `mt-1 text-sm text-error`
+- `resources/views/problem-reports/_fields.blade.php:16` — `fieldset`
+- `resources/views/problem-reports/_fields.blade.php:17` — `fieldset-label`
+- `resources/views/problem-reports/_fields.blade.php:18` — `description`
+- `resources/views/problem-reports/_fields.blade.php:19` — `textarea textarea-bordered w-full`
+- `resources/views/problem-reports/_fields.blade.php:19` — `description`
+- `resources/views/problem-reports/_fields.blade.php:20` — `description`
+- `resources/views/problem-reports/_fields.blade.php:20` — `mt-1 text-sm text-error`
+- `resources/views/problem-reports/_fields.blade.php:23` — `fieldset`
+- `resources/views/problem-reports/_fields.blade.php:24` — `fieldset-label`
+- `resources/views/problem-reports/_fields.blade.php:26` — `textarea textarea-bordered w-full`
+- `resources/views/problem-reports/_fields.blade.php:28` — `fieldset`
+- `resources/views/problem-reports/_fields.blade.php:29` — `fieldset-label`
+- `resources/views/problem-reports/_fields.blade.php:31` — `textarea textarea-bordered w-full`
+- `resources/views/problem-reports/_fields.blade.php:35` — `fieldset`
+- `resources/views/problem-reports/_fields.blade.php:36` — `fieldset-label`
+- `resources/views/problem-reports/_fields.blade.php:37` — `severity`
+- `resources/views/problem-reports/_fields.blade.php:37` — `select select-bordered w-full`
+- `resources/views/problem-reports/_fields.blade.php:39` — `severity', 'normal`
+- `resources/views/problem-reports/_fields.blade.php:43` — `fieldset`
+- `resources/views/problem-reports/_fields.blade.php:44` — `fieldset-label`
+- `resources/views/problem-reports/_fields.blade.php:45` — `file`
+- `resources/views/problem-reports/_fields.blade.php:46` — `file-input file-input-bordered w-full`
+- `resources/views/problem-reports/_fields.blade.php:47` — `mt-1 text-sm text-error`
+- `resources/views/problem-reports/_fields.blade.php:50` — `label cursor-pointer justify-start gap-3`
+- `resources/views/problem-reports/_fields.blade.php:51` — `hidden`
+- `resources/views/problem-reports/_fields.blade.php:52` — `checkbox`
+- `resources/views/problem-reports/_fields.blade.php:52` — `checkbox checkbox-sm`
+- `resources/views/problem-reports/_fields.blade.php:53` — `label-text text-sm`
+- `resources/views/problem-reports/_fields.blade.php:57` — `visibility`
+- `resources/views/problem-reports/_fields.blade.php:57` — `info`
+- `resources/views/problem-reports/_fields.blade.php:58` — `hidden`
+- `resources/views/problem-reports/_fields.blade.php:58` — `route`
+- `resources/views/problem-reports/_fields.blade.php:59` — `hidden`
+- `resources/views/problem-reports/_fields.blade.php:60` — `hidden`
+- `resources/views/problem-reports/_fields.blade.php:62` — `hidden`
+- `resources/views/problem-reports/_fields.blade.php:65` — `hidden`
+- `resources/views/problem-reports/_fields.blade.php:69` — `route`
+- `resources/views/problem-reports/_fields.blade.php:69` — `route`
+- `resources/views/problem-reports/_fields.blade.php:77` — `label cursor-pointer justify-start gap-3`
+- `resources/views/problem-reports/_fields.blade.php:78` — `hidden`
+- `resources/views/problem-reports/_fields.blade.php:79` — `checkbox`
+- `resources/views/problem-reports/_fields.blade.php:79` — `checkbox checkbox-sm`
+- `resources/views/problem-reports/_fields.blade.php:80` — `label-text text-sm`
+- `resources/views/problem-reports/_fields.blade.php:86` — `cursor-pointer text-xs font-medium`
+- `resources/views/problem-reports/_form_dialog.blade.php:13` — `flag`
+- `resources/views/problem-reports/_form_dialog.blade.php:14` — `warning`
+- `resources/views/problem-reports/_form_dialog.blade.php:15` — `problem-reports.store`
+- `resources/views/problem-reports/_form_dialog.blade.php:17` — `data-entry-form`
+- `resources/views/problem-reports/_form_dialog.blade.php:17` — `enctype`
+- `resources/views/problem-reports/_form_dialog.blade.php:21` — `context`
+- `resources/views/problem-reports/_form_dialog.blade.php:22` — `diagnosticsMode`
+- `resources/views/problem-reports/_form_dialog.blade.php:23` — `diagnosticsPreview`
 - `resources/views/chat/_message.blade.php:8` — `emoji`
 - `resources/views/chat/_message.blade.php:9` — `poll`
 - `resources/views/chat/_message.blade.php:13` — `flex-row-reverse`
@@ -14999,631 +15506,646 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/layouts/app.blade.php:304` — `pluginPanelRoutes`
 - `resources/views/layouts/app.blade.php:306` — `route`
 - `resources/views/layouts/app.blade.php:307` — `route`
-- `resources/views/layouts/app.blade.php:308` — `route`
-- `resources/views/layouts/app.blade.php:313` — `Hauptnavigation`
-- `resources/views/layouts/app.blade.php:315` — `matches`
-- `resources/views/layouts/app.blade.php:316` — `route`
-- `resources/views/layouts/app.blade.php:317` — `modal`
-- `resources/views/layouts/app.blade.php:318` — `btn-primary`
-- `resources/views/layouts/app.blade.php:318` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:319` — `label`
-- `resources/views/layouts/app.blade.php:325` — `btn btn-sm btn-ghost`
-- `resources/views/layouts/app.blade.php:325` — `Navigation`
-- `resources/views/layouts/app.blade.php:328` — `matches`
-- `resources/views/layouts/app.blade.php:330` — `route`
-- `resources/views/layouts/app.blade.php:331` — `modal`
-- `resources/views/layouts/app.blade.php:332` — `active`
-- `resources/views/layouts/app.blade.php:333` — `label`
-- `resources/views/layouts/app.blade.php:342` — `route`
-- `resources/views/layouts/app.blade.php:343` — `icon`
-- `resources/views/layouts/app.blade.php:343` — `tune'`
-- `resources/views/layouts/app.blade.php:344` — `primary`
-- `resources/views/layouts/app.blade.php:344` — `ghost'`
-- `resources/views/layouts/app.blade.php:346` — `label`
+- `resources/views/layouts/app.blade.php:309` — `children`
+- `resources/views/layouts/app.blade.php:310` — `children`
+- `resources/views/layouts/app.blade.php:310` — `route`
+- `resources/views/layouts/app.blade.php:312` — `route`
+- `resources/views/layouts/app.blade.php:312` — `route`
+- `resources/views/layouts/app.blade.php:318` — `Hauptnavigation`
+- `resources/views/layouts/app.blade.php:320` — `matches`
+- `resources/views/layouts/app.blade.php:321` — `route`
+- `resources/views/layouts/app.blade.php:322` — `modal`
+- `resources/views/layouts/app.blade.php:323` — `btn-primary`
+- `resources/views/layouts/app.blade.php:323` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:324` — `label`
+- `resources/views/layouts/app.blade.php:330` — `btn btn-sm btn-ghost`
+- `resources/views/layouts/app.blade.php:330` — `Navigation`
+- `resources/views/layouts/app.blade.php:333` — `matches`
+- `resources/views/layouts/app.blade.php:335` — `route`
+- `resources/views/layouts/app.blade.php:336` — `modal`
+- `resources/views/layouts/app.blade.php:337` — `active`
+- `resources/views/layouts/app.blade.php:338` — `label`
 - `resources/views/layouts/app.blade.php:347` — `route`
-- `resources/views/layouts/app.blade.php:353` — `primary`
-- `resources/views/layouts/app.blade.php:353` — `ghost'`
-- `resources/views/layouts/app.blade.php:355` — `Archiv`
-- `resources/views/layouts/app.blade.php:360` — `route`
-- `resources/views/layouts/app.blade.php:361` — `badge`
-- `resources/views/layouts/app.blade.php:362` — `indicator`
-- `resources/views/layouts/app.blade.php:363` — `indicator-item badge badge-xs badge-warning`
-- `resources/views/layouts/app.blade.php:363` — `badge`
-- `resources/views/layouts/app.blade.php:363` — `badge`
-- `resources/views/layouts/app.blade.php:364` — `icon`
-- `resources/views/layouts/app.blade.php:364` — `tune'`
-- `resources/views/layouts/app.blade.php:365` — `primary`
-- `resources/views/layouts/app.blade.php:365` — `ghost'`
-- `resources/views/layouts/app.blade.php:367` — `label`
-- `resources/views/layouts/app.blade.php:368` — `route`
-- `resources/views/layouts/app.blade.php:371` — `icon`
-- `resources/views/layouts/app.blade.php:371` — `tune'`
-- `resources/views/layouts/app.blade.php:372` — `primary`
-- `resources/views/layouts/app.blade.php:372` — `ghost'`
-- `resources/views/layouts/app.blade.php:374` — `label`
-- `resources/views/layouts/app.blade.php:375` — `route`
-- `resources/views/layouts/app.blade.php:380` — `primary`
-- `resources/views/layouts/app.blade.php:383` — `Neuer Eintrag`
-- `resources/views/layouts/app.blade.php:386` — `button`
-- `resources/views/layouts/app.blade.php:387` — `app-sidebar-toggle`
-- `resources/views/layouts/app.blade.php:389` — `Navigation öffnen`
-- `resources/views/layouts/app.blade.php:390` — `app-sidebar`
-- `resources/views/layouts/app.blade.php:391` — `false`
-- `resources/views/layouts/app.blade.php:392` — `h-5 w-5`
-- `resources/views/layouts/app.blade.php:392` — `none`
-- `resources/views/layouts/app.blade.php:392` — `currentColor`
-- `resources/views/layouts/app.blade.php:393` — `round`
-- `resources/views/layouts/app.blade.php:393` — `round`
-- `resources/views/layouts/app.blade.php:393` — `M4 6h16M4 12h16M4 18h16`
-- `resources/views/layouts/app.blade.php:399` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:401` — `btn-primary`
-- `resources/views/layouts/app.blade.php:401` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:402` — `Verwaltung`
-- `resources/views/layouts/app.blade.php:403` — `Verwaltung`
-- `resources/views/layouts/app.blade.php:407` — `header-menu-list menu w-full p-0`
-- `resources/views/layouts/app.blade.php:411` — `label`
-- `resources/views/layouts/app.blade.php:411` — `Personal`
-- `resources/views/layouts/app.blade.php:411` — `icon`
-- `resources/views/layouts/app.blade.php:411` — `group', 'routes`
-- `resources/views/layouts/app.blade.php:411` — `org.members.index', 'legacy.users.index', 'qualifications.index`
-- `resources/views/layouts/app.blade.php:412` — `label`
-- `resources/views/layouts/app.blade.php:412` — `Planung`
-- `resources/views/layouts/app.blade.php:412` — `icon`
-- `resources/views/layouts/app.blade.php:412` — `event', 'routes`
-- `resources/views/layouts/app.blade.php:412` — `holidays.index', 'shift-types.index', 'event-categories.index`
-- `resources/views/layouts/app.blade.php:413` — `label`
-- `resources/views/layouts/app.blade.php:413` — `Kataloge`
-- `resources/views/layouts/app.blade.php:413` — `icon`
-- `resources/views/layouts/app.blade.php:413` — `category', 'routes`
-- `resources/views/layouts/app.blade.php:413` — `materials.index', 'tags.index', 'activity-categories.index`
-- `resources/views/layouts/app.blade.php:415` — `route`
-- `resources/views/layouts/app.blade.php:418` — `routes`
-- `resources/views/layouts/app.blade.php:420` — `label`
-- `resources/views/layouts/app.blade.php:420` — `label`
-- `resources/views/layouts/app.blade.php:420` — `icon`
-- `resources/views/layouts/app.blade.php:420` — `icon`
-- `resources/views/layouts/app.blade.php:420` — `items`
-- `resources/views/layouts/app.blade.php:423` — `items`
-- `resources/views/layouts/app.blade.php:423` — `route`
-- `resources/views/layouts/app.blade.php:424` — `route`
-- `resources/views/layouts/app.blade.php:427` — `items`
-- `resources/views/layouts/app.blade.php:427` — `route`
-- `resources/views/layouts/app.blade.php:428` — `w-full`
-- `resources/views/layouts/app.blade.php:430` — `menu-active`
-- `resources/views/layouts/app.blade.php:431` — `icon`
-- `resources/views/layouts/app.blade.php:432` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:432` — `label`
-- `resources/views/layouts/app.blade.php:435` — `items`
-- `resources/views/layouts/app.blade.php:436` — `route`
-- `resources/views/layouts/app.blade.php:437` — `w-full`
-- `resources/views/layouts/app.blade.php:438` — `route`
-- `resources/views/layouts/app.blade.php:438` — `menu-active`
-- `resources/views/layouts/app.blade.php:439` — `icon`
-- `resources/views/layouts/app.blade.php:439` — `tune'`
-- `resources/views/layouts/app.blade.php:440` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:440` — `label`
-- `resources/views/layouts/app.blade.php:449` — `route`
-- `resources/views/layouts/app.blade.php:450` — `w-full`
-- `resources/views/layouts/app.blade.php:451` — `route`
-- `resources/views/layouts/app.blade.php:451` — `menu-active`
-- `resources/views/layouts/app.blade.php:452` — `icon`
-- `resources/views/layouts/app.blade.php:452` — `tune'`
-- `resources/views/layouts/app.blade.php:453` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:453` — `label`
-- `resources/views/layouts/app.blade.php:463` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:465` — `btn-primary`
-- `resources/views/layouts/app.blade.php:465` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:466` — `System`
-- `resources/views/layouts/app.blade.php:467` — `System`
-- `resources/views/layouts/app.blade.php:468` — `settings`
-- `resources/views/layouts/app.blade.php:471` — `header-menu-list menu w-full p-0`
-- `resources/views/layouts/app.blade.php:475` — `label`
-- `resources/views/layouts/app.blade.php:475` — `Organisation`
-- `resources/views/layouts/app.blade.php:475` — `icon`
-- `resources/views/layouts/app.blade.php:475` — `routes`
-- `resources/views/layouts/app.blade.php:475` — `admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index`
-- `resources/views/layouts/app.blade.php:476` — `label`
-- `resources/views/layouts/app.blade.php:476` — `Stammdaten`
-- `resources/views/layouts/app.blade.php:476` — `icon`
-- `resources/views/layouts/app.blade.php:476` — `routes`
-- `resources/views/layouts/app.blade.php:476` — `admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index`
-- `resources/views/layouts/app.blade.php:477` — `label`
-- `resources/views/layouts/app.blade.php:477` — `icon`
-- `resources/views/layouts/app.blade.php:477` — `routes`
-- `resources/views/layouts/app.blade.php:477` — `admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit`
-- `resources/views/layouts/app.blade.php:478` — `label`
-- `resources/views/layouts/app.blade.php:478` — `icon`
-- `resources/views/layouts/app.blade.php:478` — `routes`
-- `resources/views/layouts/app.blade.php:478` — `admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index`
-- `resources/views/layouts/app.blade.php:479` — `label`
-- `resources/views/layouts/app.blade.php:479` — `Systembetrieb`
-- `resources/views/layouts/app.blade.php:479` — `icon`
-- `resources/views/layouts/app.blade.php:479` — `routes`
-- `resources/views/layouts/app.blade.php:479` — `audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index`
+- `resources/views/layouts/app.blade.php:348` — `icon`
+- `resources/views/layouts/app.blade.php:348` — `tune'`
+- `resources/views/layouts/app.blade.php:349` — `primary`
+- `resources/views/layouts/app.blade.php:349` — `ghost'`
+- `resources/views/layouts/app.blade.php:351` — `label`
+- `resources/views/layouts/app.blade.php:352` — `route`
+- `resources/views/layouts/app.blade.php:358` — `primary`
+- `resources/views/layouts/app.blade.php:358` — `ghost'`
+- `resources/views/layouts/app.blade.php:360` — `Archiv`
+- `resources/views/layouts/app.blade.php:365` — `route`
+- `resources/views/layouts/app.blade.php:366` — `badge`
+- `resources/views/layouts/app.blade.php:367` — `indicator`
+- `resources/views/layouts/app.blade.php:368` — `indicator-item badge badge-xs badge-warning`
+- `resources/views/layouts/app.blade.php:368` — `badge`
+- `resources/views/layouts/app.blade.php:368` — `badge`
+- `resources/views/layouts/app.blade.php:369` — `icon`
+- `resources/views/layouts/app.blade.php:369` — `tune'`
+- `resources/views/layouts/app.blade.php:370` — `primary`
+- `resources/views/layouts/app.blade.php:370` — `ghost'`
+- `resources/views/layouts/app.blade.php:372` — `label`
+- `resources/views/layouts/app.blade.php:373` — `route`
+- `resources/views/layouts/app.blade.php:376` — `icon`
+- `resources/views/layouts/app.blade.php:376` — `tune'`
+- `resources/views/layouts/app.blade.php:377` — `primary`
+- `resources/views/layouts/app.blade.php:377` — `ghost'`
+- `resources/views/layouts/app.blade.php:379` — `label`
+- `resources/views/layouts/app.blade.php:380` — `route`
+- `resources/views/layouts/app.blade.php:385` — `primary`
+- `resources/views/layouts/app.blade.php:388` — `Neuer Eintrag`
+- `resources/views/layouts/app.blade.php:391` — `button`
+- `resources/views/layouts/app.blade.php:392` — `app-sidebar-toggle`
+- `resources/views/layouts/app.blade.php:394` — `Navigation öffnen`
+- `resources/views/layouts/app.blade.php:395` — `app-sidebar`
+- `resources/views/layouts/app.blade.php:396` — `false`
+- `resources/views/layouts/app.blade.php:397` — `h-5 w-5`
+- `resources/views/layouts/app.blade.php:397` — `none`
+- `resources/views/layouts/app.blade.php:397` — `currentColor`
+- `resources/views/layouts/app.blade.php:398` — `round`
+- `resources/views/layouts/app.blade.php:398` — `round`
+- `resources/views/layouts/app.blade.php:398` — `M4 6h16M4 12h16M4 18h16`
+- `resources/views/layouts/app.blade.php:404` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:406` — `btn-primary`
+- `resources/views/layouts/app.blade.php:406` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:407` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:408` — `Verwaltung`
+- `resources/views/layouts/app.blade.php:412` — `header-menu-list menu w-full p-0`
+- `resources/views/layouts/app.blade.php:416` — `label`
+- `resources/views/layouts/app.blade.php:416` — `Personal`
+- `resources/views/layouts/app.blade.php:416` — `icon`
+- `resources/views/layouts/app.blade.php:416` — `group', 'routes`
+- `resources/views/layouts/app.blade.php:416` — `org.members.index', 'legacy.users.index', 'qualifications.index`
+- `resources/views/layouts/app.blade.php:417` — `label`
+- `resources/views/layouts/app.blade.php:417` — `Planung`
+- `resources/views/layouts/app.blade.php:417` — `icon`
+- `resources/views/layouts/app.blade.php:417` — `event', 'routes`
+- `resources/views/layouts/app.blade.php:417` — `holidays.index', 'shift-types.index', 'event-categories.index`
+- `resources/views/layouts/app.blade.php:418` — `label`
+- `resources/views/layouts/app.blade.php:418` — `Kataloge`
+- `resources/views/layouts/app.blade.php:418` — `icon`
+- `resources/views/layouts/app.blade.php:418` — `category', 'routes`
+- `resources/views/layouts/app.blade.php:418` — `materials.index', 'tags.index', 'activity-categories.index`
+- `resources/views/layouts/app.blade.php:420` — `route`
+- `resources/views/layouts/app.blade.php:423` — `routes`
+- `resources/views/layouts/app.blade.php:425` — `label`
+- `resources/views/layouts/app.blade.php:425` — `label`
+- `resources/views/layouts/app.blade.php:425` — `icon`
+- `resources/views/layouts/app.blade.php:425` — `icon`
+- `resources/views/layouts/app.blade.php:425` — `items`
+- `resources/views/layouts/app.blade.php:428` — `items`
+- `resources/views/layouts/app.blade.php:428` — `route`
+- `resources/views/layouts/app.blade.php:429` — `route`
+- `resources/views/layouts/app.blade.php:432` — `items`
+- `resources/views/layouts/app.blade.php:432` — `route`
+- `resources/views/layouts/app.blade.php:433` — `w-full`
+- `resources/views/layouts/app.blade.php:435` — `menu-active`
+- `resources/views/layouts/app.blade.php:436` — `icon`
+- `resources/views/layouts/app.blade.php:437` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:437` — `label`
+- `resources/views/layouts/app.blade.php:440` — `items`
+- `resources/views/layouts/app.blade.php:441` — `route`
+- `resources/views/layouts/app.blade.php:442` — `w-full`
+- `resources/views/layouts/app.blade.php:443` — `route`
+- `resources/views/layouts/app.blade.php:443` — `menu-active`
+- `resources/views/layouts/app.blade.php:444` — `icon`
+- `resources/views/layouts/app.blade.php:444` — `tune'`
+- `resources/views/layouts/app.blade.php:445` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:445` — `label`
+- `resources/views/layouts/app.blade.php:454` — `route`
+- `resources/views/layouts/app.blade.php:455` — `w-full`
+- `resources/views/layouts/app.blade.php:456` — `route`
+- `resources/views/layouts/app.blade.php:456` — `menu-active`
+- `resources/views/layouts/app.blade.php:457` — `icon`
+- `resources/views/layouts/app.blade.php:457` — `tune'`
+- `resources/views/layouts/app.blade.php:458` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:458` — `label`
+- `resources/views/layouts/app.blade.php:468` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:470` — `btn-primary`
+- `resources/views/layouts/app.blade.php:470` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:471` — `System`
+- `resources/views/layouts/app.blade.php:472` — `System`
+- `resources/views/layouts/app.blade.php:473` — `settings`
+- `resources/views/layouts/app.blade.php:476` — `header-menu-list menu w-full p-0`
 - `resources/views/layouts/app.blade.php:480` — `label`
-- `resources/views/layouts/app.blade.php:480` — `Plugins`
+- `resources/views/layouts/app.blade.php:480` — `Organisation`
 - `resources/views/layouts/app.blade.php:480` — `icon`
-- `resources/views/layouts/app.blade.php:480` — `extension', 'routes`
-- `resources/views/layouts/app.blade.php:480` — `admin.plugins.index', 'admin.plugin-errors.index`
-- `resources/views/layouts/app.blade.php:482` — `route`
-- `resources/views/layouts/app.blade.php:485` — `routes`
-- `resources/views/layouts/app.blade.php:487` — `label`
-- `resources/views/layouts/app.blade.php:487` — `label`
-- `resources/views/layouts/app.blade.php:487` — `icon`
-- `resources/views/layouts/app.blade.php:487` — `icon`
-- `resources/views/layouts/app.blade.php:487` — `items`
-- `resources/views/layouts/app.blade.php:493` — `label`
-- `resources/views/layouts/app.blade.php:493` — `Plugins`
-- `resources/views/layouts/app.blade.php:496` — `items`
-- `resources/views/layouts/app.blade.php:496` — `items`
-- `resources/views/layouts/app.blade.php:499` — `label`
-- `resources/views/layouts/app.blade.php:499` — `Plugins`
-- `resources/views/layouts/app.blade.php:499` — `icon`
-- `resources/views/layouts/app.blade.php:499` — `extension', 'items`
-- `resources/views/layouts/app.blade.php:502` — `items`
-- `resources/views/layouts/app.blade.php:502` — `route`
-- `resources/views/layouts/app.blade.php:504` — `route`
-- `resources/views/layouts/app.blade.php:508` — `items`
-- `resources/views/layouts/app.blade.php:508` — `route`
-- `resources/views/layouts/app.blade.php:509` — `items`
-- `resources/views/layouts/app.blade.php:509` — `badge`
-- `resources/views/layouts/app.blade.php:511` — `w-full`
-- `resources/views/layouts/app.blade.php:513` — `menu-active`
-- `resources/views/layouts/app.blade.php:514` — `icon`
-- `resources/views/layouts/app.blade.php:515` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:515` — `label`
-- `resources/views/layouts/app.blade.php:517` — `badge badge-sm badge-warning shrink-0`
-- `resources/views/layouts/app.blade.php:521` — `items`
-- `resources/views/layouts/app.blade.php:522` — `route`
-- `resources/views/layouts/app.blade.php:523` — `w-full`
-- `resources/views/layouts/app.blade.php:524` — `route`
-- `resources/views/layouts/app.blade.php:525` — `modal`
-- `resources/views/layouts/app.blade.php:526` — `menu-active`
-- `resources/views/layouts/app.blade.php:527` — `icon`
-- `resources/views/layouts/app.blade.php:527` — `tune'`
-- `resources/views/layouts/app.blade.php:528` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:528` — `label`
-- `resources/views/layouts/app.blade.php:529` — `badge`
-- `resources/views/layouts/app.blade.php:530` — `badge badge-sm badge-warning shrink-0`
-- `resources/views/layouts/app.blade.php:530` — `badge`
-- `resources/views/layouts/app.blade.php:530` — `badge`
-- `resources/views/layouts/app.blade.php:540` — `route`
-- `resources/views/layouts/app.blade.php:541` — `w-full`
-- `resources/views/layouts/app.blade.php:542` — `route`
-- `resources/views/layouts/app.blade.php:543` — `modal`
-- `resources/views/layouts/app.blade.php:544` — `menu-active`
-- `resources/views/layouts/app.blade.php:545` — `icon`
-- `resources/views/layouts/app.blade.php:545` — `tune'`
-- `resources/views/layouts/app.blade.php:546` — `min-w-0 flex-1 truncate`
-- `resources/views/layouts/app.blade.php:546` — `label`
-- `resources/views/layouts/app.blade.php:547` — `badge`
-- `resources/views/layouts/app.blade.php:548` — `badge badge-sm badge-warning shrink-0`
-- `resources/views/layouts/app.blade.php:548` — `badge`
-- `resources/views/layouts/app.blade.php:548` — `badge`
-- `resources/views/layouts/app.blade.php:564` — `relative flex size-2`
-- `resources/views/layouts/app.blade.php:565` — `absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75`
-- `resources/views/layouts/app.blade.php:566` — `relative inline-flex size-2 rounded-full bg-primary`
-- `resources/views/layouts/app.blade.php:569` — `display`
-- `resources/views/layouts/app.blade.php:570` — `leading-none`
-- `resources/views/layouts/app.blade.php:572` — `submit`
-- `resources/views/layouts/app.blade.php:572` — `btn btn-xs btn-ghost btn-square text-error`
-- `resources/views/layouts/app.blade.php:572` — `Stoppen`
-- `resources/views/layouts/app.blade.php:572` — `Stoppen`
-- `resources/views/layouts/app.blade.php:584` — `badge badge-warning badge-sm items-center gap-1`
-- `resources/views/layouts/app.blade.php:587` — `tabular-nums`
-- `resources/views/layouts/app.blade.php:593` — `time`
-- `resources/views/layouts/app.blade.php:595` — `badge`
-- `resources/views/layouts/app.blade.php:597` — `displayShort`
-- `resources/views/layouts/app.blade.php:598` — `attendance.clock-out`
-- `resources/views/layouts/app.blade.php:598` — `leading-none`
-- `resources/views/layouts/app.blade.php:598` — `attendance.clock-out`
-- `resources/views/layouts/app.blade.php:600` — `submit`
-- `resources/views/layouts/app.blade.php:600` — `btn btn-xs btn-ghost btn-square text-warning`
-- `resources/views/layouts/app.blade.php:600` — `Ausstempeln`
-- `resources/views/layouts/app.blade.php:600` — `Ausstempeln`
-- `resources/views/layouts/app.blade.php:601` — `logout`
-- `resources/views/layouts/app.blade.php:606` — `attendance.clock-in`
-- `resources/views/layouts/app.blade.php:606` — `leading-none`
-- `resources/views/layouts/app.blade.php:606` — `attendance.clock-in`
-- `resources/views/layouts/app.blade.php:608` — `submit`
-- `resources/views/layouts/app.blade.php:608` — `success`
-- `resources/views/layouts/app.blade.php:608` — `gap-1`
-- `resources/views/layouts/app.blade.php:608` — `Einstempeln`
-- `resources/views/layouts/app.blade.php:609` — `login`
-- `resources/views/layouts/app.blade.php:610` — `Einstempeln`
-- `resources/views/layouts/app.blade.php:622` — `button`
-- `resources/views/layouts/app.blade.php:626` — `Hilfe zu dieser Seite`
-- `resources/views/layouts/app.blade.php:626` — `Hilfe`
-- `resources/views/layouts/app.blade.php:627` — `Hilfe zu dieser Seite`
-- `resources/views/layouts/app.blade.php:627` — `Hilfe`
-- `resources/views/layouts/app.blade.php:628` — `dialog`
-- `resources/views/layouts/app.blade.php:629` — `help-drawer`
-- `resources/views/layouts/app.blade.php:630` — `help`
-- `resources/views/layouts/app.blade.php:630` — `text-base`
-- `resources/views/layouts/app.blade.php:634` — `count`
-- `resources/views/layouts/app.blade.php:635` — `severity`
-- `resources/views/layouts/app.blade.php:635` — `error`
-- `resources/views/layouts/app.blade.php:643` — `chat-unread-link`
-- `resources/views/layouts/app.blade.php:645` — `btn-active`
-- `resources/views/layouts/app.blade.php:646` — `Chat`
-- `resources/views/layouts/app.blade.php:646` — `Chat`
-- `resources/views/layouts/app.blade.php:647` — `forum`
-- `resources/views/layouts/app.blade.php:647` — `text-base`
-- `resources/views/layouts/app.blade.php:648` — `chat-unread-badge`
-- `resources/views/layouts/app.blade.php:649` — `hidden`
-- `resources/views/layouts/app.blade.php:652` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:654` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:655` — `Lesezeichen`
-- `resources/views/layouts/app.blade.php:656` — `Lesezeichen`
-- `resources/views/layouts/app.blade.php:657` — `bookmarks`
-- `resources/views/layouts/app.blade.php:657` — `text-base`
-- `resources/views/layouts/app.blade.php:660` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
-- `resources/views/layouts/app.blade.php:661` — `text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:480` — `routes`
+- `resources/views/layouts/app.blade.php:480` — `admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index`
+- `resources/views/layouts/app.blade.php:481` — `label`
+- `resources/views/layouts/app.blade.php:481` — `Stammdaten`
+- `resources/views/layouts/app.blade.php:481` — `icon`
+- `resources/views/layouts/app.blade.php:481` — `routes`
+- `resources/views/layouts/app.blade.php:481` — `admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index`
+- `resources/views/layouts/app.blade.php:482` — `label`
+- `resources/views/layouts/app.blade.php:482` — `icon`
+- `resources/views/layouts/app.blade.php:482` — `routes`
+- `resources/views/layouts/app.blade.php:482` — `admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit`
+- `resources/views/layouts/app.blade.php:483` — `label`
+- `resources/views/layouts/app.blade.php:483` — `icon`
+- `resources/views/layouts/app.blade.php:483` — `routes`
+- `resources/views/layouts/app.blade.php:483` — `admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index`
+- `resources/views/layouts/app.blade.php:484` — `label`
+- `resources/views/layouts/app.blade.php:484` — `Systembetrieb`
+- `resources/views/layouts/app.blade.php:484` — `icon`
+- `resources/views/layouts/app.blade.php:484` — `routes`
+- `resources/views/layouts/app.blade.php:484` — `audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index`
+- `resources/views/layouts/app.blade.php:485` — `label`
+- `resources/views/layouts/app.blade.php:485` — `Plugins`
+- `resources/views/layouts/app.blade.php:485` — `icon`
+- `resources/views/layouts/app.blade.php:485` — `extension', 'routes`
+- `resources/views/layouts/app.blade.php:485` — `admin.plugins.index', 'admin.plugin-errors.index`
+- `resources/views/layouts/app.blade.php:487` — `route`
+- `resources/views/layouts/app.blade.php:490` — `routes`
+- `resources/views/layouts/app.blade.php:492` — `label`
+- `resources/views/layouts/app.blade.php:492` — `label`
+- `resources/views/layouts/app.blade.php:492` — `icon`
+- `resources/views/layouts/app.blade.php:492` — `icon`
+- `resources/views/layouts/app.blade.php:492` — `items`
+- `resources/views/layouts/app.blade.php:498` — `label`
+- `resources/views/layouts/app.blade.php:498` — `Plugins`
+- `resources/views/layouts/app.blade.php:501` — `items`
+- `resources/views/layouts/app.blade.php:501` — `items`
+- `resources/views/layouts/app.blade.php:504` — `label`
+- `resources/views/layouts/app.blade.php:504` — `Plugins`
+- `resources/views/layouts/app.blade.php:504` — `icon`
+- `resources/views/layouts/app.blade.php:504` — `extension', 'items`
+- `resources/views/layouts/app.blade.php:507` — `items`
+- `resources/views/layouts/app.blade.php:507` — `route`
+- `resources/views/layouts/app.blade.php:509` — `route`
+- `resources/views/layouts/app.blade.php:513` — `items`
+- `resources/views/layouts/app.blade.php:513` — `route`
+- `resources/views/layouts/app.blade.php:514` — `items`
+- `resources/views/layouts/app.blade.php:514` — `badge`
+- `resources/views/layouts/app.blade.php:516` — `w-full`
+- `resources/views/layouts/app.blade.php:518` — `menu-active`
+- `resources/views/layouts/app.blade.php:519` — `icon`
+- `resources/views/layouts/app.blade.php:520` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:520` — `label`
+- `resources/views/layouts/app.blade.php:522` — `badge badge-sm badge-warning shrink-0`
+- `resources/views/layouts/app.blade.php:526` — `items`
+- `resources/views/layouts/app.blade.php:527` — `route`
+- `resources/views/layouts/app.blade.php:528` — `w-full`
+- `resources/views/layouts/app.blade.php:529` — `route`
+- `resources/views/layouts/app.blade.php:530` — `modal`
+- `resources/views/layouts/app.blade.php:531` — `menu-active`
+- `resources/views/layouts/app.blade.php:532` — `icon`
+- `resources/views/layouts/app.blade.php:532` — `tune'`
+- `resources/views/layouts/app.blade.php:533` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:533` — `label`
+- `resources/views/layouts/app.blade.php:534` — `badge`
+- `resources/views/layouts/app.blade.php:535` — `badge badge-sm badge-warning shrink-0`
+- `resources/views/layouts/app.blade.php:535` — `badge`
+- `resources/views/layouts/app.blade.php:535` — `badge`
+- `resources/views/layouts/app.blade.php:545` — `route`
+- `resources/views/layouts/app.blade.php:546` — `w-full`
+- `resources/views/layouts/app.blade.php:547` — `route`
+- `resources/views/layouts/app.blade.php:548` — `modal`
+- `resources/views/layouts/app.blade.php:549` — `menu-active`
+- `resources/views/layouts/app.blade.php:550` — `icon`
+- `resources/views/layouts/app.blade.php:550` — `tune'`
+- `resources/views/layouts/app.blade.php:551` — `min-w-0 flex-1 truncate`
+- `resources/views/layouts/app.blade.php:551` — `label`
+- `resources/views/layouts/app.blade.php:552` — `badge`
+- `resources/views/layouts/app.blade.php:553` — `badge badge-sm badge-warning shrink-0`
+- `resources/views/layouts/app.blade.php:553` — `badge`
+- `resources/views/layouts/app.blade.php:553` — `badge`
+- `resources/views/layouts/app.blade.php:569` — `relative flex size-2`
+- `resources/views/layouts/app.blade.php:570` — `absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75`
+- `resources/views/layouts/app.blade.php:571` — `relative inline-flex size-2 rounded-full bg-primary`
+- `resources/views/layouts/app.blade.php:574` — `display`
+- `resources/views/layouts/app.blade.php:575` — `leading-none`
+- `resources/views/layouts/app.blade.php:577` — `submit`
+- `resources/views/layouts/app.blade.php:577` — `btn btn-xs btn-ghost btn-square text-error`
+- `resources/views/layouts/app.blade.php:577` — `Stoppen`
+- `resources/views/layouts/app.blade.php:577` — `Stoppen`
+- `resources/views/layouts/app.blade.php:589` — `badge badge-warning badge-sm items-center gap-1`
+- `resources/views/layouts/app.blade.php:592` — `tabular-nums`
+- `resources/views/layouts/app.blade.php:598` — `time`
+- `resources/views/layouts/app.blade.php:600` — `badge`
+- `resources/views/layouts/app.blade.php:602` — `displayShort`
+- `resources/views/layouts/app.blade.php:603` — `attendance.clock-out`
+- `resources/views/layouts/app.blade.php:603` — `leading-none`
+- `resources/views/layouts/app.blade.php:603` — `attendance.clock-out`
+- `resources/views/layouts/app.blade.php:605` — `submit`
+- `resources/views/layouts/app.blade.php:605` — `btn btn-xs btn-ghost btn-square text-warning`
+- `resources/views/layouts/app.blade.php:605` — `Ausstempeln`
+- `resources/views/layouts/app.blade.php:605` — `Ausstempeln`
+- `resources/views/layouts/app.blade.php:606` — `logout`
+- `resources/views/layouts/app.blade.php:611` — `attendance.clock-in`
+- `resources/views/layouts/app.blade.php:611` — `leading-none`
+- `resources/views/layouts/app.blade.php:611` — `attendance.clock-in`
+- `resources/views/layouts/app.blade.php:613` — `submit`
+- `resources/views/layouts/app.blade.php:613` — `success`
+- `resources/views/layouts/app.blade.php:613` — `gap-1`
+- `resources/views/layouts/app.blade.php:613` — `Einstempeln`
+- `resources/views/layouts/app.blade.php:614` — `login`
+- `resources/views/layouts/app.blade.php:615` — `Einstempeln`
+- `resources/views/layouts/app.blade.php:627` — `button`
+- `resources/views/layouts/app.blade.php:631` — `Hilfe zu dieser Seite`
+- `resources/views/layouts/app.blade.php:631` — `Hilfe`
+- `resources/views/layouts/app.blade.php:632` — `Hilfe zu dieser Seite`
+- `resources/views/layouts/app.blade.php:632` — `Hilfe`
+- `resources/views/layouts/app.blade.php:633` — `dialog`
+- `resources/views/layouts/app.blade.php:634` — `help-drawer`
+- `resources/views/layouts/app.blade.php:635` — `help`
+- `resources/views/layouts/app.blade.php:635` — `text-base`
+- `resources/views/layouts/app.blade.php:639` — `count`
+- `resources/views/layouts/app.blade.php:640` — `severity`
+- `resources/views/layouts/app.blade.php:640` — `error`
+- `resources/views/layouts/app.blade.php:648` — `chat-unread-link`
+- `resources/views/layouts/app.blade.php:650` — `btn-active`
+- `resources/views/layouts/app.blade.php:651` — `Chat`
+- `resources/views/layouts/app.blade.php:651` — `Chat`
+- `resources/views/layouts/app.blade.php:652` — `forum`
+- `resources/views/layouts/app.blade.php:652` — `text-base`
+- `resources/views/layouts/app.blade.php:653` — `chat-unread-badge`
+- `resources/views/layouts/app.blade.php:654` — `hidden`
+- `resources/views/layouts/app.blade.php:657` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:659` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:660` — `Lesezeichen`
 - `resources/views/layouts/app.blade.php:661` — `Lesezeichen`
-- `resources/views/layouts/app.blade.php:664` — `ghost`
-- `resources/views/layouts/app.blade.php:665` — `Diese Seite merken`
-- `resources/views/layouts/app.blade.php:666` — `text-sm`
-- `resources/views/layouts/app.blade.php:667` — `Merken`
-- `resources/views/layouts/app.blade.php:670` — `max-h-96 overflow-y-auto`
-- `resources/views/layouts/app.blade.php:674` — `material-symbols-outlined text-base`
-- `resources/views/layouts/app.blade.php:674` — `true`
-- `resources/views/layouts/app.blade.php:674` — `bookmark`
-- `resources/views/layouts/app.blade.php:675` — `flex-1 min-w-0 text-sm font-medium truncate`
-- `resources/views/layouts/app.blade.php:678` — `px-4 py-6 text-center text-sm opacity-60`
-- `resources/views/layouts/app.blade.php:679` — `text-2xl block mb-1 mx-auto`
-- `resources/views/layouts/app.blade.php:680` — `Noch keine Lesezeichen.`
-- `resources/views/layouts/app.blade.php:684` — `px-4 py-2 border-t border-base-200 text-right`
-- `resources/views/layouts/app.blade.php:685` — `text-xs link link-hover opacity-70`
-- `resources/views/layouts/app.blade.php:685` — `Verwalten`
-- `resources/views/layouts/app.blade.php:697` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:699` — `btn btn-sm btn-ghost btn-square relative`
-- `resources/views/layouts/app.blade.php:702` — `inbox`
-- `resources/views/layouts/app.blade.php:702` — `text-base`
-- `resources/views/layouts/app.blade.php:710` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
-- `resources/views/layouts/app.blade.php:711` — `text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:715` — `submit`
-- `resources/views/layouts/app.blade.php:715` — `ghost`
-- `resources/views/layouts/app.blade.php:716` — `text-sm`
-- `resources/views/layouts/app.blade.php:722` — `max-h-96 overflow-y-auto`
-- `resources/views/layouts/app.blade.php:730` — `text-primary`
-- `resources/views/layouts/app.blade.php:730` — `opacity-50`
-- `resources/views/layouts/app.blade.php:730` — `true`
-- `resources/views/layouts/app.blade.php:730` — `icon`
-- `resources/views/layouts/app.blade.php:730` — `notifications`
-- `resources/views/layouts/app.blade.php:731` — `flex-1 min-w-0`
-- `resources/views/layouts/app.blade.php:732` — `block text-sm font-medium truncate`
-- `resources/views/layouts/app.blade.php:734` — `block text-xs opacity-60 mt-0.5 truncate`
-- `resources/views/layouts/app.blade.php:738` — `mt-1 inline-block h-2 w-2 rounded-full bg-primary shrink-0`
-- `resources/views/layouts/app.blade.php:742` — `px-4 py-6 text-center text-sm opacity-60`
-- `resources/views/layouts/app.blade.php:743` — `text-2xl block mb-1 mx-auto`
-- `resources/views/layouts/app.blade.php:748` — `px-4 py-2 border-t border-base-200 text-right`
-- `resources/views/layouts/app.blade.php:749` — `text-xs link link-hover opacity-70`
-- `resources/views/layouts/app.blade.php:753` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:755` — `btn btn-sm btn-ghost btn-square relative`
-- `resources/views/layouts/app.blade.php:756` — `Erinnerungen`
-- `resources/views/layouts/app.blade.php:757` — `Erinnerungen`
-- `resources/views/layouts/app.blade.php:758` — `notifications`
-- `resources/views/layouts/app.blade.php:758` — `text-base`
-- `resources/views/layouts/app.blade.php:760` — `badge-error`
-- `resources/views/layouts/app.blade.php:760` — `badge-warning`
-- `resources/views/layouts/app.blade.php:766` — `px-4 py-2 border-b border-base-200 flex items-center justify-between`
-- `resources/views/layouts/app.blade.php:767` — `text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:767` — `Erinnerungen`
-- `resources/views/layouts/app.blade.php:769` — `offen`
-- `resources/views/layouts/app.blade.php:772` — `max-h-96 overflow-y-auto`
-- `resources/views/layouts/app.blade.php:780` — `severity`
-- `resources/views/layouts/app.blade.php:781` — `error`
-- `resources/views/layouts/app.blade.php:781` — `text-error',
+- `resources/views/layouts/app.blade.php:662` — `bookmarks`
+- `resources/views/layouts/app.blade.php:662` — `text-base`
+- `resources/views/layouts/app.blade.php:665` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
+- `resources/views/layouts/app.blade.php:666` — `text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:666` — `Lesezeichen`
+- `resources/views/layouts/app.blade.php:669` — `ghost`
+- `resources/views/layouts/app.blade.php:670` — `Diese Seite merken`
+- `resources/views/layouts/app.blade.php:671` — `text-sm`
+- `resources/views/layouts/app.blade.php:672` — `Merken`
+- `resources/views/layouts/app.blade.php:675` — `max-h-96 overflow-y-auto`
+- `resources/views/layouts/app.blade.php:679` — `material-symbols-outlined text-base`
+- `resources/views/layouts/app.blade.php:679` — `true`
+- `resources/views/layouts/app.blade.php:679` — `bookmark`
+- `resources/views/layouts/app.blade.php:680` — `flex-1 min-w-0 text-sm font-medium truncate`
+- `resources/views/layouts/app.blade.php:683` — `px-4 py-6 text-center text-sm opacity-60`
+- `resources/views/layouts/app.blade.php:684` — `text-2xl block mb-1 mx-auto`
+- `resources/views/layouts/app.blade.php:685` — `Noch keine Lesezeichen.`
+- `resources/views/layouts/app.blade.php:689` — `px-4 py-2 border-t border-base-200 text-right`
+- `resources/views/layouts/app.blade.php:690` — `text-xs link link-hover opacity-70`
+- `resources/views/layouts/app.blade.php:690` — `Verwalten`
+- `resources/views/layouts/app.blade.php:702` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:704` — `btn btn-sm btn-ghost btn-square relative`
+- `resources/views/layouts/app.blade.php:707` — `inbox`
+- `resources/views/layouts/app.blade.php:707` — `text-base`
+- `resources/views/layouts/app.blade.php:715` — `px-4 py-2 border-b border-base-200 flex items-center justify-between gap-2`
+- `resources/views/layouts/app.blade.php:716` — `text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:720` — `submit`
+- `resources/views/layouts/app.blade.php:720` — `ghost`
+- `resources/views/layouts/app.blade.php:721` — `text-sm`
+- `resources/views/layouts/app.blade.php:727` — `max-h-96 overflow-y-auto`
+- `resources/views/layouts/app.blade.php:735` — `text-primary`
+- `resources/views/layouts/app.blade.php:735` — `opacity-50`
+- `resources/views/layouts/app.blade.php:735` — `true`
+- `resources/views/layouts/app.blade.php:735` — `icon`
+- `resources/views/layouts/app.blade.php:735` — `notifications`
+- `resources/views/layouts/app.blade.php:736` — `flex-1 min-w-0`
+- `resources/views/layouts/app.blade.php:737` — `block text-sm font-medium truncate`
+- `resources/views/layouts/app.blade.php:739` — `block text-xs opacity-60 mt-0.5 truncate`
+- `resources/views/layouts/app.blade.php:743` — `mt-1 inline-block h-2 w-2 rounded-full bg-primary shrink-0`
+- `resources/views/layouts/app.blade.php:747` — `px-4 py-6 text-center text-sm opacity-60`
+- `resources/views/layouts/app.blade.php:748` — `text-2xl block mb-1 mx-auto`
+- `resources/views/layouts/app.blade.php:753` — `px-4 py-2 border-t border-base-200 text-right`
+- `resources/views/layouts/app.blade.php:754` — `text-xs link link-hover opacity-70`
+- `resources/views/layouts/app.blade.php:758` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:760` — `btn btn-sm btn-ghost btn-square relative`
+- `resources/views/layouts/app.blade.php:761` — `Erinnerungen`
+- `resources/views/layouts/app.blade.php:762` — `Erinnerungen`
+- `resources/views/layouts/app.blade.php:763` — `notifications`
+- `resources/views/layouts/app.blade.php:763` — `text-base`
+- `resources/views/layouts/app.blade.php:765` — `badge-error`
+- `resources/views/layouts/app.blade.php:765` — `badge-warning`
+- `resources/views/layouts/app.blade.php:771` — `px-4 py-2 border-b border-base-200 flex items-center justify-between`
+- `resources/views/layouts/app.blade.php:772` — `text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:772` — `Erinnerungen`
+- `resources/views/layouts/app.blade.php:774` — `offen`
+- `resources/views/layouts/app.blade.php:777` — `max-h-96 overflow-y-auto`
+- `resources/views/layouts/app.blade.php:785` — `severity`
+- `resources/views/layouts/app.blade.php:786` — `error`
+- `resources/views/layouts/app.blade.php:786` — `text-error',
                                                         'warning`
-- `resources/views/layouts/app.blade.php:782` — `text-warning`
-- `resources/views/layouts/app.blade.php:783` — `text-info`
-- `resources/views/layouts/app.blade.php:787` — `true`
-- `resources/views/layouts/app.blade.php:787` — `icon`
-- `resources/views/layouts/app.blade.php:788` — `flex-1 min-w-0`
-- `resources/views/layouts/app.blade.php:789` — `block text-sm font-medium`
-- `resources/views/layouts/app.blade.php:789` — `title`
-- `resources/views/layouts/app.blade.php:790` — `block text-xs opacity-60 mt-0.5`
-- `resources/views/layouts/app.blade.php:790` — `description`
-- `resources/views/layouts/app.blade.php:794` — `px-4 py-6 text-center text-sm opacity-60`
-- `resources/views/layouts/app.blade.php:795` — `text-success text-2xl block mb-1 mx-auto`
-- `resources/views/layouts/app.blade.php:796` — `Alles erledigt.`
-- `resources/views/layouts/app.blade.php:804` — `button`
-- `resources/views/layouts/app.blade.php:805` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:807` — `Globale Suche öffnen`
-- `resources/views/layouts/app.blade.php:808` — `search`
-- `resources/views/layouts/app.blade.php:808` — `text-base`
-- `resources/views/layouts/app.blade.php:816` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:818` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:819` — `Einstellungen`
-- `resources/views/layouts/app.blade.php:820` — `Einstellungen`
-- `resources/views/layouts/app.blade.php:821` — `tune`
-- `resources/views/layouts/app.blade.php:821` — `text-base`
-- `resources/views/layouts/app.blade.php:825` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
-- `resources/views/layouts/app.blade.php:826` — `text-sm font-medium`
-- `resources/views/layouts/app.blade.php:826` — `Farbschema`
-- `resources/views/layouts/app.blade.php:827` — `button`
-- `resources/views/layouts/app.blade.php:829` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:830` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:831` — `btn btn-xs btn-ghost gap-2`
-- `resources/views/layouts/app.blade.php:832` — `material-symbols-outlined text-base leading-none`
-- `resources/views/layouts/app.blade.php:833` — `text-xs opacity-70`
-- `resources/views/layouts/app.blade.php:833` — `Wechseln`
-- `resources/views/layouts/app.blade.php:838` — `px-4 py-3 border-b border-base-200`
-- `resources/views/layouts/app.blade.php:839` — `mb-2 text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:839` — `Sprache`
-- `resources/views/layouts/app.blade.php:840` — `inline`
-- `resources/views/layouts/app.blade.php:846` — `legacy`
-- `resources/views/layouts/app.blade.php:847` — `mode-switch-form`
-- `resources/views/layouts/app.blade.php:848` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
-- `resources/views/layouts/app.blade.php:850` — `hidden`
-- `resources/views/layouts/app.blade.php:850` — `origin`
-- `resources/views/layouts/app.blade.php:851` — `mode-switch-toggle`
-- `resources/views/layouts/app.blade.php:852` — `text-sm font-medium cursor-pointer select-none`
-- `resources/views/layouts/app.blade.php:853` — `Modus wechseln`
-- `resources/views/layouts/app.blade.php:854` — `Legacy-Modus`
-- `resources/views/layouts/app.blade.php:856` — `submit`
+- `resources/views/layouts/app.blade.php:787` — `text-warning`
+- `resources/views/layouts/app.blade.php:788` — `text-info`
+- `resources/views/layouts/app.blade.php:792` — `true`
+- `resources/views/layouts/app.blade.php:792` — `icon`
+- `resources/views/layouts/app.blade.php:793` — `flex-1 min-w-0`
+- `resources/views/layouts/app.blade.php:794` — `block text-sm font-medium`
+- `resources/views/layouts/app.blade.php:794` — `title`
+- `resources/views/layouts/app.blade.php:795` — `block text-xs opacity-60 mt-0.5`
+- `resources/views/layouts/app.blade.php:795` — `description`
+- `resources/views/layouts/app.blade.php:799` — `px-4 py-6 text-center text-sm opacity-60`
+- `resources/views/layouts/app.blade.php:800` — `text-success text-2xl block mb-1 mx-auto`
+- `resources/views/layouts/app.blade.php:801` — `Alles erledigt.`
+- `resources/views/layouts/app.blade.php:809` — `button`
+- `resources/views/layouts/app.blade.php:810` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:812` — `Globale Suche öffnen`
+- `resources/views/layouts/app.blade.php:813` — `search`
+- `resources/views/layouts/app.blade.php:813` — `text-base`
+- `resources/views/layouts/app.blade.php:821` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:823` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:824` — `Einstellungen`
+- `resources/views/layouts/app.blade.php:825` — `Einstellungen`
+- `resources/views/layouts/app.blade.php:826` — `tune`
+- `resources/views/layouts/app.blade.php:826` — `text-base`
+- `resources/views/layouts/app.blade.php:830` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
+- `resources/views/layouts/app.blade.php:831` — `text-sm font-medium`
+- `resources/views/layouts/app.blade.php:831` — `Farbschema`
+- `resources/views/layouts/app.blade.php:832` — `button`
+- `resources/views/layouts/app.blade.php:834` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:835` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:836` — `btn btn-xs btn-ghost gap-2`
+- `resources/views/layouts/app.blade.php:837` — `material-symbols-outlined text-base leading-none`
+- `resources/views/layouts/app.blade.php:838` — `text-xs opacity-70`
+- `resources/views/layouts/app.blade.php:838` — `Wechseln`
+- `resources/views/layouts/app.blade.php:843` — `px-4 py-3 border-b border-base-200`
+- `resources/views/layouts/app.blade.php:844` — `mb-2 text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:844` — `Sprache`
+- `resources/views/layouts/app.blade.php:845` — `inline`
+- `resources/views/layouts/app.blade.php:851` — `legacy`
+- `resources/views/layouts/app.blade.php:852` — `mode-switch-form`
+- `resources/views/layouts/app.blade.php:853` — `flex items-center justify-between gap-3 px-4 py-3 border-b border-base-200`
+- `resources/views/layouts/app.blade.php:855` — `hidden`
+- `resources/views/layouts/app.blade.php:855` — `origin`
 - `resources/views/layouts/app.blade.php:856` — `mode-switch-toggle`
-- `resources/views/layouts/app.blade.php:856` — `switch`
-- `resources/views/layouts/app.blade.php:857` — `true`
-- `resources/views/layouts/app.blade.php:857` — `false`
-- `resources/views/layouts/app.blade.php:858` — `Legacy-Modus`
-- `resources/views/layouts/app.blade.php:859` — `Modus wechseln`
-- `resources/views/layouts/app.blade.php:863` — `bg-primary`
-- `resources/views/layouts/app.blade.php:863` — `bg-base-300`
-- `resources/views/layouts/app.blade.php:866` — `translate-x-4`
-- `resources/views/layouts/app.blade.php:866` — `translate-x-0`
-- `resources/views/layouts/app.blade.php:875` — `org-switch-form`
-- `resources/views/layouts/app.blade.php:876` — `px-4 py-3`
-- `resources/views/layouts/app.blade.php:878` — `org-switch-select`
-- `resources/views/layouts/app.blade.php:879` — `block mb-1 text-xs uppercase tracking-wider opacity-60`
-- `resources/views/layouts/app.blade.php:880` — `Aktive Organisation`
-- `resources/views/layouts/app.blade.php:881` — `Aktive Organisation`
-- `resources/views/layouts/app.blade.php:884` — `org-switch-select`
-- `resources/views/layouts/app.blade.php:885` — `select select-bordered select-sm w-full`
-- `resources/views/layouts/app.blade.php:887` — `Aktive Organisation waehlen`
-- `resources/views/layouts/app.blade.php:888` — `Aktive Organisation waehlen`
-- `resources/views/layouts/app.blade.php:891` — `selected`
-- `resources/views/layouts/app.blade.php:900` — `dropdown dropdown-end`
-- `resources/views/layouts/app.blade.php:902` — `btn-primary`
-- `resources/views/layouts/app.blade.php:902` — `btn-ghost`
-- `resources/views/layouts/app.blade.php:904` — `Benutzermenü`
-- `resources/views/layouts/app.blade.php:906` — `header-username truncate`
-- `resources/views/layouts/app.blade.php:910` — `route`
-- `resources/views/layouts/app.blade.php:912` — `route`
-- `resources/views/layouts/app.blade.php:913` — `modal`
-- `resources/views/layouts/app.blade.php:914` — `active`
-- `resources/views/layouts/app.blade.php:915` — `label`
-- `resources/views/layouts/app.blade.php:920` — `logout`
-- `resources/views/layouts/app.blade.php:920` — `w-full`
-- `resources/views/layouts/app.blade.php:921` — `submit`
-- `resources/views/layouts/app.blade.php:921` — `flex w-full items-center gap-2 text-error`
-- `resources/views/layouts/app.blade.php:922` — `Abmelden`
-- `resources/views/layouts/app.blade.php:931` — `button`
-- `resources/views/layouts/app.blade.php:931` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:931` — `Farbschema wechseln`
-- `resources/views/layouts/app.blade.php:931` — `btn btn-sm btn-ghost btn-square`
-- `resources/views/layouts/app.blade.php:932` — `material-symbols-outlined text-base leading-none`
-- `resources/views/layouts/app.blade.php:935` — `login`
-- `resources/views/layouts/app.blade.php:935` — `primary`
-- `resources/views/layouts/app.blade.php:935` — `Anmelden`
-- `resources/views/layouts/app.blade.php:949` — `partials.global-search`
-- `resources/views/layouts/app.blade.php:956` — `app-sidebar`
-- `resources/views/layouts/app.blade.php:958` — `Hauptnavigation`
-- `resources/views/layouts/app.blade.php:960` — `sidebar-shell`
-- `resources/views/layouts/app.blade.php:963` — `sidebar-header px-3 py-4`
-- `resources/views/layouts/app.blade.php:969` — `button`
-- `resources/views/layouts/app.blade.php:971` — `focus-dialog`
-- `resources/views/layouts/app.blade.php:973` — `dialog`
-- `resources/views/layouts/app.blade.php:976` — `icon`
-- `resources/views/layouts/app.blade.php:976` — `apps'`
-- `resources/views/layouts/app.blade.php:978` — `min-w-0 flex-1 leading-tight`
-- `resources/views/layouts/app.blade.php:980` — `block truncate text-sm font-semibold text-base-content`
-- `resources/views/layouts/app.blade.php:980` — `label`
-- `resources/views/layouts/app.blade.php:985` — `dropdown dropdown-bottom dropdown-start w-full`
-- `resources/views/layouts/app.blade.php:986` — `button`
-- `resources/views/layouts/app.blade.php:987` — `sidebar-cta btn btn-sm btn-primary w-full gap-2`
-- `resources/views/layouts/app.blade.php:989` — `Neuen Eintrag erstellen`
-- `resources/views/layouts/app.blade.php:991` — `sidebar-cta-text flex-1 text-left`
-- `resources/views/layouts/app.blade.php:998` — `sidebar-cta-divider`
-- `resources/views/layouts/app.blade.php:998` — `divider my-1`
-- `resources/views/layouts/app.blade.php:1000` — `menu-title`
-- `resources/views/layouts/app.blade.php:1001` — `label`
-- `resources/views/layouts/app.blade.php:1003` — `items`
-- `resources/views/layouts/app.blade.php:1005` — `route`
-- `resources/views/layouts/app.blade.php:1007` — `flex items-center gap-3`
-- `resources/views/layouts/app.blade.php:1008` — `label`
-- `resources/views/layouts/app.blade.php:1009` — `icon`
-- `resources/views/layouts/app.blade.php:1009` — `add'`
-- `resources/views/layouts/app.blade.php:1010` — `truncate`
-- `resources/views/layouts/app.blade.php:1010` — `label`
-- `resources/views/layouts/app.blade.php:1019` — `sidebar-items flex flex-col gap-4 px-2 py-3`
-- `resources/views/layouts/app.blade.php:1020` — `flex flex-col gap-4`
-- `resources/views/layouts/app.blade.php:1023` — `groups`
-- `resources/views/layouts/app.blade.php:1025` — `items`
-- `resources/views/layouts/app.blade.php:1026` — `items`
-- `resources/views/layouts/app.blade.php:1028` — `matches`
-- `resources/views/layouts/app.blade.php:1028` — `route`
-- `resources/views/layouts/app.blade.php:1031` — `sidebar-section sidebar-section-collapsible`
-- `resources/views/layouts/app.blade.php:1034` — `sidebar-section-summary`
-- `resources/views/layouts/app.blade.php:1035` — `icon`
-- `resources/views/layouts/app.blade.php:1035` — `folder'`
-- `resources/views/layouts/app.blade.php:1035` — `sidebar-section-icon`
-- `resources/views/layouts/app.blade.php:1036` — `flex-1 truncate`
-- `resources/views/layouts/app.blade.php:1036` — `label`
-- `resources/views/layouts/app.blade.php:1037` — `sidebar-section-chevron`
-- `resources/views/layouts/app.blade.php:1040` — `flex flex-col gap-1 pt-1`
-- `resources/views/layouts/app.blade.php:1043` — `items`
-- `resources/views/layouts/app.blade.php:1044` — `matches`
-- `resources/views/layouts/app.blade.php:1044` — `route`
-- `resources/views/layouts/app.blade.php:1047` — `sidebar-subgroup sidebar-subgroup-collapsible`
-- `resources/views/layouts/app.blade.php:1051` — `icon`
-- `resources/views/layouts/app.blade.php:1051` — `label'`
-- `resources/views/layouts/app.blade.php:1052` — `truncate flex-1`
-- `resources/views/layouts/app.blade.php:1052` — `label`
-- `resources/views/layouts/app.blade.php:1053` — `sidebar-subgroup-chevron`
-- `resources/views/layouts/app.blade.php:1055` — `menu menu-sm w-full gap-0.5 p-0`
-- `resources/views/layouts/app.blade.php:1056` — `items`
-- `resources/views/layouts/app.blade.php:1057` — `matches`
-- `resources/views/layouts/app.blade.php:1057` — `route`
-- `resources/views/layouts/app.blade.php:1059` — `route`
-- `resources/views/layouts/app.blade.php:1060` — `modal`
-- `resources/views/layouts/app.blade.php:1061` — `menu-active`
-- `resources/views/layouts/app.blade.php:1062` — `label`
-- `resources/views/layouts/app.blade.php:1063` — `icon`
-- `resources/views/layouts/app.blade.php:1063` — `circle'`
-- `resources/views/layouts/app.blade.php:1064` — `truncate transition-opacity duration-150`
-- `resources/views/layouts/app.blade.php:1064` — `label`
-- `resources/views/layouts/app.blade.php:1073` — `menu menu-sm w-full gap-0.5 p-0 pt-1`
-- `resources/views/layouts/app.blade.php:1074` — `items`
-- `resources/views/layouts/app.blade.php:1075` — `matches`
-- `resources/views/layouts/app.blade.php:1075` — `route`
-- `resources/views/layouts/app.blade.php:1077` — `route`
-- `resources/views/layouts/app.blade.php:1078` — `modal`
-- `resources/views/layouts/app.blade.php:1079` — `menu-active`
-- `resources/views/layouts/app.blade.php:1080` — `label`
-- `resources/views/layouts/app.blade.php:1081` — `icon`
-- `resources/views/layouts/app.blade.php:1081` — `circle'`
-- `resources/views/layouts/app.blade.php:1082` — `truncate transition-opacity duration-150`
-- `resources/views/layouts/app.blade.php:1082` — `label`
-- `resources/views/layouts/app.blade.php:1093` — `sidebar-footer flex flex-col gap-2 px-3 py-4`
-- `resources/views/layouts/app.blade.php:1101` — `btn-active`
-- `resources/views/layouts/app.blade.php:1104` — `edit`
-- `resources/views/layouts/app.blade.php:1107` — `button`
-- `resources/views/layouts/app.blade.php:1108` — `app-sidebar-collapse`
-- `resources/views/layouts/app.blade.php:1109` — `btn btn-sm btn-primary w-full justify-center gap-2`
-- `resources/views/layouts/app.blade.php:1113` — `Einklappen`
-- `resources/views/layouts/app.blade.php:1118` — `app-sidebar-backdrop`
-- `resources/views/layouts/app.blade.php:1124` — `partials.focus-dialog`
-- `resources/views/layouts/app.blade.php:1131` — `app-header`
-- `resources/views/layouts/app.blade.php:1138` — `function`
-- `resources/views/layouts/app.blade.php:1141` — `resize`
-- `resources/views/layouts/app.blade.php:1143` — `load`
-- `resources/views/layouts/app.blade.php:1153` — `wd-has-scroll`
-- `resources/views/layouts/app.blade.php:1159` — `function`
-- `resources/views/layouts/app.blade.php:1168` — `loading`
-- `resources/views/layouts/app.blade.php:1169` — `DOMContentLoaded`
-- `resources/views/layouts/app.blade.php:1173` — `load`
-- `resources/views/layouts/app.blade.php:1174` — `resize`
-- `resources/views/layouts/app.blade.php:1182` — `dropdown-open`
-- `resources/views/layouts/app.blade.php:1184` — `aria-expanded', 'false`
-- `resources/views/layouts/app.blade.php:1193` — `click`
-- `resources/views/layouts/app.blade.php:1196` — `dropdown-content`
-- `resources/views/layouts/app.blade.php:1205` — `dropdown-open`
+- `resources/views/layouts/app.blade.php:857` — `text-sm font-medium cursor-pointer select-none`
+- `resources/views/layouts/app.blade.php:858` — `Modus wechseln`
+- `resources/views/layouts/app.blade.php:859` — `Legacy-Modus`
+- `resources/views/layouts/app.blade.php:861` — `submit`
+- `resources/views/layouts/app.blade.php:861` — `mode-switch-toggle`
+- `resources/views/layouts/app.blade.php:861` — `switch`
+- `resources/views/layouts/app.blade.php:862` — `true`
+- `resources/views/layouts/app.blade.php:862` — `false`
+- `resources/views/layouts/app.blade.php:863` — `Legacy-Modus`
+- `resources/views/layouts/app.blade.php:864` — `Modus wechseln`
+- `resources/views/layouts/app.blade.php:868` — `bg-primary`
+- `resources/views/layouts/app.blade.php:868` — `bg-base-300`
+- `resources/views/layouts/app.blade.php:871` — `translate-x-4`
+- `resources/views/layouts/app.blade.php:871` — `translate-x-0`
+- `resources/views/layouts/app.blade.php:880` — `org-switch-form`
+- `resources/views/layouts/app.blade.php:881` — `px-4 py-3`
+- `resources/views/layouts/app.blade.php:883` — `org-switch-select`
+- `resources/views/layouts/app.blade.php:884` — `block mb-1 text-xs uppercase tracking-wider opacity-60`
+- `resources/views/layouts/app.blade.php:885` — `Aktive Organisation`
+- `resources/views/layouts/app.blade.php:886` — `Aktive Organisation`
+- `resources/views/layouts/app.blade.php:889` — `org-switch-select`
+- `resources/views/layouts/app.blade.php:890` — `select select-bordered select-sm w-full`
+- `resources/views/layouts/app.blade.php:892` — `Aktive Organisation waehlen`
+- `resources/views/layouts/app.blade.php:893` — `Aktive Organisation waehlen`
+- `resources/views/layouts/app.blade.php:896` — `selected`
+- `resources/views/layouts/app.blade.php:905` — `dropdown dropdown-end`
+- `resources/views/layouts/app.blade.php:907` — `btn-primary`
+- `resources/views/layouts/app.blade.php:907` — `btn-ghost`
+- `resources/views/layouts/app.blade.php:909` — `Benutzermenü`
+- `resources/views/layouts/app.blade.php:911` — `header-username truncate`
+- `resources/views/layouts/app.blade.php:915` — `children`
+- `resources/views/layouts/app.blade.php:916` — `children`
+- `resources/views/layouts/app.blade.php:916` — `route`
+- `resources/views/layouts/app.blade.php:919` — `active`
+- `resources/views/layouts/app.blade.php:919` — `label`
+- `resources/views/layouts/app.blade.php:921` — `children`
+- `resources/views/layouts/app.blade.php:923` — `route`
+- `resources/views/layouts/app.blade.php:924` — `modal`
+- `resources/views/layouts/app.blade.php:925` — `route`
+- `resources/views/layouts/app.blade.php:925` — `active`
+- `resources/views/layouts/app.blade.php:926` — `label`
+- `resources/views/layouts/app.blade.php:934` — `route`
+- `resources/views/layouts/app.blade.php:936` — `route`
+- `resources/views/layouts/app.blade.php:937` — `modal`
+- `resources/views/layouts/app.blade.php:938` — `active`
+- `resources/views/layouts/app.blade.php:939` — `label`
+- `resources/views/layouts/app.blade.php:945` — `logout`
+- `resources/views/layouts/app.blade.php:945` — `w-full`
+- `resources/views/layouts/app.blade.php:946` — `submit`
+- `resources/views/layouts/app.blade.php:946` — `flex w-full items-center gap-2 text-error`
+- `resources/views/layouts/app.blade.php:947` — `Abmelden`
+- `resources/views/layouts/app.blade.php:956` — `button`
+- `resources/views/layouts/app.blade.php:956` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:956` — `Farbschema wechseln`
+- `resources/views/layouts/app.blade.php:956` — `btn btn-sm btn-ghost btn-square`
+- `resources/views/layouts/app.blade.php:957` — `material-symbols-outlined text-base leading-none`
+- `resources/views/layouts/app.blade.php:960` — `login`
+- `resources/views/layouts/app.blade.php:960` — `primary`
+- `resources/views/layouts/app.blade.php:960` — `Anmelden`
+- `resources/views/layouts/app.blade.php:974` — `partials.global-search`
+- `resources/views/layouts/app.blade.php:981` — `app-sidebar`
+- `resources/views/layouts/app.blade.php:983` — `Hauptnavigation`
+- `resources/views/layouts/app.blade.php:985` — `sidebar-shell`
+- `resources/views/layouts/app.blade.php:988` — `sidebar-header px-3 py-4`
+- `resources/views/layouts/app.blade.php:994` — `button`
+- `resources/views/layouts/app.blade.php:996` — `focus-dialog`
+- `resources/views/layouts/app.blade.php:998` — `dialog`
+- `resources/views/layouts/app.blade.php:1001` — `icon`
+- `resources/views/layouts/app.blade.php:1001` — `apps'`
+- `resources/views/layouts/app.blade.php:1003` — `min-w-0 flex-1 leading-tight`
+- `resources/views/layouts/app.blade.php:1005` — `block truncate text-sm font-semibold text-base-content`
+- `resources/views/layouts/app.blade.php:1005` — `label`
+- `resources/views/layouts/app.blade.php:1010` — `dropdown dropdown-bottom dropdown-start w-full`
+- `resources/views/layouts/app.blade.php:1011` — `button`
+- `resources/views/layouts/app.blade.php:1012` — `sidebar-cta btn btn-sm btn-primary w-full gap-2`
+- `resources/views/layouts/app.blade.php:1014` — `Neuen Eintrag erstellen`
+- `resources/views/layouts/app.blade.php:1016` — `sidebar-cta-text flex-1 text-left`
+- `resources/views/layouts/app.blade.php:1023` — `sidebar-cta-divider`
+- `resources/views/layouts/app.blade.php:1023` — `divider my-1`
+- `resources/views/layouts/app.blade.php:1025` — `menu-title`
+- `resources/views/layouts/app.blade.php:1026` — `label`
+- `resources/views/layouts/app.blade.php:1028` — `items`
+- `resources/views/layouts/app.blade.php:1030` — `route`
+- `resources/views/layouts/app.blade.php:1032` — `flex items-center gap-3`
+- `resources/views/layouts/app.blade.php:1033` — `label`
+- `resources/views/layouts/app.blade.php:1034` — `icon`
+- `resources/views/layouts/app.blade.php:1034` — `add'`
+- `resources/views/layouts/app.blade.php:1035` — `truncate`
+- `resources/views/layouts/app.blade.php:1035` — `label`
+- `resources/views/layouts/app.blade.php:1044` — `sidebar-items flex flex-col gap-4 px-2 py-3`
+- `resources/views/layouts/app.blade.php:1045` — `flex flex-col gap-4`
+- `resources/views/layouts/app.blade.php:1048` — `groups`
+- `resources/views/layouts/app.blade.php:1050` — `items`
+- `resources/views/layouts/app.blade.php:1051` — `items`
+- `resources/views/layouts/app.blade.php:1053` — `matches`
+- `resources/views/layouts/app.blade.php:1053` — `route`
+- `resources/views/layouts/app.blade.php:1056` — `sidebar-section sidebar-section-collapsible`
+- `resources/views/layouts/app.blade.php:1059` — `sidebar-section-summary`
+- `resources/views/layouts/app.blade.php:1060` — `icon`
+- `resources/views/layouts/app.blade.php:1060` — `folder'`
+- `resources/views/layouts/app.blade.php:1060` — `sidebar-section-icon`
+- `resources/views/layouts/app.blade.php:1061` — `flex-1 truncate`
+- `resources/views/layouts/app.blade.php:1061` — `label`
+- `resources/views/layouts/app.blade.php:1062` — `sidebar-section-chevron`
+- `resources/views/layouts/app.blade.php:1065` — `flex flex-col gap-1 pt-1`
+- `resources/views/layouts/app.blade.php:1068` — `items`
+- `resources/views/layouts/app.blade.php:1069` — `matches`
+- `resources/views/layouts/app.blade.php:1069` — `route`
+- `resources/views/layouts/app.blade.php:1072` — `sidebar-subgroup sidebar-subgroup-collapsible`
+- `resources/views/layouts/app.blade.php:1076` — `icon`
+- `resources/views/layouts/app.blade.php:1076` — `label'`
+- `resources/views/layouts/app.blade.php:1077` — `truncate flex-1`
+- `resources/views/layouts/app.blade.php:1077` — `label`
+- `resources/views/layouts/app.blade.php:1078` — `sidebar-subgroup-chevron`
+- `resources/views/layouts/app.blade.php:1080` — `menu menu-sm w-full gap-0.5 p-0`
+- `resources/views/layouts/app.blade.php:1081` — `items`
+- `resources/views/layouts/app.blade.php:1082` — `matches`
+- `resources/views/layouts/app.blade.php:1082` — `route`
+- `resources/views/layouts/app.blade.php:1084` — `route`
+- `resources/views/layouts/app.blade.php:1085` — `modal`
+- `resources/views/layouts/app.blade.php:1086` — `menu-active`
+- `resources/views/layouts/app.blade.php:1087` — `label`
+- `resources/views/layouts/app.blade.php:1088` — `icon`
+- `resources/views/layouts/app.blade.php:1088` — `circle'`
+- `resources/views/layouts/app.blade.php:1089` — `truncate transition-opacity duration-150`
+- `resources/views/layouts/app.blade.php:1089` — `label`
+- `resources/views/layouts/app.blade.php:1098` — `menu menu-sm w-full gap-0.5 p-0 pt-1`
+- `resources/views/layouts/app.blade.php:1099` — `items`
+- `resources/views/layouts/app.blade.php:1100` — `matches`
+- `resources/views/layouts/app.blade.php:1100` — `route`
+- `resources/views/layouts/app.blade.php:1102` — `route`
+- `resources/views/layouts/app.blade.php:1103` — `modal`
+- `resources/views/layouts/app.blade.php:1104` — `menu-active`
+- `resources/views/layouts/app.blade.php:1105` — `label`
+- `resources/views/layouts/app.blade.php:1106` — `icon`
+- `resources/views/layouts/app.blade.php:1106` — `circle'`
+- `resources/views/layouts/app.blade.php:1107` — `truncate transition-opacity duration-150`
+- `resources/views/layouts/app.blade.php:1107` — `label`
+- `resources/views/layouts/app.blade.php:1118` — `sidebar-footer flex flex-col gap-2 px-3 py-4`
+- `resources/views/layouts/app.blade.php:1126` — `btn-active`
+- `resources/views/layouts/app.blade.php:1129` — `edit`
+- `resources/views/layouts/app.blade.php:1132` — `button`
+- `resources/views/layouts/app.blade.php:1133` — `app-sidebar-collapse`
+- `resources/views/layouts/app.blade.php:1134` — `btn btn-sm btn-primary w-full justify-center gap-2`
+- `resources/views/layouts/app.blade.php:1138` — `Einklappen`
+- `resources/views/layouts/app.blade.php:1143` — `app-sidebar-backdrop`
+- `resources/views/layouts/app.blade.php:1149` — `partials.focus-dialog`
+- `resources/views/layouts/app.blade.php:1156` — `app-header`
+- `resources/views/layouts/app.blade.php:1163` — `function`
+- `resources/views/layouts/app.blade.php:1166` — `resize`
+- `resources/views/layouts/app.blade.php:1168` — `load`
+- `resources/views/layouts/app.blade.php:1178` — `wd-has-scroll`
+- `resources/views/layouts/app.blade.php:1184` — `function`
+- `resources/views/layouts/app.blade.php:1193` — `loading`
+- `resources/views/layouts/app.blade.php:1194` — `DOMContentLoaded`
+- `resources/views/layouts/app.blade.php:1198` — `load`
+- `resources/views/layouts/app.blade.php:1199` — `resize`
 - `resources/views/layouts/app.blade.php:1207` — `dropdown-open`
-- `resources/views/layouts/app.blade.php:1208` — `aria-expanded', open ? 'false`
-- `resources/views/layouts/app.blade.php:1208` — `true`
-- `resources/views/layouts/app.blade.php:1217` — `keydown`
-- `resources/views/layouts/app.blade.php:1218` — `Escape`
+- `resources/views/layouts/app.blade.php:1209` — `aria-expanded', 'false`
+- `resources/views/layouts/app.blade.php:1218` — `click`
+- `resources/views/layouts/app.blade.php:1221` — `dropdown-content`
 - `resources/views/layouts/app.blade.php:1230` — `dropdown-open`
-- `resources/views/layouts/app.blade.php:1235` — `pageshow`
-- `resources/views/layouts/app.blade.php:1240` — `mode-toast`
-- `resources/views/layouts/app.blade.php:1242` — `polite`
-- `resources/views/layouts/app.blade.php:1244` — `text-base`
-- `resources/views/layouts/app.blade.php:1244` — `legacy' ? `
-- `resources/views/layouts/app.blade.php:1245` — `font-medium`
-- `resources/views/layouts/app.blade.php:1250` — `mode-toast`
-- `resources/views/layouts/app.blade.php:1262` — `max-w-none`
-- `resources/views/layouts/app.blade.php:1262` — `max-w-screen-2xl`
-- `resources/views/layouts/app.blade.php:1270` — `wrapper-height-class', 'wd-page-fill`
-- `resources/views/layouts/app.blade.php:1271` — `success`
-- `resources/views/layouts/app.blade.php:1272` — `alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
-- `resources/views/layouts/app.blade.php:1273` — `success`
-- `resources/views/layouts/app.blade.php:1276` — `error`
-- `resources/views/layouts/app.blade.php:1277` — `alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
-- `resources/views/layouts/app.blade.php:1278` — `error`
-- `resources/views/layouts/app.blade.php:1281` — `info`
-- `resources/views/layouts/app.blade.php:1282` — `alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
-- `resources/views/layouts/app.blade.php:1283` — `info`
-- `resources/views/layouts/app.blade.php:1294` — `currentOrganization`
-- `resources/views/layouts/app.blade.php:1297` — `currentOrganization`
-- `resources/views/layouts/app.blade.php:1306` — `label`
-- `resources/views/layouts/app.blade.php:1307` — `until`
-- `resources/views/layouts/app.blade.php:1315` — `warning`
-- `resources/views/layouts/app.blade.php:1315` — `text-base`
-- `resources/views/layouts/app.blade.php:1316` — `font-semibold`
-- `resources/views/layouts/app.blade.php:1316` — `Geplante Datenlöschung nach Downgrade`
-- `resources/views/layouts/app.blade.php:1317` — `badge badge-warning badge-sm`
-- `resources/views/layouts/app.blade.php:1318` — `ml-auto text-xs font-normal opacity-70`
-- `resources/views/layouts/app.blade.php:1318` — `Stichtag`
-- `resources/views/layouts/app.blade.php:1318` — `until`
-- `resources/views/layouts/app.blade.php:1319` — `grace-chevron text-base transition-transform`
-- `resources/views/layouts/app.blade.php:1321` — `mt-2 pl-7`
-- `resources/views/layouts/app.blade.php:1322` — `text-xs opacity-80`
-- `resources/views/layouts/app.blade.php:1322` — `Der Zugriff auf diese Module ist bereits beendet. Ein Upgrade vor dem Stichtag stellt Zugriff und Daten wieder her.`
-- `resources/views/layouts/app.blade.php:1323` — `mt-1 list-disc pl-5`
-- `resources/views/layouts/app.blade.php:1325` — `label`
-- `resources/views/layouts/app.blade.php:1325` — `Daten werden entfernt am`
-- `resources/views/layouts/app.blade.php:1325` — `until`
-- `resources/views/layouts/app.blade.php:1335` — `page-header`
-- `resources/views/layouts/app.blade.php:1338` — `page-header`
-- `resources/views/layouts/app.blade.php:1341` — `main`
-- `resources/views/layouts/app.blade.php:1342` — `main-content`
-- `resources/views/layouts/app.blade.php:1342` — `main-class', '`
-- `resources/views/layouts/app.blade.php:1343` — `content`
-- `resources/views/layouts/app.blade.php:1347` — `page-footer`
-- `resources/views/layouts/app.blade.php:1352` — `page-footer`
-- `resources/views/layouts/app.blade.php:1355` — `app-footer`
-- `resources/views/layouts/app.blade.php:1355` — `fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs`
-- `resources/views/layouts/app.blade.php:1360` — `max-w-full`
-- `resources/views/layouts/app.blade.php:1362` — `Version`
-- `resources/views/layouts/app.blade.php:1362` — `app.version', '0.1.0-dev`
-- `resources/views/layouts/app.blade.php:1375` — `app-header`
-- `resources/views/layouts/app.blade.php:1376` — `app-footer`
-- `resources/views/layouts/app.blade.php:1380` — `wd-header-hidden`
-- `resources/views/layouts/app.blade.php:1389` — `resize`
-- `resources/views/layouts/app.blade.php:1390` — `orientationchange`
-- `resources/views/layouts/app.blade.php:1391` — `load`
-- `resources/views/layouts/app.blade.php:1395` — `action-confirm-dialog`
-- `resources/views/layouts/app.blade.php:1396` — `false`
-- `resources/views/layouts/app.blade.php:1398` — `warning`
-- `resources/views/layouts/app.blade.php:1399` — `help`
-- `resources/views/layouts/app.blade.php:1400` — `Aktion bestätigen`
-- `resources/views/layouts/app.blade.php:1401` — `action-confirm-header`
-- `resources/views/layouts/app.blade.php:1402` — `action-confirm-icon-wrap`
-- `resources/views/layouts/app.blade.php:1403` — `action-confirm-icon`
-- `resources/views/layouts/app.blade.php:1404` — `action-confirm-title`
-- `resources/views/layouts/app.blade.php:1405` — `action-confirm-message`
-- `resources/views/layouts/app.blade.php:1405` — `Möchtest du diese Aktion wirklich ausführen?`
-- `resources/views/layouts/app.blade.php:1408` — `button`
-- `resources/views/layouts/app.blade.php:1408` — `ghost`
-- `resources/views/layouts/app.blade.php:1408` — `gap-2`
-- `resources/views/layouts/app.blade.php:1408` — `close`
-- `resources/views/layouts/app.blade.php:1408` — `Abbrechen`
-- `resources/views/layouts/app.blade.php:1409` — `action-confirm-submit`
-- `resources/views/layouts/app.blade.php:1409` — `button`
-- `resources/views/layouts/app.blade.php:1409` — `error`
-- `resources/views/layouts/app.blade.php:1409` — `gap-2`
-- `resources/views/layouts/app.blade.php:1409` — `check`
-- `resources/views/layouts/app.blade.php:1409` — `Ausführen`
-- `resources/views/layouts/app.blade.php:1413` — `action-notify-dialog`
-- `resources/views/layouts/app.blade.php:1414` — `false`
-- `resources/views/layouts/app.blade.php:1416` — `info`
-- `resources/views/layouts/app.blade.php:1417` — `info`
-- `resources/views/layouts/app.blade.php:1418` — `Hinweis`
-- `resources/views/layouts/app.blade.php:1419` — `action-notify-header`
-- `resources/views/layouts/app.blade.php:1420` — `action-notify-icon-wrap`
-- `resources/views/layouts/app.blade.php:1421` — `action-notify-icon`
-- `resources/views/layouts/app.blade.php:1422` — `action-notify-title`
-- `resources/views/layouts/app.blade.php:1423` — `action-notify-message`
-- `resources/views/layouts/app.blade.php:1426` — `action-notify-ok`
-- `resources/views/layouts/app.blade.php:1426` — `button`
-- `resources/views/layouts/app.blade.php:1426` — `primary`
-- `resources/views/layouts/app.blade.php:1426` — `gap-2`
-- `resources/views/layouts/app.blade.php:1426` — `check`
-- `resources/views/layouts/app.blade.php:1436` — `Aktion bestätigen`
-- `resources/views/layouts/app.blade.php:1437` — `Möchtest du diese Aktion wirklich ausführen?`
-- `resources/views/layouts/app.blade.php:1438` — `Ausführen`
-- `resources/views/layouts/app.blade.php:1439` — `Hinweis`
-- `resources/views/layouts/app.blade.php:1440` — `Erfolg`
-- `resources/views/layouts/app.blade.php:1441` — `Achtung`
-- `resources/views/layouts/app.blade.php:1442` — `Fehler`
-- `resources/views/layouts/app.blade.php:1446` — `scripts`
-- `resources/views/layouts/app.blade.php:1454` — `chat-unread-link`
-- `resources/views/layouts/app.blade.php:1455` — `chat-unread-badge`
-- `resources/views/layouts/app.blade.php:1459` — `X-Requested-With`
-- `resources/views/layouts/app.blade.php:1459` — `XMLHttpRequest`
-- `resources/views/layouts/app.blade.php:1465` — `hidden`
-- `resources/views/layouts/app.blade.php:1470` — `visibilitychange`
+- `resources/views/layouts/app.blade.php:1232` — `dropdown-open`
+- `resources/views/layouts/app.blade.php:1233` — `aria-expanded', open ? 'false`
+- `resources/views/layouts/app.blade.php:1233` — `true`
+- `resources/views/layouts/app.blade.php:1242` — `keydown`
+- `resources/views/layouts/app.blade.php:1243` — `Escape`
+- `resources/views/layouts/app.blade.php:1255` — `dropdown-open`
+- `resources/views/layouts/app.blade.php:1260` — `pageshow`
+- `resources/views/layouts/app.blade.php:1265` — `mode-toast`
+- `resources/views/layouts/app.blade.php:1267` — `polite`
+- `resources/views/layouts/app.blade.php:1269` — `text-base`
+- `resources/views/layouts/app.blade.php:1269` — `legacy' ? `
+- `resources/views/layouts/app.blade.php:1270` — `font-medium`
+- `resources/views/layouts/app.blade.php:1275` — `mode-toast`
+- `resources/views/layouts/app.blade.php:1287` — `max-w-none`
+- `resources/views/layouts/app.blade.php:1287` — `max-w-screen-2xl`
+- `resources/views/layouts/app.blade.php:1295` — `wrapper-height-class', 'wd-page-fill`
+- `resources/views/layouts/app.blade.php:1296` — `success`
+- `resources/views/layouts/app.blade.php:1297` — `alert alert-success mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:1298` — `success`
+- `resources/views/layouts/app.blade.php:1301` — `error`
+- `resources/views/layouts/app.blade.php:1302` — `alert alert-error mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:1303` — `error`
+- `resources/views/layouts/app.blade.php:1306` — `info`
+- `resources/views/layouts/app.blade.php:1307` — `alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs`
+- `resources/views/layouts/app.blade.php:1308` — `info`
+- `resources/views/layouts/app.blade.php:1319` — `currentOrganization`
+- `resources/views/layouts/app.blade.php:1322` — `currentOrganization`
+- `resources/views/layouts/app.blade.php:1331` — `label`
+- `resources/views/layouts/app.blade.php:1332` — `until`
+- `resources/views/layouts/app.blade.php:1340` — `warning`
+- `resources/views/layouts/app.blade.php:1340` — `text-base`
+- `resources/views/layouts/app.blade.php:1341` — `font-semibold`
+- `resources/views/layouts/app.blade.php:1341` — `Geplante Datenlöschung nach Downgrade`
+- `resources/views/layouts/app.blade.php:1342` — `badge badge-warning badge-sm`
+- `resources/views/layouts/app.blade.php:1343` — `ml-auto text-xs font-normal opacity-70`
+- `resources/views/layouts/app.blade.php:1343` — `Stichtag`
+- `resources/views/layouts/app.blade.php:1343` — `until`
+- `resources/views/layouts/app.blade.php:1344` — `grace-chevron text-base transition-transform`
+- `resources/views/layouts/app.blade.php:1346` — `mt-2 pl-7`
+- `resources/views/layouts/app.blade.php:1347` — `text-xs opacity-80`
+- `resources/views/layouts/app.blade.php:1347` — `Der Zugriff auf diese Module ist bereits beendet. Ein Upgrade vor dem Stichtag stellt Zugriff und Daten wieder her.`
+- `resources/views/layouts/app.blade.php:1348` — `mt-1 list-disc pl-5`
+- `resources/views/layouts/app.blade.php:1350` — `label`
+- `resources/views/layouts/app.blade.php:1350` — `Daten werden entfernt am`
+- `resources/views/layouts/app.blade.php:1350` — `until`
+- `resources/views/layouts/app.blade.php:1360` — `page-header`
+- `resources/views/layouts/app.blade.php:1363` — `page-header`
+- `resources/views/layouts/app.blade.php:1366` — `main`
+- `resources/views/layouts/app.blade.php:1367` — `main-content`
+- `resources/views/layouts/app.blade.php:1367` — `main-class', '`
+- `resources/views/layouts/app.blade.php:1368` — `content`
+- `resources/views/layouts/app.blade.php:1372` — `page-footer`
+- `resources/views/layouts/app.blade.php:1377` — `page-footer`
+- `resources/views/layouts/app.blade.php:1380` — `app-footer`
+- `resources/views/layouts/app.blade.php:1380` — `fixed inset-x-0 bottom-0 z-50 h-12 bg-base-100 border-t border-base-300 shadow-xs`
+- `resources/views/layouts/app.blade.php:1385` — `max-w-full`
+- `resources/views/layouts/app.blade.php:1387` — `Version`
+- `resources/views/layouts/app.blade.php:1387` — `app.version', '0.1.0-dev`
+- `resources/views/layouts/app.blade.php:1400` — `app-header`
+- `resources/views/layouts/app.blade.php:1401` — `app-footer`
+- `resources/views/layouts/app.blade.php:1405` — `wd-header-hidden`
+- `resources/views/layouts/app.blade.php:1414` — `resize`
+- `resources/views/layouts/app.blade.php:1415` — `orientationchange`
+- `resources/views/layouts/app.blade.php:1416` — `load`
+- `resources/views/layouts/app.blade.php:1420` — `action-confirm-dialog`
+- `resources/views/layouts/app.blade.php:1421` — `false`
+- `resources/views/layouts/app.blade.php:1423` — `warning`
+- `resources/views/layouts/app.blade.php:1424` — `help`
+- `resources/views/layouts/app.blade.php:1425` — `Aktion bestätigen`
+- `resources/views/layouts/app.blade.php:1426` — `action-confirm-header`
+- `resources/views/layouts/app.blade.php:1427` — `action-confirm-icon-wrap`
+- `resources/views/layouts/app.blade.php:1428` — `action-confirm-icon`
+- `resources/views/layouts/app.blade.php:1429` — `action-confirm-title`
+- `resources/views/layouts/app.blade.php:1430` — `action-confirm-message`
+- `resources/views/layouts/app.blade.php:1430` — `Möchtest du diese Aktion wirklich ausführen?`
+- `resources/views/layouts/app.blade.php:1433` — `button`
+- `resources/views/layouts/app.blade.php:1433` — `ghost`
+- `resources/views/layouts/app.blade.php:1433` — `gap-2`
+- `resources/views/layouts/app.blade.php:1433` — `close`
+- `resources/views/layouts/app.blade.php:1433` — `Abbrechen`
+- `resources/views/layouts/app.blade.php:1434` — `action-confirm-submit`
+- `resources/views/layouts/app.blade.php:1434` — `button`
+- `resources/views/layouts/app.blade.php:1434` — `error`
+- `resources/views/layouts/app.blade.php:1434` — `gap-2`
+- `resources/views/layouts/app.blade.php:1434` — `check`
+- `resources/views/layouts/app.blade.php:1434` — `Ausführen`
+- `resources/views/layouts/app.blade.php:1438` — `action-notify-dialog`
+- `resources/views/layouts/app.blade.php:1439` — `false`
+- `resources/views/layouts/app.blade.php:1441` — `info`
+- `resources/views/layouts/app.blade.php:1442` — `info`
+- `resources/views/layouts/app.blade.php:1443` — `Hinweis`
+- `resources/views/layouts/app.blade.php:1444` — `action-notify-header`
+- `resources/views/layouts/app.blade.php:1445` — `action-notify-icon-wrap`
+- `resources/views/layouts/app.blade.php:1446` — `action-notify-icon`
+- `resources/views/layouts/app.blade.php:1447` — `action-notify-title`
+- `resources/views/layouts/app.blade.php:1448` — `action-notify-message`
+- `resources/views/layouts/app.blade.php:1451` — `action-notify-ok`
+- `resources/views/layouts/app.blade.php:1451` — `button`
+- `resources/views/layouts/app.blade.php:1451` — `primary`
+- `resources/views/layouts/app.blade.php:1451` — `gap-2`
+- `resources/views/layouts/app.blade.php:1451` — `check`
+- `resources/views/layouts/app.blade.php:1461` — `Aktion bestätigen`
+- `resources/views/layouts/app.blade.php:1462` — `Möchtest du diese Aktion wirklich ausführen?`
+- `resources/views/layouts/app.blade.php:1463` — `Ausführen`
+- `resources/views/layouts/app.blade.php:1464` — `Hinweis`
+- `resources/views/layouts/app.blade.php:1465` — `Erfolg`
+- `resources/views/layouts/app.blade.php:1466` — `Achtung`
+- `resources/views/layouts/app.blade.php:1467` — `Fehler`
+- `resources/views/layouts/app.blade.php:1471` — `scripts`
+- `resources/views/layouts/app.blade.php:1479` — `chat-unread-link`
+- `resources/views/layouts/app.blade.php:1480` — `chat-unread-badge`
+- `resources/views/layouts/app.blade.php:1484` — `X-Requested-With`
+- `resources/views/layouts/app.blade.php:1484` — `XMLHttpRequest`
+- `resources/views/layouts/app.blade.php:1490` — `hidden`
+- `resources/views/layouts/app.blade.php:1495` — `visibilitychange`
 - `resources/views/timesheets/_signature_pad.blade.php:15` — `scripts`
 - `resources/views/timesheets/_signature_pad.blade.php:19` — `signaturePad`
 - `resources/views/timesheets/_signature_pad.blade.php:23` — `flex w-full flex-col gap-3`
@@ -16928,6 +17450,34 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/components/onboarding-widget.blade.php:66` — `title`
 - `resources/views/components/onboarding-widget.blade.php:67` — `required`
 - `resources/views/components/onboarding-widget.blade.php:68` — `badge badge-xs badge-primary badge-outline`
+- `resources/views/components/ai-suggestion.blade.php:31` — `original`
+- `resources/views/components/ai-suggestion.blade.php:32` — `suggestion`
+- `resources/views/components/ai-suggestion.blade.php:33` — `provider`
+- `resources/views/components/ai-suggestion.blade.php:34` — `fallback`
+- `resources/views/components/ai-suggestion.blade.php:35` — `cached`
+- `resources/views/components/ai-suggestion.blade.php:36` — `acceptAction`
+- `resources/views/components/ai-suggestion.blade.php:37` — `rejectAction`
+- `resources/views/components/ai-suggestion.blade.php:38` — `fieldName`
+- `resources/views/components/ai-suggestion.blade.php:38` — `suggestion',
+    'editable`
+- `resources/views/components/ai-suggestion.blade.php:42` — `ai-suggestion-`
+- `resources/views/components/ai-suggestion.blade.php:46` — `flex flex-wrap items-center gap-2 text-xs`
+- `resources/views/components/ai-suggestion.blade.php:47` — `text-info`
+- `resources/views/components/ai-suggestion.blade.php:48` — `font-semibold`
+- `resources/views/components/ai-suggestion.blade.php:50` — `badge badge-outline badge-xs font-mono`
+- `resources/views/components/ai-suggestion.blade.php:53` — `badge badge-warning badge-xs`
+- `resources/views/components/ai-suggestion.blade.php:56` — `badge badge-ghost badge-xs`
+- `resources/views/components/ai-suggestion.blade.php:71` — `textarea textarea-bordered w-full text-sm`
+- `resources/views/components/ai-suggestion.blade.php:73` — `rounded bg-base-100 border border-base-200 p-2 text-sm whitespace-pre-wrap`
+- `resources/views/components/ai-suggestion.blade.php:79` — `flex flex-wrap items-center justify-end gap-2`
+- `resources/views/components/ai-suggestion.blade.php:81` — `inline`
+- `resources/views/components/ai-suggestion.blade.php:83` — `submit`
+- `resources/views/components/ai-suggestion.blade.php:83` — `ghost`
+- `resources/views/components/ai-suggestion.blade.php:86` — `inline`
+- `resources/views/components/ai-suggestion.blade.php:89` — `hidden`
+- `resources/views/components/ai-suggestion.blade.php:91` — `submit`
+- `resources/views/components/ai-suggestion.blade.php:91` — `primary`
+- `resources/views/components/ai-suggestion.blade.php:91` — `check`
 - `resources/views/components/page-shell.blade.php:3` — `overflow`
 - `resources/views/components/page-shell.blade.php:3` — `auto',
     'height`
@@ -18472,56 +19022,63 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/profile/api-tokens.blade.php:13` — `nav-title`
 - `resources/views/profile/api-tokens.blade.php:13` — `API-Tokens`
 - `resources/views/profile/api-tokens.blade.php:15` — `content`
-- `resources/views/profile/api-tokens.blade.php:20` — `font-semibold`
-- `resources/views/profile/api-tokens.blade.php:20` — `Neuer Token erstellt`
-- `resources/views/profile/api-tokens.blade.php:21` — `text-sm`
-- `resources/views/profile/api-tokens.blade.php:22` — `mt-2 block break-all rounded bg-base-200 p-2 text-sm`
-- `resources/views/profile/api-tokens.blade.php:26` — `profile.api-tokens.store`
-- `resources/views/profile/api-tokens.blade.php:26` — `card border border-base-300 bg-base-100 p-4`
-- `resources/views/profile/api-tokens.blade.php:28` — `form-control`
-- `resources/views/profile/api-tokens.blade.php:29` — `label`
-- `resources/views/profile/api-tokens.blade.php:29` — `name`
-- `resources/views/profile/api-tokens.blade.php:29` — `Token-Name`
-- `resources/views/profile/api-tokens.blade.php:30` — `name`
-- `resources/views/profile/api-tokens.blade.php:30` — `name`
-- `resources/views/profile/api-tokens.blade.php:30` — `text`
-- `resources/views/profile/api-tokens.blade.php:30` — `input input-bordered`
-- `resources/views/profile/api-tokens.blade.php:32` — `name`
-- `resources/views/profile/api-tokens.blade.php:32` — `text-error text-sm`
-- `resources/views/profile/api-tokens.blade.php:35` — `form-control mt-3`
-- `resources/views/profile/api-tokens.blade.php:36` — `label-text mb-1`
-- `resources/views/profile/api-tokens.blade.php:39` — `flex items-center gap-2 text-sm`
-- `resources/views/profile/api-tokens.blade.php:40` — `checkbox`
-- `resources/views/profile/api-tokens.blade.php:40` — `checkbox checkbox-sm`
-- `resources/views/profile/api-tokens.blade.php:41` — `text-xs opacity-60`
-- `resources/views/profile/api-tokens.blade.php:47` — `card-actions justify-end mt-3`
-- `resources/views/profile/api-tokens.blade.php:48` — `primary`
-- `resources/views/profile/api-tokens.blade.php:48` — `submit`
-- `resources/views/profile/api-tokens.blade.php:48` — `Erstellen`
-- `resources/views/profile/api-tokens.blade.php:52` — `client`
-- `resources/views/profile/api-tokens.blade.php:55` — `string`
-- `resources/views/profile/api-tokens.blade.php:55` — `Name`
-- `resources/views/profile/api-tokens.blade.php:56` — `string`
-- `resources/views/profile/api-tokens.blade.php:56` — `Fähigkeiten`
-- `resources/views/profile/api-tokens.blade.php:57` — `date`
-- `resources/views/profile/api-tokens.blade.php:57` — `Erstellt`
-- `resources/views/profile/api-tokens.blade.php:58` — `date`
-- `resources/views/profile/api-tokens.blade.php:58` — `Zuletzt benutzt`
-- `resources/views/profile/api-tokens.blade.php:66` — `text-xs`
-- `resources/views/profile/api-tokens.blade.php:68` — `badge badge-warning badge-sm`
-- `resources/views/profile/api-tokens.blade.php:68` — `Für eingeschränkten Zugriff neu ausstellen.`
-- `resources/views/profile/api-tokens.blade.php:68` — `Voller Zugriff`
-- `resources/views/profile/api-tokens.blade.php:75` — `text-right`
-- `resources/views/profile/api-tokens.blade.php:76` — `profile.api-tokens.destroy`
-- `resources/views/profile/api-tokens.blade.php:77` — `Token wirklich widerrufen?`
-- `resources/views/profile/api-tokens.blade.php:78` — `Widerrufen`
-- `resources/views/profile/api-tokens.blade.php:79` — `block`
-- `resources/views/profile/api-tokens.blade.php:79` — `error`
-- `resources/views/profile/api-tokens.blade.php:79` — `submit`
-- `resources/views/profile/api-tokens.blade.php:79` — `Widerrufen`
-- `resources/views/profile/api-tokens.blade.php:84` — `material-symbols-outlined`
-- `resources/views/profile/api-tokens.blade.php:84` — `true`
-- `resources/views/profile/api-tokens.blade.php:84` — `Keine API-Token vorhanden`
+- `resources/views/profile/api-tokens.blade.php:16` — `Persönliche Zugriffstoken für den API-Zugang verwalten.`
+- `resources/views/profile/api-tokens.blade.php:18` — `primary`
+- `resources/views/profile/api-tokens.blade.php:20` — `profile.api-tokens.create`
+- `resources/views/profile/api-tokens.blade.php:21` — `Neuer Token`
+- `resources/views/profile/api-tokens.blade.php:26` — `font-semibold`
+- `resources/views/profile/api-tokens.blade.php:26` — `Neuer Token erstellt`
+- `resources/views/profile/api-tokens.blade.php:27` — `text-sm`
+- `resources/views/profile/api-tokens.blade.php:28` — `mt-2 block break-all rounded bg-base-200 p-2 text-sm`
+- `resources/views/profile/api-tokens.blade.php:32` — `true`
+- `resources/views/profile/api-tokens.blade.php:32` — `client`
+- `resources/views/profile/api-tokens.blade.php:35` — `string`
+- `resources/views/profile/api-tokens.blade.php:35` — `Name`
+- `resources/views/profile/api-tokens.blade.php:36` — `string`
+- `resources/views/profile/api-tokens.blade.php:36` — `Fähigkeiten`
+- `resources/views/profile/api-tokens.blade.php:37` — `date`
+- `resources/views/profile/api-tokens.blade.php:37` — `Erstellt`
+- `resources/views/profile/api-tokens.blade.php:38` — `date`
+- `resources/views/profile/api-tokens.blade.php:38` — `Zuletzt benutzt`
+- `resources/views/profile/api-tokens.blade.php:39` — `w-32 text-right`
+- `resources/views/profile/api-tokens.blade.php:39` — `Aktion`
+- `resources/views/profile/api-tokens.blade.php:44` — `hover`
+- `resources/views/profile/api-tokens.blade.php:45` — `font-semibold`
+- `resources/views/profile/api-tokens.blade.php:46` — `text-xs`
+- `resources/views/profile/api-tokens.blade.php:48` — `badge badge-warning badge-sm`
+- `resources/views/profile/api-tokens.blade.php:48` — `Für eingeschränkten Zugriff neu ausstellen.`
+- `resources/views/profile/api-tokens.blade.php:48` — `Voller Zugriff`
+- `resources/views/profile/api-tokens.blade.php:55` — `text-right whitespace-nowrap`
+- `resources/views/profile/api-tokens.blade.php:56` — `profile.api-tokens.destroy`
+- `resources/views/profile/api-tokens.blade.php:57` — `Token widerrufen`
+- `resources/views/profile/api-tokens.blade.php:58` — `Token wirklich widerrufen?`
+- `resources/views/profile/api-tokens.blade.php:59` — `Widerrufen`
+- `resources/views/profile/api-tokens.blade.php:60` — `block`
+- `resources/views/profile/api-tokens.blade.php:60` — `error`
+- `resources/views/profile/api-tokens.blade.php:60` — `submit`
+- `resources/views/profile/api-tokens.blade.php:60` — `Widerrufen`
+- `resources/views/profile/api-tokens.blade.php:65` — `material-symbols-outlined`
+- `resources/views/profile/api-tokens.blade.php:65` — `true`
+- `resources/views/profile/api-tokens.blade.php:65` — `Keine API-Token vorhanden`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:16` — `Neuen API-Token erstellen`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:17` — `API-Tokens`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:19` — `primary`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:21` — `profile.api-tokens.store`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:23` — `data-entry-form`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:24` — `Erstellen`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:26` — `Token`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:26` — `primary`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:27` — `name`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:27` — `Token-Name`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:27` — `name`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:31` — `Fähigkeiten`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:31` — `tune`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:31` — `ghost`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:34` — `flex items-center gap-2 text-sm`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:35` — `checkbox`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:35` — `checkbox checkbox-sm`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:36` — `abilities`
+- `resources/views/profile/api-tokens/_form_dialog.blade.php:37` — `text-xs opacity-60`
 - `resources/views/contracts/index.blade.php:3` — `title`
 - `resources/views/contracts/index.blade.php:3` — `Vertragsverwaltung`
 - `resources/views/contracts/index.blade.php:4` — `nav-title`
@@ -23382,40 +23939,49 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/scheduled-shifts/show.blade.php:42` — `error`
 - `resources/views/scheduled-shifts/show.blade.php:42` — `submit`
 - `resources/views/scheduled-shifts/show.blade.php:42` — `Löschen`
+- `resources/views/location/_device_form_dialog.blade.php:11` — `Gerät verbinden`
+- `resources/views/location/_device_form_dialog.blade.php:12` — `Standorterfassung`
+- `resources/views/location/_device_form_dialog.blade.php:13` — `smartphone`
+- `resources/views/location/_device_form_dialog.blade.php:14` — `primary`
+- `resources/views/location/_device_form_dialog.blade.php:18` — `data-entry-form`
+- `resources/views/location/_device_form_dialog.blade.php:19` — `Token erzeugen`
+- `resources/views/location/_device_form_dialog.blade.php:21` — `Gerät`
+- `resources/views/location/_device_form_dialog.blade.php:21` — `smartphone`
+- `resources/views/location/_device_form_dialog.blade.php:21` — `primary`
+- `resources/views/location/_device_form_dialog.blade.php:22` — `label`
+- `resources/views/location/_device_form_dialog.blade.php:22` — `Bezeichnung`
+- `resources/views/location/_device_form_dialog.blade.php:23` — `z. B. Mein Diensthandy`
+- `resources/views/location/_device_form_dialog.blade.php:23` — `label`
 - `resources/views/location/devices.blade.php:12` — `title`
 - `resources/views/location/devices.blade.php:12` — `Meine Standorterfassung`
 - `resources/views/location/devices.blade.php:13` — `nav-title`
 - `resources/views/location/devices.blade.php:13` — `Meine Standorterfassung`
 - `resources/views/location/devices.blade.php:15` — `content`
-- `resources/views/location/devices.blade.php:19` — `mb-4`
-- `resources/views/location/devices.blade.php:20` — `Einwilligung`
-- `resources/views/location/devices.blade.php:22` — `Ohne deine Einwilligung werden keine Standortdaten angenommen oder gespeichert.`
-- `resources/views/location/devices.blade.php:25` — `hidden`
-- `resources/views/location/devices.blade.php:25` — `enabled`
-- `resources/views/location/devices.blade.php:27` — `success`
-- `resources/views/location/devices.blade.php:27` — `aktiviert`
-- `resources/views/location/devices.blade.php:28` — `ghost`
-- `resources/views/location/devices.blade.php:28` — `submit`
-- `resources/views/location/devices.blade.php:28` — `Deaktivieren`
-- `resources/views/location/devices.blade.php:30` — `ghost`
-- `resources/views/location/devices.blade.php:30` — `deaktiviert`
-- `resources/views/location/devices.blade.php:31` — `primary`
-- `resources/views/location/devices.blade.php:31` — `submit`
-- `resources/views/location/devices.blade.php:31` — `Aktivieren`
-- `resources/views/location/devices.blade.php:38` — `warning`
-- `resources/views/location/devices.blade.php:38` — `mb-4`
-- `resources/views/location/devices.blade.php:40` — `text-sm mb-2`
-- `resources/views/location/devices.blade.php:41` — `block break-all bg-base-200 rounded p-2 text-sm`
-- `resources/views/location/devices.blade.php:46` — `mb-4`
-- `resources/views/location/devices.blade.php:47` — `Gerät hinzufügen`
-- `resources/views/location/devices.blade.php:48` — `flex flex-wrap items-end gap-3`
-- `resources/views/location/devices.blade.php:50` — `label`
-- `resources/views/location/devices.blade.php:50` — `Bezeichnung`
-- `resources/views/location/devices.blade.php:50` — `label`
-- `resources/views/location/devices.blade.php:50` — `z. B. Mein Diensthandy`
-- `resources/views/location/devices.blade.php:51` — `primary`
-- `resources/views/location/devices.blade.php:51` — `submit`
-- `resources/views/location/devices.blade.php:51` — `Token erzeugen`
+- `resources/views/location/devices.blade.php:18` — `primary`
+- `resources/views/location/devices.blade.php:21` — `Gerät verbinden`
+- `resources/views/location/devices.blade.php:22` — `upload`
+- `resources/views/location/devices.blade.php:22` — `ghost`
+- `resources/views/location/devices.blade.php:24` — `location.devices.import-google.form`
+- `resources/views/location/devices.blade.php:25` — `Google-Timeline importieren`
+- `resources/views/location/devices.blade.php:29` — `mb-4`
+- `resources/views/location/devices.blade.php:30` — `Einwilligung`
+- `resources/views/location/devices.blade.php:32` — `Ohne deine Einwilligung werden keine Standortdaten angenommen oder gespeichert.`
+- `resources/views/location/devices.blade.php:35` — `hidden`
+- `resources/views/location/devices.blade.php:35` — `enabled`
+- `resources/views/location/devices.blade.php:37` — `success`
+- `resources/views/location/devices.blade.php:37` — `aktiviert`
+- `resources/views/location/devices.blade.php:38` — `ghost`
+- `resources/views/location/devices.blade.php:38` — `submit`
+- `resources/views/location/devices.blade.php:38` — `Deaktivieren`
+- `resources/views/location/devices.blade.php:40` — `ghost`
+- `resources/views/location/devices.blade.php:40` — `deaktiviert`
+- `resources/views/location/devices.blade.php:41` — `primary`
+- `resources/views/location/devices.blade.php:41` — `submit`
+- `resources/views/location/devices.blade.php:41` — `Aktivieren`
+- `resources/views/location/devices.blade.php:48` — `warning`
+- `resources/views/location/devices.blade.php:48` — `mb-4`
+- `resources/views/location/devices.blade.php:50` — `text-sm mb-2`
+- `resources/views/location/devices.blade.php:51` — `block break-all bg-base-200 rounded p-2 text-sm`
 - `resources/views/location/devices.blade.php:56` — `mb-4`
 - `resources/views/location/devices.blade.php:57` — `Hier einstempeln`
 - `resources/views/location/devices.blade.php:59` — `Aktuellen Standort einmalig aus dem Browser senden.`
@@ -23423,47 +23989,58 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/location/devices.blade.php:63` — `Standort senden`
 - `resources/views/location/devices.blade.php:64` — `text-error text-sm mt-2 hidden`
 - `resources/views/location/devices.blade.php:64` — `Standort konnte nicht gesendet werden.`
-- `resources/views/location/devices.blade.php:68` — `mb-4`
-- `resources/views/location/devices.blade.php:69` — `Google-Timeline importieren`
-- `resources/views/location/devices.blade.php:73` — `location.devices.import-google`
-- `resources/views/location/devices.blade.php:73` — `flex flex-wrap items-end gap-3`
-- `resources/views/location/devices.blade.php:75` — `file`
-- `resources/views/location/devices.blade.php:75` — `file`
-- `resources/views/location/devices.blade.php:75` — `file-input file-input-bordered file-input-sm`
-- `resources/views/location/devices.blade.php:76` — `upload`
-- `resources/views/location/devices.blade.php:76` — `primary`
-- `resources/views/location/devices.blade.php:76` — `submit`
-- `resources/views/location/devices.blade.php:76` — `Importieren`
-- `resources/views/location/devices.blade.php:83` — `material-symbols-outlined`
-- `resources/views/location/devices.blade.php:83` — `true`
-- `resources/views/location/devices.blade.php:88` — `Gerät`
-- `resources/views/location/devices.blade.php:89` — `Zuletzt benutzt`
-- `resources/views/location/devices.blade.php:90` — `text-end`
-- `resources/views/location/devices.blade.php:90` — `Status`
-- `resources/views/location/devices.blade.php:98` — `text-end`
-- `resources/views/location/devices.blade.php:100` — `success`
-- `resources/views/location/devices.blade.php:100` — `aktiv`
-- `resources/views/location/devices.blade.php:102` — `ghost`
-- `resources/views/location/devices.blade.php:102` — `widerrufen`
-- `resources/views/location/devices.blade.php:105` — `text-right`
-- `resources/views/location/devices.blade.php:108` — `Gerät widerrufen?`
-- `resources/views/location/devices.blade.php:108` — `Widerrufen`
-- `resources/views/location/devices.blade.php:109` — `error`
-- `resources/views/location/devices.blade.php:109` — `submit`
-- `resources/views/location/devices.blade.php:109` — `Widerrufen`
-- `resources/views/location/devices.blade.php:122` — `geolocation`
-- `resources/views/location/devices.blade.php:129` — `click`
-- `resources/views/location/devices.blade.php:131` — `hidden`
-- `resources/views/location/devices.blade.php:132` — `disabled', 'disabled`
-- `resources/views/location/devices.blade.php:137` — `same-origin`
-- `resources/views/location/devices.blade.php:139` — `Content-Type`
-- `resources/views/location/devices.blade.php:140` — `Accept`
-- `resources/views/location/devices.blade.php:141` — `X-XSRF-TOKEN`
-- `resources/views/location/devices.blade.php:150` — `stamp failed`
-- `resources/views/location/devices.blade.php:152` — `disabled`
-- `resources/views/location/devices.blade.php:153` — `hidden`
-- `resources/views/location/devices.blade.php:156` — `disabled`
-- `resources/views/location/devices.blade.php:157` — `hidden`
+- `resources/views/location/devices.blade.php:68` — `true`
+- `resources/views/location/devices.blade.php:71` — `Gerät`
+- `resources/views/location/devices.blade.php:72` — `Zuletzt benutzt`
+- `resources/views/location/devices.blade.php:73` — `text-end`
+- `resources/views/location/devices.blade.php:73` — `Status`
+- `resources/views/location/devices.blade.php:74` — `w-32 text-right`
+- `resources/views/location/devices.blade.php:74` — `Aktion`
+- `resources/views/location/devices.blade.php:79` — `hover`
+- `resources/views/location/devices.blade.php:80` — `font-semibold`
+- `resources/views/location/devices.blade.php:82` — `text-end`
+- `resources/views/location/devices.blade.php:84` — `success`
+- `resources/views/location/devices.blade.php:84` — `aktiv`
+- `resources/views/location/devices.blade.php:86` — `ghost`
+- `resources/views/location/devices.blade.php:86` — `widerrufen`
+- `resources/views/location/devices.blade.php:89` — `text-right whitespace-nowrap`
+- `resources/views/location/devices.blade.php:92` — `Gerät widerrufen`
+- `resources/views/location/devices.blade.php:93` — `Gerät widerrufen?`
+- `resources/views/location/devices.blade.php:93` — `Widerrufen`
+- `resources/views/location/devices.blade.php:94` — `error`
+- `resources/views/location/devices.blade.php:94` — `submit`
+- `resources/views/location/devices.blade.php:94` — `Widerrufen`
+- `resources/views/location/devices.blade.php:101` — `material-symbols-outlined`
+- `resources/views/location/devices.blade.php:101` — `true`
+- `resources/views/location/devices.blade.php:102` — `Noch kein Gerät verbunden`
+- `resources/views/location/devices.blade.php:111` — `geolocation`
+- `resources/views/location/devices.blade.php:118` — `click`
+- `resources/views/location/devices.blade.php:120` — `hidden`
+- `resources/views/location/devices.blade.php:121` — `disabled', 'disabled`
+- `resources/views/location/devices.blade.php:126` — `same-origin`
+- `resources/views/location/devices.blade.php:128` — `Content-Type`
+- `resources/views/location/devices.blade.php:129` — `Accept`
+- `resources/views/location/devices.blade.php:130` — `X-XSRF-TOKEN`
+- `resources/views/location/devices.blade.php:139` — `stamp failed`
+- `resources/views/location/devices.blade.php:141` — `disabled`
+- `resources/views/location/devices.blade.php:142` — `hidden`
+- `resources/views/location/devices.blade.php:145` — `disabled`
+- `resources/views/location/devices.blade.php:146` — `hidden`
+- `resources/views/location/_google_import_dialog.blade.php:11` — `Google-Timeline importieren`
+- `resources/views/location/_google_import_dialog.blade.php:12` — `Standorterfassung`
+- `resources/views/location/_google_import_dialog.blade.php:13` — `upload`
+- `resources/views/location/_google_import_dialog.blade.php:14` — `primary`
+- `resources/views/location/_google_import_dialog.blade.php:16` — `location.devices.import-google`
+- `resources/views/location/_google_import_dialog.blade.php:19` — `data-entry-form`
+- `resources/views/location/_google_import_dialog.blade.php:20` — `Importieren`
+- `resources/views/location/_google_import_dialog.blade.php:22` — `Standortverlauf`
+- `resources/views/location/_google_import_dialog.blade.php:22` — `primary`
+- `resources/views/location/_google_import_dialog.blade.php:23` — `form-control`
+- `resources/views/location/_google_import_dialog.blade.php:24` — `label-text`
+- `resources/views/location/_google_import_dialog.blade.php:24` — `JSON-Datei`
+- `resources/views/location/_google_import_dialog.blade.php:25` — `file`
+- `resources/views/location/_google_import_dialog.blade.php:25` — `file`
+- `resources/views/location/_google_import_dialog.blade.php:26` — `file-input file-input-bordered w-full`
 - `resources/views/location/review.blade.php:12` — `title`
 - `resources/views/location/review.blade.php:12` — `Standort-Vorschläge`
 - `resources/views/location/review.blade.php:13` — `nav-title`
@@ -28995,65 +29572,77 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/invoices/show.blade.php:200` — `error`
 - `resources/views/invoices/show.blade.php:200` — `submit`
 - `resources/views/invoices/show.blade.php:200` — `Löschen`
-- `resources/views/invoices/show.blade.php:207` — `client`
-- `resources/views/invoices/show.blade.php:211` — `Beschreibung`
-- `resources/views/invoices/show.blade.php:212` — `date`
-- `resources/views/invoices/show.blade.php:213` — `number`
-- `resources/views/invoices/show.blade.php:213` — `right`
-- `resources/views/invoices/show.blade.php:213` — `Menge`
-- `resources/views/invoices/show.blade.php:214` — `number`
-- `resources/views/invoices/show.blade.php:214` — `right`
-- `resources/views/invoices/show.blade.php:214` — `Einzelpreis`
-- `resources/views/invoices/show.blade.php:215` — `number`
-- `resources/views/invoices/show.blade.php:215` — `right`
-- `resources/views/invoices/show.blade.php:215` — `Betrag`
-- `resources/views/invoices/show.blade.php:216` — `update`
-- `resources/views/invoices/show.blade.php:218` — `text-right`
-- `resources/views/invoices/show.blade.php:218` — `Aktionen`
-- `resources/views/invoices/show.blade.php:224` — `text-right`
-- `resources/views/invoices/show.blade.php:224` — `Zwischensumme`
-- `resources/views/invoices/show.blade.php:224` — `text-right`
-- `resources/views/invoices/show.blade.php:225` — `text-right`
-- `resources/views/invoices/show.blade.php:225` — `USt.`
-- `resources/views/invoices/show.blade.php:225` — `text-right`
-- `resources/views/invoices/show.blade.php:229` — `text-right font-bold`
-- `resources/views/invoices/show.blade.php:229` — `Gesamt`
-- `resources/views/invoices/show.blade.php:229` — `text-right font-bold`
-- `resources/views/invoices/show.blade.php:236` — `text-right`
-- `resources/views/invoices/show.blade.php:237` — `text-right`
-- `resources/views/invoices/show.blade.php:238` — `text-right`
-- `resources/views/invoices/show.blade.php:239` — `update`
-- `resources/views/invoices/show.blade.php:241` — `text-right whitespace-nowrap`
-- `resources/views/invoices/show.blade.php:242` — `edit`
-- `resources/views/invoices/show.blade.php:242` — `ghost`
-- `resources/views/invoices/show.blade.php:245` — `Bearbeiten`
-- `resources/views/invoices/show.blade.php:247` — `Position wirklich entfernen?`
-- `resources/views/invoices/show.blade.php:248` — `delete`
-- `resources/views/invoices/show.blade.php:249` — `error`
-- `resources/views/invoices/show.blade.php:250` — `Entfernen`
-- `resources/views/invoices/show.blade.php:251` — `delete`
-- `resources/views/invoices/show.blade.php:251` — `error`
-- `resources/views/invoices/show.blade.php:251` — `submit`
-- `resources/views/invoices/show.blade.php:251` — `Entfernen`
-- `resources/views/invoices/show.blade.php:258` — `material-symbols-outlined`
-- `resources/views/invoices/show.blade.php:258` — `true`
-- `resources/views/invoices/show.blade.php:258` — `Keine Positionen.`
-- `resources/views/invoices/show.blade.php:263` — `days`
-- `resources/views/invoices/show.blade.php:263` — `date`
-- `resources/views/invoices/show.blade.php:265` — `date`
-- `resources/views/invoices/show.blade.php:272` — `collapse collapse-arrow border border-base-300 bg-base-100`
-- `resources/views/invoices/show.blade.php:273` — `collapse-title text-sm font-medium`
-- `resources/views/invoices/show.blade.php:273` — `count`
-- `resources/views/invoices/show.blade.php:274` — `collapse-content overflow-x-auto`
-- `resources/views/invoices/show.blade.php:275` — `table table-sm`
-- `resources/views/invoices/show.blade.php:278` — `Zeitpunkt`
-- `resources/views/invoices/show.blade.php:279` — `Kanal`
-- `resources/views/invoices/show.blade.php:280` — `Format`
-- `resources/views/invoices/show.blade.php:281` — `Empfänger`
-- `resources/views/invoices/show.blade.php:282` — `Status`
-- `resources/views/invoices/show.blade.php:283` — `SHA-256`
-- `resources/views/invoices/show.blade.php:292` — `max-w-xs truncate`
-- `resources/views/invoices/show.blade.php:294` — `font-mono text-xs`
+- `resources/views/invoices/show.blade.php:211` — `update`
+- `resources/views/invoices/show.blade.php:220` — `flex justify-end`
+- `resources/views/invoices/show.blade.php:221` — `ai.suggestions.invoice-all`
+- `resources/views/invoices/show.blade.php:222` — `info`
+- `resources/views/invoices/show.blade.php:222` — `submit`
+- `resources/views/invoices/show.blade.php:228` — `client`
+- `resources/views/invoices/show.blade.php:232` — `Beschreibung`
+- `resources/views/invoices/show.blade.php:233` — `date`
+- `resources/views/invoices/show.blade.php:234` — `number`
+- `resources/views/invoices/show.blade.php:234` — `right`
+- `resources/views/invoices/show.blade.php:234` — `Menge`
+- `resources/views/invoices/show.blade.php:235` — `number`
+- `resources/views/invoices/show.blade.php:235` — `right`
+- `resources/views/invoices/show.blade.php:235` — `Einzelpreis`
+- `resources/views/invoices/show.blade.php:236` — `number`
+- `resources/views/invoices/show.blade.php:236` — `right`
+- `resources/views/invoices/show.blade.php:236` — `Betrag`
+- `resources/views/invoices/show.blade.php:237` — `update`
+- `resources/views/invoices/show.blade.php:239` — `text-right`
+- `resources/views/invoices/show.blade.php:239` — `Aktionen`
+- `resources/views/invoices/show.blade.php:245` — `text-right`
+- `resources/views/invoices/show.blade.php:245` — `Zwischensumme`
+- `resources/views/invoices/show.blade.php:245` — `text-right`
+- `resources/views/invoices/show.blade.php:246` — `text-right`
+- `resources/views/invoices/show.blade.php:246` — `USt.`
+- `resources/views/invoices/show.blade.php:246` — `text-right`
+- `resources/views/invoices/show.blade.php:250` — `text-right font-bold`
+- `resources/views/invoices/show.blade.php:250` — `Gesamt`
+- `resources/views/invoices/show.blade.php:250` — `text-right font-bold`
+- `resources/views/invoices/show.blade.php:257` — `text-right`
+- `resources/views/invoices/show.blade.php:258` — `text-right`
+- `resources/views/invoices/show.blade.php:259` — `text-right`
+- `resources/views/invoices/show.blade.php:260` — `update`
+- `resources/views/invoices/show.blade.php:262` — `text-right whitespace-nowrap`
+- `resources/views/invoices/show.blade.php:264` — `ai.suggestions.invoice-item`
+- `resources/views/invoices/show.blade.php:265` — `info`
+- `resources/views/invoices/show.blade.php:265` — `submit`
+- `resources/views/invoices/show.blade.php:269` — `translate`
+- `resources/views/invoices/show.blade.php:269` — `ghost`
+- `resources/views/invoices/show.blade.php:271` — `ai.suggestions.invoice-item-translate-form`
+- `resources/views/invoices/show.blade.php:274` — `edit`
+- `resources/views/invoices/show.blade.php:274` — `ghost`
+- `resources/views/invoices/show.blade.php:277` — `Bearbeiten`
+- `resources/views/invoices/show.blade.php:279` — `Position wirklich entfernen?`
+- `resources/views/invoices/show.blade.php:280` — `delete`
+- `resources/views/invoices/show.blade.php:281` — `error`
+- `resources/views/invoices/show.blade.php:282` — `Entfernen`
+- `resources/views/invoices/show.blade.php:283` — `delete`
+- `resources/views/invoices/show.blade.php:283` — `error`
+- `resources/views/invoices/show.blade.php:283` — `submit`
+- `resources/views/invoices/show.blade.php:283` — `Entfernen`
+- `resources/views/invoices/show.blade.php:300` — `text`
+- `resources/views/invoices/show.blade.php:306` — `material-symbols-outlined`
+- `resources/views/invoices/show.blade.php:306` — `true`
+- `resources/views/invoices/show.blade.php:306` — `Keine Positionen.`
+- `resources/views/invoices/show.blade.php:311` — `days`
+- `resources/views/invoices/show.blade.php:311` — `date`
+- `resources/views/invoices/show.blade.php:313` — `date`
+- `resources/views/invoices/show.blade.php:320` — `collapse collapse-arrow border border-base-300 bg-base-100`
+- `resources/views/invoices/show.blade.php:321` — `collapse-title text-sm font-medium`
+- `resources/views/invoices/show.blade.php:321` — `count`
+- `resources/views/invoices/show.blade.php:322` — `collapse-content overflow-x-auto`
+- `resources/views/invoices/show.blade.php:323` — `table table-sm`
+- `resources/views/invoices/show.blade.php:326` — `Zeitpunkt`
+- `resources/views/invoices/show.blade.php:327` — `Kanal`
+- `resources/views/invoices/show.blade.php:328` — `Format`
+- `resources/views/invoices/show.blade.php:329` — `Empfänger`
+- `resources/views/invoices/show.blade.php:330` — `Status`
+- `resources/views/invoices/show.blade.php:331` — `SHA-256`
+- `resources/views/invoices/show.blade.php:340` — `max-w-xs truncate`
+- `resources/views/invoices/show.blade.php:342` — `font-mono text-xs`
 - `resources/views/invoices/_item_form_dialog.blade.php:8` — `Position bearbeiten`
 - `resources/views/invoices/_item_form_dialog.blade.php:8` — `Position hinzufügen`
 - `resources/views/invoices/_item_form_dialog.blade.php:14` — `primary`
@@ -30515,72 +31104,78 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/quotes/show.blade.php:93` — `link`
 - `resources/views/quotes/show.blade.php:93` — `values.`
 - `resources/views/quotes/show.blade.php:96` — `link`
-- `resources/views/quotes/show.blade.php:105` — `Beschreibung`
-- `resources/views/quotes/show.blade.php:106` — `text-right`
-- `resources/views/quotes/show.blade.php:106` — `Menge`
-- `resources/views/quotes/show.blade.php:107` — `text-right`
-- `resources/views/quotes/show.blade.php:107` — `Einzelpreis`
-- `resources/views/quotes/show.blade.php:108` — `text-right`
-- `resources/views/quotes/show.blade.php:110` — `Annahme`
-- `resources/views/quotes/show.blade.php:111` — `update`
-- `resources/views/quotes/show.blade.php:111` — `text-right`
-- `resources/views/quotes/show.blade.php:111` — `Aktionen`
-- `resources/views/quotes/show.blade.php:115` — `text-right`
-- `resources/views/quotes/show.blade.php:115` — `Zwischensumme`
-- `resources/views/quotes/show.blade.php:115` — `text-right`
-- `resources/views/quotes/show.blade.php:116` — `text-right`
-- `resources/views/quotes/show.blade.php:116` — `USt.`
-- `resources/views/quotes/show.blade.php:116` — `text-right`
-- `resources/views/quotes/show.blade.php:117` — `text-right font-bold`
-- `resources/views/quotes/show.blade.php:117` — `Gesamt`
-- `resources/views/quotes/show.blade.php:117` — `text-right font-bold`
+- `resources/views/quotes/show.blade.php:104` — `draft`
+- `resources/views/quotes/show.blade.php:104` — `update`
+- `resources/views/quotes/show.blade.php:117` — `Beschreibung`
+- `resources/views/quotes/show.blade.php:118` — `text-right`
+- `resources/views/quotes/show.blade.php:118` — `Menge`
+- `resources/views/quotes/show.blade.php:119` — `text-right`
+- `resources/views/quotes/show.blade.php:119` — `Einzelpreis`
+- `resources/views/quotes/show.blade.php:120` — `text-right`
+- `resources/views/quotes/show.blade.php:122` — `Annahme`
+- `resources/views/quotes/show.blade.php:123` — `update`
 - `resources/views/quotes/show.blade.php:123` — `text-right`
-- `resources/views/quotes/show.blade.php:124` — `text-right`
-- `resources/views/quotes/show.blade.php:125` — `text-right`
-- `resources/views/quotes/show.blade.php:126` — `Option`
-- `resources/views/quotes/show.blade.php:126` — `Pflicht`
-- `resources/views/quotes/show.blade.php:128` — `angenommen`
-- `resources/views/quotes/show.blade.php:128` — `nicht angenommen`
-- `resources/views/quotes/show.blade.php:130` — `update`
-- `resources/views/quotes/show.blade.php:131` — `text-right whitespace-nowrap`
-- `resources/views/quotes/show.blade.php:132` — `edit`
-- `resources/views/quotes/show.blade.php:132` — `ghost`
-- `resources/views/quotes/show.blade.php:135` — `Bearbeiten`
-- `resources/views/quotes/show.blade.php:137` — `Position wirklich entfernen?`
-- `resources/views/quotes/show.blade.php:138` — `delete`
-- `resources/views/quotes/show.blade.php:139` — `error`
-- `resources/views/quotes/show.blade.php:140` — `Entfernen`
-- `resources/views/quotes/show.blade.php:141` — `delete`
-- `resources/views/quotes/show.blade.php:141` — `error`
-- `resources/views/quotes/show.blade.php:141` — `submit`
-- `resources/views/quotes/show.blade.php:141` — `Entfernen`
-- `resources/views/quotes/show.blade.php:147` — `material-symbols-outlined`
-- `resources/views/quotes/show.blade.php:147` — `true`
-- `resources/views/quotes/show.blade.php:147` — `Keine Positionen.`
-- `resources/views/quotes/show.blade.php:153` — `whitespace-pre-line text-sm`
-- `resources/views/quotes/show.blade.php:158` — `sent`
-- `resources/views/quotes/show.blade.php:159` — `decide`
-- `resources/views/quotes/show.blade.php:161` — `space-y-3`
-- `resources/views/quotes/show.blade.php:163` — `space-y-1`
-- `resources/views/quotes/show.blade.php:165` — `label cursor-pointer justify-start gap-2`
-- `resources/views/quotes/show.blade.php:166` — `checkbox`
-- `resources/views/quotes/show.blade.php:166` — `checkbox checkbox-sm`
-- `resources/views/quotes/show.blade.php:167` — `label-text`
-- `resources/views/quotes/show.blade.php:167` — `Option`
-- `resources/views/quotes/show.blade.php:171` — `reason`
-- `resources/views/quotes/show.blade.php:171` — `input input-sm input-bordered w-full`
-- `resources/views/quotes/show.blade.php:172` — `flex gap-2`
-- `resources/views/quotes/show.blade.php:173` — `submit`
-- `resources/views/quotes/show.blade.php:173` — `decision`
-- `resources/views/quotes/show.blade.php:173` — `accept`
-- `resources/views/quotes/show.blade.php:173` — `btn btn-primary btn-sm`
-- `resources/views/quotes/show.blade.php:173` — `Annahme dokumentieren`
-- `resources/views/quotes/show.blade.php:174` — `submit`
-- `resources/views/quotes/show.blade.php:174` — `decision`
-- `resources/views/quotes/show.blade.php:174` — `reject`
-- `resources/views/quotes/show.blade.php:174` — `btn btn-outline btn-sm`
-- `resources/views/quotes/show.blade.php:174` — `Ablehnung dokumentieren`
-- `resources/views/quotes/show.blade.php:183` — `date`
+- `resources/views/quotes/show.blade.php:123` — `Aktionen`
+- `resources/views/quotes/show.blade.php:127` — `text-right`
+- `resources/views/quotes/show.blade.php:127` — `Zwischensumme`
+- `resources/views/quotes/show.blade.php:127` — `text-right`
+- `resources/views/quotes/show.blade.php:128` — `text-right`
+- `resources/views/quotes/show.blade.php:128` — `USt.`
+- `resources/views/quotes/show.blade.php:128` — `text-right`
+- `resources/views/quotes/show.blade.php:129` — `text-right font-bold`
+- `resources/views/quotes/show.blade.php:129` — `Gesamt`
+- `resources/views/quotes/show.blade.php:129` — `text-right font-bold`
+- `resources/views/quotes/show.blade.php:135` — `text-right`
+- `resources/views/quotes/show.blade.php:136` — `text-right`
+- `resources/views/quotes/show.blade.php:137` — `text-right`
+- `resources/views/quotes/show.blade.php:138` — `Option`
+- `resources/views/quotes/show.blade.php:138` — `Pflicht`
+- `resources/views/quotes/show.blade.php:140` — `angenommen`
+- `resources/views/quotes/show.blade.php:140` — `nicht angenommen`
+- `resources/views/quotes/show.blade.php:142` — `update`
+- `resources/views/quotes/show.blade.php:143` — `text-right whitespace-nowrap`
+- `resources/views/quotes/show.blade.php:145` — `ai.suggestions.quote-item`
+- `resources/views/quotes/show.blade.php:146` — `info`
+- `resources/views/quotes/show.blade.php:146` — `submit`
+- `resources/views/quotes/show.blade.php:149` — `edit`
+- `resources/views/quotes/show.blade.php:149` — `ghost`
+- `resources/views/quotes/show.blade.php:152` — `Bearbeiten`
+- `resources/views/quotes/show.blade.php:154` — `Position wirklich entfernen?`
+- `resources/views/quotes/show.blade.php:155` — `delete`
+- `resources/views/quotes/show.blade.php:156` — `error`
+- `resources/views/quotes/show.blade.php:157` — `Entfernen`
+- `resources/views/quotes/show.blade.php:158` — `delete`
+- `resources/views/quotes/show.blade.php:158` — `error`
+- `resources/views/quotes/show.blade.php:158` — `submit`
+- `resources/views/quotes/show.blade.php:158` — `Entfernen`
+- `resources/views/quotes/show.blade.php:174` — `text`
+- `resources/views/quotes/show.blade.php:180` — `material-symbols-outlined`
+- `resources/views/quotes/show.blade.php:180` — `true`
+- `resources/views/quotes/show.blade.php:180` — `Keine Positionen.`
+- `resources/views/quotes/show.blade.php:186` — `whitespace-pre-line text-sm`
+- `resources/views/quotes/show.blade.php:191` — `sent`
+- `resources/views/quotes/show.blade.php:192` — `decide`
+- `resources/views/quotes/show.blade.php:194` — `space-y-3`
+- `resources/views/quotes/show.blade.php:196` — `space-y-1`
+- `resources/views/quotes/show.blade.php:198` — `label cursor-pointer justify-start gap-2`
+- `resources/views/quotes/show.blade.php:199` — `checkbox`
+- `resources/views/quotes/show.blade.php:199` — `checkbox checkbox-sm`
+- `resources/views/quotes/show.blade.php:200` — `label-text`
+- `resources/views/quotes/show.blade.php:200` — `Option`
+- `resources/views/quotes/show.blade.php:204` — `reason`
+- `resources/views/quotes/show.blade.php:204` — `input input-sm input-bordered w-full`
+- `resources/views/quotes/show.blade.php:205` — `flex gap-2`
+- `resources/views/quotes/show.blade.php:206` — `submit`
+- `resources/views/quotes/show.blade.php:206` — `decision`
+- `resources/views/quotes/show.blade.php:206` — `accept`
+- `resources/views/quotes/show.blade.php:206` — `btn btn-primary btn-sm`
+- `resources/views/quotes/show.blade.php:206` — `Annahme dokumentieren`
+- `resources/views/quotes/show.blade.php:207` — `submit`
+- `resources/views/quotes/show.blade.php:207` — `decision`
+- `resources/views/quotes/show.blade.php:207` — `reject`
+- `resources/views/quotes/show.blade.php:207` — `btn btn-outline btn-sm`
+- `resources/views/quotes/show.blade.php:207` — `Ablehnung dokumentieren`
+- `resources/views/quotes/show.blade.php:216` — `date`
 - `resources/views/quotes/_item_form_dialog.blade.php:9` — `Position bearbeiten`
 - `resources/views/quotes/_item_form_dialog.blade.php:9` — `Position hinzufügen`
 - `resources/views/quotes/_item_form_dialog.blade.php:12` — `primary`
@@ -32917,9 +33512,22 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/customer/diary/pdf.blade.php:8` — `utf-8`
 - `resources/views/customer/diary/pdf.blade.php:11` — `DejaVu Sans`
 - `resources/views/customer/diary/pdf.blade.php:21` — `muted`
+- `resources/views/customer/diary/pdf.blade.php:23` — `Fotos`
 - `resources/views/customer/diary/pdf.blade.php:25` — `muted`
+- `resources/views/customer/diary/pdf.blade.php:25` — `Keine freigegebenen Fotos.`
+- `resources/views/customer/diary/pdf.blade.php:28` — `Datei`
+- `resources/views/customer/diary/pdf.blade.php:28` — `Bestätigt`
+- `resources/views/customer/diary/pdf.blade.php:41` — `Material`
 - `resources/views/customer/diary/pdf.blade.php:43` — `muted`
+- `resources/views/customer/diary/pdf.blade.php:43` — `Kein Material erfasst.`
+- `resources/views/customer/diary/pdf.blade.php:46` — `Bezeichnung`
+- `resources/views/customer/diary/pdf.blade.php:46` — `Menge`
+- `resources/views/customer/diary/pdf.blade.php:56` — `Protokolle`
 - `resources/views/customer/diary/pdf.blade.php:58` — `muted`
+- `resources/views/customer/diary/pdf.blade.php:58` — `Keine freigegebenen Protokolle.`
+- `resources/views/customer/diary/pdf.blade.php:61` — `Titel`
+- `resources/views/customer/diary/pdf.blade.php:61` — `Status`
+- `resources/views/customer/diary/pdf.blade.php:61` — `Datum`
 - `resources/views/customer/diary/show.blade.php:8` — `content`
 - `resources/views/customer/diary/show.blade.php:9` — `mb-4 flex flex-wrap items-center justify-between gap-2`
 - `resources/views/customer/diary/show.blade.php:11` — `text-2xl font-semibold`
@@ -47163,7 +47771,7 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/errors/_page.blade.php:31` — `Material Symbols Outlined`
 - `resources/views/errors/_page.blade.php:41` — `liga`
 - `resources/views/errors/_page.blade.php:43` — `FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz`
-- `resources/views/errors/_page.blade.php:51` — `min-h-screen bg-gradient-to-b from-base-200 to-base-300 text-base-content`
+- `resources/views/errors/_page.blade.php:51` — `min-h-screen bg-linear-to-b from-base-200 to-base-300 text-base-content`
 - `resources/views/errors/_page.blade.php:52` — `IBM Plex Sans`
 - `resources/views/errors/_page.blade.php:53` — `flex min-h-screen items-center justify-center px-4`
 - `resources/views/errors/_page.blade.php:54` — `w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg`
@@ -47185,12 +47793,12 @@ Generated: 2026-07-16T15:06:00+00:00
 - `resources/views/errors/_page.blade.php:73` — `home`
 - `resources/views/errors/_page.blade.php:73` — `Zur Startseite`
 - `resources/views/errors/_page.blade.php:74` — `problem-reports.create`
-- `resources/views/errors/_page.blade.php:75` — `problem-reports.create`
-- `resources/views/errors/_page.blade.php:75` — `context`
-- `resources/views/errors/_page.blade.php:75` — `error', 'code`
-- `resources/views/errors/_page.blade.php:75` — `warning`
-- `resources/views/errors/_page.blade.php:75` — `gap-1`
-- `resources/views/errors/_page.blade.php:75` — `flag`
+- `resources/views/errors/_page.blade.php:77` — `problem-reports.create`
+- `resources/views/errors/_page.blade.php:77` — `context`
+- `resources/views/errors/_page.blade.php:77` — `error', 'code`
+- `resources/views/errors/_page.blade.php:77` — `warning`
+- `resources/views/errors/_page.blade.php:77` — `gap-1`
+- `resources/views/errors/_page.blade.php:77` — `flag`
 - `resources/views/errors/maintenance.blade.php:4` — `UTF-8`
 - `resources/views/errors/maintenance.blade.php:5` — `viewport`
 - `resources/views/errors/maintenance.blade.php:9` — `workDiaryTheme`

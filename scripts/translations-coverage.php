@@ -131,6 +131,21 @@ $missing = []; // key => occurrences
 foreach ($usedKeys as $key => $occ) {
     // Dotted key with leading module-like segment "alpha[._]" -> check PHP catalog
     $isDotted = (bool) preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)+$/', $key);
+    // Concat prefix with trailing dot ("'scheduler.cadence.' . $x") — fällt
+    // sonst durch die isDotted-Regex in den JSON-Zweig; als Prefix prüfen.
+    if (! $isDotted
+        && preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)*\.$/', $key)
+        && array_filter($occ, static fn ($o) => ! empty($o['concat']))) {
+        $resolves = false;
+        foreach ($definedPhp as $defined => $_) {
+            if (str_starts_with($defined, $key)) {
+                $resolves = true;
+                break;
+            }
+        }
+        if (! $resolves) { $missing[$key] = $occ; }
+        continue;
+    }
     if ($isDotted) {
         $exactOcc = array_values(array_filter($occ, fn ($o) => empty($o['concat'])));
         $concatOcc = array_values(array_filter($occ, fn ($o) => ! empty($o['concat'])));
