@@ -133,6 +133,7 @@ return [
         'admin.msgraph.*' => 'admin.integrations',
         'admin.sharepoint.*' => 'admin.integrations',
         'admin.jtl.*' => 'admin.jtl-wawi',
+        'admin.billbee.*' => 'admin.billbee',
         'admin.kimai.*' => 'admin.integrations',
         'admin.mail.*' => 'admin.integrations',
         'admin.todoist.*' => 'admin.integrations',

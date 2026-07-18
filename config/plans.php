@@ -283,6 +283,7 @@ return [
         'pricing-margin-rules.*' => 'module.lager', // Feature 050 Margenregeln
         'oci-carts.*' => 'module.lager', // Feature 050 OCI-Warenkorb
         'admin.jtl.*' => 'module.lager', // Feature 078 JTL-Wawi-Plugin (externe Bestandsführung)
+        'admin.billbee.*' => 'module.lager', // Feature 093 Billbee-Multichannel (Bestellspiegel + Bestandsrückkanal)
 
         'bill-of-quantities.*' => 'module.bau', // Feature 049 GAEB-Leistungsverzeichnisse
         'gaeb.*' => 'module.bau',               // Feature 049 GAEB-Import/-Export

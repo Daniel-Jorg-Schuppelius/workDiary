@@ -68,6 +68,7 @@ return [
         'period_sources' => 'Only billable sources that have not yet been invoiced/handed over within the period are collected.',
         'lexoffice_draft_created' => 'Invoice draft created in Lexoffice:',
         'sevdesk_draft_created' => 'Invoice draft created in sevDesk:',
+        'easybill_draft_created' => 'Invoice draft created in easybill:',
     ],
 
     'confirm_execute' => 'Transfer to the target now? On success the sources will be marked as handed over.',
@@ -99,6 +100,12 @@ return [
         'total' => 'Total',
     ],
 
+    'easybill' => [
+        'introduction' => 'Transfer from WorkDiary — :channel, period :from – :to.',
+        'unit_hour' => 'hrs',
+        'unit_piece' => 'pcs',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Handover from WorkDiary — :channel, period :from – :to.',
         'tax_text' => 'VAT :rate%',
@@ -127,6 +134,8 @@ return [
         'lexoffice_not_configured' => 'Lexoffice is not configured for this organisation (API key missing).',
         'sevdesk_not_configured' => 'sevDesk is not configured for this organisation (API token missing).',
         'sevdesk_outcome_unclear' => 'Outcome of the sevDesk handover unclear (timeout after sending) — do not retry blindly; the next run reconciles via the source marker.',
+        'easybill_not_configured' => 'easybill is not configured for this organisation (API key missing).',
+        'easybill_outcome_unclear' => 'Outcome of the easybill transfer unclear (timeout after sending) — do not blindly retry; the next run reconciles via the source marker.',
         'lexoffice_contact_missing' => 'No Lexoffice contact for the customer — please sync the contact first.',
         'lexoffice_delivery_no_customer' => 'A delivery without a customer cannot be handed over as a delivery note.',
         'lexoffice_delivery_not_linked' => 'No Lexoffice delivery note is linked to this delivery.',

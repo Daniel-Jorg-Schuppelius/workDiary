@@ -901,6 +901,7 @@ return [
             'datev' => 'DATEV leads',
             'orgamax' => 'orgaMAX leads',
             'sevdesk' => 'sevDesk leads',
+            'easybill' => 'easybill leads',
         ],
         'transfer-channel' => [
             'time' => 'Services/time',
@@ -911,6 +912,7 @@ return [
             'datev' => 'DATEV',
             'orgamax' => 'orgaMAX (order)',
             'sevdesk' => 'sevDesk (invoice draft)',
+            'easybill' => 'easybill (invoice draft)',
             'file' => 'File export',
         ],
         'transfer-status' => [

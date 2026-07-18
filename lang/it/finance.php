@@ -68,6 +68,7 @@ return [
         'period_sources' => 'Vengono raccolte solo fonti fatturabili, non ancora fatturate/consegnate nel periodo.',
         'lexoffice_draft_created' => 'Bozza di fattura creata in Lexoffice:',
         'sevdesk_draft_created' => 'Bozza di fattura creata in sevDesk:',
+        'easybill_draft_created' => 'Bozza di fattura creata in easybill:',
     ],
 
     'confirm_execute' => 'Trasferire ora alla destinazione? In caso di successo le fonti verranno contrassegnate come consegnate.',
@@ -99,6 +100,12 @@ return [
         'total' => 'Totale',
     ],
 
+    'easybill' => [
+        'introduction' => 'Trasferimento da WorkDiary — :channel, periodo :from – :to.',
+        'unit_hour' => 'ore',
+        'unit_piece' => 'pz.',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Consegna da WorkDiary — :channel, periodo :from – :to.',
         'tax_text' => 'IVA :rate%',
@@ -127,6 +134,8 @@ return [
         'lexoffice_not_configured' => 'Lexoffice non è configurato per questa organizzazione (chiave API mancante).',
         'sevdesk_not_configured' => 'sevDesk non è configurato per questa organizzazione (token API mancante).',
         'sevdesk_outcome_unclear' => 'Esito della consegna a sevDesk incerto (timeout dopo l\'invio) — non ripetere alla cieca; la prossima esecuzione riconcilia tramite il marcatore di origine.',
+        'easybill_not_configured' => 'easybill non è configurato per questa organizzazione (chiave API mancante).',
+        'easybill_outcome_unclear' => 'Esito del trasferimento easybill incerto (timeout dopo l\'invio) — non ripetere alla cieca; la prossima esecuzione riconcilia tramite il marcatore di origine.',
         'lexoffice_contact_missing' => 'Nessun contatto Lexoffice per il cliente — sincronizzare prima il contatto.',
         'lexoffice_delivery_no_customer' => 'Una consegna senza cliente non può essere trasmessa come documento di trasporto.',
         'lexoffice_delivery_not_linked' => 'Nessun documento di trasporto Lexoffice è collegato a questa consegna.',

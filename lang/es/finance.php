@@ -68,6 +68,7 @@ return [
         'period_sources' => 'Solo se recopilan fuentes facturables, aún no facturadas/entregadas en el período.',
         'lexoffice_draft_created' => 'Borrador de factura creado en Lexoffice:',
         'sevdesk_draft_created' => 'Borrador de factura creado en sevDesk:',
+        'easybill_draft_created' => 'Borrador de factura creado en easybill:',
     ],
 
     'confirm_execute' => '¿Traspasar ahora al destino? Si tiene éxito, las fuentes se marcarán como entregadas.',
@@ -99,6 +100,12 @@ return [
         'total' => 'Total',
     ],
 
+    'easybill' => [
+        'introduction' => 'Transferencia desde WorkDiary — :channel, periodo :from – :to.',
+        'unit_hour' => 'h',
+        'unit_piece' => 'uds.',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Entrega desde WorkDiary — :channel, período :from – :to.',
         'tax_text' => 'IVA :rate %',
@@ -127,6 +134,8 @@ return [
         'lexoffice_not_configured' => 'Lexoffice no está configurado para esta organización (falta la clave API).',
         'sevdesk_not_configured' => 'sevDesk no está configurado para esta organización (falta el token de API).',
         'sevdesk_outcome_unclear' => 'Resultado de la entrega a sevDesk incierto (tiempo de espera agotado tras el envío): no reintentar a ciegas; la próxima ejecución concilia mediante el marcador de origen.',
+        'easybill_not_configured' => 'easybill no está configurado para esta organización (falta la clave de API).',
+        'easybill_outcome_unclear' => 'Resultado de la transferencia a easybill incierto (tiempo de espera tras el envío): no reintentar a ciegas; la siguiente ejecución concilia mediante el marcador de origen.',
         'lexoffice_contact_missing' => 'No hay contacto de Lexoffice para el cliente — sincronice primero el contacto.',
         'lexoffice_delivery_no_customer' => 'Una entrega sin cliente no puede transferirse como albarán.',
         'lexoffice_delivery_not_linked' => 'No hay ningún albarán de Lexoffice vinculado a esta entrega.',

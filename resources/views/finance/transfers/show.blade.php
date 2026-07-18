@@ -98,6 +98,19 @@
                         </span>
                     </div>
                 @endif
+
+                {{-- Statusrücklauf easybill (minimal, analog sevDesk): Verweis auf den externen Entwurf --}}
+                @if ($transfer->status === \App\Enums\Finance\TransferStatus::Transferred
+                    && $transfer->target === \App\Enums\Finance\TransferTarget::Easybill
+                    && $transfer->externalReference !== null)
+                    <div class="alert alert-info mt-3 text-sm">
+                        <x-icon name="cloud_done" />
+                        <span>
+                            {{ __('finance.hint.easybill_draft_created') }}
+                            <span class="font-mono text-xs">{{ $transfer->externalReference->external_id }}</span>
+                        </span>
+                    </div>
+                @endif
             </div>
 
             <div class="flex flex-wrap items-center gap-2">

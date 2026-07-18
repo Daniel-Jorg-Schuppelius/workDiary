@@ -346,6 +346,24 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        // --- Billbee-Multichannel-Sync (Feature 093, MVP-433/434) ---
+        'billbee.sync' => [
+            'command' => 'billbee:sync',
+            'plugin' => 'billbee',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
+        // --- easybill-Beleg-Rückabruf (Feature 093, MVP-431) ---
+        'easybill.sync' => [
+            'command' => 'easybill:sync',
+            'plugin' => 'easybill',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         'orgamax.sync' => [
             'command' => 'orgamax:sync',
             'plugin' => 'orgamax',

@@ -19,8 +19,19 @@ use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
  * Mock-Handler (Guzzle-`MockHandler`-Muster statt `Http::fake()`).
  */
 class PluginHttpFactory {
-    public function client(string $pluginId, string $baseUrl): PluginApiClient {
-        return new PluginApiClient($pluginId, $baseUrl);
+    /**
+     * `$requestInterval` (Sekunden) drosselt aufeinanderfolgende Requests
+     * desselben Clients (Toolkit-Throttle) — für tarifgebundene API-Limits
+     * (z. B. easybill 10/min, Billbee 2/s). Der Test-Fake ignoriert das
+     * Intervall, damit Tests nicht real schlafen.
+     */
+    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0): PluginApiClient {
+        $client = new PluginApiClient($pluginId, $baseUrl);
+        if ($requestInterval > 0) {
+            $client->setRequestInterval($requestInterval);
+        }
+
+        return $client;
     }
 
     /**

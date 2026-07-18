@@ -901,6 +901,7 @@ return [
             'datev' => 'DATEV pilote',
             'orgamax' => 'orgaMAX pilote',
             'sevdesk' => 'sevDesk pilote',
+            'easybill' => 'easybill pilote',
         ],
         'transfer-channel' => [
             'time' => 'Prestations/temps',
@@ -911,6 +912,7 @@ return [
             'datev' => 'DATEV',
             'orgamax' => 'orgaMAX (commande)',
             'sevdesk' => 'sevDesk (brouillon de facture)',
+            'easybill' => 'easybill (brouillon de facture)',
             'file' => 'Export de fichier',
         ],
         'transfer-status' => [

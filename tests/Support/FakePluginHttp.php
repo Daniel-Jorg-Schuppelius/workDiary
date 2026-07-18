@@ -80,10 +80,11 @@ class FakePluginHttp extends PluginHttpFactory {
         return new Psr7Response($status, $headers, $body ?? '');
     }
 
-    public function client(string $pluginId, string $baseUrl): PluginApiClient {
+    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0): PluginApiClient {
         $client = new PluginApiClient($pluginId, $baseUrl, $this->mockedGuzzle($baseUrl));
 
-        // Tests sollen bei Retry-Pfaden (429/503) nicht real schlafen.
+        // Tests sollen bei Retry-Pfaden (429/503) und Tarif-Drosseln
+        // (requestInterval) nicht real schlafen.
         $client->setBaseRetryDelay(0);
         $client->setMaxRetryDelay(0);
 

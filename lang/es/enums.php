@@ -901,6 +901,7 @@ return [
             'datev' => 'DATEV dirige',
             'orgamax' => 'orgaMAX lidera',
             'sevdesk' => 'sevDesk lidera',
+            'easybill' => 'easybill lidera',
         ],
         'transfer-channel' => [
             'time' => 'Servicios/tiempo',
@@ -911,6 +912,7 @@ return [
             'datev' => 'DATEV',
             'orgamax' => 'orgaMAX (pedido)',
             'sevdesk' => 'sevDesk (borrador de factura)',
+            'easybill' => 'easybill (borrador de factura)',
             'file' => 'Exportación de archivo',
         ],
         'transfer-status' => [

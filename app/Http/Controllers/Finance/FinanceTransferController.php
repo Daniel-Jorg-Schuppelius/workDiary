@@ -279,6 +279,7 @@ class FinanceTransferController extends Controller {
             BillingMode::Lexoffice => [TransferTarget::Lexoffice, TransferTarget::File],
             BillingMode::OrgaMax => [TransferTarget::OrgaMax, TransferTarget::File],
             BillingMode::SevDesk => [TransferTarget::SevDesk, TransferTarget::File],
+            BillingMode::Easybill => [TransferTarget::Easybill, TransferTarget::File],
             BillingMode::Datev, BillingMode::Workdiary => [TransferTarget::File],
         };
     }
@@ -288,6 +289,7 @@ class FinanceTransferController extends Controller {
             BillingMode::Lexoffice => TransferTarget::Lexoffice,
             BillingMode::OrgaMax => TransferTarget::OrgaMax,
             BillingMode::SevDesk => TransferTarget::SevDesk,
+            BillingMode::Easybill => TransferTarget::Easybill,
             default => TransferTarget::File,
         };
     }

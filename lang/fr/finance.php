@@ -68,6 +68,7 @@ return [
         'period_sources' => 'Seules les sources facturables, pas encore facturées/remises dans la période, sont collectées.',
         'lexoffice_draft_created' => 'Brouillon de facture créé dans Lexoffice :',
         'sevdesk_draft_created' => 'Brouillon de facture créé dans sevDesk :',
+        'easybill_draft_created' => 'Brouillon de facture créé dans easybill :',
     ],
 
     'confirm_execute' => 'Transférer maintenant vers la cible ? En cas de succès, les sources seront marquées comme remises.',
@@ -99,6 +100,12 @@ return [
         'total' => 'Total',
     ],
 
+    'easybill' => [
+        'introduction' => 'Transfert depuis WorkDiary — :channel, période :from – :to.',
+        'unit_hour' => 'h',
+        'unit_piece' => 'pcs',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Remise depuis WorkDiary — :channel, période :from – :to.',
         'tax_text' => 'TVA :rate %',
@@ -127,6 +134,8 @@ return [
         'lexoffice_not_configured' => 'Lexoffice n\'est pas configuré pour cette organisation (clé API manquante).',
         'sevdesk_not_configured' => 'sevDesk n\'est pas configuré pour cette organisation (jeton API manquant).',
         'sevdesk_outcome_unclear' => 'Résultat de la remise sevDesk incertain (délai dépassé après l\'envoi) — ne pas réessayer aveuglément ; le prochain passage rapproche via le marqueur source.',
+        'easybill_not_configured' => 'easybill n\'est pas configuré pour cette organisation (clé API manquante).',
+        'easybill_outcome_unclear' => 'Résultat du transfert easybill incertain (délai dépassé après l\'envoi) — ne pas réessayer à l\'aveugle ; la prochaine exécution réconcilie via le marqueur source.',
         'lexoffice_contact_missing' => 'Aucun contact Lexoffice pour le client — veuillez d\'abord synchroniser le contact.',
         'lexoffice_delivery_no_customer' => 'Une livraison sans client ne peut pas être transmise comme bon de livraison.',
         'lexoffice_delivery_not_linked' => 'Aucun bon de livraison Lexoffice n\'est lié à cette livraison.',

@@ -901,6 +901,7 @@ return [
             'datev' => 'DATEV guida',
             'orgamax' => 'orgaMAX guida',
             'sevdesk' => 'sevDesk guida',
+            'easybill' => 'easybill guida',
         ],
         'transfer-channel' => [
             'time' => 'Prestazioni/tempo',
@@ -911,6 +912,7 @@ return [
             'datev' => 'DATEV',
             'orgamax' => 'orgaMAX (ordine)',
             'sevdesk' => 'sevDesk (bozza di fattura)',
+            'easybill' => 'easybill (bozza di fattura)',
             'file' => 'Esportazione file',
         ],
         'transfer-status' => [

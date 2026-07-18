@@ -128,6 +128,7 @@ class DeliveryService {
             BillingMode::Datev => 'datev',
             BillingMode::OrgaMax => 'orgamax',
             BillingMode::SevDesk => 'sevdesk',
+            BillingMode::Easybill => 'easybill',
             BillingMode::Workdiary => 'workdiary',
         };
     }

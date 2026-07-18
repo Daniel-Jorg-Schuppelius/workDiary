@@ -68,6 +68,7 @@ return [
         'period_sources' => 'Gesammelt werden nur abrechenbare, noch nicht fakturierte/übergebene Quellen im Zeitraum.',
         'lexoffice_draft_created' => 'Rechnungsentwurf in Lexoffice angelegt:',
         'sevdesk_draft_created' => 'Rechnungsentwurf in sevDesk angelegt:',
+        'easybill_draft_created' => 'Rechnungsentwurf in easybill angelegt:',
     ],
 
     'confirm_execute' => 'Übergabe jetzt an das Ziel übertragen? Bei Erfolg werden die Quellen als übergeben markiert.',
@@ -99,6 +100,12 @@ return [
         'total' => 'Summe',
     ],
 
+    'easybill' => [
+        'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
+        'unit_hour' => 'Std.',
+        'unit_piece' => 'Stk.',
+    ],
+
     'sevdesk' => [
         'introduction' => 'Übergabe aus WorkDiary — :channel, Zeitraum :from – :to.',
         'tax_text' => 'Umsatzsteuer :rate%',
@@ -127,6 +134,8 @@ return [
         'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
         'sevdesk_not_configured' => 'sevDesk ist für diese Organisation nicht konfiguriert (API-Token fehlt).',
         'sevdesk_outcome_unclear' => 'Ausgang der sevDesk-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',
+        'easybill_not_configured' => 'easybill ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
+        'easybill_outcome_unclear' => 'Ausgang der easybill-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',
         'lexoffice_contact_missing' => 'Kein Lexoffice-Kontakt für den Kunden — bitte zuerst den Kontakt synchronisieren.',
         'lexoffice_delivery_no_customer' => 'Auslieferung ohne Kunde kann nicht als Lieferschein übergeben werden.',
         'lexoffice_delivery_not_linked' => 'Mit dieser Auslieferung ist kein Lexoffice-Lieferschein verknüpft.',
