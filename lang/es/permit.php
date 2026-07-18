@@ -58,10 +58,10 @@ return [
         'upload' => 'Subir documento',
         'replace' => 'Reemplazar documento',
         'replace_hint' => 'Una nueva subida reemplaza el documento existente.',
-        'hint' => 'Permitido: PDF, JPG, PNG, DOCX (máx. 25 MB).',
+        'hint' => 'Permitido: PDF, JPG, PNG, DOCX (máx. :mb MB).',
         'remove' => 'Eliminar documento',
         'remove_confirm' => '¿Eliminar realmente el documento justificativo?',
-        'too_large' => 'El archivo es demasiado grande (máx. 25 MB).',
+        'too_large' => 'El archivo es demasiado grande (máx. :mb MB).',
         'invalid_type' => 'Tipo de archivo no permitido (PDF, JPG, PNG, DOCX).',
     ],
 ];

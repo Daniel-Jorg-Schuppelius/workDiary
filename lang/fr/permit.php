@@ -58,10 +58,10 @@ return [
         'upload' => 'Téléverser le justificatif',
         'replace' => 'Remplacer le justificatif',
         'replace_hint' => 'Un nouveau téléversement remplace le justificatif existant.',
-        'hint' => 'Autorisé : PDF, JPG, PNG, DOCX (max. 25 Mo).',
+        'hint' => 'Autorisé : PDF, JPG, PNG, DOCX (max. :mb Mo).',
         'remove' => 'Supprimer le justificatif',
         'remove_confirm' => 'Supprimer définitivement le justificatif ?',
-        'too_large' => 'Le fichier est trop volumineux (max. 25 Mo).',
+        'too_large' => 'Le fichier est trop volumineux (max. :mb Mo).',
         'invalid_type' => 'Type de fichier non autorisé (PDF, JPG, PNG, DOCX).',
     ],
 ];

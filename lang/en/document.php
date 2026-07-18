@@ -78,7 +78,7 @@ return [
     ],
 
     'hint' => [
-        'upload' => 'Allowed: PDF, images, Office files, text/CSV, ZIP — max. 25 MB.',
+        'upload' => 'Allowed: PDF, images, Office files, text/CSV, ZIP — max. :mb MB.',
     ],
 
     // Customer release for the customer portal (wave D — document mirroring).

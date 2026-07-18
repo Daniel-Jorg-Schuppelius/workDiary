@@ -78,7 +78,7 @@ return [
     ],
 
     'hint' => [
-        'upload' => 'Autorisé : PDF, images, fichiers Office, texte/CSV, ZIP — max. 25 Mo.',
+        'upload' => 'Autorisé : PDF, images, fichiers Office, texte/CSV, ZIP — max. :mb Mo.',
     ],
 
     // Publication vers le portail client (vague D — miroir de documents).

@@ -47,6 +47,6 @@
             <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
             @error('file')<p class="basis-full text-sm text-error">{{ $message }}</p>@enderror
         </form>
-        <p class="mt-2 text-xs text-base-content/50">{{ __('Max. 25 MB. Erlaubt: jpg, png, gif, webp, pdf, txt, csv, log, zip, docx, xlsx.') }}</p>
+        <p class="mt-2 text-xs text-base-content/50">{{ __('Max. :mb MB. Erlaubt: jpg, png, gif, webp, pdf, txt, csv, log, zip, docx, xlsx.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
     @endcan
 </section>

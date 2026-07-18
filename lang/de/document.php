@@ -78,7 +78,7 @@ return [
     ],
 
     'hint' => [
-        'upload' => 'Erlaubt: PDF, Bilder, Office-Dateien, Text/CSV, ZIP — max. 25 MB.',
+        'upload' => 'Erlaubt: PDF, Bilder, Office-Dateien, Text/CSV, ZIP — max. :mb MB.',
     ],
 
     // Kundenfreigabe fürs Kundenportal (Welle D — Dokument-Spiegelung).

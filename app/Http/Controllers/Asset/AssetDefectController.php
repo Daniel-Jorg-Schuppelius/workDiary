@@ -15,6 +15,7 @@ use App\Exceptions\AssetValidationException;
 use App\Http\Controllers\Controller;
 use App\Models\{Asset, AssetDefect, User};
 use App\Services\Asset\AssetAssignmentService;
+use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
@@ -48,7 +49,7 @@ class AssetDefectController extends Controller {
             'blocks_usage' => ['nullable', 'boolean'],
             // Fotos direkt bei der Meldung (mobil per Kamera-Capture).
             'photos' => ['nullable', 'array', 'max:8'],
-            'photos.*' => ['file', 'mimetypes:image/jpeg,image/png,image/webp,image/gif', 'max:25600'],
+            'photos.*' => ['file', 'mimetypes:image/jpeg,image/png,image/webp,image/gif', 'max:' . FileAttacher::maxKb()],
         ]);
 
         $defect = $this->assignments->reportDefect($asset, $user, [

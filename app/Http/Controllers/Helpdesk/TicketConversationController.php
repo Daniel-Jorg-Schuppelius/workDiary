@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Helpdesk;
 use App\Enums\User\Permission;
 use App\Http\Controllers\{AttachmentController, Controller};
 use App\Models\{ServiceTicket, User};
+use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\TicketConversationService;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -84,7 +85,7 @@ class TicketConversationController extends Controller {
     private function validatedUploads(Request $request): array {
         $request->validate([
             'files' => ['nullable', 'array', 'max:5'],
-            'files.*' => ['file', 'max:' . (AttachmentController::MAX_BYTES / 1024)],
+            'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
         ]);
 
         $files = array_values(array_filter((array) $request->file('files', []), fn($f) => $f instanceof UploadedFile));

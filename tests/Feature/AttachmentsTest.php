@@ -90,6 +90,18 @@ class AttachmentsTest extends TestCase {
             ->assertSessionHasErrors('file');
     }
 
+    public function test_org_setting_lowers_upload_limit(): void {
+        $owner = User::factory()->user()->create();
+        $owner->organization->update(['settings' => ['uploads' => ['attachment_kb' => 1024]]]);
+        $entry = DiaryEntry::factory()->for($owner)->create();
+        // 2 MB > 1 MB Org-Limit (uploads.attachment_kb), aber < 25 MB Default
+        $file = UploadedFile::fake()->create('big.pdf', 2 * 1024, 'application/pdf');
+
+        $this->actingAs($owner)
+            ->post(route('attachments.store', ['type' => 'diary', 'id' => $entry->sqid]), ['file' => $file])
+            ->assertSessionHasErrors('file');
+    }
+
     public function test_signed_download_succeeds_and_unsigned_fails(): void {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();

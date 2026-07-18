@@ -116,7 +116,7 @@ return [
         'comment_submit' => 'Send comment',
         'comment_saved' => 'Comment saved.',
         'upload_heading' => 'Upload file or photo',
-        'upload_hint' => 'Allowed: JPG, PNG, GIF, WEBP, PDF (max. 25 MB).',
+        'upload_hint' => 'Allowed: JPG, PNG, GIF, WEBP, PDF (max. :mb MB).',
         'upload_submit' => 'Upload',
         'upload_saved' => 'File uploaded.',
         'upload_rejected' => 'File type not allowed.',

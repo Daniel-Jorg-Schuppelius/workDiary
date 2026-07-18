@@ -14,13 +14,13 @@ use App\Events\Chat\{MessageDeleted, MessageSent, MessageUpdated};
 use App\Http\Controllers\Controller;
 use App\Models\Chat\{Channel, Message};
 use App\Models\User;
+use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
 
 class MessageController extends Controller {
     private const PAGE = 30;
-    private const MAX_FILE_KB = 20480; // 20 MB
     private const ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'zip'];
 
     /** Serverseitig erkannte MIME-Typen (Defense-in-Depth gegen umbenannte Dateien). */
@@ -92,7 +92,7 @@ class MessageController extends Controller {
             'quoted_id' => ['nullable', 'string'],
             'scheduled_at' => ['nullable', 'date'],
             'files' => ['sometimes', 'array', 'max:10'],
-            'files.*' => ['file', 'max:' . self::MAX_FILE_KB],
+            'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
         ]);
 
         // Geplanter Versand: Nachricht in die Warteschlange (eigene Tabelle) legen.

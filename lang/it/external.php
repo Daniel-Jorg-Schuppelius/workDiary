@@ -88,7 +88,7 @@ return [
         'comment_submit' => 'Invia commento',
         'comment_saved' => 'Commento salvato.',
         'upload_heading' => 'Carica file o foto',
-        'upload_hint' => 'Consentiti: JPG, PNG, GIF, WEBP, PDF (max. 25 MB).',
+        'upload_hint' => 'Consentiti: JPG, PNG, GIF, WEBP, PDF (max. :mb MB).',
         'upload_submit' => 'Carica',
         'upload_saved' => 'File caricato.',
         'upload_rejected' => 'Tipo di file non consentito.',

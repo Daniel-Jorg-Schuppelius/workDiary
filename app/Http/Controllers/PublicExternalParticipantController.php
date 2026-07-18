@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ExternalParticipant\ExternalAbility;
 use App\Models\{ExternalParticipant, Organization};
+use App\Services\Attachments\FileAttacher;
 use App\Services\ExternalParticipant\ExternalParticipantService;
 use App\Support\CarbonFmt;
 use Illuminate\Database\Eloquent\Model;
@@ -70,7 +71,7 @@ class PublicExternalParticipantController extends Controller {
         abort_unless($participant->can(ExternalAbility::Upload), 403);
 
         $request->validate([
-            'file' => ['required', 'file', 'max:' . (ExternalParticipantService::MAX_UPLOAD_BYTES / 1024)],
+            'file' => ['required', 'file', 'max:' . FileAttacher::maxKb()],
         ]);
 
         $subject = $this->bindSubject($participant);

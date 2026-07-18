@@ -107,6 +107,9 @@ class OrganizationSettingsFormRulesTest extends TestCase {
         $this->assertAccepted(['uploads' => ['csv_import_kb' => '2048']]);
         $this->assertRejected(['uploads' => ['csv_import_kb' => '2000000']], 'settings.uploads.csv_import_kb');
 
+        $this->assertAccepted(['uploads' => ['attachment_kb' => '1024']]);
+        $this->assertRejected(['uploads' => ['attachment_kb' => '2000000']], 'settings.uploads.attachment_kb');
+
         $this->assertAccepted(['validation' => ['attendance' => ['max_comment' => '500']]]);
         $this->assertRejected(['validation' => ['attendance' => ['max_comment' => 'abc']]], 'settings.validation.attendance.max_comment');
 

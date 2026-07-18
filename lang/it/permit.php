@@ -58,10 +58,10 @@ return [
         'upload' => 'Carica documento',
         'replace' => 'Sostituisci documento',
         'replace_hint' => 'Un nuovo caricamento sostituisce il documento esistente.',
-        'hint' => 'Consentito: PDF, JPG, PNG, DOCX (max. 25 MB).',
+        'hint' => 'Consentito: PDF, JPG, PNG, DOCX (max. :mb MB).',
         'remove' => 'Rimuovi documento',
         'remove_confirm' => 'Rimuovere davvero il documento giustificativo?',
-        'too_large' => 'Il file è troppo grande (max. 25 MB).',
+        'too_large' => 'Il file è troppo grande (max. :mb MB).',
         'invalid_type' => 'Tipo di file non consentito (PDF, JPG, PNG, DOCX).',
     ],
 ];

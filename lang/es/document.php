@@ -78,7 +78,7 @@ return [
     ],
 
     'hint' => [
-        'upload' => 'Permitido: PDF, imágenes, archivos de Office, texto/CSV, ZIP — máx. 25 MB.',
+        'upload' => 'Permitido: PDF, imágenes, archivos de Office, texto/CSV, ZIP — máx. :mb MB.',
     ],
 
     // Liberación para el portal de clientes (fase D — reflejo de documentos).

@@ -88,7 +88,7 @@ return [
         'comment_submit' => 'Envoyer le commentaire',
         'comment_saved' => 'Commentaire enregistré.',
         'upload_heading' => 'Téléverser un fichier ou une photo',
-        'upload_hint' => 'Autorisé : JPG, PNG, GIF, WEBP, PDF (max. 25 Mo).',
+        'upload_hint' => 'Autorisé : JPG, PNG, GIF, WEBP, PDF (max. :mb Mo).',
         'upload_submit' => 'Téléverser',
         'upload_saved' => 'Fichier téléversé.',
         'upload_rejected' => 'Type de fichier non autorisé.',

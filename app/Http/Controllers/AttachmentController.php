@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Asset, Attachment, Comment, Customer, DiaryEntry, EmergencyAssignment, KnowledgeArticle, OnCallShift, Organization, ServiceTicket, Supplier, Task, User};
-use App\Services\Attachments\ImageMetaUploader;
+use App\Services\Attachments\{FileAttacher, ImageMetaUploader};
 use App\Support\Filename;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -23,9 +23,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class AttachmentController extends Controller {
     public function __construct(private readonly ImageMetaUploader $imageUploader) {}
 
-    // Öffentlich: gilt auch für Uploads über eigene Controller (Portal-Tickets, MVP-152) — eine Wahrheit.
-    public const MAX_BYTES = 25 * 1024 * 1024; // 25 MB
-
+    // Größenlimit: {@see FileAttacher::maxKb()} — eine Wahrheit, org-konfigurierbar (uploads.attachment_kb).
     public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
 
     /** Serverseitig akzeptierte MIME-Typen, geprüft über PHP Fileinfo (nicht Client-Header) */
@@ -86,7 +84,7 @@ class AttachmentController extends Controller {
         Gate::authorize('update', $parent);
 
         $request->validate([
-            'file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)],
+            'file' => ['required', 'file', 'max:' . FileAttacher::maxKb()],
         ]);
 
         $file = $request->file('file');

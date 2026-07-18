@@ -81,6 +81,7 @@ return [
         'description' => 'Tailles maximales de téléversement, en kilo-octets.',
         'csv_import_kb' => 'Import CSV',
         'customer_attachment_kb' => 'Pièce jointe client',
+        'attachment_kb' => 'Pièces jointes (général)',
     ],
     'validation' => [
         'heading' => 'Limites de saisie',

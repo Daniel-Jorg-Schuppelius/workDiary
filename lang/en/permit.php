@@ -58,10 +58,10 @@ return [
         'upload' => 'Upload document',
         'replace' => 'Replace document',
         'replace_hint' => 'A new upload replaces the existing document.',
-        'hint' => 'Allowed: PDF, JPG, PNG, DOCX (max. 25 MB).',
+        'hint' => 'Allowed: PDF, JPG, PNG, DOCX (max. :mb MB).',
         'remove' => 'Remove document',
         'remove_confirm' => 'Really remove the supporting document?',
-        'too_large' => 'The file is too large (max. 25 MB).',
+        'too_large' => 'The file is too large (max. :mb MB).',
         'invalid_type' => 'File type not allowed (PDF, JPG, PNG, DOCX).',
     ],
 ];

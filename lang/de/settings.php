@@ -92,6 +92,7 @@ return [
         'description' => 'Maximale Dateigrößen für Uploads, in Kilobyte.',
         'csv_import_kb' => 'CSV-Import',
         'customer_attachment_kb' => 'Kundenanhang',
+        'attachment_kb' => 'Anhänge (allgemein)',
     ],
     'validation' => [
         'heading' => 'Eingabelängen',

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Attachments;
 
 use App\Models\Attachment;
-use App\Support\Filename;
+use App\Support\{Filename, Setting};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -26,11 +26,22 @@ use Illuminate\Support\Str;
  * Request anlegen können — ohne den generischen AttachmentController-Endpoint.
  */
 final class FileAttacher {
-    /** Maximale Dateigröße in KB (Laravel `max:`-Einheit). */
-    public const MAX_KB = 25 * 1024; // 25 MB
-
     /** @var list<string> */
     public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
+
+    /**
+     * Maximale Dateigröße in KB (Laravel `max:`-Einheit) — eine Wahrheit für
+     * alle generischen Anhang-Uploads, pro Organisation/System übersteuerbar
+     * (Setting `uploads.attachment_kb`, Default aus config/uploads.php).
+     */
+    public static function maxKb(): int {
+        return (int) Setting::get('uploads.attachment_kb', 25600);
+    }
+
+    /** Wie {@see maxKb()}, gerundet auf ganze MB (für UI-Hinweise/Meldungen). */
+    public static function maxMb(): int {
+        return max(1, (int) round(self::maxKb() / 1024));
+    }
 
     /**
      * Laravel-Validierungsregel für ein einzelnes hochgeladenes Datei-Feld
@@ -39,7 +50,7 @@ final class FileAttacher {
      * @return list<string>
      */
     public static function rule(): array {
-        return ['file', 'max:' . self::MAX_KB, 'mimes:' . implode(',', self::ALLOWED_EXTENSIONS)];
+        return ['file', 'max:' . self::maxKb(), 'mimes:' . implode(',', self::ALLOWED_EXTENSIONS)];
     }
 
     /**

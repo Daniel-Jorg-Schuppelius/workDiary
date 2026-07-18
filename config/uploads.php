@@ -14,4 +14,5 @@
 return [
     'csv_import_kb' => (int) env('UPLOAD_CSV_IMPORT_KB', 10240),
     'customer_attachment_kb' => (int) env('UPLOAD_CUSTOMER_ATTACHMENT_KB', 10240),
+    'attachment_kb' => (int) env('UPLOAD_ATTACHMENT_KB', 25600),
 ];

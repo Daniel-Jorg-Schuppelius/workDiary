@@ -81,6 +81,7 @@ return [
         'description' => 'Tamaños máximos de subida, en kilobytes.',
         'csv_import_kb' => 'Importación CSV',
         'customer_attachment_kb' => 'Adjunto de cliente',
+        'attachment_kb' => 'Adjuntos (general)',
     ],
     'validation' => [
         'heading' => 'Límites de entrada',

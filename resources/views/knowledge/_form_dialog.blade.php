@@ -68,6 +68,6 @@
                    class="file-input file-input-bordered w-full" />
         </label>
         @error('attachments.*')<p class="text-sm text-error">{{ $message }}</p>@enderror
-        <p class="text-xs text-base-content/50">{{ __('Max. 25 MB pro Datei. Verwalten/Löschen auf der Artikelseite.') }}</p>
+        <p class="text-xs text-base-content/50">{{ __('Max. :mb MB pro Datei. Verwalten/Löschen auf der Artikelseite.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
     </x-form-group>
 </x-modal>

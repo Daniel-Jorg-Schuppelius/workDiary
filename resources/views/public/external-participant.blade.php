@@ -71,7 +71,7 @@
             <h2 class="text-sm font-semibold">{{ __('external.public.upload_heading') }}</h2>
             <input type="file" name="file" required class="file-input file-input-bordered w-full"
                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf">
-            <p class="text-xs text-base-content/60">{{ __('external.public.upload_hint') }}</p>
+            <p class="text-xs text-base-content/60">{{ __('external.public.upload_hint', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
             <div class="flex justify-end">
                 <x-button type="submit" tone="primary" size="sm">{{ __('external.public.upload_submit') }}</x-button>
             </div>

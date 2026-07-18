@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttachmentResource;
 use App\Models\{Asset, Attachment, Comment, DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Services\Attachments\FileAttacher;
 use App\Support\Filename;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -20,8 +21,6 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
-    private const MAX_BYTES = 25 * 1024 * 1024;
-
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
 
     private const ALLOWED_MIMES = [
@@ -54,7 +53,7 @@ class AttachmentController extends Controller {
         // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt (nicht nur Sichtbarkeit).
         Gate::authorize('update', $parent);
 
-        $request->validate(['file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)]]);
+        $request->validate(['file' => ['required', 'file', 'max:' . FileAttacher::maxKb()]]);
         $file = $request->file('file');
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
         if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {

@@ -78,7 +78,7 @@ return [
     ],
 
     'hint' => [
-        'upload' => 'Consentiti: PDF, immagini, file Office, testo/CSV, ZIP — max. 25 MB.',
+        'upload' => 'Consentiti: PDF, immagini, file Office, testo/CSV, ZIP — max. :mb MB.',
     ],
 
     // Rilascio al portale clienti (ondata D — copia dei documenti).

@@ -40,6 +40,7 @@ return [
     // Grenzen = historische Formulargrenzen (067-P3b, s. pagination).
     'uploads.csv_import_kb' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1048576'],
     'uploads.customer_attachment_kb' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1048576'],
+    'uploads.attachment_kb' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1048576'],
 
     // --- Archiv (config/archive.php) ---
     'archive.schedule_at' => ['type' => 'time', 'scopes' => ['system'], 'affects' => ['archive.run']],

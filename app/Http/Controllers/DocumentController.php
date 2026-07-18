@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Asset, Customer, DiaryEntry, Document, DocumentVersion, Project, User};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Document\DocumentService;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -34,7 +35,7 @@ class DocumentController extends Controller {
         'asset' => Asset::class,
     ];
 
-    private const MAX_BYTES = 25 * 1024 * 1024; // 25 MB (wie AttachmentController)
+    // Größenlimit: {@see FileAttacher::maxKb()} (wie AttachmentController, org-konfigurierbar).
 
     /** @var array<int, string> Erlaubte Datei-Endungen (analog AttachmentController). */
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
@@ -237,7 +238,7 @@ class DocumentController extends Controller {
         Gate::authorize('addVersion', $document);
 
         $data = $request->validate([
-            'file' => ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)],
+            'file' => ['required', 'file', 'max:' . FileAttacher::maxKb()],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -318,7 +319,7 @@ class DocumentController extends Controller {
         ];
 
         if ($includeFile) {
-            $rules['file'] = ['required', 'file', 'max:' . (self::MAX_BYTES / 1024)];
+            $rules['file'] = ['required', 'file', 'max:' . FileAttacher::maxKb()];
             $rules['version_note'] = ['nullable', 'string', 'max:500'];
             $rules['documentable_kind'] = ['nullable', 'string', 'in:' . implode(',', array_keys(self::DOCUMENTABLE_MAP))];
             $rules['documentable_id'] = ['nullable', 'string', 'required_with:documentable_kind'];

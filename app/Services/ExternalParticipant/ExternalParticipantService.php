@@ -35,8 +35,6 @@ class ExternalParticipantService {
 
     public const MAX_TTL_DAYS = 180;
 
-    public const MAX_UPLOAD_BYTES = 25 * 1024 * 1024; // 25 MB
-
     /** @var list<string> */
     public const UPLOAD_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
 

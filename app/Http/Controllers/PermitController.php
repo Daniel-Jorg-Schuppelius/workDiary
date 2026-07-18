@@ -14,6 +14,7 @@ use App\Enums\Permit\PermitStatus;
 use App\Http\Controllers\Concerns\ParsesIndexQuery;
 use App\Http\Requests\SavePermitRequest;
 use App\Models\{Event, Permit, User};
+use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\Support\Str;
@@ -33,8 +34,6 @@ class PermitController extends Controller {
         'image/png',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
-
-    private const EVIDENCE_MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Permit::class);
@@ -147,8 +146,8 @@ class PermitController extends Controller {
             return null;
         }
 
-        if ($file->getSize() > self::EVIDENCE_MAX_BYTES) {
-            return __('permit.evidence.too_large');
+        if ($file->getSize() > FileAttacher::maxKb() * 1024) {
+            return __('permit.evidence.too_large', ['mb' => FileAttacher::maxMb()]);
         }
 
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));

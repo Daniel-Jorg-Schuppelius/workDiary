@@ -116,7 +116,7 @@ return [
         'comment_submit' => 'Kommentar senden',
         'comment_saved' => 'Kommentar gespeichert.',
         'upload_heading' => 'Datei oder Foto hochladen',
-        'upload_hint' => 'Erlaubt: JPG, PNG, GIF, WEBP, PDF (max. 25 MB).',
+        'upload_hint' => 'Erlaubt: JPG, PNG, GIF, WEBP, PDF (max. :mb MB).',
         'upload_submit' => 'Hochladen',
         'upload_saved' => 'Datei hochgeladen.',
         'upload_rejected' => 'Dateityp nicht erlaubt.',

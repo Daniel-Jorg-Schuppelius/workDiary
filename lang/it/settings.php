@@ -81,6 +81,7 @@ return [
         'description' => 'Dimensioni massime di caricamento, in kilobyte.',
         'csv_import_kb' => 'Importazione CSV',
         'customer_attachment_kb' => 'Allegato cliente',
+        'attachment_kb' => 'Allegati (generale)',
     ],
     'validation' => [
         'heading' => 'Limiti di immissione',

@@ -58,10 +58,10 @@ return [
         'upload' => 'Nachweis hochladen',
         'replace' => 'Nachweis ersetzen',
         'replace_hint' => 'Ein neuer Upload ersetzt den vorhandenen Nachweis.',
-        'hint' => 'Erlaubt: PDF, JPG, PNG, DOCX (max. 25 MB).',
+        'hint' => 'Erlaubt: PDF, JPG, PNG, DOCX (max. :mb MB).',
         'remove' => 'Nachweis entfernen',
         'remove_confirm' => 'Nachweis-Dokument wirklich entfernen?',
-        'too_large' => 'Die Datei ist zu groß (max. 25 MB).',
+        'too_large' => 'Die Datei ist zu groß (max. :mb MB).',
         'invalid_type' => 'Dateityp nicht erlaubt (PDF, JPG, PNG, DOCX).',
     ],
 ];

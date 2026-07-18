@@ -89,6 +89,7 @@ return [
         'description' => 'Maximum upload sizes, in kilobytes.',
         'csv_import_kb' => 'CSV import',
         'customer_attachment_kb' => 'Customer attachment',
+        'attachment_kb' => 'Attachments (general)',
     ],
     'validation' => [
         'heading' => 'Input limits',

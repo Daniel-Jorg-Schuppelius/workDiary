@@ -59,7 +59,7 @@
         <p class="text-xs text-base-content/60 mt-1">{{ __('permit.evidence.replace_hint') }}</p>
     @endif
     <x-input-field name="evidence_document" type="file" :label="$evidence ? __('permit.evidence.replace') : __('permit.evidence.upload')" />
-    <p class="text-xs text-base-content/60 mt-1">{{ __('permit.evidence.hint') }}</p>
+    <p class="text-xs text-base-content/60 mt-1">{{ __('permit.evidence.hint', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
 </x-form-group>
 
 <x-validation-errors />
