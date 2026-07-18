@@ -14,7 +14,8 @@ namespace App\Services\Ai;
 
 use App\Enums\Ai\AiConnectionStatus;
 use App\Models\Ai\AiProviderConnection;
-use Illuminate\Support\{Carbon, Str};
+use App\Services\Ai\Exceptions\AiException;
+use Illuminate\Support\Carbon;
 use Throwable;
 
 /**
@@ -32,7 +33,7 @@ class AiConnectionTester {
         try {
             $this->providers->make($connection)->preflight();
         } catch (Throwable $e) {
-            $connection->recordConnectionFailure(class_basename($e) . ': ' . Str::limit($e->getMessage(), 240, '…'));
+            $connection->recordConnectionFailure(AiException::describe($e));
 
             return false;
         }

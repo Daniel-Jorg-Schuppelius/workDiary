@@ -130,6 +130,10 @@ return [
         'term_required' => 'Las entradas de glosario requieren un término.',
         'source_required' => 'Los pares de ejemplo requieren un texto bruto.',
     ],
+    'error' => [
+        'technical' => 'Error técnico: :message',
+        'unknown' => 'Error desconocido.',
+    ],
     'empty' => [
         'connections' => 'Aún no hay conexiones de proveedores.',
         'capabilities' => 'Aún no hay capacidades de IA registradas (config/ai.php).',

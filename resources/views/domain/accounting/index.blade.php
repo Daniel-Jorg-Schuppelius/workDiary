@@ -18,38 +18,36 @@
 
     <x-filter-bar :action="route('domains.accounting')" :reset="route('domains.accounting')">
         <x-date-range name-from="from" name-to="to" :from="$filters['from'] ?? null" :to="$filters['to'] ?? null" />
-        <input type="text" name="type" value="{{ $filters['type'] ?? '' }}" class="input input-sm input-bordered w-40 shrink-0"
-               placeholder="{{ __('domain.accounting.type') }}" aria-label="{{ __('domain.accounting.type') }}">
+        <x-filter-field :label="__('domain.accounting.type')" for="acc-type" class="shrink-0">
+            <input id="acc-type" type="text" name="type" value="{{ $filters['type'] ?? '' }}" class="input input-sm input-bordered w-40"
+                   placeholder="{{ __('domain.accounting.type') }}" aria-label="{{ __('domain.accounting.type') }}">
+        </x-filter-field>
     </x-filter-bar>
 
-    <div class="overflow-x-auto">
-        <table class="table table-sm">
-            <thead>
-                <tr>
-                    <th>{{ __('domain.accounting.date') }}</th>
-                    <th>{{ __('domain.accounting.type') }}</th>
-                    <th>{{ __('domain.accounting.description') }}</th>
-                    <th>{{ __('domain.field.customer') }}</th>
-                    <th class="text-right">{{ __('domain.accounting.net') }}</th>
-                    <th class="text-right">{{ __('domain.accounting.tax') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($entries as $entry)
-                    <tr>
-                        <td class="tabular-nums">{{ $entry->entry_date?->format('d.m.Y') ?? '—' }}</td>
-                        <td>{{ $entry->type ?? '—' }}</td>
-                        <td>{{ $entry->description ?? '—' }}</td>
-                        <td>{{ $entry->customer?->name ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? number_format((float) $entry->net_amount, 2, ',', '.') : '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $entry->tax_amount !== null ? number_format((float) $entry->tax_amount, 2, ',', '.') : '—' }}</td>
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="6" :title="__('domain.accounting.empty')" compact />
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-table size="sm" :caption="__('domain.section.accounting')">
+        <x-slot:head>
+            <tr>
+                <x-table.th>{{ __('domain.accounting.date') }}</x-table.th>
+                <x-table.th>{{ __('domain.accounting.type') }}</x-table.th>
+                <x-table.th>{{ __('domain.accounting.description') }}</x-table.th>
+                <x-table.th>{{ __('domain.field.customer') }}</x-table.th>
+                <x-table.th align="right">{{ __('domain.accounting.net') }}</x-table.th>
+                <x-table.th align="right">{{ __('domain.accounting.tax') }}</x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($entries as $entry)
+            <tr>
+                <td class="tabular-nums">{{ $entry->entry_date?->format('d.m.Y') ?? '—' }}</td>
+                <td>{{ $entry->type ?? '—' }}</td>
+                <td>{{ $entry->description ?? '—' }}</td>
+                <td>{{ $entry->customer?->name ?? '—' }}</td>
+                <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? number_format((float) $entry->net_amount, 2, ',', '.') : '—' }}</td>
+                <td class="text-right tabular-nums">{{ $entry->tax_amount !== null ? number_format((float) $entry->tax_amount, 2, ',', '.') : '—' }}</td>
+            </tr>
+        @empty
+            <x-table.empty :colspan="6" :title="__('domain.accounting.empty')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$entries" standing />
 </x-index-page>

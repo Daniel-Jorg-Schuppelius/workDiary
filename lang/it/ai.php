@@ -130,6 +130,10 @@ return [
         'term_required' => 'Le voci di glossario richiedono un termine.',
         'source_required' => 'Le coppie di esempio richiedono un testo grezzo.',
     ],
+    'error' => [
+        'technical' => 'Errore tecnico: :message',
+        'unknown' => 'Errore sconosciuto.',
+    ],
     'empty' => [
         'connections' => 'Nessuna connessione al provider ancora creata.',
         'capabilities' => 'Nessuna capability IA ancora registrata (config/ai.php).',

@@ -18,7 +18,6 @@ use App\Services\Ai\Contracts\{AiRequestInterface, LlmProviderInterface, Transla
 use App\Services\Ai\Dto\{AiCapability, AiClassificationResult, AiFindResult, AiInvocationResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExplainRequest, FindRequest, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\{AiException, AiUnavailableException};
 use Illuminate\Support\Facades\{Auth, Cache};
-use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -76,9 +75,9 @@ class AiInvocationService {
                 $provider = $this->providers->make($connection);
                 $result = $this->perform($provider, $request);
             } catch (Throwable $e) {
-                // Redigiert: Fehlerklasse + gekürzte Meldung, nie Prompt-Inhalte.
+                // Redigiert: gekürzte, lokalisierte Meldung, nie Prompt-Inhalte.
                 $lastError = $e;
-                $connection->recordConnectionFailure(class_basename($e) . ': ' . Str::limit($e->getMessage(), 240, '…'));
+                $connection->recordConnectionFailure(AiException::describe($e));
 
                 continue;
             }
