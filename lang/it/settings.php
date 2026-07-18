@@ -51,6 +51,10 @@ return [
         'default_tax_rate' => 'Aliquota fiscale predefinita (%)',
         'default_currency' => 'Valuta predefinita (ISO-4217)',
         'time_unit' => 'Unità di tempo per le voci',
+        'billing_increment_minutes' => 'Incremento di fatturazione predefinito (minuti)',
+        'billing_increment_minutes_hint' => 'Il tempo fatturabile viene arrotondato per eccesso a questo incremento. Si applica se né il progetto né il cliente ne impostano uno. Vuoto = al minuto.',
+        'billing_grouping_gap_minutes' => 'Intervallo di raggruppamento predefinito (minuti)',
+        'billing_grouping_gap_minutes_hint' => 'Le registrazioni entro questo intervallo vengono unite in un blocco in fatturazione. Vuoto = nessun raggruppamento.',
     ],
     'einvoice' => [
         'heading' => 'Fattura elettronica (XRechnung)',

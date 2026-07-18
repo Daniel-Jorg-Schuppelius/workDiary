@@ -93,6 +93,9 @@ return [
     'invoicing.default_currency' => ['type' => 'string', 'scopes' => ['system', 'organization'], 'rules' => 'size:3'],
     'invoicing.default_tax_rate' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:8'],
     'invoicing.time_unit' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:8'],
+    // Abrechnungs-Taktung: Org-Default, Kunde/Projekt können übersteuern (harter Default 1/0 im Trait)
+    'invoicing.billing_increment_minutes' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:1|max:1440', 'fallback' => 1],
+    'invoicing.billing_grouping_gap_minutes' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:1440', 'fallback' => 0],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],
     'ui.calendar.slot_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'options' => [10, 15, 20, 30, 60]],
 

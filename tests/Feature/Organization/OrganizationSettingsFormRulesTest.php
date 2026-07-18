@@ -91,6 +91,11 @@ class OrganizationSettingsFormRulesTest extends TestCase {
     public function test_invoicing_and_einvoice_field_bounds(): void {
         $this->assertAccepted(['invoicing' => ['default_currency' => 'EUR', 'default_tax_rate' => '19.00']]);
 
+        $this->assertAccepted(['invoicing' => ['billing_increment_minutes' => '15', 'billing_grouping_gap_minutes' => '30']]);
+        $this->assertSame(15, (int) data_get($this->organization->refresh()->settings, 'invoicing.billing_increment_minutes'));
+        $this->assertRejected(['invoicing' => ['billing_increment_minutes' => '0']], 'settings.invoicing.billing_increment_minutes');
+        $this->assertRejected(['invoicing' => ['billing_grouping_gap_minutes' => '2000']], 'settings.invoicing.billing_grouping_gap_minutes');
+
         $this->assertRejected(['invoicing' => ['default_currency' => 'EU']], 'settings.invoicing.default_currency');
         $this->assertRejected(['einvoice' => ['country' => 'DEU']], 'settings.einvoice.country');
         $this->assertRejected(['einvoice' => ['contact_email' => 'keine-mail']], 'settings.einvoice.contact_email');

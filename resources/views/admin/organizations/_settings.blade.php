@@ -68,6 +68,24 @@
                        class="input input-bordered w-full">
             </div>
 
+            {{-- Standardtaktung: greift, wenn weder Projekt noch Kunde eine Taktung setzen. --}}
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.invoicing.billing_increment_minutes') }}</label>
+                <input type="number" min="1" max="1440" step="1" name="settings[invoicing][billing_increment_minutes]"
+                       value="{{ old('settings.invoicing.billing_increment_minutes', data_get($stored, 'invoicing.billing_increment_minutes', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => '1']) }}"
+                       class="input input-bordered w-full">
+                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.billing_increment_minutes_hint') }}</p>
+            </div>
+            <div class="fieldset">
+                <label class="fieldset-label">{{ __('settings.invoicing.billing_grouping_gap_minutes') }}</label>
+                <input type="number" min="0" max="1440" step="1" name="settings[invoicing][billing_grouping_gap_minutes]"
+                       value="{{ old('settings.invoicing.billing_grouping_gap_minutes', data_get($stored, 'invoicing.billing_grouping_gap_minutes', '')) }}"
+                       placeholder="{{ __('settings.placeholder_default', ['value' => '0']) }}"
+                       class="input input-bordered w-full">
+                <p class="text-xs text-base-content/60 mt-1">{{ __('settings.invoicing.billing_grouping_gap_minutes_hint') }}</p>
+            </div>
+
             @can(\App\Enums\User\Permission::FinanceConfig->value)
                 {{-- Fakturierungsweg (Feature 045): Org-Default, Kunden können übersteuern. --}}
                 <div class="fieldset">

@@ -99,6 +99,31 @@ class BillableTimeAggregatorTest extends TestCase {
         $this->assertSame(30, $blocks->first()->billedMinutes);
     }
 
+    public function test_inherits_increment_from_org_setting(): void {
+        \App\Support\Setting::set('invoicing.billing_increment_minutes', 30, \App\Settings\SettingScope::Organization, $this->organization);
+        \App\Support\Setting::set('invoicing.billing_grouping_gap_minutes', 15, \App\Settings\SettingScope::Organization, $this->organization);
+        $project = $this->project(increment: null, gap: null);
+        // 10 + Lücke 10 + 10 ⇒ ein Block (Org-Lücke 15) ⇒ raw 20 ⇒ getaktet 30.
+        $this->entry($project, '2030-04-01 10:00', '2030-04-01 10:10');
+        $this->entry($project, '2030-04-01 10:20', '2030-04-01 10:30');
+
+        $blocks = $this->aggregate($project);
+
+        $this->assertCount(1, $blocks);
+        $this->assertSame(30, $blocks->first()->billedMinutes);
+    }
+
+    public function test_customer_increment_overrides_org_setting(): void {
+        \App\Support\Setting::set('invoicing.billing_increment_minutes', 60, \App\Settings\SettingScope::Organization, $this->organization);
+        $this->customer->update(['billing_increment_minutes' => 15]);
+        $project = $this->project(increment: null, gap: 0);
+        $this->entry($project, '2030-04-01 10:00', '2030-04-01 10:10'); // 10 Min
+
+        $blocks = $this->aggregate($project);
+
+        $this->assertSame(15, $blocks->first()->billedMinutes);
+    }
+
     public function test_default_is_minute_exact_without_grouping(): void {
         $project = $this->project(increment: null, gap: null);
         $this->entry($project, '2030-04-01 10:00', '2030-04-01 10:07'); // 7 Min

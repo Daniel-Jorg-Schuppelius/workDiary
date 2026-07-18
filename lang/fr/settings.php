@@ -51,6 +51,10 @@ return [
         'default_tax_rate' => 'Taux de TVA par défaut (%)',
         'default_currency' => 'Devise par défaut (ISO-4217)',
         'time_unit' => 'Unité de temps pour les positions',
+        'billing_increment_minutes' => 'Incrément de facturation par défaut (minutes)',
+        'billing_increment_minutes_hint' => 'Le temps facturable est arrondi à cet incrément. S’applique si ni le projet ni le client n’en définissent un. Vide = à la minute près.',
+        'billing_grouping_gap_minutes' => 'Écart de regroupement par défaut (minutes)',
+        'billing_grouping_gap_minutes_hint' => 'Les saisies séparées d’au plus cet écart sont regroupées en un bloc lors de la facturation. Vide = pas de regroupement.',
     ],
     'einvoice' => [
         'heading' => 'Facture électronique (XRechnung)',

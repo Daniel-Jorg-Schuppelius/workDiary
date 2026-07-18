@@ -82,8 +82,9 @@ trait ResolvesEffectiveProjectSettings {
     }
 
     /**
-     * Abrechnungs-Taktung in Minuten mit Vererbung:
-     * eigener Wert > Parent (rekursiv) > Kunde > 1 (minutengenau).
+     * Abrechnungs-Taktung in Minuten mit Vererbung: eigener Wert > Parent
+     * (rekursiv) > Kunde > Org-Setting `invoicing.billing_increment_minutes`
+     * > 1 (minutengenau).
      */
     public function effectiveBillingIncrement(): int {
         if ($this->billing_increment_minutes !== null) {
@@ -93,13 +94,18 @@ trait ResolvesEffectiveProjectSettings {
             return $this->parent->effectiveBillingIncrement();
         }
         $customerValue = $this->customer?->billing_increment_minutes;
+        if ($customerValue !== null) {
+            return max(1, (int) $customerValue);
+        }
+        $orgValue = Setting::get('invoicing.billing_increment_minutes');
 
-        return $customerValue !== null ? max(1, (int) $customerValue) : 1;
+        return $orgValue !== null ? max(1, (int) $orgValue) : 1;
     }
 
     /**
      * Max. Lücke (Minuten), bis zu der Einträge zusammengefasst werden, mit
-     * Vererbung: eigener Wert > Parent (rekursiv) > Kunde > 0 (keine Zusammenfassung).
+     * Vererbung: eigener Wert > Parent (rekursiv) > Kunde > Org-Setting
+     * `invoicing.billing_grouping_gap_minutes` > 0 (keine Zusammenfassung).
      */
     public function effectiveBillingGroupingGap(): int {
         if ($this->billing_grouping_gap_minutes !== null) {
@@ -109,8 +115,12 @@ trait ResolvesEffectiveProjectSettings {
             return $this->parent->effectiveBillingGroupingGap();
         }
         $customerValue = $this->customer?->billing_grouping_gap_minutes;
+        if ($customerValue !== null) {
+            return max(0, (int) $customerValue);
+        }
+        $orgValue = Setting::get('invoicing.billing_grouping_gap_minutes');
 
-        return $customerValue !== null ? max(0, (int) $customerValue) : 0;
+        return $orgValue !== null ? max(0, (int) $orgValue) : 0;
     }
 
     /**

@@ -59,6 +59,10 @@ return [
         'default_tax_rate' => 'Default tax rate (%)',
         'default_currency' => 'Default currency (ISO-4217)',
         'time_unit' => 'Time unit for positions',
+        'billing_increment_minutes' => 'Default billing increment (minutes)',
+        'billing_increment_minutes_hint' => 'Billable time is rounded up to this increment. Applies when neither project nor customer set one. Empty = minute-exact.',
+        'billing_grouping_gap_minutes' => 'Default grouping gap (minutes)',
+        'billing_grouping_gap_minutes_hint' => 'Entries within this gap are merged into one block when billing. Empty = no grouping.',
     ],
     'einvoice' => [
         'heading' => 'E-invoice (XRechnung)',

@@ -51,6 +51,10 @@ return [
         'default_tax_rate' => 'Tipo impositivo predeterminado (%)',
         'default_currency' => 'Moneda predeterminada (ISO-4217)',
         'time_unit' => 'Unidad de tiempo para las posiciones',
+        'billing_increment_minutes' => 'Incremento de facturación predeterminado (minutos)',
+        'billing_increment_minutes_hint' => 'El tiempo facturable se redondea hacia arriba a este incremento. Se aplica si ni el proyecto ni el cliente definen uno. Vacío = al minuto.',
+        'billing_grouping_gap_minutes' => 'Intervalo de agrupación predeterminado (minutos)',
+        'billing_grouping_gap_minutes_hint' => 'Las entradas separadas como máximo por este intervalo se agrupan en un bloque al facturar. Vacío = sin agrupación.',
     ],
     'einvoice' => [
         'heading' => 'Factura electrónica (XRechnung)',

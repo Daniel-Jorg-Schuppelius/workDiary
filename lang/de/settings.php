@@ -62,6 +62,10 @@ return [
         'default_tax_rate' => 'Standard-Steuersatz (%)',
         'default_currency' => 'Standard-Währung (ISO-4217)',
         'time_unit' => 'Zeit-Einheit für Positionen',
+        'billing_increment_minutes' => 'Standard-Taktung (Minuten)',
+        'billing_increment_minutes_hint' => 'Aufrundung abrechenbarer Zeit. Greift, wenn weder Projekt noch Kunde eine Taktung setzen. Leer = minutengenau.',
+        'billing_grouping_gap_minutes' => 'Standard-Lücke zum Zusammenfassen (Minuten)',
+        'billing_grouping_gap_minutes_hint' => 'Bis zu dieser Lücke werden Einträge beim Abrechnen zu einem Block zusammengefasst. Leer = keine Zusammenfassung.',
     ],
     'einvoice' => [
         'heading' => 'E-Rechnung (XRechnung)',
