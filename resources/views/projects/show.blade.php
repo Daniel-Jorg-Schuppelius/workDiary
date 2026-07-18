@@ -19,6 +19,11 @@
         </div>
         <x-slot:actions>
             <x-icon-btn icon="timeline" size="sm" :href="route('projects.planning', $project)" show-label>{{ __('Projektplanung') }}</x-icon-btn>
+            {{-- Einstieg Feature 064: auch ohne Board sichtbar (Erst-Aktivierung liegt auf der Board-Seite). --}}
+            @if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.agile_projects')
+                && \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::AgileView->value))
+                <x-icon-btn icon="view_kanban" size="sm" :href="route('agile.board', $project)" show-label>{{ __('Projektboard') }}</x-icon-btn>
+            @endif
             @can('update', $project)
                 <x-icon-btn icon="edit" size="sm"
                             data-entry-modal-trigger
