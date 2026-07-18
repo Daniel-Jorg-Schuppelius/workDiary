@@ -12,7 +12,7 @@ namespace App\Plugins\Toggl;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization, Project, TimeEntry, User};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, TimeEntry, User};
 use App\Plugins\Toggl\Sources\{FolderWorkspaceSource, TogglEntry, TogglWorkspaceReader, WorkspaceSourceInterface};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -31,8 +31,9 @@ use Illuminate\Support\Str;
  *    `foreign_customer_id` auf ihren Endkunden — so bleibt die Endkunden-Trennung
  *    erhalten (Abrechnung/Auswertung je Endkunde), ohne Projektnamen-Präfixe.
  *
- * Kunden/Projekte/Benutzer werden per Name bzw. E-Mail dedupliziert (bestehende
- * werden wiederverwendet, nicht dupliziert). Zeiteinträge sind über eine
+ * Kunden/Projekte werden zuerst über ihre {@see ExternalReference}/Aliase
+ * aufgelöst (überlebt Merges in workDiary), dann per Name dedupliziert;
+ * Benutzer per E-Mail. Zeiteinträge sind über eine
  * {@see ExternalReference} (entry-Key) idempotent. Mit `dryRun` wird alles in
  * einer Transaktion ausgeführt und am Ende zurückgerollt — liefert exakte
  * „Würde anlegen/buchen"-Zahlen ohne zu schreiben.
@@ -182,7 +183,7 @@ class TogglExportImporter {
         $projectMap = [];
         foreach ($source->projects() as $p) {
             $customer = $this->findOrCreateCustomer($organization, (string) ($p['client_name'] ?? ''), false, $stats);
-            $project = $this->findOrCreateProject($organization, $customer, $p['name'], $p, $stats);
+            $project = $this->findOrCreateProject($organization, $customer, $p['name'], $p, $stats, clientName: $p['client_name'] ?? null);
             $projectMap[$this->key($p['client_name'], $p['name'])] = $project;
             $this->rememberReference($organization, TogglImportService::EXT_TYPE_PROJECT, $this->key($p['client_name'], $p['name']), $project);
         }
@@ -192,7 +193,7 @@ class TogglExportImporter {
             if ($project === null) {
                 // Eintrag verweist auf (gelöschtes) Projekt/Client → on-the-fly anlegen.
                 $customer = $this->findOrCreateCustomer($organization, (string) $entry->clientName, false, $stats);
-                $project = $this->findOrCreateProject($organization, $customer, (string) ($entry->projectName ?: __('Ohne Projekt')), [], $stats);
+                $project = $this->findOrCreateProject($organization, $customer, (string) ($entry->projectName ?: __('Ohne Projekt')), [], $stats, clientName: $entry->clientName);
                 $projectMap[$this->key($entry->clientName, $entry->projectName)] = $project;
             }
             $this->bookEntry($organization, $project, $entry, $userMode, $stats);
@@ -252,7 +253,7 @@ class TogglExportImporter {
         $projectMap = [];
         foreach ($source->projects() as $p) {
             $foreign = $this->findOrCreateForeignCustomer($organization, $customer, $p['client_name'], $stats);
-            $project = $this->findOrCreateProject($organization, $customer, $p['name'], $p, $stats, $foreign);
+            $project = $this->findOrCreateProject($organization, $customer, $p['name'], $p, $stats, $foreign, clientName: $p['client_name'] ?? null);
             $projectMap[$this->key($p['client_name'], $p['name'])] = $project;
             $this->rememberReference($organization, TogglImportService::EXT_TYPE_PROJECT, $this->key($p['client_name'], $p['name']), $project);
         }
@@ -261,7 +262,7 @@ class TogglExportImporter {
             $project = $projectMap[$this->key($entry->clientName, $entry->projectName)] ?? null;
             if ($project === null) {
                 $foreign = $this->findOrCreateForeignCustomer($organization, $customer, $entry->clientName, $stats);
-                $project = $this->findOrCreateProject($organization, $customer, (string) ($entry->projectName ?: __('Ohne Projekt')), [], $stats, $foreign);
+                $project = $this->findOrCreateProject($organization, $customer, (string) ($entry->projectName ?: __('Ohne Projekt')), [], $stats, $foreign, clientName: $entry->clientName);
                 $projectMap[$this->key($entry->clientName, $entry->projectName)] = $project;
             }
             $this->bookEntry($organization, $project, $entry, $userMode, $stats);
@@ -323,6 +324,16 @@ class TogglExportImporter {
             return $this->customerCache[$cacheKey];
         }
 
+        // Referenz/Alias zuerst: Nach einem Kunden-Merge zeigt der Toggl-Client-
+        // Schlüssel aufs Merge-Ziel — die Namenssuche würde das gelöschte
+        // Duplikat sonst neu anlegen.
+        $referenced = $this->resolveReference($organization, TogglImportService::EXT_TYPE_CLIENT, $name);
+        if ($referenced instanceof Customer) {
+            $stats['customers_reused']++;
+
+            return $this->customerCache[$cacheKey] = $referenced;
+        }
+
         $existing = Customer::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
@@ -349,8 +360,18 @@ class TogglExportImporter {
      * @param  array<string, mixed>  $meta  Toggl-Projektmetadaten (color, billable, active, start_date)
      * @param  array<string, mixed>  $stats
      */
-    private function findOrCreateProject(Organization $organization, Customer $customer, string $name, array $meta, array &$stats, ?ForeignCustomer $foreignCustomer = null): Project {
+    private function findOrCreateProject(Organization $organization, Customer $customer, string $name, array $meta, array &$stats, ?ForeignCustomer $foreignCustomer = null, ?string $clientName = null): Project {
         $name = trim($name) ?: (string) __('Ohne Projekt');
+
+        // Referenz/Alias zuerst (Schlüssel „client|projekt"): Nach einem
+        // Projekt-Merge zeigt der Schlüssel aufs Merge-Ziel — die Namens-/
+        // Endkunden-Suche darunter würde das gelöschte Duplikat sonst neu anlegen.
+        $referenced = $this->resolveReference($organization, TogglImportService::EXT_TYPE_PROJECT, $this->key($clientName, $name));
+        if ($referenced instanceof Project) {
+            $stats['projects_reused']++;
+
+            return $referenced;
+        }
 
         // Dedupe pro (Kunde, Endkunde, Name): gleichnamige Projekte verschiedener
         // Endkunden sind eigenständig.
@@ -495,19 +516,67 @@ class TogglExportImporter {
     }
 
     private function rememberReference(Organization $organization, string $type, string $externalId, \Illuminate\Database\Eloquent\Model $referenceable): void {
-        ExternalReference::query()->updateOrCreate(
-            [
-                'organization_id' => $organization->id,
-                'plugin_id' => TogglPlugin::ID,
-                'external_type' => $type,
-                'external_id' => $externalId,
-            ],
-            [
-                'referenceable_type' => $referenceable->getMorphClass(),
-                'referenceable_id' => $referenceable->getKey(),
-                'synced_at' => now(),
-            ],
-        );
+        $key = [
+            'organization_id' => $organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => $type,
+            'external_id' => $externalId,
+        ];
+        $target = [
+            'referenceable_type' => $referenceable->getMorphClass(),
+            'referenceable_id' => $referenceable->getKey(),
+        ];
+
+        $byKey = ExternalReference::query()->withoutGlobalScopes()->where($key)->first();
+        if ($byKey !== null) {
+            $byKey->fill($target + ['synced_at' => now()])->save();
+
+            return;
+        }
+
+        // extref_unique erlaubt nur eine Primär-Referenz je Plugin/Typ/Entität.
+        // Trägt die Entität bereits einen anderen Schlüssel (Merge/Umbenennung),
+        // wird dieser Schlüssel als Alias gesichert statt zu kollidieren.
+        $hasPrimary = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('external_type', $type)
+            ->where('referenceable_type', $target['referenceable_type'])
+            ->where('referenceable_id', $target['referenceable_id'])
+            ->exists();
+
+        if ($hasPrimary) {
+            ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate($key, $target);
+
+            return;
+        }
+
+        ExternalReference::query()->create($key + $target + ['synced_at' => now()]);
+    }
+
+    /**
+     * Löst eine Fremd-ID über die Primär-Referenz und — als Fallback — die
+     * Alias-Tabelle (Merge-Weiterleitungen) auf. Analog
+     * {@see \App\Plugins\Support\MatchingTimeImportService::resolveByReference()}.
+     */
+    private function resolveReference(Organization $organization, string $type, string $externalId): ?\Illuminate\Database\Eloquent\Model {
+        if ($externalId === '') {
+            return null;
+        }
+
+        $ref = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('external_type', $type)
+            ->where('external_id', $externalId)
+            ->first();
+
+        if ($ref?->referenceable instanceof \Illuminate\Database\Eloquent\Model) {
+            return $ref->referenceable;
+        }
+
+        return ExternalReferenceAlias::resolveModel($organization->id, TogglPlugin::ID, $type, $externalId);
     }
 
     private function defaultUser(Organization $organization): User {

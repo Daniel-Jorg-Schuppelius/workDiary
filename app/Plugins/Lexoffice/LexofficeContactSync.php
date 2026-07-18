@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\{ContactAddress, Customer, ExternalReference, IntegrationInboxItem, Organization, Supplier};
+use App\Models\{ContactAddress, Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Supplier};
 use App\Plugins\Support\PluginHttpFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use RuntimeException;
@@ -174,6 +174,18 @@ class LexofficeContactSync {
                 $this->recordConflict($record, $remote, $externalId, $organization);
                 $this->bump($kind, 'conflicts');
             }
+
+            return;
+        }
+
+        // Alias-Fallback: per Merge umgeleitete Kontakt-UUID zeigt aufs
+        // Merge-Ziel. Nur als „matched" zählen — Stammdaten pflegt die
+        // Primär-Referenz des Ziels; der Alias-Kontakt ist das in Lexoffice
+        // verbliebene Duplikat und darf das Ziel nicht überschreiben.
+        $aliased = ExternalReferenceAlias::resolveModel($organization->id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT, $externalId);
+        if ($aliased instanceof $modelClass) {
+            $this->resolveUnmatchedInbox($organization, $morphClass, $externalId, $aliased);
+            $this->bump($kind, 'matched');
 
             return;
         }

@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ForeignCustomer, Project, TimeEntry, User};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Project, TimeEntry, User};
 use App\Plugins\Toggl\TogglExportImporter;
+use App\Services\{CustomerMergeService, ProjectMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -159,6 +160,100 @@ class TogglExportImportTest extends TestCase {
         $this->assertSame(2, TimeEntry::query()->count());
         $this->assertSame(2, $second['totals']['entries_skipped']);
         $this->assertSame(0, $second['totals']['entries_created']);
+    }
+
+    public function test_reimport_after_project_merge_reuses_merge_target(): void {
+        $importer = new TogglExportImporter;
+        $modes = ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]];
+        $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+
+        // "Website" wird in ein anders benanntes Ziel gemerged (Quelle gelöscht,
+        // Toggl-Schlüssel zeigt aufs Ziel) — der erneute Abruf darf "Website"
+        // nicht neu anlegen.
+        $website = Project::query()->where('name', 'Website')->firstOrFail();
+        $relaunch = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $website->customer_id,
+            'name' => 'Relaunch',
+        ]);
+        app(ProjectMergeService::class)->merge($website, $relaunch);
+
+        $second = $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+
+        $this->assertNull(Project::query()->where('name', 'Website')->first());
+        $this->assertSame(0, $second['totals']['projects_created']);
+        $this->assertSame(1, $second['totals']['projects_reused']);
+        $this->assertSame(1, TimeEntry::query()->count());
+        $this->assertSame($relaunch->id, TimeEntry::query()->firstOrFail()->project_id);
+
+        $ref = ExternalReference::query()
+            ->where('external_type', 'project')
+            ->where('external_id', 'acme|website')
+            ->firstOrFail();
+        $this->assertSame($relaunch->id, $ref->referenceable_id);
+    }
+
+    public function test_reimport_after_merge_of_two_imported_projects_books_via_alias(): void {
+        $dir = $this->base . '/MergeWs';
+        @mkdir($dir, 0777, true);
+        file_put_contents($dir . '/clients.json', json_encode([
+            ['id' => 1, 'name' => 'Acme', 'archived' => false],
+        ]));
+        file_put_contents($dir . '/projects.json', json_encode([
+            ['id' => 10, 'name' => 'Wartung', 'client_id' => 1, 'client_name' => 'Acme', 'active' => true],
+            ['id' => 11, 'name' => 'Wartung Alt', 'client_id' => 1, 'client_name' => 'Acme', 'active' => true],
+        ]));
+        file_put_contents($dir . '/workspace_users.json', json_encode([]));
+        $rows = [
+            ['Dev', 'dev@example.com', 'Acme', 'Wartung', '', 'A', 'No', '2025-04-01', '09:00:00', '2025-04-01', '10:00:00', '01:00:00', ''],
+            ['Dev', 'dev@example.com', 'Acme', 'Wartung Alt', '', 'B', 'No', '2025-04-02', '09:00:00', '2025-04-02', '10:00:00', '01:00:00', ''],
+        ];
+        $this->writeCsv($dir . '/Toggl_time_entries_2025-01-01_to_2025-12-31.csv', $rows);
+
+        $importer = new TogglExportImporter;
+        $modes = ['MergeWs' => ['mode' => TogglExportImporter::MODE_OWN]];
+        $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_SINGLE, dryRun: false);
+
+        // Beide Projekte tragen eigene Toggl-Schlüssel → beim Merge wird der
+        // Quell-Schlüssel als Alias aufs Ziel gesichert.
+        $target = Project::query()->where('name', 'Wartung')->firstOrFail();
+        $source = Project::query()->where('name', 'Wartung Alt')->firstOrFail();
+        app(ProjectMergeService::class)->merge($source, $target);
+
+        // Erneuter Abruf inkl. neuem Eintrag auf dem gemergten Toggl-Projekt.
+        $rows[] = ['Dev', 'dev@example.com', 'Acme', 'Wartung Alt', '', 'C', 'No', '2025-04-03', '09:00:00', '2025-04-03', '10:00:00', '01:00:00', ''];
+        $this->writeCsv($dir . '/Toggl_time_entries_2025-01-01_to_2025-12-31.csv', $rows);
+        $second = $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_SINGLE, dryRun: false);
+
+        $this->assertSame(0, $second['totals']['projects_created']);
+        $this->assertNull(Project::query()->where('name', 'Wartung Alt')->first());
+        // Der neue Eintrag bucht über den Alias aufs Merge-Ziel.
+        $this->assertSame(1, $second['totals']['entries_created']);
+        $this->assertSame(3, TimeEntry::query()->where('project_id', $target->id)->count());
+
+        $alias = ExternalReferenceAlias::query()
+            ->where('external_type', 'project')
+            ->where('external_id', 'acme|wartung alt')
+            ->firstOrFail();
+        $this->assertSame($target->id, $alias->referenceable_id);
+    }
+
+    public function test_reimport_after_customer_merge_reuses_merge_target(): void {
+        $importer = new TogglExportImporter;
+        $modes = ['OwnWs' => ['mode' => TogglExportImporter::MODE_OWN]];
+        $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+
+        $acme = Customer::query()->where('name', 'Acme')->firstOrFail();
+        $acmeGmbh = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Acme GmbH']);
+        app(CustomerMergeService::class)->merge($acme, $acmeGmbh);
+
+        $second = $importer->import($this->base, $this->organization, $modes, TogglExportImporter::USER_PER_EMAIL, dryRun: false);
+
+        // Kein neuer "Acme"-Kunde — der Toggl-Client-Schlüssel zeigt aufs Merge-Ziel.
+        $this->assertNull(Customer::query()->where('name', 'Acme')->first());
+        $this->assertSame(0, $second['totals']['customers_created']);
+        $this->assertSame(0, $second['totals']['projects_created']);
+        $this->assertSame($acmeGmbh->id, Project::query()->where('name', 'Website')->firstOrFail()->customer_id);
     }
 
     public function test_explicit_customer_id_uses_selected_customer(): void {

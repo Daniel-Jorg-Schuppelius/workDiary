@@ -13,6 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Models\{IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\{OpenProjectImportService, OpenProjectStructureSync};
+use App\Services\ProjectMergeService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -209,6 +210,30 @@ class OpenProjectImportTest extends TestCase {
         $project = Project::query()->where('name', 'Brandneu')->first();
         $this->assertNotNull($project);
         $this->assertSame(60, TimeEntry::query()->where('project_id', $project->id)->value('minutes'));
+    }
+
+    public function test_merged_project_resolves_via_alias_and_relink_writes_alias(): void {
+        $sync = new OpenProjectStructureSync;
+        $source = Project::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Website']);
+        $target = Project::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Relaunch']);
+        $sync->linkProject($this->organization, '9', $source);
+        $sync->linkProject($this->organization, '10', $target);
+
+        // Merge: Quell-Ref '9' kollidiert mit der Ziel-Ref '10' → wird Alias.
+        app(ProjectMergeService::class)->merge($source, $target);
+
+        $this->assertSame($target->id, $sync->resolveProject($this->organization, '9')?->id);
+        $this->assertSame($target->id, $sync->resolveProject($this->organization, '10')?->id);
+
+        // Re-Link einer weiteren OP-ID aufs Ziel darf extref_unique nicht
+        // verletzen, sondern landet als Alias.
+        $sync->linkProject($this->organization, '11', $target);
+        $this->assertDatabaseHas('external_reference_aliases', [
+            'plugin_id' => OpenProjectPlugin::ID,
+            'external_type' => OpenProjectStructureSync::EXT_TYPE_PROJECT,
+            'external_id' => '11',
+            'referenceable_id' => $target->id,
+        ]);
     }
 
     public function test_book_inbox_group_books_and_remembers_reference(): void {

@@ -12,7 +12,7 @@ namespace App\Plugins\OpenProject\Services;
 
 use App\Enums\Project\ProjectStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
-use App\Models\{ExternalReference, Organization, Project, Task, User};
+use App\Models\{ExternalReference, ExternalReferenceAlias, Organization, Project, Task, User};
 use App\Plugins\OpenProject\OpenProjectPlugin;
 use App\Plugins\OpenProject\Sources\OpenProjectApiClient;
 use Illuminate\Database\Eloquent\Model;
@@ -186,37 +186,42 @@ class OpenProjectStructureSync {
         $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $externalId, $project, $name !== null ? ['name' => $name] : []);
     }
 
-    /** OpenProject-Projekt-ID → workDiary-Projekt (über die gespeicherte Reference). */
+    /** OpenProject-Projekt-ID → workDiary-Projekt (Reference, dann Merge-Alias). */
     public function resolveProject(Organization $organization, ?string $externalId): ?Project {
-        if ($externalId === null || $externalId === '') {
-            return null;
-        }
+        $model = $this->resolveModel($organization, self::EXT_TYPE_PROJECT, $externalId);
 
-        $ref = $this->reference($organization, self::EXT_TYPE_PROJECT, $externalId);
-
-        return $ref?->referenceable instanceof Project ? $ref->referenceable : null;
+        return $model instanceof Project ? $model : null;
     }
 
-    /** OpenProject-WorkPackage-ID → workDiary-Aufgabe (über die gespeicherte Reference). */
+    /** OpenProject-WorkPackage-ID → workDiary-Aufgabe (Reference, dann Merge-Alias). */
     public function resolveTask(Organization $organization, ?string $externalId): ?Task {
-        if ($externalId === null || $externalId === '') {
-            return null;
-        }
+        $model = $this->resolveModel($organization, self::EXT_TYPE_WORK_PACKAGE, $externalId);
 
-        $ref = $this->reference($organization, self::EXT_TYPE_WORK_PACKAGE, $externalId);
-
-        return $ref?->referenceable instanceof Task ? $ref->referenceable : null;
+        return $model instanceof Task ? $model : null;
     }
 
-    /** OpenProject-Benutzer-ID → workDiary-Benutzer-ID (über die gespeicherte Reference). */
+    /** OpenProject-Benutzer-ID → workDiary-Benutzer-ID (Reference, dann Merge-Alias). */
     public function resolveUserId(Organization $organization, ?string $externalId): ?int {
+        $model = $this->resolveModel($organization, self::EXT_TYPE_USER, $externalId);
+
+        return $model instanceof User ? (int) $model->id : null;
+    }
+
+    /**
+     * Löst eine OpenProject-ID über die Primär-Referenz und — als Fallback —
+     * die Alias-Tabelle (Merge-Weiterleitungen) auf.
+     */
+    private function resolveModel(Organization $organization, string $type, ?string $externalId): ?Model {
         if ($externalId === null || $externalId === '') {
             return null;
         }
 
-        $ref = $this->reference($organization, self::EXT_TYPE_USER, $externalId);
+        $ref = $this->reference($organization, $type, $externalId);
+        if ($ref?->referenceable instanceof Model) {
+            return $ref->referenceable;
+        }
 
-        return $ref?->referenceable instanceof User ? (int) $ref->referenceable->id : null;
+        return ExternalReferenceAlias::resolveModel($organization->id, OpenProjectPlugin::ID, $type, $externalId);
     }
 
     /**
@@ -298,19 +303,45 @@ class OpenProjectStructureSync {
      * @param  array<string, mixed>  $payload
      */
     private function rememberReference(Organization $organization, string $type, string $externalId, Model $referenceable, array $payload = []): void {
-        ExternalReference::query()->updateOrCreate(
-            [
-                'organization_id' => $organization->id,
-                'plugin_id' => OpenProjectPlugin::ID,
-                'external_type' => $type,
-                'external_id' => $externalId,
-            ],
-            [
-                'referenceable_type' => $referenceable->getMorphClass(),
-                'referenceable_id' => $referenceable->getKey(),
-                'payload' => $payload !== [] ? $payload : null,
-                'synced_at' => now(),
-            ],
-        );
+        $key = [
+            'organization_id' => $organization->id,
+            'plugin_id' => OpenProjectPlugin::ID,
+            'external_type' => $type,
+            'external_id' => $externalId,
+        ];
+        $target = [
+            'referenceable_type' => $referenceable->getMorphClass(),
+            'referenceable_id' => $referenceable->getKey(),
+        ];
+
+        $byKey = ExternalReference::query()->withoutGlobalScopes()->where($key)->first();
+        if ($byKey !== null) {
+            $byKey->fill($target + ['payload' => $payload !== [] ? $payload : null, 'synced_at' => now()])->save();
+
+            return;
+        }
+
+        // extref_unique erlaubt nur eine Primär-Referenz je Plugin/Typ/Entität.
+        // Trägt die Entität bereits einen anderen Schlüssel (Merge/zweites
+        // OP-Projekt auf demselben Ziel), wird dieser als Alias gesichert
+        // statt zu kollidieren.
+        $hasPrimary = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('plugin_id', OpenProjectPlugin::ID)
+            ->where('external_type', $type)
+            ->where('referenceable_type', $target['referenceable_type'])
+            ->where('referenceable_id', $target['referenceable_id'])
+            ->exists();
+
+        if ($hasPrimary) {
+            ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate($key, $target);
+
+            return;
+        }
+
+        ExternalReference::query()->create($key + $target + [
+            'payload' => $payload !== [] ? $payload : null,
+            'synced_at' => now(),
+        ]);
     }
 }

@@ -6,6 +6,7 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
 use App\Models\Customer;
+use App\Services\CustomerMergeService;
 use App\Services\Import\ImportOutcome;
 use App\Services\Import\Specs\CustomerSpec;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -184,5 +185,34 @@ class CustomerSpecTest extends TestCase {
         $this->assertSame(ImportOutcome::Updated, $o2);
         $this->assertSame(1, Customer::query()->where('organization_id', $this->organization->id)->count(), 'Keine Dublette trotz neuer Nummer');
         $this->assertSame('Quelle GmbH umbenannt', $customer->fresh()->name);
+    }
+
+    public function test_external_id_of_merged_customer_resolves_via_alias(): void {
+        $spec = new CustomerSpec();
+
+        [$o1] = $spec->upsert($spec->normalize([
+            'name' => 'Alt GmbH', 'number' => 'K-10', 'external_id' => 'EXT-A', 'currency' => 'EUR',
+        ]), $this->organization);
+        [$o2] = $spec->upsert($spec->normalize([
+            'name' => 'Neu GmbH', 'number' => 'K-20', 'external_id' => 'EXT-B', 'currency' => 'EUR',
+        ]), $this->organization);
+        $this->assertSame(ImportOutcome::Created, $o1);
+        $this->assertSame(ImportOutcome::Created, $o2);
+
+        $source = Customer::query()->where('name', 'Alt GmbH')->firstOrFail();
+        $target = Customer::query()->where('name', 'Neu GmbH')->firstOrFail();
+        app(CustomerMergeService::class)->merge($source, $target);
+
+        // Reimport der alten Zeile → aktualisiert das Merge-Ziel statt eine
+        // Dublette anzulegen; die Nummer des Ziels bleibt erhalten.
+        [$o3] = $spec->upsert($spec->normalize([
+            'name' => 'Alt GmbH neu', 'number' => 'K-10', 'external_id' => 'EXT-A', 'currency' => 'EUR',
+        ]), $this->organization);
+
+        $this->assertSame(ImportOutcome::Updated, $o3);
+        $this->assertSame(1, Customer::query()->where('organization_id', $this->organization->id)->count());
+        $target->refresh();
+        $this->assertSame('K-20', $target->number);
+        $this->assertSame('Alt GmbH neu', $target->name);
     }
 }

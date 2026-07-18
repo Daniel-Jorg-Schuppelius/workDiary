@@ -10,8 +10,9 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference};
+use App\Models\{Customer, ExternalReference, IntegrationInboxItem};
 use App\Plugins\Lexoffice\{LexofficeContactSync, LexofficeMatchPolicy, LexofficePlugin};
+use App\Services\CustomerMergeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -170,6 +171,56 @@ class LexofficeContactSyncTest extends TestCase {
             'vat_id' => 'DE777',
             'address_city' => 'Hamburg',
         ]);
+    }
+
+    public function test_merged_customer_contact_resolves_via_alias_without_duplicate(): void {
+        $source = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Alt GmbH',
+            'company' => 'Alt GmbH',
+        ]);
+        $target = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Neu GmbH',
+            'company' => 'Neu GmbH',
+        ]);
+        foreach ([['lex-alt', $source], ['lex-neu', $target]] as [$extId, $customer]) {
+            ExternalReference::create([
+                'organization_id' => $this->organization->id,
+                'plugin_id' => LexofficePlugin::ID,
+                'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+                'referenceable_type' => $customer->getMorphClass(),
+                'referenceable_id' => $customer->id,
+                'external_id' => $extId,
+                'synced_at' => now(),
+            ]);
+        }
+
+        // Merge: Quell-Ref 'lex-alt' kollidiert mit der Ziel-Ref → wird Alias.
+        app(CustomerMergeService::class)->merge($source, $target);
+
+        // Lexoffice liefert den gemergten Kontakt weiterhin — trotz
+        // createMissingLocal darf weder ein Duplikat noch ein
+        // Mehrdeutig-Inbox-Item entstehen.
+        $this->fakeContacts([[
+            'id' => 'lex-alt',
+            'company' => ['name' => 'Alt GmbH'],
+        ]]);
+
+        $result = (new LexofficeContactSync)->sync(
+            $this->organization,
+            LexofficeMatchPolicy::LocalWins,
+            'test-key',
+            createMissingLocal: true,
+        );
+
+        $this->assertSame(1, $result['matched']);
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(0, $result['ambiguous']);
+        $this->assertSame(1, Customer::query()->where('organization_id', $this->organization->id)->count());
+        $this->assertSame(0, IntegrationInboxItem::query()->count());
+        // Das Ziel behält seine Stammdaten — der Alias-Kontakt überschreibt nichts.
+        $this->assertSame('Neu GmbH', $target->fresh()->name);
     }
 
     public function test_known_external_reference_is_recognized_as_matched(): void {

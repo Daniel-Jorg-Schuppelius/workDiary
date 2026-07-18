@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
-use App\Models\{ExternalReference, IntegrationInboxItem, Organization};
+use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization};
 use App\Services\Import\ImportOutcome;
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
 use CommonToolkit\Enums\HashAlgorithm;
@@ -62,6 +62,17 @@ trait DedupsAndStages {
             if ($linked instanceof Model) {
                 $this->applyMatch($linked, $payload, true);
                 ($this->afterPersist)?->__invoke($linked);
+
+                return [ImportOutcome::Updated, null];
+            }
+
+            // 1b. Merge-Alias: die Fremd-ID gehörte einem inzwischen
+            // zusammengeführten Datensatz → Ziel aktualisieren statt neu
+            // anzulegen; die Nummer des Ziels bleibt erhalten.
+            $aliased = ExternalReferenceAlias::resolveModel($organization->id, self::CSV_PLUGIN, $externalType, $externalId);
+            if ($aliased instanceof Model && $aliased->getMorphClass() === (new $modelClass)->getMorphClass()) {
+                $this->applyMatch($aliased, $payload, false);
+                ($this->afterPersist)?->__invoke($aliased);
 
                 return [ImportOutcome::Updated, null];
             }
