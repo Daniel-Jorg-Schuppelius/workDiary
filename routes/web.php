@@ -926,7 +926,6 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
-        Route::patch('kanban/{entry}/status', [KanbanController::class, 'updateStatus'])->name('kanban.status');
 
         Route::get('duties', [DutyController::class, 'index'])->name('duties.index');
 

@@ -13,4 +13,9 @@ return [
     'schedule' => [
         'move_failed' => 'Le déplacement a échoué.',
     ],
+    'kanban' => [
+        'invalid_move' => 'Ce changement de statut n\'est pas prévu dans le flux de travail de la commande.',
+        'not_allowed' => 'Vous n\'êtes pas autorisé à effectuer cette action sur la commande.',
+        'handover_via_order' => 'La réception nécessite un protocole signé et s\'effectue directement dans la commande.',
+    ],
 ];

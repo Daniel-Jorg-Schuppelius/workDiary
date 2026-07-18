@@ -16,8 +16,8 @@ use App\Enums\Diary\Status;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{DiaryEntry, User};
 use App\Services\UI\DateRangeContext;
-use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class KanbanController extends Controller {
@@ -60,8 +60,10 @@ class KanbanController extends Controller {
 
         $range = $this->globalDateRange();
 
+        // organization_id/assigned_user_id: Grundlage der Policy-Checks für
+        // die per Karte freigegebenen Auftragsaktionen (Drag-and-Drop).
         $query = DiaryEntry::query()
-            ->select(['id', 'user_id', 'content', 'status', 'start_at'])
+            ->select(['id', 'user_id', 'organization_id', 'assigned_user_id', 'content', 'status', 'start_at'])
             ->with(['user:id,name', 'tags:id,name,color'])
             ->where('is_archived', false)
             ->orderByDesc('start_at');
@@ -115,13 +117,4 @@ class KanbanController extends Controller {
         }
     }
 
-    public function updateStatus(Request $request, DiaryEntry $entry): JsonResponse {
-        Gate::authorize('update', $entry);
-        $request->validate(['status' => ['required', 'integer']]);
-
-        return response()->json([
-            'ok' => false,
-            'message' => __('Statuswechsel erfolgen über die fachlichen Auftragsaktionen.'),
-        ], 422);
-    }
 }

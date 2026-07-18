@@ -18,4 +18,9 @@ return [
     'schedule' => [
         'move_failed' => 'Move failed.',
     ],
+    'kanban' => [
+        'invalid_move' => 'This status change is not part of the order workflow.',
+        'not_allowed' => 'You are not authorised to perform this order action.',
+        'handover_via_order' => 'Handover requires a signed protocol and is performed directly in the order.',
+    ],
 ];

@@ -25,6 +25,7 @@ import "./global-search.js";
 import "./header-autohide.js";
 import "./help-drawer.js";
 import "./quick-book.js";
+import "./kanban.js";
 import "./layout.js";
 // facility-picker.js / tag-picker.js / work-schedule-form.js wurden in
 // alpine/components.js als Alpine.data-Komponenten überführt (CSP-konform).

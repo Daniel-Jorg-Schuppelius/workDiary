@@ -18,4 +18,9 @@ return [
     'schedule' => [
         'move_failed' => 'Fehler beim Verschieben.',
     ],
+    'kanban' => [
+        'invalid_move' => 'Dieser Statuswechsel ist im Auftragsworkflow nicht vorgesehen.',
+        'not_allowed' => 'Keine Berechtigung für diese Auftragsaktion.',
+        'handover_via_order' => 'Die Abnahme erfordert ein signiertes Protokoll und wird direkt im Auftrag ausgeführt.',
+    ],
 ];

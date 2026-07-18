@@ -13,4 +13,9 @@ return [
     'schedule' => [
         'move_failed' => 'Error al mover.',
     ],
+    'kanban' => [
+        'invalid_move' => 'Este cambio de estado no está previsto en el flujo de trabajo del pedido.',
+        'not_allowed' => 'No tienes permiso para esta acción del pedido.',
+        'handover_via_order' => 'La recepción requiere un protocolo firmado y se realiza directamente en el pedido.',
+    ],
 ];

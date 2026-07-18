@@ -13,4 +13,9 @@ return [
     'schedule' => [
         'move_failed' => 'Spostamento non riuscito.',
     ],
+    'kanban' => [
+        'invalid_move' => 'Questo cambio di stato non è previsto nel flusso di lavoro dell\'ordine.',
+        'not_allowed' => 'Non sei autorizzato a eseguire questa azione sull\'ordine.',
+        'handover_via_order' => 'Il collaudo richiede un protocollo firmato e viene eseguito direttamente nell\'ordine.',
+    ],
 ];

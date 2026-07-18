@@ -24,6 +24,12 @@
     {{-- Tabs --}}
     @include('duties._tab_strip', ['tabs' => $tabs, 'tab' => $activeTab])
 
+    @if ($errors->has('lifecycle'))
+        <div class="alert alert-error rounded-2xl px-5 py-3 text-sm shadow-xs">
+            {{ $errors->first('lifecycle') }}
+        </div>
+    @endif
+
     @if ($isLimited)
         <div class="rounded-box border border-warning/40 bg-warning/10 px-4 py-3 text-sm text-base-content/80">
             {{ __('Es werden maximal :count Einträge angezeigt. Verfeinere den Zeitraum oder die Ansicht für vollständigere Ergebnisse.', ['count' => 200]) }}
@@ -54,5 +60,7 @@
         @endforeach
     </div>
 </x-index-page>
+
+@include('kanban._action_dialogs')
 
 @endsection
