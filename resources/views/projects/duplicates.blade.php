@@ -113,7 +113,13 @@
         <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">difference</span>' :title="__('Keine Dubletten-Kandidaten im gewählten Filter.')" tone="success" framed />
     @else
         {{-- Logik in Alpine.data("pairSelection") (components.js) — CSP-Build-konform. --}}
-        <div x-data="pairSelection">
+        <div x-data="pairSelection"
+             data-pairs="{{ json_encode($candidates->map(fn ($pair) => $pair['source']->sqid . ':' . $pair['target']->sqid)->values()) }}">
+            <label class="mb-3 inline-flex cursor-pointer items-center gap-2 text-sm">
+                <input type="checkbox" class="checkbox checkbox-sm" :checked="allSelected()" @change="toggleAll()">
+                {{ __('Alle auswählen') }}
+                <span class="text-base-content/50">({{ $candidates->count() }})</span>
+            </label>
             <div x-cloak x-show="hasSelection()"
                  class="sticky top-2 z-10 mb-3 flex items-center justify-between gap-2 rounded-box border border-primary/40 bg-base-100 px-4 py-2 shadow-md">
                 <span class="text-sm text-base-content/70">

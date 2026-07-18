@@ -1268,11 +1268,22 @@ export function registerAlpineComponents(Alpine) {
     }));
 
     // Dubletten-Listen (customers/projects duplicates): Sammel-Auswahl von
-    // Paaren für die Bulk-Zusammenführung (ehemals Inline-x-data).
+    // Paaren für die Bulk-Zusammenführung (ehemals Inline-x-data). Alle
+    // Paar-Schlüssel via data-pairs (JSON) — Basis für „Alle auswählen".
     Alpine.data("pairSelection", () => ({
         selected: [],
+        pairs: [],
+        init() {
+            this.pairs = JSON.parse(this.$el.dataset.pairs || "[]");
+        },
         hasSelection() {
             return this.selected.length > 0;
+        },
+        allSelected() {
+            return this.pairs.length > 0 && this.selected.length === this.pairs.length;
+        },
+        toggleAll() {
+            this.selected = this.allSelected() ? [] : [...this.pairs];
         },
         clear() {
             this.selected = [];
