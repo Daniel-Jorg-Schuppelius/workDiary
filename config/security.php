@@ -29,4 +29,18 @@ return [
     | ALPINE_CSP_BUILD=false setzen UND npm run build ausführen.
     */
     'csp_alpine_csp_build' => env('ALPINE_CSP_BUILD', true),
+
+    /*
+    | CVD-Meldekanal via /.well-known/security.txt (RFC 9116; CRA-Welle 1,
+    | WorkDiary-Architecture/security/cra-red-compliance-2026-07.md §5).
+    | Ohne konfigurierten Contact liefert der Endpunkt 404 — bewusst kein
+    | erfundener Default (analog Rechtstexte-Platzhalter). E-Mail oder URL.
+    */
+    'txt' => [
+        'contact' => env('SECURITY_TXT_CONTACT'),
+        'policy' => env('SECURITY_TXT_POLICY'),
+        'preferred_languages' => env('SECURITY_TXT_LANGUAGES', 'de, en'),
+        // RFC 9116 empfiehlt Expires < 1 Jahr; wird pro Request gerechnet.
+        'expires_days' => (int) env('SECURITY_TXT_EXPIRES_DAYS', 180),
+    ],
 ];

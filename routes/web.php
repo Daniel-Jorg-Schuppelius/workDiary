@@ -45,6 +45,12 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/impressum', [\App\Http\Controllers\LegalPageController::class, 'imprint'])->name('legal.imprint');
 Route::get('/datenschutz', [\App\Http\Controllers\LegalPageController::class, 'privacy'])->name('legal.privacy');
 
+// CVD-Meldekanal nach RFC 9116 (öffentlich, CRA-Welle 1): 404 solange
+// SECURITY_TXT_CONTACT nicht gesetzt ist. Top-Level-Pfad ist der vom RFC
+// empfohlene Legacy-Fallback.
+Route::get('/.well-known/security.txt', \App\Http\Controllers\SecurityTxtController::class)->name('security.txt');
+Route::redirect('/security.txt', '/.well-known/security.txt');
+
 // Auth
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->middleware(['guest', 'throttle:login']);
