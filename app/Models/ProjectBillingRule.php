@@ -41,6 +41,19 @@ class ProjectBillingRule extends Model {
         'priority' => 'integer',
     ];
 
+    /**
+     * Map item_type-Wert => Anzeige-Label, für <select>-Optionen und Tabellen.
+     *
+     * @return array<string, string>
+     */
+    public static function itemTypeOptions(): array {
+        return [
+            'service' => __('Dienstleistung'),
+            'material' => __('Material'),
+            'custom' => __('Sonstige'),
+        ];
+    }
+
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);

@@ -413,7 +413,7 @@
                                         @php
                                             // Gruppierung der Verwaltungs-Einträge in aufklappbare Ordner.
                                             $manageGroups = [
-                                                ['label' => __('Personal'), 'icon' => 'group', 'routes' => ['org.members.index', 'legacy.users.index', 'qualifications.index']],
+                                                ['label' => __('Personal'), 'icon' => 'group', 'routes' => ['org.members.index', 'admin.organizations.index', 'legacy.users.index', 'teams.index', 'payroll.index', 'qualifications.index']],
                                                 ['label' => __('Planung'), 'icon' => 'event', 'routes' => ['holidays.index', 'shift-types.index', 'event-categories.index']],
                                                 ['label' => __('Kataloge'), 'icon' => 'category', 'routes' => ['materials.index', 'tags.index', 'activity-categories.index']],
                                             ];
@@ -477,11 +477,12 @@
                                         @php
                                             // Gruppierung der System-Einträge in aufklappbare Ordner.
                                             $adminGroups = [
-                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index']],
+                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.themes.index', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index']],
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
-                                                ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'admin.surcharge-rules.index', 'form-templates.index', 'whistleblowing.portal.edit']],
-                                                ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.remote-support.pending.index', 'admin.legacy-migration.index']],
-                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.backup.status', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index']],
+                                                ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'form-templates.index', 'procedures.index', 'admin.report-targets.index', 'whistleblowing.portal.edit']],
+                                                ['label' => __('Finanzen & Lohn'), 'icon' => 'payments', 'routes' => ['finance.bank-accounts.index', 'admin.surcharge-rules.index', 'admin.cost-center-rules.index', 'admin.wage-type-mappings.index']],
+                                                ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.integration.inbox', 'admin.cloud-intake.index', 'admin.domain-provider.index', 'admin.ai.index', 'admin.remote-support.pending.index', 'admin.support.grants.index', 'admin.legacy-migration.index']],
+                                                ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.license.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.sessions.index', 'admin.backup.status', 'admin.backup-targets.index', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index']],
                                                 ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => ['admin.plugins.index', 'admin.plugin-errors.index']],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');

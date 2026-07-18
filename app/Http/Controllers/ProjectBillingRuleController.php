@@ -25,8 +25,8 @@ class ProjectBillingRuleController extends Controller {
             'project' => $project,
             'rule' => new ProjectBillingRule,
             'articles' => LexofficeArticle::active()->orderBy('name')->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']),
-            'kinds' => TimeEntryKind::values(),
-            'itemTypes' => ['service' => __('Dienstleistung'), 'material' => __('Material'), 'custom' => __('Sonstige')],
+            'kinds' => TimeEntryKind::options(),
+            'itemTypes' => ProjectBillingRule::itemTypeOptions(),
         ]);
     }
 

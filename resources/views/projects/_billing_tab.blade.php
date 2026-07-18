@@ -1,41 +1,30 @@
+{{-- Tab: Abrechnung — erwartet: $project, $billingRules, $parentBillingRules, $billingArticles --}}
 @php
-    /** @var \App\Models\Project $project */
-    $project = $project ?? null;
-    $rules = $project?->billingRules()->orderByDesc('priority')->orderBy('id')->get() ?? collect();
-    $articles = \App\Models\LexofficeArticle::active()->orderBy('name')->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']);
-    $kinds = \App\Enums\TimeEntry\TimeEntryKind::values();
-    $itemTypes = ['service' => __('Dienstleistung'), 'material' => __('Material'), 'custom' => __('Sonstige')];
-
-    $parentRules = collect();
-    $cursor = $project?->parent;
-    while ($cursor) {
-        foreach ($cursor->billingRules as $r) {
-            $parentRules->push($r);
-        }
-        $cursor = $cursor->parent;
-    }
-
-    $increment = $project?->billing_increment_minutes;
-    $gap = $project?->billing_grouping_gap_minutes;
-    $effectiveIncrement = $project?->effectiveBillingIncrement() ?? 1;
-    $effectiveGap = $project?->effectiveBillingGroupingGap() ?? 0;
+    $increment = $project->billing_increment_minutes;
+    $gap = $project->billing_grouping_gap_minutes;
+    $effectiveIncrement = $project->effectiveBillingIncrement() ?? 1;
+    $effectiveGap = $project->effectiveBillingGroupingGap() ?? 0;
     $presetIncrements = [1 => __('Jede angefangene Minute'), 15 => __('Viertelstunde'), 30 => __('Halbe Stunde'), 60 => __('Stunde')];
     $isPreset = $increment === null || array_key_exists((int) $increment, $presetIncrements);
+    $itemTypes = \App\Models\ProjectBillingRule::itemTypeOptions();
 @endphp
 
-@if ($project)
-<div class="card bg-base-100 shadow mb-4" x-data="reveal('{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}')">
-    <div class="card-body space-y-4">
-        <h2 class="card-title">{{ __('Taktung & Zusammenfassung') }}</h2>
-        <p class="text-sm opacity-70">
-            {{ __('Abrechenbare Zeit wird auf die Taktung aufgerundet (jede angefangene Einheit zählt voll). Liegen Einträge desselben Projekts höchstens die eingestellte Lücke auseinander, werden sie zu einem Block zusammengefasst und gemeinsam einmal aufgerundet.') }}
-        </p>
+<div class="flex flex-col gap-3">
+    {{-- Taktung & Zusammenfassung --}}
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs"
+         x-data="reveal('{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}')">
+        <header class="border-b border-base-300 px-4 py-3">
+            <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Taktung & Zusammenfassung') }}</span>
+            <p class="mt-0.5 text-xs text-base-content/60">
+                {{ __('Abrechenbare Zeit wird auf die Taktung aufgerundet (jede angefangene Einheit zählt voll). Liegen Einträge desselben Projekts höchstens die eingestellte Lücke auseinander, werden sie zu einem Block zusammengefasst und gemeinsam einmal aufgerundet.') }}
+            </p>
+        </header>
 
-        <form method="POST" action="{{ route('projects.billing-settings.update', $project) }}" class="space-y-4">
+        <form method="POST" action="{{ route('projects.billing-settings.update', $project) }}" class="flex flex-col gap-4 p-4">
             @csrf
             @method('PATCH')
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('Taktung') }}</label>
                     <select class="select select-bordered w-full" x-model="value"
@@ -50,7 +39,7 @@
                            value="{{ $isPreset ? '' : (int) $increment }}"
                            x-show="is('custom')" x-cloak
                            placeholder="{{ __('Minuten') }}"
-                           class="input input-bordered w-full mt-2"
+                           class="input input-bordered mt-2 w-full"
                            x-bind:name="choose('custom', 'billing_increment_minutes', 'billing_increment_minutes_custom')">
                 </div>
 
@@ -60,7 +49,7 @@
                            value="{{ $gap === null ? '' : (int) $gap }}"
                            placeholder="{{ __('Erben (aktuell: :min)', ['min' => $effectiveGap]) }}"
                            class="input input-bordered w-full">
-                    <p class="text-xs opacity-60 mt-1">{{ __('0 = keine Zusammenfassung. Leer = erben.') }}</p>
+                    <p class="mt-1 text-xs text-base-content/60">{{ __('0 = keine Zusammenfassung. Leer = erben.') }}</p>
                 </div>
             </div>
 
@@ -69,64 +58,71 @@
             </div>
         </form>
     </div>
-</div>
-@endif
 
-<div class="card bg-base-100 shadow">
-    <div class="card-body space-y-4">
-        <div class="flex items-center justify-between">
-            <h2 class="card-title">{{ __('Abrechnungs-Regeln (Lexoffice)') }}</h2>
-        </div>
-
-        <p class="text-sm opacity-70">
-            {{ __('Pro Tätigkeitsart (kind) lässt sich festlegen, welcher Lexoffice-Artikel beim Rechnungs-Export verwendet wird. Ohne kind = Fallback für alle Einträge. Sub-Projekte erben Regeln vom Parent, können sie aber überschreiben.') }}
-        </p>
-
-        @if ($parentRules->isNotEmpty())
-            <div class="alert alert-info text-sm">
-                {{ __('Erbt :count Regel(n) vom Parent-Projekt.', ['count' => $parentRules->count()]) }}
+    {{-- Abrechnungs-Regeln --}}
+    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
+            <div>
+                <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Abrechnungs-Regeln (Lexoffice)') }}</span>
+                <p class="mt-0.5 text-xs text-base-content/60">
+                    {{ __('Pro Tätigkeitsart lässt sich festlegen, welcher Lexoffice-Artikel beim Rechnungs-Export verwendet wird. Ohne Tätigkeitsart = Fallback für alle Einträge. Sub-Projekte erben Regeln vom Parent, können sie aber überschreiben.') }}
+                </p>
             </div>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('projects.billing-rules.create', $project)"
+                        show-label>{{ __('Regel') }}</x-icon-btn>
+        </header>
+
+        @if ($parentBillingRules->isNotEmpty())
+            <p class="border-b border-base-300 bg-info/5 px-4 py-2 text-xs text-base-content/70">
+                {{ __('Erbt :count Regel(n) vom Parent-Projekt.', ['count' => $parentBillingRules->count()]) }}
+            </p>
         @endif
 
-        @if ($rules->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :title="__('Noch keine Regeln definiert.')" :message="__('Beim Rechnungs-Export wird der Default-Stundensatz genommen.')" compact />
+        @if ($billingRules->isEmpty())
+            <div class="p-4">
+                <x-empty-state compact
+                    icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                    :title="__('Noch keine Regeln definiert.')"
+                    :message="__('Beim Rechnungs-Export wird der Default-Stundensatz genommen.')" />
+            </div>
         @else
-            <x-table table-sort="client">
+            <x-table table-sort="client" bare>
                 <x-slot:head>
-                    <tr>
+                    <tr class="text-xs text-base-content/50">
                         <x-table.th sort type="string">{{ __('Art') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Lexoffice-Artikel') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Item-Typ') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Einheit') }}</x-table.th>
-                        <x-table.th sort type="number">{{ __('VAT %') }}</x-table.th>
-                        <x-table.th sort type="number">{{ __('Preis (netto)') }}</x-table.th>
-                        <x-table.th sort type="number">{{ __('Prio') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('USt %') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Preis (netto)') }}</x-table.th>
+                        <x-table.th sort type="number" align="right">{{ __('Prio') }}</x-table.th>
                         <th></th>
                     </tr>
                 </x-slot:head>
-                @foreach ($rules as $rule)
-                    <tr>
-                        <td>
+                @foreach ($billingRules as $rule)
+                    <tr class="hover:bg-base-200/50">
+                        <td class="text-xs">
                             @if ($rule->applies_to_kind)
-                                <span class="badge">{{ $rule->applies_to_kind }}</span>
+                                <x-status-badge size="xs" outline>{{ \App\Enums\TimeEntry\TimeEntryKind::tryFrom($rule->applies_to_kind)?->label() ?? $rule->applies_to_kind }}</x-status-badge>
                             @else
-                                <x-status-badge tone="ghost">{{ __('Alle (Fallback)') }}</x-status-badge>
+                                <x-status-badge tone="ghost" size="xs">{{ __('Alle (Fallback)') }}</x-status-badge>
                             @endif
                         </td>
-                        <td>
+                        <td class="text-xs">
                             @if ($rule->lexoffice_article_id)
-                                @php $art = $articles->firstWhere('external_id', $rule->lexoffice_article_id); @endphp
-                                {{ $art?->name ?? $rule->lexoffice_article_id }}
+                                {{ $billingArticles->firstWhere('external_id', $rule->lexoffice_article_id)?->name ?? $rule->lexoffice_article_id }}
                             @else
-                                <span class="opacity-60">—</span>
+                                <span class="text-base-content/50">—</span>
                             @endif
                         </td>
-                        <td>{{ $itemTypes[$rule->item_type] ?? $rule->item_type }}</td>
-                        <td>{{ $rule->unit_name ?: '—' }}</td>
-                        <td>{{ $rule->vat_rate !== null ? rtrim(rtrim((string) $rule->vat_rate, '0'), '.') : '—' }}</td>
-                        <td>{{ $rule->net_unit_price !== null ? number_format((float) $rule->net_unit_price, 2, ',', '.') : '—' }}</td>
-                        <td>{{ $rule->priority }}</td>
-                        <td class="text-right">
+                        <td class="text-xs">{{ $itemTypes[$rule->item_type] ?? $rule->item_type }}</td>
+                        <td class="text-xs">{{ $rule->unit_name ?: '—' }}</td>
+                        <td class="text-right text-xs tabular-nums">{{ $rule->vat_rate !== null ? rtrim(rtrim((string) $rule->vat_rate, '0'), '.') : '—' }}</td>
+                        <td class="text-right text-xs tabular-nums">{{ $rule->net_unit_price !== null ? number_format((float) $rule->net_unit_price, 2, ',', '.') . ' €' : '—' }}</td>
+                        <td class="text-right text-xs tabular-nums">{{ $rule->priority }}</td>
+                        <td class="whitespace-nowrap text-right">
                             <x-action-form :action="route('projects.billing-rules.destroy', [$project, $rule])" method="DELETE"
                                   :confirm="__('Regel wirklich löschen?')"
                                   confirm-icon="delete"
@@ -139,14 +135,5 @@
                 @endforeach
             </x-table>
         @endif
-
-        <div class="divider"></div>
-
-        <div class="flex justify-end">
-            <x-icon-btn icon="add" tone="primary" size="sm"
-                        data-entry-modal-trigger
-                        :href="route('projects.billing-rules.create', $project)"
-                        show-label>{{ __('Neue Regel hinzufügen') }}</x-icon-btn>
-        </div>
     </div>
 </div>

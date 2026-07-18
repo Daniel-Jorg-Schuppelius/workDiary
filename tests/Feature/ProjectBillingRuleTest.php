@@ -186,4 +186,41 @@ class ProjectBillingRuleTest extends TestCase {
         $this->assertSame(7.0, $item['unitPrice']['taxRatePercentage']);
         $this->assertSame(123.45, $item['unitPrice']['netAmount']);
     }
+
+    public function test_project_show_renders_billing_tab_for_billing_manager(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = $this->makeProject();
+        $project->billingRules()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'lexoffice',
+            'applies_to_kind' => TimeEntryKind::Work->value,
+            'item_type' => 'service',
+            'priority' => 5,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('projects.show', $project))
+            ->assertOk()
+            ->assertSee(__('Taktung & Zusammenfassung'))
+            ->assertSee(__('Abrechnungs-Regeln (Lexoffice)'));
+    }
+
+    public function test_project_show_hides_billing_tab_for_regular_user(): void {
+        $project = $this->makeProject();
+
+        $this->actingAs($this->user)
+            ->get(route('projects.show', $project))
+            ->assertOk()
+            ->assertDontSee(__('Taktung & Zusammenfassung'));
+    }
+
+    public function test_billing_rule_create_dialog_renders(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $project = $this->makeProject();
+
+        $this->actingAs($admin)
+            ->get(route('projects.billing-rules.create', $project) . '?dialog=1')
+            ->assertOk()
+            ->assertSee(__('Neue Abrechnungs-Regel'));
+    }
 }

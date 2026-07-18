@@ -39,6 +39,13 @@ class TimeEntryTest extends TestCase {
         ]);
     }
 
+    public function test_create_dialog_renders(): void {
+        $this->actingAs($this->user)
+            ->get(route('projects.time-entries.create', $this->project) . '?dialog=1')
+            ->assertOk()
+            ->assertSee(__('Zeiteintrag erfassen'));
+    }
+
     public function test_user_can_log_time(): void {
         $this->actingAs($this->user)
             ->post(route('projects.time-entries.store', $this->project), [

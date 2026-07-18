@@ -1,4 +1,4 @@
-{{-- Erwartet: $project, $entry (null = neu), $tasks, $diaryOptions, $isDialog --}}
+{{-- Erwartet: $project, $entry (null = neu), $tasks, $diaryOptions, $reworkOptions, $goodwillOptions, $isDialog --}}
 @php
     $isDialog  = $isDialog ?? false;
     $diaryOptions = $diaryOptions ?? collect();
@@ -141,12 +141,6 @@
             </div>
 
             {{-- Nacharbeit/Kulanz (Feature 014, Rang 59): nur anzeigen, wenn Gründe gepflegt sind. --}}
-            @php
-                $reworkOptions = app(\App\Services\Classification\ClassificationResolver::class)
-                    ->list(app()->bound('currentOrganization') ? app('currentOrganization') : null, \App\Enums\Classification\ClassificationDomain::ReworkReason);
-                $goodwillOptions = app(\App\Services\Classification\ClassificationResolver::class)
-                    ->list(app()->bound('currentOrganization') ? app('currentOrganization') : null, \App\Enums\Classification\ClassificationDomain::GoodwillReason);
-            @endphp
             @if ($reworkOptions->isNotEmpty())
                 <div class="fieldset">
                     <label class="fieldset-label">{{ __('Nacharbeitsgrund') }}</label>

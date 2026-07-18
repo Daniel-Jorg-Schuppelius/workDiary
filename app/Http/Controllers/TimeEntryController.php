@@ -10,9 +10,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Classification\ClassificationDomain;
 use App\Enums\Task\TaskStatus;
 use App\Http\Requests\SaveTimeEntryRequest;
 use App\Models\{DiaryEntry, Project, TimeEntry};
+use App\Services\Classification\ClassificationResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -51,7 +53,7 @@ class TimeEntryController extends Controller {
             'tasks' => $tasks,
             'diaryOptions' => $this->diaryOptions($project),
             'isDialog' => true,
-        ]);
+        ] + $this->classificationOptions($project));
     }
 
     public function store(Project $project, SaveTimeEntryRequest $request): RedirectResponse {
@@ -81,7 +83,22 @@ class TimeEntryController extends Controller {
             'tasks' => $tasks,
             'diaryOptions' => $this->diaryOptions($project, $timeEntry->diary_entry_id),
             'isDialog' => true,
-        ]);
+        ] + $this->classificationOptions($project));
+    }
+
+    /**
+     * Nacharbeits-/Kulanzgründe (Feature 014) für den Erfassungs-Dialog.
+     *
+     * @return array{reworkOptions: Collection<int, \App\Models\Classification>, goodwillOptions: Collection<int, \App\Models\Classification>}
+     */
+    private function classificationOptions(Project $project): array {
+        $resolver = app(ClassificationResolver::class);
+        $orgId = (int) $project->organization_id;
+
+        return [
+            'reworkOptions' => $resolver->list($orgId, ClassificationDomain::ReworkReason),
+            'goodwillOptions' => $resolver->list($orgId, ClassificationDomain::GoodwillReason),
+        ];
     }
 
     /**

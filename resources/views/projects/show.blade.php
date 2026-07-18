@@ -76,6 +76,9 @@
             @if (auth()->user()?->canManageBilling())
                 <button role="tab" @click="setTab('billing')" :class="tabClass('billing')" class="tab">
                     {{ __('Abrechnung') }}
+                    @if ($billingRules->isNotEmpty())
+                        <x-status-badge tone="ghost" size="xs" class="ml-1">{{ $billingRules->count() }}</x-status-badge>
+                    @endif
                 </button>
             @endif
         </div>

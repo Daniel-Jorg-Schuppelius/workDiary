@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Project\ProjectStatus;
 use App\Http\Requests\SaveProjectRequest;
-use App\Models\{DiaryEntry, Project, RecurrenceRule, Task, Team, User};
+use App\Models\{DiaryEntry, LexofficeArticle, Project, RecurrenceRule, Task, Team, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
@@ -178,6 +178,20 @@ class ProjectController extends Controller {
         $timeline = app(\App\Services\Timeline\ProjectTimelineService::class)
             ->forProject($project, $viewer, 50, $timelineOffset);
 
+        // Abrechnung (Tab 8, nur für Billing-Manager sichtbar)
+        $billingRules = collect();
+        $parentBillingRules = collect();
+        $billingArticles = collect();
+        if ($viewer->canManageBilling()) {
+            $billingRules = $project->billingRules()->orderByDesc('priority')->orderBy('id')->get();
+            $billingArticles = LexofficeArticle::active()
+                ->orderBy('name')
+                ->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']);
+            for ($cursor = $project->parent; $cursor !== null; $cursor = $cursor->parent) {
+                $parentBillingRules = $parentBillingRules->merge($cursor->billingRules);
+            }
+        }
+
         return view('projects.show', [
             'project' => $project,
             'entries' => $entries,
@@ -194,6 +208,9 @@ class ProjectController extends Controller {
             'timeline' => $timeline['items'],
             'timelineHasMore' => $timeline['hasMore'],
             'timelineOffset' => $timelineOffset,
+            'billingRules' => $billingRules,
+            'parentBillingRules' => $parentBillingRules,
+            'billingArticles' => $billingArticles,
         ]);
     }
 

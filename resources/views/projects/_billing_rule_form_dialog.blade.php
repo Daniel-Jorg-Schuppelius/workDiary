@@ -14,8 +14,8 @@
             <label class="fieldset-label">{{ __('Tätigkeitsart') }}</label>
             <select name="applies_to_kind" class="select select-bordered w-full">
                 <option value="">{{ __('Alle (Fallback)') }}</option>
-                @foreach ($kinds as $k)
-                    <option value="{{ $k }}">{{ $k }}</option>
+                @foreach ($kinds as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
                 @endforeach
             </select>
         </div>
