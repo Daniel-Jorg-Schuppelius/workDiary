@@ -11,85 +11,81 @@
 @section('nav-title', $reseller->external_user)
 
 @section('content')
-<x-index-page :subtitle="$reseller->connection->name">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('domain-reseller.index')" show-label>{{ __('domain.title.reseller') }}</x-icon-btn>
-    </x-slot:actions>
+<x-page-shell>
+    <x-entity-header :title="$reseller->external_user" :back-route="route('domain-reseller.index')" :back-label="__('domain.title.reseller')">
+        <x-slot:badges>
+            <x-status-badge :tone="$reseller->active ? 'success' : 'ghost'">
+                {{ $reseller->active ? __('domain.reseller.active') : __('domain.reseller.inactive') }}
+            </x-status-badge>
+        </x-slot:badges>
+        <x-slot:meta>{{ $reseller->connection->name }}</x-slot:meta>
+    </x-entity-header>
 
-    @if (session('success'))<div role="alert" class="alert alert-success"><span>{{ session('success') }}</span></div>@endif
-    @if (session('error'))<div role="alert" class="alert alert-error"><span>{{ session('error') }}</span></div>@endif
-
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title text-base">{{ __('domain.section.overview') }}</h2>
-            <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-                <dt class="text-base-content/60">{{ __('domain.reseller.parent') }}</dt><dd class="font-mono">{{ $reseller->parent_user ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('domain.reseller.depth') }}</dt><dd class="tabular-nums">{{ $reseller->depth }}</dd>
-                <dt class="text-base-content/60">{{ __('domain.field.customer') }}</dt><dd>{{ $reseller->customer?->name ?? '—' }}</dd>
-                <dt class="text-base-content/60">{{ __('domain.reseller.balance') }}</dt>
-                <dd class="tabular-nums">{{ $reseller->balance_snapshot !== null ? number_format((float) $reseller->balance_snapshot, 2, ',', '.') . ' ' . ($reseller->currency?->value ?? '') : '—' }}</dd>
-            </dl>
-        </div>
-    </div>
+    {{-- Übersicht --}}
+    <x-card :title="__('domain.section.overview')">
+        <x-detail-grid class="sm:grid-cols-[max-content_1fr_max-content_1fr]">
+            <x-detail-grid.row :label="__('domain.reseller.parent')" class="font-mono" :value="$reseller->parent_user ?? '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.depth')" class="tabular-nums" :value="$reseller->depth" />
+            <x-detail-grid.row :label="__('domain.field.customer')" :value="$reseller->customer?->name ?? '—'" />
+            <x-detail-grid.row :label="__('domain.reseller.balance')" class="tabular-nums"
+                               :value="$reseller->balance_snapshot !== null ? number_format((float) $reseller->balance_snapshot, 2, ',', '.') . ' ' . ($reseller->currency?->value ?? '') : '—'" />
+        </x-detail-grid>
+    </x-card>
 
     {{-- Portfolio --}}
-    <div class="card bg-base-100 shadow-sm mt-4">
-        <div class="card-body">
-            <h2 class="card-title text-base">{{ __('domain.reseller.portfolio') }}</h2>
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead><tr><th>{{ __('domain.field.domain') }}</th><th>{{ __('domain.field.customer') }}</th><th>{{ __('domain.field.expiration') }}</th></tr></thead>
-                    <tbody>
-                        @forelse ($reseller->domains as $domain)
-                            <tr>
-                                <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a>
-                                    <span class="text-xs text-base-content/50">{{ __('domain.reseller.managed_under', ['user' => $reseller->external_user]) }}</span></td>
-                                <td>{{ $domain->customer?->name ?? '—' }}</td>
-                                <td class="tabular-nums">{{ $domain->expiration_at?->format('d.m.Y') ?? '—' }}</td>
-                            </tr>
-                        @empty
-                            <x-table.empty :colspan="3" :title="__('domain.empty.domains')" compact />
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <x-card :title="__('domain.reseller.portfolio')" padding="p-0">
+        <x-table size="sm" bare :caption="__('domain.reseller.portfolio')">
+            <x-slot:head>
+                <tr>
+                    <x-table.th>{{ __('domain.field.domain') }}</x-table.th>
+                    <x-table.th>{{ __('domain.field.customer') }}</x-table.th>
+                    <x-table.th>{{ __('domain.field.expiration') }}</x-table.th>
+                </tr>
+            </x-slot:head>
+            @forelse ($reseller->domains as $domain)
+                <tr>
+                    <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a>
+                        <span class="text-xs text-base-content/50">{{ __('domain.reseller.managed_under', ['user' => $reseller->external_user]) }}</span></td>
+                    <td>{{ $domain->customer?->name ?? '—' }}</td>
+                    <td class="tabular-nums">{{ $domain->expiration_at?->format('d.m.Y') ?? '—' }}</td>
+                </tr>
+            @empty
+                <x-table.empty :colspan="3" :title="__('domain.empty.domains')" compact />
+            @endforelse
+        </x-table>
+    </x-card>
 
     {{-- Buchungen --}}
     @if ($canViewAccounting)
-        <div class="card bg-base-100 shadow-sm mt-4">
-            <div class="card-body">
-                <h2 class="card-title text-base">{{ __('domain.section.accounting') }}</h2>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead><tr><th>{{ __('domain.accounting.date') }}</th><th>{{ __('domain.accounting.type') }}</th><th>{{ __('domain.accounting.description') }}</th><th class="text-right">{{ __('domain.accounting.net') }}</th></tr></thead>
-                        <tbody>
-                            @forelse ($entries as $entry)
-                                <tr>
-                                    <td class="tabular-nums">{{ $entry->entry_date?->format('d.m.Y') ?? '—' }}</td>
-                                    <td>{{ $entry->type ?? '—' }}</td>
-                                    <td>{{ $entry->description ?? '—' }}</td>
-                                    <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? number_format((float) $entry->net_amount, 2, ',', '.') . ' ' . ($entry->currency?->value ?? '') : '—' }}</td>
-                                </tr>
-                            @empty
-                                <x-table.empty :colspan="4" :title="__('domain.accounting.empty')" compact />
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <x-card :title="__('domain.section.accounting')" padding="p-0">
+            <x-table size="sm" bare :caption="__('domain.section.accounting')">
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('domain.accounting.date') }}</x-table.th>
+                        <x-table.th>{{ __('domain.accounting.type') }}</x-table.th>
+                        <x-table.th>{{ __('domain.accounting.description') }}</x-table.th>
+                        <x-table.th align="right">{{ __('domain.accounting.net') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($entries as $entry)
+                    <tr>
+                        <td class="tabular-nums">{{ $entry->entry_date?->format('d.m.Y') ?? '—' }}</td>
+                        <td>{{ $entry->type ?? '—' }}</td>
+                        <td>{{ $entry->description ?? '—' }}</td>
+                        <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? number_format((float) $entry->net_amount, 2, ',', '.') . ' ' . ($entry->currency?->value ?? '') : '—' }}</td>
+                    </tr>
+                @empty
+                    <x-table.empty :colspan="4" :title="__('domain.accounting.empty')" compact />
+                @endforelse
+            </x-table>
+        </x-card>
     @endif
 
     {{-- Rechnungen (Blocked-State) --}}
-    <div class="card bg-base-100 shadow-sm mt-4">
-        <div class="card-body">
-            <h2 class="card-title text-base">{{ __('domain.section.invoices') }}</h2>
-            @unless ($invoicesAvailable)
-                <div role="alert" class="alert alert-info"><span>{{ $invoiceBlockedReason }}</span></div>
-            @endunless
-        </div>
-    </div>
-</x-index-page>
+    <x-card :title="__('domain.section.invoices')">
+        @unless ($invoicesAvailable)
+            <div role="note" class="alert bg-info/10 border-info/30 text-sm text-base-content"><span>{{ $invoiceBlockedReason }}</span></div>
+        @endunless
+    </x-card>
+</x-page-shell>
 @endsection

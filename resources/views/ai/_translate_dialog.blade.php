@@ -19,11 +19,7 @@
 >
     <div class="fieldset">
         <label class="fieldset-label" for="ai-target-lang">{{ __('ai.suggestion.target_language') }}</label>
-        <select id="ai-target-lang" name="target_language" class="select select-bordered w-full">
-            @foreach (['en' => 'English', 'fr' => 'Français', 'it' => 'Italiano', 'es' => 'Español', 'de' => 'Deutsch'] as $code => $label)
-                <option value="{{ $code }}" @selected(old('target_language', 'en') === $code)>{{ $label }}</option>
-            @endforeach
-        </select>
+        <x-locale-select id="ai-target-lang" name="target_language" :selected="old('target_language', 'en')" />
         <p class="text-xs text-base-content/60">{{ __('ai.suggestion.translate_help') }}</p>
     </div>
 </x-modal>

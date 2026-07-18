@@ -22,89 +22,76 @@
         <x-icon-btn icon="smart_toy" size="sm" :href="route('admin.ai.index')" show-label>{{ __('ai.title.connections') }}</x-icon-btn>
     </x-slot:actions>
 
-    @if (session('success'))
-        <div role="alert" class="alert alert-success"><span>{{ session('success') }}</span></div>
-    @endif
-    @if (session('error'))
-        <div role="alert" class="alert alert-error"><span>{{ session('error') }}</span></div>
-    @endif
-
     {{-- Transparenz-Hinweis: kein Fine-Tuning, nur Prompt-Kontext (Feature 025). --}}
     <div class="alert bg-info/10 border-info/30 text-sm text-base-content" role="note">
         <x-icon name="psychology" />
         <span>{{ __('ai.memory.notice') }}</span>
     </div>
 
-    <div class="overflow-x-auto">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>{{ __('ai.field.scope') }}</th>
-                    <th>{{ __('ai.field.type') }}</th>
-                    <th>{{ __('ai.field.term') }}</th>
-                    <th>{{ __('ai.field.content') }}</th>
-                    <th>{{ __('ai.field.origin') }}</th>
-                    <th>{{ __('ai.field.active') }}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($entries as $entry)
-                    <tr class="{{ $entry->active ? '' : 'opacity-50' }}">
-                        <td>
-                            @if ($entry->customer_id !== null)
-                                <span class="badge badge-info badge-sm">{{ __('ai.field.scope_customer') }}</span>
-                                <div class="text-xs text-base-content/60">{{ $entry->customer?->name }}</div>
-                            @elseif ($entry->capability !== null)
-                                <span class="badge badge-ghost badge-sm">{{ __('ai.field.scope_capability') }}</span>
-                                <div class="text-xs font-mono text-base-content/60">{{ $entry->capability }}</div>
-                            @else
-                                <span class="badge badge-neutral badge-sm">{{ __('ai.field.scope_organization') }}</span>
-                            @endif
-                        </td>
-                        <td>{{ $entry->entry_type->label() }}</td>
-                        <td class="font-mono text-xs">{{ $entry->term ?? '—' }}</td>
-                        <td class="max-w-md">
-                            @if ($entry->source_text !== null)
-                                <div class="text-xs text-base-content/60 line-clamp-1">{{ $entry->source_text }}</div>
-                                <div class="text-xs">→ {{ \Illuminate\Support\Str::limit($entry->content, 120) }}</div>
-                            @else
-                                <div class="text-xs">{{ \Illuminate\Support\Str::limit($entry->content, 160) }}</div>
-                            @endif
-                            @if (! empty($entry->translations))
-                                <div class="mt-1 flex flex-wrap gap-1">
-                                    @foreach ($entry->translations as $lang => $translation)
-                                        <span class="badge badge-outline badge-xs font-mono" title="{{ $translation }}">{{ $lang }}</span>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge badge-{{ $entry->origin === \App\Models\Ai\AiMemoryEntry::ORIGIN_LEARNED ? 'warning' : 'ghost' }} badge-sm">
-                                {{ __('ai.field.origin_' . $entry->origin) }}
-                            </span>
-                        </td>
-                        <td>{{ $entry->active ? __('ai.field.enabled_yes') : __('ai.field.enabled_no') }}</td>
-                        <td class="text-right whitespace-nowrap">
-                            @if ($canManage ?? false)
-                                <form method="POST" action="{{ route('admin.ai.memory.toggle', $entry) }}" class="inline">
-                                    @csrf
-                                    <x-icon-btn :icon="$entry->active ? 'toggle_on' : 'toggle_off'" size="xs" type="submit"
-                                                :title="$entry->active ? __('ai.action.deactivate') : __('ai.action.activate')" />
-                                </form>
-                                <form method="POST" action="{{ route('admin.ai.memory.destroy', $entry) }}" class="inline"
-                                      data-confirm-dialog data-confirm-message="{{ __('ai.memory.delete_confirm') }}">
-                                    @csrf @method('DELETE')
-                                    <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :title="__('ai.action.delete')" />
-                                </form>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="7" :title="__('ai.empty.memory')" compact />
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+    <x-table :caption="__('ai.title.memory')">
+        <x-slot:head>
+            <tr>
+                <x-table.th>{{ __('ai.field.scope') }}</x-table.th>
+                <x-table.th>{{ __('ai.field.type') }}</x-table.th>
+                <x-table.th>{{ __('ai.field.term') }}</x-table.th>
+                <x-table.th>{{ __('ai.field.content') }}</x-table.th>
+                <x-table.th>{{ __('ai.field.origin') }}</x-table.th>
+                <x-table.th>{{ __('ai.field.active') }}</x-table.th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($entries as $entry)
+            <tr class="{{ $entry->active ? '' : 'opacity-50' }}">
+                <td>
+                    @if ($entry->customer_id !== null)
+                        <x-status-badge tone="info" size="sm">{{ __('ai.field.scope_customer') }}</x-status-badge>
+                        <div class="text-xs text-base-content/60">{{ $entry->customer?->name }}</div>
+                    @elseif ($entry->capability !== null)
+                        <x-status-badge tone="ghost" size="sm">{{ __('ai.field.scope_capability') }}</x-status-badge>
+                        <div class="text-xs font-mono text-base-content/60">{{ $entry->capability }}</div>
+                    @else
+                        <x-status-badge tone="neutral" size="sm">{{ __('ai.field.scope_organization') }}</x-status-badge>
+                    @endif
+                </td>
+                <td>{{ $entry->entry_type->label() }}</td>
+                <td class="font-mono text-xs">{{ $entry->term ?? '—' }}</td>
+                <td class="max-w-md">
+                    @if ($entry->source_text !== null)
+                        <div class="text-xs text-base-content/60 line-clamp-1">{{ $entry->source_text }}</div>
+                        <div class="text-xs">→ {{ \Illuminate\Support\Str::limit($entry->content, 120) }}</div>
+                    @else
+                        <div class="text-xs">{{ \Illuminate\Support\Str::limit($entry->content, 160) }}</div>
+                    @endif
+                    @if (! empty($entry->translations))
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            @foreach ($entry->translations as $lang => $translation)
+                                <x-status-badge tone="ghost" size="xs" outline class="font-mono" :title="$translation">{{ $lang }}</x-status-badge>
+                            @endforeach
+                        </div>
+                    @endif
+                </td>
+                <td>
+                    <x-status-badge :tone="$entry->origin === \App\Models\Ai\AiMemoryEntry::ORIGIN_LEARNED ? 'warning' : 'ghost'" size="sm">
+                        {{ __('ai.field.origin_' . $entry->origin) }}
+                    </x-status-badge>
+                </td>
+                <td>{{ $entry->active ? __('ai.field.enabled_yes') : __('ai.field.enabled_no') }}</td>
+                <td class="text-right whitespace-nowrap">
+                    @if ($canManage ?? false)
+                        <x-action-form :action="route('admin.ai.memory.toggle', $entry)">
+                            <x-icon-btn :icon="$entry->active ? 'toggle_on' : 'toggle_off'" size="xs" type="submit"
+                                        :title="$entry->active ? __('ai.action.deactivate') : __('ai.action.activate')" />
+                        </x-action-form>
+                        <x-action-form :action="route('admin.ai.memory.destroy', $entry)" method="DELETE"
+                                       :confirm="__('ai.memory.delete_confirm')" confirm-tone="error">
+                            <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :title="__('ai.action.delete')" />
+                        </x-action-form>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <x-table.empty :colspan="7" :title="__('ai.empty.memory')" compact />
+        @endforelse
+    </x-table>
 </x-index-page>
 @endsection

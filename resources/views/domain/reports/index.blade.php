@@ -23,65 +23,59 @@
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2 mt-4">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">{{ __('domain.reports.forecast') }}</h2>
-                <div class="overflow-x-auto">
-                    <table class="table table-sm">
-                        <thead><tr><th>{{ __('domain.reports.month') }}</th><th class="text-right">{{ __('domain.reseller.domains') }}</th><th class="text-right">{{ __('domain.field.renewal_price') }}</th></tr></thead>
-                        <tbody>
-                            @forelse ($forecast as $key => $row)
-                                <tr><td class="tabular-nums">{{ explode('|', $key)[0] }}</td>
-                                    <td class="text-right tabular-nums">{{ $row['count'] }}</td>
-                                    <td class="text-right tabular-nums">{{ number_format($row['amount'], 2, ',', '.') }} {{ $row['currency'] }}</td></tr>
-                            @empty
-                                <x-table.empty :colspan="3" :title="__('domain.reports.no_forecast')" compact />
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <x-card :title="__('domain.reports.forecast')" padding="p-0">
+            <x-table size="sm" bare :caption="__('domain.reports.forecast')">
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('domain.reports.month') }}</x-table.th>
+                        <x-table.th align="right">{{ __('domain.reseller.domains') }}</x-table.th>
+                        <x-table.th align="right">{{ __('domain.field.renewal_price') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($forecast as $key => $row)
+                    <tr><td class="tabular-nums">{{ explode('|', $key)[0] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['count'] }}</td>
+                        <td class="text-right tabular-nums">{{ number_format($row['amount'], 2, ',', '.') }} {{ $row['currency'] }}</td></tr>
+                @empty
+                    <x-table.empty :colspan="3" :title="__('domain.reports.no_forecast')" compact />
+                @endforelse
+            </x-table>
+        </x-card>
 
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">{{ __('domain.reports.coverage') }}</h2>
-                <dl class="grid grid-cols-2 gap-2 text-sm">
-                    <dt class="text-base-content/60">{{ __('domain.reports.accounting_lines') }}</dt><dd class="tabular-nums">{{ $coverage['accounting'] }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.reports.invoices') }}</dt><dd class="tabular-nums">{{ $coverage['invoices'] }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.metric.sync_issues') }}</dt><dd class="tabular-nums">{{ $reconciliation }}</dd>
-                </dl>
-            </div>
-        </div>
+        <x-card :title="__('domain.reports.coverage')">
+            <x-detail-grid>
+                <x-detail-grid.row :label="__('domain.reports.accounting_lines')" class="tabular-nums" :value="$coverage['accounting']" />
+                <x-detail-grid.row :label="__('domain.reports.invoices')" class="tabular-nums" :value="$coverage['invoices']" />
+                <x-detail-grid.row :label="__('domain.metric.sync_issues')" class="tabular-nums" :value="$reconciliation" />
+            </x-detail-grid>
+        </x-card>
     </div>
 
     <div class="grid gap-4 lg:grid-cols-2 mt-4">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">{{ __('domain.metric.unmapped') }}</h2>
+        <x-card :title="__('domain.metric.unmapped')">
+            @if ($unmapped->isEmpty())
+                <x-empty-state compact tone="ghost" :title="__('domain.reports.all_mapped')" />
+            @else
                 <ul class="text-sm space-y-1">
-                    @forelse ($unmapped->take(15) as $domain)
+                    @foreach ($unmapped->take(15) as $domain)
                         <li><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a></li>
-                    @empty
-                        <li class="text-base-content/60">{{ __('domain.reports.all_mapped') }}</li>
-                    @endforelse
+                    @endforeach
                 </ul>
-            </div>
-        </div>
+            @endif
+        </x-card>
 
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">{{ __('domain.metric.risky') }}</h2>
+        <x-card :title="__('domain.metric.risky')">
+            @if ($risky->isEmpty())
+                <x-empty-state compact tone="ghost" :title="__('domain.reports.no_risk')" />
+            @else
                 <ul class="text-sm space-y-1">
-                    @forelse ($risky->take(15) as $domain)
+                    @foreach ($risky->take(15) as $domain)
                         <li><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a>
-                            <span class="badge badge-warning badge-sm">{{ $domain->renewal_mode?->label() }}</span></li>
-                    @empty
-                        <li class="text-base-content/60">{{ __('domain.reports.no_risk') }}</li>
-                    @endforelse
+                            <x-status-badge tone="warning" size="sm">{{ $domain->renewal_mode?->label() }}</x-status-badge></li>
+                    @endforeach
                 </ul>
-            </div>
-        </div>
+            @endif
+        </x-card>
     </div>
 </x-index-page>
 @endsection

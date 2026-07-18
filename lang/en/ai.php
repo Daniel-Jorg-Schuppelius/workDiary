@@ -130,6 +130,10 @@ return [
         'term_required' => 'Glossary entries require a term.',
         'source_required' => 'Example pairs require a raw text.',
     ],
+    'error' => [
+        'technical' => 'Technical error: :message',
+        'unknown' => 'Unknown error.',
+    ],
     'empty' => [
         'connections' => 'No provider connection created yet.',
         'capabilities' => 'No AI capability registered yet (config/ai.php).',

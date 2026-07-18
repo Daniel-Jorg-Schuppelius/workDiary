@@ -11,179 +11,166 @@
 @section('nav-title', $domain->external_domain)
 
 @section('content')
-<x-index-page :subtitle="$domain->connection->name . ' · ' . $domain->external_user">
-    <x-slot:actions>
-        <x-icon-btn icon="arrow_back" size="sm" :href="route('domains.index')" show-label>{{ __('domain.title.index') }}</x-icon-btn>
-        <form method="POST" action="{{ route('domains.refresh', $domain) }}" class="inline">
-            @csrf
-            <x-icon-btn icon="sync" size="sm" type="submit" show-label>{{ __('domain.action.refresh') }}</x-icon-btn>
-        </form>
-    </x-slot:actions>
-
-    @if (session('success'))<div role="alert" class="alert alert-success"><span>{{ session('success') }}</span></div>@endif
-    @if (session('error'))<div role="alert" class="alert alert-error"><span>{{ session('error') }}</span></div>@endif
+<x-page-shell>
+    <x-entity-header :title="$domain->external_domain" :back-route="route('domains.index')" :back-label="__('domain.title.index')">
+        <x-slot:badges>
+            <x-status-badge :tone="$domain->sync_status->badge()">{{ $domain->sync_status->label() }}</x-status-badge>
+        </x-slot:badges>
+        <x-slot:meta>{{ $domain->connection->name }} · {{ $domain->external_user }}</x-slot:meta>
+        <x-slot:actions>
+            <x-action-form :action="route('domains.refresh', $domain)">
+                <x-icon-btn icon="sync" size="sm" type="submit" show-label>{{ __('domain.action.refresh') }}</x-icon-btn>
+            </x-action-form>
+        </x-slot:actions>
+    </x-entity-header>
 
     <div class="grid gap-4 lg:grid-cols-3">
         {{-- Übersicht --}}
-        <div class="card bg-base-100 shadow-sm lg:col-span-2">
-            <div class="card-body">
-                <h2 class="card-title text-base">{{ __('domain.section.overview') }}</h2>
-                <dl class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                    <dt class="text-base-content/60">{{ __('domain.field.registrar') }}</dt><dd>{{ $domain->registrar ?? '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.field.status') }}</dt><dd>{{ $domain->status ?? '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.field.expiration') }}</dt><dd class="tabular-nums">{{ $domain->expiration_at?->format('d.m.Y') ?? '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.field.renewal_mode') }}</dt><dd>{{ $domain->renewal_mode?->label() ?? '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.field.transferlock') }}</dt><dd>{{ $domain->transferlock ? __('domain.yes') : __('domain.no') }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.field.renewal_price') }}</dt>
-                    <dd>{{ $domain->renewal_price !== null ? number_format((float) $domain->renewal_price, 2, ',', '.') . ' ' . ($domain->renewal_currency?->value ?? '') : '—' }}</dd>
-                    <dt class="text-base-content/60">{{ __('domain.field.sync') }}</dt>
-                    <dd><span class="badge badge-{{ $domain->sync_status->badge() }} badge-sm">{{ $domain->sync_status->label() }}</span>
-                        <span class="text-xs text-base-content/50">{{ $domain->synced_at?->diffForHumans() }}</span></dd>
-                </dl>
-            </div>
-        </div>
+        <x-card :title="__('domain.section.overview')" class="lg:col-span-2">
+            <x-detail-grid>
+                <x-detail-grid.row :label="__('domain.field.registrar')" :value="$domain->registrar ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.status')" :value="$domain->status ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.expiration')" class="tabular-nums" :value="$domain->expiration_at?->format('d.m.Y') ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.renewal_mode')" :value="$domain->renewal_mode?->label() ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.transferlock')" :value="$domain->transferlock ? __('domain.yes') : __('domain.no')" />
+                <x-detail-grid.row :label="__('domain.field.renewal_price')"
+                                   :value="$domain->renewal_price !== null ? number_format((float) $domain->renewal_price, 2, ',', '.') . ' ' . ($domain->renewal_currency?->value ?? '') : '—'" />
+                <x-detail-grid.row :label="__('domain.field.sync')">
+                    <x-status-badge :tone="$domain->sync_status->badge()">{{ $domain->sync_status->label() }}</x-status-badge>
+                    <span class="text-xs text-base-content/50">{{ $domain->synced_at?->diffForHumans() }}</span>
+                </x-detail-grid.row>
+            </x-detail-grid>
+        </x-card>
 
         {{-- Kundenzuordnung --}}
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-base">{{ __('domain.field.customer') }}</h2>
-                <p class="text-sm">{{ $domain->customer?->name ?? __('domain.mapping.none') }}</p>
-                @if ($can['assign'])
-                    <form method="POST" action="{{ route('domains.customer', $domain) }}" class="mt-2 flex gap-2">
-                        @csrf
-                        <input type="text" name="customer" class="input input-sm input-bordered w-full"
-                               placeholder="{{ __('domain.mapping.customer_sqid') }}">
-                        <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
-                    </form>
-                @endif
-            </div>
-        </div>
+        <x-card :title="__('domain.field.customer')">
+            <p class="text-sm">{{ $domain->customer?->name ?? __('domain.mapping.none') }}</p>
+            @if ($can['assign'])
+                <x-action-form :action="route('domains.customer', $domain)" class="mt-2 flex gap-2">
+                    <input type="text" name="customer" class="input input-sm input-bordered w-full"
+                           placeholder="{{ __('domain.mapping.customer_sqid') }}" aria-label="{{ __('domain.mapping.customer_sqid') }}">
+                    <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
+                </x-action-form>
+            @endif
+        </x-card>
     </div>
 
     {{-- DNS --}}
-    <div class="card bg-base-100 shadow-sm mt-4">
-        <div class="card-body">
-            <div class="flex items-center justify-between">
-                <h2 class="card-title text-base">{{ __('domain.section.dns') }}</h2>
-                @if ($can['dns'])
-                    <form method="POST" action="{{ route('domains.dns.read', $domain) }}">
-                        @csrf
-                        <x-icon-btn icon="download" size="xs" type="submit" show-label>{{ __('domain.action.dns_read') }}</x-icon-btn>
-                    </form>
-                @endif
-            </div>
-            @forelse ($domain->dnsZones as $zone)
-                <div class="text-xs font-mono text-base-content/70 mt-2">{{ $zone->zone }}</div>
-                <div class="overflow-x-auto">
-                    <table class="table table-xs">
-                        <thead><tr><th>{{ __('domain.dns.type') }}</th><th>{{ __('domain.dns.name') }}</th><th>TTL</th><th>{{ __('domain.dns.content') }}</th></tr></thead>
-                        <tbody>
-                            @foreach ($zone->records as $record)
-                                <tr><td>{{ $record->type->value }}</td><td class="font-mono">{{ $record->name }}</td><td class="tabular-nums">{{ $record->ttl }}</td><td class="font-mono">{{ $record->content }}</td></tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @empty
-                <p class="text-sm text-base-content/60">{{ __('domain.dns.empty') }}</p>
-            @endforelse
-        </div>
-    </div>
+    <x-card :title="__('domain.section.dns')">
+        <x-slot:actions>
+            @if ($can['dns'])
+                <x-action-form :action="route('domains.dns.read', $domain)">
+                    <x-icon-btn icon="download" size="xs" type="submit" show-label>{{ __('domain.action.dns_read') }}</x-icon-btn>
+                </x-action-form>
+            @endif
+        </x-slot:actions>
+        @forelse ($domain->dnsZones as $zone)
+            <div class="text-xs font-mono text-base-content/70 mt-2 mb-1">{{ $zone->zone }}</div>
+            <x-table size="xs" :zebra="false" bare :caption="__('domain.section.dns') . ' — ' . $zone->zone">
+                <x-slot:head>
+                    <tr>
+                        <x-table.th>{{ __('domain.dns.type') }}</x-table.th>
+                        <x-table.th>{{ __('domain.dns.name') }}</x-table.th>
+                        <x-table.th>TTL</x-table.th>
+                        <x-table.th>{{ __('domain.dns.content') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($zone->records as $record)
+                    <tr>
+                        <td>{{ $record->type->value }}</td>
+                        <td class="font-mono">{{ $record->name }}</td>
+                        <td class="tabular-nums">{{ $record->ttl }}</td>
+                        <td class="font-mono">{{ $record->content }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        @empty
+            <p class="text-sm text-base-content/60">{{ __('domain.dns.empty') }}</p>
+        @endforelse
+    </x-card>
 
     {{-- Rechnungen (Blocked-State / capability-gegatet) --}}
-    <div class="card bg-base-100 shadow-sm mt-4">
-        <div class="card-body">
-            <h2 class="card-title text-base">{{ __('domain.section.invoices') }}</h2>
-            @unless ($invoicesAvailable)
-                <div role="alert" class="alert alert-info"><span>{{ $invoiceBlockedReason }}</span></div>
-            @else
-                <p class="text-sm text-base-content/60">{{ __('domain.invoices.available') }}</p>
-            @endunless
-        </div>
-    </div>
+    <x-card :title="__('domain.section.invoices')">
+        @unless ($invoicesAvailable)
+            <div role="note" class="alert bg-info/10 border-info/30 text-sm text-base-content"><span>{{ $invoiceBlockedReason }}</span></div>
+        @else
+            <p class="text-sm text-base-content/60">{{ __('domain.invoices.available') }}</p>
+        @endunless
+    </x-card>
 
     {{-- Timeline: Provider-Commands --}}
-    <div class="card bg-base-100 shadow-sm mt-4">
-        <div class="card-body">
-            <h2 class="card-title text-base">{{ __('domain.section.timeline') }}</h2>
-            <div class="overflow-x-auto">
-                <table class="table table-sm">
-                    <thead><tr><th>{{ __('domain.command.name') }}</th><th>{{ __('domain.command.status') }}</th><th>{{ __('domain.command.when') }}</th><th></th></tr></thead>
-                    <tbody>
-                        @forelse ($commands as $command)
-                            <tr>
-                                <td class="font-mono text-xs">{{ $command->command }}</td>
-                                <td><span class="badge badge-{{ $command->status->badge() }} badge-sm">{{ $command->status->label() }}</span></td>
-                                <td class="text-xs text-base-content/60">{{ $command->created_at?->diffForHumans() }}</td>
-                                <td class="text-right">
-                                    @if ($can['dangerous'] && $command->status === \App\Enums\Domain\DomainProviderCommandStatus::Draft)
-                                        <form method="POST" action="{{ route('domains.commands.approve', $command) }}" class="inline">
-                                            @csrf
-                                            <x-icon-btn icon="how_to_reg" tone="warning" size="xs" type="submit" :title="__('domain.action.approve')" />
-                                        </form>
-                                        <form method="POST" action="{{ route('domains.commands.reject', $command) }}" class="inline">
-                                            @csrf
-                                            <x-icon-btn icon="cancel" tone="error" size="xs" type="submit" :title="__('domain.action.reject')" />
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <x-table.empty :colspan="4" :title="__('domain.command.empty')" compact />
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <x-card :title="__('domain.section.timeline')" padding="p-0">
+        <x-table size="sm" bare :caption="__('domain.section.timeline')">
+            <x-slot:head>
+                <tr>
+                    <x-table.th>{{ __('domain.command.name') }}</x-table.th>
+                    <x-table.th>{{ __('domain.command.status') }}</x-table.th>
+                    <x-table.th>{{ __('domain.command.when') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($commands as $command)
+                <tr>
+                    <td class="font-mono text-xs">{{ $command->command }}</td>
+                    <td><x-status-badge :tone="$command->status->badge()">{{ $command->status->label() }}</x-status-badge></td>
+                    <td class="text-xs text-base-content/60">{{ $command->created_at?->diffForHumans() }}</td>
+                    <td class="text-right">
+                        @if ($can['dangerous'] && $command->status === \App\Enums\Domain\DomainProviderCommandStatus::Draft)
+                            <x-action-form :action="route('domains.commands.approve', $command)">
+                                <x-icon-btn icon="how_to_reg" tone="warning" size="xs" type="submit" :title="__('domain.action.approve')" />
+                            </x-action-form>
+                            <x-action-form :action="route('domains.commands.reject', $command)">
+                                <x-icon-btn icon="cancel" tone="error" size="xs" type="submit" :title="__('domain.action.reject')" />
+                            </x-action-form>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty :colspan="4" :title="__('domain.command.empty')" compact />
+            @endforelse
+        </x-table>
+    </x-card>
 
     {{-- Aktionen --}}
     @if ($can['renewal'] || $can['transfer'] || $can['dangerous'])
-        <div class="card bg-base-100 shadow-sm mt-4">
-            <div class="card-body space-y-3">
-                <h2 class="card-title text-base">{{ __('domain.section.actions') }}</h2>
+        <x-card :title="__('domain.section.actions')" class="space-y-3">
+            @if ($can['renewal'])
+                <x-action-form :action="route('domains.renewal-mode', $domain)" class="flex flex-wrap items-end gap-2">
+                    <select name="renewal_mode" class="select select-sm select-bordered" aria-label="{{ __('domain.field.renewal_mode') }}">
+                        @foreach (\App\Enums\Domain\DomainRenewalMode::cases() as $m)
+                            <option value="{{ $m->value }}" @selected($domain->renewal_mode === $m)>{{ $m->label() }}</option>
+                        @endforeach
+                    </select>
+                    <x-icon-btn icon="autorenew" size="sm" type="submit" show-label>{{ __('domain.action.set_renewal_mode') }}</x-icon-btn>
+                </x-action-form>
+            @endif
 
-                @if ($can['renewal'])
-                    <form method="POST" action="{{ route('domains.renewal-mode', $domain) }}" class="flex flex-wrap items-end gap-2">
-                        @csrf
-                        <select name="renewal_mode" class="select select-sm select-bordered">
-                            @foreach (\App\Enums\Domain\DomainRenewalMode::cases() as $m)
-                                <option value="{{ $m->value }}" @selected($domain->renewal_mode === $m)>{{ $m->label() }}</option>
-                            @endforeach
-                        </select>
-                        <x-icon-btn icon="autorenew" size="sm" type="submit" show-label>{{ __('domain.action.set_renewal_mode') }}</x-icon-btn>
-                    </form>
-                @endif
+            @if ($can['transfer'])
+                <x-action-form :action="route('domains.transfer-lock', $domain)" class="flex items-end gap-2">
+                    <input type="hidden" name="locked" value="{{ $domain->transferlock ? 0 : 1 }}">
+                    <x-icon-btn icon="{{ $domain->transferlock ? 'lock_open' : 'lock' }}" size="sm" type="submit" show-label>
+                        {{ $domain->transferlock ? __('domain.action.unlock_transfer') : __('domain.action.lock_transfer') }}
+                    </x-icon-btn>
+                </x-action-form>
+            @endif
 
-                @if ($can['transfer'])
-                    <form method="POST" action="{{ route('domains.transfer-lock', $domain) }}" class="flex items-end gap-2">
-                        @csrf
-                        <input type="hidden" name="locked" value="{{ $domain->transferlock ? 0 : 1 }}">
-                        <x-icon-btn icon="{{ $domain->transferlock ? 'lock_open' : 'lock' }}" size="sm" type="submit" show-label>
-                            {{ $domain->transferlock ? __('domain.action.unlock_transfer') : __('domain.action.lock_transfer') }}
-                        </x-icon-btn>
-                    </form>
-                @endif
-
-                @if ($can['dangerous'])
-                    <form method="POST" action="{{ route('domains.dangerous', $domain) }}" class="flex flex-wrap items-end gap-2 border-t border-base-200 pt-3"
-                          data-confirm-dialog data-confirm-message="{{ __('domain.action.dangerous_confirm') }}" data-confirm-tone="error">
-                        @csrf
-                        <select name="action" class="select select-sm select-bordered">
-                            <option value="delete">{{ __('domain.dangerous.delete') }}</option>
-                            <option value="push">{{ __('domain.dangerous.push') }}</option>
-                            <option value="trade">{{ __('domain.dangerous.trade') }}</option>
-                            <option value="transfer_out">{{ __('domain.dangerous.transfer_out') }}</option>
-                            <option value="assign">{{ __('domain.dangerous.assign') }}</option>
-                        </select>
-                        <input type="text" name="target_user" class="input input-sm input-bordered w-40" placeholder="{{ __('domain.dangerous.target_user') }}">
-                        <input type="text" name="confirmation" class="input input-sm input-bordered w-56" placeholder="{{ __('domain.dangerous.retype', ['domain' => $domain->external_domain]) }}" required>
-                        <x-icon-btn icon="warning" tone="error" size="sm" type="submit" show-label>{{ __('domain.action.request_dangerous') }}</x-icon-btn>
-                        <p class="w-full text-xs text-base-content/60">{{ __('domain.dangerous.hint') }}</p>
-                    </form>
-                @endif
-            </div>
-        </div>
+            @if ($can['dangerous'])
+                <x-action-form :action="route('domains.dangerous', $domain)" class="flex flex-wrap items-end gap-2 border-t border-base-200 pt-3"
+                               :confirm="__('domain.action.dangerous_confirm')" confirm-tone="error">
+                    <select name="action" class="select select-sm select-bordered" aria-label="{{ __('domain.action.request_dangerous') }}">
+                        <option value="delete">{{ __('domain.dangerous.delete') }}</option>
+                        <option value="push">{{ __('domain.dangerous.push') }}</option>
+                        <option value="trade">{{ __('domain.dangerous.trade') }}</option>
+                        <option value="transfer_out">{{ __('domain.dangerous.transfer_out') }}</option>
+                        <option value="assign">{{ __('domain.dangerous.assign') }}</option>
+                    </select>
+                    <input type="text" name="target_user" class="input input-sm input-bordered w-40" placeholder="{{ __('domain.dangerous.target_user') }}" aria-label="{{ __('domain.dangerous.target_user') }}">
+                    <input type="text" name="confirmation" class="input input-sm input-bordered w-56" placeholder="{{ __('domain.dangerous.retype', ['domain' => $domain->external_domain]) }}" aria-label="{{ __('domain.dangerous.retype', ['domain' => $domain->external_domain]) }}" required>
+                    <x-icon-btn icon="warning" tone="error" size="sm" type="submit" show-label>{{ __('domain.action.request_dangerous') }}</x-icon-btn>
+                    <p class="w-full text-xs text-base-content/60">{{ __('domain.dangerous.hint') }}</p>
+                </x-action-form>
+            @endif
+        </x-card>
     @endif
-</x-index-page>
+</x-page-shell>
 @endsection

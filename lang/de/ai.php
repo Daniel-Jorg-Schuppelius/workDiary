@@ -130,6 +130,10 @@ return [
         'term_required' => 'Glossar-Einträge benötigen einen Begriff.',
         'source_required' => 'Beispielpaare benötigen einen Rohtext.',
     ],
+    'error' => [
+        'technical' => 'Technischer Fehler: :message',
+        'unknown' => 'Unbekannter Fehler.',
+    ],
     'empty' => [
         'connections' => 'Noch keine Provider-Verbindung angelegt.',
         'capabilities' => 'Noch keine KI-Capability registriert (config/ai.php).',

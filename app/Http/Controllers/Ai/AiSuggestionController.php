@@ -20,8 +20,10 @@ use App\Models\{Customer, Invoice, InvoiceItem, Quote, QuoteItem};
 use App\Services\Ai\AiMemoryService;
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\ItemTextSuggestionService;
+use App\Support\Locales;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -67,7 +69,7 @@ class AiSuggestionController extends Controller {
         $this->authorizeInvoice($invoice, $item);
 
         $data = $request->validate([
-            'target_language' => ['required', 'string', 'in:de,en,es,fr,it'],
+            'target_language' => ['required', 'string', Rule::in(Locales::enabledCodes())],
         ]);
 
         return $this->guarded(function () use ($invoice, $item, $data): string {
