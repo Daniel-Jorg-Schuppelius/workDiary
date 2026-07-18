@@ -10,10 +10,16 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureDeviationProposedAction: string {
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureDeviationProposedAction: string implements HasLabel {
     case None = 'none';
     case OpenIssue = 'open_issue';
     case NewDiaryEntry = 'new_diary_entry';
     case Requalify = 'requalify';
     case Escalate = 'escalate';
+
+    public function label(): string {
+        return (string) __('enums.procedure.deviation-proposed-action.' . $this->value);
+    }
 }

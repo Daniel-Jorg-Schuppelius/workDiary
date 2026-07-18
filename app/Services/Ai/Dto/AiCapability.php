@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Ai\Dto;
 
 use App\Enums\Ai\{AiSensitivity, AiVerb};
+use App\Support\Trans;
 
 /**
  * Registrierte KI-Einsatzstelle aus der Capability-Registry
@@ -31,4 +32,12 @@ final class AiCapability {
         public readonly array $memoryScopes,
         public readonly int $promptVersion,
     ) {}
+
+    /**
+     * Lesbare Bezeichnung der Einsatzstelle (lang/<locale>/ai.php →
+     * capability_label); fällt bei fehlender Übersetzung auf den Key zurück.
+     */
+    public function label(): string {
+        return Trans::or('ai.capability_label.' . $this->key, $this->key);
+    }
 }

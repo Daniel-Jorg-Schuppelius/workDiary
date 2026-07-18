@@ -37,4 +37,14 @@ return [
         'awaiting_you' => 'Rueckmeldung von Ihnen erbeten',
         'closed' => 'Abgeschlossen',
     ],
+    'priority' => [
+        'normal' => 'Normal',
+        'high' => 'Hoch',
+        'critical' => 'Kritisch',
+    ],
+    'role' => [
+        'owner' => 'Fallverantwortung',
+        'processor' => 'Bearbeitung',
+        'reviewer' => 'Pruefung',
+    ],
 ];

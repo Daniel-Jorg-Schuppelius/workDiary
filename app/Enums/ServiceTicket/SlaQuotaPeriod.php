@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Enums\ServiceTicket;
 
+use App\Enums\Contracts\HasLabel;
 use Carbon\CarbonInterface;
 
 /**
@@ -19,10 +20,14 @@ use Carbon\CarbonInterface;
  * Zeitfenster, über das der Inklusivzeit-Verbrauch gerechnet wird, und liefert
  * einen stabilen Perioden-Schlüssel für die einmalige Warnung je Periode.
  */
-enum SlaQuotaPeriod: string {
+enum SlaQuotaPeriod: string implements HasLabel {
     case Month = 'month';
     case Quarter = 'quarter';
     case Year = 'year';
+
+    public function label(): string {
+        return (string) __('enums.sla.quotaPeriod.' . $this->value);
+    }
 
     /**
      * Zeitfenster [Start, Ende] der Periode, in der die Referenz liegt.

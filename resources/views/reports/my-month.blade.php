@@ -12,11 +12,6 @@
     $money = function (float $val): string {
         return number_format($val, 2, ',', '.') . ' €';
     };
-    $kindLabel = [
-        'work' => __('Arbeit'),
-        'travel' => __('Reise'),
-        'standby' => __('Bereitschaft'),
-    ];
     $kindBadge = [
         'work' => 'badge-primary',
         'travel' => 'badge-info',
@@ -101,7 +96,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge badge-sm {{ $kindBadge[$e->kind->value] ?? 'badge-ghost' }}">{{ $kindLabel[$e->kind->value] ?? $e->kind->value }}</span>
+                                <span class="badge badge-sm {{ $kindBadge[$e->kind->value] ?? 'badge-ghost' }}">{{ $e->kind->label() }}</span>
                             </td>
                             <td class="text-sm">
                                 @if ($e->project)

@@ -72,7 +72,7 @@
                     <x-detail-grid.row :label="__('safety.field.reporter')" :value="$event->reporter?->name ?? '–'" />
                     @if ($event->subject)
                         <x-detail-grid.row :label="__('safety.field.subject')"
-                                           :value="class_basename($event->subject) . ': ' . ($event->subject->name ?? $event->subject->title ?? ('#' . $event->subject->getKey()))" />
+                                           :value="\App\Support\EntityType::label($event->subject->getMorphClass()) . ': ' . ($event->subject->name ?? $event->subject->title ?? ('#' . $event->subject->getKey()))" />
                     @endif
                     <x-detail-grid.row :label="__('safety.field.description')" :value="$event->description" />
                     <x-detail-grid.row :label="__('safety.field.immediate_action')" :value="$event->immediate_action ?? '–'" />

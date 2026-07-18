@@ -21,6 +21,17 @@ return [
         'capabilities' => 'Capabilities',
         'capabilities_subtitle' => 'Opt-in, allowed connections (order = fallback chain) and user choice per use case.',
     ],
+    // Readable label per registered use case (config/ai.php).
+    'capability_label' => [
+        'invoicing' => [
+            'item_text' => 'Invoice: line item text',
+            'block_text' => 'Invoice: summary text',
+            'item_translate' => 'Invoice: translate line item',
+        ],
+        'quotes' => [
+            'item_text' => 'Quote: line item text',
+        ],
+    ],
     'connect' => [
         'title' => 'Add connection',
         'legend' => 'Provider access (key is stored encrypted and never displayed)',

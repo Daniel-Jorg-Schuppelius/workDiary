@@ -102,7 +102,7 @@
                     @php $u = $item['usage']; @endphp
                     <div>
                         <div class="mb-1 flex items-center justify-between gap-2 text-sm">
-                            <span class="font-medium">{{ $item['quota']->period_kind->value }} · {{ $u['period_key'] }}</span>
+                            <span class="font-medium">{{ $item['quota']->period_kind->label() }} · {{ $u['period_key'] }}</span>
                             <span class="text-xs tabular-nums text-base-content/60">{{ $u['percentage'] }} %</span>
                         </div>
                         <progress class="progress w-full {{ $u['threshold_reached'] ? 'progress-warning' : 'progress-success' }}"

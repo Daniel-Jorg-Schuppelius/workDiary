@@ -68,7 +68,7 @@
                 @foreach ($proposals as $proposal)
                     <tr>
                         <td class="text-sm">{{ config('retention.areas.' . $proposal->area . '.label', $proposal->area) }}</td>
-                        <td class="font-mono text-xs">{{ class_basename($proposal->subject_type) }} #{{ $proposal->subject_id }}</td>
+                        <td class="text-xs">{{ \App\Support\EntityType::label($proposal->subject_type) }} <span class="font-mono text-base-content/60">#{{ $proposal->subject_id }}</span></td>
                         <td class="tabular-nums text-sm">{{ $proposal->retention_until->format('d.m.Y') }}</td>
                         <td class="max-w-md truncate text-sm text-base-content/70">{{ $proposal->reason }}</td>
                         <td>

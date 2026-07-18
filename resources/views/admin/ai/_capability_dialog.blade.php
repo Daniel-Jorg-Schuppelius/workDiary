@@ -9,7 +9,7 @@
 {{-- Dialog: Capability-Routing je Organisation (Feature 025, MVP-400).
      Reihenfolge der Checkbox-Liste = Fallback-Kette. --}}
 <x-modal
-    :title="__('ai.capability.title', ['capability' => $definition->key])"
+    :title="__('ai.capability.title', ['capability' => $definition->label()])"
     icon="tune"
     tone="primary"
     :action="route('admin.ai.capability.update', ['capability' => $definition->key])"

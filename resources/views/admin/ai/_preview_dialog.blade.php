@@ -10,7 +10,7 @@
      Feature 016: konfigurierbare externe Dienste mit klarer
      Datenfluss-Dokumentation). Rein lesend — es wird kein Provider gerufen. --}}
 <x-modal
-    :title="__('ai.preview.title', ['capability' => $definition->key])"
+    :title="__('ai.preview.title', ['capability' => $definition->label()])"
     icon="visibility"
     tone="info"
 >

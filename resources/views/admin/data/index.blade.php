@@ -81,7 +81,7 @@
             @foreach ($runs as $run)
                 <tr>
                     <td>{{ $run->entity->label() }}</td>
-                    <td><span class="badge badge-sm badge-ghost uppercase">{{ $run->format->value }}</span></td>
+                    <td><span class="badge badge-sm badge-ghost uppercase">{{ $run->format->label() }}</span></td>
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
                     <td class="text-sm">{{ optional($run->created_at)->format('Y-m-d H:i') }}</td>

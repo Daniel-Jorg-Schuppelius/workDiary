@@ -55,7 +55,7 @@
             <select id="aim-capability" name="capability" class="select select-bordered w-full">
                 <option value="">—</option>
                 @foreach ($capabilities as $capability)
-                    <option value="{{ $capability->key }}" @selected(old('capability') === $capability->key)>{{ $capability->key }}</option>
+                    <option value="{{ $capability->key }}" @selected(old('capability') === $capability->key)>{{ $capability->label() }}</option>
                 @endforeach
             </select>
         </div>

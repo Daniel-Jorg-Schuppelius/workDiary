@@ -54,7 +54,7 @@
                             </td>
                             <td class="font-medium">{{ $project->name }}</td>
                             <td>{{ $project->customer?->name }}</td>
-                            <td>{{ $project->status?->value }}</td>
+                            <td>{{ $project->status?->label() }}</td>
                             <td class="text-sm tabular-nums">
                                 @php($last = $lastByProject[$project->id] ?? null)
                                 {{ $last !== null ? \Illuminate\Support\Carbon::parse($last)->fdate() : '–' }}

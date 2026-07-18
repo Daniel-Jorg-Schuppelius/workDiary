@@ -37,4 +37,14 @@ return [
         'awaiting_you' => 'Awaiting your response',
         'closed' => 'Closed',
     ],
+    'priority' => [
+        'normal' => 'Normal',
+        'high' => 'High',
+        'critical' => 'Critical',
+    ],
+    'role' => [
+        'owner' => 'Owner',
+        'processor' => 'Processor',
+        'reviewer' => 'Reviewer',
+    ],
 ];

@@ -75,8 +75,8 @@
                         @endif
                     </td>
                     <td class="text-base-content/70">{{ $software->vendor ?? '—' }}</td>
-                    <td class="text-base-content/70">{{ $kindOptions[$software->kind->value] ?? $software->kind->value }}</td>
-                    <td class="text-base-content/70">{{ $licenseTypeOptions[$software->license_type->value] ?? $software->license_type->value }}</td>
+                    <td class="text-base-content/70">{{ $software->kind->label() }}</td>
+                    <td class="text-base-content/70">{{ $software->license_type->label() }}</td>
                     <td class="text-right tabular-nums">{{ $software->installations_count }}</td>
                     <td class="text-right">
                         @can('update', $software)

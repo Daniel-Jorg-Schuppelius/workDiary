@@ -76,7 +76,7 @@
                 <tr>
                     <td class="font-mono text-sm">#{{ $run->id }}</td>
                     <td>{{ $run->entity->label() }}</td>
-                    <td><span class="badge badge-sm badge-ghost uppercase">{{ $run->format->value }}</span></td>
+                    <td><span class="badge badge-sm badge-ghost uppercase">{{ $run->format->label() }}</span></td>
                     <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
                     <td class="text-sm" data-sort-value="{{ $run->created_at?->orgTz()->format('Y-m-d H:i') ?? '' }}">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>

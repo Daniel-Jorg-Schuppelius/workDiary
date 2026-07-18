@@ -20,7 +20,7 @@
             <div class="mt-2 space-y-1">
                 <p class="text-sm">
                     {{ __('Status') }}: <strong>{{ __('whistleblowing.status.' . $case->status->value) }}</strong> ·
-                    {{ __('Priorität') }}: {{ $case->priority->value }} ·
+                    {{ __('Priorität') }}: {{ __('whistleblowing.priority.' . $case->priority->value) }} ·
                     {{ __('Kategorie') }}: {{ __('whistleblowing.category.' . $case->category->value) }}
                 </p>
                 <p class="text-sm">
@@ -46,7 +46,7 @@
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Bearbeiter') }}</h2>
             <ul class="mt-2 list-disc ml-5">
                 @forelse ($case->assignments->whereNull('revoked_at') as $a)
-                    <li>{{ $a->user?->name }} ({{ $a->role->value }})</li>
+                    <li>{{ $a->user?->name }} ({{ __('whistleblowing.role.' . $a->role->value) }})</li>
                 @empty
                     <li>{{ __('Niemand zugewiesen.') }}</li>
                 @endforelse

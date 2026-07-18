@@ -30,7 +30,7 @@
                         </td>
                         <td>{{ __('whistleblowing.category.' . $case->category->value) }}</td>
                         <td>{{ __('whistleblowing.status.' . $case->status->value) }}</td>
-                        <td>{{ $case->priority->value }}</td>
+                        <td>{{ __('whistleblowing.priority.' . $case->priority->value) }}</td>
                         <td>{{ optional($case->acknowledgement_due_at)->format('d.m.Y') }}</td>
                         <td>{{ optional($case->feedback_due_at)->format('d.m.Y') }}</td>
                     </tr>

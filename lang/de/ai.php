@@ -21,6 +21,17 @@ return [
         'capabilities' => 'Capabilities',
         'capabilities_subtitle' => 'Opt-in, erlaubte Verbindungen (Reihenfolge = Fallback-Kette) und Nutzerwahl je Einsatzstelle.',
     ],
+    // Lesbare Bezeichnung je registrierter Einsatzstelle (config/ai.php).
+    'capability_label' => [
+        'invoicing' => [
+            'item_text' => 'Rechnung: Positionstext',
+            'block_text' => 'Rechnung: Sammeltext',
+            'item_translate' => 'Rechnung: Position übersetzen',
+        ],
+        'quotes' => [
+            'item_text' => 'Angebot: Positionstext',
+        ],
+    ],
     'connect' => [
         'title' => 'Verbindung anlegen',
         'legend' => 'Provider-Zugang (Schlüssel wird verschlüsselt gespeichert und nie angezeigt)',

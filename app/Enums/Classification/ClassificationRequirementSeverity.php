@@ -10,9 +10,15 @@
 
 namespace App\Enums\Classification;
 
-enum ClassificationRequirementSeverity: string {
+use App\Enums\Contracts\HasLabel;
+
+enum ClassificationRequirementSeverity: string implements HasLabel {
     case Hard = 'hard';
     case Soft = 'soft';
+
+    public function label(): string {
+        return (string) __('enums.classification.requirement-severity.' . $this->value);
+    }
 
     public function isHard(): bool {
         return $this === self::Hard;

@@ -32,7 +32,7 @@
                 <option value="">{{ __('Bitte wählen') }}</option>
                 @foreach ($domains as $domain)
                     <option value="{{ $domain->value }}" @selected($selectedDomain === $domain->value)>
-                        {{ $domainLabels[$domain->value] ?? $domain->value }}
+                        {{ $domain->label() }}
                     </option>
                 @endforeach
             </select>

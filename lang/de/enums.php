@@ -30,6 +30,22 @@ return [
             'resolved' => 'Behoben',
             'writtenOff' => 'Ausgebucht',
         ],
+        'ownership' => [
+            'org' => 'Organisation',
+            'customer' => 'Kunde',
+            'external' => 'Extern',
+        ],
+    ],
+    'classification' => [
+        'requirement-phase' => [
+            'onCreate' => 'Bei Erstellung',
+            'beforeComplete' => 'Vor Abschluss',
+            'beforeSign' => 'Vor Signatur',
+        ],
+        'requirement-severity' => [
+            'hard' => 'Blockierend',
+            'soft' => 'Hinweis',
+        ],
     ],
     'room_requirement_kind' => [
         'hygieneLevel' => 'Hygienestufe',
@@ -420,6 +436,11 @@ return [
         'violationKind' => [
             'responseTime' => 'Reaktionszeit',
             'resolutionTime' => 'Lösungszeit',
+        ],
+        'quotaPeriod' => [
+            'month' => 'Monat',
+            'quarter' => 'Quartal',
+            'year' => 'Jahr',
         ],
     ],
 

@@ -21,6 +21,17 @@ return [
         'capabilities' => 'Capacités',
         'capabilities_subtitle' => 'Activation, connexions autorisées (ordre = chaîne de secours) et choix utilisateur par cas d\'usage.',
     ],
+    // Libellé lisible par cas d'usage enregistré (config/ai.php).
+    'capability_label' => [
+        'invoicing' => [
+            'item_text' => 'Facture : texte du poste',
+            'block_text' => 'Facture : texte récapitulatif',
+            'item_translate' => 'Facture : traduire le poste',
+        ],
+        'quotes' => [
+            'item_text' => 'Devis : texte du poste',
+        ],
+    ],
     'connect' => [
         'title' => 'Ajouter une connexion',
         'legend' => 'Accès fournisseur (la clé est chiffrée et jamais affichée)',

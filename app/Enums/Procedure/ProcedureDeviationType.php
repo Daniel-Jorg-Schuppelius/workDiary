@@ -10,7 +10,9 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureDeviationType: string {
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureDeviationType: string implements HasLabel {
     case NotApplicable = 'not_applicable';
     case NotPossible = 'not_possible';
     case Partial = 'partial';
@@ -19,6 +21,10 @@ enum ProcedureDeviationType: string {
     case MaterialSubstitute = 'material_substitute';
     case SafetyBlock = 'safety_block';
     case CustomerDecline = 'customer_decline';
+
+    public function label(): string {
+        return (string) __('enums.procedure.deviation-type.' . $this->value);
+    }
 
     public function defaultSeverity(): ProcedureDeviationSeverity {
         return match ($this) {

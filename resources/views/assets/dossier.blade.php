@@ -194,7 +194,6 @@
 
     {{-- Eigentümerwechsel-Historie (Feature 027 → Rang 49): append-only Nachweis. --}}
     @if ($ownershipChanges->isNotEmpty())
-        @php $ownershipLabels = ['org' => __('Organisation'), 'customer' => __('Kunde'), 'external' => __('Extern')]; @endphp
         <h2>{{ __('Eigentümerwechsel-Historie') }}</h2>
         <table>
             <thead><tr><th>{{ __('Datum') }}</th><th>{{ __('Von') }}</th><th>{{ __('Nach') }}</th><th>{{ __('Kunde') }}</th><th>{{ __('Durch') }}</th><th>{{ __('Notizen') }}</th></tr></thead>
@@ -202,8 +201,8 @@
                 @foreach ($ownershipChanges as $change)
                     <tr>
                         <td>{{ $change->changed_at?->fdatetime() ?? '—' }}</td>
-                        <td>{{ $change->from_ownership ? ($ownershipLabels[$change->from_ownership->value] ?? $change->from_ownership->value) : '—' }}</td>
-                        <td>{{ $ownershipLabels[$change->to_ownership->value] ?? $change->to_ownership->value }}</td>
+                        <td>{{ $change->from_ownership?->label() ?? '—' }}</td>
+                        <td>{{ $change->to_ownership->label() }}</td>
                         <td>{{ $change->toCustomer?->name ?? '—' }}</td>
                         <td>{{ $change->changedBy?->name ?? '—' }}</td>
                         <td class="pre">{{ $change->note ?? '—' }}</td>

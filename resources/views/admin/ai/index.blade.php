@@ -116,7 +116,10 @@
                         : null;
                 @endphp
                 <tr>
-                    <td class="font-mono text-xs">{{ $capability->key }}</td>
+                    <td>
+                        <div class="font-medium">{{ $capability->label() }}</div>
+                        <div class="text-xs text-base-content/60 font-mono">{{ $capability->key }}</div>
+                    </td>
                     <td>{{ $capability->verb->label() }}</td>
                     <td><x-status-badge tone="ghost" size="sm" outline>{{ $capability->sensitivity->label() }}</x-status-badge></td>
                     <td>

@@ -157,11 +157,11 @@
                     @if ($dev)
                         <tr class="step">
                             <td>{{ $sr->stepDef?->label ?? '—' }}</td>
-                            <td>{{ $dev->deviation_type->value }}</td>
-                            <td>{{ $dev->severity->value }}</td>
+                            <td>{{ $dev->deviation_type->label() }}</td>
+                            <td>{{ $dev->severity->label() }}</td>
                             <td class="pre">{{ $dev->reason_text }}</td>
                             <td>
-                                {{ $dev->proposed_action?->value ?? '—' }}
+                                {{ $dev->proposed_action?->label() ?? '—' }}
                                 @if ($dev->risk_accepted_at)
                                     <div class="muted" style="font-size:9px">{{ __('procedure.print.riskAccepted') }}: {{ optional($dev->riskAcceptedBy)->name }} ({{ $dev->risk_accepted_at->format('Y-m-d') }})</div>
                                 @endif
@@ -190,7 +190,7 @@
                 @foreach ($backupProofs as $proof)
                     <tr class="step">
                         <td>{{ $proof->source_label }}</td>
-                        <td>{{ $proof->backup_scope->value }}</td>
+                        <td>{{ $proof->backup_scope->label() }}</td>
                         <td>{{ $proof->taken_at->format('Y-m-d H:i') }}</td>
                         <td>{{ number_format($proof->size_bytes / 1024, 1) }} KB</td>
                         <td>

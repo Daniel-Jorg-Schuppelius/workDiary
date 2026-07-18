@@ -27,7 +27,7 @@
         <section class="space-y-4">
             <div class="flex items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-lg font-semibold">{{ $domainLabels[$domain->value] ?? $domain->value }}</h2>
+                    <h2 class="text-lg font-semibold">{{ $domain->label() }}</h2>
                     <p class="text-sm text-base-content/60">{{ __('Domain: :domain', ['domain' => $domain->value]) }}</p>
                 </div>
                 <x-icon-btn icon="add_circle" size="xs" tone="primary"

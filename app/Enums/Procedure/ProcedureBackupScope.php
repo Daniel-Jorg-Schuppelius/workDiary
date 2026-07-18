@@ -10,9 +10,15 @@
 
 namespace App\Enums\Procedure;
 
-enum ProcedureBackupScope: string {
+use App\Enums\Contracts\HasLabel;
+
+enum ProcedureBackupScope: string implements HasLabel {
     case Config = 'config';
     case Database = 'database';
     case FullSystem = 'fullSystem';
     case CustomScript = 'customScript';
+
+    public function label(): string {
+        return (string) __('enums.procedure.backup-scope.' . $this->value);
+    }
 }

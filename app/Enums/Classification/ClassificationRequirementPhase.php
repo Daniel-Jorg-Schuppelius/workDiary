@@ -10,8 +10,14 @@
 
 namespace App\Enums\Classification;
 
-enum ClassificationRequirementPhase: string {
+use App\Enums\Contracts\HasLabel;
+
+enum ClassificationRequirementPhase: string implements HasLabel {
     case OnCreate = 'onCreate';
     case BeforeComplete = 'beforeComplete';
     case BeforeSign = 'beforeSign';
+
+    public function label(): string {
+        return (string) __('enums.classification.requirement-phase.' . $this->value);
+    }
 }

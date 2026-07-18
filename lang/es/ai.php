@@ -21,6 +21,17 @@ return [
         'capabilities' => 'Capacidades',
         'capabilities_subtitle' => 'Activación, conexiones permitidas (orden = cadena de respaldo) y elección del usuario por caso de uso.',
     ],
+    // Etiqueta legible por caso de uso registrado (config/ai.php).
+    'capability_label' => [
+        'invoicing' => [
+            'item_text' => 'Factura: texto de la partida',
+            'block_text' => 'Factura: texto resumen',
+            'item_translate' => 'Factura: traducir la partida',
+        ],
+        'quotes' => [
+            'item_text' => 'Presupuesto: texto de la partida',
+        ],
+    ],
     'connect' => [
         'title' => 'Añadir conexión',
         'legend' => 'Acceso al proveedor (la clave se guarda cifrada y nunca se muestra)',

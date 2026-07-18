@@ -21,6 +21,17 @@ return [
         'capabilities' => 'Capability',
         'capabilities_subtitle' => 'Attivazione, connessioni consentite (ordine = catena di riserva) e scelta utente per caso d\'uso.',
     ],
+    // Etichetta leggibile per caso d'uso registrato (config/ai.php).
+    'capability_label' => [
+        'invoicing' => [
+            'item_text' => 'Fattura: testo della voce',
+            'block_text' => 'Fattura: testo riepilogativo',
+            'item_translate' => 'Fattura: traduci la voce',
+        ],
+        'quotes' => [
+            'item_text' => 'Preventivo: testo della voce',
+        ],
+    ],
     'connect' => [
         'title' => 'Aggiungi connessione',
         'legend' => 'Accesso al provider (la chiave è cifrata e mai visualizzata)',

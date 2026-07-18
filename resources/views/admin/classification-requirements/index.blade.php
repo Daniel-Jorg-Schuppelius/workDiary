@@ -114,10 +114,10 @@
                 <tr>
                     <td class="font-mono text-sm">{{ $requirement->entry_type_code }}</td>
                     <td>{{ $domainLabels[$requirement->required_domain] ?? $requirement->required_domain }}</td>
-                    <td>{{ $phaseLabels[$requirement->enforce_phase->value] ?? $requirement->enforce_phase->value }}</td>
+                    <td>{{ $requirement->enforce_phase->label() }}</td>
                     <td>
                         <x-status-badge size="xs" :tone="$requirement->severity->value === 'hard' ? 'error' : 'warning'">
-                            {{ $severityLabels[$requirement->severity->value] ?? $requirement->severity->value }}
+                            {{ $requirement->severity->label() }}
                         </x-status-badge>
                     </td>
                     <td>{{ $requirement->min_count }}@if ($requirement->max_count !== null) - {{ $requirement->max_count }}@endif</td>

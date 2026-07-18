@@ -10,10 +10,16 @@
 
 namespace App\Enums\Asset;
 
-enum AssetOwnership: string {
+use App\Enums\Contracts\HasLabel;
+
+enum AssetOwnership: string implements HasLabel {
     case Organization = 'org';
     case Customer = 'customer';
     case External = 'external';
+
+    public function label(): string {
+        return (string) __('enums.asset.ownership.' . $this->value);
+    }
 
     public function requiresCustomer(): bool {
         return $this === self::Customer;
