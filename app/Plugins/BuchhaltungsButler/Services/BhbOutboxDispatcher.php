@@ -17,6 +17,7 @@ use App\Models\{ExternalReference, IntegrationOutboxEntry, Invoice};
 use App\Plugins\BuchhaltungsButler\Api\BhbClientFactory;
 use App\Plugins\BuchhaltungsButler\{BhbConfig, BuchhaltungsButlerPlugin};
 use App\Services\Invoicing\InvoicePdfRenderer;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use RuntimeException;
 
 /**
@@ -86,7 +87,7 @@ class BhbOutboxDispatcher implements IntegrationOutboxDispatcher {
 
         // Antwort-ID tolerant lesen; ohne ID trägt der Inhalts-Hash die
         // Idempotenz (Pilot verifiziert den Feldnamen).
-        $sha256 = hash('sha256', $pdf);
+        $sha256 = (string) CryptoHelper::hash($pdf);
         $externalId = (string) ($body['id'] ?? data_get($body, 'data.0.id') ?? ('uploaded:' . $sha256));
 
         ExternalReference::create([

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToOrganization;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,6 +41,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $inbox_status
  */
 class BillbeeOrder extends Model {
+    use BelongsToOrganization;
+
     public const INBOX_OPEN = 'open';
 
     public const INBOX_LINKED = 'linked';
@@ -81,11 +84,6 @@ class BillbeeOrder extends Model {
         'ordered_at' => 'datetime',
         'billbee_modified_at' => 'datetime',
     ];
-
-    /** @return BelongsTo<Organization, $this> */
-    public function organization(): BelongsTo {
-        return $this->belongsTo(Organization::class);
-    }
 
     /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo {

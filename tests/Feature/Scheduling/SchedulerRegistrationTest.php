@@ -73,6 +73,10 @@ class SchedulerRegistrationTest extends TestCase {
         'lexoffice:sync-vouchers' => ['0 * * * *', true, true],
         // Neu mit Feature 078 (MVP-322): JTL-Wawi-Projektions-Sync.
         'jtl:sync' => ['0 * * * *', true, true],
+        // Neu mit Feature 093 (MVP-433/434): Billbee-Multichannel-Sync.
+        'billbee:sync' => ['*/15 * * * *', true, true],
+        // Neu mit Feature 093 (MVP-431): easybill-Beleg-Rückabruf.
+        'easybill:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 077 (MVP-313): orgaMAX-Projektions-Sync.
         'orgamax:sync' => ['0 * * * *', true, true],
         'payroll:import-minimum-wages' => ['0 4 15 1,7 *', true, true],

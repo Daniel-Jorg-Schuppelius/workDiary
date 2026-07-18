@@ -75,6 +75,7 @@ return [
             'cloud-run' => 'Cloud-Backup-Lauf',
             'cloud-verify' => 'Cloud-Backup-Prüfung',
         ],
+        'billbee' => ['sync' => 'Billbee-Abgleich'],
         'carddav' => ['sync' => 'CardDAV-Abgleich'],
         'catalog' => ['fetch_due' => 'Katalogquellen abrufen'],
         'chat' => [
@@ -89,6 +90,7 @@ return [
             'dispatch_reminders' => 'Event-Erinnerungen versenden',
             'materialize_recurrences' => 'Wiederkehrende Events anlegen',
         ],
+        'easybill' => ['sync' => 'easybill-Belegabruf'],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
         'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],

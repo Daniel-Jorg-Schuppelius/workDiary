@@ -75,6 +75,7 @@ return [
             'cloud-run' => 'Cloud backup run',
             'cloud-verify' => 'Cloud backup check',
         ],
+        'billbee' => ['sync' => 'Billbee sync'],
         'carddav' => ['sync' => 'CardDAV sync'],
         'catalog' => ['fetch_due' => 'Fetch catalog sources'],
         'chat' => [
@@ -89,6 +90,7 @@ return [
             'dispatch_reminders' => 'Send event reminders',
             'materialize_recurrences' => 'Materialize recurring events',
         ],
+        'easybill' => ['sync' => 'easybill document retrieval'],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts'],
         'jtl' => ['sync' => 'JTL Wawi sync'],

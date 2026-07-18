@@ -19,6 +19,7 @@ use App\Plugins\Easybill\Api\EasybillClientFactory;
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Document\DocumentService;
 use App\Services\Finance\Targets\EasybillTarget;
+use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Rückabruf fertiggestellter easybill-Belege ins DMS (MVP-431, W1.3):
@@ -94,7 +95,7 @@ class EasybillDocumentPullService {
                 'payload' => array_merge((array) $reference->payload, [
                     'document' => $remote,
                     'document_pulled_at' => now()->toIso8601String(),
-                    'document_sha256' => hash('sha256', $file['content']),
+                    'document_sha256' => CryptoHelper::hash($file['content']),
                     'document_mime' => $file['mime'],
                     'dms_document_id' => $document->id,
                 ]),
