@@ -14,7 +14,7 @@
  * sich hieraus ab. Eine neue Sprache = ein Eintrag hier + `php artisan lang:sync`.
  *
  *   native:  Autonym (Eigenbezeichnung), wird unabhängig von der UI-Sprache gezeigt
- *   flag:    Flaggen-Emoji für den Umschalter
+ *   flag:    Flaggen-Emoji (Reserve; der Umschalter rendert SVGs via <x-locale-flag>)
  *   carbon:  Locale-Code für Carbon (Datums-/Zeitformatierung)
  *
  * Welche dieser Sprachen tatsächlich auswählbar sind, filtert zusätzlich

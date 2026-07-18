@@ -99,6 +99,7 @@
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
                         <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
                     </button>
+                    <x-locale-switcher />
                     <x-icon-btn icon="login" tone="primary" size="sm" :href="route('login')" show-label>{{ __('Anmelden') }}</x-icon-btn>
                 </div>
             </div>
