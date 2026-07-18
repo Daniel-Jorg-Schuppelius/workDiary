@@ -89,19 +89,24 @@ class DocumentDesignRenderer {
      * Kompletter View→Design→PDF-Dreischritt der Fachmodule (C15): rendert die
      * Blade-View, komponiert das aktive Dokumentdesign (ohne Profil No-Op) und
      * erzeugt das PDF über die pdf-toolkit Registry. Organisation wahlweise als
-     * Instanz oder per ID (Lookup ohne globale Scopes).
+     * Instanz oder per ID (Lookup ohne globale Scopes). $writerOptions gehen an
+     * den PDF-Writer; Dokumentdesign nur im Hochformat — die Druckbereiche des
+     * A4-Hochformat-Profils passen nicht auf Querformat (Feature 076).
      *
      * @param array<string, mixed> $data
+     * @param array<string, mixed> $writerOptions
      */
-    public function renderPdf(RenderDocumentKind $kind, string $view, array $data, int|Organization|null $organization): string {
+    public function renderPdf(RenderDocumentKind $kind, string $view, array $data, int|Organization|null $organization, array $writerOptions = []): string {
         if (is_int($organization)) {
             $organization = Organization::query()->withoutGlobalScopes()->find($organization);
         }
 
         $html = View::make($view, $data)->render();
-        $html = $this->composeFor($organization, $kind, $html);
+        if (($writerOptions['orientation'] ?? 'portrait') === 'portrait') {
+            $html = $this->composeFor($organization, $kind, $html);
+        }
 
-        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html))
+        return PDFWriterRegistry::getInstance()->createPdfString(PDFContent::fromHtml($html), $writerOptions)
             ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (' . $view . ').');
     }
 

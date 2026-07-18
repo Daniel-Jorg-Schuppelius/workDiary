@@ -40,21 +40,39 @@ final class SortableQuery {
         string $sortParam = 'sort',
         string $dirParam = 'dir',
     ): array {
-        $rawSort = (string) $request->query($sortParam, '');
-        $normalizedDefault = strtolower($defaultDir) === 'asc' ? 'asc' : 'desc';
-        $rawDir = strtolower((string) $request->query($dirParam, $normalizedDefault));
-        $dir = $rawDir === 'asc' ? 'asc' : ($rawDir === 'desc' ? 'desc' : $normalizedDefault);
-
-        if ($rawSort !== '' && array_key_exists($rawSort, $allowed)) {
-            $key = $rawSort;
-        } else {
-            $key = $defaultKey;
-            $dir = $normalizedDefault;
-        }
+        [$key, $dir] = self::resolve($request, $allowed, $defaultKey, $defaultDir, $sortParam, $dirParam);
 
         $column = $allowed[$key] ?? $allowed[$defaultKey];
         $query->orderBy($column, $dir);
 
         return [$key, $dir];
+    }
+
+    /**
+     * Reine Whitelist-Auflösung ohne Builder (C21, eine Semantik app-weit):
+     * bei fehlendem oder ungültigem Sort-Key werden Key UND Richtung auf die
+     * Defaults zurückgesetzt.
+     *
+     * @param  array<int|string,string>  $allowed  Liste erlaubter Keys oder Mapping `key => sql column`.
+     * @return array{0:string,1:'asc'|'desc'}
+     */
+    public static function resolve(
+        Request $request,
+        array $allowed,
+        string $defaultKey,
+        string $defaultDir = 'desc',
+        string $sortParam = 'sort',
+        string $dirParam = 'dir',
+    ): array {
+        $rawSort = (string) $request->query($sortParam, '');
+        $normalizedDefault = strtolower($defaultDir) === 'asc' ? 'asc' : 'desc';
+        $rawDir = strtolower((string) $request->query($dirParam, $normalizedDefault));
+        $dir = $rawDir === 'asc' ? 'asc' : ($rawDir === 'desc' ? 'desc' : $normalizedDefault);
+
+        $isAllowed = $rawSort !== '' && (array_is_list($allowed)
+            ? in_array($rawSort, $allowed, true)
+            : array_key_exists($rawSort, $allowed));
+
+        return $isAllowed ? [$rawSort, $dir] : [$defaultKey, $normalizedDefault];
     }
 }

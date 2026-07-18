@@ -10,11 +10,17 @@
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Support\SortableQuery;
 use Illuminate\Http\Request;
 
 /**
  * Einheitliches Einlesen der Standard-Listen-Parameter (Status-Filter,
  * Freitextsuche `q`, Sortierspalte gegen eine Whitelist, Richtung asc/desc).
+ *
+ * Sort/Dir delegiert an {@see SortableQuery::resolve} (C21, eine
+ * Whitelist-Semantik). Delta zur früheren Eigenlogik: bei fehlendem oder
+ * ungültigem `sort`-Key wird auch `dir` auf den Default zurückgesetzt
+ * (vorher blieb der Query-`dir` erhalten); `dir` wird case-insensitiv gelesen.
  */
 trait ParsesIndexQuery {
     /**
@@ -26,14 +32,15 @@ trait ParsesIndexQuery {
         array $allowedSorts,
         string $defaultSort,
         string $defaultStatus = 'active',
+        string $defaultDir = 'asc',
     ): array {
-        $sort = $request->string('sort')->toString();
+        [$sort, $dir] = SortableQuery::resolve($request, $allowedSorts, $defaultSort, $defaultDir);
 
         return [
             'status' => $request->string('status')->toString() ?: $defaultStatus,
             'search' => $request->string('q')->toString(),
-            'sort' => in_array($sort, $allowedSorts, true) ? $sort : $defaultSort,
-            'dir' => $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc',
+            'sort' => $sort,
+            'dir' => $dir,
         ];
     }
 }

@@ -13,7 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\Article\{ArticleStatus, ArticleType, ArticleUnitKind};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Requests\SaveArticleRequest;
-use App\Models\{Article, ArticleOptionDefinition, ArticleVariant};
+use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleVariant};
 use App\Services\Article\{ArticleService, VariantResolver};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -202,14 +202,19 @@ class ArticleController extends Controller {
         Gate::authorize('update', $article);
         $data = $request->validate([
             'option_value_ids' => ['required', 'array', 'min:1'],
-            'option_value_ids.*' => ['integer'],
+            // Sqid oder rohe ID (Alt-Clients); Regex akzeptiert beides.
+            'option_value_ids.*' => ['required', 'regex:/^[A-Za-z0-9]{1,32}$/'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         try {
             $variant = $this->variants->createVariant(
                 $article,
-                array_values(array_map('intval', $data['option_value_ids'])),
+                // 0-Sentinel: unbekannte Werte lehnt createVariant artikel-gebunden ab.
+                array_values(array_map(
+                    static fn ($v): int => \App\Support\Sqid::decodeOrNumeric(ArticleOptionValue::class, $v, 0) ?? 0,
+                    $data['option_value_ids'],
+                )),
                 ['created_by' => Auth::id(), 'sale_price' => $data['sale_price'] ?? null],
             );
             $this->articles->assignVariantSku($variant);

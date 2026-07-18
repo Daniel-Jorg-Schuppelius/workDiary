@@ -115,7 +115,7 @@
                         <select name="mappings[{{ $i }}][tag_id]" class="select select-sm select-bordered">
                             <option value="">{{ __('– Tag wählen –') }}</option>
                             @foreach ($tagOptions as $tag)
-                                <option value="{{ $tag->id }}">{{ $tag->name }}</option>
+                                <option value="{{ $tag->sqid }}">{{ $tag->name }}</option>
                             @endforeach
                         </select>
                         @if ($supportsClassifications)

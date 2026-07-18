@@ -34,5 +34,5 @@
         </div>
     @endforelse
 
-    <div class="mt-4">{{ $problems->links() }}</div>
+    <x-pagination :paginator="$problems" standing />
 @endsection

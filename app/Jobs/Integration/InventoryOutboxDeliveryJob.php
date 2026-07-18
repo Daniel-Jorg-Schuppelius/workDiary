@@ -12,102 +12,68 @@ declare(strict_types=1);
 
 namespace App\Jobs\Integration;
 
+use App\Contracts\Inventory\ExternalInventoryDispatcher;
+use App\Contracts\PluginDispatcher;
+use App\Jobs\AbstractOutboxDeliveryJob;
 use App\Models\{InventoryOutboxEntry, Organization, PendingExternalConflict, StockMovement};
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};
 use App\Services\Licensing\ModuleStatusResolver;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
-use RuntimeException;
-use Throwable;
+use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * Stellt einen Outbox-Eintrag an das externe Bestandssystem zu (Feature 048,
- * MVP-072). Idempotent über `idempotency_key`; nach Aufbrauchen aller Versuche
- * kompensationspflichtig + {@see PendingExternalConflict} (lokale Bewegung bleibt).
+ * MVP-072). Ablauf im gemeinsamen Skelett (C14); hier nur Modul-Gate und die
+ * Kompensation als {@see PendingExternalConflict} (lokale Bewegung bleibt).
+ *
+ * @extends AbstractOutboxDeliveryJob<InventoryOutboxEntry, ExternalInventoryDispatcher>
  */
-class InventoryOutboxDeliveryJob implements ShouldQueue {
-    use Dispatchable;
-    use InteractsWithQueue;
-    use Queueable;
-    use SerializesModels;
-
-    public int $tries = 4;
-
-    /** @var list<int> */
-    public array $backoff = [10, 60, 300];
-
-    public function __construct(public readonly int $entryId) {}
-
+class InventoryOutboxDeliveryJob extends AbstractOutboxDeliveryJob {
     public function handle(InventoryOutboxService $outbox, ExternalInventoryDispatcherResolver $resolver): void {
-        $entry = InventoryOutboxEntry::query()->withoutGlobalScopes()->find($this->entryId);
-        if ($entry === null || $entry->status->isTerminal()) {
-            return;
-        }
+        $this->deliver($outbox, $resolver);
+    }
 
+    protected function newEntryQuery(): Builder {
+        return InventoryOutboxEntry::query();
+    }
+
+    protected function outboxService(): InventoryOutboxService {
+        return app(InventoryOutboxService::class);
+    }
+
+    /** @param InventoryOutboxEntry $entry */
+    protected function shouldDeliver(Model $entry): bool {
         // MVP-052 §5: Modulstatus VOR der Wirkung prüfen — ist „Lager" für die Org
         // deaktiviert, ohne Zustellung beenden (Eintrag bleibt offen, später erneut).
         $org = Organization::query()->withoutGlobalScopes()->find($entry->organization_id);
-        if ($org !== null && ! app(ModuleStatusResolver::class)->isActiveFor($org, 'module.lager')) {
-            return;
-        }
 
-        $dispatcher = $resolver->for($entry->plugin_id);
-        if ($dispatcher === null) {
-            // Kein Plugin registriert → nicht endlos wiederholen (Bereitstellung mit MVP-073).
-            $outbox->markFailed($entry, 'kein Dispatcher für Plugin: ' . ($entry->plugin_id ?? '—'));
-
-            return;
-        }
-
-        $outbox->markProcessing($entry);
-
-        try {
-            if ($dispatcher->dispatch($entry)) {
-                $outbox->markConfirmed($entry);
-
-                return;
-            }
-
-            throw new RuntimeException('extern nicht bestätigt');
-        } catch (Throwable $e) {
-            if ($this->attempts() < $this->tries) {
-                $outbox->markFailed($entry, $e->getMessage());
-
-                throw $e; // Queue-Wiederholung auslösen
-            }
-
-            $this->compensate($entry, $outbox, $e->getMessage());
-        }
+        return $org === null || app(ModuleStatusResolver::class)->isActiveFor($org, 'module.lager');
     }
 
-    /** Sicherheitsnetz der Queue nach Aufbrauchen aller Versuche. */
-    public function failed(?Throwable $e): void {
-        $entry = InventoryOutboxEntry::query()->withoutGlobalScopes()->find($this->entryId);
-        if ($entry === null || $entry->status->isTerminal()) {
+    /**
+     * @param ExternalInventoryDispatcher $dispatcher
+     * @param InventoryOutboxEntry $entry
+     */
+    protected function dispatchEntry(PluginDispatcher $dispatcher, Model $entry): bool {
+        return $dispatcher->dispatch($entry);
+    }
+
+    /** @param InventoryOutboxEntry $entry */
+    protected function compensateEntry(Model $entry, string $reason): void {
+        if ($entry->stock_movement_id === null) {
             return;
         }
 
-        $this->compensate($entry, app(InventoryOutboxService::class), $e?->getMessage() ?? 'Zustellung fehlgeschlagen');
-    }
-
-    private function compensate(InventoryOutboxEntry $entry, InventoryOutboxService $outbox, string $reason): void {
-        $outbox->markCompensationRequired($entry, $reason);
-
-        if ($entry->stock_movement_id !== null) {
-            PendingExternalConflict::query()->withoutGlobalScopes()->create([
-                'organization_id' => $entry->organization_id,
-                'plugin_id' => $entry->plugin_id ?? 'inventory',
-                'conflict_type' => 'inventory_outbox',
-                'referenceable_type' => (new StockMovement())->getMorphClass(),
-                'referenceable_id' => $entry->stock_movement_id,
-                'external_id' => null,
-                'local_snapshot' => $entry->payload,
-                'remote_snapshot' => [],
-                'diff_fields' => null,
-                'status' => PendingExternalConflict::STATUS_OPEN,
-            ]);
-        }
+        PendingExternalConflict::query()->withoutGlobalScopes()->create([
+            'organization_id' => $entry->organization_id,
+            'plugin_id' => $entry->plugin_id ?? 'inventory',
+            'conflict_type' => 'inventory_outbox',
+            'referenceable_type' => (new StockMovement())->getMorphClass(),
+            'referenceable_id' => $entry->stock_movement_id,
+            'external_id' => null,
+            'local_snapshot' => $entry->payload,
+            'remote_snapshot' => [],
+            'diff_fields' => null,
+            'status' => PendingExternalConflict::STATUS_OPEN,
+        ]);
     }
 }

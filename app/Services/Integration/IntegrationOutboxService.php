@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
+use App\Contracts\OutboxTransitionService;
 use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
 use App\Models\IntegrationOutboxEntry;
@@ -23,8 +24,10 @@ use Illuminate\Database\Eloquent\Model;
  * Generalisiert das Muster der {@see \App\Services\Inventory\InventoryOutboxService}:
  * höchstens ein Zustellauftrag je Idempotenzschlüssel, Statusübergänge bis zur
  * Bestätigung bzw. Kompensationspflicht (fachlicher Ausgleich, kein Rollback).
+ *
+ * @implements OutboxTransitionService<IntegrationOutboxEntry>
  */
-class IntegrationOutboxService {
+class IntegrationOutboxService implements OutboxTransitionService {
     /** @use ManagesOutboxTransitions<IntegrationOutboxEntry> */
     use ManagesOutboxTransitions;
 

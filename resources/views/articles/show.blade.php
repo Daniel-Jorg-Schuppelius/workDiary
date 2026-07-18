@@ -112,7 +112,7 @@
                         <label class="fieldset-label">{{ $option->name }}</label>
                         <select name="option_value_ids[]" class="select select-sm select-bordered">
                             @foreach ($option->values->where('active', true) as $value)
-                                <option value="{{ $value->id }}">{{ $value->label }}</option>
+                                <option value="{{ $value->sqid }}">{{ $value->label }}</option>
                             @endforeach
                         </select>
                     </div>

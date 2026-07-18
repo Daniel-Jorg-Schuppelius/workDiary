@@ -108,6 +108,20 @@ final class ArticleControllerTest extends TestCase {
         $this->assertStringStartsWith('ART-', (string) $variant->sku);
     }
 
+    public function test_variant_store_accepts_sqid_option_values(): void {
+        // D6-Sweep: Formular sendet Sqids; decodeOrNumeric deckt auch rohe IDs ab.
+        $article = Article::factory()->create(['organization_id' => $this->organization->id]);
+        $option = $article->optionDefinitions()->create(['code' => 'size', 'name' => 'Größe', 'position' => 0, 'active' => true]);
+        $value = $option->values()->create(['code' => 'l', 'label' => 'L', 'active' => true, 'position' => 0]);
+
+        $this->actingAs($this->admin)->post(route('articles.variants.store', $article), [
+            'option_value_ids' => [$value->sqid],
+        ])->assertRedirect();
+
+        $variant = $article->variants()->firstOrFail();
+        $this->assertSame('size=l', $variant->option_signature);
+    }
+
     public function test_article_can_be_tagged_on_store_and_update(): void {
         $existing = \App\Models\Tag::factory()->create([
             'organization_id' => $this->organization->id,

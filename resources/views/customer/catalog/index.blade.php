@@ -64,5 +64,5 @@
         @endforelse
     </x-table>
 
-    <div class="mt-4">{{ $requests->links() }}</div>
+    <x-pagination :paginator="$requests" standing />
 @endsection

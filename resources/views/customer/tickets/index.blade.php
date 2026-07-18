@@ -44,5 +44,5 @@
         @endforelse
     </x-table>
 
-    <div class="mt-4">{{ $tickets->links() }}</div>
+    <x-pagination :paginator="$tickets" standing />
 @endsection

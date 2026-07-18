@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
+use App\Contracts\OutboxTransitionService;
 use App\Enums\Inventory\OutboxStatus;
 use App\Jobs\Integration\InventoryOutboxDeliveryJob;
 use App\Models\{InventoryOutboxEntry, StockMovement};
@@ -22,8 +23,10 @@ use App\Services\Concerns\ManagesOutboxTransitions;
  * Stellt sicher, dass jede lokal gebuchte Bewegung höchstens einen externen
  * Zustellauftrag erzeugt (Idempotenz über `idempotency_key`) und reicht
  * Statusübergänge bis zur Bestätigung bzw. Kompensationspflicht durch.
+ *
+ * @implements OutboxTransitionService<InventoryOutboxEntry>
  */
-class InventoryOutboxService {
+class InventoryOutboxService implements OutboxTransitionService {
     /** @use ManagesOutboxTransitions<InventoryOutboxEntry> */
     use ManagesOutboxTransitions;
 

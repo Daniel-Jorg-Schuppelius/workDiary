@@ -101,6 +101,29 @@ class ImportValueMappingTest extends TestCase {
         $this->assertCount(2, $customer->refresh()->tags);
     }
 
+    public function test_mapping_to_existing_tag_accepts_sqid(): void {
+        // D6-Sweep: Formular sendet Sqids; decodeOrNumeric deckt auch rohe IDs ab.
+        $target = Tag::query()->create(['organization_id' => $this->organization->id, 'name' => 'Wartungsvertrag']);
+
+        $run = $this->preflight("name;number;tags\nACME;K-1;Wartung\n");
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.imports.mapping', $run), [
+                'mappings' => [
+                    ['value' => 'Wartung', 'action' => 'tag', 'tag_id' => $target->sqid],
+                ],
+            ])->assertRedirect(route('admin.imports.show', $run));
+
+        $this->assertNull($run->refresh()->unresolved_values);
+        $this->assertDatabaseHas('import_value_mappings', [
+            'organization_id' => $this->organization->id,
+            'entity' => 'customers',
+            'source_value' => 'wartung',
+            'target_kind' => ImportValueMapping::KIND_TAG,
+            'tag_id' => $target->id,
+        ]);
+    }
+
     public function test_ignore_mapping_skips_value(): void {
         $run = $this->preflight("name;number;tags\nACME;K-1;Altsystem-Müll\n");
 

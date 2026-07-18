@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $rows_skipped
  * @property int $rows_failed
  * @property array<int, array<string, mixed>>|null $preview
+ * @property array<string, array<int, string>>|null $unresolved_values
  * @property CarbonImmutable|null $started_at
  * @property CarbonImmutable|null $finished_at
  * @property int|null $created_by_user_id

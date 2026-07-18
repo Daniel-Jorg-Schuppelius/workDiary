@@ -43,6 +43,11 @@
         @endif
         {{ $slot ?? '' }}
         @yield('content')
+
+        {{-- Stehendes Pagination-Panel: <x-pagination standing> pusht hierher
+             (App-Konvention, Gegenstück zu layouts/app). Ohne Pagination wird
+             nichts gepusht → kein Leerraum. --}}
+        @stack('page-footer')
     </main>
 </body>
 </html>

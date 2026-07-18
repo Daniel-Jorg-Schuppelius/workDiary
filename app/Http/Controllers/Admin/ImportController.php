@@ -169,7 +169,7 @@ class ImportController extends Controller {
             'mappings' => ['required', 'array'],
             'mappings.*.value' => ['required', 'string', 'max:191'],
             'mappings.*.action' => ['required', 'in:tag,new,ignore,classification'],
-            'mappings.*.tag_id' => ['nullable', 'integer'],
+            'mappings.*.tag_id' => ['nullable', 'string', 'max:32'],
             'mappings.*.classification_id' => ['nullable', 'string', 'max:32'],
         ]);
 
@@ -192,7 +192,7 @@ class ImportController extends Controller {
             } elseif ($entry['action'] === 'tag') {
                 $tag = \App\Models\Tag::query()
                     ->where('organization_id', $import->organization_id)
-                    ->whereKey((int) ($entry['tag_id'] ?? 0))
+                    ->whereKey(\App\Support\Sqid::decodeOrNumeric(\App\Models\Tag::class, $entry['tag_id'] ?? null) ?? 0)
                     ->first();
                 if ($tag === null) {
                     continue;
