@@ -72,4 +72,26 @@ class PortalManagementTest extends TestCase {
 
         $this->actingAs($plain)->get('/compliance/portal')->assertForbidden();
     }
+
+    public function test_edit_page_shows_qr_and_poster_streams_pdf(): void {
+        $org = Organization::factory()->create();
+        $user = $this->manager($org);
+        Portal::create(['organization_id' => $org->id, 'public_slug' => 'wb-aushang', 'is_enabled' => true]);
+
+        $this->actingAs($user)->get('/compliance/portal')
+            ->assertOk()
+            ->assertSee('data:image/svg+xml;base64', false)
+            ->assertSee(route('whistleblowing.portal.poster'), false);
+
+        $this->actingAs($user)->get('/compliance/portal/aushang')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    public function test_poster_requires_settings_permission(): void {
+        $org = Organization::factory()->create();
+        $plain = User::factory()->create(['organization_id' => $org->id]);
+
+        $this->actingAs($plain)->get('/compliance/portal/aushang')->assertForbidden();
+    }
 }

@@ -19,6 +19,12 @@ use Illuminate\Support\Facades\Route;
  * Middleware-Stack (kein Auth/Org-Context/Locale/2FA) – siehe bootstrap/app.php.
  * Organisation wird ausschliesslich ueber den Portal-Slug aufgeloest.
  */
+// Neutrale Landingpage ohne Slug: erklaert das Portal generisch und verlinkt
+// das Postfach – gibt bewusst keine Organisation oder Portal-Existenz preis.
+Route::get('melden', [PublicPortalController::class, 'landing'])
+    ->middleware('throttle:wb-view')
+    ->name('whistleblowing.landing');
+
 // Anonymes Postfach (Phase 4). Login NUR per Geheimnis, Cookie-Sitzung (kein
 // Pfad-Token). MUSS vor den {portal}-Routen stehen, damit „postfach" nicht als
 // Portal-Slug interpretiert wird.

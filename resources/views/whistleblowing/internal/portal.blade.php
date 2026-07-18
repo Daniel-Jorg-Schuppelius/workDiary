@@ -21,6 +21,15 @@
                         </x-status-badge>
                     </p>
                     <p class="text-sm text-base-content/70">{{ __('Diesen Link veröffentlichen Sie für Hinweisgeber. Er ist nicht aus dem Organisationsnamen ableitbar.') }}</p>
+                    @if (! empty($qr))
+                        <div class="flex items-start gap-4">
+                            <img src="{{ $qr }}" alt="{{ __('QR-Code zum Meldeportal') }}" class="h-28 w-28 rounded border border-base-300 bg-white p-1">
+                            <div class="space-y-2">
+                                <p class="text-sm text-base-content/70">{{ __('QR-Code führt direkt zum Meldeportal – z. B. für Intranet oder Aushang. Nach einer Link-Rotation neu verteilen.') }}</p>
+                                <x-icon-btn icon="print" tone="ghost" size="sm" :href="route('whistleblowing.portal.poster')" show-label>{{ __('Aushang (PDF)') }}</x-icon-btn>
+                            </div>
+                        </div>
+                    @endif
                     <form method="post" action="{{ route('whistleblowing.portal.rotate') }}"
                           data-confirm-dialog
                           data-confirm-icon="autorenew"

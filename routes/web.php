@@ -286,6 +286,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'edit'])->name('edit');
                 Route::put('/', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'update'])->name('update');
                 Route::post('/slug', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'rotateSlug'])->name('rotate');
+                Route::get('/aushang', [\App\Http\Controllers\Whistleblowing\WhistleblowingPortalController::class, 'poster'])->name('poster');
             });
 
         // ── Datenschutzmanagement (Feature 043, MVP 1) ──────────────────────

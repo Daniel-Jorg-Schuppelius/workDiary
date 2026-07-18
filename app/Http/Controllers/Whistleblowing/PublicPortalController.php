@@ -22,6 +22,11 @@ use Illuminate\View\View;
  * Meldewege) und das Meldeformular. Kein App-Menue, kein Auth-Kontext.
  */
 class PublicPortalController extends Controller {
+    /** Neutrale Landingpage unter /melden – ohne Portal-/Org-Bezug. */
+    public function landing(): View {
+        return view('whistleblowing.public.landing');
+    }
+
     public function show(Request $request): View {
         /** @var Portal $portal */
         $portal = $request->attributes->get('wb_portal');

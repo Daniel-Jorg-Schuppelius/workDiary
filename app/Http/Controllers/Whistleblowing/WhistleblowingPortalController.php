@@ -14,10 +14,17 @@ namespace App\Http\Controllers\Whistleblowing;
 
 use App\Http\Controllers\Controller;
 use App\Models\Whistleblowing\Portal;
-use Illuminate\Http\{RedirectResponse, Request};
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use PDFToolkit\Entities\PDFContent;
+use PDFToolkit\Registries\PDFWriterRegistry;
+use RuntimeException;
 
 /**
  * Verwaltung des oeffentlichen Meldeportals einer Organisation (eine Instanz pro
@@ -29,7 +36,12 @@ class WhistleblowingPortalController extends Controller {
     public function edit(): View {
         Gate::authorize('whistleblowing.settings.manage');
 
-        return view('whistleblowing.internal.portal', ['portal' => $this->portal()]);
+        $portal = $this->portal();
+
+        return view('whistleblowing.internal.portal', [
+            'portal' => $portal,
+            'qr' => $portal->exists ? $this->qrDataUri(url('/melden/' . $portal->public_slug)) : null,
+        ]);
     }
 
     public function update(Request $request): RedirectResponse {
@@ -69,12 +81,43 @@ class WhistleblowingPortalController extends Controller {
             ->with('success', __('Portal-Link wurde rotiert. Bereits verteilte Links sind jetzt ungültig.'));
     }
 
+    /** Druckfertiger A4-Aushang (PDF) mit Portal-Link und QR-Code. */
+    public function poster(): Response {
+        Gate::authorize('whistleblowing.settings.manage');
+
+        $portal = Portal::query()->firstOrFail();
+        $link = url('/melden/' . $portal->public_slug);
+
+        $html = view('whistleblowing.internal.poster_pdf', [
+            'organizationName' => $portal->organization?->name,
+            'link' => $link,
+            'qr' => $this->qrDataUri($link),
+        ])->render();
+
+        $bytes = PDFWriterRegistry::getInstance()->createPdfString(
+            PDFContent::fromHtml($html),
+            ['paper_size' => 'a4', 'orientation' => 'portrait'],
+        ) ?? throw new RuntimeException('PDF-Erzeugung fehlgeschlagen (whistleblowing.internal.poster_pdf).');
+
+        return response($bytes, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="meldeportal-aushang.pdf"',
+        ]);
+    }
+
     private function portal(): Portal {
         return Portal::query()->first() ?? new Portal([
             'allow_anonymous' => true,
             'allow_confidential' => true,
             'retention_months' => (int) config('whistleblowing.retention_months', 36),
         ]);
+    }
+
+    /** Portal-Link als QR-Code (SVG-Data-URI) – für Edit-Seite und Aushang. */
+    private function qrDataUri(string $value): string {
+        $svg = (new Writer(new ImageRenderer(new RendererStyle(160, 1), new SvgImageBackEnd())))->writeString($value);
+
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
     private function freshSlug(): string {

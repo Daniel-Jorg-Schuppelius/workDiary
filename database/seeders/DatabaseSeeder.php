@@ -22,9 +22,18 @@ class DatabaseSeeder extends Seeder {
      * Seed the application's database.
      */
     public function run(): void {
-        $this->call(OrganizationSeeder::class);
+        // Demo-Org + Demo-Materialien nur lokal/testing: deploy.sh seedet bei
+        // jedem Deploy — in Produktion darf eine gelöschte Default-Org nicht
+        // wieder auferstehen. Muss vor PermissionsSeeder laufen (Rollen je Org).
+        $demoData = app()->environment('local', 'testing');
+
+        if ($demoData) {
+            $this->call(OrganizationSeeder::class);
+        }
         $this->call(PermissionsSeeder::class);
-        $this->call(MaterialSeeder::class);
+        if ($demoData) {
+            $this->call(MaterialSeeder::class);
+        }
         $this->call(ActivityCategorySeeder::class);
         $this->call(EntryTypeSeeder::class);
         $this->call(ExpenseCategorySeeder::class);
@@ -37,10 +46,9 @@ class DatabaseSeeder extends Seeder {
         $this->call(TaxRulesSeeder::class); // Phase 23 (MVP-238): versionierter Steuerkatalog (DE voll, AT/CH)
         $this->call(AssetComplianceCatalogSeeder::class); // Feature 075 (P1): Prüfprofil-Vorlagen + Normen-Referenzmatrix
 
-        // Demo-/Test-Benutzer werden ausschließlich in lokalen bzw. Test-Umgebungen
-        // angelegt. In Produktion würde dies sonst Faker (Dev-Dependency) benötigen
-        // und unsichere Standard-Accounts erzeugen.
-        if (app()->environment('local', 'testing')) {
+        // Demo-/Test-Benutzer würden in Produktion Faker (Dev-Dependency)
+        // benötigen und unsichere Standard-Accounts erzeugen.
+        if ($demoData) {
             $this->seedDemoUsers();
         }
     }

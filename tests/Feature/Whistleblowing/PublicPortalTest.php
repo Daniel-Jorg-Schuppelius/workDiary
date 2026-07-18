@@ -53,6 +53,24 @@ class PublicPortalTest extends TestCase {
         ], $overrides);
     }
 
+    public function test_landing_page_is_public_and_leaks_no_organization(): void {
+        $org = Organization::factory()->create(['name' => 'Streng Geheime Firma GmbH']);
+        Portal::create([
+            'organization_id' => $org->id,
+            'public_slug' => 'wb-geheimer-slug',
+            'is_enabled' => true,
+            'allow_anonymous' => true,
+            'allow_confidential' => true,
+        ]);
+
+        $this->get('/melden')
+            ->assertOk()
+            ->assertSee('Hinweisgeber-Meldeportal')
+            ->assertSee(route('whistleblowing.mailbox.login'), false)
+            ->assertDontSee('Streng Geheime Firma GmbH')
+            ->assertDontSee('wb-geheimer-slug');
+    }
+
     public function test_unknown_or_disabled_portal_returns_404(): void {
         $this->get('/melden/does-not-exist')->assertNotFound();
 
