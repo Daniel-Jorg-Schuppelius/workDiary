@@ -29,33 +29,39 @@
              deren Toggl-Adresse von der workDiary-Adresse abweicht — greift in
              CSV-/API-Import, Inbox-Buchung und Reparatur-Befehl. --}}
         <form method="POST" action="{{ route('admin.toggl.mappings.store-user') }}"
-              class="mb-4 flex flex-wrap items-end gap-2 rounded-box bg-base-200/50 p-3">
+              class="mb-4 rounded-box bg-base-200/50 p-3">
             @csrf
-            <label class="form-control min-w-48 flex-1">
-                <span class="label-text text-xs">{{ __('Toggl-E-Mail') }}</span>
-                @if ($togglEmails !== [])
-                    {{-- Bekannte Toggl-Benutzer (API/Inbox) — verhindert Tippfehler. --}}
-                    <select name="toggl_email" required class="select select-sm select-bordered w-full">
+            <div class="text-sm font-semibold">{{ __('Benutzer-Zuordnung anlegen') }}</div>
+            <p class="mb-2 text-xs text-base-content/60">
+                {{ __('Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.') }}
+            </p>
+            <div class="flex flex-wrap items-end gap-2">
+                <label class="form-control w-full max-w-xs">
+                    <span class="label-text text-xs">{{ __('Toggl-E-Mail') }}</span>
+                    @if ($togglEmails !== [])
+                        {{-- Bekannte Toggl-Benutzer (API/Inbox) — verhindert Tippfehler. --}}
+                        <select name="toggl_email" required class="select select-sm select-bordered w-full">
+                            <option value="">{{ __('— wählen —') }}</option>
+                            @foreach ($togglEmails as $tu)
+                                <option value="{{ $tu['email'] }}">{{ $tu['name'] === $tu['email'] ? $tu['email'] : $tu['name'] . ' (' . $tu['email'] . ')' }}</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <input type="email" name="toggl_email" required maxlength="191" placeholder="name@firma.de"
+                               class="input input-sm input-bordered w-full">
+                    @endif
+                </label>
+                <label class="form-control w-full max-w-xs">
+                    <span class="label-text text-xs">{{ __('Benutzer') }}</span>
+                    <select name="user" required class="select select-sm select-bordered w-full">
                         <option value="">{{ __('— wählen —') }}</option>
-                        @foreach ($togglEmails as $tu)
-                            <option value="{{ $tu['email'] }}">{{ $tu['name'] === $tu['email'] ? $tu['email'] : $tu['name'] . ' (' . $tu['email'] . ')' }}</option>
+                        @foreach ($users as $u)
+                            <option value="{{ $u['sqid'] }}">{{ $u['label'] }}</option>
                         @endforeach
                     </select>
-                @else
-                    <input type="email" name="toggl_email" required maxlength="191" placeholder="name@firma.de"
-                           class="input input-sm input-bordered w-full">
-                @endif
-            </label>
-            <label class="form-control min-w-56">
-                <span class="label-text text-xs">{{ __('Benutzer') }}</span>
-                <select name="user" required class="select select-sm select-bordered w-full max-w-xs">
-                    <option value="">{{ __('— wählen —') }}</option>
-                    @foreach ($users as $u)
-                        <option value="{{ $u['sqid'] }}">{{ $u['label'] }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <button type="submit" class="btn btn-sm btn-primary">{{ __('Benutzer-Zuordnung anlegen') }}</button>
+                </label>
+                <button type="submit" class="btn btn-sm btn-primary">{{ __('Zuordnen') }}</button>
+            </div>
         </form>
 
         @if ($mappings->isEmpty())

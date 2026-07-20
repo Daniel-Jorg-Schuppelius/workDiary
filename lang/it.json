@@ -8850,5 +8850,6 @@
     ":created gebucht, :linked mit vorhandenen Zeiten verknüpft, :skipped bereits vorhanden.": ":created registrate, :linked collegate a tempi esistenti, :skipped già presenti.",
     "Benutzer-Zuordnung gespeichert.": "Associazione utente salvata.",
     "Toggl-E-Mail": "E-mail Toggl",
-    "Benutzer-Zuordnung anlegen": "Crea associazione utente"
+    "Benutzer-Zuordnung anlegen": "Crea associazione utente",
+    "Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.": "Associa un’e-mail Toggl a un utente — per collaboratori la cui e-mail Toggl differisce da quella di workDiary."
 }
