@@ -10,10 +10,11 @@
     'sortParams'   => [],      // nur sort=server (zusätzliche Query-Parameter)
     'bare'         => false,   // wenn true: kein border/rounded-box/shadow am Wrapper
                                // (z.B. wenn die Tabelle bereits in einer Card mit Header sitzt)
-    'empty'        => false,
+    'empty'        => false,   // Leerzustand erzwingen (auch bei nicht-leerem Slot)
     'emptyTitle'   => null,
     'emptyMessage' => null,
     'emptyIcon'    => null,
+    'autoEmpty'    => true,     // Standard: Leerzustand automatisch, wenn keine Zeile gerendert wurde
     'caption'      => null,    // Barrierefreiheit: sr-only <caption> als Tabellenname für Screenreader
 ])
 
@@ -26,25 +27,27 @@
       - tableSort            : "none" (Default) | "client" (data-sortable + JS) | "server" (Links)
       - route, currentSort, currentDir, sortParams : nur für tableSort="server" relevant; werden via @aware
                                an <x-table.th sort="…"> durchgereicht, das intern <x-sort-th> rendert
-      - empty                : bool — wenn true, wird statt der Tabelle direkt eine <x-empty-state>-
-                               Box angezeigt (für Fälle, in denen das ganze Datenset leer ist und
-                               der Header gar nicht gezeigt werden soll). Standardweg ist
-                               @forelse / @empty mit <x-table.empty> als Zeile.
-      - emptyTitle, emptyMessage, emptyIcon : an <x-empty-state> durchgereicht
+      - empty                : bool — erzwingt den Leerzustand (statt der Zeilen wird die Empty-State-Box
+                               bzw. eine spannende Leerzeile gezeigt).
+      - autoEmpty            : bool (Default true) — zeigt den Standard-Leerzustand AUTOMATISCH, wenn der
+                               Zeilen-Slot nichts gerendert hat (z. B. `@foreach` ohne Treffer). Damit
+                               bekommt jede Tabelle ohne eigenes `@empty` denselben Leerzustand.
+                               Auf `false` setzen für Tabellen, deren Zeilen erst per JS gefüllt werden.
+      - emptyTitle, emptyMessage, emptyIcon : an den Leerzustand durchgereicht (Defaults: „Keine Einträge
+                               vorhanden" / „Für die aktuelle Auswahl wurden keine Daten gefunden." / inbox)
+
+    Standardweg (auto): einfach `@foreach` verwenden — ist die Liste leer, rendert die Tabelle selbst
+    den Leerzustand. Wer einen eigenen `@empty`-Text braucht, nutzt weiterhin `@forelse … @empty
+    <x-table.empty …> @endforelse`; der gefüllte Slot deaktiviert die Auto-Erkennung.
 
     Beispiel:
-        <x-table table-sort="client">
+        <x-table :empty-title="__('Keine Kunden')">
             <x-slot:head>
-                <tr>
-                    <x-table.th sort type="string">Name</x-table.th>
-                    <x-table.th sort type="date">Datum</x-table.th>
-                </tr>
+                <tr><x-table.th sort="name">Name</x-table.th></tr>
             </x-slot:head>
-            @forelse ($items as $item)
-                <tr>...</tr>
-            @empty
-                <x-table.empty colspan="2" icon="inbox" :title="__('Keine Einträge')" />
-            @endforelse
+            @foreach ($customers as $c)
+                <tr><td>{{ $c->name }}</td></tr>
+            @endforeach
         </x-table>
 --}}
 
@@ -67,41 +70,25 @@
         default                      => 'overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs',
     };
 
-    // Default-Empty-Icon, falls keins gesetzt ist
-    $emptyIconDefault = $emptyIcon ?? '<span class="material-symbols-outlined" aria-hidden="true">inbox</span>';
+    // Leerzustand: explizit erzwungen (empty=true) ODER automatisch, wenn der
+    // Zeilen-Slot nichts gerendert hat. Views mit eigenem @empty/<x-table.empty>
+    // füllen den Slot und lösen die Auto-Erkennung nicht aus.
+    $isEmpty = $empty || ($autoEmpty && isset($slot) && $slot->isEmpty());
+
+    // colspan der spannenden Leerzeile aus dem Head ableiten (Anzahl <th>).
+    $emptyColspan = isset($head) ? max(1, (int) preg_match_all('/<th[\s>]/i', (string) $head)) : 1;
+
+    $tableAttrs = $tableSort === 'client' ? ' data-sortable' : '';
 @endphp
 
 <div {{ $attributes->class([$wrapperBase]) }}>
-    @if ($empty)
+    @if ($isEmpty && ! isset($head))
+        {{-- Kein Tabellenkopf → reine Empty-State-Box --}}
         <div class="p-4">
-            <x-empty-state
-                :icon="$emptyIconDefault"
-                :title="$emptyTitle ?? __('Keine Daten vorhanden')"
-                :message="$emptyMessage"
-                tone="ghost"
-            />
+            <x-empty-state :icon="$emptyIcon" :title="$emptyTitle" :message="$emptyMessage" tone="ghost" />
         </div>
-    @else
-        @php
-            $tableAttrs = $tableSort === 'client' ? ' data-sortable' : '';
-        @endphp
-
-        @if ($scroll === 'flex')
-            <div class="h-full overflow-auto">
-                <table class="{{ $tableClasses }}"{!! $tableAttrs !!}>
-                    @if ($caption)
-                        <caption class="sr-only">{{ $caption }}</caption>
-                    @endif
-                    @isset($head)
-                        <thead>{{ $head }}</thead>
-                    @endisset
-                    @isset($foot)
-                        <tfoot>{{ $foot }}</tfoot>
-                    @endisset
-                    <tbody>{{ $slot }}</tbody>
-                </table>
-            </div>
-        @else
+    @elseif ($scroll === 'flex')
+        <div class="h-full overflow-auto">
             <table class="{{ $tableClasses }}"{!! $tableAttrs !!}>
                 @if ($caption)
                     <caption class="sr-only">{{ $caption }}</caption>
@@ -112,14 +99,41 @@
                 @isset($foot)
                     <tfoot>{{ $foot }}</tfoot>
                 @endisset
-                @isset($head)
-                    <tbody>{{ $slot }}</tbody>
-                @else
-                    {{-- Backwards-Kompatibilität: alte Aufrufe, die <thead>/<tbody> selbst
-                         in den Default-Slot legen, weiterhin unterstützen. --}}
-                    {{ $slot }}
-                @endisset
+                <tbody>
+                    @if ($isEmpty)
+                        <x-table.empty :colspan="$emptyColspan" :icon="$emptyIcon"
+                                       :title="$emptyTitle" :message="$emptyMessage" compact />
+                    @else
+                        {{ $slot }}
+                    @endif
+                </tbody>
             </table>
-        @endif
+        </div>
+    @else
+        <table class="{{ $tableClasses }}"{!! $tableAttrs !!}>
+            @if ($caption)
+                <caption class="sr-only">{{ $caption }}</caption>
+            @endif
+            @isset($head)
+                <thead>{{ $head }}</thead>
+            @endisset
+            @isset($foot)
+                <tfoot>{{ $foot }}</tfoot>
+            @endisset
+            @isset($head)
+                <tbody>
+                    @if ($isEmpty)
+                        <x-table.empty :colspan="$emptyColspan" :icon="$emptyIcon"
+                                       :title="$emptyTitle" :message="$emptyMessage" compact />
+                    @else
+                        {{ $slot }}
+                    @endif
+                </tbody>
+            @else
+                {{-- Backwards-Kompatibilität: alte Aufrufe, die <thead>/<tbody> selbst
+                     in den Default-Slot legen, weiterhin unterstützen. --}}
+                {{ $slot }}
+            @endif
+        </table>
     @endif
 </div>

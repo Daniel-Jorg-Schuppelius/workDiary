@@ -44,7 +44,7 @@
                  :route="route('tenders.index')"
                  :current-sort="$sort ?? null"
                  :current-dir="$dir ?? 'asc'"
-                 :sort-params="[]"
+                 :sort-params="request()->except(['sort', 'dir', 'page'])"
                  bare scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>

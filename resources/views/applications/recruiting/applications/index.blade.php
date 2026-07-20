@@ -10,9 +10,11 @@
 
 @section('title', __('Bewerbungen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Bewerbungen'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Bewerberpipeline — Zugriff nur für den Personalbereich (recruiting.*).')">
+<x-index-page overflow="clip" :subtitle="__('Bewerberpipeline — Zugriff nur für den Personalbereich (recruiting.*).')">
     <x-slot:actions>
         @can('create', \App\Models\Applications\JobApplication::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -35,13 +37,13 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-card padding="p-0">
+    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
         <x-table table-sort="server"
                  :route="route('recruiting.applications.index')"
                  :current-sort="$sort ?? null"
                  :current-dir="$dir ?? 'desc'"
-                 :sort-params="[]"
-                 bare>
+                 :sort-params="request()->except(['sort', 'dir', 'page'])"
+                 bare scroll="flex" :pinRows="true">
             <x-slot:head>
                 <tr>
                     <x-table.th sort="candidate">{{ __('Kandidat') }}</x-table.th>
