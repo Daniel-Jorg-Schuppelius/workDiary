@@ -323,6 +323,24 @@
     font-size: 0.75rem;
 }
 
+/* ------------------------------------------------------------------ */
+/* Opt-out aus Chromiums experimentellem base-select (daisyUI 5 setzt   */
+/* `appearance: base-select`): Bei einfachem <select>-Markup clippt     */
+/* Chromium den gewählten Eintrag dort NICHT — lange Labels malen über  */
+/* den Kasten hinaus (selbst mit overflow:hidden; Playwright-Repro      */
+/* 2026-07-20). daisyUIs selectedcontent-Fix greift nur mit dem neuen   */
+/* <button><selectedcontent>-Markup, das unsere Selects nicht haben.    */
+/* `appearance: none` erzwingt das klassische Rendering: identische     */
+/* daisyUI-Optik (eigener Pfeil, Ellipsis), nur der gestylte Picker     */
+/* entfällt (native Liste). Entfernen, sobald Chromium/daisyUI das      */
+/* Clipping auch ohne Spezial-Markup beherrschen.                       */
+/* Ungelayert wie die .table-Regel, damit es DaisyUI sicher sticht.     */
+/* ------------------------------------------------------------------ */
+.select,
+.select select {
+    appearance: none;
+}
+
 @theme {
     --font-sans:
         "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif,
