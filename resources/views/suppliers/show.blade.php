@@ -43,6 +43,15 @@
         @endif
     </x-entity-header>
 
+    {{-- KPI-Kacheln (analog Kunden-Detailseite); nur mit aktivem Lager-Modul. --}}
+    @if (($procurementStats ?? null) !== null)
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <x-kpi-tile :label="__('Artikel (Bezugsquellen)')" :value="$procurementStats['articles']" tone="neutral" />
+            <x-kpi-tile :label="__('Bestellungen')" :value="$procurementStats['orders']" tone="neutral" />
+            <x-kpi-tile :label="__('Offene Bestellungen')" :value="$procurementStats['open_orders']" tone="neutral" />
+        </div>
+    @endif
+
     {{-- Stammdaten --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <x-card :title="__('Kontakt')" icon="contacts">
@@ -123,9 +132,9 @@
         'syncRoute' => route('suppliers.lexoffice.sync-vouchers', $supplier),
     ])
 
-    {{-- Verlauf --}}
+    {{-- Änderungsverlauf (Audit) — Benennung konsistent zu Kunde/Fremdkunde --}}
     @if ($auditLogs->isNotEmpty())
-    <x-card :title="__('Verlauf')" icon="history">
+    <x-card :title="__('Änderungsverlauf')" icon="history">
         <x-audit-log-list :logs="$auditLogs" />
     </x-card>
     @endif

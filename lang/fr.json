@@ -8833,5 +8833,9 @@
     "… und :count weitere": "… et :count autres",
     "Endkunden vorhanden: :count": "Clients finaux disponibles : :count",
     "Direkt bei der Firma": "Directement chez l’entreprise",
-    "Zum Fremdkunden": "Vers le client tiers"
+    "Zum Fremdkunden": "Vers le client tiers",
+    "Diesem Fremdkunden sind noch keine Projekte zugeordnet.": "Aucun projet n’est encore associé à ce client tiers.",
+    "Artikel (Bezugsquellen)": "Articles (sources d’approvisionnement)",
+    "Bestellungen": "Commandes",
+    "Offene Bestellungen": "Commandes ouvertes"
 }

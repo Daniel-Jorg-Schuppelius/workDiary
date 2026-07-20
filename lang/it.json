@@ -8833,5 +8833,9 @@
     "… und :count weitere": "… e altre :count",
     "Endkunden vorhanden: :count": "Clienti finali disponibili: :count",
     "Direkt bei der Firma": "Direttamente presso l’azienda",
-    "Zum Fremdkunden": "Vai al cliente esterno"
+    "Zum Fremdkunden": "Vai al cliente esterno",
+    "Diesem Fremdkunden sind noch keine Projekte zugeordnet.": "A questo cliente esterno non è ancora assegnato alcun progetto.",
+    "Artikel (Bezugsquellen)": "Articoli (fonti di approvvigionamento)",
+    "Bestellungen": "Ordini d’acquisto",
+    "Offene Bestellungen": "Ordini d’acquisto aperti"
 }

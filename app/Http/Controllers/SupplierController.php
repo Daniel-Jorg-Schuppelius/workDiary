@@ -68,8 +68,26 @@ class SupplierController extends Controller {
         // Lexoffice-Belege auf den globalen Header-Zeitraum eingrenzen (analog Kunde).
         $lexofficeVoucherRange = $this->globalDateRange();
 
+        // KPI-Kacheln analog zur Kunden-Detailseite — Beschaffungszahlen nur
+        // mit aktivem Lager-Modul (purchase-orders.* sind darauf gegated).
+        $procurementStats = null;
+        if (app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.lager')) {
+            $procurementStats = [
+                'articles' => \App\Models\ArticleSupply::query()->where('supplier_id', $supplier->id)->count(),
+                'orders' => \App\Models\PurchaseOrder::query()->where('supplier_id', $supplier->id)->count(),
+                'open_orders' => \App\Models\PurchaseOrder::query()
+                    ->where('supplier_id', $supplier->id)
+                    ->whereIn('status', [
+                        \App\Enums\Procurement\PurchaseOrderStatus::Draft,
+                        \App\Enums\Procurement\PurchaseOrderStatus::Ordered,
+                        \App\Enums\Procurement\PurchaseOrderStatus::PartiallyReceived,
+                    ])->count(),
+            ];
+        }
+
         return view('suppliers.show', [
             'supplier' => $supplier,
+            'procurementStats' => $procurementStats,
             'lexofficePlugin' => $lexoffice,
             'lexofficeContactRef' => $lexofficeContactRef,
             'lexofficeVoucherRange' => $lexofficeVoucherRange,

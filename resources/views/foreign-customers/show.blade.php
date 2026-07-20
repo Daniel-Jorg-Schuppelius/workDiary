@@ -59,33 +59,22 @@
             </div>
         </div>
 
-        {{-- Projekte --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Projekte') }} ({{ $projects->count() }})</h2>
+        {{-- Projekte — gleiche Darstellung wie auf der Kunden-Detailseite --}}
+        <x-card :title="__('Projekte')" icon="folder" :count="$projects->count()">
             @if ($projects->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine Projekte zugeordnet.') }}</p>
+                <x-empty-state compact icon='<span class="material-symbols-outlined">folder_off</span>'
+                               :title="__('Keine Projekte')"
+                               :message="__('Diesem Fremdkunden sind noch keine Projekte zugeordnet.')" />
             @else
-                <ul class="divide-y divide-base-200">
-                    @foreach ($projects as $project)
-                        <li class="flex items-center justify-between py-1.5 text-sm">
-                            <a class="link link-hover" href="{{ route('projects.show', $project) }}">{{ $project->name }}</a>
-                            <x-status-badge :tone="$project->statusTone()" size="xs">{{ $project->statusLabel() }}</x-status-badge>
-                        </li>
-                    @endforeach
-                </ul>
+                @include('customers._project_list_items', ['items' => $projects])
             @endif
-        </div>
+        </x-card>
 
-        {{-- Verlauf --}}
+        {{-- Änderungsverlauf (Audit) — Standard-Darstellung wie Kunden/Lieferanten --}}
         @if ($auditLogs->isNotEmpty())
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-                <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Verlauf') }}</h2>
-                <ul class="space-y-1 text-xs text-base-content/60">
-                    @foreach ($auditLogs as $log)
-                        <li>{{ \Illuminate\Support\Carbon::parse($log->created_at)->isoFormat('L LT') }} · {{ $log->event }} · {{ $log->user?->name ?? '—' }}</li>
-                    @endforeach
-                </ul>
-            </div>
+            <x-card :title="__('Änderungsverlauf')" icon="history">
+                <x-audit-log-list :logs="$auditLogs" />
+            </x-card>
         @endif
     </div>
 </x-page-shell>

@@ -8833,5 +8833,9 @@
     "… und :count weitere": "… and :count more",
     "Endkunden vorhanden: :count": "End customers available: :count",
     "Direkt bei der Firma": "Directly at the company",
-    "Zum Fremdkunden": "Go to external customer"
+    "Zum Fremdkunden": "Go to external customer",
+    "Diesem Fremdkunden sind noch keine Projekte zugeordnet.": "No projects are assigned to this external customer yet.",
+    "Artikel (Bezugsquellen)": "Articles (supply sources)",
+    "Bestellungen": "Purchase orders",
+    "Offene Bestellungen": "Open purchase orders"
 }
