@@ -11,7 +11,7 @@
 namespace Tests\Feature;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Project, User};
+use App\Models\{Customer, ForeignCustomer, Project, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -37,6 +37,64 @@ class ProjectsTest extends TestCase {
             'name' => 'Neues Projekt',
             'created_by' => $user->id,
         ]);
+    }
+
+    public function test_rename_is_unique_per_customer_and_foreign_customer(): void {
+        $user = User::factory()->admin()->create();
+        $customer = Customer::factory()->create(['organization_id' => $user->organization_id]);
+        $endkundeA = ForeignCustomer::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => $customer->id,
+            'name' => 'Endkunde A',
+        ]);
+        $endkundeB = ForeignCustomer::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => $customer->id,
+            'name' => 'Endkunde B',
+        ]);
+
+        Project::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $endkundeA->id,
+            'name' => 'Wartungen',
+            'is_default' => false,
+        ]);
+        $project = Project::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $endkundeB->id,
+            'name' => 'Sonstiges',
+            'is_default' => false,
+        ]);
+
+        // Gleicher Name bei ANDEREM Endkunden derselben Firma → erlaubt.
+        $this->actingAs($user)
+            ->put(route('projects.update', $project), [
+                'name' => 'Wartungen',
+                'status' => ProjectStatus::Active->value,
+                'customer_id' => $customer->sqid,
+                'foreign_customer_id' => $endkundeB->sqid,
+            ])
+            ->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'name' => 'Wartungen']);
+
+        // Gleicher Name beim SELBEN Endkunden → abgelehnt.
+        $other = Project::factory()->create([
+            'organization_id' => $user->organization_id,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $endkundeA->id,
+            'name' => 'Zweitprojekt',
+            'is_default' => false,
+        ]);
+        $this->actingAs($user)
+            ->put(route('projects.update', $other), [
+                'name' => 'Wartungen',
+                'status' => ProjectStatus::Active->value,
+                'customer_id' => $customer->sqid,
+                'foreign_customer_id' => $endkundeA->sqid,
+            ])
+            ->assertSessionHasErrors('name');
     }
 
     public function test_non_owner_cannot_edit_foreign_project(): void {

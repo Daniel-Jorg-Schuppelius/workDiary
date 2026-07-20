@@ -48,6 +48,13 @@ class SaveProjectRequest extends BaseFormRequest {
         $customerId = $this->validationData()['customer_id'] ?? $project?->customer_id;
         $customerId = ($customerId === '' || $customerId === null) ? null : (int) $customerId;
 
+        // Namens-Eindeutigkeit gilt je (Kunde, Fremdkunde): gleichnamige Projekte
+        // verschiedener Endkunden derselben Firma sind legitim (Toggl-Import
+        // „Als ein Kunde"). Zusätzlich org-scopen — kundenlose (interne) Projekte
+        // dürfen nicht gegen fremde Mandanten geprüft werden.
+        $foreignCustomerId = $this->validationData()['foreign_customer_id'] ?? $project?->foreign_customer_id;
+        $foreignCustomerId = ($foreignCustomerId === '' || $foreignCustomerId === null) ? null : (int) $foreignCustomerId;
+
         return [
             'name' => [
                 'required',
@@ -55,7 +62,10 @@ class SaveProjectRequest extends BaseFormRequest {
                 'max:120',
                 Rule::unique('projects', 'name')
                     ->ignore($project?->id)
-                    ->where(fn($query) => $query->where('customer_id', $customerId)),
+                    ->where(fn($query) => $query
+                        ->where('organization_id', $this->user()?->organization_id)
+                        ->where('customer_id', $customerId)
+                        ->where('foreign_customer_id', $foreignCustomerId)),
             ],
             'description' => ['nullable', 'string', 'max:2000'],
             'color' => ['nullable', 'string', 'max:16'],
