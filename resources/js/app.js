@@ -362,6 +362,17 @@ document.addEventListener("change", (e) => {
     });
 });
 
+// Radio-Aktivierung per Fokus: in „Radio + Eingabefeld"-Zeilen (z. B.
+// Zuordnungs-Inbox bestehend/neu) wählt der Fokus im Feld automatisch den
+// zugehörigen Radio — verhindert stille required_if-Fehlschläge, wenn der
+// Nutzer nur das vorbefüllte Feld nutzt, ohne den Radio umzuschalten.
+document.addEventListener("focusin", (e) => {
+    const label = e.target.closest("label[data-radio-activate]");
+    if (!label || e.target.matches("input[type=radio]")) return;
+    const radio = label.querySelector("input[type=radio]");
+    if (radio && !radio.checked) radio.checked = true;
+});
+
 // Generischer Dialog-Close-Handler:
 // Schließt den nächsten umgebenden <dialog> für jedes [data-entry-modal-close]-Element.
 // Ergänzt den entry-modal-spezifischen Handler weiter unten und greift für alle

@@ -54,6 +54,16 @@
 
     @php $customerOptions = $assignTargets[\App\Models\Customer::class] ?? (reset($assignTargets) ?: []); @endphp
 
+    @if ($errors->any())
+        <div class="alert alert-error mb-4 text-sm">
+            <ul class="list-inside list-disc">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     @if (! $groups->isEmpty())
         <div class="mb-4 space-y-4">
             <h3 class="text-sm font-semibold text-base-content/70">{{ __('Zeit-Import-Gruppen') }}</h3>
@@ -97,21 +107,25 @@
 
                         @if ($form === 'customer_project')
                         {{-- Ohne Client (leerer Client-Name) ist der Eintrag typisch ein internes
-                             Firmenprojekt → „Intern" als Default, sonst Kundenauswahl. --}}
-                        @php $noClient = trim((string) ($g['client_name'] ?? '')) === ''; @endphp
+                             Firmenprojekt → „Intern" als Default. Sonst: bestehender Kunde nur bei
+                             Vorschlag vorgewählt, andernfalls „neu" (Feld ist vorbefüllt). --}}
+                        @php
+                            $noClient = trim((string) ($g['client_name'] ?? '')) === '';
+                            $suggestedCustomer = $g['suggested_customer_sqid'] ?? null;
+                        @endphp
                         <fieldset class="rounded-box border border-base-300 p-3">
                             <legend class="px-1 text-xs font-semibold">{{ __('Kunde') }}</legend>
-                            <label class="label cursor-pointer justify-start gap-2 py-1">
-                                <input type="radio" name="customer_mode" value="existing" class="radio radio-sm" @checked(!$noClient)>
+                            <label class="label cursor-pointer justify-start gap-2 py-1" data-radio-activate>
+                                <input type="radio" name="customer_mode" value="existing" class="radio radio-sm" @checked(!$noClient && $suggestedCustomer !== null)>
                                 <select name="customer" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
                                     @foreach ($customerOptions as $sqid => $label)
-                                        <option value="{{ $sqid }}" @selected(($g['suggested_customer_sqid'] ?? null) === $sqid)>{{ $label }}</option>
+                                        <option value="{{ $sqid }}" @selected($suggestedCustomer === $sqid)>{{ $label }}</option>
                                     @endforeach
                                 </select>
                             </label>
-                            <label class="label cursor-pointer justify-start gap-2 py-1">
-                                <input type="radio" name="customer_mode" value="new" class="radio radio-sm">
+                            <label class="label cursor-pointer justify-start gap-2 py-1" data-radio-activate>
+                                <input type="radio" name="customer_mode" value="new" class="radio radio-sm" @checked(!$noClient && $suggestedCustomer === null)>
                                 <input type="text" name="new_customer_name" class="input input-sm input-bordered w-full"
                                        placeholder="{{ __('neuer Kunde') }}" value="{{ $g['client_name'] ?? '' }}">
                             </label>
@@ -131,7 +145,7 @@
                                 <input type="radio" name="foreign_mode" value="none" class="radio radio-sm" @checked($suggestedForeign === null)>
                                 <span class="text-sm">{{ __('Kein Fremdkunde') }}</span>
                             </label>
-                            <label class="label cursor-pointer justify-start gap-2 py-1">
+                            <label class="label cursor-pointer justify-start gap-2 py-1" data-radio-activate>
                                 <input type="radio" name="foreign_mode" value="existing" class="radio radio-sm" @checked($suggestedForeign !== null)>
                                 <select name="foreign_customer" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
@@ -144,7 +158,7 @@
                                     @endforeach
                                 </select>
                             </label>
-                            <label class="label cursor-pointer justify-start gap-2 py-1">
+                            <label class="label cursor-pointer justify-start gap-2 py-1" data-radio-activate>
                                 <input type="radio" name="foreign_mode" value="new" class="radio radio-sm">
                                 <input type="text" name="new_foreign_customer_name" class="input input-sm input-bordered w-full"
                                        placeholder="{{ __('neuer Fremdkunde') }}" value="{{ $g['client_name'] ?? '' }}">
@@ -152,23 +166,26 @@
                         </fieldset>
                         @endif
 
+                        {{-- Bestehendes Projekt nur bei Vorschlag vorgewählt — sonst „neu"
+                             (Feld ist mit dem Import-Projektnamen vorbefüllt). --}}
+                        @php $suggestedProject = $g['suggested_project_sqid'] ?? null; @endphp
                         <fieldset class="rounded-box border border-base-300 p-3 @if (($g['form'] ?? '') !== 'customer_project') md:col-span-2 @endif">
                             <legend class="px-1 text-xs font-semibold">{{ __('Projekt') }}</legend>
-                            <label class="label cursor-pointer justify-start gap-2 py-1">
-                                <input type="radio" name="project_mode" value="existing" class="radio radio-sm" checked>
+                            <label class="label cursor-pointer justify-start gap-2 py-1" data-radio-activate>
+                                <input type="radio" name="project_mode" value="existing" class="radio radio-sm" @checked($suggestedProject !== null)>
                                 <select name="project" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
                                     @foreach ($projects as $customerLabel => $options)
                                         <optgroup label="{{ $customerLabel }}">
                                             @foreach ($options as $p)
-                                                <option value="{{ $p['sqid'] }}" @selected(($g['suggested_project_sqid'] ?? null) === $p['sqid'])>{{ $p['name'] }}</option>
+                                                <option value="{{ $p['sqid'] }}" @selected($suggestedProject === $p['sqid'])>{{ $p['name'] }}</option>
                                             @endforeach
                                         </optgroup>
                                     @endforeach
                                 </select>
                             </label>
-                            <label class="label cursor-pointer justify-start gap-2 py-1">
-                                <input type="radio" name="project_mode" value="new" class="radio radio-sm">
+                            <label class="label cursor-pointer justify-start gap-2 py-1" data-radio-activate>
+                                <input type="radio" name="project_mode" value="new" class="radio radio-sm" @checked($suggestedProject === null)>
                                 <input type="text" name="new_project_name" class="input input-sm input-bordered w-full"
                                        placeholder="{{ __('neues Projekt') }}" value="{{ $g['project_name'] }}">
                             </label>
