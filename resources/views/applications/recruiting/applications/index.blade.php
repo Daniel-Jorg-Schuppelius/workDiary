@@ -37,39 +37,36 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table table-sort="server"
-                 :route="route('recruiting.applications.index')"
-                 :current-sort="$sort ?? null"
-                 :current-dir="$dir ?? 'desc'"
-                 :sort-params="request()->except(['sort', 'dir', 'page'])"
-                 bare scroll="flex" :pinRows="true">
-            <x-slot:head>
-                <tr>
-                    <x-table.th sort="candidate">{{ __('Kandidat') }}</x-table.th>
-                    <x-table.th>{{ __('Stelle') }}</x-table.th>
-                    <x-table.th>{{ __('Quelle') }}</x-table.th>
-                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
-                    <x-table.th sort="received">{{ __('Eingegangen') }}</x-table.th>
-                    <x-table.th>{{ __('Löschvormerkung') }}</x-table.th>
-                    <x-table.th></x-table.th>
-                </tr>
-            </x-slot:head>
-            @forelse ($applications as $application)
-                <tr>
-                    <td>{{ $application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—') }}</td>
-                    <td>{{ $application->requisition->title ?? '—' }}</td>
-                    <td>{{ __("values.{$application->source}") }}</td>
-                    <td><x-status-badge :tone="$application->statusTone()" size="sm">{{ __("values.{$application->status}") }}</x-status-badge></td>
-                    <td class="tabular-nums">{{ optional($application->received_at)->fdate() ?? '—' }}</td>
-                    <td class="tabular-nums">{{ optional($application->retention_until)->fdate() ?? '—' }}</td>
-                    <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">person_search</span>' :colspan="7" :title="__('Keine Bewerbungen — „Bewerbung erfassen" legt die erste Akte an.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"
+             :route="route('recruiting.applications.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'desc'"
+             :sort-params="request()->except(['sort', 'dir', 'page'])">
+        <x-slot:head>
+            <tr>
+                <x-table.th sort="candidate">{{ __('Kandidat') }}</x-table.th>
+                <x-table.th>{{ __('Stelle') }}</x-table.th>
+                <x-table.th>{{ __('Quelle') }}</x-table.th>
+                <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                <x-table.th sort="received">{{ __('Eingegangen') }}</x-table.th>
+                <x-table.th>{{ __('Löschvormerkung') }}</x-table.th>
+                <x-table.th></x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($applications as $application)
+            <tr class="hover">
+                <td>{{ $application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—') }}</td>
+                <td>{{ $application->requisition->title ?? '—' }}</td>
+                <td>{{ __("values.{$application->source}") }}</td>
+                <td><x-status-badge :tone="$application->statusTone()" size="sm">{{ __("values.{$application->status}") }}</x-status-badge></td>
+                <td class="tabular-nums">{{ optional($application->received_at)->fdate() ?? '—' }}</td>
+                <td class="tabular-nums">{{ optional($application->retention_until)->fdate() ?? '—' }}</td>
+                <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">person_search</span>' :colspan="7" :title="__('Keine Bewerbungen — „Bewerbung erfassen" legt die erste Akte an.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$applications" standing />
 </x-index-page>

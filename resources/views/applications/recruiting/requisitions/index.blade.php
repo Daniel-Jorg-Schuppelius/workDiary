@@ -37,37 +37,34 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table table-sort="server"
-                 :route="route('recruiting.requisitions.index')"
-                 :current-sort="$sort ?? null"
-                 :current-dir="$dir ?? 'desc'"
-                 :sort-params="request()->except(['sort', 'dir', 'page'])"
-                 bare scroll="flex" :pinRows="true">
-            <x-slot:head>
-                <tr>
-                    <x-table.th sort="title">{{ __('Stelle') }}</x-table.th>
-                    <x-table.th sort="department">{{ __('Abteilung') }}</x-table.th>
-                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
-                    <x-table.th sort="applications" align="right">{{ __('Bewerbungen') }}</x-table.th>
-                    <x-table.th sort="target_start">{{ __('Zielstart') }}</x-table.th>
-                    <x-table.th></x-table.th>
-                </tr>
-            </x-slot:head>
-            @forelse ($requisitions as $requisition)
-                <tr>
-                    <td><a href="{{ route('recruiting.requisitions.show', $requisition) }}" class="link link-hover font-medium">{{ $requisition->title }}</a></td>
-                    <td>{{ $requisition->department ?? '—' }}</td>
-                    <td><x-status-badge :tone="$requisition->statusTone()" size="sm">{{ __("values.{$requisition->status}") }}</x-status-badge></td>
-                    <td class="text-right tabular-nums">{{ $requisition->applications_count }}</td>
-                    <td class="tabular-nums">{{ optional($requisition->target_start_on)->fdate() ?? '—' }}</td>
-                    <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.requisitions.show', $requisition)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">work</span>' :colspan="6" :title="__('Keine Stellen — „Stelle anlegen" startet den ersten Bedarf.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"
+             :route="route('recruiting.requisitions.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'desc'"
+             :sort-params="request()->except(['sort', 'dir', 'page'])">
+        <x-slot:head>
+            <tr>
+                <x-table.th sort="title">{{ __('Stelle') }}</x-table.th>
+                <x-table.th sort="department">{{ __('Abteilung') }}</x-table.th>
+                <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                <x-table.th sort="applications" align="right">{{ __('Bewerbungen') }}</x-table.th>
+                <x-table.th sort="target_start">{{ __('Zielstart') }}</x-table.th>
+                <x-table.th></x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($requisitions as $requisition)
+            <tr class="hover">
+                <td><a href="{{ route('recruiting.requisitions.show', $requisition) }}" class="link link-hover font-medium">{{ $requisition->title }}</a></td>
+                <td>{{ $requisition->department ?? '—' }}</td>
+                <td><x-status-badge :tone="$requisition->statusTone()" size="sm">{{ __("values.{$requisition->status}") }}</x-status-badge></td>
+                <td class="text-right tabular-nums">{{ $requisition->applications_count }}</td>
+                <td class="tabular-nums">{{ optional($requisition->target_start_on)->fdate() ?? '—' }}</td>
+                <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.requisitions.show', $requisition)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">work</span>' :colspan="6" :title="__('Keine Stellen — „Stelle anlegen" startet den ersten Bedarf.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$requisitions" standing />
 </x-index-page>
