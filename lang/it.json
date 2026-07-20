@@ -8884,5 +8884,9 @@
     "Benutzer-Zuordnung anlegen": "Crea associazione utente",
     "Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.": "Associa un’e-mail Toggl a un utente — per collaboratori la cui e-mail Toggl differisce da quella di workDiary.",
     "Alle bekannten Toggl-Adressen sind bereits zugeordnet.": "Tutti gli indirizzi Toggl noti sono già associati.",
-    "Benutzer-Zuordnungen": "Associazioni utenti"
+    "Benutzer-Zuordnungen": "Associazioni utenti",
+    "Kunden-Zuordnungen": "Associazioni clienti",
+    "Projekt-Zuordnungen": "Associazioni progetti",
+    "Toggl-Client": "Cliente Toggl",
+    "Toggl-Projekt": "Progetto Toggl"
 }

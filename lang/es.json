@@ -8884,5 +8884,9 @@
     "Benutzer-Zuordnung anlegen": "Crear asignación de usuario",
     "Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.": "Asignar un correo de Toggl a un usuario — para empleados cuya dirección de Toggl difiere de la de workDiary.",
     "Alle bekannten Toggl-Adressen sind bereits zugeordnet.": "Todas las direcciones de Toggl conocidas ya están asignadas.",
-    "Benutzer-Zuordnungen": "Asignaciones de usuarios"
+    "Benutzer-Zuordnungen": "Asignaciones de usuarios",
+    "Kunden-Zuordnungen": "Asignaciones de clientes",
+    "Projekt-Zuordnungen": "Asignaciones de proyectos",
+    "Toggl-Client": "Cliente de Toggl",
+    "Toggl-Projekt": "Proyecto de Toggl"
 }
