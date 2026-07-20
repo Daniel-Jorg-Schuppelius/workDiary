@@ -20,7 +20,9 @@
     DaisyUI-Theme korrekt.
 --}}
 <div {{ $attributes->class([
-    'flex min-h-16 flex-wrap items-center justify-between gap-3 rounded-[var(--panel-radius)] border border-base-300 bg-base-100 p-4 shadow-xs',
+    // shrink-0: in Voll-Höhe-Flex-Seiten darf der Kopf nicht von hohem
+    // Inhalt (z. B. großen Tabellen) zusammengestaucht werden.
+    'flex min-h-16 shrink-0 flex-wrap items-center justify-between gap-3 rounded-[var(--panel-radius)] border border-base-300 bg-base-100 p-4 shadow-xs',
 ]) }}>
     <div class="min-w-0 flex flex-col gap-0.5">
         @if ($title || $badge)

@@ -46,8 +46,9 @@
          data-tab-allowed="overview,tasks,time,timesheets,diary,recurrence,billing"
          class="flex min-h-0 flex-col gap-4">
         {{-- sticky: bei langen Tab-Inhalten (z. B. große Zeiten-Tabelle) bleibt
-             die Tab-Leiste beim Scrollen erreichbar. --}}
-        <div role="tablist" class="tabs tabs-box sticky top-0 z-20 w-full shadow-xs sm:w-auto">
+             die Tab-Leiste beim Scrollen erreichbar; shrink-0 verhindert, dass
+             der Flex-Container sie bei hohem Inhalt zusammenstaucht. --}}
+        <div role="tablist" class="tabs tabs-box sticky top-0 z-20 w-full shrink-0 shadow-xs sm:w-auto">
             <button role="tab" @click="setTab('overview')" :class="tabClass('overview')" class="tab">
                 {{ __('Übersicht') }}
             </button>
