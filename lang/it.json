@@ -8888,5 +8888,6 @@
     "Kunden-Zuordnungen": "Associazioni clienti",
     "Projekt-Zuordnungen": "Associazioni progetti",
     "Toggl-Client": "Cliente Toggl",
-    "Toggl-Projekt": "Progetto Toggl"
+    "Toggl-Projekt": "Progetto Toggl",
+    "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Le associazioni nascono durante la prenotazione nella inbox di assegnazione, con l’import del workspace o sopra tramite l’associazione utente."
 }

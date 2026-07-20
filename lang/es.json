@@ -8888,5 +8888,6 @@
     "Kunden-Zuordnungen": "Asignaciones de clientes",
     "Projekt-Zuordnungen": "Asignaciones de proyectos",
     "Toggl-Client": "Cliente de Toggl",
-    "Toggl-Projekt": "Proyecto de Toggl"
+    "Toggl-Projekt": "Proyecto de Toggl",
+    "Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.": "Las asignaciones se crean al reservar en la bandeja de asignación, durante la importación del espacio de trabajo o arriba mediante la asignación de usuario."
 }
