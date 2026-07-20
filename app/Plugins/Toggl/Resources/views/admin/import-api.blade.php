@@ -103,13 +103,13 @@
                                 </p>
                                 <div class="space-y-1">
                                     @foreach ($togglUsers as $tu)
-                                        {{-- Feste Select-Breite: die langen Options-Labels würden das Select
-                                             sonst unter die E-Mail umbrechen lassen (Mobil bricht bewusst um). --}}
-                                        <div class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                                        {{-- Feste Select-Breite + truncate: der gewählte Eintrag bleibt
+                                             einzeilig im Kasten (Ellipsis), statt das Select aufzublähen. --}}
+                                        <div class="flex items-center gap-2">
                                             <span class="min-w-0 flex-1 truncate text-sm" title="{{ $tu['email'] }}">
                                                 {{ $tu['name'] }} <span class="text-base-content/50">({{ $tu['email'] }})</span>
                                             </span>
-                                            <select name="user_map[{{ $tu['email'] }}]" class="select select-sm select-bordered w-full shrink-0 sm:w-64">
+                                            <select name="user_map[{{ $tu['email'] }}]" class="select select-sm select-bordered w-64 max-w-full shrink-0 truncate">
                                                 <option value="">{{ __('— automatisch —') }}</option>
                                                 @foreach ($systemUsers as $su)
                                                     <option value="{{ $su['sqid'] }}">{{ $su['label'] }}</option>
