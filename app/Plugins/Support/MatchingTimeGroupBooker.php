@@ -51,6 +51,8 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
                 'minutes' => $group['minutes'],
                 'first_seen' => $group['first_seen'],
                 'last_seen' => $group['last_seen'],
+                'entries' => $group['entries'],
+                'entries_more' => $group['entries_more'],
                 'suggested_customer_sqid' => $customer?->sqid,
                 'suggested_foreign_sqid' => $foreign?->sqid,
                 'suggested_project_sqid' => $project?->sqid,

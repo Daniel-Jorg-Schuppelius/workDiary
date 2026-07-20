@@ -73,7 +73,7 @@ class TogglImportTest extends TestCase {
         return mb_strtolower(trim($client) . '|' . trim($project));
     }
 
-    private function seedInboxEntry(string $client, string $project, string $entryKey, string $start, string $end, bool $billable = true): IntegrationInboxItem {
+    private function seedInboxEntry(string $client, string $project, string $entryKey, string $start, string $end, bool $billable = true, ?string $description = null): IntegrationInboxItem {
         return IntegrationInboxItem::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => TogglPlugin::ID,
@@ -90,7 +90,7 @@ class TogglImportTest extends TestCase {
                 'entry_key' => $entryKey,
                 'client_name' => $client,
                 'project_name' => $project,
-                'description' => null,
+                'description' => $description,
                 'started_at' => CarbonImmutable::parse($start)->toIso8601String(),
                 'ended_at' => CarbonImmutable::parse($end)->toIso8601String(),
                 'billable' => $billable,
@@ -530,6 +530,21 @@ class TogglImportTest extends TestCase {
         ]);
     }
 
+    public function test_open_inbox_groups_include_entry_preview(): void {
+        $this->seedInboxEntry('LDS Systems GmbH', 'Firma', 'csv:p1', '2026-05-26 09:00:00', '2026-05-26 09:24:00', true, 'Serverwartung');
+        $this->seedInboxEntry('LDS Systems GmbH', 'Firma', 'csv:p2', '2026-05-27 10:00:00', '2026-05-27 11:00:00');
+
+        $groups = $this->service()->openInboxGroups($this->organization);
+        $this->assertCount(1, $groups);
+
+        $entries = $groups->first()['entries'];
+        $this->assertCount(2, $entries);
+        $this->assertSame('Serverwartung', $entries[0]['description']);
+        $this->assertSame(24, $entries[0]['minutes']);
+        $this->assertNull($entries[1]['description']);
+        $this->assertSame(0, $groups->first()['entries_more']);
+    }
+
     public function test_book_group_with_new_foreign_customer_links_project_and_reference(): void {
         $this->enableToggl();
         $customer = Customer::factory()->create([
@@ -571,6 +586,36 @@ class TogglImportTest extends TestCase {
             'referenceable_type' => $foreign->getMorphClass(),
             'referenceable_id' => $foreign->id,
         ]);
+    }
+
+    public function test_book_group_ignores_foreign_customer_equal_to_customer_name(): void {
+        $this->enableToggl();
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'LDS Systems GmbH',
+        ]);
+
+        // Client = Firma selbst (Prefill unverändert übernommen) → kein Endkunde.
+        $this->seedInboxEntry('LDS Systems GmbH', 'Firma', 'csv:self', '2026-05-26 09:00:00', '2026-05-26 09:24:00');
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('LDS Systems GmbH', 'Firma'),
+                'customer_mode' => 'existing',
+                'customer' => $customer->sqid,
+                'foreign_mode' => 'new',
+                'new_foreign_customer_name' => 'LDS Systems GmbH',
+                'project_mode' => 'new',
+                'new_project_name' => 'Firma',
+            ])
+            ->assertRedirect();
+
+        $project = Project::query()->where('name', 'Firma')->first();
+        $this->assertNotNull($project);
+        $this->assertSame($customer->id, $project->customer_id);
+        $this->assertNull($project->foreign_customer_id);
+        $this->assertSame(0, ForeignCustomer::query()->count());
     }
 
     public function test_book_group_with_existing_foreign_customer_creates_second_project(): void {

@@ -8828,5 +8828,7 @@
     "Kein Fremdkunde": "No external customer",
     "neuer Fremdkunde": "new external customer",
     "Endkunde": "End customer",
-    "Endkunden (Fremdkunden)": "End customers (external customers)"
+    "Endkunden (Fremdkunden)": "End customers (external customers)",
+    "Einträge anzeigen": "Show entries",
+    "… und :count weitere": "… and :count more"
 }

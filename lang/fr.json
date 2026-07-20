@@ -8828,5 +8828,7 @@
     "Kein Fremdkunde": "Aucun client tiers",
     "neuer Fremdkunde": "nouveau client tiers",
     "Endkunde": "Client final",
-    "Endkunden (Fremdkunden)": "Clients finaux (clients tiers)"
+    "Endkunden (Fremdkunden)": "Clients finaux (clients tiers)",
+    "Einträge anzeigen": "Afficher les entrées",
+    "… und :count weitere": "… et :count autres"
 }

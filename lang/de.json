@@ -1,0 +1,22 @@
+{
+    ":count Antwort|:count Antworten": ":count Antwort|:count Antworten",
+    ":count Aufgabe|:count Aufgaben": ":count Aufgabe|:count Aufgaben",
+    ":count Auftrag|:count Aufträge": ":count Auftrag|:count Aufträge",
+    ":count Domain|:count Domains": ":count Domain|:count Domains",
+    ":count Eintrag|:count Einträge": ":count Eintrag|:count Einträge",
+    ":count Ergebnis|:count Ergebnisse": ":count Ergebnis|:count Ergebnisse",
+    ":count Marker|:count Marker": ":count Marker|:count Marker",
+    ":count Mitglied|:count Mitglieder": ":count Mitglied|:count Mitglieder",
+    ":count Pflichtregel angezeigt|:count Pflichtregeln angezeigt": ":count Pflichtregel angezeigt|:count Pflichtregeln angezeigt",
+    ":count Projekt|:count Projekte": ":count Projekt|:count Projekte",
+    ":count Sitzung|:count Sitzungen": ":count Sitzung|:count Sitzungen",
+    ":count Stimme|:count Stimmen": ":count Stimme|:count Stimmen",
+    ":count Tour|:count Touren": ":count Tour|:count Touren",
+    ":count Treffer|:count Treffer": ":count Treffer|:count Treffer",
+    ":count unzugeordnet|:count unzugeordnet": ":count unzugeordnet|:count unzugeordnet",
+    ":count überfällige Frist|:count überfällige Fristen": ":count überfällige Frist|:count überfällige Fristen",
+    ":n Mitarbeiter|:n Mitarbeiter": ":n Mitarbeiter|:n Mitarbeiter",
+    "{0}Keine Projekte|{1}1 Projekt|[2,*]:count Projekte": "{0}Keine Projekte|{1}1 Projekt|[2,*]:count Projekte",
+    "{1} :count Woche|[2,*] :count Wochen": "{1} :count Woche|[2,*] :count Wochen",
+    "{1} :n Tag|[2,*] :n Tage": "{1} :n Tag|[2,*] :n Tage"
+}

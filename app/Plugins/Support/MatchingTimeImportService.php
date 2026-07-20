@@ -46,6 +46,9 @@ abstract class MatchingTimeImportService {
 
     public const SUGGEST_THRESHOLD = 0.82;
 
+    /** Max. Einträge der Gruppen-Vorschau in der Zuordnungs-Inbox. */
+    public const GROUP_PREVIEW_LIMIT = 15;
+
     /**
      * Effektive Plugin-Konfiguration der Organisation (für Inbox-Buchungen).
      *
@@ -348,7 +351,7 @@ abstract class MatchingTimeImportService {
     }
 
     /**
-     * @return Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon}>
+     * @return Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon, entries: array<int, array{description: ?string, started_at: ?string, ended_at: ?string, minutes: int, user_email: ?string, billable: bool}>, entries_more: int}>
      */
     public function openInboxGroups(Organization $organization): Collection {
         return $this->openInboxItems($organization)
@@ -362,6 +365,25 @@ abstract class MatchingTimeImportService {
                 /** @var \Illuminate\Support\Carbon|null $lastSeen */
                 $lastSeen = $group->max('occurred_at');
 
+                // Vorschau der dahinterliegenden Einträge (chronologisch, gedeckelt) —
+                // der Anwender sieht vor der Buchung, was er bucht.
+                $entries = $group->sortBy('occurred_at')
+                    ->take(self::GROUP_PREVIEW_LIMIT)
+                    ->map(function (IntegrationInboxItem $item): array {
+                        $s = (array) ($item->remote_snapshot ?? []);
+
+                        return [
+                            'description' => isset($s['description']) && (string) $s['description'] !== '' ? (string) $s['description'] : null,
+                            'started_at' => isset($s['started_at']) ? (string) $s['started_at'] : null,
+                            'ended_at' => isset($s['ended_at']) ? (string) $s['ended_at'] : null,
+                            'minutes' => $this->snapshotMinutes($s),
+                            'user_email' => isset($s['user_email']) && (string) $s['user_email'] !== '' ? (string) $s['user_email'] : null,
+                            'billable' => (bool) ($s['billable'] ?? false),
+                        ];
+                    })
+                    ->values()
+                    ->all();
+
                 return [
                     'group_key' => (string) $groupKey,
                     'client_name' => isset($snap['client_name']) ? (string) $snap['client_name'] : null,
@@ -370,6 +392,8 @@ abstract class MatchingTimeImportService {
                     'minutes' => (int) $group->sum(fn (IntegrationInboxItem $i): int => $this->snapshotMinutes($i->remote_snapshot ?? [])),
                     'first_seen' => $firstSeen,
                     'last_seen' => $lastSeen,
+                    'entries' => $entries,
+                    'entries_more' => max(0, $group->count() - count($entries)),
                 ];
             })
             ->values();

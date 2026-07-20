@@ -8828,5 +8828,7 @@
     "Kein Fremdkunde": "Nessun cliente esterno",
     "neuer Fremdkunde": "nuovo cliente esterno",
     "Endkunde": "Cliente finale",
-    "Endkunden (Fremdkunden)": "Clienti finali (clienti esterni)"
+    "Endkunden (Fremdkunden)": "Clienti finali (clienti esterni)",
+    "Einträge anzeigen": "Mostra voci",
+    "… und :count weitere": "… e altre :count"
 }

@@ -8828,5 +8828,7 @@
     "Kein Fremdkunde": "Sin cliente externo",
     "neuer Fremdkunde": "nuevo cliente externo",
     "Endkunde": "Cliente final",
-    "Endkunden (Fremdkunden)": "Clientes finales (clientes externos)"
+    "Endkunden (Fremdkunden)": "Clientes finales (clientes externos)",
+    "Einträge anzeigen": "Mostrar entradas",
+    "… und :count weitere": "… y :count más"
 }

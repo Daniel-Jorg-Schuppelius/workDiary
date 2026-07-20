@@ -84,6 +84,46 @@
                         </span>
                     </div>
 
+                    {{-- Vorschau der Einträge hinter der Gruppe: was genau wird hier gebucht? --}}
+                    @if (! empty($g['entries']))
+                        @php $tz = \App\Support\Tz::current(); @endphp
+                        <details class="mb-3">
+                            <summary class="cursor-pointer text-xs font-medium text-base-content/60">{{ __('Einträge anzeigen') }}</summary>
+                            <div class="mt-2 overflow-x-auto">
+                                <table class="table table-xs">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ __('Datum') }}</th>
+                                            <th>{{ __('Zeit') }}</th>
+                                            <th class="text-right">{{ __('Min') }}</th>
+                                            <th>{{ __('Beschreibung') }}</th>
+                                            <th>{{ __('Benutzer') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($g['entries'] as $e)
+                                            @php
+                                                $entryStart = $e['started_at'] ? \Carbon\CarbonImmutable::parse($e['started_at'])->setTimezone($tz) : null;
+                                                $entryEnd = $e['ended_at'] ? \Carbon\CarbonImmutable::parse($e['ended_at'])->setTimezone($tz) : null;
+                                            @endphp
+                                            <tr>
+                                                <td class="whitespace-nowrap">{{ $entryStart?->format('d.m.Y') ?? '—' }}</td>
+                                                <td class="whitespace-nowrap">{{ $entryStart?->format('H:i') }}–{{ $entryEnd?->format('H:i') }}</td>
+                                                <td class="text-right">{{ $e['minutes'] }}</td>
+                                                <td>{{ $e['description'] ?? '—' }}</td>
+                                                <td class="text-xs text-base-content/60">{{ $e['user_email'] ?? '—' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                @if (($g['entries_more'] ?? 0) > 0)
+                                    <p class="mt-1 text-xs text-base-content/50">{{ __('… und :count weitere', ['count' => $g['entries_more']]) }}</p>
+                                @endif
+                            </div>
+                        </details>
+                    @endif
+
+                    @php $dismissFormId = 'dismiss-group-' . $loop->index; @endphp
                     @if ($form === 'asset')
                         {{-- Fernwartung: unbekanntes Gerät an ein bestehendes Asset binden --}}
                         <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="flex flex-wrap items-end gap-2">
@@ -98,6 +138,7 @@
                             </select>
                             <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
                             <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
+                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                         </form>
                     @else
                     <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="grid gap-3 {{ $form === 'customer_project' ? 'md:grid-cols-3' : 'md:grid-cols-2' }}">
@@ -192,16 +233,18 @@
                         </fieldset>
 
                         <div class="md:col-span-full flex justify-end gap-2">
+                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                             <button type="submit" class="btn btn-sm btn-primary">{{ __('Gruppe buchen') }}</button>
                         </div>
                     </form>
                     @endif
-                    <form method="POST" action="{{ route('admin.integration.inbox.group.dismiss') }}" class="mt-2 flex justify-end"
+                    {{-- Unsichtbares Verwerfen-Form; die Buttons in den Aktionszeilen
+                         referenzieren es per form-Attribut. --}}
+                    <form method="POST" action="{{ route('admin.integration.inbox.group.dismiss') }}" id="{{ $dismissFormId }}" class="hidden"
                           data-confirm-dialog data-confirm-message="{{ __('Diese Gruppe verwerfen?') }}">
                         @csrf
                         <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
                         <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
-                        <button type="submit" class="btn btn-xs btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                     </form>
                 </div>
             @endforeach

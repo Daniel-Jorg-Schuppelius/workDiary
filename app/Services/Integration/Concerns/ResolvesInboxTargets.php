@@ -57,6 +57,12 @@ trait ResolvesInboxTargets {
             $name = trim((string) ($input['new_foreign_customer_name'] ?? ''));
             abort_if($name === '', 422, __('Der Name des Fremdkunden darf nicht leer sein.'));
 
+            // Client = Firma selbst → kein eigener Endkunde (gleiche Regel wie
+            // der Workspace-Import, verhindert „LDS unter LDS" aus dem Prefill).
+            if (mb_strtolower($name) === mb_strtolower((string) $customer->name)) {
+                return null;
+            }
+
             $existing = ForeignCustomer::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
