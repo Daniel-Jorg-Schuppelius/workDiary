@@ -31,7 +31,7 @@
             <x-empty-state framed
                 icon='<span class="material-symbols-outlined" aria-hidden="true">inbox</span>'
                 :title="__('Keine Korrekturanträge im Filter')"
-                :message="__('Setzen Sie den Statusfilter auf „Alle Status", um auch entschiedene Anträge zu sehen.')" />
+                :message="__('Setzen Sie den Statusfilter auf „Alle Status“, um auch entschiedene Anträge zu sehen.')" />
         @else
             <x-table scroll="flex" :pinRows="true" table-sort="server"
                      :route="route('admin.corrections.index')" :current-sort="$sort" :current-dir="$dir"

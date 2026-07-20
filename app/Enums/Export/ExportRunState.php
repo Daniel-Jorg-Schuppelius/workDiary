@@ -29,6 +29,15 @@ enum ExportRunState: string implements HasLabel {
         return (string) __('export.state.' . $this->value);
     }
 
+    /** Badge-Tone für die UI (x-status-badge). */
+    public function tone(): string {
+        return match ($this) {
+            self::Preparing => 'warning',
+            self::Ready => 'success',
+            self::Failed => 'error',
+        };
+    }
+
     public function isFinal(): bool {
         return $this === self::Ready || $this === self::Failed;
     }

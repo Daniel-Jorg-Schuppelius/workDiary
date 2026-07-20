@@ -50,7 +50,6 @@ return [
             'icon' => 'handshake',
             'keys' => [
                 'group:sales-crm',
-                'group:sales-recruiting',
                 'group:sales-billing',
                 'section:work',
                 'group:reports-projects',

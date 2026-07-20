@@ -12,50 +12,43 @@
 
 @section('content')
 <x-index-page :subtitle="__('gobd.subtitle')">
-    {{-- Auswahl Zeitraum + Bereiche → Preflight (GET) --}}
-    <x-card>
-        <form method="GET" action="{{ route('finance.gobd.index') }}" class="space-y-4">
-            <x-date-range from-name="from" to-name="to" :from="$from" :to="$to"
-                          :label="__('gobd.period')" layout="split" />
+    <x-slot:actions>
+        <x-icon-btn icon="fact_check" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('finance.gobd.check', ['from' => $from, 'to' => $to, 'sections' => $selected])"
+                    show-label>{{ __('gobd.preflight.check') }}</x-icon-btn>
+    </x-slot:actions>
 
-            <fieldset class="fieldset">
-                <legend class="fieldset-label">{{ __('gobd.sections') }}</legend>
-                <div class="flex flex-wrap gap-4">
-                    @foreach ($sections as $key)
-                        <label class="label cursor-pointer gap-2">
-                            <input type="checkbox" name="sections[]" value="{{ $key }}"
-                                   class="checkbox checkbox-sm" @checked(in_array($key, $selected, true))>
-                            <span class="label-text">{{ __('gobd.section.' . $key) }}</span>
-                        </label>
-                    @endforeach
-                </div>
-            </fieldset>
-
-            <x-icon-btn icon="fact_check" tone="outline" size="sm" type="submit"
-                        show-label>{{ __('gobd.preflight.check') }}</x-icon-btn>
-        </form>
-    </x-card>
-
-    {{-- Preflight-Ergebnis + Export (POST) --}}
+    {{-- Vorprüfungs-Ergebnis für den im Dialog gewählten Zeitraum + Export (POST) --}}
     @if ($preflight !== null)
-        <x-card>
-            <h2 class="font-semibold mb-3">{{ __('gobd.preflight.title') }}</h2>
+        <x-card :title="__('gobd.preflight.title')" icon="fact_check">
+            <x-slot:actions>
+                <span class="inline-flex items-center gap-1.5 rounded-box bg-base-200 px-3 py-1 text-sm font-medium text-base-content/80">
+                    <x-icon name="date_range" class="text-base-content/60" />
+                    <span class="tabular-nums">{{ \Illuminate\Support\Carbon::parse($from)->format('d.m.Y') }} – {{ \Illuminate\Support\Carbon::parse($to)->format('d.m.Y') }}</span>
+                </span>
+            </x-slot:actions>
 
-            <div class="flex flex-wrap gap-x-8 gap-y-1 text-sm mb-3">
+            {{-- Datensatz-Zähler je Datenbereich als Chips --}}
+            <div class="flex flex-wrap gap-2">
                 @foreach ($preflight['counts'] as $key => $count)
-                    <div>
-                        <span class="opacity-60">{{ __('gobd.section.' . $key) }}:</span>
-                        <strong class="tabular-nums">{{ __('gobd.preflight.records', ['count' => $count]) }}</strong>
+                    <div @class([
+                        'flex items-baseline gap-2 rounded-box border px-3 py-2',
+                        'border-base-300 bg-base-100' => $count > 0,
+                        'border-dashed border-base-300 bg-base-200/40 opacity-70' => $count === 0,
+                    ])>
+                        <span class="text-xs text-base-content/60">{{ __('gobd.section.' . $key) }}</span>
+                        <strong class="font-['Space_Grotesk'] tabular-nums">{{ number_format((int) $count, 0, ',', '.') }}</strong>
                     </div>
                 @endforeach
             </div>
 
             @if (! empty($preflight['warnings']))
-                <div class="alert alert-warning mb-3" role="alert">
-                    <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                <div class="alert alert-warning mt-4" role="alert">
+                    <x-icon name="warning" aria-hidden="true" />
                     <div>
                         <p class="font-medium">{{ __('gobd.preflight.warnings') }}</p>
-                        <ul class="list-disc ms-5 text-sm">
+                        <ul class="ms-5 list-disc text-sm">
                             @foreach ($preflight['warnings'] as $warning)
                                 <li>{{ $warning }}</li>
                             @endforeach
@@ -64,14 +57,15 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('finance.gobd.export') }}">
+            <form method="POST" action="{{ route('finance.gobd.export') }}"
+                  class="mt-4 flex flex-wrap items-end justify-between gap-3 border-t border-base-300 pt-4">
                 @csrf
                 <input type="hidden" name="from" value="{{ $from }}">
                 <input type="hidden" name="to" value="{{ $to }}">
                 @foreach ($selected as $key)
                     <input type="hidden" name="sections[]" value="{{ $key }}">
                 @endforeach
-                <fieldset class="fieldset mb-3 max-w-xs">
+                <fieldset class="fieldset max-w-xs">
                     <legend class="fieldset-label">{{ __('gobd.encoding') }}</legend>
                     <select name="encoding" class="select select-bordered select-sm" aria-label="{{ __('gobd.encoding') }}">
                         @foreach ($encodings as $enc)

@@ -52,6 +52,20 @@ class GobdExportController extends Controller {
         ]);
     }
 
+    /** Auswahl-Dialog (Zeitraum + Datenbereiche); wird per data-entry-modal-trigger geladen. */
+    public function check(Request $request): View {
+        Gate::authorize('viewAny', GobdExport::class);
+
+        [$from, $to] = $this->period($request);
+
+        return view('finance.gobd._check_dialog', [
+            'from' => $from->toDateString(),
+            'to' => $to->toDateString(),
+            'sections' => $this->service->availableSections(),
+            'selected' => array_values(array_filter((array) $request->input('sections', $this->service->availableSections()), 'is_string')),
+        ]);
+    }
+
     public function export(Request $request): Response {
         Gate::authorize('viewAny', GobdExport::class);
 

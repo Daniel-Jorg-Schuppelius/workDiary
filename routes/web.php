@@ -1845,6 +1845,7 @@ Route::middleware('auth')->group(function () {
         // GoBD-Z3-Datenträgerüberlassung (Feature 063, MVP-132) — module.finance über finance.*
         Route::prefix('finanzen/gobd')->name('finance.gobd.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Finance\GobdExportController::class, 'index'])->name('index');
+            Route::get('check', [\App\Http\Controllers\Finance\GobdExportController::class, 'check'])->name('check');
             Route::post('export', [\App\Http\Controllers\Finance\GobdExportController::class, 'export'])->name('export');
         });
         Route::patch('projects/{project}/tasks/{task}/complete', [TaskController::class, 'complete'])->name('projects.tasks.complete');

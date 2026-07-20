@@ -10,9 +10,11 @@
 
 @section('title', __('Investitionen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Investitionen'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page :subtitle="__('Investitionsakten mit Varianten, Budgetantrag, Freigabe und Soll-Ist-Verfolgung.')">
+<x-index-page overflow="clip" :subtitle="__('Investitionsakten mit Varianten, Budgetantrag, Freigabe und Soll-Ist-Verfolgung.')">
     <x-slot:actions>
         <x-icon-btn icon="analytics" size="sm" :href="route('investments.report')" show-label>{{ __('Bericht') }}</x-icon-btn>
         @can('create', \App\Models\Investments\InvestmentCase::class)
@@ -42,37 +44,34 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-card padding="p-0">
-        <x-table table-sort="server"
-                 :route="route('investments.index')"
-                 :current-sort="$sort ?? null"
-                 :current-dir="$dir ?? 'desc'"
-                 :sort-params="[]"
-                 bare>
-            <x-slot:head>
-                <tr>
-                    <x-table.th sort="title">{{ __('Titel') }}</x-table.th>
-                    <x-table.th sort="category">{{ __('Kategorie') }}</x-table.th>
-                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
-                    <x-table.th>{{ __('Kostenstelle') }}</x-table.th>
-                    <x-table.th>{{ __('Verantwortlich') }}</x-table.th>
-                    <x-table.th></x-table.th>
-                </tr>
-            </x-slot:head>
-            @forelse ($cases as $case)
-                <tr>
-                    <td><a href="{{ route('investments.show', $case) }}" class="link link-hover font-medium">{{ $case->title }}</a></td>
-                    <td>{{ __("values.{$case->category}") }}</td>
-                    <td><x-status-badge :tone="$case->statusTone()" size="sm">{{ __("values.{$case->status}") }}</x-status-badge></td>
-                    <td>{{ $case->costCenterDisplay() ?? '—' }}</td>
-                    <td>{{ $case->responsible->name ?? '—' }}</td>
-                    <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('investments.show', $case)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">trending_up</span>' :colspan="6" :title="__('Keine Investitionen — „Investition erfassen" startet die erste Akte.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"
+             :route="route('investments.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'desc'"
+             :sort-params="request()->except(['sort', 'dir', 'page'])">
+        <x-slot:head>
+            <tr>
+                <x-table.th sort="title">{{ __('Titel') }}</x-table.th>
+                <x-table.th sort="category">{{ __('Kategorie') }}</x-table.th>
+                <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                <x-table.th>{{ __('Kostenstelle') }}</x-table.th>
+                <x-table.th>{{ __('Verantwortlich') }}</x-table.th>
+                <x-table.th></x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($cases as $case)
+            <tr class="hover">
+                <td><a href="{{ route('investments.show', $case) }}" class="link link-hover font-medium">{{ $case->title }}</a></td>
+                <td>{{ __("values.{$case->category}") }}</td>
+                <td><x-status-badge :tone="$case->statusTone()" size="sm">{{ __("values.{$case->status}") }}</x-status-badge></td>
+                <td>{{ $case->costCenterDisplay() ?? '—' }}</td>
+                <td>{{ $case->responsible->name ?? '—' }}</td>
+                <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('investments.show', $case)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">trending_up</span>' :colspan="6" :title="__('Keine Investitionen — „Investition erfassen“ startet die erste Akte.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$cases" standing />
 </x-index-page>

@@ -439,15 +439,9 @@ class NavigationRegistry {
                         ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
                         ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
                         ['route' => 'tenders.index', 'label' => __('Ausschreibungen'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['tenders.*']],
-                    ],
-                ],
-                [
-                    'key' => 'sales-recruiting',
-                    'label' => __('Personalgewinnung'),
-                    'icon' => 'person_search',
-                    'items' => [
-                        ['route' => 'recruiting.requisitions.index', 'label' => __('Stellen'), 'icon' => 'work', 'modal' => false, 'matches' => ['recruiting.requisitions.*']],
-                        ['route' => 'recruiting.applications.index', 'label' => __('Bewerbungen'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['recruiting.applications.*']],
+                        // Ein Eintrag für die gesamte Personalgewinnung — Stellen/Bewerbungen
+                        // laufen auf der Seite selbst über Tabs (recruiting._tabs).
+                        ['route' => 'recruiting.requisitions.index', 'label' => __('Personalgewinnung'), 'icon' => 'person_search', 'modal' => false, 'matches' => ['recruiting.*']],
                     ],
                 ],
                 [
