@@ -5,9 +5,8 @@
 @php
     // id → Label für die Projekt-Anzeige (Projekt (Kunde)).
     $customerLabel = collect($customers)->keyBy('id')->map(fn($c) => $c['label']);
-    // Benutzer-Zuordnungen als eigene Tabelle direkt unter dem Formular —
-    // in der großen Kunden-/Projekt-Tabelle gingen sie ganz unten unter.
-    $userMappings = $mappings->filter(fn($m) => $m->external_type === \App\Plugins\Toggl\TogglImportService::EXT_TYPE_USER_EMAIL)->values();
+    // Benutzer-Zuordnungen ($userMappings, vereint aus Referenzen + Aliassen)
+    // kommen aus dem Controller; hier nur die übrigen Typen für die große Tabelle.
     $otherMappings = $mappings->reject(fn($m) => $m->external_type === \App\Plugins\Toggl\TogglImportService::EXT_TYPE_USER_EMAIL)->values();
 @endphp
 
@@ -86,10 +85,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($userMappings as $mapping)
-                                @php $target = $mapping->referenceable; @endphp
+                            @foreach ($userMappings as $um)
+                                @php
+                                    $target = $um->user;
+                                    $updateRoute = $um->source === 'alias'
+                                        ? route('admin.toggl.mappings.user-alias.update', $um->id)
+                                        : route('admin.toggl.mappings.update', $um->id);
+                                    $deleteRoute = $um->source === 'alias'
+                                        ? route('admin.toggl.mappings.user-alias.delete', $um->id)
+                                        : route('admin.toggl.mappings.delete', $um->id);
+                                @endphp
                                 <tr>
-                                    <td class="font-mono text-xs">{{ $mapping->external_id }}</td>
+                                    <td class="font-mono text-xs">{{ $um->email }}</td>
                                     <td>
                                         @if ($target === null)
                                             <span class="text-error text-xs">{{ __('verwaist (Ziel gelöscht)') }}</span>
@@ -100,8 +107,7 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center justify-end gap-2">
-                                            <form method="POST" action="{{ route('admin.toggl.mappings.update', $mapping->id) }}"
-                                                  class="flex items-center gap-2">
+                                            <form method="POST" action="{{ $updateRoute }}" class="flex items-center gap-2">
                                                 @csrf
                                                 <select name="target_id" required class="select select-sm select-bordered">
                                                     <option value="">{{ __('— wählen —') }}</option>
@@ -111,7 +117,7 @@
                                                 </select>
                                                 <button type="submit" class="btn btn-sm">{{ __('Umbiegen') }}</button>
                                             </form>
-                                            <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->id) }}"
+                                            <form method="POST" action="{{ $deleteRoute }}"
                                                   data-confirm-dialog
                                                   data-confirm-message="{{ __('Diese Zuordnung entfernen? Künftige Importe matchen dann nicht mehr automatisch.') }}">
                                                 @csrf

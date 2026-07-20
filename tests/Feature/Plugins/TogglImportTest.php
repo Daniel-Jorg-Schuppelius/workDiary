@@ -631,6 +631,50 @@ class TogglImportTest extends TestCase {
             ->assertSee('privat@gmx.de');
     }
 
+    public function test_second_email_for_same_user_is_stored_as_alias_and_listed(): void {
+        $this->enableToggl();
+        FakePluginHttp::fake([]);
+        $mitarbeiter = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'firma@workdiary.local',
+        ]);
+
+        // Erste Adresse → Primär-Referenz, zweite → Alias (extref_unique).
+        foreach (['privat@gmx.de', 'zweit@gmx.de'] as $email) {
+            $this->actingAs($this->admin)
+                ->post(route('admin.toggl.mappings.store-user'), [
+                    'toggl_email' => $email,
+                    'user' => $mitarbeiter->sqid,
+                ])
+                ->assertRedirect();
+        }
+
+        $this->assertDatabaseHas('external_reference_aliases', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_USER_EMAIL,
+            'external_id' => 'zweit@gmx.de',
+            'referenceable_id' => $mitarbeiter->id,
+        ]);
+
+        // Beide Adressen lösen auf denselben Benutzer auf und erscheinen in der Tabelle.
+        $this->assertSame($mitarbeiter->id, $this->service()->resolveImportUser($this->organization, 'zweit@gmx.de'));
+        $this->actingAs($this->admin)
+            ->get(route('admin.toggl.mappings.index'))
+            ->assertOk()
+            ->assertSee('privat@gmx.de')
+            ->assertSee('zweit@gmx.de');
+
+        // Alias-Zeile lässt sich entfernen.
+        $aliasId = (int) \App\Models\ExternalReferenceAlias::query()
+            ->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL)
+            ->where('external_id', 'zweit@gmx.de')
+            ->value('id');
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.user-alias.delete', $aliasId))
+            ->assertRedirect();
+        $this->assertDatabaseMissing('external_reference_aliases', ['id' => $aliasId]);
+    }
+
     public function test_repair_command_reassigns_users_from_csv(): void {
         $config = $this->enableToggl();
         $this->customerWithProject('Acme', 'Website');

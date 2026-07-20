@@ -24,6 +24,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::get('admin/toggl/mappings', [TogglController::class, 'mappings'])->name('admin.toggl.mappings.index');
     // Statische Route VOR {reference}, sonst schluckt der Parameter „user".
     Route::post('admin/toggl/mappings/user', [TogglController::class, 'storeUserMapping'])->name('admin.toggl.mappings.store-user');
+    Route::post('admin/toggl/mappings/user-alias/{alias}', [TogglController::class, 'updateUserAliasMapping'])->name('admin.toggl.mappings.user-alias.update');
+    Route::post('admin/toggl/mappings/user-alias/{alias}/delete', [TogglController::class, 'deleteUserAliasMapping'])->name('admin.toggl.mappings.user-alias.delete');
     Route::post('admin/toggl/mappings/{reference}', [TogglController::class, 'updateMapping'])->name('admin.toggl.mappings.update');
     Route::post('admin/toggl/mappings/{reference}/delete', [TogglController::class, 'deleteMapping'])->name('admin.toggl.mappings.delete');
 

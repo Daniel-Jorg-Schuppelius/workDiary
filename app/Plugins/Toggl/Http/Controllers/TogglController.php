@@ -95,6 +95,26 @@ class TogglController extends Controller {
 
         $mappings = $organization instanceof Organization ? $this->service->mappings($organization) : collect();
 
+        // Benutzer-Zuordnungen vereint aus Primär-Referenzen UND Aliassen —
+        // Zweitadressen desselben Benutzers liegen wegen extref_unique im Alias.
+        $userMappings = collect();
+        if ($organization instanceof Organization) {
+            foreach ($mappings->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL) as $ref) {
+                $userMappings->push((object) ['id' => (int) $ref->id, 'source' => 'ref', 'email' => (string) $ref->external_id, 'user' => $ref->referenceable]);
+            }
+            $aliasRows = \App\Models\ExternalReferenceAlias::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('plugin_id', TogglPlugin::ID)
+                ->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL)
+                ->with('referenceable')
+                ->get();
+            foreach ($aliasRows as $alias) {
+                $userMappings->push((object) ['id' => (int) $alias->id, 'source' => 'alias', 'email' => (string) $alias->external_id, 'user' => $alias->referenceable]);
+            }
+            $userMappings = $userMappings->sortBy('email')->values();
+        }
+
         // Dropdown nur mit UNaufgelösten Toggl-Adressen: Bereits zugeordnete
         // (oder direkt per E-Mail matchende) verschwinden aus der Auswahl.
         $togglEmails = [];
@@ -132,6 +152,7 @@ class TogglController extends Controller {
             'users' => $this->options->userSelectOptions(),
             'togglEmails' => $togglEmails,
             'allTogglEmailsMapped' => $allMapped,
+            'userMappings' => $userMappings,
         ]);
     }
 
@@ -196,6 +217,42 @@ class TogglController extends Controller {
         $this->service->rememberUserEmail($organization, (string) $data['toggl_email'], $user);
 
         return back()->with('status', (string) __('Benutzer-Zuordnung gespeichert.'));
+    }
+
+    /** Zeigt eine Alias-Benutzer-Zuordnung (Zweitadresse) auf einen anderen Benutzer um. */
+    public function updateUserAliasMapping(Request $request, int $alias): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+        $row = $this->findUserAlias($organization, $alias);
+
+        $user = \App\Models\User::query()->whereKey($this->options->decodeId(\App\Models\User::class, $request->input('target_id')))->firstOrFail();
+        abort_unless((int) $user->organization_id === (int) $organization->id, 403);
+
+        $row->update([
+            'referenceable_type' => $user->getMorphClass(),
+            'referenceable_id' => $user->getKey(),
+        ]);
+
+        return back()->with('status', (string) __('Zuordnung aktualisiert.'));
+    }
+
+    /** Löscht eine Alias-Benutzer-Zuordnung (Zweitadresse). */
+    public function deleteUserAliasMapping(int $alias): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+        $this->findUserAlias($organization, $alias)->delete();
+
+        return back()->with('status', (string) __('Zuordnung entfernt.'));
+    }
+
+    private function findUserAlias(Organization $organization, int $alias): \App\Models\ExternalReferenceAlias {
+        return \App\Models\ExternalReferenceAlias::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', TogglPlugin::ID)
+            ->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL)
+            ->whereKey($alias)
+            ->firstOrFail();
     }
 
     /** Zeigt eine gemerkte Zuordnung auf einen anderen Kunden/ein anderes Projekt um. */
