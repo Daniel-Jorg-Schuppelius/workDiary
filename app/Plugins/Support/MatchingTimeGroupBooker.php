@@ -44,7 +44,7 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
             // mit vorschlagen — sonst kollidiert die Vorauswahl mit der
             // „Kein Fremdkunde = nur Firmen-Projekte"-Regel.
             if ($foreign === null && $project?->foreign_customer_id !== null) {
-                $foreign = $project?->foreignCustomer;
+                $foreign = $project->foreignCustomer;
                 $customer ??= $foreign?->customer;
             }
 

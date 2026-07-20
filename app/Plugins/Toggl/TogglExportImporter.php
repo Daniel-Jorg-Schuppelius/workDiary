@@ -533,9 +533,24 @@ class TogglExportImporter {
 
         $byKey = ExternalReference::query()->withoutGlobalScopes()->where($key)->first();
         if ($byKey !== null) {
-            $byKey->fill($target + ['synced_at' => now()])->save();
+            // Umhängen auf ein Ziel, das schon einen anderen Schlüssel trägt,
+            // würde extref_unique verletzen → Schlüssel wird unten zum Alias.
+            $occupied = ExternalReference::query()
+                ->withoutGlobalScopes()
+                ->where('plugin_id', TogglPlugin::ID)
+                ->where('external_type', $type)
+                ->where('referenceable_type', $target['referenceable_type'])
+                ->where('referenceable_id', $target['referenceable_id'])
+                ->where('id', '!=', $byKey->id)
+                ->exists();
 
-            return;
+            if (! $occupied) {
+                $byKey->fill($target + ['synced_at' => now()])->save();
+
+                return;
+            }
+
+            $byKey->delete();
         }
 
         // extref_unique erlaubt nur eine Primär-Referenz je Plugin/Typ/Entität.

@@ -588,6 +588,60 @@ class TogglImportTest extends TestCase {
         ]);
     }
 
+    public function test_booking_second_group_into_same_project_creates_alias_instead_of_crashing(): void {
+        $this->enableToggl();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Firma X']);
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Sammelprojekt',
+            'is_default' => false,
+        ]);
+
+        // Erste Gruppe → Projekt: Primär-Referenz entsteht.
+        $this->seedInboxEntry('Firma X', 'Projekt A', 'csv:a1', '2026-05-26 09:00:00', '2026-05-26 10:00:00');
+        $this->actingAs($this->admin)->post(route('admin.integration.inbox.group.book'), [
+            'plugin' => TogglPlugin::ID,
+            'group_key' => $this->groupKey('Firma X', 'Projekt A'),
+            'customer_mode' => 'existing',
+            'customer' => $customer->sqid,
+            'project_mode' => 'existing',
+            'project' => $project->sqid,
+        ])->assertRedirect();
+
+        // Zweite Gruppe (anderer Schlüssel) → DASSELBE Projekt: verletzte früher
+        // extref_unique (Duplicate 1062), jetzt Alias-Weiterleitung.
+        $this->seedInboxEntry('Firma X', 'Projekt B', 'csv:b1', '2026-05-27 09:00:00', '2026-05-27 10:00:00');
+        $this->actingAs($this->admin)->post(route('admin.integration.inbox.group.book'), [
+            'plugin' => TogglPlugin::ID,
+            'group_key' => $this->groupKey('Firma X', 'Projekt B'),
+            'customer_mode' => 'existing',
+            'customer' => $customer->sqid,
+            'project_mode' => 'existing',
+            'project' => $project->sqid,
+        ])->assertRedirect()->assertSessionHas('success');
+
+        $this->assertSame(2, TimeEntry::query()->where('project_id', $project->id)->count());
+        $this->assertDatabaseHas('external_reference_aliases', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_PROJECT,
+            'external_id' => $this->groupKey('Firma X', 'Projekt B'),
+            'referenceable_id' => $project->id,
+        ]);
+
+        // Folge-Import matcht den Alias-Schlüssel automatisch aufs Projekt.
+        $entry = new ImportedTimeEntry(
+            entryKey: 'match:alias',
+            clientName: 'Firma X',
+            projectName: 'Projekt B',
+            activity: null,
+            description: null,
+            startedAt: CarbonImmutable::parse('2026-05-28 09:00:00'),
+            endedAt: CarbonImmutable::parse('2026-05-28 10:00:00'),
+        );
+        $this->assertSame($project->id, $this->service()->matchProject($this->organization, $entry)?->id);
+    }
+
     public function test_book_group_ignores_foreign_customer_equal_to_customer_name(): void {
         $this->enableToggl();
         $customer = Customer::factory()->create([

@@ -493,19 +493,43 @@ abstract class MatchingTimeImportService {
     }
 
     protected function rememberReference(Organization $organization, string $type, string $externalId, Model $referenceable): void {
-        ExternalReference::query()->updateOrCreate(
-            [
-                'organization_id' => $organization->id,
-                'plugin_id' => $this->pluginId(),
-                'external_type' => $type,
-                'external_id' => $externalId,
-            ],
-            [
-                'referenceable_type' => $referenceable->getMorphClass(),
-                'referenceable_id' => $referenceable->getKey(),
-                'synced_at' => now(),
-            ],
-        );
+        $key = [
+            'organization_id' => $organization->id,
+            'plugin_id' => $this->pluginId(),
+            'external_type' => $type,
+            'external_id' => $externalId,
+        ];
+        $target = [
+            'referenceable_type' => $referenceable->getMorphClass(),
+            'referenceable_id' => $referenceable->getKey(),
+        ];
+
+        // extref_unique erlaubt je Plugin/Typ nur EINE Primär-Referenz pro
+        // Zielmodell. Zeigt bereits ein anderer Schlüssel auf das Ziel (mehrere
+        // Toggl-Projekte → ein Projekt, Merge, Umbenennung), wird dieser
+        // Schlüssel als Alias gemerkt statt zu kollidieren.
+        $targetTaken = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', $this->pluginId())
+            ->where('external_type', $type)
+            ->where('referenceable_type', $target['referenceable_type'])
+            ->where('referenceable_id', $target['referenceable_id'])
+            ->where('external_id', '!=', $externalId)
+            ->exists();
+
+        if ($targetTaken) {
+            // Veraltete Primär-Referenz DIESES Schlüssels (anderes Ziel) entfernen,
+            // den Schlüssel als Alias aufs Ziel weiterleiten.
+            ExternalReference::query()->withoutGlobalScopes()->where($key)->delete();
+            ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate($key, $target);
+
+            return;
+        }
+
+        ExternalReference::query()->updateOrCreate($key, $target + ['synced_at' => now()]);
+        // Ein früherer Alias desselben Schlüssels ist durch die Primär-Referenz überholt.
+        ExternalReferenceAlias::query()->withoutGlobalScopes()->where($key)->delete();
     }
 
     /** Stabiler Gruppen-/Referenz-Schlüssel (Kunde|Projekt[|Tätigkeit], case-insensitiv). */
