@@ -158,8 +158,12 @@
                                 <input type="radio" name="project_mode" value="existing" class="radio radio-sm" checked>
                                 <select name="project" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
-                                    @foreach ($projects as $p)
-                                        <option value="{{ $p['sqid'] }}" @selected(($g['suggested_project_sqid'] ?? null) === $p['sqid'])>{{ $p['name'] }}</option>
+                                    @foreach ($projects as $customerLabel => $options)
+                                        <optgroup label="{{ $customerLabel }}">
+                                            @foreach ($options as $p)
+                                                <option value="{{ $p['sqid'] }}" @selected(($g['suggested_project_sqid'] ?? null) === $p['sqid'])>{{ $p['name'] }}</option>
+                                            @endforeach
+                                        </optgroup>
                                     @endforeach
                                 </select>
                             </label>

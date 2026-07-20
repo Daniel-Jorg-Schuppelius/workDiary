@@ -217,24 +217,38 @@ class IntegrationInboxController extends Controller {
 
     /**
      * Bestehende Projekte der Organisation als Auswahloptionen für die
-     * Gruppen-Buchung — inkl. kundenloser (interner) Projekte, damit unter „Intern"
-     * ein vorhandenes Firmenprojekt gewählt werden kann (customer_id = null).
+     * Gruppen-Buchung, gruppiert nach Kunde (Optgroup-Anzeige) — inkl.
+     * kundenloser (interner) Projekte, damit unter „Intern" ein vorhandenes
+     * Firmenprojekt gewählt werden kann (customer_id = null). Werte sind opake
+     * Sqids (nicht der Slug-Route-Key), damit Auswahl und Vorschlags-Preselect
+     * dieselbe Kennung sprechen.
      *
-     * @return list<array{sqid: string, customer_id: ?int, name: string}>
+     * @return array<string, list<array{sqid: string, name: string}>>  Kunden-Label => Projekte
      */
     private function projectOptions(User $user): array {
-        $rows = Project::query()
+        $projects = Project::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $user->organization_id)
             ->orderBy('name')
-            ->get(['id', 'name', 'customer_id'])
-            ->map(fn(Project $p): array => [
-                'sqid' => $p->getRouteKey(),
-                'customer_id' => $p->customer_id !== null ? (int) $p->customer_id : null,
-                'name' => (string) $p->name,
-            ])->all();
+            ->get(['id', 'name', 'customer_id']);
 
-        return array_values($rows);
+        $companies = Customer::query()
+            ->withoutGlobalScopes()
+            ->whereIn('id', $projects->pluck('customer_id')->filter()->unique()->all())
+            ->get(['id', 'name', 'company'])
+            ->keyBy('id');
+
+        $out = [];
+        foreach ($projects as $project) {
+            $company = $project->customer_id !== null ? $companies->get($project->customer_id) : null;
+            $label = $company !== null
+                ? (string) ($company->company ?: $company->name)
+                : (string) __('Intern (ohne Kunde)');
+            $out[$label][] = ['sqid' => (string) $project->sqid, 'name' => (string) $project->name];
+        }
+        ksort($out);
+
+        return $out;
     }
 
     /**
