@@ -144,29 +144,34 @@
             @if ($foreignProjectGroups->isEmpty())
                 @include('customers._project_list_items', ['items' => $projects])
             @else
-                <div class="space-y-4">
+                {{-- Gruppen zugeklappt: erst der Klick auf die Überschrift zeigt
+                     die Projekte — bei vielen Endkunden bleibt die Karte kompakt. --}}
+                <div class="space-y-1">
                     @if ($directProjects->isNotEmpty())
-                        <div>
-                            <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+                        <details>
+                            <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
                                 {{ __('Direkt bei der Firma') }}
                                 <span class="font-normal">({{ $directProjects->count() }})</span>
-                            </h3>
-                            @include('customers._project_list_items', ['items' => $directProjects])
-                        </div>
+                            </summary>
+                            <div class="pb-2 pl-1">
+                                @include('customers._project_list_items', ['items' => $directProjects])
+                            </div>
+                        </details>
                     @endif
                     @foreach ($foreignProjectGroups as $group)
                         @php $groupForeign = $group->first()->foreignCustomer; @endphp
-                        <div>
-                            <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
-                                @if ($groupForeign)
-                                    <a class="link link-hover" href="{{ route('foreign-customers.show', $groupForeign) }}">{{ $groupForeign->name }}</a>
-                                @else
-                                    —
-                                @endif
+                        <details>
+                            <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                                {{ $groupForeign?->name ?? '—' }}
                                 <span class="font-normal">({{ $group->count() }})</span>
-                            </h3>
-                            @include('customers._project_list_items', ['items' => $group->values()])
-                        </div>
+                            </summary>
+                            <div class="pb-2 pl-1">
+                                @if ($groupForeign)
+                                    <a class="link link-hover text-xs" href="{{ route('foreign-customers.show', $groupForeign) }}">{{ __('Zum Fremdkunden') }} →</a>
+                                @endif
+                                @include('customers._project_list_items', ['items' => $group->values()])
+                            </div>
+                        </details>
                     @endforeach
                 </div>
             @endif
