@@ -132,20 +132,44 @@
                            :title="__('Keine Projekte')"
                            :message="__('Diesem Kunden sind noch keine Projekte zugeordnet.')" />
         @else
-            <ul class="divide-y divide-base-300">
-                @foreach ($projects as $project)
-                    <li class="flex items-center justify-between py-2">
-                        <div class="flex items-center gap-2 min-w-0">
-                            <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $project->color ?: '#94a3b8' }}"></span>
-                            <a class="link link-hover truncate" href="{{ route('projects.show', $project) }}">{{ $project->name }}</a>
-                            @if ($project->is_default)
-                                <x-icon name="star" class="text-primary" :filled="true" :title="__('Standardprojekt')" />
-                            @endif
+            @php
+                // Nach Endkunde (Fremdkunde) gruppieren: erst Projekte direkt bei
+                // der Firma, dann je Endkunde alphabetisch — nur wenn es überhaupt
+                // Endkunden-Projekte gibt, sonst flache Liste wie bisher.
+                $directProjects = $projects->filter(fn($p) => $p->foreign_customer_id === null)->values();
+                $foreignProjectGroups = $projects->filter(fn($p) => $p->foreign_customer_id !== null)
+                    ->groupBy('foreign_customer_id')
+                    ->sortBy(fn($group) => mb_strtolower((string) $group->first()->foreignCustomer?->name));
+            @endphp
+            @if ($foreignProjectGroups->isEmpty())
+                @include('customers._project_list_items', ['items' => $projects])
+            @else
+                <div class="space-y-4">
+                    @if ($directProjects->isNotEmpty())
+                        <div>
+                            <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+                                {{ __('Direkt bei der Firma') }}
+                                <span class="font-normal">({{ $directProjects->count() }})</span>
+                            </h3>
+                            @include('customers._project_list_items', ['items' => $directProjects])
                         </div>
-                        <x-status-badge :tone="$project->statusTone()">{{ $project->statusLabel() }}</x-status-badge>
-                    </li>
-                @endforeach
-            </ul>
+                    @endif
+                    @foreach ($foreignProjectGroups as $group)
+                        @php $groupForeign = $group->first()->foreignCustomer; @endphp
+                        <div>
+                            <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+                                @if ($groupForeign)
+                                    <a class="link link-hover" href="{{ route('foreign-customers.show', $groupForeign) }}">{{ $groupForeign->name }}</a>
+                                @else
+                                    —
+                                @endif
+                                <span class="font-normal">({{ $group->count() }})</span>
+                            </h3>
+                            @include('customers._project_list_items', ['items' => $group->values()])
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         @endif
     </x-card>
 
@@ -190,11 +214,12 @@
                     <x-icon name="analytics" class="text-base-content/60" /> {{ __('Auswertung') }}
                 </h2>
                 <div role="tablist" class="tabs tabs-box tabs-sm">
-                    <button role="tab" class="tab" :class="tabClass('month')" @click="setTab('month')">{{ __('Aktueller Monat') }}</button>
+                    {{-- Zeitraum-Tab folgt dem global gewählten Header-Zeitraum. --}}
+                    <button role="tab" class="tab" :class="tabClass('month')" @click="setTab('month')">{{ $statsRangeLabel }}</button>
                     <button role="tab" class="tab" :class="tabClass('total')" @click="setTab('total')">{{ __('Gesamt') }}</button>
                 </div>
             </div>
-            @foreach (['month' => $statsMonth, 'total' => $statsTotal] as $key => $set)
+            @foreach (['month' => $statsRange, 'total' => $statsTotal] as $key => $set)
                 <div x-show="isTab('{{ $key }}')" x-cloak>
                     <div class="mb-3 grid grid-cols-2 gap-3 text-sm">
                         <div class="rounded-box bg-base-200 p-3">
@@ -222,6 +247,9 @@
                                             <x-icon name="star" class="text-primary align-middle" :filled="true" size="1rem" />
                                         @endif
                                         {{ $row['name'] }}
+                                        @if (! empty($row['foreign_customer']))
+                                            <span class="text-base-content/50">— {{ $row['foreign_customer'] }}</span>
+                                        @endif
                                     </td>
                                     <td class="text-right" data-sort-value="{{ (float) $row['minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['minutes'] / 60, 2, withThousandsSeparator: true) }}</td>
                                     <td class="text-right" data-sort-value="{{ (float) $row['billable_minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['billable_minutes'] / 60, 2, withThousandsSeparator: true) }}</td>

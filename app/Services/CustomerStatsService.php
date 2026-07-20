@@ -11,7 +11,7 @@
 namespace App\Services;
 
 use App\Models\{Customer, TimeEntry};
-use Carbon\{CarbonImmutable, CarbonInterface};
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -24,7 +24,7 @@ class CustomerStatsService {
      * @return array{
      *     total_minutes: int,
      *     billable_minutes: int,
-     *     by_project: array<int, array{project_id: int, name: string, is_default: bool, minutes: int, billable_minutes: int}>
+     *     by_project: array<int, array{project_id: int, name: string, is_default: bool, foreign_customer: ?string, minutes: int, billable_minutes: int}>
      * }
      */
     public function forCustomer(Customer $customer, ?CarbonInterface $from = null, ?CarbonInterface $to = null): array {
@@ -59,12 +59,14 @@ class CustomerStatsService {
         $byProject = [];
         $total = 0;
         $billable = 0;
-        foreach ($customer->projects()->orderByDesc('is_default')->orderBy('name')->get(['id', 'name', 'is_default']) as $project) {
+        foreach ($customer->projects()->with('foreignCustomer:id,name')->orderByDesc('is_default')->orderBy('name')->get(['id', 'name', 'is_default', 'foreign_customer_id']) as $project) {
             $stats = $byProjectMins[$project->id] ?? ['minutes' => 0, 'billable_minutes' => 0];
             $byProject[] = [
                 'project_id' => (int) $project->id,
                 'name' => (string) $project->name,
                 'is_default' => (bool) $project->is_default,
+                // Endkunde zur Unterscheidung gleichnamiger Projekte (Toggl-Import).
+                'foreign_customer' => $project->foreignCustomer?->name,
                 'minutes' => $stats['minutes'],
                 'billable_minutes' => $stats['billable_minutes'],
             ];
@@ -77,9 +79,5 @@ class CustomerStatsService {
             'billable_minutes' => $billable,
             'by_project' => $byProject,
         ];
-    }
-
-    public function currentMonthRange(): CarbonImmutable {
-        return CarbonImmutable::now()->startOfMonth();
     }
 }

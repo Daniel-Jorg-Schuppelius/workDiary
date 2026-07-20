@@ -70,6 +70,7 @@ class CustomerController extends Controller {
         $defaultProject = $customer->defaultProjectOrCreate();
 
         $projects = $customer->projects()
+            ->with('foreignCustomer:id,name')
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
@@ -162,7 +163,8 @@ class CustomerController extends Controller {
             'projects' => $projects,
             'defaultProject' => $defaultProject,
             'statsTotal' => $stats->forCustomer($customer),
-            'statsMonth' => $stats->forCustomer($customer, $stats->currentMonthRange()),
+            'statsRange' => $stats->forCustomer($customer, ...$this->globalDateRangeBounds()),
+            'statsRangeLabel' => $this->globalDateRange()['label'],
             'totalMinutes' => $totalMinutes,
             'totalRate' => $totalRate,
             'lexofficePlugin' => $lexoffice,
