@@ -10,6 +10,30 @@
 
 // AI assistance (feature 025, MVP-400/401).
 return [
+    'covering' => [
+        'suggest_mail' => 'Suggest covering text (AI)',
+        'suggest_dunning' => 'Suggest dunning text (AI)',
+        'draft_hint' => 'AI draft — please review and adjust if needed.',
+        'translate_to' => 'Translate (AI)',
+        'translate_none' => 'No translation',
+        'translated_hint' => 'Translation draft inserted — please review and submit again.',
+        'translate_unavailable' => 'The translation capability is not enabled.',
+    ],
+    'usage' => [
+        'title' => 'AI usage',
+        'subtitle' => 'Monthly usage per family, budget utilisation, and the suggestion funnel per capability.',
+        'of_limit' => 'of :limit (:percent %)',
+        'unlimited' => 'No monthly budget set',
+        'months' => 'Monthly history (12 months)',
+        'funnel' => 'Suggestions per capability',
+        'funnel_empty' => 'No text suggestions recorded yet.',
+        'proposed' => 'Total',
+        'adopted' => 'Adopted',
+        'rejected' => 'Rejected',
+        'adoption_rate' => 'Adoption rate',
+        'cached' => 'From cache',
+        'fallbacks' => 'Fallbacks',
+    ],
     'title' => [
         'connections' => 'AI services',
         'connections_subtitle' => 'Provider connections, capability routing and data flow per organization.',
