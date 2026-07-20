@@ -223,7 +223,7 @@
                                     @foreach ($projects as $pGroup)
                                         <optgroup label="{{ $pGroup['label'] }}" data-customer="{{ $pGroup['customer_sqid'] }}">
                                             @foreach ($pGroup['projects'] as $p)
-                                                <option value="{{ $p['sqid'] }}" @selected($suggestedProject === $p['sqid'])>{{ $p['name'] }}</option>
+                                                <option value="{{ $p['sqid'] }}" data-foreign="{{ $p['foreign_sqid'] }}" @selected($suggestedProject === $p['sqid'])>{{ $p['name'] }}@if ($p['foreign_name'] !== null) — {{ $p['foreign_name'] }}@endif</option>
                                             @endforeach
                                         </optgroup>
                                     @endforeach

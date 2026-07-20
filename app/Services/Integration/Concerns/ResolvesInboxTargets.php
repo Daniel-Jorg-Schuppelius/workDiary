@@ -113,6 +113,10 @@ trait ResolvesInboxTargets {
         abort_unless((int) $project->customer_id === (int) $customer->id, 422, __('Das gewählte Projekt gehört nicht zum gewählten Kunden.'));
         if ($foreignCustomer !== null) {
             abort_unless((int) $project->foreign_customer_id === (int) $foreignCustomer->id, 422, __('Das gewählte Projekt gehört nicht zum gewählten Fremdkunden.'));
+        } else {
+            // „Kein Fremdkunde" heißt: Projekt hängt direkt an der Firma —
+            // endkunden-gebundene Projekte brauchen den passenden Fremdkunden.
+            abort_unless($project->foreign_customer_id === null, 422, __('Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.'));
         }
 
         return $project;

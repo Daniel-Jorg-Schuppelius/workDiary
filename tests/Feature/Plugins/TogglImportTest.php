@@ -690,6 +690,41 @@ class TogglImportTest extends TestCase {
             ->assertStatus(422);
     }
 
+    public function test_book_group_without_foreign_rejects_foreign_owned_project(): void {
+        $this->enableToggl();
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma X',
+        ]);
+        $lds = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'LDS',
+        ]);
+        $foreignProject = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $lds->id,
+            'name' => 'Clients',
+            'is_default' => false,
+        ]);
+
+        $this->seedInboxEntry('Firma X', 'Clients', 'csv:fc5', '2026-05-26 09:00:00', '2026-05-26 09:30:00');
+
+        // „Kein Fremdkunde" + endkunden-gebundenes Projekt → abgelehnt.
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('Firma X', 'Clients'),
+                'customer_mode' => 'existing',
+                'customer' => $customer->sqid,
+                'foreign_mode' => 'none',
+                'project_mode' => 'existing',
+                'project' => $foreignProject->sqid,
+            ])
+            ->assertStatus(422);
+    }
+
     public function test_book_group_rejects_foreign_customer_of_other_customer(): void {
         $this->enableToggl();
         $customerA = Customer::factory()->create([

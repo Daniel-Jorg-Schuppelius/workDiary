@@ -390,28 +390,45 @@ const applyInboxCustomerFilter = (form) => {
         mode === "new" ? "__none__" :
         mode === "existing" && customer !== "" ? customer : null;
 
+    // Gewählter Fremdkunde (Endkunde) schränkt die Projektauswahl zusätzlich
+    // ein: „neu" → keine Bestandsprojekte (gehören nie dem neuen Endkunden),
+    // „bestehend" mit Auswahl → nur dessen Projekte, sonst keine Einschränkung.
+    const foreignMode = form.querySelector('input[name="foreign_mode"]:checked')?.value;
+    const foreignSel = form.querySelector('select[name="foreign_customer"]')?.value || "";
+    const wantedForeign =
+        wanted === null || wanted === "" || wanted === "__none__" ? null :
+        foreignMode === "new" ? "__none__" :
+        foreignMode === "existing" && foreignSel !== "" ? foreignSel :
+        foreignMode === "none" ? "" : null;
+
     ["project", "foreign_customer"].forEach((name) => {
         const sel = form.querySelector(`select[name="${name}"]`);
         if (!sel) return;
         let cleared = false;
         sel.querySelectorAll("optgroup[data-customer]").forEach((group) => {
-            const show = wanted === null || group.dataset.customer === wanted;
-            group.hidden = !show;
+            const groupShow = wanted === null || group.dataset.customer === wanted;
+            let anyVisible = false;
             group.querySelectorAll("option").forEach((opt) => {
+                let show = groupShow;
+                if (show && name === "project" && wantedForeign !== null) {
+                    show = (opt.dataset.foreign || "") === wantedForeign;
+                }
                 opt.hidden = !show;
                 opt.disabled = !show;
+                if (show) anyVisible = true;
                 if (!show && opt.selected) {
                     opt.selected = false;
                     cleared = true;
                 }
             });
+            group.hidden = !anyVisible;
         });
         if (cleared) sel.value = "";
 
         // Fremdkunden-Fieldset: sichtbar machen, dass der gewählte Kunde
         // Endkunden hat (Hinweis mit Anzahl); ohne Treffer ist „bestehend" sinnlos.
         if (name === "foreign_customer") {
-            const visible = sel.querySelectorAll("optgroup[data-customer]:not([hidden]) option").length;
+            const visible = sel.querySelectorAll("optgroup[data-customer]:not([hidden]) option:not([hidden])").length;
             const fieldset = sel.closest("fieldset");
             const hint = fieldset?.querySelector("[data-foreign-hint]");
             const existingRadio = fieldset?.querySelector('input[name="foreign_mode"][value="existing"]');
@@ -431,7 +448,7 @@ const applyInboxCustomerFilter = (form) => {
     });
 };
 document.addEventListener("change", (e) => {
-    const trigger = e.target.closest('select[name="customer"], input[name="customer_mode"]');
+    const trigger = e.target.closest('select[name="customer"], select[name="foreign_customer"], input[name="customer_mode"], input[name="foreign_mode"]');
     const form = trigger?.closest("form[data-customer-filter]");
     if (form) applyInboxCustomerFilter(form);
 });

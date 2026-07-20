@@ -8837,5 +8837,6 @@
     "Diesem Fremdkunden sind noch keine Projekte zugeordnet.": "A questo cliente esterno non è ancora assegnato alcun progetto.",
     "Artikel (Bezugsquellen)": "Articoli (fonti di approvvigionamento)",
     "Bestellungen": "Ordini d’acquisto",
-    "Offene Bestellungen": "Ordini d’acquisto aperti"
+    "Offene Bestellungen": "Ordini d’acquisto aperti",
+    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Il progetto selezionato appartiene a un cliente finale — selezionare il cliente esterno corrispondente."
 }

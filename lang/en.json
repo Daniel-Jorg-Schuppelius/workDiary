@@ -8837,5 +8837,6 @@
     "Diesem Fremdkunden sind noch keine Projekte zugeordnet.": "No projects are assigned to this external customer yet.",
     "Artikel (Bezugsquellen)": "Articles (supply sources)",
     "Bestellungen": "Purchase orders",
-    "Offene Bestellungen": "Open purchase orders"
+    "Offene Bestellungen": "Open purchase orders",
+    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "The selected project belongs to an end customer — please select the matching external customer."
 }

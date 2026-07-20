@@ -8837,5 +8837,6 @@
     "Diesem Fremdkunden sind noch keine Projekte zugeordnet.": "Aucun projet n’est encore associé à ce client tiers.",
     "Artikel (Bezugsquellen)": "Articles (sources d’approvisionnement)",
     "Bestellungen": "Commandes",
-    "Offene Bestellungen": "Commandes ouvertes"
+    "Offene Bestellungen": "Commandes ouvertes",
+    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Le projet sélectionné appartient à un client final — veuillez sélectionner le client tiers correspondant."
 }

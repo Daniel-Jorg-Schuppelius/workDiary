@@ -8837,5 +8837,6 @@
     "Diesem Fremdkunden sind noch keine Projekte zugeordnet.": "Este cliente externo aún no tiene proyectos asignados.",
     "Artikel (Bezugsquellen)": "Artículos (fuentes de suministro)",
     "Bestellungen": "Pedidos",
-    "Offene Bestellungen": "Pedidos abiertos"
+    "Offene Bestellungen": "Pedidos abiertos",
+    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "El proyecto seleccionado pertenece a un cliente final; seleccione el cliente externo correspondiente."
 }

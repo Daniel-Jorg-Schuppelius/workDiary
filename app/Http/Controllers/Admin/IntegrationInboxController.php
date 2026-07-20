@@ -224,14 +224,15 @@ class IntegrationInboxController extends Controller {
      * Sqids (nicht der Slug-Route-Key), damit Auswahl und Vorschlags-Preselect
      * dieselbe Kennung sprechen.
      *
-     * @return list<array{customer_sqid: string, label: string, projects: list<array{sqid: string, name: string}>}>
+     * @return list<array{customer_sqid: string, label: string, projects: list<array{sqid: string, name: string, foreign_sqid: string, foreign_name: ?string}>}>
      */
     private function projectOptions(User $user): array {
         $projects = Project::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $user->organization_id)
+            ->with('foreignCustomer:id,name')
             ->orderBy('name')
-            ->get(['id', 'name', 'customer_id']);
+            ->get(['id', 'name', 'customer_id', 'foreign_customer_id']);
 
         $companies = Customer::query()
             ->withoutGlobalScopes()
@@ -250,7 +251,13 @@ class IntegrationInboxController extends Controller {
                     : (string) __('Intern (ohne Kunde)'),
                 'projects' => [],
             ];
-            $out[$key]['projects'][] = ['sqid' => (string) $project->sqid, 'name' => (string) $project->name];
+            $out[$key]['projects'][] = [
+                'sqid' => (string) $project->sqid,
+                'name' => (string) $project->name,
+                // Endkunde für Anzeige + clientseitige Fremdkunden-Filterung.
+                'foreign_sqid' => $project->foreignCustomer !== null ? (string) $project->foreignCustomer->sqid : '',
+                'foreign_name' => $project->foreignCustomer?->name,
+            ];
         }
         usort($out, fn(array $a, array $b): int => strcasecmp($a['label'], $b['label']));
 
