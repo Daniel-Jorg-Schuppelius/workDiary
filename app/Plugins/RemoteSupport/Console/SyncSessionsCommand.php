@@ -54,7 +54,7 @@ class SyncSessionsCommand extends Command {
             $this->info("Fernwartungs-Sync für Organisation #{$org->id} ({$org->name}) [{$from->toDateString()} – {$to->toDateString()}]...");
             try {
                 $result = $service->import($org, $config, $from, $to);
-                $this->line("  created: {$result['created']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}");
+                $this->line("  created: {$result['created']}, linked: {$result['linked']}, skipped: {$result['skipped']}, unmatched: {$result['unmatched']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
             }

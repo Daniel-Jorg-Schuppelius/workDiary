@@ -33,13 +33,22 @@ trait PersistsTimeImportInbox {
     }
 
     protected function alreadyImported(Organization $organization, string $entryKey): bool {
+        // Aliasse zählen mit: Zweit-Sessions am selben Zeiteintrag liegen dort
+        // (extref_unique erlaubt nur eine Primär-Referenz je Ziel).
         return ExternalReference::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', $this->pluginId())
             ->where('external_type', $this->entryExternalType())
             ->where('external_id', $entryKey)
-            ->exists();
+            ->exists()
+            || \App\Models\ExternalReferenceAlias::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('plugin_id', $this->pluginId())
+                ->where('external_type', $this->entryExternalType())
+                ->where('external_id', $entryKey)
+                ->exists();
     }
 
     /**

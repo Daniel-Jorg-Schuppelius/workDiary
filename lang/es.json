@@ -754,7 +754,13 @@
     "CSV-Import": "Importación CSV",
     "CSV-Import: :c angelegt, :u aktualisiert, :s übersprungen.": "Importación CSV: :c creados, :u actualizados, :s omitidos.",
     "Capabilities": "Capacidades",
+    "Aufgaben-Sync": "Sincronización de tareas",
+    "Backupziel": "Destino de copia de seguridad",
+    "Dokumenteingang": "Recepción de documentos",
+    "Domain-Registrar": "Registrador de dominios",
+    "Kalender-Veröffentlichung": "Publicación de calendario",
     "Kontaktsynchronisierung": "Sincronización de contactos",
+    "Versanddienstleister": "Proveedor de envío",
     "Plugin-Fähigkeiten": "Capacidades del plugin",
     "Zahlungsabgleich": "Conciliación de pagos",
     "Zeit-Export": "Exportación de tiempos",
@@ -8839,5 +8845,10 @@
     "Bestellungen": "Pedidos",
     "Offene Bestellungen": "Pedidos abiertos",
     "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "El proyecto seleccionado pertenece a un cliente final; seleccione el cliente externo correspondiente.",
-    "Toggl-Workspace": "Espacio de trabajo de Toggl"
+    "Toggl-Workspace": "Espacio de trabajo de Toggl",
+    ":created neue, :linked mit vorhandenen Zeiten verknüpft, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.": ":created nuevas, :linked vinculadas a tiempos existentes, :skipped existentes, :unmatched sin dispositivo, :pending por asignar.",
+    ":created gebucht, :linked mit vorhandenen Zeiten verknüpft, :skipped bereits vorhanden.": ":created registradas, :linked vinculadas a tiempos existentes, :skipped ya presentes.",
+    "Benutzer-Zuordnung gespeichert.": "Asignación de usuario guardada.",
+    "Toggl-E-Mail": "Correo de Toggl",
+    "Benutzer-Zuordnung anlegen": "Crear asignación de usuario"
 }

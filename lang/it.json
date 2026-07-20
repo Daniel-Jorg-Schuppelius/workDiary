@@ -754,7 +754,13 @@
     "CSV-Import": "Import CSV",
     "CSV-Import: :c angelegt, :u aktualisiert, :s übersprungen.": "Import CSV: :c creati, :u aggiornati, :s ignorati.",
     "Capabilities": "Funzionalità",
+    "Aufgaben-Sync": "Sincronizzazione attività",
+    "Backupziel": "Destinazione di backup",
+    "Dokumenteingang": "Ricezione documenti",
+    "Domain-Registrar": "Registrar di domini",
+    "Kalender-Veröffentlichung": "Pubblicazione calendario",
     "Kontaktsynchronisierung": "Sincronizzazione contatti",
+    "Versanddienstleister": "Fornitore di spedizione",
     "Plugin-Fähigkeiten": "Funzionalità plugin",
     "Zahlungsabgleich": "Riconciliazione pagamenti",
     "Zeit-Export": "Export tempi",
@@ -8839,5 +8845,10 @@
     "Bestellungen": "Ordini d’acquisto",
     "Offene Bestellungen": "Ordini d’acquisto aperti",
     "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Il progetto selezionato appartiene a un cliente finale — selezionare il cliente esterno corrispondente.",
-    "Toggl-Workspace": "Workspace Toggl"
+    "Toggl-Workspace": "Workspace Toggl",
+    ":created neue, :linked mit vorhandenen Zeiten verknüpft, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.": ":created nuove, :linked collegate a tempi esistenti, :skipped esistenti, :unmatched senza dispositivo, :pending da assegnare.",
+    ":created gebucht, :linked mit vorhandenen Zeiten verknüpft, :skipped bereits vorhanden.": ":created registrate, :linked collegate a tempi esistenti, :skipped già presenti.",
+    "Benutzer-Zuordnung gespeichert.": "Associazione utente salvata.",
+    "Toggl-E-Mail": "E-mail Toggl",
+    "Benutzer-Zuordnung anlegen": "Crea associazione utente"
 }

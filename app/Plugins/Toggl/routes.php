@@ -22,6 +22,8 @@ Route::middleware(['web', 'auth'])->group(function (): void {
     Route::post('admin/toggl/import-csv', [TogglController::class, 'uploadCsv'])->name('admin.toggl.import-csv');
 
     Route::get('admin/toggl/mappings', [TogglController::class, 'mappings'])->name('admin.toggl.mappings.index');
+    // Statische Route VOR {reference}, sonst schluckt der Parameter „user".
+    Route::post('admin/toggl/mappings/user', [TogglController::class, 'storeUserMapping'])->name('admin.toggl.mappings.store-user');
     Route::post('admin/toggl/mappings/{reference}', [TogglController::class, 'updateMapping'])->name('admin.toggl.mappings.update');
     Route::post('admin/toggl/mappings/{reference}/delete', [TogglController::class, 'deleteMapping'])->name('admin.toggl.mappings.delete');
 

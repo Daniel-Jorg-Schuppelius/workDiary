@@ -25,6 +25,29 @@
             <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
         @endif
 
+        {{-- Benutzer-Zuordnung anlegen: Toggl-E-Mail → Benutzer. Für Mitarbeiter,
+             deren Toggl-Adresse von der workDiary-Adresse abweicht — greift in
+             CSV-/API-Import, Inbox-Buchung und Reparatur-Befehl. --}}
+        <form method="POST" action="{{ route('admin.toggl.mappings.store-user') }}"
+              class="mb-4 flex flex-wrap items-end gap-2 rounded-box bg-base-200/50 p-3">
+            @csrf
+            <label class="form-control min-w-48 flex-1">
+                <span class="label-text text-xs">{{ __('Toggl-E-Mail') }}</span>
+                <input type="email" name="toggl_email" required maxlength="191" placeholder="name@firma.de"
+                       class="input input-sm input-bordered w-full">
+            </label>
+            <label class="form-control min-w-56">
+                <span class="label-text text-xs">{{ __('Benutzer') }}</span>
+                <select name="user" required class="select select-sm select-bordered w-full max-w-xs">
+                    <option value="">{{ __('— wählen —') }}</option>
+                    @foreach ($users as $u)
+                        <option value="{{ $u['sqid'] }}">{{ $u['label'] }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <button type="submit" class="btn btn-sm btn-primary">{{ __('Benutzer-Zuordnung anlegen') }}</button>
+        </form>
+
         @if ($mappings->isEmpty())
             <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
                 {{ __('Noch keine Zuordnungen gemerkt.') }}
@@ -44,20 +67,24 @@
                         @foreach ($mappings as $mapping)
                             @php
                                 $isClient = $mapping->external_type === \App\Plugins\Toggl\TogglImportService::EXT_TYPE_CLIENT;
+                                $isUser = $mapping->external_type === \App\Plugins\Toggl\TogglImportService::EXT_TYPE_USER_EMAIL;
                                 $target = $mapping->referenceable;
                                 $currentSqid = $target?->sqid;
                                 $isForeign = $target instanceof \App\Models\ForeignCustomer;
                             @endphp
                             <tr>
                                 <td>
-                                    <x-status-badge :tone="$isForeign ? 'accent' : ($isClient ? 'info' : 'neutral')" size="sm">
-                                        {{ $isForeign ? __('Endkunde') : ($isClient ? __('Kunde') : __('Projekt')) }}
+                                    <x-status-badge :tone="$isUser ? 'warning' : ($isForeign ? 'accent' : ($isClient ? 'info' : 'neutral'))" size="sm">
+                                        {{ $isUser ? __('Benutzer') : ($isForeign ? __('Endkunde') : ($isClient ? __('Kunde') : __('Projekt'))) }}
                                     </x-status-badge>
                                 </td>
                                 <td class="font-mono text-xs">{{ $mapping->external_id }}</td>
                                 <td>
                                     @if ($target === null)
                                         <span class="text-error text-xs">{{ __('verwaist (Ziel gelöscht)') }}</span>
+                                    @elseif ($isUser)
+                                        {{ $target->name }}
+                                        <span class="text-base-content/50">({{ $target->email }})</span>
                                     @elseif ($isForeign)
                                         {{ $target->name }}
                                         <span class="text-base-content/50">({{ $customerLabel[$target->customer_id] ?? '—' }})</span>
@@ -75,7 +102,11 @@
                                             @csrf
                                             <select name="target_id" required class="select select-sm select-bordered">
                                                 <option value="">{{ __('— wählen —') }}</option>
-                                                @if ($isClient)
+                                                @if ($isUser)
+                                                    @foreach ($users as $u)
+                                                        <option value="{{ $u['sqid'] }}" @selected($isUser && $u['sqid'] === $currentSqid)>{{ $u['label'] }}</option>
+                                                    @endforeach
+                                                @elseif ($isClient)
                                                     <optgroup label="{{ __('Kunden') }}">
                                                         @foreach ($customers as $c)
                                                             <option value="{{ $c['sqid'] }}" @selected(! $isForeign && $c['sqid'] === $currentSqid)>{{ $c['label'] }}</option>

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
-use App\Models\{Asset, Customer, PluginSetting, RemotePendingSession, TimeEntry, User};
+use App\Models\{Asset, Customer, PluginSetting, Project, RemotePendingSession, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
 use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportPlugin, RemoteSupportService};
 use Carbon\CarbonImmutable;
@@ -124,6 +124,114 @@ class RemoteSupportSyncTest extends TestCase {
             'external_id' => 'teamviewer:tv-session-1',
             'referenceable_id' => $entry->id,
         ]);
+    }
+
+    public function test_overlapping_same_customer_time_links_session_instead_of_double_booking(): void {
+        $config = $this->enableTeamViewer();
+        $asset = $this->deviceAssetWithCustomer('123456789');
+        $ownerId = (int) $this->organization->owner_id;
+
+        // Vorhandene (z. B. aus Toggl importierte) Zeit desselben Kunden, die
+        // die Sitzung zeitlich abdeckt.
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $asset->customer_id,
+            'name' => 'Toggl-Zeit',
+            'is_default' => false,
+        ]);
+        $existing = TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $project->id,
+            'user_id' => $ownerId,
+            'date' => '2026-05-26',
+            'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 11:00:00'),
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work,
+            'description' => 'Toggl: Support',
+            'billable' => true,
+        ]);
+
+        $this->fakeConnections([[
+            'id' => 'tv-covered-1',
+            'deviceid' => '123456789',
+            'start_date' => CarbonImmutable::parse('2026-05-26 10:05:00')->toIso8601String(),
+            'end_date' => CarbonImmutable::parse('2026-05-26 10:35:00')->toIso8601String(),
+            'username' => 'Techniker',
+        ]]);
+
+        $result = $this->service()->import(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        // Keine Doppelbuchung: Sitzung wird als Nachweis an die vorhandene Zeit gekoppelt.
+        $this->assertSame(0, $result['created']);
+        $this->assertSame(1, $result['linked']);
+        $this->assertSame(1, TimeEntry::query()->count());
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => RemoteSupportPlugin::ID,
+            'external_type' => RemoteSupportService::EXT_TYPE_SESSION,
+            'external_id' => 'teamviewer:tv-covered-1',
+            'referenceable_id' => $existing->id,
+        ]);
+
+        // Folgesync: Sitzung gilt als verarbeitet.
+        $second = $this->service()->import(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+        $this->assertSame(0, $second['linked']);
+        $this->assertSame(1, $second['skipped']);
+    }
+
+    public function test_overlapping_time_of_other_customer_still_books_session(): void {
+        $config = $this->enableTeamViewer();
+        $asset = $this->deviceAssetWithCustomer('123456789');
+        $ownerId = (int) $this->organization->owner_id;
+
+        // Parallelarbeit: laufende Zeit gehört zu einem ANDEREN Kunden →
+        // die Sitzung ist eigene, ungetrackte Arbeit und wird gebucht.
+        $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $otherProject = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $otherCustomer->id,
+            'name' => 'Anderer Kunde',
+            'is_default' => false,
+        ]);
+        TimeEntry::query()->create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $otherProject->id,
+            'user_id' => $ownerId,
+            'date' => '2026-05-26',
+            'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 11:00:00'),
+            'kind' => \App\Enums\TimeEntry\TimeEntryKind::Work,
+            'description' => 'Toggl: anderer Kunde',
+            'billable' => true,
+        ]);
+
+        $this->fakeConnections([[
+            'id' => 'tv-parallel-1',
+            'deviceid' => '123456789',
+            'start_date' => CarbonImmutable::parse('2026-05-26 10:05:00')->toIso8601String(),
+            'end_date' => CarbonImmutable::parse('2026-05-26 10:35:00')->toIso8601String(),
+            'username' => 'Techniker',
+        ]]);
+
+        $result = $this->service()->import(
+            $this->organization,
+            $config,
+            CarbonImmutable::parse('2026-05-25'),
+            CarbonImmutable::parse('2026-05-27'),
+        );
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(0, $result['linked']);
+        $this->assertSame(2, TimeEntry::query()->count());
     }
 
     public function test_import_is_idempotent(): void {

@@ -128,7 +128,7 @@ class RemoteSupportService {
      * im Fenster [$from, $to] ab und legt je neuer Session einen TimeEntry an.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
-     * @return array{created: int, skipped: int, unmatched: int, pending: int}
+     * @return array{created: int, linked: int, skipped: int, unmatched: int, pending: int}
      */
     public function import(Organization $organization, array $config, CarbonImmutable $from, CarbonImmutable $to): array {
         $sessions = [];
@@ -152,10 +152,11 @@ class RemoteSupportService {
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
      * @param  iterable<RemoteSession>  $sessions
-     * @return array{created: int, skipped: int, unmatched: int, pending: int}
+     * @return array{created: int, linked: int, skipped: int, unmatched: int, pending: int}
      */
     public function importSessions(Organization $organization, array $config, iterable $sessions): array {
         $created = 0;
+        $linked = 0;
         $skipped = 0;
         $unmatched = 0;
         $pending = 0;
@@ -163,19 +164,20 @@ class RemoteSupportService {
         $userId = $this->resolveBookingUserId($organization, $config['default_user_id'] ?? null);
         if ($userId === null) {
             // Ohne buchbaren Benutzer lässt sich keine Zeit erfassen.
-            return ['created' => 0, 'skipped' => 0, 'unmatched' => 0, 'pending' => 0];
+            return ['created' => 0, 'linked' => 0, 'skipped' => 0, 'unmatched' => 0, 'pending' => 0];
         }
 
         foreach ($sessions as $session) {
             match ($this->bookSession($organization, $config, $session, $userId)) {
                 'created' => $created++,
+                'linked' => $linked++,
                 'unmatched' => $unmatched++,
                 'pending' => $pending++,
                 default => $skipped++,
             };
         }
 
-        return ['created' => $created, 'skipped' => $skipped, 'unmatched' => $unmatched, 'pending' => $pending];
+        return ['created' => $created, 'linked' => $linked, 'skipped' => $skipped, 'unmatched' => $unmatched, 'pending' => $pending];
     }
 
     /**
@@ -184,7 +186,7 @@ class RemoteSupportService {
      * unbekannte IDs in die Pending-Inbox oder überspringt bereits importierte.
      *
      * @param  array<string, mixed>  $config  Ergebnis von {@see RemoteSupportConfig::resolve()}
-     * @return 'created'|'skipped'|'unmatched'|'pending'
+     * @return 'created'|'linked'|'skipped'|'unmatched'|'pending'
      */
     public function bookSession(Organization $organization, array $config, RemoteSession $session, int $userId): string {
         $asset = $this->matchAsset($organization, $session->provider, $session->remoteId);
@@ -206,9 +208,9 @@ class RemoteSupportService {
             return 'pending';
         }
 
-        $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
+        [, $linked] = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
 
-        return 'created';
+        return $linked ? 'linked' : 'created';
     }
 
     private function matchAsset(Organization $organization, string $provider, string $remoteId): ?Asset {
@@ -233,13 +235,27 @@ class RemoteSupportService {
         return $this->alreadyImported($organization, $this->sessionKey($session));
     }
 
-    private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): ?TimeEntry {
+    /** @return array{0: ?TimeEntry, 1: bool}  [Eintrag, true = nur an vorhandene Zeit verknüpft] */
+    private function createTimeEntry(Organization $organization, Asset $asset, RemoteSession $session, int $userId, bool $billable, ?Project $project = null): array {
         // Bei Mehrkundengeräten wird das Zielprojekt explizit übergeben; sonst
         // greift das Standardprojekt des Asset-Kunden.
         $project ??= $asset->customer?->defaultProjectOrCreate();
         if ($project === null) {
             // Ohne Kunde/Projekt kann keine projektbezogene Zeit gebucht werden.
-            return null;
+            return [null, false];
+        }
+
+        // Deckt eine bereits erfasste Zeit DESSELBEN Kunden die Sitzung ab
+        // (z. B. Toggl-Import), wird die Sitzung nur als Nachweis verknüpft
+        // statt doppelt gebucht. Kunden-Match ist Pflicht: parallele Sitzungen
+        // bei anderen Kunden sind eigene, ungetrackte Arbeit.
+        $covering = $project->customer_id !== null
+            ? $this->findCoveringEntry($organization, $session, $userId, (int) $project->customer_id)
+            : null;
+        if ($covering !== null) {
+            $this->rememberSessionReference($organization, $session, $covering, $asset, linked: true);
+
+            return [$covering, true];
         }
 
         $description = trim(sprintf(
@@ -261,7 +277,77 @@ class RemoteSupportService {
             'billable' => $billable,
         ]);
 
-        // Idempotenz-Anker: verknüpft die anbieterseitige Session mit dem Eintrag.
+        $this->rememberSessionReference($organization, $session, $entry, $asset, linked: false);
+
+        return [$entry, false];
+    }
+
+    /**
+     * Vorhandener Zeiteintrag desselben Benutzers UND Kunden, der die Sitzung
+     * zeitlich überlappt — bei mehreren gewinnt die größte Überlappung.
+     */
+    private function findCoveringEntry(Organization $organization, RemoteSession $session, int $userId, int $customerId): ?TimeEntry {
+        $candidates = TimeEntry::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('user_id', $userId)
+            ->where('started_at', '<', $session->endedAt)
+            ->where('ended_at', '>', $session->startedAt)
+            ->whereIn('project_id', Project::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('customer_id', $customerId)
+                ->select('id'))
+            ->get();
+
+        $best = null;
+        $bestOverlap = 0;
+        foreach ($candidates as $entry) {
+            if ($entry->started_at === null || $entry->ended_at === null) {
+                continue;
+            }
+            $overlap = min($entry->ended_at->getTimestamp(), $session->endedAt->getTimestamp())
+                - max($entry->started_at->getTimestamp(), $session->startedAt->getTimestamp());
+            if ($overlap > $bestOverlap) {
+                $bestOverlap = $overlap;
+                $best = $entry;
+            }
+        }
+
+        return $best;
+    }
+
+    /** Idempotenz-Anker: verknüpft die anbieterseitige Session mit dem Eintrag. */
+    private function rememberSessionReference(Organization $organization, RemoteSession $session, TimeEntry $entry, Asset $asset, bool $linked): void {
+        // extref_unique erlaubt je Zeiteintrag nur EINE Session-Primärreferenz.
+        // Weitere Sitzungen am selben Eintrag (mehrere Sessions innerhalb einer
+        // erfassten Zeit) laufen als Alias; alreadyImported() kennt beide.
+        $occupied = ExternalReference::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', RemoteSupportPlugin::ID)
+            ->where('external_type', self::EXT_TYPE_SESSION)
+            ->where('referenceable_type', $entry->getMorphClass())
+            ->where('referenceable_id', $entry->getKey())
+            ->exists();
+
+        if ($occupied) {
+            \App\Models\ExternalReferenceAlias::query()->withoutGlobalScopes()->updateOrCreate(
+                [
+                    'organization_id' => $organization->id,
+                    'plugin_id' => RemoteSupportPlugin::ID,
+                    'external_type' => self::EXT_TYPE_SESSION,
+                    'external_id' => $this->sessionKey($session),
+                ],
+                [
+                    'referenceable_type' => $entry->getMorphClass(),
+                    'referenceable_id' => $entry->getKey(),
+                ],
+            );
+
+            return;
+        }
+
         ExternalReference::query()->create([
             'organization_id' => $organization->id,
             'plugin_id' => RemoteSupportPlugin::ID,
@@ -273,11 +359,11 @@ class RemoteSupportService {
                 'provider' => $session->provider,
                 'remote_id' => $session->remoteId,
                 'asset_id' => $asset->id,
+                // true = Sitzung nur als Nachweis an vorhandene Zeit gekoppelt.
+                'linked' => $linked,
             ],
             'synced_at' => now(),
         ]);
-
-        return $entry;
     }
 
     /**
@@ -384,17 +470,18 @@ class RemoteSupportService {
      * Asset zu: hinterlegt die Geräte-ID und materialisiert die Sessions als
      * Zeiteinträge (idempotent). Markiert die Pending-Sessions als imported.
      *
-     * @return array{created: int, skipped: int}
+     * @return array{created: int, linked: int, skipped: int}
      */
     public function assignPending(Organization $organization, string $provider, string $remoteId, Asset $asset, ?int $userId = null): array {
         $this->setRemoteId($asset, $provider, $remoteId);
 
         $userId ??= $this->resolveBookingUserId($organization, RemoteSupportConfig::resolve($organization->id)['default_user_id'] ?? null);
         if ($userId === null) {
-            return ['created' => 0, 'skipped' => 0];
+            return ['created' => 0, 'linked' => 0, 'skipped' => 0];
         }
 
         $created = 0;
+        $linked = 0;
         $skipped = 0;
 
         /** @var \Illuminate\Database\Eloquent\Collection<int, RemotePendingSession> $pending */
@@ -428,16 +515,16 @@ class RemoteSupportService {
             }
 
             $config = RemoteSupportConfig::resolve($organization->id);
-            $entry = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
+            [$entry, $wasLinked] = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable']);
             $row->update([
                 'status' => RemotePendingSession::STATUS_IMPORTED,
                 'time_entry_id' => $entry?->id,
                 'resolved_at' => now(),
             ]);
-            $created++;
+            $wasLinked ? $linked++ : $created++;
         }
 
-        return ['created' => $created, 'skipped' => $skipped];
+        return ['created' => $created, 'linked' => $linked, 'skipped' => $skipped];
     }
 
     /** Verwirft alle offenen Pending-Sessions einer (provider, remote_id)-Gruppe. */
@@ -555,7 +642,7 @@ class RemoteSupportService {
         }
 
         $config = RemoteSupportConfig::resolve($organization->id);
-        $entry = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable'], $project);
+        [$entry] = $this->createTimeEntry($organization, $asset, $session, $userId, (bool) $config['default_billable'], $project);
         $row->update([
             'status' => RemotePendingSession::STATUS_IMPORTED,
             'time_entry_id' => $entry?->id,

@@ -23,10 +23,11 @@ use Throwable;
  */
 trait IteratesOrganizations {
     /** Wortgleiche Options-Definition des Skeletts — für Command-Signaturen. */
-    public const ORGANIZATION_OPTION = '{--organization= : ID einer einzelnen Organisation, sonst alle}';
+    public const ORGANIZATION_OPTION = '{--organization= : ID oder Slug einer einzelnen Organisation, sonst alle}';
 
     /**
      * Organisationen gemäß Einzel-Org-Option (leer/fehlend → alle).
+     * Numerischer Wert = ID, sonst Slug.
      *
      * @param  string  $option  Name der Option (Default `organization`, manche Commands nutzen `org`)
      * @param  (callable(Builder<Organization>): mixed)|null  $scope  Query-Anpassung (z. B. withoutGlobalScopes)
@@ -38,9 +39,12 @@ trait IteratesOrganizations {
             $scope($query);
         }
 
-        $orgId = $this->option($option);
-        if ($orgId !== null && $orgId !== '') {
-            $query->whereKey((int) $orgId);
+        $org = $this->option($option);
+        if (($org !== '' && is_string($org)) || is_int($org)) {
+            $value = (string) $org;
+            ctype_digit($value)
+                ? $query->whereKey((int) $value)
+                : $query->where('slug', $value);
         }
 
         return $query->get();

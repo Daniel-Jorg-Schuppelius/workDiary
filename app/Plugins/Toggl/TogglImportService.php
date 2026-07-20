@@ -180,7 +180,7 @@ class TogglImportService extends MatchingTimeImportService {
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', TogglPlugin::ID)
-            ->whereIn('external_type', [self::EXT_TYPE_CLIENT, self::EXT_TYPE_PROJECT])
+            ->whereIn('external_type', [self::EXT_TYPE_CLIENT, self::EXT_TYPE_PROJECT, self::EXT_TYPE_USER_EMAIL])
             ->with('referenceable')
             ->orderBy('external_type')
             ->orderBy('external_id')

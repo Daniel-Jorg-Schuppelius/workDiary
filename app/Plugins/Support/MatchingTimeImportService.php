@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -43,6 +43,9 @@ abstract class MatchingTimeImportService {
     public const EXT_TYPE_CLIENT_ID = 'client_id';
 
     public const EXT_TYPE_PROJECT_ID = 'project_id';
+
+    /** Quell-E-Mail → Benutzer (gemerkte Zuordnung, z. B. abweichende Toggl-Adresse). */
+    public const EXT_TYPE_USER_EMAIL = 'user_email';
 
     public const SUGGEST_THRESHOLD = 0.82;
 
@@ -281,7 +284,9 @@ abstract class MatchingTimeImportService {
         $timeEntry = TimeEntry::query()->create([
             'organization_id' => $organization->id,
             'project_id' => $project->id,
-            'user_id' => $userId,
+            // Mitarbeiter-Zeile der Quelle gewinnt: E-Mail → Org-Benutzer,
+            // sonst der Standard-/Buchungs-Benutzer.
+            'user_id' => $this->resolveEntryUserId($organization, $entry->userEmail, $userId),
             'date' => $entry->startedAt->toDateString(),
             'started_at' => $entry->startedAt,
             'ended_at' => $entry->endedAt,
@@ -544,6 +549,59 @@ abstract class MatchingTimeImportService {
         ExternalReference::query()->updateOrCreate($key, $target + ['synced_at' => now()]);
         // Ein früherer Alias desselben Schlüssels ist durch die Primär-Referenz überholt.
         ExternalReferenceAlias::query()->withoutGlobalScopes()->where($key)->delete();
+    }
+
+    /** @var array<string, int|null>  lower(E-Mail) → User-ID (Lauf-Cache) */
+    private array $userIdByEmail = [];
+
+    /**
+     * Buchungs-Benutzer je Eintrag: die Quell-E-Mail (Toggl-/Kimai-Benutzer)
+     * gewinnt, wenn sie aufgelöst werden kann — sonst der übergebene
+     * Standard-Benutzer. Kein Auto-Anlegen (Inbox-First-Prinzip).
+     */
+    protected function resolveEntryUserId(Organization $organization, ?string $email, int $fallbackUserId): int {
+        return $this->resolveImportUser($organization, $email) ?? $fallbackUserId;
+    }
+
+    /**
+     * Benutzer zu einer Quell-E-Mail: gemerkte Zuordnung (user_email-Referenz,
+     * für abweichende Toggl-Adressen — UI „Zuordnungen verwalten" bzw.
+     * Workspace-Import) vor direkter E-Mail-Gleichheit. Null, wenn nichts passt.
+     */
+    public function resolveImportUser(Organization $organization, ?string $email): ?int {
+        $email = trim((string) $email);
+        if ($email === '') {
+            return null;
+        }
+
+        $key = mb_strtolower($email);
+        if (array_key_exists($key, $this->userIdByEmail)) {
+            return $this->userIdByEmail[$key];
+        }
+
+        $byRef = $this->resolveByReference($organization, self::EXT_TYPE_USER_EMAIL, $key);
+        if ($byRef instanceof User) {
+            return $this->userIdByEmail[$key] = (int) $byRef->id;
+        }
+
+        $user = User::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereRaw('LOWER(email) = ?', [$key])
+            ->first();
+
+        return $this->userIdByEmail[$key] = ($user !== null ? (int) $user->id : null);
+    }
+
+    /** Merkt eine Quell-E-Mail → Benutzer-Zuordnung (inkl. Alias-Fallback). */
+    public function rememberUserEmail(Organization $organization, string $email, User $user): void {
+        $key = mb_strtolower(trim($email));
+        if ($key === '') {
+            return;
+        }
+
+        $this->rememberReference($organization, self::EXT_TYPE_USER_EMAIL, $key, $user);
+        unset($this->userIdByEmail[$key]);
     }
 
     /** Stabiler Gruppen-/Referenz-Schlüssel (Kunde|Projekt[|Tätigkeit], case-insensitiv). */

@@ -754,7 +754,13 @@
     "CSV-Import": "Import CSV",
     "CSV-Import: :c angelegt, :u aktualisiert, :s übersprungen.": "Import CSV : :c créés, :u mis à jour, :s ignorés.",
     "Capabilities": "Capacités",
+    "Aufgaben-Sync": "Synchronisation des tâches",
+    "Backupziel": "Cible de sauvegarde",
+    "Dokumenteingang": "Réception de documents",
+    "Domain-Registrar": "Bureau d'enregistrement de domaines",
+    "Kalender-Veröffentlichung": "Publication de calendrier",
     "Kontaktsynchronisierung": "Synchronisation des contacts",
+    "Versanddienstleister": "Prestataire d'expédition",
     "Plugin-Fähigkeiten": "Capacités du plugin",
     "Zahlungsabgleich": "Rapprochement des paiements",
     "Zeit-Export": "Export du temps",
@@ -8839,5 +8845,10 @@
     "Bestellungen": "Commandes",
     "Offene Bestellungen": "Commandes ouvertes",
     "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Le projet sélectionné appartient à un client final — veuillez sélectionner le client tiers correspondant.",
-    "Toggl-Workspace": "Espace de travail Toggl"
+    "Toggl-Workspace": "Espace de travail Toggl",
+    ":created neue, :linked mit vorhandenen Zeiten verknüpft, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.": ":created nouvelles, :linked liées aux temps existants, :skipped existantes, :unmatched sans appareil, :pending à attribuer.",
+    ":created gebucht, :linked mit vorhandenen Zeiten verknüpft, :skipped bereits vorhanden.": ":created enregistrées, :linked liées aux temps existants, :skipped déjà présentes.",
+    "Benutzer-Zuordnung gespeichert.": "Association d’utilisateur enregistrée.",
+    "Toggl-E-Mail": "E-mail Toggl",
+    "Benutzer-Zuordnung anlegen": "Créer une association d’utilisateur"
 }

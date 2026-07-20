@@ -81,8 +81,9 @@ class RemoteSupportAssetController extends Controller {
         $from = $to->subDays(max(1, (int) $config['sync_window_days']));
         $result = $this->service->import($organization, $config, $from, $to);
 
-        return back()->with('status', __(':created neue, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.', [
+        return back()->with('status', __(':created neue, :linked mit vorhandenen Zeiten verknüpft, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.', [
             'created' => $result['created'],
+            'linked' => $result['linked'],
             'skipped' => $result['skipped'],
             'unmatched' => $result['unmatched'],
             'pending' => $result['pending'],

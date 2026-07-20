@@ -47,6 +47,22 @@ enum PluginCapability: string {
     /** Kann Domains bei einem Registrar-/Reseller-Provider projizieren und kontrolliert verwalten (Feature 083). */
     case DomainRegistrar = 'domain_registrar';
 
+    /** Übersetztes UI-Label (Badge in der Plugin-Übersicht). */
+    public function label(): string {
+        return match ($this) {
+            self::ContactSync => __('Kontaktsynchronisierung'),
+            self::TimeExport => __('Zeit-Export'),
+            self::TimeImport => __('Zeit-Import'),
+            self::PaymentSync => __('Zahlungsabgleich'),
+            self::TaskSync => __('Aufgaben-Sync'),
+            self::CalendarPublish => __('Kalender-Veröffentlichung'),
+            self::ShippingProvider => __('Versanddienstleister'),
+            self::DocumentIntake => __('Dokumenteingang'),
+            self::BackupTarget => __('Backupziel'),
+            self::DomainRegistrar => __('Domain-Registrar'),
+        };
+    }
+
     /**
      * Das Contract-Interface, das ein Plugin mit dieser Fähigkeit implementieren muss.
      *

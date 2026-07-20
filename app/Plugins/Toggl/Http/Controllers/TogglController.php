@@ -116,7 +116,31 @@ class TogglController extends Controller {
             'customers' => $this->options->customerOptions($customers),
             'projects' => $this->options->projectOptions($projects),
             'foreignCustomers' => $foreignCustomers,
+            'users' => $this->options->userSelectOptions(),
         ]);
+    }
+
+    /**
+     * Legt eine Benutzer-Zuordnung an: Toggl-E-Mail → Benutzer der Organisation.
+     * Für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht —
+     * greift in CSV-/API-Import, Inbox-Buchung und Reparatur-Befehl.
+     */
+    public function storeUserMapping(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'toggl_email' => ['required', 'email', 'max:191'],
+            'user' => ['required', 'string'],
+        ]);
+
+        $userId = $this->options->decodeId(\App\Models\User::class, $data['user']);
+        $user = \App\Models\User::query()->whereKey($userId)->firstOrFail();
+        abort_unless((int) $user->organization_id === (int) $organization->id, 403);
+
+        $this->service->rememberUserEmail($organization, (string) $data['toggl_email'], $user);
+
+        return back()->with('status', (string) __('Benutzer-Zuordnung gespeichert.'));
     }
 
     /** Zeigt eine gemerkte Zuordnung auf einen anderen Kunden/ein anderes Projekt um. */
@@ -124,6 +148,18 @@ class TogglController extends Controller {
         $admin = $this->admin();
         $organization = $this->organization($admin);
         $ref = $this->findMapping($organization, $reference);
+
+        if ($ref->external_type === TogglImportService::EXT_TYPE_USER_EMAIL) {
+            $user = \App\Models\User::query()->whereKey($this->options->decodeId(\App\Models\User::class, $request->input('target_id')))->firstOrFail();
+            abort_unless((int) $user->organization_id === (int) $organization->id, 403);
+            $ref->update([
+                'referenceable_type' => $user->getMorphClass(),
+                'referenceable_id' => $user->getKey(),
+                'synced_at' => now(),
+            ]);
+
+            return back()->with('status', (string) __('Zuordnung aktualisiert.'));
+        }
 
         if ($ref->external_type === TogglImportService::EXT_TYPE_CLIENT) {
             // Client-Ziel kann Kunde oder Fremdkunde (Endkunde) sein — die Sqids

@@ -532,6 +532,107 @@ class TogglImportTest extends TestCase {
         ]);
     }
 
+    public function test_csv_import_books_entries_on_matching_org_user_by_email(): void {
+        $config = $this->enableToggl();
+        $this->customerWithProject('Acme', 'Website');
+        $mitarbeiter = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'worker@example.com',
+        ]);
+
+        $csv = implode("\n", [
+            'Client,Project,Description,Start date,Start time,End date,End time,Duration,Billable,Email',
+            'Acme,Website,Arbeit A,2026-05-26,09:00:00,2026-05-26,10:00:00,01:00:00,Yes,worker@example.com',
+            'Acme,Website,Arbeit B,2026-05-26,11:00:00,2026-05-26,12:00:00,01:00:00,Yes,unbekannt@example.com',
+        ]);
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(2, $result['created']);
+        // Mitarbeiter-E-Mail der CSV gewinnt; unbekannte E-Mail → Buchungs-Benutzer (Owner).
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $mitarbeiter->id)->count());
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $this->organization->owner_id)->count());
+    }
+
+    public function test_user_email_mapping_wins_over_direct_email_match(): void {
+        $config = $this->enableToggl();
+        $this->customerWithProject('Acme', 'Website');
+        // Mitarbeiter mit abweichender Toggl-Adresse: Zuordnung gemerkt.
+        $mitarbeiter = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'firma@workdiary.local',
+        ]);
+        $this->service()->rememberUserEmail($this->organization, 'privat@gmx.de', $mitarbeiter);
+
+        $csv = implode("\n", [
+            'Client,Project,Description,Start date,Start time,End date,End time,Duration,Billable,Email',
+            'Acme,Website,Arbeit A,2026-05-26,09:00:00,2026-05-26,10:00:00,01:00:00,Yes,privat@gmx.de',
+        ]);
+
+        $result = $this->service()->importFromCsv($this->organization, $csv, $config);
+
+        $this->assertSame(1, $result['created']);
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $mitarbeiter->id)->count());
+    }
+
+    public function test_store_user_mapping_endpoint_persists_reference(): void {
+        $this->enableToggl();
+        $mitarbeiter = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'firma@workdiary.local',
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.store-user'), [
+                'toggl_email' => 'Privat@GMX.de',
+                'user' => $mitarbeiter->sqid,
+            ])
+            ->assertRedirect();
+
+        // Schlüssel wird normalisiert (lowercase) gespeichert.
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_USER_EMAIL,
+            'external_id' => 'privat@gmx.de',
+            'referenceable_id' => $mitarbeiter->id,
+        ]);
+    }
+
+    public function test_repair_command_reassigns_users_from_csv(): void {
+        $config = $this->enableToggl();
+        $this->customerWithProject('Acme', 'Website');
+        $mitarbeiter = User::factory()->user()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'worker@example.com',
+        ]);
+
+        $csv = implode("\n", [
+            'Client,Project,Description,Start date,Start time,End date,End time,Duration,Billable,Email',
+            'Acme,Website,Arbeit A,2026-05-26,09:00:00,2026-05-26,10:00:00,01:00:00,Yes,worker@example.com',
+        ]);
+
+        // Alt-Zustand simulieren: importiert, aber alles auf den Owner gebucht.
+        $this->service()->importFromCsv($this->organization, $csv, $config);
+        TimeEntry::query()->update(['user_id' => $this->organization->owner_id]);
+
+        $path = tempnam(sys_get_temp_dir(), 'toggl-repair-');
+        file_put_contents($path, $csv);
+
+        // Dry-Run ändert nichts.
+        $this->artisan('toggl:repair-entry-users', ['csv' => $path, '--organization' => $this->organization->id])
+            ->assertExitCode(0);
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $this->organization->owner_id)->count());
+
+        // --apply setzt den Benutzer anhand der CSV-E-Mail um; die Organisation
+        // ist auch per Slug adressierbar.
+        $this->artisan('toggl:repair-entry-users', ['csv' => $path, '--organization' => $this->organization->slug, '--apply' => true])
+            ->assertExitCode(0);
+        $this->assertSame(1, TimeEntry::query()->where('user_id', $mitarbeiter->id)->count());
+        $this->assertSame(0, TimeEntry::query()->where('user_id', $this->organization->owner_id)->count());
+
+        @unlink($path);
+    }
+
     public function test_pending_groups_are_separated_per_workspace(): void {
         // Gleicher (leerer) Client/Projekt-Schlüssel, aber verschiedene
         // Workspaces → zwei getrennte Gruppen mit Workspace-Anzeige.

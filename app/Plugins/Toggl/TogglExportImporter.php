@@ -419,6 +419,10 @@ class TogglExportImporter {
         if ($cacheKey !== '' && isset($this->userMap[$cacheKey])) {
             $mapped = $this->loadOrgUser($organization, (int) $this->userMap[$cacheKey]);
             if ($mapped instanceof User) {
+                // Explizite Zuordnung persistieren — damit greift sie auch für
+                // künftige CSV-/API-Importe mit abweichender Toggl-Adresse.
+                $this->rememberReference($organization, TogglImportService::EXT_TYPE_USER_EMAIL, $cacheKey, $mapped);
+
                 return $this->userCache[$cacheKey] = $mapped;
             }
         }

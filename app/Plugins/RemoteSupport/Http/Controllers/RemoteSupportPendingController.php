@@ -251,10 +251,11 @@ class RemoteSupportPendingController extends Controller {
             ->get();
     }
 
-    /** @param array{created: int, skipped: int} $result */
+    /** @param array{created: int, skipped: int, linked?: int} $result */
     private function resultMessage(array $result): string {
-        return (string) __(':created gebucht, :skipped bereits vorhanden.', [
+        return (string) __(':created gebucht, :linked mit vorhandenen Zeiten verknüpft, :skipped bereits vorhanden.', [
             'created' => $result['created'],
+            'linked' => $result['linked'] ?? 0,
             'skipped' => $result['skipped'],
         ]);
     }
