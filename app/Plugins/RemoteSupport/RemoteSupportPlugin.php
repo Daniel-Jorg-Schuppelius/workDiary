@@ -99,7 +99,7 @@ class RemoteSupportPlugin implements Plugin, SlotRenderer, TimeImporter {
             ['key' => 'anydesk_enabled', 'label' => __('AnyDesk aktiv'), 'type' => 'boolean', 'default' => false],
             ['key' => 'anydesk_license_id', 'label' => __('AnyDesk Lizenz-ID'), 'type' => 'text'],
             ['key' => 'anydesk_api_key', 'label' => __('AnyDesk API-Passwort'), 'type' => 'password', 'help' => __('API-Passwort der AnyDesk-Lizenz (Request-Signierung).')],
-            ['key' => 'anydesk_base_url', 'label' => __('AnyDesk API-Basis-URL'), 'type' => 'text', 'default' => 'https://v1.api.anydesk.com'],
+            ['key' => 'anydesk_base_url', 'label' => __('AnyDesk API-Basis-URL'), 'type' => 'text', 'default' => 'https://v1.api.anydesk.com:8081'],
 
             ['key' => 'teamviewer_enabled', 'label' => __('TeamViewer aktiv'), 'type' => 'boolean', 'default' => false],
             ['key' => 'teamviewer_api_key', 'label' => __('TeamViewer Script-Token'), 'type' => 'password', 'help' => __('Script-Token mit Connection-Report-Berechtigung.')],

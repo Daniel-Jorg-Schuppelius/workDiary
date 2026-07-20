@@ -27,7 +27,7 @@ return [
         'enabled' => env('ANYDESK_ENABLED', false),
         'license_id' => env('ANYDESK_LICENSE_ID'),
         'api_key' => env('ANYDESK_API_KEY'),
-        'base_url' => env('ANYDESK_BASE_URL', 'https://v1.api.anydesk.com'),
+        'base_url' => env('ANYDESK_BASE_URL', 'https://v1.api.anydesk.com:8081'),
     ],
     'teamviewer' => [
         'enabled' => env('TEAMVIEWER_ENABLED', false),

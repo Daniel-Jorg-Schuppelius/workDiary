@@ -14,7 +14,8 @@ use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonImmutable;
 
 /**
- * Client für die AnyDesk REST-API v1 (https://v1.api.anydesk.com).
+ * Client für die AnyDesk REST-API v1 (https://v1.api.anydesk.com:8081 —
+ * die API lauscht nur auf Port 8081, Port 443 ist dort geschlossen).
  *
  * AnyDesk signiert jeden Request per HMAC-SHA1 mit dem API-Passwort der Lizenz;
  * der Lizenz-Schlüssel wandert mit in den Authorization-Header. Das Signieren
@@ -30,7 +31,7 @@ class AnyDeskClient implements RemoteProvider {
     public function __construct(
         private readonly ?string $licenseId,
         private readonly ?string $apiPassword,
-        private readonly string $baseUrl = 'https://v1.api.anydesk.com',
+        private readonly string $baseUrl = 'https://v1.api.anydesk.com:8081',
     ) {}
 
     public function id(): string {

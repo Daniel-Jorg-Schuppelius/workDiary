@@ -35,7 +35,7 @@ class RemoteSupportConfig {
             'enabled' => (bool) config('plugins.remote-support.anydesk.enabled', false),
             'license_id' => self::stringOrNull(config('plugins.remote-support.anydesk.license_id')),
             'api_key' => self::stringOrNull(config('plugins.remote-support.anydesk.api_key')),
-            'base_url' => (string) config('plugins.remote-support.anydesk.base_url', 'https://v1.api.anydesk.com'),
+            'base_url' => (string) config('plugins.remote-support.anydesk.base_url', 'https://v1.api.anydesk.com:8081'),
         ];
         $teamviewer = [
             'enabled' => (bool) config('plugins.remote-support.teamviewer.enabled', false),
