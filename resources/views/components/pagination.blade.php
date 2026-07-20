@@ -41,7 +41,8 @@
 @if ($hasEntries)
     @if ($standing)
         @push('page-footer')
-            <div class="shrink-0 mt-(--sidebar-gap) max-md:px-1">
+            {{-- Attribute (z. B. data-tab-footer für Tab-Seiten) landen auf dem Wrapper. --}}
+            <div {{ $attributes->class(['shrink-0 mt-(--sidebar-gap) max-md:px-1']) }}>
                 <div class="flex flex-wrap items-center justify-between gap-3 rounded-(--panel-radius) border border-base-300 bg-base-100 px-4 py-2.5 shadow-xs">
                     <div class="text-xs text-base-content/60">
                         {{ __('Seite') }} {{ $paginator->currentPage() }} / {{ $paginator->lastPage() }}

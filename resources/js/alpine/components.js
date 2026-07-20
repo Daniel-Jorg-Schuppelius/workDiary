@@ -72,12 +72,21 @@ export function registerAlpineComponents(Alpine) {
                           ? this.allowed[0]
                           : this.tab;
             }
+            this.$nextTick(() => this.syncTabFooters());
+        },
+        // Stehende Footer-Panels (x-pagination standing) mit data-tab-footer
+        // nur beim zugehörigen Tab zeigen — Tabs sind hier clientseitig.
+        syncTabFooters() {
+            document.querySelectorAll("[data-tab-footer]").forEach((el) => {
+                el.hidden = el.dataset.tabFooter !== this.tab;
+            });
         },
         setTab(name) {
             this.tab = name;
             if (this.persistKey) {
                 localStorage.setItem(this.persistKey, name);
             }
+            this.syncTabFooters();
             if (this.urlSync) {
                 const url = new URL(window.location.href);
                 url.searchParams.set("tab", name);

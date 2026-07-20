@@ -65,6 +65,10 @@
                     </tr>
             @endforeach
         </x-table>
-        <x-pagination :paginator="$timeEntries" :framed="false" />
     </x-card>
 </div>
+
+{{-- App-Standard: stehendes Pagination-Footer-Panel; via data-tab-footer nur
+     im Zeiterfassungs-Tab sichtbar (Initialzustand serverseitig). --}}
+<x-pagination :paginator="$timeEntries" standing data-tab-footer="time"
+              :hidden="request('tab', 'overview') !== 'time'" />
