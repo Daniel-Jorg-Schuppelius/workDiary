@@ -78,6 +78,7 @@
                         @else
                             <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
                             @if ($g['client_name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['client_name'] }}</span>@endif
+                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Toggl-Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
                         @endif
                         <span class="ml-auto text-xs text-base-content/50">
                             {{ trans_choice(':count Eintrag|:count Einträge', $g['count'], ['count' => $g['count']]) }} · {{ $g['minutes'] }} {{ __('Min') }}
@@ -257,9 +258,7 @@
 
     @if ($items->isEmpty())
         @if ($groups->isEmpty())
-            <p class="rounded-box border border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/60">
-                {{ __('Keine Einträge im gewählten Filter. 🎉') }}
-            </p>
+            <x-empty-state icon="inbox" :title="__('Keine Einträge im gewählten Filter.')" tone="success" framed />
         @endif
     @else
         <div class="space-y-4">

@@ -48,6 +48,9 @@ final class ImportedTimeEntry {
         public readonly ?int $clientId = null,
         public readonly ?int $projectId = null,
         public readonly ?int $activityId = null,
+        /** Quell-Workspace (nur Toggl-API) — trennt Inbox-Gruppen je Workspace. */
+        public readonly ?int $workspaceId = null,
+        public readonly ?string $workspaceName = null,
     ) {}
 
     /** Verbindungsdauer in Minuten (mind. 1, falls > 0 Sekunden). */

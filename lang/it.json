@@ -4306,7 +4306,7 @@
     "Remote übernommen": "Remoto applicato",
     "Alle Quellen": "Tutte le origini",
     "Alle Entitäten": "Tutte le entità",
-    "Keine Einträge im gewählten Filter. 🎉": "Nessuna voce per il filtro selezionato. 🎉",
+    "Keine Einträge im gewählten Filter.": "Nessuna voce per il filtro selezionato.",
     "(ohne Titel)": "(senza titolo)",
     "(ohne Namen)": "(senza nome)",
     "Zuordnen:": "Associa:",
@@ -8838,5 +8838,6 @@
     "Artikel (Bezugsquellen)": "Articoli (fonti di approvvigionamento)",
     "Bestellungen": "Ordini d’acquisto",
     "Offene Bestellungen": "Ordini d’acquisto aperti",
-    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Il progetto selezionato appartiene a un cliente finale — selezionare il cliente esterno corrispondente."
+    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Il progetto selezionato appartiene a un cliente finale — selezionare il cliente esterno corrispondente.",
+    "Toggl-Workspace": "Workspace Toggl"
 }

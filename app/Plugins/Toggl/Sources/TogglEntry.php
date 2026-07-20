@@ -44,6 +44,8 @@ final class TogglEntry {
         public readonly ?int $clientId = null,
         /** Stabile Toggl-Projekt-ID (nur API; CSV liefert keine) → bevorzugter Projekt-Schlüssel. */
         public readonly ?int $projectId = null,
+        /** Toggl-Workspace-ID (nur API) — trennt Inbox-Gruppen je Workspace. */
+        public readonly ?int $workspaceId = null,
     ) {}
 
     /** Verbindungsdauer in Minuten (mind. 1, falls > 0 Sekunden). */

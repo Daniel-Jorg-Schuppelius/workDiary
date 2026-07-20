@@ -4306,7 +4306,7 @@
     "Remote übernommen": "Distant appliqué",
     "Alle Quellen": "Toutes les sources",
     "Alle Entitäten": "Toutes les entités",
-    "Keine Einträge im gewählten Filter. 🎉": "Aucune entrée pour le filtre sélectionné. 🎉",
+    "Keine Einträge im gewählten Filter.": "Aucune entrée pour le filtre sélectionné.",
     "(ohne Titel)": "(sans titre)",
     "(ohne Namen)": "(sans nom)",
     "Zuordnen:": "Affecter :",
@@ -8838,5 +8838,6 @@
     "Artikel (Bezugsquellen)": "Articles (sources d’approvisionnement)",
     "Bestellungen": "Commandes",
     "Offene Bestellungen": "Commandes ouvertes",
-    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Le projet sélectionné appartient à un client final — veuillez sélectionner le client tiers correspondant."
+    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "Le projet sélectionné appartient à un client final — veuillez sélectionner le client tiers correspondant.",
+    "Toggl-Workspace": "Espace de travail Toggl"
 }

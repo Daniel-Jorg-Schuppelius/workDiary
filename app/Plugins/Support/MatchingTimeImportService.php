@@ -325,9 +325,16 @@ abstract class MatchingTimeImportService {
         $client = trim((string) $entry->clientName);
         $project = trim((string) $entry->projectName);
 
+        // Workspace-Präfix trennt die Inbox-Gruppen je Quell-Workspace —
+        // sonst mischen sich z. B. „(ohne Projekt)"-Einträge verschiedener
+        // Workspaces in einer Gruppe. Nur Gruppenschlüssel; die gemerkten
+        // Zuordnungs-Schlüssel (rememberReference) bleiben namensbasiert.
+        $groupKey = ($entry->workspaceId !== null ? 'ws' . $entry->workspaceId . '|' : '')
+            . $this->projectKey($client, $project, $entry->activity);
+
         $this->recordPendingItem($organization, $entry->entryKey, [
             'source' => $entry->source,
-            'group_key' => $this->projectKey($client, $project, $entry->activity),
+            'group_key' => $groupKey,
             'remote_snapshot' => [
                 'source' => $entry->source,
                 'entry_key' => $entry->entryKey,
@@ -343,6 +350,8 @@ abstract class MatchingTimeImportService {
                 'client_id' => $entry->clientId,
                 'project_id' => $entry->projectId,
                 'activity_id' => $entry->activityId,
+                'workspace_id' => $entry->workspaceId,
+                'workspace_name' => $entry->workspaceName,
             ],
             'display_title' => $project !== '' ? $project : (string) __('(ohne Projekt)'),
             'display_subtitle' => $client !== '' ? $client : null,
@@ -351,7 +360,7 @@ abstract class MatchingTimeImportService {
     }
 
     /**
-     * @return Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon, entries: array<int, array{description: ?string, started_at: ?string, ended_at: ?string, minutes: int, user_email: ?string, billable: bool}>, entries_more: int}>
+     * @return Collection<int, array{group_key: string, client_name: ?string, project_name: ?string, workspace_name: ?string, count: int, minutes: int, first_seen: ?\Illuminate\Support\Carbon, last_seen: ?\Illuminate\Support\Carbon, entries: array<int, array{description: ?string, started_at: ?string, ended_at: ?string, minutes: int, user_email: ?string, billable: bool}>, entries_more: int}>
      */
     public function openInboxGroups(Organization $organization): Collection {
         return $this->openInboxItems($organization)
@@ -388,6 +397,9 @@ abstract class MatchingTimeImportService {
                     'group_key' => (string) $groupKey,
                     'client_name' => isset($snap['client_name']) ? (string) $snap['client_name'] : null,
                     'project_name' => isset($snap['project_name']) ? (string) $snap['project_name'] : null,
+                    'workspace_name' => isset($snap['workspace_name']) && (string) $snap['workspace_name'] !== ''
+                        ? (string) $snap['workspace_name']
+                        : (isset($snap['workspace_id']) ? 'Workspace ' . $snap['workspace_id'] : null),
                     'count' => $group->count(),
                     'minutes' => (int) $group->sum(fn (IntegrationInboxItem $i): int => $this->snapshotMinutes($i->remote_snapshot ?? [])),
                     'first_seen' => $firstSeen,
@@ -476,6 +488,8 @@ abstract class MatchingTimeImportService {
             clientId: is_numeric($snap['client_id'] ?? null) ? (int) $snap['client_id'] : null,
             projectId: is_numeric($snap['project_id'] ?? null) ? (int) $snap['project_id'] : null,
             activityId: is_numeric($snap['activity_id'] ?? null) ? (int) $snap['activity_id'] : null,
+            workspaceId: is_numeric($snap['workspace_id'] ?? null) ? (int) $snap['workspace_id'] : null,
+            workspaceName: isset($snap['workspace_name']) ? (string) $snap['workspace_name'] : null,
         );
     }
 

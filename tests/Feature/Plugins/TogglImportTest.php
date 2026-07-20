@@ -73,7 +73,7 @@ class TogglImportTest extends TestCase {
         return mb_strtolower(trim($client) . '|' . trim($project));
     }
 
-    private function seedInboxEntry(string $client, string $project, string $entryKey, string $start, string $end, bool $billable = true, ?string $description = null): IntegrationInboxItem {
+    private function seedInboxEntry(string $client, string $project, string $entryKey, string $start, string $end, bool $billable = true, ?string $description = null, ?int $workspaceId = null, ?string $workspaceName = null): IntegrationInboxItem {
         return IntegrationInboxItem::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => TogglPlugin::ID,
@@ -82,7 +82,7 @@ class TogglImportTest extends TestCase {
             'external_type' => 'entry',
             'external_id' => $entryKey,
             'dedupe_key' => 'entry:' . $entryKey,
-            'group_key' => $this->groupKey($client, $project),
+            'group_key' => ($workspaceId !== null ? 'ws' . $workspaceId . '|' : '') . $this->groupKey($client, $project),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
             'status' => IntegrationInboxItem::STATUS_OPEN,
             'remote_snapshot' => [
@@ -95,6 +95,8 @@ class TogglImportTest extends TestCase {
                 'ended_at' => CarbonImmutable::parse($end)->toIso8601String(),
                 'billable' => $billable,
                 'user_email' => null,
+                'workspace_id' => $workspaceId,
+                'workspace_name' => $workspaceName,
             ],
             'display_title' => $project,
             'display_subtitle' => $client,
@@ -216,7 +218,7 @@ class TogglImportTest extends TestCase {
             'plugin_id' => TogglPlugin::ID,
             'external_type' => 'entry',
             'external_id' => 'toggl:222',
-            'group_key' => $this->groupKey('Unknown Co', 'Mystery'),
+            'group_key' => 'ws1|' . $this->groupKey('Unknown Co', 'Mystery'),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
             'status' => IntegrationInboxItem::STATUS_OPEN,
         ]);
@@ -528,6 +530,20 @@ class TogglImportTest extends TestCase {
             'external_id' => 'csv:intern',
             'status' => IntegrationInboxItem::STATUS_RESOLVED_CREATED,
         ]);
+    }
+
+    public function test_pending_groups_are_separated_per_workspace(): void {
+        // Gleicher (leerer) Client/Projekt-Schlüssel, aber verschiedene
+        // Workspaces → zwei getrennte Gruppen mit Workspace-Anzeige.
+        $this->seedInboxEntry('', '', 'csv:w1', '2026-05-26 09:00:00', '2026-05-26 10:00:00', true, null, 111, 'Eigene Firma');
+        $this->seedInboxEntry('', '', 'csv:w2', '2026-05-26 11:00:00', '2026-05-26 12:00:00', true, null, 222, 'LDS Systems');
+
+        $groups = $this->service()->openInboxGroups($this->organization);
+        $this->assertCount(2, $groups);
+        $this->assertEqualsCanonicalizing(
+            ['Eigene Firma', 'LDS Systems'],
+            $groups->pluck('workspace_name')->all(),
+        );
     }
 
     public function test_open_inbox_groups_include_entry_preview(): void {

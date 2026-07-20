@@ -54,6 +54,7 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
                 'group_key' => $group['group_key'],
                 'client_name' => $group['client_name'],
                 'project_name' => $group['project_name'],
+                'workspace_name' => $group['workspace_name'],
                 'count' => $group['count'],
                 'minutes' => $group['minutes'],
                 'first_seen' => $group['first_seen'],

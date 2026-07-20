@@ -162,6 +162,7 @@ class TogglApiClient {
             userEmail: $email,
             clientId: $clientId !== null ? (int) $clientId : null,
             projectId: $projectId,
+            workspaceId: isset($record['workspace_id']) ? (int) $record['workspace_id'] : null,
         );
     }
 
@@ -351,7 +352,7 @@ class TogglApiClient {
             }
 
             foreach ($this->fetchReportWindow($workspaceId, $windowStart, $windowEnd) as $row) {
-                foreach ($this->mapReportRow((array) $row, $projects) as $entry) {
+                foreach ($this->mapReportRow((array) $row, $projects, $workspaceId) as $entry) {
                     $entries[] = $entry;
                 }
             }
@@ -408,7 +409,7 @@ class TogglApiClient {
      * @param  array<int, array{name: string, client_name: ?string, client_id: ?int}>  $projects
      * @return array<int, TogglEntry>
      */
-    private function mapReportRow(array $row, array $projects): array {
+    private function mapReportRow(array $row, array $projects, ?int $workspaceId = null): array {
         $items = $row['time_entries'] ?? null;
         if (! is_array($items) || $items === []) {
             return [];
@@ -426,7 +427,7 @@ class TogglApiClient {
 
         $entries = [];
         foreach ($items as $item) {
-            $entry = $this->reportItemToEntry((array) $item, $clientName, $projectName, $description, $billable, $userEmail, $clientId, $projectId);
+            $entry = $this->reportItemToEntry((array) $item, $clientName, $projectName, $description, $billable, $userEmail, $clientId, $projectId, $workspaceId);
             if ($entry !== null) {
                 $entries[] = $entry;
             }
@@ -440,7 +441,7 @@ class TogglApiClient {
      *
      * @param  array<string, mixed>  $item
      */
-    private function reportItemToEntry(array $item, ?string $clientName, ?string $projectName, ?string $description, bool $billable, ?string $userEmail, ?int $clientId = null, ?int $projectId = null): ?TogglEntry {
+    private function reportItemToEntry(array $item, ?string $clientName, ?string $projectName, ?string $description, bool $billable, ?string $userEmail, ?int $clientId = null, ?int $projectId = null, ?int $workspaceId = null): ?TogglEntry {
         $start = $item['start'] ?? null;
         $stop = $item['stop'] ?? null;
         if (! is_string($start) || $start === '') {
@@ -465,6 +466,7 @@ class TogglApiClient {
             userEmail: $userEmail,
             clientId: $clientId,
             projectId: $projectId,
+            workspaceId: $workspaceId,
         );
     }
 

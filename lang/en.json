@@ -4306,7 +4306,7 @@
     "Remote übernommen": "Remote applied",
     "Alle Quellen": "All sources",
     "Alle Entitäten": "All entities",
-    "Keine Einträge im gewählten Filter. 🎉": "No entries for the selected filter. 🎉",
+    "Keine Einträge im gewählten Filter.": "No entries for the selected filter.",
     "(ohne Titel)": "(no title)",
     "(ohne Namen)": "(no name)",
     "Zuordnen:": "Assign:",
@@ -8838,5 +8838,6 @@
     "Artikel (Bezugsquellen)": "Articles (supply sources)",
     "Bestellungen": "Purchase orders",
     "Offene Bestellungen": "Open purchase orders",
-    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "The selected project belongs to an end customer — please select the matching external customer."
+    "Das gewählte Projekt gehört zu einem Endkunden — bitte den passenden Fremdkunden auswählen.": "The selected project belongs to an end customer — please select the matching external customer.",
+    "Toggl-Workspace": "Toggl workspace"
 }

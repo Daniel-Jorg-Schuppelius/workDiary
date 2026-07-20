@@ -53,7 +53,13 @@ class TogglImportService extends MatchingTimeImportService {
             return ['created' => 0, 'skipped' => 0, 'unmatched' => 0];
         }
 
-        return $this->ingest($organization, $this->mapEntries($client->fetchEntries($from, $to)), $config);
+        // Workspace-Namen für die Inbox-Anzeige (Gruppen sind je Workspace getrennt).
+        $workspaceNames = [];
+        foreach ($client->workspaces() as $workspace) {
+            $workspaceNames[(int) $workspace['id']] = (string) $workspace['name'];
+        }
+
+        return $this->ingest($organization, $this->mapEntries($client->fetchEntries($from, $to), $workspaceNames), $config);
     }
 
     /**
@@ -68,14 +74,19 @@ class TogglImportService extends MatchingTimeImportService {
 
     /**
      * @param  array<int, TogglEntry>  $entries
+     * @param  array<int, string>  $workspaceNames  Workspace-ID → Name (nur API)
      * @return array<int, ImportedTimeEntry>
      */
-    private function mapEntries(array $entries): array {
-        return array_map(fn(TogglEntry $entry): ImportedTimeEntry => $this->toImported($entry), $entries);
+    private function mapEntries(array $entries, array $workspaceNames = []): array {
+        return array_map(fn(TogglEntry $entry): ImportedTimeEntry => $this->toImported($entry, $workspaceNames), $entries);
     }
 
-    /** Mappt das Toggl-DTO (keine Tätigkeit/Tags) auf das gemeinsame Import-DTO. */
-    private function toImported(TogglEntry $entry): ImportedTimeEntry {
+    /**
+     * Mappt das Toggl-DTO (keine Tätigkeit/Tags) auf das gemeinsame Import-DTO.
+     *
+     * @param  array<int, string>  $workspaceNames
+     */
+    private function toImported(TogglEntry $entry, array $workspaceNames = []): ImportedTimeEntry {
         return new ImportedTimeEntry(
             entryKey: $entry->entryKey,
             clientName: $entry->clientName,
@@ -90,6 +101,8 @@ class TogglImportService extends MatchingTimeImportService {
             source: $entry->source,
             clientId: $entry->clientId,
             projectId: $entry->projectId,
+            workspaceId: $entry->workspaceId,
+            workspaceName: $entry->workspaceId !== null ? ($workspaceNames[$entry->workspaceId] ?? null) : null,
         );
     }
 
