@@ -174,6 +174,11 @@ return [
             'debtor_no' => 'Número de deudor (DATEV)',
             'debtor_no_hint' => 'Déjelo vacío para derivar el número automáticamente del rango de numeración configurado.',
         ],
+        'metric' => [
+            'draft' => 'Lotes en borrador',
+            'exported' => 'Lotes exportados',
+            'exported_total_year' => 'Total exportado (año en curso)',
+        ],
         'lock' => [
             'on' => 'bloqueado definitivamente',
             'off' => 'no bloqueado definitivamente',

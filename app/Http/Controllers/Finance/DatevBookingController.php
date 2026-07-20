@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Finance\ChartOfAccounts;
+use App\Enums\Finance\{ChartOfAccounts, DatevBatchStatus};
 use App\Http\Controllers\Controller;
 use App\Models\{ExpenseCategory, Organization, User};
 use App\Models\Finance\DatevBookingBatch;
@@ -51,9 +51,20 @@ class DatevBookingController extends Controller {
             ? $this->service->collectBookingReady($org, $period)->count()
             : 0;
 
+        // Kennzahlen der KPI-Zeile: Stapelbestand nach Status + Exportsumme des Jahres.
+        $draftCount = DatevBookingBatch::query()->where('status', DatevBatchStatus::Draft)->count();
+        $exportedCount = DatevBookingBatch::query()->where('status', DatevBatchStatus::Exported)->count();
+        $exportedTotalYear = (float) DatevBookingBatch::query()
+            ->where('status', DatevBatchStatus::Exported)
+            ->whereYear('finalized_at', now()->year)
+            ->sum('total_amount');
+
         return view('finance.datev.index', [
             'batches' => $batches,
             'openCount' => $openCount,
+            'draftCount' => $draftCount,
+            'exportedCount' => $exportedCount,
+            'exportedTotalYear' => $exportedTotalYear,
             'importAvailable' => FinancialFormatsSupport::isAvailable(),
             'canCreate' => Gate::allows('create', DatevBookingBatch::class),
             'canConfigure' => Gate::allows('configure', DatevBookingBatch::class),

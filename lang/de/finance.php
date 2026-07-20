@@ -178,6 +178,12 @@ return [
             'debtor_no_hint' => 'Leer lassen, um die Nummer automatisch aus dem konfigurierten Nummernkreis abzuleiten.',
         ],
 
+        'metric' => [
+            'draft' => 'Stapel im Entwurf',
+            'exported' => 'Exportierte Stapel',
+            'exported_total_year' => 'Exportsumme (laufendes Jahr)',
+        ],
+
         'lock' => [
             'on' => 'festgeschrieben',
             'off' => 'nicht festgeschrieben',

@@ -60,7 +60,7 @@ class ContractNegotiationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Vertragsversion abgelegt.'));
+        return back()->with('success', __('Vertragsversion abgelegt.'));
     }
 
     public function addReviewItem(Request $request, ApplicationContractNegotiation $negotiation): RedirectResponse {
@@ -77,7 +77,7 @@ class ContractNegotiationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Review-Punkt erfasst.'));
+        return back()->with('success', __('Review-Punkt erfasst.'));
     }
 
     public function resolveReviewItem(Request $request, ApplicationContractNegotiation $negotiation, int $item): RedirectResponse {
@@ -93,7 +93,7 @@ class ContractNegotiationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Review-Punkt entschieden.'));
+        return back()->with('success', __('Review-Punkt entschieden.'));
     }
 
     public function approve(Request $request, ApplicationContractNegotiation $negotiation): RedirectResponse {
@@ -105,7 +105,7 @@ class ContractNegotiationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', $result === 'approved_all'
+        return back()->with('success', $result === 'approved_all'
             ? __('Alle Freigabestufen erteilt.')
             : __('Freigabestufe erteilt — weitere Stufe offen.'));
     }
@@ -123,7 +123,7 @@ class ContractNegotiationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Verhandlung abgeschlossen.'));
+        return back()->with('success', __('Verhandlung abgeschlossen.'));
     }
 
     private function open(Request $request, ApplicationOpportunity|JobApplication $parent): RedirectResponse {
@@ -138,7 +138,7 @@ class ContractNegotiationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Vertragsverhandlung eröffnet.'));
+        return back()->with('success', __('Vertragsverhandlung eröffnet.'));
     }
 
     private function actor(): User {

@@ -114,4 +114,17 @@ class ApplicationOpportunity extends Model {
     public function isOpen(): bool {
         return in_array($this->status, self::OPEN_STATUSES, true);
     }
+
+    /** DaisyUI badge tone */
+    public function statusTone(): string {
+        return match ($this->status) {
+            'won' => 'success',
+            'lost' => 'error',
+            'question' => 'warning',
+            'in_progress' => 'primary',
+            'submitted', 'post_submission' => 'info',
+            'withdrawn', 'archived' => 'neutral',
+            default => 'ghost',
+        };
+    }
 }

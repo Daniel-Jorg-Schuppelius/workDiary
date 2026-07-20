@@ -18,6 +18,7 @@ use App\Models\CostCenter;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation, InvestmentOption};
 use App\Models\{Supplier, User};
 use App\Services\Investments\InvestmentService;
+use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -38,17 +39,25 @@ class InvestmentController extends Controller {
         $category = $request->string('category')->toString();
         $categoryFilter = in_array($category, InvestmentCase::CATEGORIES, true) ? $category : '';
 
+        $query = InvestmentCase::query()
+            ->with(['responsible', 'costCenter'])
+            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter))
+            ->when($categoryFilter !== '', fn($q) => $q->where('category', $categoryFilter));
+
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'title' => 'title',
+            'category' => 'category',
+            'status' => 'status',
+            'created' => 'id',
+        ], 'created', 'desc');
+
         return view('investments.index', [
-            'cases' => InvestmentCase::query()
-                ->with(['responsible', 'costCenter'])
-                ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter))
-                ->when($categoryFilter !== '', fn($q) => $q->where('category', $categoryFilter))
-                ->orderByDesc('id')
-                ->paginate(25)
-                ->withQueryString(),
+            'cases' => $query->paginate(25)->withQueryString(),
             'statuses' => InvestmentCase::STATUSES,
             'categories' => InvestmentCase::CATEGORIES,
             'filters' => ['status' => $statusFilter, 'category' => $categoryFilter],
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 
@@ -70,7 +79,7 @@ class InvestmentController extends Controller {
         ]);
         $case->audit('investment.created', ['title' => $case->title]);
 
-        return redirect()->route('investments.show', $case)->with('status', __('Investitionsakte angelegt.'));
+        return redirect()->route('investments.show', $case)->with('success', __('Investitionsakte angelegt.'));
     }
 
     public function show(InvestmentCase $case): View {
@@ -95,7 +104,7 @@ class InvestmentController extends Controller {
         Gate::authorize('update', $case);
         $case->update($request->validated());
 
-        return redirect()->route('investments.show', $case)->with('status', __('Akte aktualisiert.'));
+        return redirect()->route('investments.show', $case)->with('success', __('Akte aktualisiert.'));
     }
 
     public function destroy(InvestmentCase $case): RedirectResponse {
@@ -103,7 +112,7 @@ class InvestmentController extends Controller {
         $case->options()->delete();
         $case->delete();
 
-        return redirect()->route('investments.index')->with('status', __('Akte gelöscht.'));
+        return redirect()->route('investments.index')->with('success', __('Akte gelöscht.'));
     }
 
     public function updateStatus(UpdateInvestmentStatusRequest $request, InvestmentCase $case): RedirectResponse {
@@ -116,7 +125,7 @@ class InvestmentController extends Controller {
         }
         $case->update(['status' => $data['status']]);
 
-        return back()->with('status', __('Status aktualisiert.'));
+        return back()->with('success', __('Status aktualisiert.'));
     }
 
     // ── Kostenstellen (D2, Blocked-State-Auflösung) ──────────────────────
@@ -132,7 +141,7 @@ class InvestmentController extends Controller {
             ['label' => $data['label'], 'active' => true],
         );
 
-        return back()->with('status', __('Kostenstelle angelegt.'));
+        return back()->with('success', __('Kostenstelle angelegt.'));
     }
 
     // ── Variantenvergleich (MVP-201) ─────────────────────────────────────
@@ -150,7 +159,7 @@ class InvestmentController extends Controller {
             $case->update(['status' => 'comparison']);
         }
 
-        return back()->with('status', __('Variante erfasst.'));
+        return back()->with('success', __('Variante erfasst.'));
     }
 
     public function recommendOption(InvestmentCase $case, InvestmentOption $option): RedirectResponse {
@@ -161,7 +170,7 @@ class InvestmentController extends Controller {
         $option->update(['recommended' => true]);
         $case->audit('investment.option_recommended', ['option' => $option->title]);
 
-        return back()->with('status', __('Empfehlung gesetzt.'));
+        return back()->with('success', __('Empfehlung gesetzt.'));
     }
 
     public function removeOption(InvestmentCase $case, InvestmentOption $option): RedirectResponse {
@@ -169,7 +178,7 @@ class InvestmentController extends Controller {
         abort_unless($option->investment_case_id === $case->id, 404);
         $option->delete();
 
-        return back()->with('status', __('Variante entfernt.'));
+        return back()->with('success', __('Variante entfernt.'));
     }
 
     // ── Budgetantrag + Freigabe (MVP-202/203) ────────────────────────────
@@ -188,7 +197,7 @@ class InvestmentController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Budgetantrag eingereicht — Freigabekette gestartet.'));
+        return back()->with('success', __('Budgetantrag eingereicht — Freigabekette gestartet.'));
     }
 
     public function approveBudget(Request $request, InvestmentCase $case, InvestmentBudgetRequest $budgetRequest): RedirectResponse {
@@ -201,7 +210,7 @@ class InvestmentController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', $result === 'approved_all'
+        return back()->with('success', $result === 'approved_all'
             ? __('Budget genehmigt und eingefroren.')
             : __('Freigabestufe erteilt — weitere Stufe offen (Vier-Augen).'));
     }
@@ -217,7 +226,7 @@ class InvestmentController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Budgetantrag abgelehnt.'));
+        return back()->with('success', __('Budgetantrag abgelehnt.'));
     }
 
     // ── Verknüpfungen + Ist-Werte (MVP-204/205) ──────────────────────────
@@ -257,7 +266,7 @@ class InvestmentController extends Controller {
             $case->update(['status' => 'in_progress']);
         }
 
-        return back()->with('status', __('Verknüpfung angelegt.'));
+        return back()->with('success', __('Verknüpfung angelegt.'));
     }
 
     public function addActual(AddInvestmentActualRequest $request, InvestmentCase $case): RedirectResponse {
@@ -273,7 +282,7 @@ class InvestmentController extends Controller {
             'created_by' => (int) Auth::id(),
         ]);
 
-        return back()->with('status', __('Ist-Wert erfasst.'));
+        return back()->with('success', __('Ist-Wert erfasst.'));
     }
 
     // ── Abweichungen + Nachtrag (MVP-206) ────────────────────────────────
@@ -291,7 +300,7 @@ class InvestmentController extends Controller {
             'created_by' => (int) Auth::id(),
         ]);
 
-        return back()->with('status', __('Abweichung dokumentiert.'));
+        return back()->with('success', __('Abweichung dokumentiert.'));
     }
 
     public function decideDeviation(DecideInvestmentDeviationRequest $request, InvestmentCase $case, InvestmentDeviation $deviation): RedirectResponse {
@@ -305,7 +314,7 @@ class InvestmentController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Abweichung entschieden.'));
+        return back()->with('success', __('Abweichung entschieden.'));
     }
 
     public function supplementBudget(SupplementInvestmentBudgetRequest $request, InvestmentCase $case, InvestmentDeviation $deviation): RedirectResponse {
@@ -319,7 +328,7 @@ class InvestmentController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Nachtrag eingereicht — Freigabekette gestartet.'));
+        return back()->with('success', __('Nachtrag eingereicht — Freigabekette gestartet.'));
     }
 
     // ── Nachbewertung (MVP-207) ──────────────────────────────────────────
@@ -344,7 +353,7 @@ class InvestmentController extends Controller {
         $case->update(['status' => 'post_review']);
         $case->audit('investment.reviewed', []);
 
-        return back()->with('status', __('Nachbewertung dokumentiert.'));
+        return back()->with('success', __('Nachbewertung dokumentiert.'));
     }
 
     private function formView(InvestmentCase $case): View {

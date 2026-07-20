@@ -69,4 +69,15 @@ class JobRequisition extends Model {
     public function responsible(): BelongsTo {
         return $this->belongsTo(User::class, 'responsible_user_id');
     }
+
+    /** DaisyUI badge tone */
+    public function statusTone(): string {
+        return match ($this->status) {
+            'open' => 'primary',
+            'on_hold' => 'warning',
+            'filled' => 'success',
+            'closed' => 'neutral',
+            default => 'ghost',
+        };
+    }
 }

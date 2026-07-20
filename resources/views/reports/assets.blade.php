@@ -8,7 +8,7 @@
 --}}
 
 @extends('layouts.app')
-@section('title', __('Produktanalyse'))
+@section('title', __('Produktanalyse') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Produktanalyse'))
 
 @section('content')
@@ -66,7 +66,7 @@
             <x-empty-state framed
                 icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' />
         @else
-            <x-table table-sort="client">
+            <x-table table-sort="client" :caption="__('Produktanalyse')">
                 <x-slot:head>
                     <x-table.th sort type="string">{{ match($groupBy) { 'group' => __('Produktgruppe'), 'model' => __('Modell'), default => __('Asset') } }}</x-table.th>
                     <x-table.th sort type="number" align="right">{{ __('Assets') }}</x-table.th>
@@ -80,30 +80,30 @@
                 @foreach($rows as $row)
                     <tr>
                         <td>{{ $row['label'] }}</td>
-                        <td class="text-right">{{ $row['assetCount'] }}</td>
-                        <td class="text-right">{{ $row['entryCount'] }}</td>
-                        <td class="text-right">
+                        <td class="text-right tabular-nums">{{ $row['assetCount'] }}</td>
+                        <td class="text-right tabular-nums">{{ $row['entryCount'] }}</td>
+                        <td class="text-right tabular-nums">
                             @if($row['openIssueCount'] > 0)
                                 <a href="{{ route('reports.assets.drilldown.open-issues', $row['drilldown']) }}" class="link link-hover">{{ $row['openIssueCount'] }}</a>
                             @else
                                 {{ $row['openIssueCount'] }}
                             @endif
                         </td>
-                        <td class="text-right">
+                        <td class="text-right tabular-nums">
                             @if($row['escalationCount'] > 0)
                                 <a href="{{ route('reports.assets.drilldown.open-issues', array_merge($row['drilldown'], ['escalated' => 1])) }}" class="link link-hover">{{ $row['escalationCount'] }}</a>
                             @else
                                 {{ $row['escalationCount'] }}
                             @endif
                         </td>
-                        <td class="text-right">
+                        <td class="text-right tabular-nums">
                             @if($row['defectCount'] > 0)
                                 <a href="{{ route('reports.assets.drilldown.protocols', $row['drilldown']) }}" class="link link-hover">{{ $row['defectCount'] }}</a>
                             @else
                                 {{ $row['defectCount'] }}
                             @endif
                         </td>
-                        <td class="text-right">{{ number_format((float) $row['defectRate'], 2, ',', '.') }}</td>
+                        <td class="text-right tabular-nums">{{ number_format((float) $row['defectRate'], 2, ',', '.') }}</td>
                         <td @if ($row['lastIncidentAt']) data-sort-value="{{ \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->format('Y-m-d') }}" @endif>{{ $row['lastIncidentAt'] ? \Illuminate\Support\Carbon::parse($row['lastIncidentAt'])->fdate() : '—' }}</td>
                     </tr>
                 @endforeach

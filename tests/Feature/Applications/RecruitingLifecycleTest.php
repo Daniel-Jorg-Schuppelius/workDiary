@@ -127,7 +127,7 @@ final class RecruitingLifecycleTest extends TestCase {
         app(RecruitingService::class)->decide($application, 'accepted', null, $hr);
         $this->actingAs($hr)->post(route('recruiting.applications.draft.store', $application), [
             'qualifications' => "Elektrofachkraft\nFührerschein B",
-        ])->assertSessionHas('status');
+        ])->assertSessionHas('success');
 
         $draft = $application->fresh()->employeeDraft;
         $this->assertNotNull($draft);
@@ -135,7 +135,7 @@ final class RecruitingLifecycleTest extends TestCase {
         $this->assertSame(0, User::query()->where('email', 'kim.neu@example.test')->count(), 'Entwurf darf KEIN Live-Konto erzeugen.');
 
         // Bewusste Einladung erzeugt den User über den Invite-Pfad.
-        $this->actingAs($hr)->post(route('recruiting.applications.draft.invite', [$application, $draft]))->assertSessionHas('status');
+        $this->actingAs($hr)->post(route('recruiting.applications.draft.invite', [$application, $draft]))->assertSessionHas('success');
         $user = User::query()->where('email', 'kim.neu@example.test')->firstOrFail();
         $this->assertTrue((bool) $user->is_new_system);
         $this->assertTrue((bool) $user->must_change_password);

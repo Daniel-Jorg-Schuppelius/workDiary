@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Applications;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{JobPosting, JobRequisition};
 use App\Models\User;
+use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -29,15 +30,25 @@ class JobRequisitionController extends Controller {
         $status = $request->string('status')->toString();
         $statusFilter = in_array($status, JobRequisition::STATUSES, true) ? $status : '';
 
+        $query = JobRequisition::query()
+            ->withCount('applications')
+            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter));
+
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'title' => 'title',
+            'department' => 'department',
+            'status' => 'status',
+            'applications' => 'applications_count',
+            'target_start' => 'target_start_on',
+            'created' => 'id',
+        ], 'created', 'desc');
+
         return view('applications.recruiting.requisitions.index', [
-            'requisitions' => JobRequisition::query()
-                ->withCount('applications')
-                ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter))
-                ->orderByDesc('id')
-                ->paginate(25)
-                ->withQueryString(),
+            'requisitions' => $query->paginate(25)->withQueryString(),
             'statuses' => JobRequisition::STATUSES,
             'filters' => ['status' => $statusFilter],
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 
@@ -62,7 +73,7 @@ class JobRequisitionController extends Controller {
         ]);
         $requisition->audit('recruiting.requisition_created', ['title' => $requisition->title]);
 
-        return redirect()->route('recruiting.requisitions.show', $requisition)->with('status', __('Stelle angelegt.'));
+        return redirect()->route('recruiting.requisitions.show', $requisition)->with('success', __('Stelle angelegt.'));
     }
 
     public function show(JobRequisition $requisition): View {
@@ -85,7 +96,7 @@ class JobRequisitionController extends Controller {
         Gate::authorize('update', $requisition);
         $requisition->update($this->validated($request));
 
-        return redirect()->route('recruiting.requisitions.show', $requisition)->with('status', __('Stelle aktualisiert.'));
+        return redirect()->route('recruiting.requisitions.show', $requisition)->with('success', __('Stelle aktualisiert.'));
     }
 
     public function updateStatus(Request $request, JobRequisition $requisition): RedirectResponse {
@@ -93,7 +104,7 @@ class JobRequisitionController extends Controller {
         $data = $request->validate(['status' => ['required', 'in:' . implode(',', JobRequisition::STATUSES)]]);
         $requisition->update(['status' => $data['status']]);
 
-        return back()->with('status', __('Status aktualisiert.'));
+        return back()->with('success', __('Status aktualisiert.'));
     }
 
     public function addPosting(Request $request, JobRequisition $requisition): RedirectResponse {
@@ -115,7 +126,7 @@ class JobRequisitionController extends Controller {
             'status' => 'published',
         ]);
 
-        return back()->with('status', __('Veröffentlichung dokumentiert.'));
+        return back()->with('success', __('Veröffentlichung dokumentiert.'));
     }
 
     public function closePosting(JobRequisition $requisition, JobPosting $posting): RedirectResponse {
@@ -123,7 +134,7 @@ class JobRequisitionController extends Controller {
         abort_unless($posting->job_requisition_id === $requisition->id, 404);
         $posting->update(['status' => 'closed']);
 
-        return back()->with('status', __('Veröffentlichung geschlossen.'));
+        return back()->with('success', __('Veröffentlichung geschlossen.'));
     }
 
     /** @return array<string, mixed> */

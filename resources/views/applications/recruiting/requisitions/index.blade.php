@@ -1,6 +1,14 @@
+{{--
+  Created on   : Sun Jul 20 2026
+  Author       : Daniel Jörg Schuppelius
+  Author Uri   : https://schuppelius.org
+  Filename     : index.blade.php
+  License      : AGPL-3.0-or-later
+  License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+--}}
 @extends('layouts.app')
 
-@section('title', __('Stellen'))
+@section('title', __('Stellen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Stellen'))
 
 @section('content')
@@ -17,38 +25,41 @@
     @include('applications.recruiting._tabs')
 
     <x-filter-bar :action="route('recruiting.requisitions.index')" :reset="route('recruiting.requisitions.index')">
-        <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
-            <option value="">{{ __('Alle Status') }}</option>
-            @foreach ($statuses as $s)
-                <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
-            @endforeach
-        </select>
+        <x-filter-field :label="__('Status')" for="req-status" class="shrink-0">
+            <select id="req-status" name="status" class="select select-sm select-bordered w-44" aria-label="{{ __('Status') }}">
+                <option value="">{{ __('Alle Status') }}</option>
+                @foreach ($statuses as $s)
+                    <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
     </x-filter-bar>
 
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
-
     <x-card padding="p-0">
-        <x-table bare>
+        <x-table table-sort="server"
+                 :route="route('recruiting.requisitions.index')"
+                 :current-sort="$sort ?? null"
+                 :current-dir="$dir ?? 'desc'"
+                 :sort-params="[]"
+                 bare>
             <x-slot:head>
                 <tr>
-                    <th>{{ __('Stelle') }}</th>
-                    <th>{{ __('Abteilung') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('Bewerbungen') }}</th>
-                    <th>{{ __('Zielstart') }}</th>
-                    <th></th>
+                    <x-table.th sort="title">{{ __('Stelle') }}</x-table.th>
+                    <x-table.th sort="department">{{ __('Abteilung') }}</x-table.th>
+                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                    <x-table.th sort="applications" align="right">{{ __('Bewerbungen') }}</x-table.th>
+                    <x-table.th sort="target_start">{{ __('Zielstart') }}</x-table.th>
+                    <x-table.th></x-table.th>
                 </tr>
             </x-slot:head>
             @forelse ($requisitions as $requisition)
                 <tr>
-                    <td><a href="{{ route('recruiting.requisitions.show', $requisition) }}" class="link">{{ $requisition->title }}</a></td>
+                    <td><a href="{{ route('recruiting.requisitions.show', $requisition) }}" class="link link-hover font-medium">{{ $requisition->title }}</a></td>
                     <td>{{ $requisition->department ?? '—' }}</td>
-                    <td><x-status-badge size="md" outline>{{ __("values.{$requisition->status}") }}</x-status-badge></td>
-                    <td class="text-right">{{ $requisition->applications_count }}</td>
-                    <td>{{ optional($requisition->target_start_on)->fdate() ?? '—' }}</td>
-                    <td><x-icon-btn icon="visibility" :href="route('recruiting.requisitions.show', $requisition)" :label="__('Anzeigen')" /></td>
+                    <td><x-status-badge :tone="$requisition->statusTone()" size="sm">{{ __("values.{$requisition->status}") }}</x-status-badge></td>
+                    <td class="text-right tabular-nums">{{ $requisition->applications_count }}</td>
+                    <td class="tabular-nums">{{ optional($requisition->target_start_on)->fdate() ?? '—' }}</td>
+                    <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.requisitions.show', $requisition)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
                 <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">work</span>' :colspan="6" :title="__('Keine Stellen — „Stelle anlegen" startet den ersten Bedarf.')" compact />

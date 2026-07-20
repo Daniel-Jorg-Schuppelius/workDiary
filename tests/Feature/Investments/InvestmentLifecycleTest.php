@@ -177,12 +177,12 @@ final class InvestmentLifecycleTest extends TestCase {
         $service = app(InvestmentService::class);
         $request = $service->submitBudget($case->refresh(), ['amount' => '900.00'], $accounting);
         $service->approveBudget($request, $this->second);
-        $this->actingAs($accounting)->post(route('investments.status', $case), ['status' => 'in_progress'])->assertSessionHas('status');
-        $this->actingAs($accounting)->post(route('investments.status', $case), ['status' => 'completed'])->assertSessionHas('status');
+        $this->actingAs($accounting)->post(route('investments.status', $case), ['status' => 'in_progress'])->assertSessionHas('success');
+        $this->actingAs($accounting)->post(route('investments.status', $case), ['status' => 'completed'])->assertSessionHas('success');
 
         $this->actingAs($accounting)->post(route('investments.review.store', $case), [
             'benefit_result' => 'Ausfallzeiten halbiert.',
-        ])->assertSessionHas('status');
+        ])->assertSessionHas('success');
         $this->assertSame('post_review', $case->fresh()->status);
 
         // Fremde Org: 404.

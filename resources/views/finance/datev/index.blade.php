@@ -46,8 +46,11 @@
             @endif
         </x-slot:actions>
 
-        <div class="grid grid-cols-1 gap-3 mb-4 sm:max-w-xs">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <x-kpi-tile :label="__('finance.datev.field.open_ready')" :value="$openCount" tone="warning" />
+            <x-kpi-tile :label="__('finance.datev.metric.draft')" :value="$draftCount" />
+            <x-kpi-tile :label="__('finance.datev.metric.exported')" :value="$exportedCount" tone="success" />
+            <x-kpi-tile :label="__('finance.datev.metric.exported_total_year')" :value="number_format($exportedTotalYear, 2, ',', '.') . ' €'" />
         </div>
 
         <x-table>

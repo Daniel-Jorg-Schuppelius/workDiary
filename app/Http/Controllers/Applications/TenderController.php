@@ -78,7 +78,7 @@ class TenderController extends Controller {
         ]);
         $opportunity->audit('tender.created', ['title' => $opportunity->title]);
 
-        return redirect()->route('tenders.show', $opportunity)->with('status', __('Ausschreibungsakte angelegt.'));
+        return redirect()->route('tenders.show', $opportunity)->with('success', __('Ausschreibungsakte angelegt.'));
     }
 
     public function show(ApplicationOpportunity $opportunity): View {
@@ -105,7 +105,7 @@ class TenderController extends Controller {
         Gate::authorize('update', $opportunity);
         $opportunity->update($this->validated($request));
 
-        return redirect()->route('tenders.show', $opportunity)->with('status', __('Akte aktualisiert.'));
+        return redirect()->route('tenders.show', $opportunity)->with('success', __('Akte aktualisiert.'));
     }
 
     public function destroy(ApplicationOpportunity $opportunity): RedirectResponse {
@@ -113,7 +113,7 @@ class TenderController extends Controller {
         $opportunity->requirements()->delete();
         $opportunity->delete();
 
-        return redirect()->route('tenders.index')->with('status', __('Akte gelöscht.'));
+        return redirect()->route('tenders.index')->with('success', __('Akte gelöscht.'));
     }
 
     // ── Unterlagen-Checkliste (MVP-185) ──────────────────────────────────
@@ -138,7 +138,7 @@ class TenderController extends Controller {
             'position' => (int) $opportunity->requirements()->max('position') + 1,
         ]);
 
-        return back()->with('status', __('Anforderung hinzugefügt.'));
+        return back()->with('success', __('Anforderung hinzugefügt.'));
     }
 
     public function updateRequirement(Request $request, ApplicationOpportunity $opportunity, ApplicationRequirement $requirement): RedirectResponse {
@@ -152,7 +152,7 @@ class TenderController extends Controller {
         ]);
         $requirement->update($data);
 
-        return back()->with('status', __('Anforderung aktualisiert.'));
+        return back()->with('success', __('Anforderung aktualisiert.'));
     }
 
     public function removeRequirement(ApplicationOpportunity $opportunity, ApplicationRequirement $requirement): RedirectResponse {
@@ -160,7 +160,7 @@ class TenderController extends Controller {
         abort_unless($requirement->application_opportunity_id === $opportunity->id, 404);
         $requirement->delete();
 
-        return back()->with('status', __('Anforderung entfernt.'));
+        return back()->with('success', __('Anforderung entfernt.'));
     }
 
     // ── Lifecycle (MVP-184/187) ──────────────────────────────────────────
@@ -175,7 +175,7 @@ class TenderController extends Controller {
         }
         $opportunity->update(['status' => $data['status']]);
 
-        return back()->with('status', __('Status aktualisiert.'));
+        return back()->with('success', __('Status aktualisiert.'));
     }
 
     public function decideGo(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {
@@ -191,7 +191,7 @@ class TenderController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Go-/No-go-Entscheidung dokumentiert.'));
+        return back()->with('success', __('Go-/No-go-Entscheidung dokumentiert.'));
     }
 
     public function submit(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {
@@ -207,7 +207,7 @@ class TenderController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Einreichung V:version dokumentiert (SHA-256 :hash…).', [
+        return back()->with('success', __('Einreichung V:version dokumentiert (SHA-256 :hash…).', [
             'version' => $submission->version,
             'hash' => substr($submission->sha256, 0, 12),
         ]));
@@ -226,7 +226,7 @@ class TenderController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Entscheidung dokumentiert.'));
+        return back()->with('success', __('Entscheidung dokumentiert.'));
     }
 
     public function transfer(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {
@@ -248,7 +248,7 @@ class TenderController extends Controller {
         }
 
         return redirect()->route('projects.show', $project)
-            ->with('status', __('Ausschreibung in Projekt „:name" überführt.', ['name' => $project->name]));
+            ->with('success', __('Ausschreibung in Projekt „:name" überführt.', ['name' => $project->name]));
     }
 
     /** @return array<string, mixed> */

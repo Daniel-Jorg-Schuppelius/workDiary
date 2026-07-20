@@ -5,13 +5,6 @@
 
 @section('content')
 <x-page-shell>
-    @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
-    @if (session('error'))
-        <div class="alert alert-error">{{ session('error') }}</div>
-    @endif
-
     <x-page-toolbar :title="$opportunity->title" :badge="__('values.' . $opportunity->status)" badge-tone="outline">
         <div class="text-sm text-base-content/70">
             {{ __("values.{$opportunity->kind}") }}

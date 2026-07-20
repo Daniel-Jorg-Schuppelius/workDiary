@@ -125,4 +125,17 @@ class InvestmentCase extends Model {
 
         return $this->cost_center_label;
     }
+
+    /** DaisyUI badge tone */
+    public function statusTone(): string {
+        return match ($this->status) {
+            'approved', 'completed' => 'success',
+            'rejected' => 'error',
+            'budget_request', 'in_approval' => 'warning',
+            'in_progress' => 'primary',
+            'post_review' => 'info',
+            'deferred', 'cancelled' => 'neutral',
+            default => 'ghost',
+        };
+    }
 }

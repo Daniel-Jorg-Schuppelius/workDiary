@@ -126,4 +126,19 @@ class JobApplication extends Model {
     public function isAnonymized(): bool {
         return $this->anonymized_at !== null;
     }
+
+    /** DaisyUI badge tone */
+    public function statusTone(): string {
+        return match ($this->status) {
+            'screened' => 'info',
+            'interview_planned', 'interviewed' => 'primary',
+            'task_open' => 'warning',
+            'offer' => 'accent',
+            'accepted' => 'success',
+            'rejected' => 'error',
+            'talent_pool' => 'secondary',
+            'withdrawn', 'deleted' => 'neutral',
+            default => 'ghost',
+        };
+    }
 }

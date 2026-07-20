@@ -175,6 +175,11 @@ return [
             'debtor_no' => 'Debtor number (DATEV)',
             'debtor_no_hint' => 'Leave empty to derive the number automatically from the configured number range.',
         ],
+        'metric' => [
+            'draft' => 'Draft batches',
+            'exported' => 'Exported batches',
+            'exported_total_year' => 'Export total (current year)',
+        ],
         'lock' => [
             'on' => 'locked',
             'off' => 'not locked',

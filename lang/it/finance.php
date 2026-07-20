@@ -175,6 +175,11 @@ return [
             'debtor_no' => 'Numero cliente (DATEV)',
             'debtor_no_hint' => 'Lasciare vuoto per derivare automaticamente il numero dall\'intervallo numerico configurato.',
         ],
+        'metric' => [
+            'draft' => 'Lotti in bozza',
+            'exported' => 'Lotti esportati',
+            'exported_total_year' => 'Totale esportato (anno corrente)',
+        ],
         'lock' => [
             'on' => 'registrato definitivamente',
             'off' => 'non registrato definitivamente',

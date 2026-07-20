@@ -164,6 +164,11 @@ return [
             'reversal' => 'GU',
             'reversal_badge' => 'Extourne générale',
         ],
+        'metric' => [
+            'draft' => 'Lots en brouillon',
+            'exported' => 'Lots exportés',
+            'exported_total_year' => 'Total exporté (année en cours)',
+        ],
         'lock' => ['on' => 'verrouillé', 'off' => 'non verrouillé'],
         'selection' => ['manual' => 'Sélection partielle'],
         'action' => ['create' => 'Créer un lot', 'finalize' => 'Finaliser', 'download' => 'Télécharger le CSV', 'configure' => 'Configuration', 'save_config' => 'Enregistrer la configuration', 'discard' => 'Abandonner le brouillon', 'remove_selected' => 'Retirer la sélection', 'select_source' => 'Sélectionner l\'écriture'],

@@ -18,6 +18,7 @@ use App\Models\Applications\{EmployeeDraft, JobApplication, JobRequisition};
 use App\Models\User;
 use App\Services\Applications\RecruitingService;
 use App\Services\Document\DocumentService;
+use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -37,15 +38,23 @@ class JobApplicationController extends Controller {
         $status = $request->string('status')->toString();
         $statusFilter = in_array($status, JobApplication::STATUSES, true) ? $status : '';
 
+        $query = JobApplication::query()
+            ->with(['requisition', 'responsible'])
+            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter));
+
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'candidate' => 'candidate_name',
+            'status' => 'status',
+            'received' => 'received_at',
+            'created' => 'id',
+        ], 'created', 'desc');
+
         return view('applications.recruiting.applications.index', [
-            'applications' => JobApplication::query()
-                ->with(['requisition', 'responsible'])
-                ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter))
-                ->orderByDesc('id')
-                ->paginate(25)
-                ->withQueryString(),
+            'applications' => $query->paginate(25)->withQueryString(),
             'statuses' => JobApplication::STATUSES,
             'filters' => ['status' => $statusFilter],
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 
@@ -81,7 +90,7 @@ class JobApplicationController extends Controller {
             $notice .= ' ' . __('Achtung: :count frühere Bewerbung(en) mit derselben E-Mail (Dublettenhinweis).', ['count' => $duplicates]);
         }
 
-        return redirect()->route('recruiting.applications.show', $application)->with('status', $notice);
+        return redirect()->route('recruiting.applications.show', $application)->with('success', $notice);
     }
 
     public function show(JobApplication $application): View {
@@ -104,7 +113,7 @@ class JobApplicationController extends Controller {
         }
         $application->update(['status' => $data['status']]);
 
-        return back()->with('status', __('Status aktualisiert.'));
+        return back()->with('success', __('Status aktualisiert.'));
     }
 
     // ── Gespräche + Bewertungen (MVP-191) ────────────────────────────────
@@ -129,7 +138,7 @@ class JobApplicationController extends Controller {
         ]);
         $application->update(['status' => 'interview_planned']);
 
-        return back()->with('status', __('Gespräch geplant.'));
+        return back()->with('success', __('Gespräch geplant.'));
     }
 
     public function completeInterview(Request $request, JobApplication $application, \App\Models\Applications\JobApplicationInterview $interview): RedirectResponse {
@@ -147,7 +156,7 @@ class JobApplicationController extends Controller {
         ]);
         $application->update(['status' => 'interviewed']);
 
-        return back()->with('status', __('Gespräch dokumentiert.'));
+        return back()->with('success', __('Gespräch dokumentiert.'));
     }
 
     public function addReview(Request $request, JobApplication $application): RedirectResponse {
@@ -164,7 +173,7 @@ class JobApplicationController extends Controller {
             'comment' => trim((string) ($data['comment'] ?? '')) ?: null,
         ]);
 
-        return back()->with('status', __('Bewertung gespeichert.'));
+        return back()->with('success', __('Bewertung gespeichert.'));
     }
 
     // ── Unterlagen (MVP-190) ─────────────────────────────────────────────
@@ -188,7 +197,7 @@ class JobApplicationController extends Controller {
         ]);
         $application->audit('recruiting.document_attached', ['document_id' => $document->id]);
 
-        return back()->with('status', __('Unterlage abgelegt.'));
+        return back()->with('success', __('Unterlage abgelegt.'));
     }
 
     // ── Entscheidung + Datenschutz (MVP-191/192) ─────────────────────────
@@ -207,7 +216,7 @@ class JobApplicationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Entscheidung dokumentiert.'));
+        return back()->with('success', __('Entscheidung dokumentiert.'));
     }
 
     /** Auskunft/Export (Art. 15 DSGVO): strukturierte JSON-Kopie. */
@@ -228,7 +237,7 @@ class JobApplicationController extends Controller {
 
         $this->recruiting->anonymize($application, $this->actor());
 
-        return back()->with('status', __('Bewerberdaten anonymisiert — die Akte bleibt als anonymer Nachweis erhalten.'));
+        return back()->with('success', __('Bewerberdaten anonymisiert — die Akte bleibt als anonymer Nachweis erhalten.'));
     }
 
     // ── Onboarding-Übergabe (MVP-193) ────────────────────────────────────
@@ -247,7 +256,7 @@ class JobApplicationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Mitarbeiter-Entwurf angelegt (kein Live-Konto).'));
+        return back()->with('success', __('Mitarbeiter-Entwurf angelegt (kein Live-Konto).'));
     }
 
     public function inviteDraft(JobApplication $application, EmployeeDraft $draft): RedirectResponse {
@@ -260,7 +269,7 @@ class JobApplicationController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('status', __('Konto für :name angelegt (Passwort-Änderung beim ersten Login erzwungen).', ['name' => $user->name]));
+        return back()->with('success', __('Konto für :name angelegt (Passwort-Änderung beim ersten Login erzwungen).', ['name' => $user->name]));
     }
 
     private function actor(): User {
