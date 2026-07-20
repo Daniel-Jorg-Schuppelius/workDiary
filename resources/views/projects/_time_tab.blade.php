@@ -4,41 +4,25 @@
 @endphp
 
 <div class="flex flex-col gap-3">
-    {{-- Summary --}}
+    {{-- Summary — Standard-KPI-Kacheln wie auf der Kunden-Detailseite --}}
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="font-['Space_Grotesk'] text-2xl font-bold">{{ $fmt($totalMinutes) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ __('Gesamt') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="font-['Space_Grotesk'] text-2xl font-bold">{{ $fmt($monthMinutes) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ __('Dieser Monat') }}</div>
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-center shadow-xs">
-            <div class="font-['Space_Grotesk'] text-2xl font-bold">{{ $fmt($myMinutes) }}</div>
-            <div class="mt-1 text-xs text-base-content/60">{{ __('Meine Stunden') }}</div>
-        </div>
+        <x-kpi-tile :label="__('Gesamt')" :value="$fmt($totalMinutes)" tone="neutral" />
+        <x-kpi-tile :label="__('Dieser Monat')" :value="$fmt($monthMinutes)" tone="neutral" />
+        <x-kpi-tile :label="__('Meine Stunden')" :value="$fmt($myMinutes)" tone="neutral" />
     </div>
 
-    {{-- Tabelle --}}
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs">
-        <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
-            <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</span>
+    {{-- Tabelle — Standard-Karte; Leerzustand kommt aus x-table --}}
+    <x-card :title="__('Zeiteinträge')" icon="schedule" :count="$timeEntries->count()">
+        <x-slot:actions>
             @can('create', \App\Models\TimeEntry::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
                             data-entry-modal-trigger
                             :href="route('projects.time-entries.create', $project)"
                             show-label>{{ __('Zeiteintrag') }}</x-icon-btn>
             @endcan
-        </header>
-        @if ($timeEntries->isEmpty())
-            <div class="p-4">
-                <x-empty-state compact
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>'
-                    :title="__('Noch keine Zeiteinträge erfasst.')" />
-            </div>
-        @else
-            <x-table table-sort="client" bare>
+        </x-slot:actions>
+        <x-table table-sort="client" bare
+                 empty-icon="schedule" :empty-title="__('Noch keine Zeiteinträge erfasst.')">
                 <x-slot:head>
                     <tr class="text-xs text-base-content/50">
                         <x-table.th sort type="date" default="desc">{{ __('Datum') }}</x-table.th>
@@ -75,8 +59,7 @@
                             @endcan
                         </td>
                     </tr>
-                @endforeach
-            </x-table>
-        @endif
-    </div>
+            @endforeach
+        </x-table>
+    </x-card>
 </div>

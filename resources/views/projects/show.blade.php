@@ -45,7 +45,9 @@
     <div x-data="tabs({{ Js::from(request('tab', 'overview')) }})" data-tab-url-sync
          data-tab-allowed="overview,tasks,time,timesheets,diary,recurrence,billing"
          class="flex min-h-0 flex-col gap-4">
-        <div role="tablist" class="tabs tabs-box w-full sm:w-auto">
+        {{-- sticky: bei langen Tab-Inhalten (z. B. große Zeiten-Tabelle) bleibt
+             die Tab-Leiste beim Scrollen erreichbar. --}}
+        <div role="tablist" class="tabs tabs-box sticky top-0 z-20 w-full shadow-xs sm:w-auto">
             <button role="tab" @click="setTab('overview')" :class="tabClass('overview')" class="tab">
                 {{ __('Übersicht') }}
             </button>
