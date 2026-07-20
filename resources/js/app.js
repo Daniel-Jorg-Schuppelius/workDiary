@@ -370,7 +370,73 @@ document.addEventListener("focusin", (e) => {
     const label = e.target.closest("label[data-radio-activate]");
     if (!label || e.target.matches("input[type=radio]")) return;
     const radio = label.querySelector("input[type=radio]");
-    if (radio && !radio.checked) radio.checked = true;
+    if (radio && !radio.checked) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+});
+
+// Kunden-abhängige Filterung in der Zuordnungs-Inbox-Gruppenbuchung
+// (form[data-customer-filter]): der gewählte Kunde bzw. Kunden-Modus blendet
+// fremde Optgroups in Projekt-/Fremdkunden-Selects aus — verhindert die
+// 422-Ablehnung „Projekt gehört nicht zum gewählten Kunden".
+const applyInboxCustomerFilter = (form) => {
+    const mode = form.querySelector('input[name="customer_mode"]:checked')?.value;
+    const customer = form.querySelector('select[name="customer"]')?.value || "";
+    // internal → nur kundenlose Gruppen; new → keine Bestandsauswahl;
+    // existing mit Kunde → nur dieser; sonst alles zeigen.
+    const wanted =
+        mode === "internal" ? "" :
+        mode === "new" ? "__none__" :
+        mode === "existing" && customer !== "" ? customer : null;
+
+    ["project", "foreign_customer"].forEach((name) => {
+        const sel = form.querySelector(`select[name="${name}"]`);
+        if (!sel) return;
+        let cleared = false;
+        sel.querySelectorAll("optgroup[data-customer]").forEach((group) => {
+            const show = wanted === null || group.dataset.customer === wanted;
+            group.hidden = !show;
+            group.querySelectorAll("option").forEach((opt) => {
+                opt.hidden = !show;
+                opt.disabled = !show;
+                if (!show && opt.selected) {
+                    opt.selected = false;
+                    cleared = true;
+                }
+            });
+        });
+        if (cleared) sel.value = "";
+
+        // Fremdkunden-Fieldset: sichtbar machen, dass der gewählte Kunde
+        // Endkunden hat (Hinweis mit Anzahl); ohne Treffer ist „bestehend" sinnlos.
+        if (name === "foreign_customer") {
+            const visible = sel.querySelectorAll("optgroup[data-customer]:not([hidden]) option").length;
+            const fieldset = sel.closest("fieldset");
+            const hint = fieldset?.querySelector("[data-foreign-hint]");
+            const existingRadio = fieldset?.querySelector('input[name="foreign_mode"][value="existing"]');
+            if (hint) {
+                const showHint = wanted !== null && wanted !== "__none__" && wanted !== "" && visible > 0;
+                hint.hidden = !showHint;
+                if (showHint) hint.textContent = (hint.dataset.hintTemplate || ":count").replace(":count", String(visible));
+            }
+            if (existingRadio) {
+                existingRadio.disabled = visible === 0;
+                if (visible === 0 && existingRadio.checked) {
+                    const none = fieldset.querySelector('input[name="foreign_mode"][value="none"]');
+                    if (none) none.checked = true;
+                }
+            }
+        }
+    });
+};
+document.addEventListener("change", (e) => {
+    const trigger = e.target.closest('select[name="customer"], input[name="customer_mode"]');
+    const form = trigger?.closest("form[data-customer-filter]");
+    if (form) applyInboxCustomerFilter(form);
+});
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("form[data-customer-filter]").forEach(applyInboxCustomerFilter);
 });
 
 // Generischer Dialog-Close-Handler:

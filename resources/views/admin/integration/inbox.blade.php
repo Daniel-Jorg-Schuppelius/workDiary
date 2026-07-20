@@ -141,7 +141,8 @@
                             <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                         </form>
                     @else
-                    <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="grid gap-3 {{ $form === 'customer_project' ? 'md:grid-cols-3' : 'md:grid-cols-2' }}">
+                    <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="grid gap-3 {{ $form === 'customer_project' ? 'md:grid-cols-3' : 'md:grid-cols-2' }}"
+                          @if ($form === 'customer_project') data-customer-filter @endif>
                         @csrf
                         <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
                         <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
@@ -182,6 +183,9 @@
                         @php $suggestedForeign = $g['suggested_foreign_sqid'] ?? null; @endphp
                         <fieldset class="rounded-box border border-base-300 p-3">
                             <legend class="px-1 text-xs font-semibold">{{ __('Fremdkunde (Endkunde, optional)') }}</legend>
+                            {{-- Wird per JS gefüllt, sobald der gewählte Kunde Endkunden hat. --}}
+                            <p class="text-xs text-info" data-foreign-hint hidden
+                               data-hint-template="{{ __('Endkunden vorhanden: :count') }}"></p>
                             <label class="label cursor-pointer justify-start gap-2 py-1">
                                 <input type="radio" name="foreign_mode" value="none" class="radio radio-sm" @checked($suggestedForeign === null)>
                                 <span class="text-sm">{{ __('Kein Fremdkunde') }}</span>
@@ -190,10 +194,10 @@
                                 <input type="radio" name="foreign_mode" value="existing" class="radio radio-sm" @checked($suggestedForeign !== null)>
                                 <select name="foreign_customer" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
-                                    @foreach ($foreignCustomers as $companyLabel => $options)
-                                        <optgroup label="{{ $companyLabel }}">
-                                            @foreach ($options as $sqid => $label)
-                                                <option value="{{ $sqid }}" @selected($suggestedForeign === $sqid)>{{ $label }}</option>
+                                    @foreach ($foreignCustomers as $fcGroup)
+                                        <optgroup label="{{ $fcGroup['label'] }}" data-customer="{{ $fcGroup['customer_sqid'] }}">
+                                            @foreach ($fcGroup['foreigns'] as $fc)
+                                                <option value="{{ $fc['sqid'] }}" @selected($suggestedForeign === $fc['sqid'])>{{ $fc['name'] }}</option>
                                             @endforeach
                                         </optgroup>
                                     @endforeach
@@ -216,9 +220,9 @@
                                 <input type="radio" name="project_mode" value="existing" class="radio radio-sm" @checked($suggestedProject !== null)>
                                 <select name="project" class="select select-sm select-bordered w-full">
                                     <option value="">{{ __('… auswählen') }}</option>
-                                    @foreach ($projects as $customerLabel => $options)
-                                        <optgroup label="{{ $customerLabel }}">
-                                            @foreach ($options as $p)
+                                    @foreach ($projects as $pGroup)
+                                        <optgroup label="{{ $pGroup['label'] }}" data-customer="{{ $pGroup['customer_sqid'] }}">
+                                            @foreach ($pGroup['projects'] as $p)
                                                 <option value="{{ $p['sqid'] }}" @selected($suggestedProject === $p['sqid'])>{{ $p['name'] }}</option>
                                             @endforeach
                                         </optgroup>

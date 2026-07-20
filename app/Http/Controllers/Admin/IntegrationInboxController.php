@@ -217,13 +217,14 @@ class IntegrationInboxController extends Controller {
 
     /**
      * Bestehende Projekte der Organisation als Auswahloptionen für die
-     * Gruppen-Buchung, gruppiert nach Kunde (Optgroup-Anzeige) — inkl.
+     * Gruppen-Buchung, gruppiert nach Kunde (Optgroup-Anzeige, per
+     * `customer_sqid` clientseitig auf den gewählten Kunden filterbar) — inkl.
      * kundenloser (interner) Projekte, damit unter „Intern" ein vorhandenes
      * Firmenprojekt gewählt werden kann (customer_id = null). Werte sind opake
      * Sqids (nicht der Slug-Route-Key), damit Auswahl und Vorschlags-Preselect
      * dieselbe Kennung sprechen.
      *
-     * @return array<string, list<array{sqid: string, name: string}>>  Kunden-Label => Projekte
+     * @return list<array{customer_sqid: string, label: string, projects: list<array{sqid: string, name: string}>}>
      */
     private function projectOptions(User $user): array {
         $projects = Project::query()
@@ -241,21 +242,27 @@ class IntegrationInboxController extends Controller {
         $out = [];
         foreach ($projects as $project) {
             $company = $project->customer_id !== null ? $companies->get($project->customer_id) : null;
-            $label = $company !== null
-                ? (string) ($company->company ?: $company->name)
-                : (string) __('Intern (ohne Kunde)');
-            $out[$label][] = ['sqid' => (string) $project->sqid, 'name' => (string) $project->name];
+            $key = $company !== null ? (string) $company->sqid : '';
+            $out[$key] ??= [
+                'customer_sqid' => $key,
+                'label' => $company !== null
+                    ? (string) ($company->company ?: $company->name)
+                    : (string) __('Intern (ohne Kunde)'),
+                'projects' => [],
+            ];
+            $out[$key]['projects'][] = ['sqid' => (string) $project->sqid, 'name' => (string) $project->name];
         }
-        ksort($out);
+        usort($out, fn(array $a, array $b): int => strcasecmp($a['label'], $b['label']));
 
         return $out;
     }
 
     /**
      * Fremdkunden (Endkunden) der Organisation für die Gruppen-Buchung,
-     * gruppiert nach Firma (Optgroup-Anzeige im Formular).
+     * gruppiert nach Firma (Optgroup-Anzeige, per `customer_sqid` clientseitig
+     * auf den gewählten Kunden filterbar).
      *
-     * @return array<string, array<string, string>>  Firmen-Label => [sqid => Fremdkunden-Name]
+     * @return list<array{customer_sqid: string, label: string, foreigns: list<array{sqid: string, name: string}>}>
      */
     private function foreignCustomerOptions(User $user): array {
         $rows = ForeignCustomer::query()
@@ -275,10 +282,15 @@ class IntegrationInboxController extends Controller {
         $out = [];
         foreach ($rows as $foreign) {
             $company = $companies->get($foreign->customer_id);
-            $label = (string) ($company?->company ?: $company?->name ?: '—');
-            $out[$label][$foreign->getRouteKey()] = (string) $foreign->name;
+            $key = $company !== null ? (string) $company->sqid : '';
+            $out[$key] ??= [
+                'customer_sqid' => $key,
+                'label' => (string) ($company?->company ?: $company?->name ?: '—'),
+                'foreigns' => [],
+            ];
+            $out[$key]['foreigns'][] = ['sqid' => (string) $foreign->getRouteKey(), 'name' => (string) $foreign->name];
         }
-        ksort($out);
+        usort($out, fn(array $a, array $b): int => strcasecmp($a['label'], $b['label']));
 
         return $out;
     }

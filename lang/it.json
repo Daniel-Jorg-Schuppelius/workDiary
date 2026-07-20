@@ -8830,5 +8830,6 @@
     "Endkunde": "Cliente finale",
     "Endkunden (Fremdkunden)": "Clienti finali (clienti esterni)",
     "Einträge anzeigen": "Mostra voci",
-    "… und :count weitere": "… e altre :count"
+    "… und :count weitere": "… e altre :count",
+    "Endkunden vorhanden: :count": "Clienti finali disponibili: :count"
 }
