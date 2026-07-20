@@ -39,41 +39,38 @@
         </label>
     </x-filter-bar>
 
-    <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
-        <x-table table-sort="server"
-                 :route="route('tenders.index')"
-                 :current-sort="$sort ?? null"
-                 :current-dir="$dir ?? 'asc'"
-                 :sort-params="[]"
-                 bare scroll="flex" :pinRows="true">
-            <x-slot:head>
-                <tr>
-                    <x-table.th sort="title">{{ __('Titel') }}</x-table.th>
-                    <x-table.th>{{ __('Kunde') }}</x-table.th>
-                    <x-table.th sort="status">{{ __('Status') }}</x-table.th>
-                    <x-table.th sort="submission_deadline" default>{{ __('Abgabefrist') }}</x-table.th>
-                    <x-table.th sort="estimated_value" align="right">{{ __('Wertpotenzial') }}</x-table.th>
-                    <x-table.th>{{ __('Go/No-go') }}</x-table.th>
-                    <x-table.th></x-table.th>
-                </tr>
-            </x-slot:head>
-            @forelse ($opportunities as $opportunity)
-                <tr>
-                    <td><a href="{{ route('tenders.show', $opportunity) }}" class="link link-hover font-medium">{{ $opportunity->title }}</a></td>
-                    <td>{{ $opportunity->customer->name ?? '—' }}</td>
-                    <td><x-status-badge :tone="$opportunity->statusTone()" size="sm">{{ __("values.{$opportunity->status}") }}</x-status-badge></td>
-                    <td class="tabular-nums">{{ optional($opportunity->submission_deadline)->fdate() ?? '—' }}</td>
-                    <td class="text-right tabular-nums">{{ $opportunity->estimated_value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $opportunity->estimated_value, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
-                    <td>{{ __("values.{$opportunity->go_decision}") }}</td>
-                    <td class="text-right">
-                        <x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('tenders.show', $opportunity)" :label="__('Anzeigen')" />
-                    </td>
-                </tr>
-            @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">gavel</span>' :colspan="7" :title="__('Keine Ausschreibungen — „Ausschreibung erfassen" startet die erste Akte.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm" table-sort="server"
+             :route="route('tenders.index')"
+             :current-sort="$sort ?? null"
+             :current-dir="$dir ?? 'asc'"
+             :sort-params="request()->except(['sort', 'dir', 'page'])">
+        <x-slot:head>
+            <tr>
+                <x-table.th sort="title">{{ __('Titel') }}</x-table.th>
+                <x-table.th>{{ __('Kunde') }}</x-table.th>
+                <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                <x-table.th sort="submission_deadline" default>{{ __('Abgabefrist') }}</x-table.th>
+                <x-table.th sort="estimated_value" align="right">{{ __('Wertpotenzial') }}</x-table.th>
+                <x-table.th>{{ __('Go/No-go') }}</x-table.th>
+                <x-table.th></x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($opportunities as $opportunity)
+            <tr class="hover">
+                <td><a href="{{ route('tenders.show', $opportunity) }}" class="link link-hover font-medium">{{ $opportunity->title }}</a></td>
+                <td>{{ $opportunity->customer->name ?? '—' }}</td>
+                <td><x-status-badge :tone="$opportunity->statusTone()" size="sm">{{ __("values.{$opportunity->status}") }}</x-status-badge></td>
+                <td class="tabular-nums">{{ optional($opportunity->submission_deadline)->fdate() ?? '—' }}</td>
+                <td class="text-right tabular-nums">{{ $opportunity->estimated_value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $opportunity->estimated_value, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
+                <td>{{ __("values.{$opportunity->go_decision}") }}</td>
+                <td class="text-right">
+                    <x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('tenders.show', $opportunity)" :label="__('Anzeigen')" />
+                </td>
+            </tr>
+        @empty
+            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">gavel</span>' :colspan="7" :title="__('Keine Ausschreibungen — „Ausschreibung erfassen“ startet die erste Akte.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$opportunities" standing />
 </x-index-page>
