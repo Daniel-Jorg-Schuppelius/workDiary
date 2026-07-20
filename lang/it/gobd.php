@@ -17,6 +17,9 @@ return [
         'booking_batches' => 'Lotti contabili',
         'booking_batch_items' => 'Posizioni dei lotti contabili',
         'payment_allocations' => 'Abbinamenti di pagamento',
+        'cash_entries' => 'Libro di cassa',
+        'cash_daily_closings' => 'Chiusure di cassa giornaliere',
+        'incoming_einvoices' => 'Fatture elettroniche in entrata',
         'expenses' => 'Spese',
     ],
     'preflight' => [

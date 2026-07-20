@@ -17,6 +17,9 @@ return [
         'booking_batches' => 'Booking batches',
         'booking_batch_items' => 'Booking batch line items',
         'payment_allocations' => 'Payment allocations',
+        'cash_entries' => 'Cash book',
+        'cash_daily_closings' => 'Daily cash closings',
+        'incoming_einvoices' => 'Incoming e-invoices',
         'expenses' => 'Expenses',
     ],
     'preflight' => [

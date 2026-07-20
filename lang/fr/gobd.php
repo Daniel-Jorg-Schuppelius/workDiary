@@ -17,6 +17,9 @@ return [
         'booking_batches' => 'Lots d\'écritures',
         'booking_batch_items' => 'Positions des lots d\'écritures',
         'payment_allocations' => 'Affectations de paiement',
+        'cash_entries' => 'Livre de caisse',
+        'cash_daily_closings' => 'Clôtures de caisse journalières',
+        'incoming_einvoices' => 'Factures électroniques entrantes',
         'expenses' => 'Frais',
     ],
     'preflight' => [

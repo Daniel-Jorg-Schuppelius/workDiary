@@ -17,6 +17,9 @@ return [
         'booking_batches' => 'Buchungsstapel',
         'booking_batch_items' => 'Buchungsstapel-Positionen',
         'payment_allocations' => 'Zahlungszuordnungen',
+        'cash_entries' => 'Kassenbuch',
+        'cash_daily_closings' => 'Kassenabschlüsse',
+        'incoming_einvoices' => 'Eingangs-E-Rechnungen',
         'expenses' => 'Spesen',
     ],
     'preflight' => [

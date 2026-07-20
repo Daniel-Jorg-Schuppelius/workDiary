@@ -86,10 +86,7 @@
     @endif
 
     {{-- Revisionssicherer Nachweis: bisherige Exporte --}}
-    <x-card padding="p-0">
-        <div class="px-4 pt-4">
-            <h2 class="font-semibold">{{ __('gobd.recent.title') }}</h2>
-        </div>
+    <x-card padding="p-0" :title="__('gobd.recent.title')">
         <x-table :caption="__('gobd.recent.title')" bare>
             <x-slot:head>
                 <tr>
@@ -101,10 +98,10 @@
             </x-slot:head>
             @forelse ($recent as $export)
                 <tr>
-                    <td class="text-sm tabular-nums">{{ $export->period_from->format('d.m.Y') }} – {{ $export->period_to->format('d.m.Y') }}</td>
+                    <td class="text-sm tabular-nums">{{ $export->period_from->fdate() }} – {{ $export->period_to->fdate() }}</td>
                     <td class="text-right tabular-nums">{{ $export->record_count }}</td>
                     <td class="font-mono text-xs opacity-70">{{ \Illuminate\Support\Str::limit($export->package_sha256, 16) }}</td>
-                    <td class="text-sm">{{ $export->created_at?->format('d.m.Y H:i') }}{{ $export->creator ? ' · ' . $export->creator->name : '' }}</td>
+                    <td class="text-sm">{{ $export->created_at?->fdatetime() }}{{ $export->creator ? ' · ' . $export->creator->name : '' }}</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="4"
