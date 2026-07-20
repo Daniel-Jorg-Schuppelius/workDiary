@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, IntegrationInboxItem, PluginSetting, Project, TimeEntry, User};
+use App\Plugins\Support\ImportedTimeEntry;
 use App\Plugins\Toggl\Sources\TogglEntry;
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use Carbon\CarbonImmutable;
@@ -529,6 +530,250 @@ class TogglImportTest extends TestCase {
         ]);
     }
 
+    public function test_book_group_with_new_foreign_customer_links_project_and_reference(): void {
+        $this->enableToggl();
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma X',
+        ]);
+
+        // Toggl-Client „LDS" ist Endkunde der Firma X — Projekt entsteht bei der
+        // Firma und verweist auf den Fremdkunden.
+        $this->seedInboxEntry('LDS', 'Portal', 'csv:fc1', '2026-05-26 09:00:00', '2026-05-26 10:00:00');
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('LDS', 'Portal'),
+                'customer_mode' => 'existing',
+                'customer' => $customer->sqid,
+                'foreign_mode' => 'new',
+                'new_foreign_customer_name' => 'LDS',
+                'project_mode' => 'new',
+                'new_project_name' => 'Portal',
+            ])
+            ->assertRedirect();
+
+        $foreign = ForeignCustomer::query()->where('name', 'LDS')->where('customer_id', $customer->id)->first();
+        $this->assertNotNull($foreign);
+
+        $project = Project::query()->where('name', 'Portal')->first();
+        $this->assertNotNull($project);
+        $this->assertSame($customer->id, $project->customer_id);
+        $this->assertSame($foreign->id, $project->foreign_customer_id);
+        $this->assertSame(1, TimeEntry::query()->where('project_id', $project->id)->count());
+
+        // Client-Referenz zeigt auf den Fremdkunden (präziserer Schlüssel).
+        $this->assertDatabaseHas('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+            'external_id' => 'LDS',
+            'referenceable_type' => $foreign->getMorphClass(),
+            'referenceable_id' => $foreign->id,
+        ]);
+    }
+
+    public function test_book_group_with_existing_foreign_customer_creates_second_project(): void {
+        $this->enableToggl();
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma X',
+        ]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'LDS',
+        ]);
+
+        $this->seedInboxEntry('LDS', 'App', 'csv:fc2', '2026-05-26 11:00:00', '2026-05-26 12:00:00');
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('LDS', 'App'),
+                'customer_mode' => 'existing',
+                'customer' => $customer->sqid,
+                'foreign_mode' => 'existing',
+                'foreign_customer' => $foreign->sqid,
+                'project_mode' => 'new',
+                'new_project_name' => 'App',
+            ])
+            ->assertRedirect();
+
+        $project = Project::query()->where('name', 'App')->first();
+        $this->assertNotNull($project);
+        $this->assertSame($foreign->id, $project->foreign_customer_id);
+    }
+
+    public function test_book_group_rejects_existing_project_of_other_foreign_customer(): void {
+        $this->enableToggl();
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma X',
+        ]);
+        $lds = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'LDS',
+        ]);
+        $thieme = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Thieme',
+        ]);
+        $project = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $thieme->id,
+            'name' => 'Support',
+            'is_default' => false,
+        ]);
+
+        $this->seedInboxEntry('LDS', 'Support', 'csv:fc3', '2026-05-26 09:00:00', '2026-05-26 09:30:00');
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('LDS', 'Support'),
+                'customer_mode' => 'existing',
+                'customer' => $customer->sqid,
+                'foreign_mode' => 'existing',
+                'foreign_customer' => $lds->sqid,
+                'project_mode' => 'existing',
+                'project' => $project->sqid,
+            ])
+            ->assertStatus(422);
+    }
+
+    public function test_book_group_rejects_foreign_customer_of_other_customer(): void {
+        $this->enableToggl();
+        $customerA = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma A',
+        ]);
+        $customerB = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma B',
+        ]);
+        $foreignOfB = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customerB->id,
+            'name' => 'LDS',
+        ]);
+
+        $this->seedInboxEntry('LDS', 'Portal', 'csv:fc4', '2026-05-26 09:00:00', '2026-05-26 09:30:00');
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.integration.inbox.group.book'), [
+                'plugin' => TogglPlugin::ID,
+                'group_key' => $this->groupKey('LDS', 'Portal'),
+                'customer_mode' => 'existing',
+                'customer' => $customerA->sqid,
+                'foreign_mode' => 'existing',
+                'foreign_customer' => $foreignOfB->sqid,
+                'project_mode' => 'new',
+                'new_project_name' => 'Portal',
+            ])
+            ->assertStatus(422);
+    }
+
+    public function test_match_project_scopes_by_foreign_customer_reference(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma X',
+        ]);
+        $lds = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'LDS',
+        ]);
+        $thieme = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Thieme',
+        ]);
+        // Gleichnamige Projekte verschiedener Endkunden derselben Firma.
+        $thiemeProject = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $thieme->id,
+            'name' => 'Support',
+            'is_default' => false,
+        ]);
+        $ldsProject = Project::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'foreign_customer_id' => $lds->id,
+            'name' => 'Support',
+            'is_default' => false,
+        ]);
+
+        // Gemerkte Client-Referenz: „LDS" → Fremdkunde LDS.
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+            'referenceable_type' => $lds->getMorphClass(),
+            'referenceable_id' => $lds->id,
+            'external_id' => 'LDS',
+            'synced_at' => now(),
+        ]);
+
+        $entry = new ImportedTimeEntry(
+            entryKey: 'match:fc',
+            clientName: 'LDS',
+            projectName: 'Support',
+            activity: null,
+            description: null,
+            startedAt: CarbonImmutable::parse('2026-05-26 09:00:00'),
+            endedAt: CarbonImmutable::parse('2026-05-26 10:00:00'),
+        );
+
+        $matched = $this->service()->matchProject($this->organization, $entry);
+        $this->assertNotNull($matched);
+        $this->assertSame($ldsProject->id, $matched->id);
+        $this->assertNotSame($thiemeProject->id, $matched->id);
+
+        // matchCustomer löst den Fremdkunden zur Firma auf.
+        $resolved = $this->service()->matchCustomer($this->organization, 'LDS');
+        $this->assertNotNull($resolved);
+        $this->assertSame($customer->id, $resolved->id);
+    }
+
+    public function test_suggest_foreign_customer_prefers_reference_then_fuzzy(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Firma X',
+        ]);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'Thieme Verlag',
+            'company' => null,
+        ]);
+
+        // Fuzzy: leicht abweichende Schreibweise trifft den Fremdkunden.
+        $suggested = $this->service()->suggestForeignCustomer($this->organization, 'Thieme-Verlag');
+        $this->assertNotNull($suggested);
+        $this->assertSame($foreign->id, $suggested->id);
+
+        // Referenz schlägt Fuzzy: gemerkter Client-Name zeigt exakt auf den Fremdkunden.
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+            'referenceable_type' => $foreign->getMorphClass(),
+            'referenceable_id' => $foreign->id,
+            'external_id' => 'TV',
+            'synced_at' => now(),
+        ]);
+        $byRef = $this->service()->suggestForeignCustomer($this->organization, 'TV');
+        $this->assertNotNull($byRef);
+        $this->assertSame($foreign->id, $byRef->id);
+
+        $this->assertNull($this->service()->suggestForeignCustomer($this->organization, 'Völlig anderer Endkunde'));
+    }
+
     public function test_update_and_delete_mapping(): void {
         $beta = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Beta']);
         $gamma = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Gamma']);
@@ -557,6 +802,35 @@ class TogglImportTest extends TestCase {
             ->assertRedirect();
 
         $this->assertDatabaseMissing('external_references', ['id' => $ref->id]);
+    }
+
+    public function test_update_client_mapping_to_foreign_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Firma X']);
+        $foreign = ForeignCustomer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $customer->id,
+            'name' => 'LDS',
+        ]);
+
+        $ref = ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_CLIENT,
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->id,
+            'external_id' => 'LDS',
+            'synced_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.update', $ref->id), ['target_id' => $foreign->sqid])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('external_references', [
+            'id' => $ref->id,
+            'referenceable_type' => $foreign->getMorphClass(),
+            'referenceable_id' => $foreign->id,
+        ]);
     }
 
     public function test_non_billing_user_cannot_book_group(): void {

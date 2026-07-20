@@ -35,8 +35,11 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
     public function groups(Organization $organization): Collection {
         /** @var Collection<int, array<string, mixed>> $groups */
         $groups = $this->service->openInboxGroups($organization)->map(function (array $group) use ($organization): array {
-            $customer = $this->service->suggestCustomer($organization, $group['client_name']);
-            $project = $this->service->suggestProject($organization, $customer, $group['project_name']);
+            // Fremdkunden-Treffer (Endkunde) schlägt den Kunden-Vorschlag vor —
+            // der Kunde ergibt sich dann aus der Firma des Fremdkunden.
+            $foreign = $this->service->suggestForeignCustomer($organization, $group['client_name']);
+            $customer = $foreign !== null ? $foreign->customer : $this->service->suggestCustomer($organization, $group['client_name']);
+            $project = $this->service->suggestProject($organization, $customer, $group['project_name'], $foreign);
 
             return [
                 'plugin_id' => $this->bookerPluginId(),
@@ -49,6 +52,7 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
                 'first_seen' => $group['first_seen'],
                 'last_seen' => $group['last_seen'],
                 'suggested_customer_sqid' => $customer?->sqid,
+                'suggested_foreign_sqid' => $foreign?->sqid,
                 'suggested_project_sqid' => $project?->sqid,
             ];
         })->values();
@@ -61,6 +65,9 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
             'customer_mode' => ['required', 'in:existing,new,internal'],
             'customer' => ['nullable', 'string', 'required_if:customer_mode,existing'],
             'new_customer_name' => ['nullable', 'string', 'max:191', 'required_if:customer_mode,new'],
+            'foreign_mode' => ['nullable', 'in:none,existing,new'],
+            'foreign_customer' => ['nullable', 'string', 'required_if:foreign_mode,existing'],
+            'new_foreign_customer_name' => ['nullable', 'string', 'max:191', 'required_if:foreign_mode,new'],
             'project_mode' => ['required', 'in:existing,new'],
             'project' => ['nullable', 'string', 'required_if:project_mode,existing'],
             'new_project_name' => ['nullable', 'string', 'max:191', 'required_if:project_mode,new'],
@@ -75,9 +82,10 @@ abstract class MatchingTimeGroupBooker implements InboxGroupBooker {
         }
 
         $customer = $this->resolveCustomerTarget($organization, $input);
-        $project = $this->resolveProjectUnderCustomer($organization, $customer, $input);
+        $foreign = $this->resolveForeignCustomerTarget($organization, $customer, $input);
+        $project = $this->resolveProjectUnderCustomer($organization, $customer, $input, $foreign);
 
-        return $this->service->bookInboxGroup($organization, $groupKey, $customer, $project);
+        return $this->service->bookInboxGroup($organization, $groupKey, $customer, $project, foreignCustomer: $foreign);
     }
 
     public function dismiss(Organization $organization, string $groupKey): int {

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Toggl;
 
-use App\Models\{Customer, ExternalReference, Organization, Project};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization, Project};
 use App\Plugins\Support\{ImportedTimeEntry, MatchingTimeImportService};
 use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser, TogglEntry};
 use Carbon\CarbonImmutable;
@@ -96,21 +96,35 @@ class TogglImportService extends MatchingTimeImportService {
     /**
      * Toggl-Delta: die stabile Client-ID (nur API) schlägt den Namen — robust
      * gegen Umbenennungen in Toggl. Danach greift die Basis (Namens-Reference
-     * inkl. Merge-Alias, dann Name-/Firmen-Fallback).
+     * inkl. Merge-Alias, dann Name-/Firmen-Fallback). Zeigt die ID-Referenz auf
+     * einen Fremdkunden (Endkunden), ist dessen Firma der Kunde.
      */
     public function matchCustomer(Organization $organization, ?string $clientName, ?int $clientId = null): ?Customer {
-        if ($clientId !== null) {
-            $byId = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId);
-            if ($byId instanceof Customer) {
-                return $byId;
-            }
+        $byId = $this->resolveClientById($organization, $clientId);
+        if ($byId instanceof Customer) {
+            return $byId;
+        }
+        if ($byId instanceof ForeignCustomer) {
+            return $byId->customer;
         }
 
         return parent::matchCustomer($organization, $clientName);
     }
 
-    protected function matchCustomerForEntry(Organization $organization, ImportedTimeEntry $entry): ?Customer {
-        return $this->matchCustomer($organization, $entry->clientName, $entry->clientId);
+    protected function matchClientForEntry(Organization $organization, ImportedTimeEntry $entry): Customer|ForeignCustomer|null {
+        return $this->resolveClientById($organization, $entry->clientId)
+            ?? parent::matchClientForEntry($organization, $entry);
+    }
+
+    /** Gemerkte Client-ID-Referenz (nur API-Quelle) → Kunde oder Fremdkunde. */
+    private function resolveClientById(Organization $organization, ?int $clientId): Customer|ForeignCustomer|null {
+        if ($clientId === null) {
+            return null;
+        }
+
+        $byId = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId);
+
+        return ($byId instanceof Customer || $byId instanceof ForeignCustomer) ? $byId : null;
     }
 
     /** Akzeptiert das Toggl-DTO direkt (Aufrufer/Tests) und delegiert an die Basis. */
@@ -125,19 +139,21 @@ class TogglImportService extends MatchingTimeImportService {
      *
      * @return array{created: int, skipped: int}
      */
-    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null): array {
+    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
         $firstSnap = (array) ($this->openInboxItems($organization)->where('group_key', $groupKey)->first()->remote_snapshot ?? []);
         $clientId = is_numeric($firstSnap['client_id'] ?? null) ? (int) $firstSnap['client_id'] : null;
         $projectId = is_numeric($firstSnap['project_id'] ?? null) ? (int) $firstSnap['project_id'] : null;
 
+        // Wie die Namens-Referenz der Basis: der Fremdkunde (Endkunde) ist der
+        // präzisere Schlüssel für die stabile Client-ID.
         if ($customer !== null && $clientId !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $customer);
+            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $clientId, $foreignCustomer ?? $customer);
         }
         if ($projectId !== null) {
             $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $projectId, $project);
         }
 
-        return parent::bookInboxGroup($organization, $groupKey, $customer, $project, $userId);
+        return parent::bookInboxGroup($organization, $groupKey, $customer, $project, $userId, $foreignCustomer);
     }
 
     /**

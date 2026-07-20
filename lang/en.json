@@ -8821,5 +8821,12 @@
     "Demo: Sichtkontrolle Original-Führerschein.": "Demo: visual check of the original driving licence.",
     "Serviceeinsatz vor Ort (Demo)": "On-site service call (demo)",
     "Wartungspauschale monatlich (Demo)": "Monthly maintenance flat rate (demo)",
-    "Wartungspauschale {zeitraum}": "Maintenance flat rate {zeitraum}"
+    "Wartungspauschale {zeitraum}": "Maintenance flat rate {zeitraum}",
+    "Das gewählte Projekt gehört nicht zum gewählten Fremdkunden.": "The selected project does not belong to the selected external customer.",
+    "Der Name des Fremdkunden darf nicht leer sein.": "The external customer name must not be empty.",
+    "Fremdkunde (Endkunde, optional)": "External customer (end customer, optional)",
+    "Kein Fremdkunde": "No external customer",
+    "neuer Fremdkunde": "new external customer",
+    "Endkunde": "End customer",
+    "Endkunden (Fremdkunden)": "End customers (external customers)"
 }

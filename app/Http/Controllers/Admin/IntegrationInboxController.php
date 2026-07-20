@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{IntegrationInboxItem, Organization, Project, User};
+use App\Models\{Customer, ForeignCustomer, IntegrationInboxItem, Organization, Project, User};
 use App\Services\Integration\{InboxActionService, InboxGroupBookerRegistry, MatchProfileRegistry};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -78,10 +78,16 @@ class IntegrationInboxController extends Controller {
                 ->all();
         }
 
+        // Fremdkunden-Optionen nur für den Zeit-Import-Form-Typ „customer_project".
+        $foreignCustomers = $groups->contains(fn(array $g): bool => ($g['form'] ?? null) === 'customer_project')
+            ? $this->foreignCustomerOptions($user)
+            : [];
+
         return view('admin.integration.inbox', [
             'items' => $query->paginate(25)->withQueryString(),
             'groups' => $groups,
             'projects' => $this->projectOptions($user),
+            'foreignCustomers' => $foreignCustomers,
             'filters' => ['status' => $status, 'case' => $caseType, 'plugin' => $plugin, 'target' => $target],
             'plugins' => $plugins,
             'targets' => $registry->options(),
@@ -229,6 +235,38 @@ class IntegrationInboxController extends Controller {
             ])->all();
 
         return array_values($rows);
+    }
+
+    /**
+     * Fremdkunden (Endkunden) der Organisation für die Gruppen-Buchung,
+     * gruppiert nach Firma (Optgroup-Anzeige im Formular).
+     *
+     * @return array<string, array<string, string>>  Firmen-Label => [sqid => Fremdkunden-Name]
+     */
+    private function foreignCustomerOptions(User $user): array {
+        $rows = ForeignCustomer::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $user->organization_id)
+            ->whereNull('archived_at')
+            ->orderBy('name')
+            ->limit(1000)
+            ->get(['id', 'customer_id', 'name']);
+
+        $companies = Customer::query()
+            ->withoutGlobalScopes()
+            ->whereIn('id', $rows->pluck('customer_id')->unique()->all())
+            ->get(['id', 'name', 'company'])
+            ->keyBy('id');
+
+        $out = [];
+        foreach ($rows as $foreign) {
+            $company = $companies->get($foreign->customer_id);
+            $label = (string) ($company?->company ?: $company?->name ?: '—');
+            $out[$label][$foreign->getRouteKey()] = (string) $foreign->name;
+        }
+        ksort($out);
+
+        return $out;
     }
 
     private function authorizeBilling(): User {

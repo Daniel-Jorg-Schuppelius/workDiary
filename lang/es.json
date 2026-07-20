@@ -8821,5 +8821,12 @@
     "Demo: Sichtkontrolle Original-Führerschein.": "Demo: control visual del permiso de conducir original.",
     "Serviceeinsatz vor Ort (Demo)": "Intervención de servicio in situ (demo)",
     "Wartungspauschale monatlich (Demo)": "Tarifa plana de mantenimiento mensual (demo)",
-    "Wartungspauschale {zeitraum}": "Tarifa plana de mantenimiento {zeitraum}"
+    "Wartungspauschale {zeitraum}": "Tarifa plana de mantenimiento {zeitraum}",
+    "Das gewählte Projekt gehört nicht zum gewählten Fremdkunden.": "El proyecto seleccionado no pertenece al cliente externo seleccionado.",
+    "Der Name des Fremdkunden darf nicht leer sein.": "El nombre del cliente externo no puede estar vacío.",
+    "Fremdkunde (Endkunde, optional)": "Cliente externo (cliente final, opcional)",
+    "Kein Fremdkunde": "Sin cliente externo",
+    "neuer Fremdkunde": "nuevo cliente externo",
+    "Endkunde": "Cliente final",
+    "Endkunden (Fremdkunden)": "Clientes finales (clientes externos)"
 }

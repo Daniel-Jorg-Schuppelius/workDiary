@@ -13,14 +13,15 @@ declare(strict_types=1);
 namespace App\Services\Integration\Concerns;
 
 use App\Enums\Project\ProjectStatus;
-use App\Models\{Customer, Organization, Project};
+use App\Models\{Customer, ForeignCustomer, Organization, Project};
 use Illuminate\Support\Facades\Auth;
 
 /**
  * Gemeinsame Ziel-Auflösung für {@see \App\Services\Integration\InboxGroupBooker}-
- * Implementierungen: Kunde bzw. Projekt aus der validierten Eingabe — bestehend
- * (per Sqid, mandanten-gescopt) oder explizit neu angelegt. „Nie blind anlegen":
- * Neuanlage nur bei expliziter Wahl (`*_mode = new`).
+ * Implementierungen: Kunde, Fremdkunde (Endkunde) bzw. Projekt aus der
+ * validierten Eingabe — bestehend (per Sqid, mandanten-gescopt) oder explizit
+ * neu angelegt. „Nie blind anlegen": Neuanlage nur bei expliziter Wahl
+ * (`*_mode = new`).
  */
 trait ResolvesInboxTargets {
     /**
@@ -43,15 +44,58 @@ trait ResolvesInboxTargets {
     }
 
     /**
-     * Projekt unter einem bestimmten Kunden (bestehend muss zum Kunden gehören).
+     * Fremdkunde (Endkunde) unter dem gewählten Kunden — bestehend (muss zum
+     * Kunden gehören) oder neu (Dedupe per Name, case-insensitiv). `none`/fehlend
+     * → kein Fremdkunde.
      *
      * @param  array<string, mixed>  $input
      */
-    protected function resolveProjectUnderCustomer(Organization $organization, Customer $customer, array $input): Project {
+    protected function resolveForeignCustomerTarget(Organization $organization, Customer $customer, array $input): ?ForeignCustomer {
+        $mode = $input['foreign_mode'] ?? 'none';
+
+        if ($mode === 'new') {
+            $name = trim((string) ($input['new_foreign_customer_name'] ?? ''));
+            abort_if($name === '', 422, __('Der Name des Fremdkunden darf nicht leer sein.'));
+
+            $existing = ForeignCustomer::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('customer_id', $customer->id)
+                ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+                ->first();
+
+            return $existing ?? ForeignCustomer::query()->create([
+                'organization_id' => $organization->id,
+                'customer_id' => $customer->id,
+                'name' => $name,
+                'created_by' => Auth::id(),
+            ]);
+        }
+
+        if ($mode === 'existing') {
+            $foreign = (new ForeignCustomer)->resolveRouteBinding((string) ($input['foreign_customer'] ?? ''));
+            abort_unless($foreign instanceof ForeignCustomer, 404);
+            abort_unless((int) $foreign->organization_id === (int) $organization->id, 404);
+            abort_unless((int) $foreign->customer_id === (int) $customer->id, 422, __('Der gewählte Fremdkunde gehört nicht zum gewählten Kunden.'));
+
+            return $foreign;
+        }
+
+        return null;
+    }
+
+    /**
+     * Projekt unter einem bestimmten Kunden (bestehend muss zum Kunden gehören);
+     * optional an einen Fremdkunden (Endkunden) des Kunden gebunden.
+     *
+     * @param  array<string, mixed>  $input
+     */
+    protected function resolveProjectUnderCustomer(Organization $organization, Customer $customer, array $input, ?ForeignCustomer $foreignCustomer = null): Project {
         if (($input['project_mode'] ?? null) === 'new') {
             return Project::query()->create([
                 'organization_id' => $organization->id,
                 'customer_id' => $customer->id,
+                'foreign_customer_id' => $foreignCustomer?->id,
                 'name' => trim((string) ($input['new_project_name'] ?? '')),
                 'status' => ProjectStatus::Active->value,
                 'is_default' => false,
@@ -61,6 +105,9 @@ trait ResolvesInboxTargets {
 
         $project = $this->resolveExistingProject($organization, $input);
         abort_unless((int) $project->customer_id === (int) $customer->id, 422, __('Das gewählte Projekt gehört nicht zum gewählten Kunden.'));
+        if ($foreignCustomer !== null) {
+            abort_unless((int) $project->foreign_customer_id === (int) $foreignCustomer->id, 422, __('Das gewählte Projekt gehört nicht zum gewählten Fremdkunden.'));
+        }
 
         return $project;
     }

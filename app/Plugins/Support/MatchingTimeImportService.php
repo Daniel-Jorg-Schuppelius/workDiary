@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Project, TimeEntry};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -103,6 +103,10 @@ abstract class MatchingTimeImportService {
         if ($byName instanceof Customer) {
             return $byName;
         }
+        // Client als Fremdkunde (Endkunde) gemerkt → dessen Firma ist der Kunde.
+        if ($byName instanceof ForeignCustomer) {
+            return $byName->customer;
+        }
 
         return Customer::query()
             ->withoutGlobalScopes()
@@ -134,25 +138,38 @@ abstract class MatchingTimeImportService {
             return $byName;
         }
 
-        $customer = $this->matchCustomerForEntry($organization, $entry);
+        $client = $this->matchClientForEntry($organization, $entry);
 
         $query = Project::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereRaw('LOWER(name) = ?', [mb_strtolower($projectName)]);
 
-        if ($customer !== null) {
-            $query->where('customer_id', $customer->id);
+        // Fremdkunde (Endkunde): gleichnamige Projekte verschiedener Endkunden
+        // derselben Firma bleiben getrennt — daher zusätzlich auf ihn scopen.
+        if ($client instanceof ForeignCustomer) {
+            $query->where('customer_id', $client->customer_id)->where('foreign_customer_id', $client->id);
+        } elseif ($client instanceof Customer) {
+            $query->where('customer_id', $client->id);
         }
 
         return $query->first();
     }
 
     /**
-     * Kunden-Auflösung im Projekt-Name-Fallback — Hook für Plugins mit
+     * Client-Auflösung im Projekt-Name-Fallback: gemerkte Referenz kann auf
+     * einen Kunden oder Fremdkunden (Endkunden) zeigen. Hook für Plugins mit
      * zusätzlichen Schlüsseln (Toggl: stabile client_id).
      */
-    protected function matchCustomerForEntry(Organization $organization, ImportedTimeEntry $entry): ?Customer {
+    protected function matchClientForEntry(Organization $organization, ImportedTimeEntry $entry): Customer|ForeignCustomer|null {
+        $clientName = $entry->clientName !== null ? trim($entry->clientName) : '';
+        if ($clientName !== '') {
+            $byName = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT, $clientName);
+            if ($byName instanceof Customer || $byName instanceof ForeignCustomer) {
+                return $byName;
+            }
+        }
+
         return $this->matchCustomer($organization, $entry->clientName);
     }
 
@@ -195,14 +212,46 @@ abstract class MatchingTimeImportService {
         return $bestScore >= self::SUGGEST_THRESHOLD ? $best : null;
     }
 
-    public function suggestProject(Organization $organization, ?Customer $customer, ?string $projectName): ?Project {
+    /**
+     * Fuzzy-Vorschlag eines Fremdkunden (Endkunden) zum Toggl-/Import-Client:
+     * gemerkte Client-Referenz zuerst (exakt), dann Namensähnlichkeit über alle
+     * aktiven Fremdkunden der Organisation.
+     */
+    public function suggestForeignCustomer(Organization $organization, ?string $clientName): ?ForeignCustomer {
+        $trimmed = $clientName !== null ? trim($clientName) : '';
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $byReference = $this->resolveByReference($organization, self::EXT_TYPE_CLIENT, $trimmed);
+        if ($byReference instanceof ForeignCustomer) {
+            return $byReference;
+        }
+
+        $needle = $this->normalize($trimmed);
+        $best = null;
+        $bestScore = 0.0;
+        foreach (ForeignCustomer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNull('archived_at')->get() as $foreign) {
+            $score = max($this->similarity($needle, $this->normalize($foreign->name)), $this->similarity($needle, $this->normalize($foreign->company)));
+            if ($score > $bestScore) {
+                $bestScore = $score;
+                $best = $foreign;
+            }
+        }
+
+        return $bestScore >= self::SUGGEST_THRESHOLD ? $best : null;
+    }
+
+    public function suggestProject(Organization $organization, ?Customer $customer, ?string $projectName, ?ForeignCustomer $foreignCustomer = null): ?Project {
         $needle = $this->normalize($projectName);
         if ($needle === '') {
             return null;
         }
 
         $query = Project::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNull('archived_at');
-        if ($customer !== null) {
+        if ($foreignCustomer !== null) {
+            $query->where('foreign_customer_id', $foreignCustomer->id);
+        } elseif ($customer !== null) {
             $query->where('customer_id', $customer->id);
         }
 
@@ -255,12 +304,15 @@ abstract class MatchingTimeImportService {
         ]);
 
         // API-Quelle: numerische Fremd-IDs merken — Export-Mapping und
-        // umbenennungsfestes Matching künftiger Importe.
+        // umbenennungsfestes Matching künftiger Importe. Fremdkunde (Endkunde)
+        // des Projekts hat Vorrang, sonst würde jede Auto-Buchung eine
+        // Fremdkunden-Referenz wieder auf die Firma zurückdrehen.
         if ($entry->projectId !== null) {
             $this->rememberReference($organization, self::EXT_TYPE_PROJECT_ID, (string) $entry->projectId, $project);
         }
-        if ($entry->clientId !== null && $project->customer !== null) {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $entry->clientId, $project->customer);
+        $clientTarget = $project->foreignCustomer ?? $project->customer;
+        if ($entry->clientId !== null && $clientTarget !== null) {
+            $this->rememberReference($organization, self::EXT_TYPE_CLIENT_ID, (string) $entry->clientId, $clientTarget);
         }
 
         return $timeEntry;
@@ -326,7 +378,7 @@ abstract class MatchingTimeImportService {
     /**
      * @return array{created: int, skipped: int}
      */
-    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null): array {
+    public function bookInboxGroup(Organization $organization, string $groupKey, ?Customer $customer, Project $project, ?int $userId = null, ?ForeignCustomer $foreignCustomer = null): array {
         $config = $this->resolveConfig($organization->id);
         $userId ??= $this->resolveBookingUserId($organization, isset($config['default_user_id']) && is_numeric($config['default_user_id']) ? (int) $config['default_user_id'] : null);
         if ($userId === null) {
@@ -342,8 +394,10 @@ abstract class MatchingTimeImportService {
         $clientName = trim((string) ($firstSnap['client_name'] ?? ''));
         $projectName = trim((string) ($firstSnap['project_name'] ?? ''));
 
+        // Client-Referenz: der Fremdkunde (Endkunde) ist der präzisere Schlüssel —
+        // künftige Importe scopen Projekt-Matches dann auf ihn statt nur die Firma.
         if ($customer !== null && $clientName !== '') {
-            $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $customer);
+            $this->rememberReference($organization, self::EXT_TYPE_CLIENT, $clientName, $foreignCustomer ?? $customer);
         }
         $this->rememberReference($organization, self::EXT_TYPE_PROJECT, $this->projectKey($clientName, $projectName), $project);
 

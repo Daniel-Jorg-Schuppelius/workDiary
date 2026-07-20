@@ -46,17 +46,21 @@
                                 $isClient = $mapping->external_type === \App\Plugins\Toggl\TogglImportService::EXT_TYPE_CLIENT;
                                 $target = $mapping->referenceable;
                                 $currentSqid = $target?->sqid;
+                                $isForeign = $target instanceof \App\Models\ForeignCustomer;
                             @endphp
                             <tr>
                                 <td>
-                                    <x-status-badge :tone="$isClient ? 'info' : 'neutral'" size="sm">
-                                        {{ $isClient ? __('Kunde') : __('Projekt') }}
+                                    <x-status-badge :tone="$isForeign ? 'accent' : ($isClient ? 'info' : 'neutral')" size="sm">
+                                        {{ $isForeign ? __('Endkunde') : ($isClient ? __('Kunde') : __('Projekt')) }}
                                     </x-status-badge>
                                 </td>
                                 <td class="font-mono text-xs">{{ $mapping->external_id }}</td>
                                 <td>
                                     @if ($target === null)
                                         <span class="text-error text-xs">{{ __('verwaist (Ziel gelöscht)') }}</span>
+                                    @elseif ($isForeign)
+                                        {{ $target->name }}
+                                        <span class="text-base-content/50">({{ $customerLabel[$target->customer_id] ?? '—' }})</span>
                                     @elseif ($isClient)
                                         {{ $target->company ?: $target->name }}
                                     @else
@@ -72,9 +76,20 @@
                                             <select name="target_id" required class="select select-sm select-bordered">
                                                 <option value="">{{ __('— wählen —') }}</option>
                                                 @if ($isClient)
-                                                    @foreach ($customers as $c)
-                                                        <option value="{{ $c['sqid'] }}" @selected($c['sqid'] === $currentSqid)>{{ $c['label'] }}</option>
-                                                    @endforeach
+                                                    <optgroup label="{{ __('Kunden') }}">
+                                                        @foreach ($customers as $c)
+                                                            <option value="{{ $c['sqid'] }}" @selected(! $isForeign && $c['sqid'] === $currentSqid)>{{ $c['label'] }}</option>
+                                                        @endforeach
+                                                    </optgroup>
+                                                    @if ($foreignCustomers !== [])
+                                                        <optgroup label="{{ __('Endkunden (Fremdkunden)') }}">
+                                                            @foreach ($foreignCustomers as $fc)
+                                                                <option value="{{ $fc['sqid'] }}" @selected($isForeign && $fc['sqid'] === $currentSqid)>
+                                                                    {{ $fc['name'] }} ({{ $customerLabel[$fc['customer_id']] ?? '—' }})
+                                                                </option>
+                                                            @endforeach
+                                                        </optgroup>
+                                                    @endif
                                                 @else
                                                     @foreach ($projects as $p)
                                                         <option value="{{ $p['sqid'] }}" @selected($p['sqid'] === $currentSqid)>

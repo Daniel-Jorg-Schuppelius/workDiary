@@ -8821,5 +8821,12 @@
     "Demo: Sichtkontrolle Original-Führerschein.": "Démo : contrôle visuel du permis de conduire original.",
     "Serviceeinsatz vor Ort (Demo)": "Intervention de service sur site (démo)",
     "Wartungspauschale monatlich (Demo)": "Forfait de maintenance mensuel (démo)",
-    "Wartungspauschale {zeitraum}": "Forfait de maintenance {zeitraum}"
+    "Wartungspauschale {zeitraum}": "Forfait de maintenance {zeitraum}",
+    "Das gewählte Projekt gehört nicht zum gewählten Fremdkunden.": "Le projet sélectionné n’appartient pas au client tiers sélectionné.",
+    "Der Name des Fremdkunden darf nicht leer sein.": "Le nom du client tiers ne doit pas être vide.",
+    "Fremdkunde (Endkunde, optional)": "Client tiers (client final, optionnel)",
+    "Kein Fremdkunde": "Aucun client tiers",
+    "neuer Fremdkunde": "nouveau client tiers",
+    "Endkunde": "Client final",
+    "Endkunden (Fremdkunden)": "Clients finaux (clients tiers)"
 }

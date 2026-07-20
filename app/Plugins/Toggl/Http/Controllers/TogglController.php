@@ -11,7 +11,7 @@
 namespace App\Plugins\Toggl\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ExternalReference, IntegrationInboxItem, Organization, Project};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, IntegrationInboxItem, Organization, Project};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
 use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglImportService, TogglOptionBuilder, TogglPlugin};
@@ -101,11 +101,21 @@ class TogglController extends Controller {
         $projects = Project::query()
             ->orderBy('name')
             ->get(['id', 'name', 'customer_id']);
+        // Client-Zuordnungen können auch auf Fremdkunden (Endkunden) zeigen.
+        $foreignCustomers = ForeignCustomer::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'customer_id'])
+            ->map(fn(ForeignCustomer $fc): array => [
+                'sqid' => $fc->sqid,
+                'customer_id' => (int) $fc->customer_id,
+                'name' => (string) $fc->name,
+            ])->all();
 
         return view('toggl::admin.mappings', [
             'mappings' => $mappings,
             'customers' => $this->options->customerOptions($customers),
             'projects' => $this->options->projectOptions($projects),
+            'foreignCustomers' => $foreignCustomers,
         ]);
     }
 
@@ -116,7 +126,13 @@ class TogglController extends Controller {
         $ref = $this->findMapping($organization, $reference);
 
         if ($ref->external_type === TogglImportService::EXT_TYPE_CLIENT) {
-            $target = Customer::query()->whereKey($this->options->decodeId(Customer::class, $request->input('target_id')))->firstOrFail();
+            // Client-Ziel kann Kunde oder Fremdkunde (Endkunde) sein — die Sqids
+            // sind modell-spezifisch, daher nacheinander dekodieren.
+            $raw = (string) $request->input('target_id');
+            $foreignId = \App\Support\Sqid::decode(ForeignCustomer::class, $raw);
+            $target = $foreignId !== null
+                ? ForeignCustomer::query()->whereKey($foreignId)->firstOrFail()
+                : Customer::query()->whereKey($this->options->decodeId(Customer::class, $raw))->firstOrFail();
         } else {
             $target = Project::query()->whereKey($this->options->decodeId(Project::class, $request->input('target_id')))->firstOrFail();
         }

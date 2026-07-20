@@ -90,7 +90,7 @@
                             <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
                         </form>
                     @else
-                    <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="grid gap-3 md:grid-cols-2">
+                    <form method="POST" action="{{ route('admin.integration.inbox.group.book') }}" class="grid gap-3 {{ $form === 'customer_project' ? 'md:grid-cols-3' : 'md:grid-cols-2' }}">
                         @csrf
                         <input type="hidden" name="plugin" value="{{ $g['plugin_id'] }}">
                         <input type="hidden" name="group_key" value="{{ $g['group_key'] }}">
@@ -120,6 +120,36 @@
                                 <span class="text-sm">{{ __('Intern (ohne Kunde)') }}</span>
                             </label>
                         </fieldset>
+
+                        {{-- Endkunden-Ebene: der Import-Client ist ein Kunde des Kunden
+                             (Fremdkunde) — Projekte hängen dann an der Firma und verweisen
+                             auf ihren Endkunden. --}}
+                        @php $suggestedForeign = $g['suggested_foreign_sqid'] ?? null; @endphp
+                        <fieldset class="rounded-box border border-base-300 p-3">
+                            <legend class="px-1 text-xs font-semibold">{{ __('Fremdkunde (Endkunde, optional)') }}</legend>
+                            <label class="label cursor-pointer justify-start gap-2 py-1">
+                                <input type="radio" name="foreign_mode" value="none" class="radio radio-sm" @checked($suggestedForeign === null)>
+                                <span class="text-sm">{{ __('Kein Fremdkunde') }}</span>
+                            </label>
+                            <label class="label cursor-pointer justify-start gap-2 py-1">
+                                <input type="radio" name="foreign_mode" value="existing" class="radio radio-sm" @checked($suggestedForeign !== null)>
+                                <select name="foreign_customer" class="select select-sm select-bordered w-full">
+                                    <option value="">{{ __('… auswählen') }}</option>
+                                    @foreach ($foreignCustomers as $companyLabel => $options)
+                                        <optgroup label="{{ $companyLabel }}">
+                                            @foreach ($options as $sqid => $label)
+                                                <option value="{{ $sqid }}" @selected($suggestedForeign === $sqid)>{{ $label }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="label cursor-pointer justify-start gap-2 py-1">
+                                <input type="radio" name="foreign_mode" value="new" class="radio radio-sm">
+                                <input type="text" name="new_foreign_customer_name" class="input input-sm input-bordered w-full"
+                                       placeholder="{{ __('neuer Fremdkunde') }}" value="{{ $g['client_name'] ?? '' }}">
+                            </label>
+                        </fieldset>
                         @endif
 
                         <fieldset class="rounded-box border border-base-300 p-3 @if (($g['form'] ?? '') !== 'customer_project') md:col-span-2 @endif">
@@ -140,7 +170,7 @@
                             </label>
                         </fieldset>
 
-                        <div class="md:col-span-2 flex justify-end gap-2">
+                        <div class="md:col-span-full flex justify-end gap-2">
                             <button type="submit" class="btn btn-sm btn-primary">{{ __('Gruppe buchen') }}</button>
                         </div>
                     </form>
